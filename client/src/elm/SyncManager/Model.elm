@@ -1,4 +1,4 @@
-module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), BackendWhatsAppEntity, DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadPhotosMode(..), DownloadPhotosStatus(..), DownloadSyncResponse, Flags, IncidentContnentIdentifier, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadFileResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbQueryUploadWhatsAppResultRecord, IndexDbSaveResult, IndexDbSaveResultTable(..), IndexDbSaveStatus(..), IndexDbUploadRemoteData, Model, Msg(..), Site(..), SiteFeature(..), SyncCycle(..), SyncIncidentType(..), SyncInfoAuthority, SyncInfoAuthorityForPort, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoGeneralForPort, SyncInfoStatus(..), SyncSpeed, SyncStatus(..), UploadFileError(..), UploadMethod(..), UploadRec, downloadRequestTimeout, emptyModel, emptySyncInfoAuthority, emptyUploadRec)
+module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), BackendWhatsAppEntity, DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadPhotosMode(..), DownloadPhotosStatus(..), DownloadSyncResponse, Flags, IncidentContnentIdentifier, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoBatchResultRecord, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadFileResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbQueryUploadWhatsAppResultRecord, IndexDbSaveError(..), IndexDbSaveResult, IndexDbSaveResultTable(..), IndexDbSaveStatus(..), IndexDbUploadRemoteData, Model, Msg(..), PhotoBatchResult, Site(..), SiteFeature(..), SyncCycle(..), SyncIncidentType(..), SyncInfoAuthority, SyncInfoAuthorityForPort, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoGeneralForPort, SyncInfoStatus(..), SyncSpeed, SyncStatus(..), UploadFileError(..), UploadMethod(..), UploadRec, downloadRequestTimeout, emptyModel, emptySyncInfoAuthority, emptyUploadRec, uploadRequestTimeout)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -401,6 +401,27 @@ type alias Model =
     -- on every click (at View), which causes unacceptable slowness.
     , geoInfo : GeoInfo
     , reverseGeoInfo : ReverseGeoInfo
+
+    -- Session-scoped flag for the bulk-photo endpoint. `Nothing` =
+    -- untested; `Just True` = endpoint is available, prefer bulk; `Just
+    -- False` = unavailable (404 or repeated failure), fall back to the
+    -- per-photo path for the rest of this session.
+    , bulkPhotosEndpointAvailable : Maybe Bool
+
+    -- Track consecutive whole-batch failures so a poisonous batch can't
+    -- deadlock sync; after 3 in a row, drop bulk mode for the cycle.
+    , bulkPhotosConsecutiveBatchErrors : Int
+
+    -- Rows that are in flight for the current bulk-fetch request. Used
+    -- by the response handler to reconcile per-photo outcomes against
+    -- `deferredPhotos`.
+    , bulkPhotosInFlight : List IndexDbQueryDeferredPhotoResultRecord
+
+    -- The most recent IndexedDB save failure, if the last save failed.
+    -- `IndexDbSaveErrorStorageFull` means a write hit the device storage
+    -- ceiling; in that state re-downloading is futile until space is freed.
+    -- Cleared on the next successful save.
+    , lastSaveError : Maybe IndexDbSaveError
     }
 
 
@@ -420,6 +441,10 @@ emptyModel flags =
     , syncSpeed = Editable.ReadOnly flags.syncSpeed
     , geoInfo = emptyGeoInfo
     , reverseGeoInfo = Dict.empty
+    , bulkPhotosEndpointAvailable = Nothing
+    , bulkPhotosConsecutiveBatchErrors = 0
+    , bulkPhotosInFlight = []
+    , lastSaveError = Nothing
     }
 
 
@@ -572,6 +597,9 @@ type IndexDbQueryType
     | IndexDbQueryUploadAuthority String
       -- Get a single deferred photo.
     | IndexDbQueryDeferredPhoto
+      -- Get up to N deferred photos in one shot, for the bulk-photo
+      -- fetcher. The Int is the requested batch size.
+    | IndexDbQueryDeferredPhotoBatch Int
       -- When we successfully download a photo, we remove it from the `deferredPhotos` table.
       -- We just need the UUID.
     | IndexDbQueryRemoveDeferredPhoto String
@@ -596,6 +624,8 @@ type IndexDbQueryTypeResult
     | IndexDbQueryUploadAuthorityResult (Maybe IndexDbQueryUploadAuthorityResultRecord)
       -- A single deferred photo, if exists.
     | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
+      -- Up to N deferred photos plus the remaining count.
+    | IndexDbQueryDeferredPhotoBatchResult IndexDbQueryDeferredPhotoBatchResultRecord
     | IndexDbQueryGetTotalEntriesToUploadResult Int
       -- JSON.stringify representation of pulled entity.
     | IndexDbQueryGetShardsEntityByUuidResult String
@@ -611,6 +641,10 @@ type alias IndexDbSaveResult =
     { table : IndexDbSaveResultTable
     , status : IndexDbSaveStatus
     , timestamp : String
+
+    -- Error name reported by the JS port on failure (e.g.
+    -- "QuotaExceededError"); `Nothing` on success.
+    , reason : Maybe String
     }
 
 
@@ -624,6 +658,15 @@ type IndexDbSaveResultTable
 type IndexDbSaveStatus
     = IndexDbSaveFailure
     | IndexDbSaveSuccess
+
+
+{-| A classified IndexedDB save failure. `IndexDbSaveErrorStorageFull` (the
+device ran out of storage) is distinguished because retrying the same write
+cannot succeed until space is freed.
+-}
+type IndexDbSaveError
+    = IndexDbSaveErrorOther String
+    | IndexDbSaveErrorStorageFull
 
 
 type alias IndexDbQueryUploadPhotoResultRecord =
@@ -699,6 +742,27 @@ type alias IndexDbQueryDeferredPhotoResultRecord =
     }
 
 
+{-| Result of an `IndexDbQueryDeferredPhotoBatch` query: up to N rows
+plus the total remaining count.
+-}
+type alias IndexDbQueryDeferredPhotoBatchResultRecord =
+    { rows : List IndexDbQueryDeferredPhotoResultRecord
+    , remaining : Int
+    }
+
+
+{-| Per-URL outcome from a bulk photo fetch round trip. `terminal = True`
+means the row should be removed from `deferredPhotos` without retrying
+(server reported `missing` or `forbidden`); transient errors bump the
+`attempts` counter instead.
+-}
+type alias PhotoBatchResult =
+    { url : String
+    , ok : Bool
+    , terminal : Bool
+    }
+
+
 {-| For slow devices, download request 'fetch' phase
 takes less than 12 seconds, and the 'save' phase,
 less than 3. Timeout is double the sum of the 2.
@@ -706,6 +770,19 @@ less than 3. Timeout is double the sum of the 2.
 downloadRequestTimeout : Int
 downloadRequestTimeout =
     (12000 + 3000) * 2
+
+
+{-| Upload requests (POST to /api/sync) carry a batch of changes and may run
+over slow rural connections, so we allow more headroom than downloads. The
+crucial point is that there is a timeout at all: without one, a stalled
+connection (e.g. a dropped mobile link that never sends a TCP RST) leaves the
+request in `Loading` indefinitely, wedging the entire upload phase until the
+app is manually reloaded. The value is in milliseconds, as expected by
+`HttpBuilder.withTimeout`.
+-}
+uploadRequestTimeout : Float
+uploadRequestTimeout =
+    60 * 1000
 
 
 type SyncIncidentType
@@ -759,6 +836,12 @@ type Msg
       -- Fetch a deferred photo from the server.
     | BackendDeferredPhotoFetch (Maybe IndexDbQueryDeferredPhotoResultRecord)
     | BackendDeferredPhotoFetchHandle IndexDbQueryDeferredPhotoResultRecord (WebData ())
+      -- Bulk-fetch a batch of deferred photos in one HTTP request. The
+      -- list is the rows from `deferredPhotos` we asked about; the JS
+      -- side does the POST + Cache.put and replies via the
+      -- `bulkPhotoFetchHandle` port.
+    | BackendDeferredPhotoBatchFetch (List IndexDbQueryDeferredPhotoResultRecord)
+    | BackendDeferredPhotoBatchFetchHandle (List IndexDbQueryDeferredPhotoResultRecord) (Result Int (List PhotoBatchResult))
       -- Unlike other `Backend...` msgs, we have no HTTP activity from Elm. That is,
       -- uploading the photos happens in JS, since we have to deal with file blobs
       -- which would be harder in Elm, given we have elm/http@1.0.
@@ -780,6 +863,7 @@ type Msg
     | QueryIndexDbHandle Value
     | SavedAtIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
+    | FetchFromIndexDbDeferredPhotoBatch
     | FetchFromIndexDbUploadGeneral
     | FetchFromIndexDbUploadWhatsApp
     | FetchFromIndexDbUploadAuthority

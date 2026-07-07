@@ -419,7 +419,7 @@ encodeSPVEncounterDataItem item =
 
         zscoreUnderweight =
             Maybe.map (\value -> [ ( "zscore_underweight", float value ) ])
-                item.zscoreStunting
+                item.zscoreUnderweight
                 |> Maybe.withDefault []
 
         zscoreWasting =
@@ -507,7 +507,7 @@ encodeNutritionIndividualEncounterDataItem item =
 
         zscoreUnderweight =
             Maybe.map (\value -> [ ( "zscore_underweight", float value ) ])
-                item.zscoreStunting
+                item.zscoreUnderweight
                 |> Maybe.withDefault []
 
         zscoreWasting =
@@ -553,7 +553,7 @@ encodeNutritionGroupEncounterDataItem item =
 
         zscoreUnderweight =
             Maybe.map (\value -> [ ( "zscore_underweight", float value ) ])
-                item.zscoreStunting
+                item.zscoreUnderweight
                 |> Maybe.withDefault []
 
         zscoreWasting =

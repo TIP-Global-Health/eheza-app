@@ -18,7 +18,8 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet
 import Measurement.Model exposing (ModelChild, ModelMother, MsgChild(..), MsgMother(..), OutMsgChild(..), OutMsgMother(..), emptyParticipantFormProgress)
-import Pages.Utils exposing (setMultiSelectInputValue)
+import Pages.Utils exposing (setMuacValueForSite, setMultiSelectInputValue)
+import SyncManager.Model exposing (Site)
 
 
 {-| The strategy used here, for the moment, is that the `model` tracks the UI,
@@ -28,8 +29,8 @@ which we can change **directly** here is our own model. If we want to change
 the "real" data, we have to return an `OutMsg` to be processed elsehwere (for
 instance, by actually writing the data to local storage).
 -}
-updateChild : MsgChild -> ModelChild -> ( ModelChild, Cmd MsgChild, Maybe OutMsgChild )
-updateChild msg model =
+updateChild : Site -> MsgChild -> ModelChild -> ( ModelChild, Cmd MsgChild, Maybe OutMsgChild )
+updateChild site msg model =
     case msg of
         UpdateHeight val ->
             ( { model | height = val }
@@ -401,7 +402,7 @@ updateChild msg model =
                     model.ncdaData.form
                         |> (\form ->
                                 { form
-                                    | muac = String.toFloat string |> Maybe.map MuacInCm
+                                    | muac = setMuacValueForSite site string |> Maybe.map MuacInCm
                                 }
                            )
 
@@ -573,11 +574,6 @@ updateMother measurements msg model =
 
         SendOutMsgMother outMsg ->
             let
-                -- TODO: For the moment, we're just assuming that the save into
-                -- the local cache succeeds ... we don't do any error checking.
-                -- Once we do, this mechanism would transition to the handling
-                -- for the RemoteData that represents the state of the save &
-                -- the possible error message.
                 updated =
                     case outMsg of
                         SaveCompletedForm _ formId _ ->
@@ -612,10 +608,6 @@ selectNextForm : MeasurementData MotherMeasurements -> ParticipantFormId -> Mode
 selectNextForm measurements formId model =
     let
         completedFormIds =
-            -- TODO: Note in the last step we treat the current formId as
-            -- completed ...  once we're actually doing error checking on the
-            -- save to the cache, we will need to adjust that (to take into
-            -- account whether the save succeeded or not).
             measurements
                 |> mapMeasurementData .consent
                 |> currentValues

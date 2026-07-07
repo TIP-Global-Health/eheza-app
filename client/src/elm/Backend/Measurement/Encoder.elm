@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (encodeAcuteFindings, encodeAcuteIllnessContactsTracing, encodeAcuteIllnessCoreExam, encodeAcuteIllnessDangerSigns, encodeAcuteIllnessFollowUp, encodeAcuteIllnessMuac, encodeAcuteIllnessNutrition, encodeAcuteIllnessTraceContact, encodeAcuteIllnessVitals, encodeAhezaChild, encodeAhezaMother, encodeAppointmentConfirmation, encodeAttendance, encodeBirthPlan, encodeBreastExam, encodeCall114, encodeCall114Sign, encodeChildFbf, encodeChildScoreboardBCGImmunisation, encodeChildScoreboardDTPImmunisation, encodeChildScoreboardDTPStandaloneImmunisation, encodeChildScoreboardIPVImmunisation, encodeChildScoreboardMRImmunisation, encodeChildScoreboardNCDA, encodeChildScoreboardOPVImmunisation, encodeChildScoreboardPCV13Immunisation, encodeChildScoreboardRotarixImmunisation, encodeContributingFactors, encodeCorePhysicalExam, encodeCounselingSession, encodeCovidTesting, encodeDangerSign, encodeDangerSigns, encodeExposure, encodeFamilyNutritionMuacChild, encodeFamilyNutritionMuacMother, encodeFamilyNutritionPhoto, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFollowUp, encodeGroupHealthEducation, encodeGroupNCDA, encodeGroupSendToHC, encodeHCContact, encodeHCContactSign, encodeHCRecommendation, encodeHIVDiagnostics, encodeHIVFollowUp, encodeHIVHealthEducation, encodeHIVMedication, encodeHIVReferral, encodeHIVSymptomReview, encodeHIVTreatmentReview, encodeHealthEducation, encodeHeight, encodeIsolation, encodeIsolationSign, encodeLactation, encodeLastMenstrualPeriod, encodeMalariaPrevention, encodeMalariaTesting, encodeMedicalCondition, encodeMedicalHistory, encodeMedication, encodeMedicationDistribution, encodeMotherFbf, encodeMuac, encodeNCDCoMorbidities, encodeNCDCoreExam, encodeNCDCreatinineTest, encodeNCDDangerSigns, encodeNCDFamilyHistory, encodeNCDFamilyPlanning, encodeNCDHIVTest, encodeNCDHbA1cTest, encodeNCDHealthEducation, encodeNCDLabsResults, encodeNCDLipidPanelTest, encodeNCDLiverFunctionTest, encodeNCDMedicationDistribution, encodeNCDMedicationHistory, encodeNCDOutsideCare, encodeNCDPregnancyTest, encodeNCDRandomBloodSugarTest, encodeNCDReferral, encodeNCDSocialHistory, encodeNCDSymptomReview, encodeNCDUrineDipstickTest, encodeNCDVitals, encodeNutrition, encodeNutritionCaring, encodeNutritionContributingFactors, encodeNutritionFeeding, encodeNutritionFollowUp, encodeNutritionFoodSecurity, encodeNutritionHealthEducation, encodeNutritionHeight, encodeNutritionHygiene, encodeNutritionMuac, encodeNutritionNCDA, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSendToHC, encodeNutritionSign, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistoryStep2, encodeObstetricalExam, encodeParticipantConsent, encodePhoto, encodePregnancyTest, encodePrenatalAspirin, encodePrenatalBloodGpRsTest, encodePrenatalBreastfeeding, encodePrenatalCalcium, encodePrenatalFamilyPlanning, encodePrenatalFefol, encodePrenatalFolate, encodePrenatalFollowUp, encodePrenatalGUExam, encodePrenatalHIVPCRTest, encodePrenatalHIVTest, encodePrenatalHealthEducation, encodePrenatalHemoglobinTest, encodePrenatalHepatitisBTest, encodePrenatalIron, encodePrenatalLabsResults, encodePrenatalMMS, encodePrenatalMalariaTest, encodePrenatalMebendazole, encodePrenatalMedicationDistribution, encodePrenatalMentalHealth, encodePrenatalNutrition, encodePrenatalOutsideCare, encodePrenatalPartnerHIVTest, encodePrenatalPhoto, encodePrenatalRandomBloodSugarTest, encodePrenatalSendToHC, encodePrenatalSpecialityCare, encodePrenatalSymptomReview, encodePrenatalSyphilisTest, encodePrenatalTetanusImmunisation, encodePrenatalUltrasound, encodePrenatalUrineDipstickTest, encodeRecommendation114, encodeSendToHC, encodeSendToHCSign, encodeSkippedForm, encodeSocialHistory, encodeSymptomsGI, encodeSymptomsGeneral, encodeSymptomsRespiratory, encodeTestExecutionNote, encodeTestResult, encodeTravelHistory, encodeTreatmentOngoing, encodeTreatmentReview, encodeTuberculosisDOT, encodeTuberculosisDiagnostics, encodeTuberculosisFollowUp, encodeTuberculosisHealthEducation, encodeTuberculosisMedication, encodeTuberculosisReferral, encodeTuberculosisSymptomReview, encodeTuberculosisTreatmentReview, encodeVitals, encodeWeight, encodeWellChildAlbendazole, encodeWellChildBCGImmunisation, encodeWellChildCaring, encodeWellChildContributingFactors, encodeWellChildDTPImmunisation, encodeWellChildDTPStandaloneImmunisation, encodeWellChildECD, encodeWellChildFeeding, encodeWellChildFollowUp, encodeWellChildFoodSecurity, encodeWellChildHPVImmunisation, encodeWellChildHeadCircumference, encodeWellChildHealthEducation, encodeWellChildHeight, encodeWellChildHygiene, encodeWellChildIPVImmunisation, encodeWellChildMRImmunisation, encodeWellChildMebendezole, encodeWellChildMuac, encodeWellChildNCDA, encodeWellChildNextVisit, encodeWellChildNutrition, encodeWellChildOPVImmunisation, encodeWellChildPCV13Immunisation, encodeWellChildPhoto, encodeWellChildPregnancySummary, encodeWellChildRotarixImmunisation, encodeWellChildSendToHC, encodeWellChildSymptomsReview, encodeWellChildVitals, encodeWellChildVitaminA, encodeWellChildWeight, malariaRapidTestResultAsString)
+module Backend.Measurement.Encoder exposing (encodeAcuteFindings, encodeAcuteIllnessContactsTracing, encodeAcuteIllnessCoreExam, encodeAcuteIllnessDangerSigns, encodeAcuteIllnessFollowUp, encodeAcuteIllnessMuac, encodeAcuteIllnessNutrition, encodeAcuteIllnessTraceContact, encodeAcuteIllnessVitals, encodeAhezaChild, encodeAhezaMother, encodeAppointmentConfirmation, encodeAttendance, encodeBirthPlan, encodeBreastExam, encodeCall114, encodeCall114Sign, encodeChildFbf, encodeChildScoreboardBCGImmunisation, encodeChildScoreboardDTPImmunisation, encodeChildScoreboardDTPStandaloneImmunisation, encodeChildScoreboardIPVImmunisation, encodeChildScoreboardMRImmunisation, encodeChildScoreboardNCDA, encodeChildScoreboardOPVImmunisation, encodeChildScoreboardPCV13Immunisation, encodeChildScoreboardRotarixImmunisation, encodeContributingFactors, encodeCorePhysicalExam, encodeCounselingSession, encodeCovidTesting, encodeDangerSign, encodeDangerSigns, encodeExposure, encodeFamilyNutritionMuacChild, encodeFamilyNutritionMuacMother, encodeFamilyNutritionPhoto, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFollowUp, encodeGroupHealthEducation, encodeGroupNCDA, encodeGroupSendToHC, encodeHCContact, encodeHCContactSign, encodeHCRecommendation, encodeHIVDiagnostics, encodeHIVFollowUp, encodeHIVHealthEducation, encodeHIVMedication, encodeHIVReferral, encodeHIVSymptomReview, encodeHIVTreatmentReview, encodeHealthEducation, encodeHeight, encodeIsolation, encodeIsolationSign, encodeLactation, encodeLastMenstrualPeriod, encodeMalariaPrevention, encodeMalariaTesting, encodeMedicalCondition, encodeMedicalHistory, encodeMedicalHistoryValue, encodeMedication, encodeMedicationDistribution, encodeMotherFbf, encodeMuac, encodeNCDCoMorbidities, encodeNCDCoreExam, encodeNCDCreatinineTest, encodeNCDDangerSigns, encodeNCDFamilyHistory, encodeNCDFamilyPlanning, encodeNCDHIVTest, encodeNCDHbA1cTest, encodeNCDHealthEducation, encodeNCDLabsResults, encodeNCDLipidPanelTest, encodeNCDLiverFunctionTest, encodeNCDMedicationDistribution, encodeNCDMedicationHistory, encodeNCDOutsideCare, encodeNCDPregnancyTest, encodeNCDRandomBloodSugarTest, encodeNCDReferral, encodeNCDSocialHistory, encodeNCDSymptomReview, encodeNCDUrineDipstickTest, encodeNCDVitals, encodeNutrition, encodeNutritionCaring, encodeNutritionContributingFactors, encodeNutritionFeeding, encodeNutritionFollowUp, encodeNutritionFoodSecurity, encodeNutritionHealthEducation, encodeNutritionHeight, encodeNutritionHygiene, encodeNutritionMuac, encodeNutritionNCDA, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSendToHC, encodeNutritionSign, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistoryStep2, encodeObstetricalExam, encodeParticipantConsent, encodePhoto, encodePregnancyTest, encodePrenatalAspirin, encodePrenatalBloodGpRsTest, encodePrenatalBreastfeeding, encodePrenatalCalcium, encodePrenatalFamilyPlanning, encodePrenatalFefol, encodePrenatalFolate, encodePrenatalFollowUp, encodePrenatalGUExam, encodePrenatalHIVPCRTest, encodePrenatalHIVTest, encodePrenatalHealthEducation, encodePrenatalHemoglobinTest, encodePrenatalHepatitisBTest, encodePrenatalIron, encodePrenatalLabsResults, encodePrenatalMMS, encodePrenatalMalariaTest, encodePrenatalMebendazole, encodePrenatalMedicationDistribution, encodePrenatalMentalHealth, encodePrenatalNutrition, encodePrenatalOutsideCare, encodePrenatalPartnerHIVTest, encodePrenatalPhoto, encodePrenatalRandomBloodSugarTest, encodePrenatalSendToHC, encodePrenatalSpecialityCare, encodePrenatalSymptomReview, encodePrenatalSyphilisTest, encodePrenatalTetanusImmunisation, encodePrenatalUltrasound, encodePrenatalUrineDipstickTest, encodeRecommendation114, encodeSendToHC, encodeSendToHCSign, encodeSkippedForm, encodeSocialHistory, encodeSymptomsGI, encodeSymptomsGeneral, encodeSymptomsRespiratory, encodeTestExecutionNote, encodeTestResult, encodeTravelHistory, encodeTreatmentOngoing, encodeTreatmentReview, encodeTuberculosisDOT, encodeTuberculosisDiagnostics, encodeTuberculosisFollowUp, encodeTuberculosisHealthEducation, encodeTuberculosisMedication, encodeTuberculosisReferral, encodeTuberculosisSymptomReview, encodeTuberculosisTreatmentReview, encodeVitals, encodeWeight, encodeWellChildAlbendazole, encodeWellChildBCGImmunisation, encodeWellChildCaring, encodeWellChildContributingFactors, encodeWellChildDTPImmunisation, encodeWellChildDTPStandaloneImmunisation, encodeWellChildECD, encodeWellChildFeeding, encodeWellChildFollowUp, encodeWellChildFoodSecurity, encodeWellChildHPVImmunisation, encodeWellChildHeadCircumference, encodeWellChildHealthEducation, encodeWellChildHeight, encodeWellChildHygiene, encodeWellChildIPVImmunisation, encodeWellChildMRImmunisation, encodeWellChildMebendezole, encodeWellChildMuac, encodeWellChildNCDA, encodeWellChildNextVisit, encodeWellChildNutrition, encodeWellChildOPVImmunisation, encodeWellChildPCV13Immunisation, encodeWellChildPhoto, encodeWellChildPregnancySummary, encodeWellChildRotarixImmunisation, encodeWellChildSendToHC, encodeWellChildSymptomsReview, encodeWellChildVitals, encodeWellChildVitaminA, encodeWellChildWeight, malariaRapidTestResultAsString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis)
@@ -6,7 +6,7 @@ import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (administrationNoteToString, ahezaDistributionReasonToString, avoidingGuidanceReasonToString, bilirubinValueToString, bloodGroupToString, bloodSmearResultToString, breastfeedingSignToString, foodGroupToString, glucoseValueToString, guExamSignToString, haemoglobinValueToString, hivDiagnosisSignToString, hivHealthEducationSignToString, hivPrescribedMedicationToString, hivSymptomToString, illnessSymptomToString, ketoneValueToString, laboratoryTestToString, lateFirstANCVisitReasonToString, leukocytesValueToString, lmpDateNotConfidentReasonToString, medicalConditionToString, medicalHistoryInfectiousDiseaseToString, medicalHistoryMentalHealthIssueToString, medicalHistoryPhysicalConditionToString, medicalHistorySignToString, medicationCausingHypertensionToString, medicationTreatingDiabetesToString, medicationTreatingHypertensionToString, ncdDangerSignToString, ncdFamilyHistorySignToString, ncdGroup1SymptomToString, ncdGroup2SymptomToString, ncdPainSymptomToString, ncdSocialHistorySignToString, ncdaSignToString, nitriteValueToString, nutritionAssessmentToString, nutritionSignToString, obstetricHistoryStep2SignToString, outsideCareMedicationToString, outsideCareSignToString, phValueToString, postpartumChildDangerSignToString, postpartumHealingProblemToString, postpartumMotherDangerSignToString, predecessorToString, pregnancyTestResultToString, prenatalFlankPainSignToString, prenatalHIVSignToString, prenatalMentalHealthQuestionOptionToString, prenatalMentalHealthQuestionToString, prenatalSymptomQuestionToString, prenatalSymptomToString, proteinValueToString, reasonForNonReferralToString, receiveOptionToString, recommendedTreatmentSignToString, reinforceTreatmentSignToString, reviewStateToString, rhesusToString, skippedFormToString, stuntingLevelToString, symptomsGISignToString, symptomsGeneralSignToString, symptomsRespiratorySignToString, testResultToString, tuberculosisDOTSignToString, tuberculosisDiagnosisToString, tuberculosisHealthEducationSignToString, tuberculosisPrescribedMedicationToString, tuberculosisSymptomToString, unitOfMeasurementToString, urobilinogenValueToString, vaccineDoseToString, vaginalExamSignToString)
+import Backend.Measurement.Utils exposing (administrationNoteToString, ahezaDistributionReasonToString, avoidingGuidanceReasonToString, bilirubinValueToString, bloodGroupToString, bloodSmearResultToString, breastfeedingSignToString, foodGroupToString, glucoseValueToString, guExamSignToString, haemoglobinValueToString, hivDiagnosisSignToString, hivHealthEducationSignToString, hivPrescribedMedicationToString, hivSymptomToString, illnessSymptomToString, ketoneValueToString, laboratoryTestToString, lateFirstANCVisitReasonToString, leukocytesValueToString, lmpDateNotConfidentReasonToString, medicalConditionToString, medicalHistoryInfectiousDiseaseToString, medicalHistoryMentalHealthIssueToString, medicalHistoryPhysicalConditionToString, medicalHistorySignToString, medicationCausingHypertensionToString, medicationTreatingDiabetesToString, medicationTreatingHypertensionToString, ncdDangerSignToString, ncdFamilyHistorySignToString, ncdGroup1SymptomToString, ncdGroup2SymptomToString, ncdPainSymptomToString, ncdSocialHistorySignToString, ncdaSignToString, nitriteValueToString, nutritionAssessmentToString, nutritionSignToString, obstetricHistoryStep2SignToString, occursInFamilySignToString, outsideCareMedicationToString, outsideCareSignToString, phValueToString, postpartumChildDangerSignToString, postpartumHealingProblemToString, postpartumMotherDangerSignToString, predecessorToString, pregnancyTestResultToString, prenatalFlankPainSignToString, prenatalHIVSignToString, prenatalMentalHealthQuestionOptionToString, prenatalMentalHealthQuestionToString, prenatalSymptomQuestionToString, prenatalSymptomToString, proteinValueToString, reasonForNonReferralToString, receiveOptionToString, recommendedTreatmentSignToString, reinforceTreatmentSignToString, reviewStateToString, rhesusToString, skippedFormToString, stuntingLevelToString, symptomsGISignToString, symptomsGeneralSignToString, symptomsRespiratorySignToString, testResultToString, tuberculosisDOTSignToString, tuberculosisDiagnosisToString, tuberculosisHealthEducationSignToString, tuberculosisPrescribedMedicationToString, tuberculosisSymptomToString, unitOfMeasurementToString, urobilinogenValueToString, vaccineDoseToString, vaginalExamSignToString)
 import Backend.Person.Encoder exposing (encodeGender)
 import Backend.Person.Utils exposing (genderToString)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis)
@@ -877,7 +877,6 @@ encodeUltrasoundValue value =
     , ( "edd_weeks", int value.eddWeeks )
     , ( "edd_days", int value.eddDays )
     , ( "expected_date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.eddDate )
-    , ( "deleted", bool False )
     , ( "type", string "prenatal_ultrasound" )
     ]
 
@@ -1429,7 +1428,7 @@ encodeMedicalHistoryValue value =
     , ( "physical_condition_history", encodeEverySet encodeMedicalHistoryPhysicalCondition value.physicalConditions )
     , ( "infectious_disease_history", encodeEverySet encodeMedicalHistoryInfectiousDisease value.infectiousDiseases )
     , ( "mental_health_issues", encodeEverySet encodeMedicalHistoryMentalHealthIssue value.mentalHealthIssues )
-    , ( "deleted", bool False )
+    , ( "preeclampsia_in_family", encodeOccursInFamilySign value.preeclampsiaInFamily )
     , ( "type", string "medical_history" )
     ]
 
@@ -1437,6 +1436,11 @@ encodeMedicalHistoryValue value =
 encodeMedicalHistorySign : MedicalHistorySign -> Value
 encodeMedicalHistorySign =
     medicalHistorySignToString >> string
+
+
+encodeOccursInFamilySign : OccursInFamilySign -> Value
+encodeOccursInFamilySign =
+    occursInFamilySignToString >> string
 
 
 encodeMedicalHistoryPhysicalCondition : MedicalHistoryPhysicalCondition -> Value
@@ -1725,51 +1729,7 @@ encodePreviousDeliverySign sign =
             CSectionInPreviousDelivery ->
                 "c-section-in-previous-delivery"
 
-            StillbornPreviousDelivery ->
-                "stillborn-previous-delivery"
-
-            BabyDiedOnDayOfBirthPreviousDelivery ->
-                "baby-died-on-day-of-birth-previous-delivery"
-
-            PartialPlacentaPreviousDelivery ->
-                "partial-placenta-previous-delivery"
-
-            SevereHemorrhagingPreviousDelivery ->
-                "severe-hemorrhaging-previous-delivery"
-
-            ConvulsionsPreviousDelivery ->
-                "convulsions-previous-delivery"
-
-            ConvulsionsAndUnconsciousPreviousDelivery ->
-                "convulsions-and-unconscious-previous-delivery"
-
             NoPreviousDeliverySign ->
-                "none"
-
-
-encodeObstetricHistorySign : ObstetricHistorySign -> Value
-encodeObstetricHistorySign sign =
-    string <|
-        case sign of
-            SuccessiveAbortions ->
-                "successive-abortions"
-
-            SuccessivePrematureDeliveries ->
-                "successive-premature-deliveries"
-
-            PreeclampsiaPreviousPregnancy ->
-                "preeclampsia-previous-pregnancy"
-
-            GestationalDiabetesPreviousPregnancy ->
-                "gestational-diabetes-previous-pregnancy"
-
-            IncompleteCervixPreviousPregnancy ->
-                "incomplete-cervix-previous-pregnancy"
-
-            RhNegative ->
-                "rh-negative"
-
-            NoObstetricHistorySign ->
                 "none"
 
 
@@ -1786,7 +1746,6 @@ encodeObstetricHistoryStep2 =
 encodeObstetricHistoryStep2Value : ObstetricHistoryStep2Value -> List ( String, Value )
 encodeObstetricHistoryStep2Value value =
     [ ( "c_sections", int value.cSections )
-    , ( "obstetric_history", encodeEverySet encodeObstetricHistorySign value.obstetricHistory )
     , ( "obstetric_history_step2", encodeEverySet encodeObstetricHistoryStep2Sign value.signs )
     , ( "previous_delivery", encodeEverySet encodePreviousDeliverySign value.previousDelivery )
     , ( "previous_delivery_period", encodeEverySet encodePreviousDeliveryPeriod value.previousDeliveryPeriod )
@@ -2044,7 +2003,6 @@ encodeSymptomsRespiratoryValue signs =
     , ( "sore_throat_period", int soreThroat )
     , ( "loss_of_smell_period", int lossOfSmell )
     , ( "stabbing_chest_pain_period", int stabbingChestPain )
-    , ( "deleted", bool False )
     , ( "type", string "symptoms_respiratory" )
     ]
 

@@ -19,6 +19,9 @@ export default defineConfig({
     video: recording ? 'on' : 'off',
     ...devices['iPad Mini'],
     ...(recording ? { deviceScaleFactor: 1, viewport: { width: 820, height: 1024 } } : {}),
+    // Pin the browser timezone to UTC so the app's date handling and any
+    // date-sensitive assertions are deterministic across CI runners.
+    timezoneId: 'UTC',
     hasTouch: false,
     isMobile: false,
   },

@@ -6,7 +6,7 @@ import Backend.FamilyEncounterParticipant.Model exposing (FamilyParticipantIniti
 import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
 import Backend.FamilyNutritionActivity.Utils exposing (getActivityIcon)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (ahezaDistributionReasonToString, getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (ahezaDistributionReasonToString, getMeasurementValueFunc, muacValueForSite)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Utils exposing (isPersonAnAdult)
 import Gizra.Html exposing (emptyNode)
@@ -555,12 +555,8 @@ viewMuacForm language currentDate site data model familyMember =
             getInputConstraintsMuac site
 
         currentValue =
-            case site of
-                SyncManager.Model.SiteBurundi ->
-                    Maybe.map ((*) 10) form.muac
-
-                _ ->
-                    form.muac
+            -- MUAC is stored in cm; muacValueForSite shows it in mm at Burundi.
+            Maybe.map (muacValueForSite site) form.muac
 
         disabled =
             (tasksCompleted /= tasksTotal)

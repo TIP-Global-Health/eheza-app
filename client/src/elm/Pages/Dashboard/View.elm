@@ -30,6 +30,7 @@ import Backend.Dashboard.Model
         )
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..))
+import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
@@ -39,7 +40,6 @@ import Backend.Utils exposing (groupEducationEnabled)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
-import Debug exposing (toString)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, isDiffTruthy, toLastDayOfMonth)
@@ -595,11 +595,27 @@ viewMonthCell ( month, cellData ) =
     let
         class =
             classList
-                [ ( String.toLower <| Debug.toString cellData.class, True )
+                [ ( nutritionStatusToClass cellData.class, True )
                 , ( String.fromInt month, True )
                 ]
     in
     td [ class ] [ span [] [ text cellData.value ] ]
+
+
+nutritionStatusToClass : Backend.Dashboard.Model.NutritionStatus -> String
+nutritionStatusToClass status =
+    case status of
+        Backend.Dashboard.Model.Good ->
+            "good"
+
+        Backend.Dashboard.Model.Moderate ->
+            "moderate"
+
+        Backend.Dashboard.Model.Neutral ->
+            "neutral"
+
+        Backend.Dashboard.Model.Severe ->
+            "severe"
 
 
 viewFiltersPane : Language -> DashboardPage -> ModelIndexedDb -> Model -> Html Msg
@@ -2220,7 +2236,7 @@ viewFamilyPlanningDonutChart language stats =
                 dict
                     |> Dict.toList
                     |> List.filter (\( sign, _ ) -> sign /= NoFamilyPlanning)
-                    |> List.sortBy (\( name, _ ) -> Debug.toString name)
+                    |> List.sortBy (\( name, _ ) -> encodeFamilyPlanningSignAsString name)
         in
         div [ class "content" ]
             [ viewPieChart familyPlanningSignsColors signs
@@ -2306,7 +2322,7 @@ viewPieChartLegend language translateFunc colorFunc signs =
                             "1"
 
                         else
-                            toString percentage
+                            String.fromInt percentage
                 in
                 div [ class "legend-item" ]
                     [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
@@ -3035,7 +3051,7 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
         -- at encounter during selected month or previously, and did not have
         -- an encounter afterwards that indicated that condition was resolved.
         totalBeneficiariesWasting =
-            countCurrentlyDiagnosedByValue .zscoreWasting (\zscore -> zscore < 2)
+            countCurrentlyDiagnosedByValue .zscoreWasting (\zscore -> zscore < -2)
 
         -- Number of children who are had firs diagnosis of wasting during
         -- selected month.
@@ -3067,7 +3083,7 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
         -- encounter during selected month or previously, and did not have an
         -- encounter afterwards that indicated that condition was resolved.
         numberOfStunting =
-            countCurrentlyDiagnosedByValue .zscoreStunting (\zscore -> zscore < 2)
+            countCurrentlyDiagnosedByValue .zscoreStunting (\zscore -> zscore < -2)
 
         -- Number of Children who had either micro or macrocephaly diagnosed at
         -- encounter during selected month or previously, and did not have an

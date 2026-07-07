@@ -475,3 +475,45 @@ function hedley_activity_count_person_measurements_taken_during_sessions($person
 
   return $query->countQuery()->execute()->fetchField();
 }
+
+/**
+ * Loads, per person, the sessions during which they have measurements.
+ *
+ * Batched companion to
+ * hedley_activity_count_person_measurements_taken_during_sessions(): instead of
+ * one COUNT query per person, this resolves attendance for many persons at once
+ * with a single query, so callers can determine it in memory.
+ *
+ * @param array $sessions_ids
+ *   The session node IDs to consider.
+ *
+ * @return array
+ *   A map keyed by person node ID; each value is a set of session node IDs (as
+ *   array keys) during which that person has at least one measurement.
+ */
+function hedley_activity_get_persons_sessions_with_measurements(array $sessions_ids) {
+  $persons_sessions = [];
+  if (empty($sessions_ids)) {
+    return $persons_sessions;
+  }
+
+  $query = hedley_general_create_db_select_query_excluding_deleted('node');
+  $query->condition('status', NODE_PUBLISHED);
+
+  $person_field = 'field_person';
+  hedley_general_join_field_to_query($query, 'node', $person_field);
+
+  $session_field = 'field_session';
+  hedley_general_join_field_to_query($query, 'node', $session_field);
+  $session_field_name = $session_field . '.' . $session_field . '_target_id';
+  $query->condition($session_field_name, $sessions_ids, 'IN');
+
+  $query->distinct();
+
+  $result = $query->execute();
+  foreach ($result as $row) {
+    $persons_sessions[$row->field_person][$row->field_session] = TRUE;
+  }
+
+  return $persons_sessions;
+}

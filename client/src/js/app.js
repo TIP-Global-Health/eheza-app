@@ -531,38 +531,26 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
 });
 
 elmApp.ports.getCoordinates.subscribe(function() {
-  if ("geolocation" in navigator) {
-    const options = {
-        enableHighAccuracy: true,  // Use GPS if available for better accuracy.
-        timeout: 15000,            // Time to wait for position (15 * 1000 ms).
-        maximumAge: 600000         // Accept cached positions up to 10 minutes old (10 * 60 * 1000 ms).
-    };
-
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const { latitude, longitude } = position.coords;
-            const result = {latitude: latitude, longitude: longitude};
-            elmApp.ports.coordinates.send(result);
-        },
-        (error) => {
-            rollbar.log("Error fetching location:", error);
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    rollbar.log("User denied geolocation permission");
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    rollbar.log("Location information unavailable");
-                    break;
-                case error.TIMEOUT:
-                    rollbar.log("Location request timed out");
-                    break;
-            }
-        },
-        options
-    );
-  } else {
-      rollbar.log("Geolocation is not available.");
+  if (!("geolocation" in navigator)) {
+    return;
   }
+
+  const options = {
+      enableHighAccuracy: true,  // Use GPS if available for better accuracy.
+      timeout: 15000,            // Time to wait for position (15 * 1000 ms).
+      maximumAge: 600000         // Accept cached positions up to 10 minutes old (10 * 60 * 1000 ms).
+  };
+
+  navigator.geolocation.getCurrentPosition(
+      (position) => {
+          const { latitude, longitude } = position.coords;
+          const result = {latitude: latitude, longitude: longitude};
+          elmApp.ports.coordinates.send(result);
+      },
+      // Failure is expected (denied / hardware unavailable / timeout); Elm uses Maybe GPSCoordinates.
+      () => {},
+      options
+  );
 });
 
 
@@ -597,6 +585,19 @@ elmApp.ports.sendSyncInfoAuthorities.subscribe(function(syncInfoAuthorities) {
  */
 elmApp.ports.sendSyncSpeed.subscribe(function(syncSpeed) {
   localStorage.setItem('syncSpeed', JSON.stringify(syncSpeed));
+});
+
+/**
+ * Bulk fetch a batch of photo URLs.
+ *
+ * Elm calls this with {urls, accessToken}; we delegate to bulkPhotos.js
+ * which POSTs to /api/bulk-photos, parses the binary container, and
+ * populates the "photos" Cache Storage. Reply (per-URL outcomes or a
+ * whole-batch error) goes back via the bulkPhotoFetchHandle port.
+ */
+elmApp.ports.bulkPhotoFetch.subscribe(async function(params) {
+  const outcome = await self.bulkPhotos.handleBulkPhotoFetch(params);
+  elmApp.ports.bulkPhotoFetchHandle.send(outcome);
 });
 
 /**
@@ -644,22 +645,57 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
 
   table.bulkPut(entities)
       .then(function() {
-          return sendIndexedDbSaveResult('Success', info.table, info.timestamp);
-      }).catch(Dexie.BulkError, function (e) {
-          return sendIndexedDbSaveResult('Failure', info.table, info.timestamp);
+          return sendIndexedDbSaveResult('Success', info.table, info.timestamp, null);
+      }).catch(function (e) {
+          // Catch EVERY failure, not just Dexie.BulkError. A QuotaExceededError
+          // (the device storage is full) or a transaction AbortError is not a
+          // BulkError, so it used to escape this handler as an unhandled
+          // rejection -- Elm was never told the save failed, and the sync lane
+          // silently retried the same batch forever. Report the error name so
+          // Elm can tell a storage-full condition apart from other failures.
+          return sendIndexedDbSaveResult('Failure', info.table, info.timestamp, indexedDbErrorName(e));
       });
 
   /**
-   * Report that save operation was successful.
+   * Report the outcome of a save operation back to Elm.
    */
-  function sendIndexedDbSaveResult(status, table, timestamp) {
+  function sendIndexedDbSaveResult(status, table, timestamp, reason) {
     const dataForSend = {
       'status': status,
       'table': table,
-      'timestamp': timestamp
+      'timestamp': timestamp,
+      'reason': reason || null
     }
 
     elmApp.ports.savedAtIndexedDb.send(dataForSend);
+  }
+
+  /**
+   * Extract a stable error name from a Dexie/IndexedDB failure, surfacing a
+   * QuotaExceededError even when Dexie wraps it (in `inner`, or among the
+   * per-row `failures` of a BulkError), so Elm can detect storage exhaustion.
+   */
+  function indexedDbErrorName(e) {
+    if (!e) {
+      return 'Unknown';
+    }
+
+    var candidates = [e];
+    if (e.inner) {
+      candidates.push(e.inner);
+    }
+    if (e.failures && e.failures.length) {
+      candidates = candidates.concat(e.failures);
+    }
+
+    for (var i = 0; i < candidates.length; i++) {
+      var name = candidates[i] && candidates[i].name;
+      if (typeof name === 'string' && name.indexOf('Quota') !== -1) {
+        return 'QuotaExceededError';
+      }
+    }
+
+    return (e.name && typeof e.name === 'string') ? e.name : 'Unknown';
   }
 
 });
@@ -867,10 +903,10 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
               // Update IndexDb to hold the fileId. As there could have been multiple
               // operations on the same entity, we replace all the screenshot occurrences.
-              // For example, lets say a person's screenshot was changed, and later also
-              // their name. So on the two records there were created on the
-              // screenshotUploadChanges table, the same screenshot local URL will appear.
-              await dbSync.authorityPhotoUploadChanges.where('screenshot').equals(row.screenshot).modify(changes);
+              // For example, lets say a report was generated for a person, and later
+              // another report. So on the two records that were created on the
+              // whatsAppUploads table, the same screenshot local URL will appear.
+              await dbSync.whatsAppUploads.where('screenshot').equals(row.screenshot).modify(changes);
             }
 
             return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: row});
@@ -1037,6 +1073,39 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         }
 
         return sendIndexedDbFetchResult(queryType, result);
+      })();
+      break;
+
+    case 'IndexDbQueryDeferredPhotoBatch':
+      // queryParam: JSON-encoded {batchSize: int}
+      (async () => {
+
+        let batchSize = 100;
+        try {
+          const parsed = JSON.parse(data);
+          batchSize = Math.max(1, Math.min(parseInt(parsed.batchSize, 10) || 100, 200));
+        }
+        catch (e) {
+          // Fall through with default batchSize.
+        }
+
+        let rows = await dbSync
+            .deferredPhotos
+            .where('attempts')
+            .belowOrEqual(2)
+            .limit(batchSize)
+            .sortBy('attempts');
+
+        if (rows.length > 0) {
+          let total = await dbSync
+              .deferredPhotos
+              .where('attempts')
+              .belowOrEqual(2)
+              .count();
+          rows = rows.map(function(r) { r.remaining = total; return r; });
+        }
+
+        return sendIndexedDbFetchResult(queryType, rows);
       })();
       break;
 
@@ -1775,7 +1844,8 @@ function attachDropzone() {
   var element = document.querySelector(selector);
 
   if (element) {
-    if (element.dropZone) {
+    // Lowercase: Dropzone itself sets `.dropzone` on the host element.
+    if (element.dropzone) {
       // Bail, since already initialized
       return;
     } else {
@@ -1792,11 +1862,12 @@ function attachDropzone() {
     return;
   }
 
-  // TODO: Feed the dictDefaultMessage in as a param, so we can use the
-  // translated version.
+  // The default message is rendered by Elm inside `.dz-message`. Dropzone
+  // detects the pre-existing element (see Dropzone.js init guard against
+  // `.dz-message`) and leaves the translated content in place, so we do
+  // not need to pass `dictDefaultMessage` here.
   dropZone = new Dropzone(selector, {
     url: "cache-upload/images",
-    dictDefaultMessage: "Touch here to take a photo, or drop a photo file here.",
     acceptedFiles: "jpg,jpeg,png,gif,image/*",
     capture: 'camera',
     resizeWidth: 600,

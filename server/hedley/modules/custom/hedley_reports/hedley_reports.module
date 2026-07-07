@@ -327,7 +327,7 @@ function hedley_reports_trigger_recalculation_for_created_person($node) {
 /**
  * Triggers recalculation of person's Reports data, when edited.
  *
- * Recalculation is required only when birthdate is edited.
+ * Recalculation is required when birthdate or gender is edited.
  * Note: Currently, editing geo fields of person is not allowed.
  *
  * @param object $node
@@ -342,7 +342,12 @@ function hedley_reports_trigger_recalculation_for_edited_person($node) {
   $birth_date = $wrapper->field_birth_date->value();
   $birth_date_orig = $wrapper_orig->field_birth_date->value();
 
-  if ($birth_date == $birth_date_orig) {
+  $gender = $wrapper->field_gender->value();
+  $gender_orig = $wrapper_orig->field_gender->value();
+
+  // Birth date and gender both feed the person's aggregated nutrition data
+  // (z-scores are gender-derived), so a change to either must recalculate.
+  if ($birth_date == $birth_date_orig && $gender == $gender_orig) {
     return;
   }
 
@@ -408,28 +413,28 @@ function hedley_reports_trigger_recalculation_by_new_content($node) {
  * @throws EntityMetadataWrapperException
  */
 function hedley_reports_trigger_recalculation_by_edited_content($node) {
-  switch ($node->type) {
-    case HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE:
-      $participant_id = $node->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
-      break;
+  // The antenatal participant node itself is a special case: it is neither a
+  // triggering encounter nor a triggering measurement, but editing it must
+  // still refresh the pregnancy's report data.
+  if ($node->type == HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE) {
+    $encounter_type = !empty($node->field_encounter_type[LANGUAGE_NONE][0]['value'])
+      ? $node->field_encounter_type[LANGUAGE_NONE][0]['value']
+      : '';
+    if ($encounter_type == 'antenatal') {
+      $wrapper = entity_metadata_wrapper('node', $node);
+      $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
+      hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
+        'person_id' => $person_id,
+      ]);
+    }
 
-    case HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE:
-      if ($node->field_encounter_type[LANGUAGE_NONE][0]['value'] == 'antenatal') {
-        $participant_id = $node->nid;
-      }
-      break;
-  }
-
-  if (empty($participant_id)) {
-    // Can't resolve to which participant encounter belongs.
     return;
   }
-  $wrapper = entity_metadata_wrapper('node', $participant_id);
-  $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
-  // Trigger recalculation using AQ.
-  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
-    'person_id' => $person_id,
-  ]);
+
+  // For every other edited measurement or encounter, mirror the insert path,
+  // so value corrections and soft-deletes (which both arrive as node updates)
+  // refresh the report - not just prenatal content.
+  hedley_reports_trigger_recalculation_by_new_content($node);
 }
 
 /**
@@ -939,8 +944,11 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   ];
   $individual_participants_ids = hedley_person_individual_participants_for_person($person->nid, $encounter_types_to_load);
   $individual_participants = node_load_multiple($individual_participants_ids);
+  $encounters_ids_by_participant = hedley_person_load_individual_participants_encounters_ids(array_keys($individual_participants));
   foreach ($individual_participants as $individual_participant) {
-    $encounters_ids = hedley_person_load_individual_participant_encounters_ids($individual_participant->nid);
+    $encounters_ids = isset($encounters_ids_by_participant[$individual_participant->nid])
+      ? $encounters_ids_by_participant[$individual_participant->nid]
+      : [];
     if (empty($encounters_ids)) {
       continue;
     }
@@ -2414,7 +2422,10 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
 
       $start_date_month = $start_date->format('m');
-      $encounter_fields = explode(',', $parts[1]);
+      // The wire may carry a "|<amount>" distribution tail (FBF) after the
+      // anthropometry CSV; strip it before parsing, matching the Elm decoder.
+      $anthropometry = explode('|', $parts[1])[0];
+      $encounter_fields = explode(',', $anthropometry);
       $nutrition_data = [
         'stunting' => (!isset($encounter_fields[0]) || $encounter_fields[0] === '') ? NULL : (float) $encounter_fields[0],
         'underweight' => (!isset($encounter_fields[1]) || $encounter_fields[1] === '') ? NULL : (float) $encounter_fields[1],
@@ -2446,7 +2457,10 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
 
       $start_date_month = $start_date->format('m');
-      $muac_value = isset($parts[1]) && $parts[1] !== '' ? (float) $parts[1] : NULL;
+      // Strip the "|<distribution-amount>" tail (AHEZA) before reading MUAC, so
+      // an amount-only wire ("|500") is treated as no-MUAC rather than 0.0.
+      $muac_raw = isset($parts[1]) ? explode('|', $parts[1])[0] : '';
+      $muac_value = $muac_raw !== '' ? (float) $muac_raw : NULL;
       $family_data = [
         'stunting' => NULL,
         'underweight' => NULL,
@@ -2545,6 +2559,21 @@ function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
 }
 
 /**
+ * Resolves the timestamp of the first day of the current month.
+ *
+ * Report period stepping uses relative "-N month" arithmetic, which overflows
+ * on month-end run-dates (e.g. from the 31st, "-1 month" skips to the following
+ * month, dropping and duplicating months). Anchoring to the first of the month
+ * - which exists in every month - avoids that overflow.
+ *
+ * @return int
+ *   Unix timestamp for the first day of the current month.
+ */
+function hedley_reports_current_month_start() {
+  return strtotime(date('Y-m-01'));
+}
+
+/**
  * Generates monthly prevalence data from encounters metrics grouped by month.
  *
  * @param array $encounters_by_month
@@ -2555,7 +2584,7 @@ function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
  */
 function hedley_reports_generate_monthly_prevalence_data(array $encounters_by_month) {
   $result = [];
-  $current_timestamp = time();
+  $current_timestamp = hedley_reports_current_month_start();
   for ($index = 1; $index <= 12; $index++) {
     $target_timestamp = strtotime("-$index month", $current_timestamp);
     $target_date_year = date('Y', $target_timestamp);
@@ -2579,7 +2608,7 @@ function hedley_reports_generate_monthly_prevalence_data(array $encounters_by_mo
  */
 function hedley_reports_generate_monthly_incidence_data(array $encounters_by_month) {
   $result = [];
-  $current_timestamp = time();
+  $current_timestamp = hedley_reports_current_month_start();
 
   for ($index = 1; $index <= 12; $index++) {
     $target_timestamp = strtotime("-$index month", $current_timestamp);
@@ -2623,7 +2652,7 @@ function hedley_reports_generate_quarterly_incidence_data(array $encounters_by_m
   }
 
   $result = [];
-  $current_timestamp = time();
+  $current_timestamp = hedley_reports_current_month_start();
   // Showing data of the previous 4 quarters.
   for ($index = 1; $index <= 4; $index++) {
     $selected_date = strtotime("-" . (3 * $index) . " months", $current_timestamp);
@@ -2838,7 +2867,8 @@ function hedley_reports_resolve_data_set_for_year($year_index, array $encounters
  */
 function hedley_reports_resolve_data_set_for_quarter($quarter_index, array $encounters_by_month) {
   // Calculate the selected date by subtracting months.
-  $selected_date = strtotime("-" . (3 * ($quarter_index - 1)) . " months", time());
+  $anchor = hedley_reports_current_month_start();
+  $selected_date = strtotime("-" . (3 * ($quarter_index - 1)) . " months", $anchor);
 
   [$year, $quarter] = hedley_reports_resolve_quarter_date_info($selected_date);
 
@@ -3369,7 +3399,7 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
   $start_date_obj = new DateTime($start_date);
 
   // Loading all measurements that belong to encounter.
-  $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+  $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
 
   if (empty($measurements_ids)) {
     $completion = hedley_reports_generate_completion_result($expected, [], $mapping);
@@ -3543,8 +3573,9 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
   $fbf_launch_date_obj = new DateTime($fbf_launch_date);
 
   // Processing measurements by participant type.
+  $persons = node_load_multiple(array_keys($measurements_by_participant));
   foreach ($measurements_by_participant as $person_id => $measurements) {
-    $person = node_load($person_id);
+    $person = $persons[$person_id];
     // Ordering measurements by type.
     $measurements_by_type = [];
     foreach ($measurements as $measurement) {
@@ -3713,7 +3744,7 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     // If encounter type field is empty, we default to CHW, since
     // CHW mode was developed before nurse mode.
     if (empty($encounter->field_ai_encounter_type)) {
@@ -4741,7 +4772,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     // If encounter type field is empty, we default to pediatric care.
     if (empty($encounter->field_well_child_encounter_type)) {
       $encounter_type = 'pediatric-care';
@@ -4764,6 +4795,11 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     ];
   }
 
+  // Load the child-scoreboard immunisation history once. It is filtered per
+  // well-child encounter (by date) in memory below, instead of being
+  // re-queried from the database for every encounter.
+  $scoreboard_immunisations = hedley_reports_well_child_load_child_scoreboard_immunisations($person_id);
+
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
     $measurements_by_type = $encounter_data['measurements_by_type'];
@@ -4777,7 +4813,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
     $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
 
-    [$encounter_data['vaccination_history'], $encounter_data['vaccination_progress']] = hedley_reports_well_child_generate_vaccination_progress_data($person_id, $encounter_data);
+    [$encounter_data['vaccination_history'], $encounter_data['vaccination_progress']] = hedley_reports_well_child_generate_vaccination_progress_data($scoreboard_immunisations, $encounter_data);
 
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
@@ -4810,9 +4846,9 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
  * well-child encounters. It merges this data with child scoreboard data
  * to produce comprehensive vaccination progress information.
  *
- * @param int $person_id
- *   The ID of the person (child) whose vaccination data is being
- *   processed.
+ * @param array $scoreboard_immunisations
+ *   The child-scoreboard immunisation history, preloaded once by
+ *   hedley_reports_well_child_load_child_scoreboard_immunisations().
  * @param array $encounter_data
  *   An associative array containing details of the current encounter,
  *   including previous encounter data and measurements.
@@ -4821,7 +4857,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
  *   An array containing merged vaccination progress data, with history
  *   and progress for the child.
  */
-function hedley_reports_well_child_generate_vaccination_progress_data($person_id, array $encounter_data) {
+function hedley_reports_well_child_generate_vaccination_progress_data(array $scoreboard_immunisations, array $encounter_data) {
   $previous_encounters_data = $encounter_data['previous_encounters_data'];
 
   $immunisation_types = [
@@ -4862,7 +4898,7 @@ function hedley_reports_well_child_generate_vaccination_progress_data($person_id
 
   $history_data_by_well_child = hedley_reports_generate_vaccination_progress_data($immunisations_from_previous_encounters, 'well-child');
   $progress_data_by_well_child = hedley_reports_generate_vaccination_progress_data($immunisations_from_all_encounters, 'well-child');
-  $progress_data_by_child_scoreboard = hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard($person_id, $encounter_data['start_date_obj']);
+  $progress_data_by_child_scoreboard = hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard($scoreboard_immunisations, $encounter_data['start_date_obj']);
 
   return [
     hedley_reports_merge_vaccination_progress_data($immunisation_types, 'well-child', $history_data_by_well_child, $progress_data_by_child_scoreboard),
@@ -4970,27 +5006,28 @@ function hedley_reports_generate_vaccination_progress_data(array $immunisations_
 }
 
 /**
- * Generates vaccination progress data based on child scoreboard data.
+ * Loads child-scoreboard immunisation history for a person.
  *
- * Retrieves immunisation data for a child from the child scoreboard,
- * considering all encounters up to the current well-child encounter,
- * and returns structured vaccination progress data.
+ * Performs the database work that
+ * hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard()
+ * used to repeat for every well-child encounter: resolves the child-scoreboard
+ * participant, loads all its encounters and their immunisation measurements,
+ * and returns the raw doses and dates per encounter, tagged with the encounter
+ * start date. Callers filter this in memory by date cutoff.
  *
  * @param int $person_id
- *   The ID of the person (child) whose scoreboard data is being
- *   processed.
- * @param DateTime $well_child_encounter_start_date_obj
- *   The DateTime object representing the start date of the current
- *   well-child encounter.
+ *   The ID of the person (child) whose scoreboard data is being loaded.
  *
  * @return array
- *   A structured array of vaccination doses and dates, organized by
- *   immunisation type, based on child scoreboard encounters.
+ *   A list, in encounter order, of associative arrays:
+ *     - 'start_date_obj': DateTime, the encounter start date.
+ *     - 'immunisations_by_type': array keyed by immunisation type, each with
+ *       'doses' and 'dates' arrays recorded during that encounter.
  */
-function hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard($person_id, DateTime $well_child_encounter_start_date_obj) {
-  $return = [];
+function hedley_reports_well_child_load_child_scoreboard_immunisations($person_id) {
+  $encounters_immunisations = [];
   if (empty($person_id)) {
-    return $return;
+    return $encounters_immunisations;
   }
 
   $query = hedley_general_create_entity_field_query_excluding_deleted();
@@ -5006,8 +5043,8 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
     ->execute();
 
   if (empty($result['node'])) {
-    // No more items left.
-    return $return;
+    // No child-scoreboard participant for this person.
+    return $encounters_immunisations;
   }
 
   $participant_id = key($result['node']);
@@ -5022,8 +5059,96 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
     ->execute();
 
   if (empty($result['node'])) {
-    return $return;
+    return $encounters_immunisations;
   }
+
+  $immunisation_types = [
+    'child_scoreboard_bcg_iz',
+    'child_scoreboard_dtp_iz',
+    'child_scoreboard_dtp_sa_iz',
+    'child_scoreboard_ipv_iz',
+    'child_scoreboard_mr_iz',
+    'child_scoreboard_opv_iz',
+    'child_scoreboard_pcv13_iz',
+    'child_scoreboard_rotarix_iz',
+  ];
+
+  $encounters = node_load_multiple(array_keys($result['node']));
+  foreach ($encounters as $encounter) {
+    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    $start_date_obj = new DateTime($start_date);
+
+    // Loading all immunisation activities recorded during the encounter.
+    $query = hedley_general_create_entity_field_query_excluding_deleted();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', $immunisation_types, 'IN')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_child_scoreboard_encounter', 'target_id', $encounter->nid)
+      ->execute();
+
+    if (empty($result['node'])) {
+      continue;
+    }
+
+    $immunisations_by_type = [];
+    $immunisations = node_load_multiple(array_keys($result['node']));
+    foreach ($immunisations as $immunisation) {
+      $doses = $immunisation->field_administered_doses;
+      $dates = $immunisation->field_administration_dates;
+      if (empty($doses) || empty($dates)) {
+        continue;
+      }
+
+      $encounter_doses = $encounter_dates = [];
+      foreach ($doses[LANGUAGE_NONE] as $dose) {
+        $encounter_doses[] = $dose['value'];
+      }
+      foreach ($dates[LANGUAGE_NONE] as $date) {
+        $encounter_dates[] = explode(' ', $date['value'])[0];
+      }
+
+      if (empty($immunisations_by_type[$immunisation->type])) {
+        $immunisations_by_type[$immunisation->type] = [
+          'doses' => [],
+          'dates' => [],
+        ];
+      }
+      $immunisations_by_type[$immunisation->type]['doses'] = array_merge($immunisations_by_type[$immunisation->type]['doses'], $encounter_doses);
+      $immunisations_by_type[$immunisation->type]['dates'] = array_merge($immunisations_by_type[$immunisation->type]['dates'], $encounter_dates);
+    }
+
+    $encounters_immunisations[] = [
+      'start_date_obj' => $start_date_obj,
+      'immunisations_by_type' => $immunisations_by_type,
+    ];
+  }
+
+  return $encounters_immunisations;
+}
+
+/**
+ * Generates vaccination progress data based on child scoreboard data.
+ *
+ * Filters the preloaded child-scoreboard immunisation history to encounters
+ * that started on or before the current well-child encounter, then merges the
+ * doses and dates into structured vaccination progress data. Performs no
+ * database queries -- the history is loaded once by
+ * hedley_reports_well_child_load_child_scoreboard_immunisations().
+ *
+ * @param array $scoreboard_immunisations
+ *   The preloaded child-scoreboard immunisation history (see
+ *   hedley_reports_well_child_load_child_scoreboard_immunisations()).
+ * @param DateTime $well_child_encounter_start_date_obj
+ *   The DateTime object representing the start date of the current
+ *   well-child encounter.
+ *
+ * @return array
+ *   A structured array of vaccination doses and dates, organized by
+ *   immunisation type, based on child scoreboard encounters.
+ */
+function hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard(array $scoreboard_immunisations, DateTime $well_child_encounter_start_date_obj) {
+  $return = [];
 
   $immunisation_types = [
     'child_scoreboard_bcg_iz',
@@ -5043,46 +5168,15 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
       'dates' => [],
     ];
   }
-  $encounters = node_load_multiple(array_keys($result['node']));
-  foreach ($encounters as $encounter) {
-    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
-    $start_date_obj = new DateTime($start_date);
-    if ($start_date_obj > $well_child_encounter_start_date_obj) {
+  foreach ($scoreboard_immunisations as $encounter_immunisations) {
+    if ($encounter_immunisations['start_date_obj'] > $well_child_encounter_start_date_obj) {
       // This encounter started after well child encounter, so, skip it.
       continue;
     }
 
-    // Loading all immunisation activities recorded during the encounter.
-    $query = hedley_general_create_entity_field_query_excluding_deleted();
-    $result = $query
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', $immunisation_types, 'IN')
-      ->propertyCondition('status', NODE_PUBLISHED)
-      ->fieldCondition('field_child_scoreboard_encounter', 'target_id', $encounter->nid)
-      ->execute();
-
-    if (empty($result['node'])) {
-      continue;
-    }
-
-    $immunisations = node_load_multiple(array_keys($result['node']));
-    foreach ($immunisations as $immunisation) {
-      $doses = $immunisation->field_administered_doses;
-      $dates = $immunisation->field_administration_dates;
-      if (empty($doses) || empty($dates)) {
-        continue;
-      }
-
-      $encounter_doses = $encounter_dates = [];
-      foreach ($doses[LANGUAGE_NONE] as $dose) {
-        $encounter_doses[] = $dose['value'];
-      }
-      foreach ($dates[LANGUAGE_NONE] as $date) {
-        $encounter_dates[] = explode(' ', $date['value'])[0];
-      }
-
-      $immunisations_by_type[$immunisation->type]['doses'] = array_merge($immunisations_by_type[$immunisation->type]['doses'], $encounter_doses);
-      $immunisations_by_type[$immunisation->type]['dates'] = array_merge($immunisations_by_type[$immunisation->type]['dates'], $encounter_dates);
+    foreach ($encounter_immunisations['immunisations_by_type'] as $type => $item) {
+      $immunisations_by_type[$type]['doses'] = array_merge($immunisations_by_type[$type]['doses'], $item['doses']);
+      $immunisations_by_type[$type]['dates'] = array_merge($immunisations_by_type[$type]['dates'], $item['dates']);
     }
   }
 
@@ -6032,7 +6126,7 @@ function hedley_reports_generate_completion_data_for_home_visit_encounter($encou
   $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
 
   // Loading all measurements that belong to encounter.
-  $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+  $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
 
   if (empty($measurements_ids)) {
     $completion = hedley_reports_generate_completion_result($expected, [], $mapping);
@@ -6118,7 +6212,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
 
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
     // Ordering measurements by type.
@@ -6132,6 +6226,11 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
       'measurements_by_type' => $measurements_by_type,
     ];
   }
+
+  // Load the well-child immunisation history once. It is filtered per
+  // child-scoreboard encounter (by date) in memory below, instead of being
+  // re-queried from the database for every encounter.
+  $well_child_immunisations = hedley_reports_child_scoreboard_load_well_child_immunisations($person_id);
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
@@ -6171,7 +6270,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
       $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
       $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
 
-      [$encounter_data['vaccination_history'], $encounter_data['vaccination_progress']] = hedley_reports_child_scoreboard_generate_vaccination_progress_data($person_id, $encounter_data);
+      [$encounter_data['vaccination_history'], $encounter_data['vaccination_progress']] = hedley_reports_child_scoreboard_generate_vaccination_progress_data($well_child_immunisations, $encounter_data);
 
       $expected_immunisation_activities = hedley_reports_child_scoreboard_get_expected_immunisation_activities($encounter_data, $birth_date_obj, $gender, 'history');
       $expected = array_merge($expected, $expected_immunisation_activities);
@@ -6195,9 +6294,9 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
  * child scoreboard encounters. It merges this data with well-child
  * data to produce comprehensive vaccination progress information.
  *
- * @param int $person_id
- *   The ID of the person (child) whose vaccination data is being
- *   processed.
+ * @param array $well_child_immunisations
+ *   The well-child immunisation history, preloaded once by
+ *   hedley_reports_child_scoreboard_load_well_child_immunisations().
  * @param array $encounter_data
  *   An associative array containing details of the current encounter,
  *   including previous encounter data and measurements.
@@ -6206,7 +6305,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
  *   An array containing merged vaccination progress data, with history
  *   and progress for the child.
  */
-function hedley_reports_child_scoreboard_generate_vaccination_progress_data($person_id, array $encounter_data) {
+function hedley_reports_child_scoreboard_generate_vaccination_progress_data(array $well_child_immunisations, array $encounter_data) {
   $previous_encounters_data = $encounter_data['previous_encounters_data'];
 
   $immunisation_types = [
@@ -6245,7 +6344,7 @@ function hedley_reports_child_scoreboard_generate_vaccination_progress_data($per
 
   $history_data_by_well_child = hedley_reports_generate_vaccination_progress_data($immunisations_from_previous_encounters, 'child-scoreboard');
   $progress_data_by_well_child = hedley_reports_generate_vaccination_progress_data($immunisations_from_all_encounters, 'child-scoreboard');
-  $progress_data_by_child_scoreboard = hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_well_child($person_id, $encounter_data['start_date_obj']);
+  $progress_data_by_child_scoreboard = hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_well_child($well_child_immunisations, $encounter_data['start_date_obj']);
 
   return [
     hedley_reports_merge_vaccination_progress_data($immunisation_types, 'child-scoreboard', $history_data_by_well_child, $progress_data_by_child_scoreboard),
@@ -6375,27 +6474,28 @@ function hedley_reports_child_scoreboard_get_expected_immunisation_activities(ar
 }
 
 /**
- * Generates vaccination progress data based on well-child data.
+ * Loads well-child immunisation history for a person.
  *
- * Retrieves immunisation data for a child from the well-child,
- * considering all encounters up to the current child scoreboard encounter,
- * and returns structured vaccination progress data.
+ * Performs the database work that
+ * hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_well_child()
+ * used to repeat for every child-scoreboard encounter: resolves the well-child
+ * participant, loads all its encounters and their immunisation measurements,
+ * and returns the raw doses and dates per encounter, tagged with the encounter
+ * start date. Callers filter this in memory by date cutoff.
  *
  * @param int $person_id
- *   The ID of the person (child) whose scoreboard data is being
- *   processed.
- * @param DateTime $child_scoreboard_encounter_start_date_obj
- *   The DateTime object representing the start date of the current
- *   child scoreboard encounter.
+ *   The ID of the person (child) whose well-child data is being loaded.
  *
  * @return array
- *   A structured array of vaccination doses and dates, organized by
- *   immunisation type, based on child scoreboard encounters.
+ *   A list, in encounter order, of associative arrays:
+ *     - 'start_date_obj': DateTime, the encounter start date.
+ *     - 'immunisations_by_type': array keyed by immunisation type, each with
+ *       'doses' and 'dates' arrays recorded during that encounter.
  */
-function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_well_child($person_id, DateTime $child_scoreboard_encounter_start_date_obj) {
-  $return = [];
+function hedley_reports_child_scoreboard_load_well_child_immunisations($person_id) {
+  $encounters_immunisations = [];
   if (empty($person_id)) {
-    return $return;
+    return $encounters_immunisations;
   }
 
   $query = hedley_general_create_entity_field_query_excluding_deleted();
@@ -6411,8 +6511,8 @@ function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_w
     ->execute();
 
   if (empty($result['node'])) {
-    // No more items left.
-    return $return;
+    // No well-child participant for this person.
+    return $encounters_immunisations;
   }
 
   $participant_id = key($result['node']);
@@ -6427,8 +6527,96 @@ function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_w
     ->execute();
 
   if (empty($result['node'])) {
-    return $return;
+    return $encounters_immunisations;
   }
+
+  $immunisation_types = [
+    'well_child_bcg_immunisation',
+    'well_child_dtp_immunisation',
+    'well_child_dtp_sa_immunisation',
+    'well_child_ipv_immunisation',
+    'well_child_mr_immunisation',
+    'well_child_opv_immunisation',
+    'well_child_pcv13_immunisation',
+    'well_child_rotarix_immunisation',
+  ];
+
+  $encounters = node_load_multiple(array_keys($result['node']));
+  foreach ($encounters as $encounter) {
+    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    $start_date_obj = new DateTime($start_date);
+
+    // Loading all immunisation activities recorded during the encounter.
+    $query = hedley_general_create_entity_field_query_excluding_deleted();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', $immunisation_types, 'IN')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_well_child_encounter', 'target_id', $encounter->nid)
+      ->execute();
+
+    if (empty($result['node'])) {
+      continue;
+    }
+
+    $immunisations_by_type = [];
+    $immunisations = node_load_multiple(array_keys($result['node']));
+    foreach ($immunisations as $immunisation) {
+      $doses = $immunisation->field_administered_doses;
+      $dates = $immunisation->field_administration_dates;
+      if (empty($doses) || empty($dates)) {
+        continue;
+      }
+
+      $encounter_doses = $encounter_dates = [];
+      foreach ($doses[LANGUAGE_NONE] as $dose) {
+        $encounter_doses[] = $dose['value'];
+      }
+      foreach ($dates[LANGUAGE_NONE] as $date) {
+        $encounter_dates[] = explode(' ', $date['value'])[0];
+      }
+
+      if (empty($immunisations_by_type[$immunisation->type])) {
+        $immunisations_by_type[$immunisation->type] = [
+          'doses' => [],
+          'dates' => [],
+        ];
+      }
+      $immunisations_by_type[$immunisation->type]['doses'] = array_merge($immunisations_by_type[$immunisation->type]['doses'], $encounter_doses);
+      $immunisations_by_type[$immunisation->type]['dates'] = array_merge($immunisations_by_type[$immunisation->type]['dates'], $encounter_dates);
+    }
+
+    $encounters_immunisations[] = [
+      'start_date_obj' => $start_date_obj,
+      'immunisations_by_type' => $immunisations_by_type,
+    ];
+  }
+
+  return $encounters_immunisations;
+}
+
+/**
+ * Generates vaccination progress data based on well-child data.
+ *
+ * Filters the preloaded well-child immunisation history to encounters that
+ * started on or before the current child-scoreboard encounter, then merges the
+ * doses and dates into structured vaccination progress data. Performs no
+ * database queries -- the history is loaded once by
+ * hedley_reports_child_scoreboard_load_well_child_immunisations().
+ *
+ * @param array $well_child_immunisations
+ *   The preloaded well-child immunisation history (see
+ *   hedley_reports_child_scoreboard_load_well_child_immunisations()).
+ * @param DateTime $child_scoreboard_encounter_start_date_obj
+ *   The DateTime object representing the start date of the current
+ *   child scoreboard encounter.
+ *
+ * @return array
+ *   A structured array of vaccination doses and dates, organized by
+ *   immunisation type, based on child scoreboard encounters.
+ */
+function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_well_child(array $well_child_immunisations, DateTime $child_scoreboard_encounter_start_date_obj) {
+  $return = [];
 
   $immunisation_types = [
     'well_child_bcg_immunisation',
@@ -6448,46 +6636,15 @@ function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_w
       'dates' => [],
     ];
   }
-  $encounters = node_load_multiple(array_keys($result['node']));
-  foreach ($encounters as $encounter) {
-    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
-    $start_date_obj = new DateTime($start_date);
-    if ($start_date_obj > $child_scoreboard_encounter_start_date_obj) {
-      // This encounter started after well child encounter, so, skip it.
+  foreach ($well_child_immunisations as $encounter_immunisations) {
+    if ($encounter_immunisations['start_date_obj'] > $child_scoreboard_encounter_start_date_obj) {
+      // This encounter started after child scoreboard encounter, so, skip it.
       continue;
     }
 
-    // Loading all immunisation activities recorded during the encounter.
-    $query = hedley_general_create_entity_field_query_excluding_deleted();
-    $result = $query
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', $immunisation_types, 'IN')
-      ->propertyCondition('status', NODE_PUBLISHED)
-      ->fieldCondition('field_well_child_encounter', 'target_id', $encounter->nid)
-      ->execute();
-
-    if (empty($result['node'])) {
-      continue;
-    }
-
-    $immunisations = node_load_multiple(array_keys($result['node']));
-    foreach ($immunisations as $immunisation) {
-      $doses = $immunisation->field_administered_doses;
-      $dates = $immunisation->field_administration_dates;
-      if (empty($doses) || empty($dates)) {
-        continue;
-      }
-
-      $encounter_doses = $encounter_dates = [];
-      foreach ($doses[LANGUAGE_NONE] as $dose) {
-        $encounter_doses[] = $dose['value'];
-      }
-      foreach ($dates[LANGUAGE_NONE] as $date) {
-        $encounter_dates[] = explode(' ', $date['value'])[0];
-      }
-
-      $immunisations_by_type[$immunisation->type]['doses'] = array_merge($immunisations_by_type[$immunisation->type]['doses'], $encounter_doses);
-      $immunisations_by_type[$immunisation->type]['dates'] = array_merge($immunisations_by_type[$immunisation->type]['dates'], $encounter_dates);
+    foreach ($encounter_immunisations['immunisations_by_type'] as $type => $item) {
+      $immunisations_by_type[$type]['doses'] = array_merge($immunisations_by_type[$type]['doses'], $item['doses']);
+      $immunisations_by_type[$type]['dates'] = array_merge($immunisations_by_type[$type]['dates'], $item['dates']);
     }
   }
 
@@ -6598,7 +6755,7 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
     // Ordering measurements by type.
     $measurements_by_type = [];
@@ -7133,7 +7290,7 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
     // Ordering measurements by type.
     $measurements_by_type = [];
@@ -7284,7 +7441,7 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
     // Ordering measurements by type.
     $measurements_by_type = [];
@@ -7521,7 +7678,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
     // Ordering measurements by type.
     $measurements_by_type = [];

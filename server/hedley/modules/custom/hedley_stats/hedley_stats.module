@@ -1381,6 +1381,8 @@ function hedley_stats_get_ncd_data($health_center_id) {
     $items[$row->field_individual_participant]['encounters'][$row->nid]['hiv_test_result'] = $row->test_result;
   }
 
+  $query = clone $base_query;
+
   // Run dedicated query to pull data of HIV test execution note recorded
   // at NCD HIV Test activity.
   // Dedicated query is mandatory since multiple bundles hold same field.
@@ -2693,6 +2695,15 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
       $periods_ranges[$period] = hedley_stats_get_period($period);
     }
 
+    // Load, in a single query, the sessions during which each person has
+    // measurements, so attendance can be determined in memory below instead of
+    // with a COUNT query per (participant, period).
+    $all_sessions_ids = [];
+    foreach ($sessions_by_period as $period_sessions_ids) {
+      $all_sessions_ids = array_merge($all_sessions_ids, $period_sessions_ids);
+    }
+    $persons_sessions = hedley_activity_get_persons_sessions_with_measurements(array_unique($all_sessions_ids));
+
     // Get PMTCT participants by clinic.
     $participants_ids = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, 5000);
     $participants_info = [];
@@ -2785,8 +2796,14 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
 
         $sessions_ids = $sessions_by_period[$period];
         if (!empty($sessions_ids)) {
-          $count = hedley_activity_count_person_measurements_taken_during_sessions($child_id, $sessions_ids);
-          if ($count == 0) {
+          $attended = FALSE;
+          foreach ($sessions_ids as $session_id) {
+            if (isset($persons_sessions[$child_id][$session_id])) {
+              $attended = TRUE;
+              break;
+            }
+          }
+          if (!$attended) {
             // The child missed the session during given period, because
             // no measurements was taken for them.
             $missed_session[] = $expected_person;
@@ -3510,10 +3527,11 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period = FA
     $date_field_name = $date_field . '.' . $date_field . '_value';
 
     $date = hedley_stats_get_period($period, $extend);
-    $query->condition($date_field_name, [
-      $date['start'],
-      $date['end'],
-    ], 'BETWEEN');
+    // Lower bound inclusive, upper bound exclusive: a period's end equals the
+    // next period's start (both at midnight), so an inclusive BETWEEN would
+    // count a boundary record in both adjacent periods.
+    $query->condition($date_field_name, $date['start'], '>=');
+    $query->condition($date_field_name, $date['end'], '<');
   }
 
   return $query;
@@ -3698,8 +3716,20 @@ function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $range = 100)
     ->range(0, $range);
 
   $result = $query->execute();
+  $ids = !empty($result['node']) ? array_keys($result['node']) : [];
 
-  return !empty($result['node']) ? array_keys($result['node']) : [];
+  if (count($ids) >= $range) {
+    // Results reached the cap and may be truncated. Log it rather than
+    // silently dropping participants from the statistics.
+    watchdog(
+      'hedley_stats',
+      'Clinic @clinic PMTCT participants: @count/@range; may be truncated.',
+      ['@clinic' => $clinic_id, '@range' => $range, '@count' => count($ids)],
+      WATCHDOG_WARNING
+    );
+  }
+
+  return $ids;
 }
 
 /**
@@ -3709,13 +3739,13 @@ function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $range = 100)
  *   The clinic node ID.
  * @param string $period
  *   The wanted period.
- * @param int $range
- *   The queries' range.
+ * @param int|null $range
+ *   (optional) Max number of results. NULL (the default) returns all sessions.
  *
  * @return array
  *   Node IDs if they exist or empty array if no nodes exist.
  */
-function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR, $range = 100) {
+function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR, $range = NULL) {
   $dates = hedley_stats_get_period($period);
 
   $query = hedley_general_create_entity_field_query_excluding_deleted();
@@ -3725,14 +3755,32 @@ function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_clinic', 'target_id', $clinic_id)
     // Meaning that we are still expecting those participants.
+    // Upper bound is exclusive: a period's end equals the next period's start
+    // (both at midnight), so '<=' would count a boundary session in both.
     ->fieldCondition('field_scheduled_date', 'value', $dates['start'], '>=')
-    ->fieldCondition('field_scheduled_date', 'value', $dates['end'], '<=')
-    ->propertyOrderBy('nid')
-    ->range(0, $range);
+    ->fieldCondition('field_scheduled_date', 'value', $dates['end'], '<')
+    ->propertyOrderBy('nid');
+
+  // Sessions per period are inherently bounded, so by default return them all
+  // rather than silently truncating at an arbitrary cap. A caller may still
+  // pass an explicit $range.
+  if ($range !== NULL) {
+    $query->range(0, $range);
+  }
 
   $result = $query->execute();
+  $ids = !empty($result['node']) ? array_keys($result['node']) : [];
 
-  return !empty($result['node']) ? array_keys($result['node']) : [];
+  if ($range !== NULL && count($ids) >= $range) {
+    watchdog(
+      'hedley_stats',
+      'Clinic @clinic sessions: @count/@range; may be truncated.',
+      ['@clinic' => $clinic_id, '@range' => $range, '@count' => count($ids)],
+      WATCHDOG_WARNING
+    );
+  }
+
+  return $ids;
 }
 
 /**

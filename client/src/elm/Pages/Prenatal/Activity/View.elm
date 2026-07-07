@@ -468,7 +468,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                                     prePregnancyWeight =
                                         Maybe.map (\(WeightInKg weight) -> String.fromFloat weight ++ "kg")
                                             value.prePregnancyWeight
-                                            |> Maybe.withDefault "Not Set"
+                                            |> Maybe.withDefault (translate language Translate.NotAvailable)
                                 in
                                 [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
                                 , viewLabel language Translate.LmpLabel
@@ -3105,6 +3105,7 @@ medicalFormInputsAndTasks language form =
       , maybeToBoolTask form.physicalConditions
       , maybeToBoolTask form.infectiousDiseases
       , maybeToBoolTask form.mentalHealthIssues
+      , maybeToBoolTask form.preeclampsiaInFamily
       ]
     )
 
@@ -4347,11 +4348,11 @@ viewUltrasoundContent language currentDate assembled data =
 
 viewNumberInput :
     Language
-    -> Maybe a
+    -> Maybe Int
     -> (String -> msg)
     -> String
     -> TranslationId
-    -> Maybe ( List (List (a -> Bool)), List (List (a -> Bool)) )
+    -> Maybe ( List (List (Int -> Bool)), List (List (Int -> Bool)) )
     -> Html msg
 viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId maybeAlertConditions =
     let
@@ -4359,7 +4360,7 @@ viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId 
             maybeCurrentValue
                 |> unwrap
                     ""
-                    Debug.toString
+                    String.fromInt
 
         ( labelWidth, inputWidth, alert ) =
             maybeAlertConditions

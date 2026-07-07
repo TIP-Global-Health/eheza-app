@@ -1,0 +1,30 @@
+#!/bin/bash
+
+## Description: Authenticate terminus (Pantheon CLI) for deploys, using TERMINUS_MACHINE_TOKEN.
+## Usage: terminus-auth [machine-token]
+## Example: "ddev terminus-auth"  (uses $TERMINUS_MACHINE_TOKEN from .ddev/config.local.yaml)
+## Example: "ddev terminus-auth <token>"
+
+# Companion to `ddev auth ssh`: that authenticates the git push to Pantheon;
+# this authenticates terminus for the post-deploy `terminus remote:drush`
+# (cc all / updb / fra) steps. Without it, those steps fail with
+# "You are not logged in".
+
+set -e
+
+# Use an explicit token arg if given (but ignore flags like --help / -h); else the env var.
+TOKEN="$TERMINUS_MACHINE_TOKEN"
+if [ -n "$1" ] && [ "${1#-}" = "$1" ]; then
+  TOKEN="$1"
+fi
+
+if [ -z "$TOKEN" ]; then
+  echo "No machine token found."
+  echo "Set TERMINUS_MACHINE_TOKEN in .ddev/config.local.yaml (then 'ddev restart'),"
+  echo "or pass one explicitly: 'ddev terminus-auth <token>'."
+  echo "Generate a token at https://dashboard.pantheon.io/machine-token/create"
+  exit 1
+fi
+
+terminus auth:login --machine-token="$TOKEN"
+terminus auth:whoami

@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -338,51 +338,44 @@ determineDownloadPhotosStatus model =
     in
     if syncCycleRotate then
         let
+            currentStatus =
+                model.downloadPhotosStatus
+
             statusUpdated =
-                case model.syncStatus of
-                    SyncIdle ->
-                        -- Cases are ordered by the cycle order.
-                        let
-                            currentStatus =
-                                model.downloadPhotosStatus
-                        in
-                        case currentStatus of
-                            DownloadPhotosIdle ->
-                                DownloadPhotosInProcess model.downloadPhotosMode
+                -- Cases are ordered by the cycle order.
+                case currentStatus of
+                    DownloadPhotosIdle ->
+                        DownloadPhotosInProcess model.downloadPhotosMode
 
-                            DownloadPhotosInProcess record ->
-                                case record of
-                                    DownloadPhotosNone ->
-                                        DownloadPhotosIdle
+                    DownloadPhotosInProcess record ->
+                        case record of
+                            DownloadPhotosNone ->
+                                DownloadPhotosIdle
 
-                                    DownloadPhotosBatch deferredPhoto ->
-                                        if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
-                                            -- We tried to fetch deferred photos from IndexDB,
-                                            -- but there we non matching the query.
-                                            DownloadPhotosIdle
+                            DownloadPhotosBatch deferredPhoto ->
+                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
+                                    -- We tried to fetch deferred photos from IndexDB,
+                                    -- but there we non matching the query.
+                                    DownloadPhotosIdle
 
-                                        else if deferredPhoto.batchCounter < 1 then
-                                            -- We've reached the end of the batch, so we
-                                            -- need to rotate.
-                                            DownloadPhotosIdle
+                                else if deferredPhoto.batchCounter < 1 then
+                                    -- We've reached the end of the batch, so we
+                                    -- need to rotate.
+                                    DownloadPhotosIdle
 
-                                        else
-                                            currentStatus
+                                else
+                                    currentStatus
 
-                                    DownloadPhotosAll deferredPhoto ->
-                                        if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
-                                            -- We tried to fetch deferred photos from IndexDB,
-                                            -- but there we non matching the query.
-                                            DownloadPhotosIdle
+                            DownloadPhotosAll deferredPhoto ->
+                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
+                                    -- We tried to fetch deferred photos from IndexDB,
+                                    -- but there we non matching the query.
+                                    DownloadPhotosIdle
 
-                                        else
-                                            -- There are still deferred photos in IndexDB
-                                            -- that match out query.
-                                            currentStatus
-
-                    -- When sync is active, we stop photos download.
-                    _ ->
-                        DownloadPhotosIdle
+                                else
+                                    -- There are still deferred photos in IndexDB
+                                    -- that match out query.
+                                    currentStatus
         in
         { model | downloadPhotosStatus = statusUpdated }
 
@@ -1095,6 +1088,9 @@ getImageFromBackendAuthorityEntity backendAuthorityEntity =
                     identifier.entity.signature
             in
             Just url
+
+        BackendAuthorityWellChildPhoto identifier ->
+            getImageFromMeasurement identifier
 
         _ ->
             Nothing
@@ -2800,3 +2796,29 @@ resolveIncidentDetailsMsg error =
 fileUploadFailureThreshold : Int
 fileUploadFailureThreshold =
     5
+
+
+{-| Classify an IndexedDB save failure from the raw error name reported by the
+JS port. `QuotaExceededError` (the device storage is full) is singled out
+because, unlike a transient failure, re-downloading and re-saving the same batch
+cannot succeed until space is freed.
+-}
+indexDbSaveErrorFromReason : Maybe String -> IndexDbSaveError
+indexDbSaveErrorFromReason reason =
+    case reason of
+        Just name ->
+            if isStorageFullError name then
+                IndexDbSaveErrorStorageFull
+
+            else
+                IndexDbSaveErrorOther name
+
+        Nothing ->
+            IndexDbSaveErrorOther "Unknown"
+
+
+isStorageFullError : String -> Bool
+isStorageFullError name =
+    -- Browsers report a full quota as `QuotaExceededError`; older Firefox used
+    -- `NS_ERROR_DOM_QUOTA_REACHED`. Match the substring to cover both casings.
+    String.contains "Quota" name || String.contains "QUOTA" name

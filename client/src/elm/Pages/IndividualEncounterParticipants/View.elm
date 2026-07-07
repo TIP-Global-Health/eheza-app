@@ -118,10 +118,6 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                         |> Maybe.map not
                         |> Maybe.withDefault False
 
-                InmmunizationEncounter ->
-                    -- Not in use (possibly future development).
-                    False
-
         -- For CHW nurse, we present people only from the village that was selected.
         chwCondition person =
             if isChw then
@@ -142,7 +138,6 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                         (Dict.filter
                             (\_ filteredPerson ->
                                 -- Show only participants that belong to selected health center.
-                                -- Todo: check if this really required.
                                 (filteredPerson.healthCenterId == Just healthCenterId)
                                     && encounterCondition filteredPerson
                                     && chwCondition filteredPerson
@@ -237,10 +232,6 @@ viewParticipant language currentDate encounterType id person =
 
                 WellChildEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage InitiatorParticipantsPage id ]
-
-                InmmunizationEncounter ->
-                    -- Not implemented (possibly future development).
-                    []
 
         viewAction =
             div [ class "action" ]

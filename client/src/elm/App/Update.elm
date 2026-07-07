@@ -194,6 +194,7 @@ init flags url key =
                             -- to fetch it only when we really, really need it).
                             Cmd.batch
                                 [ Task.perform Tick Time.now
+                                , Task.perform SetTimeZone Time.here
                                 , fetchCachedDevice
                                 , Nav.pushUrl model.navigationKey (Url.toString model.url)
                                 ]
@@ -242,7 +243,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         currentDate =
-            fromLocalDateTime model.currentTime
+            fromLocalDateTime model.zone model.currentTime
 
         loggedInData =
             getLoggedInData model
@@ -1152,19 +1153,41 @@ update msg model =
                         DevicePage ->
                             [ MsgSyncManager SyncManager.Model.TrySyncing ]
 
-                        -- When navigating to relationship page in group encounter context,
-                        -- we automaticaly select the clinic, to which the session belongs.
-                        UserPage (RelationshipPage id1 id2 (GroupEncounterOrigin sessionId)) ->
-                            getSession sessionId model.indexedDb
-                                |> Maybe.map
-                                    (.clinicId
-                                        >> fromEntityUuid
-                                        >> Pages.Relationship.Model.AssignToClinicId
-                                        >> MsgPageRelationship id1 id2
-                                        >> MsgLoggedIn
-                                        >> List.singleton
-                                    )
-                                |> Maybe.withDefault []
+                        -- Clear the (per-pair) relationship form on genuine entry, so a
+                        -- previously abandoned, unsaved selection can't be shown as the
+                        -- current value and re-saved for the same pair (the view lets an
+                        -- unsaved relatedBy win over the DB value). In group encounter
+                        -- context we then re-select the clinic the session belongs to.
+                        UserPage (RelationshipPage id1 id2 initiator) ->
+                            let
+                                resetMsgs =
+                                    if model.activePage == page then
+                                        []
+
+                                    else
+                                        [ Pages.Relationship.Model.Reset initiator
+                                            |> MsgPageRelationship id1 id2
+                                            |> MsgLoggedIn
+                                        ]
+
+                                clinicMsgs =
+                                    case initiator of
+                                        GroupEncounterOrigin sessionId ->
+                                            getSession sessionId model.indexedDb
+                                                |> Maybe.map
+                                                    (.clinicId
+                                                        >> fromEntityUuid
+                                                        >> Pages.Relationship.Model.AssignToClinicId
+                                                        >> MsgPageRelationship id1 id2
+                                                        >> MsgLoggedIn
+                                                        >> List.singleton
+                                                    )
+                                                |> Maybe.withDefault []
+
+                                        _ ->
+                                            []
+                            in
+                            resetMsgs ++ clinicMsgs
 
                         -- When navigating to Acute Illness participant page, set initial view mode.
                         UserPage (AcuteIllnessParticipantPage _ participantId) ->
@@ -1172,6 +1195,34 @@ update msg model =
                                 |> MsgPageAcuteIllnessParticipant participantId
                                 |> MsgLoggedIn
                                 |> List.singleton
+
+                        -- When starting a new person registration, clear the (singleton)
+                        -- create form, so a previous patient's abandoned entry can't
+                        -- pre-fill the next person's form. Only on a genuine page change,
+                        -- not when already on the page.
+                        UserPage (CreatePersonPage _ _) ->
+                            if model.activePage == page then
+                                []
+
+                            else
+                                Pages.Person.Model.ResetCreateForm
+                                    |> MsgPageCreatePerson
+                                    |> MsgLoggedIn
+                                    |> List.singleton
+
+                        -- Likewise clear the (per-person) edit form on entry, so a
+                        -- previously abandoned, unsaved edit isn't shown as the current
+                        -- value and can't clobber a value synced from another device --
+                        -- with the form empty, the view re-seeds it from the DB.
+                        UserPage (EditPersonPage id) ->
+                            if model.activePage == page then
+                                []
+
+                            else
+                                Pages.Person.Model.ResetEditForm
+                                    |> MsgPageEditPerson id
+                                    |> MsgLoggedIn
+                                    |> List.singleton
 
                         _ ->
                             []
@@ -1248,6 +1299,11 @@ update msg model =
             , cmd
             )
                 |> sequence update extraMsgs
+
+        SetTimeZone zone ->
+            ( { model | zone = zone }
+            , Cmd.none
+            )
 
         Tick time ->
             let
@@ -1509,8 +1565,18 @@ update msg model =
                         in
                         case errorType of
                             Http err ->
-                                Utils.WebData.viewErrorForRollbar err
-                                    |> generateRollbarCmd
+                                case err of
+                                    -- Offline-first: NetworkError and Timeout are
+                                    -- expected during sync and shouldn't reach Rollbar.
+                                    NetworkError ->
+                                        Cmd.none
+
+                                    Timeout ->
+                                        Cmd.none
+
+                                    _ ->
+                                        Utils.WebData.viewErrorForRollbar err
+                                            |> generateRollbarCmd
 
                             Decoder err ->
                                 Json.Decode.errorToString err

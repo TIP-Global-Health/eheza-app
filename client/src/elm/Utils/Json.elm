@@ -48,15 +48,39 @@ decodeNullAsEmptyArray =
 
 {-| Given a decoder, decodes a JSON list of that type, and then
 turns it into an `EverySet`.
+
+The decode is element-tolerant: any element the inner decoder cannot
+parse (for example an enum value introduced by a client newer than the
+one running) is dropped on its own, rather than collapsing the entire
+set to empty. Recognized elements always survive. A non-list value
+(null, etc.) still falls back to the empty set, preserving the previous
+behaviour.
+
 -}
 decodeEverySet : Decoder a -> Decoder (EverySet a)
 decodeEverySet decoder =
-    decodeWithFallback EverySet.empty (map EverySet.fromList <| list decoder)
+    list (oneOf [ map Just decoder, succeed Nothing ])
+        |> map (List.filterMap identity >> EverySet.fromList)
+        |> decodeWithFallback EverySet.empty
 
 
 decodeWithFallback : a -> Decoder a -> Decoder a
 decodeWithFallback fallback decoder =
     oneOf [ decoder, succeed fallback ]
+
+
+{-| Decode a JSON list, dropping any element the inner decoder cannot parse and
+keeping the recognized ones — instead of failing the whole list or coercing an
+unrecognized element into a fallback sentinel value. Use for forward-compatible
+clinical enum lists, where a value introduced by a newer backend than the client
+is running must NOT silently become a "no finding" value. A non-list value
+yields `[]`.
+-}
+decodeListDroppingUnknown : Decoder a -> Decoder (List a)
+decodeListDroppingUnknown decoder =
+    list (oneOf [ map Just decoder, succeed Nothing ])
+        |> map (List.filterMap identity)
+        |> decodeWithFallback []
 
 
 encodeIfSet : String -> Maybe a -> (a -> Value) -> List ( String, Value )
