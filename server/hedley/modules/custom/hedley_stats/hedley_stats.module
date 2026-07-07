@@ -3525,7 +3525,7 @@ function hedley_stats_run_node_query_in_batches(SelectQuery $query, $batch = 100
  *   The ON condition extended with the soft-delete exclusion.
  */
 function hedley_stats_exclude_deleted_from_join($on_condition, $measurement_entity_id) {
-  return "$on_condition AND NOT EXISTS (SELECT 1 FROM {field_data_field_deleted} hsd WHERE hsd.entity_id = $measurement_entity_id AND hsd.field_deleted_value = 1)";
+  return "($on_condition) AND NOT EXISTS (SELECT 1 FROM {field_data_field_deleted} hsd WHERE hsd.entity_id = $measurement_entity_id AND hsd.field_deleted_value = 1)";
 }
 
 /**

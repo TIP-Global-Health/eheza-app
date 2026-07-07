@@ -305,7 +305,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    */
   protected function extractFirstStatsEncounter(array $data) {
     $participant = reset($data);
-    if (empty($participant['encounters'])) {
+    if (empty($participant) || empty($participant['encounters'])) {
       return [];
     }
 
