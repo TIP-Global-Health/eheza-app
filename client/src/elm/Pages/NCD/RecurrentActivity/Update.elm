@@ -273,7 +273,7 @@ update currentDate id db msg model =
                     model.labResultsData.randomBloodSugarTestForm
 
                 updatedForm =
-                    { form | sugarCount = String.toFloat value }
+                    { form | sugarCount = String.toFloat value, sugarCountDirty = True }
 
                 updatedData =
                     model.labResultsData

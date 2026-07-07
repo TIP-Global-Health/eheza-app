@@ -18,7 +18,7 @@ import Json.Encode
 import List.Zipper as Zipper
 import Maybe.Extra
 import Pages.Page exposing (Page)
-import RemoteData
+import RemoteData exposing (RemoteData)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseAuthorityStats, decodeDownloadSyncResponseGeneral)
 import SyncManager.Encoder
@@ -36,6 +36,14 @@ import SyncManager.Utils
 import Time
 import Utils.WebData
 import Version
+
+
+{-| True when either the local IndexedDB write or the backend request of a sync
+record is still in progress. Used to avoid re-issuing a step already running.
+-}
+isRecordLoading : { a | indexDbRemoteData : RemoteData e1 v1, backendRemoteData : RemoteData e2 v2 } -> Bool
+isRecordLoading record =
+    RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData
 
 
 update : Time.Posix -> Page -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
@@ -933,7 +941,7 @@ update currentTime activePage dbVersion device msg model =
                     noChange
 
                 DownloadPhotosInProcess (DownloadPhotosBatch record) ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 
@@ -954,7 +962,7 @@ update currentTime activePage dbVersion device msg model =
                             { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosBatch recordUpdated) }
 
                 DownloadPhotosInProcess (DownloadPhotosAll record) ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 
@@ -986,7 +994,7 @@ update currentTime activePage dbVersion device msg model =
                     noChange
 
                 DownloadPhotosInProcess (DownloadPhotosBatch record) ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         noChange
 
                     else
@@ -1006,7 +1014,7 @@ update currentTime activePage dbVersion device msg model =
                             { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosBatch recordUpdated) }
 
                 DownloadPhotosInProcess (DownloadPhotosAll record) ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         noChange
 
                     else
@@ -1032,7 +1040,7 @@ update currentTime activePage dbVersion device msg model =
             -- Get a entities for upload from IndexDB.
             case model.syncStatus of
                 SyncUploadGeneral record ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 
@@ -1059,10 +1067,7 @@ update currentTime activePage dbVersion device msg model =
             -- Get a entities for upload from IndexDB.
             case model.syncStatus of
                 SyncUploadWhatsApp record ->
-                    if
-                        RemoteData.isLoading record.indexDbRemoteData
-                            || RemoteData.isLoading record.backendRemoteData
-                    then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 
@@ -1089,7 +1094,7 @@ update currentTime activePage dbVersion device msg model =
             -- Get a entities for upload from IndexDB.
             case model.syncStatus of
                 SyncUploadAuthority record ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 

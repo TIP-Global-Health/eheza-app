@@ -1741,7 +1741,7 @@ update currentDate id db msg model =
                     model.laboratoryData.hba1cTestForm
 
                 updatedForm =
-                    { form | hba1cResult = String.toFloat value }
+                    { form | hba1cResult = String.toFloat value, hba1cResultDirty = True }
 
                 updatedData =
                     model.laboratoryData

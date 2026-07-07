@@ -3051,7 +3051,7 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
         -- at encounter during selected month or previously, and did not have
         -- an encounter afterwards that indicated that condition was resolved.
         totalBeneficiariesWasting =
-            countCurrentlyDiagnosedByValue .zscoreWasting (\zscore -> zscore < 2)
+            countCurrentlyDiagnosedByValue .zscoreWasting (\zscore -> zscore < -2)
 
         -- Number of children who are had firs diagnosis of wasting during
         -- selected month.
@@ -3083,7 +3083,7 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
         -- encounter during selected month or previously, and did not have an
         -- encounter afterwards that indicated that condition was resolved.
         numberOfStunting =
-            countCurrentlyDiagnosedByValue .zscoreStunting (\zscore -> zscore < 2)
+            countCurrentlyDiagnosedByValue .zscoreStunting (\zscore -> zscore < -2)
 
         -- Number of Children who had either micro or macrocephaly diagnosed at
         -- encounter during selected month or previously, and did not have an

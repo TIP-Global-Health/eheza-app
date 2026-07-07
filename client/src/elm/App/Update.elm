@@ -1153,19 +1153,41 @@ update msg model =
                         DevicePage ->
                             [ MsgSyncManager SyncManager.Model.TrySyncing ]
 
-                        -- When navigating to relationship page in group encounter context,
-                        -- we automaticaly select the clinic, to which the session belongs.
-                        UserPage (RelationshipPage id1 id2 (GroupEncounterOrigin sessionId)) ->
-                            getSession sessionId model.indexedDb
-                                |> Maybe.map
-                                    (.clinicId
-                                        >> fromEntityUuid
-                                        >> Pages.Relationship.Model.AssignToClinicId
-                                        >> MsgPageRelationship id1 id2
-                                        >> MsgLoggedIn
-                                        >> List.singleton
-                                    )
-                                |> Maybe.withDefault []
+                        -- Clear the (per-pair) relationship form on genuine entry, so a
+                        -- previously abandoned, unsaved selection can't be shown as the
+                        -- current value and re-saved for the same pair (the view lets an
+                        -- unsaved relatedBy win over the DB value). In group encounter
+                        -- context we then re-select the clinic the session belongs to.
+                        UserPage (RelationshipPage id1 id2 initiator) ->
+                            let
+                                resetMsgs =
+                                    if model.activePage == page then
+                                        []
+
+                                    else
+                                        [ Pages.Relationship.Model.Reset initiator
+                                            |> MsgPageRelationship id1 id2
+                                            |> MsgLoggedIn
+                                        ]
+
+                                clinicMsgs =
+                                    case initiator of
+                                        GroupEncounterOrigin sessionId ->
+                                            getSession sessionId model.indexedDb
+                                                |> Maybe.map
+                                                    (.clinicId
+                                                        >> fromEntityUuid
+                                                        >> Pages.Relationship.Model.AssignToClinicId
+                                                        >> MsgPageRelationship id1 id2
+                                                        >> MsgLoggedIn
+                                                        >> List.singleton
+                                                    )
+                                                |> Maybe.withDefault []
+
+                                        _ ->
+                                            []
+                            in
+                            resetMsgs ++ clinicMsgs
 
                         -- When navigating to Acute Illness participant page, set initial view mode.
                         UserPage (AcuteIllnessParticipantPage _ participantId) ->

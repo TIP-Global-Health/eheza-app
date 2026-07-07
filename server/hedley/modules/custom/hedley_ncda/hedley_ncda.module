@@ -520,10 +520,10 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
   // we try to resolve from NCDA questionnaires.
   if (empty($birth_weight)) {
     foreach ($ncdas as $ncda) {
-      if (!empty($ncda->field_birth_weight) && !empty($ncda->field_weight[LANGUAGE_NONE][0]['value'])) {
+      if (!empty($ncda->field_birth_weight[LANGUAGE_NONE][0]['value'])) {
         $birth_weight = $ncda->field_birth_weight[LANGUAGE_NONE][0]['value'];
+        break;
       }
-      break;
     }
   }
   if ($birth_weight) {

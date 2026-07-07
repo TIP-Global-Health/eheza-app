@@ -1,9 +1,13 @@
 module Backend.Measurement.Test exposing (all)
 
-import Backend.Measurement.Model exposing (ColorAlertIndication(..), GlucoseValue(..), HeadCircumferenceInCm(..), MuacInCm(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..), UrineDipstickTestValue)
-import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, headCircumferenceIndication, muacIndicationForAdult, muacIndicationForChild)
+import Backend.Measurement.Encoder exposing (encodeMedicalHistoryValue)
+import Backend.Measurement.Model exposing (ColorAlertIndication(..), GlucoseValue(..), HeadCircumferenceInCm(..), MuacInCm(..), OccursInFamilySign(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..), UrineDipstickTestValue)
+import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, headCircumferenceIndication, muacIndicationForAdult, muacIndicationForChild, muacValueFuncForSite)
 import EverySet
 import Expect
+import Json.Decode
+import Json.Encode
+import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 
 
@@ -172,6 +176,52 @@ diabetesByUrineGlucoseTest =
         ]
 
 
+preeclampsiaInFamilyEncodeTest : Test
+preeclampsiaInFamilyEncodeTest =
+    -- Regression: preeclampsia_in_family must be encoded (with the string the
+    -- decoder expects), else the nurse's "family history of preeclampsia"
+    -- answer is silently dropped on every save.
+    let
+        encodedSign sign =
+            encodeMedicalHistoryValue
+                { signs = EverySet.empty
+                , physicalConditions = EverySet.empty
+                , infectiousDiseases = EverySet.empty
+                , mentalHealthIssues = EverySet.empty
+                , preeclampsiaInFamily = sign
+                }
+                |> Json.Encode.object
+                |> Json.Decode.decodeValue (Json.Decode.field "preeclampsia_in_family" Json.Decode.string)
+    in
+    describe "encodeMedicalHistoryValue emits preeclampsia_in_family"
+        [ test "DoesOccur -> \"yes\"" <|
+            \_ -> encodedSign DoesOccur |> Expect.equal (Ok "yes")
+        , test "DoesNotOccur -> \"no\"" <|
+            \_ -> encodedSign DoesNotOccur |> Expect.equal (Ok "no")
+        , test "NotKnownIfOccurs -> \"do-not-know\"" <|
+            \_ -> encodedSign NotKnownIfOccurs |> Expect.equal (Ok "do-not-know")
+        ]
+
+
+muacValueFuncForSiteTest : Test
+muacValueFuncForSiteTest =
+    -- MUAC is stored in cm; Burundi displays it in mm (x10), other sites in cm.
+    describe "muacValueFuncForSite"
+        [ test "Burundi: 12.5 cm shown as 125 mm" <|
+            \_ ->
+                muacValueFuncForSite SiteBurundi (MuacInCm 12.5)
+                    |> Expect.within (Expect.Absolute 0.001) 125
+        , test "Rwanda: 12.5 cm shown unchanged" <|
+            \_ ->
+                muacValueFuncForSite SiteRwanda (MuacInCm 12.5)
+                    |> Expect.within (Expect.Absolute 0.001) 12.5
+        , test "Somalia: 12.5 cm shown unchanged" <|
+            \_ ->
+                muacValueFuncForSite SiteSomalia (MuacInCm 12.5)
+                    |> Expect.within (Expect.Absolute 0.001) 12.5
+        ]
+
+
 all : Test
 all =
     describe "Measurement data tests"
@@ -179,4 +229,6 @@ all =
         , headCircumferenceIndicationTest
         , diabetesBySugarCountTest
         , diabetesByUrineGlucoseTest
+        , preeclampsiaInFamilyEncodeTest
+        , muacValueFuncForSiteTest
         ]

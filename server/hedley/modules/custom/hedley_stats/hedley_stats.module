@@ -1381,6 +1381,8 @@ function hedley_stats_get_ncd_data($health_center_id) {
     $items[$row->field_individual_participant]['encounters'][$row->nid]['hiv_test_result'] = $row->test_result;
   }
 
+  $query = clone $base_query;
+
   // Run dedicated query to pull data of HIV test execution note recorded
   // at NCD HIV Test activity.
   // Dedicated query is mandatory since multiple bundles hold same field.

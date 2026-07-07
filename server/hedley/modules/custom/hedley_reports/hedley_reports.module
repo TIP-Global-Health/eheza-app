@@ -327,7 +327,7 @@ function hedley_reports_trigger_recalculation_for_created_person($node) {
 /**
  * Triggers recalculation of person's Reports data, when edited.
  *
- * Recalculation is required only when birthdate is edited.
+ * Recalculation is required when birthdate or gender is edited.
  * Note: Currently, editing geo fields of person is not allowed.
  *
  * @param object $node
@@ -342,7 +342,12 @@ function hedley_reports_trigger_recalculation_for_edited_person($node) {
   $birth_date = $wrapper->field_birth_date->value();
   $birth_date_orig = $wrapper_orig->field_birth_date->value();
 
-  if ($birth_date == $birth_date_orig) {
+  $gender = $wrapper->field_gender->value();
+  $gender_orig = $wrapper_orig->field_gender->value();
+
+  // Birth date and gender both feed the person's aggregated nutrition data
+  // (z-scores are gender-derived), so a change to either must recalculate.
+  if ($birth_date == $birth_date_orig && $gender == $gender_orig) {
     return;
   }
 
@@ -408,28 +413,28 @@ function hedley_reports_trigger_recalculation_by_new_content($node) {
  * @throws EntityMetadataWrapperException
  */
 function hedley_reports_trigger_recalculation_by_edited_content($node) {
-  switch ($node->type) {
-    case HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE:
-      $participant_id = $node->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
-      break;
+  // The antenatal participant node itself is a special case: it is neither a
+  // triggering encounter nor a triggering measurement, but editing it must
+  // still refresh the pregnancy's report data.
+  if ($node->type == HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE) {
+    $encounter_type = !empty($node->field_encounter_type[LANGUAGE_NONE][0]['value'])
+      ? $node->field_encounter_type[LANGUAGE_NONE][0]['value']
+      : '';
+    if ($encounter_type == 'antenatal') {
+      $wrapper = entity_metadata_wrapper('node', $node);
+      $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
+      hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
+        'person_id' => $person_id,
+      ]);
+    }
 
-    case HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE:
-      if ($node->field_encounter_type[LANGUAGE_NONE][0]['value'] == 'antenatal') {
-        $participant_id = $node->nid;
-      }
-      break;
-  }
-
-  if (empty($participant_id)) {
-    // Can't resolve to which participant encounter belongs.
     return;
   }
-  $wrapper = entity_metadata_wrapper('node', $participant_id);
-  $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
-  // Trigger recalculation using AQ.
-  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
-    'person_id' => $person_id,
-  ]);
+
+  // For every other edited measurement or encounter, mirror the insert path,
+  // so value corrections and soft-deletes (which both arrive as node updates)
+  // refresh the report - not just prenatal content.
+  hedley_reports_trigger_recalculation_by_new_content($node);
 }
 
 /**
@@ -2417,7 +2422,10 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
 
       $start_date_month = $start_date->format('m');
-      $encounter_fields = explode(',', $parts[1]);
+      // The wire may carry a "|<amount>" distribution tail (FBF) after the
+      // anthropometry CSV; strip it before parsing, matching the Elm decoder.
+      $anthropometry = explode('|', $parts[1])[0];
+      $encounter_fields = explode(',', $anthropometry);
       $nutrition_data = [
         'stunting' => (!isset($encounter_fields[0]) || $encounter_fields[0] === '') ? NULL : (float) $encounter_fields[0],
         'underweight' => (!isset($encounter_fields[1]) || $encounter_fields[1] === '') ? NULL : (float) $encounter_fields[1],
@@ -2449,7 +2457,10 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
 
       $start_date_month = $start_date->format('m');
-      $muac_value = isset($parts[1]) && $parts[1] !== '' ? (float) $parts[1] : NULL;
+      // Strip the "|<distribution-amount>" tail (AHEZA) before reading MUAC, so
+      // an amount-only wire ("|500") is treated as no-MUAC rather than 0.0.
+      $muac_raw = isset($parts[1]) ? explode('|', $parts[1])[0] : '';
+      $muac_value = $muac_raw !== '' ? (float) $muac_raw : NULL;
       $family_data = [
         'stunting' => NULL,
         'underweight' => NULL,
@@ -2548,6 +2559,21 @@ function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
 }
 
 /**
+ * Resolves the timestamp of the first day of the current month.
+ *
+ * Report period stepping uses relative "-N month" arithmetic, which overflows
+ * on month-end run-dates (e.g. from the 31st, "-1 month" skips to the following
+ * month, dropping and duplicating months). Anchoring to the first of the month
+ * - which exists in every month - avoids that overflow.
+ *
+ * @return int
+ *   Unix timestamp for the first day of the current month.
+ */
+function hedley_reports_current_month_start() {
+  return strtotime(date('Y-m-01'));
+}
+
+/**
  * Generates monthly prevalence data from encounters metrics grouped by month.
  *
  * @param array $encounters_by_month
@@ -2558,7 +2584,7 @@ function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
  */
 function hedley_reports_generate_monthly_prevalence_data(array $encounters_by_month) {
   $result = [];
-  $current_timestamp = time();
+  $current_timestamp = hedley_reports_current_month_start();
   for ($index = 1; $index <= 12; $index++) {
     $target_timestamp = strtotime("-$index month", $current_timestamp);
     $target_date_year = date('Y', $target_timestamp);
@@ -2582,7 +2608,7 @@ function hedley_reports_generate_monthly_prevalence_data(array $encounters_by_mo
  */
 function hedley_reports_generate_monthly_incidence_data(array $encounters_by_month) {
   $result = [];
-  $current_timestamp = time();
+  $current_timestamp = hedley_reports_current_month_start();
 
   for ($index = 1; $index <= 12; $index++) {
     $target_timestamp = strtotime("-$index month", $current_timestamp);
@@ -2626,7 +2652,7 @@ function hedley_reports_generate_quarterly_incidence_data(array $encounters_by_m
   }
 
   $result = [];
-  $current_timestamp = time();
+  $current_timestamp = hedley_reports_current_month_start();
   // Showing data of the previous 4 quarters.
   for ($index = 1; $index <= 4; $index++) {
     $selected_date = strtotime("-" . (3 * $index) . " months", $current_timestamp);
@@ -2841,7 +2867,8 @@ function hedley_reports_resolve_data_set_for_year($year_index, array $encounters
  */
 function hedley_reports_resolve_data_set_for_quarter($quarter_index, array $encounters_by_month) {
   // Calculate the selected date by subtracting months.
-  $selected_date = strtotime("-" . (3 * ($quarter_index - 1)) . " months", time());
+  $anchor = hedley_reports_current_month_start();
+  $selected_date = strtotime("-" . (3 * ($quarter_index - 1)) . " months", $anchor);
 
   [$year, $quarter] = hedley_reports_resolve_quarter_date_info($selected_date);
 

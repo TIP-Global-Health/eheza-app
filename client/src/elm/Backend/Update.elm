@@ -4679,11 +4679,24 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostIndividualEncounterParticipant extraData session ->
-            ( { model | postIndividualEncounterParticipant = Dict.insert session.person Loading model.postIndividualEncounterParticipant }
-            , sw.post individualEncounterParticipantEndpoint session
-                |> toCmd (RemoteData.fromResult >> HandlePostedIndividualEncounterParticipant session.person session.encounterType extraData)
-            , []
-            )
+            let
+                alreadyInFlight =
+                    Dict.get session.person model.postIndividualEncounterParticipant
+                        |> Maybe.map RemoteData.isLoading
+                        |> Maybe.withDefault False
+            in
+            if alreadyInFlight then
+                -- A create for this person is already in flight; ignore the
+                -- duplicate, so a double-tapped "begin encounter" button can't
+                -- open two encounter participants (e.g. two open pregnancies).
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postIndividualEncounterParticipant = Dict.insert session.person Loading model.postIndividualEncounterParticipant }
+                , sw.post individualEncounterParticipantEndpoint session
+                    |> toCmd (RemoteData.fromResult >> HandlePostedIndividualEncounterParticipant session.person session.encounterType extraData)
+                , []
+                )
 
         HandlePostedIndividualEncounterParticipant personId encounterType extraData data ->
             let
@@ -5093,11 +5106,23 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostFamilyEncounterParticipant session ->
-            ( { model | postFamilyEncounterParticipant = Dict.insert session.person Loading model.postFamilyEncounterParticipant }
-            , sw.post familyEncounterParticipantEndpoint session
-                |> toCmd (RemoteData.fromResult >> HandlePostedFamilyEncounterParticipant session.person session.encounterType)
-            , []
-            )
+            let
+                alreadyInFlight =
+                    Dict.get session.person model.postFamilyEncounterParticipant
+                        |> Maybe.map RemoteData.isLoading
+                        |> Maybe.withDefault False
+            in
+            if alreadyInFlight then
+                -- Already creating a family encounter participant for this
+                -- person; ignore the double-tap.
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postFamilyEncounterParticipant = Dict.insert session.person Loading model.postFamilyEncounterParticipant }
+                , sw.post familyEncounterParticipantEndpoint session
+                    |> toCmd (RemoteData.fromResult >> HandlePostedFamilyEncounterParticipant session.person session.encounterType)
+                , []
+                )
 
         HandlePostedFamilyEncounterParticipant personId encounterType data ->
             let
