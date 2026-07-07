@@ -975,7 +975,12 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   $query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
 
   // Join with AI Encounter table, through which we can join measurements data.
-  $query->leftJoin('field_data_field_acute_illness_encounter', 'ai_encounter', 'ai_encounter.field_acute_illness_encounter_target_id = node.nid');
+  // Soft-deleted measurements are excluded via the ON clause, so their values
+  // are not pulled into the aggregates below.
+  $query->leftJoin('field_data_field_acute_illness_encounter', 'ai_encounter', hedley_stats_exclude_deleted_from_join(
+    'ai_encounter.field_acute_illness_encounter_target_id = node.nid',
+    'ai_encounter.entity_id'
+  ));
 
   // Pull data of health center referrals.
   $query->leftJoin('field_data_field_send_to_hc', 'send_to_hc', 'send_to_hc.entity_id = ai_encounter.entity_id');
@@ -1153,7 +1158,12 @@ function hedley_stats_get_prenatal_data($health_center_id) {
 
   // Join with Prenatal Encounter table,
   // through which we can join measurements data.
-  $query->leftJoin('field_data_field_prenatal_encounter', 'prenatal_encounter', 'prenatal_encounter.field_prenatal_encounter_target_id = node.nid');
+  // Soft-deleted measurements are excluded via the ON clause, so their values
+  // are not pulled into the aggregates below.
+  $query->leftJoin('field_data_field_prenatal_encounter', 'prenatal_encounter', hedley_stats_exclude_deleted_from_join(
+    'prenatal_encounter.field_prenatal_encounter_target_id = node.nid',
+    'prenatal_encounter.entity_id'
+  ));
 
   // Pull data of danger signs that were recorded during encounter.
   $query->leftJoin('field_data_field_danger_signs', 'danger_signs', 'danger_signs.entity_id = prenatal_encounter.entity_id');
@@ -1302,7 +1312,13 @@ function hedley_stats_get_ncd_data($health_center_id) {
   }
   $base_query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
   // Join with NCD Encounter table, through which we can join measurements data.
-  $base_query->leftJoin('field_data_field_ncd_encounter', 'ncd_encounter', 'ncd_encounter.field_ncd_encounter_target_id = node.nid');
+  // Soft-deleted measurements are excluded via the ON clause, so their values
+  // are not pulled into the aggregates below (this base query is cloned into
+  // the measurement queries that follow).
+  $base_query->leftJoin('field_data_field_ncd_encounter', 'ncd_encounter', hedley_stats_exclude_deleted_from_join(
+    'ncd_encounter.field_ncd_encounter_target_id = node.nid',
+    'ncd_encounter.entity_id'
+  ));
 
   $query = clone $base_query;
   // Pull data of prenatal_diagnoses that were recorded during encounter.
@@ -1582,7 +1598,13 @@ function hedley_stats_get_spv_data($health_center_id) {
 
   // Join with Well Child Encounter table, through which
   // we can join measurements data.
-  $base_query->leftJoin('field_data_field_well_child_encounter', 'well_child_encounter', 'well_child_encounter.field_well_child_encounter_target_id = node.nid');
+  // Soft-deleted measurements are excluded via the ON clause, so their values
+  // are not pulled into the aggregates below (this base query is cloned into
+  // the measurement queries that follow).
+  $base_query->leftJoin('field_data_field_well_child_encounter', 'well_child_encounter', hedley_stats_exclude_deleted_from_join(
+    'well_child_encounter.field_well_child_encounter_target_id = node.nid',
+    'well_child_encounter.entity_id'
+  ));
 
   $query = clone $base_query;
 
@@ -1774,7 +1796,13 @@ function hedley_stats_get_child_scorecard_data($health_center_id) {
 
   // Join with Well Child Encounter table, through which
   // we can join measurements data.
-  $base_query->leftJoin('field_data_field_child_scoreboard_encounter', 'child_scoreboard_encounter', 'child_scoreboard_encounter.field_child_scoreboard_encounter_target_id = node.nid');
+  // Soft-deleted measurements are excluded via the ON clause, so their values
+  // are not pulled into the aggregates below (this base query is cloned into
+  // the measurement queries that follow).
+  $base_query->leftJoin('field_data_field_child_scoreboard_encounter', 'child_scoreboard_encounter', hedley_stats_exclude_deleted_from_join(
+    'child_scoreboard_encounter.field_child_scoreboard_encounter_target_id = node.nid',
+    'child_scoreboard_encounter.entity_id'
+  ));
 
   $query = clone $base_query;
 
@@ -2005,7 +2033,13 @@ function hedley_stats_get_nutrition_individual_data($health_center_id) {
 
   // Join with Nutrition Encounter table, through which we can
   // join measurements data.
-  $base_query->leftJoin('field_data_field_nutrition_encounter', 'nutrition_encounter', 'nutrition_encounter.field_nutrition_encounter_target_id = node.nid');
+  // Soft-deleted measurements are excluded via the ON clause, so their values
+  // are not pulled into the aggregates below (this base query is cloned into
+  // the measurement queries that follow).
+  $base_query->leftJoin('field_data_field_nutrition_encounter', 'nutrition_encounter', hedley_stats_exclude_deleted_from_join(
+    'nutrition_encounter.field_nutrition_encounter_target_id = node.nid',
+    'nutrition_encounter.entity_id'
+  ));
 
   $query = clone $base_query;
 
@@ -3463,6 +3497,35 @@ function hedley_stats_run_node_query_in_batches(SelectQuery $query, $batch = 100
   }
 
   return $result;
+}
+
+/**
+ * Adds a soft-delete exclusion to a measurement JOIN's ON condition.
+ *
+ * The dashboard statistics builders reach measurement values by joining the
+ * field_<program>_encounter table (whose entity_id is the measurement node ID)
+ * and then joining each value field off that alias. Soft-deleting a measurement
+ * only sets its field_deleted flag; the node and its field rows remain, so
+ * the measurement's values would otherwise keep being pulled into the
+ * aggregates on every stats recalculation.
+ *
+ * The exclusion is folded into the JOIN's ON clause (rather than added as a
+ * WHERE condition) so that a soft-deleted measurement is treated as absent from
+ * the LEFT JOIN - its values simply do not appear - without dropping the
+ * encounter row. A WHERE filter on a fanned-in measurement would instead drop
+ * the whole encounter when all of its measurements are deleted.
+ *
+ * @param string $on_condition
+ *   The original ON condition of the measurement join.
+ * @param string $measurement_entity_id
+ *   SQL reference to the measurement node ID within that join, e.g.
+ *   "ai_encounter.entity_id".
+ *
+ * @return string
+ *   The ON condition extended with the soft-delete exclusion.
+ */
+function hedley_stats_exclude_deleted_from_join($on_condition, $measurement_entity_id) {
+  return "$on_condition AND NOT EXISTS (SELECT 1 FROM {field_data_field_deleted} hsd WHERE hsd.entity_id = $measurement_entity_id AND hsd.field_deleted_value = 1)";
 }
 
 /**

@@ -82,6 +82,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *   2. Case management aggregation across moderate/severe branches.
    *   3. Session attendance (smoke check that the function runs).
    *   4. Stats-blob sync with cache-hash invalidation.
+   *   5. Soft-deleted measurements are excluded from stats aggregates (B-032).
    */
   public function testStatsCalculations() {
     // 1. Total encounters.
@@ -258,6 +259,57 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     // Check that we got the stats.
     $this->assertTrue(is_array($stats4));
+
+    // 5. Soft-deleted measurements are excluded from stats aggregates (B-032).
+    //
+    // An admin can soft-delete an individual measurement (field_deleted = TRUE)
+    // while its encounter stays live (VBO mark-as-deleted action, or the
+    // delete-duplicate-measurements script). The dashboard builders join
+    // measurement values off the field_<program>_encounter fan, which had no
+    // deleted filter, so the removed values kept feeding the dashboards on
+    // every recalculation. This scenario exercises the shared
+    // hedley_stats_exclude_deleted_from_join() helper through the nutrition
+    // individual builder as a representative of the six builders that use it.
+    $this->resetHealthCenter();
+    $created = $this->createIndividualNutritionEncounterData('-7 days', 11, 'edema');
+
+    // Baseline: the MUAC measurement is present in the stats.
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA, $this->healthCenterId);
+    $encounter_before = $this->extractFirstStatsEncounter(hedley_stats_get_nutrition_individual_data($this->healthCenterId));
+    $this->assertFalse(empty($encounter_before['muac']), 'MUAC measurement is present before deletion.');
+
+    // Soft-delete the MUAC measurement, leaving its encounter live.
+    $muac_wrapper = entity_metadata_wrapper('node', $created['muac']);
+    $muac_wrapper->field_deleted->set(TRUE);
+    $muac_wrapper->save();
+
+    // Recalculate: the deleted MUAC must be gone, while the encounter and its
+    // still-live nutrition sign must remain. Before the fix, the deleted MUAC
+    // value would still be pulled in here.
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA, $this->healthCenterId);
+    $encounter_after = $this->extractFirstStatsEncounter(hedley_stats_get_nutrition_individual_data($this->healthCenterId));
+    $this->assertFalse(empty($encounter_after), 'Encounter is retained after its measurement is soft-deleted.');
+    $this->assertTrue(empty($encounter_after['muac']), 'Soft-deleted MUAC is excluded from stats after recalculation.');
+    $this->assertEqual(['edema'], $encounter_after['nutrition_signs'], 'Live nutrition sign is retained.');
+  }
+
+  /**
+   * Return the first encounter from a program *_data stats structure.
+   *
+   * @param array $data
+   *   A stats builder result: a list of participant items, each with an
+   *   'encounters' list.
+   *
+   * @return array
+   *   The first participant's first encounter, or an empty array if none.
+   */
+  protected function extractFirstStatsEncounter(array $data) {
+    $participant = reset($data);
+    if (empty($participant['encounters'])) {
+      return [];
+    }
+
+    return reset($participant['encounters']);
   }
 
   /**
@@ -406,6 +458,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *   Nutrition sign value to record.
    * @param float $weight_value
    *   Weight value to record.
+   *
+   * @return array
+   *   The created node IDs, keyed by 'encounter', 'muac', 'height', 'weight'
+   *   and 'nutrition'.
    */
   protected function createIndividualNutritionEncounterData($timestamp = '-7 days', $muac_value = 11, $nutrition_sign = 'edema', $weight_value = 9) {
     $date = strtotime($timestamp);
@@ -441,10 +497,13 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     ];
     node_save($encounter);
 
-    $this->createMuac('nutrition_muac', $encounter->nid, $child_id, $muac_value, $date);
-    $this->createHeight('nutrition_height', $encounter->nid, $child_id, 68, $date);
-    $this->createWeight('nutrition_weight', $encounter->nid, $child_id, $weight_value, $date);
-    $this->createNutrition('nutrition_nutrition', $encounter->nid, $child_id, $nutrition_sign, $date);
+    return [
+      'encounter' => $encounter->nid,
+      'muac' => $this->createMuac('nutrition_muac', $encounter->nid, $child_id, $muac_value, $date),
+      'height' => $this->createHeight('nutrition_height', $encounter->nid, $child_id, 68, $date),
+      'weight' => $this->createWeight('nutrition_weight', $encounter->nid, $child_id, $weight_value, $date),
+      'nutrition' => $this->createNutrition('nutrition_nutrition', $encounter->nid, $child_id, $nutrition_sign, $date),
+    ];
   }
 
   /**
