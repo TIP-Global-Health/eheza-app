@@ -14,8 +14,8 @@
 set -e
 
 # Install the Elm toolchain (same versions as ci-scripts/install_client.sh).
-npm install -g elm@latest-0.19.1
-npm install -g elm-test@0.19.1-revision6
+npm install -g elm@latest-0.19.2
+npm install -g elm-test@0.19.2-0
 npm install --global gulp-cli
 
 cd "$CIRCLE_WORKING_DIRECTORY"/client
