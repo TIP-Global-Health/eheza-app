@@ -37,7 +37,7 @@ class HedleyRestfulPhotos extends HedleyRestfulGroupActivityBase {
 
     // For the Photo, get to the `file`. We'll convert the `uri`
     // to `field_photo`.
-    $query->innerJoin('file_managed', 'f', 'f.fid = field_photo.field_photo_fid');
+    $query->leftJoin('file_managed', 'f', 'f.fid = field_photo.field_photo_fid');
     $query->addField('f', 'uri');
   }
 
