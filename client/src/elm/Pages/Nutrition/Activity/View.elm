@@ -8,7 +8,7 @@ module Pages.Nutrition.Activity.View exposing
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacValueForSite)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Utils
@@ -33,7 +33,7 @@ import Measurement.Model
         , NCDAData
         , NextStepsTask(..)
         )
-import Measurement.Utils exposing (allNextStepsTasks, contributingFactorsFormWithDefault, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, heightFormWithDefault, muacFormWithDefault, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, sendToHCFormWithDefault, weightFormWithDefault, withinConstraints)
+import Measurement.Utils exposing (allNextStepsTasks, contributingFactorsFormWithDefault, getInputConstraintsHeight, getInputConstraintsWeight, healthEducationFormWithDefault, heightFormWithDefault, muacFormWithDefault, muacOutsideConstraints, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, outsideConstraints, sendToHCFormWithDefault, weightFormWithDefault)
 import Measurement.View
     exposing
         ( heightFormAndTasks
@@ -252,15 +252,10 @@ viewHeightContent language currentDate zscores isChw assembled data previousValu
             List.map taskCompleted tasks
                 |> List.sum
 
-        constraints =
-            getInputConstraintsHeight
-
         disabled =
             (form.measurementNotTaken /= Just True)
                 && ((tasksCompleted /= totalTasks)
-                        || (Maybe.map (withinConstraints constraints >> not) form.height
-                                |> Maybe.withDefault True
-                           )
+                        || outsideConstraints getInputConstraintsHeight form.height
                    )
     in
     [ viewTasksCount language tasksCompleted totalTasks
@@ -287,18 +282,9 @@ viewMuacContent language currentDate site assembled data previousValue =
         ( tasksCompleted, tasksTotal ) =
             resolveTasksCompletedFromTotal tasks
 
-        constraints =
-            getInputConstraintsMuac site
-
-        currentValue =
-            -- MUAC is stored in cm; muacValueForSite shows it in mm at Burundi.
-            Maybe.map (muacValueForSite site) form.muac
-
         disabled =
             (tasksCompleted /= tasksTotal)
-                || (Maybe.map (withinConstraints constraints >> not) currentValue
-                        |> Maybe.withDefault True
-                   )
+                || muacOutsideConstraints site form.muac
     in
     [ viewTasksCount language tasksCompleted tasksTotal
     , div [ class "ui full segment" ]
@@ -456,15 +442,10 @@ viewWeightContent language currentDate zscores site isChw assembled data previou
         heightValue =
             getMeasurementValueFunc assembled.measurements.height
 
-        constraints =
-            getInputConstraintsWeight
-
         disabled =
             (form.measurementNotTaken /= Just True)
                 && ((tasksCompleted /= totalTasks)
-                        || (Maybe.map (withinConstraints constraints >> not) form.weight
-                                |> Maybe.withDefault True
-                           )
+                        || outsideConstraints getInputConstraintsWeight form.weight
                    )
     in
     [ viewTasksCount language tasksCompleted totalTasks
