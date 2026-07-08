@@ -287,10 +287,17 @@ outsideConstraintsTest =
             \_ ->
                 outsideConstraints getInputConstraintsHeight (Just 1050)
                     |> Expect.equal True
-        , test "a mistyped weight (85 kg for a child) is outside the constraints" <|
+        , test "a grossly mistyped weight (850 kg) is outside the constraints" <|
             \_ ->
                 outsideConstraints getInputConstraintsWeight (Just 850)
                     |> Expect.equal True
+        , test "the weight range is wide (0.5-200 kg), so an implausible 85 kg for a child still passes" <|
+            -- The constraints are a typo guard, not a plausibility check: the
+            -- weight form is shared with adult encounters. A dropped decimal
+            -- (8.5 -> 85) is therefore NOT caught here.
+            \_ ->
+                outsideConstraints getInputConstraintsWeight (Just 85)
+                    |> Expect.equal False
         , test "the range bounds themselves are inside the constraints" <|
             \_ ->
                 ( outsideConstraints getInputConstraintsHeight (Just 25)
