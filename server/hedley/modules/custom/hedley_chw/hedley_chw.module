@@ -8,6 +8,31 @@
 include_once 'hedley_chw.features.inc';
 
 /**
+ * Implements hook_node_presave().
+ *
+ * Enforce that every village is assigned a health center.
+ *
+ * A village saved without one is silently dropped from the all-devices sync
+ * feed - HedleyRestfulVillages inner-joins the health center UUID, so a NULL
+ * target matches no row - while still counting toward the feed's revision
+ * count, and it spawns an unreachable, shard-less CHW clinic
+ * (hedley_chw_process_new_village reads the health center from the village).
+ * The field is required on the node form, but programmatic saves (migration,
+ * API) bypass form validation, so the invariant is enforced here for every
+ * save path.
+ */
+function hedley_chw_node_presave($node) {
+  if ($node->type != 'village') {
+    return;
+  }
+
+  $items = field_get_items('node', $node, 'field_health_center');
+  if (empty($items) || empty($items[0]['target_id'])) {
+    throw new Exception('A village must be assigned a health center.');
+  }
+}
+
+/**
  * Implements hook_node_insert().
  *
  * Create CHW group for newly created village.

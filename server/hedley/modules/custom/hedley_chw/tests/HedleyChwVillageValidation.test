@@ -1,0 +1,102 @@
+<?php
+
+/**
+ * @file
+ * Tests that a village cannot be saved without a health center.
+ */
+
+/**
+ * Village health-center requirement tests.
+ */
+class HedleyChwVillageValidation extends HedleyWebTestBase {
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'CHW village health-center requirement',
+      'description' => 'A village must be assigned a health center on every save path.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp([
+      'hedley_chw',
+      'hedley_health_center',
+      'hedley_person',
+      'hedley_schedule',
+    ]);
+  }
+
+  /**
+   * A village with a health center saves; one without is rejected.
+   *
+   * A village saved without a health center is silently dropped from the
+   * all-devices Villages sync feed (its inner join on the health center UUID
+   * matches no row) and spawns an unreachable CHW clinic. The health center
+   * field is required on the node form, but programmatic saves (migration, API)
+   * bypass form validation, so hedley_chw_node_presave enforces the invariant
+   * for every save path. This drives that programmatic path directly.
+   */
+  public function testVillageRequiresHealthCenter() {
+    $health_center_id = $this->createHealthCenter();
+
+    // A village WITH a health center saves successfully.
+    $village = $this->villageNode($health_center_id);
+    node_save($village);
+    $this->assertTrue(!empty($village->nid), 'Village with a health center is saved.');
+
+    // A village WITHOUT a health center is rejected on save. Before the fix the
+    // save succeeded silently and the village was then dropped from the sync
+    // feed; now the presave guard throws.
+    $rejected = $this->villageNode(NULL);
+    $threw = FALSE;
+    try {
+      node_save($rejected);
+    }
+    catch (Exception $e) {
+      $threw = TRUE;
+    }
+    $this->assertTrue($threw, 'Saving a village without a health center throws.');
+    $this->assertTrue(empty($rejected->nid), 'The health-center-less village was not assigned a node ID.');
+
+    // Belt and braces: no health-center-less village reached the database.
+    $count = db_select('node', 'n')
+      ->condition('n.type', 'village')
+      ->condition('n.title', 'HC-less village')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+    $this->assertEqual(0, $count, 'No health-center-less village persisted.');
+  }
+
+  /**
+   * Build an unsaved village node, optionally with a health center.
+   *
+   * @param int|null $health_center_id
+   *   Health center node ID, or NULL to omit the health center.
+   *
+   * @return object
+   *   The unsaved village node.
+   */
+  protected function villageNode($health_center_id) {
+    $node = (object) [
+      'type' => 'village',
+      'title' => $health_center_id ? 'Valid village' : 'HC-less village',
+      'uid' => 1,
+      'status' => NODE_PUBLISHED,
+    ];
+
+    if ($health_center_id) {
+      $node->field_health_center[LANGUAGE_NONE][0]['target_id'] = $health_center_id;
+    }
+
+    return $node;
+  }
+
+}
