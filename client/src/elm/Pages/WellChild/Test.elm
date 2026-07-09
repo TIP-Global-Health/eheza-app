@@ -1,9 +1,13 @@
 module Pages.WellChild.Test exposing (all)
 
+import AssocList as Dict
 import Backend.Measurement.Model exposing (VaccineDose(..), WellChildVaccineType(..))
 import Date exposing (Unit(..))
 import Expect
+import Gizra.NominalDate exposing (diffMonths)
+import List.Extra
 import Pages.WellChild.Activity.Utils exposing (resolveNextDateForImmunisationVisit)
+import Pages.WellChild.ProgressReport.View exposing (distributeByListIndex, resolveLastDayForMonthX)
 import Test exposing (Test, describe, test)
 import Time
 
@@ -11,7 +15,9 @@ import Time
 all : Test
 all =
     describe "Pages.WellChild"
-        [ resolveNextDateForImmunisationVisitTests ]
+        [ resolveNextDateForImmunisationVisitTests
+        , immunizationBucketingTests
+        ]
 
 
 {-| The scenarios mirror issue #1896: an on-schedule child used to get
@@ -80,4 +86,45 @@ resolveNextDateForImmunisationVisitTests =
                     , ( VaccineMR, Just ( VaccineDoseSecond, fifteenMonthsDate ) )
                     ]
                     |> Expect.equal (Just (Date.fromCalendarDate 2025 Time.Nov 1))
+        ]
+
+
+{-| The Child Scorecard immunization row builds one value per age-in-months in
+order, then keys them by list position. It used to re-derive the month from a
+synthetic reference date (last day of month X after the birth month), which
+mis-buckets children born on day 29/30/31 - the reference date lands in a
+shorter month and `diffMonths` counts one month too few, collapsing a bucket.
+-}
+immunizationBucketingTests : Test
+immunizationBucketingTests =
+    let
+        referenceDateBuckets birthDate =
+            List.range 0 24
+                |> List.map (\index -> diffMonths birthDate (resolveLastDayForMonthX index birthDate))
+    in
+    describe "immunization age-in-months bucketing"
+        [ test "distributeByListIndex keys every one of the 25 months for a day-31 birth" <|
+            \_ ->
+                let
+                    birthDate =
+                        Date.fromCalendarDate 2024 Time.Jan 31
+
+                    syntheticValues =
+                        List.range 0 24
+                            |> List.map (\index -> ( resolveLastDayForMonthX index birthDate, index ))
+                in
+                distributeByListIndex syntheticValues
+                    |> Dict.keys
+                    |> List.sort
+                    |> Expect.equal (List.range 0 24)
+        , test "the old reference-date bucketing collides for a day-31 birth (fewer than 25 distinct buckets)" <|
+            \_ ->
+                referenceDateBuckets (Date.fromCalendarDate 2024 Time.Jan 31)
+                    |> List.Extra.unique
+                    |> List.length
+                    |> Expect.lessThan 25
+        , test "a mid-month (day-15) birth does not collide - buckets are exactly 0..24" <|
+            \_ ->
+                referenceDateBuckets (Date.fromCalendarDate 2024 Time.Jan 15)
+                    |> Expect.equal (List.range 0 24)
         ]
