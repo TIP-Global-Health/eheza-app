@@ -4,7 +4,7 @@ import App.Model exposing (ConfiguredModel, Model, Msg(..), MsgLoggedIn(..), Sto
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician, nurseAuthorizedForLocation)
 import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperation(..))
 import Browser
 import Config.Model
@@ -409,21 +409,25 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
     case getLoggedInData model of
         Just ( healthCenterId, loggedInModel ) ->
             let
-                selectedAuthorizedHealthCenter =
+                loggedInNurse =
                     Tuple.second loggedInModel.nurse
-                        |> .healthCenters
-                        |> EverySet.member healthCenterId
+
+                -- Authorize per village for a CHW, per health center otherwise -
+                -- the same gate the PinCode screen applies. Without this, a
+                -- synced nurse revision that drops the selected village leaves a
+                -- CHW silently working under a location they no longer belong to
+                -- (their parent health center still passes a health-center-only
+                -- check); now they fall through to the PinCode screen instead.
+                selectedAuthorizedLocation =
+                    nurseAuthorizedForLocation model.villageId (Just healthCenterId) loggedInNurse
             in
-            if selectedAuthorizedHealthCenter then
+            if selectedAuthorizedLocation then
                 let
                     currentDate =
                         fromLocalDateTime model.zone model.currentTime
 
                     ( isChw, isLabTech ) =
-                        Tuple.second loggedInModel.nurse
-                            |> (\nurse ->
-                                    ( isCommunityHealthWorker nurse, isLabTechnician nurse )
-                               )
+                        ( isCommunityHealthWorker loggedInNurse, isLabTechnician loggedInNurse )
                 in
                 case page of
                     MyAccountPage ->
