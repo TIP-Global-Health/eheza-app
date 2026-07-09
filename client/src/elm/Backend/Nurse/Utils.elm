@@ -1,4 +1,4 @@
-module Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isAuthorithedNurse, isCommunityHealthWorker, isLabTechnician, nurseAuthorizedForLocation, resilienceRoleFromString, resilienceRoleToString)
+module Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isAuthorizedNurse, isCommunityHealthWorker, isLabTechnician, nurseAuthorizedForLocation, resilienceRoleFromString, resilienceRoleToString)
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
@@ -41,8 +41,8 @@ isLabTechnician =
     resolveMainRole >> (==) (Just RoleLabTech)
 
 
-isAuthorithedNurse : Clinic -> Nurse -> Bool
-isAuthorithedNurse clinic nurse =
+isAuthorizedNurse : Clinic -> Nurse -> Bool
+isAuthorizedNurse clinic nurse =
     nurseAuthorizedForLocation clinic.villageId (Just clinic.healthCenterId) nurse
 
 
