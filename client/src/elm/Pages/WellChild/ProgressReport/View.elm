@@ -2521,13 +2521,17 @@ viewUniversalInterventionsPane language currentDate site child nurseQuestionnair
 {-| Resolves the Vitamin A, Dewormer, Ongera-MNP and ECD rows of the
 Universal Interventions pane.
 
-Vitamin A, Dewormer and ECD are asked only when CHW conducts the NCDA
-questionnaire, at Child Scoreboard encounter. The questionnaire nurse fills at
-health center asks only if Ongera-MNP was distributed. Therefore, these 3 rows
-are resolved from CHW questionnaires alone - if we consulted the nurse
-questionnaire as well, a month at which only nurse filled the questionnaire
-would show X (intervention was not provided), where correct value is dash
-(we have no data for that month).
+Vitamin A, Dewormer and ECD are asked only when a CHW conducts the NCDA
+questionnaire, at the Child Scoreboard encounter. The questionnaire a nurse
+fills at the health center asks only whether Ongera-MNP was distributed.
+Therefore, the Vitamin A, Dewormer and ECD rows are resolved from the CHW
+questionnaires alone. If they consulted the nurse questionnaire as well, a
+month at which only a nurse filled the questionnaire would show an X (the
+intervention was not provided), where the correct value is a dash (we have no
+data for that month).
+
+The Ongera-MNP row does consult the nurse questionnaire, since that is the one
+question a nurse is asked.
 
 -}
 generateUniversalInterventionsValues :
@@ -2545,8 +2549,8 @@ generateUniversalInterventionsValues currentDate child nurseQuestionnairesByAgeI
     let
         -- When CHW conducts NCDA, at Vitamin A section, there's an option for marking as not
         -- applicable. The requirements if this option is selected is to have dash on scorecard.
-        -- Dash is set also in case there's not questioneer for the month, so, if in case
-        -- 'not applicable', is selected, we filter out the questioneer.
+        -- Dash is set also in case there's no questionnaire for the month, so, if in case
+        -- 'not applicable', is selected, we filter out the questionnaire.
         chwQuestionnairesByAgeInMonthsEliminatingVitaminANotApplicable =
             Maybe.map (Dict.filter (\_ value -> value.receivesVitaminA /= Just OptionNotApplicable))
                 chwQuestionnairesByAgeInMonths
