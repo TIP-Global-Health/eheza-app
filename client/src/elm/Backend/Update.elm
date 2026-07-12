@@ -17,6 +17,7 @@ import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.EducationSession.Model
 import Backend.EducationSession.Update
+import Backend.EducationSession.Utils
 import Backend.Endpoints exposing (ComputedDashboardParams, PersonParams(..), PmtctParticipantParams(..), SessionParams(..), acuteIllnessEncounterEndpoint, acuteIllnessMeasurementsEndpoint, acuteIllnessTraceContactEndpoint, childMeasurementListEndpoint, childScoreboardEncounterEndpoint, childScoreboardMeasurementsEndpoint, clinicEndpoint, computedDashboardEndpoint, counselingScheduleEndpoint, counselingTopicEndpoint, educationSessionEndpoint, familyEncounterParticipantEndpoint, familyNutritionEncounterEndpoint, familyNutritionMeasurementsEndpoint, followUpMeasurementsEndpoint, healthCenterEndpoint, hivEncounterEndpoint, hivMeasurementsEndpoint, homeVisitEncounterEndpoint, homeVisitMeasurementsEndpoint, individualEncounterParticipantEndpoint, motherMeasurementListEndpoint, ncdEncounterEndpoint, ncdMeasurementsEndpoint, nutritionEncounterEndpoint, nutritionMeasurementsEndpoint, participantFormEndpoint, personEndpoint, pmtctParticipantEndpoint, pregnancyByNewbornEndpoint, prenatalEncounterEndpoint, prenatalMeasurementsEndpoint, relationshipEndpoint, resilienceSurveyEndpoint, sessionEndpoint, stockManagementMeasurementsEndpoint, tuberculosisEncounterEndpoint, tuberculosisMeasurementsEndpoint, villageEndpoint, villageStockManagementMeasurementsEndpoint, wellChildEncounterEndpoint, wellChildMeasurementsEndpoint)
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model
@@ -4061,26 +4062,13 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
                 ( subModel, subCmd, appMsgs ) =
                     Backend.EducationSession.Update.update sessionId encounter subMsg requests
-
-                -- Session update is performed by a full entity PATCH, which is rebuilt
-                -- from the session we hold here, at educationSessions dict. That dict is
-                -- refreshed when the revision for the PATCH echoes back from service
-                -- worker, which happens asynchronously.
-                -- Therefore, we apply the update to the dict right away. Otherwise, an
-                -- update that is triggered before the echo of its predecessor lands would
-                -- rebuild the entity from pre-update session, reverting the field that
-                -- predecessor has set. For example, ending the session right after last
-                -- participant was checked in would drop that participant.
-                educationSessions =
-                    case ( subMsg, encounter ) of
-                        ( Backend.EducationSession.Model.Update updateFunc, Just session ) ->
-                            Dict.insert sessionId (Success <| updateFunc session) model.educationSessions
-
-                        _ ->
-                            model.educationSessions
             in
             ( { model
-                | educationSessions = educationSessions
+                | educationSessions =
+                    -- The update is applied to the sessions dict right away, since that
+                    -- dict is what the next PATCH is rebuilt from. See the docs at
+                    -- applyUpdateToSessions.
+                    Backend.EducationSession.Utils.applyUpdateToSessions sessionId subMsg model.educationSessions
                 , educationSessionRequests = Dict.insert sessionId subModel model.educationSessionRequests
               }
             , Cmd.map (MsgEducationSession sessionId) subCmd
