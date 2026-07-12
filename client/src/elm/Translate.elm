@@ -30775,7 +30775,7 @@ translateFormError error =
             translateValidationError e
 
 
-{-| This one is hampered by the fact that the field names in etaque/elm-form
+{-| This one is hampered by the fact that the field names in Gizra/elm-form
 are untyped strings, but we do our best.
 -}
 translateFormField : String -> TranslationSet String

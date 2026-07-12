@@ -147,7 +147,7 @@ These are the most common mistakes when writing E-Heza E2E tests. Violating any 
 When you can't reliably target an element (duplicate labels, ambiguous structure, no distinguishing class), **add a CSS class in the Elm source** to serve as a test identifier. Never weaken assertions or use fragile index-based selectors as a workaround. The Elm codebase is under our control — adding a class like `class "encounter-row-ai-hc"` is cheap and makes tests robust.
 
 ### 1. No `name` Attributes on Form Inputs
-Elm's `etaque/elm-form` does NOT set HTML `name` attributes. Locate inputs by label text:
+Elm's `Gizra/elm-form` does NOT set HTML `name` attributes. Locate inputs by label text:
 ```typescript
 page.locator('.ui.grid').filter({ hasText: 'Label Text:' }).locator('input').first()
 ```
