@@ -1,5 +1,6 @@
 module Pages.WellChild.ProgressReport.View exposing
-    ( view
+    ( generateUniversalInterventionsValues
+    , view
     , viewNutritionSigns
     , viewPaneHeading
     , viewPersonInfoPane
@@ -2478,6 +2479,70 @@ viewUniversalInterventionsPane language currentDate site child nurseQuestionnair
         immunizationValues =
             generateValues currentDate child immunizationByAgeInMonths ((==) NCDACellValueV)
 
+        interventionsValues =
+            generateUniversalInterventionsValues currentDate
+                child
+                nurseQuestionnairesByAgeInMonths
+                chwQuestionnairesByAgeInMonths
+    in
+    div [ class "pane universal-interventions" ]
+        [ viewPaneHeading language Translate.UniversalInterventions
+        , div [ class "pane-content" ]
+            [ viewTableHeader language
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel Immunization)
+                pregnancyValues
+                (List.take 6 immunizationValues)
+                (List.drop 6 immunizationValues)
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel Pages.WellChild.ProgressReport.Model.VitaminA)
+                pregnancyValues
+                (List.take 6 interventionsValues.vitaminA)
+                (List.drop 6 interventionsValues.vitaminA)
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel Deworming)
+                pregnancyValues
+                (List.take 6 interventionsValues.dewormer)
+                (List.drop 6 interventionsValues.dewormer)
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel Pages.WellChild.ProgressReport.Model.OngeraMNP)
+                pregnancyValues
+                (List.take 6 interventionsValues.ongeraMNP)
+                (List.drop 6 interventionsValues.ongeraMNP)
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel ECDServices)
+                pregnancyValues
+                (List.take 6 interventionsValues.ecd)
+                (List.drop 6 interventionsValues.ecd)
+            ]
+        ]
+
+
+{-| Resolves the Vitamin A, Dewormer, Ongera-MNP and ECD rows of the
+Universal Interventions pane.
+
+Vitamin A, Dewormer and ECD are asked only when CHW conducts the NCDA
+questionnaire, at Child Scoreboard encounter. The questionnaire nurse fills at
+health center asks only if Ongera-MNP was distributed. Therefore, these 3 rows
+are resolved from CHW questionnaires alone - if we consulted the nurse
+questionnaire as well, a month at which only nurse filled the questionnaire
+would show X (intervention was not provided), where correct value is dash
+(we have no data for that month).
+
+-}
+generateUniversalInterventionsValues :
+    NominalDate
+    -> Person
+    -> Maybe (Dict Int NCDAValue)
+    -> Maybe (Dict Int NCDAValue)
+    ->
+        { vitaminA : List NCDACellValue
+        , dewormer : List NCDACellValue
+        , ongeraMNP : List NCDACellValue
+        , ecd : List NCDACellValue
+        }
+generateUniversalInterventionsValues currentDate child nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonths =
+    let
         -- When CHW conducts NCDA, at Vitamin A section, there's an option for marking as not
         -- applicable. The requirements if this option is selected is to have dash on scorecard.
         -- Dash is set also in case there's not questioneer for the month, so, if in case
@@ -2485,21 +2550,6 @@ viewUniversalInterventionsPane language currentDate site child nurseQuestionnair
         chwQuestionnairesByAgeInMonthsEliminatingVitaminANotApplicable =
             Maybe.map (Dict.filter (\_ value -> value.receivesVitaminA /= Just OptionNotApplicable))
                 chwQuestionnairesByAgeInMonths
-
-        vitaminAValues =
-            generateValues currentDate
-                child
-                chwQuestionnairesByAgeInMonthsEliminatingVitaminANotApplicable
-                (.receivesVitaminA >> (==) (Just OptionReceive))
-                |> List.indexedMap
-                    -- Vitamin A should not be administered before age of 6 months.
-                    (postProcessMedicineRawValue 6)
-
-        dewormerValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildReceivesDewormer)
-                |> List.indexedMap
-                    -- Dewormer should not be administered before age of 12 months.
-                    (postProcessMedicineRawValue 12)
 
         postProcessMedicineRawValue startingMonth processingMonth value =
             if List.member value [ NCDACellValueV, NCDACellValueEmpty ] then
@@ -2545,44 +2595,25 @@ viewUniversalInterventionsPane language currentDate site child nurseQuestionnair
 
                 _ ->
                     Maybe.Extra.or nurseQuestionnairesByAgeInMonthsEliminatingFalseNegatives chwQuestionnairesByAgeInMonths
-
-        ongeraMNPValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member TakingOngeraMNP)
-
-        ecdValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildReceivesECD)
     in
-    div [ class "pane universal-interventions" ]
-        [ viewPaneHeading language Translate.UniversalInterventions
-        , div [ class "pane-content" ]
-            [ viewTableHeader language
-            , viewTableRow language
-                (Translate.NCDAUniversalInterventionsItemLabel Immunization)
-                pregnancyValues
-                (List.take 6 immunizationValues)
-                (List.drop 6 immunizationValues)
-            , viewTableRow language
-                (Translate.NCDAUniversalInterventionsItemLabel Pages.WellChild.ProgressReport.Model.VitaminA)
-                pregnancyValues
-                (List.take 6 vitaminAValues)
-                (List.drop 6 vitaminAValues)
-            , viewTableRow language
-                (Translate.NCDAUniversalInterventionsItemLabel Deworming)
-                pregnancyValues
-                (List.take 6 dewormerValues)
-                (List.drop 6 dewormerValues)
-            , viewTableRow language
-                (Translate.NCDAUniversalInterventionsItemLabel Pages.WellChild.ProgressReport.Model.OngeraMNP)
-                pregnancyValues
-                (List.take 6 ongeraMNPValues)
-                (List.drop 6 ongeraMNPValues)
-            , viewTableRow language
-                (Translate.NCDAUniversalInterventionsItemLabel ECDServices)
-                pregnancyValues
-                (List.take 6 ecdValues)
-                (List.drop 6 ecdValues)
-            ]
-        ]
+    { vitaminA =
+        generateValues currentDate
+            child
+            chwQuestionnairesByAgeInMonthsEliminatingVitaminANotApplicable
+            (.receivesVitaminA >> (==) (Just OptionReceive))
+            |> List.indexedMap
+                -- Vitamin A should not be administered before age of 6 months.
+                (postProcessMedicineRawValue 6)
+    , dewormer =
+        generateValues currentDate child chwQuestionnairesByAgeInMonths (.signs >> EverySet.member ChildReceivesDewormer)
+            |> List.indexedMap
+                -- Dewormer should not be administered before age of 12 months.
+                (postProcessMedicineRawValue 12)
+    , ongeraMNP =
+        generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member TakingOngeraMNP)
+    , ecd =
+        generateValues currentDate child chwQuestionnairesByAgeInMonths (.signs >> EverySet.member ChildReceivesECD)
+    }
 
 
 viewFillTheBlanksPane :
