@@ -4061,8 +4061,28 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
                 ( subModel, subCmd, appMsgs ) =
                     Backend.EducationSession.Update.update sessionId encounter subMsg requests
+
+                -- Session update is performed by a full entity PATCH, which is rebuilt
+                -- from the session we hold here, at educationSessions dict. That dict is
+                -- refreshed when the revision for the PATCH echoes back from service
+                -- worker, which happens asynchronously.
+                -- Therefore, we apply the update to the dict right away. Otherwise, an
+                -- update that is triggered before the echo of its predecessor lands would
+                -- rebuild the entity from pre-update session, reverting the field that
+                -- predecessor has set. For example, ending the session right after last
+                -- participant was checked in would drop that participant.
+                educationSessions =
+                    case ( subMsg, encounter ) of
+                        ( Backend.EducationSession.Model.Update updateFunc, Just session ) ->
+                            Dict.insert sessionId (Success <| updateFunc session) model.educationSessions
+
+                        _ ->
+                            model.educationSessions
             in
-            ( { model | educationSessionRequests = Dict.insert sessionId subModel model.educationSessionRequests }
+            ( { model
+                | educationSessions = educationSessions
+                , educationSessionRequests = Dict.insert sessionId subModel model.educationSessionRequests
+              }
             , Cmd.map (MsgEducationSession sessionId) subCmd
             , appMsgs
             )
