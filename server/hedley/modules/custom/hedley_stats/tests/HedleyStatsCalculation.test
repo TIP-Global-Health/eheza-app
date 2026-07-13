@@ -83,6 +83,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *   3. Session attendance (smoke check that the function runs).
    *   4. Stats-blob sync with cache-hash invalidation.
    *   5. Soft-deleted measurements are excluded from stats aggregates (B-032).
+   *   6. Soft-deleted persons are excluded from group education stats (B-033).
    */
   public function testStatsCalculations() {
     // 1. Total encounters.
@@ -291,6 +292,86 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertFalse(empty($encounter_after), 'Encounter is retained after its measurement is soft-deleted.');
     $this->assertTrue(empty($encounter_after['muac']), 'Soft-deleted MUAC is excluded from stats after recalculation.');
     $this->assertEqual(['edema'], $encounter_after['nutrition_signs'], 'Live nutrition sign is retained.');
+
+    // 6. Soft-deleted persons are excluded from group education stats (B-033).
+    //
+    // Merging a duplicate patient soft-deletes the duplicate person, but
+    // nothing re-points the education sessions that reference them. Those
+    // sessions kept counting the deleted person among their attendees, and
+    // shipped their name and gender to the dashboard.
+    $this->resetHealthCenter();
+    $live = $this->createMother($this->clinicId);
+    $duplicate = $this->createMother($this->clinicId);
+    $this->createEducationSession([$live, $duplicate]);
+
+    // Baseline: both attendees are counted, and both have details.
+    $patients_details = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_GROUP_EDUCATION_DATA, $this->healthCenterId);
+    $before = $this->extractEducationParticipants(hedley_stats_get_group_education_data($this->healthCenterId, $patients_details));
+    $this->assertEqual([$live, $duplicate], $before, 'Both attendees are counted before the merge.');
+    $this->assertFalse(empty($patients_details[$duplicate]), 'The duplicate has details before the merge.');
+
+    // Merge the duplicate away, as hedley_patient's merge flow does.
+    $duplicate_wrapper = entity_metadata_wrapper('node', $duplicate);
+    $duplicate_wrapper->field_deleted->set(TRUE);
+    $duplicate_wrapper->save();
+
+    // The session keeps its live attendee; the deleted person is neither
+    // counted nor described. Before the fix, both assertions failed.
+    $patients_details = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_GROUP_EDUCATION_DATA, $this->healthCenterId);
+    $after = $this->extractEducationParticipants(hedley_stats_get_group_education_data($this->healthCenterId, $patients_details));
+    $this->assertEqual([$live], $after, 'The soft-deleted attendee is no longer counted.');
+    $this->assertTrue(empty($patients_details[$duplicate]), 'The soft-deleted attendee\'s name is not shipped to the dashboard.');
+  }
+
+  /**
+   * Create an education session attended by the given persons.
+   *
+   * @param array $participants
+   *   Person node IDs attending the session.
+   *
+   * @return int
+   *   The education session node ID.
+   */
+  protected function createEducationSession(array $participants) {
+    $node = $this->drupalCreateNode(['type' => 'education_session']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $scheduled_date = date('Y-m-d', strtotime('-3 days'));
+    $wrapper->field_scheduled_date->set([
+      'value' => $scheduled_date,
+      'value2' => $scheduled_date,
+    ]);
+    $wrapper->field_education_topics->set(['malaria']);
+    $wrapper->field_participating_patients->set($participants);
+    $wrapper->field_shards->set([$this->healthCenterId]);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Flatten the participant IDs out of a group-education stats structure.
+   *
+   * @param array $data
+   *   A hedley_stats_get_group_education_data() result: sessions by village.
+   *
+   * @return array
+   *   Sorted participant node IDs, as integers.
+   */
+  protected function extractEducationParticipants(array $data) {
+    $participants = [];
+    foreach ($data as $sessions) {
+      foreach ($sessions as $session) {
+        foreach ($session['participating_patients'] as $participant) {
+          $participants[] = (int) $participant;
+        }
+      }
+    }
+    sort($participants);
+
+    return $participants;
   }
 
   /**
