@@ -402,7 +402,7 @@ export async function saveSubTask(page: Page): Promise<void> {
 
 /**
  * Locate a form input by its label text (grid row pattern).
- * Elm's etaque/elm-form does NOT set HTML name attributes on inputs,
+ * Elm's Gizra/elm-form does NOT set HTML name attributes on inputs,
  * so we locate by label text in the .ui.grid layout.
  */
 export function formInput(page: Page, labelText: string) {

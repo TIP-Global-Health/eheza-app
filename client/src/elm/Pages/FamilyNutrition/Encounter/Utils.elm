@@ -9,7 +9,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, isPersonAnAdult)
-import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Backend.Relationship.Utils exposing (isChildRelation)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.FamilyNutrition.Encounter.Model exposing (AssembledData, FamilyMember(..))
 import RemoteData exposing (RemoteData(..), WebData)
@@ -61,12 +61,7 @@ generateAssembledData id db =
                                     |> Maybe.andThen RemoteData.toMaybe
                                     |> Maybe.map
                                         (Dict.values
-                                            >> List.filter
-                                                (.relatedBy
-                                                    >> (\relatedBy ->
-                                                            List.member relatedBy [ MyChild, MyCaregiven ]
-                                                       )
-                                                )
+                                            >> List.filter (.relatedBy >> isChildRelation)
                                             >> List.filterMap
                                                 (\rel ->
                                                     Dict.get rel.relatedTo db.people

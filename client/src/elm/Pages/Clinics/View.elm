@@ -10,7 +10,7 @@ import Backend.Clinic.Model exposing (Clinic, allClinicTypes)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (isAuthorithedNurse)
+import Backend.Nurse.Utils exposing (isAuthorizedNurse)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -154,7 +154,7 @@ viewClinicButton : NominalDate -> Nurse -> ModelIndexedDb -> ( ClinicId, Clinic 
 viewClinicButton currentDate nurse db ( clinicId, clinic ) =
     let
         attributes =
-            if isAuthorithedNurse clinic nurse then
+            if isAuthorizedNurse clinic nurse then
                 let
                     sessions =
                         Dict.get clinicId db.sessionsByClinic

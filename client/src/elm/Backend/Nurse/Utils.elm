@@ -1,4 +1,4 @@
-module Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isAuthorithedNurse, isCommunityHealthWorker, isLabTechnician, resilienceRoleFromString, resilienceRoleToString)
+module Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isAuthorizedNurse, isCommunityHealthWorker, isLabTechnician, nurseAuthorizedForLocation, resilienceRoleFromString, resilienceRoleToString)
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
@@ -41,15 +41,32 @@ isLabTechnician =
     resolveMainRole >> (==) (Just RoleLabTech)
 
 
-isAuthorithedNurse : Clinic -> Nurse -> Bool
-isAuthorithedNurse clinic nurse =
+isAuthorizedNurse : Clinic -> Nurse -> Bool
+isAuthorizedNurse clinic nurse =
+    nurseAuthorizedForLocation clinic.villageId (Just clinic.healthCenterId) nurse
+
+
+{-| Is the nurse authorized to work at the currently selected location?
+
+A CHW is authorized per village (their `field_health_centers` holds the parent
+health center, so a health-center check alone would wrongly pass); every other
+nurse is authorized per health center. This is the single authorization gate,
+shared by the PinCode screen and every in-app page (`App.View.viewUserPage`), so
+the two can't drift - a mid-session reassignment that drops the selected
+location now fails everywhere at once.
+
+-}
+nurseAuthorizedForLocation : Maybe VillageId -> Maybe HealthCenterId -> Nurse -> Bool
+nurseAuthorizedForLocation maybeVillageId maybeHealthCenterId nurse =
     if isCommunityHealthWorker nurse then
-        clinic.villageId
+        maybeVillageId
             |> Maybe.map (\id -> assignedToVillage id nurse)
             |> Maybe.withDefault False
 
     else
-        assignedToHealthCenter clinic.healthCenterId nurse
+        maybeHealthCenterId
+            |> Maybe.map (\id -> assignedToHealthCenter id nurse)
+            |> Maybe.withDefault False
 
 
 resilienceRoleFromString : String -> Maybe ResilienceRole

@@ -77,7 +77,7 @@ import Pages.Utils
         )
 import Pages.WellChild.Activity.Model exposing (DangerSignsData, HeadCircumferenceForm, HomeVisitData, ImmunisationData, MedicationData, Model, Msg(..), NextStepsData, NextVisitForm, NutritionAssessmentData, PregnancySummaryForm, SymptomsReviewForm, WarningPopupType(..), WellChildECDForm, WellChildVaccinationForm, medicationTasks)
 import Pages.WellChild.Activity.Types exposing (DangerSignsTask(..), HomeVisitTask(..), MedicationTask(..), NextStepsTask(..), NutritionAssessmentTask(..))
-import Pages.WellChild.Activity.Utils exposing (albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, generateASAPImmunisationDate, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
+import Pages.WellChild.Activity.Utils exposing (albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, generateASAPImmunisationDate, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentSaveDisabled, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
 import SyncManager.Model exposing (Site, SiteFeature)
@@ -807,6 +807,18 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
             getMeasurementValueFunc measurements.headCircumference
                 |> headCircumferenceFormWithDefault data.headCircumferenceForm
 
+        heightForm =
+            getMeasurementValueFunc measurements.height
+                |> heightFormWithDefault assembled.encounter.skippedForms data.heightForm
+
+        muacForm =
+            getMeasurementValueFunc measurements.muac
+                |> muacFormWithDefault data.muacForm
+
+        weightForm =
+            getMeasurementValueFunc measurements.weight
+                |> weightFormWithDefault assembled.encounter.skippedForms data.weightForm
+
         headCircumferenceZScore =
             if headCircumferenceForm.measurementNotTaken == Just True then
                 Nothing
@@ -827,8 +839,7 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
         viewForm =
             case activeTask of
                 Just TaskHeight ->
-                    getMeasurementValueFunc measurements.height
-                        |> heightFormWithDefault assembled.encounter.skippedForms data.heightForm
+                    heightForm
                         |> viewHeightForm language
                             currentDate
                             zscores
@@ -842,8 +853,7 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
                     viewHeadCircumferenceForm language headCircumferenceZScore previousValuesSet.headCircumference headCircumferenceForm
 
                 Just TaskMuac ->
-                    getMeasurementValueFunc measurements.muac
-                        |> muacFormWithDefault data.muacForm
+                    muacForm
                         |> viewMuacForm language currentDate site assembled.person previousValuesSet.muac SetMuac
 
                 Just TaskNutrition ->
@@ -859,8 +869,7 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
                         showWeightForHeightZScore =
                             assembled.encounter.encounterType /= NewbornExam
                     in
-                    getMeasurementValueFunc measurements.weight
-                        |> weightFormWithDefault assembled.encounter.skippedForms data.weightForm
+                    weightForm
                         |> viewWeightForm language
                             currentDate
                             zscores
@@ -909,7 +918,12 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
                                     SaveWeight assembled.encounter.skippedForms personId measurements.weight nextTask
 
                         disabled =
-                            tasksCompleted /= totalTasks
+                            nutritionAssessmentSaveDisabled site
+                                (tasksCompleted /= totalTasks)
+                                heightForm
+                                muacForm
+                                weightForm
+                                task
                     in
                     viewSaveAction language saveMsg disabled
                 )
