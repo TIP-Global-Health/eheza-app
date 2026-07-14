@@ -44,7 +44,7 @@ import Measurement.Utils
 import Measurement.View exposing (viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.AcuteIllness.Activity.Model exposing (AcuteFindingsForm, AcuteIllnessCoreExamForm, AcuteIllnessNutritionForm, ContactsTracingForm, ContactsTracingFormState(..), CovidTestingForm, DangerSignsData, FollowUpForm, LaboratoryData, MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, OngoingTreatmentData, PhysicalExamData, PriorTreatmentData, RecordContactDetailsData, RegisterContactData, ReviewDangerSignsForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TreatmentReviewForm, emptyRecordContactDetailsData, emptyRegisterContactData)
 import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), DangerSignsTask(..), NextStepsTask(..), OngoingTreatmentTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomsTask(..))
-import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nutritionFormInutsAndTasks, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveNextStepsTasks, resolvePreviousValue, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vomitingAtSymptoms)
+import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nutritionFormInutsAndTasks, ongoingTreatmentTasksCompletedFromTotal, physicalExamSaveDisabled, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveNextStepsTasks, resolvePreviousValue, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vomitingAtSymptoms)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
@@ -746,6 +746,10 @@ viewAcuteIllnessPhysicalExam language currentDate site isChw assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
+        muacForm =
+            getMeasurementValueFunc measurements.muac
+                |> muacFormWithDefault data.muacForm
+
         viewForm =
             case activeTask of
                 Just PhysicalExamVitals ->
@@ -768,8 +772,7 @@ viewAcuteIllnessPhysicalExam language currentDate site isChw assembled data =
                         previousValue =
                             resolvePreviousValue assembled .muac (muacValueFuncForSite site)
                     in
-                    getMeasurementValueFunc measurements.muac
-                        |> muacFormWithDefault data.muacForm
+                    muacForm
                         |> Measurement.View.viewMuacForm language currentDate site assembled.person previousValue SetMuac
 
                 Just PhysicalExamAcuteFindings ->
@@ -814,10 +817,13 @@ viewAcuteIllnessPhysicalExam language currentDate site isChw assembled data =
 
                                     PhysicalExamNutrition ->
                                         SaveNutrition personId measurements.nutrition nextTask
+
+                            disabled =
+                                physicalExamSaveDisabled site (tasksCompleted /= totalTasks) muacForm task
                         in
                         div [ class "actions symptoms" ]
                             [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
                                 , onClick saveMsg
                                 ]
                                 [ text <| translate language Translate.Save ]

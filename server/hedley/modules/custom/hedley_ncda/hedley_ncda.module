@@ -985,6 +985,18 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
   }
 
   $encoded_data = json_encode($data);
+
+  // Assembling the data above may take seconds (hundreds of node loads), during
+  // which the person node could have been updated (device sync, admin edit).
+  // node_save() writes back every field of the object it's given, so saving the
+  // copy we started with would revert those updates. Reload before mutating, to
+  // keep the window between read and write as short as possible.
+  $person = node_load($person->nid, NULL, TRUE);
+  if (!$person) {
+    // Person was deleted while we were calculating.
+    return FALSE;
+  }
+
   $person->field_ncda_data[LANGUAGE_NONE][0]['value'] = $encoded_data;
   node_save($person);
 

@@ -28,11 +28,14 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
+import Measurement.Model exposing (emptyMuacForm)
+import Pages.AcuteIllness.Activity.Types exposing (PhysicalExamTask(..))
 import Pages.AcuteIllness.Activity.Utils
     exposing
         ( malariaDangerSignsPresent
         , mildGastrointestinalInfectionSymptomsPresent
         , nonBloodyDiarrheaAtSymptoms
+        , physicalExamSaveDisabled
         , resolveAcuteIllnessDiagnosis
         , resolveAcuteIllnessDiagnosisByMalariaRDT
         , resolveAmoxicillinDosage
@@ -46,7 +49,7 @@ import Pages.AcuteIllness.Activity.Utils
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
-import SyncManager.Model exposing (SiteFeature(..))
+import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
 import Time
 
@@ -870,4 +873,48 @@ all =
         , orsDosageTest
         , zincDosageTest
         , amoxicillinDosageTest
+        , physicalExamSaveDisabledTest
+        ]
+
+
+{-| The Physical Exam save action used to be gated on task completeness alone,
+so a mistyped MUAC saved silently and fed the nutrition assessment - while the
+same shared MUAC form is range-gated in the Nutrition encounter, the group
+sessions and Family Nutrition.
+-}
+physicalExamSaveDisabledTest : Test
+physicalExamSaveDisabledTest =
+    let
+        saveDisabled site tasksIncomplete muac task =
+            physicalExamSaveDisabled site tasksIncomplete { emptyMuacForm | muac = muac } task
+    in
+    describe "physicalExamSaveDisabled"
+        [ test "Muac: Rwanda accepts a plausible 12.5 cm" <|
+            \_ ->
+                saveDisabled SiteRwanda False (Just 12.5) PhysicalExamMuac
+                    |> Expect.equal False
+        , test "Muac: Rwanda rejects 125, a mm value typed into a cm field" <|
+            \_ ->
+                saveDisabled SiteRwanda False (Just 125) PhysicalExamMuac
+                    |> Expect.equal True
+        , test "Muac: Burundi stores cm, so 12.5 cm (125 mm) enables Save" <|
+            \_ ->
+                saveDisabled SiteBurundi False (Just 12.5) PhysicalExamMuac
+                    |> Expect.equal False
+        , test "Muac: an unset value keeps Save disabled" <|
+            \_ ->
+                saveDisabled SiteRwanda False Nothing PhysicalExamMuac
+                    |> Expect.equal True
+        , test "Muac: an unanswered task keeps Save disabled even with a valid value" <|
+            \_ ->
+                saveDisabled SiteRwanda True (Just 12.5) PhysicalExamMuac
+                    |> Expect.equal True
+        , test "the other physical exam tasks remain gated on task completeness only" <|
+            \_ ->
+                [ saveDisabled SiteRwanda False Nothing PhysicalExamVitals
+                , saveDisabled SiteRwanda True Nothing PhysicalExamVitals
+                , saveDisabled SiteRwanda False Nothing PhysicalExamNutrition
+                , saveDisabled SiteRwanda False Nothing PhysicalExamAcuteFindings
+                ]
+                    |> Expect.equal [ False, True, False, False ]
         ]

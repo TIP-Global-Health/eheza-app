@@ -17,6 +17,7 @@ import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.EducationSession.Model
 import Backend.EducationSession.Update
+import Backend.EducationSession.Utils
 import Backend.Endpoints exposing (ComputedDashboardParams, PersonParams(..), PmtctParticipantParams(..), SessionParams(..), acuteIllnessEncounterEndpoint, acuteIllnessMeasurementsEndpoint, acuteIllnessTraceContactEndpoint, childMeasurementListEndpoint, childScoreboardEncounterEndpoint, childScoreboardMeasurementsEndpoint, clinicEndpoint, computedDashboardEndpoint, counselingScheduleEndpoint, counselingTopicEndpoint, educationSessionEndpoint, familyEncounterParticipantEndpoint, familyNutritionEncounterEndpoint, familyNutritionMeasurementsEndpoint, followUpMeasurementsEndpoint, healthCenterEndpoint, hivEncounterEndpoint, hivMeasurementsEndpoint, homeVisitEncounterEndpoint, homeVisitMeasurementsEndpoint, individualEncounterParticipantEndpoint, motherMeasurementListEndpoint, ncdEncounterEndpoint, ncdMeasurementsEndpoint, nutritionEncounterEndpoint, nutritionMeasurementsEndpoint, participantFormEndpoint, personEndpoint, pmtctParticipantEndpoint, pregnancyByNewbornEndpoint, prenatalEncounterEndpoint, prenatalMeasurementsEndpoint, relationshipEndpoint, resilienceSurveyEndpoint, sessionEndpoint, stockManagementMeasurementsEndpoint, tuberculosisEncounterEndpoint, tuberculosisMeasurementsEndpoint, villageEndpoint, villageStockManagementMeasurementsEndpoint, wellChildEncounterEndpoint, wellChildMeasurementsEndpoint)
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model
@@ -4062,7 +4063,14 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 ( subModel, subCmd, appMsgs ) =
                     Backend.EducationSession.Update.update sessionId encounter subMsg requests
             in
-            ( { model | educationSessionRequests = Dict.insert sessionId subModel model.educationSessionRequests }
+            ( { model
+                | educationSessions =
+                    -- The update is applied to the sessions dict right away, since that
+                    -- dict is what the next PATCH is rebuilt from. See the docs at
+                    -- applyUpdateToSessions.
+                    Backend.EducationSession.Utils.applyUpdateToSessions sessionId subMsg model.educationSessions
+                , educationSessionRequests = Dict.insert sessionId subModel model.educationSessionRequests
+              }
             , Cmd.map (MsgEducationSession sessionId) subCmd
             , appMsgs
             )

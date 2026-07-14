@@ -5,7 +5,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (isAuthorithedNurse)
+import Backend.Nurse.Utils exposing (isAuthorizedNurse)
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (isClosed)
 import EverySet exposing (EverySet)
@@ -102,7 +102,7 @@ viewFoundSession language currentDate zscores site features isChw nurse ( sessio
             authorized =
                 RemoteData.toMaybe db.clinics
                     |> Maybe.andThen (Dict.get session.clinicId)
-                    |> Maybe.map (\clinic -> isAuthorithedNurse clinic nurse)
+                    |> Maybe.map (\clinic -> isAuthorizedNurse clinic nurse)
                     |> Maybe.withDefault False
         in
         if authorized then

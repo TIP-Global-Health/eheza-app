@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..))
 import Backend.FamilyNutritionEncounter.Utils exposing (getFamilyNutritionEncountersForParticipant)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Backend.Relationship.Utils exposing (isChildRelation)
 import Backend.Utils exposing (resolveFamilyParticipantForPerson)
 import EverySet
 import Maybe.Extra
@@ -20,7 +20,7 @@ fetch id db =
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map
                     (Dict.values
-                        >> List.filter (.relatedBy >> (==) MyChild)
+                        >> List.filter (.relatedBy >> isChildRelation)
                         >> EverySet.fromList
                         >> EverySet.toList
                         >> List.map (.relatedTo >> FetchPerson)

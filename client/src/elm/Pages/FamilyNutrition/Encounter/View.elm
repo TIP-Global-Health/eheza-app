@@ -6,7 +6,7 @@ import Backend.FamilyEncounterParticipant.Model exposing (FamilyParticipantIniti
 import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
 import Backend.FamilyNutritionActivity.Utils exposing (getActivityIcon)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (ahezaDistributionReasonToString, getMeasurementValueFunc, muacValueForSite)
+import Backend.Measurement.Utils exposing (ahezaDistributionReasonToString, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Utils exposing (isPersonAnAdult)
 import Gizra.Html exposing (emptyNode)
@@ -14,7 +14,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Measurement.Utils exposing (ahezaFormWithDefault, ahezaMotherFormWithDefault, getInputConstraintsMuac, muacFormWithDefault, withinConstraints)
+import Measurement.Utils exposing (ahezaFormWithDefault, ahezaMotherFormWithDefault, muacFormWithDefault, muacOutsideConstraints)
 import Measurement.View
 import Pages.FamilyNutrition.Encounter.Model exposing (AssembledData, DialogType(..), FamilyMember(..), Model, Msg(..), Tab(..))
 import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData)
@@ -551,18 +551,9 @@ viewMuacForm language currentDate site data model familyMember =
         ( tasksCompleted, tasksTotal ) =
             resolveTasksCompletedFromTotal tasks
 
-        constraints =
-            getInputConstraintsMuac site
-
-        currentValue =
-            -- MUAC is stored in cm; muacValueForSite shows it in mm at Burundi.
-            Maybe.map (muacValueForSite site) form.muac
-
         disabled =
             (tasksCompleted /= tasksTotal)
-                || (Maybe.map (withinConstraints constraints >> not) currentValue
-                        |> Maybe.withDefault True
-                   )
+                || muacOutsideConstraints site form.muac
 
         saveMsg =
             case familyMember of
