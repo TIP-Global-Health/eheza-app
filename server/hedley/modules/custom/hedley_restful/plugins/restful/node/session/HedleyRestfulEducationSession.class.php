@@ -105,11 +105,17 @@ class HedleyRestfulEducationSession extends HedleyRestfulSyncBase {
       unset($item->uuid_nurse);
 
       $item->village_ref = $item->uuid_village_ref;
-      unset($item->uuid_individual_participant);
+      unset($item->uuid_village_ref);
 
-      $item->education_topics = explode(',', $item->education_topics);
+      // A session is created empty - the client POSTs it the moment the nurse
+      // begins the encounter - so both of these are routinely NULL here, and an
+      // unguarded explode() would turn that into a single empty string. The
+      // empty topic is dropped by the client's decoder, but an empty
+      // participant UUID is accepted, and lands in the session's participant
+      // set. NULL instead: the decoder's `optional` falls back to an empty set.
+      $item->education_topics = !empty($item->education_topics) ? explode(',', $item->education_topics) : NULL;
 
-      $item->participating_patients = explode(',', $item->uuids_participating_patients);
+      $item->participating_patients = !empty($item->uuids_participating_patients) ? explode(',', $item->uuids_participating_patients) : NULL;
       unset($item->uuids_participating_patients);
 
       unset($item->label);
