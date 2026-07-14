@@ -155,11 +155,19 @@ function hedley_patient_recalculate_shards_for_person_content($person_id) {
   // using person, adult and related_to fields.
   // These are group and individual measurements, relationships,
   // and group and individual participants.
-  $association_fields = [
-    'field_person',
-    'field_adult',
-    'field_related_to',
-  ];
+  //
+  // The remaining person-reference fields are deliberately left out: an
+  // education session's shards follow its health center, a pregnancy
+  // participant's follow the mother, and a trace contact's follow the
+  // encounter it was taken at - none of them follow this person.
+  $association_fields = array_values(array_diff(
+    hedley_general_get_person_association_fields(),
+    [
+      'field_participating_patients',
+      'field_newborn',
+      'field_referred_person',
+    ]
+  ));
   $entries = hedley_general_get_person_content_associated_by_fields($person_id, $association_fields);
 
   $ids = $individual_participants = [];
