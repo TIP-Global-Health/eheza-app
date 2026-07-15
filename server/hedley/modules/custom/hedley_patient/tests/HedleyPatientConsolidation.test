@@ -1,0 +1,149 @@
+<?php
+
+/**
+ * @file
+ * Tests for the patient-merge (consolidation) flow.
+ */
+
+/**
+ * HedleyPatientConsolidation.
+ *
+ * Exercises how merging a duplicate patient into an original moves the
+ * duplicate's content onto the original.
+ */
+class HedleyPatientConsolidation extends HedleyWebTestBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp([
+      'hedley_patient',
+      'hedley_person',
+    ]);
+
+    // The merge helpers live in the drush include.
+    module_load_include('inc', 'hedley_patient', 'hedley_patient.drush');
+  }
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyPatientConsolidation tests',
+      'description' => 'Tests the patient-merge (consolidation) flow.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * Creates a bare person node.
+   *
+   * @param string $name
+   *   The first name, for readable failures.
+   *
+   * @return int
+   *   The person node ID.
+   */
+  protected function createPerson($name) {
+    $node = $this->drupalCreateNode(['type' => 'person']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_first_name->set($name);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * The live relationships a person takes part in, as person:by:related_to.
+   *
+   * @param int $person_id
+   *   The person node ID.
+   *
+   * @return array
+   *   Sorted triples describing each live relationship.
+   */
+  protected function relationshipTriples($person_id) {
+    $triples = [];
+    foreach (_hedley_patient_relationships_for_person($person_id) as $id) {
+      $wrapper = entity_metadata_wrapper('node', $id);
+      $triples[] = implode(':', [
+        $wrapper->field_person->getIdentifier(),
+        $wrapper->field_related_by->value(),
+        $wrapper->field_related_to->getIdentifier(),
+      ]);
+    }
+    sort($triples);
+
+    return $triples;
+  }
+
+  /**
+   * Merging a duplicate transfers, dedupes and prunes its relationships.
+   *
+   * All four cases operate on disjoint people, so bundling them under one test
+   * method keeps the hedley-profile install (~5 min in CI) paid once. Each
+   * calls _consolidate_patient_relationships() directly - the piece that used
+   * to be missing, so the delete cascade destroyed these links instead.
+   */
+  public function testRelationshipsAreTransferredOnMerge() {
+    // 1. A duplicate child's link to its mother moves to the original child.
+    $mother = $this->createPerson('Mother');
+    $originalChild = $this->createPerson('OriginalChild');
+    $duplicateChild = $this->createPerson('DuplicateChild');
+    $this->createRelationship($mother, $duplicateChild, 'parent');
+
+    _consolidate_patient_relationships($originalChild, $duplicateChild);
+
+    $this->assertEqual(
+      $this->relationshipTriples($originalChild),
+      [implode(':', [$mother, 'parent', $originalChild])],
+      'The mother link is transferred to the original child.'
+    );
+
+    // 2. When the original already holds the same link, it is not duplicated.
+    $mother = $this->createPerson('Mother2');
+    $originalChild = $this->createPerson('OriginalChild2');
+    $duplicateChild = $this->createPerson('DuplicateChild2');
+    $this->createRelationship($mother, $originalChild, 'parent');
+    $this->createRelationship($mother, $duplicateChild, 'parent');
+
+    _consolidate_patient_relationships($originalChild, $duplicateChild);
+
+    $this->assertEqual(
+      $this->relationshipTriples($originalChild),
+      [implode(':', [$mother, 'parent', $originalChild])],
+      'A relationship the original already holds is not duplicated.'
+    );
+
+    // 3. A relationship between the two merged patients is dropped, not turned
+    // into the original pointing at itself.
+    $originalChild = $this->createPerson('OriginalChild3');
+    $duplicateChild = $this->createPerson('DuplicateChild3');
+    $this->createRelationship($originalChild, $duplicateChild, 'caregiver');
+
+    _consolidate_patient_relationships($originalChild, $duplicateChild);
+
+    $this->assertEqual(
+      $this->relationshipTriples($originalChild),
+      [],
+      'A relationship between the two patients being merged is dropped.'
+    );
+
+    // 4. When the duplicate is the adult, its link to a child moves too.
+    $originalMother = $this->createPerson('OriginalMother4');
+    $duplicateMother = $this->createPerson('DuplicateMother4');
+    $child = $this->createPerson('Child4');
+    $this->createRelationship($duplicateMother, $child, 'parent');
+
+    _consolidate_patient_relationships($originalMother, $duplicateMother);
+
+    $this->assertEqual(
+      $this->relationshipTriples($originalMother),
+      [implode(':', [$originalMother, 'parent', $child])],
+      'The duplicate adult\'s link to a child is transferred.'
+    );
+  }
+
+}

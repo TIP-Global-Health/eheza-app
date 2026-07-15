@@ -224,12 +224,147 @@ function _consolidate_patients_execute($original, $duplicate) {
     }
   }
 
+  // Relationships are not measurements, so the loop above never sees them.
+  // Re-point them before the duplicate is marked deleted: once they point at
+  // the original (a live person), the delete cascade - which soft-deletes the
+  // relationships that still reference the duplicate - leaves them alone.
+  $messages[] = _consolidate_patient_relationships($original, $duplicate);
+
   // Mark duplicate patient as Deleted.
   $wrapper_duplicate->field_deleted->set(TRUE);
   $wrapper_duplicate->save();
 
   $messages[] = 'SUCCESS! All consolidations completed!';
   return $messages;
+}
+
+/**
+ * Re-points the duplicate patient's relationships onto the original patient.
+ *
+ * A relationship is one node - field_person (the parent/caregiver) is related
+ * to field_related_to (the child/cared-for) by field_related_by. A person
+ * appears as field_person when they are the adult and as field_related_to when
+ * they are the child, so the duplicate may sit on either side.
+ *
+ * For each of the duplicate's relationships we move its side to the original,
+ * except:
+ *   - a relationship that would then point the original at itself (the two
+ *     patients were directly related) is redundant, so it is deleted;
+ *   - a relationship the original already holds (same other person, same
+ *     relation, same direction) would be a duplicate, so it is deleted.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_relationships($original, $duplicate) {
+  // The duplicate's relationships, from either side. The helper already
+  // excludes deleted content.
+  $entries = hedley_general_get_person_content_associated_by_fields($duplicate, [
+    'field_person',
+    'field_related_to',
+  ]);
+  $relationship_ids = [];
+  foreach ($entries as $entry) {
+    if ($entry->bundle === 'relationship') {
+      $relationship_ids[$entry->entity_id] = $entry->entity_id;
+    }
+  }
+
+  // The relationships the original already holds, keyed so we can spot a
+  // would-be duplicate. The key is person + related_by + related_to.
+  $existing = [];
+  foreach (_hedley_patient_relationships_for_person($original) as $relationship_id) {
+    $wrapper = entity_metadata_wrapper('node', $relationship_id);
+    $key = _hedley_patient_relationship_key(
+      $wrapper->field_person->getIdentifier(),
+      $wrapper->field_related_by->value(),
+      $wrapper->field_related_to->getIdentifier()
+    );
+    $existing[$key] = TRUE;
+  }
+
+  $repointed = $dropped = 0;
+  foreach ($relationship_ids as $relationship_id) {
+    $wrapper = entity_metadata_wrapper('node', $relationship_id);
+    $person = $wrapper->field_person->getIdentifier();
+    $related_to = $wrapper->field_related_to->getIdentifier();
+
+    // Move whichever side is the duplicate onto the original.
+    $new_person = ($person == $duplicate) ? $original : $person;
+    $new_related_to = ($related_to == $duplicate) ? $original : $related_to;
+
+    $key = _hedley_patient_relationship_key($new_person, $wrapper->field_related_by->value(), $new_related_to);
+
+    if ($new_person == $new_related_to || isset($existing[$key])) {
+      // Self-referential (the two patients were related to each other) or a
+      // relationship the original already has - either way, redundant.
+      $wrapper->field_deleted->set(TRUE);
+      $wrapper->save();
+      $dropped++;
+      continue;
+    }
+
+    $wrapper->field_person->set($new_person);
+    $wrapper->field_related_to->set($new_related_to);
+    $wrapper->save();
+    // A later relationship of the duplicate might now duplicate this one.
+    $existing[$key] = TRUE;
+    $repointed++;
+  }
+
+  return format_string('Relationships: @repointed re-pointed to the original, @dropped dropped as redundant.', [
+    '@repointed' => $repointed,
+    '@dropped' => $dropped,
+  ]);
+}
+
+/**
+ * All non-deleted relationship node IDs a person takes part in, either side.
+ *
+ * @param int $person_id
+ *   Node ID of the person.
+ *
+ * @return array
+ *   Relationship node IDs.
+ */
+function _hedley_patient_relationships_for_person($person_id) {
+  $entries = hedley_general_get_person_content_associated_by_fields($person_id, [
+    'field_person',
+    'field_related_to',
+  ]);
+
+  $ids = [];
+  foreach ($entries as $entry) {
+    if ($entry->bundle === 'relationship') {
+      $ids[$entry->entity_id] = $entry->entity_id;
+    }
+  }
+
+  return $ids;
+}
+
+/**
+ * Builds a comparison key identifying a relationship by its content.
+ *
+ * @param int $person_id
+ *   The field_person target.
+ * @param string $related_by
+ *   The field_related_by value.
+ * @param int $related_to_id
+ *   The field_related_to target.
+ *
+ * @return string
+ *   The key.
+ */
+function _hedley_patient_relationship_key($person_id, $related_by, $related_to_id) {
+  return implode(':', [$person_id, $related_by, $related_to_id]);
 }
 
 /**
