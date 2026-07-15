@@ -230,6 +230,12 @@ function _consolidate_patients_execute($original, $duplicate) {
   // relationships that still reference the duplicate - leaves them alone.
   $messages[] = _consolidate_patient_relationships($original, $duplicate);
 
+  // Education sessions reference their attendees, and are not measurements
+  // either. Re-point the duplicate to the original in every session it
+  // attended, so the original is recorded as the attendee rather than a
+  // person who no longer exists.
+  $messages[] = _consolidate_patient_education_sessions($original, $duplicate);
+
   // Mark duplicate patient as Deleted.
   $wrapper_duplicate->field_deleted->set(TRUE);
   $wrapper_duplicate->save();
@@ -322,6 +328,32 @@ function _consolidate_patient_relationships($original, $duplicate) {
 }
 
 /**
+ * Non-deleted node IDs of one bundle that reference a person via given fields.
+ *
+ * @param int $person_id
+ *   Node ID of the person.
+ * @param array $fields
+ *   The reference fields to look through.
+ * @param string $bundle
+ *   The node bundle to keep.
+ *
+ * @return array
+ *   Node IDs of that bundle, keyed by ID.
+ */
+function _hedley_patient_content_referencing_person($person_id, array $fields, $bundle) {
+  $entries = hedley_general_get_person_content_associated_by_fields($person_id, $fields);
+
+  $ids = [];
+  foreach ($entries as $entry) {
+    if ($entry->bundle === $bundle) {
+      $ids[$entry->entity_id] = $entry->entity_id;
+    }
+  }
+
+  return $ids;
+}
+
+/**
  * All non-deleted relationship node IDs a person takes part in, either side.
  *
  * @param int $person_id
@@ -331,19 +363,10 @@ function _consolidate_patient_relationships($original, $duplicate) {
  *   Relationship node IDs.
  */
 function _hedley_patient_relationships_for_person($person_id) {
-  $entries = hedley_general_get_person_content_associated_by_fields($person_id, [
+  return _hedley_patient_content_referencing_person($person_id, [
     'field_person',
     'field_related_to',
-  ]);
-
-  $ids = [];
-  foreach ($entries as $entry) {
-    if ($entry->bundle === 'relationship') {
-      $ids[$entry->entity_id] = $entry->entity_id;
-    }
-  }
-
-  return $ids;
+  ], 'relationship');
 }
 
 /**
@@ -361,6 +384,59 @@ function _hedley_patient_relationships_for_person($person_id) {
  */
 function _hedley_patient_relationship_key($person_id, $related_by, $related_to_id) {
   return implode(':', [$person_id, $related_by, $related_to_id]);
+}
+
+/**
+ * Re-points the duplicate patient to the original in its education sessions.
+ *
+ * A session's field_participating_patients is a multi-value list of the people
+ * who attended it. Replace the duplicate with the original in every session it
+ * attended; if the original attended the same session, the duplicate's entry
+ * is simply dropped so the original is not listed twice.
+ *
+ * Unlike a relationship, a session is not soft-deleted by the person-delete
+ * cascade (it belongs to the health center, not the attendee), so this exists
+ * only to keep the attendee list accurate - a merged-away person should not
+ * remain among a session's participants.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_education_sessions($original, $duplicate) {
+  $session_ids = _hedley_patient_content_referencing_person($duplicate, [
+    'field_participating_patients',
+  ], 'education_session');
+
+  $updated = 0;
+  foreach ($session_ids as $session_id) {
+    $wrapper = entity_metadata_wrapper('node', $session_id);
+    $participants = $wrapper->field_participating_patients->value(['identifier' => TRUE]);
+
+    $new_participants = [];
+    foreach ($participants as $participant_id) {
+      $participant_id = ($participant_id == $duplicate) ? $original : $participant_id;
+      // Skip if we already have this participant (the original may have
+      // attended the same session).
+      if (!in_array($participant_id, $new_participants)) {
+        $new_participants[] = $participant_id;
+      }
+    }
+
+    $wrapper->field_participating_patients->set($new_participants);
+    $wrapper->save();
+    $updated++;
+  }
+
+  return format_string('Education sessions: @updated re-pointed to the original.', [
+    '@updated' => $updated,
+  ]);
 }
 
 /**

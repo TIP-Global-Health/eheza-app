@@ -107,14 +107,56 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
   }
 
   /**
-   * Merging a duplicate transfers, dedupes and prunes its relationships.
+   * Creates an education session with the given attendees.
    *
-   * All cases operate on disjoint people, so bundling them under one test
-   * method keeps the hedley-profile install (~5 min in CI) paid once. Each
-   * calls _consolidate_patient_relationships() directly - the piece that used
-   * to be missing, so the delete cascade destroyed these links instead.
+   * @param array $participants
+   *   Person node IDs attending the session.
+   *
+   * @return int
+   *   The education session node ID.
    */
-  public function testRelationshipsAreTransferredOnMerge() {
+  protected function createEducationSession(array $participants) {
+    $node = $this->drupalCreateNode(['type' => 'education_session']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $scheduled = date('Y-m-d', strtotime('-2 days'));
+    $wrapper->field_scheduled_date->set([
+      'value' => $scheduled,
+      'value2' => $scheduled,
+    ]);
+    $wrapper->field_education_topics->set(['malaria']);
+    $wrapper->field_participating_patients->set($participants);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * The sorted attendee node IDs of an education session.
+   *
+   * @param int $session_id
+   *   The education session node ID.
+   *
+   * @return array
+   *   Sorted person node IDs.
+   */
+  protected function sessionAttendees($session_id) {
+    $ids = entity_metadata_wrapper('node', node_load($session_id, NULL, TRUE))
+      ->field_participating_patients->value(['identifier' => TRUE]);
+    $ids = empty($ids) ? [] : $ids;
+    sort($ids);
+
+    return $ids;
+  }
+
+  /**
+   * Merging a duplicate transfers the content that references it.
+   *
+   * Covers the non-measurement links the merge has to move by hand:
+   * relationships (cases 1-6) and education-session attendance (cases 7-9).
+   * All cases operate on disjoint people, so bundling them under one test
+   * method keeps the hedley-profile install (~5 min in CI) paid once.
+   */
+  public function testContentIsTransferredOnMerge() {
     // 1. A duplicate child's link to its mother moves to the original child.
     $mother = $this->createPerson('Mother');
     $originalChild = $this->createPerson('OriginalChild');
@@ -214,6 +256,53 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
       $this->relationshipTriples($original),
       [implode(':', [$mother, 'parent', $original])],
       'The full merge transfers the relationship instead of letting the cascade delete it.'
+    );
+
+    // 7. A duplicate's education-session attendance moves to the original, so
+    // the session no longer lists a person who was merged away.
+    $original = $this->createPerson('Original7');
+    $duplicate = $this->createPerson('Duplicate7');
+    $other = $this->createPerson('Other7');
+    $session = $this->createEducationSession([$duplicate, $other]);
+
+    _consolidate_patient_education_sessions($original, $duplicate);
+
+    $expected = [$original, $other];
+    sort($expected);
+    $this->assertEqual(
+      $this->sessionAttendees($session),
+      $expected,
+      'The duplicate is replaced by the original in the session attendees.'
+    );
+
+    // 8. When both attended the same session, the original is not listed twice.
+    $original = $this->createPerson('Original8');
+    $duplicate = $this->createPerson('Duplicate8');
+    $other = $this->createPerson('Other8');
+    $session = $this->createEducationSession([$original, $duplicate, $other]);
+
+    _consolidate_patient_education_sessions($original, $duplicate);
+
+    $expected = [$original, $other];
+    sort($expected);
+    $this->assertEqual(
+      $this->sessionAttendees($session),
+      $expected,
+      'A session both attended lists the original once, not twice.'
+    );
+
+    // 9. Through the full merge path, the session is re-pointed before the
+    // duplicate is deleted, so the session never keeps a merged-away attendee.
+    $original = $this->createPerson('Original9');
+    $duplicate = $this->createPerson('Duplicate9');
+    $session = $this->createEducationSession([$duplicate]);
+
+    _consolidate_patients_execute($original, $duplicate);
+
+    $this->assertEqual(
+      $this->sessionAttendees($session),
+      [$original],
+      'The full merge re-points the session attendee to the original.'
     );
   }
 
