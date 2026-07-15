@@ -264,18 +264,8 @@ function _consolidate_patients_execute($original, $duplicate) {
  * @throws EntityMetadataWrapperException
  */
 function _consolidate_patient_relationships($original, $duplicate) {
-  // The duplicate's relationships, from either side. The helper already
-  // excludes deleted content.
-  $entries = hedley_general_get_person_content_associated_by_fields($duplicate, [
-    'field_person',
-    'field_related_to',
-  ]);
-  $relationship_ids = [];
-  foreach ($entries as $entry) {
-    if ($entry->bundle === 'relationship') {
-      $relationship_ids[$entry->entity_id] = $entry->entity_id;
-    }
-  }
+  // The duplicate's relationships, from either side.
+  $relationship_ids = _hedley_patient_relationships_for_person($duplicate);
 
   // The relationships the original already holds, keyed so we can spot a
   // would-be duplicate. The key is person + related_by + related_to.

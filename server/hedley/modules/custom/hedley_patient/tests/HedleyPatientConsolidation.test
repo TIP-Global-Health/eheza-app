@@ -50,6 +50,10 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     $node = $this->drupalCreateNode(['type' => 'person']);
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_first_name->set($name);
+    // field_second_name is required on the person bundle. node_save() does not
+    // enforce that (Drupal 7 skips field validation on programmatic save), but
+    // set it anyway so the person gets a proper title, as createMother does.
+    $wrapper->field_second_name->set('Test');
     $wrapper->save();
 
     return $node->nid;
