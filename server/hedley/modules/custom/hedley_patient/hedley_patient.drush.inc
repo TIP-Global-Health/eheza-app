@@ -420,11 +420,14 @@ function _consolidate_patient_education_sessions($original, $duplicate) {
     $participants = $wrapper->field_participating_patients->value(['identifier' => TRUE]);
 
     $new_participants = [];
+    $seen = [];
     foreach ($participants as $participant_id) {
       $participant_id = ($participant_id == $duplicate) ? $original : $participant_id;
       // Skip if we already have this participant (the original may have
-      // attended the same session).
-      if (!in_array($participant_id, $new_participants)) {
+      // attended the same session). Node IDs used as array keys normalise any
+      // int/string difference, so this needs no explicit comparison.
+      if (!isset($seen[$participant_id])) {
+        $seen[$participant_id] = TRUE;
         $new_participants[] = $participant_id;
       }
     }
