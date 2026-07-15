@@ -303,6 +303,12 @@ function _consolidate_patient_relationships($original, $duplicate) {
 
     $wrapper->field_person->set($new_person);
     $wrapper->field_related_to->set($new_related_to);
+    // Clear the shards so the presave hook recomputes them from the new
+    // endpoints. hedley_device_assign_shards() leaves an already-populated
+    // field alone, so without this the relationship keeps the duplicate's
+    // shards and misses any the original has but the duplicate did not - and
+    // the transferred link would not reach all of the original's devices.
+    $wrapper->field_shards->set([]);
     $wrapper->save();
     // A later relationship of the duplicate might now duplicate this one.
     $existing[$key] = TRUE;
