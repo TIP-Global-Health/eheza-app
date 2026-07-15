@@ -61,6 +61,7 @@ class HedleyAdminIntegrityTests extends HedleyWebTestBase {
    *   3. Node deletion -- forbidden across the board (devices used
    *      as the example).
    *   4. Session unpublishing -- forbidden.
+   *   5. Person association fields -- the canonical list is complete.
    */
   public function testIntegrityInvariants() {
     // 1. Device pairing code.
@@ -150,6 +151,56 @@ class HedleyAdminIntegrityTests extends HedleyWebTestBase {
     catch (Exception $e) {
       $this->assertEqual($e->getMessage(), 'Content unpublishing is forbidden!');
     }
+
+    // 5. The canonical person-association-field list is complete.
+    $this->checkPersonAssociationFieldsAreComplete();
+  }
+
+  /**
+   * Every field that can reference a person is declared as such.
+   *
+   * The patient merge, the shard recalculation and the delete cascade all
+   * follow references to a person. They used to carry their own hardcoded
+   * lists, so a newly introduced reference field escaped all of them at once,
+   * silently - which is how education sessions ended up still pointing at
+   * merged-away patients.
+   *
+   * Declaring a field in hedley_general_get_person_association_fields() does
+   * not by itself make those subsystems handle it, but it does mean nobody can
+   * add one without being told to think about them: this fails the build.
+   *
+   * Called from testIntegrityInvariants() rather than being a test method of
+   * its own, so that it shares that method's install.
+   */
+  protected function checkPersonAssociationFieldsAreComplete() {
+    $referencing_person = [];
+    foreach (field_info_fields() as $field_name => $field) {
+      if ($field['type'] !== 'entityreference') {
+        continue;
+      }
+
+      $target_bundles = [];
+      if (isset($field['settings']['handler_settings']['target_bundles'])) {
+        $target_bundles = array_keys($field['settings']['handler_settings']['target_bundles']);
+      }
+
+      if (in_array('person', $target_bundles)) {
+        $referencing_person[] = $field_name;
+      }
+    }
+
+    $declared = hedley_general_get_person_association_fields();
+    sort($referencing_person);
+    sort($declared);
+
+    $this->assertEqual(
+      $referencing_person,
+      $declared,
+      format_string('Every person-referencing field is declared. Found: @found. Declared: @declared.', [
+        '@found' => implode(', ', $referencing_person),
+        '@declared' => implode(', ', $declared),
+      ])
+    );
   }
 
 }
