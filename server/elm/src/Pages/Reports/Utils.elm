@@ -273,11 +273,19 @@ generatePrevalenceNutritionMetricsResults : NutritionMetrics -> NutritionMetrics
 generatePrevalenceNutritionMetricsResults metrics =
     let
         calculatePercentage nominator total =
-            if List.isEmpty total then
+            let
+                -- The metric lists hold one entry per encounter, so a child
+                -- measured several times during the period appears several
+                -- times. Count children on both sides: deduplicating only the
+                -- total inflated the percentage, and could push it past 100%.
+                totalChildren =
+                    unique total
+            in
+            if List.isEmpty totalChildren then
                 0
 
             else
-                (toFloat (List.length nominator) / toFloat (List.length total)) * 100
+                (toFloat (List.length (unique nominator)) / toFloat (List.length totalChildren)) * 100
 
         stuntingTotal =
             metrics.stuntingModerate

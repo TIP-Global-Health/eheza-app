@@ -2817,6 +2817,13 @@ function hedley_reports_generate_incidence_nutrition_metrics_results(array $curr
  *   The percentage value as a string, rounded to three decimal places.
  */
 function hedley_reports_calculate_percentage(array $nominator, array $total) {
+  // The metric arrays hold one entry per encounter, so a child measured
+  // several times during the period appears several times. Count children on
+  // both sides: deduplicating only the total (as callers do) inflated the
+  // percentage, and could push it past 100%.
+  $nominator = array_unique($nominator);
+  $total = array_unique($total);
+
   if (empty($total)) {
     return "0%";
   }
