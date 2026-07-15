@@ -2304,8 +2304,14 @@ function hedley_stats_get_group_education_data($health_center_id, array &$patien
   $query->leftJoin('field_data_field_education_topics', 'et', 'et.entity_id = node.nid');
   $query->addField('et', 'field_education_topics_value');
   $query->addExpression("GROUP_CONCAT(DISTINCT et.field_education_topics_value)", 'education_topics');
-  // Resolve participants.
-  $query->leftJoin('field_data_field_participating_patients', 'pp', 'pp.entity_id = node.nid');
+  // Resolve participants. A person who was soft-deleted - most commonly the
+  // duplicate side of a patient merge - is still referenced by the session, so
+  // exclude them here: otherwise they keep being counted among the attendees,
+  // and their name and gender are shipped to the dashboard.
+  $query->leftJoin('field_data_field_participating_patients', 'pp', hedley_stats_exclude_deleted_from_join(
+    'pp.entity_id = node.nid',
+    'pp.field_participating_patients_target_id'
+  ));
   $query->addField('pp', 'field_participating_patients_target_id');
   $query->addExpression("GROUP_CONCAT(DISTINCT pp.field_participating_patients_target_id)", 'participating_patients');
   $query->groupBy('node.nid');
@@ -3500,32 +3506,37 @@ function hedley_stats_run_node_query_in_batches(SelectQuery $query, $batch = 100
 }
 
 /**
- * Adds a soft-delete exclusion to a measurement JOIN's ON condition.
+ * Adds a soft-delete exclusion to a JOIN's ON condition.
  *
- * The dashboard statistics builders reach measurement values by joining the
- * field_<program>_encounter table (whose entity_id is the measurement node ID)
- * and then joining each value field off that alias. Soft-deleting a measurement
- * only sets its field_deleted flag; the node and its field rows remain, so
- * the measurement's values would otherwise keep being pulled into the
- * aggregates on every stats recalculation.
+ * Soft-deleting a node only sets its field_deleted flag; the node and its field
+ * rows remain, so anything the statistics builders reach through a JOIN would
+ * otherwise keep being pulled into the aggregates on every recalculation. Two
+ * kinds of node are excluded this way:
+ *
+ *   - Measurements, reached by joining the field_<program>_encounter table
+ *     (whose entity_id is the measurement node ID) and then joining each value
+ *     field off that alias.
+ *   - Persons, reached through a reference field - e.g. an education session's
+ *     field_participating_patients, whose target_id is the person node ID.
  *
  * The exclusion is folded into the JOIN's ON clause (rather than added as a
- * WHERE condition) so that a soft-deleted measurement is treated as absent from
- * the LEFT JOIN - its values simply do not appear - without dropping the
- * encounter row. A WHERE filter on a fanned-in measurement would instead drop
- * the whole encounter when all of its measurements are deleted.
+ * WHERE condition) so that a soft-deleted node is treated as absent from the
+ * LEFT JOIN - it simply does not appear - without dropping the row that joined
+ * to it. A WHERE filter would instead drop the whole encounter when all of its
+ * measurements are deleted, or the whole session when one attendee is.
  *
  * @param string $on_condition
- *   The original ON condition of the measurement join.
- * @param string $measurement_entity_id
- *   SQL reference to the measurement node ID within that join, e.g.
- *   "ai_encounter.entity_id".
+ *   The original ON condition of the join.
+ * @param string $entity_id
+ *   SQL reference, within that join, to the node ID whose field_deleted flag
+ *   should be honoured - e.g. "ai_encounter.entity_id" for a measurement, or
+ *   "pp.field_participating_patients_target_id" for a referenced person.
  *
  * @return string
  *   The ON condition extended with the soft-delete exclusion.
  */
-function hedley_stats_exclude_deleted_from_join($on_condition, $measurement_entity_id) {
-  return "($on_condition) AND NOT EXISTS (SELECT 1 FROM {field_data_field_deleted} hsd WHERE hsd.entity_id = $measurement_entity_id AND hsd.field_deleted_value = 1)";
+function hedley_stats_exclude_deleted_from_join($on_condition, $entity_id) {
+  return "($on_condition) AND NOT EXISTS (SELECT 1 FROM {field_data_field_deleted} hsd WHERE hsd.entity_id = $entity_id AND hsd.field_deleted_value = 1)";
 }
 
 /**
