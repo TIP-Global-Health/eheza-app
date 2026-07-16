@@ -1907,7 +1907,8 @@ fromCovidTestingValue saved =
         (\value ->
             let
                 testPerformed =
-                    value.result /= RapidTestUnableToRun |> Just
+                    not (List.member value.result [ RapidTestUnableToRun, RapidTestUnableToRunAndPregnant ])
+                        |> Just
 
                 testPositive =
                     case value.result of
@@ -1924,8 +1925,7 @@ fromCovidTestingValue saved =
                             Nothing
 
                 isPregnant =
-                    Just <|
-                        rapidTestPositive value.result
+                    Just (List.member value.result [ RapidTestPositiveAndPregnant, RapidTestUnableToRunAndPregnant ])
             in
             { testPerformed = testPerformed
             , testPositive = testPositive
