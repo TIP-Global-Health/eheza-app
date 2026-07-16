@@ -1,15 +1,20 @@
 module Backend.EducationSession.Test exposing (all)
 
 import AssocList as Dict exposing (Dict)
+import Backend.EducationSession.Decoder exposing (decodeEducationSession)
 import Backend.EducationSession.Model exposing (EducationSession, EducationTopic(..), Msg(..))
 import Backend.EducationSession.Utils exposing (applyUpdateToSessions)
 import Backend.Entities exposing (EducationSessionId, PersonId)
+import Backend.NCDEncounter.Decoder exposing (decodeNCDEncounter)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
+import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter)
 import Date
 import EverySet
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
+import Json.Decode exposing (decodeString)
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (toEntityUuid)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import Test exposing (Test, describe, test)
 import Time
 
@@ -17,7 +22,97 @@ import Time
 all : Test
 all =
     describe "Backend.EducationSession"
-        [ applyUpdateToSessionsTests ]
+        [ applyUpdateToSessionsTests
+        , emptyMultiValueFieldTests
+        ]
+
+
+{-| The server used to run an unguarded `explode(',', ...)` over multi-value
+fields. A field with no values arrives from GROUP\_CONCAT as NULL, and exploding
+NULL yields a single empty string, so an empty field synced as `[""]` instead of
+as nothing at all.
+
+For the enum fields that stayed invisible - their decoders drop the unparseable
+"" - but `decodeEntityUuid` accepts "", and an education session is created
+empty the moment the nurse begins it. So every device received a session with a
+phantom empty-string participant in it.
+
+The server now sends `null` for an empty field. These pin that each affected
+decoder reads `null` exactly as it read the old `[""]`: the phantom participant
+is gone, and the encounter fields are unchanged.
+
+-}
+emptyMultiValueFieldTests : Test
+emptyMultiValueFieldTests =
+    describe "empty multi-value fields"
+        [ test "OLD payload: [\"\"] put a phantom empty UUID in the participant set" <|
+            \_ ->
+                decodeString decodeEducationSession (educationSessionJson "[\"\"]")
+                    |> Result.map (.participants >> EverySet.toList >> List.map fromEntityUuid)
+                    |> Expect.equal (Ok [ "" ])
+        , test "NEW payload: null decodes to no participants at all" <|
+            \_ ->
+                decodeString decodeEducationSession (educationSessionJson "null")
+                    |> Result.map (.participants >> EverySet.isEmpty)
+                    |> Expect.equal (Ok True)
+        , test "NCD diagnoses: null reads the same as the old [\"\"]" <|
+            \_ ->
+                let
+                    decodeDiagnoses payload =
+                        decodeString decodeNCDEncounter (ncdEncounterJson payload)
+                            |> Result.map .diagnoses
+                in
+                ( decodeDiagnoses "[\"\"]", decodeDiagnoses "null" )
+                    |> Expect.equal
+                        ( Ok (EverySet.singleton NoNCDDiagnosis)
+                        , Ok (EverySet.singleton NoNCDDiagnosis)
+                        )
+        , test "skipped forms: null reads the same as the old [\"\"]" <|
+            \_ ->
+                let
+                    decodeSkipped payload =
+                        decodeString decodeNutritionEncounter (nutritionEncounterJson payload)
+                            |> Result.map (.skippedForms >> EverySet.isEmpty)
+                in
+                ( decodeSkipped "[\"\"]", decodeSkipped "null" )
+                    |> Expect.equal ( Ok True, Ok True )
+        ]
+
+
+educationSessionJson : String -> String
+educationSessionJson participants =
+    """
+    { "scheduled_date": { "value": "2026-07-14" }
+    , "nurse": "nurse-uuid"
+    , "village_ref": "village-uuid"
+    , "education_topics": null
+    , "participating_patients": """ ++ participants ++ """
+    , "deleted": false
+    }
+    """
+
+
+ncdEncounterJson : String -> String
+ncdEncounterJson diagnoses =
+    """
+    { "individual_participant": "participant-uuid"
+    , "scheduled_date": { "value": "2026-07-14" }
+    , "ncd_diagnoses": """ ++ diagnoses ++ """
+    , "deleted": false
+    }
+    """
+
+
+nutritionEncounterJson : String -> String
+nutritionEncounterJson skippedForms =
+    """
+    { "individual_participant": "participant-uuid"
+    , "scheduled_date": { "value": "2026-07-14" }
+    , "nutrition_encounter_type": "nurse"
+    , "skipped_forms": """ ++ skippedForms ++ """
+    , "deleted": false
+    }
+    """
 
 
 
