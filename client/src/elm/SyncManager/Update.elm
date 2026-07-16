@@ -104,7 +104,15 @@ update currentTime activePage dbVersion device msg model =
                     [ MsgDebouncer <| provideInput TryDownloadingPhotos ]
 
         RefreshPage ->
-            SubModelReturn model (refreshPage ()) noError []
+            if SyncManager.Utils.pageAllowsBackgroundRefresh activePage then
+                SubModelReturn model (refreshPage ()) noError []
+
+            else
+                -- The nurse is in a logged-in workflow - they may have navigated
+                -- here while the reload was pending - so reloading would discard
+                -- unsaved form entries. Skip it; the newly-synced data still
+                -- surfaces through the regular fetch.
+                noChange
 
         BackendAuthorityFetch ->
             case model.syncStatus of

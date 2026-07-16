@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -44,7 +44,34 @@ import SyncManager.Model exposing (..)
 import Utils.WebData
 
 
-{-| Decide on the Sync status. Either keep the exiting one, or set the next one,
+{-| After a large download, a background sync may reload the page. That is only
+safe before the nurse is working: reloading a logged-in (`UserPage`) session
+would discard whatever form entries have not been saved yet, so the reload is
+skipped there. On any other page (device, PIN, service worker) there is no
+in-progress work to lose.
+-}
+pageAllowsBackgroundRefresh : Page -> Bool
+pageAllowsBackgroundRefresh page =
+    -- Enumerated rather than defaulted, so a new Page constructor forces this
+    -- safety decision to be made rather than silently allowing the reload.
+    case page of
+        DevicePage ->
+            True
+
+        PageNotFound _ ->
+            True
+
+        PinCodePage ->
+            True
+
+        ServiceWorkerPage ->
+            True
+
+        UserPage _ ->
+            False
+
+
+{-| Decide on the Sync status. Either keep the existing one, or set the next one,
 according to the order `SyncStatus` is defined.
 -}
 determineSyncStatus : Page -> Model -> Model
