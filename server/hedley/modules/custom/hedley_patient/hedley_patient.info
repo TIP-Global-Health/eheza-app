@@ -2,6 +2,7 @@ name = Hedley Patient
 description = Mother and Child related code.
 core = 7.x
 package = Hedley
+files[] = tests/HedleyPatientConsolidation.test
 dependencies[] = ctools
 dependencies[] = date
 dependencies[] = entityreference
