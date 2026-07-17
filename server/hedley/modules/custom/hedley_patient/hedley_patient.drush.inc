@@ -236,6 +236,12 @@ function _consolidate_patients_execute($original, $duplicate) {
   // person who no longer exists.
   $messages[] = _consolidate_patient_education_sessions($original, $duplicate);
 
+  // When the duplicate is a newborn, the parent's pregnancy participant points
+  // at it through field_newborn. That field is not among the ones the delete
+  // cascade follows, so re-point it here or the participant would keep naming a
+  // person who no longer exists.
+  $messages[] = _consolidate_patient_newborn_references($original, $duplicate);
+
   // Mark duplicate patient as Deleted.
   $wrapper_duplicate->field_deleted->set(TRUE);
   $wrapper_duplicate->save();
@@ -439,6 +445,37 @@ function _consolidate_patient_education_sessions($original, $duplicate) {
 
   return format_string('Education sessions: @updated re-pointed to the original.', [
     '@updated' => $updated,
+  ]);
+}
+
+/**
+ * Re-points a parent's pregnancy participant from the newborn duplicate.
+ *
+ * An individual_participant records a pregnancy through field_person (the
+ * parent) and field_newborn (the child it resulted in). When the duplicate is
+ * that child, the participant keeps naming it after the merge, because
+ * field_newborn is not one of the fields the person-delete cascade follows.
+ * Re-point those participants at the original.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_newborn_references($original, $duplicate) {
+  $participant_ids = _hedley_patient_content_referencing_person($duplicate, [
+    'field_newborn',
+  ], 'individual_participant');
+
+  _associate_content_by_field($participant_ids, 'field_newborn', $original);
+
+  return format_string('Newborn references: @count re-pointed to the original.', [
+    '@count' => count($participant_ids),
   ]);
 }
 

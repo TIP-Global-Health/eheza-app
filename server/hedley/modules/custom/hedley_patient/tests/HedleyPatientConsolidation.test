@@ -149,12 +149,49 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
   }
 
   /**
+   * Creates a pregnancy participant for a parent and its newborn.
+   *
+   * @param int $parent
+   *   The parent's person node ID.
+   * @param int $newborn
+   *   The newborn's person node ID.
+   *
+   * @return int
+   *   The individual_participant node ID.
+   */
+  protected function createPregnancyParticipant($parent, $newborn) {
+    $node = $this->drupalCreateNode(['type' => 'individual_participant']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($parent);
+    $wrapper->field_encounter_type->set('antenatal');
+    $wrapper->field_newborn->set($newborn);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * The person a participant names as its newborn.
+   *
+   * @param int $participant_id
+   *   The individual_participant node ID.
+   *
+   * @return int|null
+   *   The newborn person node ID, or NULL.
+   */
+  protected function participantNewborn($participant_id) {
+    return entity_metadata_wrapper('node', node_load($participant_id, NULL, TRUE))
+      ->field_newborn->getIdentifier();
+  }
+
+  /**
    * Merging a duplicate transfers the content that references it.
    *
    * Covers the non-measurement links the merge has to move by hand:
-   * relationships (cases 1-6) and education-session attendance (cases 7-9).
-   * All cases operate on disjoint people, so bundling them under one test
-   * method keeps the hedley-profile install (~5 min in CI) paid once.
+   * relationships (cases 1-6), education-session attendance (cases 7-9) and the
+   * pregnancy->newborn link (cases 10-11). All cases operate on disjoint
+   * people, so bundling them under one test method keeps the hedley-profile
+   * install (~5 min in CI) paid once.
    */
   public function testContentIsTransferredOnMerge() {
     // 1. A duplicate child's link to its mother moves to the original child.
@@ -303,6 +340,35 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
       $this->sessionAttendees($session),
       [$original],
       'The full merge re-points the session attendee to the original.'
+    );
+
+    // 10. When the duplicate is a newborn, the parent's pregnancy participant
+    // is re-pointed at the original child.
+    $parent = $this->createPerson('Parent10');
+    $originalChild = $this->createPerson('OriginalChild10');
+    $duplicateChild = $this->createPerson('DuplicateChild10');
+    $participant = $this->createPregnancyParticipant($parent, $duplicateChild);
+
+    _consolidate_patient_newborn_references($originalChild, $duplicateChild);
+
+    $this->assertEqual(
+      $this->participantNewborn($participant),
+      $originalChild,
+      'The pregnancy participant names the original child as its newborn.'
+    );
+
+    // 11. The same through the full merge path.
+    $parent = $this->createPerson('Parent11');
+    $originalChild = $this->createPerson('OriginalChild11');
+    $duplicateChild = $this->createPerson('DuplicateChild11');
+    $participant = $this->createPregnancyParticipant($parent, $duplicateChild);
+
+    _consolidate_patients_execute($originalChild, $duplicateChild);
+
+    $this->assertEqual(
+      $this->participantNewborn($participant),
+      $originalChild,
+      'The full merge re-points the pregnancy participant to the original child.'
     );
   }
 
