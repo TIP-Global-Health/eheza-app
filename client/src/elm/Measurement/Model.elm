@@ -1720,26 +1720,42 @@ type alias CreatinineResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , creatinineResult : Maybe Float
+    , creatinineResultDirty : Bool
     , bunResult : Maybe Float
+    , bunResultDirty : Bool
     }
 
 
 emptyCreatinineResultForm : CreatinineResultForm
 emptyCreatinineResultForm =
-    CreatinineResultForm Nothing Nothing Nothing Nothing
+    { executionNote = Nothing
+    , executionDate = Nothing
+    , creatinineResult = Nothing
+    , creatinineResultDirty = False
+    , bunResult = Nothing
+    , bunResultDirty = False
+    }
 
 
 type alias LiverFunctionResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , altResult : Maybe Float
+    , altResultDirty : Bool
     , astResult : Maybe Float
+    , astResultDirty : Bool
     }
 
 
 emptyLiverFunctionResultForm : LiverFunctionResultForm
 emptyLiverFunctionResultForm =
-    LiverFunctionResultForm Nothing Nothing Nothing Nothing
+    { executionNote = Nothing
+    , executionDate = Nothing
+    , altResult = Nothing
+    , altResultDirty = False
+    , astResult = Nothing
+    , astResultDirty = False
+    }
 
 
 type alias NCDAData =

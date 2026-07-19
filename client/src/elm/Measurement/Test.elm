@@ -4,21 +4,26 @@ import AssocList as Dict
 import Backend.Measurement.Model
     exposing
         ( ColorAlertIndication(..)
+        , CreatinineTestValue
+        , LiverFunctionTestValue
         , MuacInCm(..)
+        , TestExecutionNote(..)
         , VaccineDose(..)
         , WellChildVaccineType(..)
         )
 import Date exposing (Unit(..))
 import Expect
-import Measurement.Model exposing (MsgChild(..), emptyModelChild)
+import Measurement.Model exposing (MsgChild(..), emptyCreatinineResultForm, emptyLiverFunctionResultForm, emptyModelChild)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
-        ( getAllDosesForVaccine
+        ( creatinineResultFormWithDefault
+        , getAllDosesForVaccine
         , getInputConstraintsHeight
         , getInputConstraintsWeight
         , getIntervalForVaccine
         , initialVaccinationDateByBirthDate
+        , liverFunctionResultFormWithDefault
         , muacOutsideConstraints
         , outsideConstraints
         )
@@ -346,6 +351,85 @@ muacOutsideConstraintsTest =
         ]
 
 
+{-| A saved creatinine test with both results filled in, so the tests can check
+what happens when the nurse clears one and re-opens the recurrent encounter.
+-}
+savedCreatinineTest : CreatinineTestValue
+savedCreatinineTest =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just (Date.fromCalendarDate 2024 Time.Jan 1)
+    , creatinineResult = Just 1.2
+    , bunResult = Just 15
+    }
+
+
+creatinineResultFormWithDefaultTest : Test
+creatinineResultFormWithDefaultTest =
+    let
+        resolve form =
+            creatinineResultFormWithDefault form (Just savedCreatinineTest)
+    in
+    describe "creatinineResultFormWithDefault"
+        [ test "a cleared creatinine result stays cleared when the field is dirty" <|
+            \_ ->
+                resolve { emptyCreatinineResultForm | creatinineResultDirty = True }
+                    |> .creatinineResult
+                    |> Expect.equal Nothing
+        , test "an untouched creatinine result loads from the saved value" <|
+            \_ ->
+                resolve emptyCreatinineResultForm
+                    |> .creatinineResult
+                    |> Expect.equal (Just 1.2)
+        , test "an edited creatinine result wins over the saved value" <|
+            \_ ->
+                resolve { emptyCreatinineResultForm | creatinineResultDirty = True, creatinineResult = Just 2.5 }
+                    |> .creatinineResult
+                    |> Expect.equal (Just 2.5)
+        , test "a cleared BUN result stays cleared when the field is dirty" <|
+            \_ ->
+                resolve { emptyCreatinineResultForm | bunResultDirty = True }
+                    |> .bunResult
+                    |> Expect.equal Nothing
+        ]
+
+
+{-| A saved liver function test with both results filled in, for the same
+clear-then-reopen check.
+-}
+savedLiverFunctionTest : LiverFunctionTestValue
+savedLiverFunctionTest =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just (Date.fromCalendarDate 2024 Time.Jan 1)
+    , altResult = Just 30
+    , astResult = Just 25
+    }
+
+
+liverFunctionResultFormWithDefaultTest : Test
+liverFunctionResultFormWithDefaultTest =
+    let
+        resolve form =
+            liverFunctionResultFormWithDefault form (Just savedLiverFunctionTest)
+    in
+    describe "liverFunctionResultFormWithDefault"
+        [ test "a cleared ALT result stays cleared when the field is dirty" <|
+            \_ ->
+                resolve { emptyLiverFunctionResultForm | altResultDirty = True }
+                    |> .altResult
+                    |> Expect.equal Nothing
+        , test "an untouched ALT result loads from the saved value" <|
+            \_ ->
+                resolve emptyLiverFunctionResultForm
+                    |> .altResult
+                    |> Expect.equal (Just 30)
+        , test "a cleared AST result stays cleared when the field is dirty" <|
+            \_ ->
+                resolve { emptyLiverFunctionResultForm | astResultDirty = True }
+                    |> .astResult
+                    |> Expect.equal Nothing
+        ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
@@ -358,4 +442,6 @@ all =
         , updateChildSetMuacTest
         , outsideConstraintsTest
         , muacOutsideConstraintsTest
+        , creatinineResultFormWithDefaultTest
+        , liverFunctionResultFormWithDefaultTest
         ]
