@@ -46,6 +46,7 @@ import Pages.Utils
         , ifNullableTrue
         , ifTrue
         , maybeToBoolTask
+        , maybeValueConsideringIsDirtyField
         , resolveTasksCompletedFromTotal
         , taskAnyCompleted
         , valueConsideringIsDirtyField
@@ -240,12 +241,13 @@ pregnancySummaryFormWithDefault form saved =
                         (listNotEmptyWithException NoDeliveryComplications deliveryComplications |> Just)
                 , deliveryComplications = or form.deliveryComplications (Just deliveryComplications)
                 , apgarScoresAvailable = or form.apgarScoresAvailable (List.member ApgarScores signsFromValue |> Just)
-                , apgarOneMin = or form.apgarOneMin (Maybe.andThen .apgarOneMin saved)
-                , apgarFiveMin = or form.apgarFiveMin (Maybe.andThen .apgarFiveMin saved)
+                , apgarOneMin = maybeValueConsideringIsDirtyField form.apgarDirty form.apgarOneMin (Maybe.andThen .apgarOneMin saved)
+                , apgarFiveMin = maybeValueConsideringIsDirtyField form.apgarDirty form.apgarFiveMin (Maybe.andThen .apgarFiveMin saved)
                 , apgarDirty = form.apgarDirty
-                , birthWeight = or form.birthWeight (Maybe.andThen .birthWeight saved)
+                , birthWeight = maybeValueConsideringIsDirtyField form.birthWeightDirty form.birthWeight (Maybe.andThen .birthWeight saved)
+                , birthWeightDirty = form.birthWeightDirty
                 , birthLengthAvailable = or form.birthLengthAvailable (List.member BirthLength signsFromValue |> Just)
-                , birthLength = or form.birthLength (Maybe.andThen .birthLength saved)
+                , birthLength = maybeValueConsideringIsDirtyField form.birthLengthDirty form.birthLength (Maybe.andThen .birthLength saved)
                 , birthLengthDirty = form.birthLengthDirty
                 , birthDefectsPresent =
                     or form.birthDefectsPresent
