@@ -29,6 +29,7 @@ import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (emptyMuacForm)
+import Pages.AcuteIllness.Activity.Model exposing (emptyCovidTestingForm)
 import Pages.AcuteIllness.Activity.Types exposing (PhysicalExamTask(..))
 import Pages.AcuteIllness.Activity.Utils
     exposing
@@ -46,6 +47,7 @@ import Pages.AcuteIllness.Activity.Utils
         , respiratoryRateElevatedByAge
         , respiratoryRateElevatedByAgeForCovid19
         , symptomMaxDuration
+        , toCovidTestingValueWithDefault
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
@@ -874,6 +876,36 @@ all =
         , zincDosageTest
         , amoxicillinDosageTest
         , physicalExamSaveDisabledTest
+        , covidTestingRoundTripTest
+        ]
+
+
+{-| Re-opening a saved COVID rapid test used to reconstruct some results wrong:
+"unable to run while pregnant" came back as "performed / not pregnant" (and
+re-saved as no value), and a plain positive came back flagged pregnant (and
+re-saved as positive-and-pregnant). Saving from the edited form therefore
+corrupted the record. Every result must survive a form round-trip unchanged.
+-}
+covidTestingRoundTripTest : Test
+covidTestingRoundTripTest =
+    let
+        roundTrip result =
+            toCovidTestingValueWithDefault
+                (Just (CovidTestingValue result Nothing))
+                emptyCovidTestingForm
+                |> Expect.equal (Just (CovidTestingValue result Nothing))
+    in
+    describe "COVID rapid test result round-trips through the form unchanged"
+        [ test "unable to run while pregnant (was lost on re-save)" <|
+            \_ -> roundTrip RapidTestUnableToRunAndPregnant
+        , test "positive (was silently turned into positive-and-pregnant)" <|
+            \_ -> roundTrip RapidTestPositive
+        , test "positive and pregnant" <|
+            \_ -> roundTrip RapidTestPositiveAndPregnant
+        , test "negative" <|
+            \_ -> roundTrip RapidTestNegative
+        , test "unable to run" <|
+            \_ -> roundTrip RapidTestUnableToRun
         ]
 
 
