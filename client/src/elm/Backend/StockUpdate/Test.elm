@@ -213,6 +213,36 @@ generateDataTest =
                     |> Maybe.map .consumptionAverage
                     |> Maybe.map (\avg -> Expect.within (Absolute 0.01) 10 avg)
                     |> Maybe.withDefault (Expect.fail "Month not found in result")
+        , test "consumption average for the current month uses its 6 preceding months, not the current partial month" <|
+            \_ ->
+                let
+                    stockUpdates =
+                        [ makeStockUpdate
+                            { dateRecorded = date 2025 Time.May 1
+                            , quantity = 1000
+                            , updateType = UpdateReceivingSupplies
+                            }
+                        ]
+
+                    distributions =
+                        [ { dateMeasured = date 2025 Time.Aug 10, distributedAmount = 12 }
+                        , { dateMeasured = date 2025 Time.Sep 10, distributedAmount = 12 }
+                        , { dateMeasured = date 2025 Time.Oct 10, distributedAmount = 12 }
+                        , { dateMeasured = date 2025 Time.Nov 10, distributedAmount = 12 }
+                        , { dateMeasured = date 2025 Time.Dec 10, distributedAmount = 12 }
+                        , { dateMeasured = date 2026 Time.Jan 10, distributedAmount = 12 }
+
+                        -- The current month is excluded from its own average.
+                        , { dateMeasured = date 2026 Time.Feb 10, distributedAmount = 999 }
+                        ]
+
+                    result =
+                        generateStockManagementDataFromDistributions currentDate distributions stockUpdates
+                in
+                lookupMonth currentMonthYear result
+                    |> Maybe.map .consumptionAverage
+                    |> Maybe.map (\avg -> Expect.within (Absolute 0.01) 12 avg)
+                    |> Maybe.withDefault (Expect.fail "Current month not found in result")
         , test "multiple stock updates across months accumulate correctly" <|
             \_ ->
                 let
