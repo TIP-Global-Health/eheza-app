@@ -532,6 +532,47 @@ function hedley_general_shards_by_person($nid) {
 }
 
 /**
+ * Resolves the shards for a two-person linking node.
+ *
+ * A pmtct_participant or relationship links two people, so it must reach every
+ * device that syncs either of them. Its shards are therefore the union of both
+ * persons' shards.
+ *
+ * @param object $node
+ *   A pmtct_participant or relationship node.
+ *
+ * @return array
+ *   The union of both linked persons' shards.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function hedley_general_two_person_node_shards($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  // The two person-reference fields differ by bundle.
+  if ($node->type == 'relationship') {
+    $person_ids = [
+      $wrapper->field_person->getIdentifier(),
+      $wrapper->field_related_to->getIdentifier(),
+    ];
+  }
+  else {
+    $person_ids = [
+      $wrapper->field_person->getIdentifier(),
+      $wrapper->field_adult->getIdentifier(),
+    ];
+  }
+
+  $shards = [];
+  foreach ($person_ids as $person_id) {
+    $person_shards = hedley_general_shards_by_person($person_id);
+    $shards = array_merge($shards, $person_shards);
+  }
+
+  return array_unique($shards);
+}
+
+/**
  * Implements hook_file_presave().
  *
  * If file is saved directly into 'private', sets it's uri and

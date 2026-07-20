@@ -372,4 +372,50 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     );
   }
 
+  /**
+   * A two-person linking record keeps the union of both persons' shards.
+   *
+   * A relationship or pmtct_participant links two people, so its shards must be
+   * the union of both. hedley_patient_recalculate_shards_for_person_content()
+   * propagates one person's shards to their content, and must keep the union
+   * for these records. Otherwise the record drops off a health center that
+   * only the other person belongs to.
+   */
+  public function testLinkingRecordShardsSurviveRecalculation() {
+    $hc1 = $this->createHealthCenter();
+    $hc2 = $this->createHealthCenter();
+
+    // The adult syncs to one health center; the child to two.
+    $adult = $this->createPerson('AdultB057', [$hc1]);
+    $child = $this->createPerson('ChildB057', [$hc1, $hc2]);
+
+    // The relationship presave assigns the union of both persons' shards.
+    $relationship = $this->createRelationship($adult, $child, 'parent');
+
+    $union = [$hc1, $hc2];
+    sort($union);
+    $this->assertEqual(
+      $this->shardsOf($relationship),
+      $union,
+      'The relationship starts with the union of both persons\' shards.'
+    );
+
+    // Recalculating the adult's content must not reset the relationship to the
+    // adult's shards alone, which would drop the child-only health center.
+    hedley_patient_recalculate_shards_for_person_content($adult);
+    $this->assertEqual(
+      $this->shardsOf($relationship),
+      $union,
+      'Recalculating the adult keeps the child-only shard on the relationship.'
+    );
+
+    // Recalculating the child's content likewise leaves the union intact.
+    hedley_patient_recalculate_shards_for_person_content($child);
+    $this->assertEqual(
+      $this->shardsOf($relationship),
+      $union,
+      'Recalculating the child keeps the union on the relationship.'
+    );
+  }
+
 }
