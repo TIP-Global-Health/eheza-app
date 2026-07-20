@@ -7870,8 +7870,10 @@ creatinineResultFormWithDefault form saved =
             (\value ->
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
-                , creatinineResult = or form.creatinineResult value.creatinineResult
-                , bunResult = or form.bunResult value.bunResult
+                , creatinineResult = maybeValueConsideringIsDirtyField form.creatinineResultDirty form.creatinineResult value.creatinineResult
+                , creatinineResultDirty = form.creatinineResultDirty
+                , bunResult = maybeValueConsideringIsDirtyField form.bunResultDirty form.bunResult value.bunResult
+                , bunResultDirty = form.bunResultDirty
                 }
             )
 
@@ -7903,8 +7905,10 @@ liverFunctionResultFormWithDefault form saved =
             (\value ->
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
-                , altResult = or form.altResult value.altResult
-                , astResult = or form.astResult value.astResult
+                , altResult = maybeValueConsideringIsDirtyField form.altResultDirty form.altResult value.altResult
+                , altResultDirty = form.altResultDirty
+                , astResult = maybeValueConsideringIsDirtyField form.astResultDirty form.astResult value.astResult
+                , astResultDirty = form.astResultDirty
                 }
             )
 
