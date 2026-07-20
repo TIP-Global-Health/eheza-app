@@ -14,7 +14,8 @@
  * handleBulkPhotoFetch returns either:
  *   { results: [{url, ok, terminal}, ...] } on success, or
  *   { batchError: <http status or 0 for network/parse failure> } on
- *   whole-batch failure.
+ *   whole-batch failure, optionally carrying a diagnostic `error` string
+ *   (ignored by the Elm decoder, visible in port traffic).
  *
  * NOTE: depends on self.photoCache.stripAccessToken — photoCache.js must
  * load before this file (handled by index.html script order).
@@ -46,7 +47,14 @@ self.bulkPhotos.handleBulkPhotoFetch = async function (params) {
     return { batchError: response.status };
   }
 
-  var buf = await response.arrayBuffer();
+  var buf;
+  try {
+    buf = await response.arrayBuffer();
+  } catch (e) {
+    // Connection dropped while the (multi-MB) body was streaming —
+    // routine on rural networks. Transient: retry on the next cycle.
+    return { batchError: 0, error: String(e) };
+  }
   if (buf.byteLength < 8) {
     return { batchError: 0 };
   }
@@ -67,7 +75,13 @@ self.bulkPhotos.handleBulkPhotoFetch = async function (params) {
   }
 
   var binStart = 8 + manifestLen;
-  var cache = await caches.open(self.photoCache.cacheName);
+  var cache;
+  try {
+    cache = await caches.open(self.photoCache.cacheName);
+  } catch (e) {
+    // Cache Storage unavailable (quota pressure, storage eviction).
+    return { batchError: 0, error: String(e) };
+  }
   var results = [];
 
   for (var i = 0; i < manifest.items.length; i++) {
