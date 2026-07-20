@@ -1,4 +1,4 @@
-module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentSaveDisabled, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveFirstEncounterDateAfterMilestone, resolveNextDateForImmunisationVisit, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
+module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentSaveDisabled, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -1899,65 +1899,82 @@ generateNextDateForECDVisit currentDate assembled =
         |> Maybe.andThen
             (\birthDate ->
                 let
-                    ageWeeks =
-                        Date.diff Weeks birthDate currentDate
-
                     noRemainingSigns =
                         List.isEmpty <| generateRemianingECDSignsAfterCurrentEncounter currentDate assembled
                 in
-                if ageWeeks < 6 then
-                    -- Since 6 weeks question appear from age of 5 weeks,
-                    -- we check if they were completed then.
-                    -- If so, we schedule next ECD visit to following
-                    -- milestone, which is at 14 weeks.
-                    if ageWeeks == 5 && noRemainingSigns then
-                        Just <| Date.add Weeks 14 birthDate
-
-                    else
-                        Just <| Date.add Weeks 6 birthDate
-
-                else if ageWeeks < 14 then
-                    -- Since 14 weeks question appear from age of 13 weeks,
-                    -- we check if they were completed then.
-                    -- If so, we schedule next ECD visit to following
-                    -- milestone, which is at 6 months.
-                    if ageWeeks == 13 && noRemainingSigns then
-                        Just <| Date.add Months 6 birthDate
-
-                    else
-                        Just <| Date.add Weeks 14 birthDate
-
-                else
-                    let
-                        ageMonths =
-                            Date.diff Months birthDate currentDate
-                    in
-                    if ageMonths < 6 then
-                        Just <| Date.add Months 6 birthDate
-
-                    else if ageMonths < 15 then
-                        Just <| Date.add Months 15 birthDate
-
-                    else
-                        let
-                            ageYears =
-                                Date.diff Years birthDate currentDate
-                        in
-                        if ageYears < 2 then
-                            Just <| Date.add Years 2 birthDate
-
-                        else if ageYears < 3 then
-                            Just <| Date.add Years 3 birthDate
-
-                        else if ageYears < 4 then
-                            Just <| Date.add Years 4 birthDate
-
-                        else if not noRemainingSigns then
-                            Just <| Date.add Months 6 currentDate
-
-                        else
-                            Nothing
+                resolveNextDateForECDVisit currentDate birthDate noRemainingSigns
             )
+
+
+{-| Resolves the date for the next ECD visit from the child's birth date and
+whether the current milestone's signs are all done. Extracted from
+generateNextDateForECDVisit so the ladder can be unit tested without an
+AssembledData value.
+
+Each rung matches an ECD sign group that becomes assessable at that age.
+
+-}
+resolveNextDateForECDVisit : NominalDate -> NominalDate -> Bool -> Maybe NominalDate
+resolveNextDateForECDVisit currentDate birthDate noRemainingSigns =
+    let
+        ageWeeks =
+            Date.diff Weeks birthDate currentDate
+    in
+    if ageWeeks < 6 then
+        -- Since 6 weeks question appear from age of 5 weeks,
+        -- we check if they were completed then.
+        -- If so, we schedule next ECD visit to following
+        -- milestone, which is at 14 weeks.
+        if ageWeeks == 5 && noRemainingSigns then
+            Just <| Date.add Weeks 14 birthDate
+
+        else
+            Just <| Date.add Weeks 6 birthDate
+
+    else if ageWeeks < 14 then
+        -- Since 14 weeks question appear from age of 13 weeks,
+        -- we check if they were completed then.
+        -- If so, we schedule next ECD visit to following
+        -- milestone, which is at 6 months.
+        if ageWeeks == 13 && noRemainingSigns then
+            Just <| Date.add Months 6 birthDate
+
+        else
+            Just <| Date.add Weeks 14 birthDate
+
+    else
+        let
+            ageMonths =
+                Date.diff Months birthDate currentDate
+        in
+        if ageMonths < 6 then
+            Just <| Date.add Months 6 birthDate
+
+        else if ageMonths < 15 then
+            Just <| Date.add Months 15 birthDate
+
+        else if ageMonths < 18 then
+            Just <| Date.add Months 18 birthDate
+
+        else
+            let
+                ageYears =
+                    Date.diff Years birthDate currentDate
+            in
+            if ageYears < 2 then
+                Just <| Date.add Years 2 birthDate
+
+            else if ageYears < 3 then
+                Just <| Date.add Years 3 birthDate
+
+            else if ageYears < 4 then
+                Just <| Date.add Years 4 birthDate
+
+            else if not noRemainingSigns then
+                Just <| Date.add Months 6 currentDate
+
+            else
+                Nothing
 
 
 generateNextDateForMedicationVisit : NominalDate -> Site -> AssembledData -> Maybe NominalDate
