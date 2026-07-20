@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 E-Heza is a digital health data capture app for frontline health workers (maternal/child health). It's an offline-first PWA that syncs with a Drupal backend.
 
-- **Frontend:** Elm 0.19.1 (`client/`)
+- **Frontend:** Elm 0.19.2 (`client/`)
 - **Backend:** Drupal 7 with custom "Hedley" install profile (`server/hedley/`)
 - **Database:** MariaDB 10.5
 - **Dev environment:** DDEV (Docker-based)

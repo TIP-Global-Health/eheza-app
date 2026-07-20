@@ -1,4 +1,4 @@
-module Pages.WellChild.Activity.Model exposing (DangerSignsData, HeadCircumferenceForm, HomeVisitData, ImmunisationData, MedicationData, Model, Msg(..), NextStepsData, NextVisitForm, NutritionAssessmentData, PregnancySummaryForm, SymptomsReviewForm, WarningPopupType(..), WellChildECDForm, WellChildVaccinationForm, emptyModel, medicationTasks)
+module Pages.WellChild.Activity.Model exposing (DangerSignsData, HeadCircumferenceForm, HomeVisitData, ImmunisationData, MedicationData, Model, Msg(..), NextStepsData, NextVisitForm, NutritionAssessmentData, PregnancySummaryForm, SymptomsReviewForm, WarningPopupType(..), WellChildECDForm, WellChildVaccinationForm, emptyModel, emptyPregnancySummaryForm, medicationTasks)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -179,6 +179,7 @@ type alias PregnancySummaryForm =
     , apgarFiveMin : Maybe Float
     , apgarDirty : Bool
     , birthWeight : Maybe WeightInGrm
+    , birthWeightDirty : Bool
     , birthLengthAvailable : Maybe Bool
     , birthLength : Maybe HeightInCm
     , birthLengthDirty : Bool
@@ -198,6 +199,7 @@ emptyPregnancySummaryForm =
     , apgarFiveMin = Nothing
     , apgarDirty = False
     , birthWeight = Nothing
+    , birthWeightDirty = False
     , birthLengthAvailable = Nothing
     , birthLength = Nothing
     , birthLengthDirty = False

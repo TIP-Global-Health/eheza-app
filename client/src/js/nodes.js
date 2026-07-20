@@ -654,7 +654,7 @@
                     if (node.date_concluded != undefined && typeof node.date_concluded != 'undefined') {
                         var resolutionDate = new Date(node.date_concluded);
                         if (followUpMeasurementsTypesUsedByDashboard.includes(node.type)) {
-                          resolutionDate.setMonth(today.getMonth() + 6);
+                          resolutionDate.setMonth(resolutionDate.getMonth() + 6);
                         }
 
                         if (resolutionDate < today) {

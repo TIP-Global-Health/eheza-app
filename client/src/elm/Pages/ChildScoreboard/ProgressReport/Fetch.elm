@@ -2,7 +2,7 @@ module Pages.ChildScoreboard.ProgressReport.Fetch exposing (fetch)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
+import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Pages.AcuteIllness.Participant.Fetch
 import Pages.ChildScoreboard.Encounter.Fetch
 import RemoteData
@@ -29,4 +29,8 @@ fetch id db =
                 maybePersonId
                 |> Maybe.withDefault []
     in
-    Pages.ChildScoreboard.Encounter.Fetch.fetch id db ++ fetchAcuteIllnessDataMsgs
+    -- See Pages.Nutrition.ProgressReport.Fetch: the Next Appointment pane needs
+    -- the health centers, and nothing else on this page fetches them.
+    FetchHealthCenters
+        :: Pages.ChildScoreboard.Encounter.Fetch.fetch id db
+        ++ fetchAcuteIllnessDataMsgs

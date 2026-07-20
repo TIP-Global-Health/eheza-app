@@ -2,7 +2,7 @@ module Pages.Nutrition.ProgressReport.Fetch exposing (fetch)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
+import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Pages.AcuteIllness.Participant.Fetch
 import Pages.Nutrition.Encounter.Fetch
 import RemoteData
@@ -29,4 +29,10 @@ fetch id db =
                 maybePersonId
                 |> Maybe.withDefault []
     in
-    Pages.Nutrition.Encounter.Fetch.fetch id db ++ fetchAcuteIllnessDataMsgs
+    -- The report's Next Appointment pane resolves the health center's name, so
+    -- the health centers have to be fetched here: CheckDataWanted drops them
+    -- once they go unwanted for 5 minutes, and nothing else on this page asks
+    -- for them again.
+    FetchHealthCenters
+        :: Pages.Nutrition.Encounter.Fetch.fetch id db
+        ++ fetchAcuteIllnessDataMsgs

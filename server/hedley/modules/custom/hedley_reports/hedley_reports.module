@@ -1326,6 +1326,19 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   }
 
   $encoded_data = json_encode($data);
+
+  // Assembling the data above may take seconds (hundreds of node loads), during
+  // which the person node could have been updated (device sync, admin edit), or
+  // the NCDA worker could have written its own aggregate to it. node_save()
+  // writes back every field of the object it's given, so saving the copy we
+  // started with would revert those updates. Reload before mutating, to keep
+  // the window between read and write as short as possible.
+  $person = node_load($person->nid, NULL, TRUE);
+  if (!$person) {
+    // Person was deleted while we were calculating.
+    return FALSE;
+  }
+
   $person->field_reports_data[LANGUAGE_NONE][0]['value'] = $encoded_data;
   node_save($person);
 
@@ -2817,6 +2830,13 @@ function hedley_reports_generate_incidence_nutrition_metrics_results(array $curr
  *   The percentage value as a string, rounded to three decimal places.
  */
 function hedley_reports_calculate_percentage(array $nominator, array $total) {
+  // The metric arrays hold one entry per encounter, so a child measured
+  // several times during the period appears several times. Count children on
+  // both sides: deduplicating only the total (as callers do) inflated the
+  // percentage, and could push it past 100%.
+  $nominator = array_unique($nominator);
+  $total = array_unique($total);
+
   if (empty($total)) {
     return "0%";
   }

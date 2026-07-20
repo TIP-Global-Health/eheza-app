@@ -118,7 +118,7 @@ function hedley_chw_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_health_center',
     'label' => 'Health Center',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
     ),

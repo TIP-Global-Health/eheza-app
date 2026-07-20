@@ -877,7 +877,6 @@ encodeUltrasoundValue value =
     , ( "edd_weeks", int value.eddWeeks )
     , ( "edd_days", int value.eddDays )
     , ( "expected_date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.eddDate )
-    , ( "deleted", bool False )
     , ( "type", string "prenatal_ultrasound" )
     ]
 
@@ -1430,7 +1429,6 @@ encodeMedicalHistoryValue value =
     , ( "infectious_disease_history", encodeEverySet encodeMedicalHistoryInfectiousDisease value.infectiousDiseases )
     , ( "mental_health_issues", encodeEverySet encodeMedicalHistoryMentalHealthIssue value.mentalHealthIssues )
     , ( "preeclampsia_in_family", encodeOccursInFamilySign value.preeclampsiaInFamily )
-    , ( "deleted", bool False )
     , ( "type", string "medical_history" )
     ]
 
@@ -2005,7 +2003,6 @@ encodeSymptomsRespiratoryValue signs =
     , ( "sore_throat_period", int soreThroat )
     , ( "loss_of_smell_period", int lossOfSmell )
     , ( "stabbing_chest_pain_period", int stabbingChestPain )
-    , ( "deleted", bool False )
     , ( "type", string "symptoms_respiratory" )
     ]
 

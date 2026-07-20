@@ -3105,6 +3105,7 @@ medicalFormInputsAndTasks language form =
       , maybeToBoolTask form.physicalConditions
       , maybeToBoolTask form.infectiousDiseases
       , maybeToBoolTask form.mentalHealthIssues
+      , maybeToBoolTask form.preeclampsiaInFamily
       ]
     )
 

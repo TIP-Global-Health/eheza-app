@@ -34,16 +34,24 @@ RUN if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then \
     fi
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
-# Elm - directly downloading the binary.
-RUN wget https://github.com/elm/compiler/releases/download/0.19.1/binary-for-linux-64-bit.gz
-RUN gunzip binary-for-linux-64-bit.gz
-RUN mv binary-for-linux-64-bit /usr/bin/elm
-RUN chmod +x /usr/bin/elm
+# Elm - directly downloading the binary. Since 0.19.2 the release ships one
+# asset per architecture, so pick the one matching the container.
+RUN set -eux; \
+    if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then \
+      ELM_ARCH=arm; \
+    else \
+      ELM_ARCH=x64; \
+    fi; \
+    wget -q "https://github.com/elm/compiler/releases/download/0.19.2/elm-0.19.2-linux-${ELM_ARCH}.gz" -O /tmp/elm.gz; \
+    gunzip -c /tmp/elm.gz > /usr/bin/elm; \
+    rm /tmp/elm.gz; \
+    chmod +x /usr/bin/elm; \
+    elm --version
 # gulp for the client compilation.
 RUN npm install -g gulp-cli
 # For Elm Unit tests
 ENV NPM_CONFIG_UNSAFE_PERM=true
-RUN npm install -g elm-test@0.19.1-revision6
+RUN npm install -g elm-test@0.19.2-0
 # Install svg2elm.
 RUN npm install -g svg2elm
 # Downgrade terminus.

@@ -4,19 +4,28 @@ import AssocList as Dict
 import Backend.Measurement.Model
     exposing
         ( ColorAlertIndication(..)
+        , CreatinineTestValue
+        , LiverFunctionTestValue
         , MuacInCm(..)
+        , TestExecutionNote(..)
         , VaccineDose(..)
         , WellChildVaccineType(..)
         )
 import Date exposing (Unit(..))
 import Expect
-import Measurement.Model exposing (MsgChild(..), emptyModelChild)
+import Measurement.Model exposing (MsgChild(..), emptyCreatinineResultForm, emptyLiverFunctionResultForm, emptyModelChild)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
-        ( getAllDosesForVaccine
+        ( creatinineResultFormWithDefault
+        , getAllDosesForVaccine
+        , getInputConstraintsHeight
+        , getInputConstraintsWeight
         , getIntervalForVaccine
         , initialVaccinationDateByBirthDate
+        , liverFunctionResultFormWithDefault
+        , muacOutsideConstraints
+        , outsideConstraints
         )
 import Measurement.View exposing (viewColorAlertIndication)
 import SyncManager.Model exposing (Site(..))
@@ -270,6 +279,157 @@ updateChildSetMuacTest =
         ]
 
 
+outsideConstraintsTest : Test
+outsideConstraintsTest =
+    -- Guards the Save actions of every measurement form: a value that is absent,
+    -- or outside the range printed above the input, must keep Save disabled.
+    describe "outsideConstraints"
+        [ test "a plausible height is inside the constraints" <|
+            \_ ->
+                outsideConstraints getInputConstraintsHeight (Just 105)
+                    |> Expect.equal False
+        , test "a mistyped height (1050 cm) is outside the constraints" <|
+            \_ ->
+                outsideConstraints getInputConstraintsHeight (Just 1050)
+                    |> Expect.equal True
+        , test "a grossly mistyped weight (850 kg) is outside the constraints" <|
+            \_ ->
+                outsideConstraints getInputConstraintsWeight (Just 850)
+                    |> Expect.equal True
+        , test "the weight range is wide (0.5-200 kg), so an implausible 85 kg for a child still passes" <|
+            -- The constraints are a typo guard, not a plausibility check: the
+            -- weight form is shared with adult encounters. A dropped decimal
+            -- (8.5 -> 85) is therefore NOT caught here.
+            \_ ->
+                outsideConstraints getInputConstraintsWeight (Just 85)
+                    |> Expect.equal False
+        , test "the range bounds themselves are inside the constraints" <|
+            \_ ->
+                ( outsideConstraints getInputConstraintsHeight (Just 25)
+                , outsideConstraints getInputConstraintsHeight (Just 250)
+                )
+                    |> Expect.equal ( False, False )
+        , test "a value just below the minimum is outside the constraints" <|
+            \_ ->
+                outsideConstraints getInputConstraintsHeight (Just 24.9)
+                    |> Expect.equal True
+        , test "an unset value is outside the constraints, so Save stays disabled" <|
+            \_ ->
+                outsideConstraints getInputConstraintsHeight Nothing
+                    |> Expect.equal True
+        ]
+
+
+muacOutsideConstraintsTest : Test
+muacOutsideConstraintsTest =
+    -- MUAC is stored in cm, but its constraints are expressed in the unit shown
+    -- to the nurse - mm at Burundi. Comparing the stored value directly would
+    -- reject every legitimate Burundi measurement.
+    describe "muacOutsideConstraints (site-aware)"
+        [ test "Burundi: a stored 12.5 cm (125 mm) is inside the 50-999 mm range" <|
+            \_ ->
+                muacOutsideConstraints SiteBurundi (Just 12.5)
+                    |> Expect.equal False
+        , test "Burundi: a stored 0.4 cm (4 mm) is below the 50 mm minimum" <|
+            \_ ->
+                muacOutsideConstraints SiteBurundi (Just 0.4)
+                    |> Expect.equal True
+        , test "Rwanda: a stored 12.5 cm is inside the 5-99 cm range" <|
+            \_ ->
+                muacOutsideConstraints SiteRwanda (Just 12.5)
+                    |> Expect.equal False
+        , test "Rwanda: a stored 125 cm (mm typed into a cm field) is above the 99 cm maximum" <|
+            \_ ->
+                muacOutsideConstraints SiteRwanda (Just 125)
+                    |> Expect.equal True
+        , test "an unset MUAC is outside the constraints at either site" <|
+            \_ ->
+                ( muacOutsideConstraints SiteBurundi Nothing
+                , muacOutsideConstraints SiteRwanda Nothing
+                )
+                    |> Expect.equal ( True, True )
+        ]
+
+
+{-| A saved creatinine test with both results filled in, so the tests can check
+what happens when the nurse clears one and re-opens the recurrent encounter.
+-}
+savedCreatinineTest : CreatinineTestValue
+savedCreatinineTest =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just (Date.fromCalendarDate 2024 Time.Jan 1)
+    , creatinineResult = Just 1.2
+    , bunResult = Just 15
+    }
+
+
+creatinineResultFormWithDefaultTest : Test
+creatinineResultFormWithDefaultTest =
+    let
+        resolve form =
+            creatinineResultFormWithDefault form (Just savedCreatinineTest)
+    in
+    describe "creatinineResultFormWithDefault"
+        [ test "a cleared creatinine result stays cleared when the field is dirty" <|
+            \_ ->
+                resolve { emptyCreatinineResultForm | creatinineResultDirty = True }
+                    |> .creatinineResult
+                    |> Expect.equal Nothing
+        , test "an untouched creatinine result loads from the saved value" <|
+            \_ ->
+                resolve emptyCreatinineResultForm
+                    |> .creatinineResult
+                    |> Expect.equal (Just 1.2)
+        , test "an edited creatinine result wins over the saved value" <|
+            \_ ->
+                resolve { emptyCreatinineResultForm | creatinineResultDirty = True, creatinineResult = Just 2.5 }
+                    |> .creatinineResult
+                    |> Expect.equal (Just 2.5)
+        , test "a cleared BUN result stays cleared when the field is dirty" <|
+            \_ ->
+                resolve { emptyCreatinineResultForm | bunResultDirty = True }
+                    |> .bunResult
+                    |> Expect.equal Nothing
+        ]
+
+
+{-| A saved liver function test with both results filled in, for the same
+clear-then-reopen check.
+-}
+savedLiverFunctionTest : LiverFunctionTestValue
+savedLiverFunctionTest =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just (Date.fromCalendarDate 2024 Time.Jan 1)
+    , altResult = Just 30
+    , astResult = Just 25
+    }
+
+
+liverFunctionResultFormWithDefaultTest : Test
+liverFunctionResultFormWithDefaultTest =
+    let
+        resolve form =
+            liverFunctionResultFormWithDefault form (Just savedLiverFunctionTest)
+    in
+    describe "liverFunctionResultFormWithDefault"
+        [ test "a cleared ALT result stays cleared when the field is dirty" <|
+            \_ ->
+                resolve { emptyLiverFunctionResultForm | altResultDirty = True }
+                    |> .altResult
+                    |> Expect.equal Nothing
+        , test "an untouched ALT result loads from the saved value" <|
+            \_ ->
+                resolve emptyLiverFunctionResultForm
+                    |> .altResult
+                    |> Expect.equal (Just 30)
+        , test "a cleared AST result stays cleared when the field is dirty" <|
+            \_ ->
+                resolve { emptyLiverFunctionResultForm | astResultDirty = True }
+                    |> .astResult
+                    |> Expect.equal Nothing
+        ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
@@ -280,4 +440,8 @@ all =
         , getAllDosesForVaccineTest
         , initialVaccinationDateByBirthDateTest
         , updateChildSetMuacTest
+        , outsideConstraintsTest
+        , muacOutsideConstraintsTest
+        , creatinineResultFormWithDefaultTest
+        , liverFunctionResultFormWithDefaultTest
         ]

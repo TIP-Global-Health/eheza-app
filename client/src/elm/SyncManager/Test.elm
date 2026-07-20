@@ -4,7 +4,7 @@ import Device.Model exposing (Device)
 import EverySet
 import Expect
 import Json.Encode
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData
 import SyncManager.Model
     exposing
@@ -20,7 +20,7 @@ import SyncManager.Model
         , emptyModel
         )
 import SyncManager.Update
-import SyncManager.Utils exposing (determineDownloadPhotosStatus)
+import SyncManager.Utils exposing (determineDownloadPhotosStatus, pageAllowsBackgroundRefresh)
 import Test exposing (Test, describe, test)
 import Time
 
@@ -64,7 +64,7 @@ testDevice =
 
 all : Test
 all =
-    describe "SyncManager photo lane"
+    describe "SyncManager"
         [ test "determineDownloadPhotosStatus progresses the photo lane while the data lane is downloading" <|
             \() ->
                 determineDownloadPhotosStatus
@@ -272,4 +272,20 @@ all =
                     |> .model
                     |> .syncStatus
                     |> Expect.equal (SyncDownloadAuthority RemoteData.Loading)
+
+        -- A long catch-up sync can schedule a page reload. It must not fire
+        -- while a nurse is logged in and possibly mid-form, or their unsaved
+        -- entries are lost; it is only allowed on the pre-login screens.
+        , test "background refresh is skipped on a logged-in page" <|
+            \() ->
+                pageAllowsBackgroundRefresh (UserPage ClinicalPage)
+                    |> Expect.equal False
+        , test "background refresh is allowed on the PIN page" <|
+            \() ->
+                pageAllowsBackgroundRefresh PinCodePage
+                    |> Expect.equal True
+        , test "background refresh is allowed on the device page" <|
+            \() ->
+                pageAllowsBackgroundRefresh DevicePage
+                    |> Expect.equal True
         ]

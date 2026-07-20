@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.Activity.Utils exposing (activityCompleted, acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectActivity, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, gastrointestinalInfectionDangerSignsPresent, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaDangerSignsPresent, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, mandatoryActivitiesCompletedSubsequentVisit, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, mildGastrointestinalInfectionSymptomsPresent, muacRedOnSubsequentVisit, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nonBloodyDiarrheaAtSymptoms, nutritionFormInutsAndTasks, nutritionFormWithDefault, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByMalariaRDT, resolveAmoxicillinDosage, resolveCoartemDosage, resolveMedicationsNonAdministrationReasons, resolveNextStepFirstEncounter, resolveNextStepSubsequentEncounter, resolveNextStepsTasks, resolveORSDosage, resolvePreviousValue, resolveZincDosage, respiratoryInfectionDangerSignsPresent, respiratoryRateAbnormalForAge, respiratoryRateElevated, respiratoryRateElevatedByAge, respiratoryRateElevatedByAgeForCovid19, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, sendToHCOnSubsequentVisitByNutrition, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, toAcuteFindingsValueWithDefault, toContactsTracingValueWithDefault, toCoreExamValueWithDefault, toCovidTestingValueWithDefault, toFollowUpValueWithDefault, toMalariaTestingValueWithDefault, toMedicationDistributionValueWithDefault, toNutritionValueWithDefault, toReviewDangerSignsValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTreatmentReviewValueWithDefault, toggleSymptomsSign, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, viewAdministeredMedicationLabel, viewAmoxicillinAdministrationInstructions, viewHCRecommendation, viewOralSolutionPrescription, viewParacetamolAdministrationInstructions, viewTabletsPrescription, vomitingAtSymptoms)
+module Pages.AcuteIllness.Activity.Utils exposing (activityCompleted, acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectActivity, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, gastrointestinalInfectionDangerSignsPresent, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaDangerSignsPresent, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, mandatoryActivitiesCompletedSubsequentVisit, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, mildGastrointestinalInfectionSymptomsPresent, muacRedOnSubsequentVisit, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nonBloodyDiarrheaAtSymptoms, nutritionFormInutsAndTasks, nutritionFormWithDefault, ongoingTreatmentTasksCompletedFromTotal, physicalExamSaveDisabled, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByMalariaRDT, resolveAmoxicillinDosage, resolveCoartemDosage, resolveMedicationsNonAdministrationReasons, resolveNextStepFirstEncounter, resolveNextStepSubsequentEncounter, resolveNextStepsTasks, resolveORSDosage, resolvePreviousValue, resolveZincDosage, respiratoryInfectionDangerSignsPresent, respiratoryRateAbnormalForAge, respiratoryRateElevated, respiratoryRateElevatedByAge, respiratoryRateElevatedByAgeForCovid19, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, sendToHCOnSubsequentVisitByNutrition, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, toAcuteFindingsValueWithDefault, toContactsTracingValueWithDefault, toCoreExamValueWithDefault, toCovidTestingValueWithDefault, toFollowUpValueWithDefault, toMalariaTestingValueWithDefault, toMedicationDistributionValueWithDefault, toNutritionValueWithDefault, toReviewDangerSignsValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTreatmentReviewValueWithDefault, toggleSymptomsSign, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, viewAdministeredMedicationLabel, viewAmoxicillinAdministrationInstructions, viewHCRecommendation, viewOralSolutionPrescription, viewParacetamolAdministrationInstructions, viewTabletsPrescription, vomitingAtSymptoms)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
@@ -16,11 +16,12 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (HealthEducationForm, InvokationModule(..), VitalsFormConfig, VitalsFormMode(..))
+import Measurement.Model exposing (HealthEducationForm, InvokationModule(..), MuacForm, VitalsFormConfig, VitalsFormMode(..))
 import Measurement.Utils
     exposing
         ( healthEducationFormWithDefault
         , muacFormWithDefault
+        , muacOutsideConstraints
         , ongoingTreatmentReviewFormWithDefault
         , renderDatePart
         , sendToHCFormWithDefault
@@ -359,6 +360,34 @@ physicalExamTasksCompletedFromTotal currentDate isChw assembled data task =
                         |> nutritionFormInutsAndTasks English
     in
     resolveTasksCompletedFromTotal tasks
+
+
+{-| Whether the Save action of a Physical Exam task must stay disabled.
+
+Beyond all the task's questions being answered, MUAC requires a value within the
+allowed range that is shown to the nurse above the input - the same gate the
+Nutrition encounter and the group sessions apply. Otherwise a mistyped value
+would be persisted and fed to the nutrition assessment.
+
+-}
+physicalExamSaveDisabled : Site -> Bool -> MuacForm -> PhysicalExamTask -> Bool
+physicalExamSaveDisabled site tasksIncomplete muacForm task =
+    case task of
+        PhysicalExamVitals ->
+            tasksIncomplete
+
+        PhysicalExamCoreExam ->
+            tasksIncomplete
+
+        PhysicalExamMuac ->
+            tasksIncomplete
+                || muacOutsideConstraints site muacForm.muac
+
+        PhysicalExamAcuteFindings ->
+            tasksIncomplete
+
+        PhysicalExamNutrition ->
+            tasksIncomplete
 
 
 generateVitalsFormConfig : Bool -> AssembledData -> VitalsFormConfig Msg
@@ -1878,7 +1907,8 @@ fromCovidTestingValue saved =
         (\value ->
             let
                 testPerformed =
-                    value.result /= RapidTestUnableToRun |> Just
+                    not (List.member value.result [ RapidTestUnableToRun, RapidTestUnableToRunAndPregnant ])
+                        |> Just
 
                 testPositive =
                     case value.result of
@@ -1895,8 +1925,7 @@ fromCovidTestingValue saved =
                             Nothing
 
                 isPregnant =
-                    Just <|
-                        rapidTestPositive value.result
+                    Just (List.member value.result [ RapidTestPositiveAndPregnant, RapidTestUnableToRunAndPregnant ])
             in
             { testPerformed = testPerformed
             , testPositive = testPositive

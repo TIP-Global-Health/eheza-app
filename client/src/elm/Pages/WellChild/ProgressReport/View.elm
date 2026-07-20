@@ -1,5 +1,8 @@
 module Pages.WellChild.ProgressReport.View exposing
-    ( view
+    ( distributeByListIndex
+    , generateUniversalInterventionsValues
+    , resolveLastDayForMonthX
+    , view
     , viewNutritionSigns
     , viewPaneHeading
     , viewPersonInfoPane
@@ -2411,7 +2414,7 @@ viewUniversalInterventionsPane language currentDate site child nurseQuestionnair
             Maybe.map (Dict.map (\_ value -> Tuple.second value)) chwQuestionnairesByAgeInMonthsWithDate
 
         immunizationByAgeInMonths =
-            Maybe.andThen
+            Maybe.map
                 (\birthDate ->
                     List.repeat 25 ""
                         |> List.indexedMap
@@ -2460,46 +2463,94 @@ viewUniversalInterventionsPane language currentDate site child nurseQuestionnair
                                         -- done, and therefore, we're on track at current month.
                                         ( referenceDate, NCDACellValueV )
                             )
-                        |> distributeByAgeInMonths child
+                        -- The values are built one per age-in-months, in order,
+                        -- so the list position IS the month bucket. Keying by the
+                        -- index (rather than re-deriving the month from the
+                        -- reference date) avoids mis-bucketing children born on
+                        -- day 29/30/31, whose reference dates land in shorter
+                        -- months and collapse a bucket.
+                        |> distributeByListIndex
                 )
                 child.birthDate
-
-        -- Resolves the date for last day of month X after child birth date.
-        -- For example, for X = 0, this is
-        -- the last day, before child turns 1 month old.
-        resolveLastDayForMonthX monthX childBirthDate =
-            -- Get to first day of the birth months.
-            Date.floor Date.Month childBirthDate
-                |> -- Add required number of months.
-                   Date.add Date.Months (monthX + 1)
-                |> -- Substract one day
-                   Date.add Date.Days -1
 
         immunizationValues =
             generateValues currentDate child immunizationByAgeInMonths ((==) NCDACellValueV)
 
+        interventionsValues =
+            generateUniversalInterventionsValues currentDate
+                child
+                nurseQuestionnairesByAgeInMonths
+                chwQuestionnairesByAgeInMonths
+    in
+    div [ class "pane universal-interventions" ]
+        [ viewPaneHeading language Translate.UniversalInterventions
+        , div [ class "pane-content" ]
+            [ viewTableHeader language
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel Immunization)
+                pregnancyValues
+                (List.take 6 immunizationValues)
+                (List.drop 6 immunizationValues)
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel Pages.WellChild.ProgressReport.Model.VitaminA)
+                pregnancyValues
+                (List.take 6 interventionsValues.vitaminA)
+                (List.drop 6 interventionsValues.vitaminA)
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel Deworming)
+                pregnancyValues
+                (List.take 6 interventionsValues.dewormer)
+                (List.drop 6 interventionsValues.dewormer)
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel Pages.WellChild.ProgressReport.Model.OngeraMNP)
+                pregnancyValues
+                (List.take 6 interventionsValues.ongeraMNP)
+                (List.drop 6 interventionsValues.ongeraMNP)
+            , viewTableRow language
+                (Translate.NCDAUniversalInterventionsItemLabel ECDServices)
+                pregnancyValues
+                (List.take 6 interventionsValues.ecd)
+                (List.drop 6 interventionsValues.ecd)
+            ]
+        ]
+
+
+{-| Resolves the Vitamin A, Dewormer, Ongera-MNP and ECD rows of the
+Universal Interventions pane.
+
+Vitamin A, Dewormer and ECD are asked only when a CHW conducts the NCDA
+questionnaire, at the Child Scoreboard encounter. The questionnaire a nurse
+fills at the health center asks only whether Ongera-MNP was distributed.
+Therefore, the Vitamin A, Dewormer and ECD rows are resolved from the CHW
+questionnaires alone. If they consulted the nurse questionnaire as well, a
+month at which only a nurse filled the questionnaire would show an X (the
+intervention was not provided), where the correct value is a dash (we have no
+data for that month).
+
+The Ongera-MNP row does consult the nurse questionnaire, since that is the one
+question a nurse is asked.
+
+-}
+generateUniversalInterventionsValues :
+    NominalDate
+    -> Person
+    -> Maybe (Dict Int NCDAValue)
+    -> Maybe (Dict Int NCDAValue)
+    ->
+        { vitaminA : List NCDACellValue
+        , dewormer : List NCDACellValue
+        , ongeraMNP : List NCDACellValue
+        , ecd : List NCDACellValue
+        }
+generateUniversalInterventionsValues currentDate child nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonths =
+    let
         -- When CHW conducts NCDA, at Vitamin A section, there's an option for marking as not
         -- applicable. The requirements if this option is selected is to have dash on scorecard.
-        -- Dash is set also in case there's not questioneer for the month, so, if in case
-        -- 'not applicable', is selected, we filter out the questioneer.
+        -- Dash is set also in case there's no questionnaire for the month, so, if in case
+        -- 'not applicable', is selected, we filter out the questionnaire.
         chwQuestionnairesByAgeInMonthsEliminatingVitaminANotApplicable =
             Maybe.map (Dict.filter (\_ value -> value.receivesVitaminA /= Just OptionNotApplicable))
                 chwQuestionnairesByAgeInMonths
-
-        vitaminAValues =
-            generateValues currentDate
-                child
-                chwQuestionnairesByAgeInMonthsEliminatingVitaminANotApplicable
-                (.receivesVitaminA >> (==) (Just OptionReceive))
-                |> List.indexedMap
-                    -- Vitamin A should not be administered before age of 6 months.
-                    (postProcessMedicineRawValue 6)
-
-        dewormerValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildReceivesDewormer)
-                |> List.indexedMap
-                    -- Dewormer should not be administered before age of 12 months.
-                    (postProcessMedicineRawValue 12)
 
         postProcessMedicineRawValue startingMonth processingMonth value =
             if List.member value [ NCDACellValueV, NCDACellValueEmpty ] then
@@ -2545,44 +2596,25 @@ viewUniversalInterventionsPane language currentDate site child nurseQuestionnair
 
                 _ ->
                     Maybe.Extra.or nurseQuestionnairesByAgeInMonthsEliminatingFalseNegatives chwQuestionnairesByAgeInMonths
-
-        ongeraMNPValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member TakingOngeraMNP)
-
-        ecdValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildReceivesECD)
     in
-    div [ class "pane universal-interventions" ]
-        [ viewPaneHeading language Translate.UniversalInterventions
-        , div [ class "pane-content" ]
-            [ viewTableHeader language
-            , viewTableRow language
-                (Translate.NCDAUniversalInterventionsItemLabel Immunization)
-                pregnancyValues
-                (List.take 6 immunizationValues)
-                (List.drop 6 immunizationValues)
-            , viewTableRow language
-                (Translate.NCDAUniversalInterventionsItemLabel Pages.WellChild.ProgressReport.Model.VitaminA)
-                pregnancyValues
-                (List.take 6 vitaminAValues)
-                (List.drop 6 vitaminAValues)
-            , viewTableRow language
-                (Translate.NCDAUniversalInterventionsItemLabel Deworming)
-                pregnancyValues
-                (List.take 6 dewormerValues)
-                (List.drop 6 dewormerValues)
-            , viewTableRow language
-                (Translate.NCDAUniversalInterventionsItemLabel Pages.WellChild.ProgressReport.Model.OngeraMNP)
-                pregnancyValues
-                (List.take 6 ongeraMNPValues)
-                (List.drop 6 ongeraMNPValues)
-            , viewTableRow language
-                (Translate.NCDAUniversalInterventionsItemLabel ECDServices)
-                pregnancyValues
-                (List.take 6 ecdValues)
-                (List.drop 6 ecdValues)
-            ]
-        ]
+    { vitaminA =
+        generateValues currentDate
+            child
+            chwQuestionnairesByAgeInMonthsEliminatingVitaminANotApplicable
+            (.receivesVitaminA >> (==) (Just OptionReceive))
+            |> List.indexedMap
+                -- Vitamin A should not be administered before age of 6 months.
+                (postProcessMedicineRawValue 6)
+    , dewormer =
+        generateValues currentDate child chwQuestionnairesByAgeInMonths (.signs >> EverySet.member ChildReceivesDewormer)
+            |> List.indexedMap
+                -- Dewormer should not be administered before age of 12 months.
+                (postProcessMedicineRawValue 12)
+    , ongeraMNP =
+        generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member TakingOngeraMNP)
+    , ecd =
+        generateValues currentDate child chwQuestionnairesByAgeInMonths (.signs >> EverySet.member ChildReceivesECD)
+    }
 
 
 viewFillTheBlanksPane :
@@ -3061,6 +3093,34 @@ distributeByAgeInMonths : Person -> List ( NominalDate, a ) -> Maybe (Dict Int a
 distributeByAgeInMonths child values =
     distributeByAgeInMonthsWithDate child values
         |> Maybe.map (Dict.map (\_ value -> Tuple.second value))
+
+
+{-| Key an index-ordered list of `( _, value )` pairs by their list position.
+
+Unlike `distributeByAgeInMonths`, this does NOT re-derive the month from a date.
+The immunization row builds exactly one value per age-in-months, in order, so
+the position is the month. Re-bucketing by `diffMonths` on a synthetic reference
+date mis-counts children born on day 29/30/31 (whose reference dates fall in
+shorter months), collapsing a bucket - this keeps all months distinct.
+
+-}
+distributeByListIndex : List ( x, a ) -> Dict Int a
+distributeByListIndex values =
+    List.indexedMap (\index ( _, value ) -> ( index, value )) values
+        |> Dict.fromList
+
+
+{-| The last day of the month that is `monthX` whole months after the child's
+birth month - i.e. the day before the child turns `monthX + 1` months old.
+-}
+resolveLastDayForMonthX : Int -> NominalDate -> NominalDate
+resolveLastDayForMonthX monthX childBirthDate =
+    -- Get to first day of the birth month.
+    Date.floor Date.Month childBirthDate
+        |> -- Add required number of months.
+           Date.add Date.Months (monthX + 1)
+        |> -- Subtract one day.
+           Date.add Date.Days -1
 
 
 generateValues : NominalDate -> Person -> Maybe (Dict Int a) -> (a -> Bool) -> List NCDACellValue
