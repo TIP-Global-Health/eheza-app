@@ -202,8 +202,18 @@ function hedley_patient_recalculate_shards_for_person_content($person_id) {
     $wrapper = entity_metadata_wrapper('node', $node);
     $node_shards = $wrapper->field_shards->value(['identifier' => TRUE]);
 
-    if (!hedley_patient_arrays_equal($person_shards, $node_shards)) {
-      $wrapper->field_shards->set($person_shards);
+    // A pmtct_participant or relationship links two people, so its shards are
+    // the union of both. Setting them to a single person's shards would drop
+    // shards that only the other person carries.
+    if (in_array($node->type, ['pmtct_participant', 'relationship'])) {
+      $correct_shards = hedley_general_two_person_node_shards($node);
+    }
+    else {
+      $correct_shards = $person_shards;
+    }
+
+    if (!hedley_patient_arrays_equal($correct_shards, $node_shards)) {
+      $wrapper->field_shards->set($correct_shards);
       $wrapper->save();
     }
   }
