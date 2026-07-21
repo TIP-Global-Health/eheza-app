@@ -1224,6 +1224,20 @@ update msg model =
                                     |> MsgLoggedIn
                                     |> List.singleton
 
+                        -- Clear the (singleton) stock management forms on entry, so a
+                        -- signed but abandoned form isn't shown again -- with its old
+                        -- signature and quantities -- and saved with today's date.
+                        -- Only on a genuine page change, not when already on the page.
+                        UserPage StockManagementPage ->
+                            if model.activePage == page then
+                                []
+
+                            else
+                                Pages.StockManagement.Model.Reset
+                                    |> MsgPageStockManagement
+                                    |> MsgLoggedIn
+                                    |> List.singleton
+
                         _ ->
                             []
             in
