@@ -5,6 +5,7 @@ import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Fetch
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
+import Backend.Person.Model exposing (Initiator(..))
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.AcuteIllness.Activity.Fetch
 import Pages.AcuteIllness.Activity.Model
@@ -156,11 +157,11 @@ fetch model =
                     |> List.map MsgIndexedDb
 
             UserPage (CreatePersonPage relatedId initiator) ->
-                Pages.Person.Fetch.fetchForCreateOrEdit relatedId (Just initiator) model.indexedDb
+                Pages.Person.Fetch.fetchForCreateOrEdit relatedId initiator model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (EditPersonPage relatedId) ->
-                Pages.Person.Fetch.fetchForCreateOrEdit (Just relatedId) Nothing model.indexedDb
+                Pages.Person.Fetch.fetchForCreateOrEdit (Just relatedId) ParticipantDirectoryOrigin model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (DemographicsReportPage _ personId) ->

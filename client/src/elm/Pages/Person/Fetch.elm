@@ -31,13 +31,10 @@ fetch id initiator db =
                         >> List.map FetchPerson
                     )
                 |> RemoteData.withDefault []
-
-        initiatorDependentContent =
-            fetchSessionForInitiator initiator
     in
     fetchFamilyMembers id db
         ++ participantMembers
-        ++ initiatorDependentContent
+        ++ fetchSessionForInitiator initiator
         ++ [ FetchPerson id
            , FetchRelationshipsForPerson id
            , FetchParticipantsForPerson id
@@ -45,7 +42,7 @@ fetch id initiator db =
            ]
 
 
-fetchForCreateOrEdit : Maybe PersonId -> Maybe Initiator -> ModelIndexedDb -> List MsgIndexedDb
+fetchForCreateOrEdit : Maybe PersonId -> Initiator -> ModelIndexedDb -> List MsgIndexedDb
 fetchForCreateOrEdit related initiator db =
     [ FetchHealthCenters
     , FetchVillages
@@ -55,10 +52,7 @@ fetchForCreateOrEdit related initiator db =
                 |> Maybe.map (\id -> FetchPerson id :: fetchFamilyMembers id db)
                 |> Maybe.withDefault []
            )
-        ++ (initiator
-                |> Maybe.map fetchSessionForInitiator
-                |> Maybe.withDefault []
-           )
+        ++ fetchSessionForInitiator initiator
 
 
 {-| In group encounter context the page needs the session itself, to know which
