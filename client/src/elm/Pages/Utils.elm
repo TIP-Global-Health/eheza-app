@@ -1,4 +1,4 @@
-module Pages.Utils exposing (calculatePercentage, concatInputsAndTasksSections, customButton, customPopup, emptySelectOption, filterDependentNoResultsMessage, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isAboveAgeOf2Years, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, nonAdministrationReasonToSign, normalizeFilter, resolveActiveTask, resolveNextTask, resolveSelectedDateForMonthSelector, resolveTasksCompletedFromTotal, saveButton, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBoolInputReverted, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxMultipleSelectSectionsInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewConfirmationDialog, viewCustomAction, viewCustomBoolInput, viewCustomLabel, viewCustomNameFilter, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPersonDetails, viewPersonDetailsExtended, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewPreviousMeasurementCustom, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewStartEncounterButton, viewTasksCount, viewTextInput, viewYellowAlertForSelect)
+module Pages.Utils exposing (calculatePercentage, concatInputsAndTasksSections, customButton, customPopup, emptySelectOption, filterDependentNoResultsMessage, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isAboveAgeOf2Years, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, nonAdministrationReasonToSign, normalizeFilter, percentageOfTotal, resolveActiveTask, resolveNextTask, resolveSelectedDateForMonthSelector, resolveTasksCompletedFromTotal, saveButton, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBoolInputReverted, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxMultipleSelectSectionsInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewConfirmationDialog, viewCustomAction, viewCustomBoolInput, viewCustomLabel, viewCustomNameFilter, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPersonDetails, viewPersonDetailsExtended, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewPreviousMeasurementCustom, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewStartEncounterButton, viewTasksCount, viewTextInput, viewYellowAlertForSelect)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (HealthCenterId, PersonId)
@@ -237,6 +237,18 @@ calculatePercentage now before =
 
         else
             (toFloat diff / toFloat before) * -100
+
+
+{-| The share of `part` in `total`, as a rounded percentage. Returns 0 when
+`total` is 0, so an empty period shows "0%" rather than "NaN%".
+-}
+percentageOfTotal : Int -> Int -> Int
+percentageOfTotal part total =
+    if total == 0 then
+        0
+
+    else
+        round (toFloat part / toFloat total * 100)
 
 
 filterDependentNoResultsMessage : Language -> String -> TranslationId -> String

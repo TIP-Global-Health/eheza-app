@@ -66,6 +66,7 @@ import Pages.Prenatal.Utils exposing (preeclampsiaDiagnoses, severeAnemiaDiagnos
 import Pages.Utils
     exposing
         ( calculatePercentage
+        , percentageOfTotal
         , resolveSelectedDateForMonthSelector
         , viewCustomAction
         , viewCustomSelectListInput
@@ -1449,9 +1450,7 @@ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYe
                 |> List.sum
 
         percentageThisYear =
-            (toFloat goodThisYear / toFloat allThisYear)
-                * 100
-                |> round
+            percentageOfTotal goodThisYear allThisYear
 
         percentageLastYear =
             calculatePercentage goodThisYear goodLastYear
@@ -3041,7 +3040,7 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
                     List.filter isGoodNutritionEncounter encountersForSelectedMonth
                         |> List.length
             in
-            round (100 * toFloat goodNutritionEncounters / toFloat totalEncountersCompleted)
+            percentageOfTotal goodNutritionEncounters totalEncountersCompleted
 
         -- Total Nutrition encounters performed during selected month.
         totalEncountersCompleted =
