@@ -55,8 +55,9 @@ fetchForCreateOrEdit related initiator db =
         ++ fetchSessionForInitiator initiator
 
 
-{-| In group encounter context the page needs the session itself, to know which
-group it belongs to. Without it the group is missing and the page can't be used.
+{-| Fetches the session a page was opened from, when it was opened from a group
+encounter. The pages that use this read the session to decide what to offer:
+which group to add someone to, and which children are the right age for it.
 -}
 fetchSessionForInitiator : Initiator -> List MsgIndexedDb
 fetchSessionForInitiator initiator =
