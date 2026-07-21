@@ -1,4 +1,4 @@
-module Pages.Person.Fetch exposing (fetch, fetchForCreateOrEdit)
+module Pages.Person.Fetch exposing (fetch, fetchForCreateOrEdit, fetchSessionForInitiator)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -33,12 +33,7 @@ fetch id initiator db =
                 |> RemoteData.withDefault []
 
         initiatorDependentContent =
-            case initiator of
-                GroupEncounterOrigin sessionId ->
-                    [ FetchSession sessionId ]
-
-                _ ->
-                    []
+            fetchSessionForInitiator initiator
     in
     fetchFamilyMembers id db
         ++ participantMembers
@@ -50,8 +45,8 @@ fetch id initiator db =
            ]
 
 
-fetchForCreateOrEdit : Maybe PersonId -> ModelIndexedDb -> List MsgIndexedDb
-fetchForCreateOrEdit related db =
+fetchForCreateOrEdit : Maybe PersonId -> Maybe Initiator -> ModelIndexedDb -> List MsgIndexedDb
+fetchForCreateOrEdit related initiator db =
     [ FetchHealthCenters
     , FetchVillages
     , FetchClinics
@@ -60,6 +55,23 @@ fetchForCreateOrEdit related db =
                 |> Maybe.map (\id -> FetchPerson id :: fetchFamilyMembers id db)
                 |> Maybe.withDefault []
            )
+        ++ (initiator
+                |> Maybe.map fetchSessionForInitiator
+                |> Maybe.withDefault []
+           )
+
+
+{-| In group encounter context the page needs the session itself, to know which
+group it belongs to. Without it the group is missing and the page can't be used.
+-}
+fetchSessionForInitiator : Initiator -> List MsgIndexedDb
+fetchSessionForInitiator initiator =
+    case initiator of
+        GroupEncounterOrigin sessionId ->
+            [ FetchSession sessionId ]
+
+        _ ->
+            []
 
 
 fetchFamilyMembers : PersonId -> ModelIndexedDb -> List MsgIndexedDb
