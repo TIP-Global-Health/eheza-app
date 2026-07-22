@@ -54,6 +54,8 @@ import Pages.Utils
         ( concatInputsAndTasksSections
         , isTaskCompleted
         , maybeToBoolTask
+        , muacUnitTransIdForSite
+        , setMuacValueForSite
         , taskCompleted
         , tasksBarId
         , viewBoolInput
@@ -179,19 +181,11 @@ heightFormConfig =
 muacFormConfig : Site -> FloatFormConfig MuacId Muac
 muacFormConfig site =
     let
-        ( toBackendValue, unit ) =
-            case site of
-                SiteBurundi ->
-                    ( -- At Burundi, value is entered as mm, but we need to store it
-                      -- as cm. Therefore, we multiply by 0.1.
-                      String.toFloat >> Maybe.map ((*) 0.1 >> Round.roundNum 1)
-                    , Translate.UnitMillimeter
-                    )
+        toBackendValue =
+            setMuacValueForSite site
 
-                _ ->
-                    ( String.toFloat
-                    , Translate.UnitCentimeter
-                    )
+        unit =
+            muacUnitTransIdForSite site
     in
     { blockName = "muac"
     , activity = ChildActivity Muac
@@ -3329,12 +3323,7 @@ ncdaFormInputsAndTasks language currentDate site personId person config form cur
                                                             form.muac
 
                                                     unitTransId =
-                                                        case site of
-                                                            SiteBurundi ->
-                                                                Translate.UnitMillimeter
-
-                                                            _ ->
-                                                                Translate.UnitCentimeter
+                                                        muacUnitTransIdForSite site
                                                 in
                                                 [ div [ class "ui grid" ]
                                                     [ div [ class "eleven wide column" ]
@@ -4328,12 +4317,7 @@ muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg
             Maybe.map (muacValueForSite site) form.muac
 
         unitTransId =
-            case site of
-                SiteBurundi ->
-                    Translate.UnitMillimeter
-
-                _ ->
-                    Translate.UnitCentimeter
+            muacUnitTransIdForSite site
 
         rangeHelper =
             if showRangeHelper then

@@ -2,6 +2,7 @@ module Pages.FamilyNutrition.ProgressReport.Svg exposing (viewMuacChart)
 
 import Html exposing (Html)
 import Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolygon, drawPolyline, heightPx, referenceHorizontalLines, referenceVerticalLines, referenceVerticalNumbers, widthPx, withinRange)
+import Pages.Utils exposing (muacUnitTransIdForSite)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import SyncManager.Model exposing (Site(..))
@@ -52,11 +53,7 @@ viewMuacChart language site isAdult anchorAge muacPoints =
             2 * displayFactor
 
         unitTransId =
-            if isBurundi then
-                Translate.UnitMillimeter
-
-            else
-                Translate.UnitCentimeter
+            muacUnitTransIdForSite site
 
         yAxisLabel =
             translate language Translate.MUAC
