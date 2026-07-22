@@ -291,8 +291,9 @@ counter doesn't say which measurement is at fault, only that one of them is.
 Pass `outsideConstraints` for height and weight, or `muacOutsideConstraints site`
 for MUAC.
 
-A measurement that hasn't been taken comes back as it went in, since there is
-nothing to be outside of. Whether it was required is what the task list is for.
+A measurement that hasn't been taken is dropped as well -- the predicates count
+an absent value as outside -- which leaves it exactly as it was. Whether it was
+required is what the task list is for.
 
 -}
 measurementInRange : (Maybe Float -> Bool) -> Maybe Float -> Maybe Float
