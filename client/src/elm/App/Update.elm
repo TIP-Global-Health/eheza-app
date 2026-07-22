@@ -663,7 +663,7 @@ update msg model =
                                     data.prenatalActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.Prenatal.Activity.Model.emptyModel
-                                        |> Pages.Prenatal.Activity.Update.update currentDate id model.indexedDb subMsg
+                                        |> Pages.Prenatal.Activity.Update.update currentDate site id model.indexedDb subMsg
                             in
                             ( { data | prenatalActivityPages = Dict.insert ( id, activity ) subModel data.prenatalActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
