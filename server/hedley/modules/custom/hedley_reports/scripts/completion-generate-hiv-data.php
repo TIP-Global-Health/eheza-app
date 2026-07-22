@@ -31,7 +31,8 @@ $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
   ->fieldCondition('field_encounter_type', 'value', 'hiv')
-  ->propertyCondition('status', NODE_PUBLISHED);
+  ->propertyCondition('status', NODE_PUBLISHED)
+  ->propertyOrderBy('nid');
 
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');

@@ -31,7 +31,8 @@ $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
   ->fieldCondition('field_attended', 'value', TRUE)
-  ->propertyCondition('status', NODE_PUBLISHED);
+  ->propertyCondition('status', NODE_PUBLISHED)
+  ->propertyOrderBy('nid');
 
 if ($exclude_set) {
   $base_query->addTag('exclude_set_reports_data');
