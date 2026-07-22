@@ -8,7 +8,7 @@ import Backend.Measurement.Utils
         ( getHeightValue
         , getMeasurementValueFunc
         , muacValueForSite
-        , muacValueFunc
+        , muacValueFuncForSite
         , pregnancyTestResultToString
         , weightValueFunc
         )
@@ -3229,7 +3229,7 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site is
 
         muacPreviousValue =
             resolvePreviousValue assembled .nutrition .muac
-                |> Maybe.map (muacValueFunc >> muacValueForSite site)
+                |> Maybe.map (muacValueFuncForSite site)
 
         calculatedBmi =
             calculateBmi form.height form.weight
