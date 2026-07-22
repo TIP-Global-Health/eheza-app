@@ -711,8 +711,12 @@ viewCheckBoxSelectInputItem checkedOptions setMsg viewOptionFunc option =
 Everything these inputs collect -- lengths, weights, counts, lab values -- is a
 quantity that can't be negative. The `min` attribute only points the spinner
 arrows the right way; a minus that is typed or pasted still reaches the message
-and parses. Dropping it keeps the digits, so what the field shows and what is
-stored stay the same.
+and parses. Dropping it keeps the digits, so what is stored is never negative.
+
+A minus put in front of a number the field already holds still shows in the
+field: what is left after dropping it is the value already there, so nothing
+re-renders. The positive number is what gets stored, and the next keystroke
+brings the two back together.
 
 -}
 dropLeadingMinus : String -> String
