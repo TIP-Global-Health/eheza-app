@@ -112,6 +112,7 @@ type Msg
     | SaveVitals PersonId (Maybe ( VitalsId, Vitals )) (Maybe ExaminationTask)
       -- ExaminationMsgs, Nutrition Assessment
     | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
+    | SetNutritionAssessmentMuac String
     | SaveNutritionAssessment PersonId (Maybe ( PrenatalNutritionId, PrenatalNutrition )) (Maybe Float) (Maybe Bool) (Maybe ExaminationTask)
       -- ExaminationMsgs, Core Physical Exam
     | SetCorePhysicalExamBoolInput (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) Bool

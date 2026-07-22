@@ -7,6 +7,7 @@ import Backend.Measurement.Utils
     exposing
         ( getHeightValue
         , getMeasurementValueFunc
+        , muacValueForSite
         , muacValueFunc
         , pregnancyTestResultToString
         , weightValueFunc
@@ -126,7 +127,7 @@ import Pages.Utils
         , viewYellowAlertForSelect
         )
 import Round
-import SyncManager.Model exposing (Site, SiteFeature)
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -324,7 +325,7 @@ viewActivity language currentDate zscores site features isChw activity assembled
             viewHistoryContent language assembled model.historyData
 
         Examination ->
-            viewExaminationContent language currentDate zscores features assembled model.examinationData
+            viewExaminationContent language currentDate zscores site features assembled model.examinationData
 
         FamilyPlanning ->
             viewFamilyPlanningContent language assembled model.familyPlanningData
@@ -868,8 +869,8 @@ viewHistoryContent language assembled data =
     ]
 
 
-viewExaminationContent : Language -> NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> AssembledData -> ExaminationData -> List (Html Msg)
-viewExaminationContent language currentDate zscores features assembled data =
+viewExaminationContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> EverySet SiteFeature -> AssembledData -> ExaminationData -> List (Html Msg)
+viewExaminationContent language currentDate zscores site features assembled data =
     let
         tasks =
             resolveExaminationTasks assembled
@@ -989,7 +990,7 @@ viewExaminationContent language currentDate zscores features assembled data =
                     healthyStartEnabled features
 
                 formWithIndicator =
-                    viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores isHealthyStart assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
+                    viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site isHealthyStart assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
             in
             ( Tuple.first formWithIndicator, Tuple.second formWithIndicator )
 
@@ -3185,8 +3186,8 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewNutritionAssessmentFormWithGWGIndicator : Language -> NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> ( Html Msg, Maybe Bool )
-viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores isHealthyStart assembled form previouslyMeasuredHeight prePregnancyWeight =
+viewNutritionAssessmentFormWithGWGIndicator : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> ( Html Msg, Maybe Bool )
+viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site isHealthyStart assembled form previouslyMeasuredHeight prePregnancyWeight =
     let
         hideHeightInput =
             isJust previouslyMeasuredHeight
@@ -3200,8 +3201,17 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores isHealt
         bmiUpdateFunc _ form_ =
             form_
 
-        muacUpdateFunc value form_ =
-            { form_ | muac = value, muacDirty = True }
+        -- MUAC is stored in cm; show it in mm at Burundi.
+        muacForView =
+            Maybe.map (muacValueForSite site) form.muac
+
+        muacUnitTransId =
+            case site of
+                SiteBurundi ->
+                    Translate.UnitMillimeter
+
+                _ ->
+                    Translate.UnitCentimeter
 
         heightPreviousValue =
             resolvePreviousValue assembled .nutrition .height
@@ -3219,7 +3229,7 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores isHealt
 
         muacPreviousValue =
             resolvePreviousValue assembled .nutrition .muac
-                |> Maybe.map muacValueFunc
+                |> Maybe.map (muacValueFunc >> muacValueForSite site)
 
         calculatedBmi =
             calculateBmi form.height form.weight
@@ -3441,16 +3451,16 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores isHealt
                     [ div [ class "twelve wide column" ]
                         [ viewMeasurementInput
                             language
-                            form.muac
-                            (SetNutritionAssessmentMeasurement muacUpdateFunc)
+                            muacForView
+                            SetNutritionAssessmentMuac
                             "muac"
-                            Translate.UnitCentimeter
+                            muacUnitTransId
                         ]
                     , div [ class "four wide column" ]
                         [ nutritionalSupplementAlert
                         ]
                     ]
-               , viewPreviousMeasurement language muacPreviousValue Translate.UnitCentimeter
+               , viewPreviousMeasurement language muacPreviousValue muacUnitTransId
                ]
     , isAdequateGWG
     )
