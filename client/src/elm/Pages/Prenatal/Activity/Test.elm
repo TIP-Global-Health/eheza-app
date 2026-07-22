@@ -13,11 +13,13 @@ import Backend.Measurement.Model
         , Gender(..)
         , HIVPCRTestValue
         , HIVTestValue
+        , HeightInCm(..)
         , HemoglobinTestValue
         , HepatitisBTestValue
         , LungsCPESign
         , MalariaTestValue
         , Measurement
+        , MuacInCm(..)
         , PrenatalAssesment(..)
         , PrenatalMeasurements
         , PrenatalMentalHealthQuestion(..)
@@ -32,6 +34,7 @@ import Backend.Measurement.Model
         , UrineDipstickTestValue
         , ViralLoadStatus(..)
         , VitalsValue
+        , WeightInKg(..)
         , emptyPrenatalMeasurements
         )
 import Backend.Person.Model exposing (Person)
@@ -41,10 +44,12 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Prenatal.Activity.Types exposing (PrePregnancyClassification(..))
-import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
-import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Activity.Model exposing (emptyModel)
+import Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), PrePregnancyClassification(..))
+import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, examinationTasksCompletedFromTotal, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
+import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import Time
 
@@ -1314,10 +1319,121 @@ suicideRiskDiagnosedBySignsTest =
         ]
 
 
+{-| A previous nurse encounter that recorded a height, so the height input is
+hidden on this encounter and its value is carried over.
+-}
+previousEncounterWithHeight : Float -> PreviousEncounterData
+previousEncounterWithHeight height =
+    { startDate = lmpDate
+    , diagnoses = EverySet.empty
+    , pastDiagnoses = EverySet.empty
+    , measurements =
+        { emptyPrenatalMeasurements
+            | nutrition =
+                wrapMeasurement
+                    { height = HeightInCm height
+                    , weight = WeightInKg 60
+                    , muac = MuacInCm 25
+                    }
+        }
+    }
+
+
+examinationTasksCompletedFromTotalTest : Test
+examinationTasksCompletedFromTotalTest =
+    -- A measurement outside its range is counted as a task still to do, which is
+    -- what keeps Save disabled and stops the nurse being moved past it to another
+    -- task, which would leave the whole nutrition measurement unsaved.
+    let
+        nutritionData height weight muac =
+            let
+                examinationData =
+                    emptyModel.examinationData
+
+                form =
+                    examinationData.nutritionAssessmentForm
+            in
+            { examinationData
+                | nutritionAssessmentForm =
+                    { form | height = height, weight = weight, muac = muac }
+            }
+
+        completedOnSite site height weight muac =
+            examinationTasksCompletedFromTotal
+                currentDate
+                site
+                (testAssembled emptyPrenatalMeasurements)
+                (nutritionData height weight muac)
+                NutritionAssessment
+
+        completedOf =
+            completedOnSite SiteRwanda
+
+        carriedOverHeightCompletedOf previousHeight weight muac =
+            let
+                assembled =
+                    testAssembled emptyPrenatalMeasurements
+            in
+            examinationTasksCompletedFromTotal
+                currentDate
+                SiteRwanda
+                { assembled | nursePreviousEncountersData = [ previousEncounterWithHeight previousHeight ] }
+                (nutritionData Nothing weight muac)
+                NutritionAssessment
+    in
+    describe "examinationTasksCompletedFromTotal, nutrition assessment"
+        [ test "measurements in range count as done" <|
+            \_ ->
+                completedOf (Just 160) (Just 60) (Just 25)
+                    |> Expect.equal ( 4, 4 )
+        , test "a height of 1050 cm is not done, and takes BMI with it" <|
+            \_ ->
+                completedOf (Just 1050) (Just 60) (Just 25)
+                    |> Expect.equal ( 2, 4 )
+        , test "a weight of 850 kg is not done, and takes BMI with it" <|
+            \_ ->
+                completedOf (Just 160) (Just 850) (Just 25)
+                    |> Expect.equal ( 2, 4 )
+        , test "a MUAC of 250 cm is not done, and leaves BMI alone" <|
+            \_ ->
+                completedOf (Just 160) (Just 60) (Just 250)
+                    |> Expect.equal ( 3, 4 )
+        , test "nothing entered yet is nothing done" <|
+            \_ ->
+                completedOf Nothing Nothing Nothing
+                    |> Expect.equal ( 0, 4 )
+        , test "a height carried over from an earlier encounter isn't asked for, so there are three tasks" <|
+            \_ ->
+                carriedOverHeightCompletedOf 160 (Just 60) (Just 25)
+                    |> Expect.equal ( 3, 3 )
+        , test "a carried over height that is out of range does NOT hold the save, since it can't be corrected here" <|
+            -- The height input is hidden in this case. Holding the save on it
+            -- would leave the nurse with no way to finish the encounter.
+            \_ ->
+                carriedOverHeightCompletedOf 1050 (Just 60) (Just 25)
+                    |> Expect.equal ( 3, 3 )
+        , test "the weight is still checked when the height is carried over" <|
+            \_ ->
+                carriedOverHeightCompletedOf 160 (Just 850) (Just 25)
+                    |> Expect.equal ( 1, 3 )
+        , test "a MUAC of 99.5 cm is too big at Rwanda" <|
+            \_ ->
+                completedOnSite SiteRwanda (Just 160) (Just 60) (Just 99.5)
+                    |> Expect.equal ( 3, 4 )
+        , test "the same 99.5 cm is 995 mm at Burundi, which is allowed" <|
+            -- The MUAC ranges are 5-99 cm and 50-999 mm, so they disagree above
+            -- 99 cm. This is what says the site is really being passed through.
+            \_ ->
+                completedOnSite SiteBurundi (Just 160) (Just 60) (Just 99.5)
+                    |> Expect.equal ( 4, 4 )
+        ]
+
+
 all : Test
 all =
     describe "Prenatal Activity tests"
-        [ bmiToPrePregnancyClassificationTest
+        [ examinationTasksCompletedFromTotalTest
+        , bmiToPrePregnancyClassificationTest
         , zscoreToPrePregnancyClassificationTest
         , generatePrenatalDiagnosesForNurseLabsTest
         , generatePrenatalDiagnosesForNurseRecurrentLabsTest

@@ -39,10 +39,15 @@ import Measurement.Model
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
+        , getInputConstraintsHeight
+        , getInputConstraintsWeight
         , getNextVaccineDose
         , isTestResultValid
+        , measurementInRange
         , medicationAdministrationFormInputsAndTasks
         , medicationAdministrationFormWithDefault
+        , muacOutsideConstraints
+        , outsideConstraints
         , resolveLabTestDate
         , testPerformedByExecutionNote
         , vaccinationFormWithDefault
@@ -5131,8 +5136,8 @@ toPregnancyTestValue form =
     form.pregnancyTestResult
 
 
-examinationTasksCompletedFromTotal : NominalDate -> AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
-examinationTasksCompletedFromTotal currentDate assembled data task =
+examinationTasksCompletedFromTotal : NominalDate -> Site -> AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
+examinationTasksCompletedFromTotal currentDate site assembled data task =
     case task of
         Vitals ->
             let
@@ -5166,19 +5171,33 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
                     else
                         form_
 
+                -- A measurement that is outside its range is not a done task,
+                -- so it has to be corrected before the encounter can be saved.
+                heightTask =
+                    measurementInRange (outsideConstraints getInputConstraintsHeight) form.height
+
+                weightTask =
+                    measurementInRange (outsideConstraints getInputConstraintsWeight) form.weight
+
+                muacTask =
+                    measurementInRange (muacOutsideConstraints site) form.muac
+
+                -- The height is left out when it comes from an earlier encounter:
+                -- its input isn't shown, so holding the save on it would leave
+                -- nothing here to correct.
                 tasks_ =
                     if hideHeightInput then
-                        [ form.weight, form.muac ]
+                        [ weightTask, muacTask ]
 
                     else
-                        [ form.height, form.weight, form.muac ]
+                        [ heightTask, weightTask, muacTask ]
 
                 tasksForBmi =
                     if hideHeightInput then
-                        [ form.weight ]
+                        [ weightTask ]
 
                     else
-                        [ form.height, form.weight ]
+                        [ heightTask, weightTask ]
             in
             ( (List.map taskCompleted tasks_ |> List.sum)
                 -- This is for BMI task, which is considered as completed

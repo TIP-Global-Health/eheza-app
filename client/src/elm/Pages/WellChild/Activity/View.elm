@@ -35,7 +35,7 @@ import Measurement.Model
         , VaccinationStatus(..)
         , VitalsForm
         )
-import Measurement.Utils exposing (contributingFactorsFormWithDefault, generateFutureVaccinationsData, healthEducationFormWithDefault, heightFormWithDefault, immunisationTaskToVaccineType, medicationAdministrationFormWithDefault, muacFormWithDefault, ncdaFormWithDefault, nutritionCaringFormWithDefault, nutritionFeedingFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFoodSecurityFormWithDefault, nutritionFormWithDefault, nutritionHygieneFormWithDefault, sendToHCFormWithDefault, vaccinationFormWithDefault, vitalsFormWithDefault, weightFormWithDefault)
+import Measurement.Utils exposing (contributingFactorsFormWithDefault, generateFutureVaccinationsData, getInputConstraintsHeight, healthEducationFormWithDefault, heightFormWithDefault, immunisationTaskToVaccineType, measurementInRange, medicationAdministrationFormWithDefault, muacFormWithDefault, ncdaFormWithDefault, nutritionCaringFormWithDefault, nutritionFeedingFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFoodSecurityFormWithDefault, nutritionFormWithDefault, nutritionHygieneFormWithDefault, outsideConstraints, sendToHCFormWithDefault, vaccinationFormWithDefault, vitalsFormWithDefault, weightFormWithDefault)
 import Measurement.View
     exposing
         ( birthWeightInputsAndTasks
@@ -358,7 +358,9 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                                 "birth-length"
                                 Translate.UnitCentimeter
                           ]
-                        , [ maybeToBoolTask form.birthLength ]
+                        , [ measurementInRange (outsideConstraints getInputConstraintsHeight) birthLengthAsFloat
+                                |> maybeToBoolTask
+                          ]
                         )
 
                     else

@@ -949,7 +949,7 @@ viewExaminationContent language currentDate zscores site features assembled data
                             )
 
                         _ ->
-                            ( task, examinationTasksCompletedFromTotal currentDate assembled data task )
+                            ( task, examinationTasksCompletedFromTotal currentDate site assembled data task )
                 )
                 tasks
                 |> Dict.fromList

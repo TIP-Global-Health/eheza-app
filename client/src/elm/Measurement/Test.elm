@@ -24,6 +24,7 @@ import Measurement.Utils
         , getIntervalForVaccine
         , initialVaccinationDateByBirthDate
         , liverFunctionResultFormWithDefault
+        , measurementInRange
         , muacOutsideConstraints
         , outsideConstraints
         )
@@ -320,6 +321,35 @@ outsideConstraintsTest =
         ]
 
 
+measurementInRangeTest : Test
+measurementInRangeTest =
+    -- Builds the task lists: a measurement outside its range is dropped, so it
+    -- counts as a task still to do and Save stays disabled until it's corrected.
+    describe "measurementInRange"
+        [ test "a measurement inside its range is kept" <|
+            \_ ->
+                measurementInRange (outsideConstraints getInputConstraintsWeight) (Just 12)
+                    |> Expect.equal (Just 12)
+        , test "a measurement outside its range is dropped" <|
+            \_ ->
+                measurementInRange (outsideConstraints getInputConstraintsWeight) (Just 850)
+                    |> Expect.equal Nothing
+        , test "a measurement that hasn't been taken comes back as it went in" <|
+            \_ ->
+                measurementInRange (outsideConstraints getInputConstraintsWeight) Nothing
+                    |> Expect.equal Nothing
+        , test "MUAC is judged by the site: 99.5 cm is too big at Rwanda" <|
+            \_ ->
+                measurementInRange (muacOutsideConstraints SiteRwanda) (Just 99.5)
+                    |> Expect.equal Nothing
+        , test "MUAC is judged by the site: the same 99.5 cm is 995 mm at Burundi, which is allowed" <|
+            -- The ranges are 5-99 cm and 50-999 mm, so they disagree above 99 cm.
+            \_ ->
+                measurementInRange (muacOutsideConstraints SiteBurundi) (Just 99.5)
+                    |> Expect.equal (Just 99.5)
+        ]
+
+
 muacOutsideConstraintsTest : Test
 muacOutsideConstraintsTest =
     -- MUAC is stored in cm, but its constraints are expressed in the unit shown
@@ -441,6 +471,7 @@ all =
         , initialVaccinationDateByBirthDateTest
         , updateChildSetMuacTest
         , outsideConstraintsTest
+        , measurementInRangeTest
         , muacOutsideConstraintsTest
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
