@@ -100,6 +100,7 @@ import Pages.Utils
         ( customButton
         , dropLeadingMinus
         , maybeToBoolTask
+        , muacUnitTransIdForSite
         , resolveActiveTask
         , resolveNextTask
         , resolveTasksCompletedFromTotal
@@ -128,7 +129,7 @@ import Pages.Utils
         , viewYellowAlertForSelect
         )
 import Round
-import SyncManager.Model exposing (Site(..), SiteFeature)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -3207,12 +3208,7 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site is
             Maybe.map (muacValueForSite site) form.muac
 
         muacUnitTransId =
-            case site of
-                SiteBurundi ->
-                    Translate.UnitMillimeter
-
-                _ ->
-                    Translate.UnitCentimeter
+            muacUnitTransIdForSite site
 
         heightPreviousValue =
             resolvePreviousValue assembled .nutrition .height

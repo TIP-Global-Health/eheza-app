@@ -2,9 +2,10 @@ module Pages.Utils.Test exposing (all)
 
 import Backend.Measurement.Utils exposing (muacValueForSite)
 import Expect
-import Pages.Utils exposing (dropLeadingMinus, percentageOfTotal, setMuacValueForSite)
+import Pages.Utils exposing (dropLeadingMinus, muacUnitTransIdForSite, percentageOfTotal, setMuacValueForSite)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
+import Translate
 
 
 muacValueForSiteTest : Test
@@ -70,6 +71,29 @@ percentageOfTotalTest =
         ]
 
 
+muacUnitTransIdForSiteTest : Test
+muacUnitTransIdForSiteTest =
+    -- The label has to say the same unit the value is entered and read in, or
+    -- the number on screen means something other than what it says.
+    describe "muacUnitTransIdForSite"
+        [ test "Burundi reads MUAC in millimetres" <|
+            \_ ->
+                muacUnitTransIdForSite SiteBurundi
+                    |> Expect.equal Translate.UnitMillimeter
+        , test "everywhere else reads it in centimetres" <|
+            \_ ->
+                ( muacUnitTransIdForSite SiteRwanda
+                , muacUnitTransIdForSite SiteSomalia
+                , muacUnitTransIdForSite SiteUnknown
+                )
+                    |> Expect.equal
+                        ( Translate.UnitCentimeter
+                        , Translate.UnitCentimeter
+                        , Translate.UnitCentimeter
+                        )
+        ]
+
+
 dropLeadingMinusTest : Test
 dropLeadingMinusTest =
     describe "Pages.Utils.dropLeadingMinus"
@@ -112,4 +136,5 @@ all =
         [ percentageOfTotalTest
         , dropLeadingMinusTest
         , muacValueForSiteTest
+        , muacUnitTransIdForSiteTest
         ]
