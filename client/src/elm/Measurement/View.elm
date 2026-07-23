@@ -52,6 +52,7 @@ import Measurement.Utils exposing (contributingFactorsFormWithDefault, fbfFormTo
 import Pages.Utils
     exposing
         ( concatInputsAndTasksSections
+        , dropLeadingMinus
         , isTaskCompleted
         , maybeToBoolTask
         , taskCompleted
@@ -272,7 +273,7 @@ viewFloatForm config language currentDate isChw child measurements previousValue
             , name config.blockName
             , Attr.min <| String.fromFloat config.constraints.minVal
             , Attr.max <| String.fromFloat config.constraints.maxVal
-            , onInput config.updateMsg
+            , onInput (dropLeadingMinus >> config.updateMsg)
             , value inputValue
             ]
 
