@@ -1,4 +1,4 @@
-module Pages.Utils exposing (calculatePercentage, concatInputsAndTasksSections, customButton, customPopup, emptySelectOption, filterDependentNoResultsMessage, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isAboveAgeOf2Years, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, muacUnitTransIdForSite, nonAdministrationReasonToSign, normalizeFilter, percentageOfTotal, resolveActiveTask, resolveNextTask, resolveSelectedDateForMonthSelector, resolveTasksCompletedFromTotal, saveButton, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBoolInputReverted, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxMultipleSelectSectionsInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewConfirmationDialog, viewCustomAction, viewCustomBoolInput, viewCustomLabel, viewCustomNameFilter, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPersonDetails, viewPersonDetailsExtended, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewPreviousMeasurementCustom, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewStartEncounterButton, viewTasksCount, viewTextInput, viewYellowAlertForSelect)
+module Pages.Utils exposing (calculatePercentage, concatInputsAndTasksSections, customButton, customPopup, dropLeadingMinus, emptySelectOption, filterDependentNoResultsMessage, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isAboveAgeOf2Years, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, muacUnitTransIdForSite, nonAdministrationReasonToSign, normalizeFilter, percentageOfTotal, resolveActiveTask, resolveNextTask, resolveSelectedDateForMonthSelector, resolveTasksCompletedFromTotal, saveButton, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBoolInputReverted, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxMultipleSelectSectionsInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewConfirmationDialog, viewCustomAction, viewCustomBoolInput, viewCustomLabel, viewCustomNameFilter, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPersonDetails, viewPersonDetailsExtended, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewPreviousMeasurementCustom, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewStartEncounterButton, viewTasksCount, viewTextInput, viewYellowAlertForSelect)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (HealthCenterId, PersonId)
@@ -706,6 +706,28 @@ viewCheckBoxSelectInputItem checkedOptions setMsg viewOptionFunc option =
         ]
 
 
+{-| Drops a minus sign typed at the front of a number.
+
+Everything these inputs collect -- lengths, weights, counts, lab values -- is a
+quantity that can't be negative. The `min` attribute only points the spinner
+arrows the right way; a minus that is typed or pasted still reaches the message
+and parses. Dropping it keeps the digits, so what is stored is never negative.
+
+A minus put in front of a number the field already holds still shows in the
+field: what is left after dropping it is the value already there, so nothing
+re-renders. The positive number is what gets stored, and the next keystroke
+brings the two back together.
+
+-}
+dropLeadingMinus : String -> String
+dropLeadingMinus value =
+    if String.startsWith "-" value then
+        String.dropLeft 1 value
+
+    else
+        value
+
+
 viewNumberInput : Maybe Int -> (String -> msg) -> String -> Html msg
 viewNumberInput maybeCurrentValue setMsg inputClass =
     let
@@ -716,7 +738,7 @@ viewNumberInput maybeCurrentValue setMsg inputClass =
         inputAttrs =
             [ type_ "number"
             , Html.Attributes.min "0"
-            , onInput setMsg
+            , onInput (dropLeadingMinus >> setMsg)
             , value currentValue
             ]
     in
@@ -735,7 +757,7 @@ viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslatio
         inputAttrs =
             [ type_ "number"
             , Html.Attributes.min "0"
-            , onInput setMsg
+            , onInput (dropLeadingMinus >> setMsg)
             , value currentValue
             ]
     in

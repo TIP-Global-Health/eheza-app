@@ -98,6 +98,7 @@ import Pages.Prenatal.View
 import Pages.Utils
     exposing
         ( customButton
+        , dropLeadingMinus
         , maybeToBoolTask
         , muacUnitTransIdForSite
         , resolveActiveTask
@@ -4389,7 +4390,7 @@ viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId 
                     [ type_ "number"
                     , Html.Attributes.min "0"
                     , Html.Attributes.max "99"
-                    , onInput setMsg
+                    , onInput (dropLeadingMinus >> setMsg)
                     , value currentValue
                     ]
                     []
