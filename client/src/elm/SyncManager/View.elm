@@ -14,6 +14,7 @@ import Json.Encode
 import List.Extra
 import List.Zipper as Zipper
 import Maybe.Extra exposing (isJust)
+import Pages.Utils exposing (dropLeadingMinus)
 import RemoteData exposing (RemoteData, WebData)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Model
@@ -133,7 +134,7 @@ viewSyncSettings model =
                     , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
                     , Html.Attributes.required True
                     , value <| String.fromInt syncSpeed.idle
-                    , onInput SetSyncSpeedIdle
+                    , onInput (dropLeadingMinus >> SetSyncSpeedIdle)
                     ]
                     []
                 , div [ class "ui basic label" ] [ text "ms" ]
@@ -150,7 +151,7 @@ viewSyncSettings model =
                     , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
                     , Html.Attributes.required True
                     , value <| String.fromInt syncSpeed.cycle
-                    , onInput SetSyncSpeedCycle
+                    , onInput (dropLeadingMinus >> SetSyncSpeedCycle)
                     ]
                     []
                 , div [ class "ui basic label" ] [ text "ms" ]
@@ -167,7 +168,7 @@ viewSyncSettings model =
                     , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
                     , Html.Attributes.required True
                     , value <| String.fromInt syncSpeed.offline
-                    , onInput SetSyncSpeedOffline
+                    , onInput (dropLeadingMinus >> SetSyncSpeedOffline)
                     ]
                     []
                 , div [ class "ui basic label" ] [ text "ms" ]
