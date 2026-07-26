@@ -22,6 +22,7 @@ type Msg
     | SetPregnancySummaryNumberInput (String -> PregnancySummaryForm -> PregnancySummaryForm) String
     | SetDeliveryComplication DeliveryComplication
     | SetBirthDefect BirthDefect
+    | PreSavePregnancySummary PersonId (Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary ))
     | SavePregnancySummary PersonId (Maybe ( WellChildPregnancySummaryId, WellChildPregnancySummary ))
       -- DANGER SIGNS
     | SetActiveDangerSignsTask DangerSignsTask
@@ -112,6 +113,7 @@ type Msg
     | SetMuacForNCDA String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
+    | SetBirthWeightOutOfRangePopup Bool
     | SaveNCDA PersonId (Maybe ( WellChildNCDAId, WellChildNCDA ))
       -- HOME VISIT
     | SetActiveHomeVisitTask Pages.WellChild.Activity.Types.HomeVisitTask
@@ -164,7 +166,8 @@ emptyModel =
 
 
 type WarningPopupType
-    = PopupNutritionAssessment (List NutritionAssessment)
+    = PopupBirthWeightOutOfRange
+    | PopupNutritionAssessment (List NutritionAssessment)
     | PopupMacrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | PopupMicrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
 

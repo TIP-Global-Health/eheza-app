@@ -76,6 +76,7 @@ type Msg
     | SetMuac String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
+    | SetBirthWeightOutOfRangePopup Bool
     | SaveNCDA PersonId (Maybe ( ChildScoreboardNCDAId, ChildScoreboardNCDA ))
       -- IMMUNISATION
     | SetActiveImmunisationTask ImmunisationTask

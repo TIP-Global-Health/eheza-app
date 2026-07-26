@@ -34,6 +34,7 @@ type Msg
     | SetMuacForNCDA String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
+    | SetBirthWeightOutOfRangePopup Bool
     | SaveNCDA PersonId (Maybe ( NutritionNCDAId, NutritionNCDA ))
     | SetActiveNextStepsTask NextStepsTask
     | SetReferToHealthCenter Bool

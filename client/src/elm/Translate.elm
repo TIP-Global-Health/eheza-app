@@ -461,6 +461,7 @@ type TranslationId
     | BirthDefectLabel
     | BirthDefectsPresentQuestion
     | BirthDefectsSelectionLabel
+    | BirthWeightOutOfRangeWarning Measurement.Model.FloatInputConstraints
     | BloodGlucose
     | BloodPressure
     | BloodPressureDiaLabel
@@ -4086,6 +4087,18 @@ translationSet trans =
             { english = "Which of the following"
             , kinyarwanda = Just "Ni ubuhe muri ubu bukurikira"
             , kirundi = Just "Ni ubuhe muri ubu"
+            , somali = Nothing
+            }
+
+        BirthWeightOutOfRangeWarning constraints ->
+            { english =
+                "Birth weight is recorded in grams, and must be between "
+                    ++ String.fromFloat constraints.minVal
+                    ++ " and "
+                    ++ String.fromFloat constraints.maxVal
+                    ++ ". Please check the value entered. A weight of 3 kilograms is entered as 3000."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             , somali = Nothing
             }
 

@@ -262,6 +262,7 @@ type MsgChild
     | SetMuac String
     | SetNCDAHelperState (Maybe NCDASign)
     | SetNCDAFormStep NCDAStep
+    | SetBirthWeightOutOfRangePopup Bool
 
 
 type MsgMother
@@ -1761,6 +1762,7 @@ emptyLiverFunctionResultForm =
 type alias NCDAData =
     { form : NCDAForm
     , helperState : Maybe NCDASign
+    , showBirthWeightOutOfRangePopup : Bool
     }
 
 
@@ -1768,6 +1770,7 @@ emptyNCDAData : NCDAData
 emptyNCDAData =
     { form = emptyNCDAForm
     , helperState = Nothing
+    , showBirthWeightOutOfRangePopup = False
     }
 
 
@@ -1982,6 +1985,7 @@ type alias NCDAContentConfig msg =
     , setMuacMsg : String -> msg
     , setStepMsg : NCDAStep -> msg
     , setHelperStateMsg : Maybe NCDASign -> msg
+    , setBirthWeightOutOfRangePopupMsg : Bool -> msg
     , saveMsg : msg
     }
 

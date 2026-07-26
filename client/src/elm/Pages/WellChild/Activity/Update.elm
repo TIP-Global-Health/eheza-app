@@ -19,7 +19,7 @@ import Measurement.Model
         , VaccinationFormViewMode(..)
         , emptyPhotoForm
         )
-import Measurement.Utils exposing (contributingFactorsFormWithDefault, ncdaFormWithDefault, nutritionFormWithDefault, toAdministrationNoteWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable)
+import Measurement.Utils exposing (birthWeightOutsideConstraints, contributingFactorsFormWithDefault, ncdaFormWithDefault, nutritionFormWithDefault, toAdministrationNoteWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (insertIntoSet, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue)
 import Pages.WellChild.Activity.Model exposing (Model, Msg(..), WarningPopupType(..))
@@ -177,6 +177,24 @@ update currentDate site id db msg model =
             , Cmd.none
             , []
             )
+
+        PreSavePregnancySummary personId saved ->
+            let
+                extraMsgs =
+                    if birthWeightOutsideConstraints pregnancySummaryForm.birthWeight then
+                        -- Tell the nurse what is wrong and leave the form as it
+                        -- is, so the weight can be entered again. Nothing is
+                        -- saved until it is within range.
+                        [ SetWarningPopupState <| Just PopupBirthWeightOutOfRange ]
+
+                    else
+                        [ SavePregnancySummary personId saved ]
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SavePregnancySummary personId saved ->
             let
@@ -1618,6 +1636,17 @@ update currentDate site id db msg model =
                 updatedData =
                     model.ncdaData
                         |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBirthWeightOutOfRangePopup isOpen ->
+            let
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | showBirthWeightOutOfRangePopup = isOpen })
             in
             ( { model | ncdaData = updatedData }
             , Cmd.none

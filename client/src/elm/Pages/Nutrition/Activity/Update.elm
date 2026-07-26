@@ -509,6 +509,17 @@ update site id db msg model =
             , []
             )
 
+        SetBirthWeightOutOfRangePopup isOpen ->
+            let
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | showBirthWeightOutOfRangePopup = isOpen })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetNCDAHelperState state ->
             let
                 updatedData =

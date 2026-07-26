@@ -9,6 +9,7 @@ import Backend.Measurement.Model
         , MuacInCm(..)
         , TestExecutionNote(..)
         , VaccineDose(..)
+        , WeightInGrm(..)
         , WellChildVaccineType(..)
         )
 import Date exposing (Unit(..))
@@ -17,7 +18,8 @@ import Measurement.Model exposing (MsgChild(..), emptyCreatinineResultForm, empt
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
-        ( creatinineResultFormWithDefault
+        ( birthWeightOutsideConstraints
+        , creatinineResultFormWithDefault
         , getAllDosesForVaccine
         , getInputConstraintsHeight
         , getInputConstraintsWeight
@@ -279,6 +281,43 @@ updateChildSetMuacTest =
         ]
 
 
+birthWeightOutsideConstraintsTest : Test
+birthWeightOutsideConstraintsTest =
+    -- Birth weight is stored in grams, but is often typed in kilograms. The
+    -- kilogram value lands inside the range a weight in grams cannot be, which
+    -- is what this reports so that the form can say so and refuse to save.
+    describe "birthWeightOutsideConstraints"
+        [ test "an ordinary birth weight in grams is inside the range" <|
+            \_ ->
+                birthWeightOutsideConstraints (Just (WeightInGrm 3000))
+                    |> Expect.equal False
+        , test "a genuinely low birth weight is still inside the range" <|
+            \_ ->
+                birthWeightOutsideConstraints (Just (WeightInGrm 1200))
+                    |> Expect.equal False
+        , test "the same weight typed in kilograms is outside the range" <|
+            \_ ->
+                birthWeightOutsideConstraints (Just (WeightInGrm 3))
+                    |> Expect.equal True
+        , test "a weight far above what a newborn can be is outside the range" <|
+            \_ ->
+                birthWeightOutsideConstraints (Just (WeightInGrm 350022))
+                    |> Expect.equal True
+        , test "the ends of the range are accepted" <|
+            \_ ->
+                ( birthWeightOutsideConstraints (Just (WeightInGrm 500))
+                , birthWeightOutsideConstraints (Just (WeightInGrm 6000))
+                )
+                    |> Expect.equal ( False, False )
+        , test "a weight that has not been entered is not reported" <|
+            -- Whether the measurement still has to be taken is answered by the
+            -- task count, not here.
+            \_ ->
+                birthWeightOutsideConstraints Nothing
+                    |> Expect.equal False
+        ]
+
+
 outsideConstraintsTest : Test
 outsideConstraintsTest =
     -- Guards the Save actions of every measurement form: a value that is absent,
@@ -440,6 +479,7 @@ all =
         , getAllDosesForVaccineTest
         , initialVaccinationDateByBirthDateTest
         , updateChildSetMuacTest
+        , birthWeightOutsideConstraintsTest
         , outsideConstraintsTest
         , muacOutsideConstraintsTest
         , creatinineResultFormWithDefaultTest

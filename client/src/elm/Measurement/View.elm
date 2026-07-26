@@ -1,4 +1,4 @@
-module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, contributingFactorsFormInutsAndTasks, followUpFormInputsAndTasks, healthEducationFormInutsAndTasks, heightFormAndTasks, muacFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewCorePhysicalExamForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewHeightForm, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDAContent, viewNutritionFollowUpForm, viewNutritionForm, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks)
+module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, birthWeightOutOfRangePopup, contributingFactorsFormInutsAndTasks, followUpFormInputsAndTasks, healthEducationFormInutsAndTasks, heightFormAndTasks, muacFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewCorePhysicalExamForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewHeightForm, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDAContent, viewNutritionFollowUpForm, viewNutritionForm, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks)
 
 {-| This module provides a form for entering measurements.
 -}
@@ -48,7 +48,7 @@ import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, FamilyPlanningForm, FbfForm, FloatInputConstraints, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
-import Measurement.Utils exposing (contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault, withinConstraints)
+import Measurement.Utils exposing (birthWeightOutsideConstraints, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsBirthWeight, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault, withinConstraints)
 import Pages.Utils
     exposing
         ( concatInputsAndTasksSections
@@ -2396,10 +2396,11 @@ viewNCDAContent :
     -> Person
     -> NCDAContentConfig msg
     -> Maybe NCDASign
+    -> Bool
     -> NCDAForm
     -> ModelIndexedDb
     -> List (Html msg)
-viewNCDAContent language currentDate site personId person config helperState form db =
+viewNCDAContent language currentDate site personId person config helperState showBirthWeightOutOfRangePopup form db =
     let
         steps =
             resolveNCDASteps currentDate person config.ncdaNeverFilled config.atHealthCenter
@@ -2507,8 +2508,26 @@ viewNCDAContent language currentDate site personId person config helperState for
             Maybe.map
                 (\step ->
                     let
-                        actionButton =
-                            Pages.Utils.saveButton language (tasksCompleted == totalTasks)
+                        birthWeightOutOfRange =
+                            -- Only when the weight is asked on this form. If it
+                            -- is not shown, there is nothing here to correct,
+                            -- and the form must not become impossible to leave.
+                            showNCDAQuestionsByNewbornExam config.pregnancySummary
+                                && birthWeightOutsideConstraints form.birthWeight
+
+                        actionButton msg =
+                            -- The weight is asked on the first step but saved
+                            -- on the last one, so every step forward is stopped
+                            -- rather than only the save. Moving between steps
+                            -- another way cannot leave it behind.
+                            Pages.Utils.saveButton language
+                                (tasksCompleted == totalTasks)
+                                (if birthWeightOutOfRange then
+                                    config.setBirthWeightOutOfRangePopupMsg True
+
+                                 else
+                                    msg
+                                )
                     in
                     if config.showTasksTray then
                         let
@@ -2586,6 +2605,12 @@ viewNCDAContent language currentDate site personId person config helperState for
         ]
     , viewModal <|
         viewNCDAHelperDialog language (config.setHelperStateMsg Nothing) helperState
+    , viewModal <|
+        if showBirthWeightOutOfRangePopup then
+            Just <| birthWeightOutOfRangePopup language (config.setBirthWeightOutOfRangePopupMsg False)
+
+        else
+            Nothing
     ]
 
 
@@ -3629,6 +3654,23 @@ showNCDAQuestionsByNewbornExam newbornExamPregnancySummary =
         |> Maybe.withDefault True
 
 
+{-| Shown when a birth weight outside the range a weight in grams can take is
+about to be saved. Closing it leaves the form as it was, so the weight can be
+entered again; nothing is saved until it is in range.
+-}
+birthWeightOutOfRangePopup : Language -> msg -> Html msg
+birthWeightOutOfRangePopup language closeMsg =
+    Pages.Utils.customPopup language
+        True
+        Translate.Continue
+        "warning-popup"
+        ( div [ class "popup-action" ]
+            [ text <| translate language <| Translate.BirthWeightOutOfRangeWarning getInputConstraintsBirthWeight ]
+        , emptyNode
+        , closeMsg
+        )
+
+
 birthWeightInputsAndTasks : Language -> Maybe WeightInGrm -> (String -> msg) -> ( List (Html msg), List (Maybe Bool) )
 birthWeightInputsAndTasks language birthWeight setBirthWeightMsg =
     let
@@ -3768,6 +3810,7 @@ viewNCDA language currentDate site childId child measurement data db =
             , setMuacMsg = SetMuac
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
+            , setBirthWeightOutOfRangePopupMsg = SetBirthWeightOutOfRangePopup
             , saveMsg =
                 toNCDAValueWithDefault saved data.form
                     |> Maybe.map (SaveNCDA existingId)
@@ -3782,6 +3825,7 @@ viewNCDA language currentDate site childId child measurement data db =
         child
         config
         data.helperState
+        data.showBirthWeightOutOfRangePopup
         form
         db
         |> div [ class "form-content ncda" ]
