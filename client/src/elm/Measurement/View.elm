@@ -2513,9 +2513,11 @@ viewNCDAContent language currentDate site personId person config helperState sho
 
                         actionButton msg =
                             -- The weight is asked on the first step but saved
-                            -- on the last one, so every step forward is stopped
-                            -- rather than only the save. Moving between steps
-                            -- another way cannot leave it behind.
+                            -- on the last one, so this button is stopped on
+                            -- every step, not only where it saves. The step
+                            -- tabs and the Back button still move between
+                            -- steps; what they cannot do is save, since the
+                            -- save is only reached through this button.
                             Pages.Utils.saveButton language
                                 (tasksCompleted == totalTasks)
                                 (if birthWeightOutOfRange then

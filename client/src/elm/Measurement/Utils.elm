@@ -322,7 +322,7 @@ birthWeightOutsideConstraints birthWeight =
 
 showNCDAQuestionsByNewbornExam : Maybe PregnancySummaryValue -> Bool
 showNCDAQuestionsByNewbornExam newbornExamPregnancySummary =
-    -- Verify that NCDA related questions were not answered at Neborn exam.
+    -- Verify that NCDA related questions were not answered at Newborn exam.
     -- This can happen, because needed questions were added after
     -- Newborn exam was launched, so, it could have been filled
     -- without them.
