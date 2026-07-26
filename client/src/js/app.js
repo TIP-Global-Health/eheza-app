@@ -598,8 +598,24 @@ elmApp.ports.sendSyncSpeed.subscribe(function(syncSpeed) {
 elmApp.ports.bulkPhotoFetch.subscribe(async function(params) {
   // Belt and braces: the handler guards its own failure paths, but a reply
   // must reach Elm on every exit, or the photos lane stays Loading forever.
-  const outcome = await self.bulkPhotos.handleBulkPhotoFetch(params)
-    .catch((e) => ({ 'batchError': 0, 'error': String(e) }));
+  // bulkPhotos.js can be absent while the app updates, when a new app.js
+  // runs against a stale cache. Reading the handler off a missing module
+  // throws before a catch can attach, so check for it first, and take the
+  // whole call through try/catch so a handler of any shape still replies.
+  let outcome;
+  if (self.bulkPhotos && typeof self.bulkPhotos.handleBulkPhotoFetch === 'function') {
+    try {
+      outcome = await self.bulkPhotos.handleBulkPhotoFetch(params);
+    } catch (e) {
+      outcome = { 'batchError': 0, 'error': String(e) };
+    }
+  } else {
+    // The file cannot turn up later in this session, so send what a server
+    // without the bulk endpoint sends. Photos are then fetched one at a
+    // time from the next cycle, rather than after three whole-batch
+    // errors. 404 is the signal Elm reads for that, not an HTTP status.
+    outcome = { 'batchError': 404, 'error': 'bulkPhotos.js not loaded' };
+  }
   elmApp.ports.bulkPhotoFetchHandle.send(outcome);
 });
 
