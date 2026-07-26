@@ -1993,11 +1993,15 @@ elmApp.ports.serviceWorkerOut.subscribe(function(message) {
       break;
 
     case 'Update':
-      // This happens on its own every 24 hours or so, but we can force a
-      // check for updates if we like.
+      // Checked automatically every hour, and on demand from the version UI.
+      // The check fetches service-worker.js, which rejects when the device is
+      // offline -- routine for an offline-first app, so ignore it. The hourly
+      // timer checks again anyway.
       navigator.serviceWorker.getRegistration().then(function(reg) {
-        reg.update();
-      });
+        if (reg) {
+          return reg.update();
+        }
+      }).catch(function() {});
       break;
 
     case 'SkipWaiting':
@@ -2008,10 +2012,10 @@ elmApp.ports.serviceWorkerOut.subscribe(function(message) {
       // provide. So we make this explicit rather than automatic -- we don't
       // want to reload at some moment the user isn't expecting.
       navigator.serviceWorker.getRegistration().then(function(reg) {
-        if (reg.waiting) {
+        if (reg && reg.waiting) {
           reg.waiting.postMessage('SkipWaiting');
         }
-      });
+      }).catch(function() {});
       break;
   }
 });
