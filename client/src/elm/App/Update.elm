@@ -140,6 +140,7 @@ import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import Url exposing (Url)
 import Utils.WebData
+import Version
 import ZScore.Model
 import ZScore.Update
 
@@ -1559,6 +1560,7 @@ update msg model =
                                             { source = "sync"
                                             , message = message
                                             , md5 = MD5.hex message
+                                            , version = Version.version.build
                                             }
 
                                     IndexedDB ->
@@ -1566,6 +1568,7 @@ update msg model =
                                             { source = "db"
                                             , message = message
                                             , md5 = ""
+                                            , version = Version.version.build
                                             }
 
                                     ServiceWorker ->
@@ -1573,6 +1576,7 @@ update msg model =
                                             { source = "sw"
                                             , message = message
                                             , md5 = ""
+                                            , version = Version.version.build
                                             }
                         in
                         case errorType of

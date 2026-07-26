@@ -1735,7 +1735,9 @@ elmApp.ports.initRollbar.subscribe(function(data) {
           environment: 'all',
           client: {
             javascript: {
-              code_version: '1.0',
+              // The build the report came from, so a stack trace can be read
+              // against the bundle that produced it.
+              code_version: data.version,
             }
           },
           person: {
@@ -1765,7 +1767,15 @@ elmApp.ports.initRollbar.subscribe(function(data) {
       // Send all items.
       let localIds = [];
       result.forEach(function(row) {
-          rollbar.log(row.error);
+          // The report carries the build that sends it, which is not the build
+          // that recorded it when the app updated in between. Rows written
+          // before this was kept have no build to say.
+          if (row.version) {
+              rollbar.log(row.error, { recordedOnVersion: row.version });
+          }
+          else {
+              rollbar.log(row.error);
+          }
           localIds.push(row.localId);
       })
 
@@ -1805,7 +1815,9 @@ elmApp.ports.logByRollbar.subscribe(function(data) {
             break;
 
         case 'db':
-            await dbSync.dbErrors.add({ error: data.message, isSynced: 0 });
+            // Kept until Rollbar is ready, which can be after the app updates,
+            // so keep the build this was recorded on with it.
+            await dbSync.dbErrors.add({ error: data.message, version: data.version, isSynced: 0 });
             break;
       }
 
