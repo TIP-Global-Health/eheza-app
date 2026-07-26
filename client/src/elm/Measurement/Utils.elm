@@ -89,8 +89,11 @@ here to catch.
 -}
 getInputConstraintsBirthWeight : FloatInputConstraints
 getInputConstraintsBirthWeight =
-    { minVal = 500
-    , maxVal = 6000
+    -- Wide enough for the extremes that do occur: babies have survived under
+    -- 500g, and a very large baby can be over 6000g. A weight typed in
+    -- kilograms is still far below all of them.
+    { minVal = 300
+    , maxVal = 7000
     }
 
 

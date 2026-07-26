@@ -343,12 +343,20 @@ birthWeightOutsideConstraintsTest =
             \_ ->
                 birthWeightOutsideConstraints (Just (WeightInGrm 350022))
                     |> Expect.equal True
-        , test "the ends of the range are accepted" <|
+        , test "the extremes that do occur are accepted" <|
+            -- Babies have survived under 500g, and a very large baby can be
+            -- over 6000g. Both have to be recordable as they are.
             \_ ->
-                ( birthWeightOutsideConstraints (Just (WeightInGrm 500))
-                , birthWeightOutsideConstraints (Just (WeightInGrm 6000))
+                ( birthWeightOutsideConstraints (Just (WeightInGrm 300))
+                , birthWeightOutsideConstraints (Just (WeightInGrm 7000))
                 )
                     |> Expect.equal ( False, False )
+        , test "just outside either end is refused" <|
+            \_ ->
+                ( birthWeightOutsideConstraints (Just (WeightInGrm 299))
+                , birthWeightOutsideConstraints (Just (WeightInGrm 7001))
+                )
+                    |> Expect.equal ( True, True )
         , test "a weight that has not been entered is not reported" <|
             -- Whether the measurement still has to be taken is answered by the
             -- task count, not here.
