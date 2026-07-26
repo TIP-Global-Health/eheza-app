@@ -45,10 +45,10 @@ import Html.Events exposing (on, onClick, onInput)
 import Html.Parser.Util exposing (toVirtualDom)
 import Json.Decode
 import List.Extra exposing (greedyGroupsOf)
-import Maybe.Extra exposing (isJust, isNothing)
+import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, FamilyPlanningForm, FbfForm, FloatInputConstraints, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
-import Measurement.Utils exposing (birthWeightOutsideConstraints, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsBirthWeight, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault, withinConstraints)
+import Measurement.Utils exposing (birthWeightBlocksNCDAForm, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsBirthWeight, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault, withinConstraints)
 import Pages.Utils
     exposing
         ( concatInputsAndTasksSections
@@ -2509,11 +2509,7 @@ viewNCDAContent language currentDate site personId person config helperState sho
                 (\step ->
                     let
                         birthWeightOutOfRange =
-                            -- Only when the weight is asked on this form. If it
-                            -- is not shown, there is nothing here to correct,
-                            -- and the form must not become impossible to leave.
-                            showNCDAQuestionsByNewbornExam config.pregnancySummary
-                                && birthWeightOutsideConstraints form.birthWeight
+                            birthWeightBlocksNCDAForm steps config.pregnancySummary form.birthWeight
 
                         actionButton msg =
                             -- The weight is asked on the first step but saved
@@ -3642,18 +3638,6 @@ ancVisitsInpustAndTasks language personId person config form db =
         |> Maybe.withDefault ( [], [] )
 
 
-showNCDAQuestionsByNewbornExam : Maybe PregnancySummaryValue -> Bool
-showNCDAQuestionsByNewbornExam newbornExamPregnancySummary =
-    -- Verify that NCDA related questions were not answered at Neborn exam.
-    -- This can happen, because needed questions were added after
-    -- Newborn exam was launched, so, it could have been filled
-    -- without them.
-    -- It's enough to check if one of the questions was answered,
-    -- because both answereds are required to save the form.
-    Maybe.map (.birthWeight >> isNothing) newbornExamPregnancySummary
-        |> Maybe.withDefault True
-
-
 {-| Shown when a birth weight outside the range a weight in grams can take is
 about to be saved. Closing it leaves the form as it was, so the weight can be
 entered again; nothing is saved until it is in range.
@@ -3662,8 +3646,8 @@ birthWeightOutOfRangePopup : Language -> msg -> Html msg
 birthWeightOutOfRangePopup language closeMsg =
     Pages.Utils.customPopup language
         True
-        Translate.Continue
-        "warning-popup"
+        Translate.Close
+        "warning-popup birth-weight-out-of-range"
         ( div [ class "popup-action" ]
             [ text <| translate language <| Translate.BirthWeightOutOfRangeWarning getInputConstraintsBirthWeight ]
         , emptyNode

@@ -14,11 +14,12 @@ import Backend.Measurement.Model
         )
 import Date exposing (Unit(..))
 import Expect
-import Measurement.Model exposing (MsgChild(..), emptyCreatinineResultForm, emptyLiverFunctionResultForm, emptyModelChild)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), emptyCreatinineResultForm, emptyLiverFunctionResultForm, emptyModelChild)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
-        ( birthWeightOutsideConstraints
+        ( birthWeightBlocksNCDAForm
+        , birthWeightOutsideConstraints
         , creatinineResultFormWithDefault
         , getAllDosesForVaccine
         , getInputConstraintsHeight
@@ -281,6 +282,45 @@ updateChildSetMuacTest =
         ]
 
 
+birthWeightBlocksNCDAFormTest : Test
+birthWeightBlocksNCDAFormTest =
+    -- The form may only be stopped over a weight the nurse can actually reach.
+    -- The weight is asked on the Antenatal Care step, and only when the newborn
+    -- exam did not already record it; a form stopped over a weight it does not
+    -- show could not be left at all.
+    let
+        allSteps =
+            [ NCDAStepAntenatalCare, NCDAStepUniversalInterventions ]
+
+        withoutAntenatalCare =
+            [ NCDAStepUniversalInterventions ]
+
+        newbornExamWithoutBirthWeight =
+            Nothing
+    in
+    describe "birthWeightBlocksNCDAForm"
+        [ test "a weight in kilograms on a form that asks for it is stopped" <|
+            \_ ->
+                birthWeightBlocksNCDAForm allSteps newbornExamWithoutBirthWeight (Just (WeightInGrm 3))
+                    |> Expect.equal True
+        , test "a weight in grams is not stopped" <|
+            \_ ->
+                birthWeightBlocksNCDAForm allSteps newbornExamWithoutBirthWeight (Just (WeightInGrm 3000))
+                    |> Expect.equal False
+        , test "a form without the Antenatal Care step is never stopped" <|
+            -- The step is dropped once an NCDA was filled before, and the weight
+            -- saved then is still on the form. There is no field to correct it,
+            -- so stopping here would leave the form impossible to save.
+            \_ ->
+                birthWeightBlocksNCDAForm withoutAntenatalCare newbornExamWithoutBirthWeight (Just (WeightInGrm 3))
+                    |> Expect.equal False
+        , test "a form with no weight entered is not stopped" <|
+            \_ ->
+                birthWeightBlocksNCDAForm allSteps newbornExamWithoutBirthWeight Nothing
+                    |> Expect.equal False
+        ]
+
+
 birthWeightOutsideConstraintsTest : Test
 birthWeightOutsideConstraintsTest =
     -- Birth weight is stored in grams, but is often typed in kilograms. The
@@ -479,6 +519,7 @@ all =
         , getAllDosesForVaccineTest
         , initialVaccinationDateByBirthDateTest
         , updateChildSetMuacTest
+        , birthWeightBlocksNCDAFormTest
         , birthWeightOutsideConstraintsTest
         , outsideConstraintsTest
         , muacOutsideConstraintsTest

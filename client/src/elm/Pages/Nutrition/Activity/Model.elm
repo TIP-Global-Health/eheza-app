@@ -26,6 +26,7 @@ type Msg
     | SaveWeight (EverySet SkippedForm) PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
     | SetUpdateANCVisits Bool
     | ToggleANCVisitDate NominalDate
+    | SetBirthWeightOutOfRangePopup Bool
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetChildReceivesVitaminA ReceiveOption
@@ -34,7 +35,6 @@ type Msg
     | SetMuacForNCDA String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
-    | SetBirthWeightOutOfRangePopup Bool
     | SaveNCDA PersonId (Maybe ( NutritionNCDAId, NutritionNCDA ))
     | SetActiveNextStepsTask NextStepsTask
     | SetReferToHealthCenter Bool

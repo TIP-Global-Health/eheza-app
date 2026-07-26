@@ -68,6 +68,7 @@ type Msg
       -- NCDA
     | SetUpdateANCVisits Bool
     | ToggleANCVisitDate NominalDate
+    | SetBirthWeightOutOfRangePopup Bool
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetChildReceivesVitaminA ReceiveOption
@@ -76,7 +77,6 @@ type Msg
     | SetMuac String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
-    | SetBirthWeightOutOfRangePopup Bool
     | SaveNCDA PersonId (Maybe ( ChildScoreboardNCDAId, ChildScoreboardNCDA ))
       -- IMMUNISATION
     | SetActiveImmunisationTask ImmunisationTask

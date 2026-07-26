@@ -256,13 +256,13 @@ type MsgChild
     | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
+    | SetBirthWeightOutOfRangePopup Bool
     | SetChildReceivesVitaminA ReceiveOption
     | SetStuntingLevel StuntingLevel
     | SetWeight String
     | SetMuac String
     | SetNCDAHelperState (Maybe NCDASign)
     | SetNCDAFormStep NCDAStep
-    | SetBirthWeightOutOfRangePopup Bool
 
 
 type MsgMother
