@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
 
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import { click } from './auth';
 import { drushEnv } from './device';
 import {
@@ -511,9 +511,11 @@ export async function completePregnancySummary(page: Page) {
   await fillMeasurement(page, 'apgar.one-min', '8');
   await fillMeasurement(page, 'apgar.five-min', '9');
 
-  // Birth Length Available → Yes, so the length is asked for and can be checked.
+  // Birth Length Available → No to begin with. The length is not asked for
+  // then, so there is no length on screen to correct and the form must not be
+  // held up over one.
   const birthLengthBoolInput = boolInputs.nth(1);
-  await click(birthLengthBoolInput.locator('label', { hasText: 'Yes' }), page);
+  await click(birthLengthBoolInput.locator('label', { hasText: 'No' }), page);
   await page.waitForTimeout(WAIT.formInteraction);
 
   // Delivery Complications Present → No
@@ -526,16 +528,44 @@ export async function completePregnancySummary(page: Page) {
   await click(defectsBoolInput.locator('label', { hasText: 'No' }), page);
   await page.waitForTimeout(WAIT.formInteraction);
 
-  // The measurements are filled last, so that the rest of the form is answered
-  // and Save is active. Both are entered in the wrong unit at once -- a weight
-  // in kilograms and a length in metres -- so the warning has to name both
-  // before either is entered as it should be.
+  // A birth weight that is in range, so that nothing else stands in the way.
+  await fillMeasurement(page, 'birth-weight', '3000');
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  // With no birth length recorded, the activity saves and we leave it.
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await saveBtn.waitFor({ timeout: 5000 });
+  await expect(saveBtn).toHaveClass(/active/);
+  await saveActivity(page, 'well-child');
+
+  // Back into the activity, this time recording a birth length. The form comes
+  // up with what was just saved, so this also covers correcting a measurement
+  // on a record that already exists. Saving it moved it to the Completed tab,
+  // so it is reached from there rather than from the list of things to do.
+  await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+  await click(page.locator('.icon-task-history'), page);
+  await page.locator('div.page-activity.well-child').waitFor({ timeout: 10000 });
+  await form.waitFor({ timeout: 5000 });
+  await click(boolInputs.nth(1).locator('label', { hasText: 'Yes' }), page);
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  // Both measurements are entered in the wrong unit at once -- a weight in
+  // kilograms and a length in metres -- so the warning has to name both before
+  // either is entered as it should be.
   await expectMeasurementsOutOfRangeRefused(page, '.ui.form.pregnancy-summary', [
     { inputId: 'birth-weight', popupClass: 'birth-weight-out-of-range', bad: '3', good: '3000' },
     { inputId: 'birth-length', popupClass: 'birth-length-out-of-range', bad: '0.5', good: '50' },
   ]);
 
   await saveActivity(page, 'well-child');
+
+  // Reaching the saved activity left us on the Completed tab. Go back to the
+  // things still to do, so the activity after this one can be reached.
+  await click(page.locator('#pending-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------

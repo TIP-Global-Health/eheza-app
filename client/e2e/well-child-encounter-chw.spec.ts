@@ -42,11 +42,15 @@ test.describe('CHW: Well Child NewbornExam Encounter', () => {
 
   // Scenario: Newborn exam for a 1-month-old child (CHW).
   // Activities: PregnancySummary, NutritionAssessment, Immunisation.
-  // Also verifies (issues #1981, #1998): birth weight is recorded in grams and
-  //             birth length in centimetres. Both are entered in the wrong unit
-  //             at once — 3 (kilograms) and 0.5 (metres) — and saving is refused
-  //             with a warning naming BOTH; the activity is not left, and only
-  //             after 3000 and 50 are entered does it save.
+  // Also verifies (issues #1981, #1998): PregnancySummary is saved twice.
+  //             First with no birth length available — the length is not asked
+  //             for then, so nothing holds the form up and it saves.
+  //             Then the activity is re-entered, a birth length is recorded,
+  //             and both measurements are entered in the wrong unit at once —
+  //             3 (kilograms) and 0.5 (metres). Saving is refused with a
+  //             warning naming BOTH; the activity is not left; only after 3000
+  //             and 50 are entered does it save. The second pass also covers
+  //             correcting measurements on a record that already exists.
   test('complete newborn exam with PregnancySummary, NutritionAssessment, Immunisation, verify backend sync', async ({ page }) => {
 
     const { fullName } = await createChildAndStartWellChildEncounter(page, {
