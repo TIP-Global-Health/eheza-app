@@ -166,10 +166,10 @@ emptyModel =
 
 
 type WarningPopupType
-    = PopupMeasurementOutOfRange (List AnthropometricMeasurement)
-    | PopupNutritionAssessment (List NutritionAssessment)
-    | PopupMacrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
+    = PopupMacrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
+    | PopupMeasurementOutOfRange (List AnthropometricMeasurement)
     | PopupMicrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
+    | PopupNutritionAssessment (List NutritionAssessment)
 
 
 type alias PregnancySummaryForm =

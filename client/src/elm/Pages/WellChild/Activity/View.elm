@@ -179,20 +179,20 @@ viewWarningPopup language warningPopupState =
         |> Maybe.andThen
             (\popupType ->
                 case popupType of
+                    PopupMacrocephaly personId saved nextTask ->
+                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMacrocephalyWarning
+
                     PopupMeasurementOutOfRange measurements ->
                         Just <|
                             measurementOutOfRangePopup language measurements (SetWarningPopupState Nothing)
+
+                    PopupMicrocephaly personId saved nextTask ->
+                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMicrocephalyWarning
 
                     PopupNutritionAssessment assessment ->
                         warningPopup language
                             (SetWarningPopupState Nothing)
                             assessment
-
-                    PopupMacrocephaly personId saved nextTask ->
-                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMacrocephalyWarning
-
-                    PopupMicrocephaly personId saved nextTask ->
-                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMicrocephalyWarning
             )
 
 
