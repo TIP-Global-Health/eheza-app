@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import { click } from './auth';
 import {
   WAIT,
-  expectBirthWeightInKilogramsRefused,
+  expectMeasurementsOutOfRangeRefused,
   openActivity,
   queryMeasurementNodes,
   registerChild,
@@ -174,7 +174,9 @@ export async function completeNCDA(page: Page) {
     // Every other question on this step is answered, so the button is active.
     // The weight is asked on this step but the form is only saved on the last
     // one, so going on from here has to be refused just as saving would be.
-    await expectBirthWeightInKilogramsRefused(page, '.ui.form.ncda', '3200');
+    await expectMeasurementsOutOfRangeRefused(page, '.ui.form.ncda', [
+      { inputId: 'birth-weight', popupClass: 'birth-weight-out-of-range', bad: '3', good: '3200' },
+    ]);
   }
 
   // Click Save to proceed to next step.

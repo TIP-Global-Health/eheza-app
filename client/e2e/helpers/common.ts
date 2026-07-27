@@ -375,13 +375,14 @@ export function queryPrenatalLmp(personName: string): string | null {
 // ---------------------------------------------------------------------------
 
 /**
- * Verify that a birth weight typed in kilograms is refused, then enter the
- * weight in grams.
+ * Verify that measurements outside their range are refused, then enter values
+ * that are within it.
  *
- * Birth weight is stored in grams, and a value typed in kilograms lands far
- * below the range a weight in grams can take. Every such value counts as a low
- * birth weight, which is what made that indicator over-report (issue #1981).
- * Pressing the button to go on must show the warning and save nothing.
+ * Anthropometric measurements are stored in a particular unit, and a value in
+ * the wrong unit lands far outside the range that unit can take -- a birth
+ * weight typed in kilograms, a birth length typed in metres. Pressing the
+ * button to go on must show the warning, naming every measurement that is
+ * wrong, and save nothing (issue #1980).
  *
  * Call with the rest of the form already filled in, so that the button is
  * active: Elm gives a button that is not active no click handler at all, and
@@ -389,14 +390,18 @@ export function queryPrenatalLmp(personName: string): string | null {
  *
  * @param stillOnFormSelector - something on the form that must still be there
  *   afterwards, proving the form was not left and nothing was saved.
+ * @param measurements - for each: the input's CSS id, the class the popup
+ *   carries for it, a value outside the range, and one within it.
  */
-export async function expectBirthWeightInKilogramsRefused(
+export async function expectMeasurementsOutOfRangeRefused(
   page: Page,
   stillOnFormSelector: string,
-  weightInGrams: string,
+  measurements: Array<{ inputId: string; popupClass: string; bad: string; good: string }>,
 ): Promise<void> {
-  await fillMeasurement(page, 'birth-weight', '3');
-  await page.waitForTimeout(WAIT.formInteraction);
+  for (const m of measurements) {
+    await fillMeasurement(page, m.inputId, m.bad);
+    await page.waitForTimeout(WAIT.formInteraction);
+  }
 
   const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
   await saveBtn.waitFor({ timeout: 5000 });
@@ -405,19 +410,26 @@ export async function expectBirthWeightInKilogramsRefused(
   await expect(saveBtn).toHaveClass(/active/);
   await click(saveBtn, page);
 
-  const popup = page.locator('div.ui.active.modal.birth-weight-out-of-range');
+  const popup = page.locator('div.ui.active.modal.measurement-out-of-range');
   await popup.waitFor({ timeout: 10000 });
 
-  // The form is still up, so the weight in kilograms was not saved.
+  // Every measurement that is wrong is named, not just the first one.
+  for (const m of measurements) {
+    await expect(popup).toHaveClass(new RegExp(m.popupClass));
+  }
+
+  // The form is still up, so nothing out of range was saved.
   await expect(page.locator(stillOnFormSelector).first()).toBeVisible();
 
   await click(popup.locator('button.ui.primary.fluid.button'), page);
   await popup.waitFor({ state: 'hidden', timeout: 10000 });
   await page.waitForTimeout(WAIT.formInteraction);
 
-  // Now the weight as it is meant to be recorded.
-  await fillMeasurement(page, 'birth-weight', weightInGrams);
-  await page.waitForTimeout(WAIT.formInteraction);
+  // Now the values as they are meant to be recorded.
+  for (const m of measurements) {
+    await fillMeasurement(page, m.inputId, m.good);
+    await page.waitForTimeout(WAIT.formInteraction);
+  }
 }
 
 /**

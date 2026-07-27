@@ -13,7 +13,8 @@ import Expect
 import Pages.WellChild.Activity.Model exposing (emptyPregnancySummaryForm)
 import Pages.WellChild.Activity.Utils
     exposing
-        ( pregnancySummaryFormWithDefault
+        ( birthLengthOutsideConstraints
+        , pregnancySummaryFormWithDefault
         , resolveFirstEncounterDateAfterMilestone
         , resolveNextDateForECDVisit
         )
@@ -27,6 +28,56 @@ all =
         [ resolveFirstEncounterDateAfterMilestoneTests
         , resolveNextDateForECDVisitTests
         , pregnancySummaryFormWithDefaultTests
+        , birthLengthOutsideConstraintsTests
+        ]
+
+
+birthLengthOutsideConstraintsTests : Test
+birthLengthOutsideConstraintsTests =
+    -- A newborn's length is around 50cm. The height range used elsewhere runs to
+    -- 250cm, which is a grown adult, so birth length has its own range.
+    let
+        formWith available length =
+            { emptyPregnancySummaryForm
+                | birthLengthAvailable = available
+                , birthLength = Maybe.map HeightInCm length
+            }
+    in
+    describe "birthLengthOutsideConstraints"
+        [ test "an ordinary birth length is in range" <|
+            \_ ->
+                birthLengthOutsideConstraints (formWith (Just True) (Just 50))
+                    |> Expect.equal False
+        , test "a length entered in metres is out of range" <|
+            \_ ->
+                birthLengthOutsideConstraints (formWith (Just True) (Just 0.5))
+                    |> Expect.equal True
+        , test "a length entered in millimetres is out of range" <|
+            \_ ->
+                birthLengthOutsideConstraints (formWith (Just True) (Just 500))
+                    |> Expect.equal True
+        , test "the ends of the range are accepted" <|
+            \_ ->
+                ( birthLengthOutsideConstraints (formWith (Just True) (Just 15))
+                , birthLengthOutsideConstraints (formWith (Just True) (Just 60))
+                )
+                    |> Expect.equal ( False, False )
+        , test "just outside either end is refused" <|
+            \_ ->
+                ( birthLengthOutsideConstraints (formWith (Just True) (Just 14))
+                , birthLengthOutsideConstraints (formWith (Just True) (Just 61))
+                )
+                    |> Expect.equal ( True, True )
+        , test "a length that has not been entered is not reported" <|
+            \_ ->
+                birthLengthOutsideConstraints (formWith (Just True) Nothing)
+                    |> Expect.equal False
+        , test "a length is not reported when the form does not ask for one" <|
+            -- The input is hidden then, so stopping on it would leave the form
+            -- with nothing on screen to correct.
+            \_ ->
+                birthLengthOutsideConstraints (formWith (Just False) (Just 0.5))
+                    |> Expect.equal False
         ]
 
 

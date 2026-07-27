@@ -1,4 +1,4 @@
-module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, birthWeightOutOfRangePopup, contributingFactorsFormInutsAndTasks, followUpFormInputsAndTasks, healthEducationFormInutsAndTasks, heightFormAndTasks, muacFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewCorePhysicalExamForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewHeightForm, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDAContent, viewNutritionFollowUpForm, viewNutritionForm, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks)
+module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, contributingFactorsFormInutsAndTasks, followUpFormInputsAndTasks, healthEducationFormInutsAndTasks, heightFormAndTasks, measurementOutOfRangePopup, muacFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewCorePhysicalExamForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewHeightForm, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDAContent, viewNutritionFollowUpForm, viewNutritionForm, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks)
 
 {-| This module provides a form for entering measurements.
 -}
@@ -47,8 +47,8 @@ import Json.Decode
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, FamilyPlanningForm, FbfForm, FloatInputConstraints, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
-import Measurement.Utils exposing (birthWeightBlocksNCDAForm, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsBirthWeight, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault, withinConstraints)
+import Measurement.Model exposing (AnthropometricMeasurement(..), ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, FamilyPlanningForm, FbfForm, FloatInputConstraints, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
+import Measurement.Utils exposing (anthropometricConstraints, birthWeightBlocksNCDAForm, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault, withinConstraints)
 import Pages.Utils
     exposing
         ( concatInputsAndTasksSections
@@ -2605,7 +2605,7 @@ viewNCDAContent language currentDate site personId person config helperState sho
         viewNCDAHelperDialog language (config.setHelperStateMsg Nothing) helperState
     , viewModal <|
         if showBirthWeightOutOfRangePopup then
-            Just <| birthWeightOutOfRangePopup language (config.setBirthWeightOutOfRangePopupMsg False)
+            Just <| measurementOutOfRangePopup language [ MeasurementBirthWeight ] (config.setBirthWeightOutOfRangePopupMsg False)
 
         else
             Nothing
@@ -3640,21 +3640,49 @@ ancVisitsInpustAndTasks language personId person config form db =
         |> Maybe.withDefault ( [], [] )
 
 
-{-| Shown when a birth weight outside the range a weight in grams can take is
-about to be saved. Closing it leaves the form as it was, so the weight can be
-entered again; nothing is saved until it is in range.
+{-| Shown when measurements outside the range they can take are about to be
+saved. Closing it leaves the form as it was, so they can be entered again;
+nothing is saved until they are in range.
+
+Takes every measurement that is wrong, not just the first: a form can ask for
+several behind one button, and being told about them one save at a time would be
+tiresome.
+
 -}
-birthWeightOutOfRangePopup : Language -> msg -> Html msg
-birthWeightOutOfRangePopup language closeMsg =
+measurementOutOfRangePopup : Language -> List AnthropometricMeasurement -> msg -> Html msg
+measurementOutOfRangePopup language measurements closeMsg =
     Pages.Utils.customPopup language
         True
         Translate.Close
-        "warning-popup birth-weight-out-of-range"
-        ( div [ class "popup-action" ]
-            [ text <| translate language <| Translate.BirthWeightOutOfRangeWarning getInputConstraintsBirthWeight ]
+        ("warning-popup measurement-out-of-range "
+            ++ String.join " " (List.map measurementOutOfRangeClass measurements)
+        )
+        ( div [ class "popup-action" ] <|
+            List.map
+                (\measurement ->
+                    p []
+                        [ text <|
+                            translate language <|
+                                Translate.MeasurementOutOfRangeWarning measurement (anthropometricConstraints measurement)
+                        ]
+                )
+                measurements
         , emptyNode
         , closeMsg
         )
+
+
+{-| Names the measurement on the popup, so that a test can tell which one it is
+about.
+-}
+measurementOutOfRangeClass : AnthropometricMeasurement -> String
+measurementOutOfRangeClass measurement =
+    case measurement of
+        MeasurementBirthLength ->
+            "birth-length-out-of-range"
+
+        MeasurementBirthWeight ->
+            "birth-weight-out-of-range"
 
 
 birthWeightInputsAndTasks : Language -> Maybe WeightInGrm -> (String -> msg) -> ( List (Html msg), List (Maybe Bool) )

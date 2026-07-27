@@ -461,7 +461,6 @@ type TranslationId
     | BirthDefectLabel
     | BirthDefectsPresentQuestion
     | BirthDefectsSelectionLabel
-    | BirthWeightOutOfRangeWarning Measurement.Model.FloatInputConstraints
     | BloodGlucose
     | BloodPressure
     | BloodPressureDiaLabel
@@ -1060,6 +1059,7 @@ type TranslationId
     | MastitisRecommendedTreatmentHeader Bool
     | MastitisRecommendedTreatmentHelper
     | MeasurementNotTaken
+    | MeasurementOutOfRangeWarning Measurement.Model.AnthropometricMeasurement Measurement.Model.FloatInputConstraints
     | MedicationCausingHypertension MedicationCausingHypertension
     | MedicationCausingHypertensionQuestion
     | MedicalCondition MedicalCondition
@@ -4090,17 +4090,25 @@ translationSet trans =
             , somali = Nothing
             }
 
-        BirthWeightOutOfRangeWarning constraints ->
-            { english =
-                "Birth weight is recorded in grams, and must be between "
-                    ++ String.fromFloat constraints.minVal
-                    ++ " and "
-                    ++ String.fromFloat constraints.maxVal
-                    ++ ". Please check the value entered. A weight of 3 kilograms is entered as 3000."
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
-            }
+        MeasurementOutOfRangeWarning measurement constraints ->
+            let
+                range =
+                    String.fromFloat constraints.minVal ++ " and " ++ String.fromFloat constraints.maxVal
+            in
+            case measurement of
+                Measurement.Model.MeasurementBirthLength ->
+                    { english = "Birth length is recorded in centimetres, and must be between " ++ range ++ ". Please check the value entered."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementBirthWeight ->
+                    { english = "Birth weight is recorded in grams, and must be between " ++ range ++ ". Please check the value entered. A weight of 3 kilograms is entered as 3000."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
         BloodGlucose ->
             { english = "Blood Glucose"

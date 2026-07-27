@@ -39,7 +39,7 @@ import Measurement.Utils exposing (contributingFactorsFormWithDefault, generateF
 import Measurement.View
     exposing
         ( birthWeightInputsAndTasks
-        , birthWeightOutOfRangePopup
+        , measurementOutOfRangePopup
         , nutritionCaringInputsAndTasks
         , nutritionFeedingInputsAndTasks
         , nutritionFoodSecurityInputsAndTasks
@@ -179,9 +179,9 @@ viewWarningPopup language warningPopupState =
         |> Maybe.andThen
             (\popupType ->
                 case popupType of
-                    PopupBirthWeightOutOfRange ->
+                    PopupMeasurementOutOfRange measurements ->
                         Just <|
-                            birthWeightOutOfRangePopup language (SetWarningPopupState Nothing)
+                            measurementOutOfRangePopup language measurements (SetWarningPopupState Nothing)
 
                     PopupNutritionAssessment assessment ->
                         warningPopup language

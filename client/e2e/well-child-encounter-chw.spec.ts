@@ -42,10 +42,11 @@ test.describe('CHW: Well Child NewbornExam Encounter', () => {
 
   // Scenario: Newborn exam for a 1-month-old child (CHW).
   // Activities: PregnancySummary, NutritionAssessment, Immunisation.
-  // Also verifies (issue #1981): birth weight is recorded in grams, so a weight
-  //             typed in kilograms (3) is refused when saving PregnancySummary —
-  //             the warning shows, the activity is not left, and only after the
-  //             weight is entered in grams (3000) does it save.
+  // Also verifies (issues #1981, #1998): birth weight is recorded in grams and
+  //             birth length in centimetres. Both are entered in the wrong unit
+  //             at once — 3 (kilograms) and 0.5 (metres) — and saving is refused
+  //             with a warning naming BOTH; the activity is not left, and only
+  //             after 3000 and 50 are entered does it save.
   test('complete newborn exam with PregnancySummary, NutritionAssessment, Immunisation, verify backend sync', async ({ page }) => {
 
     const { fullName } = await createChildAndStartWellChildEncounter(page, {

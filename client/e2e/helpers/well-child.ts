@@ -7,7 +7,7 @@ import {
   WAIT,
   answerYesNo,
   clickSubTaskTab,
-  expectBirthWeightInKilogramsRefused,
+  expectMeasurementsOutOfRangeRefused,
   fillMeasurement,
   formInput,
   openActivity as openActivityBase,
@@ -511,9 +511,9 @@ export async function completePregnancySummary(page: Page) {
   await fillMeasurement(page, 'apgar.one-min', '8');
   await fillMeasurement(page, 'apgar.five-min', '9');
 
-  // Birth Length Available → No (second bool input after APGAR).
+  // Birth Length Available → Yes, so the length is asked for and can be checked.
   const birthLengthBoolInput = boolInputs.nth(1);
-  await click(birthLengthBoolInput.locator('label', { hasText: 'No' }), page);
+  await click(birthLengthBoolInput.locator('label', { hasText: 'Yes' }), page);
   await page.waitForTimeout(WAIT.formInteraction);
 
   // Delivery Complications Present → No
@@ -526,10 +526,14 @@ export async function completePregnancySummary(page: Page) {
   await click(defectsBoolInput.locator('label', { hasText: 'No' }), page);
   await page.waitForTimeout(WAIT.formInteraction);
 
-  // Birth Weight is filled last, so that the rest of the form is answered and
-  // Save is active: a weight in kilograms has to be refused before the weight
-  // in grams is entered and the activity saved.
-  await expectBirthWeightInKilogramsRefused(page, '.ui.form.pregnancy-summary', '3000');
+  // The measurements are filled last, so that the rest of the form is answered
+  // and Save is active. Both are entered in the wrong unit at once -- a weight
+  // in kilograms and a length in metres -- so the warning has to name both
+  // before either is entered as it should be.
+  await expectMeasurementsOutOfRangeRefused(page, '.ui.form.pregnancy-summary', [
+    { inputId: 'birth-weight', popupClass: 'birth-weight-out-of-range', bad: '3', good: '3000' },
+    { inputId: 'birth-length', popupClass: 'birth-length-out-of-range', bad: '0.5', good: '50' },
+  ]);
 
   await saveActivity(page, 'well-child');
 }
