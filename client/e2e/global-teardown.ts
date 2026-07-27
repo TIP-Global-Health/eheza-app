@@ -1,5 +1,5 @@
 import { FullConfig } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, statSync, unlinkSync } from 'fs';
 import { dirname, join, relative } from 'path';
 
@@ -12,7 +12,7 @@ const RUNS_KEPT = 10;
 
 // Names this file gives the runs it keeps: the time the run ended. Anything
 // else in the directory was put there by hand and is left alone.
-const RUN_NAME = /^\d{4}-\d{2}-\d{2}T[\d-]+Z$/;
+const RUN_NAME = /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z$/;
 
 /**
  * Playwright global teardown, run when RECORD=1 is set.
@@ -69,7 +69,7 @@ function keep(video: string, destination: string): boolean {
 
   const mp4 = destination.replace(/\.webm$/, '.mp4');
   try {
-    execSync(`ffmpeg -i "${destination}" -c:v libx264 -y "${mp4}"`, {
+    execFileSync('ffmpeg', ['-i', destination, '-c:v', 'libx264', '-y', mp4], {
       stdio: 'ignore',
       timeout: 60000,
     });
@@ -82,7 +82,13 @@ function keep(video: string, destination: string): boolean {
   }
 
   // Keeping both formats of the same video would double what is on disk.
-  unlinkSync(destination);
+  // The video is kept either way, so a delete that fails is said and passed
+  // over rather than taking the videos after it with it.
+  try {
+    unlinkSync(destination);
+  } catch (error) {
+    console.error(`Could not remove ${destination}: ${error}`);
+  }
   console.log(`Kept: ${mp4}`);
   return true;
 }

@@ -31,6 +31,12 @@ const CONVERTS = ffmpegThat('converts', `${NAME_OF_OUTPUT}\necho mp4 > "$out"`);
 // ffmpeg makes the file it is asked for before it reads anything.
 const GIVES_UP = ffmpegThat('gives-up', `${NAME_OF_OUTPUT}\necho half > "$out"\nexit 1`);
 const IS_MISSING = ffmpegThat('is-missing', 'exit 127');
+// Converts, and leaves the directory it wrote into read-only, so that removing
+// the .webm beside the .mp4 fails the way a full or read-only disk would.
+const LOCKS_THE_DIRECTORY = ffmpegThat(
+  'locks-the-directory',
+  `${NAME_OF_OUTPUT}\necho mp4 > "$out"\nchmod 555 "$(dirname "$out")"`,
+);
 
 /** A run that recorded a video for each of the named tests. */
 function aRunThatRecorded(name: string, tests: string[]) {
@@ -104,16 +110,36 @@ test('a video that cannot be copied stops neither the others nor the pruning', (
   expect(filesIn(join(keptIn, runs[runs.length - 1]))).toEqual(['video.webm']);
 });
 
+test('a .webm that cannot be removed stops neither the others nor the pruning', () => {
+  const { outputDir, keptIn } = aRunThatRecorded('undeletable-webm', ['one', 'two']);
+  for (let day = 1; day <= 12; day += 1) {
+    mkdirSync(join(keptIn, `2020-01-${String(day).padStart(2, '0')}T00-00-00-000Z`), { recursive: true });
+  }
+  tidyUp(outputDir, LOCKS_THE_DIRECTORY);
+
+  const runs = runsKeptIn(keptIn);
+  const run = join(keptIn, runs[runs.length - 1]);
+  readdirSync(run).forEach((one) => chmodSync(join(run, one), 0o755));
+
+  expect(runs).toHaveLength(10);
+  // Both videos are kept, .webm and all, rather than the second being lost
+  // because the first could not be tidied up.
+  expect(filesIn(run)).toEqual(['video.mp4', 'video.mp4', 'video.webm', 'video.webm']);
+});
+
 test('a recording moved there by hand is left alone', () => {
   const { outputDir, keptIn } = aRunThatRecorded('kept-by-hand', ['one']);
-  mkdirSync(join(keptIn, 'issue-1982'), { recursive: true });
-  writeFileSync(join(keptIn, 'issue-1982', 'video.webm'), 'kept by hand');
+  // The second is named closely enough to a run to be worth pinning down.
+  ['issue-1982', '2020-01-01T---Z'].forEach((byHand) => {
+    mkdirSync(join(keptIn, byHand), { recursive: true });
+    writeFileSync(join(keptIn, byHand, 'video.webm'), 'kept by hand');
+  });
   for (let day = 1; day <= 12; day += 1) {
     mkdirSync(join(keptIn, `2020-01-${String(day).padStart(2, '0')}T00-00-00-000Z`), { recursive: true });
   }
   tidyUp(outputDir, IS_MISSING);
 
-  expect(runsKeptIn(keptIn)).toContain('issue-1982');
+  expect(runsKeptIn(keptIn)).toEqual(expect.arrayContaining(['issue-1982', '2020-01-01T---Z']));
 });
 
 test('when nothing can be kept no run is left behind', () => {
