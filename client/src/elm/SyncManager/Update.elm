@@ -750,7 +750,11 @@ update currentTime activePage dbVersion device msg model =
                                 -- Init also sends all unsent items from dbErrors table.
                                 initRollbarCmd =
                                     if List.length data.entities < 500 && (not <| String.isEmpty data.rollbarToken) then
-                                        initRollbar { device = data.deviceName, token = data.rollbarToken }
+                                        initRollbar
+                                            { device = data.deviceName
+                                            , token = data.rollbarToken
+                                            , version = Version.version.build
+                                            }
 
                                     else
                                         Cmd.none

@@ -67,7 +67,7 @@ port scrollToElement : String -> Cmd msg
 port makeProgressReportScreenshot : { language : String, reportType : String, personId : String, phoneNumber : String } -> Cmd msg
 
 
-port initRollbar : { device : String, token : String } -> Cmd msg
+port initRollbar : { device : String, token : String, version : String } -> Cmd msg
 
 
-port logByRollbar : { source : String, message : String, md5 : String } -> Cmd msg
+port logByRollbar : { source : String, message : String, md5 : String, version : String } -> Cmd msg
