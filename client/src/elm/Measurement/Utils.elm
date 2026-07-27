@@ -331,8 +331,8 @@ birthWeightOutsideConstraints site birthWeight =
         |> anthropometricOutOfRange site MeasurementBirthWeight
 
 
-{-| The measurement of a nutrition assessment, when it was entered outside
-the range it can take.
+{-| The measurement a form asks for, when it was entered outside the range it
+can take. Asked wherever the measurement is entered.
 
 A list, because the warning that names the measurements takes one, and because
 the forms that ask for several behind a single button are named the same way.
