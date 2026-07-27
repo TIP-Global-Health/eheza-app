@@ -53,7 +53,7 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
 
     // Weight: 850 kg first, which is a decimal in the wrong place. The warning
     // names it and the form stays up, then 12 kg is recorded.
-    await enterWeight(page, '12');
+    await enterWeight(page, '850');
     await expectMeasurementsOutOfRangeRefused(
       page,
       '.form-input.measurement.weight',
@@ -64,7 +64,7 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
 
     // MUAC: 125 first, which is millimetres typed where centimetres are asked
     // for, then 14 cm is recorded.
-    await enterMuac(page, '14');
+    await enterMuac(page, '125');
     await expectMeasurementsOutOfRangeRefused(
       page,
       '.form-input.measurement.muac',
