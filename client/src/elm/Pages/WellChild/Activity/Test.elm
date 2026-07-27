@@ -12,8 +12,7 @@ import Date
 import EverySet
 import Expect
 import Measurement.Model exposing (AnthropometricMeasurement(..), emptyHeightForm, emptyMuacForm, emptyWeightForm)
-import Pages.WellChild.Activity.Model exposing (Model, Msg(..), WarningPopupType(..), emptyModel, emptyPregnancySummaryForm)
-import Pages.WellChild.Activity.Types exposing (NutritionAssessmentTask(..))
+import Pages.WellChild.Activity.Model exposing (Msg(..), WarningPopupType(..), emptyModel, emptyPregnancySummaryForm)
 import Pages.WellChild.Activity.Update exposing (update)
 import Pages.WellChild.Activity.Utils
     exposing

@@ -813,18 +813,6 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
             getMeasurementValueFunc measurements.headCircumference
                 |> headCircumferenceFormWithDefault data.headCircumferenceForm
 
-        heightForm =
-            getMeasurementValueFunc measurements.height
-                |> heightFormWithDefault assembled.encounter.skippedForms data.heightForm
-
-        muacForm =
-            getMeasurementValueFunc measurements.muac
-                |> muacFormWithDefault data.muacForm
-
-        weightForm =
-            getMeasurementValueFunc measurements.weight
-                |> weightFormWithDefault assembled.encounter.skippedForms data.weightForm
-
         headCircumferenceZScore =
             if headCircumferenceForm.measurementNotTaken == Just True then
                 Nothing
@@ -845,7 +833,8 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
         viewForm =
             case activeTask of
                 Just TaskHeight ->
-                    heightForm
+                    getMeasurementValueFunc measurements.height
+                        |> heightFormWithDefault assembled.encounter.skippedForms data.heightForm
                         |> viewHeightForm language
                             currentDate
                             zscores
@@ -859,7 +848,8 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
                     viewHeadCircumferenceForm language headCircumferenceZScore previousValuesSet.headCircumference headCircumferenceForm
 
                 Just TaskMuac ->
-                    muacForm
+                    getMeasurementValueFunc measurements.muac
+                        |> muacFormWithDefault data.muacForm
                         |> viewMuacForm language currentDate site assembled.person previousValuesSet.muac SetMuac
 
                 Just TaskNutrition ->
@@ -875,7 +865,8 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
                         showWeightForHeightZScore =
                             assembled.encounter.encounterType /= NewbornExam
                     in
-                    weightForm
+                    getMeasurementValueFunc measurements.weight
+                        |> weightFormWithDefault assembled.encounter.skippedForms data.weightForm
                         |> viewWeightForm language
                             currentDate
                             zscores
