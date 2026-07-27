@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
 
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import { click } from './auth';
 import { drushEnv } from './device';
 
@@ -373,6 +373,52 @@ export function queryPrenatalLmp(personName: string): string | null {
 // ---------------------------------------------------------------------------
 // Save helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Verify that a birth weight typed in kilograms is refused, then enter the
+ * weight in grams.
+ *
+ * Birth weight is stored in grams, and a value typed in kilograms lands far
+ * below the range a weight in grams can take. Every such value counts as a low
+ * birth weight, which is what made that indicator over-report (issue #1981).
+ * Pressing the button to go on must show the warning and save nothing.
+ *
+ * Call with the rest of the form already filled in, so that the button is
+ * active: Elm gives a button that is not active no click handler at all, and
+ * clicking it would do nothing.
+ *
+ * @param stillOnFormSelector - something on the form that must still be there
+ *   afterwards, proving the form was not left and nothing was saved.
+ */
+export async function expectBirthWeightInKilogramsRefused(
+  page: Page,
+  stillOnFormSelector: string,
+  weightInGrams: string,
+): Promise<void> {
+  await fillMeasurement(page, 'birth-weight', '3');
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await saveBtn.waitFor({ timeout: 5000 });
+  // A button without `active` has no click handler, so the click below would be
+  // silently dropped and the warning would never appear.
+  await expect(saveBtn).toHaveClass(/active/);
+  await click(saveBtn, page);
+
+  const popup = page.locator('div.ui.active.modal.birth-weight-out-of-range');
+  await popup.waitFor({ timeout: 10000 });
+
+  // The form is still up, so the weight in kilograms was not saved.
+  await expect(page.locator(stillOnFormSelector).first()).toBeVisible();
+
+  await click(popup.locator('button.ui.primary.fluid.button'), page);
+  await popup.waitFor({ state: 'hidden', timeout: 10000 });
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  // Now the weight as it is meant to be recorded.
+  await fillMeasurement(page, 'birth-weight', weightInGrams);
+  await page.waitForTimeout(WAIT.formInteraction);
+}
 
 /**
  * Click the Save button and wait for return to the encounter page.

@@ -256,6 +256,7 @@ type MsgChild
     | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
+    | SetBirthWeightOutOfRangePopup Bool
     | SetChildReceivesVitaminA ReceiveOption
     | SetStuntingLevel StuntingLevel
     | SetWeight String
@@ -1761,6 +1762,7 @@ emptyLiverFunctionResultForm =
 type alias NCDAData =
     { form : NCDAForm
     , helperState : Maybe NCDASign
+    , showBirthWeightOutOfRangePopup : Bool
     }
 
 
@@ -1768,6 +1770,7 @@ emptyNCDAData : NCDAData
 emptyNCDAData =
     { form = emptyNCDAForm
     , helperState = Nothing
+    , showBirthWeightOutOfRangePopup = False
     }
 
 
@@ -1982,6 +1985,7 @@ type alias NCDAContentConfig msg =
     , setMuacMsg : String -> msg
     , setStepMsg : NCDAStep -> msg
     , setHelperStateMsg : Maybe NCDASign -> msg
+    , setBirthWeightOutOfRangePopupMsg : Bool -> msg
     , saveMsg : msg
     }
 

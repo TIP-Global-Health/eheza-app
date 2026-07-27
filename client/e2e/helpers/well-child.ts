@@ -7,6 +7,7 @@ import {
   WAIT,
   answerYesNo,
   clickSubTaskTab,
+  expectBirthWeightInKilogramsRefused,
   fillMeasurement,
   formInput,
   openActivity as openActivityBase,
@@ -510,9 +511,6 @@ export async function completePregnancySummary(page: Page) {
   await fillMeasurement(page, 'apgar.one-min', '8');
   await fillMeasurement(page, 'apgar.five-min', '9');
 
-  // Birth Weight — fill value in grams.
-  await fillMeasurement(page, 'birth-weight', '3000');
-
   // Birth Length Available → No (second bool input after APGAR).
   const birthLengthBoolInput = boolInputs.nth(1);
   await click(birthLengthBoolInput.locator('label', { hasText: 'No' }), page);
@@ -527,6 +525,11 @@ export async function completePregnancySummary(page: Page) {
   const defectsBoolInput = boolInputs.nth(3);
   await click(defectsBoolInput.locator('label', { hasText: 'No' }), page);
   await page.waitForTimeout(WAIT.formInteraction);
+
+  // Birth Weight is filled last, so that the rest of the form is answered and
+  // Save is active: a weight in kilograms has to be refused before the weight
+  // in grams is entered and the activity saved.
+  await expectBirthWeightInKilogramsRefused(page, '.ui.form.pregnancy-summary', '3000');
 
   await saveActivity(page, 'well-child');
 }

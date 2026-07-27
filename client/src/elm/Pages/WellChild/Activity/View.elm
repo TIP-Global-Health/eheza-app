@@ -39,6 +39,7 @@ import Measurement.Utils exposing (contributingFactorsFormWithDefault, generateF
 import Measurement.View
     exposing
         ( birthWeightInputsAndTasks
+        , birthWeightOutOfRangePopup
         , nutritionCaringInputsAndTasks
         , nutritionFeedingInputsAndTasks
         , nutritionFoodSecurityInputsAndTasks
@@ -178,6 +179,10 @@ viewWarningPopup language warningPopupState =
         |> Maybe.andThen
             (\popupType ->
                 case popupType of
+                    PopupBirthWeightOutOfRange ->
+                        Just <|
+                            birthWeightOutOfRangePopup language (SetWarningPopupState Nothing)
+
                     PopupNutritionAssessment assessment ->
                         warningPopup language
                             (SetWarningPopupState Nothing)
@@ -573,7 +578,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                     ++ birthDefectsSection
             ]
         , viewSaveAction language
-            (SavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary)
+            (PreSavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary)
             disabled
         ]
     ]
@@ -2178,6 +2183,7 @@ viewNCDAContent language currentDate site assembled data db =
             , setMuacMsg = SetMuacForNCDA
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
+            , setBirthWeightOutOfRangePopupMsg = SetBirthWeightOutOfRangePopup
             , saveMsg = SaveNCDA personId assembled.measurements.ncda
             }
     in
@@ -2188,6 +2194,7 @@ viewNCDAContent language currentDate site assembled data db =
         assembled.person
         config
         data.helperState
+        data.showBirthWeightOutOfRangePopup
         form
         db
 

@@ -144,6 +144,7 @@ viewNCDAContent language currentDate site assembled db data =
             , setMuacMsg = SetMuac
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
+            , setBirthWeightOutOfRangePopupMsg = SetBirthWeightOutOfRangePopup
             , saveMsg = SaveNCDA personId assembled.measurements.ncda
             }
     in
@@ -154,6 +155,7 @@ viewNCDAContent language currentDate site assembled db data =
         assembled.person
         config
         data.helperState
+        data.showBirthWeightOutOfRangePopup
         form
         db
 

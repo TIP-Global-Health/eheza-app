@@ -2,6 +2,7 @@ import { Page } from '@playwright/test';
 import { click } from './auth';
 import {
   WAIT,
+  expectBirthWeightInKilogramsRefused,
   openActivity,
   queryMeasurementNodes,
   registerChild,
@@ -156,10 +157,9 @@ export async function completeNCDA(page: Page) {
   // Birth weight — appears when newborn exam pregnancy summary has no birth weight.
   // Input class: .form-input.measurement.birth-weight, unit: grams.
   const birthWeightInput = page.locator('.form-input.measurement.birth-weight input[type="number"]');
-  if (await birthWeightInput.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await birthWeightInput.fill('3200');
-    await page.waitForTimeout(WAIT.formInteraction);
-  }
+  const birthWeightAsked = await birthWeightInput
+    .isVisible({ timeout: 1000 })
+    .catch(() => false);
 
   // "Was the child born with a birth defect" → No
   const birthDefectQuestion = page.locator('.ui.form.ncda .label', {
@@ -168,6 +168,13 @@ export async function completeNCDA(page: Page) {
   if (await birthDefectQuestion.isVisible({ timeout: 1000 }).catch(() => false)) {
     await answerNCDAYesNo(page, 'born with a birth defect', 'No');
     await page.waitForTimeout(WAIT.formInteraction);
+  }
+
+  if (birthWeightAsked) {
+    // Every other question on this step is answered, so the button is active.
+    // The weight is asked on this step but the form is only saved on the last
+    // one, so going on from here has to be refused just as saving would be.
+    await expectBirthWeightInKilogramsRefused(page, '.ui.form.ncda', '3200');
   }
 
   // Click Save to proceed to next step.

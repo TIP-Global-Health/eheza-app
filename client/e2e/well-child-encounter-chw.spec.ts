@@ -40,6 +40,12 @@ test.describe('CHW: Well Child NewbornExam Encounter', () => {
     await setupDevice(page, '2345', 'Akanduga');
   });
 
+  // Scenario: Newborn exam for a 1-month-old child (CHW).
+  // Activities: PregnancySummary, NutritionAssessment, Immunisation.
+  // Also verifies (issue #1981): birth weight is recorded in grams, so a weight
+  //             typed in kilograms (3) is refused when saving PregnancySummary —
+  //             the warning shows, the activity is not left, and only after the
+  //             weight is entered in grams (3000) does it save.
   test('complete newborn exam with PregnancySummary, NutritionAssessment, Immunisation, verify backend sync', async ({ page }) => {
 
     const { fullName } = await createChildAndStartWellChildEncounter(page, {

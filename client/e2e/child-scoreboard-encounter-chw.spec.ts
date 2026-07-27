@@ -35,6 +35,10 @@ test.describe('CHW: Child Scoreboard Encounter — First NCDA + Vaccination Hist
   // Conditions: First NCDA → AntenatalCare step shown. Child 10 months → NutritionBehavior shown.
   //             Normal MUAC (14.0) → TreatedForAcuteMalnutrition NOT shown. No diarrhea → no popup.
   //             ChildBehindOnVaccination → "No" triggers VaccinationHistory activity.
+  // Also verifies (issue #1981): birth weight is recorded in grams, so a weight
+  //             typed in kilograms (3) is refused on the AntenatalCare step —
+  //             the warning shows, the form is not left, and only after the
+  //             weight is entered in grams (3200) does the form go on.
   // Backend: Verifies child_scoreboard_ncda + 7 vaccination nodes created,
   //          confirms child_scoreboard_dtp_sa_iz absent (Burundi-only).
   test('complete NCDA and vaccination history, verify backend sync', async ({ page }) => {
