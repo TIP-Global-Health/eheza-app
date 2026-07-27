@@ -176,7 +176,7 @@ export async function completeNCDA(page: Page) {
     // one, so going on from here has to be refused just as saving would be.
     await expectMeasurementsOutOfRangeRefused(page, '.ui.form.ncda', [
       { inputId: 'birth-weight', popupClass: 'birth-weight-out-of-range', bad: '3', good: '3200' },
-    ]);
+    ], ['birth-length-out-of-range']);
   }
 
   // Click Save to proceed to next step.

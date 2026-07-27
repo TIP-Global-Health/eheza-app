@@ -232,10 +232,8 @@ the number has to be within.
 Naming the measurement lets one warning say which of them is wrong, on the forms
 that ask for several behind a single button.
 
-A measurement whose range depends on the site should carry the site here, the
-way MUAC will: its range is in millimetres at Burundi and centimetres elsewhere.
-Keeping it on the measurement means the range can be asked for with nothing else
-to hand, so adding one does not change what every caller has to pass.
+A measurement whose range depends on the site carries the site, so that the
+range can be asked for with nothing else to hand.
 
 -}
 type AnthropometricMeasurement

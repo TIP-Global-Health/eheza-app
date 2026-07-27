@@ -392,11 +392,16 @@ export function queryPrenatalLmp(personName: string): string | null {
  *   afterwards, proving the form was not left and nothing was saved.
  * @param measurements - for each: the input's CSS id, the class the popup
  *   carries for it, a value outside the range, and one within it.
+ * @param notNamed - classes of measurements that are in range, which the
+ *   warning must NOT carry. Without this a check that named every measurement
+ *   regardless, or one that lost its "is this even asked for" guard, would
+ *   still pass.
  */
 export async function expectMeasurementsOutOfRangeRefused(
   page: Page,
   stillOnFormSelector: string,
   measurements: Array<{ inputId: string; popupClass: string; bad: string; good: string }>,
+  notNamed: string[] = [],
 ): Promise<void> {
   for (const m of measurements) {
     await fillMeasurement(page, m.inputId, m.bad);
@@ -416,6 +421,11 @@ export async function expectMeasurementsOutOfRangeRefused(
   // Every measurement that is wrong is named, not just the first one.
   for (const m of measurements) {
     await expect(popup).toHaveClass(new RegExp(m.popupClass));
+  }
+
+  // And nothing that is in range is named.
+  for (const cls of notNamed) {
+    await expect(popup).not.toHaveClass(new RegExp(cls));
   }
 
   // The form is still up, so nothing out of range was saved.

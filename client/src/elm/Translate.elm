@@ -12068,7 +12068,7 @@ translationSet trans =
                     }
 
                 Measurement.Model.MeasurementBirthWeight ->
-                    { english = "Birth weight is recorded in grams, not kilograms."
+                    { english = "Birth weight is recorded in grams, not kilograms: a weight of 3 kilograms is entered as 3000."
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing

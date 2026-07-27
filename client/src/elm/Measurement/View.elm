@@ -3664,8 +3664,8 @@ measurementOutOfRangePopup language measurements closeMsg =
                         [ text <| translate language <| Translate.MeasurementOutOfRangeWarning measurement
                         , text " "
 
-                        -- The range is said the way it is said above every
-                        -- measurement input, which is already translated.
+                        -- Said the way the range is said elsewhere in the app,
+                        -- which is already translated.
                         , text <|
                             translate language <|
                                 Translate.AllowedValuesRangeHelper (anthropometricConstraints measurement)
