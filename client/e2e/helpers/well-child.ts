@@ -292,9 +292,27 @@ export async function completeNutritionAssessment(
     muac?: string;
     nutritionSigns?: string[];
     weight?: string;
+    // Type a wrong value into each measurement first, and check the nurse is
+    // told the range and kept on the form, before entering the right one.
+    checkRanges?: boolean;
   },
 ) {
   const nutritionSigns = options?.nutritionSigns ?? [];
+
+  // Wrong in a way the nurse could type: a height in millimetres, a MUAC in
+  // millimetres where centimetres are asked for, a weight in the wrong place.
+  const enter = async (id: string, good: string, bad: string, otherClasses: string[]) => {
+    if (options?.checkRanges) {
+      await expectMeasurementsOutOfRangeRefused(
+        page,
+        `.form-input.measurement.${id}`,
+        [{ inputId: id, popupClass: `${id}-out-of-range`, bad, good }],
+        otherClasses,
+      );
+    } else {
+      await fillMeasurement(page, id, good);
+    }
+  };
 
   await openActivity(page, 'nutrition-assessment');
 
@@ -302,7 +320,7 @@ export async function completeNutritionAssessment(
   const heightTab = page.locator('.link-section:has(.icon-activity-task.icon-height)');
   if (options?.height && await heightTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'height');
-    await fillMeasurement(page, 'height', options.height);
+    await enter('height', options.height, '1050', ['muac-out-of-range', 'weight-out-of-range']);
     await saveSubTask(page);
   }
 
@@ -321,7 +339,7 @@ export async function completeNutritionAssessment(
   const muacTab = page.locator('.link-section:has(.icon-activity-task.icon-muac)');
   if (options?.muac && await muacTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'muac');
-    await fillMeasurement(page, 'muac', options.muac);
+    await enter('muac', options.muac, '125', ['height-out-of-range', 'weight-out-of-range']);
     await saveSubTask(page);
   }
 
@@ -346,7 +364,7 @@ export async function completeNutritionAssessment(
   const weightTab = page.locator('.link-section:has(.icon-activity-task.icon-weight)');
   if (options?.weight && await weightTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'weight');
-    await fillMeasurement(page, 'weight', options.weight);
+    await enter('weight', options.weight, '850', ['height-out-of-range', 'muac-out-of-range']);
     await saveSubTask(page);
   }
 

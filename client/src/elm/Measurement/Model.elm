@@ -232,10 +232,18 @@ the number has to be within.
 Naming the measurement lets one warning say which of them is wrong, on the forms
 that ask for several behind a single button.
 
+The range is asked for along with the site, because MUAC is entered in
+millimetres at Burundi and in centimetres everywhere else. The site is passed
+alongside rather than held here: this module is below the one the site is
+defined in.
+
 -}
 type AnthropometricMeasurement
     = MeasurementBirthLength
     | MeasurementBirthWeight
+    | MeasurementHeight
+    | MeasurementMuac
+    | MeasurementWeight
 
 
 {-| Represents the "file" that DropZone gives us when

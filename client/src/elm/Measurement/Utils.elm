@@ -325,22 +325,32 @@ warning shown on save is about; whether the measurement still has to be taken is
 already answered by the task count.
 
 -}
-birthWeightOutsideConstraints : Maybe WeightInGrm -> Bool
-birthWeightOutsideConstraints birthWeight =
+birthWeightOutsideConstraints : Site -> Maybe WeightInGrm -> Bool
+birthWeightOutsideConstraints site birthWeight =
     Maybe.map (\(WeightInGrm weight) -> weight) birthWeight
-        |> anthropometricOutOfRange MeasurementBirthWeight
+        |> anthropometricOutOfRange site MeasurementBirthWeight
 
 
-{-| The range a measurement of the body has to be within.
+{-| The range a measurement of the body has to be within, in the unit it is
+entered in.
 -}
-anthropometricConstraints : AnthropometricMeasurement -> FloatInputConstraints
-anthropometricConstraints measurement =
+anthropometricConstraints : Site -> AnthropometricMeasurement -> FloatInputConstraints
+anthropometricConstraints site measurement =
     case measurement of
         MeasurementBirthLength ->
             getInputConstraintsBirthLength
 
         MeasurementBirthWeight ->
             getInputConstraintsBirthWeight
+
+        MeasurementHeight ->
+            getInputConstraintsHeight
+
+        MeasurementMuac ->
+            getInputConstraintsMuac site
+
+        MeasurementWeight ->
+            getInputConstraintsWeight
 
 
 {-| True when a measurement has been entered and is outside the range it can
@@ -350,15 +360,33 @@ An unset measurement is not reported. This answers "is what was entered wrong",
 which is what the warning shown on save is about; whether the measurement still
 has to be taken is already answered by the task count.
 
+MUAC is held on the forms in centimetres and shown in millimetres at Burundi, so
+it is put back into the unit it was entered in before it is compared. Ask here
+rather than comparing against the range directly, so that cannot be forgotten.
+
 -}
-anthropometricOutOfRange : AnthropometricMeasurement -> Maybe Float -> Bool
-anthropometricOutOfRange measurement value =
+anthropometricOutOfRange : Site -> AnthropometricMeasurement -> Maybe Float -> Bool
+anthropometricOutOfRange site measurement value =
     Maybe.map
         (\number ->
-            not <| withinConstraints (anthropometricConstraints measurement) number
+            not <|
+                withinConstraints (anthropometricConstraints site measurement)
+                    (asEntered site measurement number)
         )
         value
         |> Maybe.withDefault False
+
+
+{-| A measurement as the nurse typed it, from the way the form holds it.
+-}
+asEntered : Site -> AnthropometricMeasurement -> Float -> Float
+asEntered site measurement number =
+    case measurement of
+        MeasurementMuac ->
+            muacValueForSite site number
+
+        _ ->
+            number
 
 
 showNCDAQuestionsByNewbornExam : Maybe PregnancySummaryValue -> Bool
@@ -381,11 +409,11 @@ saved earlier is kept on the form even once that step is gone, and stopping on a
 weight that is nowhere to be seen would leave the form with no way out of it.
 
 -}
-birthWeightBlocksNCDAForm : List NCDAStep -> Maybe PregnancySummaryValue -> Maybe WeightInGrm -> Bool
-birthWeightBlocksNCDAForm steps newbornExamPregnancySummary birthWeight =
+birthWeightBlocksNCDAForm : Site -> List NCDAStep -> Maybe PregnancySummaryValue -> Maybe WeightInGrm -> Bool
+birthWeightBlocksNCDAForm site steps newbornExamPregnancySummary birthWeight =
     List.member NCDAStepAntenatalCare steps
         && showNCDAQuestionsByNewbornExam newbornExamPregnancySummary
-        && birthWeightOutsideConstraints birthWeight
+        && birthWeightOutsideConstraints site birthWeight
 
 
 {-| `outsideConstraints` for a MUAC value as stored on the form (in cm).

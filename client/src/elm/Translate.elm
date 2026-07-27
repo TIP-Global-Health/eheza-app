@@ -12074,6 +12074,27 @@ translationSet trans =
                     , somali = Nothing
                     }
 
+                Measurement.Model.MeasurementHeight ->
+                    { english = "Height is recorded in centimetres."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementMuac ->
+                    { english = "MUAC is outside the range it can take."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementWeight ->
+                    { english = "Weight is recorded in kilograms."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
         MedicationCausingHypertension medication ->
             case medication of
                 MedicationOestrogens ->

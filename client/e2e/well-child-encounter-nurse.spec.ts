@@ -51,13 +51,15 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
       expectNoSkipCheckboxes: true,
     });
 
-    // 2. Nutrition Assessment: normal values for 23-month child.
+    // 2. Nutrition Assessment: normal values for 23-month child, each of the
+    //    three measurements refused once for being out of range first.
     await completeNutritionAssessment(page, {
       height: '84',
       headCircumference: '48',
       muac: '14',
       weight: '12',
       nutritionSigns: [],
+      checkRanges: true,
     });
 
     // 3. ECD: answer all milestone questions "Yes".

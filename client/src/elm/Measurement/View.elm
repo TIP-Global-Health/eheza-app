@@ -2509,7 +2509,7 @@ viewNCDAContent language currentDate site personId person config helperState sho
                 (\step ->
                     let
                         birthWeightOutOfRange =
-                            birthWeightBlocksNCDAForm steps config.pregnancySummary form.birthWeight
+                            birthWeightBlocksNCDAForm site steps config.pregnancySummary form.birthWeight
 
                         actionButton msg =
                             -- The weight is asked on the first step but saved
@@ -2605,7 +2605,7 @@ viewNCDAContent language currentDate site personId person config helperState sho
         viewNCDAHelperDialog language (config.setHelperStateMsg Nothing) helperState
     , viewModal <|
         if showBirthWeightOutOfRangePopup then
-            Just <| measurementOutOfRangePopup language [ MeasurementBirthWeight ] (config.setBirthWeightOutOfRangePopupMsg False)
+            Just <| measurementOutOfRangePopup language site [ MeasurementBirthWeight ] (config.setBirthWeightOutOfRangePopupMsg False)
 
         else
             Nothing
@@ -3649,8 +3649,8 @@ several behind one button, and being told about them one save at a time would be
 tiresome.
 
 -}
-measurementOutOfRangePopup : Language -> List AnthropometricMeasurement -> msg -> Html msg
-measurementOutOfRangePopup language measurements closeMsg =
+measurementOutOfRangePopup : Language -> Site -> List AnthropometricMeasurement -> msg -> Html msg
+measurementOutOfRangePopup language site measurements closeMsg =
     Pages.Utils.customPopup language
         True
         Translate.Close
@@ -3668,7 +3668,7 @@ measurementOutOfRangePopup language measurements closeMsg =
                         -- which is already translated.
                         , text <|
                             translate language <|
-                                Translate.AllowedValuesRangeHelper (anthropometricConstraints measurement)
+                                Translate.AllowedValuesRangeHelper (anthropometricConstraints site measurement)
                         ]
                 )
                 measurements
@@ -3688,6 +3688,15 @@ measurementOutOfRangeClass measurement =
 
         MeasurementBirthWeight ->
             "birth-weight-out-of-range"
+
+        MeasurementHeight ->
+            "height-out-of-range"
+
+        MeasurementMuac ->
+            "muac-out-of-range"
+
+        MeasurementWeight ->
+            "weight-out-of-range"
 
 
 birthWeightInputsAndTasks : Language -> Maybe WeightInGrm -> (String -> msg) -> ( List (Html msg), List (Maybe Bool) )

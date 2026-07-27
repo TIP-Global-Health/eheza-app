@@ -7,10 +7,14 @@ import Backend.Measurement.Model
         , PregnancySummaryValue
         , WeightInGrm(..)
         )
+import Backend.Model exposing (emptyModelIndexedDb)
 import Date
 import EverySet
 import Expect
-import Pages.WellChild.Activity.Model exposing (emptyPregnancySummaryForm)
+import Measurement.Model exposing (AnthropometricMeasurement(..), emptyHeightForm, emptyMuacForm, emptyWeightForm)
+import Pages.WellChild.Activity.Model exposing (Model, Msg(..), WarningPopupType(..), emptyModel, emptyPregnancySummaryForm)
+import Pages.WellChild.Activity.Types exposing (NutritionAssessmentTask(..))
+import Pages.WellChild.Activity.Update exposing (update)
 import Pages.WellChild.Activity.Utils
     exposing
         ( birthLengthOutsideConstraints
@@ -18,6 +22,8 @@ import Pages.WellChild.Activity.Utils
         , resolveFirstEncounterDateAfterMilestone
         , resolveNextDateForECDVisit
         )
+import Restful.Endpoint exposing (toEntityUuid)
+import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import Time
 
@@ -29,6 +35,75 @@ all =
         , resolveNextDateForECDVisitTests
         , pregnancySummaryFormWithDefaultTests
         , birthLengthOutsideConstraintsTests
+        , nutritionAssessmentGateTests
+        ]
+
+
+{-| What the Save action of a Nutrition Assessment task does with a measurement
+that is outside the range it can take.
+
+The measurement is named on a popup and nothing is saved. The task is left as it
+is, so the measurement can be entered again.
+
+-}
+nutritionAssessmentGateTests : Test
+nutritionAssessmentGateTests =
+    let
+        modelWith height muac weight =
+            let
+                data =
+                    emptyModel.nutritionAssessmentData
+            in
+            { emptyModel
+                | nutritionAssessmentData =
+                    { data
+                        | heightForm = { emptyHeightForm | height = height }
+                        , muacForm = { emptyMuacForm | muac = muac }
+                        , weightForm = { emptyWeightForm | weight = weight }
+                    }
+            }
+
+        preSave model msg =
+            let
+                ( updatedModel, _, appMsgs ) =
+                    update (Date.fromCalendarDate 2026 Time.Jul 27)
+                        SiteRwanda
+                        (toEntityUuid "encounter")
+                        emptyModelIndexedDb
+                        msg
+                        model
+            in
+            ( updatedModel.warningPopupState, List.isEmpty appMsgs )
+
+        person =
+            toEntityUuid "person"
+    in
+    describe "the Nutrition Assessment save gate"
+        [ test "a height outside the range names it and saves nothing" <|
+            \_ ->
+                preSave (modelWith (Just 1050) Nothing Nothing)
+                    (PreSaveHeight EverySet.empty person Nothing Nothing)
+                    |> Expect.equal ( Just (PopupMeasurementOutOfRange [ MeasurementHeight ]), True )
+        , test "a weight outside the range names it and saves nothing" <|
+            \_ ->
+                preSave (modelWith Nothing Nothing (Just 850))
+                    (PreSaveWeight EverySet.empty person Nothing Nothing)
+                    |> Expect.equal ( Just (PopupMeasurementOutOfRange [ MeasurementWeight ]), True )
+        , test "a MUAC outside the range names it and saves nothing" <|
+            \_ ->
+                preSave (modelWith Nothing (Just 125) Nothing)
+                    (PreSaveMuac person Nothing Nothing)
+                    |> Expect.equal ( Just (PopupMeasurementOutOfRange [ MeasurementMuac ]), True )
+        , test "a height within the range shows no popup and goes on to save" <|
+            \_ ->
+                preSave (modelWith (Just 105) Nothing Nothing)
+                    (PreSaveHeight EverySet.empty person Nothing Nothing)
+                    |> Expect.equal ( Nothing, False )
+        , test "a MUAC within the range shows no popup and goes on to save" <|
+            \_ ->
+                preSave (modelWith Nothing (Just 12.5) Nothing)
+                    (PreSaveMuac person Nothing Nothing)
+                    |> Expect.equal ( Nothing, False )
         ]
 
 
@@ -46,37 +121,37 @@ birthLengthOutsideConstraintsTests =
     describe "birthLengthOutsideConstraints"
         [ test "an ordinary birth length is in range" <|
             \_ ->
-                birthLengthOutsideConstraints (formWith (Just True) (Just 50))
+                birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 50))
                     |> Expect.equal False
         , test "a length entered in metres is out of range" <|
             \_ ->
-                birthLengthOutsideConstraints (formWith (Just True) (Just 0.5))
+                birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 0.5))
                     |> Expect.equal True
         , test "a length entered in millimetres is out of range" <|
             \_ ->
-                birthLengthOutsideConstraints (formWith (Just True) (Just 500))
+                birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 500))
                     |> Expect.equal True
         , test "the ends of the range are accepted" <|
             \_ ->
-                ( birthLengthOutsideConstraints (formWith (Just True) (Just 15))
-                , birthLengthOutsideConstraints (formWith (Just True) (Just 60))
+                ( birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 15))
+                , birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 60))
                 )
                     |> Expect.equal ( False, False )
         , test "just outside either end is refused" <|
             \_ ->
-                ( birthLengthOutsideConstraints (formWith (Just True) (Just 14))
-                , birthLengthOutsideConstraints (formWith (Just True) (Just 61))
+                ( birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 14))
+                , birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 61))
                 )
                     |> Expect.equal ( True, True )
         , test "a length that has not been entered is not reported" <|
             \_ ->
-                birthLengthOutsideConstraints (formWith (Just True) Nothing)
+                birthLengthOutsideConstraints SiteRwanda (formWith (Just True) Nothing)
                     |> Expect.equal False
         , test "a length is not reported when the form does not ask for one" <|
             -- The input is hidden then, so stopping on it would leave the form
             -- with nothing on screen to correct.
             \_ ->
-                birthLengthOutsideConstraints (formWith (Just False) (Just 0.5))
+                birthLengthOutsideConstraints SiteRwanda (formWith (Just False) (Just 0.5))
                     |> Expect.equal False
         ]
 
