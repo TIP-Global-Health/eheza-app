@@ -35,13 +35,16 @@ measurementOutOfRangeTests =
                 , weightData = { form = { emptyWeightForm | weight = weight } }
             }
 
-        preSave model msg =
+        preSaveAt site model msg =
             let
                 ( updatedModel, _, appMsgs ) =
-                    update SiteRwanda (toEntityUuid "encounter") emptyModelIndexedDb msg model
+                    update site (toEntityUuid "encounter") emptyModelIndexedDb msg model
             in
             -- What the popup names, and whether anything was saved.
             ( updatedModel.measurementOutOfRangePopupState, not <| List.isEmpty appMsgs )
+
+        preSave =
+            preSaveAt SiteRwanda
 
         person =
             toEntityUuid "person"
@@ -62,18 +65,12 @@ measurementOutOfRangeTests =
                 preSave (modelWith Nothing (Just 125) Nothing)
                     (PreSaveMuac person Nothing)
                     |> Expect.equal ( [ MeasurementMuac ], False )
-        , test "a MUAC that is millimetres at Burundi is within range there" <|
+        , test "a MUAC that is millimetres at Burundi is within range there, and saves" <|
             \_ ->
-                let
-                    ( updatedModel, _, _ ) =
-                        update SiteBurundi
-                            (toEntityUuid "encounter")
-                            emptyModelIndexedDb
-                            (PreSaveMuac person Nothing)
-                            (modelWith Nothing (Just 12.5) Nothing)
-                in
-                updatedModel.measurementOutOfRangePopupState
-                    |> Expect.equal []
+                preSaveAt SiteBurundi
+                    (modelWith Nothing (Just 12.5) Nothing)
+                    (PreSaveMuac person Nothing)
+                    |> Expect.equal ( [], True )
         , test "a height within the range shows no popup and goes on to save" <|
             \_ ->
                 preSave (modelWith (Just 105) Nothing Nothing)

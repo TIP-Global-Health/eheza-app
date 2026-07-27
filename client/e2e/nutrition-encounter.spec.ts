@@ -87,7 +87,7 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
   }) => {
     await createChildAndStartEncounter(page, { ageMonths: 24 });
 
-    const saveBtn = page.locator('button.ui.fluid.primary.button');
+    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
 
     /** Enters a value that is out of range and checks what the nurse is told. */
     const refuses = async (id: string, value: string, named: string) => {
