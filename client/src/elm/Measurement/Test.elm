@@ -5,16 +5,19 @@ import Backend.Measurement.Model
     exposing
         ( ColorAlertIndication(..)
         , CreatinineTestValue
+        , HeightInCm(..)
         , LiverFunctionTestValue
         , MuacInCm(..)
+        , SkippedForm(..)
         , TestExecutionNote(..)
         , VaccineDose(..)
         , WeightInGrm(..)
         , WellChildVaccineType(..)
         )
 import Date exposing (Unit(..))
+import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), emptyCreatinineResultForm, emptyLiverFunctionResultForm, emptyModelChild)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), emptyCreatinineResultForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyModelChild)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -25,6 +28,7 @@ import Measurement.Utils
         , getInputConstraintsHeight
         , getInputConstraintsWeight
         , getIntervalForVaccine
+        , heightFormWithDefault
         , initialVaccinationDateByBirthDate
         , liverFunctionResultFormWithDefault
         , muacOutsideConstraints
@@ -531,6 +535,37 @@ all =
         , birthWeightOutsideConstraintsTest
         , outsideConstraintsTest
         , muacOutsideConstraintsTest
+        , heightFormWithDefaultSkippedTest
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
+        ]
+
+
+{-| The range check asks the form the nurse is looking at, which is why it does
+not have to ask separately whether the measurement could be taken: a form that
+was skipped holds no height to be out of range.
+-}
+heightFormWithDefaultSkippedTest : Test
+heightFormWithDefaultSkippedTest =
+    describe "heightFormWithDefault, on a measurement that could not be taken"
+        [ test "holds no height when the encounter says the form was skipped" <|
+            \_ ->
+                heightFormWithDefault (EverySet.singleton SkippedHeight)
+                    emptyHeightForm
+                    (Just (HeightInCm 1050))
+                    |> Expect.equal
+                        { height = Nothing
+                        , heightDirty = False
+                        , measurementNotTaken = Just True
+                        }
+        , test "holds no height when the nurse said so on the form" <|
+            \_ ->
+                heightFormWithDefault EverySet.empty
+                    { emptyHeightForm | height = Just 1050, measurementNotTaken = Just True }
+                    Nothing
+                    |> Expect.equal
+                        { height = Nothing
+                        , heightDirty = False
+                        , measurementNotTaken = Just True
+                        }
         ]

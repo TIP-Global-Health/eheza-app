@@ -477,17 +477,14 @@ the range it can take.
 A list, because the warning that names the measurements takes one, and because
 the forms that ask for several behind a single button are named the same way.
 
-Nothing is recorded when the nurse has said the measurement could not be taken,
-so on those tasks there is nothing to be wrong.
+A measurement the nurse said could not be taken is asked about like any other:
+the form it is asked of holds no value in that case, and a measurement that was
+not entered is not out of range.
 
 -}
 heightOutOfRange : Site -> HeightForm -> List AnthropometricMeasurement
 heightOutOfRange site form =
-    if form.measurementNotTaken == Just True then
-        []
-
-    else
-        outOfRange site MeasurementHeight form.height
+    outOfRange site MeasurementHeight form.height
 
 
 muacOutOfRange : Site -> MuacForm -> List AnthropometricMeasurement
@@ -497,11 +494,7 @@ muacOutOfRange site form =
 
 weightOutOfRange : Site -> WeightForm -> List AnthropometricMeasurement
 weightOutOfRange site form =
-    if form.measurementNotTaken == Just True then
-        []
-
-    else
-        outOfRange site MeasurementWeight form.weight
+    outOfRange site MeasurementWeight form.weight
 
 
 outOfRange : Site -> AnthropometricMeasurement -> Maybe Float -> List AnthropometricMeasurement

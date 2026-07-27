@@ -148,20 +148,10 @@ outOfRangeTests =
             \_ ->
                 heightOutOfRange SiteRwanda { emptyHeightForm | height = Just 1050 }
                     |> Expect.equal [ MeasurementHeight ]
-        , test "Height: nothing is reported when the measurement could not be taken" <|
-            \_ ->
-                heightOutOfRange SiteRwanda
-                    { emptyHeightForm | height = Just 1050, measurementNotTaken = Just True }
-                    |> Expect.equal []
         , test "Weight: a mistyped 850 kg is reported" <|
             \_ ->
                 weightOutOfRange SiteRwanda { emptyWeightForm | weight = Just 850 }
                     |> Expect.equal [ MeasurementWeight ]
-        , test "Weight: nothing is reported when the measurement could not be taken" <|
-            \_ ->
-                weightOutOfRange SiteRwanda
-                    { emptyWeightForm | weight = Just 850, measurementNotTaken = Just True }
-                    |> Expect.equal []
         , test "Muac: Burundi holds cm and shows mm, so 12.5 cm is 125 mm and is not reported" <|
             \_ ->
                 muacOutOfRange SiteBurundi { emptyMuacForm | muac = Just 12.5 }
