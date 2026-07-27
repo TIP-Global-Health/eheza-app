@@ -3661,7 +3661,7 @@ measurementOutOfRangePopup language site measurements closeMsg =
             List.map
                 (\measurement ->
                     p []
-                        [ text <| translate language <| Translate.MeasurementOutOfRangeWarning measurement
+                        [ text <| translate language <| Translate.MeasurementOutOfRangeWarning site measurement
                         , text " "
 
                         -- Said the way the range is said elsewhere in the app,

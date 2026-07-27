@@ -564,7 +564,9 @@ export async function completePregnancySummary(page: Page) {
   await page.waitForTimeout(WAIT.elmRerender);
   await click(page.locator('#completed-tab'), page);
   await page.waitForTimeout(WAIT.elmRerender);
-  await click(page.locator('.icon-task-history'), page);
+  // Birth History and Child Scorecard are drawn with the same icon, so the
+  // card is picked by its name rather than by the icon alone.
+  await click(page.locator('.card', { hasText: 'BIRTH HISTORY' }).locator('.icon-task-history'), page);
   await page.locator('div.page-activity.well-child').waitFor({ timeout: 10000 });
   await form.waitFor({ timeout: 5000 });
   await click(boolInputs.nth(1).locator('label', { hasText: 'Yes' }), page);

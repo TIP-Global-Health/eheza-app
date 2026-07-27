@@ -418,14 +418,18 @@ export async function expectMeasurementsOutOfRangeRefused(
   const popup = page.locator('div.ui.active.modal.measurement-out-of-range');
   await popup.waitFor({ timeout: 10000 });
 
+  // Match whole class names: `birth-weight-out-of-range` holds
+  // `weight-out-of-range` inside it, so a loose match names the wrong one.
+  const named = (cls: string) => new RegExp(`(^| )${cls}( |$)`);
+
   // Every measurement that is wrong is named, not just the first one.
   for (const m of measurements) {
-    await expect(popup).toHaveClass(new RegExp(m.popupClass));
+    await expect(popup).toHaveClass(named(m.popupClass));
   }
 
   // And nothing that is in range is named.
   for (const cls of notNamed) {
-    await expect(popup).not.toHaveClass(new RegExp(cls));
+    await expect(popup).not.toHaveClass(named(cls));
   }
 
   // The form is still up, so nothing out of range was saved.

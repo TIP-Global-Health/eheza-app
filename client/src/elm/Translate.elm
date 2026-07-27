@@ -1059,7 +1059,7 @@ type TranslationId
     | MastitisRecommendedTreatmentHeader Bool
     | MastitisRecommendedTreatmentHelper
     | MeasurementNotTaken
-    | MeasurementOutOfRangeWarning Measurement.Model.AnthropometricMeasurement
+    | MeasurementOutOfRangeWarning Site Measurement.Model.AnthropometricMeasurement
     | MedicationCausingHypertension MedicationCausingHypertension
     | MedicationCausingHypertensionQuestion
     | MedicalCondition MedicalCondition
@@ -12058,7 +12058,7 @@ translationSet trans =
             , somali = Just "Lama awoodo in la qaado cabirka, ka bood qeybtan"
             }
 
-        MeasurementOutOfRangeWarning measurement ->
+        MeasurementOutOfRangeWarning site measurement ->
             case measurement of
                 Measurement.Model.MeasurementBirthLength ->
                     { english = "Birth length is recorded in centimetres."
@@ -12082,11 +12082,20 @@ translationSet trans =
                     }
 
                 Measurement.Model.MeasurementMuac ->
-                    { english = "MUAC is outside the range it can take."
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    case site of
+                        SiteBurundi ->
+                            { english = "MUAC is recorded in millimetres."
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            , somali = Nothing
+                            }
+
+                        _ ->
+                            { english = "MUAC is recorded in centimetres."
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            , somali = Nothing
+                            }
 
                 Measurement.Model.MeasurementWeight ->
                     { english = "Weight is recorded in kilograms."

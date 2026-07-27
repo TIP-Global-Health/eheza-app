@@ -7,8 +7,7 @@ import Expect
 import Gizra.NominalDate exposing (diffMonths)
 import List.Extra
 import Measurement.Model exposing (AnthropometricMeasurement(..), emptyHeightForm, emptyMuacForm, emptyWeightForm)
-import Pages.WellChild.Activity.Types exposing (NutritionAssessmentTask(..))
-import Pages.WellChild.Activity.Utils exposing (nutritionAssessmentOutOfRange, resolveNextDateForImmunisationVisit)
+import Pages.WellChild.Activity.Utils exposing (heightOutOfRange, muacOutOfRange, resolveNextDateForImmunisationVisit, weightOutOfRange)
 import Pages.WellChild.ProgressReport.View exposing (distributeByListIndex, resolveLastDayForMonthX)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
@@ -20,7 +19,7 @@ all =
     describe "Pages.WellChild"
         [ resolveNextDateForImmunisationVisitTests
         , immunizationBucketingTests
-        , nutritionAssessmentOutOfRangeTests
+        , outOfRangeTests
         ]
 
 
@@ -138,61 +137,41 @@ immunizationBucketingTests =
 nothing on screen to say why. The measurement is named instead, so the warning
 can say which one is wrong.
 -}
-nutritionAssessmentOutOfRangeTests : Test
-nutritionAssessmentOutOfRangeTests =
-    let
-        outOfRange site height muac weight task =
-            nutritionAssessmentOutOfRange site
-                { emptyHeightForm | height = height }
-                { emptyMuacForm | muac = muac }
-                { emptyWeightForm | weight = weight }
-                task
-    in
-    describe "nutritionAssessmentOutOfRange"
+outOfRangeTests : Test
+outOfRangeTests =
+    describe "the Nutrition Assessment measurements that are out of range"
         [ test "Height: a plausible value is not reported" <|
             \_ ->
-                outOfRange SiteRwanda (Just 105) Nothing Nothing TaskHeight
+                heightOutOfRange SiteRwanda { emptyHeightForm | height = Just 105 }
                     |> Expect.equal []
         , test "Height: a mistyped 1050 cm is reported" <|
             \_ ->
-                outOfRange SiteRwanda (Just 1050) Nothing Nothing TaskHeight
+                heightOutOfRange SiteRwanda { emptyHeightForm | height = Just 1050 }
                     |> Expect.equal [ MeasurementHeight ]
         , test "Height: nothing is reported when the measurement could not be taken" <|
             \_ ->
-                nutritionAssessmentOutOfRange SiteRwanda
+                heightOutOfRange SiteRwanda
                     { emptyHeightForm | height = Just 1050, measurementNotTaken = Just True }
-                    emptyMuacForm
-                    emptyWeightForm
-                    TaskHeight
                     |> Expect.equal []
         , test "Weight: a mistyped 850 kg is reported" <|
             \_ ->
-                outOfRange SiteRwanda Nothing Nothing (Just 850) TaskWeight
+                weightOutOfRange SiteRwanda { emptyWeightForm | weight = Just 850 }
                     |> Expect.equal [ MeasurementWeight ]
         , test "Weight: nothing is reported when the measurement could not be taken" <|
             \_ ->
-                nutritionAssessmentOutOfRange SiteRwanda
-                    emptyHeightForm
-                    emptyMuacForm
+                weightOutOfRange SiteRwanda
                     { emptyWeightForm | weight = Just 850, measurementNotTaken = Just True }
-                    TaskWeight
                     |> Expect.equal []
         , test "Muac: Burundi holds cm and shows mm, so 12.5 cm is 125 mm and is not reported" <|
             \_ ->
-                outOfRange SiteBurundi Nothing (Just 12.5) Nothing TaskMuac
+                muacOutOfRange SiteBurundi { emptyMuacForm | muac = Just 12.5 }
                     |> Expect.equal []
         , test "Muac: Rwanda reports 125, a mm value typed into a cm field" <|
             \_ ->
-                outOfRange SiteRwanda Nothing (Just 125) Nothing TaskMuac
+                muacOutOfRange SiteRwanda { emptyMuacForm | muac = Just 125 }
                     |> Expect.equal [ MeasurementMuac ]
         , test "Muac: an unset value is not reported, since the task count says it is still to be taken" <|
             \_ ->
-                outOfRange SiteRwanda Nothing Nothing Nothing TaskMuac
+                muacOutOfRange SiteRwanda emptyMuacForm
                     |> Expect.equal []
-        , test "the tasks that ask for no measurement report nothing" <|
-            \_ ->
-                ( outOfRange SiteRwanda Nothing Nothing Nothing TaskHeadCircumference
-                , outOfRange SiteRwanda Nothing Nothing Nothing TaskNutrition
-                )
-                    |> Expect.equal ( [], [] )
         ]

@@ -1,4 +1,4 @@
-module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, birthLengthOutsideConstraints, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentOutOfRange, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
+module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, birthLengthOutsideConstraints, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, heightOutOfRange, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, muacOutOfRange, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, weightOutOfRange, wellChildECDFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -471,49 +471,46 @@ nutritionAssessmentTasksCompletedFromTotal currentDate zscores site isChw assemb
     resolveTasksCompletedFromTotal tasks
 
 
-{-| The measurements of a Nutrition Assessment task that were entered outside
-the range they can take.
+{-| The measurement of a Nutrition Assessment task, when it was entered outside
+the range it can take.
 
-A list, because the popup that shows them names each one, and because the tasks
-that ask for several measurements behind one button are named the same way.
+A list, because the warning that names the measurements takes one, and because
+the forms that ask for several behind a single button are named the same way.
 
-Height and Weight are not asked about when the nurse has said the measurement
-could not be taken, since nothing is recorded then.
+Nothing is recorded when the nurse has said the measurement could not be taken,
+so on those tasks there is nothing to be wrong.
 
 -}
-nutritionAssessmentOutOfRange : Site -> HeightForm -> MuacForm -> WeightForm -> NutritionAssessmentTask -> List AnthropometricMeasurement
-nutritionAssessmentOutOfRange site heightForm muacForm weightForm task =
-    let
-        outOfRange measurement value =
-            if anthropometricOutOfRange site measurement value then
-                [ measurement ]
+heightOutOfRange : Site -> HeightForm -> List AnthropometricMeasurement
+heightOutOfRange site form =
+    if form.measurementNotTaken == Just True then
+        []
 
-            else
-                []
-    in
-    case task of
-        TaskHeadCircumference ->
-            []
+    else
+        outOfRange site MeasurementHeight form.height
 
-        TaskHeight ->
-            if heightForm.measurementNotTaken == Just True then
-                []
 
-            else
-                outOfRange MeasurementHeight heightForm.height
+muacOutOfRange : Site -> MuacForm -> List AnthropometricMeasurement
+muacOutOfRange site form =
+    outOfRange site MeasurementMuac form.muac
 
-        TaskMuac ->
-            outOfRange MeasurementMuac muacForm.muac
 
-        TaskNutrition ->
-            []
+weightOutOfRange : Site -> WeightForm -> List AnthropometricMeasurement
+weightOutOfRange site form =
+    if form.measurementNotTaken == Just True then
+        []
 
-        TaskWeight ->
-            if weightForm.measurementNotTaken == Just True then
-                []
+    else
+        outOfRange site MeasurementWeight form.weight
 
-            else
-                outOfRange MeasurementWeight weightForm.weight
+
+outOfRange : Site -> AnthropometricMeasurement -> Maybe Float -> List AnthropometricMeasurement
+outOfRange site measurement value =
+    if anthropometricOutOfRange site measurement value then
+        [ measurement ]
+
+    else
+        []
 
 
 headCircumferenceFormAndTasks :
