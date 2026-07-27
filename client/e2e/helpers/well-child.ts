@@ -295,6 +295,10 @@ export async function completeNutritionAssessment(
     // Type a wrong value into each measurement first, and check the nurse is
     // told the range and kept on the form, before entering the right one.
     checkRanges?: boolean;
+    // Save the height as one that could not be taken first, and check that
+    // goes through, before going back and recording it. CHW only: the
+    // checkbox is not drawn for a nurse.
+    heightNotTakenFirst?: boolean;
   },
 ) {
   const nutritionSigns = options?.nutritionSigns ?? [];
@@ -320,6 +324,28 @@ export async function completeNutritionAssessment(
   const heightTab = page.locator('.link-section:has(.icon-activity-task.icon-height)');
   if (options?.height && await heightTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'height');
+
+    if (options?.heightNotTakenFirst) {
+      const notTaken = page.locator('div.ui.checkbox.activity', {
+        hasText: 'Unable to take measurement',
+      });
+      await click(notTaken, page);
+      await page.waitForTimeout(WAIT.formInteraction);
+
+      // Nothing is recorded, so there is nothing to be out of range: the
+      // button answers, and no warning comes up.
+      const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+      await expect(saveBtn).toHaveClass(/active/);
+      await click(saveBtn, page);
+      await page.waitForTimeout(WAIT.sectionTransition);
+      await expect(page.locator('div.ui.active.modal.measurement-out-of-range')).toHaveCount(0);
+
+      // Back to the height, this time recording one.
+      await clickSubTaskTab(page, 'height');
+      await click(notTaken, page);
+      await page.waitForTimeout(WAIT.formInteraction);
+    }
+
     await enter('height', options.height, '1050', ['muac-out-of-range', 'weight-out-of-range']);
     await saveSubTask(page);
   }

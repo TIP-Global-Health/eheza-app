@@ -140,12 +140,15 @@ test.describe('CHW: Well Child PediatricCareChw Encounter with HomeVisit', () =>
     await completeDangerSigns(page);
 
     // 2. Nutrition Assessment: height, head circumference, MUAC, nutrition, weight.
+    //    Height is first saved as one that could not be taken, to check a CHW is
+    //    not stopped by the range check when nothing is being recorded.
     await completeNutritionAssessment(page, {
       height: '85',
       headCircumference: '48',
       muac: '14',
       weight: '12',
       nutritionSigns: [],
+      heightNotTakenFirst: true,
     });
 
     // 3. Home Visit: Feeding, Caring, Hygiene, FoodSecurity.
