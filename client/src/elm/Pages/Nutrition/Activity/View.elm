@@ -33,7 +33,7 @@ import Measurement.Model
         , NCDAData
         , NextStepsTask(..)
         )
-import Measurement.Utils exposing (allNextStepsTasks, contributingFactorsFormWithDefault, getInputConstraintsHeight, getInputConstraintsWeight, healthEducationFormWithDefault, heightFormWithDefault, muacFormWithDefault, muacOutsideConstraints, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, outsideConstraints, sendToHCFormWithDefault, weightFormWithDefault)
+import Measurement.Utils exposing (allNextStepsTasks, contributingFactorsFormWithDefault, healthEducationFormWithDefault, heightFormWithDefault, muacFormWithDefault, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, sendToHCFormWithDefault, weightFormWithDefault)
 import Measurement.View
     exposing
         ( heightFormAndTasks
@@ -111,9 +111,17 @@ viewHeaderAndContent language currentDate zscores site id activity isChw db mode
         [ header
         , content
         , viewModal <|
-            warningPopup language
-                (SetWarningPopupState [])
-                model.warningPopupState
+            if List.isEmpty model.measurementOutOfRangePopupState then
+                warningPopup language
+                    (SetWarningPopupState [])
+                    model.warningPopupState
+
+            else
+                Just <|
+                    Measurement.View.measurementOutOfRangePopup language
+                        site
+                        model.measurementOutOfRangePopupState
+                        (SetMeasurementOutOfRangePopupState [])
         ]
 
 
@@ -253,17 +261,14 @@ viewHeightContent language currentDate zscores isChw assembled data previousValu
                 |> List.sum
 
         disabled =
-            (form.measurementNotTaken /= Just True)
-                && ((tasksCompleted /= totalTasks)
-                        || outsideConstraints getInputConstraintsHeight form.height
-                   )
+            tasksCompleted /= totalTasks
     in
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             formForView
         , viewSaveAction language
-            (SaveHeight assembled.encounter.skippedForms assembled.participant.person assembled.measurements.height)
+            (PreSaveHeight assembled.encounter.skippedForms assembled.participant.person assembled.measurements.height)
             disabled
         ]
     ]
@@ -283,8 +288,7 @@ viewMuacContent language currentDate site assembled data previousValue =
             resolveTasksCompletedFromTotal tasks
 
         disabled =
-            (tasksCompleted /= tasksTotal)
-                || muacOutsideConstraints site form.muac
+            tasksCompleted /= tasksTotal
     in
     [ viewTasksCount language tasksCompleted tasksTotal
     , div [ class "ui full segment" ]
@@ -293,7 +297,7 @@ viewMuacContent language currentDate site assembled data previousValue =
                 inputs
             ]
         , viewSaveAction language
-            (SaveMuac assembled.participant.person assembled.measurements.muac)
+            (PreSaveMuac assembled.participant.person assembled.measurements.muac)
             disabled
         ]
     ]
@@ -443,17 +447,14 @@ viewWeightContent language currentDate zscores site isChw assembled data previou
             getMeasurementValueFunc assembled.measurements.height
 
         disabled =
-            (form.measurementNotTaken /= Just True)
-                && ((tasksCompleted /= totalTasks)
-                        || outsideConstraints getInputConstraintsWeight form.weight
-                   )
+            tasksCompleted /= totalTasks
     in
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             formForView
         , viewSaveAction language
-            (SaveWeight assembled.encounter.skippedForms assembled.participant.person assembled.measurements.weight)
+            (PreSaveWeight assembled.encounter.skippedForms assembled.participant.person assembled.measurements.weight)
             disabled
         ]
     ]

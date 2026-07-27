@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (ContributingFactorsForm, DropZoneFile, HealthEducationForm, HeightForm, MuacForm, NCDAData, NCDAForm, NCDAStep, NextStepsTask, NutritionFollowUpForm, NutritionForm, PhotoForm, SendToHCForm, WeightForm, emptyContributingFactorsForm, emptyHealthEducationForm, emptyHeightForm, emptyMuacForm, emptyNCDAData, emptyNutritionFollowUpForm, emptyNutritionForm, emptyPhotoForm, emptySendToHCForm, emptyWeightForm)
+import Measurement.Model exposing (AnthropometricMeasurement, ContributingFactorsForm, DropZoneFile, HealthEducationForm, HeightForm, MuacForm, NCDAData, NCDAForm, NCDAStep, NextStepsTask, NutritionFollowUpForm, NutritionForm, PhotoForm, SendToHCForm, WeightForm, emptyContributingFactorsForm, emptyHealthEducationForm, emptyHeightForm, emptyMuacForm, emptyNCDAData, emptyNutritionFollowUpForm, emptyNutritionForm, emptyPhotoForm, emptySendToHCForm, emptyWeightForm)
 import Pages.Page exposing (Page)
 
 
@@ -12,10 +12,13 @@ type Msg
     = NoOp
     | SetActivePage Page
     | SetWarningPopupState (List NutritionAssessment)
+    | SetMeasurementOutOfRangePopupState (List AnthropometricMeasurement)
     | SetHeight String
     | SetHeightNotTaken Bool
+    | PreSaveHeight (EverySet SkippedForm) PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
     | SaveHeight (EverySet SkippedForm) PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
     | SetMuac String
+    | PreSaveMuac PersonId (Maybe ( NutritionMuacId, NutritionMuac ))
     | SaveMuac PersonId (Maybe ( NutritionMuacId, NutritionMuac ))
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( NutritionNutritionId, NutritionNutrition )) (EverySet NutritionAssessment)
@@ -23,6 +26,7 @@ type Msg
     | SavePhoto PersonId (Maybe NutritionPhotoId) ImageUrl
     | SetWeight String
     | SetWeightNotTaken Bool
+    | PreSaveWeight (EverySet SkippedForm) PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
     | SaveWeight (EverySet SkippedForm) PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
     | SetUpdateANCVisits Bool
     | ToggleANCVisitDate NominalDate
@@ -59,6 +63,10 @@ type alias Model =
     , ncdaData : NCDAData
     , nextStepsData : NextStepsData
     , warningPopupState : List NutritionAssessment
+
+    -- Kept apart from warningPopupState, which carries a nutrition assessment,
+    -- so that every page names an out-of-range measurement the same way.
+    , measurementOutOfRangePopupState : List AnthropometricMeasurement
     }
 
 
@@ -72,6 +80,7 @@ emptyModel =
     , ncdaData = emptyNCDAData
     , nextStepsData = emptyNextStepsData
     , warningPopupState = []
+    , measurementOutOfRangePopupState = []
     }
 
 
