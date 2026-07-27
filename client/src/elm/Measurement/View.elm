@@ -3661,9 +3661,14 @@ measurementOutOfRangePopup language measurements closeMsg =
             List.map
                 (\measurement ->
                     p []
-                        [ text <|
+                        [ text <| translate language <| Translate.MeasurementOutOfRangeWarning measurement
+                        , text " "
+
+                        -- The range is said the way it is said above every
+                        -- measurement input, which is already translated.
+                        , text <|
                             translate language <|
-                                Translate.MeasurementOutOfRangeWarning measurement (anthropometricConstraints measurement)
+                                Translate.AllowedValuesRangeHelper (anthropometricConstraints measurement)
                         ]
                 )
                 measurements

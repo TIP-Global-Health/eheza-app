@@ -1059,7 +1059,7 @@ type TranslationId
     | MastitisRecommendedTreatmentHeader Bool
     | MastitisRecommendedTreatmentHelper
     | MeasurementNotTaken
-    | MeasurementOutOfRangeWarning Measurement.Model.AnthropometricMeasurement Measurement.Model.FloatInputConstraints
+    | MeasurementOutOfRangeWarning Measurement.Model.AnthropometricMeasurement
     | MedicationCausingHypertension MedicationCausingHypertension
     | MedicationCausingHypertensionQuestion
     | MedicalCondition MedicalCondition
@@ -4089,26 +4089,6 @@ translationSet trans =
             , kirundi = Just "Ni ubuhe muri ubu"
             , somali = Nothing
             }
-
-        MeasurementOutOfRangeWarning measurement constraints ->
-            let
-                range =
-                    String.fromFloat constraints.minVal ++ " and " ++ String.fromFloat constraints.maxVal
-            in
-            case measurement of
-                Measurement.Model.MeasurementBirthLength ->
-                    { english = "Birth length is recorded in centimetres, and must be between " ++ range ++ ". Please check the value entered."
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
-
-                Measurement.Model.MeasurementBirthWeight ->
-                    { english = "Birth weight is recorded in grams, and must be between " ++ range ++ ". Please check the value entered. A weight of 3 kilograms is entered as 3000."
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
 
         BloodGlucose ->
             { english = "Blood Glucose"
@@ -12077,6 +12057,22 @@ translationSet trans =
             , kirundi = Nothing
             , somali = Just "Lama awoodo in la qaado cabirka, ka bood qeybtan"
             }
+
+        MeasurementOutOfRangeWarning measurement ->
+            case measurement of
+                Measurement.Model.MeasurementBirthLength ->
+                    { english = "Birth length is recorded in centimetres."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementBirthWeight ->
+                    { english = "Birth weight is recorded in grams, not kilograms."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
         MedicationCausingHypertension medication ->
             case medication of
