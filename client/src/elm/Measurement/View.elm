@@ -48,7 +48,7 @@ import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (AnthropometricMeasurement(..), ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, FamilyPlanningForm, FbfForm, FloatInputConstraints, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
-import Measurement.Utils exposing (anthropometricConstraints, birthWeightBlocksNCDAForm, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault, withinConstraints)
+import Measurement.Utils exposing (anthropometricConstraints, birthWeightBlocksNCDAForm, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, outOfRangeAsEntered, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault)
 import Pages.Utils
     exposing
         ( concatInputsAndTasksSections
@@ -110,7 +110,7 @@ viewChild language currentDate site isChw ( childId, child ) activity measuremen
             viewPhoto language (mapMeasurementData .photo measurements) model.photo
 
         Height ->
-            viewHeight language currentDate isChw child (mapMeasurementData .height measurements) previousValuesSet.height zscores model
+            viewHeight site language currentDate isChw child (mapMeasurementData .height measurements) previousValuesSet.height zscores model
 
         Muac ->
             viewMuac site language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
@@ -121,7 +121,7 @@ viewChild language currentDate site isChw ( childId, child ) activity measuremen
         -- Counseling ->
         --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
         Weight ->
-            viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousValuesSet.weight zscores model
+            viewWeight site language currentDate isChw child (mapMeasurementData .weight measurements) previousValuesSet.weight zscores model
 
         ContributingFactors ->
             viewContributingFactors language (mapMeasurementData .contributingFactors measurements) model.contributingFactorsForm
@@ -150,6 +150,10 @@ type alias FloatFormConfig id value =
     , zScoreForAge : Maybe (ZScore.Model.Model -> Days -> Gender -> Float -> Maybe ZScore)
     , zScoreForHeightOrLength : Maybe (ZScore.Model.Model -> Days -> Centimetres -> Gender -> Float -> Maybe ZScore)
     , constraints : FloatInputConstraints
+
+    -- Names the measurement on the warning when what was typed is outside the
+    -- range above.
+    , measurement : AnthropometricMeasurement
     , unit : TranslationId
     , inputValue : ModelChild -> String
     , toBackendValue : String -> Maybe Float
@@ -169,6 +173,7 @@ heightFormConfig =
     , zScoreForAge = Just <| \model age gender height -> zScoreLengthHeightForAge model age gender (Centimetres height)
     , zScoreForHeightOrLength = Nothing
     , constraints = getInputConstraintsHeight
+    , measurement = MeasurementHeight
     , unit = Translate.UnitCentimeter
     , inputValue = .height
     , toBackendValue = String.toFloat
@@ -195,6 +200,7 @@ muacFormConfig site =
     , zScoreForAge = Nothing
     , zScoreForHeightOrLength = Nothing
     , constraints = getInputConstraintsMuac site
+    , measurement = MeasurementMuac
     , unit = unit
     , inputValue = .muac
     , toBackendValue = toBackendValue
@@ -214,6 +220,7 @@ weightFormConfig =
     , zScoreForAge = Just <| \model age gender weight -> zScoreWeightForAge model age gender (Kilograms weight)
     , zScoreForHeightOrLength = Just zScoreForHeightOrLength
     , constraints = getInputConstraintsWeight
+    , measurement = MeasurementWeight
     , unit = Translate.KilogramShorthand
     , inputValue = .weight
     , toBackendValue = String.toFloat
@@ -233,23 +240,23 @@ zScoreForHeightOrLength model (Days days) (Centimetres cm) gender weight =
         zScoreWeightForHeight model (ZScore.Model.Height cm) gender (Kilograms weight)
 
 
-viewHeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewHeight =
-    viewFloatForm heightFormConfig
+viewHeight : Site -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewHeight site =
+    viewFloatForm site heightFormConfig
 
 
-viewWeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewWeight =
-    viewFloatForm weightFormConfig
+viewWeight : Site -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewWeight site =
+    viewFloatForm site weightFormConfig
 
 
 viewMuac : Site -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewMuac site =
-    viewFloatForm (muacFormConfig site)
+    viewFloatForm site (muacFormConfig site)
 
 
-viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewFloatForm config language currentDate isChw child measurements previousValue zscores model =
+viewFloatForm : Site -> FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewFloatForm site config language currentDate isChw child measurements previousValue zscores model =
     let
         -- What is the string input value from the form?
         inputValue =
@@ -378,11 +385,15 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         saveMsg =
             Maybe.Extra.andThen2
                 (\asFloat forBackend ->
-                    if not <| withinConstraints config.constraints asFloat then
-                        Nothing
+                    case outOfRangeAsEntered config.constraints config.measurement asFloat of
+                        [] ->
+                            config.saveMsg (Maybe.map Tuple.first measurements.current) forBackend |> Just
 
-                    else
-                        config.saveMsg (Maybe.map Tuple.first measurements.current) forBackend |> Just
+                        outOfRange ->
+                            -- The button answers, and says what is wrong. What
+                            -- does not parse leaves it with nothing to do, as
+                            -- before: this form has no task count to say so.
+                            Just <| SetMeasurementOutOfRangePopupState outOfRange
                 )
                 inputAsFloat
                 backendValue
@@ -429,6 +440,16 @@ viewFloatForm config language currentDate isChw child measurements previousValue
             ]
         , div [ class "actions" ] <|
             saveButton language saveMsg measurements
+        , viewModal <|
+            if List.isEmpty model.measurementOutOfRangePopupState then
+                Nothing
+
+            else
+                Just <|
+                    measurementOutOfRangePopup language
+                        site
+                        model.measurementOutOfRangePopupState
+                        (SetMeasurementOutOfRangePopupState [])
         ]
 
 

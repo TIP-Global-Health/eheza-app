@@ -17,7 +17,7 @@ import Backend.Measurement.Model
 import Date exposing (Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), emptyCreatinineResultForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyModelChild)
+import Measurement.Model exposing (AnthropometricMeasurement(..), MsgChild(..), NCDAStep(..), emptyCreatinineResultForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyModelChild)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -26,12 +26,14 @@ import Measurement.Utils
         , creatinineResultFormWithDefault
         , getAllDosesForVaccine
         , getInputConstraintsHeight
+        , getInputConstraintsMuac
         , getInputConstraintsWeight
         , getIntervalForVaccine
         , heightFormWithDefault
         , initialVaccinationDateByBirthDate
         , liverFunctionResultFormWithDefault
         , muacOutsideConstraints
+        , outOfRangeAsEntered
         , outsideConstraints
         )
 import Measurement.View exposing (viewColorAlertIndication)
@@ -531,6 +533,8 @@ all =
         , getAllDosesForVaccineTest
         , initialVaccinationDateByBirthDateTest
         , updateChildSetMuacTest
+        , outOfRangeAsEnteredTest
+        , updateChildOutOfRangePopupTest
         , birthWeightBlocksNCDAFormTest
         , birthWeightOutsideConstraintsTest
         , outsideConstraintsTest
@@ -568,4 +572,74 @@ heightFormWithDefaultSkippedTest =
                         , heightDirty = False
                         , measurementNotTaken = Just True
                         }
+        ]
+
+
+{-| The group session forms hold what the nurse typed, in the unit they show:
+millimetres for MUAC at Burundi, centimetres elsewhere. The range they are
+compared against is the one shown above the input, so the value is compared as
+it is - converting here as well would report every MUAC at Burundi.
+-}
+outOfRangeAsEnteredTest : Test
+outOfRangeAsEnteredTest =
+    describe "outOfRangeAsEntered"
+        [ test "Burundi: 125 mm is within the range shown there" <|
+            \_ ->
+                outOfRangeAsEntered (getInputConstraintsMuac SiteBurundi) MeasurementMuac 125
+                    |> Expect.equal []
+        , test "Rwanda: 125 is outside the range shown there, being millimetres" <|
+            \_ ->
+                outOfRangeAsEntered (getInputConstraintsMuac SiteRwanda) MeasurementMuac 125
+                    |> Expect.equal [ MeasurementMuac ]
+        , test "Rwanda: 12.5 cm is within the range shown there" <|
+            \_ ->
+                outOfRangeAsEntered (getInputConstraintsMuac SiteRwanda) MeasurementMuac 12.5
+                    |> Expect.equal []
+        , test "Burundi: 12.5 is outside the range shown there, being centimetres" <|
+            \_ ->
+                outOfRangeAsEntered (getInputConstraintsMuac SiteBurundi) MeasurementMuac 12.5
+                    |> Expect.equal [ MeasurementMuac ]
+        , test "a height of 1050 is outside its range, which is the same everywhere" <|
+            \_ ->
+                outOfRangeAsEntered getInputConstraintsHeight MeasurementHeight 1050
+                    |> Expect.equal [ MeasurementHeight ]
+        , test "a weight of 850 is outside its range" <|
+            \_ ->
+                outOfRangeAsEntered getInputConstraintsWeight MeasurementWeight 850
+                    |> Expect.equal [ MeasurementWeight ]
+        , test "both ends of a range are within it" <|
+            \_ ->
+                ( outOfRangeAsEntered getInputConstraintsHeight MeasurementHeight 25
+                , outOfRangeAsEntered getInputConstraintsHeight MeasurementHeight 250
+                )
+                    |> Expect.equal ( [], [] )
+        ]
+
+
+{-| What the group session form asks for is named on a warning until the nurse
+closes it.
+-}
+updateChildOutOfRangePopupTest : Test
+updateChildOutOfRangePopupTest =
+    describe "updateChild SetMeasurementOutOfRangePopupState"
+        [ test "names the measurement the form asked for" <|
+            \_ ->
+                let
+                    ( model, _, _ ) =
+                        updateChild SiteRwanda
+                            (SetMeasurementOutOfRangePopupState [ MeasurementMuac ])
+                            emptyModelChild
+                in
+                model.measurementOutOfRangePopupState
+                    |> Expect.equal [ MeasurementMuac ]
+        , test "closing it names nothing, and saves nothing on the way" <|
+            \_ ->
+                let
+                    ( model, _, outMsg ) =
+                        updateChild SiteRwanda
+                            (SetMeasurementOutOfRangePopupState [])
+                            { emptyModelChild | measurementOutOfRangePopupState = [ MeasurementWeight ] }
+                in
+                ( model.measurementOutOfRangePopupState, outMsg )
+                    |> Expect.equal ( [], Nothing )
         ]
