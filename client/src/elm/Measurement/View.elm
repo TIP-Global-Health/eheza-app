@@ -393,7 +393,7 @@ viewFloatForm site config language currentDate isChw child measurements previous
                             -- The button answers, and says what is wrong. What
                             -- does not parse leaves it with nothing to do, as
                             -- before: this form has no task count to say so.
-                            Just SetMeasurementOutOfRangePopupState outOfRange
+                            Just <| SetMeasurementOutOfRangePopupState outOfRange
                 )
                 inputAsFloat
                 backendValue
