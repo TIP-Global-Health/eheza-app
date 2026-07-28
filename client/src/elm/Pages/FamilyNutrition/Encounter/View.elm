@@ -59,26 +59,23 @@ viewHeaderAndContent language currentDate site id model data =
 
         content =
             viewContent language currentDate site model data
-
-        dialog =
-            Maybe.map
-                (\state ->
-                    case state of
-                        DialogEndEncounter ->
-                            viewConfirmationDialog language
-                                Translate.EndEncounterQuestion
-                                Translate.OnceYouEndTheEncounter
-                                (CloseEncounter id)
-                                (SetDialogState Nothing)
-                )
-                model.dialogState
     in
     div [ class "page-encounter family-nutrition" ]
         [ header
         , content
         , viewModal <|
             if List.isEmpty model.measurementOutOfRangePopupState then
-                dialog
+                Maybe.map
+                    (\state ->
+                        case state of
+                            DialogEndEncounter ->
+                                viewConfirmationDialog language
+                                    Translate.EndEncounterQuestion
+                                    Translate.OnceYouEndTheEncounter
+                                    (CloseEncounter id)
+                                    (SetDialogState Nothing)
+                    )
+                    model.dialogState
 
             else
                 Just <|
