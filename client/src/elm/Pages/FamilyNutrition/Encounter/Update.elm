@@ -320,7 +320,8 @@ update site id db msg model =
                         _ ->
                             Cmd.none
             in
-            ( { model | selectedActivity = activity }, cmd, [] )
+            -- Leaving the activity forgets what it was complaining about.
+            ( { model | selectedActivity = activity, measurementOutOfRangePopupState = [] }, cmd, [] )
 
         SetSelectedFamilyMember member ->
             let
@@ -339,6 +340,7 @@ update site id db msg model =
                 , ahezaData = emptyAhezaData
                 , muacData = emptyMuacData
                 , photoData = emptyPhotoData
+                , measurementOutOfRangePopupState = []
               }
             , cmd
             , []

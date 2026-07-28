@@ -388,7 +388,10 @@ update site selectedHealthCenter id db msg model =
                     model.physicalExamData
                         |> (\data -> { data | activeTask = Just task })
             in
-            ( { model | physicalExamData = updatedData }
+            -- Moving to another task forgets what the one before it was
+            -- complaining about: the warning names a measurement, and the
+            -- tasks of this activity share one place to put it.
+            ( { model | physicalExamData = updatedData, measurementOutOfRangePopupState = [] }
             , Cmd.none
             , []
             )

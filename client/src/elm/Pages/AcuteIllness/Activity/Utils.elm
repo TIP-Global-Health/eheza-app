@@ -16,12 +16,11 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (HealthEducationForm, InvokationModule(..), MuacForm, VitalsFormConfig, VitalsFormMode(..))
+import Measurement.Model exposing (HealthEducationForm, InvokationModule(..), VitalsFormConfig, VitalsFormMode(..))
 import Measurement.Utils
     exposing
         ( healthEducationFormWithDefault
         , muacFormWithDefault
-        , muacOutsideConstraints
         , ongoingTreatmentReviewFormWithDefault
         , renderDatePart
         , sendToHCFormWithDefault
