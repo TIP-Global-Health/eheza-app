@@ -2623,13 +2623,11 @@ viewNCDAContent language currentDate site personId person config helperState sho
         , actions
         ]
     , viewModal <|
-        viewNCDAHelperDialog language (config.setHelperStateMsg Nothing) helperState
-    , viewModal <|
         if showBirthWeightOutOfRangePopup then
             Just <| measurementOutOfRangePopup language site [ MeasurementBirthWeight ] (config.setBirthWeightOutOfRangePopupMsg False)
 
         else
-            Nothing
+            viewNCDAHelperDialog language (config.setHelperStateMsg Nothing) helperState
     ]
 
 
