@@ -604,13 +604,14 @@ export async function completeWeight(page: Page, value: string, checkRange = fal
  */
 export async function completeMuac(page: Page, value: string, checkRange = false) {
   await openActivity(page, 'MUAC');
-  // MUAC uses a number input (spinbutton) — find it near the Save button.
-  const input = 'input[type="number"]';
+  const input = 'input[type="number"][name="muac"]';
   if (checkRange) {
-    // Millimetres typed where the site asks for centimetres.
+    // Millimetres typed where centimetres are asked for, which is the mistake
+    // the range is here to catch. Out of range at the sites asking for
+    // centimetres, which is every site this suite runs against.
     await refusesOutOfRange(page, input, '125', 'muac-out-of-range');
   }
-  await page.locator(input).first().fill(value);
+  await page.locator(input).fill(value);
   await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
