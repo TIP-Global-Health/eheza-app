@@ -34,6 +34,7 @@ import Backend.Measurement.Model
         , VitalsValue
         , emptyPrenatalMeasurements
         )
+import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -41,10 +42,14 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Prenatal.Activity.Types exposing (PrePregnancyClassification(..))
+import Measurement.Model exposing (AnthropometricMeasurement(..))
+import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
+import Pages.Prenatal.Activity.Types exposing (PrePregnancyClassification(..), WarningPopupType(..))
+import Pages.Prenatal.Activity.Update exposing (update)
 import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
+import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import Time
 
@@ -1317,7 +1322,8 @@ suicideRiskDiagnosedBySignsTest =
 all : Test
 all =
     describe "Prenatal Activity tests"
-        [ bmiToPrePregnancyClassificationTest
+        [ measurementOutOfRangeTest
+        , bmiToPrePregnancyClassificationTest
         , zscoreToPrePregnancyClassificationTest
         , generatePrenatalDiagnosesForNurseLabsTest
         , generatePrenatalDiagnosesForNurseRecurrentLabsTest
@@ -1333,4 +1339,121 @@ all =
         , generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest
         , generatePrenatalDiagnosesForNurseEGA37PlusPreeclampsiaRecurrentTest
         , suicideRiskDiagnosedBySignsTest
+        ]
+
+
+{-| Nothing was checked on this encounter, so a mistyped height, weight, MUAC or
+fundal height saved without a word. Each is named on a warning now, and nothing
+is saved until it is entered again.
+
+A height measured at an earlier encounter is carried over and its input is not
+drawn, so it is not asked about: there would be nothing on screen to correct.
+
+-}
+measurementOutOfRangeTest : Test
+measurementOutOfRangeTest =
+    let
+        person =
+            toEntityUuid "person"
+
+        preSaveNutrition site carriedOverHeight height weight muac =
+            let
+                data =
+                    emptyModel.examinationData
+
+                form =
+                    data.nutritionAssessmentForm
+
+                model =
+                    { emptyModel
+                        | examinationData =
+                            { data
+                                | nutritionAssessmentForm =
+                                    { form | height = height, weight = weight, muac = muac }
+                            }
+                    }
+
+                ( updatedModel, _, appMsgs ) =
+                    update (Date.fromCalendarDate 2026 Time.Jul 28)
+                        site
+                        (toEntityUuid "encounter")
+                        emptyModelIndexedDb
+                        (PreSaveNutritionAssessment person Nothing carriedOverHeight Nothing Nothing)
+                        model
+            in
+            -- What the warning names, and whether anything was saved.
+            ( updatedModel.warningPopupState, not <| List.isEmpty appMsgs )
+
+        preSaveObstetrical palpable fundalHeight =
+            let
+                data =
+                    emptyModel.examinationData
+
+                form =
+                    data.obstetricalExamForm
+
+                model =
+                    { emptyModel
+                        | examinationData =
+                            { data
+                                | obstetricalExamForm =
+                                    { form | fundalPalpable = palpable, fundalHeight = fundalHeight }
+                            }
+                    }
+
+                ( updatedModel, _, appMsgs ) =
+                    update (Date.fromCalendarDate 2026 Time.Jul 28)
+                        SiteRwanda
+                        (toEntityUuid "encounter")
+                        emptyModelIndexedDb
+                        (PreSaveObstetricalExam person Nothing Nothing)
+                        model
+            in
+            ( updatedModel.warningPopupState, not <| List.isEmpty appMsgs )
+
+        named measurements =
+            Just (WarningPopupMeasurementOutOfRange measurements)
+    in
+    describe "the ANC save gate"
+        [ test "a height of 1050 cm is named and saves nothing" <|
+            \_ ->
+                preSaveNutrition SiteRwanda Nothing (Just 1050) Nothing Nothing
+                    |> Expect.equal ( named [ MeasurementHeight ], False )
+        , test "a weight of 850 kg is named and saves nothing" <|
+            \_ ->
+                preSaveNutrition SiteRwanda Nothing Nothing (Just 850) Nothing
+                    |> Expect.equal ( named [ MeasurementWeight ], False )
+        , test "a MUAC of 125, being millimetres, is named and saves nothing" <|
+            \_ ->
+                preSaveNutrition SiteRwanda Nothing Nothing Nothing (Just 125)
+                    |> Expect.equal ( named [ MeasurementMuac ], False )
+        , test "Burundi holds MUAC in centimetres too, so 12.5 is within range there" <|
+            \_ ->
+                preSaveNutrition SiteBurundi Nothing Nothing Nothing (Just 12.5)
+                    |> Expect.equal ( Nothing, True )
+        , test "every one that is wrong is named, not just the first" <|
+            \_ ->
+                preSaveNutrition SiteRwanda Nothing (Just 1050) (Just 850) (Just 125)
+                    |> Expect.equal
+                        ( named [ MeasurementHeight, MeasurementWeight, MeasurementMuac ], False )
+        , test "a height carried over from an earlier encounter is not asked about" <|
+            \_ ->
+                preSaveNutrition SiteRwanda (Just 165) (Just 1050) Nothing Nothing
+                    |> Expect.equal ( Nothing, True )
+        , test "measurements within range save with no warning" <|
+            \_ ->
+                preSaveNutrition SiteRwanda Nothing (Just 165) (Just 65) (Just 25)
+                    |> Expect.equal ( Nothing, True )
+        , test "a fundal height of 120 cm is named and saves nothing" <|
+            \_ ->
+                preSaveObstetrical (Just True) (Just 120)
+                    |> Expect.equal ( named [ MeasurementFundalHeight ], False )
+        , test "a fundal height within range saves with no warning" <|
+            \_ ->
+                preSaveObstetrical (Just True) (Just 30)
+                    |> Expect.equal ( Nothing, True )
+        , test "nothing is asked when the uterus cannot be felt" <|
+            \_ ->
+                preSaveObstetrical (Just False) (Just 120)
+                    |> Expect.equal ( Nothing, True )
         ]

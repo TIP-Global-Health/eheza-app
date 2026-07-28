@@ -201,7 +201,7 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
 
     await completePregnancyDating(page, lmpDate);
     await completeHistory(page);
-    await completeExamination(page);
+    await completeExamination(page, { checkRanges: true });
     await completeFamilyPlanning(page);
     await completeDangerSigns(page);
     await completeSymptomReview(page);

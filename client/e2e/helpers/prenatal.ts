@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 import { click } from './auth';
 import {
   WAIT,
@@ -428,7 +428,12 @@ export async function completeHistory(
  */
 export async function completeExamination(
   page: Page,
-  options?: { isPostpartum?: boolean; vitals?: { sys?: string; dia?: string } },
+  options?: {
+    isPostpartum?: boolean;
+    vitals?: { sys?: string; dia?: string };
+    // Type a MUAC in the wrong unit first, and check the nurse is told.
+    checkRanges?: boolean;
+  },
 ) {
   await openActivity(page, 'prenatal', 'examination');
 
@@ -454,6 +459,31 @@ export async function completeExamination(
     await heightInput.fill('160');
   }
   await fillMeasurement(page, 'weight', '60');
+
+  if (options?.checkRanges) {
+    // Millimetres typed where centimetres are asked for. The button answers,
+    // the warning names the MUAC, and closing it saves nothing - unlike this
+    // page's other warnings, which save on the way out.
+    await fillMeasurement(page, 'muac', '125');
+    await page.waitForTimeout(WAIT.formInteraction);
+
+    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+    await expect(saveBtn, 'save should answer for a MUAC of 125').not.toHaveClass(/disabled/);
+    await click(saveBtn, page);
+
+    const popup = page.locator('div.ui.active.modal.measurement-out-of-range');
+    await popup.waitFor({ timeout: 10000 });
+    await expect(popup, 'the warning should name the MUAC').toHaveClass(
+      /(^| )muac-out-of-range( |$)/,
+    );
+    await click(popup.locator('button.ui.primary.fluid.button'), page);
+    await popup.waitFor({ state: 'hidden', timeout: 10000 });
+
+    // Still on the form, so nothing out of range was saved.
+    await expect(page.locator('.form-input.measurement.muac').first()).toBeVisible();
+    await page.waitForTimeout(WAIT.formInteraction);
+  }
+
   await fillMeasurement(page, 'muac', '25');
 
   await saveSubTask(page);

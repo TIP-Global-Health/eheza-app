@@ -12074,6 +12074,13 @@ translationSet trans =
                     , somali = Nothing
                     }
 
+                Measurement.Model.MeasurementFundalHeight ->
+                    { english = "Fundal height is recorded in centimetres."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 Measurement.Model.MeasurementHeight ->
                     { english = "Height is recorded in centimetres."
                     , kinyarwanda = Nothing

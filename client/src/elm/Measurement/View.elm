@@ -3708,6 +3708,9 @@ measurementOutOfRangeClass measurement =
         MeasurementBirthWeight ->
             "birth-weight-out-of-range"
 
+        MeasurementFundalHeight ->
+            "fundal-height-out-of-range"
+
         MeasurementHeight ->
             "height-out-of-range"
 
