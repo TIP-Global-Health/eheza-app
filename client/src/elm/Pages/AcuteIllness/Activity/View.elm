@@ -41,10 +41,10 @@ import Measurement.Utils
         , treatmentReviewInputsAndTasks
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (viewSendToHealthCenterForm, viewSendToHospitalForm)
+import Measurement.View exposing (measurementOutOfRangePopup, viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.AcuteIllness.Activity.Model exposing (AcuteFindingsForm, AcuteIllnessCoreExamForm, AcuteIllnessNutritionForm, ContactsTracingForm, ContactsTracingFormState(..), CovidTestingForm, DangerSignsData, FollowUpForm, LaboratoryData, MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, OngoingTreatmentData, PhysicalExamData, PriorTreatmentData, RecordContactDetailsData, RegisterContactData, ReviewDangerSignsForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TreatmentReviewForm, emptyRecordContactDetailsData, emptyRegisterContactData)
 import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), DangerSignsTask(..), NextStepsTask(..), OngoingTreatmentTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomsTask(..))
-import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nutritionFormInutsAndTasks, ongoingTreatmentTasksCompletedFromTotal, physicalExamSaveDisabled, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveNextStepsTasks, resolvePreviousValue, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vomitingAtSymptoms)
+import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nutritionFormInutsAndTasks, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveNextStepsTasks, resolvePreviousValue, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vomitingAtSymptoms)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
@@ -109,6 +109,16 @@ viewHeaderAndContent language currentDate site geoInfo id isChw activity db mode
                 model.showPertinentSymptomsPopup
                 (SetPertinentSymptomsPopupState False)
                 assembled.measurements
+        , viewModal <|
+            if List.isEmpty model.measurementOutOfRangePopupState then
+                Nothing
+
+            else
+                Just <|
+                    measurementOutOfRangePopup language
+                        site
+                        model.measurementOutOfRangePopupState
+                        (SetMeasurementOutOfRangePopupState [])
         ]
 
 
@@ -746,10 +756,6 @@ viewAcuteIllnessPhysicalExam language currentDate site isChw assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        muacForm =
-            getMeasurementValueFunc measurements.muac
-                |> muacFormWithDefault data.muacForm
-
         viewForm =
             case activeTask of
                 Just PhysicalExamVitals ->
@@ -772,7 +778,8 @@ viewAcuteIllnessPhysicalExam language currentDate site isChw assembled data =
                         previousValue =
                             resolvePreviousValue assembled .muac (muacValueFuncForSite site)
                     in
-                    muacForm
+                    getMeasurementValueFunc measurements.muac
+                        |> muacFormWithDefault data.muacForm
                         |> Measurement.View.viewMuacForm language currentDate site assembled.person previousValue SetMuac
 
                 Just PhysicalExamAcuteFindings ->
@@ -810,7 +817,7 @@ viewAcuteIllnessPhysicalExam language currentDate site isChw assembled data =
                                         SaveCoreExam personId measurements.coreExam nextTask
 
                                     PhysicalExamMuac ->
-                                        SaveMuac personId measurements.muac nextTask
+                                        PreSaveMuac personId measurements.muac nextTask
 
                                     PhysicalExamAcuteFindings ->
                                         SaveAcuteFindings personId measurements.acuteFindings nextTask
@@ -819,7 +826,7 @@ viewAcuteIllnessPhysicalExam language currentDate site isChw assembled data =
                                         SaveNutrition personId measurements.nutrition nextTask
 
                             disabled =
-                                physicalExamSaveDisabled site (tasksCompleted /= totalTasks) muacForm task
+                                tasksCompleted /= totalTasks
                         in
                         div [ class "actions symptoms" ]
                             [ button

@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import { execSync } from 'child_process';
 import { click } from './auth';
 import { drushEnv } from './device';
@@ -483,16 +483,35 @@ export async function completeAhezaChild(
  */
 export async function completeMuac(
   page: Page,
-  options?: { value?: string },
+  options?: { value?: string; checkRange?: boolean },
 ) {
   const value = options?.value ?? '25.0';
+  const input = page.locator('div.ui.full.segment.muac input[type="number"]');
 
   await openActivity(page, 'muac', 'div.ui.full.segment.muac');
 
+  if (options?.checkRange) {
+    // This encounter shows no range above the input, so the warning is the
+    // only place a nurse is ever told what the range is.
+    await input.fill('125');
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+    await expect(saveBtn, 'save should answer for a MUAC of 125').not.toHaveClass(/disabled/);
+    await click(saveBtn, page);
+
+    const popup = page.locator('div.ui.active.modal.measurement-out-of-range');
+    await popup.waitFor({ timeout: 10000 });
+    await expect(popup, 'the warning should name the MUAC').toHaveClass(
+      /(^| )muac-out-of-range( |$)/,
+    );
+    await click(popup.locator('button.ui.primary.fluid.button'), page);
+    await popup.waitFor({ state: 'hidden', timeout: 10000 });
+    await page.waitForTimeout(WAIT.elmRerender);
+  }
+
   // Fill MUAC value (accepts Float via String.toFloat).
-  await page
-    .locator('div.ui.full.segment.muac input[type="number"]')
-    .fill(value);
+  await input.fill(value);
   await page.waitForTimeout(WAIT.elmRerender);
 
   await saveActivity(page);

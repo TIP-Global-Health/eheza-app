@@ -14,7 +14,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Measurement.Utils exposing (ahezaFormWithDefault, ahezaMotherFormWithDefault, muacFormWithDefault, muacOutsideConstraints)
+import Measurement.Utils exposing (ahezaFormWithDefault, ahezaMotherFormWithDefault, muacFormWithDefault)
 import Measurement.View
 import Pages.FamilyNutrition.Encounter.Model exposing (AssembledData, DialogType(..), FamilyMember(..), Model, Msg(..), Tab(..))
 import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData)
@@ -77,6 +77,16 @@ viewHeaderAndContent language currentDate site id model data =
         [ header
         , content
         , viewModal dialog
+        , viewModal <|
+            if List.isEmpty model.measurementOutOfRangePopupState then
+                Nothing
+
+            else
+                Just <|
+                    Measurement.View.measurementOutOfRangePopup language
+                        site
+                        model.measurementOutOfRangePopupState
+                        (SetMeasurementOutOfRangePopupState [])
         ]
 
 
@@ -552,16 +562,15 @@ viewMuacForm language currentDate site data model familyMember =
             resolveTasksCompletedFromTotal tasks
 
         disabled =
-            (tasksCompleted /= tasksTotal)
-                || muacOutsideConstraints site form.muac
+            tasksCompleted /= tasksTotal
 
         saveMsg =
             case familyMember of
                 FamilyMemberMother ->
-                    SaveMuacMother data.participant.person data.measurements.muacMother
+                    PreSaveMuacMother data.participant.person data.measurements.muacMother
 
                 FamilyMemberChild childId ->
-                    SaveMuacChild childId (Dict.get childId data.measurements.muacChild)
+                    PreSaveMuacChild childId (Dict.get childId data.measurements.muacChild)
     in
     div [ class "ui full segment muac" ]
         [ div [ class "content" ]
