@@ -105,13 +105,11 @@ viewHeaderAndContent language currentDate site geoInfo id isChw activity db mode
                 SetWarningPopupState
                 assembled
         , viewModal <|
-            pertinentSymptomsPopup language
-                model.showPertinentSymptomsPopup
-                (SetPertinentSymptomsPopupState False)
-                assembled.measurements
-        , viewModal <|
             if List.isEmpty model.measurementOutOfRangePopupState then
-                Nothing
+                pertinentSymptomsPopup language
+                    model.showPertinentSymptomsPopup
+                    (SetPertinentSymptomsPopupState False)
+                    assembled.measurements
 
             else
                 Just <|

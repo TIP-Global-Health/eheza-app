@@ -76,10 +76,9 @@ viewHeaderAndContent language currentDate site id model data =
     div [ class "page-encounter family-nutrition" ]
         [ header
         , content
-        , viewModal dialog
         , viewModal <|
             if List.isEmpty model.measurementOutOfRangePopupState then
-                Nothing
+                dialog
 
             else
                 Just <|
