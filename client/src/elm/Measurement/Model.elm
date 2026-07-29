@@ -246,6 +246,7 @@ defined in.
 type AnthropometricMeasurement
     = MeasurementBirthLength
     | MeasurementBirthWeight
+    | MeasurementFundalHeight
     | MeasurementHeight
     | MeasurementMuac
     | MeasurementWeight
