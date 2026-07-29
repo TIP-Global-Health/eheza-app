@@ -133,6 +133,10 @@ test.describe('CHW: Child Scoreboard Encounter — child under six months', () =
     ).toHaveCount(0);
 
     await completeNCDA(page);
+
+    // Answering the vaccination question on the NCDA asks for this too, and the
+    // encounter will not end while it is still pending.
+    await completeVaccinationHistory(page);
     await endChildScoreboardEncounter(page);
     await syncAndWait(page);
 

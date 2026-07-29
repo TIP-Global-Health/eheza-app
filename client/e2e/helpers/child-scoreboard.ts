@@ -325,9 +325,15 @@ export async function completeNCDA(page: Page) {
   await answerNCDAYesNo(page, 'other support', 'No');
   await page.waitForTimeout(WAIT.formInteraction);
 
-  // TreatedForAcuteMalnutrition → Yes (pane4.row2, visible due to MUAC 12.0).
-  await answerNCDAYesNo(page, 'child being treated', 'Yes');
-  await page.waitForTimeout(WAIT.formInteraction);
+  // TreatedForAcuteMalnutrition → Yes (pane4.row2). Asked only when the MUAC is
+  // off, so a child too young to be asked for one is never asked this either.
+  const treatedQuestion = page.locator('.ui.form.ncda .label', {
+    hasText: 'child being treated',
+  });
+  if (await treatedQuestion.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await answerNCDAYesNo(page, 'child being treated', 'Yes');
+    await page.waitForTimeout(WAIT.formInteraction);
+  }
 
   // ChildWithDisability → Yes (pane4.row4)
   await answerNCDAYesNo(page, 'have disability', 'Yes');
