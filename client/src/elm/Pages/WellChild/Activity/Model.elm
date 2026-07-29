@@ -1,4 +1,4 @@
-module Pages.WellChild.Activity.Model exposing (DangerSignsData, HeadCircumferenceForm, HomeVisitData, ImmunisationData, MedicationData, Model, Msg(..), NextStepsData, NextVisitForm, NutritionAssessmentData, PregnancySummaryForm, SymptomsReviewForm, WarningPopupType(..), WellChildECDForm, WellChildVaccinationForm, emptyModel, emptyPregnancySummaryForm, medicationTasks)
+module Pages.WellChild.Activity.Model exposing (DangerSignsData, HeadCircumferenceForm, HomeVisitData, ImmunisationData, MedicationData, Model, Msg(..), NextStepsData, NextVisitForm, NutritionAssessmentData, PregnancySummaryForm, SymptomsReviewForm, WarningPopupType(..), WellChildECDForm, WellChildVaccinationForm, emptyModel, emptyPregnancySummaryForm, forgetMeasurementOutOfRangeWarning, medicationTasks)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -469,3 +469,22 @@ emptyHomeVisitData =
     , caringForm = emptyNutritionCaringForm
     , activeTask = Nothing
     }
+
+
+{-| Forget a warning that a measurement is out of range.
+
+It answers a button the nurse has just pressed, so arriving at this page must
+not find one waiting. The page is kept for the encounter, and the browser's own
+Back button never reaches the page itself.
+
+Only that warning is dropped, so any other one still stands.
+
+-}
+forgetMeasurementOutOfRangeWarning : Model -> Model
+forgetMeasurementOutOfRangeWarning model =
+    case model.warningPopupState of
+        Just (PopupMeasurementOutOfRange _) ->
+            { model | warningPopupState = Nothing }
+
+        _ ->
+            model

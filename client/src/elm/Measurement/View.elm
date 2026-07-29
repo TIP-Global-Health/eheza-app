@@ -255,6 +255,12 @@ viewMuac site =
 viewFloatForm : Site -> FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewFloatForm site config language currentDate isChw child measurements previousValue zscores model =
     let
+        -- The range this measurement has to fall in. Taken once, so that the
+        -- range the form states, the range it enforces and the range the
+        -- warning quotes cannot come apart.
+        constraints =
+            anthropometricConstraints site config.measurement
+
         -- What is the string input value from the form?
         inputValue =
             config.inputValue model
@@ -269,8 +275,8 @@ viewFloatForm site config language currentDate isChw child measurements previous
             [ type_ "number"
             , placeholder <| translate language config.placeholderText
             , name config.blockName
-            , Attr.min <| String.fromFloat (anthropometricConstraints site config.measurement).minVal
-            , Attr.max <| String.fromFloat (anthropometricConstraints site config.measurement).maxVal
+            , Attr.min <| String.fromFloat constraints.minVal
+            , Attr.max <| String.fromFloat constraints.maxVal
             , onInput (dropLeadingMinus >> config.updateMsg)
             , value inputValue
             ]
@@ -382,7 +388,7 @@ viewFloatForm site config language currentDate isChw child measurements previous
         saveMsg =
             Maybe.Extra.andThen2
                 (\asFloat forBackend ->
-                    case outOfRangeAsEntered (anthropometricConstraints site config.measurement) config.measurement asFloat of
+                    case outOfRangeAsEntered constraints config.measurement asFloat of
                         [] ->
                             config.saveMsg (Maybe.map Tuple.first measurements.current) forBackend |> Just
 
@@ -403,7 +409,7 @@ viewFloatForm site config language currentDate isChw child measurements previous
                 [ text <| translate language (Translate.ActivitiesTitle config.activity)
                 ]
             , p [ class "activity-helper" ] [ text <| translate language (Translate.ActivitiesHelp config.activity) ]
-            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper (anthropometricConstraints site config.measurement)) ]
+            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
             , div
                 [ class "ui form" ]
                 [ div [ class "ui grid" ]

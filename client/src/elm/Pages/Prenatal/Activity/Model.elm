@@ -1,4 +1,4 @@
-module Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, BirthPlanData, BirthPlanForm, BreastExamForm, BreastfeedingData, BreastfeedingForm, DangerSignsData, DangerSignsForm, ExaminationData, FamilyPlanningData, FollowUpForm, GUExamForm, HealthEducationData, HistoryData, ImmunisationData, LaboratoryData, LabsHistoryForm, MedicalHistoryForm, MedicationData, MedicationForm, MentalHealthData, MentalHealthForm, MentalHealthStep(..), Model, Msg(..), NewbornEnrolmentForm, NextStepsData, NutritionAssessmentForm, ObstetricFormFirstStep, ObstetricFormSecondStep, ObstetricalExamForm, PostpartumTreatmentReviewData, PregnancyDatingData, PregnancyDatingForm, PregnancyTestForm, PrenatalPhotoData, PrenatalVaccinationForm, SocialHistoryForm, SpecialityCareData, SpecialityCareForm, SymptomReviewData, SymptomReviewForm, TreatmentReviewData, UltrasoundData, UltrasoundForm, emptyModel, emptyPregnancyDatingForm)
+module Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, BirthPlanData, BirthPlanForm, BreastExamForm, BreastfeedingData, BreastfeedingForm, DangerSignsData, DangerSignsForm, ExaminationData, FamilyPlanningData, FollowUpForm, GUExamForm, HealthEducationData, HistoryData, ImmunisationData, LaboratoryData, LabsHistoryForm, MedicalHistoryForm, MedicationData, MedicationForm, MentalHealthData, MentalHealthForm, MentalHealthStep(..), Model, Msg(..), NewbornEnrolmentForm, NextStepsData, NutritionAssessmentForm, ObstetricFormFirstStep, ObstetricFormSecondStep, ObstetricalExamForm, PostpartumTreatmentReviewData, PregnancyDatingData, PregnancyDatingForm, PregnancyTestForm, PrenatalPhotoData, PrenatalVaccinationForm, SocialHistoryForm, SpecialityCareData, SpecialityCareForm, SymptomReviewData, SymptomReviewForm, TreatmentReviewData, UltrasoundData, UltrasoundForm, emptyModel, emptyPregnancyDatingForm, forgetMeasurementOutOfRangeWarning)
 
 import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
@@ -47,7 +47,7 @@ import Measurement.Model
         , emptyVitalsForm
         )
 import Pages.Page exposing (Page)
-import Pages.Prenatal.Activity.Types exposing (ExaminationTask, HistoryTask, ImmunisationTask, MedicationTask, NextStepsTask, ObstetricHistoryStep(..), SymptomReviewStep(..), TreatmentReviewTask, WarningPopupType)
+import Pages.Prenatal.Activity.Types exposing (ExaminationTask, HistoryTask, ImmunisationTask, MedicationTask, NextStepsTask, ObstetricHistoryStep(..), SymptomReviewStep(..), TreatmentReviewTask, WarningPopupType(..))
 import Pages.Prenatal.Model exposing (HealthEducationForm, MalariaPreventionData, MalariaPreventionForm, MedicationDistributionForm, ReferralForm, emptyHealthEducationForm, emptyMalariaPreventionData, emptyMedicationDistributionForm, emptyReferralForm)
 
 
@@ -1152,3 +1152,22 @@ emptyBreastfeedingForm =
     , breastfedFirstHour = Nothing
     , breastfedFirstHourDirty = False
     }
+
+
+{-| Forget a warning that a measurement is out of range.
+
+It answers a button the nurse has just pressed, so arriving at this page must
+not find one waiting. The page is kept for the encounter, and the browser's own
+Back button never reaches the page itself.
+
+Only that warning is dropped, so any other one still stands.
+
+-}
+forgetMeasurementOutOfRangeWarning : Model -> Model
+forgetMeasurementOutOfRangeWarning model =
+    case model.warningPopupState of
+        Just (WarningPopupMeasurementOutOfRange _) ->
+            { model | warningPopupState = Nothing }
+
+        _ ->
+            model
