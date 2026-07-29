@@ -3274,7 +3274,7 @@ ncdaFormInputsAndTasks language currentDate site personId person config form cur
 
                         notTakenCheckbox =
                             [ div
-                                [ class "ui checkbox activity skip-step"
+                                [ class "ui checkbox activity skip-step stunting-level"
                                 , onClick <| config.setBoolInputMsg measurementNotTakenUpdateFunc measurementNotTakenValueWhenChecked
                                 ]
                                 [ input
@@ -3328,7 +3328,7 @@ ncdaFormInputsAndTasks language currentDate site personId person config form cur
 
                         notTakenCheckbox =
                             [ div
-                                [ class "ui checkbox activity skip-step"
+                                [ class "ui checkbox activity skip-step weight"
                                 , onClick <| config.setBoolInputMsg measurementNotTakenUpdateFunc measurementNotTakenValueWhenChecked
                                 ]
                                 [ input
@@ -3399,7 +3399,7 @@ ncdaFormInputsAndTasks language currentDate site personId person config form cur
 
                                         notTakenCheckbox =
                                             [ div
-                                                [ class "ui checkbox activity skip-step"
+                                                [ class "ui checkbox activity skip-step muac"
                                                 , onClick <| config.setBoolInputMsg measurementNotTakenUpdateFunc measurementNotTakenValueWhenChecked
                                                 ]
                                                 [ input

@@ -411,20 +411,32 @@ export async function reopenNCDAAndSayWeightNotTaken(page: Page) {
   const weightInput = page.locator('.form-input.measurement.weight input[type="number"]');
   await expect(weightInput, 'the saved weight should be on the form').toHaveValue('8.5');
 
-  const notTaken = page.locator('div.ui.checkbox', { hasText: 'not taken' }).first();
-  await click(notTaken, page);
+  // Three measurements on this step carry the same label, so the box is picked
+  // by the measurement it belongs to.
+  await click(page.locator('div.ui.checkbox.skip-step.weight'), page);
   await page.waitForTimeout(WAIT.formInteraction);
 
   // The input goes with it.
   await expect(weightInput, 'the input should go when the box is ticked').toHaveCount(0);
 
-  // Save through the steps that follow, which is where the value is written.
-  await clickSave(page);
-  await page.waitForTimeout(WAIT.sectionTransition);
-  await clickSave(page);
-  await page.waitForTimeout(WAIT.sectionTransition);
-  await clickSave(page);
-  await page.locator('div.page-encounter.child-scoreboard').waitFor({ timeout: 15000 });
+  // Save through whatever steps remain. A form that is already complete goes
+  // back to the encounter sooner than one being filled for the first time, so
+  // press Save until it does rather than a fixed number of times.
+  const encounterPage = page.locator('div.page-encounter.child-scoreboard');
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+
+  for (let step = 0; step < 6; step += 1) {
+    if (await encounterPage.isVisible({ timeout: 1000 }).catch(() => false)) {
+      break;
+    }
+    if (!(await saveBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
+      break;
+    }
+    await click(saveBtn, page);
+    await page.waitForTimeout(WAIT.sectionTransition);
+  }
+
+  await encounterPage.waitFor({ timeout: 15000 });
   await page.waitForTimeout(WAIT.elmRerender);
 }
 
