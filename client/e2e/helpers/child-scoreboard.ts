@@ -67,13 +67,20 @@ async function answerNCDAYesNo(page: Page, questionSubstring: string, answer: 'Y
 /**
  * Click an NCDA step tab icon and wait for it to become active.
  */
-async function clickNCDAStepTab(page: Page, iconClass: string) {
+async function clickNCDAStepTab(page: Page, iconClass: string): Promise<boolean> {
   const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
+  if (!(await tab.isVisible({ timeout: 1000 }).catch(() => false))) {
+    // Not every step is part of every form: some are only asked from a certain
+    // age, or only the first time the form is filled.
+    return false;
+  }
+
   const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
   if (!isActive) {
     await click(tab, page);
     await page.waitForTimeout(WAIT.elmRerender);
   }
+  return true;
 }
 
 /**
@@ -227,32 +234,33 @@ export async function completeNCDA(page: Page) {
 
   await clickSave(page);
 
-  // --- Step 3: Nutrition Behavior (child >= 6 months) ---
-  await clickNCDAStepTab(page, 'ncda-nutrition-behavior');
-  await page.waitForTimeout(WAIT.elmRerender);
+  // --- Step 3: Nutrition Behavior (asked from six months of age) ---
+  if (await clickNCDAStepTab(page, 'ncda-nutrition-behavior')) {
+    await page.waitForTimeout(WAIT.elmRerender);
 
-  // FiveFoodGroups → Yes
-  await answerNCDAYesNo(page, '5 food groups', 'Yes');
-  await page.waitForTimeout(WAIT.formInteraction);
-
-  // BreastfedForSixMonths → Yes (shown for first NCDA on child > 6 months)
-  const breastfedQuestion = page.locator('.ui.form.ncda .label', {
-    hasText: 'breastfed for 6 months',
-  });
-  if (await breastfedQuestion.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await answerNCDAYesNo(page, 'breastfed for 6 months', 'Yes');
+    // FiveFoodGroups → Yes
+    await answerNCDAYesNo(page, '5 food groups', 'Yes');
     await page.waitForTimeout(WAIT.formInteraction);
+
+    // BreastfedForSixMonths → Yes (shown for first NCDA on child > 6 months)
+    const breastfedQuestion = page.locator('.ui.form.ncda .label', {
+      hasText: 'breastfed for 6 months',
+    });
+    if (await breastfedQuestion.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await answerNCDAYesNo(page, 'breastfed for 6 months', 'Yes');
+      await page.waitForTimeout(WAIT.formInteraction);
+    }
+
+    // AppropriateComplementaryFeeding → Yes
+    await answerNCDAYesNo(page, 'appropriate complementary feeding', 'Yes');
+    await page.waitForTimeout(WAIT.formInteraction);
+
+    // MealsAtRecommendedTimes → No (deliberately No for negative-path verification).
+    await answerNCDAYesNo(page, 'eat at the recommended times', 'No');
+    await page.waitForTimeout(WAIT.formInteraction);
+
+    await clickSave(page);
   }
-
-  // AppropriateComplementaryFeeding → Yes
-  await answerNCDAYesNo(page, 'appropriate complementary feeding', 'Yes');
-  await page.waitForTimeout(WAIT.formInteraction);
-
-  // MealsAtRecommendedTimes → No (deliberately No for negative-path verification).
-  await answerNCDAYesNo(page, 'eat at the recommended times', 'No');
-  await page.waitForTimeout(WAIT.formInteraction);
-
-  await clickSave(page);
 
   // --- Step 4: Nutrition Assessment ---
   await clickNCDAStepTab(page, 'nutrition-assessment');
@@ -268,8 +276,10 @@ export async function completeNCDA(page: Page) {
   await page.waitForTimeout(WAIT.formInteraction);
 
   // MUAC: enter 12.0 cm (moderate range, < 12.5 cm. Triggers TreatedForAcuteMalnutrition question visibility).
+  // Asked only from six months of age, so a younger child has no input here.
   const muacInput = page.locator('.form-input.measurement.muac input[type="number"]');
-  if (await muacInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+  const muacAsked = await muacInput.isVisible({ timeout: 1000 }).catch(() => false);
+  if (muacAsked) {
     await muacInput.fill('12.0');
     await page.waitForTimeout(WAIT.formInteraction);
   }
@@ -277,6 +287,21 @@ export async function completeNCDA(page: Page) {
   // ShowsEdemaSigns → No
   await answerNCDAYesNo(page, 'signs of edema', 'No');
   await page.waitForTimeout(WAIT.formInteraction);
+
+  // Every question on this step is answered, so the button is active. The
+  // weight is held in kilograms and the MUAC in centimetres; a value belonging
+  // to the other unit has to be refused rather than saved as it stands. The
+  // form is only saved on the last step, so going on from here is refused just
+  // as saving would be.
+  const rangeChecks = [
+    { inputId: 'weight', popupClass: 'weight-out-of-range', bad: '8500', good: '8.5' },
+  ];
+  if (muacAsked) {
+    rangeChecks.push({ inputId: 'muac', popupClass: 'muac-out-of-range', bad: '120', good: '12.0' });
+  }
+  await expectMeasurementsOutOfRangeRefused(page, '.ui.form.ncda', rangeChecks, [
+    'birth-weight-out-of-range',
+  ]);
 
   await clickSave(page);
 

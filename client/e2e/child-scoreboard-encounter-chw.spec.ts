@@ -41,6 +41,9 @@ test.describe('CHW: Child Scoreboard Encounter — First NCDA + Vaccination Hist
   //             typed in kilograms (3) is refused on the AntenatalCare step —
   //             the warning shows, the form is not left, and only after the
   //             weight is entered in grams (3200) does the form go on.
+  // And (issue #2005): the same for the weight and MUAC on the NutritionAssessment
+  //             step — the weight is held in kilograms and the MUAC in
+  //             centimetres, so 8500 and 120 are refused and named.
   // Backend: Verifies child_scoreboard_ncda + 7 vaccination nodes created,
   //          confirms child_scoreboard_dtp_sa_iz absent (Burundi-only).
   test('complete NCDA and vaccination history, verify backend sync', async ({ page }) => {
@@ -97,5 +100,44 @@ test.describe('CHW: Child Scoreboard Encounter — First NCDA + Vaccination Hist
     expect(nodes['child_scoreboard_mr_iz'], 'child_scoreboard_mr_iz should exist').toBe(true);
     // DTPStandalone is Burundi-only, not present on Rwanda site.
     expect(nodes['child_scoreboard_dtp_sa_iz'], 'child_scoreboard_dtp_sa_iz should not exist').toBe(false);
+  });
+});
+
+test.describe('CHW: Child Scoreboard Encounter — child under six months', () => {
+  test.describe.configure({ timeout: 600000 });
+
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '2345', 'Akanduga');
+  });
+
+  // Scenario: first encounter for a 3-month-old, who is not asked for a MUAC.
+  // Conditions: under six months → neither the NutritionBehavior step nor the
+  //             MUAC input is part of the form.
+  // The regression #1983 documents: the range check must ask only for what the
+  // form shows. A MUAC that is checked but never drawn leaves the nurse with a
+  // button that will not answer and no input to correct — three earlier attempts
+  // were defeated this way. The weight, which is asked at every age, is still
+  // refused when it is out of range, so this is not passing by checking nothing.
+  test('is not asked for a MUAC, and still saves', async ({ page }) => {
+    const { fullName } = await createChildAndStartEncounter(page, { ageMonths: 3 });
+
+    await expect(
+      page.locator('.form-input.measurement.muac input[type="number"]'),
+    ).toHaveCount(0);
+
+    await completeNCDA(page);
+    await endChildScoreboardEncounter(page);
+    await syncAndWait(page);
+
+    const nodes = queryChildScoreboardNodes(fullName, ['child_scoreboard_ncda']);
+    expect(nodes['child_scoreboard_ncda'], 'child_scoreboard_ncda should exist').toBe(true);
+    expect(queryNCDAWeight(fullName), 'the weight entered should be saved').toBe(8.5);
   });
 });

@@ -32,7 +32,6 @@ import Backend.NutritionEncounter.Utils
         , resolveNCDANotFilledAfterAgeOfSixMonths
         )
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths)
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Date
