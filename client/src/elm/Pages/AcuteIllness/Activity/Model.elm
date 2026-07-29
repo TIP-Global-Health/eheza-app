@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.Activity.Model exposing (AcuteFindingsForm, AcuteIllnessCoreExamForm, AcuteIllnessNutritionForm, Call114Form, ContactsTracingForm, ContactsTracingFormState(..), CovidTestingForm, DangerSignsData, ExposureData, ExposureForm, FollowUpForm, HCContactForm, IsolationForm, LaboratoryData, MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, OngoingTreatmentData, PhysicalExamData, PriorTreatmentData, RecordContactDetailsData, RegisterContactData, ReviewDangerSignsForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TravelHistoryForm, TreatmentReviewForm, emptyCovidTestingForm, emptyModel, emptyRecordContactDetailsData, emptyRegisterContactData, forgetMeasurementOutOfRangeWarning)
+module Pages.AcuteIllness.Activity.Model exposing (AcuteFindingsForm, AcuteIllnessCoreExamForm, AcuteIllnessNutritionForm, Call114Form, ContactsTracingForm, ContactsTracingFormState(..), CovidTestingForm, DangerSignsData, ExposureData, ExposureForm, FollowUpForm, HCContactForm, IsolationForm, LaboratoryData, MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, OngoingTreatmentData, PhysicalExamData, PriorTreatmentData, RecordContactDetailsData, RegisterContactData, ReviewDangerSignsForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TravelHistoryForm, TreatmentReviewForm, emptyCovidTestingForm, emptyModel, emptyRecordContactDetailsData, emptyRegisterContactData)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
@@ -505,15 +505,3 @@ emptyReviewDangerSignsForm =
     { conditionImproving = Nothing
     , symptoms = Nothing
     }
-
-
-{-| Forget a warning that a measurement is out of range.
-
-It answers a button the nurse has just pressed, so arriving at this page must
-not find one waiting. The page is kept for the encounter, and the browser's own
-Back button never reaches the page itself.
-
--}
-forgetMeasurementOutOfRangeWarning : Model -> Model
-forgetMeasurementOutOfRangeWarning model =
-    { model | measurementOutOfRangePopupState = [] }

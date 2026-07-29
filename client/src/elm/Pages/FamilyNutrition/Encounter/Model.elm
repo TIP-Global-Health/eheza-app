@@ -1,4 +1,4 @@
-module Pages.FamilyNutrition.Encounter.Model exposing (AhezaData, AssembledData, DialogType(..), FamilyMember(..), Model, Msg(..), MuacData, PhotoData, Tab(..), emptyAhezaData, emptyModel, emptyMuacData, emptyPhotoData, forgetMeasurementOutOfRangeWarning)
+module Pages.FamilyNutrition.Encounter.Model exposing (AhezaData, AssembledData, DialogType(..), FamilyMember(..), Model, Msg(..), MuacData, PhotoData, Tab(..), emptyAhezaData, emptyModel, emptyMuacData, emptyPhotoData)
 
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterParticipant)
@@ -115,15 +115,3 @@ type alias PhotoData =
 emptyPhotoData : PhotoData
 emptyPhotoData =
     PhotoData emptyPhotoForm
-
-
-{-| Forget a warning that a measurement is out of range.
-
-It answers a button the nurse has just pressed, so arriving at this page must
-not find one waiting. The page is kept for the encounter, and the browser's own
-Back button never reaches the page itself.
-
--}
-forgetMeasurementOutOfRangeWarning : Model -> Model
-forgetMeasurementOutOfRangeWarning model =
-    { model | measurementOutOfRangePopupState = [] }

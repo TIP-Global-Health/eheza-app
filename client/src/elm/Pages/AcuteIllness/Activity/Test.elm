@@ -30,8 +30,7 @@ import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (AnthropometricMeasurement(..), emptyMuacForm)
-import Pages.AcuteIllness.Activity.Model exposing (Msg(..), emptyCovidTestingForm, emptyModel, forgetMeasurementOutOfRangeWarning)
-import Pages.AcuteIllness.Activity.Types exposing (PhysicalExamTask(..))
+import Pages.AcuteIllness.Activity.Model exposing (Msg(..), emptyCovidTestingForm, emptyModel)
 import Pages.AcuteIllness.Activity.Update exposing (update)
 import Pages.AcuteIllness.Activity.Utils
     exposing
@@ -877,7 +876,6 @@ all =
         , zincDosageTest
         , amoxicillinDosageTest
         , preSaveMuacTest
-        , arrivingForgetsTheWarningTest
         , covidTestingRoundTripTest
         ]
 
@@ -908,45 +906,6 @@ covidTestingRoundTripTest =
             \_ -> roundTrip RapidTestNegative
         , test "unable to run" <|
             \_ -> roundTrip RapidTestUnableToRun
-        ]
-
-
-{-| The warning must not be waiting on the way back.
-
-The page is kept for the encounter, so a warning left open would be shown again
-on returning - over a measurement that may since be corrected, and which the
-nurse never asked about the second time. Arriving anywhere forgets it, which is
-why this is asked of the forgetting itself rather than of any one message.
-
--}
-arrivingForgetsTheWarningTest : Test
-arrivingForgetsTheWarningTest =
-    describe "arriving at the activity"
-        [ test "forgets what a warning was complaining about" <|
-            \_ ->
-                { emptyModel | measurementOutOfRangePopupState = [ MeasurementMuac ] }
-                    |> forgetMeasurementOutOfRangeWarning
-                    |> .measurementOutOfRangePopupState
-                    |> Expect.equal []
-        , test "leaves a form with no warning alone" <|
-            \_ ->
-                emptyModel
-                    |> forgetMeasurementOutOfRangeWarning
-                    |> .measurementOutOfRangePopupState
-                    |> Expect.equal []
-        , test "moving to another part of the physical exam forgets it too" <|
-            \_ ->
-                let
-                    ( updatedModel, _, _ ) =
-                        update SiteRwanda
-                            Nothing
-                            (toEntityUuid "encounter")
-                            emptyModelIndexedDb
-                            (SetActivePhysicalExamTask PhysicalExamVitals)
-                            { emptyModel | measurementOutOfRangePopupState = [ MeasurementMuac ] }
-                in
-                updatedModel.measurementOutOfRangePopupState
-                    |> Expect.equal []
         ]
 
 

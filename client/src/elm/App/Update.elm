@@ -1542,12 +1542,6 @@ update msg model =
                             Cmd.none
             in
             ( { model | url = url, activePage = activePage }
-                |> (if activePage == model.activePage then
-                        identity
-
-                    else
-                        forgetMeasurementOutOfRangeWarnings
-                   )
             , cmd
             )
 
@@ -1628,46 +1622,6 @@ handleRevision model revision =
 
         _ ->
             Nothing
-
-
-{-| Forget every warning that a measurement is out of range.
-
-Each answers a button the nurse has just pressed, so arriving at a page must not
-find one waiting over a measurement she may since have corrected, and which she
-never asked about the second time.
-
-Said here because this is the one place every arrival passes through. The pages
-are kept for the encounter and are never told they were left: the browser's own
-Back button reaches no page message at all.
-
--}
-forgetMeasurementOutOfRangeWarnings : Model -> Model
-forgetMeasurementOutOfRangeWarnings model =
-    let
-        forgetIn data =
-            { data
-                | acuteIllnessActivityPages =
-                    Dict.map (\_ -> Pages.AcuteIllness.Activity.Model.forgetMeasurementOutOfRangeWarning)
-                        data.acuteIllnessActivityPages
-                , familyNutritionEncounterPages =
-                    Dict.map (\_ -> Pages.FamilyNutrition.Encounter.Model.forgetMeasurementOutOfRangeWarning)
-                        data.familyNutritionEncounterPages
-                , prenatalActivityPages =
-                    Dict.map (\_ -> Pages.Prenatal.Activity.Model.forgetMeasurementOutOfRangeWarning)
-                        data.prenatalActivityPages
-                , wellChildActivityPages =
-                    Dict.map (\_ -> Pages.WellChild.Activity.Model.forgetMeasurementOutOfRangeWarning)
-                        data.wellChildActivityPages
-            }
-    in
-    { model
-        | configuration =
-            RemoteData.map
-                (\configured ->
-                    { configured | loggedIn = RemoteData.map forgetIn configured.loggedIn }
-                )
-                model.configuration
-    }
 
 
 {-| Convenience function to process a msg which depends on having a configuration.
