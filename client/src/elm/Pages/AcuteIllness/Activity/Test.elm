@@ -31,6 +31,7 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (AnthropometricMeasurement(..), emptyMuacForm)
 import Pages.AcuteIllness.Activity.Model exposing (Msg(..), emptyCovidTestingForm, emptyModel)
+import Pages.AcuteIllness.Activity.Types exposing (PhysicalExamTask(..))
 import Pages.AcuteIllness.Activity.Update exposing (update)
 import Pages.AcuteIllness.Activity.Utils
     exposing
@@ -50,6 +51,7 @@ import Pages.AcuteIllness.Activity.Utils
         , toCovidTestingValueWithDefault
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
+import Pages.Page exposing (Page(..), UserPage(..))
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
@@ -876,6 +878,7 @@ all =
         , zincDosageTest
         , amoxicillinDosageTest
         , preSaveMuacTest
+        , leavingClearsTheWarningTest
         , covidTestingRoundTripTest
         ]
 
@@ -906,6 +909,43 @@ covidTestingRoundTripTest =
             \_ -> roundTrip RapidTestNegative
         , test "unable to run" <|
             \_ -> roundTrip RapidTestUnableToRun
+        ]
+
+
+{-| The warning must not be waiting on the way back.
+
+The page is kept for the encounter, so leaving with the warning open and
+returning would show it again over a measurement that may since be corrected -
+and the nurse never asked for it the second time.
+
+-}
+leavingClearsTheWarningTest : Test
+leavingClearsTheWarningTest =
+    let
+        withWarning =
+            { emptyModel | measurementOutOfRangePopupState = [ MeasurementMuac ] }
+
+        after msg =
+            let
+                ( updatedModel, _, _ ) =
+                    update SiteRwanda
+                        Nothing
+                        (toEntityUuid "encounter")
+                        emptyModelIndexedDb
+                        msg
+                        withWarning
+            in
+            updatedModel.measurementOutOfRangePopupState
+    in
+    describe "leaving the activity"
+        [ test "forgets what the warning was complaining about" <|
+            \_ ->
+                after (SetActivePage <| UserPage <| ClinicalPage)
+                    |> Expect.equal []
+        , test "so does moving to another part of the physical exam" <|
+            \_ ->
+                after (SetActivePhysicalExamTask PhysicalExamVitals)
+                    |> Expect.equal []
         ]
 
 

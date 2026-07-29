@@ -109,7 +109,11 @@ update site selectedHealthCenter id db msg model =
             ( model, Cmd.none, [] )
 
         SetActivePage page ->
-            ( model
+            -- Leaving the activity forgets what it was complaining about. The
+            -- page is kept for the encounter, so a warning left open would be
+            -- waiting on the way back, over a measurement that may since be
+            -- fine.
+            ( { model | measurementOutOfRangePopupState = [] }
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )

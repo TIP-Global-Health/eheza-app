@@ -149,10 +149,10 @@ type alias FloatFormConfig id value =
     , zScoreLabelForAge : TranslationId
     , zScoreForAge : Maybe (ZScore.Model.Model -> Days -> Gender -> Float -> Maybe ZScore)
     , zScoreForHeightOrLength : Maybe (ZScore.Model.Model -> Days -> Centimetres -> Gender -> Float -> Maybe ZScore)
-    , constraints : FloatInputConstraints
 
-    -- Names the measurement on the warning when what was typed is outside the
-    -- range above.
+    -- Which measurement this form takes. The range it has to fall in follows
+    -- from it, and is said in one place so that the range the form states, the
+    -- range it enforces and the range the warning quotes cannot come apart.
     , measurement : AnthropometricMeasurement
     , unit : TranslationId
     , inputValue : ModelChild -> String
@@ -172,7 +172,6 @@ heightFormConfig =
     , zScoreLabelForAge = Translate.ZScoreHeightForAge
     , zScoreForAge = Just <| \model age gender height -> zScoreLengthHeightForAge model age gender (Centimetres height)
     , zScoreForHeightOrLength = Nothing
-    , constraints = getInputConstraintsHeight
     , measurement = MeasurementHeight
     , unit = Translate.UnitCentimeter
     , inputValue = .height
@@ -199,7 +198,6 @@ muacFormConfig site =
     , zScoreLabelForAge = Translate.ZScoreMuacForAge
     , zScoreForAge = Nothing
     , zScoreForHeightOrLength = Nothing
-    , constraints = getInputConstraintsMuac site
     , measurement = MeasurementMuac
     , unit = unit
     , inputValue = .muac
@@ -219,7 +217,6 @@ weightFormConfig =
     , zScoreLabelForAge = Translate.ZScoreWeightForAge
     , zScoreForAge = Just <| \model age gender weight -> zScoreWeightForAge model age gender (Kilograms weight)
     , zScoreForHeightOrLength = Just zScoreForHeightOrLength
-    , constraints = getInputConstraintsWeight
     , measurement = MeasurementWeight
     , unit = Translate.KilogramShorthand
     , inputValue = .weight
@@ -272,8 +269,8 @@ viewFloatForm site config language currentDate isChw child measurements previous
             [ type_ "number"
             , placeholder <| translate language config.placeholderText
             , name config.blockName
-            , Attr.min <| String.fromFloat config.constraints.minVal
-            , Attr.max <| String.fromFloat config.constraints.maxVal
+            , Attr.min <| String.fromFloat (anthropometricConstraints site config.measurement).minVal
+            , Attr.max <| String.fromFloat (anthropometricConstraints site config.measurement).maxVal
             , onInput (dropLeadingMinus >> config.updateMsg)
             , value inputValue
             ]
@@ -385,7 +382,7 @@ viewFloatForm site config language currentDate isChw child measurements previous
         saveMsg =
             Maybe.Extra.andThen2
                 (\asFloat forBackend ->
-                    case outOfRangeAsEntered config.constraints config.measurement asFloat of
+                    case outOfRangeAsEntered (anthropometricConstraints site config.measurement) config.measurement asFloat of
                         [] ->
                             config.saveMsg (Maybe.map Tuple.first measurements.current) forBackend |> Just
 
@@ -406,7 +403,7 @@ viewFloatForm site config language currentDate isChw child measurements previous
                 [ text <| translate language (Translate.ActivitiesTitle config.activity)
                 ]
             , p [ class "activity-helper" ] [ text <| translate language (Translate.ActivitiesHelp config.activity) ]
-            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper config.constraints) ]
+            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper (anthropometricConstraints site config.measurement)) ]
             , div
                 [ class "ui form" ]
                 [ div [ class "ui grid" ]
