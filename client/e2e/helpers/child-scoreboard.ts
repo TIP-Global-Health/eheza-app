@@ -438,6 +438,11 @@ export async function reopenNCDAAndSayWeightNotTaken(page: Page) {
 
   await encounterPage.waitFor({ timeout: 15000 });
   await page.waitForTimeout(WAIT.elmRerender);
+
+  // Back to the things still to do, or the activity that follows cannot be
+  // reached: this left the page on the completed ones.
+  await click(page.locator('#pending-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 export async function completeVaccinationHistory(page: Page) {
