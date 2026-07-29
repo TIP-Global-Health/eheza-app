@@ -51,7 +51,6 @@ import Pages.AcuteIllness.Activity.Utils
         , toCovidTestingValueWithDefault
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
-import Pages.Page exposing (Page(..), UserPage(..))
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
