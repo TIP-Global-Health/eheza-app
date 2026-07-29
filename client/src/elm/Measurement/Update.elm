@@ -421,11 +421,25 @@ updateChild site msg model =
             , Nothing
             )
 
-        SetBirthWeightOutOfRangePopup isOpen ->
+        SetMeasurementOutOfRangePopup stepAsking ->
             let
+                -- Open on the step that asks for the measurement, so that the
+                -- input the warning names is the one on screen behind it.
+                updatedForm =
+                    Maybe.map (\step -> { form_ | step = Just step }) stepAsking
+                        |> Maybe.withDefault form_
+
+                form_ =
+                    model.ncdaData.form
+
                 updatedData =
                     model.ncdaData
-                        |> (\data -> { data | showBirthWeightOutOfRangePopup = isOpen })
+                        |> (\data ->
+                                { data
+                                    | showMeasurementOutOfRangePopup = stepAsking /= Nothing
+                                    , form = updatedForm
+                                }
+                           )
             in
             ( { model | ncdaData = updatedData }
             , Cmd.none
