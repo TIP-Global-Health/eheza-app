@@ -22,6 +22,8 @@ import Measurement.Model exposing (VaccinationFormViewMode(..))
 import Measurement.Utils
     exposing
         ( ncdaFormWithDefault
+        , setNCDAStep
+        , showNCDAMeasurementOutOfRange
         , toNCDAValueWithDefault
         , toVaccinationValueWithDefault
         , vaccinationFormWithDefault
@@ -226,41 +228,13 @@ update currentDate site id db msg model =
             )
 
         SetNCDAFormStep step ->
-            let
-                updatedForm =
-                    model.ncdaData.form
-                        |> (\form -> { form | step = Just step })
-
-                updatedData =
-                    model.ncdaData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | ncdaData = updatedData }
+            ( { model | ncdaData = setNCDAStep step model.ncdaData }
             , Cmd.none
             , []
             )
 
         SetMeasurementOutOfRangePopup stepAsking ->
-            let
-                -- Open on the step that asks for the measurement, so that the
-                -- input the warning names is the one on screen behind it.
-                updatedForm =
-                    Maybe.map (\step -> { form_ | step = Just step }) stepAsking
-                        |> Maybe.withDefault form_
-
-                form_ =
-                    model.ncdaData.form
-
-                updatedData =
-                    model.ncdaData
-                        |> (\data ->
-                                { data
-                                    | showMeasurementOutOfRangePopup = stepAsking /= Nothing
-                                    , form = updatedForm
-                                }
-                           )
-            in
-            ( { model | ncdaData = updatedData }
+            ( { model | ncdaData = showNCDAMeasurementOutOfRange stepAsking model.ncdaData }
             , Cmd.none
             , []
             )

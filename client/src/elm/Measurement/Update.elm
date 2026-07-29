@@ -18,6 +18,7 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet
 import Measurement.Model exposing (ModelChild, ModelMother, MsgChild(..), MsgMother(..), OutMsgChild(..), OutMsgMother(..), emptyParticipantFormProgress)
+import Measurement.Utils exposing (setNCDAStep, showNCDAMeasurementOutOfRange)
 import Pages.Utils exposing (setMuacValueForSite, setMultiSelectInputValue)
 import SyncManager.Model exposing (Site)
 
@@ -422,26 +423,7 @@ updateChild site msg model =
             )
 
         SetMeasurementOutOfRangePopup stepAsking ->
-            let
-                -- Open on the step that asks for the measurement, so that the
-                -- input the warning names is the one on screen behind it.
-                updatedForm =
-                    Maybe.map (\step -> { form_ | step = Just step }) stepAsking
-                        |> Maybe.withDefault form_
-
-                form_ =
-                    model.ncdaData.form
-
-                updatedData =
-                    model.ncdaData
-                        |> (\data ->
-                                { data
-                                    | showMeasurementOutOfRangePopup = stepAsking /= Nothing
-                                    , form = updatedForm
-                                }
-                           )
-            in
-            ( { model | ncdaData = updatedData }
+            ( { model | ncdaData = showNCDAMeasurementOutOfRange stepAsking model.ncdaData }
             , Cmd.none
             , Nothing
             )
@@ -458,16 +440,7 @@ updateChild site msg model =
             )
 
         SetNCDAFormStep step ->
-            let
-                updatedForm =
-                    model.ncdaData.form
-                        |> (\form -> { form | step = Just step })
-
-                updatedData =
-                    model.ncdaData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | ncdaData = updatedData }
+            ( { model | ncdaData = setNCDAStep step model.ncdaData }
             , Cmd.none
             , Nothing
             )

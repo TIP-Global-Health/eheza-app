@@ -54,7 +54,7 @@ test.describe('CHW: Child Scoreboard Encounter — First NCDA + Vaccination Hist
 
     // 2. Complete NCDA activity (all 6 steps with healthy values).
     //    ChildBehindOnVaccination answered "No" to trigger VaccinationHistory.
-    await completeNCDA(page);
+    await completeNCDA(page, { expectMuacAsked: true });
 
     // 3. Reopen the scorecard and say the weight could not be taken. The form
     //    is saved only at the end of its steps, so this checks the weight saved
@@ -128,11 +128,9 @@ test.describe('CHW: Child Scoreboard Encounter — child under six months', () =
   test('is not asked for a MUAC, and still saves', async ({ page }) => {
     const { fullName } = await createChildAndStartEncounter(page, { ageMonths: 3 });
 
-    await expect(
-      page.locator('.form-input.measurement.muac input[type="number"]'),
-    ).toHaveCount(0);
-
-    await completeNCDA(page);
+    // Asked on the step that draws the MUAC, since that is the only place the
+    // absence means anything.
+    await completeNCDA(page, { expectMuacAsked: false });
 
     // Answering the vaccination question on the NCDA asks for this too, and the
     // encounter will not end while it is still pending.

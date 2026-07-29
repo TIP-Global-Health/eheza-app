@@ -36,6 +36,8 @@ import Measurement.Utils
         , ncdaFormWithDefault
         , ncdaMeasurementsOutOfRange
         , outOfRangeAsEntered
+        , setNCDAStep
+        , showNCDAMeasurementOutOfRange
         )
 import Measurement.View exposing (viewColorAlertIndication)
 import SyncManager.Model exposing (Site(..))
@@ -431,6 +433,51 @@ ncdaMeasurementsOutOfRangeTest =
         ]
 
 
+{-| The warning has to leave the nurse looking at the input it names.
+
+Four pages hold this form and each moves it the same way, which is why the move
+is said once and asked for here: dropping it on any one of them would name a
+measurement asked on a step she is not on, and nothing else would notice.
+
+-}
+showNCDAMeasurementOutOfRangeTest : Test
+showNCDAMeasurementOutOfRangeTest =
+    let
+        onStep step data =
+            { data | form = (\form -> { form | step = Just step }) data.form }
+
+        shownAndStep data =
+            ( data.showMeasurementOutOfRangePopup, data.form.step )
+    in
+    describe "showNCDAMeasurementOutOfRange"
+        [ test "showing it opens the form on the step that asks for the measurement" <|
+            \_ ->
+                emptyNCDAData
+                    |> onStep NCDAStepInfrastructureEnvironment
+                    |> showNCDAMeasurementOutOfRange (Just NCDAStepNutritionAssessment)
+                    |> shownAndStep
+                    |> Expect.equal ( True, Just NCDAStepNutritionAssessment )
+        , test "hiding it leaves the form where it is" <|
+            \_ ->
+                emptyNCDAData
+                    |> onStep NCDAStepNutritionAssessment
+                    |> showNCDAMeasurementOutOfRange Nothing
+                    |> shownAndStep
+                    |> Expect.equal ( False, Just NCDAStepNutritionAssessment )
+        , test "hiding it on a form that was never moved leaves it unmoved" <|
+            \_ ->
+                emptyNCDAData
+                    |> showNCDAMeasurementOutOfRange Nothing
+                    |> shownAndStep
+                    |> Expect.equal ( False, Nothing )
+        , test "setNCDAStep moves the form and touches nothing else" <|
+            \_ ->
+                setNCDAStep NCDAStepTargetedInterventions emptyNCDAData
+                    |> shownAndStep
+                    |> Expect.equal ( False, Just NCDAStepTargetedInterventions )
+        ]
+
+
 birthWeightOutsideConstraintsTest : Test
 birthWeightOutsideConstraintsTest =
     -- Birth weight is stored in grams, but is often typed in kilograms. The
@@ -569,6 +616,7 @@ all =
         , outOfRangeAsEnteredTest
         , updateChildOutOfRangePopupTest
         , ncdaMeasurementsOutOfRangeTest
+        , showNCDAMeasurementOutOfRangeTest
         , birthWeightOutsideConstraintsTest
         , heightFormWithDefaultSkippedTest
         , creatinineResultFormWithDefaultTest

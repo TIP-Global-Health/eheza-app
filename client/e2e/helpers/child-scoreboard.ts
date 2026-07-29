@@ -67,12 +67,21 @@ async function answerNCDAYesNo(page: Page, questionSubstring: string, answer: 'Y
 /**
  * Click an NCDA step tab icon and wait for it to become active.
  */
-async function clickNCDAStepTab(page: Page, iconClass: string): Promise<boolean> {
+async function clickNCDAStepTab(
+  page: Page,
+  iconClass: string,
+  options?: { optional?: boolean },
+): Promise<boolean> {
   const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
   if (!(await tab.isVisible({ timeout: 1000 }).catch(() => false))) {
     // Not every step is part of every form: some are only asked from a certain
-    // age, or only the first time the form is filled.
-    return false;
+    // age. Only those may be missing - a step that should be there and is not
+    // has to fail here, rather than leaving what follows to answer questions on
+    // whichever step happens to be showing.
+    if (options?.optional) {
+      return false;
+    }
+    throw new Error(`NCDA step "${iconClass}" is not part of this form`);
   }
 
   const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
@@ -144,7 +153,7 @@ export async function createChildAndStartEncounter(
  *
  * Creates: child_scoreboard_ncda
  */
-export async function completeNCDA(page: Page) {
+export async function completeNCDA(page: Page, options?: { expectMuacAsked?: boolean }) {
   await openActivity(page, 'child-scoreboard', 'history');
 
   // --- Step 1: Antenatal Care ---
@@ -235,7 +244,7 @@ export async function completeNCDA(page: Page) {
   await clickSave(page);
 
   // --- Step 3: Nutrition Behavior (asked from six months of age) ---
-  if (await clickNCDAStepTab(page, 'ncda-nutrition-behavior')) {
+  if (await clickNCDAStepTab(page, 'ncda-nutrition-behavior', { optional: true })) {
     await page.waitForTimeout(WAIT.elmRerender);
 
     // FiveFoodGroups → Yes
@@ -279,6 +288,11 @@ export async function completeNCDA(page: Page) {
   // Asked only from six months of age, so a younger child has no input here.
   const muacInput = page.locator('.form-input.measurement.muac input[type="number"]');
   const muacAsked = await muacInput.isVisible({ timeout: 1000 }).catch(() => false);
+  if (options?.expectMuacAsked !== undefined) {
+    // Asked here, on the step that draws it, because this is the only place the
+    // answer means anything: anywhere else the input is absent whatever the age.
+    expect(muacAsked, 'whether the form asks for a MUAC').toBe(options.expectMuacAsked);
+  }
   if (muacAsked) {
     await muacInput.fill('12.0');
     await page.waitForTimeout(WAIT.formInteraction);
