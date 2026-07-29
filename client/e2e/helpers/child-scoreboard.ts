@@ -366,20 +366,6 @@ export async function completeNCDA(page: Page) {
   await page.waitForTimeout(WAIT.elmRerender);
 }
 
-// ---------------------------------------------------------------------------
-// Vaccination History activity
-// ---------------------------------------------------------------------------
-
-/**
- * Complete the Vaccination History activity by iterating all visible
- * vaccine tabs and answering "No" to "Did the child receive any [vaccine]
- * immunizations prior to today that are not recorded above".
- *
- * In Child Scoreboard, suggestDoseToday is false, so answering "No"
- * to the previous-doses question completes each vaccine tab.
- *
- * Creates: child_scoreboard_*_iz nodes for each vaccine tab completed.
- */
 /**
  * Reopens the saved Child Scorecard, says the weight could not be taken, and
  * saves again.
@@ -445,6 +431,20 @@ export async function reopenNCDAAndSayWeightNotTaken(page: Page) {
   await page.waitForTimeout(WAIT.elmRerender);
 }
 
+// ---------------------------------------------------------------------------
+// Vaccination History activity
+// ---------------------------------------------------------------------------
+
+/**
+ * Complete the Vaccination History activity by iterating all visible
+ * vaccine tabs and answering "No" to "Did the child receive any [vaccine]
+ * immunizations prior to today that are not recorded above".
+ *
+ * In Child Scoreboard, suggestDoseToday is false, so answering "No"
+ * to the previous-doses question completes each vaccine tab.
+ *
+ * Creates: child_scoreboard_*_iz nodes for each vaccine tab completed.
+ */
 export async function completeVaccinationHistory(page: Page) {
   await openActivity(page, 'child-scoreboard', 'immunisation');
 
@@ -520,6 +520,23 @@ export async function endChildScoreboardEncounter(page: Page) {
  * Query the backend for Child Scoreboard measurement nodes associated with a person.
  * Returns an object mapping node type → boolean (exists).
  */
+export function queryChildScoreboardNodes(
+  personName: string,
+  expectedTypes?: string[],
+): Record<string, boolean> {
+  return queryMeasurementNodes(personName, [
+    'child_scoreboard_ncda',
+    'child_scoreboard_bcg_iz',
+    'child_scoreboard_dtp_iz',
+    'child_scoreboard_dtp_sa_iz',
+    'child_scoreboard_ipv_iz',
+    'child_scoreboard_mr_iz',
+    'child_scoreboard_opv_iz',
+    'child_scoreboard_pcv13_iz',
+    'child_scoreboard_rotarix_iz',
+  ], expectedTypes);
+}
+
 /**
  * The weight held on the saved Child Scorecard, or null when it holds none.
  *
@@ -545,6 +562,8 @@ export function queryNCDAWeight(personName: string): number | null {
     \\$r = \\$q->entityCondition('entity_type', 'node')
       ->propertyCondition('type', 'child_scoreboard_ncda')
       ->fieldCondition('field_person', 'target_id', \\$person_nid)
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
       ->execute();
     if (empty(\\$r['node'])) {
       echo json_encode(['error' => 'NCDA not found']);
@@ -563,21 +582,4 @@ export function queryNCDAWeight(personName: string): number | null {
     throw new Error(`queryNCDAWeight: ${parsed.error}`);
   }
   return parsed.weight === null || parsed.weight === undefined ? null : Number(parsed.weight);
-}
-
-export function queryChildScoreboardNodes(
-  personName: string,
-  expectedTypes?: string[],
-): Record<string, boolean> {
-  return queryMeasurementNodes(personName, [
-    'child_scoreboard_ncda',
-    'child_scoreboard_bcg_iz',
-    'child_scoreboard_dtp_iz',
-    'child_scoreboard_dtp_sa_iz',
-    'child_scoreboard_ipv_iz',
-    'child_scoreboard_mr_iz',
-    'child_scoreboard_opv_iz',
-    'child_scoreboard_pcv13_iz',
-    'child_scoreboard_rotarix_iz',
-  ], expectedTypes);
 }

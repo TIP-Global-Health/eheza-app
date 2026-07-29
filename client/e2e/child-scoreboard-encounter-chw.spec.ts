@@ -61,13 +61,13 @@ test.describe('CHW: Child Scoreboard Encounter — First NCDA + Vaccination Hist
     // 4. Complete VaccinationHistory activity (answer "No" to prior doses for each vaccine).
     await completeVaccinationHistory(page);
 
-    // 4. End encounter (no diarrhea popup since we answered No).
+    // 5. End encounter (no diarrhea popup since we answered No).
     await endChildScoreboardEncounter(page);
 
-    // 5. Sync to backend.
+    // 6. Sync to backend.
     await syncAndWait(page);
 
-    // 6. Verify backend nodes.
+    // 7. Verify backend nodes.
     // For a 10-month-old male on Rwanda site with no vaccination history,
     // all 7 common vaccines are overdue (BCG, OPV, DTP, PCV13, Rotarix, IPV, MR).
     // DTPStandalone is Burundi-only, so absent on Rwanda.
