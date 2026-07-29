@@ -426,6 +426,35 @@ export async function completeHistory(
  *          obstetrical_exam (not postpartum), breast_exam,
  *          prenatal_gu_exam (postpartum only)
  */
+/**
+ * Enters a value outside the range the measurement can take, and checks the
+ * nurse is told which one is wrong rather than left with a button that will not
+ * answer. Closing the warning saves nothing: this page's other warnings save on
+ * the way out, and this one must not.
+ */
+async function refusesOutOfRange(page: Page, id: string, value: string, named: string) {
+  await fillMeasurement(page, id, value);
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  // This page marks refusal by adding `disabled`, not by removing `active`.
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await expect(saveBtn, `save should answer for ${id} ${value}`).not.toHaveClass(/disabled/);
+  await click(saveBtn, page);
+
+  const popup = page.locator('div.ui.active.modal.measurement-out-of-range');
+  await popup.waitFor({ timeout: 10000 });
+  await expect(popup, `the warning should name the ${id}`).toHaveClass(
+    new RegExp(`(^| )${named}( |$)`),
+  );
+
+  // Still on the form, so nothing out of range was saved.
+  await expect(page.locator(`.form-input.measurement.${id}`).first()).toBeVisible();
+
+  await click(popup.locator('button.ui.primary.fluid.button'), page);
+  await popup.waitFor({ state: 'hidden', timeout: 10000 });
+  await page.waitForTimeout(WAIT.formInteraction);
+}
+
 export async function completeExamination(
   page: Page,
   options?: {
@@ -461,27 +490,22 @@ export async function completeExamination(
   await fillMeasurement(page, 'weight', '60');
 
   if (options?.checkRanges) {
-    // Millimetres typed where centimetres are asked for. The button answers,
-    // the warning names the MUAC, and closing it saves nothing - unlike this
-    // page's other warnings, which save on the way out.
-    await fillMeasurement(page, 'muac', '125');
-    await page.waitForTimeout(WAIT.formInteraction);
+    // All three are asked for behind one button, so the others have to hold a
+    // value for it to answer at all. Each is then made wrong in turn: a height
+    // in millimetres, a weight with the decimal in the wrong place, and a MUAC
+    // in millimetres where centimetres are asked for.
+    await fillMeasurement(page, 'muac', '25');
 
-    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
-    await expect(saveBtn, 'save should answer for a MUAC of 125').not.toHaveClass(/disabled/);
-    await click(saveBtn, page);
+    if (await heightInput.isVisible()) {
+      await refusesOutOfRange(page, 'height', '1600', 'height-out-of-range');
+      await heightInput.fill('160');
+      await page.waitForTimeout(WAIT.formInteraction);
+    }
 
-    const popup = page.locator('div.ui.active.modal.measurement-out-of-range');
-    await popup.waitFor({ timeout: 10000 });
-    await expect(popup, 'the warning should name the MUAC').toHaveClass(
-      /(^| )muac-out-of-range( |$)/,
-    );
-    await click(popup.locator('button.ui.primary.fluid.button'), page);
-    await popup.waitFor({ state: 'hidden', timeout: 10000 });
+    await refusesOutOfRange(page, 'weight', '850', 'weight-out-of-range');
+    await fillMeasurement(page, 'weight', '60');
 
-    // Still on the form, so nothing out of range was saved.
-    await expect(page.locator('.form-input.measurement.muac').first()).toBeVisible();
-    await page.waitForTimeout(WAIT.formInteraction);
+    await refusesOutOfRange(page, 'muac', '125', 'muac-out-of-range');
   }
 
   await fillMeasurement(page, 'muac', '25');
@@ -548,6 +572,15 @@ export async function completeExamination(
 
     // Previous c-section scar → None
     await selectCheckbox(page, 'None');
+
+    if (options?.checkRanges && (await fundalInput.isVisible().catch(() => false))) {
+      // The range this work gives fundal height, which had none before. Asked
+      // last, because the rest of this form has to hold values for the button
+      // to answer at all.
+      await refusesOutOfRange(page, 'fundal-height', '120', 'fundal-height-out-of-range');
+      await fundalInput.fill('30');
+      await page.waitForTimeout(WAIT.formInteraction);
+    }
 
     await saveSubTask(page);
   }
