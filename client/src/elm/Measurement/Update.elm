@@ -154,6 +154,12 @@ updateChild site msg model =
             , Nothing
             )
 
+        SetMeasurementOutOfRangePopupState state ->
+            ( { model | measurementOutOfRangePopupState = state }
+            , Cmd.none
+            , Nothing
+            )
+
         UpdateWeight val ->
             ( { model | weight = val }
             , Cmd.none

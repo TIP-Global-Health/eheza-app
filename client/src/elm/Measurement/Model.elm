@@ -52,6 +52,10 @@ type alias ModelChild =
     , healthEducationForm : HealthEducationForm
     , sendToHCForm : SendToHCForm
     , ncdaData : NCDAData
+
+    -- The measurements this form asks for that were entered outside the range
+    -- they can take, named on a warning until the nurse closes it.
+    , measurementOutOfRangePopupState : List AnthropometricMeasurement
     }
 
 
@@ -77,6 +81,7 @@ emptyModelChild =
     , healthEducationForm = emptyHealthEducationForm
     , sendToHCForm = emptySendToHCForm
     , ncdaData = emptyNCDAData
+    , measurementOutOfRangePopupState = []
     }
 
 
@@ -261,6 +266,7 @@ type MsgChild
     | SendOutMsgChild OutMsgChild
     | SetDistributedAmountForChild String
     | SetDistributoinNoticeForChild DistributionNotice
+    | SetMeasurementOutOfRangePopupState (List AnthropometricMeasurement)
     | UpdateHeight String
     | UpdateMuac String
     | UpdateWeight String
