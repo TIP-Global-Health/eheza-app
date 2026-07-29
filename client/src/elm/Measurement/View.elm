@@ -2614,6 +2614,20 @@ viewNCDAContent language currentDate site personId person config helperState sho
                 )
                 currentStep
                 |> Maybe.withDefault ( emptyNode, emptyNode )
+
+        outOfRangeWarning =
+            if showBirthWeightOutOfRangePopup then
+                Just <|
+                    measurementOutOfRangePopup language
+                        site
+                        [ MeasurementBirthWeight ]
+                        (config.setBirthWeightOutOfRangePopupMsg False)
+
+            else
+                Nothing
+
+        helperDialog =
+            viewNCDAHelperDialog language (config.setHelperStateMsg Nothing) helperState
     in
     [ header
     , viewTasksCount language tasksCompleted totalTasks
@@ -2622,12 +2636,10 @@ viewNCDAContent language currentDate site personId person config helperState sho
             [ div [ class "ui form ncda" ] viewForm ]
         , actions
         ]
-    , viewModal <|
-        if showBirthWeightOutOfRangePopup then
-            Just <| measurementOutOfRangePopup language site [ MeasurementBirthWeight ] (config.setBirthWeightOutOfRangePopupMsg False)
 
-        else
-            viewNCDAHelperDialog language (config.setHelperStateMsg Nothing) helperState
+    -- One at a time, and the warning wins: it answers what the nurse just
+    -- pressed, while the dialog only explains a question.
+    , viewModal <| Maybe.Extra.or outOfRangeWarning helperDialog
     ]
 
 
