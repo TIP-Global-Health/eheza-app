@@ -5,16 +5,19 @@ import Backend.Measurement.Model
     exposing
         ( ColorAlertIndication(..)
         , CreatinineTestValue
+        , HeightInCm(..)
         , LiverFunctionTestValue
         , MuacInCm(..)
+        , SkippedForm(..)
         , TestExecutionNote(..)
         , VaccineDose(..)
         , WeightInGrm(..)
         , WellChildVaccineType(..)
         )
 import Date exposing (Unit(..))
+import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), emptyCreatinineResultForm, emptyLiverFunctionResultForm, emptyModelChild)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), emptyCreatinineResultForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyModelChild)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -25,6 +28,7 @@ import Measurement.Utils
         , getInputConstraintsHeight
         , getInputConstraintsWeight
         , getIntervalForVaccine
+        , heightFormWithDefault
         , initialVaccinationDateByBirthDate
         , liverFunctionResultFormWithDefault
         , muacOutsideConstraints
@@ -301,22 +305,22 @@ birthWeightBlocksNCDAFormTest =
     describe "birthWeightBlocksNCDAForm"
         [ test "a weight in kilograms on a form that asks for it is stopped" <|
             \_ ->
-                birthWeightBlocksNCDAForm allSteps newbornExamWithoutBirthWeight (Just (WeightInGrm 3))
+                birthWeightBlocksNCDAForm SiteRwanda allSteps newbornExamWithoutBirthWeight (Just (WeightInGrm 3))
                     |> Expect.equal True
         , test "a weight in grams is not stopped" <|
             \_ ->
-                birthWeightBlocksNCDAForm allSteps newbornExamWithoutBirthWeight (Just (WeightInGrm 3000))
+                birthWeightBlocksNCDAForm SiteRwanda allSteps newbornExamWithoutBirthWeight (Just (WeightInGrm 3000))
                     |> Expect.equal False
         , test "a form without the Antenatal Care step is never stopped" <|
             -- The step is dropped once an NCDA was filled before, and the weight
             -- saved then is still on the form. There is no field to correct it,
             -- so stopping here would leave the form impossible to save.
             \_ ->
-                birthWeightBlocksNCDAForm withoutAntenatalCare newbornExamWithoutBirthWeight (Just (WeightInGrm 3))
+                birthWeightBlocksNCDAForm SiteRwanda withoutAntenatalCare newbornExamWithoutBirthWeight (Just (WeightInGrm 3))
                     |> Expect.equal False
         , test "a form with no weight entered is not stopped" <|
             \_ ->
-                birthWeightBlocksNCDAForm allSteps newbornExamWithoutBirthWeight Nothing
+                birthWeightBlocksNCDAForm SiteRwanda allSteps newbornExamWithoutBirthWeight Nothing
                     |> Expect.equal False
         ]
 
@@ -329,39 +333,39 @@ birthWeightOutsideConstraintsTest =
     describe "birthWeightOutsideConstraints"
         [ test "an ordinary birth weight in grams is inside the range" <|
             \_ ->
-                birthWeightOutsideConstraints (Just (WeightInGrm 3000))
+                birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 3000))
                     |> Expect.equal False
         , test "a genuinely low birth weight is still inside the range" <|
             \_ ->
-                birthWeightOutsideConstraints (Just (WeightInGrm 1200))
+                birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 1200))
                     |> Expect.equal False
         , test "the same weight typed in kilograms is outside the range" <|
             \_ ->
-                birthWeightOutsideConstraints (Just (WeightInGrm 3))
+                birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 3))
                     |> Expect.equal True
         , test "a weight far above what a newborn can be is outside the range" <|
             \_ ->
-                birthWeightOutsideConstraints (Just (WeightInGrm 350022))
+                birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 350022))
                     |> Expect.equal True
         , test "the extremes that do occur are accepted" <|
             -- Babies have survived under 500g, and a very large baby can be
             -- over 6000g. Both have to be recordable as they are.
             \_ ->
-                ( birthWeightOutsideConstraints (Just (WeightInGrm 300))
-                , birthWeightOutsideConstraints (Just (WeightInGrm 7000))
+                ( birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 300))
+                , birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 7000))
                 )
                     |> Expect.equal ( False, False )
         , test "just outside either end is refused" <|
             \_ ->
-                ( birthWeightOutsideConstraints (Just (WeightInGrm 299))
-                , birthWeightOutsideConstraints (Just (WeightInGrm 7001))
+                ( birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 299))
+                , birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 7001))
                 )
                     |> Expect.equal ( True, True )
         , test "a weight that has not been entered is not reported" <|
             -- Whether the measurement still has to be taken is answered by the
             -- task count, not here.
             \_ ->
-                birthWeightOutsideConstraints Nothing
+                birthWeightOutsideConstraints SiteRwanda Nothing
                     |> Expect.equal False
         ]
 
@@ -531,6 +535,37 @@ all =
         , birthWeightOutsideConstraintsTest
         , outsideConstraintsTest
         , muacOutsideConstraintsTest
+        , heightFormWithDefaultSkippedTest
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
+        ]
+
+
+{-| The range check asks the form the nurse is looking at, which is why it does
+not have to ask separately whether the measurement could be taken: a form that
+was skipped holds no height to be out of range.
+-}
+heightFormWithDefaultSkippedTest : Test
+heightFormWithDefaultSkippedTest =
+    describe "heightFormWithDefault, on a measurement that could not be taken"
+        [ test "holds no height when the encounter says the form was skipped" <|
+            \_ ->
+                heightFormWithDefault (EverySet.singleton SkippedHeight)
+                    emptyHeightForm
+                    (Just (HeightInCm 1050))
+                    |> Expect.equal
+                        { height = Nothing
+                        , heightDirty = False
+                        , measurementNotTaken = Just True
+                        }
+        , test "holds no height when the nurse said so on the form" <|
+            \_ ->
+                heightFormWithDefault EverySet.empty
+                    { emptyHeightForm | height = Just 1050, measurementNotTaken = Just True }
+                    Nothing
+                    |> Expect.equal
+                        { height = Nothing
+                        , heightDirty = False
+                        , measurementNotTaken = Just True
+                        }
         ]

@@ -20,11 +20,11 @@ import Measurement.Model
         , VaccinationFormViewMode(..)
         , emptyPhotoForm
         )
-import Measurement.Utils exposing (birthWeightOutsideConstraints, contributingFactorsFormWithDefault, ncdaFormWithDefault, nutritionFormWithDefault, toAdministrationNoteWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable)
+import Measurement.Utils exposing (birthWeightOutsideConstraints, contributingFactorsFormWithDefault, heightFormWithDefault, muacFormWithDefault, ncdaFormWithDefault, nutritionFormWithDefault, toAdministrationNoteWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, weightFormWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (insertIntoSet, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue)
 import Pages.WellChild.Activity.Model exposing (Model, Msg(..), WarningPopupType(..))
-import Pages.WellChild.Activity.Utils exposing (birthLengthOutsideConstraints, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, pregnancySummaryFormWithDefault, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType)
+import Pages.WellChild.Activity.Utils exposing (birthLengthOutsideConstraints, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, heightOutOfRange, muacOutOfRange, pregnancySummaryFormWithDefault, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, weightOutOfRange)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 
@@ -179,6 +179,27 @@ update currentDate site id db msg model =
             , []
             )
 
+        PreSaveHeight skippedForms personId saved nextTask ->
+            (getMeasurementValueFunc saved
+                |> heightFormWithDefault skippedForms model.nutritionAssessmentData.heightForm
+                |> heightOutOfRange site
+            )
+                |> preSaveNutritionAssessment currentDate site id db model (SaveHeight skippedForms personId saved nextTask)
+
+        PreSaveMuac personId saved nextTask ->
+            (getMeasurementValueFunc saved
+                |> muacFormWithDefault model.nutritionAssessmentData.muacForm
+                |> muacOutOfRange site
+            )
+                |> preSaveNutritionAssessment currentDate site id db model (SaveMuac personId saved nextTask)
+
+        PreSaveWeight skippedForms personId saved nextTask ->
+            (getMeasurementValueFunc saved
+                |> weightFormWithDefault skippedForms model.nutritionAssessmentData.weightForm
+                |> weightOutOfRange site
+            )
+                |> preSaveNutritionAssessment currentDate site id db model (SaveWeight skippedForms personId saved nextTask)
+
         PreSavePregnancySummary personId saved ->
             let
                 outOfRange =
@@ -186,12 +207,12 @@ update currentDate site id db msg model =
                     -- told about each of them that is wrong rather than being
                     -- sent back a second time for the other.
                     List.filterMap identity
-                        [ if birthWeightOutsideConstraints pregnancySummaryForm.birthWeight then
+                        [ if birthWeightOutsideConstraints site pregnancySummaryForm.birthWeight then
                             Just MeasurementBirthWeight
 
                           else
                             Nothing
-                        , if birthLengthOutsideConstraints pregnancySummaryForm then
+                        , if birthLengthOutsideConstraints site pregnancySummaryForm then
                             Just MeasurementBirthLength
 
                           else
@@ -1940,3 +1961,39 @@ update currentDate site id db msg model =
                 toIndexedDbMsg
             )
                 |> sequenceExtra (update currentDate site id db) (generateHomeVisitMsgs nextTask)
+
+
+{-| Saves a Nutrition Assessment task, unless a measurement on it was entered
+outside the range it can take.
+
+The nurse is told which measurement is wrong and the form is left as it is, so
+it can be entered again. Nothing is saved until it is within range.
+
+The measurements are read from the form the nurse is looking at, which is the
+one the saved measurement and the forms skipped on the encounter have been
+merged into - not the form as it was last typed into.
+
+-}
+preSaveNutritionAssessment :
+    NominalDate
+    -> Site
+    -> WellChildEncounterId
+    -> ModelIndexedDb
+    -> Model
+    -> Msg
+    -> List AnthropometricMeasurement
+    -> ( Model, Cmd Msg, List App.Model.Msg )
+preSaveNutritionAssessment currentDate site id db model saveMsg outOfRange =
+    let
+        extraMsgs =
+            if List.isEmpty outOfRange then
+                [ saveMsg ]
+
+            else
+                [ SetWarningPopupState <| Just <| PopupMeasurementOutOfRange outOfRange ]
+    in
+    ( model
+    , Cmd.none
+    , []
+    )
+        |> sequenceExtra (update currentDate site id db) extraMsgs

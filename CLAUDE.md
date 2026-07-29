@@ -61,7 +61,9 @@ ci-scripts/test_shell.sh
 # E2E tests (Playwright, from client/)
 ./node_modules/.bin/playwright test              # Headless, fast
 RECORD=1 ./node_modules/.bin/playwright test     # Headed, with video recording and visual cursor
-# Video saved to client/test-results/*/video.webm
+# Video saved to client/test-results/*/video.webm, and copied to
+# client/e2e-recordings/<run>/ so the next run does not delete it (last 10 runs kept,
+# converted to .mp4 where ffmpeg is installed)
 ```
 
 ### Deployment

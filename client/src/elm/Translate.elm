@@ -1059,7 +1059,7 @@ type TranslationId
     | MastitisRecommendedTreatmentHeader Bool
     | MastitisRecommendedTreatmentHelper
     | MeasurementNotTaken
-    | MeasurementOutOfRangeWarning Measurement.Model.AnthropometricMeasurement
+    | MeasurementOutOfRangeWarning Site Measurement.Model.AnthropometricMeasurement
     | MedicationCausingHypertension MedicationCausingHypertension
     | MedicationCausingHypertensionQuestion
     | MedicalCondition MedicalCondition
@@ -12058,7 +12058,7 @@ translationSet trans =
             , somali = Just "Lama awoodo in la qaado cabirka, ka bood qeybtan"
             }
 
-        MeasurementOutOfRangeWarning measurement ->
+        MeasurementOutOfRangeWarning site measurement ->
             case measurement of
                 Measurement.Model.MeasurementBirthLength ->
                     { english = "Birth length is recorded in centimetres."
@@ -12069,6 +12069,36 @@ translationSet trans =
 
                 Measurement.Model.MeasurementBirthWeight ->
                     { english = "Birth weight is recorded in grams, not kilograms: a weight of 3 kilograms is entered as 3000."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementHeight ->
+                    { english = "Height is recorded in centimetres."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementMuac ->
+                    case site of
+                        SiteBurundi ->
+                            { english = "MUAC is recorded in millimetres."
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            , somali = Nothing
+                            }
+
+                        _ ->
+                            { english = "MUAC is recorded in centimetres."
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            , somali = Nothing
+                            }
+
+                Measurement.Model.MeasurementWeight ->
+                    { english = "Weight is recorded in kilograms."
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing

@@ -18,4 +18,5 @@ package-lock.json
 wdio.local.conf.js
 vendor
 test-results/
+e2e-recordings/
 playwright-report/

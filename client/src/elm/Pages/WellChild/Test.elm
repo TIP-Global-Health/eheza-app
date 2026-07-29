@@ -6,9 +6,8 @@ import Date exposing (Unit(..))
 import Expect
 import Gizra.NominalDate exposing (diffMonths)
 import List.Extra
-import Measurement.Model exposing (emptyHeightForm, emptyMuacForm, emptyWeightForm)
-import Pages.WellChild.Activity.Types exposing (NutritionAssessmentTask(..))
-import Pages.WellChild.Activity.Utils exposing (nutritionAssessmentSaveDisabled, resolveNextDateForImmunisationVisit)
+import Measurement.Model exposing (AnthropometricMeasurement(..), emptyHeightForm, emptyMuacForm, emptyWeightForm)
+import Pages.WellChild.Activity.Utils exposing (heightOutOfRange, muacOutOfRange, resolveNextDateForImmunisationVisit, weightOutOfRange)
 import Pages.WellChild.ProgressReport.View exposing (distributeByListIndex, resolveLastDayForMonthX)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
@@ -20,7 +19,7 @@ all =
     describe "Pages.WellChild"
         [ resolveNextDateForImmunisationVisitTests
         , immunizationBucketingTests
-        , nutritionAssessmentSaveDisabledTests
+        , outOfRangeTests
         ]
 
 
@@ -134,83 +133,35 @@ immunizationBucketingTests =
         ]
 
 
-{-| The Nutrition Assessment save action used to be gated on task completeness
-alone, so a mistyped height/weight/MUAC saved silently and fed the z-score
-calculations - while the very same shared forms are range-gated in the Nutrition
-encounter, the group sessions and Family Nutrition.
+{-| A mistyped height, weight or MUAC used to deaden the Save button with
+nothing on screen to say why. The measurement is named instead, so the warning
+can say which one is wrong.
 -}
-nutritionAssessmentSaveDisabledTests : Test
-nutritionAssessmentSaveDisabledTests =
-    let
-        heightForm value =
-            { emptyHeightForm | height = value }
-
-        muacForm value =
-            { emptyMuacForm | muac = value }
-
-        weightForm value =
-            { emptyWeightForm | weight = value }
-
-        saveDisabled site tasksIncomplete height muac weight task =
-            nutritionAssessmentSaveDisabled site
-                tasksIncomplete
-                (heightForm height)
-                (muacForm muac)
-                (weightForm weight)
-                task
-    in
-    describe "nutritionAssessmentSaveDisabled"
-        [ test "Height: a plausible value with every task answered enables Save" <|
+outOfRangeTests : Test
+outOfRangeTests =
+    describe "the Nutrition Assessment measurements that are out of range"
+        [ test "Height: a plausible value is not reported" <|
             \_ ->
-                saveDisabled SiteRwanda False (Just 105) Nothing Nothing TaskHeight
-                    |> Expect.equal False
-        , test "Height: a mistyped 1050 cm keeps Save disabled" <|
+                heightOutOfRange SiteRwanda { emptyHeightForm | height = Just 105 }
+                    |> Expect.equal []
+        , test "Height: a mistyped 1050 cm is reported" <|
             \_ ->
-                saveDisabled SiteRwanda False (Just 1050) Nothing Nothing TaskHeight
-                    |> Expect.equal True
-        , test "Height: 'unable to take measurement' enables Save with no value" <|
+                heightOutOfRange SiteRwanda { emptyHeightForm | height = Just 1050 }
+                    |> Expect.equal [ MeasurementHeight ]
+        , test "Weight: a mistyped 850 kg is reported" <|
             \_ ->
-                nutritionAssessmentSaveDisabled SiteRwanda
-                    False
-                    { emptyHeightForm | height = Nothing, measurementNotTaken = Just True }
-                    emptyMuacForm
-                    emptyWeightForm
-                    TaskHeight
-                    |> Expect.equal False
-        , test "Weight: a mistyped 850 kg keeps Save disabled" <|
+                weightOutOfRange SiteRwanda { emptyWeightForm | weight = Just 850 }
+                    |> Expect.equal [ MeasurementWeight ]
+        , test "Muac: Burundi holds cm and shows mm, so 12.5 cm is 125 mm and is not reported" <|
             \_ ->
-                saveDisabled SiteRwanda False Nothing Nothing (Just 850) TaskWeight
-                    |> Expect.equal True
-        , test "Weight: 'unable to take measurement' enables Save with no value" <|
+                muacOutOfRange SiteBurundi { emptyMuacForm | muac = Just 12.5 }
+                    |> Expect.equal []
+        , test "Muac: Rwanda reports 125, a mm value typed into a cm field" <|
             \_ ->
-                nutritionAssessmentSaveDisabled SiteRwanda
-                    False
-                    emptyHeightForm
-                    emptyMuacForm
-                    { emptyWeightForm | weight = Nothing, measurementNotTaken = Just True }
-                    TaskWeight
-                    |> Expect.equal False
-        , test "Muac: Burundi stores cm, so 12.5 cm (125 mm) enables Save" <|
+                muacOutOfRange SiteRwanda { emptyMuacForm | muac = Just 125 }
+                    |> Expect.equal [ MeasurementMuac ]
+        , test "Muac: an unset value is not reported, since the task count says it is still to be taken" <|
             \_ ->
-                saveDisabled SiteBurundi False Nothing (Just 12.5) Nothing TaskMuac
-                    |> Expect.equal False
-        , test "Muac: Rwanda rejects 125, a mm value typed into a cm field" <|
-            \_ ->
-                saveDisabled SiteRwanda False Nothing (Just 125) Nothing TaskMuac
-                    |> Expect.equal True
-        , test "Muac: an unset value keeps Save disabled" <|
-            \_ ->
-                saveDisabled SiteRwanda False Nothing Nothing Nothing TaskMuac
-                    |> Expect.equal True
-        , test "an unanswered task keeps Save disabled even with a valid value" <|
-            \_ ->
-                saveDisabled SiteRwanda True (Just 105) Nothing Nothing TaskHeight
-                    |> Expect.equal True
-        , test "HeadCircumference and Nutrition remain gated on task completeness only" <|
-            \_ ->
-                ( saveDisabled SiteRwanda False Nothing Nothing Nothing TaskHeadCircumference
-                , saveDisabled SiteRwanda True Nothing Nothing Nothing TaskHeadCircumference
-                , saveDisabled SiteRwanda False Nothing Nothing Nothing TaskNutrition
-                )
-                    |> Expect.equal ( False, True, False )
+                muacOutOfRange SiteRwanda emptyMuacForm
+                    |> Expect.equal []
         ]

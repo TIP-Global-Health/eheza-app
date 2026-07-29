@@ -1,4 +1,4 @@
-module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, birthLengthOutsideConstraints, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentSaveDisabled, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
+module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, birthLengthOutsideConstraints, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, heightOutOfRange, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, muacOutOfRange, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, weightOutOfRange, wellChildECDFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -26,7 +26,7 @@ import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.Model exposing (AnthropometricMeasurement(..), HeightForm, ImmunisationTask(..), InvokationModule(..), MedicationAdministrationFormConfig, MuacForm, VitalsFormConfig, VitalsFormMode(..), WeightForm)
-import Measurement.Utils exposing (anthropometricOutOfRange, behindOnVaccinationsByHistory, contributingFactorsFormWithDefault, expectVaccineDoseForPerson, generateFutureVaccinationsData, getAllDosesForVaccine, getInputConstraintsHeight, getInputConstraintsWeight, getIntervalForVaccine, getPreviousMeasurements, healthEducationFormWithDefault, heightFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, muacOutsideConstraints, nextVaccinationDataForVaccine, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, outsideConstraints, sendToHCFormWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault)
+import Measurement.Utils exposing (anthropometricOutOfRange, behindOnVaccinationsByHistory, contributingFactorsFormWithDefault, expectVaccineDoseForPerson, generateFutureVaccinationsData, getAllDosesForVaccine, getIntervalForVaccine, getPreviousMeasurements, healthEducationFormWithDefault, heightFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, nextVaccinationDataForVaccine, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, sendToHCFormWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault)
 import Measurement.View
     exposing
         ( contributingFactorsFormInutsAndTasks
@@ -218,10 +218,11 @@ input is not shown, and stopping on a length that is nowhere to be seen would
 leave the form with no way out of it.
 
 -}
-birthLengthOutsideConstraints : PregnancySummaryForm -> Bool
-birthLengthOutsideConstraints form =
+birthLengthOutsideConstraints : Site -> PregnancySummaryForm -> Bool
+birthLengthOutsideConstraints site form =
     (form.birthLengthAvailable == Just True)
-        && anthropometricOutOfRange MeasurementBirthLength
+        && anthropometricOutOfRange site
+            MeasurementBirthLength
             (Maybe.map (\(HeightInCm length) -> length) form.birthLength)
 
 
@@ -470,41 +471,39 @@ nutritionAssessmentTasksCompletedFromTotal currentDate zscores site isChw assemb
     resolveTasksCompletedFromTotal tasks
 
 
-{-| Whether the Save action of a Nutrition Assessment task must stay disabled.
+{-| The measurement of a Nutrition Assessment task, when it was entered outside
+the range it can take.
 
-Beyond all the task's questions being answered, the measurement tasks require a
-value within the allowed range that is shown to the nurse above the input - the
-same gate the Nutrition encounter and the group sessions apply. Otherwise a
-mistyped value would be persisted and fed to the z-score calculations.
+A list, because the warning that names the measurements takes one, and because
+the forms that ask for several behind a single button are named the same way.
 
-An 'unable to take measurement' checkbox (CHW only) bypasses the range check for
-Height and Weight, since no value is recorded in that case.
+A measurement the nurse said could not be taken is asked about like any other:
+the form it is asked of holds no value in that case, and a measurement that was
+not entered is not out of range.
 
 -}
-nutritionAssessmentSaveDisabled : Site -> Bool -> HeightForm -> MuacForm -> WeightForm -> NutritionAssessmentTask -> Bool
-nutritionAssessmentSaveDisabled site tasksIncomplete heightForm muacForm weightForm task =
-    case task of
-        TaskHeight ->
-            (heightForm.measurementNotTaken /= Just True)
-                && (tasksIncomplete
-                        || outsideConstraints getInputConstraintsHeight heightForm.height
-                   )
+heightOutOfRange : Site -> HeightForm -> List AnthropometricMeasurement
+heightOutOfRange site form =
+    outOfRange site MeasurementHeight form.height
 
-        TaskHeadCircumference ->
-            tasksIncomplete
 
-        TaskMuac ->
-            tasksIncomplete
-                || muacOutsideConstraints site muacForm.muac
+muacOutOfRange : Site -> MuacForm -> List AnthropometricMeasurement
+muacOutOfRange site form =
+    outOfRange site MeasurementMuac form.muac
 
-        TaskNutrition ->
-            tasksIncomplete
 
-        TaskWeight ->
-            (weightForm.measurementNotTaken /= Just True)
-                && (tasksIncomplete
-                        || outsideConstraints getInputConstraintsWeight weightForm.weight
-                   )
+weightOutOfRange : Site -> WeightForm -> List AnthropometricMeasurement
+weightOutOfRange site form =
+    outOfRange site MeasurementWeight form.weight
+
+
+outOfRange : Site -> AnthropometricMeasurement -> Maybe Float -> List AnthropometricMeasurement
+outOfRange site measurement value =
+    if anthropometricOutOfRange site measurement value then
+        [ measurement ]
+
+    else
+        []
 
 
 headCircumferenceFormAndTasks :
