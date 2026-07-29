@@ -6,6 +6,8 @@ import { syncAndWait } from './helpers/common';
 import {
   createChildAndStartEncounter,
   completeNCDA,
+  queryNCDAWeight,
+  reopenNCDAAndSayWeightNotTaken,
   completeVaccinationHistory,
   endChildScoreboardEncounter,
   queryChildScoreboardNodes,
@@ -51,7 +53,12 @@ test.describe('CHW: Child Scoreboard Encounter — First NCDA + Vaccination Hist
     //    ChildBehindOnVaccination answered "No" to trigger VaccinationHistory.
     await completeNCDA(page);
 
-    // 3. Complete VaccinationHistory activity (answer "No" to prior doses for each vaccine).
+    // 3. Reopen the scorecard and say the weight could not be taken. The form
+    //    is saved only at the end of its steps, so this checks the weight saved
+    //    a moment ago does not come back and get written again (#2004).
+    await reopenNCDAAndSayWeightNotTaken(page);
+
+    // 4. Complete VaccinationHistory activity (answer "No" to prior doses for each vaccine).
     await completeVaccinationHistory(page);
 
     // 4. End encounter (no diarrhea popup since we answered No).
@@ -77,6 +84,10 @@ test.describe('CHW: Child Scoreboard Encounter — First NCDA + Vaccination Hist
     const nodes = queryChildScoreboardNodes(fullName, expectedTypes);
 
     expect(nodes['child_scoreboard_ncda'], 'child_scoreboard_ncda should exist').toBe(true);
+
+    // The weight was saved, then said not to have been taken: it should be gone
+    // rather than written again from what the form was holding.
+    expect(queryNCDAWeight(fullName), 'the weight should not be kept').toBeNull();
     expect(nodes['child_scoreboard_bcg_iz'], 'child_scoreboard_bcg_iz should exist').toBe(true);
     expect(nodes['child_scoreboard_opv_iz'], 'child_scoreboard_opv_iz should exist').toBe(true);
     expect(nodes['child_scoreboard_dtp_iz'], 'child_scoreboard_dtp_iz should exist').toBe(true);

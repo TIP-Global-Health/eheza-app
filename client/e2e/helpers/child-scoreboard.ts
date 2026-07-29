@@ -1,5 +1,7 @@
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
+import { execSync } from 'child_process';
 import { click } from './auth';
+import { drushEnv } from './device';
 import {
   WAIT,
   expectMeasurementsOutOfRangeRefused,
@@ -378,6 +380,54 @@ export async function completeNCDA(page: Page) {
  *
  * Creates: child_scoreboard_*_iz nodes for each vaccine tab completed.
  */
+/**
+ * Reopens the saved Child Scorecard, says the weight could not be taken, and
+ * saves again.
+ *
+ * The form is filled over several steps and saved only at the end, so what it
+ * holds between them is what gets saved. Ticking the box empties the input and
+ * hides it; this checks the weight saved a moment ago does not come back in its
+ * place and get written again.
+ */
+export async function reopenNCDAAndSayWeightNotTaken(page: Page) {
+  await page.locator('div.page-encounter.child-scoreboard').waitFor({ timeout: 10000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  // Child Scorecard and Birth History share an icon, so pick it by name.
+  await click(
+    page.locator('.card', { hasText: 'CHILD SCORECARD' }).locator('.icon-task-history'),
+    page,
+  );
+  await page.locator('div.page-activity.child-scoreboard').waitFor({ timeout: 10000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  await clickNCDAStepTab(page, 'nutrition-assessment');
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  // The weight saved a moment ago is on the form.
+  const weightInput = page.locator('.form-input.measurement.weight input[type="number"]');
+  await expect(weightInput, 'the saved weight should be on the form').toHaveValue('8.5');
+
+  const notTaken = page.locator('div.ui.checkbox', { hasText: 'not taken' }).first();
+  await click(notTaken, page);
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  // The input goes with it.
+  await expect(weightInput, 'the input should go when the box is ticked').toHaveCount(0);
+
+  // Save through the steps that follow, which is where the value is written.
+  await clickSave(page);
+  await page.waitForTimeout(WAIT.sectionTransition);
+  await clickSave(page);
+  await page.waitForTimeout(WAIT.sectionTransition);
+  await clickSave(page);
+  await page.locator('div.page-encounter.child-scoreboard').waitFor({ timeout: 15000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
 export async function completeVaccinationHistory(page: Page) {
   await openActivity(page, 'child-scoreboard', 'immunisation');
 
@@ -453,6 +503,51 @@ export async function endChildScoreboardEncounter(page: Page) {
  * Query the backend for Child Scoreboard measurement nodes associated with a person.
  * Returns an object mapping node type → boolean (exists).
  */
+/**
+ * The weight held on the saved Child Scorecard, or null when it holds none.
+ *
+ * Read as a field rather than as "does the node exist", because the node is
+ * always there - the question is whether the measurement was written into it.
+ */
+export function queryNCDAWeight(personName: string): number | null {
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+  const php = `
+    \\$person_name = base64_decode('${personNameB64}');
+    \\$query = new EntityFieldQuery();
+    \\$result = \\$query->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$person_name)
+      ->execute();
+    if (empty(\\$result['node'])) {
+      echo json_encode(['error' => 'Person not found']);
+      return;
+    }
+    \\$person_nid = key(\\$result['node']);
+
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'child_scoreboard_ncda')
+      ->fieldCondition('field_person', 'target_id', \\$person_nid)
+      ->execute();
+    if (empty(\\$r['node'])) {
+      echo json_encode(['error' => 'NCDA not found']);
+      return;
+    }
+    \\$node = node_load(key(\\$r['node']));
+    \\$wrapper = entity_metadata_wrapper('node', \\$node);
+    \\$weight = \\$wrapper->field_weight->value();
+    echo json_encode(['weight' => \\$weight]);
+  `;
+
+  const { drushCmd, cwd } = drushEnv();
+  const output = execSync(`${drushCmd} eval "${php}"`, { cwd, timeout: 30000, encoding: 'utf-8' });
+  const parsed = JSON.parse(output.trim());
+  if (parsed.error) {
+    throw new Error(`queryNCDAWeight: ${parsed.error}`);
+  }
+  return parsed.weight === null || parsed.weight === undefined ? null : Number(parsed.weight);
+}
+
 export function queryChildScoreboardNodes(
   personName: string,
   expectedTypes?: string[],

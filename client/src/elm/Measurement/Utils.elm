@@ -8551,15 +8551,32 @@ ncdaFormWithDefault form saved =
                 , birthWeight = or form.birthWeight value.birthWeight
 
                 -- Nutrition measurements.
-                , stuntingLevel = or form.stuntingLevel value.stuntingLevel
+                , stuntingLevel = measurementUnlessNotTaken form.stuntingLevelNotTaken form.stuntingLevel value.stuntingLevel
                 , stuntingLevelNotTaken = or form.stuntingLevelNotTaken (isNothing value.stuntingLevel |> Just)
-                , weight = or form.weight value.weight
+                , weight = measurementUnlessNotTaken form.weightNotTaken form.weight value.weight
                 , weightNotTaken = or form.weightNotTaken (isNothing value.weight |> Just)
-                , muac = or form.muac value.muac
+                , muac = measurementUnlessNotTaken form.muacNotTaken form.muac value.muac
                 , muacNotTaken = or form.muacNotTaken (isNothing value.muac |> Just)
                 , showsEdemaSigns = or form.showsEdemaSigns (EverySet.member ShowsEdemaSigns value.signs |> Just)
                 }
             )
+
+
+{-| What the form holds for a measurement once the one saved earlier is merged
+into it, and nothing when the nurse has said it was not taken.
+
+Ticking that empties the input and hides it, so the measurement saved earlier
+must not come back in its place: it would be live behind a box saying it was not
+taken, and saved again at the end of the flow.
+
+-}
+measurementUnlessNotTaken : Maybe Bool -> Maybe a -> Maybe a -> Maybe a
+measurementUnlessNotTaken notTaken onForm saved =
+    if notTaken == Just True then
+        Nothing
+
+    else
+        or onForm saved
 
 
 toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm -> Maybe NCDAValue
