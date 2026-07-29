@@ -11,7 +11,7 @@ import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Form
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (HealthEducationForm, MuacForm, OngoingTreatmentReviewForm, SendToHCForm, VitalsForm, emptyHealthEducationForm, emptyMuacForm, emptyOngoingTreatmentReviewForm, emptySendToHCForm, emptyVitalsForm)
+import Measurement.Model exposing (AnthropometricMeasurement, HealthEducationForm, MuacForm, OngoingTreatmentReviewForm, SendToHCForm, VitalsForm, emptyHealthEducationForm, emptyMuacForm, emptyOngoingTreatmentReviewForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask, DangerSignsTask, ExposureTask, OngoingTreatmentTask, PhysicalExamTask, PriorTreatmentTask, SymptomsTask)
 import Pages.Page exposing (Page)
 import SyncManager.Model exposing (Site)
@@ -22,6 +22,7 @@ type Msg
     | SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
+    | SetMeasurementOutOfRangePopupState (List AnthropometricMeasurement)
     | SetPertinentSymptomsPopupState Bool
       -- SYMPTOMS Msgs
     | SetActiveSymptomsTask SymptomsTask
@@ -45,6 +46,7 @@ type Msg
     | SaveVitals PersonId (Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals )) (Maybe PhysicalExamTask)
     | SaveAcuteFindings PersonId (Maybe ( AcuteFindingsId, AcuteFindings )) (Maybe PhysicalExamTask)
     | SetMuac String
+    | PreSaveMuac PersonId (Maybe ( AcuteIllnessMuacId, AcuteIllnessMuac )) (Maybe PhysicalExamTask)
     | SaveMuac PersonId (Maybe ( AcuteIllnessMuacId, AcuteIllnessMuac )) (Maybe PhysicalExamTask)
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( AcuteIllnessNutritionId, AcuteIllnessNutrition )) (Maybe PhysicalExamTask)
@@ -114,6 +116,9 @@ type alias Model =
     , showAlertsDialog : Bool
     , showPertinentSymptomsPopup : Bool
     , warningPopupState : Maybe AcuteIllnessDiagnosis
+
+    -- Kept apart from warningPopupState, which carries a diagnosis.
+    , measurementOutOfRangePopupState : List AnthropometricMeasurement
     }
 
 
@@ -130,6 +135,7 @@ emptyModel =
     , showAlertsDialog = False
     , showPertinentSymptomsPopup = False
     , warningPopupState = Nothing
+    , measurementOutOfRangePopupState = []
     }
 
 

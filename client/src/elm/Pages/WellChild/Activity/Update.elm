@@ -401,8 +401,20 @@ update currentDate site id db msg model =
                 updatedData =
                     model.nutritionAssessmentData
                         |> (\data -> { data | activeTask = Just task })
+
+                -- Moving to another task forgets what the one before it was
+                -- complaining about: the warning names a measurement, and the
+                -- tasks of this activity share one place to put it. Only that
+                -- warning is dropped, so a head circumference one still stands.
+                warningPopupState =
+                    case model.warningPopupState of
+                        Just (PopupMeasurementOutOfRange _) ->
+                            Nothing
+
+                        other ->
+                            other
             in
-            ( { model | nutritionAssessmentData = updatedData }
+            ( { model | nutritionAssessmentData = updatedData, warningPopupState = warningPopupState }
             , Cmd.none
             , []
             )

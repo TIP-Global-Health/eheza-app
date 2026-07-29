@@ -47,7 +47,8 @@ update site id db msg model =
             )
 
         SetActivePage page ->
-            ( model
+            -- Leaving the activity forgets what it was complaining about.
+            ( { model | measurementOutOfRangePopupState = [] }
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
