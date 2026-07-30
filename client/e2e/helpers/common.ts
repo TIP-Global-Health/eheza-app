@@ -400,7 +400,15 @@ export function queryPrenatalLmp(personName: string): string | null {
 export async function expectMeasurementsOutOfRangeRefused(
   page: Page,
   stillOnFormSelector: string,
-  measurements: Array<{ inputId: string; popupClass: string; bad: string; good: string }>,
+  measurements: Array<{
+    inputId: string;
+    popupClass: string;
+    bad: string;
+    good: string;
+    /** Words from the warning's line for this one. Give it for every
+     *  measurement to also check the order they are named in. */
+    saysInWarning?: string;
+  }>,
   notNamed: string[] = [],
 ): Promise<void> {
   for (const m of measurements) {
@@ -430,6 +438,17 @@ export async function expectMeasurementsOutOfRangeRefused(
   // And nothing that is in range is named.
   for (const cls of notNamed) {
     await expect(popup).not.toHaveClass(named(cls));
+  }
+
+  // They are named in the order the form asks for them. Otherwise the nurse
+  // reads them in a different order to the fields in front of her.
+  if (measurements.length > 1 && measurements.every(m => m.saysInWarning)) {
+    const said = await popup.locator('.popup-action p').allTextContents();
+    expect(said.length, 'the warning says one line per measurement named').toBe(measurements.length);
+    measurements.forEach((m, i) => {
+      expect(said[i], `line ${i + 1} of the warning is about ${m.inputId}`)
+        .toContain(m.saysInWarning as string);
+    });
   }
 
   // The form is still up, so nothing out of range was saved.
