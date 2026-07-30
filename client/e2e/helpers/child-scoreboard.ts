@@ -1,5 +1,7 @@
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
+import { execSync } from 'child_process';
 import { click } from './auth';
+import { drushEnv } from './device';
 import {
   WAIT,
   expectMeasurementsOutOfRangeRefused,
@@ -364,6 +366,71 @@ export async function completeNCDA(page: Page) {
   await page.waitForTimeout(WAIT.elmRerender);
 }
 
+/**
+ * Reopens the saved Child Scorecard, says the weight could not be taken, and
+ * saves again.
+ *
+ * The form is filled over several steps and saved only at the end, so what it
+ * holds between them is what gets saved. Ticking the box empties the input and
+ * hides it; this checks the weight saved a moment ago does not come back in its
+ * place and get written again.
+ */
+export async function reopenNCDAAndSayWeightNotTaken(page: Page) {
+  await page.locator('div.page-encounter.child-scoreboard').waitFor({ timeout: 10000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  // Child Scorecard and Birth History share an icon, so pick it by name.
+  await click(
+    page.locator('.card', { hasText: 'CHILD SCORECARD' }).locator('.icon-task-history'),
+    page,
+  );
+  await page.locator('div.page-activity.child-scoreboard').waitFor({ timeout: 10000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  await clickNCDAStepTab(page, 'nutrition-assessment');
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  // The weight saved a moment ago is on the form.
+  const weightInput = page.locator('.form-input.measurement.weight input[type="number"]');
+  await expect(weightInput, 'the saved weight should be on the form').toHaveValue('8.5');
+
+  // Three measurements on this step carry the same label, so the box is picked
+  // by the measurement it belongs to.
+  await click(page.locator('div.ui.checkbox.skip-step.weight'), page);
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  // The input goes with it.
+  await expect(weightInput, 'the input should go when the box is ticked').toHaveCount(0);
+
+  // Save through whatever steps remain. A form that is already complete goes
+  // back to the encounter sooner than one being filled for the first time, so
+  // press Save until it does rather than a fixed number of times.
+  const encounterPage = page.locator('div.page-encounter.child-scoreboard');
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+
+  for (let step = 0; step < 6; step += 1) {
+    if (await encounterPage.isVisible({ timeout: 1000 }).catch(() => false)) {
+      break;
+    }
+    if (!(await saveBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
+      break;
+    }
+    await click(saveBtn, page);
+    await page.waitForTimeout(WAIT.sectionTransition);
+  }
+
+  await encounterPage.waitFor({ timeout: 15000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  // Back to the things still to do, or the activity that follows cannot be
+  // reached: this left the page on the completed ones.
+  await click(page.locator('#pending-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
 // ---------------------------------------------------------------------------
 // Vaccination History activity
 // ---------------------------------------------------------------------------
@@ -468,4 +535,51 @@ export function queryChildScoreboardNodes(
     'child_scoreboard_pcv13_iz',
     'child_scoreboard_rotarix_iz',
   ], expectedTypes);
+}
+
+/**
+ * The weight held on the saved Child Scorecard, or null when it holds none.
+ *
+ * Read as a field rather than as "does the node exist", because the node is
+ * always there - the question is whether the measurement was written into it.
+ */
+export function queryNCDAWeight(personName: string): number | null {
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+  const php = `
+    \\$person_name = base64_decode('${personNameB64}');
+    \\$query = new EntityFieldQuery();
+    \\$result = \\$query->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$person_name)
+      ->execute();
+    if (empty(\\$result['node'])) {
+      echo json_encode(['error' => 'Person not found']);
+      return;
+    }
+    \\$person_nid = key(\\$result['node']);
+
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'child_scoreboard_ncda')
+      ->fieldCondition('field_person', 'target_id', \\$person_nid)
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$r['node'])) {
+      echo json_encode(['error' => 'NCDA not found']);
+      return;
+    }
+    \\$node = node_load(key(\\$r['node']));
+    \\$wrapper = entity_metadata_wrapper('node', \\$node);
+    \\$weight = \\$wrapper->field_weight->value();
+    echo json_encode(['weight' => \\$weight]);
+  `;
+
+  const { drushCmd, cwd } = drushEnv();
+  const output = execSync(`${drushCmd} eval "${php}"`, { cwd, timeout: 30000, encoding: 'utf-8' });
+  const parsed = JSON.parse(output.trim());
+  if (parsed.error) {
+    throw new Error(`queryNCDAWeight: ${parsed.error}`);
+  }
+  return parsed.weight === null || parsed.weight === undefined ? null : Number(parsed.weight);
 }
