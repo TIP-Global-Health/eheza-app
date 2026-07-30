@@ -6,7 +6,7 @@ import Date exposing (Unit(..))
 import Expect
 import Gizra.NominalDate exposing (diffMonths)
 import List.Extra
-import Measurement.Model exposing (AnthropometricMeasurement(..), emptyHeightForm, emptyMuacForm, emptyWeightForm)
+import Measurement.Model exposing (RangedMeasurement(..), emptyHeightForm, emptyMuacForm, emptyWeightForm)
 import Measurement.Utils exposing (heightOutOfRange, muacOutOfRange, weightOutOfRange)
 import Pages.WellChild.Activity.Utils exposing (resolveNextDateForImmunisationVisit)
 import Pages.WellChild.ProgressReport.View exposing (distributeByListIndex, resolveLastDayForMonthX)

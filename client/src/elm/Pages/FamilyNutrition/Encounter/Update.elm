@@ -10,7 +10,7 @@ import Backend.Measurement.Utils exposing (ahezaDistributionReasonFromString, ge
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
-import Measurement.Model exposing (AnthropometricMeasurement)
+import Measurement.Model exposing (RangedMeasurement)
 import Measurement.Utils exposing (muacFormWithDefault, muacOutOfRange, toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toMuacValueWithDefault)
 import Pages.FamilyNutrition.Encounter.Model exposing (FamilyMember(..), Model, Msg(..), Tab(..), emptyAhezaData, emptyMuacData, emptyPhotoData)
 import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData, nextFamilyMemberWithPendingActivities)
@@ -411,7 +411,7 @@ preSaveMuac :
     -> ModelIndexedDb
     -> Model
     -> Msg
-    -> List AnthropometricMeasurement
+    -> List RangedMeasurement
     -> ( Model, Cmd Msg, List App.Model.Msg )
 preSaveMuac site id db model saveMsg outOfRange =
     let

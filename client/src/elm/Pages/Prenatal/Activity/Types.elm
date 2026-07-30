@@ -1,6 +1,6 @@
 module Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), ObstetricHistoryStep(..), PrePregnancyClassification(..), SymptomReviewStep(..), TreatmentReviewTask(..), WarningPopupType(..))
 
-import Measurement.Model exposing (AnthropometricMeasurement)
+import Measurement.Model exposing (RangedMeasurement)
 
 
 type ExaminationTask
@@ -56,7 +56,7 @@ type WarningPopupType msg
     | WarningPopupMentalHealth msg
     | WarningPopupTreatmentReview msg
     | WarningPopupVitaminA msg
-    | WarningPopupMeasurementOutOfRange (List AnthropometricMeasurement)
+    | WarningPopupMeasurementOutOfRange (List RangedMeasurement)
 
 
 type ObstetricHistoryStep

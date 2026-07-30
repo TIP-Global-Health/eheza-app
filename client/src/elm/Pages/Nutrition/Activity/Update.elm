@@ -10,7 +10,7 @@ import Backend.NutritionEncounter.Model
 import EverySet
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
-import Measurement.Model exposing (AnthropometricMeasurement)
+import Measurement.Model exposing (RangedMeasurement)
 import Measurement.Utils exposing (contributingFactorsFormWithDefault, heightFormWithDefault, heightOutOfRange, muacFormWithDefault, muacOutOfRange, ncdaFormWithDefault, nutritionFormWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toWeightValueWithDefault, weightFormWithDefault, weightOutOfRange)
 import Pages.Nutrition.Activity.Model exposing (Model, Msg(..), emptyPhotoData)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -785,7 +785,7 @@ preSaveMeasurement :
     -> ModelIndexedDb
     -> Model
     -> Msg
-    -> List AnthropometricMeasurement
+    -> List RangedMeasurement
     -> ( Model, Cmd Msg, List App.Model.Msg )
 preSaveMeasurement site id db model saveMsg outOfRange =
     let

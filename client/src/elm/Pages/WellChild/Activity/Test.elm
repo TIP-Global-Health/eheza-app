@@ -11,13 +11,13 @@ import Backend.Model exposing (emptyModelIndexedDb)
 import Date
 import EverySet
 import Expect
-import Measurement.Model exposing (AnthropometricMeasurement(..), emptyHeightForm, emptyMuacForm, emptyWeightForm)
+import Measurement.Model exposing (RangedMeasurement(..), emptyHeightForm, emptyMuacForm, emptyWeightForm)
 import Pages.WellChild.Activity.Model exposing (Msg(..), WarningPopupType(..), emptyModel, emptyPregnancySummaryForm)
 import Pages.WellChild.Activity.Update exposing (update)
 import Pages.WellChild.Activity.Utils
     exposing
-        ( birthLengthOutsideConstraints
-        , pregnancySummaryFormWithDefault
+        ( pregnancySummaryFormWithDefault
+        , pregnancySummaryMeasurementsOutOfRange
         , resolveFirstEncounterDateAfterMilestone
         , resolveNextDateForECDVisit
         )
@@ -33,7 +33,7 @@ all =
         [ resolveFirstEncounterDateAfterMilestoneTests
         , resolveNextDateForECDVisitTests
         , pregnancySummaryFormWithDefaultTests
-        , birthLengthOutsideConstraintsTests
+        , pregnancySummaryMeasurementsOutOfRangeTests
         , nutritionAssessmentGateTests
         ]
 
@@ -106,52 +106,130 @@ nutritionAssessmentGateTests =
         ]
 
 
-birthLengthOutsideConstraintsTests : Test
-birthLengthOutsideConstraintsTests =
-    -- A newborn's length is around 50cm. The height range used elsewhere runs to
-    -- 250cm, which is a grown adult, so birth length has its own range.
+pregnancySummaryMeasurementsOutOfRangeTests : Test
+pregnancySummaryMeasurementsOutOfRangeTests =
     let
-        formWith available length =
+        lengthForm available length =
             { emptyPregnancySummaryForm
                 | birthLengthAvailable = available
                 , birthLength = Maybe.map HeightInCm length
             }
+
+        apgarForm available one five =
+            { emptyPregnancySummaryForm
+                | apgarScoresAvailable = available
+                , apgarOneMin = one
+                , apgarFiveMin = five
+            }
+
+        outOfRange =
+            pregnancySummaryMeasurementsOutOfRange SiteRwanda
     in
-    describe "birthLengthOutsideConstraints"
-        [ test "an ordinary birth length is in range" <|
+    describe "pregnancySummaryMeasurementsOutOfRange"
+        [ describe "the birth length"
+            -- A newborn's length is around 50cm. The height range used elsewhere
+            -- runs to 250cm, which is a grown adult, so birth length has its own.
+            [ test "an ordinary birth length is in range" <|
+                \_ ->
+                    outOfRange (lengthForm (Just True) (Just 50))
+                        |> Expect.equal []
+            , test "a length entered in metres is out of range" <|
+                \_ ->
+                    outOfRange (lengthForm (Just True) (Just 0.5))
+                        |> Expect.equal [ MeasurementBirthLength ]
+            , test "a length entered in millimetres is out of range" <|
+                \_ ->
+                    outOfRange (lengthForm (Just True) (Just 500))
+                        |> Expect.equal [ MeasurementBirthLength ]
+            , test "the ends of the range are accepted" <|
+                \_ ->
+                    ( outOfRange (lengthForm (Just True) (Just 15))
+                    , outOfRange (lengthForm (Just True) (Just 60))
+                    )
+                        |> Expect.equal ( [], [] )
+            , test "just outside either end is refused" <|
+                \_ ->
+                    ( outOfRange (lengthForm (Just True) (Just 14))
+                    , outOfRange (lengthForm (Just True) (Just 61))
+                    )
+                        |> Expect.equal ( [ MeasurementBirthLength ], [ MeasurementBirthLength ] )
+            , test "a length that has not been entered is not reported" <|
+                \_ ->
+                    outOfRange (lengthForm (Just True) Nothing)
+                        |> Expect.equal []
+            , test "a length is not reported when the form does not ask for one" <|
+                -- The input is hidden then, so stopping on it would leave the
+                -- form with nothing on screen to correct.
+                \_ ->
+                    outOfRange (lengthForm (Just False) (Just 0.5))
+                        |> Expect.equal []
+            ]
+        , describe "the Apgar scores"
+            -- A score out of 10. A quarter of the scores already stored are not
+            -- one: they run to 36, 246, and 30000.
+            [ test "an ordinary pair of scores is in range" <|
+                \_ ->
+                    outOfRange (apgarForm (Just True) (Just 8) (Just 9))
+                        |> Expect.equal []
+            , test "the ends of the range are accepted" <|
+                \_ ->
+                    outOfRange (apgarForm (Just True) (Just 0) (Just 10))
+                        |> Expect.equal []
+            , test "a score above 10 is refused, and says which one" <|
+                \_ ->
+                    outOfRange (apgarForm (Just True) (Just 36) (Just 9))
+                        |> Expect.equal [ MeasurementApgarOneMinute ]
+            , test "the five minute score is named on its own" <|
+                \_ ->
+                    outOfRange (apgarForm (Just True) (Just 8) (Just 30000))
+                        |> Expect.equal [ MeasurementApgarFiveMinutes ]
+            , test "both are named when both are wrong" <|
+                \_ ->
+                    outOfRange (apgarForm (Just True) (Just 11) (Just 246))
+                        |> Expect.equal [ MeasurementApgarOneMinute, MeasurementApgarFiveMinutes ]
+            , test "a score below zero is refused" <|
+                \_ ->
+                    outOfRange (apgarForm (Just True) (Just -1) (Just 9))
+                        |> Expect.equal [ MeasurementApgarOneMinute ]
+            , test "scores that have not been entered are not reported" <|
+                \_ ->
+                    outOfRange (apgarForm (Just True) Nothing Nothing)
+                        |> Expect.equal []
+            , test "scores are not reported when the form does not ask for them" <|
+                -- The inputs are hidden then, the same as the birth length.
+                \_ ->
+                    outOfRange (apgarForm (Just False) (Just 36) (Just 30000))
+                        |> Expect.equal []
+            ]
+        , describe "the birth weight, which is asked for every time"
+            [ test "a weight in grams is in range" <|
+                \_ ->
+                    outOfRange { emptyPregnancySummaryForm | birthWeight = Just (WeightInGrm 3200) }
+                        |> Expect.equal []
+            , test "a weight in kilograms is refused, though no question guards it" <|
+                \_ ->
+                    outOfRange { emptyPregnancySummaryForm | birthWeight = Just (WeightInGrm 3) }
+                        |> Expect.equal [ MeasurementBirthWeight ]
+            ]
+        , test "every measurement that is wrong is named, in the order the form asks them" <|
+            -- So that the nurse corrects them together rather than being sent
+            -- back once for each.
             \_ ->
-                birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 50))
-                    |> Expect.equal False
-        , test "a length entered in metres is out of range" <|
-            \_ ->
-                birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 0.5))
-                    |> Expect.equal True
-        , test "a length entered in millimetres is out of range" <|
-            \_ ->
-                birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 500))
-                    |> Expect.equal True
-        , test "the ends of the range are accepted" <|
-            \_ ->
-                ( birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 15))
-                , birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 60))
-                )
-                    |> Expect.equal ( False, False )
-        , test "just outside either end is refused" <|
-            \_ ->
-                ( birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 14))
-                , birthLengthOutsideConstraints SiteRwanda (formWith (Just True) (Just 61))
-                )
-                    |> Expect.equal ( True, True )
-        , test "a length that has not been entered is not reported" <|
-            \_ ->
-                birthLengthOutsideConstraints SiteRwanda (formWith (Just True) Nothing)
-                    |> Expect.equal False
-        , test "a length is not reported when the form does not ask for one" <|
-            -- The input is hidden then, so stopping on it would leave the form
-            -- with nothing on screen to correct.
-            \_ ->
-                birthLengthOutsideConstraints SiteRwanda (formWith (Just False) (Just 0.5))
-                    |> Expect.equal False
+                outOfRange
+                    { emptyPregnancySummaryForm
+                        | birthWeight = Just (WeightInGrm 3)
+                        , apgarScoresAvailable = Just True
+                        , apgarOneMin = Just 36
+                        , apgarFiveMin = Just 36
+                        , birthLengthAvailable = Just True
+                        , birthLength = Just (HeightInCm 0.5)
+                    }
+                    |> Expect.equal
+                        [ MeasurementBirthWeight
+                        , MeasurementApgarOneMinute
+                        , MeasurementApgarFiveMinutes
+                        , MeasurementBirthLength
+                        ]
         ]
 
 

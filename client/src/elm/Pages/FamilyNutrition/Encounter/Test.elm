@@ -2,7 +2,7 @@ module Pages.FamilyNutrition.Encounter.Test exposing (all)
 
 import Backend.Model exposing (emptyModelIndexedDb)
 import Expect
-import Measurement.Model exposing (AnthropometricMeasurement(..), emptyMuacForm)
+import Measurement.Model exposing (RangedMeasurement(..), emptyMuacForm)
 import Pages.FamilyNutrition.Encounter.Model exposing (Msg(..), emptyModel)
 import Pages.FamilyNutrition.Encounter.Update exposing (update)
 import Restful.Endpoint exposing (toEntityUuid)

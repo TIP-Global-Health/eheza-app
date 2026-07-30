@@ -1059,7 +1059,7 @@ type TranslationId
     | MastitisRecommendedTreatmentHeader Bool
     | MastitisRecommendedTreatmentHelper
     | MeasurementNotTaken
-    | MeasurementOutOfRangeWarning Site Measurement.Model.AnthropometricMeasurement
+    | MeasurementOutOfRangeWarning Site Measurement.Model.RangedMeasurement
     | MedicationCausingHypertension MedicationCausingHypertension
     | MedicationCausingHypertensionQuestion
     | MedicalCondition MedicalCondition
@@ -12060,6 +12060,20 @@ translationSet trans =
 
         MeasurementOutOfRangeWarning site measurement ->
             case measurement of
+                Measurement.Model.MeasurementApgarFiveMinutes ->
+                    { english = "The Apgar score at five minutes is a score out of 10, not a measurement."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementApgarOneMinute ->
+                    { english = "The Apgar score at one minute is a score out of 10, not a measurement."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 Measurement.Model.MeasurementBirthLength ->
                     { english = "Birth length is recorded in centimetres."
                     , kinyarwanda = Nothing

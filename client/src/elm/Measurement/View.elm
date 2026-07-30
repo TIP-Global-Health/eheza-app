@@ -47,8 +47,8 @@ import Json.Decode
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (AnthropometricMeasurement(..), ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, FamilyPlanningForm, FbfForm, FloatInputConstraints, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
-import Measurement.Utils exposing (anthropometricConstraints, birthWeightBlocksNCDAForm, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, outOfRangeAsEntered, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault)
+import Measurement.Model exposing (ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, FamilyPlanningForm, FbfForm, FloatInputConstraints, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, RangedMeasurement(..), SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
+import Measurement.Utils exposing (birthWeightBlocksNCDAForm, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, measurementConstraints, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, outOfRangeAsEntered, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault)
 import Pages.Utils
     exposing
         ( concatInputsAndTasksSections
@@ -153,7 +153,7 @@ type alias FloatFormConfig id value =
 
     -- Names the measurement on the warning when what was typed is outside the
     -- range above.
-    , measurement : AnthropometricMeasurement
+    , measurement : RangedMeasurement
     , unit : TranslationId
     , inputValue : ModelChild -> String
     , toBackendValue : String -> Maybe Float
@@ -3680,7 +3680,7 @@ several behind one button, and being told about them one save at a time would be
 tiresome.
 
 -}
-measurementOutOfRangePopup : Language -> Site -> List AnthropometricMeasurement -> msg -> Html msg
+measurementOutOfRangePopup : Language -> Site -> List RangedMeasurement -> msg -> Html msg
 measurementOutOfRangePopup language site measurements closeMsg =
     Pages.Utils.customPopup language
         True
@@ -3699,7 +3699,7 @@ measurementOutOfRangePopup language site measurements closeMsg =
                         -- which is already translated.
                         , text <|
                             translate language <|
-                                Translate.AllowedValuesRangeHelper (anthropometricConstraints site measurement)
+                                Translate.AllowedValuesRangeHelper (measurementConstraints site measurement)
                         ]
                 )
                 measurements
@@ -3711,9 +3711,15 @@ measurementOutOfRangePopup language site measurements closeMsg =
 {-| Names the measurement on the popup, so that a test can tell which one it is
 about.
 -}
-measurementOutOfRangeClass : AnthropometricMeasurement -> String
+measurementOutOfRangeClass : RangedMeasurement -> String
 measurementOutOfRangeClass measurement =
     case measurement of
+        MeasurementApgarFiveMinutes ->
+            "apgar-five-minutes-out-of-range"
+
+        MeasurementApgarOneMinute ->
+            "apgar-one-minute-out-of-range"
+
         MeasurementBirthLength ->
             "birth-length-out-of-range"
 

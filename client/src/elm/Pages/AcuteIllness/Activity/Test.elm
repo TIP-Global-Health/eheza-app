@@ -29,7 +29,7 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (AnthropometricMeasurement(..), emptyMuacForm)
+import Measurement.Model exposing (RangedMeasurement(..), emptyMuacForm)
 import Pages.AcuteIllness.Activity.Model exposing (Msg(..), emptyCovidTestingForm, emptyModel)
 import Pages.AcuteIllness.Activity.Update exposing (update)
 import Pages.AcuteIllness.Activity.Utils
