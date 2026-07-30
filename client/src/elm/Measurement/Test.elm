@@ -9,15 +9,17 @@ import Backend.Measurement.Model
         , LiverFunctionTestValue
         , MuacInCm(..)
         , SkippedForm(..)
+        , StuntingLevel(..)
         , TestExecutionNote(..)
         , VaccineDose(..)
         , WeightInGrm(..)
+        , WeightInKg(..)
         , WellChildVaccineType(..)
         )
 import Date exposing (Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyModelChild)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyModelChild, emptyNCDAData)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -32,6 +34,7 @@ import Measurement.Utils
         , heightFormWithDefault
         , initialVaccinationDateByBirthDate
         , liverFunctionResultFormWithDefault
+        , ncdaFormWithDefault
         , outOfRangeAsEntered
         )
 import Measurement.View exposing (viewColorAlertIndication)
@@ -459,6 +462,7 @@ all =
         , getAllDosesForVaccineTest
         , initialVaccinationDateByBirthDateTest
         , updateChildSetMuacTest
+        , ncdaFormWithDefaultNotTakenTest
         , outOfRangeAsEnteredTest
         , updateChildOutOfRangePopupTest
         , birthWeightBlocksNCDAFormTest
@@ -566,4 +570,69 @@ updateChildOutOfRangePopupTest =
                 in
                 ( model.measurementOutOfRangePopupState, outMsg )
                     |> Expect.equal ( [], Nothing )
+        ]
+
+
+{-| The Child Scorecard is filled over several steps and saved only at the end,
+so what the form holds between them is what gets saved. Ticking "measurement
+not taken" empties the input and hides it; the measurement saved at an earlier
+encounter must not come back in its place, or it is live behind a box saying it
+was not taken, and saved again at the end.
+-}
+ncdaFormWithDefaultNotTakenTest : Test
+ncdaFormWithDefaultNotTakenTest =
+    let
+        saved =
+            { signs = EverySet.empty
+            , birthWeight = Nothing
+            , ancVisitsDates = EverySet.empty
+            , receivesVitaminA = Nothing
+            , stuntingLevel = Just LevelYellow
+            , weight = Just (WeightInKg 12)
+            , muac = Just (MuacInCm 14)
+            }
+
+        emptyForm =
+            emptyNCDAData.form
+
+        hydrate form =
+            ncdaFormWithDefault form (Just saved)
+    in
+    describe "ncdaFormWithDefault, on a measurement said not to have been taken"
+        [ test "the weight saved earlier does not come back" <|
+            \_ ->
+                hydrate { emptyForm | weightNotTaken = Just True }
+                    |> .weight
+                    |> Expect.equal Nothing
+        , test "the MUAC saved earlier does not come back" <|
+            \_ ->
+                hydrate { emptyForm | muacNotTaken = Just True }
+                    |> .muac
+                    |> Expect.equal Nothing
+        , test "the stunting level saved earlier does not come back" <|
+            \_ ->
+                hydrate { emptyForm | stuntingLevelNotTaken = Just True }
+                    |> .stuntingLevel
+                    |> Expect.equal Nothing
+        , test "saying one was not taken leaves the others alone" <|
+            \_ ->
+                let
+                    form =
+                        hydrate { emptyForm | weightNotTaken = Just True }
+                in
+                ( form.weight, form.muac, form.stuntingLevel )
+                    |> Expect.equal ( Nothing, Just (MuacInCm 14), Just LevelYellow )
+        , test "a form nobody has touched still inherits what was saved" <|
+            \_ ->
+                let
+                    form =
+                        hydrate emptyForm
+                in
+                ( form.weight, form.muac, form.stuntingLevel )
+                    |> Expect.equal ( Just (WeightInKg 12), Just (MuacInCm 14), Just LevelYellow )
+        , test "what the nurse has typed is kept over what was saved" <|
+            \_ ->
+                hydrate { emptyForm | weight = Just (WeightInKg 13) }
+                    |> .weight
+                    |> Expect.equal (Just (WeightInKg 13))
         ]
