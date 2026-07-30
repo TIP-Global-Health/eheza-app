@@ -232,7 +232,8 @@ pregnancySummaryMeasurementsOutOfRange site form =
 
         apgar =
             -- The score is out of 10, so a number that could not be one is
-            -- almost always something else typed into the box.
+            -- almost always something else typed into the box. Asked first,
+            -- because that is where the form asks for them.
             [ ( MeasurementApgarOneMinute, asked form.apgarScoresAvailable form.apgarOneMin )
             , ( MeasurementApgarFiveMinutes, asked form.apgarScoresAvailable form.apgarFiveMin )
             ]
@@ -245,9 +246,11 @@ pregnancySummaryMeasurementsOutOfRange site form =
             else
                 Nothing
         )
-        (( MeasurementBirthWeight, Maybe.map (\(WeightInGrm weight) -> weight) form.birthWeight )
-            :: apgar
-            ++ [ ( MeasurementBirthLength
+        (apgar
+            ++ [ ( MeasurementBirthWeight
+                 , Maybe.map (\(WeightInGrm weight) -> weight) form.birthWeight
+                 )
+               , ( MeasurementBirthLength
                  , asked form.birthLengthAvailable form.birthLength
                     |> Maybe.map (\(HeightInCm length) -> length)
                  )

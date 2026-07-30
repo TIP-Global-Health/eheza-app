@@ -225,9 +225,9 @@ pregnancySummaryMeasurementsOutOfRangeTests =
                         , birthLength = Just (HeightInCm 0.5)
                     }
                     |> Expect.equal
-                        [ MeasurementBirthWeight
-                        , MeasurementApgarOneMinute
+                        [ MeasurementApgarOneMinute
                         , MeasurementApgarFiveMinutes
+                        , MeasurementBirthWeight
                         , MeasurementBirthLength
                         ]
         ]

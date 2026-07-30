@@ -393,8 +393,11 @@ outOfRangeAsEntered constraints measurement value =
         [ measurement ]
 
 
-{-| The range a measurement of the body has to be within, in the unit it is
-entered in.
+{-| The range a measurement has to be within, in the unit it is entered in.
+
+The Apgar scores have one too, though they are neither of the body nor carried
+in a unit: they are scores out of ten.
+
 -}
 measurementConstraints : Site -> RangedMeasurement -> FloatInputConstraints
 measurementConstraints site measurement =

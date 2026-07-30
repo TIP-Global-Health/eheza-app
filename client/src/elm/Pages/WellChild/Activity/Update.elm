@@ -16,11 +16,11 @@ import Maybe.Extra exposing (unwrap)
 import Measurement.Model
     exposing
         ( ImmunisationTask(..)
-        , RangedMeasurement(..)
+        , RangedMeasurement
         , VaccinationFormViewMode(..)
         , emptyPhotoForm
         )
-import Measurement.Utils exposing (birthWeightOutsideConstraints, contributingFactorsFormWithDefault, heightFormWithDefault, heightOutOfRange, muacFormWithDefault, muacOutOfRange, ncdaFormWithDefault, nutritionFormWithDefault, toAdministrationNoteWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, weightFormWithDefault, weightOutOfRange)
+import Measurement.Utils exposing (contributingFactorsFormWithDefault, heightFormWithDefault, heightOutOfRange, muacFormWithDefault, muacOutOfRange, ncdaFormWithDefault, nutritionFormWithDefault, toAdministrationNoteWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, weightFormWithDefault, weightOutOfRange)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (insertIntoSet, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue)
 import Pages.WellChild.Activity.Model exposing (Model, Msg(..), WarningPopupType(..))
