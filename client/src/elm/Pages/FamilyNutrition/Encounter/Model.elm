@@ -7,7 +7,7 @@ import Backend.FamilyNutritionEncounter.Model exposing (FamilyNutritionEncounter
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (AhezaForm, AnthropometricMeasurement, DropZoneFile, MuacForm, PhotoForm, emptyAhezaForm, emptyMuacForm, emptyPhotoForm)
+import Measurement.Model exposing (AhezaForm, DropZoneFile, MuacForm, PhotoForm, RangedMeasurement, emptyAhezaForm, emptyMuacForm, emptyPhotoForm)
 import Pages.Page exposing (Page)
 
 
@@ -23,7 +23,7 @@ type alias Model =
     -- The measurement that was entered outside the range it can take, named on
     -- a warning until the nurse closes it. This encounter shows no range above
     -- the input, so the warning is the only place it is said.
-    , measurementOutOfRangePopupState : List AnthropometricMeasurement
+    , measurementOutOfRangePopupState : List RangedMeasurement
     }
 
 
@@ -54,7 +54,7 @@ type Msg
     | SetAheza String
     | SetAhezaDistributionReason String
     | SetDialogState (Maybe DialogType)
-    | SetMeasurementOutOfRangePopupState (List AnthropometricMeasurement)
+    | SetMeasurementOutOfRangePopupState (List RangedMeasurement)
     | SetMuac String
     | SetSelectedActivity (Maybe FamilyNutritionActivity)
     | SetSelectedFamilyMember (Maybe FamilyMember)

@@ -42,7 +42,7 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (AnthropometricMeasurement(..))
+import Measurement.Model exposing (RangedMeasurement(..))
 import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.Prenatal.Activity.Types exposing (PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)

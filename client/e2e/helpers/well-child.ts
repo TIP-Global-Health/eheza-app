@@ -598,12 +598,42 @@ export async function completePregnancySummary(page: Page) {
   await click(boolInputs.nth(1).locator('label', { hasText: 'Yes' }), page);
   await page.waitForTimeout(WAIT.formInteraction);
 
-  // Both measurements are entered in the wrong unit at once -- a weight in
-  // kilograms and a length in metres -- so the warning has to name both before
-  // either is entered as it should be.
+  // Everything the form asks for as a number is wrong at once -- Apgar scores
+  // that cannot be scores out of ten, a weight in kilograms and a length in
+  // metres -- so the warning has to name all four, in the order the form asks
+  // for them, before any of them is entered as it should be.
+  //
+  // 36 is the value recorded most often that cannot be an Apgar score, and
+  // 30000 the largest.
   await expectMeasurementsOutOfRangeRefused(page, '.ui.form.pregnancy-summary', [
-    { inputId: 'birth-weight', popupClass: 'birth-weight-out-of-range', bad: '3', good: '3000' },
-    { inputId: 'birth-length', popupClass: 'birth-length-out-of-range', bad: '0.5', good: '50' },
+    {
+      inputId: 'apgar.one-min',
+      popupClass: 'apgar-one-minute-out-of-range',
+      bad: '36',
+      good: '8',
+      saysInWarning: 'Apgar score at one minute',
+    },
+    {
+      inputId: 'apgar.five-min',
+      popupClass: 'apgar-five-minutes-out-of-range',
+      bad: '30000',
+      good: '9',
+      saysInWarning: 'Apgar score at five minutes',
+    },
+    {
+      inputId: 'birth-weight',
+      popupClass: 'birth-weight-out-of-range',
+      bad: '3',
+      good: '3000',
+      saysInWarning: 'Birth weight is recorded in grams',
+    },
+    {
+      inputId: 'birth-length',
+      popupClass: 'birth-length-out-of-range',
+      bad: '0.5',
+      good: '50',
+      saysInWarning: 'Birth length is recorded in centimetres',
+    },
   ]);
 
   await saveActivity(page, 'well-child');

@@ -3,7 +3,7 @@ module Pages.Nutrition.Activity.Test exposing (all)
 import Backend.Model exposing (emptyModelIndexedDb)
 import EverySet
 import Expect
-import Measurement.Model exposing (AnthropometricMeasurement(..), emptyHeightForm, emptyMuacForm, emptyWeightForm)
+import Measurement.Model exposing (RangedMeasurement(..), emptyHeightForm, emptyMuacForm, emptyWeightForm)
 import Pages.Nutrition.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.Nutrition.Activity.Update exposing (update)
 import Restful.Endpoint exposing (toEntityUuid)

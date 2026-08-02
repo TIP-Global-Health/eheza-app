@@ -1,4 +1,4 @@
-module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, birthLengthOutsideConstraints, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
+module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, pregnancySummaryMeasurementsOutOfRange, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -25,8 +25,8 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
-import Measurement.Model exposing (AnthropometricMeasurement(..), ImmunisationTask(..), InvokationModule(..), MedicationAdministrationFormConfig, VitalsFormConfig, VitalsFormMode(..))
-import Measurement.Utils exposing (anthropometricOutOfRange, behindOnVaccinationsByHistory, contributingFactorsFormWithDefault, expectVaccineDoseForPerson, generateFutureVaccinationsData, getAllDosesForVaccine, getIntervalForVaccine, getPreviousMeasurements, healthEducationFormWithDefault, heightFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, nextVaccinationDataForVaccine, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, sendToHCFormWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault)
+import Measurement.Model exposing (ImmunisationTask(..), InvokationModule(..), MedicationAdministrationFormConfig, RangedMeasurement(..), VitalsFormConfig, VitalsFormMode(..))
+import Measurement.Utils exposing (behindOnVaccinationsByHistory, contributingFactorsFormWithDefault, expectVaccineDoseForPerson, generateFutureVaccinationsData, getAllDosesForVaccine, getIntervalForVaccine, getPreviousMeasurements, healthEducationFormWithDefault, heightFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, measurementOutOfRange, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, nextVaccinationDataForVaccine, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, sendToHCFormWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault)
 import Measurement.View
     exposing
         ( contributingFactorsFormInutsAndTasks
@@ -210,20 +210,52 @@ expectActivity currentDate zscores site features isChw assembled db activity =
             assembled.encounter.encounterType == PediatricCareChw
 
 
-{-| True when a birth length has been entered on the newborn exam and is outside
-the range a newborn's length can take.
+{-| The measurements on the newborn exam that hold a value outside their range.
 
-Only asked when the form says a birth length is available: when it is not, the
-input is not shown, and stopping on a length that is nowhere to be seen would
-leave the form with no way out of it.
+Only what the form asks for is checked. Each of the Apgar scores and the birth
+length is behind a question of its own, and its input is not drawn when the
+answer is no - stopping on one that is nowhere to be seen would leave the form
+impossible to save.
+
+The birth weight is asked for every time, so it is checked every time.
 
 -}
-birthLengthOutsideConstraints : Site -> PregnancySummaryForm -> Bool
-birthLengthOutsideConstraints site form =
-    (form.birthLengthAvailable == Just True)
-        && anthropometricOutOfRange site
-            MeasurementBirthLength
-            (Maybe.map (\(HeightInCm length) -> length) form.birthLength)
+pregnancySummaryMeasurementsOutOfRange : Site -> PregnancySummaryForm -> List RangedMeasurement
+pregnancySummaryMeasurementsOutOfRange site form =
+    let
+        asked available value =
+            if available == Just True then
+                value
+
+            else
+                Nothing
+
+        apgar =
+            -- The score is out of 10, so a number that could not be one is
+            -- almost always something else typed into the box. Asked first,
+            -- because that is where the form asks for them.
+            [ ( MeasurementApgarOneMinute, asked form.apgarScoresAvailable form.apgarOneMin )
+            , ( MeasurementApgarFiveMinutes, asked form.apgarScoresAvailable form.apgarFiveMin )
+            ]
+    in
+    List.filterMap
+        (\( measurement, value ) ->
+            if measurementOutOfRange site measurement value then
+                Just measurement
+
+            else
+                Nothing
+        )
+        (apgar
+            ++ [ ( MeasurementBirthWeight
+                 , Maybe.map (\(WeightInGrm weight) -> weight) form.birthWeight
+                 )
+               , ( MeasurementBirthLength
+                 , asked form.birthLengthAvailable form.birthLength
+                    |> Maybe.map (\(HeightInCm length) -> length)
+                 )
+               ]
+        )
 
 
 pregnancySummaryFormWithDefault : PregnancySummaryForm -> Maybe PregnancySummaryValue -> PregnancySummaryForm
@@ -249,6 +281,18 @@ pregnancySummaryFormWithDefault form saved =
 
                     signsFromValue =
                         EverySet.toList value.signs
+
+                    -- A record can hold a measurement without the sign that
+                    -- says it was asked for: the two are stored apart, and the
+                    -- signs fall back to none when they cannot be read. Asking
+                    -- the value as well as the sign makes what is stored
+                    -- visible, so the nurse can correct or confirm it and the
+                    -- range check can reach it. Were only the sign asked, the
+                    -- input would stay hidden while the measurement it holds
+                    -- was written back out on every save.
+                    asked sign values =
+                        List.member sign signsFromValue
+                            || List.any isJust values
                 in
                 { expectedDateConcluded = or form.expectedDateConcluded (Just value.expectedDateConcluded)
                 , dateSelectorPopupState = form.dateSelectorPopupState
@@ -256,13 +300,17 @@ pregnancySummaryFormWithDefault form saved =
                     or form.deliveryComplicationsPresent
                         (listNotEmptyWithException NoDeliveryComplications deliveryComplications |> Just)
                 , deliveryComplications = or form.deliveryComplications (Just deliveryComplications)
-                , apgarScoresAvailable = or form.apgarScoresAvailable (List.member ApgarScores signsFromValue |> Just)
+                , apgarScoresAvailable =
+                    or form.apgarScoresAvailable
+                        (asked ApgarScores [ value.apgarOneMin, value.apgarFiveMin ] |> Just)
                 , apgarOneMin = maybeValueConsideringIsDirtyField form.apgarDirty form.apgarOneMin (Maybe.andThen .apgarOneMin saved)
                 , apgarFiveMin = maybeValueConsideringIsDirtyField form.apgarDirty form.apgarFiveMin (Maybe.andThen .apgarFiveMin saved)
                 , apgarDirty = form.apgarDirty
                 , birthWeight = maybeValueConsideringIsDirtyField form.birthWeightDirty form.birthWeight (Maybe.andThen .birthWeight saved)
                 , birthWeightDirty = form.birthWeightDirty
-                , birthLengthAvailable = or form.birthLengthAvailable (List.member BirthLength signsFromValue |> Just)
+                , birthLengthAvailable =
+                    or form.birthLengthAvailable
+                        (asked BirthLength [ Maybe.map (\(HeightInCm length) -> length) value.birthLength ] |> Just)
                 , birthLength = maybeValueConsideringIsDirtyField form.birthLengthDirty form.birthLength (Maybe.andThen .birthLength saved)
                 , birthLengthDirty = form.birthLengthDirty
                 , birthDefectsPresent =

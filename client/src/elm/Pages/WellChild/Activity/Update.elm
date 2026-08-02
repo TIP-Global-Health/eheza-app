@@ -15,16 +15,16 @@ import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
 import Measurement.Model
     exposing
-        ( AnthropometricMeasurement(..)
-        , ImmunisationTask(..)
+        ( ImmunisationTask(..)
+        , RangedMeasurement
         , VaccinationFormViewMode(..)
         , emptyPhotoForm
         )
-import Measurement.Utils exposing (birthWeightOutsideConstraints, contributingFactorsFormWithDefault, heightFormWithDefault, heightOutOfRange, muacFormWithDefault, muacOutOfRange, ncdaFormWithDefault, nutritionFormWithDefault, setNCDAStep, showNCDAMeasurementOutOfRange, toAdministrationNoteWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, weightFormWithDefault, weightOutOfRange)
+import Measurement.Utils exposing (contributingFactorsFormWithDefault, heightFormWithDefault, heightOutOfRange, muacFormWithDefault, muacOutOfRange, ncdaFormWithDefault, nutritionFormWithDefault, setNCDAStep, showNCDAMeasurementOutOfRange, toAdministrationNoteWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, weightFormWithDefault, weightOutOfRange)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (insertIntoSet, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue)
 import Pages.WellChild.Activity.Model exposing (Model, Msg(..), WarningPopupType(..))
-import Pages.WellChild.Activity.Utils exposing (birthLengthOutsideConstraints, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, pregnancySummaryFormWithDefault, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType)
+import Pages.WellChild.Activity.Utils exposing (getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, pregnancySummaryFormWithDefault, pregnancySummaryMeasurementsOutOfRange, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 
@@ -203,21 +203,10 @@ update currentDate site id db msg model =
         PreSavePregnancySummary personId saved ->
             let
                 outOfRange =
-                    -- Both are asked for behind the one button, so the nurse is
+                    -- They are asked for behind the one button, so the nurse is
                     -- told about each of them that is wrong rather than being
-                    -- sent back a second time for the other.
-                    List.filterMap identity
-                        [ if birthWeightOutsideConstraints site pregnancySummaryForm.birthWeight then
-                            Just MeasurementBirthWeight
-
-                          else
-                            Nothing
-                        , if birthLengthOutsideConstraints site pregnancySummaryForm then
-                            Just MeasurementBirthLength
-
-                          else
-                            Nothing
-                        ]
+                    -- sent back a second time for the next.
+                    pregnancySummaryMeasurementsOutOfRange site pregnancySummaryForm
 
                 extraMsgs =
                     if List.isEmpty outOfRange then
@@ -1979,7 +1968,7 @@ preSaveNutritionAssessment :
     -> ModelIndexedDb
     -> Model
     -> Msg
-    -> List AnthropometricMeasurement
+    -> List RangedMeasurement
     -> ( Model, Cmd Msg, List App.Model.Msg )
 preSaveNutritionAssessment currentDate site id db model saveMsg outOfRange =
     let

@@ -41,7 +41,7 @@ import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
-import Measurement.Model exposing (AnthropometricMeasurement(..), VaccinationFormViewMode(..))
+import Measurement.Model exposing (RangedMeasurement(..), VaccinationFormViewMode(..))
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault

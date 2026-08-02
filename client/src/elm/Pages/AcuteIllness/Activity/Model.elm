@@ -11,7 +11,7 @@ import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Form
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (AnthropometricMeasurement, HealthEducationForm, MuacForm, OngoingTreatmentReviewForm, SendToHCForm, VitalsForm, emptyHealthEducationForm, emptyMuacForm, emptyOngoingTreatmentReviewForm, emptySendToHCForm, emptyVitalsForm)
+import Measurement.Model exposing (HealthEducationForm, MuacForm, OngoingTreatmentReviewForm, RangedMeasurement, SendToHCForm, VitalsForm, emptyHealthEducationForm, emptyMuacForm, emptyOngoingTreatmentReviewForm, emptySendToHCForm, emptyVitalsForm)
 import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask, DangerSignsTask, ExposureTask, OngoingTreatmentTask, PhysicalExamTask, PriorTreatmentTask, SymptomsTask)
 import Pages.Page exposing (Page)
 import SyncManager.Model exposing (Site)
@@ -22,7 +22,7 @@ type Msg
     | SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
-    | SetMeasurementOutOfRangePopupState (List AnthropometricMeasurement)
+    | SetMeasurementOutOfRangePopupState (List RangedMeasurement)
     | SetPertinentSymptomsPopupState Bool
       -- SYMPTOMS Msgs
     | SetActiveSymptomsTask SymptomsTask
@@ -118,7 +118,7 @@ type alias Model =
     , warningPopupState : Maybe AcuteIllnessDiagnosis
 
     -- Kept apart from warningPopupState, which carries a diagnosis.
-    , measurementOutOfRangePopupState : List AnthropometricMeasurement
+    , measurementOutOfRangePopupState : List RangedMeasurement
     }
 
 

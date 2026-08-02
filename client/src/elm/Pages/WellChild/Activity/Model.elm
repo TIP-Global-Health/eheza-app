@@ -6,7 +6,7 @@ import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (AnthropometricMeasurement, ContributingFactorsForm, DropZoneFile, HealthEducationForm, HeightForm, ImmunisationTask, MedicationAdministrationForm, MuacForm, NCDAData, NCDAForm, NCDAStep, NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, PhotoForm, SendToHCForm, VaccinationForm, VaccinationFormViewMode, VitalsForm, WeightForm, emptyContributingFactorsForm, emptyHealthEducationForm, emptyHeightForm, emptyMedicationAdministrationForm, emptyMuacForm, emptyNCDAData, emptyNutritionCaringForm, emptyNutritionFeedingForm, emptyNutritionFollowUpForm, emptyNutritionFoodSecurityForm, emptyNutritionForm, emptyNutritionHygieneForm, emptyPhotoForm, emptySendToHCForm, emptyVaccinationForm, emptyVitalsForm, emptyWeightForm)
+import Measurement.Model exposing (ContributingFactorsForm, DropZoneFile, HealthEducationForm, HeightForm, ImmunisationTask, MedicationAdministrationForm, MuacForm, NCDAData, NCDAForm, NCDAStep, NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, PhotoForm, RangedMeasurement, SendToHCForm, VaccinationForm, VaccinationFormViewMode, VitalsForm, WeightForm, emptyContributingFactorsForm, emptyHealthEducationForm, emptyHeightForm, emptyMedicationAdministrationForm, emptyMuacForm, emptyNCDAData, emptyNutritionCaringForm, emptyNutritionFeedingForm, emptyNutritionFollowUpForm, emptyNutritionFoodSecurityForm, emptyNutritionForm, emptyNutritionHygieneForm, emptyPhotoForm, emptySendToHCForm, emptyVaccinationForm, emptyVitalsForm, emptyWeightForm)
 import Pages.Page exposing (Page)
 import Pages.WellChild.Activity.Types exposing (DangerSignsTask, MedicationTask(..), NutritionAssessmentTask)
 
@@ -170,7 +170,7 @@ emptyModel =
 
 type WarningPopupType
     = PopupMacrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
-    | PopupMeasurementOutOfRange (List AnthropometricMeasurement)
+    | PopupMeasurementOutOfRange (List RangedMeasurement)
     | PopupMicrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | PopupNutritionAssessment (List NutritionAssessment)
 
