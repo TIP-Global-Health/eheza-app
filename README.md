@@ -152,10 +152,9 @@ job from those or you can invoke them via `cron` or
 top of the scripts and study the file head comment that contains more
 information of the dependencies of the scripts.
 
-Example crontabs:
+Example crontab:
 ```
 */5 * * * *   /path/to/app/infrastructure_setup/advancedqueue.sh
-1 1 * * *     /path/to/app/infrastructure_setup/reporting.sh
 ```
 
 We recommend an external source, like Jenkins to trigger these, it's
