@@ -11,7 +11,7 @@ import EverySet
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
 import Measurement.Model exposing (RangedMeasurement)
-import Measurement.Utils exposing (contributingFactorsFormWithDefault, heightFormWithDefault, heightOutOfRange, muacFormWithDefault, muacOutOfRange, ncdaFormWithDefault, nutritionFormWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toWeightValueWithDefault, weightFormWithDefault, weightOutOfRange)
+import Measurement.Utils exposing (contributingFactorsFormWithDefault, heightFormWithDefault, heightOutOfRange, muacFormWithDefault, muacOutOfRange, ncdaFormWithDefault, nutritionFormWithDefault, setNCDAStep, showNCDAMeasurementOutOfRange, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toWeightValueWithDefault, weightFormWithDefault, weightOutOfRange)
 import Pages.Nutrition.Activity.Model exposing (Model, Msg(..), emptyPhotoData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue)
@@ -521,27 +521,13 @@ update site id db msg model =
             )
 
         SetNCDAFormStep step ->
-            let
-                updatedForm =
-                    model.ncdaData.form
-                        |> (\form -> { form | step = Just step })
-
-                updatedData =
-                    model.ncdaData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | ncdaData = updatedData }
+            ( { model | ncdaData = setNCDAStep step model.ncdaData }
             , Cmd.none
             , []
             )
 
-        SetBirthWeightOutOfRangePopup isOpen ->
-            let
-                updatedData =
-                    model.ncdaData
-                        |> (\data -> { data | showBirthWeightOutOfRangePopup = isOpen })
-            in
-            ( { model | ncdaData = updatedData }
+        SetMeasurementOutOfRangePopup stepAsking ->
+            ( { model | ncdaData = showNCDAMeasurementOutOfRange stepAsking model.ncdaData }
             , Cmd.none
             , []
             )

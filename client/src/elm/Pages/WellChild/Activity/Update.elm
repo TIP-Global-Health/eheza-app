@@ -20,7 +20,7 @@ import Measurement.Model
         , VaccinationFormViewMode(..)
         , emptyPhotoForm
         )
-import Measurement.Utils exposing (contributingFactorsFormWithDefault, heightFormWithDefault, heightOutOfRange, muacFormWithDefault, muacOutOfRange, ncdaFormWithDefault, nutritionFormWithDefault, toAdministrationNoteWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, weightFormWithDefault, weightOutOfRange)
+import Measurement.Utils exposing (contributingFactorsFormWithDefault, heightFormWithDefault, heightOutOfRange, muacFormWithDefault, muacOutOfRange, ncdaFormWithDefault, nutritionFormWithDefault, setNCDAStep, showNCDAMeasurementOutOfRange, toAdministrationNoteWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, weightFormWithDefault, weightOutOfRange)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (insertIntoSet, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue)
 import Pages.WellChild.Activity.Model exposing (Model, Msg(..), WarningPopupType(..))
@@ -1668,27 +1668,13 @@ update currentDate site id db msg model =
             )
 
         SetNCDAFormStep step ->
-            let
-                updatedForm =
-                    model.ncdaData.form
-                        |> (\form -> { form | step = Just step })
-
-                updatedData =
-                    model.ncdaData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | ncdaData = updatedData }
+            ( { model | ncdaData = setNCDAStep step model.ncdaData }
             , Cmd.none
             , []
             )
 
-        SetBirthWeightOutOfRangePopup isOpen ->
-            let
-                updatedData =
-                    model.ncdaData
-                        |> (\data -> { data | showBirthWeightOutOfRangePopup = isOpen })
-            in
-            ( { model | ncdaData = updatedData }
+        SetMeasurementOutOfRangePopup stepAsking ->
+            ( { model | ncdaData = showNCDAMeasurementOutOfRange stepAsking model.ncdaData }
             , Cmd.none
             , []
             )
