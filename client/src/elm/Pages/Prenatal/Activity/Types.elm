@@ -50,13 +50,13 @@ type ImmunisationTask
 
 
 type WarningPopupType msg
-    = WarningPopupUrgent ( String, String )
-    | WarningPopupRegular
-    | WarningPopupTuberculosis
+    = WarningPopupMeasurementOutOfRange (List RangedMeasurement)
     | WarningPopupMentalHealth msg
+    | WarningPopupRegular
     | WarningPopupTreatmentReview msg
+    | WarningPopupTuberculosis
+    | WarningPopupUrgent ( String, String )
     | WarningPopupVitaminA msg
-    | WarningPopupMeasurementOutOfRange (List RangedMeasurement)
 
 
 type ObstetricHistoryStep

@@ -223,6 +223,17 @@ warningPopup language encounterDiagnoses setStateMsg state =
             let
                 data =
                     case popupType of
+                        -- Answered by the page, which knows the site.
+                        WarningPopupMeasurementOutOfRange _ ->
+                            Nothing
+
+                        WarningPopupMentalHealth mentalHealthAction ->
+                            Just
+                                ( p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupMessage ]
+                                , p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupInstructions ]
+                                , mentalHealthAction
+                                )
+
                         WarningPopupRegular ->
                             let
                                 nonUrgentDiagnoses =
@@ -285,11 +296,11 @@ warningPopup language encounterDiagnoses setStateMsg state =
                                     , setStateMsg Nothing
                                     )
 
-                        WarningPopupUrgent ( top, bottom ) ->
+                        WarningPopupTreatmentReview treatmentReviewAtion ->
                             Just
-                                ( p [] [ text top ]
-                                , p [] [ text bottom ]
-                                , setStateMsg Nothing
+                                ( p [] [ text <| translate language Translate.TreatmentReviewWarningPopupMessage ]
+                                , p [] [ text <| translate language Translate.TreatmentReviewWarningPopupInstructions ]
+                                , treatmentReviewAtion
                                 )
 
                         WarningPopupTuberculosis ->
@@ -299,18 +310,11 @@ warningPopup language encounterDiagnoses setStateMsg state =
                                 , setStateMsg Nothing
                                 )
 
-                        WarningPopupMentalHealth mentalHealthAction ->
+                        WarningPopupUrgent ( top, bottom ) ->
                             Just
-                                ( p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupMessage ]
-                                , p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupInstructions ]
-                                , mentalHealthAction
-                                )
-
-                        WarningPopupTreatmentReview treatmentReviewAtion ->
-                            Just
-                                ( p [] [ text <| translate language Translate.TreatmentReviewWarningPopupMessage ]
-                                , p [] [ text <| translate language Translate.TreatmentReviewWarningPopupInstructions ]
-                                , treatmentReviewAtion
+                                ( p [] [ text top ]
+                                , p [] [ text bottom ]
+                                , setStateMsg Nothing
                                 )
 
                         WarningPopupVitaminA treatmentReviewAtion ->
@@ -319,10 +323,6 @@ warningPopup language encounterDiagnoses setStateMsg state =
                                 , emptyNode
                                 , treatmentReviewAtion
                                 )
-
-                        -- Answered by the page, which knows the site.
-                        WarningPopupMeasurementOutOfRange _ ->
-                            Nothing
             in
             Maybe.map (customWarningPopup language) data
         )

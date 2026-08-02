@@ -3678,9 +3678,10 @@ ancVisitsInpustAndTasks language personId person config form db =
         |> Maybe.withDefault ( [], [] )
 
 
-{-| Shown when measurements outside the range they can take are about to be
-saved. Closing it leaves the form as it was, so they can be entered again;
-nothing is saved until they are in range.
+{-| Shown when measurements outside the range they can take would be carried
+forward: on saving a form, and on leaving a step of one that is filled in
+several. Closing it leaves the form as it was, so they can be entered again;
+nothing is saved and no step is left behind until they are in range.
 
 Takes every measurement that is wrong, not just the first: a form can ask for
 several behind one button, and being told about them one save at a time would be
