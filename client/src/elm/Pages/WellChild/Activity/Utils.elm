@@ -281,6 +281,18 @@ pregnancySummaryFormWithDefault form saved =
 
                     signsFromValue =
                         EverySet.toList value.signs
+
+                    -- A record can hold a measurement without the sign that
+                    -- says it was asked for: the two are stored apart, and the
+                    -- signs fall back to none when they cannot be read. Asking
+                    -- the value as well as the sign makes what is stored
+                    -- visible, so the nurse can correct or confirm it and the
+                    -- range check can reach it. Were only the sign asked, the
+                    -- input would stay hidden while the measurement it holds
+                    -- was written back out on every save.
+                    asked sign values =
+                        List.member sign signsFromValue
+                            || List.any isJust values
                 in
                 { expectedDateConcluded = or form.expectedDateConcluded (Just value.expectedDateConcluded)
                 , dateSelectorPopupState = form.dateSelectorPopupState
@@ -288,13 +300,17 @@ pregnancySummaryFormWithDefault form saved =
                     or form.deliveryComplicationsPresent
                         (listNotEmptyWithException NoDeliveryComplications deliveryComplications |> Just)
                 , deliveryComplications = or form.deliveryComplications (Just deliveryComplications)
-                , apgarScoresAvailable = or form.apgarScoresAvailable (List.member ApgarScores signsFromValue |> Just)
+                , apgarScoresAvailable =
+                    or form.apgarScoresAvailable
+                        (asked ApgarScores [ value.apgarOneMin, value.apgarFiveMin ] |> Just)
                 , apgarOneMin = maybeValueConsideringIsDirtyField form.apgarDirty form.apgarOneMin (Maybe.andThen .apgarOneMin saved)
                 , apgarFiveMin = maybeValueConsideringIsDirtyField form.apgarDirty form.apgarFiveMin (Maybe.andThen .apgarFiveMin saved)
                 , apgarDirty = form.apgarDirty
                 , birthWeight = maybeValueConsideringIsDirtyField form.birthWeightDirty form.birthWeight (Maybe.andThen .birthWeight saved)
                 , birthWeightDirty = form.birthWeightDirty
-                , birthLengthAvailable = or form.birthLengthAvailable (List.member BirthLength signsFromValue |> Just)
+                , birthLengthAvailable =
+                    or form.birthLengthAvailable
+                        (asked BirthLength [ Maybe.map (\(HeightInCm length) -> length) value.birthLength ] |> Just)
                 , birthLength = maybeValueConsideringIsDirtyField form.birthLengthDirty form.birthLength (Maybe.andThen .birthLength saved)
                 , birthLengthDirty = form.birthLengthDirty
                 , birthDefectsPresent =

@@ -321,6 +321,14 @@ savedPregnancySummary =
     }
 
 
+{-| The same record with its signs lost, which is what a decoder that cannot
+read them leaves behind. The measurements are still there.
+-}
+savedWithoutSigns : PregnancySummaryValue
+savedWithoutSigns =
+    { savedPregnancySummary | signs = EverySet.singleton NoPregnancySummarySigns }
+
+
 {-| Clearing a value (for example answering "Apgar scores available? No", which
 empties the scores and marks them dirty) must stay cleared when the form is
 rebuilt from the saved value. An untouched field still loads from the saved
@@ -369,4 +377,76 @@ pregnancySummaryFormWithDefaultTests =
                 resolve { emptyPregnancySummaryForm | birthLengthDirty = True }
                     |> .birthLength
                     |> Expect.equal Nothing
+        , describe "a record whose signs were lost"
+            -- The measurement and the sign that says it was asked for are
+            -- stored apart, and the signs fall back to none when they cannot be
+            -- read. The measurement is then live but its input is not drawn: it
+            -- is written back out on every save, and the range check cannot
+            -- reach it because the check asks only for what the form shows.
+            [ test "still asks for the birth length it holds" <|
+                \_ ->
+                    pregnancySummaryFormWithDefault emptyPregnancySummaryForm (Just savedWithoutSigns)
+                        |> (\resolved -> ( resolved.birthLengthAvailable, resolved.birthLength ))
+                        |> Expect.equal ( Just True, Just (HeightInCm 50) )
+            , test "still asks for the Apgar scores it holds" <|
+                \_ ->
+                    pregnancySummaryFormWithDefault emptyPregnancySummaryForm (Just savedWithoutSigns)
+                        |> (\resolved -> ( resolved.apgarScoresAvailable, resolved.apgarOneMin, resolved.apgarFiveMin ))
+                        |> Expect.equal ( Just True, Just 8, Just 9 )
+            , test "asks for the Apgar scores when it holds only one of them" <|
+                \_ ->
+                    pregnancySummaryFormWithDefault emptyPregnancySummaryForm
+                        (Just { savedWithoutSigns | apgarOneMin = Nothing })
+                        |> .apgarScoresAvailable
+                        |> Expect.equal (Just True)
+            , test "asks for nothing it does not hold" <|
+                -- Otherwise the form would show empty inputs it never asked
+                -- for, and count them as tasks still to be done.
+                \_ ->
+                    pregnancySummaryFormWithDefault emptyPregnancySummaryForm
+                        (Just
+                            { savedWithoutSigns
+                                | apgarOneMin = Nothing
+                                , apgarFiveMin = Nothing
+                                , birthLength = Nothing
+                            }
+                        )
+                        |> (\resolved -> ( resolved.apgarScoresAvailable, resolved.birthLengthAvailable ))
+                        |> Expect.equal ( Just False, Just False )
+            , test "a sign with nothing stored is still asked for" <|
+                -- The sign is the answer the nurse gave, so it stands on its
+                -- own: were only the value asked, answering yes and saving
+                -- before entering anything would hide the question again.
+                \_ ->
+                    pregnancySummaryFormWithDefault emptyPregnancySummaryForm
+                        (Just
+                            { savedPregnancySummary
+                                | apgarOneMin = Nothing
+                                , apgarFiveMin = Nothing
+                                , birthLength = Nothing
+                            }
+                        )
+                        |> (\resolved -> ( resolved.apgarScoresAvailable, resolved.birthLengthAvailable ))
+                        |> Expect.equal ( Just True, Just True )
+            , test "the nurse saying no wins over what is stored" <|
+                -- She has answered the question in front of her; the value is
+                -- cleared alongside the answer.
+                \_ ->
+                    pregnancySummaryFormWithDefault
+                        { emptyPregnancySummaryForm
+                            | birthLengthAvailable = Just False
+                            , birthLengthDirty = True
+                        }
+                        (Just savedWithoutSigns)
+                        |> (\resolved -> ( resolved.birthLengthAvailable, resolved.birthLength ))
+                        |> Expect.equal ( Just False, Nothing )
+            , test "and the measurement it holds is then checked, which was the point" <|
+                -- A length of 0.5 was being written back out untouched, because
+                -- the check only asks for what the form shows.
+                \_ ->
+                    pregnancySummaryFormWithDefault emptyPregnancySummaryForm
+                        (Just { savedWithoutSigns | birthLength = Just (HeightInCm 0.5), apgarFiveMin = Just 30000 })
+                        |> pregnancySummaryMeasurementsOutOfRange SiteRwanda
+                        |> Expect.equal [ MeasurementApgarFiveMinutes, MeasurementBirthLength ]
+            ]
         ]
