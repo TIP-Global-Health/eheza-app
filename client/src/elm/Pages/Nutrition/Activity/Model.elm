@@ -30,7 +30,7 @@ type Msg
     | SaveWeight (EverySet SkippedForm) PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
     | SetUpdateANCVisits Bool
     | ToggleANCVisitDate NominalDate
-    | SetBirthWeightOutOfRangePopup Bool
+    | SetMeasurementOutOfRangePopup (Maybe NCDAStep)
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetChildReceivesVitaminA ReceiveOption
