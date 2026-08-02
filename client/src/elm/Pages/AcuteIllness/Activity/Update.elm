@@ -30,7 +30,9 @@ import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils
     exposing
-        ( ongoingTreatmentReviewFormWithDefault
+        ( muacFormWithDefault
+        , muacOutOfRange
+        , ongoingTreatmentReviewFormWithDefault
         , toHealthEducationValueWithDefault
         , toMuacValueWithDefault
         , toOngoingTreatmentReviewValueWithDefault
@@ -117,6 +119,31 @@ update site selectedHealthCenter id db msg model =
 
         SetWarningPopupState diagnosis ->
             ( { model | warningPopupState = diagnosis }, Cmd.none, [] )
+
+        SetMeasurementOutOfRangePopupState state ->
+            ( { model | measurementOutOfRangePopupState = state }, Cmd.none, [] )
+
+        PreSaveMuac personId saved nextTask ->
+            let
+                outOfRange =
+                    getMeasurementValueFunc saved
+                        |> muacFormWithDefault model.physicalExamData.muacForm
+                        |> muacOutOfRange site
+
+                extraMsgs =
+                    if List.isEmpty outOfRange then
+                        [ SaveMuac personId saved nextTask ]
+
+                    else
+                        -- Tell the nurse what is wrong and leave the form as it
+                        -- is, so the measurement can be entered again.
+                        [ SetMeasurementOutOfRangePopupState outOfRange ]
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update site selectedHealthCenter id db) extraMsgs
 
         SetPertinentSymptomsPopupState isOpen ->
             ( { model | showPertinentSymptomsPopup = isOpen }, Cmd.none, [] )
@@ -361,7 +388,10 @@ update site selectedHealthCenter id db msg model =
                     model.physicalExamData
                         |> (\data -> { data | activeTask = Just task })
             in
-            ( { model | physicalExamData = updatedData }
+            -- Moving to another task forgets what the one before it was
+            -- complaining about: the warning names a measurement, and the
+            -- tasks of this activity share one place to put it.
+            ( { model | physicalExamData = updatedData, measurementOutOfRangePopupState = [] }
             , Cmd.none
             , []
             )

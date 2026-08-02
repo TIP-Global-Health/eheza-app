@@ -39,7 +39,7 @@ import Measurement.Utils exposing (contributingFactorsFormWithDefault, generateF
 import Measurement.View
     exposing
         ( birthWeightInputsAndTasks
-        , birthWeightOutOfRangePopup
+        , measurementOutOfRangePopup
         , nutritionCaringInputsAndTasks
         , nutritionFeedingInputsAndTasks
         , nutritionFoodSecurityInputsAndTasks
@@ -78,7 +78,7 @@ import Pages.Utils
         )
 import Pages.WellChild.Activity.Model exposing (DangerSignsData, HeadCircumferenceForm, HomeVisitData, ImmunisationData, MedicationData, Model, Msg(..), NextStepsData, NextVisitForm, NutritionAssessmentData, PregnancySummaryForm, SymptomsReviewForm, WarningPopupType(..), WellChildECDForm, WellChildVaccinationForm, medicationTasks)
 import Pages.WellChild.Activity.Types exposing (DangerSignsTask(..), HomeVisitTask(..), MedicationTask(..), NextStepsTask(..), NutritionAssessmentTask(..))
-import Pages.WellChild.Activity.Utils exposing (albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, generateASAPImmunisationDate, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentSaveDisabled, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
+import Pages.WellChild.Activity.Utils exposing (albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, generateASAPImmunisationDate, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
 import SyncManager.Model exposing (Site, SiteFeature)
@@ -134,7 +134,7 @@ viewHeaderAndContent language currentDate zscores site features id isChw activit
         [ header
         , content
         , viewModal <|
-            viewWarningPopup language model.warningPopupState
+            viewWarningPopup language site model.warningPopupState
         ]
 
 
@@ -173,26 +173,26 @@ viewContent language currentDate zscores site features isChw activity db model a
         |> div [ class "ui unstackable items" ]
 
 
-viewWarningPopup : Language -> Maybe WarningPopupType -> Maybe (Html Msg)
-viewWarningPopup language warningPopupState =
+viewWarningPopup : Language -> Site -> Maybe WarningPopupType -> Maybe (Html Msg)
+viewWarningPopup language site warningPopupState =
     warningPopupState
         |> Maybe.andThen
             (\popupType ->
                 case popupType of
-                    PopupBirthWeightOutOfRange ->
+                    PopupMacrocephaly personId saved nextTask ->
+                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMacrocephalyWarning
+
+                    PopupMeasurementOutOfRange measurements ->
                         Just <|
-                            birthWeightOutOfRangePopup language (SetWarningPopupState Nothing)
+                            measurementOutOfRangePopup language site measurements (SetWarningPopupState Nothing)
+
+                    PopupMicrocephaly personId saved nextTask ->
+                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMicrocephalyWarning
 
                     PopupNutritionAssessment assessment ->
                         warningPopup language
                             (SetWarningPopupState Nothing)
                             assessment
-
-                    PopupMacrocephaly personId saved nextTask ->
-                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMacrocephalyWarning
-
-                    PopupMicrocephaly personId saved nextTask ->
-                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMicrocephalyWarning
             )
 
 
@@ -813,18 +813,6 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
             getMeasurementValueFunc measurements.headCircumference
                 |> headCircumferenceFormWithDefault data.headCircumferenceForm
 
-        heightForm =
-            getMeasurementValueFunc measurements.height
-                |> heightFormWithDefault assembled.encounter.skippedForms data.heightForm
-
-        muacForm =
-            getMeasurementValueFunc measurements.muac
-                |> muacFormWithDefault data.muacForm
-
-        weightForm =
-            getMeasurementValueFunc measurements.weight
-                |> weightFormWithDefault assembled.encounter.skippedForms data.weightForm
-
         headCircumferenceZScore =
             if headCircumferenceForm.measurementNotTaken == Just True then
                 Nothing
@@ -845,7 +833,8 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
         viewForm =
             case activeTask of
                 Just TaskHeight ->
-                    heightForm
+                    getMeasurementValueFunc measurements.height
+                        |> heightFormWithDefault assembled.encounter.skippedForms data.heightForm
                         |> viewHeightForm language
                             currentDate
                             zscores
@@ -859,7 +848,8 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
                     viewHeadCircumferenceForm language headCircumferenceZScore previousValuesSet.headCircumference headCircumferenceForm
 
                 Just TaskMuac ->
-                    muacForm
+                    getMeasurementValueFunc measurements.muac
+                        |> muacFormWithDefault data.muacForm
                         |> viewMuacForm language currentDate site assembled.person previousValuesSet.muac SetMuac
 
                 Just TaskNutrition ->
@@ -875,7 +865,8 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
                         showWeightForHeightZScore =
                             assembled.encounter.encounterType /= NewbornExam
                     in
-                    weightForm
+                    getMeasurementValueFunc measurements.weight
+                        |> weightFormWithDefault assembled.encounter.skippedForms data.weightForm
                         |> viewWeightForm language
                             currentDate
                             zscores
@@ -904,13 +895,13 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
                         saveMsg =
                             case task of
                                 TaskHeight ->
-                                    SaveHeight assembled.encounter.skippedForms personId measurements.height nextTask
+                                    PreSaveHeight assembled.encounter.skippedForms personId measurements.height nextTask
 
                                 TaskHeadCircumference ->
                                     PreSaveHeadCircumference personId headCircumferenceZScore measurements.headCircumference nextTask
 
                                 TaskMuac ->
-                                    SaveMuac personId measurements.muac nextTask
+                                    PreSaveMuac personId measurements.muac nextTask
 
                                 TaskNutrition ->
                                     let
@@ -921,15 +912,10 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
                                     SaveNutrition personId measurements.nutrition assessment nextTask
 
                                 TaskWeight ->
-                                    SaveWeight assembled.encounter.skippedForms personId measurements.weight nextTask
+                                    PreSaveWeight assembled.encounter.skippedForms personId measurements.weight nextTask
 
                         disabled =
-                            nutritionAssessmentSaveDisabled site
-                                (tasksCompleted /= totalTasks)
-                                heightForm
-                                muacForm
-                                weightForm
-                                task
+                            tasksCompleted /= totalTasks
                     in
                     viewSaveAction language saveMsg disabled
                 )
@@ -2183,7 +2169,7 @@ viewNCDAContent language currentDate site assembled data db =
             , setMuacMsg = SetMuacForNCDA
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
-            , setBirthWeightOutOfRangePopupMsg = SetBirthWeightOutOfRangePopup
+            , setMeasurementOutOfRangePopupMsg = SetMeasurementOutOfRangePopup
             , saveMsg = SaveNCDA personId assembled.measurements.ncda
             }
     in
@@ -2194,7 +2180,7 @@ viewNCDAContent language currentDate site assembled data db =
         assembled.person
         config
         data.helperState
-        data.showBirthWeightOutOfRangePopup
+        data.showMeasurementOutOfRangePopup
         form
         db
 

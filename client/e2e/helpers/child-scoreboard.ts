@@ -1,8 +1,10 @@
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
+import { execSync } from 'child_process';
 import { click } from './auth';
+import { drushEnv } from './device';
 import {
   WAIT,
-  expectBirthWeightInKilogramsRefused,
+  expectMeasurementsOutOfRangeRefused,
   openActivity,
   queryMeasurementNodes,
   registerChild,
@@ -65,13 +67,29 @@ async function answerNCDAYesNo(page: Page, questionSubstring: string, answer: 'Y
 /**
  * Click an NCDA step tab icon and wait for it to become active.
  */
-async function clickNCDAStepTab(page: Page, iconClass: string) {
+async function clickNCDAStepTab(
+  page: Page,
+  iconClass: string,
+  options?: { optional?: boolean },
+): Promise<boolean> {
   const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
+  if (!(await tab.isVisible({ timeout: 1000 }).catch(() => false))) {
+    // Not every step is part of every form: some are only asked from a certain
+    // age. Only those may be missing - a step that should be there and is not
+    // has to fail here, rather than leaving what follows to answer questions on
+    // whichever step happens to be showing.
+    if (options?.optional) {
+      return false;
+    }
+    throw new Error(`NCDA step "${iconClass}" is not part of this form`);
+  }
+
   const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
   if (!isActive) {
     await click(tab, page);
     await page.waitForTimeout(WAIT.elmRerender);
   }
+  return true;
 }
 
 /**
@@ -135,7 +153,7 @@ export async function createChildAndStartEncounter(
  *
  * Creates: child_scoreboard_ncda
  */
-export async function completeNCDA(page: Page) {
+export async function completeNCDA(page: Page, options?: { expectMuacAsked?: boolean }) {
   await openActivity(page, 'child-scoreboard', 'history');
 
   // --- Step 1: Antenatal Care ---
@@ -174,7 +192,9 @@ export async function completeNCDA(page: Page) {
     // Every other question on this step is answered, so the button is active.
     // The weight is asked on this step but the form is only saved on the last
     // one, so going on from here has to be refused just as saving would be.
-    await expectBirthWeightInKilogramsRefused(page, '.ui.form.ncda', '3200');
+    await expectMeasurementsOutOfRangeRefused(page, '.ui.form.ncda', [
+      { inputId: 'birth-weight', popupClass: 'birth-weight-out-of-range', bad: '3', good: '3200' },
+    ], ['birth-length-out-of-range']);
   }
 
   // Click Save to proceed to next step.
@@ -223,32 +243,33 @@ export async function completeNCDA(page: Page) {
 
   await clickSave(page);
 
-  // --- Step 3: Nutrition Behavior (child >= 6 months) ---
-  await clickNCDAStepTab(page, 'ncda-nutrition-behavior');
-  await page.waitForTimeout(WAIT.elmRerender);
+  // --- Step 3: Nutrition Behavior (asked from six months of age) ---
+  if (await clickNCDAStepTab(page, 'ncda-nutrition-behavior', { optional: true })) {
+    await page.waitForTimeout(WAIT.elmRerender);
 
-  // FiveFoodGroups → Yes
-  await answerNCDAYesNo(page, '5 food groups', 'Yes');
-  await page.waitForTimeout(WAIT.formInteraction);
-
-  // BreastfedForSixMonths → Yes (shown for first NCDA on child > 6 months)
-  const breastfedQuestion = page.locator('.ui.form.ncda .label', {
-    hasText: 'breastfed for 6 months',
-  });
-  if (await breastfedQuestion.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await answerNCDAYesNo(page, 'breastfed for 6 months', 'Yes');
+    // FiveFoodGroups → Yes
+    await answerNCDAYesNo(page, '5 food groups', 'Yes');
     await page.waitForTimeout(WAIT.formInteraction);
+
+    // BreastfedForSixMonths → Yes (shown for first NCDA on child > 6 months)
+    const breastfedQuestion = page.locator('.ui.form.ncda .label', {
+      hasText: 'breastfed for 6 months',
+    });
+    if (await breastfedQuestion.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await answerNCDAYesNo(page, 'breastfed for 6 months', 'Yes');
+      await page.waitForTimeout(WAIT.formInteraction);
+    }
+
+    // AppropriateComplementaryFeeding → Yes
+    await answerNCDAYesNo(page, 'appropriate complementary feeding', 'Yes');
+    await page.waitForTimeout(WAIT.formInteraction);
+
+    // MealsAtRecommendedTimes → No (deliberately No for negative-path verification).
+    await answerNCDAYesNo(page, 'eat at the recommended times', 'No');
+    await page.waitForTimeout(WAIT.formInteraction);
+
+    await clickSave(page);
   }
-
-  // AppropriateComplementaryFeeding → Yes
-  await answerNCDAYesNo(page, 'appropriate complementary feeding', 'Yes');
-  await page.waitForTimeout(WAIT.formInteraction);
-
-  // MealsAtRecommendedTimes → No (deliberately No for negative-path verification).
-  await answerNCDAYesNo(page, 'eat at the recommended times', 'No');
-  await page.waitForTimeout(WAIT.formInteraction);
-
-  await clickSave(page);
 
   // --- Step 4: Nutrition Assessment ---
   await clickNCDAStepTab(page, 'nutrition-assessment');
@@ -264,8 +285,15 @@ export async function completeNCDA(page: Page) {
   await page.waitForTimeout(WAIT.formInteraction);
 
   // MUAC: enter 12.0 cm (moderate range, < 12.5 cm. Triggers TreatedForAcuteMalnutrition question visibility).
+  // Asked only from six months of age, so a younger child has no input here.
   const muacInput = page.locator('.form-input.measurement.muac input[type="number"]');
-  if (await muacInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+  const muacAsked = await muacInput.isVisible({ timeout: 1000 }).catch(() => false);
+  if (options?.expectMuacAsked !== undefined) {
+    // Asked here, on the step that draws it, because this is the only place the
+    // answer means anything: anywhere else the input is absent whatever the age.
+    expect(muacAsked, 'whether the form asks for a MUAC').toBe(options.expectMuacAsked);
+  }
+  if (muacAsked) {
     await muacInput.fill('12.0');
     await page.waitForTimeout(WAIT.formInteraction);
   }
@@ -273,6 +301,21 @@ export async function completeNCDA(page: Page) {
   // ShowsEdemaSigns → No
   await answerNCDAYesNo(page, 'signs of edema', 'No');
   await page.waitForTimeout(WAIT.formInteraction);
+
+  // Every question on this step is answered, so the button is active. The
+  // weight is held in kilograms and the MUAC in centimetres; a value belonging
+  // to the other unit has to be refused rather than saved as it stands. The
+  // form is only saved on the last step, so going on from here is refused just
+  // as saving would be.
+  const rangeChecks = [
+    { inputId: 'weight', popupClass: 'weight-out-of-range', bad: '8500', good: '8.5' },
+  ];
+  if (muacAsked) {
+    rangeChecks.push({ inputId: 'muac', popupClass: 'muac-out-of-range', bad: '120', good: '12.0' });
+  }
+  await expectMeasurementsOutOfRangeRefused(page, '.ui.form.ncda', rangeChecks, [
+    'birth-weight-out-of-range',
+  ]);
 
   await clickSave(page);
 
@@ -296,9 +339,15 @@ export async function completeNCDA(page: Page) {
   await answerNCDAYesNo(page, 'other support', 'No');
   await page.waitForTimeout(WAIT.formInteraction);
 
-  // TreatedForAcuteMalnutrition → Yes (pane4.row2, visible due to MUAC 12.0).
-  await answerNCDAYesNo(page, 'child being treated', 'Yes');
-  await page.waitForTimeout(WAIT.formInteraction);
+  // TreatedForAcuteMalnutrition → Yes (pane4.row2). Asked only when the MUAC is
+  // off, so a child too young to be asked for one is never asked this either.
+  const treatedQuestion = page.locator('.ui.form.ncda .label', {
+    hasText: 'child being treated',
+  });
+  if (await treatedQuestion.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await answerNCDAYesNo(page, 'child being treated', 'Yes');
+    await page.waitForTimeout(WAIT.formInteraction);
+  }
 
   // ChildWithDisability → Yes (pane4.row4)
   await answerNCDAYesNo(page, 'have disability', 'Yes');
@@ -359,6 +408,71 @@ export async function completeNCDA(page: Page) {
     await encounterPage.waitFor({ timeout: 10000 });
   }
 
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
+/**
+ * Reopens the saved Child Scorecard, says the weight could not be taken, and
+ * saves again.
+ *
+ * The form is filled over several steps and saved only at the end, so what it
+ * holds between them is what gets saved. Ticking the box empties the input and
+ * hides it; this checks the weight saved a moment ago does not come back in its
+ * place and get written again.
+ */
+export async function reopenNCDAAndSayWeightNotTaken(page: Page) {
+  await page.locator('div.page-encounter.child-scoreboard').waitFor({ timeout: 10000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  // Child Scorecard and Birth History share an icon, so pick it by name.
+  await click(
+    page.locator('.card', { hasText: 'CHILD SCORECARD' }).locator('.icon-task-history'),
+    page,
+  );
+  await page.locator('div.page-activity.child-scoreboard').waitFor({ timeout: 10000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  await clickNCDAStepTab(page, 'nutrition-assessment');
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  // The weight saved a moment ago is on the form.
+  const weightInput = page.locator('.form-input.measurement.weight input[type="number"]');
+  await expect(weightInput, 'the saved weight should be on the form').toHaveValue('8.5');
+
+  // Three measurements on this step carry the same label, so the box is picked
+  // by the measurement it belongs to.
+  await click(page.locator('div.ui.checkbox.skip-step.weight'), page);
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  // The input goes with it.
+  await expect(weightInput, 'the input should go when the box is ticked').toHaveCount(0);
+
+  // Save through whatever steps remain. A form that is already complete goes
+  // back to the encounter sooner than one being filled for the first time, so
+  // press Save until it does rather than a fixed number of times.
+  const encounterPage = page.locator('div.page-encounter.child-scoreboard');
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+
+  for (let step = 0; step < 6; step += 1) {
+    if (await encounterPage.isVisible({ timeout: 1000 }).catch(() => false)) {
+      break;
+    }
+    if (!(await saveBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
+      break;
+    }
+    await click(saveBtn, page);
+    await page.waitForTimeout(WAIT.sectionTransition);
+  }
+
+  await encounterPage.waitFor({ timeout: 15000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  // Back to the things still to do, or the activity that follows cannot be
+  // reached: this left the page on the completed ones.
+  await click(page.locator('#pending-tab'), page);
   await page.waitForTimeout(WAIT.elmRerender);
 }
 
@@ -466,4 +580,51 @@ export function queryChildScoreboardNodes(
     'child_scoreboard_pcv13_iz',
     'child_scoreboard_rotarix_iz',
   ], expectedTypes);
+}
+
+/**
+ * The weight held on the saved Child Scorecard, or null when it holds none.
+ *
+ * Read as a field rather than as "does the node exist", because the node is
+ * always there - the question is whether the measurement was written into it.
+ */
+export function queryNCDAWeight(personName: string): number | null {
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+  const php = `
+    \\$person_name = base64_decode('${personNameB64}');
+    \\$query = new EntityFieldQuery();
+    \\$result = \\$query->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$person_name)
+      ->execute();
+    if (empty(\\$result['node'])) {
+      echo json_encode(['error' => 'Person not found']);
+      return;
+    }
+    \\$person_nid = key(\\$result['node']);
+
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'child_scoreboard_ncda')
+      ->fieldCondition('field_person', 'target_id', \\$person_nid)
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$r['node'])) {
+      echo json_encode(['error' => 'NCDA not found']);
+      return;
+    }
+    \\$node = node_load(key(\\$r['node']));
+    \\$wrapper = entity_metadata_wrapper('node', \\$node);
+    \\$weight = \\$wrapper->field_weight->value();
+    echo json_encode(['weight' => \\$weight]);
+  `;
+
+  const { drushCmd, cwd } = drushEnv();
+  const output = execSync(`${drushCmd} eval "${php}"`, { cwd, timeout: 30000, encoding: 'utf-8' });
+  const parsed = JSON.parse(output.trim());
+  if (parsed.error) {
+    throw new Error(`queryNCDAWeight: ${parsed.error}`);
+  }
+  return parsed.weight === null || parsed.weight === undefined ? null : Number(parsed.weight);
 }

@@ -6,7 +6,7 @@ import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (ContributingFactorsForm, DropZoneFile, HealthEducationForm, HeightForm, ImmunisationTask, MedicationAdministrationForm, MuacForm, NCDAData, NCDAForm, NCDAStep, NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, PhotoForm, SendToHCForm, VaccinationForm, VaccinationFormViewMode, VitalsForm, WeightForm, emptyContributingFactorsForm, emptyHealthEducationForm, emptyHeightForm, emptyMedicationAdministrationForm, emptyMuacForm, emptyNCDAData, emptyNutritionCaringForm, emptyNutritionFeedingForm, emptyNutritionFollowUpForm, emptyNutritionFoodSecurityForm, emptyNutritionForm, emptyNutritionHygieneForm, emptyPhotoForm, emptySendToHCForm, emptyVaccinationForm, emptyVitalsForm, emptyWeightForm)
+import Measurement.Model exposing (ContributingFactorsForm, DropZoneFile, HealthEducationForm, HeightForm, ImmunisationTask, MedicationAdministrationForm, MuacForm, NCDAData, NCDAForm, NCDAStep, NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, PhotoForm, RangedMeasurement, SendToHCForm, VaccinationForm, VaccinationFormViewMode, VitalsForm, WeightForm, emptyContributingFactorsForm, emptyHealthEducationForm, emptyHeightForm, emptyMedicationAdministrationForm, emptyMuacForm, emptyNCDAData, emptyNutritionCaringForm, emptyNutritionFeedingForm, emptyNutritionFollowUpForm, emptyNutritionFoodSecurityForm, emptyNutritionForm, emptyNutritionHygieneForm, emptyPhotoForm, emptySendToHCForm, emptyVaccinationForm, emptyVitalsForm, emptyWeightForm)
 import Pages.Page exposing (Page)
 import Pages.WellChild.Activity.Types exposing (DangerSignsTask, MedicationTask(..), NutritionAssessmentTask)
 
@@ -37,6 +37,7 @@ type Msg
     | SetActiveNutritionAssessmentTask NutritionAssessmentTask
     | SetHeight String
     | SetHeightNotTaken Bool
+    | PreSaveHeight (EverySet SkippedForm) PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssessmentTask)
     | SaveHeight (EverySet SkippedForm) PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssessmentTask)
     | SetHeadCircumference String
     | ToggleHeadCircumferenceNotTaken
@@ -44,11 +45,13 @@ type Msg
     | PreSaveHeadCircumference PersonId (Maybe Float) (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | SaveHeadCircumference PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
     | SetMuac String
+    | PreSaveMuac PersonId (Maybe ( WellChildMuacId, WellChildMuac )) (Maybe NutritionAssessmentTask)
     | SaveMuac PersonId (Maybe ( WellChildMuacId, WellChildMuac )) (Maybe NutritionAssessmentTask)
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( WellChildNutritionId, WellChildNutrition )) (EverySet NutritionAssessment) (Maybe NutritionAssessmentTask)
     | SetWeight String
     | SetWeightNotTaken Bool
+    | PreSaveWeight (EverySet SkippedForm) PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
     | SaveWeight (EverySet SkippedForm) PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
       -- IMMUNISATION
     | SetActiveImmunisationTask ImmunisationTask
@@ -105,7 +108,7 @@ type Msg
       -- NCDA
     | SetUpdateANCVisits Bool
     | ToggleANCVisitDate NominalDate
-    | SetBirthWeightOutOfRangePopup Bool
+    | SetMeasurementOutOfRangePopup (Maybe NCDAStep)
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetChildReceivesVitaminA ReceiveOption
@@ -166,10 +169,10 @@ emptyModel =
 
 
 type WarningPopupType
-    = PopupBirthWeightOutOfRange
-    | PopupNutritionAssessment (List NutritionAssessment)
-    | PopupMacrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
+    = PopupMacrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
+    | PopupMeasurementOutOfRange (List RangedMeasurement)
     | PopupMicrocephaly PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
+    | PopupNutritionAssessment (List NutritionAssessment)
 
 
 type alias PregnancySummaryForm =

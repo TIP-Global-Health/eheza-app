@@ -81,9 +81,9 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
     await navigateToChild(page);
 
     // 5. Complete mandatory child activities with abnormal values.
-    await completeHeight(page, '70');
-    await completeWeight(page, '8.5');
-    await completeMuac(page, '11.5'); // Low MUAC → triggers malnutrition
+    await completeHeight(page, '70', true);
+    await completeWeight(page, '8.5', true);
+    await completeMuac(page, '11.5', true); // Low MUAC → triggers malnutrition
     await completeNutritionSignsAbnormal(page); // Edema → triggers NextSteps
     await completeChildFbf(page);
     await completeNCDA(page);

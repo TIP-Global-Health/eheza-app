@@ -1,13 +1,13 @@
 import { execSync } from 'child_process';
 
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import { click } from './auth';
 import { drushEnv } from './device';
 import {
   WAIT,
   answerYesNo,
   clickSubTaskTab,
-  expectBirthWeightInKilogramsRefused,
+  expectMeasurementsOutOfRangeRefused,
   fillMeasurement,
   formInput,
   openActivity as openActivityBase,
@@ -292,9 +292,31 @@ export async function completeNutritionAssessment(
     muac?: string;
     nutritionSigns?: string[];
     weight?: string;
+    // Type a wrong value into each measurement first, and check the nurse is
+    // told the range and kept on the form, before entering the right one.
+    checkRanges?: boolean;
+    // Save the height as one that could not be taken first, and check that
+    // goes through, before going back and recording it. CHW only: the
+    // checkbox is not drawn for a nurse.
+    heightNotTakenFirst?: boolean;
   },
 ) {
   const nutritionSigns = options?.nutritionSigns ?? [];
+
+  // Wrong in a way the nurse could type: a height in millimetres, a MUAC in
+  // millimetres where centimetres are asked for, a weight in the wrong place.
+  const enter = async (id: string, good: string, bad: string, otherClasses: string[]) => {
+    if (options?.checkRanges) {
+      await expectMeasurementsOutOfRangeRefused(
+        page,
+        `.form-input.measurement.${id}`,
+        [{ inputId: id, popupClass: `${id}-out-of-range`, bad, good }],
+        otherClasses,
+      );
+    } else {
+      await fillMeasurement(page, id, good);
+    }
+  };
 
   await openActivity(page, 'nutrition-assessment');
 
@@ -302,7 +324,29 @@ export async function completeNutritionAssessment(
   const heightTab = page.locator('.link-section:has(.icon-activity-task.icon-height)');
   if (options?.height && await heightTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'height');
-    await fillMeasurement(page, 'height', options.height);
+
+    if (options?.heightNotTakenFirst) {
+      const notTaken = page.locator('div.ui.checkbox.activity', {
+        hasText: 'Unable to take measurement',
+      });
+      await click(notTaken, page);
+      await page.waitForTimeout(WAIT.formInteraction);
+
+      // Nothing is recorded, so there is nothing to be out of range: the
+      // button answers, and no warning comes up.
+      const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+      await expect(saveBtn).toHaveClass(/active/);
+      await click(saveBtn, page);
+      await page.waitForTimeout(WAIT.sectionTransition);
+      await expect(page.locator('div.ui.active.modal.measurement-out-of-range')).toHaveCount(0);
+
+      // Back to the height, this time recording one.
+      await clickSubTaskTab(page, 'height');
+      await click(notTaken, page);
+      await page.waitForTimeout(WAIT.formInteraction);
+    }
+
+    await enter('height', options.height, '1050', ['muac-out-of-range', 'weight-out-of-range']);
     await saveSubTask(page);
   }
 
@@ -321,7 +365,7 @@ export async function completeNutritionAssessment(
   const muacTab = page.locator('.link-section:has(.icon-activity-task.icon-muac)');
   if (options?.muac && await muacTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'muac');
-    await fillMeasurement(page, 'muac', options.muac);
+    await enter('muac', options.muac, '125', ['height-out-of-range', 'weight-out-of-range']);
     await saveSubTask(page);
   }
 
@@ -346,7 +390,7 @@ export async function completeNutritionAssessment(
   const weightTab = page.locator('.link-section:has(.icon-activity-task.icon-weight)');
   if (options?.weight && await weightTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'weight');
-    await fillMeasurement(page, 'weight', options.weight);
+    await enter('weight', options.weight, '850', ['height-out-of-range', 'muac-out-of-range']);
     await saveSubTask(page);
   }
 
@@ -511,7 +555,9 @@ export async function completePregnancySummary(page: Page) {
   await fillMeasurement(page, 'apgar.one-min', '8');
   await fillMeasurement(page, 'apgar.five-min', '9');
 
-  // Birth Length Available → No (second bool input after APGAR).
+  // Birth Length Available → No to begin with. The length is not asked for
+  // then, so there is no length on screen to correct and the form must not be
+  // held up over one.
   const birthLengthBoolInput = boolInputs.nth(1);
   await click(birthLengthBoolInput.locator('label', { hasText: 'No' }), page);
   await page.waitForTimeout(WAIT.formInteraction);
@@ -526,12 +572,76 @@ export async function completePregnancySummary(page: Page) {
   await click(defectsBoolInput.locator('label', { hasText: 'No' }), page);
   await page.waitForTimeout(WAIT.formInteraction);
 
-  // Birth Weight is filled last, so that the rest of the form is answered and
-  // Save is active: a weight in kilograms has to be refused before the weight
-  // in grams is entered and the activity saved.
-  await expectBirthWeightInKilogramsRefused(page, '.ui.form.pregnancy-summary', '3000');
+  // A birth weight that is in range, so that nothing else stands in the way.
+  await fillMeasurement(page, 'birth-weight', '3000');
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  // With no birth length recorded, the activity saves and we leave it.
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await saveBtn.waitFor({ timeout: 5000 });
+  await expect(saveBtn).toHaveClass(/active/);
+  await saveActivity(page, 'well-child');
+
+  // Back into the activity, this time recording a birth length. The form comes
+  // up with what was just saved, so this also covers correcting a measurement
+  // on a record that already exists. Saving it moved it to the Completed tab,
+  // so it is reached from there rather than from the list of things to do.
+  await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+  // Birth History and Child Scorecard are drawn with the same icon, so the
+  // card is picked by its name rather than by the icon alone.
+  await click(page.locator('.card', { hasText: 'BIRTH HISTORY' }).locator('.icon-task-history'), page);
+  await page.locator('div.page-activity.well-child').waitFor({ timeout: 10000 });
+  await form.waitFor({ timeout: 5000 });
+  await click(boolInputs.nth(1).locator('label', { hasText: 'Yes' }), page);
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  // Everything the form asks for as a number is wrong at once -- Apgar scores
+  // that cannot be scores out of ten, a weight in kilograms and a length in
+  // metres -- so the warning has to name all four, in the order the form asks
+  // for them, before any of them is entered as it should be.
+  //
+  // 36 is the value recorded most often that cannot be an Apgar score, and
+  // 30000 the largest.
+  await expectMeasurementsOutOfRangeRefused(page, '.ui.form.pregnancy-summary', [
+    {
+      inputId: 'apgar.one-min',
+      popupClass: 'apgar-one-minute-out-of-range',
+      bad: '36',
+      good: '8',
+      saysInWarning: 'Apgar score at one minute',
+    },
+    {
+      inputId: 'apgar.five-min',
+      popupClass: 'apgar-five-minutes-out-of-range',
+      bad: '30000',
+      good: '9',
+      saysInWarning: 'Apgar score at five minutes',
+    },
+    {
+      inputId: 'birth-weight',
+      popupClass: 'birth-weight-out-of-range',
+      bad: '3',
+      good: '3000',
+      saysInWarning: 'Birth weight is recorded in grams',
+    },
+    {
+      inputId: 'birth-length',
+      popupClass: 'birth-length-out-of-range',
+      bad: '0.5',
+      good: '50',
+      saysInWarning: 'Birth length is recorded in centimetres',
+    },
+  ]);
 
   await saveActivity(page, 'well-child');
+
+  // Reaching the saved activity left us on the Completed tab. Go back to the
+  // things still to do, so the activity after this one can be reached.
+  await click(page.locator('#pending-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------

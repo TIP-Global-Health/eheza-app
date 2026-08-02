@@ -162,7 +162,18 @@ viewHeaderAndContent language currentDate zscores site features id isChw activit
         [ viewHeader language id activity assembled
         , viewContent language currentDate zscores site features isChw activity model assembled
         , viewModal <|
-            warningPopup language assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
+            case model.warningPopupState of
+                -- Answered here, where the site is known: the warning names the
+                -- unit a measurement is recorded in, and that differs by site.
+                Just (WarningPopupMeasurementOutOfRange measurements) ->
+                    Just <|
+                        Measurement.View.measurementOutOfRangePopup language
+                            site
+                            measurements
+                            (SetWarningPopupState Nothing)
+
+                _ ->
+                    warningPopup language assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
 
 
@@ -212,6 +223,17 @@ warningPopup language encounterDiagnoses setStateMsg state =
             let
                 data =
                     case popupType of
+                        -- Answered by the page, which knows the site.
+                        WarningPopupMeasurementOutOfRange _ ->
+                            Nothing
+
+                        WarningPopupMentalHealth mentalHealthAction ->
+                            Just
+                                ( p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupMessage ]
+                                , p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupInstructions ]
+                                , mentalHealthAction
+                                )
+
                         WarningPopupRegular ->
                             let
                                 nonUrgentDiagnoses =
@@ -274,11 +296,11 @@ warningPopup language encounterDiagnoses setStateMsg state =
                                     , setStateMsg Nothing
                                     )
 
-                        WarningPopupUrgent ( top, bottom ) ->
+                        WarningPopupTreatmentReview treatmentReviewAtion ->
                             Just
-                                ( p [] [ text top ]
-                                , p [] [ text bottom ]
-                                , setStateMsg Nothing
+                                ( p [] [ text <| translate language Translate.TreatmentReviewWarningPopupMessage ]
+                                , p [] [ text <| translate language Translate.TreatmentReviewWarningPopupInstructions ]
+                                , treatmentReviewAtion
                                 )
 
                         WarningPopupTuberculosis ->
@@ -288,18 +310,11 @@ warningPopup language encounterDiagnoses setStateMsg state =
                                 , setStateMsg Nothing
                                 )
 
-                        WarningPopupMentalHealth mentalHealthAction ->
+                        WarningPopupUrgent ( top, bottom ) ->
                             Just
-                                ( p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupMessage ]
-                                , p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupInstructions ]
-                                , mentalHealthAction
-                                )
-
-                        WarningPopupTreatmentReview treatmentReviewAtion ->
-                            Just
-                                ( p [] [ text <| translate language Translate.TreatmentReviewWarningPopupMessage ]
-                                , p [] [ text <| translate language Translate.TreatmentReviewWarningPopupInstructions ]
-                                , treatmentReviewAtion
+                                ( p [] [ text top ]
+                                , p [] [ text bottom ]
+                                , setStateMsg Nothing
                                 )
 
                         WarningPopupVitaminA treatmentReviewAtion ->
@@ -1046,13 +1061,13 @@ viewExaminationContent language currentDate zscores site features assembled data
                                     SaveVitals personId measurements.vitals nextTask
 
                                 NutritionAssessment ->
-                                    SaveNutritionAssessment personId measurements.nutrition previouslyMeasuredHeight isAdequateGWG nextTask
+                                    PreSaveNutritionAssessment personId measurements.nutrition previouslyMeasuredHeight isAdequateGWG nextTask
 
                                 CorePhysicalExam ->
                                     SaveCorePhysicalExam personId measurements.corePhysicalExam nextTask
 
                                 ObstetricalExam ->
-                                    SaveObstetricalExam personId measurements.obstetricalExam nextTask
+                                    PreSaveObstetricalExam personId measurements.obstetricalExam nextTask
 
                                 BreastExam ->
                                     SaveBreastExam personId measurements.breastExam nextTask

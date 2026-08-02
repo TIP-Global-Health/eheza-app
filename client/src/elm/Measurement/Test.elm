@@ -5,37 +5,46 @@ import Backend.Measurement.Model
     exposing
         ( ColorAlertIndication(..)
         , CreatinineTestValue
+        , HeightInCm(..)
         , LiverFunctionTestValue
         , MuacInCm(..)
+        , SkippedForm(..)
+        , StuntingLevel(..)
         , TestExecutionNote(..)
         , VaccineDose(..)
         , WeightInGrm(..)
+        , WeightInKg(..)
         , WellChildVaccineType(..)
         )
 import Date exposing (Unit(..))
+import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), emptyCreatinineResultForm, emptyLiverFunctionResultForm, emptyModelChild)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyModelChild, emptyNCDAData, emptyNCDAForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
-        ( birthWeightBlocksNCDAForm
-        , birthWeightOutsideConstraints
+        ( birthWeightOutsideConstraints
         , creatinineResultFormWithDefault
         , getAllDosesForVaccine
         , getInputConstraintsHeight
+        , getInputConstraintsMuac
         , getInputConstraintsWeight
         , getIntervalForVaccine
+        , heightFormWithDefault
         , initialVaccinationDateByBirthDate
         , liverFunctionResultFormWithDefault
-        , muacOutsideConstraints
-        , outsideConstraints
+        , ncdaFormWithDefault
+        , ncdaMeasurementsOutOfRange
+        , outOfRangeAsEntered
+        , setNCDAStep
+        , showNCDAMeasurementOutOfRange
         )
 import Measurement.View exposing (viewColorAlertIndication)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (classes, text)
-import Time
+import Time exposing (Month(..))
 import Translate.Model exposing (Language(..))
 
 
@@ -282,42 +291,190 @@ updateChildSetMuacTest =
         ]
 
 
-birthWeightBlocksNCDAFormTest : Test
-birthWeightBlocksNCDAFormTest =
-    -- The form may only be stopped over a weight the nurse can actually reach.
-    -- The weight is asked on the Antenatal Care step, and only when the newborn
-    -- exam did not already record it; a form stopped over a weight it does not
-    -- show could not be left at all.
+ncdaMeasurementsOutOfRangeTest : Test
+ncdaMeasurementsOutOfRangeTest =
+    -- The form may only be stopped over a measurement the nurse can actually
+    -- reach. Each of these questions is asked only in some circumstances, and a
+    -- value saved earlier stays on the form even once its question is gone, so
+    -- a form stopped over one it does not show could not be left at all. Every
+    -- condition is checked on its own here for that reason.
     let
         allSteps =
-            [ NCDAStepAntenatalCare, NCDAStepUniversalInterventions ]
-
-        withoutAntenatalCare =
-            [ NCDAStepUniversalInterventions ]
+            [ NCDAStepAntenatalCare
+            , NCDAStepNutritionAssessment
+            , NCDAStepUniversalInterventions
+            ]
 
         newbornExamWithoutBirthWeight =
             Nothing
+
+        newbornExamWithBirthWeight =
+            Just
+                { expectedDateConcluded = Date.fromCalendarDate 2020 Jan 1
+                , deliveryComplications = EverySet.empty
+                , signs = EverySet.empty
+                , apgarOneMin = Nothing
+                , apgarFiveMin = Nothing
+                , birthWeight = Just (WeightInGrm 3000)
+                , birthLength = Nothing
+                , birthDefects = EverySet.empty
+                }
     in
-    describe "birthWeightBlocksNCDAForm"
-        [ test "a weight in kilograms on a form that asks for it is stopped" <|
+    describe "ncdaMeasurementsOutOfRange"
+        [ describe "the birth weight, asked on the Antenatal Care step"
+            [ test "a weight in kilograms is named, on the step that asks it" <|
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteRwanda allSteps newbornExamWithoutBirthWeight True { emptyNCDAForm | birthWeight = Just (WeightInGrm 3) }
+                        |> Expect.equal [ ( MeasurementBirthWeight, NCDAStepAntenatalCare ) ]
+            , test "a weight in grams is not named" <|
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteRwanda allSteps newbornExamWithoutBirthWeight True { emptyNCDAForm | birthWeight = Just (WeightInGrm 3000) }
+                        |> Expect.equal []
+            , test "without that step it is not named, though the form still holds it" <|
+                -- The step is dropped once an NCDA was filled before, and the
+                -- weight saved then is still on the form. There is no field to
+                -- correct it, so stopping here would leave the form unsavable.
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteRwanda [ NCDAStepNutritionAssessment ] newbornExamWithoutBirthWeight True { emptyNCDAForm | birthWeight = Just (WeightInGrm 3) }
+                        |> Expect.equal []
+            , test "when the newborn exam already recorded one, it is not asked and not named" <|
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteRwanda allSteps newbornExamWithBirthWeight True { emptyNCDAForm | birthWeight = Just (WeightInGrm 3) }
+                        |> Expect.equal []
+            ]
+        , describe "the weight, asked on the Nutrition Assessment step"
+            [ test "a weight in grams is named, on the step that asks it" <|
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteRwanda allSteps newbornExamWithoutBirthWeight True { emptyNCDAForm | weight = Just (WeightInKg 8500) }
+                        |> Expect.equal [ ( MeasurementWeight, NCDAStepNutritionAssessment ) ]
+            , test "a weight in kilograms is not named" <|
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteRwanda allSteps newbornExamWithoutBirthWeight True { emptyNCDAForm | weight = Just (WeightInKg 8.5) }
+                        |> Expect.equal []
+            , test "at a health centre that step is not asked, so it is not named" <|
+                -- The step is only part of the form when the NCDA is filled by
+                -- a CHW, and a weight saved earlier is still on the form.
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteRwanda [ NCDAStepAntenatalCare ] newbornExamWithoutBirthWeight True { emptyNCDAForm | weight = Just (WeightInKg 8500) }
+                        |> Expect.equal []
+            , test "a form holding no weight is not named" <|
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteRwanda allSteps newbornExamWithoutBirthWeight True emptyNCDAForm
+                        |> Expect.equal []
+            ]
+        , describe "the MUAC, asked from six months of age"
+            [ test "a MUAC in millimetres is named, on the step that asks it" <|
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteRwanda allSteps newbornExamWithoutBirthWeight True { emptyNCDAForm | muac = Just (MuacInCm 125) }
+                        |> Expect.equal [ ( MeasurementMuac, NCDAStepNutritionAssessment ) ]
+            , test "a MUAC in centimetres is not named" <|
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteRwanda allSteps newbornExamWithoutBirthWeight True { emptyNCDAForm | muac = Just (MuacInCm 12.5) }
+                        |> Expect.equal []
+            , test "under six months it is not asked, so it is not named" <|
+                -- The exact regression this had three times before: the MUAC
+                -- input is only drawn from six months, and gating on a value
+                -- the form never shows deadened the button with nothing on
+                -- screen to correct.
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteRwanda allSteps newbornExamWithoutBirthWeight False { emptyNCDAForm | muac = Just (MuacInCm 125) }
+                        |> Expect.equal []
+            , test "Burundi: a form holding 12.5 cm is 125 mm there, so it is not named" <|
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteBurundi allSteps newbornExamWithoutBirthWeight True { emptyNCDAForm | muac = Just (MuacInCm 12.5) }
+                        |> Expect.equal []
+            , test "Burundi: a form holding 1.25 cm is 12.5 mm there, below the range" <|
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteBurundi allSteps newbornExamWithoutBirthWeight True { emptyNCDAForm | muac = Just (MuacInCm 1.25) }
+                        |> Expect.equal [ ( MeasurementMuac, NCDAStepNutritionAssessment ) ]
+            ]
+        , describe "saying a measurement could not be taken"
+            [ test "empties it, so there is nothing left to be out of range" <|
+                -- Ticking the box clears the value, and hydrating a saved form
+                -- keeps it cleared. Were either to leave the old value behind,
+                -- the form would be stopped by a measurement whose input is not
+                -- even drawn.
+                \_ ->
+                    ncdaFormWithDefault
+                        { emptyNCDAForm | weightNotTaken = Just True }
+                        (Just
+                            { signs = EverySet.empty
+                            , birthWeight = Nothing
+                            , ancVisitsDates = EverySet.empty
+                            , receivesVitaminA = Nothing
+                            , stuntingLevel = Nothing
+                            , weight = Just (WeightInKg 8500)
+                            , muac = Nothing
+                            }
+                        )
+                        |> ncdaMeasurementsOutOfRange SiteRwanda allSteps newbornExamWithoutBirthWeight True
+                        |> Expect.equal []
+            ]
+        , describe "several at once"
+            [ test "all are named, in the order the form asks them" <|
+                -- The nurse is told about every one, rather than correcting one
+                -- and being stopped again by the next.
+                \_ ->
+                    ncdaMeasurementsOutOfRange SiteRwanda
+                        allSteps
+                        newbornExamWithoutBirthWeight
+                        True
+                        { emptyNCDAForm
+                            | birthWeight = Just (WeightInGrm 3)
+                            , weight = Just (WeightInKg 8500)
+                            , muac = Just (MuacInCm 125)
+                        }
+                        |> Expect.equal
+                            [ ( MeasurementBirthWeight, NCDAStepAntenatalCare )
+                            , ( MeasurementWeight, NCDAStepNutritionAssessment )
+                            , ( MeasurementMuac, NCDAStepNutritionAssessment )
+                            ]
+            ]
+        ]
+
+
+{-| The warning has to leave the nurse looking at the input it names.
+
+Four pages hold this form and each moves it the same way, which is why the move
+is said once and asked for here: dropping it on any one of them would name a
+measurement asked on a step she is not on, and nothing else would notice.
+
+-}
+showNCDAMeasurementOutOfRangeTest : Test
+showNCDAMeasurementOutOfRangeTest =
+    let
+        onStep step data =
+            { data | form = (\form -> { form | step = Just step }) data.form }
+
+        shownAndStep data =
+            ( data.showMeasurementOutOfRangePopup, data.form.step )
+    in
+    describe "showNCDAMeasurementOutOfRange"
+        [ test "showing it opens the form on the step that asks for the measurement" <|
             \_ ->
-                birthWeightBlocksNCDAForm allSteps newbornExamWithoutBirthWeight (Just (WeightInGrm 3))
-                    |> Expect.equal True
-        , test "a weight in grams is not stopped" <|
+                emptyNCDAData
+                    |> onStep NCDAStepInfrastructureEnvironment
+                    |> showNCDAMeasurementOutOfRange (Just NCDAStepNutritionAssessment)
+                    |> shownAndStep
+                    |> Expect.equal ( True, Just NCDAStepNutritionAssessment )
+        , test "hiding it leaves the form where it is" <|
             \_ ->
-                birthWeightBlocksNCDAForm allSteps newbornExamWithoutBirthWeight (Just (WeightInGrm 3000))
-                    |> Expect.equal False
-        , test "a form without the Antenatal Care step is never stopped" <|
-            -- The step is dropped once an NCDA was filled before, and the weight
-            -- saved then is still on the form. There is no field to correct it,
-            -- so stopping here would leave the form impossible to save.
+                emptyNCDAData
+                    |> onStep NCDAStepNutritionAssessment
+                    |> showNCDAMeasurementOutOfRange Nothing
+                    |> shownAndStep
+                    |> Expect.equal ( False, Just NCDAStepNutritionAssessment )
+        , test "hiding it on a form that was never moved leaves it unmoved" <|
             \_ ->
-                birthWeightBlocksNCDAForm withoutAntenatalCare newbornExamWithoutBirthWeight (Just (WeightInGrm 3))
-                    |> Expect.equal False
-        , test "a form with no weight entered is not stopped" <|
+                emptyNCDAData
+                    |> showNCDAMeasurementOutOfRange Nothing
+                    |> shownAndStep
+                    |> Expect.equal ( False, Nothing )
+        , test "setNCDAStep moves the form and touches nothing else" <|
             \_ ->
-                birthWeightBlocksNCDAForm allSteps newbornExamWithoutBirthWeight Nothing
-                    |> Expect.equal False
+                setNCDAStep NCDAStepTargetedInterventions emptyNCDAData
+                    |> shownAndStep
+                    |> Expect.equal ( False, Just NCDAStepTargetedInterventions )
         ]
 
 
@@ -329,112 +486,40 @@ birthWeightOutsideConstraintsTest =
     describe "birthWeightOutsideConstraints"
         [ test "an ordinary birth weight in grams is inside the range" <|
             \_ ->
-                birthWeightOutsideConstraints (Just (WeightInGrm 3000))
+                birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 3000))
                     |> Expect.equal False
         , test "a genuinely low birth weight is still inside the range" <|
             \_ ->
-                birthWeightOutsideConstraints (Just (WeightInGrm 1200))
+                birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 1200))
                     |> Expect.equal False
         , test "the same weight typed in kilograms is outside the range" <|
             \_ ->
-                birthWeightOutsideConstraints (Just (WeightInGrm 3))
+                birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 3))
                     |> Expect.equal True
         , test "a weight far above what a newborn can be is outside the range" <|
             \_ ->
-                birthWeightOutsideConstraints (Just (WeightInGrm 350022))
+                birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 350022))
                     |> Expect.equal True
         , test "the extremes that do occur are accepted" <|
             -- Babies have survived under 500g, and a very large baby can be
             -- over 6000g. Both have to be recordable as they are.
             \_ ->
-                ( birthWeightOutsideConstraints (Just (WeightInGrm 300))
-                , birthWeightOutsideConstraints (Just (WeightInGrm 7000))
+                ( birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 300))
+                , birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 7000))
                 )
                     |> Expect.equal ( False, False )
         , test "just outside either end is refused" <|
             \_ ->
-                ( birthWeightOutsideConstraints (Just (WeightInGrm 299))
-                , birthWeightOutsideConstraints (Just (WeightInGrm 7001))
+                ( birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 299))
+                , birthWeightOutsideConstraints SiteRwanda (Just (WeightInGrm 7001))
                 )
                     |> Expect.equal ( True, True )
         , test "a weight that has not been entered is not reported" <|
             -- Whether the measurement still has to be taken is answered by the
             -- task count, not here.
             \_ ->
-                birthWeightOutsideConstraints Nothing
+                birthWeightOutsideConstraints SiteRwanda Nothing
                     |> Expect.equal False
-        ]
-
-
-outsideConstraintsTest : Test
-outsideConstraintsTest =
-    -- Guards the Save actions of every measurement form: a value that is absent,
-    -- or outside the range printed above the input, must keep Save disabled.
-    describe "outsideConstraints"
-        [ test "a plausible height is inside the constraints" <|
-            \_ ->
-                outsideConstraints getInputConstraintsHeight (Just 105)
-                    |> Expect.equal False
-        , test "a mistyped height (1050 cm) is outside the constraints" <|
-            \_ ->
-                outsideConstraints getInputConstraintsHeight (Just 1050)
-                    |> Expect.equal True
-        , test "a grossly mistyped weight (850 kg) is outside the constraints" <|
-            \_ ->
-                outsideConstraints getInputConstraintsWeight (Just 850)
-                    |> Expect.equal True
-        , test "the weight range is wide (0.5-200 kg), so an implausible 85 kg for a child still passes" <|
-            -- The constraints are a typo guard, not a plausibility check: the
-            -- weight form is shared with adult encounters. A dropped decimal
-            -- (8.5 -> 85) is therefore NOT caught here.
-            \_ ->
-                outsideConstraints getInputConstraintsWeight (Just 85)
-                    |> Expect.equal False
-        , test "the range bounds themselves are inside the constraints" <|
-            \_ ->
-                ( outsideConstraints getInputConstraintsHeight (Just 25)
-                , outsideConstraints getInputConstraintsHeight (Just 250)
-                )
-                    |> Expect.equal ( False, False )
-        , test "a value just below the minimum is outside the constraints" <|
-            \_ ->
-                outsideConstraints getInputConstraintsHeight (Just 24.9)
-                    |> Expect.equal True
-        , test "an unset value is outside the constraints, so Save stays disabled" <|
-            \_ ->
-                outsideConstraints getInputConstraintsHeight Nothing
-                    |> Expect.equal True
-        ]
-
-
-muacOutsideConstraintsTest : Test
-muacOutsideConstraintsTest =
-    -- MUAC is stored in cm, but its constraints are expressed in the unit shown
-    -- to the nurse - mm at Burundi. Comparing the stored value directly would
-    -- reject every legitimate Burundi measurement.
-    describe "muacOutsideConstraints (site-aware)"
-        [ test "Burundi: a stored 12.5 cm (125 mm) is inside the 50-999 mm range" <|
-            \_ ->
-                muacOutsideConstraints SiteBurundi (Just 12.5)
-                    |> Expect.equal False
-        , test "Burundi: a stored 0.4 cm (4 mm) is below the 50 mm minimum" <|
-            \_ ->
-                muacOutsideConstraints SiteBurundi (Just 0.4)
-                    |> Expect.equal True
-        , test "Rwanda: a stored 12.5 cm is inside the 5-99 cm range" <|
-            \_ ->
-                muacOutsideConstraints SiteRwanda (Just 12.5)
-                    |> Expect.equal False
-        , test "Rwanda: a stored 125 cm (mm typed into a cm field) is above the 99 cm maximum" <|
-            \_ ->
-                muacOutsideConstraints SiteRwanda (Just 125)
-                    |> Expect.equal True
-        , test "an unset MUAC is outside the constraints at either site" <|
-            \_ ->
-                ( muacOutsideConstraints SiteBurundi Nothing
-                , muacOutsideConstraints SiteRwanda Nothing
-                )
-                    |> Expect.equal ( True, True )
         ]
 
 
@@ -527,10 +612,178 @@ all =
         , getAllDosesForVaccineTest
         , initialVaccinationDateByBirthDateTest
         , updateChildSetMuacTest
-        , birthWeightBlocksNCDAFormTest
+        , ncdaFormWithDefaultNotTakenTest
+        , outOfRangeAsEnteredTest
+        , updateChildOutOfRangePopupTest
+        , ncdaMeasurementsOutOfRangeTest
+        , showNCDAMeasurementOutOfRangeTest
         , birthWeightOutsideConstraintsTest
-        , outsideConstraintsTest
-        , muacOutsideConstraintsTest
+        , heightFormWithDefaultSkippedTest
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
+        ]
+
+
+{-| The range check asks the form the nurse is looking at, which is why it does
+not have to ask separately whether the measurement could be taken: a form that
+was skipped holds no height to be out of range.
+-}
+heightFormWithDefaultSkippedTest : Test
+heightFormWithDefaultSkippedTest =
+    describe "heightFormWithDefault, on a measurement that could not be taken"
+        [ test "holds no height when the encounter says the form was skipped" <|
+            \_ ->
+                heightFormWithDefault (EverySet.singleton SkippedHeight)
+                    emptyHeightForm
+                    (Just (HeightInCm 1050))
+                    |> Expect.equal
+                        { height = Nothing
+                        , heightDirty = False
+                        , measurementNotTaken = Just True
+                        }
+        , test "holds no height when the nurse said so on the form" <|
+            \_ ->
+                heightFormWithDefault EverySet.empty
+                    { emptyHeightForm | height = Just 1050, measurementNotTaken = Just True }
+                    Nothing
+                    |> Expect.equal
+                        { height = Nothing
+                        , heightDirty = False
+                        , measurementNotTaken = Just True
+                        }
+        ]
+
+
+{-| The group session forms hold what the nurse typed, in the unit they show:
+millimetres for MUAC at Burundi, centimetres elsewhere. The range they are
+compared against is the one shown above the input, so the value is compared as
+it is - converting here as well would report every MUAC at Burundi.
+-}
+outOfRangeAsEnteredTest : Test
+outOfRangeAsEnteredTest =
+    describe "outOfRangeAsEntered"
+        [ test "Burundi: 125 mm is within the range shown there" <|
+            \_ ->
+                outOfRangeAsEntered (getInputConstraintsMuac SiteBurundi) MeasurementMuac 125
+                    |> Expect.equal []
+        , test "Rwanda: 125 is outside the range shown there, being millimetres" <|
+            \_ ->
+                outOfRangeAsEntered (getInputConstraintsMuac SiteRwanda) MeasurementMuac 125
+                    |> Expect.equal [ MeasurementMuac ]
+        , test "Rwanda: 12.5 cm is within the range shown there" <|
+            \_ ->
+                outOfRangeAsEntered (getInputConstraintsMuac SiteRwanda) MeasurementMuac 12.5
+                    |> Expect.equal []
+        , test "Burundi: 12.5 is outside the range shown there, being centimetres" <|
+            \_ ->
+                outOfRangeAsEntered (getInputConstraintsMuac SiteBurundi) MeasurementMuac 12.5
+                    |> Expect.equal [ MeasurementMuac ]
+        , test "a height of 1050 is outside its range, which is the same everywhere" <|
+            \_ ->
+                outOfRangeAsEntered getInputConstraintsHeight MeasurementHeight 1050
+                    |> Expect.equal [ MeasurementHeight ]
+        , test "a weight of 850 is outside its range" <|
+            \_ ->
+                outOfRangeAsEntered getInputConstraintsWeight MeasurementWeight 850
+                    |> Expect.equal [ MeasurementWeight ]
+        , test "both ends of a range are within it" <|
+            \_ ->
+                ( outOfRangeAsEntered getInputConstraintsHeight MeasurementHeight 25
+                , outOfRangeAsEntered getInputConstraintsHeight MeasurementHeight 250
+                )
+                    |> Expect.equal ( [], [] )
+        ]
+
+
+{-| What the group session form asks for is named on a warning until the nurse
+closes it.
+-}
+updateChildOutOfRangePopupTest : Test
+updateChildOutOfRangePopupTest =
+    describe "updateChild SetMeasurementOutOfRangePopupState"
+        [ test "names the measurement the form asked for" <|
+            \_ ->
+                let
+                    ( model, _, _ ) =
+                        updateChild SiteRwanda
+                            (SetMeasurementOutOfRangePopupState [ MeasurementMuac ])
+                            emptyModelChild
+                in
+                model.measurementOutOfRangePopupState
+                    |> Expect.equal [ MeasurementMuac ]
+        , test "closing it names nothing, and saves nothing on the way" <|
+            \_ ->
+                let
+                    ( model, _, outMsg ) =
+                        updateChild SiteRwanda
+                            (SetMeasurementOutOfRangePopupState [])
+                            { emptyModelChild | measurementOutOfRangePopupState = [ MeasurementWeight ] }
+                in
+                ( model.measurementOutOfRangePopupState, outMsg )
+                    |> Expect.equal ( [], Nothing )
+        ]
+
+
+{-| The Child Scorecard is filled over several steps and saved only at the end,
+so what the form holds between them is what gets saved. Ticking "measurement
+not taken" empties the input and hides it; the measurement saved at an earlier
+encounter must not come back in its place, or it is live behind a box saying it
+was not taken, and saved again at the end.
+-}
+ncdaFormWithDefaultNotTakenTest : Test
+ncdaFormWithDefaultNotTakenTest =
+    let
+        saved =
+            { signs = EverySet.empty
+            , birthWeight = Nothing
+            , ancVisitsDates = EverySet.empty
+            , receivesVitaminA = Nothing
+            , stuntingLevel = Just LevelYellow
+            , weight = Just (WeightInKg 12)
+            , muac = Just (MuacInCm 14)
+            }
+
+        emptyForm =
+            emptyNCDAData.form
+
+        hydrate form =
+            ncdaFormWithDefault form (Just saved)
+    in
+    describe "ncdaFormWithDefault, on a measurement said not to have been taken"
+        [ test "the weight saved earlier does not come back" <|
+            \_ ->
+                hydrate { emptyForm | weightNotTaken = Just True }
+                    |> .weight
+                    |> Expect.equal Nothing
+        , test "the MUAC saved earlier does not come back" <|
+            \_ ->
+                hydrate { emptyForm | muacNotTaken = Just True }
+                    |> .muac
+                    |> Expect.equal Nothing
+        , test "the stunting level saved earlier does not come back" <|
+            \_ ->
+                hydrate { emptyForm | stuntingLevelNotTaken = Just True }
+                    |> .stuntingLevel
+                    |> Expect.equal Nothing
+        , test "saying one was not taken leaves the others alone" <|
+            \_ ->
+                let
+                    form =
+                        hydrate { emptyForm | weightNotTaken = Just True }
+                in
+                ( form.weight, form.muac, form.stuntingLevel )
+                    |> Expect.equal ( Nothing, Just (MuacInCm 14), Just LevelYellow )
+        , test "a form nobody has touched still inherits what was saved" <|
+            \_ ->
+                let
+                    form =
+                        hydrate emptyForm
+                in
+                ( form.weight, form.muac, form.stuntingLevel )
+                    |> Expect.equal ( Just (WeightInKg 12), Just (MuacInCm 14), Just LevelYellow )
+        , test "what the nurse has typed is kept over what was saved" <|
+            \_ ->
+                hydrate { emptyForm | weight = Just (WeightInKg 13) }
+                    |> .weight
+                    |> Expect.equal (Just (WeightInKg 13))
         ]

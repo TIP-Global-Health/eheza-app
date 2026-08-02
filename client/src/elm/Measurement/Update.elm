@@ -18,6 +18,7 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet
 import Measurement.Model exposing (ModelChild, ModelMother, MsgChild(..), MsgMother(..), OutMsgChild(..), OutMsgMother(..), emptyParticipantFormProgress)
+import Measurement.Utils exposing (setNCDAStep, showNCDAMeasurementOutOfRange)
 import Pages.Utils exposing (setMuacValueForSite, setMultiSelectInputValue)
 import SyncManager.Model exposing (Site)
 
@@ -150,6 +151,12 @@ updateChild site msg model =
                            )
             in
             ( { model | fbfForm = fbfForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetMeasurementOutOfRangePopupState state ->
+            ( { model | measurementOutOfRangePopupState = state }
             , Cmd.none
             , Nothing
             )
@@ -415,13 +422,8 @@ updateChild site msg model =
             , Nothing
             )
 
-        SetBirthWeightOutOfRangePopup isOpen ->
-            let
-                updatedData =
-                    model.ncdaData
-                        |> (\data -> { data | showBirthWeightOutOfRangePopup = isOpen })
-            in
-            ( { model | ncdaData = updatedData }
+        SetMeasurementOutOfRangePopup stepAsking ->
+            ( { model | ncdaData = showNCDAMeasurementOutOfRange stepAsking model.ncdaData }
             , Cmd.none
             , Nothing
             )
@@ -438,16 +440,7 @@ updateChild site msg model =
             )
 
         SetNCDAFormStep step ->
-            let
-                updatedForm =
-                    model.ncdaData.form
-                        |> (\form -> { form | step = Just step })
-
-                updatedData =
-                    model.ncdaData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | ncdaData = updatedData }
+            ( { model | ncdaData = setNCDAStep step model.ncdaData }
             , Cmd.none
             , Nothing
             )

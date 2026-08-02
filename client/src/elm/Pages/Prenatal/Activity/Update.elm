@@ -41,7 +41,7 @@ import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
-import Measurement.Model exposing (VaccinationFormViewMode(..))
+import Measurement.Model exposing (RangedMeasurement(..), VaccinationFormViewMode(..))
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
@@ -70,7 +70,7 @@ import Measurement.Utils
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (Model, Msg(..), emptyPregnancyDatingForm)
 import Pages.Prenatal.Activity.Types exposing (ImmunisationTask(..), ObstetricHistoryStep(..), SymptomReviewStep(..), WarningPopupType(..))
-import Pages.Prenatal.Activity.Utils exposing (birthPlanFormWithDefault, breastExamFormWithDefault, dangerSignsFormWithDefault, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormWithDefault, medicalHistoryFormWithDefault, mentalHealthFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType)
+import Pages.Prenatal.Activity.Utils exposing (birthPlanFormWithDefault, breastExamFormWithDefault, dangerSignsFormWithDefault, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormWithDefault, medicalHistoryFormWithDefault, mentalHealthFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, prenatalNutritionFormWithDefault, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType)
 import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultInitialPhase, referralFormWithDefault, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toPrenatalReferralValueWithDefault)
 import Pages.Utils exposing (insertIntoSet, nonAdministrationReasonToSign, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, tasksBarId)
 import RemoteData exposing (RemoteData(..))
@@ -1087,6 +1087,67 @@ update currentDate site id db msg model =
             , Cmd.none
             , []
             )
+
+        PreSaveNutritionAssessment personId saved maybeHeight isAdequateGWG nextTask ->
+            let
+                form =
+                    getMeasurementValueFunc saved
+                        |> prenatalNutritionFormWithDefault model.examinationData.nutritionAssessmentForm
+
+                outOfRange =
+                    List.concat
+                        [ -- A height measured at an earlier encounter is carried
+                          -- over and its input is not drawn, so there would be
+                          -- nothing on screen to enter again.
+                          if maybeHeight /= Nothing then
+                            []
+
+                          else
+                            Measurement.Utils.outOfRange site MeasurementHeight form.height
+                        , Measurement.Utils.outOfRange site MeasurementWeight form.weight
+                        , Measurement.Utils.outOfRange site MeasurementMuac form.muac
+                        ]
+
+                extraMsgs =
+                    if List.isEmpty outOfRange then
+                        [ SaveNutritionAssessment personId saved maybeHeight isAdequateGWG nextTask ]
+
+                    else
+                        [ SetWarningPopupState <| Just <| WarningPopupMeasurementOutOfRange outOfRange ]
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate site id db) extraMsgs
+
+        PreSaveObstetricalExam personId saved nextTask ->
+            let
+                form =
+                    getMeasurementValueFunc saved
+                        |> obstetricalExamFormWithDefault model.examinationData.obstetricalExamForm
+
+                outOfRange =
+                    -- Asked for only when the uterus can be felt; the input is
+                    -- not drawn otherwise.
+                    if form.fundalPalpable == Just True then
+                        Measurement.Utils.outOfRange site MeasurementFundalHeight form.fundalHeight
+
+                    else
+                        []
+
+                extraMsgs =
+                    if List.isEmpty outOfRange then
+                        [ SaveObstetricalExam personId saved nextTask ]
+
+                    else
+                        [ SetWarningPopupState <| Just <| WarningPopupMeasurementOutOfRange outOfRange ]
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SaveNutritionAssessment personId saved maybeHeight isAdequateGWG nextTask ->
             let

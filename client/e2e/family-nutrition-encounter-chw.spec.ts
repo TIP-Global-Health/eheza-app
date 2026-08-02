@@ -52,7 +52,7 @@ test.describe('CHW: Family Nutrition Encounter', () => {
     await completeAhezaMother(page, { amount: '3', reasonIndex: 1 });
 
     // 4. Complete MUAC for mother.
-    await completeMuac(page, { value: '25.0' });
+    await completeMuac(page, { value: '25.0', checkRange: true });
 
     // 5. All mother activities done → End Encounter should be enabled.
     await endFamilyNutritionEncounter(page);
