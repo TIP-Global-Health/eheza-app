@@ -97,9 +97,9 @@ getInputConstraintsBirthWeight =
     }
 
 
-{-| The Apgar score is a score out of 10, given twice: once a minute after
-birth and once five minutes after. It is not a measurement of anything, so
-there is nothing else it could plausibly be.
+{-| The Apgar score is a score out of 10, given twice: one minute after birth
+and again five minutes after. It is not a measurement of anything, so there is
+nothing else it could plausibly be.
 -}
 getInputConstraintsApgar : FloatInputConstraints
 getInputConstraintsApgar =
