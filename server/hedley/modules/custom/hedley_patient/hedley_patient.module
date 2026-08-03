@@ -199,6 +199,14 @@ function hedley_patient_recalculate_shards_for_person_content($person_id) {
 
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
+    // Not everything that names a person is sharded. A whatsapp_record points
+    // at its person with field_person, so the query above returns it, but the
+    // bundle has no field_shards instance at all - asking a wrapper for it
+    // throws, and the person save this runs from would be aborted.
+    if (!field_info_instance('node', 'field_shards', $node->type)) {
+      continue;
+    }
+
     $wrapper = entity_metadata_wrapper('node', $node);
     $node_shards = $wrapper->field_shards->value(['identifier' => TRUE]);
 
