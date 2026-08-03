@@ -242,6 +242,16 @@ function _consolidate_patients_execute($original, $duplicate) {
   // person who no longer exists.
   $messages[] = _consolidate_patient_newborn_references($original, $duplicate);
 
+  // A WhatsApp record names the person a report was shared about. It carries no
+  // encounter indicator, so it is not a measurement and the loop above never
+  // sees it either.
+  $messages[] = _consolidate_patient_whatsapp_records($original, $duplicate);
+
+  // A trace contact IS a measurement, so the loop above re-pointed the person
+  // who reported it. It holds a second reference - the person who was contacted
+  // - which the loop does not touch.
+  $messages[] = _consolidate_patient_trace_contact_referrals($original, $duplicate);
+
   // Mark duplicate patient as Deleted.
   $wrapper_duplicate->field_deleted->set(TRUE);
   $wrapper_duplicate->save();
@@ -476,6 +486,75 @@ function _consolidate_patient_newborn_references($original, $duplicate) {
 
   return format_string('Newborn references: @count re-pointed to the original.', [
     '@count' => count($participant_ids),
+  ]);
+}
+
+/**
+ * Re-points the duplicate patient's WhatsApp records at the original.
+ *
+ * A whatsapp_record names the person a report was shared about, through
+ * field_person. It carries no encounter indicator, so it is not a measurement
+ * type and the consolidation's measurement sweep never sees it. Left alone, the
+ * record of a report that was sent keeps naming a person who no longer exists.
+ *
+ * No shard handling: the bundle carries no field_shards at all, so there is
+ * nothing to recompute. It has no field_deleted either, which is why the
+ * person-delete cascade leaves the record in place rather than soft-deleting
+ * it along with the duplicate.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_whatsapp_records($original, $duplicate) {
+  $record_ids = _hedley_patient_content_referencing_person($duplicate, [
+    'field_person',
+  ], 'whatsapp_record');
+
+  _associate_content_by_field($record_ids, 'field_person', $original);
+
+  return format_string('WhatsApp records: @count re-pointed to the original.', [
+    '@count' => count($record_ids),
+  ]);
+}
+
+/**
+ * Re-points trace contacts that refer to the duplicate patient.
+ *
+ * An acute_illness_trace_contact is a measurement, so the sweep above already
+ * re-points its field_person - the person who reported the contact. It holds a
+ * second person reference the sweep does not touch: field_referred_person, the
+ * person who was contacted. When the duplicate is that person, the trace
+ * contact keeps naming them after the merge.
+ *
+ * No shard handling: a trace contact's shards derive from field_person, which
+ * the measurement sweep has already dealt with, not from field_referred_person.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_trace_contact_referrals($original, $duplicate) {
+  $contact_ids = _hedley_patient_content_referencing_person($duplicate, [
+    'field_referred_person',
+  ], 'acute_illness_trace_contact');
+
+  _associate_content_by_field($contact_ids, 'field_referred_person', $original);
+
+  return format_string('Trace contact referrals: @count re-pointed to the original.', [
+    '@count' => count($contact_ids),
   ]);
 }
 
