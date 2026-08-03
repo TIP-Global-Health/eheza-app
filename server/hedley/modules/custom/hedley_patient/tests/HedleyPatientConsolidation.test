@@ -196,7 +196,13 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
   protected function createWhatsAppRecord($person) {
     $node = $this->drupalCreateNode(['type' => 'whatsapp_record']);
     $wrapper = entity_metadata_wrapper('node', $node);
+    // Everything the bundle marks required, so the fixture is a record that
+    // could exist rather than one that only survives because Drupal 7 skips
+    // field validation on a programmatic save.
     $wrapper->field_person->set($person);
+    $wrapper->field_date_measured->set(REQUEST_TIME);
+    $wrapper->field_phone_number->set('250780000000');
+    $wrapper->field_report_type->set('antenatal');
     $wrapper->save();
 
     return $node->nid;
@@ -218,6 +224,12 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_person->set($reporter);
     $wrapper->field_referred_person->set($referred);
+    $wrapper->field_date_measured->set(REQUEST_TIME);
+    // The bundle also marks field_acute_illness_encounter and field_nurse
+    // required, and both are left out on purpose. Without an encounter the
+    // contact is not discoverable as a measurement of the reporter, which is
+    // the state under test: field_referred_person has to be re-pointed by the
+    // new helper rather than swept up with the reporter's measurements.
     $wrapper->save();
 
     return $node->nid;
