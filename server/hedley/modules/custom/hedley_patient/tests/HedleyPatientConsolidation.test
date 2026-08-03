@@ -224,30 +224,6 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
   }
 
   /**
-   * Enrols a child in a group, brought by an adult.
-   *
-   * @param int $adult
-   *   The person who brings the child, held in field_adult.
-   * @param int $child
-   *   The enrolled child, held in field_person.
-   * @param int $clinic
-   *   The group node ID.
-   *
-   * @return int
-   *   The pmtct_participant node ID.
-   */
-  protected function createGroupParticipation($adult, $child, $clinic) {
-    $node = $this->drupalCreateNode(['type' => 'pmtct_participant']);
-    $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_person->set($child);
-    $wrapper->field_adult->set($adult);
-    $wrapper->field_clinic->set($clinic);
-    $wrapper->save();
-
-    return $node->nid;
-  }
-
-  /**
    * Whether a node is still live, that is not marked deleted.
    *
    * @param int $nid
@@ -534,11 +510,11 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     // participation moves to the original. Without this the cascade would
     // soft-delete it, and the child would lose an enrolment because someone
     // else was merged.
-    $clinic = $this->drupalCreateNode(['type' => 'clinic'])->nid;
+    $clinic = $this->createClinic();
     $child = $this->createPerson('Child16');
     $original = $this->createPerson('Original16');
     $duplicate = $this->createPerson('Duplicate16');
-    $participation = $this->createGroupParticipation($duplicate, $child, $clinic);
+    $participation = $this->createPMTCT($child, $duplicate, $clinic);
 
     _consolidate_patients_execute($original, $duplicate);
 
@@ -559,12 +535,12 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
 
     // 17. A participation the original already holds for the same child and
     // group is dropped rather than duplicated.
-    $clinic = $this->drupalCreateNode(['type' => 'clinic'])->nid;
+    $clinic = $this->createClinic();
     $child = $this->createPerson('Child17');
     $original = $this->createPerson('Original17');
     $duplicate = $this->createPerson('Duplicate17');
-    $kept = $this->createGroupParticipation($original, $child, $clinic);
-    $redundant = $this->createGroupParticipation($duplicate, $child, $clinic);
+    $kept = $this->createPMTCT($child, $original, $clinic);
+    $redundant = $this->createPMTCT($child, $duplicate, $clinic);
 
     _consolidate_patient_group_participations($original, $duplicate);
 
@@ -576,10 +552,10 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
 
     // 18. A participation where the original is the enrolled child is dropped,
     // rather than making the original its own adult.
-    $clinic = $this->drupalCreateNode(['type' => 'clinic'])->nid;
+    $clinic = $this->createClinic();
     $original = $this->createPerson('Original18');
     $duplicate = $this->createPerson('Duplicate18');
-    $selfReferential = $this->createGroupParticipation($duplicate, $original, $clinic);
+    $selfReferential = $this->createPMTCT($original, $duplicate, $clinic);
 
     _consolidate_patient_group_participations($original, $duplicate);
 
