@@ -242,6 +242,11 @@ function _consolidate_patients_execute($original, $duplicate) {
   // person who no longer exists.
   $messages[] = _consolidate_patient_newborn_references($original, $duplicate);
 
+  // A group participation names the adult who brings the child, and that is
+  // the reference the delete cascade DOES follow - so leaving it behind would
+  // not dangle, it would soft-delete another child's enrolment.
+  $messages[] = _consolidate_patient_group_participations($original, $duplicate);
+
   // A WhatsApp record names the person a report was shared about. It carries no
   // encounter indicator, so it is not a measurement and the loop above never
   // sees it either.
@@ -521,6 +526,84 @@ function _consolidate_patient_whatsapp_records($original, $duplicate) {
 
   return format_string('WhatsApp records: @count re-pointed to the original.', [
     '@count' => count($record_ids),
+  ]);
+}
+
+/**
+ * Re-points group participations the duplicate patient holds as the adult.
+ *
+ * A pmtct_participant enrols a child in a group, and names the adult who brings
+ * them in field_adult. That is the one person reference where leaving the
+ * duplicate in place does not merely dangle: field_adult IS followed by the
+ * person-delete cascade, so marking the duplicate deleted soft-deletes the
+ * participation - and the child, who has nothing to do with this merge, loses
+ * a group enrolment.
+ *
+ * Participations where the duplicate is the CHILD are a separate matter, left
+ * alone here: _consolidate_session_content_validate() refuses the merge unless
+ * the original already participates in every group the duplicate has
+ * measurements in, so the enrolment the child needs is already there.
+ *
+ * Shards are cleared so the presave hook recomputes them. A participant is a
+ * two-person node - hedley_device_assign_shards() gives it the union of both
+ * persons' shards - and it leaves an already-populated field alone, so without
+ * this the participation would keep the duplicate's shards and miss any health
+ * center only the original belongs to.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_group_participations($original, $duplicate) {
+  $participant_ids = _hedley_patient_content_referencing_person($duplicate, [
+    'field_adult',
+  ], 'pmtct_participant');
+
+  // What the original already brings a child to, keyed child + group, so a
+  // participation it already holds is not created twice.
+  $existing = [];
+  $original_ids = _hedley_patient_content_referencing_person($original, [
+    'field_adult',
+  ], 'pmtct_participant');
+  foreach ($original_ids as $id) {
+    $wrapper = entity_metadata_wrapper('node', $id);
+    $key = $wrapper->field_person->getIdentifier() . ':' . $wrapper->field_clinic->getIdentifier();
+    $existing[$key] = TRUE;
+  }
+
+  $repointed = $dropped = 0;
+  foreach ($participant_ids as $id) {
+    $wrapper = entity_metadata_wrapper('node', $id);
+    $child = $wrapper->field_person->getIdentifier();
+    $key = $child . ':' . $wrapper->field_clinic->getIdentifier();
+
+    if ($child == $original || isset($existing[$key])) {
+      // Either the original is the child of this participation, so re-pointing
+      // would make it its own adult, or it already brings that child to that
+      // group. Redundant either way.
+      $wrapper->field_deleted->set(TRUE);
+      $wrapper->save();
+      $dropped++;
+      continue;
+    }
+
+    $wrapper->field_adult->set($original);
+    $wrapper->field_shards->set([]);
+    $wrapper->save();
+    // A later participation of the duplicate might now duplicate this one.
+    $existing[$key] = TRUE;
+    $repointed++;
+  }
+
+  return format_string('Group participations: @repointed re-pointed to the original, @dropped dropped as redundant.', [
+    '@repointed' => $repointed,
+    '@dropped' => $dropped,
   ]);
 }
 

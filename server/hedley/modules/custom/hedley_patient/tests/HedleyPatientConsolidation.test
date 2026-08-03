@@ -224,6 +224,46 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
   }
 
   /**
+   * Enrols a child in a group, brought by an adult.
+   *
+   * @param int $adult
+   *   The person who brings the child, held in field_adult.
+   * @param int $child
+   *   The enrolled child, held in field_person.
+   * @param int $clinic
+   *   The group node ID.
+   *
+   * @return int
+   *   The pmtct_participant node ID.
+   */
+  protected function createGroupParticipation($adult, $child, $clinic) {
+    $node = $this->drupalCreateNode(['type' => 'pmtct_participant']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($child);
+    $wrapper->field_adult->set($adult);
+    $wrapper->field_clinic->set($clinic);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Whether a node is still live, that is not marked deleted.
+   *
+   * @param int $nid
+   *   The node ID.
+   *
+   * @return bool
+   *   TRUE when field_deleted is not set.
+   */
+  protected function isLive($nid) {
+    $deleted = entity_metadata_wrapper('node', node_load($nid, NULL, TRUE))
+      ->field_deleted->value();
+
+    return empty($deleted);
+  }
+
+  /**
    * The person a node names through a single-value person reference.
    *
    * @param int $nid
@@ -244,8 +284,9 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
    *
    * Covers the non-measurement links the merge has to move by hand:
    * relationships (cases 1-6), education-session attendance (cases 7-9), the
-   * pregnancy->newborn link (cases 10-11), WhatsApp records (cases 12-13) and
-   * the second person reference on a trace contact (cases 14-15). All cases
+   * pregnancy->newborn link (cases 10-11), WhatsApp records (cases 12-13), the
+   * second person reference on a trace contact (cases 14-15) and the adult who
+   * brings a child to a group (cases 16-18). All cases
    * operate on disjoint people, so bundling them under one test method keeps
    * the hedley-profile install (~5 min in CI) paid once.
    */
@@ -487,6 +528,64 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
       $this->personNamedBy($contact, 'field_referred_person'),
       $original,
       'The full merge re-points the trace contact to the original.'
+    );
+
+    // 16. When the duplicate is the adult who brings a child to a group, the
+    // participation moves to the original. Without this the cascade would
+    // soft-delete it, and the child would lose an enrolment because someone
+    // else was merged.
+    $clinic = $this->drupalCreateNode(['type' => 'clinic'])->nid;
+    $child = $this->createPerson('Child16');
+    $original = $this->createPerson('Original16');
+    $duplicate = $this->createPerson('Duplicate16');
+    $participation = $this->createGroupParticipation($duplicate, $child, $clinic);
+
+    _consolidate_patients_execute($original, $duplicate);
+
+    $this->assertTrue(
+      $this->isLive($participation),
+      'The group participation survives the merge.'
+    );
+    $this->assertEqual(
+      $this->personNamedBy($participation, 'field_adult'),
+      $original,
+      'The original is now the adult who brings the child.'
+    );
+    $this->assertEqual(
+      $this->personNamedBy($participation, 'field_person'),
+      $child,
+      'The enrolled child is left alone.'
+    );
+
+    // 17. A participation the original already holds for the same child and
+    // group is dropped rather than duplicated.
+    $clinic = $this->drupalCreateNode(['type' => 'clinic'])->nid;
+    $child = $this->createPerson('Child17');
+    $original = $this->createPerson('Original17');
+    $duplicate = $this->createPerson('Duplicate17');
+    $kept = $this->createGroupParticipation($original, $child, $clinic);
+    $redundant = $this->createGroupParticipation($duplicate, $child, $clinic);
+
+    _consolidate_patient_group_participations($original, $duplicate);
+
+    $this->assertTrue($this->isLive($kept), 'The original keeps its own participation.');
+    $this->assertFalse(
+      $this->isLive($redundant),
+      'The duplicate participation for the same child and group is dropped.'
+    );
+
+    // 18. A participation where the original is the enrolled child is dropped,
+    // rather than making the original its own adult.
+    $clinic = $this->drupalCreateNode(['type' => 'clinic'])->nid;
+    $original = $this->createPerson('Original18');
+    $duplicate = $this->createPerson('Duplicate18');
+    $selfReferential = $this->createGroupParticipation($duplicate, $original, $clinic);
+
+    _consolidate_patient_group_participations($original, $duplicate);
+
+    $this->assertFalse(
+      $this->isLive($selfReferential),
+      'A participation naming the original on both sides is dropped.'
     );
   }
 

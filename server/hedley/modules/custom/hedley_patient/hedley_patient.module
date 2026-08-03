@@ -157,10 +157,12 @@ function hedley_patient_recalculate_shards_for_person_content($person_id) {
   // and group and individual participants.
   //
   // The remaining person-reference fields are deliberately left out, because
-  // the content they point from does not take its shards from this person:
-  // an education session takes its shards from its health center, a pregnancy
-  // participant takes them from the parent, and a trace contact takes them
-  // from the encounter it was recorded at.
+  // the content they point from does not take its shards from the person named
+  // by THAT field: an education session takes its shards from its health
+  // center, a pregnancy participant takes them from the parent rather than the
+  // newborn, and a trace contact takes them from the person who reported it -
+  // its field_person - rather than from the person it refers to. A trace
+  // contact is still reached here, through field_person, which is correct.
   $association_fields = array_values(array_diff(
     hedley_general_get_person_association_fields(),
     [
