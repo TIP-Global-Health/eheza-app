@@ -29,3 +29,10 @@ function hedley_admin_update_7002() {
     ->condition('link_path', 'node/add/child')
     ->execute();
 }
+
+/**
+ * Remove the weekly report recipient, which nothing reads any more.
+ */
+function hedley_admin_update_7003() {
+  variable_del('hedley_admin_report_email');
+}

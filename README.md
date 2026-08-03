@@ -137,31 +137,27 @@ To generate the release notes, use `ddev robo generate:release-notes prev-tag`.
 
 #### Infrastructure-related steps
 
-When the site is initially installed in an environment, there are recurring
-jobs that need to be configured.
-
- - Advancedqueue processing
- - Weekly report processing
+When the site is initially installed in an environment, advancedqueue
+processing needs to be configured as a recurring job.
 
 There are two main alternatives to achieve this. Either the hosting platform
 provides customizable cron-jobs or we can invoke it from an external place,
 like a Jenkins server.
-Check the scripts in `infrastructure_setup` directory, create either a Jenkins
-job from those or you can invoke them via `cron` or
+Check the script in the `infrastructure_setup` directory, create either a
+Jenkins job from it or you can invoke it via `cron` or
 [`supervisord`](http://supervisord.org/), edit the Bash variables at the
-top of the scripts and study the file head comment that contains more
-information of the dependencies of the scripts.
+top of the script and study the file head comment that contains more
+information of the dependencies of the script.
 
 Example crontab:
 ```
 */5 * * * *   /path/to/app/infrastructure_setup/advancedqueue.sh
 ```
 
-We recommend an external source, like Jenkins to trigger these, it's
+We recommend an external source, like Jenkins to trigger this, it's
 a comfortable, high-level tool with easily configurable logging / history.
-Inside Jenkins, these scripts can be "Freestyle project"s with
+Inside Jenkins, this script can be a "Freestyle project" with
 "Build periodically" trigger and a "Shell" build part.
 
-If that's a no-go, for the advancedqueue, `supervisord` is a better choice,
-as that queue needs to be processed all the time. For the reporting, a simple
-cron job might be sufficient.
+If that's a no-go, `supervisord` is a better choice, as that queue needs to
+be processed all the time.
