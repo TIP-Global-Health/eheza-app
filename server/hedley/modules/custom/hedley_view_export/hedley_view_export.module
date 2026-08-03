@@ -168,9 +168,29 @@ function hedley_view_export_add_item(string $type, string $view_name, string $di
     'range' => variable_get("hedley_view_export_range__{$view_name}", 500),
     'title' => $title,
   ];
-  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_VIEW_EXPORT_EXPORT_VIEW_QUEUE, 0, $arguments);
-  // Display a message and a link back to the view.
-  drupal_set_message(t('Exporting view. We will soon email you a link to @email', ['@email' => $user->mail]));
+  // The unique id has to name what is being exported. It was a hardcoded 0, so
+  // every export shared the title export_view_0: while one was queued - and a
+  // multi-batch export is queued again between batches, so that is its whole
+  // life - every other export request in the system was refused.
+  $unique_id = implode('_', [
+    $user->uid,
+    $view_name,
+    $display,
+    md5(serialize([$exposed_inputs, $context])),
+  ]);
+  $queued = hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_VIEW_EXPORT_EXPORT_VIEW_QUEUE, $unique_id, $arguments);
+
+  if (!$queued) {
+    // Nothing will process the file that was created for this request, and the
+    // cleanup cron only removes files a queue item points at.
+    file_delete($file);
+    drupal_set_message(t('This export was not started. If you have just asked for the same one, it is already running.'), 'warning');
+  }
+  else {
+    drupal_set_message(t('Exporting view. We will soon email you a link to @email', ['@email' => $user->mail]));
+  }
+
+  // A link back to the view, whichever of the two messages was shown.
   return '<a href="javascript:history.back()">' . t('Go back') . '</a>';
 }
 
