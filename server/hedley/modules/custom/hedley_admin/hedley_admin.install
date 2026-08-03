@@ -32,7 +32,14 @@ function hedley_admin_update_7002() {
 
 /**
  * Remove the weekly report recipient, which nothing reads any more.
+ *
+ * The settings page that offered it is gone too, so rebuild the menu: the
+ * router still holds a row for admin/config/hedley-reporting, whose page
+ * callback names a form function that no longer exists. Cache flushing at the
+ * end of a completed update run would clear it anyway, but an update run that
+ * does not reach the end would leave the route live and fatal on request.
  */
 function hedley_admin_update_7003() {
   variable_del('hedley_admin_report_email');
+  menu_rebuild();
 }
