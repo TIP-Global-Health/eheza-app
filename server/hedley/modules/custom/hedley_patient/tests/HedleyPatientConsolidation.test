@@ -621,6 +621,19 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
       $union,
       'Recalculating the child keeps the union on the relationship.'
     );
+
+    // A person can own content that is not sharded at all. A whatsapp_record
+    // names its person with field_person, so the recalculation finds it, but
+    // the bundle has no field_shards instance - asking a wrapper for one
+    // throws, and takes the person save that triggered this down with it.
+    $shared = $this->createPerson('SharedAboutB057', [$hc1]);
+    $record = $this->drupalCreateNode(['type' => 'whatsapp_record']);
+    $wrapper = entity_metadata_wrapper('node', $record);
+    $wrapper->field_person->set($shared);
+    $wrapper->save();
+
+    hedley_patient_recalculate_shards_for_person_content($shared);
+    $this->pass('Recalculating a person who has a WhatsApp record does not throw.');
   }
 
 }
