@@ -455,11 +455,4 @@ class RoboFile extends Tasks {
     $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-closed-pregnancies-report.php --limit_date=$limit_date");
   }
 
-  /**
-   * Generates the nutrition report.
-   */
-  public function reportNutrition($region = NULL) {
-    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php --region=$region");
-  }
-
 }
