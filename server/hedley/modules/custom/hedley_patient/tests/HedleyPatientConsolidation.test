@@ -185,13 +185,98 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
   }
 
   /**
+   * Creates a WhatsApp record about a person.
+   *
+   * @param int $person
+   *   The person the shared report is about.
+   *
+   * @return int
+   *   The whatsapp_record node ID.
+   */
+  protected function createWhatsAppRecord($person) {
+    $node = $this->drupalCreateNode(['type' => 'whatsapp_record']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    // Everything the bundle marks required, so the fixture is a record that
+    // could exist rather than one that only survives because Drupal 7 skips
+    // field validation on a programmatic save.
+    $wrapper->field_person->set($person);
+    $wrapper->field_date_measured->set(REQUEST_TIME);
+    $wrapper->field_phone_number->set('250780000000');
+    $wrapper->field_report_type->set('antenatal');
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Creates a trace contact, reported by one person about another.
+   *
+   * @param int $reporter
+   *   The person who reported the contact, held in field_person.
+   * @param int $referred
+   *   The person who was contacted, held in field_referred_person.
+   *
+   * @return int
+   *   The acute_illness_trace_contact node ID.
+   */
+  protected function createTraceContact($reporter, $referred) {
+    $node = $this->drupalCreateNode(['type' => 'acute_illness_trace_contact']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($reporter);
+    $wrapper->field_referred_person->set($referred);
+    $wrapper->field_date_measured->set(REQUEST_TIME);
+    // The bundle also marks field_acute_illness_encounter and field_nurse
+    // required, and both are left out on purpose. Without an encounter the
+    // contact is not discoverable as a measurement of the reporter, which is
+    // the state under test: field_referred_person has to be re-pointed by the
+    // new helper rather than swept up with the reporter's measurements.
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Whether a node is still live, that is not marked deleted.
+   *
+   * @param int $nid
+   *   The node ID.
+   *
+   * @return bool
+   *   TRUE when field_deleted is not set.
+   */
+  protected function isLive($nid) {
+    $deleted = entity_metadata_wrapper('node', node_load($nid, NULL, TRUE))
+      ->field_deleted->value();
+
+    return empty($deleted);
+  }
+
+  /**
+   * The person a node names through a single-value person reference.
+   *
+   * @param int $nid
+   *   The node ID.
+   * @param string $field
+   *   The field name, for example 'field_referred_person'.
+   *
+   * @return int|null
+   *   The person node ID, or NULL.
+   */
+  protected function personNamedBy($nid, $field) {
+    return entity_metadata_wrapper('node', node_load($nid, NULL, TRUE))
+      ->{$field}->getIdentifier();
+  }
+
+  /**
    * Merging a duplicate transfers the content that references it.
    *
    * Covers the non-measurement links the merge has to move by hand:
-   * relationships (cases 1-6), education-session attendance (cases 7-9) and the
-   * pregnancy->newborn link (cases 10-11). All cases operate on disjoint
-   * people, so bundling them under one test method keeps the hedley-profile
-   * install (~5 min in CI) paid once.
+   * relationships (cases 1-6), education-session attendance (cases 7-9), the
+   * pregnancy->newborn link (cases 10-11), WhatsApp records (cases 12-13), the
+   * second person reference on a trace contact (cases 14-15) and the adult who
+   * brings a child to a group (cases 16-18). All cases
+   * operate on disjoint people, so bundling them under one test method keeps
+   * the hedley-profile install (~5 min in CI) paid once.
    */
   public function testContentIsTransferredOnMerge() {
     // 1. A duplicate child's link to its mother moves to the original child.
@@ -369,6 +454,126 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
       $this->participantNewborn($participant),
       $originalChild,
       'The full merge re-points the pregnancy participant to the original child.'
+    );
+
+    // 12. A WhatsApp record about the duplicate names the original instead.
+    $original = $this->createPerson('Original12');
+    $duplicate = $this->createPerson('Duplicate12');
+    $record = $this->createWhatsAppRecord($duplicate);
+
+    _consolidate_patient_whatsapp_records($original, $duplicate);
+
+    $this->assertEqual(
+      $this->personNamedBy($record, 'field_person'),
+      $original,
+      'The WhatsApp record is about the original.'
+    );
+
+    // 13. The same through the full merge path, which is what proves the
+    // re-point happens before the duplicate is marked deleted.
+    $original = $this->createPerson('Original13');
+    $duplicate = $this->createPerson('Duplicate13');
+    $record = $this->createWhatsAppRecord($duplicate);
+
+    _consolidate_patients_execute($original, $duplicate);
+
+    $this->assertEqual(
+      $this->personNamedBy($record, 'field_person'),
+      $original,
+      'The full merge re-points the WhatsApp record to the original.'
+    );
+
+    // 14. A trace contact referring to the duplicate refers to the original.
+    // The reporter is a third person, which is the real shape: the duplicate is
+    // the person who was contacted, not the one who reported it.
+    $reporter = $this->createPerson('Reporter14');
+    $original = $this->createPerson('Original14');
+    $duplicate = $this->createPerson('Duplicate14');
+    $contact = $this->createTraceContact($reporter, $duplicate);
+
+    _consolidate_patient_trace_contact_referrals($original, $duplicate);
+
+    $this->assertEqual(
+      $this->personNamedBy($contact, 'field_referred_person'),
+      $original,
+      'The trace contact refers to the original.'
+    );
+    $this->assertEqual(
+      $this->personNamedBy($contact, 'field_person'),
+      $reporter,
+      'The person who reported the contact is left alone.'
+    );
+
+    // 15. The same through the full merge path.
+    $reporter = $this->createPerson('Reporter15');
+    $original = $this->createPerson('Original15');
+    $duplicate = $this->createPerson('Duplicate15');
+    $contact = $this->createTraceContact($reporter, $duplicate);
+
+    _consolidate_patients_execute($original, $duplicate);
+
+    $this->assertEqual(
+      $this->personNamedBy($contact, 'field_referred_person'),
+      $original,
+      'The full merge re-points the trace contact to the original.'
+    );
+
+    // 16. When the duplicate is the adult who brings a child to a group, the
+    // participation moves to the original. Without this the cascade would
+    // soft-delete it, and the child would lose an enrolment because someone
+    // else was merged.
+    $clinic = $this->createClinic();
+    $child = $this->createPerson('Child16');
+    $original = $this->createPerson('Original16');
+    $duplicate = $this->createPerson('Duplicate16');
+    $participation = $this->createPMTCT($child, $duplicate, $clinic);
+
+    _consolidate_patients_execute($original, $duplicate);
+
+    $this->assertTrue(
+      $this->isLive($participation),
+      'The group participation survives the merge.'
+    );
+    $this->assertEqual(
+      $this->personNamedBy($participation, 'field_adult'),
+      $original,
+      'The original is now the adult who brings the child.'
+    );
+    $this->assertEqual(
+      $this->personNamedBy($participation, 'field_person'),
+      $child,
+      'The enrolled child is left alone.'
+    );
+
+    // 17. A participation the original already holds for the same child and
+    // group is dropped rather than duplicated.
+    $clinic = $this->createClinic();
+    $child = $this->createPerson('Child17');
+    $original = $this->createPerson('Original17');
+    $duplicate = $this->createPerson('Duplicate17');
+    $kept = $this->createPMTCT($child, $original, $clinic);
+    $redundant = $this->createPMTCT($child, $duplicate, $clinic);
+
+    _consolidate_patient_group_participations($original, $duplicate);
+
+    $this->assertTrue($this->isLive($kept), 'The original keeps its own participation.');
+    $this->assertFalse(
+      $this->isLive($redundant),
+      'The duplicate participation for the same child and group is dropped.'
+    );
+
+    // 18. A participation where the original is the enrolled child is dropped,
+    // rather than making the original its own adult.
+    $clinic = $this->createClinic();
+    $original = $this->createPerson('Original18');
+    $duplicate = $this->createPerson('Duplicate18');
+    $selfReferential = $this->createPMTCT($original, $duplicate, $clinic);
+
+    _consolidate_patient_group_participations($original, $duplicate);
+
+    $this->assertFalse(
+      $this->isLive($selfReferential),
+      'A participation naming the original on both sides is dropped.'
     );
   }
 

@@ -242,6 +242,21 @@ function _consolidate_patients_execute($original, $duplicate) {
   // person who no longer exists.
   $messages[] = _consolidate_patient_newborn_references($original, $duplicate);
 
+  // A group participation names the adult who brings the child, and that is
+  // the reference the delete cascade DOES follow - so leaving it behind would
+  // not dangle, it would soft-delete another child's enrolment.
+  $messages[] = _consolidate_patient_group_participations($original, $duplicate);
+
+  // A WhatsApp record names the person a report was shared about. It carries no
+  // encounter indicator, so it is not a measurement and the loop above never
+  // sees it either.
+  $messages[] = _consolidate_patient_whatsapp_records($original, $duplicate);
+
+  // A trace contact IS a measurement, so the loop above re-pointed the person
+  // who reported it. It holds a second reference - the person who was contacted
+  // - which the loop does not touch.
+  $messages[] = _consolidate_patient_trace_contact_referrals($original, $duplicate);
+
   // Mark duplicate patient as Deleted.
   $wrapper_duplicate->field_deleted->set(TRUE);
   $wrapper_duplicate->save();
@@ -476,6 +491,153 @@ function _consolidate_patient_newborn_references($original, $duplicate) {
 
   return format_string('Newborn references: @count re-pointed to the original.', [
     '@count' => count($participant_ids),
+  ]);
+}
+
+/**
+ * Re-points the duplicate patient's WhatsApp records at the original.
+ *
+ * A whatsapp_record names the person a report was shared about, through
+ * field_person. It carries no encounter indicator, so it is not a measurement
+ * type and the consolidation's measurement sweep never sees it. Left alone, the
+ * record of a report that was sent keeps naming a person who no longer exists.
+ *
+ * No shard handling: the bundle carries no field_shards at all, so there is
+ * nothing to recompute. It has no field_deleted either, which is why the
+ * person-delete cascade leaves the record in place rather than soft-deleting
+ * it along with the duplicate.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_whatsapp_records($original, $duplicate) {
+  $record_ids = _hedley_patient_content_referencing_person($duplicate, [
+    'field_person',
+  ], 'whatsapp_record');
+
+  _associate_content_by_field($record_ids, 'field_person', $original);
+
+  return format_string('WhatsApp records: @count re-pointed to the original.', [
+    '@count' => count($record_ids),
+  ]);
+}
+
+/**
+ * Re-points group participations the duplicate patient holds as the adult.
+ *
+ * A pmtct_participant enrols a child in a group, and names the adult who brings
+ * them in field_adult. That is the one person reference where leaving the
+ * duplicate in place does not merely dangle: field_adult IS followed by the
+ * person-delete cascade, so marking the duplicate deleted soft-deletes the
+ * participation - and the child, who has nothing to do with this merge, loses
+ * a group enrolment.
+ *
+ * Participations where the duplicate is the CHILD are a separate matter, left
+ * alone here: _consolidate_session_content_validate() refuses the merge unless
+ * the original already participates in every group the duplicate has
+ * measurements in, so the enrolment the child needs is already there.
+ *
+ * Shards are cleared so the presave hook recomputes them. A participant is a
+ * two-person node - hedley_device_assign_shards() gives it the union of both
+ * persons' shards - and it leaves an already-populated field alone, so without
+ * this the participation would keep the duplicate's shards and miss any health
+ * center only the original belongs to.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_group_participations($original, $duplicate) {
+  $participant_ids = _hedley_patient_content_referencing_person($duplicate, [
+    'field_adult',
+  ], 'pmtct_participant');
+
+  // What the original already brings a child to, keyed child + group, so a
+  // participation it already holds is not created twice.
+  $existing = [];
+  $original_ids = _hedley_patient_content_referencing_person($original, [
+    'field_adult',
+  ], 'pmtct_participant');
+  foreach ($original_ids as $id) {
+    $wrapper = entity_metadata_wrapper('node', $id);
+    $key = $wrapper->field_person->getIdentifier() . ':' . $wrapper->field_clinic->getIdentifier();
+    $existing[$key] = TRUE;
+  }
+
+  $repointed = $dropped = 0;
+  foreach ($participant_ids as $id) {
+    $wrapper = entity_metadata_wrapper('node', $id);
+    $child = $wrapper->field_person->getIdentifier();
+    $key = $child . ':' . $wrapper->field_clinic->getIdentifier();
+
+    if ($child == $original || isset($existing[$key])) {
+      // Either the original is the child of this participation, so re-pointing
+      // would make it its own adult, or it already brings that child to that
+      // group. Redundant either way.
+      $wrapper->field_deleted->set(TRUE);
+      $wrapper->save();
+      $dropped++;
+      continue;
+    }
+
+    $wrapper->field_adult->set($original);
+    $wrapper->field_shards->set([]);
+    $wrapper->save();
+    // A later participation of the duplicate might now duplicate this one.
+    $existing[$key] = TRUE;
+    $repointed++;
+  }
+
+  return format_string('Group participations: @repointed re-pointed to the original, @dropped dropped as redundant.', [
+    '@repointed' => $repointed,
+    '@dropped' => $dropped,
+  ]);
+}
+
+/**
+ * Re-points trace contacts that refer to the duplicate patient.
+ *
+ * An acute_illness_trace_contact is a measurement, so the sweep above already
+ * re-points its field_person - the person who reported the contact. It holds a
+ * second person reference the sweep does not touch: field_referred_person, the
+ * person who was contacted. When the duplicate is that person, the trace
+ * contact keeps naming them after the merge.
+ *
+ * No shard handling: a trace contact's shards derive from field_person, which
+ * the measurement sweep has already dealt with, not from field_referred_person.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_trace_contact_referrals($original, $duplicate) {
+  $contact_ids = _hedley_patient_content_referencing_person($duplicate, [
+    'field_referred_person',
+  ], 'acute_illness_trace_contact');
+
+  _associate_content_by_field($contact_ids, 'field_referred_person', $original);
+
+  return format_string('Trace contact referrals: @count re-pointed to the original.', [
+    '@count' => count($contact_ids),
   ]);
 }
 
