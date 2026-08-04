@@ -1,0 +1,6 @@
+name = Logs GlitchTip
+description = "Sends watchdog errors to GlitchTip over the Sentry protocol."
+core = "7.x"
+package = "Hedley"
+
+dependencies[] = composer_manager

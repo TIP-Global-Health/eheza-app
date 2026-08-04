@@ -142,6 +142,9 @@ install_drupal_profile
 # Composer install
 composer_install
 
+# Configure GlitchTip error reporting.
+configure_glitchtip
+
 # Setup the files directory.
 create_sites_default_files_directory
 
