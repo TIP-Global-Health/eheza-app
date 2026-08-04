@@ -12,6 +12,8 @@ define('HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA', 'hedley_ncda_calculate_ncda_data
 // Birth weight, in grams, below which a child counts as born underweight.
 // This is what puts the birth weight input in the red on the client, and the
 // aggregated scorecard counts the children it applies to - issues #543, #687.
+// Changing this leaves already calculated data behind, so run
+// scripts/generate-data-for-all.php afterwards, on every site.
 define('HEDLEY_NCDA_LOW_BIRTH_WEIGHT_THRESHOLD', 2500);
 
 // Lowest birth weight, in grams, that can be read as a real measurement.
@@ -527,7 +529,10 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
   // was performed, at first NCDA questionnaire, otherwise.
   // Therefore, if we did not resolve birth weight from pregnancy summary,
   // we try to resolve from NCDA questionnaires.
-  if (empty($birth_weight)) {
+  // A weight we cannot read counts as one we do not have, so that both sides
+  // state the same rule - the client falls back the same way. NULL compares
+  // as zero here, so a missing weight still falls through.
+  if ($birth_weight < HEDLEY_NCDA_MINIMAL_PLAUSIBLE_BIRTH_WEIGHT) {
     foreach ($ncdas as $ncda) {
       if (!empty($ncda->field_birth_weight[LANGUAGE_NONE][0]['value'])) {
         $birth_weight = $ncda->field_birth_weight[LANGUAGE_NONE][0]['value'];
