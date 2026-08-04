@@ -132,9 +132,9 @@ viewScoreboardData language currentDate data model =
         (topBar :: panes)
 
 
-{-| Resolves date for last day of examined month.
-For, current month, it's current date. For past month,
-it's last day of that month.
+{-| Resolves the date for the examined month.
+For the current month, it's the current date. For any other month (past or future),
+it's the last day of that month.
 
 Note that the returned date already accounts for the column offset, so an age
 measured against it is the age the patient had at that column. Do not subtract
