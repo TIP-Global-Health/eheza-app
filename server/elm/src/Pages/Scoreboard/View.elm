@@ -492,7 +492,7 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                                 let
                                                     ageInMonths =
                                                         -- Using EDD date to properly resolve the month of
-                                                        -- prgnancy (as child may have been borm premature).
+                                                        -- pregnancy (as child may have been born premature).
                                                         diffMonths (Date.floor Month record.eddDate) targetDateForMonth
 
                                                     monthsBeforeDelivery =
