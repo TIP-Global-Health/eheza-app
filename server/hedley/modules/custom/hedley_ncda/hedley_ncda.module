@@ -9,6 +9,15 @@ include_once 'hedley_ncda.features.inc';
 
 define('HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA', 'hedley_ncda_calculate_ncda_data');
 
+// Birth weight, in grams, below which a child counts as born underweight.
+// This is what puts the birth weight input in the red on the client, and the
+// aggregated scorecard counts the children it applies to - issues #543, #687.
+define('HEDLEY_NCDA_LOW_BIRTH_WEIGHT_THRESHOLD', 2500);
+
+// Lowest birth weight, in grams, that can be read as a real measurement.
+// Mirrors getInputConstraintsBirthWeight.minVal on the client.
+define('HEDLEY_NCDA_MINIMAL_PLAUSIBLE_BIRTH_WEIGHT', 300);
+
 /**
  * Implements hook_menu().
  */
@@ -526,8 +535,13 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
       }
     }
   }
-  if ($birth_weight) {
-    $data['low_birth_weight'] = $birth_weight < 2000;
+  // Birth weight is recorded in grams. A weight below the plausible minimum
+  // cannot be read: the smallest ones are kilograms typed into a grams field
+  // (issue #2008), and the rest cannot be interpreted at all. Leaving the
+  // indicator unset marks it as unknown, rather than claiming the child was
+  // not born underweight.
+  if ($birth_weight >= HEDLEY_NCDA_MINIMAL_PLAUSIBLE_BIRTH_WEIGHT) {
+    $data['low_birth_weight'] = $birth_weight < HEDLEY_NCDA_LOW_BIRTH_WEIGHT_THRESHOLD;
   }
 
   $empty_nutrition_values = [
