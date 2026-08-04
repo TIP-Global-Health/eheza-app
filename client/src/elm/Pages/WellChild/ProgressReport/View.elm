@@ -53,13 +53,12 @@ import Maybe.Extra exposing (isNothing)
 import Measurement.Model exposing (VaccinationProgressDict)
 import Measurement.Utils
     exposing
-        ( generateFutureVaccinationsData
+        ( bornUnderweightByBirthWeight
+        , generateFutureVaccinationsData
         , generateGroupNutritionAssessmentEntries
         , generateIndividualNutritionAssessmentEntries
         , generateVaccinationProgressDictByChildScoreboard
-        , getInputConstraintsBirthWeight
         , getPreviousMeasurements
-        , lowBirthWeightThreshold
         , resolveChildANCPregnancyData
         )
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
@@ -1761,20 +1760,8 @@ viewChildIdentificationPane language site allNCDAQuestionnaires db ( childId, ch
             viewEntry Translate.ChildName child.name
 
         bornUnderweightByNewbornExam =
-            Maybe.andThen (\value -> Maybe.andThen resolveBornUnderweight value.birthWeight)
+            Maybe.andThen (.birthWeight >> bornUnderweightByBirthWeight)
                 newbornExamPregnancySummary
-
-        resolveBornUnderweight (WeightInGrm birthWeight) =
-            if birthWeight < getInputConstraintsBirthWeight.minVal then
-                -- The weight is recorded in grams, and one below the plausible
-                -- minimum cannot be read: the smallest ones are kilograms typed
-                -- into a grams field (issue #2008), and the rest cannot be
-                -- interpreted at all. Answer that we do not know, rather than
-                -- claiming the child was not born underweight.
-                Nothing
-
-            else
-                Just (birthWeight < lowBirthWeightThreshold)
 
         birthDefectByNewbornExam =
             Maybe.map
@@ -1791,7 +1778,7 @@ viewChildIdentificationPane language site allNCDAQuestionnaires db ( childId, ch
             List.filterMap (\( _, value ) -> value.birthWeight)
                 allNCDAQuestionnaires
                 |> List.head
-                |> Maybe.andThen resolveBornUnderweight
+                |> bornUnderweightByBirthWeight
 
         birthDefectByNCDA =
             if List.isEmpty allNCDAQuestionnaires then
