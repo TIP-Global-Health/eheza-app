@@ -66,17 +66,6 @@ projects[jquery_update][version] = "2.4"
 projects[libraries][subdir] = "contrib"
 projects[libraries][version] = "2.5"
 
-; Superseded by the logs_glitchtip module, but still enabled in databases that
-; have not run hedley_update_7048() yet. Since logs_rollbar implements
-; hook_boot(), dropping the code before that update runs would break the
-; bootstrap. Remove once every environment is updated.
-projects[logs_rollbar][type] = "module"
-projects[logs_rollbar][subdir] = "contrib"
-projects[logs_rollbar][download][type] = "git"
-projects[logs_rollbar][download][branch] = "master"
-projects[logs_rollbar][download][url] = "https://github.com/Gizra/logs_rollbar.git"
-projects[logs_rollbar][download][revision] = 8248ae1780c0608bf7a44a7c35cc4faa69f433cb
-
 projects[mailsystem][version] = 2.34
 projects[mailsystem][subdir] = "contrib"
 
