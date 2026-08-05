@@ -27,6 +27,11 @@ if (!drupal_is_cli()) {
 // Report what would be recalculated, without recalculating it.
 $dry_run = (bool) drush_get_option('dry_run', FALSE);
 
+// Resume after this person, for a run that stopped on memory. Recalculating a
+// child does not change what this script selects, so a plain re-run would stop
+// in the same place; the run says which id to pass.
+$nid = drush_get_option('nid', 0);
+
 // Get the number of nodes to be processed at once.
 $batch = drush_get_option('batch', 50);
 
@@ -67,6 +72,16 @@ foreach ($sources as $source) {
   $query->join('node', 'n', 'n.nid = fp.field_person_target_id');
   hedley_general_apply_exclude_deleted($query, 'n');
 
+  // The measurement holding the weight has to count as well - a deleted one is
+  // not what the indicator was calculated from.
+  $query->join('node', 'mn', 'mn.nid = f.entity_id');
+  $query->leftJoin('field_data_field_deleted', 'mfd', 'mfd.entity_id = mn.nid');
+  $query->condition(
+    db_or()
+      ->isNull('mfd.field_deleted_value')
+      ->condition('mfd.field_deleted_value', 0)
+  );
+
   $bands = db_or()
     ->condition('f.' . $source['column'], HEDLEY_NCDA_MINIMAL_PLAUSIBLE_BIRTH_WEIGHT, '<')
     ->condition(
@@ -82,6 +97,7 @@ foreach ($sources as $source) {
     ->condition('fp.deleted', 0)
     ->condition('n.status', NODE_PUBLISHED)
     ->condition('n.type', 'person')
+    ->condition('mn.status', NODE_PUBLISHED)
     ->condition($bands);
 
   if (!empty($source['bundle'])) {
@@ -93,6 +109,12 @@ foreach ($sources as $source) {
 
 $affected = array_values(array_unique($affected));
 sort($affected);
+
+if ($nid) {
+  $affected = array_values(array_filter($affected, function ($person_id) use ($nid) {
+    return $person_id > $nid;
+  }));
+}
 
 $count = count($affected);
 if ($count == 0) {
@@ -131,9 +153,10 @@ foreach (array_chunk($affected, $batch) as $chunk) {
 
   $memory = round(memory_get_usage() / 1048576);
   if ($memory >= $memory_limit) {
-    drush_print(dt('Stopped before running out of memory, after @total of @count children. Run again to continue.', [
+    drush_print(dt('Stopped before running out of memory, after @total of @count children. Run again with --nid=@nid to continue.', [
       '@total' => $total,
       '@count' => $count,
+      '@nid' => end($chunk),
     ]));
     return;
   }
