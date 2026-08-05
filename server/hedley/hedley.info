@@ -40,6 +40,9 @@ dependencies[] = token
 dependencies[] = views
 dependencies[] = views_bulk_operations
 
+; Error reporting
+dependencies[] = logs_glitchtip
+
 ; Hedley
 dependencies[] = hedley_activity
 dependencies[] = hedley_acute_illness

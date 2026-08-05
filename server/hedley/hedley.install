@@ -753,3 +753,17 @@ function hedley_update_7046() {
 function hedley_update_7047() {
   module_enable(['hedley_family_nutrition']);
 }
+
+/**
+ * Replace Rollbar error reporting with GlitchTip.
+ *
+ * The old module is only disabled, not uninstalled, so its code can stay in
+ * the build until every environment has run this update.
+ */
+function hedley_update_7048() {
+  module_disable(['logs_rollbar']);
+  module_enable(['logs_glitchtip']);
+
+  variable_del('logs_rollbar_enabled');
+  variable_del('logs_rollbar_rollbar_access_token');
+}

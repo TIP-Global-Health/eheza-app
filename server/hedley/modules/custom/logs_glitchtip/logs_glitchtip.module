@@ -1,0 +1,445 @@
+<?php
+
+/**
+ * @file
+ * Sends watchdog events to GlitchTip via the Sentry PHP SDK.
+ *
+ * Events are collected during the request by hook_watchdog(), deduplicated,
+ * and sent in one batch on shutdown.
+ *
+ * The DSN is never hardcoded: this repository is public and a DSN is an
+ * ingest key. See README.md for where operators are expected to set it.
+ */
+
+use Sentry\Severity;
+
+/**
+ * Implements hook_menu().
+ */
+function logs_glitchtip_menu() {
+  $items = [];
+
+  $items['admin/config/services/logs-glitchtip-settings'] = [
+    'type' => MENU_NORMAL_ITEM,
+    'title' => 'Logs GlitchTip Client',
+    'description' => 'Administer GlitchTip Client settings.',
+    'access arguments' => ['administer glitchtip'],
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['logs_glitchtip_admin_settings'],
+    'file' => 'logs_glitchtip.admin.inc',
+  ];
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function logs_glitchtip_permission() {
+  $permissions = [];
+
+  $permissions['administer glitchtip'] = [
+    'title' => t('Administer GlitchTip'),
+  ];
+
+  return $permissions;
+}
+
+/**
+ * Implements hook_boot().
+ *
+ * Runs even for cached pages.
+ */
+function logs_glitchtip_boot() {
+  // Replacing the global exception handler is a visible behaviour change, so
+  // only do it where events are actually reported. Unconfigured sites, local
+  // machines and CI keep Drupal's own handler.
+  if (!logs_glitchtip_is_active()) {
+    return;
+  }
+
+  drupal_register_shutdown_function('logs_glitchtip_shutdown');
+  set_exception_handler('_logs_glitchtip_exception_handler');
+}
+
+/**
+ * Provides custom PHP exception handling.
+ *
+ * Uncaught exceptions are those not enclosed in a try/catch block. They are
+ * always fatal: the execution of the script will stop as soon as the exception
+ * handler exits.
+ *
+ * @param Throwable $exception
+ *   The exception object that was thrown.
+ *
+ * @see _drupal_exception_handler()
+ */
+function _logs_glitchtip_exception_handler(Throwable $exception) {
+  require_once DRUPAL_ROOT . '/includes/errors.inc';
+
+  try {
+    // Log the message to the watchdog and return an error page to the user.
+    _drupal_log_error(_logs_glitchtip_decode_exception($exception), TRUE);
+  }
+  catch (Exception $exception2) {
+    // Add a 500 status code in case an exception was thrown before the 500
+    // status could be set.
+    drupal_add_http_header('Status', '500 Internal Server Error');
+
+    // Another uncaught exception was thrown while handling the first one.
+    // If we are displaying errors, then do so with no possibility of a
+    // further uncaught exception being thrown.
+    if (error_displayable()) {
+      print '<h1>Additional uncaught exception thrown while handling exception.</h1>';
+      print '<h2>Original</h2><p>' . _drupal_render_exception_safe($exception) . '</p>';
+      print '<h2>Additional</h2><p>' . _drupal_render_exception_safe($exception2) . '</p><hr />';
+    }
+  }
+}
+
+/**
+ * Decodes an exception and retrieves the correct caller.
+ *
+ * @param Throwable $exception
+ *   The exception object that was thrown.
+ *
+ * @return array
+ *   An error in the format expected by _drupal_log_error().
+ *
+ * @see _drupal_decode_exception()
+ */
+function _logs_glitchtip_decode_exception(Throwable $exception) {
+  $return = _drupal_decode_exception($exception);
+
+  // Serialize and encode so the trace survives the watchdog variables
+  // round-trip without notices; _logs_glitchtip_decode_trace() turns it back
+  // into readable frames.
+  try {
+    $return['exception_trace'] = drupal_base64_encode(serialize($exception->getTrace()));
+  }
+  catch (Exception $e) {
+    // Some structures (e.g. Closures) are not serializable; prevent a fatal
+    // when such a construct appears in the trace.
+    $return['exception_trace'] = drupal_base64_encode(serialize($e->getMessage()));
+  }
+
+  return $return;
+}
+
+/**
+ * Implements hook_watchdog().
+ */
+function logs_glitchtip_watchdog(array $log_entry) {
+  if ($log_entry['severity'] > variable_get('logs_glitchtip_severity_level', WATCHDOG_ERROR)) {
+    // Severity level is above the ones we want to log.
+    return;
+  }
+
+  logs_glitchtip_register_event($log_entry);
+}
+
+/**
+ * Register an event in a static cache.
+ *
+ * Identical events are only captured once, reducing the payload sent on
+ * shutdown.
+ *
+ * @param array $log_entry
+ *   The entry log as passed from hook_watchdog().
+ */
+function logs_glitchtip_register_event(array $log_entry) {
+  if (!logs_glitchtip_is_active()) {
+    return;
+  }
+
+  $events = &drupal_static('logs_glitchtip_events', []);
+
+  $event = [
+    'timestamp' => $log_entry['timestamp'],
+    'type' => $log_entry['type'],
+    'ip' => $log_entry['ip'],
+    'request_uri' => $log_entry['request_uri'],
+    'referer' => $log_entry['referer'],
+    'uid' => $log_entry['uid'],
+    'link' => strip_tags($log_entry['link']),
+    'message' => empty($log_entry['variables']) ? $log_entry['message'] : strtr($log_entry['message'], $log_entry['variables']),
+    'severity' => $log_entry['severity'],
+  ];
+
+  if (!empty($log_entry['variables']['exception_trace'])) {
+    $event['exception_trace'] = _logs_glitchtip_decode_trace($log_entry['variables']['exception_trace']);
+  }
+
+  // Prevent identical events.
+  $event_clone = $event;
+  unset($event_clone['timestamp']);
+  $key = md5(serialize($event_clone));
+  $events[$key] = $event;
+}
+
+/**
+ * Turn an encoded exception trace back into readable frames.
+ *
+ * Call arguments are dropped: they can hold entities, passwords or unbounded
+ * structures, none of which belong in an error report.
+ *
+ * @param string $encoded
+ *   The trace as put on the watchdog variables by
+ *   _logs_glitchtip_decode_exception().
+ *
+ * @return array|string
+ *   One "file(line): Class::method()" string per frame, or the raw decoded
+ *   value when it does not hold a trace.
+ */
+function _logs_glitchtip_decode_trace($encoded) {
+  // drupal_base64_encode() produces URL-safe base64; map it back before
+  // decoding, as base64_decode() would silently drop '-' and '_'.
+  $decoded = base64_decode(strtr($encoded, ['-' => '+', '_' => '/']));
+
+  // Objects held by the frames are never restored: only their file, line and
+  // name are read.
+  $trace = @unserialize($decoded, ['allowed_classes' => FALSE]);
+  if (!is_array($trace)) {
+    // The failed-to-serialize path stores a plain message instead of a trace;
+    // a truncated value does not unserialize at all.
+    return is_string($trace) ? $trace : $decoded;
+  }
+
+  $frames = [];
+  foreach ($trace as $frame) {
+    $call = '';
+    if (!empty($frame['class'])) {
+      $call = $frame['class'] . (isset($frame['type']) ? $frame['type'] : '::');
+    }
+    $call .= (isset($frame['function']) ? $frame['function'] : '[unknown]') . '()';
+
+    $location = isset($frame['file']) ? $frame['file'] : '[internal function]';
+    if (isset($frame['line'])) {
+      $location .= '(' . $frame['line'] . ')';
+    }
+
+    $frames[] = $location . ': ' . $call;
+  }
+
+  return $frames;
+}
+
+/**
+ * Get the registered events from the static cache.
+ *
+ * @return array
+ *   Array of events.
+ */
+function logs_glitchtip_get_registered_events() {
+  $events = &drupal_static('logs_glitchtip_events', []);
+  return $events;
+}
+
+/**
+ * Runs on shutdown, sends the registered events to GlitchTip.
+ */
+function logs_glitchtip_shutdown() {
+  if (!$events = logs_glitchtip_get_registered_events()) {
+    return;
+  }
+
+  if (!logs_glitchtip_is_active()) {
+    return;
+  }
+
+  logs_glitchtip_sentry_post($events);
+}
+
+/**
+ * Send events via the Sentry SDK.
+ *
+ * @param array $events
+ *   Events as registered by logs_glitchtip_register_event().
+ */
+function logs_glitchtip_sentry_post(array $events) {
+  global $user;
+
+  if (!function_exists('\Sentry\init')) {
+    // Composer dependencies not (re)built yet; silently skip rather than
+    // taking the site down from inside the error handler.
+    return;
+  }
+
+  \Sentry\init([
+    'dsn' => logs_glitchtip_get_dsn(),
+    'environment' => logs_glitchtip_get_environment(),
+    // Error tracking only; tracing is not used, so do not sample
+    // transactions at all.
+    'traces_sample_rate' => 0.0,
+  ]);
+
+  foreach ($events as $event) {
+    switch ($event['severity']) {
+      case WATCHDOG_EMERGENCY:
+      case WATCHDOG_ALERT:
+      case WATCHDOG_CRITICAL:
+        $level = Severity::fatal();
+        break;
+
+      case WATCHDOG_ERROR:
+        $level = Severity::error();
+        break;
+
+      case WATCHDOG_WARNING:
+        $level = Severity::warning();
+        break;
+
+      default:
+        $level = Severity::info();
+        break;
+    }
+
+    \Sentry\withScope(function ($scope) use ($event, $level, $user) {
+      $scope->setUser([
+        'id' => $event['uid'],
+        'username' => isset($user->name) ? $user->name : 'anonymous',
+        'ip_address' => $event['ip'],
+      ]);
+      $scope->setTag('watchdog_type', $event['type']);
+      foreach (['request_uri', 'referer', 'link', 'timestamp'] as $key) {
+        if (!empty($event[$key])) {
+          $scope->setExtra($key, $event[$key]);
+        }
+      }
+      if (!empty($event['exception_trace'])) {
+        $scope->setExtra('exception_trace', $event['exception_trace']);
+      }
+
+      \Sentry\captureMessage($event['type'] . ' : ' . $event['message'], $level);
+    });
+  }
+}
+
+/**
+ * Get the GlitchTip DSN.
+ *
+ * The Drupal variable wins so a site can be redirected or silenced without a
+ * redeploy; the environment variable covers hosts that inject configuration
+ * into the process instead of into settings.php.
+ *
+ * @return string
+ *   The DSN, or an empty string when reporting is not configured.
+ */
+function logs_glitchtip_get_dsn() {
+  if ($dsn = variable_get('logs_glitchtip_dsn', '')) {
+    return $dsn;
+  }
+
+  return _logs_glitchtip_getenv('GLITCHTIP_DSN');
+}
+
+/**
+ * Read an environment variable.
+ *
+ * Pantheon injects PANTHEON_* into the superglobals rather than the process
+ * environment, so getenv() alone reports nothing there and every deployment
+ * would look local.
+ *
+ * @param string $name
+ *   The variable name.
+ *
+ * @return string
+ *   The value, or an empty string when it is not set.
+ */
+function _logs_glitchtip_getenv($name) {
+  $value = getenv($name);
+  if ($value !== FALSE && $value !== '') {
+    return (string) $value;
+  }
+
+  foreach ([$_ENV, $_SERVER] as $source) {
+    if (!empty($source[$name])) {
+      return (string) $source[$name];
+    }
+  }
+
+  return '';
+}
+
+/**
+ * Check whether sending to GlitchTip is enabled for this environment.
+ *
+ * @return bool
+ *   TRUE when events should be sent.
+ */
+function logs_glitchtip_is_active() {
+  if (!variable_get('logs_glitchtip_enabled', TRUE)) {
+    return FALSE;
+  }
+
+  // No DSN means reporting was never configured, which is the case for fresh
+  // checkouts, DDEV and CI. Stay silent there.
+  if (!logs_glitchtip_get_dsn()) {
+    return FALSE;
+  }
+
+  if (variable_get('logs_glitchtip_auto_disable_on_local', TRUE) && logs_glitchtip_is_local()) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
+ * Determine the environment name reported to GlitchTip.
+ *
+ * @return string
+ *   The environment name.
+ */
+function logs_glitchtip_get_environment() {
+  if ($environment = variable_get('logs_glitchtip_environment', '')) {
+    return $environment;
+  }
+
+  if ($environment = _logs_glitchtip_getenv('GLITCHTIP_ENVIRONMENT')) {
+    return $environment;
+  }
+
+  // The same codebase runs on several Pantheon sites (one per country), so
+  // the site name is needed to tell "live" apart from "live".
+  $pantheon_site = _logs_glitchtip_getenv('PANTHEON_SITE_NAME');
+  $pantheon_env = _logs_glitchtip_getenv('PANTHEON_ENVIRONMENT');
+  if ($pantheon_site && $pantheon_env) {
+    return $pantheon_site . '.' . $pantheon_env;
+  }
+
+  return 'local';
+}
+
+/**
+ * Check if this is a local development environment.
+ *
+ * The self-hosted country servers expose no vendor environment variable, so
+ * an explicitly configured environment name is what marks a machine as a
+ * real deployment.
+ *
+ * @return bool
+ *   TRUE when the site is considered local.
+ */
+function logs_glitchtip_is_local() {
+  if (variable_get('logs_glitchtip_environment', '') || _logs_glitchtip_getenv('GLITCHTIP_ENVIRONMENT')) {
+    return FALSE;
+  }
+
+  // Pantheon unique ID.
+  if (_logs_glitchtip_getenv('PANTHEON_SITE_NAME')) {
+    return FALSE;
+  }
+
+  // Platform.sh unique ID.
+  if (_logs_glitchtip_getenv('PLATFORM_ENVIRONMENT')) {
+    return FALSE;
+  }
+
+  // Acquia unique ID.
+  if (_logs_glitchtip_getenv('AH_SITE_GROUP')) {
+    return FALSE;
+  }
+
+  return TRUE;
+}

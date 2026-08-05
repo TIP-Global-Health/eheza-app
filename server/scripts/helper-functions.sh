@@ -210,6 +210,35 @@ function composer_install {
   cd "$ROOT"
 }
 
+
+##
+# Configure GlitchTip error reporting from the config file.
+#
+# Both values are optional and empty in default.config.sh, so a checkout that
+# was never configured simply reports nothing.
+##
+function configure_glitchtip {
+  if [ -z "$GLITCHTIP_DSN" ] && [ -z "$GLITCHTIP_ENVIRONMENT" ]; then
+    return
+  fi
+
+  echo -e "${LBLUE}> Configure GlitchTip error reporting${RESTORE}"
+
+  cd "$ROOT"/www
+
+  if [ -n "$GLITCHTIP_DSN" ]; then
+    drush vset logs_glitchtip_dsn "$GLITCHTIP_DSN"
+  fi
+
+  if [ -n "$GLITCHTIP_ENVIRONMENT" ]; then
+    drush vset logs_glitchtip_environment "$GLITCHTIP_ENVIRONMENT"
+  fi
+
+  echo
+
+  cd "$ROOT"
+}
+
 ##
 # Create (if not exists) and set the proper file permissions
 # on the sites/default/files directory.
