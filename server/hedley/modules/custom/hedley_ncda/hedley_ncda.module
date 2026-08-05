@@ -1002,6 +1002,16 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
     return FALSE;
   }
 
+  $stored = field_get_items('node', $person, 'field_ncda_data');
+  if ($stored && $stored[0]['value'] === $encoded_data) {
+    // The data is what is already stored. Saving it would write a revision
+    // that every device holding this person downloads again, to deliver
+    // nothing - which is most of the work when data is recalculated in bulk,
+    // since a recalculation is triggered per person and most of them have not
+    // changed.
+    return TRUE;
+  }
+
   $person->field_ncda_data[LANGUAGE_NONE][0]['value'] = $encoded_data;
   node_save($person);
 
