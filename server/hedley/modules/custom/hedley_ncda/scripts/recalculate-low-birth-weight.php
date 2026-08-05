@@ -60,7 +60,10 @@ $sources = [
 $affected = [];
 foreach ($sources as $source) {
   $query = db_select($source['table'], 'f');
-  $query->join('field_data_field_person', 'fp', 'fp.entity_id = f.entity_id');
+  // Field tables are keyed by entity type as well as by entity id, and keep
+  // the rows of deleted field instances, so both are named rather than left
+  // to the fact that these fields are only on nodes today.
+  $query->join('field_data_field_person', 'fp', 'fp.entity_id = f.entity_id AND fp.entity_type = f.entity_type');
   $query->join('node', 'n', 'n.nid = fp.field_person_target_id');
   hedley_general_apply_exclude_deleted($query, 'n');
 
@@ -75,6 +78,8 @@ foreach ($sources as $source) {
   $query
     ->fields('fp', ['field_person_target_id'])
     ->condition('f.deleted', 0)
+    ->condition('f.entity_type', 'node')
+    ->condition('fp.deleted', 0)
     ->condition('n.status', NODE_PUBLISHED)
     ->condition('n.type', 'person')
     ->condition($bands);

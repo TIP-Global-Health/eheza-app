@@ -12,8 +12,10 @@ define('HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA', 'hedley_ncda_calculate_ncda_data
 // Birth weight, in grams, below which a child counts as born underweight.
 // This is what puts the birth weight input in the red on the client, and the
 // aggregated scorecard counts the children it applies to - issues #543, #687.
-// Changing this leaves already calculated data behind, so run
-// scripts/generate-data-for-all.php afterwards, on every site.
+// Changing this leaves already calculated data behind, so recalculate the
+// children it moves afterwards, on every site. Which children those are
+// depends on what it moves from and to, and
+// scripts/recalculate-low-birth-weight.php is how it was done last time.
 define('HEDLEY_NCDA_LOW_BIRTH_WEIGHT_THRESHOLD', 2500);
 
 // Lowest birth weight, in grams, that can be read as a real measurement.
