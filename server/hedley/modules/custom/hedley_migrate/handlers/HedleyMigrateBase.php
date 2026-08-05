@@ -167,19 +167,6 @@ abstract class HedleyMigrateBase extends Migration {
   }
 
   /**
-   * Add a JPG extensions to the file name.
-   *
-   * @param string $name
-   *   A user name.
-   *
-   * @return string
-   *   A file name.
-   */
-  public function avatarProcess($name) {
-    return $name . '.jpg';
-  }
-
-  /**
    * Convert a date string to a timestamp.
    *
    * @param string $date

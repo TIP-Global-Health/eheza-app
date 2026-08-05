@@ -1127,31 +1127,6 @@ function hedley_person_import_form_callback(array $form, array $form_state) {
 }
 
 /**
- * Get a relationships by a person.
- *
- * @param int $child_id
- *   The node ID of child.
- * @param string $relation_type
- *   Optional; the type of the relation, can be either "parent" or "caregiver".
- *
- * @return array
- *   Node IDs if they exist or empty array if no nodes exist.
- */
-function hedley_person_get_child_relationships($child_id, $relation_type = 'parent') {
-  $query = hedley_general_create_entity_field_query_excluding_deleted();
-  $query
-    ->entityCondition('entity_type', 'node')
-    ->propertyCondition('type', 'relationship')
-    ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_related_to', 'target_id', $child_id)
-    ->fieldCondition('field_related_by', 'value', $relation_type);
-
-  $result = $query->execute();
-
-  return !empty($result['node']) ? array_keys($result['node']) : [];
-}
-
-/**
  * Implements hook_node_presave().
  *
  * If person is marked as deleted, verifies it got no measurements.
