@@ -77,7 +77,7 @@ function A9(fun, a, b, c, d, e, f, g, h, i) {
   return fun.a === 9 ? fun.f(a, b, c, d, e, f, g, h, i) : fun(a)(b)(c)(d)(e)(f)(g)(h)(i);
 }
 
-console.warn('Compiled in DEV mode. Follow the advice at https://elm-lang.org/0.19.1/optimize for better performance and smaller assets.');
+console.warn('Compiled in DEV mode. Follow the advice at https://elm-lang.org/0.19.2/optimize for better performance and smaller assets.');
 
 
 var _JsArray_empty = [];
@@ -4898,8 +4898,8 @@ var $elm$core$String$split = F2(
 var $elm$json$Json$Decode$indent = function (str) {
 	return A2(
 		$elm$core$String$join,
-		'\n    ',
-		A2($elm$core$String$split, '\n', str));
+		'\u000A    ',
+		A2($elm$core$String$split, '\u000A', str));
 };
 var $elm$core$List$foldl = F3(
 	function (func, acc, list) {
@@ -4991,7 +4991,7 @@ var $elm$core$List$reverse = function (list) {
 var $elm$core$String$uncons = _String_uncons;
 var $elm$json$Json$Decode$errorOneOf = F2(
 	function (i, error) {
-		return '\n\n(' + ($elm$core$String$fromInt(i + 1) + (') ' + $elm$json$Json$Decode$indent(
+		return '\u000A\u000A(' + ($elm$core$String$fromInt(i + 1) + (') ' + $elm$json$Json$Decode$indent(
 			$elm$json$Json$Decode$errorToString(error))));
 	});
 var $elm$json$Json$Decode$errorToString = function (error) {
@@ -5016,7 +5016,7 @@ var $elm$json$Json$Decode$errorToStringHelp = F2(
 							return $elm$core$Char$isAlpha(_char) && A2($elm$core$String$all, $elm$core$Char$isAlphaNum, rest);
 						}
 					}();
-					var fieldName = isSimple ? ('.' + f) : ('[\'' + (f + '\']'));
+					var fieldName = isSimple ? ('.' + f) : ('[\u0027' + (f + '\u0027]'));
 					var $temp$error = err,
 						$temp$context = A2($elm$core$List$cons, fieldName, context);
 					error = $temp$error;
@@ -5067,7 +5067,7 @@ var $elm$json$Json$Decode$errorToStringHelp = F2(
 								$elm$core$List$length(errors)) + ' ways:'));
 							return A2(
 								$elm$core$String$join,
-								'\n\n',
+								'\u000A\u000A',
 								A2(
 									$elm$core$List$cons,
 									introduction,
@@ -5079,16 +5079,16 @@ var $elm$json$Json$Decode$errorToStringHelp = F2(
 					var json = error.b;
 					var introduction = function () {
 						if (!context.b) {
-							return 'Problem with the given value:\n\n';
+							return 'Problem with the given value:\u000A\u000A';
 						} else {
 							return 'Problem with the value at json' + (A2(
 								$elm$core$String$join,
 								'',
-								$elm$core$List$reverse(context)) + ':\n\n    ');
+								$elm$core$List$reverse(context)) + ':\u000A\u000A    ');
 						}
 					}();
 					return introduction + ($elm$json$Json$Decode$indent(
-						A2($elm$json$Json$Encode$encode, 4, json)) + ('\n\n' + msg));
+						A2($elm$json$Json$Encode$encode, 4, json)) + ('\u000A\u000A' + msg));
 			}
 		}
 	});
@@ -12958,8 +12958,8 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisPneuminialCovid19':
 						return {
 							english: 'COVID-19 with signs of Pneumonia',
-							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwa Covid-19 hamwe n\'ibimenyetso by\'Umusonga'),
-							kirundi: $elm$core$Maybe$Just('Virisi ya Korona - 19 n\'ibimenyetso vy\'umusonga'),
+							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwa Covid-19 hamwe n\u0027ibimenyetso by\u0027Umusonga'),
+							kirundi: $elm$core$Maybe$Just('Virisi ya Korona - 19 n\u0027ibimenyetso vy\u0027umusonga'),
 							somali: $elm$core$Maybe$Just('COVID-19 oo leh calaamadaha Oof wareenka')
 						};
 					case 'DiagnosisLowRiskCovid19':
@@ -12972,7 +12972,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisMalariaComplicated':
 						return {
 							english: 'Complicated Malaria',
-							kinyarwanda: $elm$core$Maybe$Just('Malariya y\'igikatu'),
+							kinyarwanda: $elm$core$Maybe$Just('Malariya y\u0027igikatu'),
 							kirundi: $elm$core$Maybe$Just('Malariya ikomeye'),
 							somali: $elm$core$Maybe$Just('Duumo Liidata')
 						};
@@ -12994,35 +12994,35 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Gastrointestinal Infection with Complications',
 							kinyarwanda: $elm$core$Maybe$Just('Indwara yo mu nda ikabije'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo mu mara/m\'umushishito hamwe n\'ingorane zijanye nazo'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu mara/m\u0027umushishito hamwe n\u0027ingorane zijanye nazo'),
 							somali: $elm$core$Maybe$Just('Caabuqa Caloosha oo leh Waxyeello')
 						};
 					case 'DiagnosisGastrointestinalInfectionUncomplicated':
 						return {
 							english: 'Gastrointestinal Infection without Complications',
 							kinyarwanda: $elm$core$Maybe$Just('Indwara yo mu nda yoroheje'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo mu mara/m\'umushishito ata ngorane zijanye nazo'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu mara/m\u0027umushishito ata ngorane zijanye nazo'),
 							somali: $elm$core$Maybe$Just('Caabuqa Caloosha aan lahayn Waxyeello')
 						};
 					case 'DiagnosisSimpleColdAndCough':
 						return {
 							english: 'Simple Cold and Cough',
-							kinyarwanda: $elm$core$Maybe$Just('Ibicurane n\'inkorora byoroheje'),
-							kirundi: $elm$core$Maybe$Just('Imbeho hamwe n\'inkorora biswnzwe'),
+							kinyarwanda: $elm$core$Maybe$Just('Ibicurane n\u0027inkorora byoroheje'),
+							kirundi: $elm$core$Maybe$Just('Imbeho hamwe n\u0027inkorora biswnzwe'),
 							somali: $elm$core$Maybe$Just('Qufac iyo Qarqaryo fudud')
 						};
 					case 'DiagnosisRespiratoryInfectionComplicated':
 						return {
 							english: 'Acute Respiratory Infection with Complications',
-							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'ubuhumekero ikabije'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo guhema nabi ibabaje/uguhema nabi bibabaje hamwe n\'ingorane bijanye'),
+							kinyarwanda: $elm$core$Maybe$Just('Indwara y\u0027ubuhumekero ikabije'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo guhema nabi ibabaje/uguhema nabi bibabaje hamwe n\u0027ingorane bijanye'),
 							somali: $elm$core$Maybe$Just('Looga Shakisan yahay Caabuqa Saableyda (leh waxyeello)')
 						};
 					case 'DiagnosisRespiratoryInfectionUncomplicated':
 						return {
 							english: 'Uncomplicated Pneumonia',
 							kinyarwanda: $elm$core$Maybe$Just('Umusonga woroheje'),
-							kirundi: $elm$core$Maybe$Just('Hiketswe ingwara y\'umusonga igoye'),
+							kirundi: $elm$core$Maybe$Just('Hiketswe ingwara y\u0027umusonga igoye'),
 							somali: $elm$core$Maybe$Just('Oof wareen aan waxyeello lahayn`')
 						};
 					case 'DiagnosisFeverOfUnknownOrigin':
@@ -13574,7 +13574,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'HasKitchenGarden':
 						return {
 							english: 'Household has kitchen garden',
-							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite akarima k\'igikoni'),
+							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite akarima k\u0027igikoni'),
 							kirundi: $elm$core$Maybe$Nothing,
 							somali: $elm$core$Maybe$Nothing
 						};
@@ -13644,7 +13644,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					default:
 						return {
 							english: 'Receipt of conditional food items including small livestock',
-							kinyarwanda: $elm$core$Maybe$Just('Gufata inkunga z’ingoboka harimo ibiryo n\'amatungo magufi'),
+							kinyarwanda: $elm$core$Maybe$Just('Gufata inkunga z’ingoboka harimo ibiryo n\u0027amatungo magufi'),
 							kirundi: $elm$core$Maybe$Nothing,
 							somali: $elm$core$Maybe$Nothing
 						};
@@ -13664,7 +13664,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'Deworming':
 						return {
 							english: 'Deworming',
-							kinyarwanda: $elm$core$Maybe$Just('Imiti y\'inzoka'),
+							kinyarwanda: $elm$core$Maybe$Just('Imiti y\u0027inzoka'),
 							kirundi: $elm$core$Maybe$Nothing,
 							somali: $elm$core$Maybe$Nothing
 						};
@@ -13678,7 +13678,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					default:
 						return {
 							english: 'ECD services provided to child',
-							kinyarwanda: $elm$core$Maybe$Just('Umwana yahawe servise n\'ikigo mboneza mikurire'),
+							kinyarwanda: $elm$core$Maybe$Just('Umwana yahawe servise n\u0027ikigo mboneza mikurire'),
 							kirundi: $elm$core$Maybe$Nothing,
 							somali: $elm$core$Maybe$Nothing
 						};
@@ -13847,35 +13847,35 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Live Birth at Term (38 weeks EGA or more)',
 							kinyarwanda: $elm$core$Maybe$Just('Kubyara umwana muzima/Ushyitse (ku byumweru 38 kuzamura)'),
-							kirundi: $elm$core$Maybe$Just('Imbanyi ivutse ikomeye ikiringo kigeze (Indwi 38 z\'imbanyi canke zirenga)'),
+							kirundi: $elm$core$Maybe$Just('Imbanyi ivutse ikomeye ikiringo kigeze (Indwi 38 z\u0027imbanyi canke zirenga)'),
 							somali: $elm$core$Maybe$Just('Nolol ku Dhashay oo Bilo Dhameestay (38 usbuuc EGA ama ka badan)')
 						};
 					case 'OutcomeLivePreTerm':
 						return {
 							english: 'Live Birth Preterm (less than 38 weeks EGA)',
-							kinyarwanda: $elm$core$Maybe$Just('Kubyara mwana udashyitse (munsi y\'ibyumweru 38)'),
-							kirundi: $elm$core$Maybe$Just('Imbanyi ivutse imbere y\'ikiringo (mbere y\'indwi 38)'),
+							kinyarwanda: $elm$core$Maybe$Just('Kubyara mwana udashyitse (munsi y\u0027ibyumweru 38)'),
+							kirundi: $elm$core$Maybe$Just('Imbanyi ivutse imbere y\u0027ikiringo (mbere y\u0027indwi 38)'),
 							somali: $elm$core$Maybe$Just('Nolol ku dhashay oo aan Bilo dhameesan (ka yar 38 usbuuc EGA)')
 						};
 					case 'OutcomeStillAtTerm':
 						return {
 							english: 'Stillbirth at Term (38 weeks EGA or more)',
 							kinyarwanda: $elm$core$Maybe$Just('Abana bapfiriye mu nda bageze igihe cyo kuvuka (ku byumweru 38 kuzamura)'),
-							kirundi: $elm$core$Maybe$Just('Kuvyarira ku gihe (Indwi 38 - AGE (z\'Igihe co Kwibungenga Caharuwe ) canke zirenga)'),
+							kirundi: $elm$core$Maybe$Just('Kuvyarira ku gihe (Indwi 38 - AGE (z\u0027Igihe co Kwibungenga Caharuwe ) canke zirenga)'),
 							somali: $elm$core$Maybe$Just('Uur meyd bilo dhameystay (38 usbuuc EGA ama ka badan)')
 						};
 					case 'OutcomeStillPreTerm':
 						return {
 							english: 'Stillbirth Preterm (less than 38 weeks EGA)',
-							kinyarwanda: $elm$core$Maybe$Just('Abana bapfiriye mu nda batagejeje igihe cyo kuvuka (munsi y\'ibyumweru 38)'),
-							kirundi: $elm$core$Maybe$Just('Kuvyara imbere yuko igihe kigera (imbere y\'indwi 38 - AGE (Igihe co Kwibungenga Caharuwe)'),
+							kinyarwanda: $elm$core$Maybe$Just('Abana bapfiriye mu nda batagejeje igihe cyo kuvuka (munsi y\u0027ibyumweru 38)'),
+							kirundi: $elm$core$Maybe$Just('Kuvyara imbere yuko igihe kigera (imbere y\u0027indwi 38 - AGE (Igihe co Kwibungenga Caharuwe)'),
 							somali: $elm$core$Maybe$Just('Uur meyd aan bilo dhameysan (ka yar 38 usbuuc EGA)')
 						};
 					default:
 						return {
 							english: 'Abortions (before 24 weeks EGA)',
-							kinyarwanda: $elm$core$Maybe$Just('Kuvanamo inda (mbere y\'ibyumweru 24)'),
-							kirundi: $elm$core$Maybe$Just('Ugukoroka kw\'imbanyi (imbere y\'indwi 24 ugereranije nigihe imbanyi imaze)'),
+							kinyarwanda: $elm$core$Maybe$Just('Kuvanamo inda (mbere y\u0027ibyumweru 24)'),
+							kirundi: $elm$core$Maybe$Just('Ugukoroka kw\u0027imbanyi (imbere y\u0027indwi 24 ugereranije nigihe imbanyi imaze)'),
 							somali: $elm$core$Maybe$Just('Dhicis (ka hor 24 todobaad EGA)')
 						};
 				}
@@ -14098,22 +14098,22 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisChronicHypertension':
 						return {
 							english: 'Chronic Hypertension',
-							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'Umuvuduko w\'Amaraso Imaze Igihe Kirekire'),
-							kirundi: $elm$core$Maybe$Just('Umuvuduko ukabije w\'amaraso wamaho'),
+							kinyarwanda: $elm$core$Maybe$Just('Indwara y\u0027Umuvuduko w\u0027Amaraso Imaze Igihe Kirekire'),
+							kirundi: $elm$core$Maybe$Just('Umuvuduko ukabije w\u0027amaraso wamaho'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisGestationalHypertension':
 						return {
 							english: 'Pregnancy-Induced Hypertension',
-							kinyarwanda: $elm$core$Maybe$Just('Umuvuduko w\'amaraso watewe no gutwita'),
-							kirundi: $elm$core$Maybe$Just('Umuvuduko w\'amaraso utewe n\'imbanyi'),
+							kinyarwanda: $elm$core$Maybe$Just('Umuvuduko w\u0027amaraso watewe no gutwita'),
+							kirundi: $elm$core$Maybe$Just('Umuvuduko w\u0027amaraso utewe n\u0027imbanyi'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisModeratePreeclampsia':
 						return {
 							english: 'Mild to Moderate Preeclampsia',
 							kinyarwanda: $elm$core$Maybe$Just('Preklampusi Yoroheje'),
-							kirundi: $elm$core$Maybe$Just('Umuvuduko w\'amaraso mu gihe c\'imbanyi woroshe'),
+							kirundi: $elm$core$Maybe$Just('Umuvuduko w\u0027amaraso mu gihe c\u0027imbanyi woroshe'),
 							somali: $elm$core$Maybe$Just('Dhiig karka Uurka u dhaxeeya mid hoose iyo mid dhexe')
 						};
 					case 'DiagnosisSeverePreeclampsia':
@@ -14155,28 +14155,28 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Syphilis',
 							kinyarwanda: $elm$core$Maybe$Just('Mburugu'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\u0027irondoka'),
 							somali: $elm$core$Maybe$Just('Waraabow')
 						};
 					case 'DiagnosisSyphilisWithComplications':
 						return {
 							english: 'Syphilis with Complications',
-							kinyarwanda: $elm$core$Maybe$Just('Mburugu n\'ibibazo bishamikiyeho'),
-							kirundi: $elm$core$Maybe$Just('Syphilis hamwe n\'ingorane'),
+							kinyarwanda: $elm$core$Maybe$Just('Mburugu n\u0027ibibazo bishamikiyeho'),
+							kirundi: $elm$core$Maybe$Just('Syphilis hamwe n\u0027ingorane'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisNeurosyphilis':
 						return {
 							english: 'Neurosyphilis',
 							kinyarwanda: $elm$core$Maybe$Just('Mburugu yageze mu bwonko'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo m\'ubwonko'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo m\u0027ubwonko'),
 							somali: $elm$core$Maybe$Just('Jabtada Dareen Sidaha')
 						};
 					case 'DiagnosisHepatitisB':
 						return {
 							english: 'Hepatitis B',
 							kinyarwanda: $elm$core$Maybe$Just('Umwijima wo mu bwoko bwa B'),
-							kirundi: $elm$core$Maybe$Just('Ingwara y\'igitigu'),
+							kirundi: $elm$core$Maybe$Just('Ingwara y\u0027igitigu'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisMalaria':
@@ -14189,43 +14189,43 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisMalariaWithAnemia':
 						return {
 							english: 'Malaria with Anemia',
-							kinyarwanda: $elm$core$Maybe$Just('Malariya n\'Amaraso Macye'),
-							kirundi: $elm$core$Maybe$Just('Malariya hamwe n\'igabanuka ry\'amaraso m\'umubiri'),
+							kinyarwanda: $elm$core$Maybe$Just('Malariya n\u0027Amaraso Macye'),
+							kirundi: $elm$core$Maybe$Just('Malariya hamwe n\u0027igabanuka ry\u0027amaraso m\u0027umubiri'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisMalariaWithSevereAnemia':
 						return {
 							english: 'Malaria with Severe Anemia',
-							kinyarwanda: $elm$core$Maybe$Just('Malariya n\'Amaraso Macye Cyane'),
-							kirundi: $elm$core$Maybe$Just('Malariya kumwe n\'igabanuka ry\'amaraso m\'umubiri ridasanzwe'),
+							kinyarwanda: $elm$core$Maybe$Just('Malariya n\u0027Amaraso Macye Cyane'),
+							kirundi: $elm$core$Maybe$Just('Malariya kumwe n\u0027igabanuka ry\u0027amaraso m\u0027umubiri ridasanzwe'),
 							somali: $elm$core$Maybe$Just('Duumo leh Dhiig la`aan Daran')
 						};
 					case 'DiagnosisModerateAnemia':
 						return {
 							english: 'Mild to Moderate Anemia',
 							kinyarwanda: $elm$core$Maybe$Just('Amaraso Macye byoroheje'),
-							kirundi: $elm$core$Maybe$Just('Igabanuka ry\'amaraso kuva bisanzwe'),
+							kirundi: $elm$core$Maybe$Just('Igabanuka ry\u0027amaraso kuva bisanzwe'),
 							somali: $elm$core$Maybe$Just('Dhiig la`aan u dhaxeysa mid hoose iyo mid dhexe')
 						};
 					case 'DiagnosisSevereAnemia':
 						return {
 							english: 'Severe Anemia',
 							kinyarwanda: $elm$core$Maybe$Just('Amaraso Macye Cyane'),
-							kirundi: $elm$core$Maybe$Just('Ibura ry\'amaraso rikaze'),
+							kirundi: $elm$core$Maybe$Just('Ibura ry\u0027amaraso rikaze'),
 							somali: $elm$core$Maybe$Just('Dhiig yari aad u daran')
 						};
 					case 'DiagnosisSevereAnemiaWithComplications':
 						return {
 							english: 'Severe Anemia with Complications',
-							kinyarwanda: $elm$core$Maybe$Just('Amaraso Macye Cyane n\'Ibibazo Bishamikiyeho'),
-							kirundi: $elm$core$Maybe$Just('Ibura ry\'amaraso rikaze hamwe n\'ingorane bijanye'),
+							kinyarwanda: $elm$core$Maybe$Just('Amaraso Macye Cyane n\u0027Ibibazo Bishamikiyeho'),
+							kirundi: $elm$core$Maybe$Just('Ibura ry\u0027amaraso rikaze hamwe n\u0027ingorane bijanye'),
 							somali: $elm$core$Maybe$Just('Dhiig yari aad u daran oo leh waxyeello')
 						};
 					case 'DiagnosisMiscarriage':
 						return {
 							english: 'Miscarriage',
 							kinyarwanda: $elm$core$Maybe$Just('Inda yavuyemo'),
-							kirundi: $elm$core$Maybe$Just('Ugukoroka kw\'imbanyi'),
+							kirundi: $elm$core$Maybe$Just('Ugukoroka kw\u0027imbanyi'),
 							somali: $elm$core$Maybe$Just('Umuliso biyaan')
 						};
 					case 'DiagnosisMolarPregnancy':
@@ -14238,7 +14238,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisPlacentaPrevia':
 						return {
 							english: 'Placenta Previa',
-							kinyarwanda: $elm$core$Maybe$Just('Ingobyi iri hasi ku nkondo y\'umura'),
+							kinyarwanda: $elm$core$Maybe$Just('Ingobyi iri hasi ku nkondo y\u0027umura'),
 							kirundi: $elm$core$Maybe$Just('Igitereko cugaye isohokera'),
 							somali: $elm$core$Maybe$Just('Ibida Qalloocatay')
 						};
@@ -14246,14 +14246,14 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Placental Abruption',
 							kinyarwanda: $elm$core$Maybe$Just('Ingobyi yomotse hakiri kare'),
-							kirundi: $elm$core$Maybe$Just('Itabuka ry\'igitereko'),
+							kirundi: $elm$core$Maybe$Just('Itabuka ry\u0027igitereko'),
 							somali: $elm$core$Maybe$Just('Ibida Go`day')
 						};
 					case 'DiagnosisUterineRupture':
 						return {
 							english: 'Uterine Rupture',
 							kinyarwanda: $elm$core$Maybe$Just('Nyababyeyi yaturitse'),
-							kirundi: $elm$core$Maybe$Just('uguturika kw\'igitereko'),
+							kirundi: $elm$core$Maybe$Just('uguturika kw\u0027igitereko'),
 							somali: $elm$core$Maybe$Just('Dillaaca Ilmo galeenka')
 						};
 					case 'DiagnosisObstructedLabor':
@@ -14267,34 +14267,34 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Post Abortion Sepsis',
 							kinyarwanda: $elm$core$Maybe$Just('Afite uburwayi bwa infegisiyo yo mu maraso bwatewe no gukuramo inda'),
-							kirundi: $elm$core$Maybe$Just('Birashoboka ko ingwara y\'igitereko izamwo'),
+							kirundi: $elm$core$Maybe$Just('Birashoboka ko ingwara y\u0027igitereko izamwo'),
 							somali: $elm$core$Maybe$Just('Caabuqa Dhiciska kadib')
 						};
 					case 'DiagnosisEctopicPregnancy':
 						return {
 							english: 'Ectopic Pregnancy',
-							kinyarwanda: $elm$core$Maybe$Just('Yasamiye hanze y\'umura'),
-							kirundi: $elm$core$Maybe$Just('Imbanyi iri hanze y\'Igitereko'),
+							kinyarwanda: $elm$core$Maybe$Just('Yasamiye hanze y\u0027umura'),
+							kirundi: $elm$core$Maybe$Just('Imbanyi iri hanze y\u0027Igitereko'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisPROM':
 						return {
 							english: 'Premature Rupture of Membranes (PROM)',
 							kinyarwanda: $elm$core$Maybe$Just('Isuha yamenetse hakiri kare'),
-							kirundi: $elm$core$Maybe$Just('Itabuka ry\'isimbizo y\'umwana mu gitereko imbere yuko imbanyi ishika kw\'itarike yayo/igihe cayo'),
+							kirundi: $elm$core$Maybe$Just('Itabuka ry\u0027isimbizo y\u0027umwana mu gitereko imbere yuko imbanyi ishika kw\u0027itarike yayo/igihe cayo'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisPPROM':
 						return {
 							english: 'Preterm Premature Rupture of Membranes (PPROM)',
 							kinyarwanda: $elm$core$Maybe$Just('Isuha yamenetse hakiri kare inda itarageza igihe'),
-							kirundi: $elm$core$Maybe$Just('Itabuka ry\'isimbizo y\'umwana mu gitereko imbere yuko imbanyi ishika kw\'itarike yayo'),
+							kirundi: $elm$core$Maybe$Just('Itabuka ry\u0027isimbizo y\u0027umwana mu gitereko imbere yuko imbanyi ishika kw\u0027itarike yayo'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisHyperemesisGravidum':
 						return {
 							english: 'Hyperemesis Gravidum',
-							kinyarwanda: $elm$core$Maybe$Just('Kuruka bikabije k\'umugore utwite'),
+							kinyarwanda: $elm$core$Maybe$Just('Kuruka bikabije k\u0027umugore utwite'),
 							kirundi: $elm$core$Maybe$Just('Hyperémèse gravidique'),
 							somali: $elm$core$Maybe$Nothing
 						};
@@ -14309,13 +14309,13 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Maternal Complications',
 							kinyarwanda: $elm$core$Maybe$Just('Ibibazo bishobora kwibasira umugore utwite'),
-							kirundi: $elm$core$Maybe$Just('Ingorane z\'abavyeyi'),
+							kirundi: $elm$core$Maybe$Just('Ingorane z\u0027abavyeyi'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisInfection':
 						return {
 							english: 'Infection',
-							kinyarwanda: $elm$core$Maybe$Just('Indwara iterwa n\'udukoko tutabonwa n\'amaso (Microbes)'),
+							kinyarwanda: $elm$core$Maybe$Just('Indwara iterwa n\u0027udukoko tutabonwa n\u0027amaso (Microbes)'),
 							kirundi: $elm$core$Maybe$Just('Ivyanduza'),
 							somali: $elm$core$Maybe$Just('Caabuq')
 						};
@@ -14337,35 +14337,35 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Heartburn',
 							kinyarwanda: $elm$core$Maybe$Just('Ikirungurira'),
-							kirundi: $elm$core$Maybe$Just('Ugusha k\'umutima'),
+							kirundi: $elm$core$Maybe$Just('Ugusha k\u0027umutima'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisDeepVeinThrombosis':
 						return {
 							english: 'Deep Vein Thrombosis',
-							kinyarwanda: $elm$core$Maybe$Just('Gufatana(Kuvura) gukabije kw\'amaraso'),
-							kirundi: $elm$core$Maybe$Just('Umutsi w\'indani ufise Thrombose'),
+							kinyarwanda: $elm$core$Maybe$Just('Gufatana(Kuvura) gukabije kw\u0027amaraso'),
+							kirundi: $elm$core$Maybe$Just('Umutsi w\u0027indani ufise Thrombose'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisPelvicPainIntense':
 						return {
 							english: 'Intense Pelvic Pain',
-							kinyarwanda: $elm$core$Maybe$Just('Ububabare bukabije mu kiziba cy\'inda'),
+							kinyarwanda: $elm$core$Maybe$Just('Ububabare bukabije mu kiziba cy\u0027inda'),
 							kirundi: $elm$core$Maybe$Just('Ububabare bukomeye bwo mu nda yo hepfo'),
 							somali: $elm$core$Maybe$Just('Xanuun Dhabarka ah oo daran')
 						};
 					case 'DiagnosisUrinaryTractInfection':
 						return {
 							english: 'Urinary Tract Infection',
-							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'ubwandu bw\'umuyoboro w\'inkari'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo mu miringoti y\'umukoyo'),
+							kinyarwanda: $elm$core$Maybe$Just('Indwara y\u0027ubwandu bw\u0027umuyoboro w\u0027inkari'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu miringoti y\u0027umukoyo'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisPyelonephritis':
 						return {
 							english: 'Pyelonephritis',
 							kinyarwanda: $elm$core$Maybe$Just('Indwara yo kubyimba impyiko'),
-							kirundi: $elm$core$Maybe$Just('Ingwara y\'Amafyigo'),
+							kirundi: $elm$core$Maybe$Just('Ingwara y\u0027Amafyigo'),
 							somali: $elm$core$Maybe$Just('Caabuqa Kellida')
 						};
 					case 'DiagnosisCandidiasis':
@@ -14378,15 +14378,15 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisGonorrhea':
 						return {
 							english: 'Gonorrhea',
-							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'umutezi'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka'),
+							kinyarwanda: $elm$core$Maybe$Just('Indwara y\u0027umutezi'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\u0027irondoka'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisTrichomonasOrBacterialVaginosis':
 						return {
 							english: 'Trichomonas or Bacterial Vaginosis',
 							kinyarwanda: $elm$core$Maybe$Just('Tirikomonasi cyangwa Mikorobe zo mu nda ibyara'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka igaragazwa kenshi no kuhiyagaza'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\u0027irondoka igaragazwa kenshi no kuhiyagaza'),
 							somali: $elm$core$Maybe$Just('Trichomonas ama Bakteeriyada Makaanka')
 						};
 					case 'DiagnosisTuberculosis':
@@ -14399,7 +14399,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisDiabetes':
 						return {
 							english: 'Diabetes',
-							kinyarwanda: $elm$core$Maybe$Just('Diyabete (Indwara y\'igisukari)'),
+							kinyarwanda: $elm$core$Maybe$Just('Diyabete (Indwara y\u0027igisukari)'),
 							kirundi: $elm$core$Maybe$Just('Diyabete'),
 							somali: $elm$core$Maybe$Nothing
 						};
@@ -14407,7 +14407,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Gestational Diabetes',
 							kinyarwanda: $elm$core$Maybe$Just('Diyabete iterwa no gutwita'),
-							kirundi: $elm$core$Maybe$Just('Diyabete y\'imbanyi'),
+							kirundi: $elm$core$Maybe$Just('Diyabete y\u0027imbanyi'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisRhesusNegative':
@@ -14420,28 +14420,28 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisDepressionNotLikely':
 						return {
 							english: 'Depression not Likely',
-							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko adafite indwara y\'agahinda gakabije'),
+							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko adafite indwara y\u0027agahinda gakabije'),
 							kirundi: $elm$core$Maybe$Just('Kwihebura ntibishoboka'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisDepressionPossible':
 						return {
 							english: 'Depression Possible',
-							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko yagira indwara y\'agahinda gakabije'),
+							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko yagira indwara y\u0027agahinda gakabije'),
 							kirundi: $elm$core$Maybe$Just('Kwihebura birashoboka'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisDepressionHighlyPossible':
 						return {
 							english: 'Fairly High Possibility of Depression',
-							kinyarwanda: $elm$core$Maybe$Just('Birashoboka cyane ko afite indwara y\'agahinda gakabije'),
+							kinyarwanda: $elm$core$Maybe$Just('Birashoboka cyane ko afite indwara y\u0027agahinda gakabije'),
 							kirundi: $elm$core$Maybe$Just('Birashoboka cane kwihebura'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisDepressionProbable':
 						return {
 							english: 'Probable Depression',
-							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko afite indwara y\'agahinda gakabije'),
+							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko afite indwara y\u0027agahinda gakabije'),
 							kirundi: $elm$core$Maybe$Just('Ukwihebura gushoboka'),
 							somali: $elm$core$Maybe$Nothing
 						};
@@ -14498,7 +14498,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Perineal Pain or Discharge',
 							kinyarwanda: $elm$core$Maybe$Just('Arababara perine cg aratakaza ibintu budasanzwe'),
-							kirundi: $elm$core$Maybe$Just('Ububabare bw\'umugongo hepfo'),
+							kirundi: $elm$core$Maybe$Just('Ububabare bw\u0027umugongo hepfo'),
 							somali: $elm$core$Maybe$Just('Xanuun qaska ah ama Dheecaan')
 						};
 					case 'DiagnosisPostpartumInfection':
@@ -14514,14 +14514,14 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Early Mastitis or Engorgement',
 							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwo kubyimba amabere bwaje kare cyane'),
-							kirundi: $elm$core$Maybe$Just('Iyuzura ry\'amaberebere (Mastite précoce)'),
+							kirundi: $elm$core$Maybe$Just('Iyuzura ry\u0027amaberebere (Mastite précoce)'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisPostpartumMastitis':
 						return {
 							english: 'Mastitis',
-							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bw\'amabere'),
-							kirundi: $elm$core$Maybe$Just('Ingwara y\'imoko ituma amaberebere adasohoka'),
+							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bw\u0027amabere'),
+							kirundi: $elm$core$Maybe$Just('Ingwara y\u0027imoko ituma amaberebere adasohoka'),
 							somali: $elm$core$Maybe$Nothing
 						};
 					default:
@@ -15516,8 +15516,8 @@ var $justinmimbs$date$Pattern$Literal = function (a) {
 var $justinmimbs$date$Pattern$escapedQuote = A2(
 	$elm$parser$Parser$ignorer,
 	$elm$parser$Parser$succeed(
-		$justinmimbs$date$Pattern$Literal('\'')),
-	$elm$parser$Parser$token('\'\''));
+		$justinmimbs$date$Pattern$Literal('\u0027')),
+	$elm$parser$Parser$token('\u0027\u0027'));
 var $justinmimbs$date$Pattern$Field = F2(
 	function (a, b) {
 		return {$: 'Field', a: a, b: b};
@@ -15680,9 +15680,9 @@ var $justinmimbs$date$Pattern$quotedHelp = function (result) {
 				A2(
 				$elm$parser$Parser$andThen,
 				function (_v0) {
-					return $justinmimbs$date$Pattern$quotedHelp(result + '\'');
+					return $justinmimbs$date$Pattern$quotedHelp(result + '\u0027');
 				},
-				$elm$parser$Parser$token('\'\'')),
+				$elm$parser$Parser$token('\u0027\u0027')),
 				$elm$parser$Parser$succeed(result)
 			]));
 };
@@ -18893,14 +18893,14 @@ var $elm$core$String$replace = F3(
 var $author$project$Pages$Reports$View$reportTableDataToCSV = function (tableData) {
 	return A2(
 		$elm$core$String$join,
-		'\n',
+		'\u000A',
 		_List_fromArray(
 			[
 				tableData.heading,
 				A2($elm$core$String$join, ',', tableData.captions),
 				A2(
 				$elm$core$String$join,
-				'\n',
+				'\u000A',
 				A2(
 					$elm$core$List$map,
 					$elm$core$String$join(','),
@@ -18990,14 +18990,14 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F5(
 var $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV = function (data) {
 	return A2(
 		$elm$core$String$join,
-		'\n',
+		'\u000A',
 		_List_fromArray(
 			[
-				data.heading + '\n',
+				data.heading + '\u000A',
 				A2($elm$core$String$join, ',', data.captions),
 				A2(
 				$elm$core$String$join,
-				'\n',
+				'\u000A',
 				A2(
 					$elm$core$List$map,
 					A2(
@@ -19016,13 +19016,13 @@ var $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV = fun
 	var tableDataToCSV = function (tableData) {
 		return A2(
 			$elm$core$String$join,
-			'\n',
+			'\u000A',
 			_List_fromArray(
 				[
 					A2($elm$core$String$join, ',', tableData.captions),
 					A2(
 					$elm$core$String$join,
-					'\n',
+					'\u000A',
 					A2(
 						$elm$core$List$map,
 						$elm$core$String$join(','),
@@ -19032,13 +19032,13 @@ var $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV = fun
 	};
 	return A2(
 		$elm$core$String$join,
-		'\n',
+		'\u000A',
 		_List_fromArray(
 			[
-				data.heading + '\n',
+				data.heading + '\u000A',
 				A2(
 				$elm$core$String$join,
-				'\n\n',
+				'\u000A\u000A',
 				A2($elm$core$List$map, tableDataToCSV, data.tables))
 			]));
 };
@@ -19726,7 +19726,7 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F6(
 		var demographicsReportEncountersData = A3($author$project$Pages$Reports$View$generateDemographicsReportEncountersData, language, features, records);
 		var csvFileName = 'demographics-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
-		var csvContent = $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV(demographicsReportPatientsData) + ('\n\n\n' + $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV(demographicsReportEncountersData));
+		var csvContent = $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV(demographicsReportPatientsData) + ('\u000A\u000A\u000A' + $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV(demographicsReportEncountersData));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -20636,7 +20636,9 @@ var $author$project$Pages$Reports$Utils$generatePrevalenceNutritionMetricsResult
 			_Utils_ap(metrics.stuntingSevere, metrics.stuntingNormal)));
 	var calculatePercentage = F2(
 		function (nominator, total) {
-			return $elm$core$List$isEmpty(total) ? 0 : (($elm$core$List$length(nominator) / $elm$core$List$length(total)) * 100);
+			var totalChildren = $elm_community$list_extra$List$Extra$unique(total);
+			return $elm$core$List$isEmpty(totalChildren) ? 0 : (($elm$core$List$length(
+				$elm_community$list_extra$List$Extra$unique(nominator)) / $elm$core$List$length(totalChildren)) * 100);
 		});
 	var acuteMalnutritionTotal = $elm_community$list_extra$List$Extra$unique(
 		_Utils_ap(
@@ -20916,7 +20918,7 @@ var $author$project$Pages$Reports$View$generareNutritionReportDataFromRawData = 
 var $author$project$Pages$Reports$View$reportTablesDataToCSV = A2(
 	$elm$core$Basics$composeR,
 	$elm$core$List$map($author$project$Pages$Reports$View$reportTableDataToCSV),
-	$elm$core$String$join('\n\n'));
+	$elm$core$String$join('\u000A\u000A'));
 var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 	function (language, currentDate, scopeLabel, mBackendGeneratedData, reportData) {
 		var generatedData = A2(
@@ -24943,7 +24945,7 @@ var $author$project$Utils$GeoLocation$getGeoCellsForRwanda = $pzp1997$assoc_list
 				$author$project$Backend$Entities$toEntityId(4487),
 				A2(
 					$author$project$Utils$GeoLocation$GeoLocation,
-					'Nyamata y\' umujyi',
+					'Nyamata y\u0027 umujyi',
 					$elm$core$Maybe$Just(
 						$author$project$Backend$Entities$toEntityId(4471)))),
 				_Utils_Tuple2(
@@ -44248,8 +44250,8 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 													$author$project$Gizra$NominalDate$diffMonths,
 													A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.eddDate),
 													targetDateForMonth);
-												var gap = gapInMonths - ageInMonths;
-												return ((record.ncda.ancNewborn.row2 && (gap > 0)) && (gap < 10)) ? (accumValue.row2 + 1) : accumValue.row2;
+												var monthsBeforeDelivery = -ageInMonths;
+												return ((record.ncda.ancNewborn.row2 && (monthsBeforeDelivery > 0)) && (monthsBeforeDelivery < 10)) ? (accumValue.row2 + 1) : accumValue.row2;
 											}();
 											var row1AsAgeInMonths = A2(
 												$elm$core$List$filter,
@@ -44534,9 +44536,8 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F7(
 												$author$project$Gizra$NominalDate$diffMonths,
 												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
 												targetDateForMonth);
-											var gap = ageInMonths - gapInMonths;
-											var row2 = (existedDuringExaminationMonth && (!gap)) ? (accumValue.row2 + 1) : accumValue.row2;
-											var row3 = (existedDuringExaminationMonth && ((!gap) && _Utils_eq(
+											var row2 = (existedDuringExaminationMonth && (!ageInMonths)) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row3 = (existedDuringExaminationMonth && ((!ageInMonths) && _Utils_eq(
 												record.lowBirthWeight,
 												$elm$core$Maybe$Just(true)))) ? (accumValue.row3 + 1) : accumValue.row3;
 											return {row2: row2, row3: row3};
@@ -44736,7 +44737,7 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 						A3($author$project$Pages$Scoreboard$Utils$valuesByViewMode, viewMode, childrenUnder2, itemValues));
 				}),
 			_List_fromArray(
-				[$author$project$Pages$Scoreboard$Model$HasToilets, $author$project$Pages$Scoreboard$Model$HasCleanWater, $author$project$Pages$Scoreboard$Model$HasHandwashingFacility, $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets, $author$project$Pages$Scoreboard$Model$HasKitchenGarden]),
+				[$author$project$Pages$Scoreboard$Model$HasCleanWater, $author$project$Pages$Scoreboard$Model$HasToilets, $author$project$Pages$Scoreboard$Model$HasHandwashingFacility, $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets, $author$project$Pages$Scoreboard$Model$HasKitchenGarden]),
 			values);
 		return A2(
 			$elm$html$Html$div,
@@ -44816,8 +44817,7 @@ var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F7(
 												$author$project$Gizra$NominalDate$diffMonths,
 												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
 												targetDateForMonth);
-											var gap = ageInMonths - gapInMonths;
-											var row1 = (existedDuringExaminationMonth && ((gap >= 0) && ((gap < 6) && record.ncda.nutritionBehavior.row1))) ? (accumValue.row1 + 1) : accumValue.row1;
+											var row1 = (existedDuringExaminationMonth && ((ageInMonths >= 0) && ((ageInMonths < 6) && record.ncda.nutritionBehavior.row1))) ? (accumValue.row1 + 1) : accumValue.row1;
 											return {row1: row1, row2: row2, row3: row3, row4: row4};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -45084,9 +45084,8 @@ var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F7(
 												$author$project$Gizra$NominalDate$diffMonths,
 												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
 												targetDateForMonth);
-											var gap = ageInMonths - gapInMonths;
-											var row2 = (existedDuringExaminationMonth && ((!$elm$core$List$isEmpty(row2AsAgeInMonths)) && ((gap >= 0) && (gap < 24)))) ? (accumValue.row2 + 1) : accumValue.row2;
-											var row3 = (existedDuringExaminationMonth && ((!$elm$core$List$isEmpty(row3AsAgeInMonths)) && ((gap >= 0) && (gap < 24)))) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row2 = (existedDuringExaminationMonth && ((!$elm$core$List$isEmpty(row2AsAgeInMonths)) && ((ageInMonths >= 0) && (ageInMonths < 24)))) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row3 = (existedDuringExaminationMonth && ((!$elm$core$List$isEmpty(row3AsAgeInMonths)) && ((ageInMonths >= 0) && (ageInMonths < 24)))) ? (accumValue.row3 + 1) : accumValue.row3;
 											return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5, row6: row6};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -45249,12 +45248,11 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 												$author$project$Gizra$NominalDate$diffMonths,
 												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
 												targetDateForMonth);
-											var ageInMonthsForIndexCell = ageInMonths - gapInMonths;
 											var row1 = function () {
-												if ((!existedDuringExaminationMonth) || ((ageInMonthsForIndexCell < 0) || (ageInMonthsForIndexCell >= 24))) {
+												if ((!existedDuringExaminationMonth) || ((ageInMonths < 0) || (ageInMonths >= 24))) {
 													return accumValue.row1;
 												} else {
-													var referenceDate = A2(resolveLastDayForMonthX, ageInMonthsForIndexCell, record.birthDate);
+													var referenceDate = A2(resolveLastDayForMonthX, ageInMonths, record.birthDate);
 													var vaccinationProgressOnReferrenceDate = A2(
 														$pzp1997$assoc_list$AssocList$map,
 														F2(
@@ -45613,8 +45611,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 														A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
 														$elm$core$Basics$LT);
 													var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, targetDateForMonth);
-													var gap = ageInMonths - gapInMonths;
-													return (existedDuringExaminationMonth && ((gap >= 0) && (gap < 24))) ? (accumValue + 1) : accumValue;
+													return (existedDuringExaminationMonth && ((ageInMonths >= 0) && (ageInMonths < 24))) ? (accumValue + 1) : accumValue;
 												},
 												A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
 									}),
