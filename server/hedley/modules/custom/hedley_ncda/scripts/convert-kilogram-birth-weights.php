@@ -19,9 +19,11 @@
  *   which nothing says how to read.
  *
  * Converting changes which children the aggregated indicator applies to, so
- * this recalculates every child it converts a weight for. That leaves it
- * independent of recalculate-low-birth-weight.php, which covers the children
- * whose weight was already in grams.
+ * this recalculates each child as soon as their weight is converted. That
+ * leaves it independent of recalculate-low-birth-weight.php, which covers the
+ * children whose weight was already in grams, and it means anything the script
+ * has finished is finished: a converted weight no longer matches what the
+ * script looks for, so a run that stops early can simply be run again.
  *
  * Execution: drush scr profiles/hedley/modules/custom/hedley_ncda/scripts/
  *   convert-kilogram-birth-weights.php [--dry_run] [--batch=50].
@@ -126,8 +128,9 @@ if ($dry_run) {
   return;
 }
 
-// Convert, remembering whose aggregated data the conversion invalidates.
-$persons = [];
+// Convert each weight and recalculate the child it belongs to, so that a
+// child is either untouched or wholly done.
+$recalculated = [];
 $converted = 0;
 foreach (array_chunk($convert, $batch) as $chunk) {
   $nodes = node_load_multiple(array_column($chunk, 'nid'));
@@ -143,14 +146,31 @@ foreach (array_chunk($convert, $batch) as $chunk) {
     $converted++;
 
     $person = field_get_items('node', $node, 'field_person');
-    if ($person) {
-      $persons[$person[0]['target_id']] = $person[0]['target_id'];
+    if (!$person) {
+      drush_print("  Measurement {$item['nid']} has no person. Converted, but nothing to recalculate.");
+      continue;
     }
+
+    $person_id = $person[0]['target_id'];
+    if (isset($recalculated[$person_id])) {
+      // A child can have more than one weight to convert, and one
+      // recalculation covers them all.
+      continue;
+    }
+
+    $recalculated[$person_id] = $person_id;
+    $child = node_load($person_id);
+    if (!$child) {
+      drush_print("  Measurement {$item['nid']} points at person {$person_id}, which does not load. Converted, but not recalculated.");
+      continue;
+    }
+
+    hedley_ncda_calculate_aggregated_data_for_person($child);
   }
 
   $memory = round(memory_get_usage() / 1048576);
   if ($memory >= $memory_limit) {
-    drush_print(dt('Stopped before running out of memory, after @converted weights. Run again to continue.', [
+    drush_print(dt('Stopped before running out of memory, after @converted weights. Everything converted so far is recalculated, so run again to continue.', [
       '@converted' => $converted,
     ]));
     return;
@@ -160,26 +180,4 @@ foreach (array_chunk($convert, $batch) as $chunk) {
   drupal_static_reset();
 }
 
-drush_print("Converted $converted birth weights. Recalculating " . count($persons) . ' children.');
-
-$recalculated = 0;
-foreach (array_chunk($persons, $batch) as $chunk) {
-  foreach (node_load_multiple($chunk) as $person) {
-    if (hedley_ncda_calculate_aggregated_data_for_person($person)) {
-      $recalculated++;
-    }
-  }
-
-  $memory = round(memory_get_usage() / 1048576);
-  if ($memory >= $memory_limit) {
-    drush_print(dt('Ran out of memory while recalculating, after @total children. The weights are converted; run recalculate-low-birth-weight.php to finish.', [
-      '@total' => $recalculated,
-    ]));
-    return;
-  }
-
-  // Free up memory.
-  drupal_static_reset();
-}
-
-drush_print("Done! Converted $converted birth weights and recalculated $recalculated children.");
+drush_print("Done! Converted $converted birth weights and recalculated " . count($recalculated) . ' children.');
