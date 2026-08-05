@@ -778,6 +778,11 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
           $data['ncda']['pane4']['row6'][] = $date_measured;
           break;
 
+        // The scorecard presents the rows of this pane in the order they are
+        // numbered here, and labels them by that order alone. Moving a sign to
+        // a different row moves the row it appears as, and every person
+        // already calculated keeps the numbering they were calculated with.
+        // See Pages/Scoreboard/View.elm.
         case 'has-clean-water':
           $data['ncda']['pane5']['row1'][] = $date_measured;
           break;
