@@ -1048,7 +1048,10 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
                     valuesByViewMode viewMode childrenUnder2 itemValues
                         |> viewTableRow language currentDate yearSelectorGap (Translate.NCDAInfrastructureEnvironmentWashItemLabel item)
                 )
-                [ HasToilets, HasCleanWater, HasHandwashingFacility, InsecticideTreatedBedNets, HasKitchenGarden ]
+                -- In the order the rows are stored in, so that the label of a
+                -- row and the sign it counts cannot come apart. See
+                -- hedley_ncda.module, which fills them.
+                [ HasCleanWater, HasToilets, HasHandwashingFacility, InsecticideTreatedBedNets, HasKitchenGarden ]
                 values
 
         valuesByRow =
