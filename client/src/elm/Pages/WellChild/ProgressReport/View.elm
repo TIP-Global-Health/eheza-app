@@ -53,7 +53,8 @@ import Maybe.Extra exposing (isNothing)
 import Measurement.Model exposing (VaccinationProgressDict)
 import Measurement.Utils
     exposing
-        ( generateFutureVaccinationsData
+        ( bornUnderweightByBirthWeight
+        , generateFutureVaccinationsData
         , generateGroupNutritionAssessmentEntries
         , generateIndividualNutritionAssessmentEntries
         , generateVaccinationProgressDictByChildScoreboard
@@ -1759,7 +1760,7 @@ viewChildIdentificationPane language site allNCDAQuestionnaires db ( childId, ch
             viewEntry Translate.ChildName child.name
 
         bornUnderweightByNewbornExam =
-            Maybe.andThen (\value -> Maybe.map (\(WeightInGrm birthWeight) -> birthWeight < 2500) value.birthWeight)
+            Maybe.andThen (.birthWeight >> bornUnderweightByBirthWeight)
                 newbornExamPregnancySummary
 
         birthDefectByNewbornExam =
@@ -1774,13 +1775,10 @@ viewChildIdentificationPane language site allNCDAQuestionnaires db ( childId, ch
             getNewbornExamPregnancySummary childId db
 
         bornUnderweightByNCDA =
-            List.filterMap
-                (\( _, value ) ->
-                    Maybe.map (\(WeightInGrm birthWeight) -> birthWeight) value.birthWeight
-                )
+            List.filterMap (\( _, value ) -> value.birthWeight)
                 allNCDAQuestionnaires
                 |> List.head
-                |> Maybe.map (\weight -> weight < 2500)
+                |> bornUnderweightByBirthWeight
 
         birthDefectByNCDA =
             if List.isEmpty allNCDAQuestionnaires then

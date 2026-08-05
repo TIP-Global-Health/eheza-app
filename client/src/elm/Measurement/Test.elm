@@ -24,6 +24,7 @@ import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
         ( birthWeightOutsideConstraints
+        , bornUnderweightByBirthWeight
         , creatinineResultFormWithDefault
         , getAllDosesForVaccine
         , getInputConstraintsHeight
@@ -478,6 +479,47 @@ showNCDAMeasurementOutOfRangeTest =
         ]
 
 
+bornUnderweightByBirthWeightTest : Test
+bornUnderweightByBirthWeightTest =
+    -- Below 2500g the child was born underweight - the threshold the red
+    -- callout, the scorecard and the aggregated scorecard all ask for. A weight
+    -- that cannot be read answers that we do not know, rather than that the
+    -- child was not underweight.
+    describe "bornUnderweightByBirthWeight"
+        [ test "an ordinary birth weight is not underweight" <|
+            \_ ->
+                bornUnderweightByBirthWeight (Just (WeightInGrm 3000))
+                    |> Expect.equal (Just False)
+        , test "a weight below the threshold is underweight" <|
+            \_ ->
+                bornUnderweightByBirthWeight (Just (WeightInGrm 2300))
+                    |> Expect.equal (Just True)
+        , test "the threshold itself is not underweight" <|
+            \_ ->
+                ( bornUnderweightByBirthWeight (Just (WeightInGrm 2499))
+                , bornUnderweightByBirthWeight (Just (WeightInGrm 2500))
+                )
+                    |> Expect.equal ( Just True, Just False )
+        , test "the smallest weight that can be read is answered" <|
+            \_ ->
+                bornUnderweightByBirthWeight (Just (WeightInGrm 300))
+                    |> Expect.equal (Just True)
+        , test "a weight too small to read is not an answer" <|
+            -- Kilograms typed into a grams field, and values that cannot be
+            -- interpreted at all. Answering False here would count them as
+            -- children known not to be underweight.
+            \_ ->
+                ( bornUnderweightByBirthWeight (Just (WeightInGrm 299))
+                , bornUnderweightByBirthWeight (Just (WeightInGrm 3.2))
+                )
+                    |> Expect.equal ( Nothing, Nothing )
+        , test "a weight that was never taken is not an answer" <|
+            \_ ->
+                bornUnderweightByBirthWeight Nothing
+                    |> Expect.equal Nothing
+        ]
+
+
 birthWeightOutsideConstraintsTest : Test
 birthWeightOutsideConstraintsTest =
     -- Birth weight is stored in grams, but is often typed in kilograms. The
@@ -618,6 +660,7 @@ all =
         , ncdaMeasurementsOutOfRangeTest
         , showNCDAMeasurementOutOfRangeTest
         , birthWeightOutsideConstraintsTest
+        , bornUnderweightByBirthWeightTest
         , heightFormWithDefaultSkippedTest
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
