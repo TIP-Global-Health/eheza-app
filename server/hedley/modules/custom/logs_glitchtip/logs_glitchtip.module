@@ -51,6 +51,13 @@ function logs_glitchtip_permission() {
  * Runs even for cached pages.
  */
 function logs_glitchtip_boot() {
+  // Replacing the global exception handler is a visible behaviour change, so
+  // only do it where events are actually reported. Unconfigured sites, local
+  // machines and CI keep Drupal's own handler.
+  if (!logs_glitchtip_is_active()) {
+    return;
+  }
+
   drupal_register_shutdown_function('logs_glitchtip_shutdown');
   set_exception_handler('_logs_glitchtip_exception_handler');
 }
@@ -105,7 +112,8 @@ function _logs_glitchtip_decode_exception(Throwable $exception) {
   $return = _drupal_decode_exception($exception);
 
   // Serialize and encode so the trace survives the watchdog variables
-  // round-trip without notices; decoded again in hook_watchdog().
+  // round-trip without notices; _logs_glitchtip_decode_trace() turns it back
+  // into readable frames.
   try {
     $return['exception_trace'] = drupal_base64_encode(serialize($exception->getTrace()));
   }
@@ -159,9 +167,7 @@ function logs_glitchtip_register_event(array $log_entry) {
   ];
 
   if (!empty($log_entry['variables']['exception_trace'])) {
-    // drupal_base64_encode() produces URL-safe base64; map it back before
-    // decoding, as base64_decode() would silently drop '-' and '_'.
-    $event['exception_trace'] = base64_decode(strtr($log_entry['variables']['exception_trace'], ['-' => '+', '_' => '/']));
+    $event['exception_trace'] = _logs_glitchtip_decode_trace($log_entry['variables']['exception_trace']);
   }
 
   // Prevent identical events.
@@ -169,6 +175,53 @@ function logs_glitchtip_register_event(array $log_entry) {
   unset($event_clone['timestamp']);
   $key = md5(serialize($event_clone));
   $events[$key] = $event;
+}
+
+/**
+ * Turn an encoded exception trace back into readable frames.
+ *
+ * Call arguments are dropped: they can hold entities, passwords or unbounded
+ * structures, none of which belong in an error report.
+ *
+ * @param string $encoded
+ *   The trace as put on the watchdog variables by
+ *   _logs_glitchtip_decode_exception().
+ *
+ * @return array|string
+ *   One "file(line): Class::method()" string per frame, or the raw decoded
+ *   value when it does not hold a trace.
+ */
+function _logs_glitchtip_decode_trace($encoded) {
+  // drupal_base64_encode() produces URL-safe base64; map it back before
+  // decoding, as base64_decode() would silently drop '-' and '_'.
+  $decoded = base64_decode(strtr($encoded, ['-' => '+', '_' => '/']));
+
+  // Objects held by the frames are never restored: only their file, line and
+  // name are read.
+  $trace = @unserialize($decoded, ['allowed_classes' => FALSE]);
+  if (!is_array($trace)) {
+    // The failed-to-serialize path stores a plain message instead of a trace;
+    // a truncated value does not unserialize at all.
+    return is_string($trace) ? $trace : $decoded;
+  }
+
+  $frames = [];
+  foreach ($trace as $frame) {
+    $call = '';
+    if (!empty($frame['class'])) {
+      $call = $frame['class'] . (isset($frame['type']) ? $frame['type'] : '::');
+    }
+    $call .= (isset($frame['function']) ? $frame['function'] : '[unknown]') . '()';
+
+    $location = isset($frame['file']) ? $frame['file'] : '[internal function]';
+    if (isset($frame['line'])) {
+      $location .= '(' . $frame['line'] . ')';
+    }
+
+    $frames[] = $location . ': ' . $call;
+  }
+
+  return $frames;
 }
 
 /**
@@ -277,7 +330,35 @@ function logs_glitchtip_get_dsn() {
     return $dsn;
   }
 
-  return (string) getenv('GLITCHTIP_DSN');
+  return _logs_glitchtip_getenv('GLITCHTIP_DSN');
+}
+
+/**
+ * Read an environment variable.
+ *
+ * Pantheon injects PANTHEON_* into the superglobals rather than the process
+ * environment, so getenv() alone reports nothing there and every deployment
+ * would look local.
+ *
+ * @param string $name
+ *   The variable name.
+ *
+ * @return string
+ *   The value, or an empty string when it is not set.
+ */
+function _logs_glitchtip_getenv($name) {
+  $value = getenv($name);
+  if ($value !== FALSE && $value !== '') {
+    return (string) $value;
+  }
+
+  foreach ([$_ENV, $_SERVER] as $source) {
+    if (!empty($source[$name])) {
+      return (string) $source[$name];
+    }
+  }
+
+  return '';
 }
 
 /**
@@ -315,14 +396,14 @@ function logs_glitchtip_get_environment() {
     return $environment;
   }
 
-  if ($environment = getenv('GLITCHTIP_ENVIRONMENT')) {
+  if ($environment = _logs_glitchtip_getenv('GLITCHTIP_ENVIRONMENT')) {
     return $environment;
   }
 
   // The same codebase runs on several Pantheon sites (one per country), so
   // the site name is needed to tell "live" apart from "live".
-  $pantheon_site = getenv('PANTHEON_SITE_NAME');
-  $pantheon_env = getenv('PANTHEON_ENVIRONMENT');
+  $pantheon_site = _logs_glitchtip_getenv('PANTHEON_SITE_NAME');
+  $pantheon_env = _logs_glitchtip_getenv('PANTHEON_ENVIRONMENT');
   if ($pantheon_site && $pantheon_env) {
     return $pantheon_site . '.' . $pantheon_env;
   }
@@ -341,22 +422,22 @@ function logs_glitchtip_get_environment() {
  *   TRUE when the site is considered local.
  */
 function logs_glitchtip_is_local() {
-  if (variable_get('logs_glitchtip_environment', '') || getenv('GLITCHTIP_ENVIRONMENT')) {
+  if (variable_get('logs_glitchtip_environment', '') || _logs_glitchtip_getenv('GLITCHTIP_ENVIRONMENT')) {
     return FALSE;
   }
 
   // Pantheon unique ID.
-  if (getenv('PANTHEON_SITE_NAME')) {
+  if (_logs_glitchtip_getenv('PANTHEON_SITE_NAME')) {
     return FALSE;
   }
 
   // Platform.sh unique ID.
-  if (getenv('PLATFORM_ENVIRONMENT')) {
+  if (_logs_glitchtip_getenv('PLATFORM_ENVIRONMENT')) {
     return FALSE;
   }
 
   // Acquia unique ID.
-  if (getenv('AH_SITE_GROUP')) {
+  if (_logs_glitchtip_getenv('AH_SITE_GROUP')) {
     return FALSE;
   }
 

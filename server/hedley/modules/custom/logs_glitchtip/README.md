@@ -25,6 +25,32 @@ For a scripted install, put the DSN in `server/config.sh` (gitignored, copied
 from `server/default.config.sh`); the install and reset scripts push it into
 the Drupal variable.
 
+### On Pantheon
+
+Pantheon offers no way to set an environment variable for a Drupal 7 site, so
+the DSN has to reach the Drupal variable instead. Two options, per Pantheon
+site:
+
+- **Drush, once per environment.** Simplest, and the value travels along when
+  the database is cloned Dev ← Live:
+  ```bash
+  terminus remote:drush <site>.<env> -- vset logs_glitchtip_dsn '<dsn>'
+  ```
+- **`sites/default/settings.php` in the Pantheon repository** (private, and
+  excluded from the deploy rsync, so it is never overwritten):
+  ```php
+  $conf['logs_glitchtip_dsn'] = '<dsn>';
+  ```
+  This wins over the database value, so the settings form then has no effect.
+
+The environment name needs no configuration here: it is derived from
+`PANTHEON_SITE_NAME` and `PANTHEON_ENVIRONMENT`, which keeps Dev, Test and Live
+apart even though they share a cloned database.
+
+The `sentry/sdk` package must be present in `sites/all/vendor` before a deploy
+— Composer runs locally, not on Pantheon, and the deploy commits the vendor
+directory. Without it the module silently reports nothing.
+
 ## Environment name
 
 The environment reported to GlitchTip is taken from the
