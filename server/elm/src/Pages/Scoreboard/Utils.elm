@@ -30,7 +30,7 @@ generateFutureVaccinationsData site birthDate vaccinationProgress =
                 nextVaccinationData =
                     case latestVaccinationDataForVaccine vaccinationProgress vaccineType of
                         Just ( lastDoseAdministered, lastDoseDate ) ->
-                            nextVaccinationDataForVaccine site vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
+                            nextVaccinationDataForVaccine site birthDate vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
 
                         Nothing ->
                             let
@@ -71,9 +71,9 @@ latestVaccinationDataForVaccine vaccinationsData vaccineType =
             )
 
 
-nextVaccinationDataForVaccine : Site -> VaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
-nextVaccinationDataForVaccine site vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
-    if getLastDoseForVaccine initialOpvAdministered vaccineType == lastDoseAdministered then
+nextVaccinationDataForVaccine : Site -> NominalDate -> VaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine site birthDate vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
+    if getLastDoseForVaccine site initialOpvAdministered vaccineType == lastDoseAdministered then
         Nothing
 
     else
@@ -83,13 +83,39 @@ nextVaccinationDataForVaccine site vaccineType initialOpvAdministered lastDoseDa
                     let
                         ( interval, unit ) =
                             getIntervalForVaccine site vaccineType
+
+                        byInterval =
+                            Date.add unit interval lastDoseDate
                     in
-                    ( dose, Date.add unit interval lastDoseDate )
+                    if vaccineType == VaccineOPV && initialOpvAdministered && dose == VaccineDoseSecond then
+                        -- The initial OPV dose is given before the child is two
+                        -- weeks old, and the second at six weeks, so the interval
+                        -- alone does not say when it is due.
+                        ( dose, laterOf byInterval (Date.add Weeks 6 birthDate) )
+
+                    else if site == SiteRwanda && vaccineType == VaccineIPV && dose == VaccineDoseSecond then
+                        -- The interval for IPV is zero, since for most sites
+                        -- there is only one dose. Rwanda's second dose is due on
+                        -- the later of 36 weeks of age and 28 days after the
+                        -- first, which is what says when it is due here.
+                        ( dose, laterOf (Date.add Days 28 lastDoseDate) (Date.add Weeks 36 birthDate) )
+
+                    else
+                        ( dose, byInterval )
                 )
 
 
-getLastDoseForVaccine : Bool -> VaccineType -> VaccineDose
-getLastDoseForVaccine initialOpvAdministered vaccineType =
+laterOf : NominalDate -> NominalDate -> NominalDate
+laterOf first second =
+    if Date.compare first second == GT then
+        first
+
+    else
+        second
+
+
+getLastDoseForVaccine : Site -> Bool -> VaccineType -> VaccineDose
+getLastDoseForVaccine site initialOpvAdministered vaccineType =
     case vaccineType of
         VaccineBCG ->
             VaccineDoseFirst
@@ -114,7 +140,12 @@ getLastDoseForVaccine initialOpvAdministered vaccineType =
             VaccineDoseSecond
 
         VaccineIPV ->
-            VaccineDoseFirst
+            case site of
+                SiteRwanda ->
+                    VaccineDoseSecond
+
+                _ ->
+                    VaccineDoseFirst
 
         VaccineMR ->
             VaccineDoseSecond
@@ -163,6 +194,12 @@ getIntervalForVaccine site vaccineType =
         VaccineRotarix ->
             ( 4, Weeks )
 
+        -- So far, there was only single IPV dose.
+        -- Since https://github.com/TIP-Global-Health/eheza-app/issues/1426,
+        -- at Rwanda site, we got second dose scheduled on the latter
+        -- between age of 36 weeks, and 4 weeks after first dose was administered.
+        -- This requirement is not reflected here. Instead, it's defined as
+        -- special case at appropriate spots in code (which use getIntervalForVaccine).
         VaccineIPV ->
             ( 0, Days )
 
@@ -245,8 +282,19 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
                 |> Date.add unit (dosesInterval * interval)
 
         VaccineIPV ->
-            Date.add Weeks 14 birthDate
-                |> Date.add unit (dosesInterval * interval)
+            case ( site, vaccineDose ) of
+                ( SiteRwanda, VaccineDoseSecond ) ->
+                    -- The later of 36 weeks of age and 28 days after the first
+                    -- dose. Where the first dose is not known, 36 weeks is the
+                    -- earliest the second is allowed.
+                    Dict.get VaccineIPV vaccinationProgress
+                        |> Maybe.andThen (Dict.get VaccineDoseFirst)
+                        |> Maybe.map (\firstDoseDate -> laterOf (Date.add Days 28 firstDoseDate) (Date.add Weeks 36 birthDate))
+                        |> Maybe.withDefault (Date.add Weeks 36 birthDate)
+
+                _ ->
+                    Date.add Weeks 14 birthDate
+                        |> Date.add unit (dosesInterval * interval)
 
         VaccineMR ->
             Date.add Weeks 36 birthDate
@@ -258,19 +306,36 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
 
 
 {-| We don't include VaccineHPV, since it's given only at
-age of 12 years.
+age of 12 years, and this report is for children up to 24 months.
+That is what makes this list different from the one in
+Pages.Reports.Utils, which covers all ages and does include it - they
+are not two copies of the same list, and should not be made one.
+
+Only Burundi schedules VaccineDTPStandalone. Listing it for a site that
+does not schedule it leaves a dose that is never administered, and the
+caller takes the earliest outstanding dose, so the child reads as off
+track from the day it falls due.
+
 -}
-allVaccineTypes : List VaccineType
-allVaccineTypes =
-    [ VaccineBCG
-    , VaccineOPV
-    , VaccineDTP
-    , VaccineDTPStandalone
-    , VaccinePCV13
-    , VaccineRotarix
-    , VaccineIPV
-    , VaccineMR
-    ]
+allVaccineTypes : Site -> List VaccineType
+allVaccineTypes site =
+    let
+        common =
+            [ VaccineBCG
+            , VaccineOPV
+            , VaccineDTP
+            , VaccinePCV13
+            , VaccineRotarix
+            , VaccineIPV
+            , VaccineMR
+            ]
+    in
+    case site of
+        SiteBurundi ->
+            common ++ [ VaccineDTPStandalone ]
+
+        _ ->
+            common
 
 
 valuesByViewMode : ViewMode -> List Int -> List Int -> List String
