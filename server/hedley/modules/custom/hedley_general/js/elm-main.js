@@ -21111,6 +21111,12 @@ var $author$project$Pages$Scoreboard$Utils$getIntervalForVaccine = F2(
 				return _Utils_Tuple2(6, $justinmimbs$date$Date$Months);
 		}
 	});
+var $author$project$Pages$Scoreboard$Utils$laterOf = F2(
+	function (first, second) {
+		return _Utils_eq(
+			A2($justinmimbs$date$Date$compare, first, second),
+			$elm$core$Basics$GT) ? first : second;
+	});
 var $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable = function (dose) {
 	switch (dose.$) {
 		case 'VaccineDoseFirst':
@@ -21186,11 +21192,32 @@ var $author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate = F
 					dosesInterval * interval,
 					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate));
 			case 'VaccineIPV':
-				return A3(
-					$justinmimbs$date$Date$add,
-					unit,
-					dosesInterval * interval,
-					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 14, birthDate));
+				var _v4 = _Utils_Tuple2(site, vaccineDose);
+				if ((_v4.a.$ === 'SiteRwanda') && (_v4.b.$ === 'VaccineDoseSecond')) {
+					var _v5 = _v4.a;
+					var _v6 = _v4.b;
+					return A2(
+						$elm$core$Maybe$withDefault,
+						A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 36, birthDate),
+						A2(
+							$elm$core$Maybe$map,
+							function (firstDoseDate) {
+								return A2(
+									$author$project$Pages$Scoreboard$Utils$laterOf,
+									A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 28, firstDoseDate),
+									A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 36, birthDate));
+							},
+							A2(
+								$elm$core$Maybe$andThen,
+								$pzp1997$assoc_list$AssocList$get($author$project$Backend$Scoreboard$Model$VaccineDoseFirst),
+								A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Scoreboard$Model$VaccineIPV, vaccinationProgress))));
+				} else {
+					return A3(
+						$justinmimbs$date$Date$add,
+						unit,
+						dosesInterval * interval,
+						A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 14, birthDate));
+				}
 			case 'VaccineMR':
 				return A3(
 					$justinmimbs$date$Date$add,
@@ -21219,8 +21246,8 @@ var $author$project$Pages$Scoreboard$Utils$latestVaccinationDataForVaccine = F2(
 					A2($elm$core$Basics$composeR, $elm$core$List$reverse, $elm$core$List$head))),
 			A2($pzp1997$assoc_list$AssocList$get, vaccineType, vaccinationsData));
 	});
-var $author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine = F2(
-	function (initialOpvAdministered, vaccineType) {
+var $author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine = F3(
+	function (site, initialOpvAdministered, vaccineType) {
 		switch (vaccineType.$) {
 			case 'VaccineBCG':
 				return $author$project$Backend$Scoreboard$Model$VaccineDoseFirst;
@@ -21235,7 +21262,11 @@ var $author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine = F2(
 			case 'VaccineRotarix':
 				return $author$project$Backend$Scoreboard$Model$VaccineDoseSecond;
 			case 'VaccineIPV':
-				return $author$project$Backend$Scoreboard$Model$VaccineDoseFirst;
+				if (site.$ === 'SiteRwanda') {
+					return $author$project$Backend$Scoreboard$Model$VaccineDoseSecond;
+				} else {
+					return $author$project$Backend$Scoreboard$Model$VaccineDoseFirst;
+				}
 			case 'VaccineMR':
 				return $author$project$Backend$Scoreboard$Model$VaccineDoseSecond;
 			default:
@@ -21256,19 +21287,28 @@ var $author$project$Pages$Scoreboard$Utils$getNextVaccineDose = function (dose) 
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine = F5(
-	function (site, vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered) {
+var $author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine = F6(
+	function (site, birthDate, vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered) {
 		return _Utils_eq(
-			A2($author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine, initialOpvAdministered, vaccineType),
+			A3($author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine, site, initialOpvAdministered, vaccineType),
 			lastDoseAdministered) ? $elm$core$Maybe$Nothing : A2(
 			$elm$core$Maybe$map,
 			function (dose) {
 				var _v0 = A2($author$project$Pages$Scoreboard$Utils$getIntervalForVaccine, site, vaccineType);
 				var interval = _v0.a;
 				var unit = _v0.b;
-				return _Utils_Tuple2(
+				var byInterval = A3($justinmimbs$date$Date$add, unit, interval, lastDoseDate);
+				return (_Utils_eq(vaccineType, $author$project$Backend$Scoreboard$Model$VaccineOPV) && (initialOpvAdministered && _Utils_eq(dose, $author$project$Backend$Scoreboard$Model$VaccineDoseSecond))) ? _Utils_Tuple2(
 					dose,
-					A3($justinmimbs$date$Date$add, unit, interval, lastDoseDate));
+					A2(
+						$author$project$Pages$Scoreboard$Utils$laterOf,
+						byInterval,
+						A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate))) : ((_Utils_eq(site, $author$project$App$Types$SiteRwanda) && (_Utils_eq(vaccineType, $author$project$Backend$Scoreboard$Model$VaccineIPV) && _Utils_eq(dose, $author$project$Backend$Scoreboard$Model$VaccineDoseSecond))) ? _Utils_Tuple2(
+					dose,
+					A2(
+						$author$project$Pages$Scoreboard$Utils$laterOf,
+						A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 28, lastDoseDate),
+						A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 36, birthDate))) : _Utils_Tuple2(dose, byInterval));
 			},
 			$author$project$Pages$Scoreboard$Utils$getNextVaccineDose(lastDoseAdministered));
 	});
@@ -21298,7 +21338,7 @@ var $author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData = F3(
 						var _v1 = _v0.a;
 						var lastDoseAdministered = _v1.a;
 						var lastDoseDate = _v1.b;
-						return A5($author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine, site, vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered);
+						return A6($author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine, site, birthDate, vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered);
 					} else {
 						var vaccinationDate = A5(
 							$author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate,
@@ -45178,8 +45218,18 @@ var $author$project$Translate$NCDAUniversalInterventionItemLabel = function (a) 
 var $author$project$Pages$Scoreboard$Model$OngeraMNP = {$: 'OngeraMNP'};
 var $author$project$Translate$UniversalIntervention = {$: 'UniversalIntervention'};
 var $author$project$Pages$Scoreboard$Model$VitaminA = {$: 'VitaminA'};
-var $author$project$Pages$Scoreboard$Utils$allVaccineTypes = _List_fromArray(
-	[$author$project$Backend$Scoreboard$Model$VaccineBCG, $author$project$Backend$Scoreboard$Model$VaccineOPV, $author$project$Backend$Scoreboard$Model$VaccineDTP, $author$project$Backend$Scoreboard$Model$VaccineDTPStandalone, $author$project$Backend$Scoreboard$Model$VaccinePCV13, $author$project$Backend$Scoreboard$Model$VaccineRotarix, $author$project$Backend$Scoreboard$Model$VaccineIPV, $author$project$Backend$Scoreboard$Model$VaccineMR]);
+var $author$project$Pages$Scoreboard$Utils$allVaccineTypes = function (site) {
+	var common = _List_fromArray(
+		[$author$project$Backend$Scoreboard$Model$VaccineBCG, $author$project$Backend$Scoreboard$Model$VaccineOPV, $author$project$Backend$Scoreboard$Model$VaccineDTP, $author$project$Backend$Scoreboard$Model$VaccinePCV13, $author$project$Backend$Scoreboard$Model$VaccineRotarix, $author$project$Backend$Scoreboard$Model$VaccineIPV, $author$project$Backend$Scoreboard$Model$VaccineMR]);
+	if (site.$ === 'SiteBurundi') {
+		return _Utils_ap(
+			common,
+			_List_fromArray(
+				[$author$project$Backend$Scoreboard$Model$VaccineDTPStandalone]));
+	} else {
+		return common;
+	}
+};
 var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 	function (language, currentDate, site, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {
 		var resolveLastDayForMonthX = F2(
@@ -45268,7 +45318,12 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 																	dosesDict);
 															}),
 														record.ncda.universalIntervention.row1);
-													var futureVaccinations = A4($author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData, site, record.birthDate, vaccinationProgressOnReferrenceDate, $author$project$Pages$Scoreboard$Utils$allVaccineTypes);
+													var futureVaccinations = A4(
+														$author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData,
+														site,
+														record.birthDate,
+														vaccinationProgressOnReferrenceDate,
+														$author$project$Pages$Scoreboard$Utils$allVaccineTypes(site));
 													var closestDateForVaccination = $elm$core$List$head(
 														A2(
 															$elm$core$List$sortWith,
