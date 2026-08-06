@@ -133,7 +133,7 @@ update msg model =
                 subMsg
                 model.backend
                 (\subMsg_ subModel ->
-                    Backend.Update.updateBackend (fromLocalDateTime model.currentTime)
+                    Backend.Update.updateBackend
                         model.backendUrl
                         model.csrfToken
                         subMsg_
