@@ -282,12 +282,14 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
                 |> Date.add unit (dosesInterval * interval)
 
         VaccineIPV ->
-            -- Only the first dose is asked for here today: the one caller
-            -- resolves a date for a child who has had none. The second dose is
-            -- kept because the client asks this same question for any dose, and
-            -- because leaving it out would answer the second dose with 14 weeks
-            -- and an interval of none, which is the wrong date rather than no
-            -- date. Whoever asks for it next gets the right answer.
+            -- Nothing here asks for the second dose today: the one caller
+            -- resolves a date for a child who has had none, and so asks only
+            -- for the first. It is answered anyway, for symmetry with the
+            -- client's own copy of this function, which is reached with any
+            -- dose - and because leaving it out would answer the second dose
+            -- with 14 weeks and an interval of none, which is the wrong date
+            -- rather than no date. Whoever asks for it next gets the right
+            -- answer.
             case ( site, vaccineDose ) of
                 ( SiteRwanda, VaccineDoseSecond ) ->
                     -- The later of 36 weeks of age and 28 days after the first
