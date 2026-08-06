@@ -11649,7 +11649,7 @@ var $author$project$Backend$Scoreboard$Model$ANCNewbornData = F2(
 	function (row1, row2) {
 		return {row1: row1, row2: row2};
 	});
-var $author$project$Backend$Scoreboard$Decoder$calendarMonth = function (date) {
+var $author$project$Utils$NominalDate$calendarMonth = function (date) {
 	return _Utils_Tuple2(
 		$justinmimbs$date$Date$year(date),
 		$justinmimbs$date$Date$monthNumber(date));
@@ -11669,7 +11669,7 @@ var $author$project$Backend$Scoreboard$Decoder$sanitizeSingleValuePerMonth = fun
 				$elm$core$List$map,
 				function (date) {
 					return _Utils_Tuple2(
-						$author$project$Backend$Scoreboard$Decoder$calendarMonth(date),
+						$author$project$Utils$NominalDate$calendarMonth(date),
 						date);
 				},
 				dates)));
@@ -11994,7 +11994,7 @@ var $author$project$Backend$Scoreboard$Decoder$sanitizeCriterionBySeverities = f
 			$elm$core$List$map,
 			function (date) {
 				return _Utils_Tuple2(
-					$author$project$Backend$Scoreboard$Decoder$calendarMonth(date),
+					$author$project$Utils$NominalDate$calendarMonth(date),
 					date);
 			},
 			data.severe));
@@ -12003,7 +12003,7 @@ var $author$project$Backend$Scoreboard$Decoder$sanitizeCriterionBySeverities = f
 			$elm$core$List$map,
 			function (date) {
 				return _Utils_Tuple2(
-					$author$project$Backend$Scoreboard$Decoder$calendarMonth(date),
+					$author$project$Utils$NominalDate$calendarMonth(date),
 					date);
 			},
 			data.normal));
@@ -12012,7 +12012,7 @@ var $author$project$Backend$Scoreboard$Decoder$sanitizeCriterionBySeverities = f
 			$elm$core$List$map,
 			function (date) {
 				return _Utils_Tuple2(
-					$author$project$Backend$Scoreboard$Decoder$calendarMonth(date),
+					$author$project$Utils$NominalDate$calendarMonth(date),
 					date);
 			},
 			data.moderate));
@@ -44074,10 +44074,8 @@ var $author$project$Pages$Scoreboard$Model$RegularCheckups = {$: 'RegularCheckup
 var $author$project$Utils$NominalDate$equalByYearAndMonth = F2(
 	function (first, second) {
 		return _Utils_eq(
-			$justinmimbs$date$Date$year(first),
-			$justinmimbs$date$Date$year(second)) && _Utils_eq(
-			$justinmimbs$date$Date$month(first),
-			$justinmimbs$date$Date$month(second));
+			$author$project$Utils$NominalDate$calendarMonth(first),
+			$author$project$Utils$NominalDate$calendarMonth(second));
 	});
 var $author$project$Pages$Scoreboard$Utils$viewPercentage = F2(
 	function (nominator, denominator) {

@@ -5,13 +5,13 @@ import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEn
 import Backend.Decoder exposing (decodeSite)
 import Backend.Scoreboard.Model exposing (ANCNewbornData, CriterionBySeverities, InfrastructureEnvironmentWashData, NCDAData, NutritionBehaviorData, NutritionCriterionsData, PatientData, RawVaccinationData, ScoreboardData, SyncResponse, TargetedInterventionsData, UniversalInterventionData, VaccinationProgressDict, VaccineType(..), emptyANCNewbornData, emptyInfrastructureEnvironmentWashData, emptyNCDAData, emptyNutritionBehaviorData, emptyNutritionCriterionsData, emptyTargetedInterventionsData, emptyUniversalInterventionData)
 import Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine)
-import Date
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, bool, field, list, map, maybe, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Maybe.Extra exposing (isNothing)
+import Utils.NominalDate exposing (calendarMonth)
 
 
 decodeScoreboardData : Decoder ScoreboardData
@@ -68,11 +68,6 @@ decodeCriterionBySeverities =
 during calendar month.
 In case there are multuple severities, most severe one needs to be selected.
 -}
-calendarMonth : NominalDate -> ( Int, Int )
-calendarMonth date =
-    ( Date.year date, Date.monthNumber date )
-
-
 sanitizeCriterionBySeverities : CriterionBySeverities -> CriterionBySeverities
 sanitizeCriterionBySeverities data =
     let
