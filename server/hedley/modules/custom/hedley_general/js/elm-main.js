@@ -21178,7 +21178,7 @@ var $author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate = F
 						A2(
 							$elm$core$Maybe$andThen,
 							$pzp1997$assoc_list$AssocList$get($author$project$Backend$Scoreboard$Model$VaccineDoseThird),
-							A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Scoreboard$Model$VaccineOPV, vaccinationProgress))));
+							A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Scoreboard$Model$VaccineDTP, vaccinationProgress))));
 			case 'VaccinePCV13':
 				return A3(
 					$justinmimbs$date$Date$add,
