@@ -9,11 +9,10 @@ import Backend.Scoreboard.Update
 import Backend.ScoreboardMenu.Update
 import Backend.Types exposing (BackendReturn)
 import Backend.Utils exposing (updateSubModel)
-import Gizra.NominalDate exposing (NominalDate)
 
 
-updateBackend : NominalDate -> String -> String -> Msg -> ModelBackend -> BackendReturn Msg
-updateBackend currentDate backendUrl csrfToken msg model =
+updateBackend : String -> String -> Msg -> ModelBackend -> BackendReturn Msg
+updateBackend backendUrl csrfToken msg model =
     case msg of
         MsgScoreboardMenu subMsg ->
             updateSubModel
@@ -25,7 +24,7 @@ updateBackend currentDate backendUrl csrfToken msg model =
         MsgScoreboard subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.Scoreboard.Update.update currentDate backendUrl csrfToken subMsg_ model_)
+                (\subMsg_ model_ -> Backend.Scoreboard.Update.update backendUrl csrfToken subMsg_ model_)
                 (\subCmds -> MsgScoreboard subCmds)
                 model
 
