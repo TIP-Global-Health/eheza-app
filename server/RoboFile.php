@@ -56,12 +56,23 @@ class RoboFile extends Tasks {
     }
 
     $result = $this
-      ->taskExec("cd $pantheonDirectory && git checkout $branchName && git pull")
+      ->taskExec("cd $pantheonDirectory && git checkout $branchName")
       ->printOutput(FALSE)
       ->run();
 
     if (!$result->wasSuccessful()) {
       throw new Exception("Specified branch $branchName does not exist.");
+    }
+
+    // Before the rsync, so that the tree is clean when it runs. Its own check,
+    // because a pull fails for reasons that have nothing to do with the branch
+    // existing - no network to the code server, no upstream, a conflict.
+    $result = $this
+      ->taskExec("cd $pantheonDirectory && git pull")
+      ->run();
+
+    if (!$result->wasSuccessful()) {
+      throw new Exception("Failed to pull $branchName in the Pantheon directory ($pantheonDirectory)");
     }
 
     $rsyncExclude = [
@@ -124,7 +135,11 @@ class RoboFile extends Tasks {
       return;
     }
 
-    $push_status = $this->_exec("cd $pantheonDirectory && git add . && git commit -am 'Site update' && git push")->getExitCode();
+    // `git commit` exits non-zero when there is nothing to commit, which is an
+    // ordinary case: re-running the deploy after fixing something on the
+    // Pantheon side finds the rsync has produced no change. Push regardless -
+    // an earlier run may have committed without getting as far as pushing.
+    $push_status = $this->_exec("cd $pantheonDirectory && git add . && { git diff --cached --quiet || git commit -m 'Site update'; } && git push")->getExitCode();
     if ($push_status != 0) {
       throw new Exception('Failed to push to Pantheon');
     }
@@ -142,12 +157,17 @@ class RoboFile extends Tasks {
    *   Determine if a deploy should be done by terminus. That is, for example
    *   should TEST environment be updated from DEV.
    *
+   * @return \Robo\Result
+   *   The result of the deploy steps.
+   *
+   * @throws \Exception
+   *   If PANTHEON_NAME is not set, or any of the deploy steps failed.
    * @throws \Robo\Exception\TaskException
    */
   public function deployPantheonSync(string $env = 'test', bool $doDeploy = TRUE) {
-    // Required, as deployPantheon() requires it. The constant below is another
-    // real site, so falling back to it would run these steps against someone
-    // else's environment.
+    // Required, as deployPantheon() requires it. This used to fall back to a
+    // constant naming another of our sites, so an unset variable deployed to
+    // someone else's environment rather than failing.
     $pantheonName = getenv('PANTHEON_NAME');
     if (!$pantheonName) {
       throw new Exception('Please specify PANTHEON_NAME in your DDEV local config, so it is clear which site is being deployed to.');

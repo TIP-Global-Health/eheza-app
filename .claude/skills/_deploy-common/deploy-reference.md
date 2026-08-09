@@ -22,10 +22,10 @@ and `server/RoboFile.php`.
 2. **Aborts if the eheza-app working tree is dirty.**
 3. **Aborts if the Pantheon clone (`.pantheon-<name>`) is dirty.**
 4. **Aborts if `pantheon.upstream.yml` is missing or has no `php_version:`.**
-5. Checks out the target branch in the Pantheon clone (`master` for Dev, else the multidev branch name).
+5. Checks out the target branch in the Pantheon clone (`master` for Dev, else the multidev branch name), then pulls it. Checkout and pull fail with different messages, so a pull that fails for its own reasons — no network to the code server, no upstream, a conflict — does not read as a missing branch.
 6. rsyncs `www/.` (server) and `client/dist/.` (app) into the clone, excluding `.git`, `.ddev`, `client`, etc.
 7. Prints `git status`, then asks **"Commit changes and deploy?"** (interactive — needs a human).
-8. On confirm: `git pull && git add . && git commit -am 'Site update' && git push` to Pantheon.
+8. On confirm: `git add .`, commit if there is anything to commit, then `git push` to Pantheon. Nothing to commit is not a failure — re-running a deploy after fixing something on the Pantheon side finds no change to make, and the push still runs in case an earlier run committed without pushing.
 9. Calls `deployPantheonSync(<env>, FALSE)` → runs `cc all` (×2), `updb -y`, `fra -y`, `cc all`, `uli` on that env.
 
 `$branchName == 'master'` maps to the Pantheon **`dev`** environment.
