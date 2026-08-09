@@ -14,6 +14,11 @@ var $ = require("gulp-load-plugins")();
 // "del" is used to clean out directories and such
 var del = require("del");
 
+// Publishing must fail when the build does. The watch loop must not: it keeps
+// running so that the next save can fix the error, and shows the error in the
+// browser meanwhile. The same tasks serve both, so they ask which they are in.
+var isPublishing = false;
+
 var rename = require("gulp-rename");
 // BrowserSync isn't a gulp package, and needs to be loaded manually
 var browserSync = require("browser-sync");
@@ -272,6 +277,11 @@ gulp.task("minify", gulp.series(
         mangle: false
       }))).on('error', function(err) {
         console.error(err);
+
+        if (isPublishing) {
+          // A partially minified dist is not something to ship quietly.
+          this.destroy(err);
+        }
       })
 
     // Minify CSS
@@ -309,6 +319,18 @@ gulp.task("deploy", function() {
 });
 
 gulp.task('elm', gulp.series('version', function elmCompile() {
+  if (isPublishing) {
+    // No plumber and no error handler, so a compile error ends the task and
+    // with it the publish. Swallowing it here would leave the error page that
+    // the watch loop writes to be packaged into dist and shipped as the app.
+    return gulp.src('src/elm/Main.elm')
+      .pipe(elm({
+        'debug': false,
+        'warn': false
+      }))
+      .pipe(gulp.dest('serve'));
+  }
+
   return gulp.src('src/elm/Main.elm')
     .pipe(plumber())
     .pipe(elm({
@@ -489,7 +511,13 @@ gulp.task("deploy:revert", function(cb) {
 
 // Builds your site with the "build" command and then runs all the optimizations on
 // it and outputs it to "./dist"
+gulp.task("publish:mark", function markPublishing(cb) {
+  isPublishing = true;
+  cb();
+});
+
 gulp.task("publish", gulp.series(
+  "publish:mark",
   "deploy:config",
   gulp.parallel("build", "clean:prod"),
   gulp.parallel("minify", "cname", "images"),
