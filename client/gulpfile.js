@@ -61,12 +61,20 @@ gulp.task("clean:prod", function() {
 });
 
 // Compiles the SASS files and moves them into the "assets/stylesheets" directory
-gulp.task("styles", function() {
+gulp.task("styles", function styleCompile() {
   // Looks at the style.scss file for what to include and creates a style.css file
-  return gulp.src("src/assets/scss/style.scss")
-    .pipe(plumber())
-    .pipe(sass({silenceDeprecations: ['legacy-js-api', 'import']}))
-    .on('error', function(err) {
+  var stream = gulp.src("src/assets/scss/style.scss");
+
+  // Publishing attaches neither plumber nor the handler below, so a SASS error
+  // travels down the stream and fails the task.
+  if (!isPublishing) {
+    stream = stream.pipe(plumber());
+  }
+
+  stream = stream.pipe(sass({silenceDeprecations: ['legacy-js-api', 'import']}));
+
+  if (!isPublishing) {
+    stream = stream.on('error', function(err) {
       browserSync.notify("SASS error");
 
       console.error(err.message);
@@ -79,7 +87,10 @@ gulp.task("styles", function() {
 
       // No need to continue processing.
       this.emit('end');
-    })
+    });
+  }
+
+  return stream
     // AutoPrefix your CSS so it works between browsers
     .pipe($.autoprefixer("last 1 version", {
       cascade: true
@@ -277,11 +288,6 @@ gulp.task("minify", gulp.series(
         mangle: false
       }))).on('error', function(err) {
         console.error(err);
-
-        if (isPublishing) {
-          // A partially minified dist is not something to ship quietly.
-          this.destroy(err);
-        }
       })
 
     // Minify CSS
@@ -319,25 +325,22 @@ gulp.task("deploy", function() {
 });
 
 gulp.task('elm', gulp.series('version', function elmCompile() {
-  if (isPublishing) {
-    // No plumber and no error handler, so a compile error ends the task and
-    // with it the publish. Swallowing it here would leave the error page that
-    // the watch loop writes to be packaged into dist and shipped as the app.
-    return gulp.src('src/elm/Main.elm')
-      .pipe(elm({
-        'debug': false,
-        'warn': false
-      }))
-      .pipe(gulp.dest('serve'));
+  var stream = gulp.src('src/elm/Main.elm');
+
+  // Publishing attaches neither plumber nor the handler below, so a compile
+  // error travels down the stream and fails the task. Swallowing it would
+  // package the error page written below into dist and ship it as the app.
+  if (!isPublishing) {
+    stream = stream.pipe(plumber());
   }
 
-  return gulp.src('src/elm/Main.elm')
-    .pipe(plumber())
-    .pipe(elm({
-      'debug': false,
-      'warn': false
-    }))
-    .on('error', function(err) {
+  stream = stream.pipe(elm({
+    'debug': false,
+    'warn': false
+  }));
+
+  if (!isPublishing) {
+    stream = stream.on('error', function(err) {
       console.error(err.message);
 
       browserSync.notify("Elm compile error", 5000);
@@ -347,8 +350,10 @@ gulp.task('elm', gulp.series('version', function elmCompile() {
       fs.writeFileSync('serve/index.html',
         "<!DOCTYPE HTML><html><body><pre>" + err.message +
         "</pre></body></html>");
-    })
-    .pipe(gulp.dest('serve'));
+    });
+  }
+
+  return stream.pipe(gulp.dest('serve'));
 }));
 
 // BrowserSync will serve our site on a local server for us and other devices to use
@@ -516,10 +521,18 @@ gulp.task("publish:mark", function markPublishing(cb) {
   cb();
 });
 
+// Cleared so that a task graph running publish before a serving task in the
+// same process (say "gulp publish watch") leaves the watch loop its plumber.
+gulp.task("publish:unmark", function unmarkPublishing(cb) {
+  isPublishing = false;
+  cb();
+});
+
 gulp.task("publish", gulp.series(
   "publish:mark",
   "deploy:config",
   gulp.parallel("build", "clean:prod"),
   gulp.parallel("minify", "cname", "images"),
-  "deploy:revert"
+  "deploy:revert",
+  "publish:unmark"
 ));
