@@ -4633,7 +4633,20 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         updatePersonWithCooridnates person coordinates
 
                     else
-                        person
+                        -- The edit form has no coordinate inputs, so it always
+                        -- reports Nothing for them. Patching that in would
+                        -- erase the location recorded at registration, so the
+                        -- stored one is carried over instead.
+                        Dict.get personId model.people
+                            |> Maybe.andThen RemoteData.toMaybe
+                            |> Maybe.map
+                                (\stored ->
+                                    { person
+                                        | registrationLatitude = stored.registrationLatitude
+                                        , registrationLongitude = stored.registrationLongitude
+                                    }
+                                )
+                            |> Maybe.withDefault person
             in
             ( { model | postPerson = Loading }
             , sw.patchFull personEndpoint personId personWithCoordinates

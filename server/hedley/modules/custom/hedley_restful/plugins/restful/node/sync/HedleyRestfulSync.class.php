@@ -446,6 +446,19 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           $ignored[] = 'health_center';
         }
 
+        // The person edit form has no coordinate inputs, so the client sends
+        // NULL for them whenever a person is edited. Applying that erases the
+        // location recorded at registration, which no screen can restore. An
+        // edit that does carry a fresh reading still updates them, and
+        // registration is unaffected, as this applies to PATCH only.
+        if ($item['type'] == 'person' && $item['method'] == 'PATCH') {
+          foreach (['latitude', 'longitude'] as $coordinate) {
+            if (!isset($item['data'][$coordinate]) || $item['data'][$coordinate] === '') {
+              $ignored[] = $coordinate;
+            }
+          }
+        }
+
         $data = [];
         foreach (array_keys($item['data']) as $key) {
           $value = $item['data'][$key];
