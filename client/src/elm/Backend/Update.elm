@@ -4627,26 +4627,31 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
         PatchPerson origin personId person ->
             let
-                -- Adding GPS coordinates.
+                -- The edit form has no coordinate inputs, so it always reports
+                -- Nothing for them. Patching that in would erase the location
+                -- recorded at registration, so the stored one is carried over.
+                personWithStoredCoordinates =
+                    Dict.get personId model.people
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (\stored ->
+                                { person
+                                    | registrationLatitude = stored.registrationLatitude
+                                    , registrationLongitude = stored.registrationLongitude
+                                }
+                            )
+                        |> Maybe.withDefault person
+
+                -- Adding GPS coordinates. Laid over the stored ones, rather
+                -- than offered instead of them, because a reading that was
+                -- asked for is not always a reading that arrived: without a
+                -- fix this leaves what is stored alone.
                 personWithCoordinates =
                     if gpsCoordinatesEnabled features && person.saveGPSLocation then
-                        updatePersonWithCooridnates person coordinates
+                        updatePersonWithCooridnates personWithStoredCoordinates coordinates
 
                     else
-                        -- The edit form has no coordinate inputs, so it always
-                        -- reports Nothing for them. Patching that in would
-                        -- erase the location recorded at registration, so the
-                        -- stored one is carried over instead.
-                        Dict.get personId model.people
-                            |> Maybe.andThen RemoteData.toMaybe
-                            |> Maybe.map
-                                (\stored ->
-                                    { person
-                                        | registrationLatitude = stored.registrationLatitude
-                                        , registrationLongitude = stored.registrationLongitude
-                                    }
-                                )
-                            |> Maybe.withDefault person
+                        personWithStoredCoordinates
             in
             ( { model | postPerson = Loading }
             , sw.patchFull personEndpoint personId personWithCoordinates
