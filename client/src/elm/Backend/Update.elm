@@ -4438,7 +4438,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     -- Adding GPS coordinates.
                     personWithCoordinates =
                         if gpsCoordinatesEnabled features && person.saveGPSLocation then
-                            updatePersonWithCooridnates person coordinates
+                            updatePersonWithCoordinates person coordinates
 
                         else
                             person
@@ -4648,7 +4648,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 -- fix this leaves what is stored alone.
                 personWithCoordinates =
                     if gpsCoordinatesEnabled features && person.saveGPSLocation then
-                        updatePersonWithCooridnates personWithStoredCoordinates coordinates
+                        updatePersonWithCoordinates personWithStoredCoordinates coordinates
 
                     else
                         personWithStoredCoordinates
@@ -10469,8 +10469,8 @@ generateTuberculosisEncounterCompletedMsgs currentDate after id =
         |> Maybe.withDefault []
 
 
-updatePersonWithCooridnates : Person -> Maybe App.Model.GPSCoordinates -> Person
-updatePersonWithCooridnates person =
+updatePersonWithCoordinates : Person -> Maybe App.Model.GPSCoordinates -> Person
+updatePersonWithCoordinates person =
     Maybe.map
         (\coordinates ->
             { person
