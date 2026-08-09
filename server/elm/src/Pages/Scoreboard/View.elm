@@ -619,7 +619,7 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                                             generateFutureVaccinationsData site
                                                                 record.birthDate
                                                                 vaccinationProgressOnReferrenceDate
-                                                                allVaccineTypes
+                                                                (allVaccineTypes site)
 
                                                         closestDateForVaccination =
                                                             List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
