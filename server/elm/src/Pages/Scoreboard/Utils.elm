@@ -252,7 +252,10 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
             -- All 3 dosed of DTP were given, it has passed
             -- at least 28 days since third dose, and, child
             -- is at last 18 months old.
-            Dict.get VaccineOPV vaccinationProgress
+            -- Burundi calls the DTP combo Pentavalent, and issue #926 asks for
+            -- this dose after three of them - not after three doses of polio,
+            -- which is a different vaccine with a fourth dose of its own.
+            Dict.get VaccineDTP vaccinationProgress
                 |> Maybe.andThen (Dict.get VaccineDoseThird)
                 |> Maybe.map
                     (\thirdDoseDate ->
