@@ -5758,6 +5758,7 @@ function hedley_reports_well_child_get_expected_immunisation_activities(array $e
   $age_in_days = $interval->days;
 
   $possible_immunisations = ['bcg', 'opv'];
+  $site = variable_get('hedley_general_site_name', '');
   if ($encounter_type != 'newborn-exam') {
     if ($age_in_days >= (6 * 7)) {
       $possible_immunisations = array_merge(
@@ -5772,7 +5773,6 @@ function hedley_reports_well_child_get_expected_immunisation_activities(array $e
       $possible_immunisations[] = 'mr';
     }
 
-    $site = variable_get('hedley_general_site_name', '');
     if ($site == 'burundi') {
       // All 3 doses of DTP were given, it has passed at least 28 days since
       // third dose, and, child is at last 18 months old.
@@ -5795,9 +5795,38 @@ function hedley_reports_well_child_get_expected_immunisation_activities(array $e
     }
   }
 
+  return hedley_reports_resolve_expected_immunisations($possible_immunisations, $vaccination_history, $initial_opv_administered, $site, $birth_date_obj, $start_date_obj, 'well_child_%s_immunisation');
+}
+
+/**
+ * Resolves which immunisations a child is expected to have had by now.
+ *
+ * A vaccine is expected when none of it was given, or when the dose that
+ * follows the last one given was due before the encounter started.
+ *
+ * @param array $possible_immunisations
+ *   The vaccines that apply to this child at this age.
+ * @param array $vaccination_history
+ *   The doses administered, keyed by vaccine and then by dose.
+ * @param bool $initial_opv_administered
+ *   Whether the OPV birth dose was given within 14 days of birth.
+ * @param string $site
+ *   The site, which decides how many doses some vaccines have and how far
+ *   apart they are.
+ * @param DateTime $birth_date_obj
+ *   The child's date of birth.
+ * @param DateTime $start_date_obj
+ *   The date the encounter started.
+ * @param string $name_pattern
+ *   The activity name for a vaccine, with the vaccine where the %s goes.
+ *
+ * @return array
+ *   The names of the immunisation activities that are expected.
+ */
+function hedley_reports_resolve_expected_immunisations(array $possible_immunisations, array $vaccination_history, $initial_opv_administered, $site, DateTime $birth_date_obj, DateTime $start_date_obj, $name_pattern) {
   $expected = [];
   foreach ($possible_immunisations as $immunisation_type) {
-    $immunisation_full_name = "well_child_{$immunisation_type}_immunisation";
+    $immunisation_full_name = sprintf($name_pattern, $immunisation_type);
     if (empty($vaccination_history)) {
       $expected[] = $immunisation_full_name;
       continue;
@@ -5812,7 +5841,7 @@ function hedley_reports_well_child_get_expected_immunisation_activities(array $e
     $doses = array_keys($performed);
     sort($doses);
     $last_dose = array_reverse($doses)[0];
-    $last_dose_for_immunisation = hedley_reports_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered);
+    $last_dose_for_immunisation = hedley_reports_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered, $site);
     // If all doses we administered, skipping to next immunisation type.
     if ($last_dose == $last_dose_for_immunisation) {
       continue;
@@ -5832,6 +5861,20 @@ function hedley_reports_well_child_get_expected_immunisation_activities(array $e
 
       if ($six_weeks_old_date_obj > $next_dose_date_obj) {
         $next_dose_date_obj = $six_weeks_old_date_obj;
+      }
+    }
+
+    if ($immunisation_type == 'ipv' && $next_dose_as_number == 2 && $site == 'rwanda') {
+      // The interval for IPV is none, since for most sites there is only one
+      // dose. Rwanda's second dose is due on the later of 36 weeks of age and
+      // 28 days after the first, which is what says when it is due here.
+      $next_dose_date_obj = clone $last_dose_date_obj;
+      $next_dose_date_obj->modify('+28 days');
+      $thirty_six_weeks_old_date_obj = clone $birth_date_obj;
+      $thirty_six_weeks_old_date_obj->modify('+36 weeks');
+
+      if ($thirty_six_weeks_old_date_obj > $next_dose_date_obj) {
+        $next_dose_date_obj = $thirty_six_weeks_old_date_obj;
       }
     }
 
@@ -5887,15 +5930,21 @@ function hedley_reports_initial_opv_administered(array $encounter_data, DateTime
  * @param bool $initial_opv_administered
  *   Indicates whether the initial OPV dose was administered within 14 days
  *   of birth.
+ * @param string $site
+ *   The site, since IPV has a second dose at Rwanda and one elsewhere.
  *
  * @return string|bool
  *   The last expected dose for the vaccine (e.g., 'dose-1', 'dose-3'),
  *   or FALSE, if the immunisation type is not recognized.
  */
-function hedley_reports_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered) {
+function hedley_reports_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered, $site) {
   switch ($immunisation_type) {
-    case 'bcg':
     case 'ipv':
+      // Since https://github.com/TIP-Global-Health/eheza-app/issues/1426,
+      // Rwanda gives a second dose. Other sites give one.
+      return $site == 'rwanda' ? 'dose-2' : 'dose-1';
+
+    case 'bcg':
     case 'dtp_sa':
       return 'dose-1';
 
@@ -5933,8 +5982,15 @@ function hedley_reports_get_last_dose_for_vaccine($immunisation_type, $initial_o
  */
 function hedley_reports_get_interval_for_vaccine($immunisation_type, $site) {
   switch ($immunisation_type) {
-    case 'bcg':
+    // The interval says nothing about IPV, since for most sites there is only
+    // one dose. Rwanda's second dose is due on the later of 36 weeks of age
+    // and 28 days after the first, which is applied where the next dose is
+    // resolved rather than here.
     case 'ipv':
+      return '+0 days';
+
+    // One dose each, so there is no interval to give.
+    case 'bcg':
     case 'dtp_sa':
       return '+0 days';
 
@@ -6443,54 +6499,7 @@ function hedley_reports_child_scoreboard_get_expected_immunisation_activities(ar
     }
   }
 
-  $expected = [];
-  foreach ($possible_immunisations as $immunisation_type) {
-    $immunisation_full_name = "child_scoreboard_{$immunisation_type}_iz";
-    if (empty($vaccination_history)) {
-      $expected[] = $immunisation_full_name;
-      continue;
-    }
-
-    $performed = $vaccination_history[$immunisation_type];
-    if (empty($performed)) {
-      $expected[] = $immunisation_full_name;
-      continue;
-    }
-
-    $doses = array_keys($performed);
-    sort($doses);
-    $last_dose = array_reverse($doses)[0];
-    $last_dose_for_immunisation = hedley_reports_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered);
-    // If all doses we administered, skipping to next immunisation type.
-    if ($last_dose == $last_dose_for_immunisation) {
-      continue;
-    }
-
-    // Calculating when next dose is supposed to be administered.
-    $last_dose_as_number = (int) explode('-', $last_dose)[1];
-    $next_dose_as_number = $last_dose_as_number + 1;
-    $last_dose_date = $performed[$last_dose];
-    $interval_between_dosed = hedley_reports_get_interval_for_vaccine($immunisation_type, $site);
-    $last_dose_date_obj = new DateTime($last_dose_date);
-    $next_dose_date_obj = clone $last_dose_date_obj;
-    $next_dose_date_obj->modify($interval_between_dosed);
-    if ($immunisation_type == 'opv' && $next_dose_as_number == 2 && $initial_opv_administered) {
-      $six_weeks_old_date_obj = clone $birth_date_obj;
-      $six_weeks_old_date_obj->modify('+6 weeks');
-
-      if ($six_weeks_old_date_obj > $next_dose_date_obj) {
-        $next_dose_date_obj = $six_weeks_old_date_obj;
-      }
-    }
-
-    // If encounter started after the date when immunisation was supposed
-    // to be administered, adding it as expected.
-    if ($start_date_obj >= $next_dose_date_obj) {
-      $expected[] = $immunisation_full_name;
-    }
-  }
-
-  return $expected;
+  return hedley_reports_resolve_expected_immunisations($possible_immunisations, $vaccination_history, $initial_opv_administered, $site, $birth_date_obj, $start_date_obj, 'child_scoreboard_%s_iz');
 }
 
 /**
