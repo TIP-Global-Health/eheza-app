@@ -5982,12 +5982,15 @@ function hedley_reports_get_last_dose_for_vaccine($immunisation_type, $initial_o
  */
 function hedley_reports_get_interval_for_vaccine($immunisation_type, $site) {
   switch ($immunisation_type) {
-    // The interval for IPV says nothing, since for most sites there is only
+    // The interval says nothing about IPV, since for most sites there is only
     // one dose. Rwanda's second dose is due on the later of 36 weeks of age
     // and 28 days after the first, which is applied where the next dose is
     // resolved rather than here.
-    case 'bcg':
     case 'ipv':
+      return '+0 days';
+
+    // One dose each, so there is no interval to give.
+    case 'bcg':
     case 'dtp_sa':
       return '+0 days';
 
