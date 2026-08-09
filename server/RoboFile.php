@@ -9,14 +9,6 @@ use Symfony\Component\Yaml\Yaml;
 class RoboFile extends Tasks {
 
   /**
-   * The Pantheon name.
-   *
-   * You need to fill this information for Robo to know what's the name of your
-   * site.
-   */
-  const PANTHEON_NAME = 'eheza-app';
-
-  /**
    * Deploy to Pantheon.
    *
    * @param string $branchName
@@ -25,10 +17,6 @@ class RoboFile extends Tasks {
    * @throws \Exception
    */
   public function deployPantheon($branchName = 'master') {
-    if (empty(self::PANTHEON_NAME)) {
-      throw new Exception('You need to fill the "PANTHEON_NAME" const in the Robo file, so it will know what is the name of your site.');
-    }
-
     $site = getenv('PANTHEON_NAME');
     if (!$site) {
       throw new Exception('Please specify PANTHEON_NAME in your DDEV local config, so it will be possible to resolve pantheon directory.');
@@ -68,7 +56,7 @@ class RoboFile extends Tasks {
     }
 
     $result = $this
-      ->taskExec("cd $pantheonDirectory && git checkout $branchName")
+      ->taskExec("cd $pantheonDirectory && git checkout $branchName && git pull")
       ->printOutput(FALSE)
       ->run();
 
@@ -136,8 +124,8 @@ class RoboFile extends Tasks {
       return;
     }
 
-    $push_status = $this->_exec("cd $pantheonDirectory && git pull && git add . && git commit -am 'Site update' && git push")->getExitCode();
-    if ($client_sync_result != 0) {
+    $push_status = $this->_exec("cd $pantheonDirectory && git add . && git commit -am 'Site update' && git push")->getExitCode();
+    if ($push_status != 0) {
       throw new Exception('Failed to push to Pantheon');
     }
 
@@ -157,11 +145,12 @@ class RoboFile extends Tasks {
    * @throws \Robo\Exception\TaskException
    */
   public function deployPantheonSync(string $env = 'test', bool $doDeploy = TRUE) {
-    if (getenv('PANTHEON_NAME')) {
-      $pantheonName = getenv('PANTHEON_NAME');
-    }
-    else {
-      $pantheonName = self::PANTHEON_NAME;
+    // Required, as deployPantheon() requires it. The constant below is another
+    // real site, so falling back to it would run these steps against someone
+    // else's environment.
+    $pantheonName = getenv('PANTHEON_NAME');
+    if (!$pantheonName) {
+      throw new Exception('Please specify PANTHEON_NAME in your DDEV local config, so it is clear which site is being deployed to.');
     }
 
     $pantheonTerminusEnvironment = $pantheonName . '.' . $env;
@@ -182,8 +171,14 @@ class RoboFile extends Tasks {
       // clear caches again so the reverted config takes effect.
       ->exec("terminus remote:drush $pantheonTerminusEnvironment -- fra -y")
       ->exec("terminus remote:drush $pantheonTerminusEnvironment -- cc all")
-      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- uli")
-      ->run();
+      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- uli");
+
+    $result = $task->run();
+    if (!$result->wasSuccessful()) {
+      throw new Exception("Deploy steps failed on $pantheonTerminusEnvironment");
+    }
+
+    return $result;
   }
 
   /**

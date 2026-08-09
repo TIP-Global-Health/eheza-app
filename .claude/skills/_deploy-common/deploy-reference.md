@@ -18,7 +18,7 @@ and `server/RoboFile.php`.
 ## What the robo commands actually do (`server/RoboFile.php`)
 
 ### `deployPantheon($branchName = 'master')` — `ddev robo deploy:pantheon [env]`
-1. Resolves `PANTHEON_NAME` from the env var (falls back to the `PANTHEON_NAME` const, `eheza-app`, if unset — which is why the env var must be set correctly).
+1. Resolves `PANTHEON_NAME` from the env var, and refuses to run without it. It used to fall back to a `PANTHEON_NAME` const of `eheza-app` — which is itself a real site, so an unset variable deployed to someone else's environment.
 2. **Aborts if the eheza-app working tree is dirty.**
 3. **Aborts if the Pantheon clone (`.pantheon-<name>`) is dirty.**
 4. **Aborts if `pantheon.upstream.yml` is missing or has no `php_version:`.**
