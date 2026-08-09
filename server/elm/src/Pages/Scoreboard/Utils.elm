@@ -252,7 +252,10 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
             -- All 3 dosed of DTP were given, it has passed
             -- at least 28 days since third dose, and, child
             -- is at last 18 months old.
-            Dict.get VaccineOPV vaccinationProgress
+            -- Burundi calls the DTP combo Pentavalent, and issue #926 asks for
+            -- this dose after three of them - not after three doses of polio,
+            -- which is a different vaccine with a fourth dose of its own.
+            Dict.get VaccineDTP vaccinationProgress
                 |> Maybe.andThen (Dict.get VaccineDoseThird)
                 |> Maybe.map
                     (\thirdDoseDate ->
@@ -282,6 +285,14 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
                 |> Date.add unit (dosesInterval * interval)
 
         VaccineIPV ->
+            -- Nothing here asks for the second dose today: the one caller
+            -- resolves a date for a child who has had none, and so asks only
+            -- for the first. It is answered anyway, for symmetry with the
+            -- client's own copy of this function, which is reached with any
+            -- dose - and because leaving it out would answer the second dose
+            -- with 14 weeks and an interval of none, which is the wrong date
+            -- rather than no date. Whoever asks for it next gets the right
+            -- answer.
             case ( site, vaccineDose ) of
                 ( SiteRwanda, VaccineDoseSecond ) ->
                     -- The later of 36 weeks of age and 28 days after the first

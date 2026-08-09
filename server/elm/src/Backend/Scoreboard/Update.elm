@@ -5,18 +5,17 @@ import Backend.Model exposing (ModelBackend)
 import Backend.Scoreboard.Decoder exposing (decodeScoreboardData, decodeSyncResponse)
 import Backend.Scoreboard.Model exposing (Msg(..))
 import Backend.Types exposing (BackendReturn)
-import Gizra.NominalDate exposing (NominalDate)
 
 
-update : NominalDate -> String -> String -> Msg -> ModelBackend -> BackendReturn Msg
-update currentDate backendUrl csrfToken msg model =
+update : String -> String -> Msg -> ModelBackend -> BackendReturn Msg
+update backendUrl csrfToken msg model =
     let
         config =
             { appType = "scoreboard"
             , backendUrl = backendUrl
             , csrfToken = csrfToken
             , dataDecoder = decodeScoreboardData
-            , syncResponseDecoder = decodeSyncResponse currentDate
+            , syncResponseDecoder = decodeSyncResponse
             , getData = .scoreboardData
             , setData = \v m -> { m | scoreboardData = v }
             , getParams = .params
