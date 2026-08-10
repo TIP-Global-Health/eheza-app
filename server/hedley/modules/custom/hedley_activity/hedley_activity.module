@@ -477,6 +477,15 @@ function hedley_activity_get_persons_sessions_with_measurements(array $sessions_
   $session_field_name = $session_field . '.' . $session_field . '_target_id';
   $query->condition($session_field_name, $sessions_ids, 'IN');
 
+  // A session counts for a person when something was measured there. The
+  // attendance record does not count: it carries a person and a session like
+  // any measurement does, but it says only whether the person was expected to
+  // come, and it exists either way - marking someone absent updates it to
+  // attended = FALSE rather than removing it. So counting it made a record of
+  // absence into proof of presence, and a tick with nothing behind it into a
+  // session that ran.
+  $query->condition('node.type', HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE, '<>');
+
   $query->distinct();
 
   $result = $query->execute();

@@ -80,7 +80,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *
    *   1. Total encounters by period (last_year / this_year split).
    *   2. Case management aggregation across moderate/severe branches.
-   *   3. Session attendance (smoke check that the function runs).
+   *   3. Session attendance (smoke check that the function runs), and what
+   *      counts as having attended one (B-152a).
    *   4. Stats-blob sync with cache-hash invalidation.
    *   5. Soft-deleted measurements are excluded from stats aggregates (B-032).
    *   6. Soft-deleted persons are excluded from group education stats (B-033).
@@ -165,6 +166,44 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         $count_completed_programs++;
       }
     }
+
+    // 3b. What counts as attending a session.
+    //
+    // A session counts for a person when something was measured there. The
+    // attendance record itself does not count: it carries a person and a
+    // session like any measurement does, but marking someone absent updates
+    // it to attended = FALSE rather than removing it, so counting it turned a
+    // record of absence into proof of presence.
+    $this->resetHealthCenter();
+    $session_nid = $this->createSession($this->clinicId, strtotime('-1 week'));
+    $nurse = $this->createNurse($this->clinicId);
+
+    $mother_nid = $this->createMother($this->clinicId);
+    $measured_child = $this->createChild($mother_nid, $this->healthCenterId, strtotime('-23 months'), strtotime('-23 months'));
+    $attended_only_child = $this->createChild($mother_nid, $this->healthCenterId, strtotime('-23 months'), strtotime('-23 months'));
+    $absent_child = $this->createChild($mother_nid, $this->healthCenterId, strtotime('-23 months'), strtotime('-23 months'));
+
+    // One child was weighed, one was marked present and nothing was taken,
+    // one was marked absent.
+    $this->createAttendance($this->healthCenterId, $session_nid, $nurse->uid, $measured_child, TRUE, strtotime('-1 week'));
+    $this->createWeight('weight', $session_nid, $measured_child, 12, strtotime('-1 week'));
+    $this->createAttendance($this->healthCenterId, $session_nid, $nurse->uid, $attended_only_child, TRUE, strtotime('-1 week'));
+    $this->createAttendance($this->healthCenterId, $session_nid, $nurse->uid, $absent_child, FALSE, strtotime('-1 week'));
+
+    $persons_sessions = hedley_activity_get_persons_sessions_with_measurements([$session_nid]);
+
+    $this->assertTrue(
+      !empty($persons_sessions[$measured_child][$session_nid]),
+      'A child who was weighed in the session counts as having attended it.'
+    );
+    $this->assertTrue(
+      empty($persons_sessions[$attended_only_child][$session_nid]),
+      'A child marked present, with nothing measured, does not count: the session did not run for them.'
+    );
+    $this->assertTrue(
+      empty($persons_sessions[$absent_child][$session_nid]),
+      'A child marked absent does not count. The record of the absence is not evidence of presence.'
+    );
 
     // 4. Sync handler with cache-hash invalidation.
     $this->resetHealthCenter();
