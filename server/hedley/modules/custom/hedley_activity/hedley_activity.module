@@ -452,8 +452,7 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
  *
  * Attending is evidenced either by a measurement taken during the session, or
  * by an attendance record that says they came. An attendance record saying
- * they did not is no evidence at all, which is what the name of this function
- * fails to convey - it predates the distinction.
+ * they did not is no evidence at all.
  *
  * Resolves attendance for many persons at once with a single query, rather
  * than a COUNT query per person, so callers can determine it in memory.
@@ -465,7 +464,7 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
  *   A map keyed by person node ID; each value is a set of session node IDs (as
  *   array keys) that person attended.
  */
-function hedley_activity_get_persons_sessions_with_measurements(array $sessions_ids) {
+function hedley_activity_get_persons_sessions_attended(array $sessions_ids) {
   $persons_sessions = [];
   if (empty($sessions_ids)) {
     return $persons_sessions;

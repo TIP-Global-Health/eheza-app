@@ -189,7 +189,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createAttendance($this->healthCenterId, $session_nid, $nurse->uid, $attended_only_child, TRUE, strtotime('-1 week'));
     $this->createAttendance($this->healthCenterId, $session_nid, $nurse->uid, $absent_child, FALSE, strtotime('-1 week'));
 
-    $persons_sessions = hedley_activity_get_persons_sessions_with_measurements([$session_nid]);
+    $persons_sessions = hedley_activity_get_persons_sessions_attended([$session_nid]);
 
     $this->assertTrue(
       !empty($persons_sessions[$measured_child][$session_nid]),
