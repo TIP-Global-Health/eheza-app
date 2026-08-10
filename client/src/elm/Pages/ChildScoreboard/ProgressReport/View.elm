@@ -74,7 +74,7 @@ view language currentDate zscores site features id db model =
                             -- where the encounter was ended from does not
                             -- decide whether the child is referred.
                             if childGotDiarrhea assembled then
-                                ShowAIEncounterPopup
+                                ShowAIEncounterPopup id
 
                             else
                                 CloseEncounter id

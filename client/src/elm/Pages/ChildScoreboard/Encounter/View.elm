@@ -139,7 +139,7 @@ viewMainPageContent language currentDate site assembled model =
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language assembled allowEndEncounter ShowAIEncounterPopup CloseEncounter
+                , viewEndEncounterButton language assembled allowEndEncounter (ShowAIEncounterPopup assembled.id) CloseEncounter
                 ]
     in
     [ tabs

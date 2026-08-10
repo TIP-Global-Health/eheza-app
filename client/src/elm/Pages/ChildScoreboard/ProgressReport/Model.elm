@@ -33,7 +33,7 @@ type Msg
     = NoOp
     | CloseEncounter ChildScoreboardEncounterId
     | SetActivePage Page
-    | ShowAIEncounterPopup
+    | ShowAIEncounterPopup ChildScoreboardEncounterId
     | TriggerAcuteIllnessEncounter AssembledData
     | SetDiagnosisMode DiagnosisMode
     | SetEndEncounterDialogState Bool
