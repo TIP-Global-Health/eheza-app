@@ -13,8 +13,6 @@ var configUrlRegex = /\/sw\/config/;
 var credentialsUrlRegex = /\/sw\/config\/device$/;
 var credentialsUrl = '/sw/config/device';
 
-var deviceUuidUrl = '/sw/config/device-uuid';
-
 var photosDownloadCache = "photos";
 var photosUploadCache = "photos-upload";
 var screenshotsUploadCache = "screenshots-upload";
