@@ -489,8 +489,17 @@ function hedley_activity_get_persons_sessions_with_measurements(array $sessions_
   // the record itself turned an absence into proof of attendance.
   //
   // The join is optional because only the attendance bundle carries the
-  // field; every other measurement passes on the first condition.
-  hedley_general_join_field_to_query($query, 'node', 'field_attended', FALSE);
+  // field; every other measurement passes on the first condition. It is made
+  // by hand rather than through the usual helper, which would also add the
+  // value to the SELECT list and so to the DISTINCT below - a person with
+  // both a measurement and an attendance record would come back as two rows
+  // where one will do, in the query that exists to be the cheap bulk path.
+  $query->leftJoin(
+    'field_data_field_attended',
+    'field_attended',
+    'node.nid = field_attended.entity_id AND field_attended.entity_type = :attended_entity_type',
+    [':attended_entity_type' => 'node']
+  );
   $query->condition(
     db_or()
       ->condition('node.type', HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE, '<>')
