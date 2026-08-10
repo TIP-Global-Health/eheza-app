@@ -37,7 +37,9 @@ update msg model =
             )
 
         ShowAIEncounterPopup ->
-            ( { model | showAIEncounterPopup = True }
+            -- The confirmation dialog has done its job by the time we get
+            -- here, and two stacked modals would be one too many.
+            ( { model | showAIEncounterPopup = True, showEndEncounterDialog = False }
             , Cmd.none
             , []
             )
@@ -51,6 +53,9 @@ update msg model =
 
         SetDiagnosisMode mode ->
             ( { model | diagnosisMode = mode }, Cmd.none, [] )
+
+        SetEndEncounterDialogState isOpen ->
+            ( { model | showEndEncounterDialog = isOpen }, Cmd.none, [] )
 
         MsgReportToWhatsAppDialog subMsg ->
             let

@@ -1,19 +1,16 @@
-module Pages.ChildScoreboard.Encounter.View exposing (view)
+module Pages.ChildScoreboard.Encounter.View exposing (acuteIllnessEncounterPopup, view)
 
 import Backend.ChildScoreboardActivity.Utils exposing (allActivities, getActivityIcon)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Model exposing (NCDASign(..))
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData, Model, Msg(..), Tab(..))
-import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
+import Pages.ChildScoreboard.Encounter.Utils exposing (childGotDiarrhea, generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewCustomAction, viewEncounterActionButton, viewPersonDetailsExtended)
 import SyncManager.Model exposing (Site)
@@ -154,13 +151,7 @@ viewEndEncounterButton : Language -> AssembledData -> Bool -> msg -> (ChildScore
 viewEndEncounterButton language assembled allowEndEncounter showAIEncounterPopupMsg closeEncounterMsg =
     let
         endEncounterMsg =
-            let
-                childGotDiarrhea =
-                    getMeasurementValueFunc assembled.measurements.ncda
-                        |> Maybe.map (.signs >> EverySet.member ChildGotDiarrhea)
-                        |> Maybe.withDefault False
-            in
-            if childGotDiarrhea then
+            if childGotDiarrhea assembled then
                 showAIEncounterPopupMsg
 
             else

@@ -8,13 +8,15 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectActivity)
-import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
+import Pages.ChildScoreboard.Encounter.Utils exposing (childGotDiarrhea, generateAssembledData)
+import Pages.ChildScoreboard.Encounter.View exposing (acuteIllnessEncounterPopup)
 import Pages.ChildScoreboard.ProgressReport.Model exposing (Model, Msg(..))
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
 import Pages.WellChild.ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate.Model exposing (Language)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
@@ -65,10 +67,18 @@ view language currentDate zscores site features id db model =
                                 |> List.partition (activityCompleted currentDate site assembled)
                     in
                     ( Just
-                        { showEndEncounterDialog = model.showAIEncounterPopup
+                        { showEndEncounterDialog = model.showEndEncounterDialog
                         , allowEndEncounter = List.isEmpty pendingActivities
-                        , closeEncounterMsg = CloseEncounter id
-                        , setEndEncounterDialogStateMsg = always ShowAIEncounterPopup
+                        , closeEncounterMsg =
+                            -- Same rule the encounter page applies, so that
+                            -- where the encounter was ended from does not
+                            -- decide whether the child is referred.
+                            if childGotDiarrhea assembled then
+                                ShowAIEncounterPopup
+
+                            else
+                                CloseEncounter id
+                        , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
                         }
                     , True
@@ -83,26 +93,41 @@ view language currentDate zscores site features id db model =
 
         componentsConfig =
             Just { setReportComponentsMsg = SetReportComponents }
+
+        -- The same warning the encounter page shows, so a child recorded
+        -- with diarrhea is told why the acute illness encounter follows.
+        aiEncounterPopup =
+            Maybe.andThen
+                (\assembled ->
+                    acuteIllnessEncounterPopup language
+                        assembled
+                        model.showAIEncounterPopup
+                        TriggerAcuteIllnessEncounter
+                )
+                assembledData
     in
-    viewWebData language
-        (viewProgressReport language
-            currentDate
-            zscores
-            site
-            features
-            initiator
-            mandatoryNutritionAssessmentMeasurementsTaken
-            db
-            model.diagnosisMode
-            model.reportToWhatsAppDialog
-            model.reportTab
-            SetActivePage
-            SetReportTab
-            SetDiagnosisMode
-            MsgReportToWhatsAppDialog
-            componentsConfig
-            model.components
-            bottomActionData
-        )
-        identity
-        childData
+    div []
+        [ viewWebData language
+            (viewProgressReport language
+                currentDate
+                zscores
+                site
+                features
+                initiator
+                mandatoryNutritionAssessmentMeasurementsTaken
+                db
+                model.diagnosisMode
+                model.reportToWhatsAppDialog
+                model.reportTab
+                SetActivePage
+                SetReportTab
+                SetDiagnosisMode
+                MsgReportToWhatsAppDialog
+                componentsConfig
+                model.components
+                bottomActionData
+            )
+            identity
+            childData
+        , viewModal aiEncounterPopup
+        ]

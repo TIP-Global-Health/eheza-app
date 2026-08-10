@@ -11,6 +11,7 @@ import Pages.Report.Model exposing (DiagnosisMode(..), ReportTab(..))
 type alias Model =
     { diagnosisMode : DiagnosisMode
     , showAIEncounterPopup : Bool
+    , showEndEncounterDialog : Bool
     , reportToWhatsAppDialog : Components.ReportToWhatsAppDialog.Model.Model
     , components : Maybe (EverySet Components.ReportToWhatsAppDialog.Model.ReportComponentWellChild)
     , reportTab : ReportTab
@@ -21,6 +22,7 @@ emptyModel : Model
 emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
     , showAIEncounterPopup = False
+    , showEndEncounterDialog = False
     , reportToWhatsAppDialog = Components.ReportToWhatsAppDialog.Model.emptyModel
     , components = Nothing
     , reportTab = TabSPVReport
@@ -34,6 +36,7 @@ type Msg
     | ShowAIEncounterPopup
     | TriggerAcuteIllnessEncounter AssembledData
     | SetDiagnosisMode DiagnosisMode
+    | SetEndEncounterDialogState Bool
     | MsgReportToWhatsAppDialog (Components.ReportToWhatsAppDialog.Model.Msg Msg)
     | SetReportComponents (Maybe Components.ReportToWhatsAppDialog.Model.ReportComponentsList)
     | SetReportTab ReportTab
