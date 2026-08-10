@@ -169,11 +169,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     // 3b. What counts as attending a session.
     //
-    // A session counts for a person when something was measured there. The
-    // attendance record itself does not count: it carries a person and a
-    // session like any measurement does, but marking someone absent updates
-    // it to attended = FALSE rather than removing it, so counting it turned a
-    // record of absence into proof of presence.
+    // A measurement means the person was there, and so does the attendance
+    // record - but only when it says so. Marking someone absent updates it to
+    // attended = FALSE rather than removing it, so counting the record itself
+    // turned an absence into proof of attendance.
     $this->resetHealthCenter();
     $session_nid = $this->createSession($this->clinicId, strtotime('-1 week'));
     $nurse = $this->createNurse($this->clinicId);
@@ -184,7 +183,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $absent_child = $this->createChild($mother_nid, $this->healthCenterId, strtotime('-23 months'), strtotime('-23 months'));
 
     // One child was weighed, one was marked present and nothing was taken,
-    // one was marked absent.
+    // one was marked absent. Only the last is not evidence of attending.
     $this->createAttendance($this->healthCenterId, $session_nid, $nurse->uid, $measured_child, TRUE, strtotime('-1 week'));
     $this->createWeight('weight', $session_nid, $measured_child, 12, strtotime('-1 week'));
     $this->createAttendance($this->healthCenterId, $session_nid, $nurse->uid, $attended_only_child, TRUE, strtotime('-1 week'));
@@ -197,8 +196,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       'A child who was weighed in the session counts as having attended it.'
     );
     $this->assertTrue(
-      empty($persons_sessions[$attended_only_child][$session_nid]),
-      'A child marked present, with nothing measured, does not count: the session did not run for them.'
+      !empty($persons_sessions[$attended_only_child][$session_nid]),
+      'A child marked present counts, even with nothing measured. The record says they came.'
     );
     $this->assertTrue(
       empty($persons_sessions[$absent_child][$session_nid]),

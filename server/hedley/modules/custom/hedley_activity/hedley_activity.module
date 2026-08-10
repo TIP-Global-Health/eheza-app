@@ -448,7 +448,12 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
 }
 
 /**
- * Loads, per person, the sessions during which they have measurements.
+ * Loads, per person, the sessions they attended.
+ *
+ * Attending is evidenced either by a measurement taken during the session, or
+ * by an attendance record that says they came. An attendance record saying
+ * they did not is no evidence at all, which is what the name of this function
+ * fails to convey - it predates the distinction.
  *
  * Resolves attendance for many persons at once with a single query, rather
  * than a COUNT query per person, so callers can determine it in memory.
@@ -458,7 +463,7 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
  *
  * @return array
  *   A map keyed by person node ID; each value is a set of session node IDs (as
- *   array keys) during which that person has at least one measurement.
+ *   array keys) that person attended.
  */
 function hedley_activity_get_persons_sessions_with_measurements(array $sessions_ids) {
   $persons_sessions = [];
@@ -477,14 +482,20 @@ function hedley_activity_get_persons_sessions_with_measurements(array $sessions_
   $session_field_name = $session_field . '.' . $session_field . '_target_id';
   $query->condition($session_field_name, $sessions_ids, 'IN');
 
-  // A session counts for a person when something was measured there. The
-  // attendance record does not count: it carries a person and a session like
-  // any measurement does, but it says only whether the person was expected to
-  // come, and it exists either way - marking someone absent updates it to
-  // attended = FALSE rather than removing it. So counting it made a record of
-  // absence into proof of presence, and a tick with nothing behind it into a
-  // session that ran.
-  $query->condition('node.type', HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE, '<>');
+  // A measurement means the person was there, and so does the attendance
+  // record - but only when it says so. Marking someone absent updates it to
+  // attended = FALSE rather than removing it, so the record exists either way
+  // and its value, not its presence, is what answers the question. Counting
+  // the record itself turned an absence into proof of attendance.
+  //
+  // The join is optional because only the attendance bundle carries the
+  // field; every other measurement passes on the first condition.
+  hedley_general_join_field_to_query($query, 'node', 'field_attended', FALSE);
+  $query->condition(
+    db_or()
+      ->condition('node.type', HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE, '<>')
+      ->condition('field_attended.field_attended_value', 1)
+  );
 
   $query->distinct();
 
