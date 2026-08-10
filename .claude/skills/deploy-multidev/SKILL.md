@@ -54,7 +54,7 @@ Report a ✅/❌ checklist. **Stop and surface any ❌.**
    git ls-remote --heads origin <source-branch>   # ...or on origin
    git status -s -uno                        # expect empty (no tracked changes)
    ```
-3. **Pantheon clone exists, clean, and has the target multidev branch.** The deploy runs `git checkout <env>` inside the clone and aborts with *"Specified branch `<env>` does not exist"* if that branch isn't there:
+3. **Pantheon clone exists, clean, and has the target multidev branch.** The deploy runs `git checkout <env>` inside the clone and aborts with *"Specified branch `<env>` does not exist"* if that branch isn't there. It then pulls, which aborts with *"Failed to pull `<env>`"* — a different message, because a pull fails for reasons of its own:
    ```bash
    git -C server/.pantheon-<PANTHEON_NAME> status -s -uno              # clean
    git -C server/.pantheon-<PANTHEON_NAME> fetch origin                # refresh
