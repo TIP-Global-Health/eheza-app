@@ -153,7 +153,10 @@ export async function createChildAndStartEncounter(
  *
  * Creates: child_scoreboard_ncda
  */
-export async function completeNCDA(page: Page, options?: { expectMuacAsked?: boolean }) {
+export async function completeNCDA(
+  page: Page,
+  options?: { expectMuacAsked?: boolean; diarrhea?: 'Yes' | 'No' },
+) {
   await openActivity(page, 'child-scoreboard', 'history');
 
   // --- Step 1: Antenatal Care ---
@@ -357,10 +360,11 @@ export async function completeNCDA(page: Page, options?: { expectMuacAsked?: boo
   await answerNCDAYesNo(page, 'receive support', 'Yes');
   await page.waitForTimeout(WAIT.formInteraction);
 
-  // ChildGotDiarrhea → No (does not contribute to any scoreboard pane —
-  // pane4.row3 requires ORS/Zinc medication, not this sign. Answering Yes
-  // triggers a popup on end-encounter that breaks the standalone test).
-  await answerNCDAYesNo(page, 'have diarrhea', 'No');
+  // ChildGotDiarrhea → No by default (it contributes to no scoreboard pane —
+  // pane4.row3 requires ORS/Zinc medication, not this sign). Yes is what sends
+  // the child on to an acute illness encounter when this one ends, so tests
+  // that want that path ask for it.
+  await answerNCDAYesNo(page, 'have diarrhea', options?.diarrhea ?? 'No');
   await page.waitForTimeout(WAIT.formInteraction);
 
   await clickSave(page);
@@ -627,4 +631,30 @@ export function queryNCDAWeight(personName: string): number | null {
     throw new Error(`queryNCDAWeight: ${parsed.error}`);
   }
   return parsed.weight === null || parsed.weight === undefined ? null : Number(parsed.weight);
+}
+
+
+/**
+ * Open the progress report (the "scorecard" tab of the encounter).
+ */
+export async function openScorecardReport(page: Page) {
+  await click(page.locator('#scorecard-tab'), page);
+  await page.locator('h1', { hasText: 'PROGRESS REPORT' }).waitFor({ timeout: 30000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
+/**
+ * The confirmation dialog the report shows before ending an encounter.
+ * Distinct from the diarrhea warning, which is a .danger-signs-popup - both
+ * carry a Continue button, so tests have to say which one they mean.
+ */
+export function endEncounterDialog(page: Page) {
+  return page.locator('div.ui.tiny.active.modal');
+}
+
+/**
+ * The warning shown when a child recorded with diarrhea is referred on.
+ */
+export function diarrheaReferralPopup(page: Page) {
+  return page.locator('div.ui.active.modal.danger-signs-popup');
 }

@@ -11,7 +11,11 @@ import {
   completeVaccinationHistory,
   endChildScoreboardEncounter,
   queryChildScoreboardNodes,
+  openScorecardReport,
+  endEncounterDialog,
+  diarrheaReferralPopup,
 } from './helpers/child-scoreboard';
+import { click } from './helpers/auth';
 
 // =========================================================================
 // Test 1: CHW First Child Scoreboard Encounter — NCDA + Vaccination History
@@ -141,5 +145,72 @@ test.describe('CHW: Child Scoreboard Encounter — child under six months', () =
     const nodes = queryChildScoreboardNodes(fullName, ['child_scoreboard_ncda']);
     expect(nodes['child_scoreboard_ncda'], 'child_scoreboard_ncda should exist').toBe(true);
     expect(queryNCDAWeight(fullName), 'the weight entered should be saved').toBe(8.5);
+  });
+});
+
+// =========================================================================
+// Test 3: Ending the encounter from the progress report
+// =========================================================================
+
+test.describe('CHW: Child Scoreboard Encounter — ending it from the progress report', () => {
+  test.describe.configure({ timeout: 600000 });
+
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '2345', 'Akanduga');
+  });
+
+  // Scenario: the encounter is ended from the progress report rather than from
+  // the encounter page, with diarrhea recorded on the NCDA questionnaire.
+  //
+  // Covers issue #2062, both halves, in one encounter:
+  //   1. Cancel on the confirmation dialog leaves the report open. Before the
+  //      fix the report passed "always ShowAIEncounterPopup" for that dialog,
+  //      so Cancel set the flag the dialog's own visibility reads and re-opened
+  //      it - confirming was the only way out.
+  //   2. Confirming refers the child on. Before the fix the report never asked
+  //      whether diarrhea was recorded, so the same child was referred or not
+  //      depending on which screen the encounter was ended from; and the
+  //      referral itself navigated to the PIN code page, because the message
+  //      that closed the encounter appended a navigation of its own after it.
+  test('cancel keeps the report open, and confirming refers a child with diarrhea', async ({
+    page,
+  }) => {
+    // 1. A child with diarrhea recorded, so ending the encounter should refer.
+    await createChildAndStartEncounter(page, { ageMonths: 10 });
+    await completeNCDA(page, { expectMuacAsked: true, diarrhea: 'Yes' });
+    await completeVaccinationHistory(page);
+
+    // 2. End the encounter from the report, not from the encounter page.
+    await openScorecardReport(page);
+    await click(page.locator('button', { hasText: 'End Encounter' }).first(), page);
+
+    const dialog = endEncounterDialog(page);
+    await expect(dialog).toBeVisible();
+
+    // 3. Cancel means cancel: the dialog closes and the report is still here.
+    await click(dialog.locator('button', { hasText: 'Cancel' }), page);
+    await expect(dialog).toBeHidden();
+    await expect(page.locator('h1', { hasText: 'PROGRESS REPORT' })).toBeVisible();
+
+    // 4. Confirming this time brings up the referral warning.
+    await click(page.locator('button', { hasText: 'End Encounter' }).first(), page);
+    await expect(dialog).toBeVisible();
+    await click(dialog.locator('button.primary', { hasText: 'Continue' }), page);
+
+    const popup = diarrheaReferralPopup(page);
+    await expect(popup).toBeVisible();
+
+    // 5. Continue arrives at the acute illness encounter, not the PIN screen.
+    await click(popup.locator('button'), page);
+    await expect(page.locator('div.page-participant.acute-illness')).toBeVisible({
+      timeout: 30000,
+    });
   });
 });

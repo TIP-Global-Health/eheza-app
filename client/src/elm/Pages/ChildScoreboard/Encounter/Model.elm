@@ -47,5 +47,5 @@ type Msg
     = CloseEncounter ChildScoreboardEncounterId
     | SetActivePage Page
     | SetSelectedTab Tab
-    | ShowAIEncounterPopup
+    | ShowAIEncounterPopup ChildScoreboardEncounterId
     | TriggerAcuteIllnessEncounter AssembledData
