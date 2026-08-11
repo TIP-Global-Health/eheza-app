@@ -4808,10 +4808,13 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
       $measurements_by_type[$measurement->type] = $measurement;
     }
 
+    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+
     $encounters_data[] = [
       'encounter' => $encounter,
       'encounter_type' => $encounter_type,
       'measurements_by_type' => $measurements_by_type,
+      'start_date_obj' => new DateTime($start_date),
     ];
   }
 
@@ -4824,10 +4827,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     $encounter = $encounter_data['encounter'];
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
-    // Resolve encounter start date.
-    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
-    $start_date_obj = new DateTime($start_date);
-    $encounter_data['start_date_obj'] = $start_date_obj;
+    $start_date_obj = $encounter_data['start_date_obj'];
 
     // Try to resolve age in months at a time encounter was performed.
     $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
@@ -6058,7 +6058,8 @@ function hedley_reports_well_child_add_medication_activities(array $encounter_da
       $expected[] = $expected_activity;
     }
     else {
-      $next_administration_date_obj = $last_administration_date_obj->add(new DateInterval('P6M'));
+      // The date belongs to the encounter it came from, so add to a copy.
+      $next_administration_date_obj = (clone $last_administration_date_obj)->add(new DateInterval('P6M'));
       if ($start_date_obj >= $next_administration_date_obj) {
         // Medication was administered previously more than 6 months
         // ago - add it as expected.
