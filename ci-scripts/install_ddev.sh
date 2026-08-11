@@ -18,7 +18,7 @@ curl -s -L https://raw.githubusercontent.com/drud/ddev/master/scripts/install_dd
 echo "Configuring ddev."
 mkdir ~/.ddev
 cp "ci-scripts/global_config.yaml" ~/.ddev/
-docker network create ddev_default || ddev logs
+docker network create ddev_default || { ddev logs; exit 1; }
 
 if [[ "$MAC" == 1 ]];
 then

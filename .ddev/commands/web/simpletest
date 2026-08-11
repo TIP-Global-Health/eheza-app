@@ -4,11 +4,37 @@
 ## Usage: simpletest
 ## Example: "ddev simpletest"
 #
-drush en simpletest -y
+
+# The runner's exit code reaches us through the pipe into tee, and every step
+# below is checked. Without this the job reported success for a runner that
+# never started - a broken site build left the only server-side test job green
+# on every pull request, with nothing to distinguish no failures from no tests.
+set -o pipefail
+
+if ! drush en simpletest -y; then
+  echo "Could not enable the simpletest module, so no tests were run."
+  exit 1
+fi
+
 cd ..
 php ./www/scripts/run-tests.sh --php "$(which php)" --concurrency 4 --verbose --color --url http://eheza-app.ddev.site:8081 Hedley 2>&1 | tee /tmp/simpletest-result.txt
+runner_status=$?
 
+if [ "$runner_status" -ne 0 ]; then
+  echo "The test runner exited with status $runner_status."
+  exit 1
+fi
+
+# Reports a failure, a fatal, or an exception. The trailing-zero alternatives
+# catch counts like 10 and 20, which the leading [1-9] would otherwise miss.
 grep -E -i "([1-9]+ fail)|(Fatal error)|([1-9]+ exception)|([0-9]+0 fail)|([0-9]+0 exception)" /tmp/simpletest-result.txt && exit 1
+
+# Says nothing failed, which is also what it says when nothing ran. A suite
+# that passed has passes to show for it.
+if ! grep -E -q "[1-9][0-9]* passes" /tmp/simpletest-result.txt; then
+  echo "No passing tests were reported, so the suite did not run."
+  exit 1
+fi
 
 drush pm-disable simpletest -y
 
