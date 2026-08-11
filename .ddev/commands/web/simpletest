@@ -16,6 +16,10 @@ if ! drush en simpletest -y; then
   exit 1
 fi
 
+# Every path below can exit, and leaving the module enabled changes the state
+# of the developer's site.
+trap 'drush pm-disable simpletest -y' EXIT
+
 cd ..
 php ./www/scripts/run-tests.sh --php "$(which php)" --concurrency 4 --verbose --color --url http://eheza-app.ddev.site:8081 Hedley 2>&1 | tee /tmp/simpletest-result.txt
 runner_status=$?
@@ -30,12 +34,12 @@ fi
 grep -E -i "([1-9]+ fail)|(Fatal error)|([1-9]+ exception)|([0-9]+0 fail)|([0-9]+0 exception)" /tmp/simpletest-result.txt && exit 1
 
 # Says nothing failed, which is also what it says when nothing ran. A suite
-# that passed has passes to show for it.
-if ! grep -E -q "[1-9][0-9]* passes" /tmp/simpletest-result.txt; then
+# that passed has passes to show for it. The singular is spelled differently -
+# simpletest formats the count with format_plural, so exactly one reads
+# "1 pass" - and a run of a single narrow class must not look like no run.
+if ! grep -E -q "[1-9][0-9]* pass(es)?" /tmp/simpletest-result.txt; then
   echo "No passing tests were reported, so the suite did not run."
   exit 1
 fi
-
-drush pm-disable simpletest -y
 
 exit 0
