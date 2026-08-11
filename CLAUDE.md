@@ -123,3 +123,23 @@ Translations in `Translate.elm` use a record with `english`, `kinyarwanda`, `kir
 ### Debug Code in Elm
 
 When committing Elm files, do not include `Debug.log` calls. Remove any `Debug.log` lines before staging.
+
+### Code Duplication
+
+Avoid code duplication. Extract shared logic into common functions rather than copying similar code blocks.
+
+### Code Comments
+
+- Comments describe current behavior only — no change history, no issue numbers, no references to how the code used to work.
+- Plain language, in terms already used in the codebase. No invented jargon or pattern names.
+- Keep comments short. When more explanation is needed, use simple English and a small example.
+
+### Issues and Pull Requests
+
+The same principle applies to issue and PR text: describe the current state, not how it came to be.
+
+- The title names the defect from the reader's side, not the mechanism chosen to fix it. Someone scanning the merge log should learn what was wrong. "Stop a person edit from erasing recorded GPS coordinates", not "Carry stored coordinates in PatchPerson".
+- An issue describes what is wrong and how to see it. A PR describes what the change makes true.
+- **No verification sections.** Do not list how the change was tested, which commands were run, or what they printed. CI reports that, and it is noise in the permanent record.
+- No process narrative — no review rounds, no "the first attempt did X", no account of what was tried and abandoned.
+- Plain language, short. The PR description's first line links the issue.
