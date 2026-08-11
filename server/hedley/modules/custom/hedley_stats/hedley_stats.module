@@ -2737,12 +2737,14 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
 
     // Load, in a single query, the sessions during which each person has
     // measurements, so attendance can be determined in memory below instead of
-    // with a COUNT query per (participant, period).
+    // with a COUNT query per (participant, period). A measurement means the
+    // person was there, and so does an attendance record that says they came;
+    // one saying they did not is no evidence of either.
     $all_sessions_ids = [];
     foreach ($sessions_by_period as $period_sessions_ids) {
       $all_sessions_ids = array_merge($all_sessions_ids, $period_sessions_ids);
     }
-    $persons_sessions = hedley_activity_get_persons_sessions_with_measurements(array_unique($all_sessions_ids));
+    $persons_sessions = hedley_activity_get_persons_sessions_attended(array_unique($all_sessions_ids));
 
     // Get PMTCT participants by clinic.
     $participants_ids = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, 5000);
