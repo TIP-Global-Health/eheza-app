@@ -928,9 +928,8 @@
                     if (nameContains) {
                         // For the case when there's more than one word as an input,
                         // we generate an array of lowercase words.
-                        var words = nameContains.split(' ');
-                        words.forEach(function (word, index) {
-                          words[index] = word.toLowerCase();
+                        var words = nameContains.split(/\s+/).flatMap(function (word) {
+                            return word ? [word.toLowerCase()] : [];
                         });
 
                         modifyQuery = modifyQuery.then(function () {
@@ -1272,7 +1271,7 @@
                   return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
               }
           } else {
-              return Promise.reject('Could not find clinic: ' + session.clinic);
+              return Promise.reject('Could not find clinic: ' + clinicId);
           }
       });
     }
