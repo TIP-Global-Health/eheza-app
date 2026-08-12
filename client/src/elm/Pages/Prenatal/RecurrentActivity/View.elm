@@ -58,6 +58,7 @@ import Pages.Utils
     exposing
         ( resolveActiveTask
         , resolveNextTask
+        , saveButton
         , tasksBarId
         , viewSaveAction
         , viewTasksCount
@@ -500,7 +501,9 @@ viewNextStepsContent language currentDate assembled data =
                                 NextStepsHealthEducation ->
                                     SaveHealthEducation personId measurements.healthEducation nextTask
                     in
-                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+                    div [ class "actions next-steps" ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveMsg
+                        ]
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -605,7 +608,9 @@ viewExaminationContent language currentDate assembled data =
                                         in
                                         SaveVitals personId measurements.vitals
                         in
-                        viewSaveAction language saveAction (tasksCompleted /= totalTasks)
+                        div [ class "actions examination" ]
+                            [ saveButton language (tasksCompleted == totalTasks) saveAction
+                            ]
                     )
                 |> Maybe.withDefault emptyNode
     in

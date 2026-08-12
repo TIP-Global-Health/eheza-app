@@ -1075,7 +1075,9 @@ viewExaminationContent language currentDate zscores site features assembled data
                                 GUExam ->
                                     SaveGUExam personId measurements.guExam nextTask
                     in
-                    viewSaveAction language saveAction (tasksCompleted /= totalTasks)
+                    div [ class "actions examination" ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveAction
+                        ]
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -2471,7 +2473,9 @@ viewTreatmentReviewContent language currentDate assembled data =
                                 _ ->
                                     saveMsg
                     in
-                    viewSaveAction language action (tasksCompleted /= totalTasks)
+                    div [ class "actions treatment-review" ]
+                        [ saveButton language (tasksCompleted == totalTasks) action
+                        ]
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
