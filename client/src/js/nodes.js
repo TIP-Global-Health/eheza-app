@@ -926,11 +926,9 @@
                     // No need ot wory about combinations of several params.
                     var nameContains = params.get('name_contains');
                     if (nameContains) {
-                        // For the case when there's more than one word as an input,
-                        // we generate an array of lowercase words.
-                        var words = nameContains.split(/\s+/).flatMap(function (word) {
-                            return word ? [word.toLowerCase()] : [];
-                        });
+                        // Tokenized by the function that builds name_search, so
+                        // what is searched for and what was indexed cannot differ.
+                        var words = gatherWords(nameContains);
 
                         modifyQuery = modifyQuery.then(function () {
                             // We search for resulting persons that start with any of the input words (apply 'OR' condition).
