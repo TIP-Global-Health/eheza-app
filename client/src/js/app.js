@@ -1374,8 +1374,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         return sendIndexedDbFetchResult(queryType, JSON.stringify(entities));
       })().catch((e) => {
         // The backend reads this reply as a list of entities, so the reply
-        // stays a list whatever went wrong, and the reason goes to the log.
-        console.error('IndexDbQueryGetShardsEntityByUuid: ' + String(e));
+        // stays a list whatever went wrong, and the reason is reported.
+        rollbar.log('IndexDbQueryGetShardsEntityByUuid: ' + String(e));
         return sendIndexedDbFetchResult(queryType, JSON.stringify([]));
       });
         break;
