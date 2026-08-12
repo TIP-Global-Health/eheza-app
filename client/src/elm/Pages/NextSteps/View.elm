@@ -28,7 +28,7 @@ import Measurement.View
 import Pages.NextSteps.Model exposing (Model, Msg(..))
 import Pages.NextSteps.Utils exposing (nextStepsTasksCompletedFromTotal)
 import Pages.Nutrition.Activity.View exposing (warningPopup)
-import Pages.Utils exposing (resolveNextTask, tasksBarId, viewPersonDetails, viewSaveAction, viewTasksCount)
+import Pages.Utils exposing (resolveNextTask, tasksBarId, viewPersonDetails, viewTasksCount)
 import RemoteData
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
@@ -202,7 +202,7 @@ viewNextStepsContent language currentDate zscores childId session db model =
                                     nextTask =
                                         resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    maybeSaveMsg =
+                                    saveAction =
                                         case task of
                                             NextStepsSendToHC ->
                                                 toSendToHCValueWithDefault sendToHCValue model.sendToHCForm
@@ -212,8 +212,9 @@ viewNextStepsContent language currentDate zscores childId session db model =
                                                                 sendToHCId =
                                                                     Maybe.map Tuple.first sendToHC
                                                             in
-                                                            SaveSendToHC sendToHCId value nextTask
+                                                            SaveSendToHC sendToHCId value nextTask |> onClick |> List.singleton
                                                         )
+                                                    |> Maybe.withDefault []
 
                                             NextStepsHealthEducation ->
                                                 toHealthEducationValueWithDefault healthEducationValue model.healthEducationForm
@@ -223,8 +224,9 @@ viewNextStepsContent language currentDate zscores childId session db model =
                                                                 healthEducationId =
                                                                     Maybe.map Tuple.first healthEducation
                                                             in
-                                                            SaveHealthEducation healthEducationId value nextTask
+                                                            SaveHealthEducation healthEducationId value nextTask |> onClick |> List.singleton
                                                         )
+                                                    |> Maybe.withDefault []
 
                                             NextStepContributingFactors ->
                                                 toContributingFactorsValueWithDefault contributingFactorsValue model.contributingFactorsForm
@@ -234,8 +236,9 @@ viewNextStepsContent language currentDate zscores childId session db model =
                                                                 contributingFactorsId =
                                                                     Maybe.map Tuple.first contributingFactors
                                                             in
-                                                            SaveContributingFactors contributingFactorsId value nextTask
+                                                            SaveContributingFactors contributingFactorsId value nextTask |> onClick |> List.singleton
                                                         )
+                                                    |> Maybe.withDefault []
 
                                             NextStepFollowUp ->
                                                 let
@@ -253,11 +256,15 @@ viewNextStepsContent language currentDate zscores childId session db model =
                                                                 followUpId =
                                                                     Maybe.map Tuple.first followUp
                                                             in
-                                                            SaveFollowUp followUpId value nextTask
+                                                            SaveFollowUp followUpId value nextTask |> onClick |> List.singleton
                                                         )
+                                                    |> Maybe.withDefault []
                                 in
-                                Maybe.map (\saveMsg -> viewSaveAction language saveMsg (tasksCompleted /= totalTasks)) maybeSaveMsg
-                                    |> Maybe.withDefault (viewSaveAction language NoOp True)
+                                div [ class "actions next-steps" ]
+                                    [ button
+                                        (classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ] :: saveAction)
+                                        [ text <| translate language Translate.Save ]
+                                    ]
                             )
                             activeTask
                             |> Maybe.withDefault emptyNode

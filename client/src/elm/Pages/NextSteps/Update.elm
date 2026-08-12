@@ -25,9 +25,6 @@ update childId activity msg model =
                 |> Maybe.withDefault [ SetActiveSessionPage (ActivityPage activity) ]
     in
     case msg of
-        NoOp ->
-            ( model, Cmd.none, [] )
-
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
 
