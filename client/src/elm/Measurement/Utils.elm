@@ -1558,12 +1558,22 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
                                 -- expected due date of first dose.
                                 |> Maybe.withDefault config.firstDoseExpectedFrom
 
+                        -- A dose given previously was given before today, so the
+                        -- range ends yesterday. On the day a dose first becomes due
+                        -- its due date is later than that, and the range starts from
+                        -- the last day it can offer instead.
+                        dateTo =
+                            Date.add Days -1 currentDate
+
+                        rangeStart =
+                            Date.min dateFrom dateTo
+
                         dateSelectorConfig =
                             { select = config.setVaccinationUpdateDateMsg
                             , close = config.setVaccinationUpdateDateSelectorStateMsg Nothing
-                            , dateFrom = dateFrom
-                            , dateTo = Date.add Days -1 currentDate
-                            , dateDefault = Just dateFrom
+                            , dateFrom = rangeStart
+                            , dateTo = dateTo
+                            , dateDefault = Just rangeStart
                             }
                     in
                     ( [ viewLabel language Translate.SelectDate
