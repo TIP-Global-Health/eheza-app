@@ -61,6 +61,7 @@ import Pages.Utils
         , viewCustomLabel
         , viewLabel
         , viewQuestionLabel
+        , viewSaveAction
         , viewTasksCount
         , viewTextInput
         )
@@ -521,13 +522,7 @@ viewAcuteIllnessSymptomsContent language ( personId, measurements ) data =
                                 SymptomsGI ->
                                     SaveSymptomsGI personId measurements.symptomsGI nextTask
                     in
-                    div [ class "actions symptoms" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
-                        ]
+                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -826,13 +821,7 @@ viewAcuteIllnessPhysicalExam language currentDate site isChw assembled data =
                             disabled =
                                 tasksCompleted /= totalTasks
                         in
-                        div [ class "actions symptoms" ]
-                            [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-                                , onClick saveMsg
-                                ]
-                                [ text <| translate language Translate.Save ]
-                            ]
+                        viewSaveAction language saveMsg disabled
                     )
                 |> Maybe.withDefault emptyNode
     in
@@ -998,13 +987,7 @@ viewAcuteIllnessLaboratory language currentDate isChw assembled data =
                                     in
                                     SaveCovidTesting assembled.participant.person assembled.measurements.covidTesting nextTask_
                     in
-                    div [ class "actions malaria-testing" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
-                        ]
+                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -1117,13 +1100,7 @@ viewAcuteIllnessPriorTreatment language ( personId, measurements ) data =
                                 TreatmentReview ->
                                     SaveTreatmentReview personId measurements.treatmentReview
                     in
-                    div [ class "actions malaria-testing" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
-                        ]
+                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -1398,13 +1375,7 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo isChw assembled db d
                                     _ ->
                                         tasksCompleted /= totalTasks
                         in
-                        div [ class "actions next-steps" ]
-                            [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-                                , onClick saveMsg
-                                ]
-                                [ text <| translate language saveLabel ]
-                            ]
+                        viewCustomAction language saveMsg disabled saveLabel
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -1516,13 +1487,7 @@ viewAcuteIllnessOngoingTreatment language ( personId, measurements ) data =
                                 OngoingTreatmentReview ->
                                     SaveOngoingTreatmentReview personId measurements.treatmentOngoing
                     in
-                    div [ class "actions treatment-ongoing" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
-                        ]
+                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -1629,13 +1594,7 @@ viewAcuteIllnessDangerSigns language ( personId, measurements ) data =
                                 ReviewDangerSigns ->
                                     SaveReviewDangerSigns personId measurements.dangerSigns
                     in
-                    div [ class "actions treatment-ongoing" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
-                        ]
+                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode

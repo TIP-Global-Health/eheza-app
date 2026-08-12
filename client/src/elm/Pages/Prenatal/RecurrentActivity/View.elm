@@ -500,13 +500,7 @@ viewNextStepsContent language currentDate assembled data =
                                 NextStepsHealthEducation ->
                                     SaveHealthEducation personId measurements.healthEducation nextTask
                     in
-                    div [ class "actions next-steps" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
-                        ]
+                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -611,13 +605,7 @@ viewExaminationContent language currentDate assembled data =
                                         in
                                         SaveVitals personId measurements.vitals
                         in
-                        div [ class "actions examination" ]
-                            [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                , onClick saveAction
-                                ]
-                                [ text <| translate language Translate.Save ]
-                            ]
+                        viewSaveAction language saveAction (tasksCompleted /= totalTasks)
                     )
                 |> Maybe.withDefault emptyNode
     in

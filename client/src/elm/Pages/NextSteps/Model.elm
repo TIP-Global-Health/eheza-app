@@ -35,7 +35,8 @@ type alias Model =
 
 
 type Msg
-    = SetWarningPopupState (List NutritionAssessment)
+    = NoOp
+    | SetWarningPopupState (List NutritionAssessment)
     | SetActiveSessionPage SessionPage
     | SetActiveNextStepsTask NextStepsTask
     | SetReferToHealthCenter Bool
