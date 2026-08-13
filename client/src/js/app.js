@@ -1190,6 +1190,13 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .limit(1)
             .toArray();
 
+        if (!result.length) {
+          // The uuid is not among the shards this device holds, so there is
+          // nothing to describe. The reply still goes back, because the
+          // report that asked is waiting for one.
+          return sendIndexedDbFetchResult(queryType, JSON.stringify([]));
+        }
+
         let entities = [result[0]];
 
         // In case we got entity of type "session", it's only reference is
@@ -1364,10 +1371,13 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           }
         }
 
-        if (entities) {
-          return sendIndexedDbFetchResult(queryType, JSON.stringify(entities));
-        }
-      })();
+        return sendIndexedDbFetchResult(queryType, JSON.stringify(entities));
+      })().catch((e) => {
+        // The backend reads this reply as a list of entities, so the reply
+        // stays a list whatever went wrong, and the reason is reported.
+        rollbar.log('IndexDbQueryGetShardsEntityByUuid: ' + String(e));
+        return sendIndexedDbFetchResult(queryType, JSON.stringify([]));
+      });
         break;
 
     default:
