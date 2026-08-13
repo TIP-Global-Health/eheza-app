@@ -1558,11 +1558,19 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
                                 -- expected due date of first dose.
                                 |> Maybe.withDefault config.firstDoseExpectedFrom
 
+                        -- The range runs from the day the dose became due to
+                        -- yesterday. A dose that becomes due today was not due on any
+                        -- earlier day, so the range is that one day: earlier is before
+                        -- the dose could be given, and for a first dose of BCG or OPV
+                        -- it would be before the child was born.
+                        dateTo =
+                            Date.max (Date.add Days -1 currentDate) dateFrom
+
                         dateSelectorConfig =
                             { select = config.setVaccinationUpdateDateMsg
                             , close = config.setVaccinationUpdateDateSelectorStateMsg Nothing
                             , dateFrom = dateFrom
-                            , dateTo = Date.add Days -1 currentDate
+                            , dateTo = dateTo
                             , dateDefault = Just dateFrom
                             }
                     in
