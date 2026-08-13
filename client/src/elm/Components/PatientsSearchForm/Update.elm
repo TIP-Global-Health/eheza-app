@@ -59,10 +59,14 @@ update msg model =
                 ModeSearchByNationalId ->
                     if String.isEmpty input then
                         -- An emptied field searches for nothing, so the results
-                        -- of what it held go with it.
+                        -- of what it held go with it. The empty input goes to
+                        -- the debouncer too: it holds the last input it was
+                        -- given, and a number given a moment earlier would
+                        -- otherwise arrive half a second later and search again.
                         ( { model | input = "", search = Nothing }
                         , Cmd.none
                         )
+                            |> sequence update [ MsgDebouncer <| provideInput <| SetSearch "" ]
 
                     else if isJust (String.toInt input) then
                         ( { model | input = input }
