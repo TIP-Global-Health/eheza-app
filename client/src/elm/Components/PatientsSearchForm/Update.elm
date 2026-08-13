@@ -61,19 +61,27 @@ update msg model =
         SetInput input ->
             case model.mode of
                 ModeSearchByName ->
-                    ( { model | input = input }
+                    ( { model
+                        | input = input
+                        , search =
+                            if String.isEmpty (String.trim input) then
+                                Nothing
+
+                            else
+                                model.search
+                      }
                     , Cmd.none
                     )
                         |> sequence update [ MsgDebouncer <| provideInput <| SetSearch input ]
 
                 ModeSearchByNationalId ->
-                    if String.isEmpty input then
+                    if String.isEmpty (String.trim input) then
                         -- An emptied field searches for nothing, so the results
                         -- of what it held go with it. The empty input goes to
                         -- the debouncer too: it holds the last input it was
                         -- given, and a number given a moment earlier would
                         -- otherwise arrive half a second later and search again.
-                        ( { model | input = "", search = Nothing }
+                        ( { model | input = input, search = Nothing }
                         , Cmd.none
                         )
                             |> sequence update [ MsgDebouncer <| provideInput <| SetSearch "" ]
