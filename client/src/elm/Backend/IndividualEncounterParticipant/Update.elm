@@ -6,25 +6,28 @@ import Backend.Endpoints exposing (individualEncounterParticipantEndpoint)
 import Backend.Entities exposing (IndividualEncounterParticipantId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterParticipantOutcome(..), Model, Msg(..))
 import Backend.Utils exposing (sw)
+import Error.Model exposing (ErrorType(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
-import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (toCmd, withoutDecoder)
+import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing (fromEntityUuid, toCmd, withoutDecoder)
+import Utils.WebData exposing (viewErrorForRollbar)
 
 
 update :
     NominalDate
     -> IndividualEncounterParticipantId
-    -> Maybe IndividualEncounterParticipant
+    -> Maybe (WebData IndividualEncounterParticipant)
     -> Msg
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate participantId maybeParticipant msg model =
+update currentDate participantId participantState msg model =
     case msg of
         ClosePrenatalSession concludedDate outcome deliveryLocation ->
             updateIndividualEncounterParticipant
                 participantId
-                maybeParticipant
+                participantState
+                "close-prenatal-session"
                 (\participant ->
                     { participant
                         | endDate = Just currentDate
@@ -38,14 +41,16 @@ update currentDate participantId maybeParticipant msg model =
         CloseAcuteIllnessSession outcome ->
             updateIndividualEncounterParticipant
                 participantId
-                maybeParticipant
+                participantState
+                "close-acute-illness-session"
                 (\participant -> { participant | endDate = Just currentDate, outcome = Just (AcuteIllness outcome) })
                 model
 
         CloseTuberculosisSession outcome ->
             updateIndividualEncounterParticipant
                 participantId
-                maybeParticipant
+                participantState
+                "close-tuberculosis-session"
                 (\participant ->
                     { participant
                         | endDate = Just currentDate
@@ -58,7 +63,8 @@ update currentDate participantId maybeParticipant msg model =
         CloseHIVSession outcome ->
             updateIndividualEncounterParticipant
                 participantId
-                maybeParticipant
+                participantState
+                "close-hiv-session"
                 (\participant ->
                     { participant
                         | endDate = Just currentDate
@@ -71,14 +77,16 @@ update currentDate participantId maybeParticipant msg model =
         SetEddDate eddDate ->
             updateIndividualEncounterParticipant
                 participantId
-                maybeParticipant
+                participantState
+                "set-edd-date"
                 (\participant -> { participant | eddDate = Just eddDate })
                 model
 
         SetNewborn personId ->
             updateIndividualEncounterParticipant
                 participantId
-                maybeParticipant
+                participantState
+                "set-newborn"
                 (\participant -> { participant | newborn = Just personId })
                 model
 
@@ -91,13 +99,34 @@ update currentDate participantId maybeParticipant msg model =
 
 updateIndividualEncounterParticipant :
     IndividualEncounterParticipantId
-    -> Maybe IndividualEncounterParticipant
+    -> Maybe (WebData IndividualEncounterParticipant)
+    -> String
     -> (IndividualEncounterParticipant -> IndividualEncounterParticipant)
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-updateIndividualEncounterParticipant individualEncounterParticipantId maybeIndividualEncounterParticipant updateFunc model =
-    maybeIndividualEncounterParticipant
-        |> unwrap ( model, Cmd.none, [] )
+updateIndividualEncounterParticipant individualEncounterParticipantId participantState action updateFunc model =
+    participantState
+        |> Maybe.andThen RemoteData.toMaybe
+        |> unwrap
+            -- The participant is not loaded, so there is nothing to apply the
+            -- update to, and it is discarded. Discarding used to be silent,
+            -- which made field occurrences (pregnancies left without EDD)
+            -- undiagnosable - so report it, with the cache state that explains
+            -- why the participant was not available.
+            ( model
+            , Cmd.none
+            , [ ("Dropped '"
+                    ++ action
+                    ++ "' for individual participant "
+                    ++ fromEntityUuid individualEncounterParticipantId
+                    ++ ": participant not loaded (cache state: "
+                    ++ describeParticipantState participantState
+                    ++ ")"
+                )
+                    |> Plain
+                    |> App.Model.TriggerRollbar App.Model.IndexedDB
+              ]
+            )
             (\individualEncounterParticipant ->
                 ( { model | updateIndividualEncounterParticipant = Loading }
                 , updateFunc individualEncounterParticipant
@@ -107,3 +136,22 @@ updateIndividualEncounterParticipant individualEncounterParticipantId maybeIndiv
                 , []
                 )
             )
+
+
+describeParticipantState : Maybe (WebData IndividualEncounterParticipant) -> String
+describeParticipantState participantState =
+    case participantState of
+        Nothing ->
+            "missing"
+
+        Just NotAsked ->
+            "not-asked"
+
+        Just Loading ->
+            "loading"
+
+        Just (Failure error) ->
+            "failure - " ++ viewErrorForRollbar error
+
+        Just (Success _) ->
+            "success"

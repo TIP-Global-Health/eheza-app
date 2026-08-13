@@ -4119,16 +4119,17 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
         MsgIndividualEncounterParticipant participantId subMsg ->
             let
-                participant =
+                -- The full cache state is passed down, so that a dropped
+                -- update can report what stood in the way of applying it.
+                participantState =
                     Dict.get participantId model.individualParticipants
-                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get participantId model.individualEncounterParticipantRequests
                         |> Maybe.withDefault Backend.IndividualEncounterParticipant.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.IndividualEncounterParticipant.Update.update currentDate participantId participant subMsg requests
+                    Backend.IndividualEncounterParticipant.Update.update currentDate participantId participantState subMsg requests
             in
             ( { model | individualEncounterParticipantRequests = Dict.insert participantId subModel model.individualEncounterParticipantRequests }
             , Cmd.map (MsgIndividualEncounterParticipant participantId) subCmd
