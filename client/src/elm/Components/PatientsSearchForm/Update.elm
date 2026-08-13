@@ -57,11 +57,14 @@ update msg model =
                         |> sequence update [ MsgDebouncer <| provideInput <| SetSearch input ]
 
                 ModeSearchByNationalId ->
-                    let
-                        asNumber =
-                            String.toInt input
-                    in
-                    if isJust asNumber then
+                    if String.isEmpty input then
+                        -- An emptied field searches for nothing, so the results
+                        -- of what it held go with it.
+                        ( { model | input = "", search = Nothing }
+                        , Cmd.none
+                        )
+
+                    else if isJust (String.toInt input) then
                         ( { model | input = input }
                         , Cmd.none
                         )
