@@ -58,6 +58,7 @@ import Pages.Utils
     exposing
         ( resolveActiveTask
         , resolveNextTask
+        , saveButton
         , tasksBarId
         , viewSaveAction
         , viewTasksCount
@@ -501,11 +502,7 @@ viewNextStepsContent language currentDate assembled data =
                                     SaveHealthEducation personId measurements.healthEducation nextTask
                     in
                     div [ class "actions next-steps" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveMsg
                         ]
                 )
                 activeTask
@@ -612,11 +609,7 @@ viewExaminationContent language currentDate assembled data =
                                         SaveVitals personId measurements.vitals
                         in
                         div [ class "actions examination" ]
-                            [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                , onClick saveAction
-                                ]
-                                [ text <| translate language Translate.Save ]
+                            [ saveButton language (tasksCompleted == totalTasks) saveAction
                             ]
                     )
                 |> Maybe.withDefault emptyNode

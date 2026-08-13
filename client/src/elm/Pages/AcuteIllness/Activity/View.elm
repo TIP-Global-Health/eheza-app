@@ -52,8 +52,10 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.View
 import Pages.Utils
     exposing
-        ( resolveActiveTask
+        ( customButton
+        , resolveActiveTask
         , resolveNextTask
+        , saveButton
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxValueInput
@@ -522,11 +524,7 @@ viewAcuteIllnessSymptomsContent language ( personId, measurements ) data =
                                     SaveSymptomsGI personId measurements.symptomsGI nextTask
                     in
                     div [ class "actions symptoms" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveMsg
                         ]
                 )
                 activeTask
@@ -827,11 +825,7 @@ viewAcuteIllnessPhysicalExam language currentDate site isChw assembled data =
                                 tasksCompleted /= totalTasks
                         in
                         div [ class "actions symptoms" ]
-                            [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-                                , onClick saveMsg
-                                ]
-                                [ text <| translate language Translate.Save ]
+                            [ saveButton language (not disabled) saveMsg
                             ]
                     )
                 |> Maybe.withDefault emptyNode
@@ -999,11 +993,7 @@ viewAcuteIllnessLaboratory language currentDate isChw assembled data =
                                     SaveCovidTesting assembled.participant.person assembled.measurements.covidTesting nextTask_
                     in
                     div [ class "actions malaria-testing" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveMsg
                         ]
                 )
                 activeTask
@@ -1118,11 +1108,7 @@ viewAcuteIllnessPriorTreatment language ( personId, measurements ) data =
                                     SaveTreatmentReview personId measurements.treatmentReview
                     in
                     div [ class "actions malaria-testing" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveMsg
                         ]
                 )
                 activeTask
@@ -1399,11 +1385,7 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo isChw assembled db d
                                         tasksCompleted /= totalTasks
                         in
                         div [ class "actions next-steps" ]
-                            [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-                                , onClick saveMsg
-                                ]
-                                [ text <| translate language saveLabel ]
+                            [ customButton language (not disabled) saveMsg saveLabel
                             ]
                 )
                 activeTask
@@ -1517,11 +1499,7 @@ viewAcuteIllnessOngoingTreatment language ( personId, measurements ) data =
                                     SaveOngoingTreatmentReview personId measurements.treatmentOngoing
                     in
                     div [ class "actions treatment-ongoing" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveMsg
                         ]
                 )
                 activeTask
@@ -1630,11 +1608,7 @@ viewAcuteIllnessDangerSigns language ( personId, measurements ) data =
                                     SaveReviewDangerSigns personId measurements.dangerSigns
                     in
                     div [ class "actions treatment-ongoing" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveMsg
                         ]
                 )
                 activeTask

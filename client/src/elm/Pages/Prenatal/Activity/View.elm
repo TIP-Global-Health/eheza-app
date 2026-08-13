@@ -1076,11 +1076,7 @@ viewExaminationContent language currentDate zscores site features assembled data
                                     SaveGUExam personId measurements.guExam nextTask
                     in
                     div [ class "actions examination" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveAction
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveAction
                         ]
                 )
                 activeTask
@@ -2478,11 +2474,7 @@ viewTreatmentReviewContent language currentDate assembled data =
                                     saveMsg
                     in
                     div [ class "actions treatment-review" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick action
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) action
                         ]
                 )
                 activeTask
@@ -3835,24 +3827,24 @@ viewFollowUpForm language form =
 viewNewbornEnrolmentForm : Language -> AssembledData -> Html Msg
 viewNewbornEnrolmentForm language assembled =
     let
-        attributes =
+        enrolButton =
             Maybe.map
                 (\birthDate ->
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", isJust assembled.participant.newborn ) ]
-                    , onClick <|
-                        SetActivePage <|
+                    customButton language
+                        (isNothing assembled.participant.newborn)
+                        (SetActivePage <|
                             UserPage <|
                                 CreatePersonPage (Just assembled.participant.person) <|
                                     Backend.Person.Model.PrenatalNextStepsNewbornEnrolmentOrigin birthDate assembled.id
-                    ]
+                        )
+                        Translate.EnrolNewborn
                 )
                 assembled.participant.dateConcluded
-                |> Maybe.withDefault []
+                |> Maybe.withDefault (customButton language False NoOp Translate.EnrolNewborn)
     in
     div [ class "form newborn-enrolment" ]
         [ text <| translate language <| Translate.EnrolNewbornHelper <| isJust assembled.participant.newborn
-        , button attributes
-            [ text <| translate language Translate.EnrolNewborn ]
+        , enrolButton
         ]
 
 
