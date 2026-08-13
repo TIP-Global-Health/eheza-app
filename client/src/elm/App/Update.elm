@@ -1054,7 +1054,7 @@ update msg model =
                 (\configured ->
                     let
                         ( subModel, subCmd, outMsg ) =
-                            Pages.PinCode.Update.update subMsg configured.pinCodePage
+                            Pages.PinCode.Update.update model.currentTime subMsg configured.pinCodePage
 
                         ( extraMsgs, extraCmds ) =
                             Maybe.map
