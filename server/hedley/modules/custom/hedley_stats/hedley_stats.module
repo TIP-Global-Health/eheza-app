@@ -3894,7 +3894,7 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
 
     case HEDLEY_STATS_CACHE_GET_TIMESTAMP:
       $cached = cache_get($cache_id);
-      return !empty($cached) ? $cached->data['timestamp'] : NULL;
+      return isset($cached->data['timestamp']) ? $cached->data['timestamp'] : NULL;
 
     case HEDLEY_STATS_CACHE_SET:
       $cached = [
