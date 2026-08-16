@@ -699,7 +699,14 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
     if (!empty($encounters_ids)) {
       $encounters = node_load_multiple($encounters_ids);
       foreach ($encounters as $encounter) {
-        $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
+        // Encounters recorded before the type field was populated have no
+        // type. They count as ANC visits, which is how the client reads them
+        // too.
+        $encounter_type = NULL;
+        if (!empty($encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'])) {
+          $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
+        }
+
         if (in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum'])) {
           continue;
         }
