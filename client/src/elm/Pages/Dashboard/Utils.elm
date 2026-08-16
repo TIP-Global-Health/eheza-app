@@ -1,4 +1,4 @@
-module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isNurseEncounter, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isNurseEncounter, resolveStatsMonth, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -188,6 +188,7 @@ generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter =
     , missedSessions = stats.missedSessions
     , totalEncounters = stats.totalEncounters
     , timestamp = stats.timestamp
+    , statsGeneratedMonth = stats.statsGeneratedMonth
     }
 
 
@@ -1191,6 +1192,9 @@ getAcuteIllnessFollowUpsBreakdownByDiagnosis currentDate limitDate db villageId 
 generateNutritionPageData : NominalDate -> DashboardStats -> FilterProgramType -> Maybe VillageId -> NutritionPageData
 generateNutritionPageData currentDate stats programTypeFilter selectedVillageFilter =
     let
+        statsMonth =
+            resolveStatsMonth currentDate stats.statsGeneratedMonth
+
         currentPeriodStats =
             filterStatsWithinPeriod currentDate OneYear stats
 
@@ -1217,7 +1221,7 @@ generateNutritionPageData currentDate stats programTypeFilter selectedVillageFil
 
         newCasesGraphData =
             stats.caseManagement.thisYear
-                |> List.map (.nutrition >> generateCaseNutritionNewCases currentDate)
+                |> List.map (.nutrition >> generateCaseNutritionNewCases statsMonth)
                 |> List.foldl accumCaseNutritionTotals emptyTotalBeneficiariesDict
                 |> applyTotalBeneficiariesDenomination totalBeneficiariesMonthlyDuringPastYear
     in
@@ -1226,7 +1230,19 @@ generateNutritionPageData currentDate stats programTypeFilter selectedVillageFil
     , totalEncounters = generateTotalEncounters currentPeriodStats.totalEncounters programTypeFilter selectedVillageFilter
     , totalsGraphData = totalsGraphData
     , newCasesGraphData = newCasesGraphData
+    , statsMonth = statsMonth
     }
+
+
+{-| The month monthly figures are numbered from, which is the month the
+statistics were computed in rather than today. Statistics that do not carry it
+are read against the current month, as they were before it was sent.
+-}
+resolveStatsMonth : NominalDate -> Maybe Int -> Int
+resolveStatsMonth currentDate statsGeneratedMonth =
+    Maybe.withDefault
+        (Date.month currentDate |> Date.monthToNumber)
+        statsGeneratedMonth
 
 
 generateTotalBeneficiariesMonthlyDuringPastYear :
@@ -1236,8 +1252,7 @@ generateTotalBeneficiariesMonthlyDuringPastYear :
 generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats =
     let
         currentMonth =
-            Date.month currentDate
-                |> Date.monthToNumber
+            resolveStatsMonth currentDate stats.statsGeneratedMonth
 
         ( thisYear, lastYear ) =
             List.repeat 12 0
@@ -1310,13 +1325,9 @@ generateCaseNutritionTotals caseNutrition =
     }
 
 
-generateCaseNutritionNewCases : NominalDate -> CaseNutrition -> CaseNutritionTotal
-generateCaseNutritionNewCases currentDate caseNutrition =
+generateCaseNutritionNewCases : Int -> CaseNutrition -> CaseNutritionTotal
+generateCaseNutritionNewCases currentMonth caseNutrition =
     let
-        currentMonth =
-            Date.month currentDate
-                |> Date.monthToNumber
-
         generateTotals nutrition =
             let
                 sorted =

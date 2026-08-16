@@ -60,6 +60,9 @@ type alias NutritionPageData =
     , totalEncounters : Periods
     , newCasesGraphData : Dict Int TotalBeneficiaries
     , totalsGraphData : Dict Int TotalBeneficiaries
+
+    -- The month the figures above are numbered from.
+    , statsMonth : Int
     }
 
 
@@ -85,6 +88,10 @@ type alias DashboardStatsRaw =
     -- UTC Date and time on which statistics were generated.
     , timestamp : String
 
+    -- The month the statistics were generated in. Monthly figures are numbered
+    -- from it, so it is the month they are read against.
+    , statsGeneratedMonth : Maybe Int
+
     -- An md5 hash, using which we know if we have the most up to date data.
     , cacheHash : String
     }
@@ -100,6 +107,10 @@ type alias DashboardStats =
 
     -- UTC Date and time on which statistics were generated.
     , timestamp : String
+
+    -- The month the statistics were generated in. Monthly figures are numbered
+    -- from it, so it is the month they are read against.
+    , statsGeneratedMonth : Maybe Int
     }
 
 
