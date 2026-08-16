@@ -314,7 +314,7 @@ viewNutritionPage :
 viewNutritionPage language currentDate activePage stats patientsDetails data model =
     case activePage of
         PageCharts ->
-            viewNutritionChartsPage language data model
+            viewNutritionChartsPage language currentDate data model
 
         PageStats ->
             viewStatsPage language currentDate stats model
@@ -330,11 +330,9 @@ viewStatsPage language currentDate stats model =
 
     else
         let
-            statsDate =
-                resolveStatsDate currentDate stats.statsGeneratedDate
-
             currentMonth =
-                Date.month statsDate |> Date.monthToNumber
+                Date.month currentDate
+                    |> Date.monthToNumber
 
             ( modelWithLastMonth, displayedMonth ) =
                 if model.period == ThisMonth then
@@ -344,10 +342,10 @@ viewStatsPage language currentDate stats model =
                     ( { model | period = ThreeMonthsAgo }, resolvePreviousMonth currentMonth )
 
             currentPeriodStats =
-                filterStatsWithinPeriod statsDate model.period stats
+                filterStatsWithinPeriod currentDate model.period stats
 
             monthBeforeStats =
-                filterStatsWithinPeriod statsDate modelWithLastMonth.period stats
+                filterStatsWithinPeriod currentDate modelWithLastMonth.period stats
 
             malnourishedCurrentMonth =
                 mapMalnorishedByMonth displayedMonth currentPeriodStats.caseManagement.thisYear
@@ -1106,8 +1104,15 @@ viewGastroPage language isChw dateLastDayOfSelectedMonth acuteIllnessData encoun
         ]
 
 
-viewNutritionChartsPage : Language -> NutritionPageData -> Model -> List (Html Msg)
-viewNutritionChartsPage language data model =
+chartsMonth : NominalDate -> NutritionPageData -> Int
+chartsMonth currentDate data =
+    resolveStatsDate currentDate data.statsGeneratedDate
+        |> Date.month
+        |> Date.monthToNumber
+
+
+viewNutritionChartsPage : Language -> NominalDate -> NutritionPageData -> Model -> List (Html Msg)
+viewNutritionChartsPage language currentDate data model =
     let
         links =
             case model.programTypeFilter of
@@ -1127,10 +1132,10 @@ viewNutritionChartsPage language data model =
             [ viewTotalEncounters language data.totalEncounters
             ]
         , div [ class "sixteen wide column" ]
-            [ viewMonthlyChart language data.statsMonth MonthlyChartTotals FilterBeneficiariesChart data.totalsGraphData model.currentBeneficiariesChartsFilter
+            [ viewMonthlyChart language (chartsMonth currentDate data) MonthlyChartTotals FilterBeneficiariesChart data.totalsGraphData model.currentBeneficiariesChartsFilter
             ]
         , div [ class "sixteen wide column" ]
-            [ viewMonthlyChart language data.statsMonth MonthlyChartIncidence FilterBeneficiariesIncidenceChart data.newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
+            [ viewMonthlyChart language (chartsMonth currentDate data) MonthlyChartIncidence FilterBeneficiariesIncidenceChart data.newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
             ]
         , links
         ]

@@ -61,8 +61,9 @@ type alias NutritionPageData =
     , newCasesGraphData : Dict Int TotalBeneficiaries
     , totalsGraphData : Dict Int TotalBeneficiaries
 
-    -- The month the figures above are numbered from.
-    , statsMonth : Int
+    -- The date the figures above are numbered from, when the statistics
+    -- carried one.
+    , statsGeneratedDate : Maybe NominalDate
     }
 
 

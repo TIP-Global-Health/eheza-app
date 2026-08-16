@@ -1232,7 +1232,7 @@ generateNutritionPageData currentDate stats programTypeFilter selectedVillageFil
     , totalEncounters = generateTotalEncounters currentPeriodStats.totalEncounters programTypeFilter selectedVillageFilter
     , totalsGraphData = totalsGraphData
     , newCasesGraphData = newCasesGraphData
-    , statsMonth = statsMonth
+    , statsGeneratedDate = stats.statsGeneratedDate
     }
 
 
