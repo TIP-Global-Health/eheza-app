@@ -128,6 +128,10 @@ When committing Elm files, do not include `Debug.log` calls. Remove any `Debug.l
 
 Avoid code duplication. Extract shared logic into common functions rather than copying similar code blocks.
 
+The same applies to a repeated expression: compute it once in a `let` (or a variable) and use the result, rather than evaluating it again at each use.
+
+A helper that exists only to be called twice in one function belongs in that function's `let`.
+
 ### Code Comments
 
 - Comments describe current behavior only — no change history, no issue numbers, no references to how the code used to work.
