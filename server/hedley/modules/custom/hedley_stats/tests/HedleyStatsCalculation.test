@@ -258,10 +258,24 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertFalse(empty($stats['prenatal_data']));
     $this->assertFalse(empty($stats['acute_illness_data']));
 
-    // A temperature of 38.5 was recorded at the acute illness encounter,
-    // alongside a reading below the fever threshold.
+    // One encounter recorded a temperature of 38.5 alongside a reading below
+    // the fever threshold, the other five days of fever alongside a report of
+    // none. Both are a fever.
     $acute_illness_encounters = $stats['acute_illness_data'][0]['encounters'];
-    $this->assertTrue($acute_illness_encounters[0]['fever']);
+    $this->assertEqual(count($acute_illness_encounters), 2);
+    foreach ($acute_illness_encounters as $acute_illness_encounter) {
+      $this->assertTrue($acute_illness_encounter['fever']);
+    }
+
+    // Two MUAC readings were recorded at the prenatal encounter, and two HIV
+    // tests at the NCD encounter. Each is reported as one value, since a list
+    // of them fails the dashboard's decoder.
+    $prenatal_encounter = $stats['prenatal_data'][0]['encounters'][0];
+    $this->assertTrue(in_array($prenatal_encounter['muac'], ['23.5', '24.5']));
+
+    $ncd_encounter = reset($stats['ncd_data'][0]['encounters']);
+    $this->assertTrue(in_array($ncd_encounter['hiv_test_result'], ['positive', 'negative']));
+    $this->assertTrue(in_array($ncd_encounter['hiv_test_execution_note'], ['test-performed', 'test-performed-today']));
     $this->assertFalse(empty($stats['child_scoreboard_data']));
     $this->assertFalse(empty($stats['spv_data']));
 
@@ -685,6 +699,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createCoreExam('ncd_core_exam', $encounter->nid, $mother_id, $date);
     $this->createNcdVitals($encounter->nid, $mother_id, $date);
     $this->createNcdFamilyPlanning($encounter->nid, $mother_id, $date);
+    // Two tests, differing, so that the statistics are asked for one result
+    // rather than the list of them.
+    $this->createNcdHivTest($encounter->nid, $mother_id, 'positive', 'test-performed', $date);
+    $this->createNcdHivTest($encounter->nid, $mother_id, 'negative', 'test-performed-today', $date);
   }
 
   /**
@@ -723,6 +741,32 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createAcuteIllnessVitals($encounter->nid, $child_id, $date, 38.5);
     $this->createAcuteIllnessCoreExam($encounter->nid, $child_id, $date);
     $this->createAcuteFindings($encounter->nid, $child_id, $date);
+
+    // A second encounter where no temperature reaches the fever threshold, so
+    // that the fever periods are what decides. The first of them reports no
+    // fever and the second reports five days of it.
+    $second_encounter = (object) [
+      'type' => 'acute_illness_encounter',
+      'title' => 'Acute illness encounter with a reported fever',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $date),
+            'value2' => date('Y-m-d', $date),
+          ],
+        ],
+      ],
+    ];
+    node_save($second_encounter);
+
+    $this->createAcuteIllnessSymptoms('symptoms_general', $second_encounter->nid, $child_id, $date, 0);
+    $this->createAcuteIllnessSymptoms('symptoms_general', $second_encounter->nid, $child_id, $date, 5);
+    $this->createAcuteIllnessVitals($second_encounter->nid, $child_id, $date);
   }
 
   /**
@@ -752,6 +796,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     ];
     node_save($encounter);
 
+    // Two readings, differing, so that the statistics are asked for one value
+    // rather than the list of them.
+    $this->createPrenatalNutrition($encounter->nid, $mother_id, 23.5, $date);
+    $this->createPrenatalNutrition($encounter->nid, $mother_id, 24.5, $date);
     $this->createPrenatalBreastfeeding($encounter->nid, $mother_id, $date);
     $this->createBreastExam($encounter->nid, $mother_id, $date);
     $this->createCoreExam('core_physical_exam', $encounter->nid, $mother_id, $date);
