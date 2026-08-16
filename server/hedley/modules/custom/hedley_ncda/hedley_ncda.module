@@ -704,7 +704,12 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
           continue;
         }
 
-        $data['ncda']['pane1']['row1'][] = hedley_ncda_get_date_filed_value($encounter, 'field_scheduled_date');
+        $scheduled_date = hedley_ncda_get_date_filed_value($encounter, 'field_scheduled_date');
+        if (!$scheduled_date) {
+          continue;
+        }
+
+        $data['ncda']['pane1']['row1'][] = $scheduled_date;
       }
     }
   }
