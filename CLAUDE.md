@@ -138,7 +138,7 @@ Avoid code duplication. Extract shared logic into common functions rather than c
 
 The same principle applies to issue and PR text: describe the current state, not how it came to be.
 
-- The title names the defect from the reader's side, not the mechanism chosen to fix it. Someone scanning the merge log should learn what was wrong. "Stop a person edit from erasing recorded GPS coordinates", not "Carry stored coordinates in PatchPerson".
+- The title starts with the feature area, then names the defect from the reader's side, not the mechanism chosen to fix it: `<Feature area>: <what was wrong>`. Someone scanning the merge log should learn both where the problem was and what it was. "Dashboard stats: stop stale month figures being read as this month's", not "Anchor the month split on stats.timestamp", and not "Stop stale month figures being read as this month's".
 - An issue describes what is wrong and how to see it. A PR describes what the change makes true.
 - **No verification sections.** Do not list how the change was tested, which commands were run, or what they printed. CI reports that, and it is noise in the permanent record.
 - No process narrative — no review rounds, no "the first attempt did X", no account of what was tried and abandoned.
