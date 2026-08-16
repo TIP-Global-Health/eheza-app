@@ -538,7 +538,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create an acute illness vitals entity.
    */
-  public function createAcuteIllnessVitals($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+  public function createAcuteIllnessVitals($encounter_id, $person_id, $timestamp = REQUEST_TIME, $temperature = 37.2) {
     $node = $this->drupalCreateNode(['type' => 'acute_illness_vitals']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
@@ -549,7 +549,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_dia->set(70);
     $wrapper->field_heart_rate->set(80);
     $wrapper->field_respiratory_rate->set(20);
-    $wrapper->field_body_temperature->set(37.2);
+    $wrapper->field_body_temperature->set($temperature);
     $wrapper->save();
 
     return $node->nid;

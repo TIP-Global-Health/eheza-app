@@ -257,6 +257,11 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertFalse(empty($stats['ncd_data']));
     $this->assertFalse(empty($stats['prenatal_data']));
     $this->assertFalse(empty($stats['acute_illness_data']));
+
+    // A temperature of 38.5 was recorded at the acute illness encounter,
+    // alongside a reading below the fever threshold.
+    $acute_illness_encounters = $stats['acute_illness_data'][0]['encounters'];
+    $this->assertTrue($acute_illness_encounters[0]['fever']);
     $this->assertFalse(empty($stats['child_scoreboard_data']));
     $this->assertFalse(empty($stats['spv_data']));
 
@@ -712,7 +717,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createAcuteIllnessSymptoms('symptoms_gi', $encounter->nid, $child_id, $date);
     $this->createAcuteIllnessSymptoms('symptoms_general', $encounter->nid, $child_id, $date);
     $this->createAcuteIllnessSymptoms('symptoms_respiratory', $encounter->nid, $child_id, $date);
+    // Two measurements, the second one feverish, so that the statistics are
+    // asked which of them decides.
     $this->createAcuteIllnessVitals($encounter->nid, $child_id, $date);
+    $this->createAcuteIllnessVitals($encounter->nid, $child_id, $date, 38.5);
     $this->createAcuteIllnessCoreExam($encounter->nid, $child_id, $date);
     $this->createAcuteFindings($encounter->nid, $child_id, $date);
   }
