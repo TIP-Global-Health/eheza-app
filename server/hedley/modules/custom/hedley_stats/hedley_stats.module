@@ -832,19 +832,17 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
     'patients_details' => $patients_details,
   ];
 
-  // The sections above are read from cache, so the moment they were computed
-  // is the moment the cache entry was written, not now. The monthly figures
-  // are numbered by the month they were computed in, so the client needs that
-  // month to place them. Cached sections are written in one pass, so the case
-  // management entry dates all of them.
-  $generated = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET_TIMESTAMP, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, HEDLEY_STATS_PERIOD_ONE_YEAR);
-  if (empty($generated)) {
-    $generated = time();
-  }
-  $generated_utc = $generated - date('Z');
+  $now = time();
   // UTC date and time on which statistics were generated.
-  $stats['timestamp'] = date('d-m-Y, H:i', $generated_utc);
-  $stats['stats_generated_month'] = (int) date('n', $generated_utc);
+  $timestamp = date('d-m-Y, H:i', $now - date('Z'));
+  $stats['timestamp'] = $timestamp;
+
+  // The monthly figures are numbered by the month they were computed in, so
+  // the client needs that date to place them. It is the date the case
+  // management entry was cached, and it is read in the same local time the
+  // months are numbered in.
+  $generated = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET_TIMESTAMP, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, HEDLEY_STATS_PERIOD_ONE_YEAR);
+  $stats['stats_generated_date'] = date('Y-m-d', empty($generated) ? $now : $generated);
   // Update client of current hash for health center statistics.
   $stats['stats_cache_hash'] = $health_center_cached_hash;
 

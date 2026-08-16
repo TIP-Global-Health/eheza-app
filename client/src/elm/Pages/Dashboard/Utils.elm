@@ -1,4 +1,4 @@
-module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isNurseEncounter, resolveStatsMonth, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isNurseEncounter, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -188,7 +188,7 @@ generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter =
     , missedSessions = stats.missedSessions
     , totalEncounters = stats.totalEncounters
     , timestamp = stats.timestamp
-    , statsGeneratedMonth = stats.statsGeneratedMonth
+    , statsGeneratedDate = stats.statsGeneratedDate
     }
 
 
@@ -1193,7 +1193,9 @@ generateNutritionPageData : NominalDate -> DashboardStats -> FilterProgramType -
 generateNutritionPageData currentDate stats programTypeFilter selectedVillageFilter =
     let
         statsMonth =
-            resolveStatsMonth currentDate stats.statsGeneratedMonth
+            resolveStatsDate currentDate stats.statsGeneratedDate
+                |> Date.month
+                |> Date.monthToNumber
 
         currentPeriodStats =
             filterStatsWithinPeriod currentDate OneYear stats
@@ -1234,15 +1236,13 @@ generateNutritionPageData currentDate stats programTypeFilter selectedVillageFil
     }
 
 
-{-| The month monthly figures are numbered from, which is the month the
-statistics were computed in rather than today. Statistics that do not carry it
-are read against the current month, as they were before it was sent.
+{-| The date monthly figures are counted and numbered from, which is the date
+the statistics were computed on rather than today. Statistics that do not carry
+it are read against today, as they were before it was sent.
 -}
-resolveStatsMonth : NominalDate -> Maybe Int -> Int
-resolveStatsMonth currentDate statsGeneratedMonth =
-    Maybe.withDefault
-        (Date.month currentDate |> Date.monthToNumber)
-        statsGeneratedMonth
+resolveStatsDate : NominalDate -> Maybe NominalDate -> NominalDate
+resolveStatsDate currentDate statsGeneratedDate =
+    Maybe.withDefault currentDate statsGeneratedDate
 
 
 generateTotalBeneficiariesMonthlyDuringPastYear :
@@ -1251,8 +1251,11 @@ generateTotalBeneficiariesMonthlyDuringPastYear :
     -> Dict Int Int
 generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats =
     let
+        statsDate =
+            resolveStatsDate currentDate stats.statsGeneratedDate
+
         currentMonth =
-            resolveStatsMonth currentDate stats.statsGeneratedMonth
+            Date.month statsDate |> Date.monthToNumber
 
         ( thisYear, lastYear ) =
             List.repeat 12 0
@@ -1265,11 +1268,11 @@ generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats =
             (\index month ->
                 let
                     maxJoinDate =
-                        Date.add Months (-1 * index) currentDate
+                        Date.add Months (-1 * index) statsDate
                             |> toLastDayOfMonth
 
                     minGraduationDate =
-                        Date.add Months (-1 * index) currentDate
+                        Date.add Months (-1 * index) statsDate
                             |> Date.floor Date.Month
 
                     totalBeneficiaries =

@@ -58,6 +58,7 @@ encodeDashboardStatsRaw stats =
     , encodeVillagesWithResidents stats.villagesWithResidents
     , encodePatientsDetails stats.patientsDetails
     , ( "timestamp", string stats.timestamp )
+    , ( "stats_generated_date", maybe encodeYYYYMMDD stats.statsGeneratedDate )
     , ( "stats_cache_hash", string stats.cacheHash )
     ]
 
