@@ -1104,16 +1104,14 @@ viewGastroPage language isChw dateLastDayOfSelectedMonth acuteIllnessData encoun
         ]
 
 
-chartsMonth : NominalDate -> NutritionPageData -> Int
-chartsMonth currentDate data =
-    resolveStatsDate currentDate data.statsGeneratedDate
-        |> Date.month
-        |> Date.monthToNumber
-
-
 viewNutritionChartsPage : Language -> NominalDate -> NutritionPageData -> Model -> List (Html Msg)
 viewNutritionChartsPage language currentDate data model =
     let
+        chartsMonth =
+            resolveStatsDate currentDate data.statsGeneratedDate
+                |> Date.month
+                |> Date.monthToNumber
+
         links =
             case model.programTypeFilter of
                 FilterProgramFbf ->
@@ -1132,10 +1130,10 @@ viewNutritionChartsPage language currentDate data model =
             [ viewTotalEncounters language data.totalEncounters
             ]
         , div [ class "sixteen wide column" ]
-            [ viewMonthlyChart language (chartsMonth currentDate data) MonthlyChartTotals FilterBeneficiariesChart data.totalsGraphData model.currentBeneficiariesChartsFilter
+            [ viewMonthlyChart language chartsMonth MonthlyChartTotals FilterBeneficiariesChart data.totalsGraphData model.currentBeneficiariesChartsFilter
             ]
         , div [ class "sixteen wide column" ]
-            [ viewMonthlyChart language (chartsMonth currentDate data) MonthlyChartIncidence FilterBeneficiariesIncidenceChart data.newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
+            [ viewMonthlyChart language chartsMonth MonthlyChartIncidence FilterBeneficiariesIncidenceChart data.newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
             ]
         , links
         ]
