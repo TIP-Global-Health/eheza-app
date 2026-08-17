@@ -51,7 +51,7 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Utils exposing (generateFutureVaccinationsData)
 import Pages.Dashboard.GraphUtils exposing (barChartHeight, barChartWidth, column, familyPlanningSignToColor, familyPlanningSignsColors, feverCauseToColor, feverCausesColors, gridXScale, gridYScale, padding, pieChartHeight, pieChartWidth, radius, xAxis, xGridLine, xScale, yAxis, yGridLine)
 import Pages.Dashboard.Model exposing (BeneficiariesTableLabels(..), CardValueSeverity(..), DashboardFilter(..), DashboardSubFilter(..), FamilyPlanningSignsCounter, FeverCause(..), FilterGender(..), FilterPeriod(..), FilterProgramType(..), FilterType(..), MalnorishedNutritionData, ModalState(..), Model, MonthlyChartType(..), Msg(..), StatsCard, caseManagementFilters, caseManagementSubFilters, filterGenders, filterPeriodsForStatsPage, maxMonthGap, monthlyChartFilters)
-import Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isNurseEncounter, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+import Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isNurseEncounter, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 import Pages.Page
     exposing
         ( AcuteIllnessSubPage(..)
@@ -330,16 +330,22 @@ viewStatsPage language currentDate stats model =
 
     else
         let
-            currentMonth =
-                Date.month currentDate
+            -- The monthly figures below are numbered by the month they were
+            -- computed in, so that is the month they are looked up by. The
+            -- records are filtered by their own dates, which are read against
+            -- today: filtering them from the month of computation would hide
+            -- the ones recorded after it.
+            statsMonth =
+                resolveStatsDate currentDate stats.statsGeneratedDate
+                    |> Date.month
                     |> Date.monthToNumber
 
             ( modelWithLastMonth, displayedMonth ) =
                 if model.period == ThisMonth then
-                    ( { model | period = LastMonth }, currentMonth )
+                    ( { model | period = LastMonth }, statsMonth )
 
                 else
-                    ( { model | period = ThreeMonthsAgo }, resolvePreviousMonth currentMonth )
+                    ( { model | period = ThreeMonthsAgo }, resolvePreviousMonth statsMonth )
 
             currentPeriodStats =
                 filterStatsWithinPeriod currentDate model.period stats
@@ -427,7 +433,8 @@ viewCaseManagementPage language currentDate stats patientsDetails model =
     else
         let
             currentMonth =
-                Date.month currentDate
+                resolveStatsDate currentDate stats.statsGeneratedDate
+                    |> Date.month
                     |> Date.monthToNumber
 
             tableDataUnsorted =
@@ -1106,6 +1113,11 @@ viewGastroPage language isChw dateLastDayOfSelectedMonth acuteIllnessData encoun
 viewNutritionChartsPage : Language -> NominalDate -> NutritionPageData -> Model -> List (Html Msg)
 viewNutritionChartsPage language currentDate data model =
     let
+        chartsMonth =
+            resolveStatsDate currentDate data.statsGeneratedDate
+                |> Date.month
+                |> Date.monthToNumber
+
         links =
             case model.programTypeFilter of
                 FilterProgramFbf ->
@@ -1124,10 +1136,10 @@ viewNutritionChartsPage language currentDate data model =
             [ viewTotalEncounters language data.totalEncounters
             ]
         , div [ class "sixteen wide column" ]
-            [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart data.totalsGraphData model.currentBeneficiariesChartsFilter
+            [ viewMonthlyChart language chartsMonth MonthlyChartTotals FilterBeneficiariesChart data.totalsGraphData model.currentBeneficiariesChartsFilter
             ]
         , div [ class "sixteen wide column" ]
-            [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart data.newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
+            [ viewMonthlyChart language chartsMonth MonthlyChartIncidence FilterBeneficiariesIncidenceChart data.newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
             ]
         , links
         ]
@@ -2017,13 +2029,9 @@ viewFamilyPlanning language stats =
         ]
 
 
-viewMonthlyChart : Language -> NominalDate -> MonthlyChartType -> FilterType -> Dict Int TotalBeneficiaries -> DashboardFilter -> Html Msg
-viewMonthlyChart language currentDate chartType filterType data currentFilter =
+viewMonthlyChart : Language -> Int -> MonthlyChartType -> FilterType -> Dict Int TotalBeneficiaries -> DashboardFilter -> Html Msg
+viewMonthlyChart language currentMonth chartType filterType data currentFilter =
     let
-        currentMonth =
-            Date.month currentDate
-                |> Date.monthToNumber
-
         ( thisYear, lastYear ) =
             data
                 |> Dict.toList

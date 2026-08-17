@@ -64,6 +64,7 @@ decodeDashboardStatsRaw =
         |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "patients_details" decodePatientsDetails
         |> required "timestamp" string
+        |> optional "stats_generated_date" (nullable decodeYYYYMMDD) Nothing
         |> required "stats_cache_hash" string
 
 

@@ -66,6 +66,7 @@ define('HEDLEY_STATS_SYNC_PATIENTS_DETAILS', 'patients_details');
 
 // Cache methods.
 define('HEDLEY_STATS_CACHE_GET', 'get');
+define('HEDLEY_STATS_CACHE_GET_TIMESTAMP', 'get_timestamp');
 define('HEDLEY_STATS_CACHE_SET', 'set');
 define('HEDLEY_STATS_CACHE_CLEAR', 'clear');
 
@@ -835,6 +836,13 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
   // UTC date and time on which statistics were generated.
   $timestamp = date('d-m-Y, H:i', $now - date('Z'));
   $stats['timestamp'] = $timestamp;
+
+  // The monthly figures are numbered by the month they were computed in, so
+  // the client needs that date to place them. It is the date the case
+  // management entry was cached, and it is read in the same local time the
+  // months are numbered in.
+  $generated = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET_TIMESTAMP, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, HEDLEY_STATS_PERIOD_ONE_YEAR);
+  $stats['stats_generated_date'] = date('Y-m-d', empty($generated) ? $now : $generated);
   // Update client of current hash for health center statistics.
   $stats['stats_cache_hash'] = $health_center_cached_hash;
 
@@ -3884,6 +3892,10 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
     case HEDLEY_STATS_CACHE_GET:
       $cached = cache_get($cache_id);
       return !empty($cached) ? $cached->data['value'] : NULL;
+
+    case HEDLEY_STATS_CACHE_GET_TIMESTAMP:
+      $cached = cache_get($cache_id);
+      return isset($cached->data['timestamp']) ? $cached->data['timestamp'] : NULL;
 
     case HEDLEY_STATS_CACHE_SET:
       $cached = [
