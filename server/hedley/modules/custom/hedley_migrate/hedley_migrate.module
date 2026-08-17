@@ -338,11 +338,20 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
     $row = _hedley_migrate_geo_row($row, count($column_mapping));
 
     if (!$row) {
-      watchdog('hedley_migrate', 'Skipped line @line of @file: a location is missing.', [
+      watchdog('hedley_migrate', 'Skipped line @line of @file: it names no location.', [
         '@line' => $line,
         '@file' => $source_file,
       ], WATCHDOG_WARNING);
       continue;
+    }
+
+    if (count($row) < count($column_mapping)) {
+      watchdog('hedley_migrate', 'Line @line of @file names @named of @total locations. The ones it names are created.', [
+        '@line' => $line,
+        '@file' => $source_file,
+        '@named' => count($row),
+        '@total' => count($column_mapping),
+      ], WATCHDOG_WARNING);
     }
 
     foreach ($row as $index => $column) {
@@ -361,21 +370,19 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
  * @param int $columns
  *   The number of locations a row holds.
  *
- * @return array|false
- *   The locations, with the spacing around them removed, or FALSE when the row
- *   does not name all of them.
+ * @return array
+ *   The locations the row names, with the spacing around them removed. A row
+ *   naming a location but not the one below it describes the levels above, so
+ *   reading stops at the first it leaves out.
  */
 function _hedley_migrate_geo_row(array $row, $columns) {
-  if (count($row) < $columns) {
-    return FALSE;
-  }
-
   $locations = [];
+
   foreach (array_slice($row, 0, $columns) as $location) {
     $location = trim($location);
 
     if ($location === '') {
-      return FALSE;
+      break;
     }
 
     $locations[] = $location;
@@ -513,9 +520,10 @@ function hedley_migrate_generate_structure_for_terms_of_type($type, array $tids,
     $entities = [];
     foreach (taxonomy_term_load_multiple($tid_chunk) as $term) {
       $id = 'toEntityId ' . $term->tid;
-      // The name is written into Elm source, where a quote or a backslash
-      // would end the string it sits in.
-      $name = addcslashes($term->name, '"\\');
+      // The name is written into Elm source, where a quote, a backslash or a
+      // line break would end the string it sits in. A quoted field of the
+      // input file may hold a line break.
+      $name = addcslashes($term->name, "\"\\\n\r\t");
 
       if ($type == 'province') {
         $parent = 'Nothing';
