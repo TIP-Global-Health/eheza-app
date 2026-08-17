@@ -36,6 +36,7 @@ import Measurement.Utils
         , liverFunctionResultFormWithDefault
         , ncdaFormWithDefault
         , ncdaMeasurementsOutOfRange
+        , nextVaccinationDataForVaccine
         , outOfRangeAsEntered
         , setNCDAStep
         , showNCDAMeasurementOutOfRange
@@ -210,6 +211,39 @@ getAllDosesForVaccineTest =
                         [ VaccineDoseFirst
                         , VaccineDoseSecond
                         ]
+        ]
+
+
+nextVaccinationDataForVaccineTest : Test
+nextVaccinationDataForVaccineTest =
+    let
+        birthDate =
+            Date.fromCalendarDate 2026 Time.Jan 1
+
+        lastDoseDate =
+            Date.fromCalendarDate 2026 Time.Jun 1
+
+        -- Rwanda gives three doses of DTP, four weeks apart.
+        nextDTPDose dose =
+            nextVaccinationDataForVaccine SiteRwanda (Just birthDate) VaccineDTP False lastDoseDate dose
+    in
+    describe "nextVaccinationDataForVaccine (Rwanda, DTP)"
+        [ test "a dose is due while the doses given are short of the three expected" <|
+            \_ ->
+                nextDTPDose VaccineDoseSecond
+                    |> Expect.equal
+                        (Just ( VaccineDoseThird, Date.fromCalendarDate 2026 Time.Jun 29 ))
+        , test "no dose is due once the third has been given" <|
+            \_ ->
+                nextDTPDose VaccineDoseThird
+                    |> Expect.equal Nothing
+        , test "no dose is due when more doses are recorded than the three expected" <|
+            \_ ->
+                -- A record holding a fourth dose has no dose left to receive.
+                -- Read as still owing one, the child is behind from the day the
+                -- dose that does not exist falls due, and nothing clears it.
+                nextDTPDose VaccineDoseFourth
+                    |> Expect.equal Nothing
         ]
 
 
@@ -647,7 +681,8 @@ liverFunctionResultFormWithDefaultTest =
 all : Test
 all =
     describe "Measurement of children: form tests"
-        [ viewChildFormsTest
+        [ nextVaccinationDataForVaccineTest
+        , viewChildFormsTest
         , viewMotherFormsTest
         , viewColorAlertIndicationTest
         , getIntervalForVaccineTest
