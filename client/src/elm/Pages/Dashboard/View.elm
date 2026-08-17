@@ -330,16 +330,22 @@ viewStatsPage language currentDate stats model =
 
     else
         let
-            currentMonth =
-                Date.month currentDate
+            -- The monthly figures below are numbered by the month they were
+            -- computed in, so that is the month they are looked up by. The
+            -- records are filtered by their own dates, which are read against
+            -- today: filtering them from the month of computation would hide
+            -- the ones recorded after it.
+            statsMonth =
+                resolveStatsDate currentDate stats.statsGeneratedDate
+                    |> Date.month
                     |> Date.monthToNumber
 
             ( modelWithLastMonth, displayedMonth ) =
                 if model.period == ThisMonth then
-                    ( { model | period = LastMonth }, currentMonth )
+                    ( { model | period = LastMonth }, statsMonth )
 
                 else
-                    ( { model | period = ThreeMonthsAgo }, resolvePreviousMonth currentMonth )
+                    ( { model | period = ThreeMonthsAgo }, resolvePreviousMonth statsMonth )
 
             currentPeriodStats =
                 filterStatsWithinPeriod currentDate model.period stats
