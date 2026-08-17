@@ -73,9 +73,16 @@ latestVaccinationDataForVaccine vaccinationsData vaccineType =
 
 nextVaccinationDataForVaccine : Site -> NominalDate -> VaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
 nextVaccinationDataForVaccine site birthDate vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
-    if vaccineDoseToComparable (getLastDoseForVaccine site initialOpvAdministered vaccineType) <= vaccineDoseToComparable lastDoseAdministered then
-        -- The course is over once the doses reach the last the site expects. A
-        -- child holding more than that has no dose left to receive either.
+    let
+        dosesGiven =
+            vaccineDoseToComparable lastDoseAdministered
+
+        dosesTheSiteExpects =
+            vaccineDoseToComparable (getLastDoseForVaccine site initialOpvAdministered vaccineType)
+    in
+    if dosesGiven >= dosesTheSiteExpects then
+        -- A child holding every dose the site expects, or more, has none left
+        -- to receive.
         Nothing
 
     else
