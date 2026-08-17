@@ -497,7 +497,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create an acute illness symptom measurement entity of given type.
    */
-  public function createAcuteIllnessSymptoms($type, $encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+  public function createAcuteIllnessSymptoms($type, $encounter_id, $person_id, $timestamp = REQUEST_TIME, $fever_period = NULL) {
     $node = $this->drupalCreateNode(['type' => $type]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
@@ -513,6 +513,9 @@ class HedleyWebTestBase extends DrupalWebTestCase {
         break;
 
       case 'symptoms_general':
+        if (!is_null($fever_period)) {
+          $wrapper->field_fever_period->set($fever_period);
+        }
         $wrapper->field_night_sweats_period->set(2);
         $wrapper->field_headache_period->set(2);
         $wrapper->field_poor_suck_period->set(2);
@@ -538,7 +541,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create an acute illness vitals entity.
    */
-  public function createAcuteIllnessVitals($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+  public function createAcuteIllnessVitals($encounter_id, $person_id, $timestamp = REQUEST_TIME, $temperature = 37.2) {
     $node = $this->drupalCreateNode(['type' => 'acute_illness_vitals']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
@@ -549,7 +552,40 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_dia->set(70);
     $wrapper->field_heart_rate->set(80);
     $wrapper->field_respiratory_rate->set(20);
-    $wrapper->field_body_temperature->set(37.2);
+    $wrapper->field_body_temperature->set($temperature);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a prenatal nutrition entity.
+   */
+  public function createPrenatalNutrition($encounter_id, $person_id, $muac, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'prenatal_nutrition']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_prenatal_encounter->set($encounter_id);
+    $wrapper->field_muac->set($muac);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an NCD HIV test entity.
+   */
+  public function createNcdHivTest($encounter_id, $person_id, $result, $execution_note, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'ncd_hiv_test']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_ncd_encounter->set($encounter_id);
+    $wrapper->field_test_result->set($result);
+    $wrapper->field_test_execution_note->set($execution_note);
     $wrapper->save();
 
     return $node->nid;

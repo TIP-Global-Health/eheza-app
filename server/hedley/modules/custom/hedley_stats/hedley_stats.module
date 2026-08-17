@@ -987,15 +987,16 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   $query->addField('send_to_hc', 'field_send_to_hc_value');
   $query->addExpression("GROUP_CONCAT(DISTINCT send_to_hc.field_send_to_hc_value)", 'send_to_hc');
 
-  // Pull data of recorded fever at symptoms.
+  // Pull the longest fever reported and the highest temperature recorded at
+  // the encounter, since an encounter can hold more than one of each and it
+  // is a fever if any of them says so.
   $query->leftJoin('field_data_field_fever_period', 'fever_period', 'fever_period.entity_id = ai_encounter.entity_id');
   $query->addField('fever_period', 'field_fever_period_value');
-  $query->addExpression("GROUP_CONCAT(fever_period.field_fever_period_value)", 'fever_period');
+  $query->addExpression("MAX(fever_period.field_fever_period_value)", 'fever_period');
 
-  // Pull data of recorded fever at vitals.
   $query->leftJoin('field_data_field_body_temperature', 'body_temperature', 'body_temperature.entity_id = ai_encounter.entity_id');
   $query->addField('body_temperature', 'field_body_temperature_value');
-  $query->addExpression("GROUP_CONCAT(body_temperature.field_body_temperature_value)", 'body_temperature');
+  $query->addExpression("MAX(body_temperature.field_body_temperature_value)", 'body_temperature');
 
   // Pull data of isolations - COVID suspect.
   $query->leftJoin('field_data_field_isolation', 'isolation', 'isolation.entity_id = ai_encounter.entity_id');
@@ -1209,7 +1210,7 @@ function hedley_stats_get_prenatal_data($health_center_id) {
     }
 
     if (!empty($row->muac)) {
-      $item['muac'] = $row->muac;
+      $item['muac'] = hedley_stats_extract_first_value($row->muac);
     }
 
     $items[$row->field_individual_participant]['encounters'][] = $item;
@@ -1394,7 +1395,7 @@ function hedley_stats_get_ncd_data($health_center_id) {
       continue;
     }
 
-    $items[$row->field_individual_participant]['encounters'][$row->nid]['hiv_test_result'] = $row->test_result;
+    $items[$row->field_individual_participant]['encounters'][$row->nid]['hiv_test_result'] = hedley_stats_extract_first_value($row->test_result);
   }
 
   $query = clone $base_query;
@@ -1424,7 +1425,7 @@ function hedley_stats_get_ncd_data($health_center_id) {
       continue;
     }
 
-    $items[$row->field_individual_participant]['encounters'][$row->nid]['hiv_test_execution_note'] = $row->test_execution_note;
+    $items[$row->field_individual_participant]['encounters'][$row->nid]['hiv_test_execution_note'] = hedley_stats_extract_first_value($row->test_execution_note);
   }
 
   foreach ($items as &$item) {
