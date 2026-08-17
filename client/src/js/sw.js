@@ -90,7 +90,6 @@ var tableForType = {
     health_education: 'shards',
     height: 'shards',
     hiv_diagnostics: 'shards',
-    hiv_dot: 'shards',
     hiv_encounter: 'shards',
     hiv_follow_up: 'shards',
     hiv_health_education: 'shards',
