@@ -5843,8 +5843,10 @@ function hedley_reports_resolve_expected_immunisations(array $possible_immunisat
     sort($doses);
     $last_dose = array_reverse($doses)[0];
     $last_dose_for_immunisation = hedley_reports_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered, $site);
-    // If all doses we administered, skipping to next immunisation type.
-    if ($last_dose == $last_dose_for_immunisation) {
+    // The course is over once the doses reach the last the site expects. A
+    // child holding more than that has no dose left to receive either, so
+    // skipping to next immunisation type.
+    if ((int) explode('-', $last_dose)[1] >= (int) explode('-', $last_dose_for_immunisation)[1]) {
       continue;
     }
 

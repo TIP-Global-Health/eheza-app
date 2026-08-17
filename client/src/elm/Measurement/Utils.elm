@@ -9645,7 +9645,10 @@ nextVaccinationDataForVaccine :
 nextVaccinationDataForVaccine site maybeBirthDate vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
     Maybe.andThen
         (\birthDate ->
-            if getLastDoseForVaccine site initialOpvAdministered vaccineType == lastDoseAdministered then
+            if vaccineDoseToComparable (getLastDoseForVaccine site initialOpvAdministered vaccineType) <= vaccineDoseToComparable lastDoseAdministered then
+                -- The course is over once the doses reach the last the site
+                -- expects. A child holding more than that has no dose left to
+                -- receive either.
                 Nothing
 
             else

@@ -73,7 +73,9 @@ latestVaccinationDataForVaccine vaccinationsData vaccineType =
 
 nextVaccinationDataForVaccine : Site -> NominalDate -> VaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
 nextVaccinationDataForVaccine site birthDate vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
-    if getLastDoseForVaccine site initialOpvAdministered vaccineType == lastDoseAdministered then
+    if vaccineDoseToComparable (getLastDoseForVaccine site initialOpvAdministered vaccineType) <= vaccineDoseToComparable lastDoseAdministered then
+        -- The course is over once the doses reach the last the site expects. A
+        -- child holding more than that has no dose left to receive either.
         Nothing
 
     else
