@@ -5843,13 +5843,18 @@ function hedley_reports_resolve_expected_immunisations(array $possible_immunisat
     sort($doses);
     $last_dose = array_reverse($doses)[0];
     $last_dose_for_immunisation = hedley_reports_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered, $site);
-    // If all doses we administered, skipping to next immunisation type.
-    if ($last_dose == $last_dose_for_immunisation) {
+    $last_dose_as_number = (int) explode('-', $last_dose)[1];
+
+    // The course is over once the doses reach the last the site expects. A
+    // child holding more than that has no dose left to receive either, so
+    // skipping to next immunisation type. An immunisation the site says nothing
+    // about is left to the dose after the last one recorded, as before.
+    if (!empty($last_dose_for_immunisation)
+      && $last_dose_as_number >= (int) explode('-', $last_dose_for_immunisation)[1]) {
       continue;
     }
 
     // Calculating when next dose is supposed to be administered.
-    $last_dose_as_number = (int) explode('-', $last_dose)[1];
     $next_dose_as_number = $last_dose_as_number + 1;
     $last_dose_date = $performed[$last_dose];
     $interval_between_dosed = hedley_reports_get_interval_for_vaccine($immunisation_type, $site);
