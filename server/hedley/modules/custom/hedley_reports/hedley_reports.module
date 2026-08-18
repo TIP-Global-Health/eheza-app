@@ -6863,7 +6863,7 @@ function hedley_reports_ncd_generate_expected_initial_activities(array $encounte
     $interval = $start_date_obj->diff($birth_date_obj);
     $age_in_years = $interval->y;
 
-    if ($age_in_years >= 13 && $age_in_years <= 44) {
+    if ($age_in_years > 12 && $age_in_years < 50) {
       $expected[] = 'ncd_family_planning';
     }
   }
@@ -6990,9 +6990,9 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, DateTime 
       $date_measured_obj = new DateTime($date_measured);
       $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
       $valid_results_exists =
-        !empty($hiv_test->field_test_result) &&
-        !empty($hiv_test->field_test_result[LANGUAGE_NONE][0]['value']) &&
-        $hiv_test->field_test_result[LANGUAGE_NONE][0]['value'] != 'indeterminate';
+        !empty($pregnancy_test->field_test_result) &&
+        !empty($pregnancy_test->field_test_result[LANGUAGE_NONE][0]['value']) &&
+        $pregnancy_test->field_test_result[LANGUAGE_NONE][0]['value'] != 'indeterminate';
       if ($valid_results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
         $tests_dates_by_lab_type['ncd_pregnancy_test'][] = explode(' ', $pregnancy_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
       }
@@ -7049,7 +7049,7 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, DateTime 
             $interval = $encounter_data['start_date_obj']->diff($birth_date_obj);
             $age_in_years = $interval->y;
 
-            if ($age_in_years >= 13 && $age_in_years <= 44) {
+            if ($age_in_years > 12 && $age_in_years < 50) {
               $expected[] = 'ncd_pregnancy_test';
             }
           }
