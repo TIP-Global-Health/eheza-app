@@ -6951,11 +6951,14 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, DateTime 
           $date_measured = explode(' ', $hiv_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
           $date_measured_obj = new DateTime($date_measured);
           $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
+          // The test is read on the spot, so it always carries a result, and
+          // a result that is not conclusive is taken as if the test had not
+          // been done.
           $valid_results_exists =
             !empty($hiv_test->field_test_result) &&
             !empty($hiv_test->field_test_result[LANGUAGE_NONE][0]['value']) &&
             $hiv_test->field_test_result[LANGUAGE_NONE][0]['value'] != 'indeterminate';
-          if ($valid_results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+          if ($valid_results_exists) {
             $tests_dates_by_lab_type['ncd_hiv_test'][] = explode(' ', $hiv_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
           }
         }
@@ -6989,11 +6992,13 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, DateTime 
       $date_measured = explode(' ', $pregnancy_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
       $date_measured_obj = new DateTime($date_measured);
       $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
-      $valid_results_exists =
-        !empty($pregnancy_test->field_test_result) &&
-        !empty($pregnancy_test->field_test_result[LANGUAGE_NONE][0]['value']) &&
+      // A result that is not conclusive is taken as if the test had not been
+      // done. A test still awaiting its result holds until it expires.
+      $results_exist = !empty($pregnancy_test->field_test_result) &&
+        !empty($pregnancy_test->field_test_result[LANGUAGE_NONE][0]['value']);
+      $valid_results_exists = $results_exist &&
         $pregnancy_test->field_test_result[LANGUAGE_NONE][0]['value'] != 'indeterminate';
-      if ($valid_results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+      if ($valid_results_exists || (!$results_exist && $diff_days < HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD)) {
         $tests_dates_by_lab_type['ncd_pregnancy_test'][] = explode(' ', $pregnancy_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
       }
     }
