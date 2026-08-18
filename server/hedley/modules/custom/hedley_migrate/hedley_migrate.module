@@ -329,17 +329,88 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
     $data[] = [];
   }
 
-  // Used to check if term exists (was previously created), so we can
-  // skip it.
+  // The term created for each location, by the path that leads to it.
   $locator = [];
 
+  $line = 0;
   while ($row = fgetcsv($handler)) {
+    $line++;
+    $row = _hedley_migrate_geo_row($row, count($column_mapping));
+
+    if (!$row) {
+      watchdog('hedley_migrate', 'Skipped line @line of @file: it names no location.', [
+        '@line' => $line,
+        '@file' => $source_file,
+      ], WATCHDOG_WARNING);
+      continue;
+    }
+
+    if (count($row) < count($column_mapping)) {
+      watchdog('hedley_migrate', 'Line @line of @file names @named of @total locations. The ones it names are created.', [
+        '@line' => $line,
+        '@file' => $source_file,
+        '@named' => count($row),
+        '@total' => count($column_mapping),
+      ], WATCHDOG_WARNING);
+    }
+
     foreach ($row as $index => $column) {
       _hedley_migrate_process_column($data, $locator, $index, $row, $vocabulary->vid, $column_mapping);
     }
   }
 
   fclose($handler);
+}
+
+/**
+ * Reads the locations of one input row.
+ *
+ * @param array $row
+ *   A row of the input file.
+ * @param int $columns
+ *   The number of locations a row holds.
+ *
+ * @return array
+ *   The locations the row names, with the spacing around them removed. A row
+ *   naming a location but not the one below it describes the levels above, so
+ *   reading stops at the first it leaves out.
+ */
+function _hedley_migrate_geo_row(array $row, $columns) {
+  $locations = [];
+
+  foreach (array_slice($row, 0, $columns) as $location) {
+    $location = trim($location);
+
+    if ($location === '') {
+      break;
+    }
+
+    $locations[] = $location;
+  }
+
+  return $locations;
+}
+
+/**
+ * The key under which the term for a path of locations is kept.
+ *
+ * Locations are compared without their case, so a location spelled two ways in
+ * the input file is one location. Each is escaped, so that the key for one path
+ * can never read as the key for another.
+ *
+ * @param array $path
+ *   The locations leading to a term, itself included.
+ *
+ * @return string
+ *   The key for that path.
+ */
+function _hedley_migrate_geo_path_key(array $path) {
+  $escaped = [];
+  foreach ($path as $location) {
+    $escaped[] = rawurlencode(drupal_strtolower($location));
+  }
+
+  return implode('/', $escaped);
 }
 
 /**
@@ -364,16 +435,18 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
  *   Columns mapping array.
  */
 function _hedley_migrate_process_column(array &$data, array &$locator, $index, array $row, $vocabulary_id, array $column_mapping) {
-  $locator_index = implode('-', array_slice($row, 0, $index + 1));
+  $path_key = _hedley_migrate_geo_path_key(array_slice($row, 0, $index + 1));
 
-  if (!empty($locator[$locator_index])) {
+  if (!empty($locator[$path_key])) {
     // Term already exists.
     return;
   }
 
-  // Resolve term parent.
+  // Resolve term parent. A location is identified by the path that leads to it,
+  // so locations sharing a name under different parents stay apart, and the
+  // rows of the input file may arrive in any order.
   if ($index != 0) {
-    $parent_key = $row[$index - 1];
+    $parent_key = _hedley_migrate_geo_path_key(array_slice($row, 0, $index));
     $parent = $data[$index - 1][$parent_key];
   }
   else {
@@ -382,7 +455,7 @@ function _hedley_migrate_process_column(array &$data, array &$locator, $index, a
 
   // Create the term.
   $term = (object) [
-    'name' => ucfirst(strtolower($row[$index])),
+    'name' => ucfirst(drupal_strtolower($row[$index])),
     'description' => ucfirst($column_mapping[$index]) . ' ' . $row[$index],
     'vid' => $vocabulary_id,
     'parent' => $parent,
@@ -390,7 +463,7 @@ function _hedley_migrate_process_column(array &$data, array &$locator, $index, a
   taxonomy_term_save($term);
 
   // Update data and locator arrays with new term.
-  $data[$index][$row[$index]] = $locator[$locator_index] = $term->tid;
+  $data[$index][$path_key] = $locator[$path_key] = $term->tid;
 }
 
 /**
@@ -447,7 +520,10 @@ function hedley_migrate_generate_structure_for_terms_of_type($type, array $tids,
     $entities = [];
     foreach (taxonomy_term_load_multiple($tid_chunk) as $term) {
       $id = 'toEntityId ' . $term->tid;
-      $name = $term->name;
+      // The name is written into Elm source, where a quote, a backslash or a
+      // line break would end the string it sits in. A quoted field of the
+      // input file may hold a line break.
+      $name = addcslashes($term->name, "\"\\\n\r\t");
 
       if ($type == 'province') {
         $parent = 'Nothing';

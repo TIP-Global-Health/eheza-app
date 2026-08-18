@@ -24480,13 +24480,6 @@ var $author$project$Utils$GeoLocation$getGeoCellsForRwanda = $pzp1997$assoc_list
 					$elm$core$Maybe$Just(
 						$author$project$Backend$Entities$toEntityId(3847)))),
 				_Utils_Tuple2(
-				$author$project$Backend$Entities$toEntityId(3870),
-				A2(
-					$author$project$Utils$GeoLocation$GeoLocation,
-					'Bubangu',
-					$elm$core$Maybe$Just(
-						$author$project$Backend$Entities$toEntityId(3869)))),
-				_Utils_Tuple2(
 				$author$project$Backend$Entities$toEntityId(3884),
 				A2(
 					$author$project$Utils$GeoLocation$GeoLocation,
@@ -26373,13 +26366,6 @@ var $author$project$Utils$GeoLocation$getGeoSectorsForRwanda = $pzp1997$assoc_li
 					$author$project$Backend$Entities$toEntityId(3490)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(3847),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Murambi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(3490)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(3869),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Murambi',
@@ -33596,14 +33582,14 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForRwanda = $pzp1997$assoc_l
 								$author$project$Utils$GeoLocation$GeoLocation,
 								'Ruhunga',
 								$elm$core$Maybe$Just(
-									$author$project$Backend$Entities$toEntityId(3870)))),
+									$author$project$Backend$Entities$toEntityId(3862)))),
 							_Utils_Tuple2(
 							$author$project$Backend$Entities$toEntityId(3872),
 							A2(
 								$author$project$Utils$GeoLocation$GeoLocation,
 								'Taba',
 								$elm$core$Maybe$Just(
-									$author$project$Backend$Entities$toEntityId(3870)))),
+									$author$project$Backend$Entities$toEntityId(3862)))),
 							_Utils_Tuple2(
 							$author$project$Backend$Entities$toEntityId(3874),
 							A2(
