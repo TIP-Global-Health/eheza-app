@@ -3,7 +3,8 @@ module Pages.Completion.View exposing (view)
 import App.Types exposing (Language, Site)
 import Backend.Completion.Model
     exposing
-        ( AcuteIllnessActivity
+        ( ActivitiesCompletionData
+        , AcuteIllnessActivity
         , ChildScoreboardActivity
         , CompletionData
         , EncounterData
@@ -16,7 +17,6 @@ import Backend.Completion.Model
         , PrenatalActivity
         , TakenBy(..)
         , TuberculosisActivity
-        , WellChildActivity
         , WellChildEncounterData
         , WellChildEncounterType(..)
         )
@@ -26,32 +26,24 @@ import Backend.Model exposing (ModelBackend)
 import Date exposing (Date)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
-import Maybe.Extra exposing (isJust, isNothing)
+import Maybe.Extra exposing (isJust)
 import Pages.Completion.Model exposing (Model, Msg(..), ReportType(..))
 import Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, newbornExamActivities, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
-import Pages.Components.View exposing (viewMetricsResultsTable)
+import Pages.Components.View exposing (viewMetricsResultsTable, viewReportDateInputs)
 import Pages.Model exposing (MetricsResultsTableData)
-import Pages.Utils exposing (calculatePercentage, launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
+import Pages.Utils exposing (calculatePercentage, viewBackendData, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
 
 view : Language -> NominalDate -> ModelBackend -> Model -> Html Msg
 view language currentDate modelBackend model =
-    case modelBackend.completionData of
-        Just (Ok data) ->
-            viewCompletionData language currentDate data model
-
-        Just (Err err) ->
-            text <| Debug.toString err
-
-        Nothing ->
-            emptyNode
+    viewBackendData modelBackend.completionData
+        (\data -> viewCompletionData language currentDate data model)
 
 
 viewCompletionData : Language -> NominalDate -> CompletionData -> Model -> Html Msg
@@ -130,61 +122,14 @@ viewCompletionData language currentDate data model =
                     dateInputs =
                         Maybe.map
                             (\_ ->
-                                let
-                                    startDateInput =
-                                        let
-                                            dateSelectorConfig =
-                                                { select = SetStartDate
-                                                , close = SetStartDateSelectorState Nothing
-                                                , dateFrom = launchDate
-                                                , dateTo = currentDate
-                                                , dateDefault = Just launchDate
-                                                }
-
-                                            dateForView =
-                                                Maybe.map formatDDMMYYYY model.startDate
-                                                    |> Maybe.withDefault ""
-                                        in
-                                        div
-                                            [ class "form-input date"
-                                            , onClick <| SetStartDateSelectorState (Just dateSelectorConfig)
-                                            ]
-                                            [ text dateForView ]
-                                            |> wrapSelectListInput language Translate.SelectStartDate False
-
-                                    limitDateInput =
-                                        if
-                                            -- Reports requires setting start date before
-                                            -- limit date can be shown.
-                                            isNothing model.startDate
-                                        then
-                                            emptyNode
-
-                                        else
-                                            let
-                                                dateFrom =
-                                                    Maybe.withDefault launchDate model.startDate
-
-                                                dateSelectorConfig =
-                                                    { select = SetLimitDate
-                                                    , close = SetLimitDateSelectorState Nothing
-                                                    , dateFrom = dateFrom
-                                                    , dateTo = currentDate
-                                                    , dateDefault = Just currentDate
-                                                    }
-
-                                                limitDateForView =
-                                                    Maybe.map formatDDMMYYYY model.limitDate
-                                                        |> Maybe.withDefault ""
-                                            in
-                                            div
-                                                [ class "form-input date"
-                                                , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
-                                                ]
-                                                [ text limitDateForView ]
-                                                |> wrapSelectListInput language Translate.SelectLimitDate False
-                                in
-                                [ startDateInput, limitDateInput ]
+                                viewReportDateInputs language
+                                    currentDate
+                                    model.startDate
+                                    model.limitDate
+                                    SetStartDate
+                                    SetStartDateSelectorState
+                                    SetLimitDate
+                                    SetLimitDateSelectorState
                             )
                             model.reportType
                             |> Maybe.withDefault []
@@ -297,7 +242,7 @@ viewNutritionIndividualReport : Language -> NominalDate -> NominalDate -> Maybe 
 viewNutritionIndividualReport language startDate limitDate mTakenBy reportData =
     eliminateEmptyEncounters reportData
         |> applyFilters startDate limitDate mTakenBy
-        |> generateNutritionIndividualReportData language
+        |> generateReportData language Translate.NutritionIndividual Translate.NutritionChildActivity allNutritionIndividualActivities
         |> viewMetricsResultsTable
         |> div [ class "report nutrition-individual" ]
 
@@ -320,7 +265,7 @@ viewAcuteIllnessReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy
 viewAcuteIllnessReport language startDate limitDate mTakenBy reportData =
     eliminateEmptyEncounters reportData
         |> applyFilters startDate limitDate mTakenBy
-        |> generateAcuteIllnessReportData language
+        |> generateReportData language Translate.AcuteIllness Translate.AcuteIllnessActivity allAcuteIllnessActivities
         |> viewMetricsResultsTable
         |> div [ class "report acute-illness" ]
 
@@ -338,7 +283,7 @@ viewSPVReport language site startDate limitDate mTakenBy reportData =
                     TakenByCHW
             )
             mTakenBy
-        |> generateWellChildReportData language Translate.StandardPediatricVisit (resolveSPVActivities site)
+        |> generateReportData language Translate.StandardPediatricVisit Translate.WellChildActivity (resolveSPVActivities site)
         |> viewMetricsResultsTable
         |> div [ class "report well-child" ]
 
@@ -350,7 +295,7 @@ viewNewbornExamReport language startDate limitDate mTakenBy reportData =
             limitDate
             (always TakenByCHW)
             mTakenBy
-        |> generateWellChildReportData language Translate.NewbornExam newbornExamActivities
+        |> generateReportData language Translate.NewbornExam Translate.WellChildActivity newbornExamActivities
         |> viewMetricsResultsTable
         |> div [ class "report well-child" ]
 
@@ -359,7 +304,7 @@ viewHomeVisitReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy ->
 viewHomeVisitReport language startDate limitDate mTakenBy reportData =
     eliminateEmptyEncounters reportData
         |> applyFilters startDate limitDate mTakenBy
-        |> generateHomeVisitReportData language
+        |> generateReportData language Translate.HomeVisit Translate.HomeVisitActivity allHomeVisitActivities
         |> viewMetricsResultsTable
         |> div [ class "report home-visit" ]
 
@@ -368,7 +313,7 @@ viewChildScoreboardReport : Language -> Site -> NominalDate -> NominalDate -> Ma
 viewChildScoreboardReport language site startDate limitDate mTakenBy reportData =
     eliminateEmptyEncounters reportData
         |> applyFilters startDate limitDate mTakenBy
-        |> generateChildScoreboardReportData language (resolveChildScoreboardActivities site)
+        |> generateReportData language Translate.ChildScorecard Translate.ChildScoreboardActivity (resolveChildScoreboardActivities site)
         |> viewMetricsResultsTable
         |> div [ class "report child-scoreboard" ]
 
@@ -377,7 +322,7 @@ viewNCDReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List 
 viewNCDReport language startDate limitDate mTakenBy reportData =
     eliminateEmptyEncounters reportData
         |> applyFilters startDate limitDate mTakenBy
-        |> generateNCDReportData language
+        |> generateReportData language Translate.NCD Translate.NCDActivity allNCDActivities
         |> viewMetricsResultsTable
         |> div [ class "report ncd" ]
 
@@ -386,7 +331,7 @@ viewHIVReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List 
 viewHIVReport language startDate limitDate mTakenBy reportData =
     eliminateEmptyEncounters reportData
         |> applyFilters startDate limitDate mTakenBy
-        |> generateHIVReportData language
+        |> generateReportData language Translate.HIV Translate.HIVActivity allHIVActivities
         |> viewMetricsResultsTable
         |> div [ class "report hiv" ]
 
@@ -395,7 +340,7 @@ viewTuberculosisReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy
 viewTuberculosisReport language startDate limitDate mTakenBy reportData =
     eliminateEmptyEncounters reportData
         |> applyFilters startDate limitDate mTakenBy
-        |> generateTuberculosisReportData language
+        |> generateReportData language Translate.Tuberculosis Translate.TuberculosisActivity allTuberculosisActivities
         |> viewMetricsResultsTable
         |> div [ class "report tuberculosis" ]
 
@@ -404,7 +349,7 @@ viewPrenatalReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> 
 viewPrenatalReport language startDate limitDate mTakenBy reportData =
     eliminateEmptyEncounters reportData
         |> applyFilters startDate limitDate mTakenBy
-        |> generatePrenatalReportData language
+        |> generateReportData language Translate.Antenatal Translate.PrenatalActivity allPrenatalActivities
         |> viewMetricsResultsTable
         |> div [ class "report prenatal" ]
 
@@ -422,22 +367,8 @@ applyFilters :
     -> Maybe TakenBy
     -> List { a | startDate : Date, takenBy : Maybe TakenBy }
     -> List { a | startDate : Date, takenBy : Maybe TakenBy }
-applyFilters startDate limitDate mTakenBy =
-    List.filter
-        (\encounter ->
-            let
-                takenByCondition =
-                    Maybe.map
-                        (\takenBy ->
-                            encounter.takenBy == Just takenBy
-                        )
-                        mTakenBy
-                        |> Maybe.withDefault True
-            in
-            (not <| Date.compare encounter.startDate startDate == LT)
-                && (not <| Date.compare encounter.startDate limitDate == GT)
-                && takenByCondition
-        )
+applyFilters startDate limitDate =
+    applyFiltersBy startDate limitDate .takenBy
 
 
 customApplyFilters :
@@ -447,14 +378,25 @@ customApplyFilters :
     -> Maybe TakenBy
     -> List { a | encounterType : WellChildEncounterType, startDate : Date }
     -> List { a | encounterType : WellChildEncounterType, startDate : Date }
-customApplyFilters startDate limitDate resolveTakenByFunc mTakenBy =
+customApplyFilters startDate limitDate resolveTakenByFunc =
+    applyFiltersBy startDate limitDate (resolveTakenByFunc >> Just)
+
+
+applyFiltersBy :
+    NominalDate
+    -> NominalDate
+    -> ({ a | startDate : Date } -> Maybe TakenBy)
+    -> Maybe TakenBy
+    -> List { a | startDate : Date }
+    -> List { a | startDate : Date }
+applyFiltersBy startDate limitDate resolveTakenByFunc mTakenBy =
     List.filter
         (\encounter ->
             let
                 takenByCondition =
                     Maybe.map
                         (\takenBy ->
-                            resolveTakenByFunc encounter == takenBy
+                            resolveTakenByFunc encounter == Just takenBy
                         )
                         mTakenBy
                         |> Maybe.withDefault True
@@ -465,30 +407,17 @@ customApplyFilters startDate limitDate resolveTakenByFunc mTakenBy =
         )
 
 
-generateNutritionIndividualReportData :
+generateReportData :
     Language
-    -> List (EncounterData NutritionChildActivity)
+    -> TranslationId
+    -> (activity -> TranslationId)
+    -> List activity
+    -> List { record | completion : ActivitiesCompletionData activity }
     -> MetricsResultsTableData
-generateNutritionIndividualReportData language records =
-    { heading = translate language Translate.NutritionIndividual
+generateReportData language headingTransId activityTransId activities records =
+    { heading = translate language headingTransId
     , captions = generateCaptionsList language
-    , rows =
-        List.map
-            (\activity ->
-                let
-                    expected =
-                        countOccurrences (.completion >> .expectedActivities) activity records
-
-                    completed =
-                        countOccurrences (.completion >> .completedActivities) activity records
-                in
-                [ translate language <| Translate.NutritionChildActivity activity
-                , String.fromInt expected
-                , String.fromInt completed
-                , calculatePercentage completed expected
-                ]
-            )
-            allNutritionIndividualActivities
+    , rows = generateActivityRows language activityTransId (List.map .completion records) activities
     }
 
 
@@ -503,253 +432,37 @@ generateNutritionGroupReportData language records =
 
         childrenData =
             List.concatMap .childrenData records
-
-        generateActivityRows activityTransId data =
-            List.map
-                (\activity ->
-                    let
-                        expected =
-                            countOccurrences .expectedActivities activity data
-
-                        completed =
-                            countOccurrences .completedActivities activity data
-                    in
-                    [ translate language <| activityTransId activity
-                    , String.fromInt expected
-                    , String.fromInt completed
-                    , calculatePercentage completed expected
-                    ]
-                )
-
-        motherActivityRows =
-            generateActivityRows Translate.NutritionMotherActivity motherData allNutritionMotherGroupActivities
-
-        childrenActivityRows =
-            generateActivityRows Translate.NutritionChildActivity childrenData allNutritionChildGroupActivities
     in
     { heading = translate language Translate.NutritionGroup
     , captions = generateCaptionsList language
-    , rows = motherActivityRows ++ childrenActivityRows
-    }
-
-
-generateAcuteIllnessReportData :
-    Language
-    -> List (EncounterData AcuteIllnessActivity)
-    -> MetricsResultsTableData
-generateAcuteIllnessReportData language records =
-    { heading = translate language Translate.AcuteIllness
-    , captions = generateCaptionsList language
     , rows =
-        List.map
-            (\activity ->
-                let
-                    expected =
-                        countOccurrences (.completion >> .expectedActivities) activity records
-
-                    completed =
-                        countOccurrences (.completion >> .completedActivities) activity records
-                in
-                [ translate language <| Translate.AcuteIllnessActivity activity
-                , String.fromInt expected
-                , String.fromInt completed
-                , calculatePercentage completed expected
-                ]
-            )
-            allAcuteIllnessActivities
+        generateActivityRows language Translate.NutritionMotherActivity motherData allNutritionMotherGroupActivities
+            ++ generateActivityRows language Translate.NutritionChildActivity childrenData allNutritionChildGroupActivities
     }
 
 
-generateWellChildReportData :
+generateActivityRows :
     Language
-    -> TranslationId
-    -> List WellChildActivity
-    -> List WellChildEncounterData
-    -> MetricsResultsTableData
-generateWellChildReportData language labelTransId activities records =
-    { heading = translate language labelTransId
-    , captions = generateCaptionsList language
-    , rows =
-        List.map
-            (\activity ->
-                let
-                    expected =
-                        countOccurrences (.completion >> .expectedActivities) activity records
+    -> (activity -> TranslationId)
+    -> List (ActivitiesCompletionData activity)
+    -> List activity
+    -> List (List String)
+generateActivityRows language activityTransId data =
+    List.map
+        (\activity ->
+            let
+                expected =
+                    countOccurrences .expectedActivities activity data
 
-                    completed =
-                        countOccurrences (.completion >> .completedActivities) activity records
-                in
-                [ translate language <| Translate.WellChildActivity activity
-                , String.fromInt expected
-                , String.fromInt completed
-                , calculatePercentage completed expected
-                ]
-            )
-            activities
-    }
-
-
-generateHomeVisitReportData :
-    Language
-    -> List (EncounterData HomeVisitActivity)
-    -> MetricsResultsTableData
-generateHomeVisitReportData language records =
-    { heading = translate language Translate.HomeVisit
-    , captions = generateCaptionsList language
-    , rows =
-        List.map
-            (\activity ->
-                let
-                    expected =
-                        countOccurrences (.completion >> .expectedActivities) activity records
-
-                    completed =
-                        countOccurrences (.completion >> .completedActivities) activity records
-                in
-                [ translate language <| Translate.HomeVisitActivity activity
-                , String.fromInt expected
-                , String.fromInt completed
-                , calculatePercentage completed expected
-                ]
-            )
-            allHomeVisitActivities
-    }
-
-
-generateChildScoreboardReportData :
-    Language
-    -> List ChildScoreboardActivity
-    -> List (EncounterData ChildScoreboardActivity)
-    -> MetricsResultsTableData
-generateChildScoreboardReportData language activities records =
-    { heading = translate language Translate.ChildScorecard
-    , captions = generateCaptionsList language
-    , rows =
-        List.map
-            (\activity ->
-                let
-                    expected =
-                        countOccurrences (.completion >> .expectedActivities) activity records
-
-                    completed =
-                        countOccurrences (.completion >> .completedActivities) activity records
-                in
-                [ translate language <| Translate.ChildScoreboardActivity activity
-                , String.fromInt expected
-                , String.fromInt completed
-                , calculatePercentage completed expected
-                ]
-            )
-            activities
-    }
-
-
-generateNCDReportData :
-    Language
-    -> List (EncounterData NCDActivity)
-    -> MetricsResultsTableData
-generateNCDReportData language records =
-    { heading = translate language Translate.NCD
-    , captions = generateCaptionsList language
-    , rows =
-        List.map
-            (\activity ->
-                let
-                    expected =
-                        countOccurrences (.completion >> .expectedActivities) activity records
-
-                    completed =
-                        countOccurrences (.completion >> .completedActivities) activity records
-                in
-                [ translate language <| Translate.NCDActivity activity
-                , String.fromInt expected
-                , String.fromInt completed
-                , calculatePercentage completed expected
-                ]
-            )
-            allNCDActivities
-    }
-
-
-generateHIVReportData :
-    Language
-    -> List (EncounterData HIVActivity)
-    -> MetricsResultsTableData
-generateHIVReportData language records =
-    { heading = translate language Translate.HIV
-    , captions = generateCaptionsList language
-    , rows =
-        List.map
-            (\activity ->
-                let
-                    expected =
-                        countOccurrences (.completion >> .expectedActivities) activity records
-
-                    completed =
-                        countOccurrences (.completion >> .completedActivities) activity records
-                in
-                [ translate language <| Translate.HIVActivity activity
-                , String.fromInt expected
-                , String.fromInt completed
-                , calculatePercentage completed expected
-                ]
-            )
-            allHIVActivities
-    }
-
-
-generateTuberculosisReportData :
-    Language
-    -> List (EncounterData TuberculosisActivity)
-    -> MetricsResultsTableData
-generateTuberculosisReportData language records =
-    { heading = translate language Translate.Tuberculosis
-    , captions = generateCaptionsList language
-    , rows =
-        List.map
-            (\activity ->
-                let
-                    expected =
-                        countOccurrences (.completion >> .expectedActivities) activity records
-
-                    completed =
-                        countOccurrences (.completion >> .completedActivities) activity records
-                in
-                [ translate language <| Translate.TuberculosisActivity activity
-                , String.fromInt expected
-                , String.fromInt completed
-                , calculatePercentage completed expected
-                ]
-            )
-            allTuberculosisActivities
-    }
-
-
-generatePrenatalReportData :
-    Language
-    -> List (EncounterData PrenatalActivity)
-    -> MetricsResultsTableData
-generatePrenatalReportData language records =
-    { heading = translate language Translate.Antenatal
-    , captions = generateCaptionsList language
-    , rows =
-        List.map
-            (\activity ->
-                let
-                    expected =
-                        countOccurrences (.completion >> .expectedActivities) activity records
-
-                    completed =
-                        countOccurrences (.completion >> .completedActivities) activity records
-                in
-                [ translate language <| Translate.PrenatalActivity activity
-                , String.fromInt expected
-                , String.fromInt completed
-                , calculatePercentage completed expected
-                ]
-            )
-            allPrenatalActivities
-    }
+                completed =
+                    countOccurrences .completedActivities activity data
+            in
+            [ translate language <| activityTransId activity
+            , String.fromInt expected
+            , String.fromInt completed
+            , calculatePercentage completed expected
+            ]
+        )
 
 
 

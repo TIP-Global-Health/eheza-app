@@ -1,21 +1,171 @@
-module Pages.Components.View exposing (viewDemographicsSelection, viewDemographicsSelectionActionButton, viewMetricsResultsTable, viewStandardCells, viewStandardRow)
+module Pages.Components.View exposing (viewDemographicsSelection, viewDemographicsSelectionActionButton, viewHealthCenterSelection, viewMetricsResultsTable, viewPopulationSelectionInput, viewReportDateInputs, viewStandardCells, viewStandardRow)
 
 import App.Types exposing (Language, Site)
 import AssocList as Dict
+import Backend.Components.Model exposing (HealthCenterId, MenuData, MenuScope(..))
 import Backend.Entities exposing (fromEntityId, toEntityId)
+import DateSelector.Model exposing (DateSelectorConfig)
 import Gizra.Html exposing (emptyNode)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Maybe.Extra exposing (isJust)
+import Html.Events exposing (onClick)
+import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Components.Model exposing (DemographicsSelection)
+import Pages.Components.Types exposing (PopulationSelectionOption(..))
+import Pages.Components.Utils exposing (populationSelectionOptionToString)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils
     exposing
-        ( viewGeoLocationSelectListInput
+        ( launchDate
+        , viewCustomSelectListInput
+        , viewGeoLocationSelectListInput
+        , viewLoadDataButton
         , viewMenuActionButton
+        , viewSelectListInput
+        , wrapSelectListInput
         )
 import Translate exposing (TranslationId)
 import Utils.GeoLocation exposing (..)
+
+
+viewPopulationSelectionInput :
+    Language
+    -> MenuData
+    -> List PopulationSelectionOption
+    -> Maybe PopulationSelectionOption
+    -> (String -> msg)
+    -> Html msg
+viewPopulationSelectionInput language data allOptions populationSelection setPopulationSelectionMsg =
+    let
+        options =
+            Maybe.map
+                (\scope ->
+                    case scope of
+                        ScopeFull ->
+                            allOptions
+
+                        ScopeHealthCenters ->
+                            [ SelectionOptionHealthCenter ]
+                )
+                data.scope
+                |> Maybe.withDefault allOptions
+    in
+    viewSelectListInput language
+        populationSelection
+        options
+        populationSelectionOptionToString
+        setPopulationSelectionMsg
+        Translate.PopulationSelectionOption
+        "select-input"
+        |> wrapSelectListInput language Translate.Scope False
+
+
+{-| The health-center scope inputs of a menu page - the health-center
+select list, and the action button that leads to the page for the
+selected health center (its URL is the given prefix followed by the
+health center ID).
+-}
+viewHealthCenterSelection :
+    Language
+    -> MenuData
+    -> String
+    -> Maybe HealthCenterId
+    -> (String -> msg)
+    -> msg
+    -> ( List (Html msg), Html msg )
+viewHealthCenterSelection language data urlPrefix selectedHealthCenter setHealthCenterMsg selectionMadeMsg =
+    let
+        options =
+            List.sortBy .name data.healthCenters
+                |> List.map (\healthCenter -> ( healthCenter.name, healthCenter.id ))
+    in
+    ( [ viewCustomSelectListInput
+            selectedHealthCenter
+            options
+            String.fromInt
+            setHealthCenterMsg
+            "select-input"
+            (Just "")
+            |> wrapSelectListInput language Translate.HealthCenter False
+      ]
+    , Maybe.map
+        (\healthCenterId ->
+            viewLoadDataButton language
+                (urlPrefix ++ String.fromInt healthCenterId)
+                selectionMadeMsg
+        )
+        selectedHealthCenter
+        |> Maybe.withDefault emptyNode
+    )
+
+
+viewReportDateInputs :
+    Language
+    -> NominalDate
+    -> Maybe NominalDate
+    -> Maybe NominalDate
+    -> (NominalDate -> msg)
+    -> (Maybe (DateSelectorConfig msg) -> msg)
+    -> (NominalDate -> msg)
+    -> (Maybe (DateSelectorConfig msg) -> msg)
+    -> List (Html msg)
+viewReportDateInputs language currentDate startDate limitDate setStartDateMsg setStartDateSelectorStateMsg setLimitDateMsg setLimitDateSelectorStateMsg =
+    let
+        startDateInput =
+            let
+                dateSelectorConfig =
+                    { select = setStartDateMsg
+                    , close = setStartDateSelectorStateMsg Nothing
+                    , dateFrom = launchDate
+                    , dateTo = currentDate
+                    , dateDefault = Just launchDate
+                    }
+
+                dateForView =
+                    Maybe.map formatDDMMYYYY startDate
+                        |> Maybe.withDefault ""
+            in
+            div
+                [ class "form-input date"
+                , onClick <| setStartDateSelectorStateMsg (Just dateSelectorConfig)
+                ]
+                [ text dateForView ]
+                |> wrapSelectListInput language Translate.SelectStartDate False
+
+        limitDateInput =
+            if
+                -- Reports requires setting start date before
+                -- limit date can be shown.
+                isNothing startDate
+            then
+                emptyNode
+
+            else
+                let
+                    dateFrom =
+                        Maybe.withDefault launchDate startDate
+
+                    dateSelectorConfig =
+                        { select = setLimitDateMsg
+                        , close = setLimitDateSelectorStateMsg Nothing
+                        , dateFrom = dateFrom
+                        , dateTo = currentDate
+                        , dateDefault = Just currentDate
+                        }
+
+                    limitDateForView =
+                        Maybe.map formatDDMMYYYY limitDate
+                            |> Maybe.withDefault ""
+                in
+                div
+                    [ class "form-input date"
+                    , onClick <| setLimitDateSelectorStateMsg (Just dateSelectorConfig)
+                    ]
+                    [ text limitDateForView ]
+                    |> wrapSelectListInput language Translate.SelectLimitDate False
+    in
+    [ startDateInput, limitDateInput ]
 
 
 viewDemographicsSelection :

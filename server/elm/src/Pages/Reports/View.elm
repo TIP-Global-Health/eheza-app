@@ -31,7 +31,6 @@ import Gizra.NominalDate
         , customFormatDDMMYYYY
         , diffMonths
         , diffWeeks
-        , formatDDMMYYYY
         , sortByDate
         , sortByDateDesc
         )
@@ -41,7 +40,7 @@ import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
-import Pages.Components.View exposing (viewMetricsResultsTable, viewStandardCells, viewStandardRow)
+import Pages.Components.View exposing (viewMetricsResultsTable, viewReportDateInputs, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
 import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
@@ -51,6 +50,7 @@ import Pages.Utils
         ( calculatePercentage
         , generateReportsHeaderImage
         , launchDate
+        , viewBackendData
         , viewCustomLabel
         , viewSelectListInput
         , wrapSelectListInput
@@ -63,15 +63,8 @@ import Utils.Html exposing (viewModal)
 
 view : Language -> NominalDate -> String -> ModelBackend -> Model -> Html Msg
 view language currentDate themePath modelBackend model =
-    case modelBackend.reportsData of
-        Just (Ok data) ->
-            viewReportsData language currentDate themePath data model
-
-        Just (Err err) ->
-            text <| Debug.toString err
-
-        Nothing ->
-            emptyNode
+    viewBackendData modelBackend.reportsData
+        (\data -> viewReportsData language currentDate themePath data model)
 
 
 viewReportsData : Language -> NominalDate -> String -> ReportsData -> Model -> Html Msg
@@ -110,61 +103,14 @@ viewReportsData language currentDate themePath data model =
                                     []
 
                                 else
-                                    let
-                                        startDateInput =
-                                            let
-                                                dateSelectorConfig =
-                                                    { select = SetStartDate
-                                                    , close = SetStartDateSelectorState Nothing
-                                                    , dateFrom = launchDate
-                                                    , dateTo = currentDate
-                                                    , dateDefault = Just launchDate
-                                                    }
-
-                                                dateForView =
-                                                    Maybe.map formatDDMMYYYY model.startDate
-                                                        |> Maybe.withDefault ""
-                                            in
-                                            div
-                                                [ class "form-input date"
-                                                , onClick <| SetStartDateSelectorState (Just dateSelectorConfig)
-                                                ]
-                                                [ text dateForView ]
-                                                |> wrapSelectListInput language Translate.SelectStartDate False
-
-                                        limitDateInput =
-                                            if
-                                                -- Reports requires setting start date before
-                                                -- limit date can be shown.
-                                                isNothing model.startDate
-                                            then
-                                                emptyNode
-
-                                            else
-                                                let
-                                                    dateFrom =
-                                                        Maybe.withDefault launchDate model.startDate
-
-                                                    dateSelectorConfig =
-                                                        { select = SetLimitDate
-                                                        , close = SetLimitDateSelectorState Nothing
-                                                        , dateFrom = dateFrom
-                                                        , dateTo = currentDate
-                                                        , dateDefault = Just currentDate
-                                                        }
-
-                                                    limitDateForView =
-                                                        Maybe.map formatDDMMYYYY model.limitDate
-                                                            |> Maybe.withDefault ""
-                                                in
-                                                div
-                                                    [ class "form-input date"
-                                                    , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
-                                                    ]
-                                                    [ text limitDateForView ]
-                                                    |> wrapSelectListInput language Translate.SelectLimitDate False
-                                    in
-                                    [ startDateInput, limitDateInput ]
+                                    viewReportDateInputs language
+                                        currentDate
+                                        model.startDate
+                                        model.limitDate
+                                        SetStartDate
+                                        SetStartDateSelectorState
+                                        SetLimitDate
+                                        SetLimitDateSelectorState
                             )
                             model.reportType
                             |> Maybe.withDefault []
@@ -249,33 +195,19 @@ viewReportsData language currentDate themePath data model =
                                                                             )
                                                                         )
 
+                                                                inRangeBy resolveDateFunc encounterData =
+                                                                    let
+                                                                        encounterDate =
+                                                                            resolveDateFunc encounterData
+                                                                    in
+                                                                    (not <| Date.compare encounterDate startDate == LT)
+                                                                        && (not <| Date.compare encounterDate limitDate == GT)
+
                                                                 filterIndividualBy resolveDateFunc =
-                                                                    Maybe.map
-                                                                        (List.map
-                                                                            (List.filter
-                                                                                (\encounterData ->
-                                                                                    let
-                                                                                        encounterDate =
-                                                                                            resolveDateFunc encounterData
-                                                                                    in
-                                                                                    (not <| Date.compare encounterDate startDate == LT)
-                                                                                        && (not <| Date.compare encounterDate limitDate == GT)
-                                                                                )
-                                                                            )
-                                                                        )
+                                                                    Maybe.map (List.map (List.filter (inRangeBy resolveDateFunc)))
 
                                                                 filterGroupBy resolveDateFunc =
-                                                                    Maybe.map
-                                                                        (List.filter
-                                                                            (\encounterData ->
-                                                                                let
-                                                                                    encounterDate =
-                                                                                        resolveDateFunc encounterData
-                                                                                in
-                                                                                (not <| Date.compare encounterDate startDate == LT)
-                                                                                    && (not <| Date.compare encounterDate limitDate == GT)
-                                                                            )
-                                                                        )
+                                                                    Maybe.map (List.filter (inRangeBy resolveDateFunc))
                                                             in
                                                             Just
                                                                 { record
@@ -1262,25 +1194,13 @@ generateMonthlyPrevalenceTableData :
     -> Dict ( Int, Int ) NutritionMetrics
     -> MetricsResultsTableData
 generateMonthlyPrevalenceTableData language currentDate heading encountersByMonth =
-    List.range 1 12
-        |> List.map
-            (\index ->
-                let
-                    selectedDate =
-                        Date.add Months (-1 * index) currentDate
-
-                    year =
-                        Date.year selectedDate
-
-                    monthNumber =
-                        Date.monthNumber selectedDate
-                in
-                ( Translate.MonthYear monthNumber year True
-                , resolveDataSetForMonth currentDate index encountersByMonth
-                    |> generatePrevalenceNutritionMetricsResults
-                )
-            )
-        |> toMetricsResultsTableData language heading
+    generateMonthlyTableData language
+        currentDate
+        heading
+        (\index ->
+            resolveDataSetForMonth currentDate index encountersByMonth
+                |> generatePrevalenceNutritionMetricsResults
+        )
 
 
 generateMonthlyIncidenceTableData :
@@ -1290,25 +1210,38 @@ generateMonthlyIncidenceTableData :
     -> Dict ( Int, Int ) NutritionMetrics
     -> MetricsResultsTableData
 generateMonthlyIncidenceTableData language currentDate heading encountersByMonth =
+    generateMonthlyTableData language
+        currentDate
+        heading
+        (\index ->
+            generateIncidenceNutritionMetricsResults
+                (resolveDataSetForMonth currentDate index encountersByMonth)
+                -- Per definition, for month, previous data set contains
+                -- data of 3 months that came prior.
+                (resolvePreviousDataSetForMonth currentDate index encountersByMonth)
+        )
+
+
+{-| A table with one row per month, covering the 12 months before current
+date. The given function resolves row metrics from the month's index
+(1 = last month, 12 = a year ago).
+-}
+generateMonthlyTableData :
+    Language
+    -> NominalDate
+    -> TranslationId
+    -> (Int -> NutritionMetricsResults)
+    -> MetricsResultsTableData
+generateMonthlyTableData language currentDate heading resolveMetricsResultsForMonth =
     List.range 1 12
         |> List.map
             (\index ->
                 let
                     selectedDate =
                         Date.add Months (-1 * index) currentDate
-
-                    year =
-                        Date.year selectedDate
-
-                    monthNumber =
-                        Date.monthNumber selectedDate
                 in
-                ( Translate.MonthYear monthNumber year True
-                , generateIncidenceNutritionMetricsResults
-                    (resolveDataSetForMonth currentDate index encountersByMonth)
-                    -- Per definition, for month, previous data set contains
-                    -- data of 3 months that came prior.
-                    (resolvePreviousDataSetForMonth currentDate index encountersByMonth)
+                ( Translate.MonthYear (Date.monthNumber selectedDate) (Date.year selectedDate) True
+                , resolveMetricsResultsForMonth index
                 )
             )
         |> toMetricsResultsTableData language heading
@@ -2326,6 +2259,20 @@ prenatalDiagnosisCssClass diagnosis =
             "no-diagnosis"
 
 
+countOccurrencesDict : List a -> Dict a Int
+countOccurrencesDict =
+    List.foldl
+        (\item accum ->
+            Dict.get item accum
+                |> Maybe.map
+                    (\value ->
+                        Dict.insert item (value + 1) accum
+                    )
+                |> Maybe.withDefault (Dict.insert item 1 accum)
+        )
+        Dict.empty
+
+
 generateAcuteIllnessReportData :
     Language
     -> NominalDate
@@ -2343,16 +2290,7 @@ generateAcuteIllnessReportData language startDate records =
             List.concat acuteIllnessParticipantRecords
                 |> List.map .diagnosis
                 |> Maybe.Extra.values
-                |> List.foldl
-                    (\diagnosis accum ->
-                        Dict.get diagnosis accum
-                            |> Maybe.map
-                                (\value ->
-                                    Dict.insert diagnosis (value + 1) accum
-                                )
-                            |> Maybe.withDefault (Dict.insert diagnosis 1 accum)
-                    )
-                    Dict.empty
+                |> countOccurrencesDict
 
         -- Initial encounter always determines a diagnosis.
         -- Here we count the illnesses for which no diagnosis was determined.
@@ -2697,17 +2635,7 @@ generatePrenatalDiagnosesReportData language records =
                     )
 
         diagnosesCountDict =
-            List.foldl
-                (\diagnosis accum ->
-                    Dict.get diagnosis accum
-                        |> Maybe.map
-                            (\value ->
-                                Dict.insert diagnosis (value + 1) accum
-                            )
-                        |> Maybe.withDefault (Dict.insert diagnosis 1 accum)
-                )
-                Dict.empty
-                allDiagnoses
+            countOccurrencesDict allDiagnoses
 
         rows =
             List.map
