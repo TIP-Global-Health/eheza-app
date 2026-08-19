@@ -6868,7 +6868,7 @@ function hedley_reports_ncd_generate_expected_initial_activities(array $encounte
     $interval = $start_date_obj->diff($birth_date_obj);
     $age_in_years = $interval->y;
 
-    if ($age_in_years >= 13 && $age_in_years <= 44) {
+    if ($age_in_years > 12 && $age_in_years < 50) {
       $expected[] = 'ncd_family_planning';
     }
   }
@@ -6953,14 +6953,14 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, DateTime 
       if (!empty($hiv_test) && !empty($hiv_test->field_test_execution_note)) {
         $hiv_known_as_positive = $hiv_test->field_test_execution_note[LANGUAGE_NONE][0]['value'] == 'known-as-positive';
         if (!$hiv_known_as_positive && hedley_reports_lab_test_performed_by_execution_note($hiv_test)) {
-          $date_measured = explode(' ', $hiv_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
-          $date_measured_obj = new DateTime($date_measured);
-          $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
+          // The test is read on the spot, so it always carries a result, and
+          // a result that is not conclusive is taken as if the test had not
+          // been done.
           $valid_results_exists =
             !empty($hiv_test->field_test_result) &&
             !empty($hiv_test->field_test_result[LANGUAGE_NONE][0]['value']) &&
             $hiv_test->field_test_result[LANGUAGE_NONE][0]['value'] != 'indeterminate';
-          if ($valid_results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+          if ($valid_results_exists) {
             $tests_dates_by_lab_type['ncd_hiv_test'][] = explode(' ', $hiv_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
           }
         }
@@ -6991,14 +6991,14 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, DateTime 
 
     $pregnancy_test = $measurements_by_type['ncd_pregnancy_test'];
     if (hedley_reports_lab_test_performed_by_execution_note($pregnancy_test)) {
-      $date_measured = explode(' ', $pregnancy_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
-      $date_measured_obj = new DateTime($date_measured);
-      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
+      // The test is read on the spot, so it always carries a result, and a
+      // result that is not conclusive is taken as if the test had not been
+      // done.
       $valid_results_exists =
-        !empty($hiv_test->field_test_result) &&
-        !empty($hiv_test->field_test_result[LANGUAGE_NONE][0]['value']) &&
-        $hiv_test->field_test_result[LANGUAGE_NONE][0]['value'] != 'indeterminate';
-      if ($valid_results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+        !empty($pregnancy_test->field_test_result) &&
+        !empty($pregnancy_test->field_test_result[LANGUAGE_NONE][0]['value']) &&
+        $pregnancy_test->field_test_result[LANGUAGE_NONE][0]['value'] != 'indeterminate';
+      if ($valid_results_exists) {
         $tests_dates_by_lab_type['ncd_pregnancy_test'][] = explode(' ', $pregnancy_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
       }
     }
@@ -7054,7 +7054,7 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, DateTime 
             $interval = $encounter_data['start_date_obj']->diff($birth_date_obj);
             $age_in_years = $interval->y;
 
-            if ($age_in_years >= 13 && $age_in_years <= 44) {
+            if ($age_in_years > 12 && $age_in_years < 50) {
               $expected[] = 'ncd_pregnancy_test';
             }
           }
