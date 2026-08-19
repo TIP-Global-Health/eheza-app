@@ -1,13 +1,12 @@
 module Pages.Prenatal.ProgressReport.Svg exposing
-    ( frame
-    , viewBMIForEGA
+    ( viewBMIForEGA
     , viewFundalHeightForEGA
     , viewWeightGainForEGA
     , viewWeightGainForEGAHealthyStart
     )
 
 import Html exposing (Html)
-import Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolygon, drawPolyline, heightPx, referenceHorizontalLines, referenceHorizontalNumbers, referenceVerticalLines, referenceVerticalNumbers, widthPx, withinRange)
+import Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolygon, drawPolyline, frame, heightPx, referenceHorizontalLines, referenceHorizontalNumbers, referenceVerticalLines, referenceVerticalNumbers, widthPx, withinRange)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Translate exposing (Language, translate)
@@ -516,26 +515,4 @@ viewFundalHeightForEGA language points =
           )
             |> g []
         , referenceHorizontalLines horizontalParts ++ referenceHorizontalNumbers horizontalParts horizontalMin 2 |> g []
-        ]
-
-
-frame : Svg any
-frame =
-    g
-        []
-        [ rect
-            [ class "chart-outer-frame"
-            , height "447.9"
-            , width "728.5"
-            , x "56.7"
-            , y "101.1"
-            ]
-            []
-        , rect
-            [ height "386.8"
-            , width "626.8"
-            , x "110.9"
-            , y "119.9"
-            ]
-            []
         ]
