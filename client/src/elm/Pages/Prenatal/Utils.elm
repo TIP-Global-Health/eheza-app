@@ -31,6 +31,7 @@ import Pages.Utils
         , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
         , nonAdministrationReasonToSign
+        , nonReferralReasonSection
         , taskCompleted
         , viewBoolInput
         , viewCheckBoxSelectCustomInput
@@ -3693,8 +3694,12 @@ resolveReferralToFacilityInputsAndTasks language phase assembled setReferralBool
                                 )
 
                             else
-                                ( nonReferralReasonSection language facility config.reasonToSignFunc setNonReferralReasonMsg form
-                                , [ maybeToBoolTask <| getCurrentReasonForNonReferralByForm config.reasonToSignFunc form ]
+                                let
+                                    currentValue =
+                                        getCurrentReasonForNonReferralByForm config.reasonToSignFunc form
+                                in
+                                ( nonReferralReasonSection language facility currentValue setNonReferralReasonMsg
+                                , [ maybeToBoolTask currentValue ]
                                 )
                         )
                         config.referralField
@@ -3719,44 +3724,6 @@ resolveReferralToFacilityInputsAndTasks language phase assembled setReferralBool
         )
         maybeConfig
         |> Maybe.withDefault ( [], [] )
-
-
-nonReferralReasonSection :
-    Language
-    -> ReferralFacility
-    -> (ReasonForNonReferral -> NonReferralSign)
-    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
-    -> ReferralForm
-    -> List (Html msg)
-nonReferralReasonSection language facility reasonToSignFunc setNonReferralReasonMsg form =
-    let
-        currentValue =
-            getCurrentReasonForNonReferralByForm reasonToSignFunc form
-
-        options =
-            if facility == FacilityHospital then
-                [ ClientRefused
-                , NoAmbulance
-                , ClientUnableToAffordFees
-                , ReasonForNonReferralNotIndicated
-                , ReasonForNonReferralOther
-                ]
-
-            else
-                [ ClientRefused
-                , ClientAlreadyInCare
-                , ReasonForNonReferralNotIndicated
-                , ReasonForNonReferralOther
-                ]
-    in
-    [ viewQuestionLabel language Translate.WhyNot
-    , viewCheckBoxSelectInput language
-        options
-        []
-        currentValue
-        (setNonReferralReasonMsg currentValue facility)
-        Translate.ReasonForNonReferral
-    ]
 
 
 getCurrentReasonForNonReferralByForm :

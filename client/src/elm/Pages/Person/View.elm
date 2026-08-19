@@ -61,7 +61,7 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (Model, Msg(..))
-import Pages.Utils exposing (viewConfirmationDialog)
+import Pages.Utils exposing (viewConfirmationDialog, viewPhotoThumb)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Set
@@ -489,17 +489,6 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
             [ class "ui image" ]
             [ thumbnailImage typeForThumbnail person.avatarUrl person.name 120 120 ]
         , content
-        ]
-
-
-viewPhotoThumb : String -> Html any
-viewPhotoThumb url =
-    div []
-        [ img
-            [ src url
-            , class "ui small image orientation"
-            ]
-            []
         ]
 
 
