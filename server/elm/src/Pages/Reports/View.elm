@@ -107,10 +107,11 @@ viewReportsData language currentDate themePath data model =
                                         currentDate
                                         model.startDate
                                         model.limitDate
-                                        SetStartDate
-                                        SetStartDateSelectorState
-                                        SetLimitDate
-                                        SetLimitDateSelectorState
+                                        { setStartDate = SetStartDate
+                                        , setStartDateSelectorState = SetStartDateSelectorState
+                                        , setLimitDate = SetLimitDate
+                                        , setLimitDateSelectorState = SetLimitDateSelectorState
+                                        }
                             )
                             model.reportType
                             |> Maybe.withDefault []
