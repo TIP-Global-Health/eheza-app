@@ -36,7 +36,7 @@ reached yet.
 -}
 child : Person
 child =
-    { testChild | birthDate = Just (Date.add Date.Months -24 currentDate) }
+    testChild (Date.add Date.Months -24 currentDate)
 
 
 emptyNCDAValue : NCDAValue

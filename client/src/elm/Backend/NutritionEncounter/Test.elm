@@ -47,7 +47,7 @@ empty `ZScore.Model`).
 -}
 baseChild : Person
 baseChild =
-    { testChild | birthDate = Just (Date.add Date.Months -3 currentDate) }
+    testChild (Date.add Date.Months -3 currentDate)
 
 
 {-| A child whose birth date places it `months` months before `currentDate`.

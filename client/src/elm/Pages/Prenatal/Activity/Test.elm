@@ -476,9 +476,7 @@ withHemoglobinNonImmediate count measurements =
     { measurements | hemoglobinTest = wrapMeasurement (hemoglobinTestValueNonImmediate count) }
 
 
-{-| Vitals with the given systolic/diastolic blood pressure. Respiratory rate
-is left unset so the anemia-complication path (which keys off an elevated
-respiratory rate) stays inert.
+{-| Vitals with the given systolic/diastolic blood pressure.
 -}
 withVitals : Float -> Float -> PrenatalMeasurements -> PrenatalMeasurements
 withVitals sys dia measurements =

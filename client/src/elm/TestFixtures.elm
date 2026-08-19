@@ -65,12 +65,12 @@ testPerson =
     }
 
 
-{-| `testPerson` named as a child. Tests override `birthDate` to set the age
-they need.
+{-| `testPerson` named as a child, born on the given date. The birth date is
+an argument because every test needs a specific age.
 -}
-testChild : Person
-testChild =
-    { testPerson | name = "Test Child", secondName = "Child" }
+testChild : NominalDate -> Person
+testChild birthDate =
+    { testPerson | name = "Test Child", secondName = "Child", birthDate = Just birthDate }
 
 
 {-| An `IndividualEncounterParticipant` of the given encounter type, started
@@ -115,8 +115,9 @@ wrapMeasurement dateMeasured value =
         )
 
 
-{-| Vitals with the given systolic/diastolic blood pressure; everything else
-is left unset.
+{-| Vitals with the given systolic/diastolic blood pressure. Respiratory rate
+is left unset so the prenatal anemia-complication path, which keys off an
+elevated respiratory rate, stays inert. Everything else is unset too.
 -}
 vitalsValueWith : Float -> Float -> VitalsValue
 vitalsValueWith sys dia =
