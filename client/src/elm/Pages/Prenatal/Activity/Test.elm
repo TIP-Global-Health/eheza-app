@@ -10,7 +10,6 @@ import Backend.Measurement.Model
         , CorePhysicalExamValue
         , DangerSign(..)
         , DangerSignsValue
-        , Gender(..)
         , HIVPCRTestValue
         , HIVTestValue
         , HemoglobinTestValue
@@ -51,6 +50,7 @@ import Pages.Prenatal.Model exposing (AssembledData)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
+import TestFixtures
 import Time
 
 
@@ -137,65 +137,23 @@ dummyDate =
     currentDate
 
 
-{-| Wrap a measurement `value` into the full `Measurement` record shape that
-the `PrenatalMeasurements` fields require, paired with a dummy entity id.
-
-The signature is polymorphic in the id tag, encounter type, and value, so it
-unifies with each concrete `PrenatalMeasurements` field type.
-
+{-| Wrap a measurement `value` into the shape the `PrenatalMeasurements`
+fields require, with `dummyDate` as `dateMeasured`.
 -}
 wrapMeasurement : value -> Maybe ( EntityUuid id, Measurement encounter value )
 wrapMeasurement value =
-    Just
-        ( toEntityUuid "dummy-id"
-        , { dateMeasured = dummyDate
-          , nurse = Nothing
-          , healthCenter = Nothing
-          , participantId = toEntityUuid "dummy-person"
-          , deleted = False
-          , encounterId = Nothing
-          , value = value
-          }
-        )
+    TestFixtures.wrapMeasurement dummyDate value
 
 
-{-| An adult female person. Everything except birthDate/gender is
-defaulted/empty (mirrors `testPerson` in the acute-illness test file).
+{-| The shared adult female fixture, but born 1990: age 30 at `currentDate`.
 -}
 testPerson : Person
 testPerson =
-    { name = "Test Person"
-    , firstName = "Test"
-    , secondName = "Person"
-    , nationalIdNumber = Nothing
-    , hmisNumber = Nothing
-    , avatarUrl = Nothing
-    , birthDate = Just (Date.fromCalendarDate 1990 Time.Jan 1)
-    , isDateOfBirthEstimated = False
-    , gender = Female
-    , hivStatus = Nothing
-    , numberOfChildren = Nothing
-    , modeOfDelivery = Nothing
-    , ubudehe = Nothing
-    , educationLevel = Nothing
-    , maritalStatus = Nothing
-    , province = Nothing
-    , district = Nothing
-    , sector = Nothing
-    , cell = Nothing
-    , village = Nothing
-    , registrationLatitude = Nothing
-    , registrationLongitude = Nothing
-    , saveGPSLocation = False
-    , telephoneNumber = Nothing
-    , spouseName = Nothing
-    , spousePhoneNumber = Nothing
-    , nextOfKinName = Nothing
-    , nextOfKinPhoneNumber = Nothing
-    , healthCenterId = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
+    let
+        base =
+            TestFixtures.testPerson
+    in
+    { base | birthDate = Just (Date.fromCalendarDate 1990 Time.Jan 1) }
 
 
 {-| An initial-phase nurse encounter (`NurseEncounter`), with no prior
@@ -218,18 +176,7 @@ testEncounter =
 
 testParticipant : IndividualEncounterParticipant
 testParticipant =
-    { person = toEntityUuid "dummy-person"
-    , encounterType = AntenatalEncounter
-    , startDate = currentDate
-    , endDate = Nothing
-    , eddDate = Nothing
-    , dateConcluded = Nothing
-    , outcome = Nothing
-    , deliveryLocation = Nothing
-    , newborn = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
+    TestFixtures.testParticipant currentDate AntenatalEncounter
 
 
 {-| One reusable `AssembledData` for an initial-phase nurse encounter at
@@ -533,21 +480,9 @@ withHemoglobinNonImmediate count measurements =
 is left unset so the anemia-complication path (which keys off an elevated
 respiratory rate) stays inert.
 -}
-vitalsValueWith : Float -> Float -> VitalsValue
-vitalsValueWith sys dia =
-    { sys = Just sys
-    , dia = Just dia
-    , heartRate = Nothing
-    , respiratoryRate = Nothing
-    , bodyTemperature = Nothing
-    , sysRepeated = Nothing
-    , diaRepeated = Nothing
-    }
-
-
 withVitals : Float -> Float -> PrenatalMeasurements -> PrenatalMeasurements
 withVitals sys dia measurements =
-    { measurements | vitals = wrapMeasurement (vitalsValueWith sys dia) }
+    { measurements | vitals = wrapMeasurement (TestFixtures.vitalsValueWith sys dia) }
 
 
 {-| Vitals with a normal initial reading (120/80, so the _initial_ BP is not

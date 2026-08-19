@@ -5,7 +5,6 @@ import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model
     exposing
         ( ChildNutritionSign(..)
-        , Gender(..)
         , MuacInCm(..)
         , NutritionAssessment(..)
         )
@@ -25,6 +24,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (testChild)
 import Time
 import ZScore.Model
 
@@ -40,46 +40,14 @@ currentDate =
     Date.fromCalendarDate 2020 Time.Jun 1
 
 
-{-| A minimal child `Person`, mirroring `testPerson` from
-`Pages/AcuteIllness/Activity/Test.elm`. Only `birthDate` is varied per test
-via `childAgedMonths`. `gender` does not affect the paths under test (the
-weight-for-age path is kept inert by passing `Nothing` for weight and an empty
-`ZScore.Model`).
+{-| The shared child fixture, 3 months old by default; `birthDate` is varied
+per test via `childAgedMonths`. `gender` does not affect the paths under test
+(the weight-for-age path is kept inert by passing `Nothing` for weight and an
+empty `ZScore.Model`).
 -}
 baseChild : Person
 baseChild =
-    { name = "Test Child"
-    , firstName = "Test"
-    , secondName = "Child"
-    , nationalIdNumber = Nothing
-    , hmisNumber = Nothing
-    , avatarUrl = Nothing
-    , birthDate = Just (Date.add Date.Months -3 currentDate)
-    , isDateOfBirthEstimated = False
-    , gender = Female
-    , hivStatus = Nothing
-    , numberOfChildren = Nothing
-    , modeOfDelivery = Nothing
-    , ubudehe = Nothing
-    , educationLevel = Nothing
-    , maritalStatus = Nothing
-    , province = Nothing
-    , district = Nothing
-    , sector = Nothing
-    , cell = Nothing
-    , village = Nothing
-    , registrationLatitude = Nothing
-    , registrationLongitude = Nothing
-    , saveGPSLocation = False
-    , telephoneNumber = Nothing
-    , spouseName = Nothing
-    , spousePhoneNumber = Nothing
-    , nextOfKinName = Nothing
-    , nextOfKinPhoneNumber = Nothing
-    , healthCenterId = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
+    { testChild | birthDate = Just (Date.add Date.Months -3 currentDate) }
 
 
 {-| A child whose birth date places it `months` months before `currentDate`.

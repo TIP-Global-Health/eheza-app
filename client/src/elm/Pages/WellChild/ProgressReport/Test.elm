@@ -1,7 +1,7 @@
 module Pages.WellChild.ProgressReport.Test exposing (all)
 
 import AssocList as Dict
-import Backend.Measurement.Model exposing (Gender(..), NCDASign(..), NCDAValue, ReceiveOption(..))
+import Backend.Measurement.Model exposing (NCDASign(..), NCDAValue, ReceiveOption(..))
 import Backend.Person.Model exposing (Person)
 import Date
 import EverySet
@@ -11,6 +11,7 @@ import List.Extra
 import Pages.WellChild.ProgressReport.Model exposing (NCDACellValue(..))
 import Pages.WellChild.ProgressReport.View exposing (generateUniversalInterventionsValues)
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (testChild)
 import Time
 
 
@@ -35,38 +36,7 @@ reached yet.
 -}
 child : Person
 child =
-    { name = "Test Child"
-    , firstName = "Test"
-    , secondName = "Child"
-    , nationalIdNumber = Nothing
-    , hmisNumber = Nothing
-    , avatarUrl = Nothing
-    , birthDate = Just (Date.add Date.Months -24 currentDate)
-    , isDateOfBirthEstimated = False
-    , gender = Female
-    , hivStatus = Nothing
-    , numberOfChildren = Nothing
-    , modeOfDelivery = Nothing
-    , ubudehe = Nothing
-    , educationLevel = Nothing
-    , maritalStatus = Nothing
-    , province = Nothing
-    , district = Nothing
-    , sector = Nothing
-    , cell = Nothing
-    , village = Nothing
-    , registrationLatitude = Nothing
-    , registrationLongitude = Nothing
-    , saveGPSLocation = False
-    , telephoneNumber = Nothing
-    , spouseName = Nothing
-    , spousePhoneNumber = Nothing
-    , nextOfKinName = Nothing
-    , nextOfKinPhoneNumber = Nothing
-    , healthCenterId = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
+    { testChild | birthDate = Just (Date.add Date.Months -24 currentDate) }
 
 
 emptyNCDAValue : NCDAValue
