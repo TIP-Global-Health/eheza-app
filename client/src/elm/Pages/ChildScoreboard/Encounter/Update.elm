@@ -1,4 +1,4 @@
-module Pages.ChildScoreboard.Encounter.Update exposing (update)
+module Pages.ChildScoreboard.Encounter.Update exposing (closeEncounterMsgs, update)
 
 import App.Model
 import Backend.ChildScoreboardEncounter.Model
