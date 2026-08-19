@@ -8957,9 +8957,9 @@ var $author$project$Backend$Completion$Utils$prenatalActivityFromMapping = funct
 		case 'c1':
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalIron);
 		case 'd1':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMebendazole);
-		case 'e1':
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMMS);
+		case 'e1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMebendazole);
 		case 'f1':
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalAspirin);
 		case 'g1':
