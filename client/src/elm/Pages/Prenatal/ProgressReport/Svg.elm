@@ -1,7 +1,7 @@
 module Pages.Prenatal.ProgressReport.Svg exposing
-    ( viewBMIForEGA
+    ( frame
+    , viewBMIForEGA
     , viewFundalHeightForEGA
-    , viewMarkers
     , viewWeightGainForEGA
     , viewWeightGainForEGAHealthyStart
     )
@@ -11,37 +11,6 @@ import Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolygon, drawPol
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Translate exposing (Language, translate)
-
-
-{-| If you're calling any of the functions that generate charts,
-also call this one in order to generate some markers they all use.
--}
-viewMarkers : Html any
-viewMarkers =
-    svg
-        [ width "0"
-        , height "0"
-        ]
-        [ defs
-            []
-            [ marker
-                [ id "dot-marker"
-                , markerWidth "8"
-                , markerHeight "8"
-                , refX "4"
-                , refY "4"
-                , markerUnits "userSpaceOnUse"
-                , class "dot-marker"
-                ]
-                [ circle
-                    [ cx "4"
-                    , cy "4"
-                    , r "3"
-                    ]
-                    []
-                ]
-            ]
-        ]
 
 
 viewBMIForEGA : Language -> List ( Int, Float ) -> Html any

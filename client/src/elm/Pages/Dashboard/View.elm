@@ -36,6 +36,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Utils exposing (groupEducationEnabled)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Color exposing (Color)
@@ -51,7 +52,7 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Utils exposing (generateFutureVaccinationsData)
 import Pages.Dashboard.GraphUtils exposing (barChartHeight, barChartWidth, column, familyPlanningSignToColor, familyPlanningSignsColors, feverCauseToColor, feverCausesColors, gridXScale, gridYScale, padding, pieChartHeight, pieChartWidth, radius, xAxis, xGridLine, xScale, yAxis, yGridLine)
 import Pages.Dashboard.Model exposing (BeneficiariesTableLabels(..), CardValueSeverity(..), DashboardFilter(..), DashboardSubFilter(..), FamilyPlanningSignsCounter, FeverCause(..), FilterGender(..), FilterPeriod(..), FilterProgramType(..), FilterType(..), MalnorishedNutritionData, ModalState(..), Model, MonthlyChartType(..), Msg(..), StatsCard, caseManagementFilters, caseManagementSubFilters, filterGenders, filterPeriodsForStatsPage, maxMonthGap, monthlyChartFilters)
-import Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isNurseEncounter, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+import Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 import Pages.Page
     exposing
         ( AcuteIllnessSubPage(..)
@@ -1310,7 +1311,7 @@ viewPrenatalPage language currentDate isChw assembled model =
                     (\pregnancy ->
                         let
                             nurseEncounters =
-                                List.filter isNurseEncounter pregnancy.encounters
+                                List.filter (.encounterType >> isNurseEncounter) pregnancy.encounters
                         in
                         if List.isEmpty nurseEncounters then
                             Nothing
@@ -2712,7 +2713,7 @@ viewDiabetesPage language dateLastDayOfSelectedMonth dataItems prenatalDataItems
                         (\pregnancy ->
                             let
                                 nurseEncounters =
-                                    List.filter isNurseEncounter pregnancy.encounters
+                                    List.filter (.encounterType >> isNurseEncounter) pregnancy.encounters
                             in
                             if List.isEmpty nurseEncounters then
                                 Nothing
