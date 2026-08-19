@@ -842,6 +842,11 @@ isNurseEncounter encounter =
     List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
 
 
+isPostpartumEncounter : PrenatalEncounterDataItem -> Bool
+isPostpartumEncounter encounter =
+    List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
+
+
 countNewlyIdentifiedPregananciesForSelectedMonth : NominalDate -> Bool -> List PrenatalDataItem -> Int
 countNewlyIdentifiedPregananciesForSelectedMonth dateLastDayOfSelectedMonth isChw itemsList =
     let
@@ -1047,16 +1052,23 @@ countPregnanciesWith4VisitsOrMoreForSelectedMonth dateLastDayOfSelectedMonth =
                         Nothing ->
                             True
 
-                -- We want at least one encounter to  be conducted by nurse at HC.
-                facilityFilter =
+                -- Four or more antenatal visits, of which at least one was
+                -- conducted by a nurse at the health center. Visits made after
+                -- the birth are not antenatal care, and are left out of both.
+                encountersFilter =
                     let
-                        encountersTilldateLastDayOfSelectedMonth =
-                            List.filter (\encounter -> not <| Date.compare encounter.startDate dateLastDayOfSelectedMonth == GT)
+                        encountersTillLastDayOfSelectedMonth =
+                            List.filter
+                                (\encounter ->
+                                    (not <| Date.compare encounter.startDate dateLastDayOfSelectedMonth == GT)
+                                        && (not <| isPostpartumEncounter encounter)
+                                )
                                 pregnancy.encounters
                     in
-                    List.any isNurseEncounter encountersTilldateLastDayOfSelectedMonth
+                    (List.length encountersTillLastDayOfSelectedMonth >= 4)
+                        && List.any isNurseEncounter encountersTillLastDayOfSelectedMonth
             in
-            facilityFilter && dateConcludedFilter
+            encountersFilter && dateConcludedFilter
         )
         >> List.length
 
