@@ -105,18 +105,20 @@ viewReportDateInputs :
     -> NominalDate
     -> Maybe NominalDate
     -> Maybe NominalDate
-    -> (NominalDate -> msg)
-    -> (Maybe (DateSelectorConfig msg) -> msg)
-    -> (NominalDate -> msg)
-    -> (Maybe (DateSelectorConfig msg) -> msg)
+    ->
+        { setStartDate : NominalDate -> msg
+        , setStartDateSelectorState : Maybe (DateSelectorConfig msg) -> msg
+        , setLimitDate : NominalDate -> msg
+        , setLimitDateSelectorState : Maybe (DateSelectorConfig msg) -> msg
+        }
     -> List (Html msg)
-viewReportDateInputs language currentDate startDate limitDate setStartDateMsg setStartDateSelectorStateMsg setLimitDateMsg setLimitDateSelectorStateMsg =
+viewReportDateInputs language currentDate startDate limitDate msgs =
     let
         startDateInput =
             let
                 dateSelectorConfig =
-                    { select = setStartDateMsg
-                    , close = setStartDateSelectorStateMsg Nothing
+                    { select = msgs.setStartDate
+                    , close = msgs.setStartDateSelectorState Nothing
                     , dateFrom = launchDate
                     , dateTo = currentDate
                     , dateDefault = Just launchDate
@@ -128,7 +130,7 @@ viewReportDateInputs language currentDate startDate limitDate setStartDateMsg se
             in
             div
                 [ class "form-input date"
-                , onClick <| setStartDateSelectorStateMsg (Just dateSelectorConfig)
+                , onClick <| msgs.setStartDateSelectorState (Just dateSelectorConfig)
                 ]
                 [ text dateForView ]
                 |> wrapSelectListInput language Translate.SelectStartDate False
@@ -147,8 +149,8 @@ viewReportDateInputs language currentDate startDate limitDate setStartDateMsg se
                         Maybe.withDefault launchDate startDate
 
                     dateSelectorConfig =
-                        { select = setLimitDateMsg
-                        , close = setLimitDateSelectorStateMsg Nothing
+                        { select = msgs.setLimitDate
+                        , close = msgs.setLimitDateSelectorState Nothing
                         , dateFrom = dateFrom
                         , dateTo = currentDate
                         , dateDefault = Just currentDate
@@ -160,7 +162,7 @@ viewReportDateInputs language currentDate startDate limitDate setStartDateMsg se
                 in
                 div
                     [ class "form-input date"
-                    , onClick <| setLimitDateSelectorStateMsg (Just dateSelectorConfig)
+                    , onClick <| msgs.setLimitDateSelectorState (Just dateSelectorConfig)
                     ]
                     [ text limitDateForView ]
                     |> wrapSelectListInput language Translate.SelectLimitDate False

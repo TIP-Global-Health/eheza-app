@@ -17608,15 +17608,15 @@ var $author$project$Pages$Utils$wrapSelectListInput = F4(
 					selectList
 				]));
 	});
-var $author$project$Pages$Components$View$viewReportDateInputs = F8(
-	function (language, currentDate, startDate, limitDate, setStartDateMsg, setStartDateSelectorStateMsg, setLimitDateMsg, setLimitDateSelectorStateMsg) {
+var $author$project$Pages$Components$View$viewReportDateInputs = F5(
+	function (language, currentDate, startDate, limitDate, msgs) {
 		var startDateInput = function () {
 			var dateSelectorConfig = {
-				close: setStartDateSelectorStateMsg($elm$core$Maybe$Nothing),
+				close: msgs.setStartDateSelectorState($elm$core$Maybe$Nothing),
 				dateDefault: $elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
 				dateFrom: $author$project$Pages$Utils$launchDate,
 				dateTo: currentDate,
-				select: setStartDateMsg
+				select: msgs.setStartDate
 			};
 			var dateForView = A2(
 				$elm$core$Maybe$withDefault,
@@ -17633,7 +17633,7 @@ var $author$project$Pages$Components$View$viewReportDateInputs = F8(
 						[
 							$elm$html$Html$Attributes$class('form-input date'),
 							$elm$html$Html$Events$onClick(
-							setStartDateSelectorStateMsg(
+							msgs.setStartDateSelectorState(
 								$elm$core$Maybe$Just(dateSelectorConfig)))
 						]),
 					_List_fromArray(
@@ -17651,11 +17651,11 @@ var $author$project$Pages$Components$View$viewReportDateInputs = F8(
 					A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, limitDate));
 				var dateFrom = A2($elm$core$Maybe$withDefault, $author$project$Pages$Utils$launchDate, startDate);
 				var dateSelectorConfig = {
-					close: setLimitDateSelectorStateMsg($elm$core$Maybe$Nothing),
+					close: msgs.setLimitDateSelectorState($elm$core$Maybe$Nothing),
 					dateDefault: $elm$core$Maybe$Just(currentDate),
 					dateFrom: dateFrom,
 					dateTo: currentDate,
-					select: setLimitDateMsg
+					select: msgs.setLimitDate
 				};
 				return A4(
 					$author$project$Pages$Utils$wrapSelectListInput,
@@ -17668,7 +17668,7 @@ var $author$project$Pages$Components$View$viewReportDateInputs = F8(
 							[
 								$elm$html$Html$Attributes$class('form-input date'),
 								$elm$html$Html$Events$onClick(
-								setLimitDateSelectorStateMsg(
+								msgs.setLimitDateSelectorState(
 									$elm$core$Maybe$Just(dateSelectorConfig)))
 							]),
 						_List_fromArray(
@@ -17943,7 +17943,13 @@ var $author$project$Pages$Completion$View$viewCompletionData = F4(
 					A2(
 						$elm$core$Maybe$map,
 						function (_v2) {
-							return A8($author$project$Pages$Components$View$viewReportDateInputs, language, currentDate, model.startDate, model.limitDate, $author$project$Pages$Completion$Model$SetStartDate, $author$project$Pages$Completion$Model$SetStartDateSelectorState, $author$project$Pages$Completion$Model$SetLimitDate, $author$project$Pages$Completion$Model$SetLimitDateSelectorState);
+							return A5(
+								$author$project$Pages$Components$View$viewReportDateInputs,
+								language,
+								currentDate,
+								model.startDate,
+								model.limitDate,
+								{setLimitDate: $author$project$Pages$Completion$Model$SetLimitDate, setLimitDateSelectorState: $author$project$Pages$Completion$Model$SetLimitDateSelectorState, setStartDate: $author$project$Pages$Completion$Model$SetStartDate, setStartDateSelectorState: $author$project$Pages$Completion$Model$SetStartDateSelectorState});
 						},
 						model.reportType));
 				var content = ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) ? $author$project$Gizra$Html$emptyNode : A2(
@@ -22369,7 +22375,13 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 					A2(
 						$elm$core$Maybe$map,
 						function (reportType) {
-							return _Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportNutrition) ? _List_Nil : A8($author$project$Pages$Components$View$viewReportDateInputs, language, currentDate, model.startDate, model.limitDate, $author$project$Pages$Reports$Model$SetStartDate, $author$project$Pages$Reports$Model$SetStartDateSelectorState, $author$project$Pages$Reports$Model$SetLimitDate, $author$project$Pages$Reports$Model$SetLimitDateSelectorState);
+							return _Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportNutrition) ? _List_Nil : A5(
+								$author$project$Pages$Components$View$viewReportDateInputs,
+								language,
+								currentDate,
+								model.startDate,
+								model.limitDate,
+								{setLimitDate: $author$project$Pages$Reports$Model$SetLimitDate, setLimitDateSelectorState: $author$project$Pages$Reports$Model$SetLimitDateSelectorState, setStartDate: $author$project$Pages$Reports$Model$SetStartDate, setStartDateSelectorState: $author$project$Pages$Reports$Model$SetStartDateSelectorState});
 						},
 						model.reportType));
 				var content = function () {
