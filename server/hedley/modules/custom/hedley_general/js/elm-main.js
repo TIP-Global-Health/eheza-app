@@ -21263,9 +21263,10 @@ var $author$project$Pages$Scoreboard$Utils$getNextVaccineDose = function (dose) 
 };
 var $author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine = F6(
 	function (site, birthDate, vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered) {
-		return _Utils_eq(
-			A3($author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine, site, initialOpvAdministered, vaccineType),
-			lastDoseAdministered) ? $elm$core$Maybe$Nothing : A2(
+		var dosesTheSiteExpects = $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable(
+			A3($author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine, site, initialOpvAdministered, vaccineType));
+		var dosesGiven = $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable(lastDoseAdministered);
+		return (_Utils_cmp(dosesGiven, dosesTheSiteExpects) > -1) ? $elm$core$Maybe$Nothing : A2(
 			$elm$core$Maybe$map,
 			function (dose) {
 				var _v0 = A2($author$project$Pages$Scoreboard$Utils$getIntervalForVaccine, site, vaccineType);
