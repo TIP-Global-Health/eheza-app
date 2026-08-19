@@ -1,4 +1,4 @@
-module Pages.Utils exposing (calculatePercentage, concatInputsAndTasksSections, customButton, customPopup, dropLeadingMinus, emptySelectOption, filterDependentNoResultsMessage, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isAboveAgeOf2Years, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, muacUnitTransIdForSite, nonAdministrationReasonToSign, normalizeFilter, percentageOfTotal, resolveActiveTask, resolveNextTask, resolveSelectedDateForMonthSelector, resolveTasksCompletedFromTotal, saveButton, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBoolInputReverted, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxMultipleSelectSectionsInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewConfirmationDialog, viewCustomAction, viewCustomBoolInput, viewCustomLabel, viewCustomNameFilter, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPaneHeading, viewPersonDetails, viewPersonDetailsExtended, viewPersonInfoPane, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewPreviousMeasurementCustom, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewStartEncounterButton, viewTasksCount, viewTextInput, viewYellowAlertForSelect)
+module Pages.Utils exposing (calculatePercentage, concatInputsAndTasksSections, customButton, customPopup, dropLeadingMinus, emptySelectOption, filterDependentNoResultsMessage, filterPreviousEncountersDataToDate, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isAboveAgeOf2Years, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, muacUnitTransIdForSite, nonAdministrationReasonToSign, nonReferralReasonSection, normalizeFilter, percentageOfTotal, resolveActiveTask, resolveNextTask, resolveSelectedDateForMonthSelector, resolveTasksCompletedFromTotal, saveButton, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBoolInputReverted, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxMultipleSelectSectionsInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewConfirmationDialog, viewCustomAction, viewCustomBoolInput, viewCustomLabel, viewCustomNameFilter, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPaneHeading, viewPersonDetails, viewPersonDetailsExtended, viewPersonInfoPane, viewPhotoThumb, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewPreviousMeasurementCustom, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewStartEncounterButton, viewTasksCount, viewTextInput, viewYellowAlertForSelect)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (HealthCenterId, PersonId)
@@ -8,6 +8,8 @@ import Backend.Measurement.Model
         , ImageUrl(..)
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
+        , ReasonForNonReferral(..)
+        , ReferralFacility(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Person.Model exposing (Person)
@@ -260,6 +262,18 @@ filterDependentNoResultsMessage language filter message =
         translate language Translate.NoMatchesFound
 
 
+filterPreviousEncountersDataToDate :
+    NominalDate
+    -> List { a | startDate : NominalDate }
+    -> List { a | startDate : NominalDate }
+filterPreviousEncountersDataToDate limitDate previousEncountersData =
+    List.filter
+        (\data ->
+            Date.compare data.startDate limitDate == LT
+        )
+        previousEncountersData
+
+
 matchFilter : String -> String -> Bool
 matchFilter filter filteredValue =
     if String.isEmpty filter then
@@ -436,6 +450,40 @@ nonAdministrationReasonToSign sign reason =
 
         NoMedicationDistributionSignsRecurrentPhase ->
             NoMedicationNonAdministrationSigns
+
+
+nonReferralReasonSection :
+    Language
+    -> ReferralFacility
+    -> Maybe ReasonForNonReferral
+    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
+    -> List (Html msg)
+nonReferralReasonSection language facility currentValue setNonReferralReasonMsg =
+    let
+        options =
+            if facility == FacilityHospital then
+                [ ClientRefused
+                , NoAmbulance
+                , ClientUnableToAffordFees
+                , ReasonForNonReferralNotIndicated
+                , ReasonForNonReferralOther
+                ]
+
+            else
+                [ ClientRefused
+                , ClientAlreadyInCare
+                , ReasonForNonReferralNotIndicated
+                , ReasonForNonReferralOther
+                ]
+    in
+    [ viewQuestionLabel language Translate.WhyNot
+    , viewCheckBoxSelectInput language
+        options
+        []
+        currentValue
+        (setNonReferralReasonMsg currentValue facility)
+        Translate.ReasonForNonReferral
+    ]
 
 
 viewMonthSelector : Language -> NominalDate -> Int -> Int -> (Int -> msg) -> Html msg
@@ -1288,6 +1336,11 @@ viewPhotoThumb url =
         ]
 
 
+viewPhotoThumbFromImageUrl : ImageUrl -> Html any
+viewPhotoThumbFromImageUrl (ImageUrl url) =
+    viewPhotoThumb url
+
+
 viewPaneHeading : Language -> TranslationId -> Html any
 viewPaneHeading language label =
     div [ class "pane-heading" ]
@@ -1301,11 +1354,6 @@ viewPersonInfoPane language currentDate person =
         , div [ class "patient-info" ] <|
             viewPersonDetailsExtended language currentDate person
         ]
-
-
-viewPhotoThumbFromImageUrl : ImageUrl -> Html any
-viewPhotoThumbFromImageUrl (ImageUrl url) =
-    viewPhotoThumb url
 
 
 isTaskCompleted : Dict t ( Int, Int ) -> t -> Bool

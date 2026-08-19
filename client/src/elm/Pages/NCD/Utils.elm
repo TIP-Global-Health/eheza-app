@@ -7,7 +7,6 @@ import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrine
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
-import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -17,14 +16,15 @@ import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWit
 import Pages.NCD.Model exposing (AssembledData, MedicationDistributionForm, NCDEncounterPhase(..), PreviousEncounterData, ReferralForm)
 import Pages.Utils
     exposing
-        ( ifEverySetEmpty
+        ( filterPreviousEncountersDataToDate
+        , ifEverySetEmpty
         , ifNullableTrue
         , maybeToBoolTask
+        , nonReferralReasonSection
         , taskCompleted
         , viewBoolInput
         , viewCheckBoxMultipleSelectCustomInput
         , viewCheckBoxSelectCustomInput
-        , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewInstructionsLabel
         , viewQuestionLabel
@@ -902,8 +902,12 @@ resolveReferralInputsAndTasks language phase assembled setReferralBoolInputMsg s
                                 )
 
                             else
-                                ( nonReferralReasonSection language facility config.reasonToSignFunc setNonReferralReasonMsg form
-                                , [ maybeToBoolTask <| getCurrentReasonForNonReferralByForm config.reasonToSignFunc form ]
+                                let
+                                    currentValue =
+                                        getCurrentReasonForNonReferralByForm config.reasonToSignFunc form
+                                in
+                                ( nonReferralReasonSection language facility currentValue setNonReferralReasonMsg
+                                , [ maybeToBoolTask currentValue ]
                                 )
                         )
                         config.referralField
@@ -985,44 +989,6 @@ referForRenalComplications phase assembled =
            )
 
 
-nonReferralReasonSection :
-    Language
-    -> ReferralFacility
-    -> (ReasonForNonReferral -> NonReferralSign)
-    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
-    -> ReferralForm
-    -> List (Html msg)
-nonReferralReasonSection language facility reasonToSignFunc setNonReferralReasonMsg form =
-    let
-        currentValue =
-            getCurrentReasonForNonReferralByForm reasonToSignFunc form
-
-        options =
-            if facility == FacilityHospital then
-                [ ClientRefused
-                , NoAmbulance
-                , ClientUnableToAffordFees
-                , ReasonForNonReferralNotIndicated
-                , ReasonForNonReferralOther
-                ]
-
-            else
-                [ ClientRefused
-                , ClientAlreadyInCare
-                , ReasonForNonReferralNotIndicated
-                , ReasonForNonReferralOther
-                ]
-    in
-    [ viewQuestionLabel language Translate.WhyNot
-    , viewCheckBoxSelectInput language
-        options
-        []
-        currentValue
-        (setNonReferralReasonMsg currentValue facility)
-        Translate.ReasonForNonReferral
-    ]
-
-
 getCurrentReasonForNonReferralByForm :
     (ReasonForNonReferral -> NonReferralSign)
     -> ReferralForm
@@ -1088,15 +1054,3 @@ updateChronicDiagnoses encounterDate encounterDiagnoses assembled =
     in
     Maybe.Extra.values [ chronicHypertensionDiagnosis, chronicDiabetesDiagnosis, chronicRenalComplicationsDiagnosis ]
         ++ EverySet.toList encounterDiagnoses
-
-
-filterPreviousEncountersDataToDate :
-    NominalDate
-    -> List PreviousEncounterData
-    -> List PreviousEncounterData
-filterPreviousEncountersDataToDate limitDate previousEncountersData =
-    List.filter
-        (\data ->
-            Date.compare data.startDate limitDate == LT
-        )
-        previousEncountersData

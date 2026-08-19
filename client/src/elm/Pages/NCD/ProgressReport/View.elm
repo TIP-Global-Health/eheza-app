@@ -21,7 +21,6 @@ import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMe
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Utils exposing (allActivities)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..), NCDProgressReportInitiator)
-import Backend.Person.Model exposing (Person)
 import Components.ReportToWhatsAppDialog.Model
 import Components.ReportToWhatsAppDialog.Utils
 import Components.ReportToWhatsAppDialog.View
@@ -55,11 +54,12 @@ import Pages.Utils
     exposing
         ( viewConfirmationDialog
         , viewEndEncounterMenuForProgressReport
-        , viewPersonDetailsExtended
+        , viewPaneHeading
+        , viewPersonInfoPane
         )
 import RemoteData
 import SyncManager.Model exposing (Site, SiteFeature)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 import Utils.WebData exposing (viewWebData)
@@ -363,21 +363,6 @@ viewContent language currentDate site features initiator db model assembled =
                             )
                        ]
                )
-
-
-viewPersonInfoPane : Language -> NominalDate -> Person -> Html any
-viewPersonInfoPane language currentDate person =
-    div [ class "pane person-details" ]
-        [ viewPaneHeading language Translate.PatientInformation
-        , div [ class "patient-info" ] <|
-            viewPersonDetailsExtended language currentDate person
-        ]
-
-
-viewPaneHeading : Language -> TranslationId -> Html any
-viewPaneHeading language label =
-    div [ class "pane-heading" ]
-        [ text <| translate language label ]
 
 
 viewRiskFactorsPane : Language -> AssembledData -> Html Msg
