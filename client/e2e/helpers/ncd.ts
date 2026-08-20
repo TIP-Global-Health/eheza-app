@@ -426,7 +426,21 @@ export async function completeLaboratory(
       // 4. "Immediate result?" → Lab (custom labels: "Point of Care" / "Lab")
       const immediateResult = page.locator('.form-input.yes-no.immediate-result');
       if (await immediateResult.isVisible().catch(() => false)) {
-        await forceClick(immediateResult.locator('label', { hasText: 'Lab' }));
+        // Answering Lab leaves the result to be entered later, so the reading
+        // is never asked for here. The blood sugar tab has to be read on the
+        // spot for its input to be drawn at all.
+        const readOnTheSpot =
+          checkGlucoseRange &&
+          (await page
+            .locator('div.label.header', { hasText: 'Random Blood Sugar' })
+            .isVisible()
+            .catch(() => false));
+
+        await forceClick(
+          immediateResult.locator('label', {
+            hasText: readOnTheSpot ? 'Point of Care' : 'Lab',
+          }),
+        );
         await page.waitForTimeout(WAIT.elmRerender);
       }
 
