@@ -736,37 +736,41 @@ heightFormWithDefaultSkippedTest =
 
 {-| Blood glucose is entered in milligrams per decilitre. A reading typed in
 millimoles per litre is about eighteen times smaller - 12.5 mmol/L is 225
-mg/dL - and the bottom of the range sits above every reading a meter gives in
-that unit.
+mg/dL - which is what the bottom of the range is there to catch. A reading the
+form is not showing is left alone, because it cannot be corrected.
 -}
 bloodGlucoseOutOfRangeTest : Test
 bloodGlucoseOutOfRangeTest =
     describe "bloodGlucoseOutOfRange"
         [ test "a reading typed in millimoles per litre is outside the range" <|
             \_ ->
-                bloodGlucoseOutOfRange (Just 12.5)
+                bloodGlucoseOutOfRange True (Just 12.5)
                     |> Expect.equal [ MeasurementBloodGlucose ]
         , test "the same reading in milligrams per decilitre is within it" <|
             \_ ->
-                bloodGlucoseOutOfRange (Just 225)
+                bloodGlucoseOutOfRange True (Just 225)
                     |> Expect.equal []
-        , test "a reading above what a meter can show is outside the range" <|
+        , test "a laboratory result above what a meter can show is within it" <|
             \_ ->
-                bloodGlucoseOutOfRange (Just 601)
-                    |> Expect.equal [ MeasurementBloodGlucose ]
-        , test "the highest reading a meter gives in millimoles per litre is still outside the range" <|
+                bloodGlucoseOutOfRange True (Just 900)
+                    |> Expect.equal []
+        , test "a reading above what a laboratory reports is outside it" <|
             \_ ->
-                bloodGlucoseOutOfRange (Just 33.3)
+                bloodGlucoseOutOfRange True (Just 1201)
                     |> Expect.equal [ MeasurementBloodGlucose ]
         , test "both ends of the range are within it" <|
             \_ ->
-                ( bloodGlucoseOutOfRange (Just 35)
-                , bloodGlucoseOutOfRange (Just 600)
+                ( bloodGlucoseOutOfRange True (Just 20)
+                , bloodGlucoseOutOfRange True (Just 1200)
                 )
                     |> Expect.equal ( [], [] )
+        , test "a reading the form is not showing is not asked about" <|
+            \_ ->
+                bloodGlucoseOutOfRange False (Just 12.5)
+                    |> Expect.equal []
         , test "no reading is not out of range" <|
             \_ ->
-                bloodGlucoseOutOfRange Nothing
+                bloodGlucoseOutOfRange True Nothing
                     |> Expect.equal []
         ]
 

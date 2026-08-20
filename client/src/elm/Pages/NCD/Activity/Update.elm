@@ -1261,15 +1261,19 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
                         |> Measurement.Utils.randomBloodSugarFormWithDefault model.laboratoryData.randomBloodSugarTestForm
 
-                outOfRange =
-                    Measurement.Utils.bloodGlucoseOutOfRange form.sugarCount
+                -- The reading is drawn only for a test performed on a known
+                -- date and read on the spot, which is the condition the form
+                -- itself uses.
+                inputShown =
+                    (form.testPerformed == Just True)
+                        && (form.executionDate /= Nothing)
+                        && (form.immediateResult == Just True)
 
                 extraMsgs =
-                    if List.isEmpty outOfRange then
-                        [ SaveRandomBloodSugarTest personId saved nextTask ]
-
-                    else
-                        [ SetMeasurementOutOfRangePopupState outOfRange ]
+                    Measurement.Utils.bloodGlucoseSaveMsgs inputShown
+                        form.sugarCount
+                        (SaveRandomBloodSugarTest personId saved nextTask)
+                        SetMeasurementOutOfRangePopupState
             in
             ( model
             , Cmd.none

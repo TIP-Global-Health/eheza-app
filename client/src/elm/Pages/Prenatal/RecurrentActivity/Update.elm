@@ -691,15 +691,16 @@ update id isLabTech db msg model =
                     getMeasurementValueFunc saved
                         |> Measurement.Utils.randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
 
-                outOfRange =
-                    Measurement.Utils.bloodGlucoseOutOfRange form.sugarCount
+                -- A lab tech is shown the reading only once they confirm
+                -- the test was run, which is the condition the form uses.
+                inputShown =
+                    not isLabTech || form.runConfirmedByLabTech == Just True
 
                 extraMsgs =
-                    if List.isEmpty outOfRange then
-                        [ SaveRandomBloodSugarResult personId saved nextTask ]
-
-                    else
-                        [ SetMeasurementOutOfRangePopupState outOfRange ]
+                    Measurement.Utils.bloodGlucoseSaveMsgs inputShown
+                        form.sugarCount
+                        (SaveRandomBloodSugarResult personId saved nextTask)
+                        SetMeasurementOutOfRangePopupState
             in
             ( model
             , Cmd.none
@@ -1621,15 +1622,16 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
                     getMeasurementValueFunc saved
                         |> Measurement.Utils.randomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
 
-                outOfRange =
-                    Measurement.Utils.bloodGlucoseOutOfRange form.sugarCount
+                -- A lab tech is shown the reading only once they confirm
+                -- the test was run, which is the condition the form uses.
+                inputShown =
+                    not isLabTech || form.runConfirmedByLabTech == Just True
 
                 nextMsgs =
-                    if List.isEmpty outOfRange then
-                        [ SaveRandomBloodSugarResult personId saved nextTask ]
-
-                    else
-                        [ SetMeasurementOutOfRangePopupState outOfRange ]
+                    Measurement.Utils.bloodGlucoseSaveMsgs inputShown
+                        form.sugarCount
+                        (SaveRandomBloodSugarResult personId saved nextTask)
+                        SetMeasurementOutOfRangePopupState
             in
             ( data
             , Cmd.none

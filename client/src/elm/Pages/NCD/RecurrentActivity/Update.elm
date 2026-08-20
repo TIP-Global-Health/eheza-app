@@ -290,15 +290,13 @@ update currentDate id db msg model =
                     getMeasurementValueFunc saved
                         |> Measurement.Utils.randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
 
-                outOfRange =
-                    Measurement.Utils.bloodGlucoseOutOfRange form.sugarCount
-
                 extraMsgs =
-                    if List.isEmpty outOfRange then
-                        [ SaveRandomBloodSugarResult personId saved nextTask ]
-
-                    else
-                        [ SetMeasurementOutOfRangePopupState outOfRange ]
+                    -- NCD has no lab tech, so the results form always draws
+                    -- the reading.
+                    Measurement.Utils.bloodGlucoseSaveMsgs True
+                        form.sugarCount
+                        (SaveRandomBloodSugarResult personId saved nextTask)
+                        SetMeasurementOutOfRangePopupState
             in
             ( model
             , Cmd.none
