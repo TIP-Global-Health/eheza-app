@@ -753,6 +753,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.Prenatal.RecurrentActivity.View.view model.language
                             currentDate
+                            site
                             (Tuple.second loggedInModel.nurse)
                             id
                             activity

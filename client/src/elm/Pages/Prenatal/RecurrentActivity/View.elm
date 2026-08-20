@@ -69,25 +69,26 @@ import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> Nurse -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate nurse id activity db model =
+view : Language -> NominalDate -> Site -> Nurse -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site nurse id activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate nurse id activity model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site nurse id activity model) identity assembled
 
 
 viewHeaderAndContent :
     Language
     -> NominalDate
+    -> Site
     -> Nurse
     -> PrenatalEncounterId
     -> PrenatalRecurrentActivity
     -> Model
     -> AssembledData
     -> Html Msg
-viewHeaderAndContent language currentDate nurse id activity model assembled =
+viewHeaderAndContent language currentDate site nurse id activity model assembled =
     let
         isLabTech =
             isLabTechnician nurse
@@ -103,7 +104,15 @@ viewHeaderAndContent language currentDate nurse id activity model assembled =
         [ viewHeader language goBackPage (Translate.PrenatalRecurrentActivitiesTitle activity)
         , viewContent language currentDate isLabTech activity model assembled
         , viewModal <|
-            warningPopup language assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
+            if List.isEmpty model.labResultsData.measurementOutOfRangePopupState then
+                warningPopup language assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
+
+            else
+                Just <|
+                    Measurement.View.measurementOutOfRangePopup language
+                        site
+                        model.labResultsData.measurementOutOfRangePopupState
+                        (SetMeasurementOutOfRangePopupState [])
         ]
 
 
@@ -1028,7 +1037,7 @@ viewLab language lab assembled data =
                             SaveHemoglobinResult personId measurements.hemoglobinTest Nothing
 
                         TestRandomBloodSugar ->
-                            SaveRandomBloodSugarResult personId measurements.randomBloodSugarTest Nothing
+                            PreSaveRandomBloodSugarResult personId measurements.randomBloodSugarTest Nothing
 
                         TestHIVPCR ->
                             SaveHIVPCRResult personId measurements.hivPCRTest Nothing

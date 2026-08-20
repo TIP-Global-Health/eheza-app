@@ -287,7 +287,8 @@ update currentDate id db msg model =
         PreSaveRandomBloodSugarResult personId saved nextTask ->
             let
                 form =
-                    model.labResultsData.randomBloodSugarTestForm
+                    getMeasurementValueFunc saved
+                        |> Measurement.Utils.randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
 
                 outOfRange =
                     Measurement.Utils.bloodGlucoseOutOfRange form.sugarCount

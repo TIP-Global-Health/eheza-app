@@ -81,7 +81,8 @@ toEverySet presentValue absentValue present =
 
 {-| Blood glucose is recorded in milligrams per decilitre. The range is that of
 a glucometer: below it the meter shows LO rather than a number, and a reading
-in millimoles per litre - a tenth of the milligram figure - falls under it.
+in millimoles per litre falls under it - 11.1 mmol/L is 200 mg/dL, so the
+figure is about eighteen times smaller.
 -}
 getInputConstraintsBloodGlucose : FloatInputConstraints
 getInputConstraintsBloodGlucose =
@@ -393,12 +394,6 @@ the form it is asked of holds no value in that case, and a measurement that was
 not entered is not out of range.
 
 -}
-bloodGlucoseOutOfRange : Maybe Float -> List RangedMeasurement
-bloodGlucoseOutOfRange value =
-    Maybe.map (outOfRangeAsEntered getInputConstraintsBloodGlucose MeasurementBloodGlucose) value
-        |> Maybe.withDefault []
-
-
 heightOutOfRange : Site -> HeightForm -> List RangedMeasurement
 heightOutOfRange site form =
     outOfRange site MeasurementHeight form.height
@@ -412,6 +407,15 @@ muacOutOfRange site form =
 weightOutOfRange : Site -> WeightForm -> List RangedMeasurement
 weightOutOfRange site form =
     outOfRange site MeasurementWeight form.weight
+
+
+{-| The measurement, when a blood glucose reading is outside the range it can
+take. Not site-aware: the field is milligrams per decilitre everywhere.
+-}
+bloodGlucoseOutOfRange : Maybe Float -> List RangedMeasurement
+bloodGlucoseOutOfRange value =
+    Maybe.map (outOfRangeAsEntered getInputConstraintsBloodGlucose MeasurementBloodGlucose) value
+        |> Maybe.withDefault []
 
 
 {-| The measurement, when what a form holds for it is outside the range it can

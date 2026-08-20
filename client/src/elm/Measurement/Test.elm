@@ -735,8 +735,8 @@ heightFormWithDefaultSkippedTest =
 
 
 {-| Blood glucose is entered in milligrams per decilitre. A reading typed in
-millimoles per litre is roughly a tenth of the figure, which is what the bottom
-of the range is there to catch.
+millimoles per litre is about eighteen times smaller - 12.5 mmol/L is 225
+mg/dL - which is what the bottom of the range is there to catch.
 -}
 bloodGlucoseOutOfRangeTest : Test
 bloodGlucoseOutOfRangeTest =

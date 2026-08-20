@@ -26,7 +26,6 @@ import Measurement.Utils
         , toVitalsValueWithDefault
         )
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (LabResultsData, Model, Msg(..))
 import Pages.Prenatal.RecurrentActivity.Utils exposing (toHealthEducationValueWithDefault)
 import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, referralFormWithDefault, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault)
@@ -689,7 +688,8 @@ update id isLabTech db msg model =
         PreSaveRandomBloodSugarResult personId saved nextTask ->
             let
                 form =
-                    model.labResultsData.randomBloodSugarTestForm
+                    getMeasurementValueFunc saved
+                        |> Measurement.Utils.randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
 
                 outOfRange =
                     Measurement.Utils.bloodGlucoseOutOfRange form.sugarCount
@@ -699,7 +699,7 @@ update id isLabTech db msg model =
                         [ SaveRandomBloodSugarResult personId saved nextTask ]
 
                     else
-                        [ SetWarningPopupState <| Just <| WarningPopupMeasurementOutOfRange outOfRange ]
+                        [ SetMeasurementOutOfRangePopupState outOfRange ]
             in
             ( model
             , Cmd.none
@@ -1617,8 +1617,12 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
 
         PreSaveRandomBloodSugarResult personId saved nextTask ->
             let
+                form =
+                    getMeasurementValueFunc saved
+                        |> Measurement.Utils.randomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
+
                 outOfRange =
-                    Measurement.Utils.bloodGlucoseOutOfRange data.randomBloodSugarTestForm.sugarCount
+                    Measurement.Utils.bloodGlucoseOutOfRange form.sugarCount
 
                 nextMsgs =
                     if List.isEmpty outOfRange then
