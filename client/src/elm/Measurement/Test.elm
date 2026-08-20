@@ -736,7 +736,8 @@ heightFormWithDefaultSkippedTest =
 
 {-| Blood glucose is entered in milligrams per decilitre. A reading typed in
 millimoles per litre is about eighteen times smaller - 12.5 mmol/L is 225
-mg/dL - which is what the bottom of the range is there to catch.
+mg/dL - and the bottom of the range sits above every reading a meter gives in
+that unit.
 -}
 bloodGlucoseOutOfRangeTest : Test
 bloodGlucoseOutOfRangeTest =
@@ -753,9 +754,13 @@ bloodGlucoseOutOfRangeTest =
             \_ ->
                 bloodGlucoseOutOfRange (Just 601)
                     |> Expect.equal [ MeasurementBloodGlucose ]
+        , test "the highest reading a meter gives in millimoles per litre is still outside the range" <|
+            \_ ->
+                bloodGlucoseOutOfRange (Just 33.3)
+                    |> Expect.equal [ MeasurementBloodGlucose ]
         , test "both ends of the range are within it" <|
             \_ ->
-                ( bloodGlucoseOutOfRange (Just 20)
+                ( bloodGlucoseOutOfRange (Just 35)
                 , bloodGlucoseOutOfRange (Just 600)
                 )
                     |> Expect.equal ( [], [] )

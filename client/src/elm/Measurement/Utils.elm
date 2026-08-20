@@ -79,14 +79,19 @@ toEverySet presentValue absentValue present =
         EverySet.singleton absentValue
 
 
-{-| Blood glucose is recorded in milligrams per decilitre. The range is that of
-a glucometer: below it the meter shows LO rather than a number, and a reading
-in millimoles per litre falls under it - 11.1 mmol/L is 200 mg/dL, so the
-figure is about eighteen times smaller.
+{-| Blood glucose is recorded in milligrams per decilitre, and 35 to 600 is the
+range that says so.
+
+The top is what a meter can show. The bottom is set above the readings a meter
+gives in millimoles per litre, which go to about 33: 11.1 mmol/L is 200 mg/dL,
+so the figure is about eighteen times smaller, and every reading in that unit
+lands under 35. A milligram reading that low is a level of hypoglycaemia that
+does not arrive at a routine visit.
+
 -}
 getInputConstraintsBloodGlucose : FloatInputConstraints
 getInputConstraintsBloodGlucose =
-    { minVal = 20
+    { minVal = 35
     , maxVal = 600
     }
 
