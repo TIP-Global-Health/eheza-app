@@ -26,6 +26,7 @@ import Measurement.Utils
         , toVitalsValueWithDefault
         )
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (LabResultsData, Model, Msg(..))
 import Pages.Prenatal.RecurrentActivity.Utils exposing (toHealthEducationValueWithDefault)
 import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, referralFormWithDefault, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault)
@@ -79,6 +80,14 @@ update id isLabTech db msg model =
 
         SetAlertsDialogState value ->
             ( { model | showAlertsDialog = value }, Cmd.none, [] )
+
+        SetMeasurementOutOfRangePopupState state ->
+            let
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | measurementOutOfRangePopupState = state })
+            in
+            ( { model | labResultsData = updatedData }, Cmd.none, [] )
 
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
@@ -676,6 +685,27 @@ update id isLabTech db msg model =
             , Cmd.none
             , []
             )
+
+        PreSaveRandomBloodSugarResult personId saved nextTask ->
+            let
+                form =
+                    model.labResultsData.randomBloodSugarTestForm
+
+                outOfRange =
+                    Measurement.Utils.bloodGlucoseOutOfRange form.sugarCount
+
+                extraMsgs =
+                    if List.isEmpty outOfRange then
+                        [ SaveRandomBloodSugarResult personId saved nextTask ]
+
+                    else
+                        [ SetWarningPopupState <| Just <| WarningPopupMeasurementOutOfRange outOfRange ]
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SaveRandomBloodSugarResult personId saved nextTask ->
             ( model
@@ -1581,6 +1611,27 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
             , Cmd.none
             , []
             )
+
+        SetMeasurementOutOfRangePopupState state ->
+            ( { data | measurementOutOfRangePopupState = state }, Cmd.none, [] )
+
+        PreSaveRandomBloodSugarResult personId saved nextTask ->
+            let
+                outOfRange =
+                    Measurement.Utils.bloodGlucoseOutOfRange data.randomBloodSugarTestForm.sugarCount
+
+                nextMsgs =
+                    if List.isEmpty outOfRange then
+                        [ SaveRandomBloodSugarResult personId saved nextTask ]
+
+                    else
+                        [ SetMeasurementOutOfRangePopupState outOfRange ]
+            in
+            ( data
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) nextMsgs
 
         SaveRandomBloodSugarResult personId saved _ ->
             let

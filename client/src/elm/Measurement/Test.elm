@@ -24,6 +24,7 @@ import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
         ( birthWeightOutsideConstraints
+        , bloodGlucoseOutOfRange
         , bornUnderweightByBirthWeight
         , creatinineResultFormWithDefault
         , getAllDosesForVaccine
@@ -690,6 +691,7 @@ all =
         , initialVaccinationDateByBirthDateTest
         , updateChildSetMuacTest
         , ncdaFormWithDefaultNotTakenTest
+        , bloodGlucoseOutOfRangeTest
         , outOfRangeAsEnteredTest
         , updateChildOutOfRangePopupTest
         , ncdaMeasurementsOutOfRangeTest
@@ -729,6 +731,38 @@ heightFormWithDefaultSkippedTest =
                         , heightDirty = False
                         , measurementNotTaken = Just True
                         }
+        ]
+
+
+{-| Blood glucose is entered in milligrams per decilitre. A reading typed in
+millimoles per litre is roughly a tenth of the figure, which is what the bottom
+of the range is there to catch.
+-}
+bloodGlucoseOutOfRangeTest : Test
+bloodGlucoseOutOfRangeTest =
+    describe "bloodGlucoseOutOfRange"
+        [ test "a reading typed in millimoles per litre is outside the range" <|
+            \_ ->
+                bloodGlucoseOutOfRange (Just 12.5)
+                    |> Expect.equal [ MeasurementBloodGlucose ]
+        , test "the same reading in milligrams per decilitre is within it" <|
+            \_ ->
+                bloodGlucoseOutOfRange (Just 225)
+                    |> Expect.equal []
+        , test "a reading above what a meter can show is outside the range" <|
+            \_ ->
+                bloodGlucoseOutOfRange (Just 601)
+                    |> Expect.equal [ MeasurementBloodGlucose ]
+        , test "both ends of the range are within it" <|
+            \_ ->
+                ( bloodGlucoseOutOfRange (Just 20)
+                , bloodGlucoseOutOfRange (Just 600)
+                )
+                    |> Expect.equal ( [], [] )
+        , test "no reading is not out of range" <|
+            \_ ->
+                bloodGlucoseOutOfRange Nothing
+                    |> Expect.equal []
         ]
 
 

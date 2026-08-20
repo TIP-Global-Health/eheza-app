@@ -77,6 +77,8 @@ type Msg
     | SetRandomBloodSugarTestFormBoolInput (Bool -> RandomBloodSugarResultForm PrenatalEncounterId -> RandomBloodSugarResultForm PrenatalEncounterId) Bool
     | SetRandomBloodSugarTestExecutionNote TestExecutionNote
     | SetRandomBloodSugar String
+    | SetMeasurementOutOfRangePopupState (List Measurement.Model.RangedMeasurement)
+    | PreSaveRandomBloodSugarResult PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
     | SaveRandomBloodSugarResult PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
     | SetHIVPCRTestFormBoolInput (Bool -> HIVPCRResultForm -> HIVPCRResultForm) Bool
     | SetHIVPCRTestExecutionNote TestExecutionNote
@@ -158,6 +160,7 @@ type alias LabResultsData =
     , partnerHIVTestForm : PartnerHIVResultForm
     , malariaTestForm : MalariaResultForm
     , activeTask : Maybe LaboratoryTask
+    , measurementOutOfRangePopupState : List Measurement.Model.RangedMeasurement
     }
 
 
@@ -174,6 +177,7 @@ emptyLabResultsData =
     , partnerHIVTestForm = emptyPartnerHIVResultForm
     , malariaTestForm = emptyMalariaResultForm
     , activeTask = Nothing
+    , measurementOutOfRangePopupState = []
     }
 
 

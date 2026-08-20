@@ -63,6 +63,7 @@ import Pages.Utils
         , viewSaveAction
         , viewTasksCount
         )
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -352,7 +353,7 @@ viewLabResultsContent language isLabTech assembled model =
                                     SaveHemoglobinResult personId measurements.hemoglobinTest nextTask |> Just
 
                                 TaskRandomBloodSugarTest ->
-                                    SaveRandomBloodSugarResult personId measurements.randomBloodSugarTest nextTask |> Just
+                                    PreSaveRandomBloodSugarResult personId measurements.randomBloodSugarTest nextTask |> Just
 
                                 TaskHIVPCRTest ->
                                     SaveHIVPCRResult personId measurements.hivPCRTest nextTask |> Just
@@ -827,34 +828,46 @@ contentAndTasksLaboratorResultsConfig =
 viewLabsHistory :
     Language
     -> NominalDate
+    -> Site
     -> PrenatalEncounterId
     -> PrenatalEncounterId
     -> LaboratoryTest
     -> ModelIndexedDb
     -> LabResultsData
     -> Html Msg
-viewLabsHistory language currentDate originatingEncounterId labEncounterId lab db data =
+viewLabsHistory language currentDate site originatingEncounterId labEncounterId lab db data =
     let
         assembled =
             generateAssembledData labEncounterId db
     in
-    viewWebData language (viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId lab data) identity assembled
+    viewWebData language (viewLabsHistoryHeaderAndContent language currentDate site originatingEncounterId lab data) identity assembled
 
 
 viewLabsHistoryHeaderAndContent :
     Language
     -> NominalDate
+    -> Site
     -> PrenatalEncounterId
     -> LaboratoryTest
     -> LabResultsData
     -> AssembledData
     -> Html Msg
-viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId lab data assembled =
+viewLabsHistoryHeaderAndContent language currentDate site originatingEncounterId lab data assembled =
     div [ class "page-activity prenatal labs-history" ]
         [ viewHeader language
             (PrenatalActivityPage originatingEncounterId Backend.PrenatalActivity.Model.Laboratory)
             (Translate.LaboratoryTest lab)
         , viewLabsHistoryContent language currentDate lab data assembled
+        , viewModal <|
+            if List.isEmpty data.measurementOutOfRangePopupState then
+                Nothing
+
+            else
+                Just <|
+                    Measurement.View.measurementOutOfRangePopup language
+                        site
+                        data.measurementOutOfRangePopupState
+                        (SetMeasurementOutOfRangePopupState [])
         ]
 
 

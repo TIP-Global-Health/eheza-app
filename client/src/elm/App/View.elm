@@ -767,7 +767,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, labEncounterId, lab ) loggedInModel.prenatalLabsHistoryPages
                                     |> Maybe.withDefault Pages.Prenatal.RecurrentActivity.Model.emptyLabResultsData
                         in
-                        Pages.Prenatal.RecurrentActivity.View.viewLabsHistory model.language currentDate id labEncounterId lab model.indexedDb page_
+                        Pages.Prenatal.RecurrentActivity.View.viewLabsHistory model.language currentDate site id labEncounterId lab model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalLabsHistory id labEncounterId lab)
                             |> flexPageWrapper configured.config model
 
@@ -1019,7 +1019,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, activity ) loggedInModel.ncdRecurrentActivityPages
                                     |> Maybe.withDefault Pages.NCD.RecurrentActivity.Model.emptyModel
                         in
-                        Pages.NCD.RecurrentActivity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.NCD.RecurrentActivity.View.view model.language currentDate site id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDRecurrentActivity id activity)
                             |> flexPageWrapper configured.config model
 

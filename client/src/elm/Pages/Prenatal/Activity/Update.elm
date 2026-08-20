@@ -3011,6 +3011,27 @@ update currentDate site id db msg model =
             , []
             )
 
+        PreSaveRandomBloodSugarTest personId saved nextTask ->
+            let
+                form =
+                    model.laboratoryData.randomBloodSugarTestForm
+
+                outOfRange =
+                    Measurement.Utils.bloodGlucoseOutOfRange form.sugarCount
+
+                extraMsgs =
+                    if List.isEmpty outOfRange then
+                        [ SaveRandomBloodSugarTest personId saved nextTask ]
+
+                    else
+                        [ SetWarningPopupState <| Just <| WarningPopupMeasurementOutOfRange outOfRange ]
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate site id db) extraMsgs
+
         SaveRandomBloodSugarTest personId saved nextTask ->
             ( model
             , Cmd.none

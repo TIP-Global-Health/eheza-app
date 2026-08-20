@@ -70,6 +70,7 @@ import Pages.Utils
         )
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -87,6 +88,16 @@ viewHeaderAndContent language currentDate site id activity model assembled =
     div [ class "page-activity ncd" ]
         [ viewHeader language id activity
         , viewContent language currentDate site activity model assembled
+        , viewModal <|
+            if List.isEmpty model.measurementOutOfRangePopupState then
+                Nothing
+
+            else
+                Just <|
+                    Measurement.View.measurementOutOfRangePopup language
+                        site
+                        model.measurementOutOfRangePopupState
+                        (SetMeasurementOutOfRangePopupState [])
         ]
 
 
@@ -914,7 +925,7 @@ viewLaboratoryContent language currentDate assembled data =
                                     SaveUrineDipstickTest personId measurements.urineDipstickTest nextTask
 
                                 TaskRandomBloodSugarTest ->
-                                    SaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
+                                    PreSaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
 
                                 TaskPregnancyTest ->
                                     SavePregnancyTest personId measurements.pregnancyTest nextTask
