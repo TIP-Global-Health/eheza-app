@@ -3734,6 +3734,9 @@ measurementOutOfRangeClass measurement =
         MeasurementBirthWeight ->
             "birth-weight-out-of-range"
 
+        MeasurementBloodGlucose ->
+            "blood-glucose-out-of-range"
+
         MeasurementFundalHeight ->
             "fundal-height-out-of-range"
 

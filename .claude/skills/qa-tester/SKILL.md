@@ -60,8 +60,60 @@ Verify before testing — testing the wrong build is the classic wasted run:
 4. The app is reachable at `http://localhost:3000` and, after every recompile, "Version" in
    the app's top-right corner has been clicked to activate the new code.
 
-If a precondition needs the user (e.g. switching a branch out from under a parallel session),
-stop and ask.
+5. **The Chrome window is visible and in front.** Check it, first thing, with
+   `javascript_tool: JSON.stringify({hidden: document.hidden, focus: document.hasFocus()})`.
+   If `hidden` is true, ask the user to raise the window before going on — this is not a
+   nicety. Hidden, every click, hover and screenshot costs a flat **five seconds** instead of
+   under a fifth of one, and the same occlusion is behind the frozen DOM, the dead input and
+   the timed-out screenshots in pitfalls. One request at the start saves minutes and most of
+   the run's failure modes; see the measurements in app-map.
+
+If a precondition needs the user (e.g. switching a branch out from under a parallel session,
+or raising the Chrome window), stop and ask.
+
+### Start each run on a freshly paired device
+
+Do not inherit the pairing from an earlier run. It is lost whenever the app's caches are
+rebuilt, and a device carried between runs can bring a jammed upload queue with it (see
+pitfalls). Pairing codes are single-use, so make a new one, then pair:
+
+```bash
+# Creates a device node holding the code, first clearing that code off any node that
+# still has it (codes must be unique). Verified 2026-08-21.
+ddev drush eval "\$code='88888888'; \$title='QA Manual Device '.date('Ymd-His'); \
+variable_set('hedley_super_user_mode',1); \$q=new EntityFieldQuery(); \
+\$r=\$q->entityCondition('entity_type','node')->propertyCondition('type','device') \
+->fieldCondition('field_pairing_code','value',\$code)->execute(); \
+if(!empty(\$r['node'])){foreach(node_load_multiple(array_keys(\$r['node'])) as \$o){ \
+\$o->field_pairing_code[LANGUAGE_NONE][0]['value']=''; node_save(\$o);}} \
+variable_set('hedley_super_user_mode',0); \
+\$n=entity_create('node',array('type'=>'device','title'=>\$title)); \
+\$w=entity_metadata_wrapper('node',\$n); \$w->field_pairing_code->set(\$code); node_save(\$n); \
+echo 'created: '.\$title.' code='.\$code;"
+```
+
+Then in the app: if it already shows the PIN page, wipe the local state first so the pairing
+screen comes back (unregister the service worker, delete the caches **including `config`**,
+delete IndexedDB, clear storage, reload — see pitfalls). Enter the code with `form_input` on
+the field's ref, never by clicking and typing. After pairing, general data has to download
+before any PIN is accepted: "Your PIN code was not recognized" straight after pairing means
+sync has not finished, not that the PIN is wrong.
+
+### What the browser tools cannot set up — ask the user
+
+Two things worth having that this skill cannot do for itself. Say so rather than pretending:
+
+- **An incognito window.** No browser tool opens one, and a Chrome extension is inert in
+  incognito unless the user has ticked "Allow in Incognito" for it. The clean-slate benefit
+  is available anyway through the local-state wipe above, so treat incognito as optional:
+  mention it, and only pursue it if the user sets the window up and hands it over.
+- **iPad Mini (or any device) emulation.** Tabs driven through these tools already run under
+  a fixed emulated viewport — 1200×1799 CSS px at devicePixelRatio 1, with `outerWidth`
+  reading 0 and `ontouchstart` false. `resize_window` changes the OS window but leaves
+  `innerWidth`/`innerHeight` untouched, so the tablet metrics, the pixel ratio and touch
+  events are all out of reach (measured 2026-08-21). Anything that depends on a real tablet
+  viewport — layout at 768 px, touch-only gestures — has to be checked by hand on a tablet,
+  and the run should say so instead of implying it was covered.
 
 ## Step 3: Test plan — present before executing
 
@@ -79,12 +131,63 @@ Drive the app with the Claude-in-Chrome tools (`mcp__claude-in-chrome__*`; load 
 ToolSearch in one call). Rules:
 
 - Call `tabs_context_mcp` first; create a fresh tab for the run.
-- **Record every scenario.** Use `gif_creator`: start capturing before the scenario's first
-  action, capture extra frames before and after each action (smooth playback), and export as
-  `qa-<pr>-<scenario>.gif`. Chrome saves exports to `~/Downloads` — move each file into
-  `client/qa-recordings/<pr>/` (gitignored, like the e2e recordings) right after exporting,
-  before starting the next scenario. These recordings ARE the demonstration of the
-  verification; a scenario without one counts as not verified.
+- **Inject the cursor before recording anything.** `cursor.js` next to this skill draws the
+  pointer and the last three clicks into the page, the way the e2e videos do it
+  (`client/e2e/helpers/cursor.ts`). Without it a viewer cannot tell where a click landed:
+  gif_creator's own overlay marks only the frame captured at the instant of the click, and
+  QA frames are taken a second or more later. Pass the file's contents to `javascript_tool`
+  and **re-inject after every navigation** — a page load wipes it. It survives Elm's
+  re-renders on its own.
+- **Hover, pause, then click** — the same shape as the e2e `click()` helper. The hover frame
+  shows the pointer resting on the control before it is pressed, so the recording reads as
+  someone using the app rather than as things happening by themselves.
+- **Record every scenario, and keep it as `.mp4`.** `gif_creator` is the only capture there
+  is, so record with it — start capturing before the scenario's first action, take extra
+  screenshots around each action (they are the frames, and they double as the flush the
+  occluded-window pitfall needs), and export as `qa-<pr>-<scenario>.gif` with gif_creator's
+  own click overlay turned **off** — the injected cursor already marks every click, and two
+  markers in one frame is just noise:
+
+  ```
+  options: { showClickIndicators: false, showActionLabels: false, showDragPaths: false }
+  ```
+
+  Its progress bar and watermark are worth keeping. Chrome saves
+  exports to `~/Downloads`. Convert each one to .mp4 in `client/qa-recordings/<pr>/`
+  (gitignored, like the e2e recordings) and delete the GIF, right after exporting and before
+  the next scenario:
+
+  ```bash
+  # Absolute output path — the command must not depend on the working directory.
+  mkdir -p /var/www/html/ihangane/client/qa-recordings/<pr>
+  ffmpeg -y -loglevel error -i ~/Downloads/qa-<pr>-<scenario>.gif \
+    -movflags +faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" \
+    -c:v libx264 -crf 23 \
+    /var/www/html/ihangane/client/qa-recordings/<pr>/qa-<pr>-<scenario>.mp4 \
+    && rm ~/Downloads/qa-<pr>-<scenario>.gif
+  ```
+
+  Then check the file rather than assuming: `ffmpeg -v error -i <file> -f null -` must print
+  nothing, and a frame pulled from the moment that matters
+  (`ffmpeg -ss <t> -i <file> -frames:v 1 frame.png`) must show the thing being demonstrated,
+  legibly. A recording that converted cleanly but does not contain the warning is not
+  evidence.
+- **The recording is not real time — say so when handing it over.** gif_creator captures one
+  frame per action and gives every frame the same duration on export, so playback speed is a
+  function of the frame count, not of the clock. The pairing run was 23 frames held 0.89s
+  each = 20.4s of video for about four minutes of real work, and a six-second wait for sync
+  looks exactly like a one-second pause. Never let a reader infer timing, responsiveness or
+  "how long the app took" from one of these files. If a scenario is *about* timing, capture
+  it differently: screenshot with `save_to_disk: true`, note the wall-clock time of each
+  frame, and assemble with ffmpeg's concat demuxer giving each frame its real duration.
+
+  Same format the e2e recordings are kept in, and about an eighth of the size (49 MB of GIF
+  became 6.2 MB of mp4 on the #2007 run). The overlays gif_creator burns in — click rings,
+  action labels, progress bar — survive the conversion. The `scale` filter is not optional:
+  the capture height is odd and `yuv420p` needs even dimensions. These recordings ARE the
+  demonstration of the verification; a scenario without one counts as not verified.
+- The capture stops at **50 frames**. Watch the count: on a long scenario, export and start
+  a fresh recording once the important moment is captured, rather than losing the end.
 - Never click elements that open native `confirm()`/`alert()` dialogs — they freeze the
   extension (see pitfalls). Find another route or ask the user to click through manually.
 - Offline-first app: backend-visible effects appear only after sync completes. Wait for the
@@ -124,7 +227,7 @@ Guardrails, all cases:
 ## Step 5: Report and record
 
 Report to the user: per plan row — pass/fail, what was observed, and the recording as a
-clickable link (`file:///var/www/html/ihangane/client/qa-recordings/<pr>/qa-<pr>-<scenario>.gif`)
+clickable link (`file:///var/www/html/ihangane/client/qa-recordings/<pr>/qa-<pr>-<scenario>.mp4`)
 so they can watch the verification. For failures, include the drafted PR comment or issue
 text from "When you find a bug" and ask for approval to post it.
 

@@ -108,7 +108,11 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await page.waitForTimeout(WAIT.elmRerender);
 
     // Complete lab results for all visible tests.
-    const completedResults = await completeLabResultsAsLabTech(page);
+    // The blood glucose field is asked for a reading in the wrong unit on
+    // the way, and has to refuse it (#2123).
+    const completedResults = await completeLabResultsAsLabTech(page, {
+      checkGlucoseRange: true,
+    });
     expect(completedResults.length, 'at least one lab result should have been completed').toBeGreaterThan(0);
 
     // After completing all tabs, the app should navigate to encounter page

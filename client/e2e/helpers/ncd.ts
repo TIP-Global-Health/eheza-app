@@ -1,18 +1,21 @@
 import { Page } from '@playwright/test';
 import { click } from './auth';
 import {
-  WAIT,
-  queryMeasurementNodes,
-  backdateEncounter,
   answerYesNo,
-  selectCheckbox,
-  selectCheckboxInForm,
+  backdateEncounter,
   clickSubTaskTab,
+  expectGlucoseRangeRefusesMillimoles,
   fillMeasurement,
+  GLUCOSE_IN_RANGE,
+  isGlucoseInput,
   openActivity,
+  queryMeasurementNodes,
+  registerAdult,
   saveActivity,
   saveSubTask,
-  registerAdult,
+  selectCheckbox,
+  selectCheckboxInForm,
+  WAIT,
 } from './common';
 
 // ---------------------------------------------------------------------------
@@ -350,9 +353,10 @@ export async function completeOutsideCare(page: Page) {
  */
 export async function completeLaboratory(
   page: Page,
-  options?: { performTests?: boolean },
+  options?: { performTests?: boolean; checkGlucoseRange?: boolean },
 ) {
   const performTests = options?.performTests ?? false;
+  const checkGlucoseRange = options?.checkGlucoseRange ?? false;
 
   await openActivity(page, 'ncd', 'laboratory');
 
@@ -422,7 +426,21 @@ export async function completeLaboratory(
       // 4. "Immediate result?" → Lab (custom labels: "Point of Care" / "Lab")
       const immediateResult = page.locator('.form-input.yes-no.immediate-result');
       if (await immediateResult.isVisible().catch(() => false)) {
-        await forceClick(immediateResult.locator('label', { hasText: 'Lab' }));
+        // Answering Lab leaves the result to be entered later, so the reading
+        // is never asked for here. The blood sugar tab has to be read on the
+        // spot for its input to be drawn at all.
+        const readOnTheSpot =
+          checkGlucoseRange &&
+          (await page
+            .locator('div.label.header', { hasText: 'Random Blood Sugar' })
+            .isVisible()
+            .catch(() => false));
+
+        await forceClick(
+          immediateResult.locator('label', {
+            hasText: readOnTheSpot ? 'Point of Care' : 'Lab',
+          }),
+        );
         await page.waitForTimeout(WAIT.elmRerender);
       }
 
@@ -477,7 +495,15 @@ export async function completeLaboratory(
         if (await input.isVisible().catch(() => false)) {
           const currentVal = await input.inputValue();
           if (!currentVal) {
-            await input.fill('5');
+            if (await isGlucoseInput(input)) {
+              if (checkGlucoseRange) {
+                await expectGlucoseRangeRefusesMillimoles(page);
+              } else {
+                await input.fill(GLUCOSE_IN_RANGE);
+              }
+            } else {
+              await input.fill('5');
+            }
             await page.waitForTimeout(WAIT.quickInput);
           }
         }
@@ -700,7 +726,11 @@ export async function openNCDRecurrentEncounterFromCaseManagement(
  * Complete LabResults activity on the recurrent encounter.
  * Iterates visible lab result tabs and fills in result values.
  */
-export async function completeLabResults(page: Page) {
+export async function completeLabResults(
+  page: Page,
+  options?: { checkGlucoseRange?: boolean },
+) {
+  const checkGlucoseRange = options?.checkGlucoseRange ?? false;
   await openActivity(page, 'ncd', 'laboratory');
 
   const tabs = page.locator('.link-section:has(.icon-activity-task)');
@@ -739,7 +769,15 @@ export async function completeLabResults(page: Page) {
       if (await input.isVisible({ timeout: 500 }).catch(() => false)) {
         const currentVal = await input.inputValue();
         if (!currentVal) {
-          await input.fill('5');
+          if (await isGlucoseInput(input)) {
+            if (checkGlucoseRange) {
+              await expectGlucoseRangeRefusesMillimoles(page);
+            } else {
+              await input.fill(GLUCOSE_IN_RANGE);
+            }
+          } else {
+            await input.fill('5');
+          }
         }
       }
     }

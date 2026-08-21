@@ -12088,6 +12088,13 @@ translationSet trans =
                     , somali = Nothing
                     }
 
+                Measurement.Model.MeasurementBloodGlucose ->
+                    { english = "Blood glucose is recorded in milligrams per decilitre, not millimoles per litre: a reading of 11.1 mmol/L is entered as 200."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 Measurement.Model.MeasurementFundalHeight ->
                     { english = "Fundal height is recorded in centimetres."
                     , kinyarwanda = Nothing

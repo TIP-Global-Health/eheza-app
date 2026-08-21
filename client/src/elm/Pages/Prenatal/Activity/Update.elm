@@ -3011,6 +3011,29 @@ update currentDate site id db msg model =
             , []
             )
 
+        PreSaveRandomBloodSugarTest personId saved nextTask ->
+            let
+                form =
+                    getMeasurementValueFunc saved
+                        |> Measurement.Utils.randomBloodSugarUniversalFormWithDefault model.laboratoryData.randomBloodSugarTestForm
+
+                -- The reading is drawn only for a test performed and read on
+                -- the spot, which is the condition the form itself uses.
+                inputShown =
+                    form.testPerformed == Just True && form.immediateResult == Just True
+
+                extraMsgs =
+                    Measurement.Utils.bloodGlucoseSaveMsgs inputShown
+                        form.sugarCount
+                        (SaveRandomBloodSugarTest personId saved nextTask)
+                        (SetWarningPopupState << Just << WarningPopupMeasurementOutOfRange)
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate site id db) extraMsgs
+
         SaveRandomBloodSugarTest personId saved nextTask ->
             ( model
             , Cmd.none

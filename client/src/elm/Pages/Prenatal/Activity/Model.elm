@@ -231,6 +231,7 @@ type Msg
     | SetRandomBloodSugarTestFormBoolInput (Bool -> RandomBloodSugarTestUniversalForm -> RandomBloodSugarTestUniversalForm) Bool
     | SetRandomBloodSugarTestExecutionNote TestExecutionNote
     | SetRandomBloodSugarResult String
+    | PreSaveRandomBloodSugarTest PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
     | SaveRandomBloodSugarTest PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
     | SetHIVPCRTestFormBoolInput (Bool -> HIVPCRTestForm -> HIVPCRTestForm) Bool
     | SetHIVPCRTestExecutionNote TestExecutionNote
