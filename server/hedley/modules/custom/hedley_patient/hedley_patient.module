@@ -155,11 +155,22 @@ function hedley_patient_recalculate_shards_for_person_content($person_id) {
   // using person, adult and related_to fields.
   // These are group and individual measurements, relationships,
   // and group and individual participants.
-  $association_fields = [
-    'field_person',
-    'field_adult',
-    'field_related_to',
-  ];
+  //
+  // The remaining person-reference fields are deliberately left out, because
+  // the content they point from does not take its shards from the person named
+  // by THAT field: an education session takes its shards from its health
+  // center, a pregnancy participant takes them from the parent rather than the
+  // newborn, and a trace contact takes them from the person who reported it -
+  // its field_person - rather than from the person it refers to. A trace
+  // contact is still reached here, through field_person, which is correct.
+  $association_fields = array_values(array_diff(
+    hedley_general_get_person_association_fields(),
+    [
+      'field_participating_patients',
+      'field_newborn',
+      'field_referred_person',
+    ]
+  ));
   $entries = hedley_general_get_person_content_associated_by_fields($person_id, $association_fields);
 
   $ids = $individual_participants = [];
@@ -190,11 +201,29 @@ function hedley_patient_recalculate_shards_for_person_content($person_id) {
 
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
+    // Not everything that names a person is sharded. A whatsapp_record points
+    // at its person with field_person, so the query above returns it, but the
+    // bundle has no field_shards instance at all - asking a wrapper for it
+    // throws, and the person save this runs from would be aborted.
+    if (!field_info_instance('node', 'field_shards', $node->type)) {
+      continue;
+    }
+
     $wrapper = entity_metadata_wrapper('node', $node);
     $node_shards = $wrapper->field_shards->value(['identifier' => TRUE]);
 
-    if (!hedley_patient_arrays_equal($person_shards, $node_shards)) {
-      $wrapper->field_shards->set($person_shards);
+    // A pmtct_participant or relationship links two people, so its shards are
+    // the union of both. Setting them to a single person's shards would drop
+    // shards that only the other person carries.
+    if (in_array($node->type, ['pmtct_participant', 'relationship'])) {
+      $correct_shards = hedley_general_two_person_node_shards($node);
+    }
+    else {
+      $correct_shards = $person_shards;
+    }
+
+    if (!hedley_patient_arrays_equal($correct_shards, $node_shards)) {
+      $wrapper->field_shards->set($correct_shards);
       $wrapper->save();
     }
   }

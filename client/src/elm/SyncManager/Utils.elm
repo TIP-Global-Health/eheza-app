@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -44,7 +44,44 @@ import SyncManager.Model exposing (..)
 import Utils.WebData
 
 
-{-| Decide on the Sync status. Either keep the exiting one, or set the next one,
+{-| After a large download, a background sync may reload the page. That is only
+safe before the nurse is working: reloading a logged-in (`UserPage`) session
+would discard whatever form entries have not been saved yet, so the reload is
+skipped there, and on the wellbeing pages the nurse reaches once logged in. On
+any other page (device, PIN, service worker) there is no in-progress work to
+lose.
+-}
+pageAllowsBackgroundRefresh : Page -> Bool
+pageAllowsBackgroundRefresh page =
+    -- Enumerated rather than defaulted, so a new Page constructor forces this
+    -- safety decision to be made rather than silently allowing the reload.
+    case page of
+        DevicePage ->
+            True
+
+        MessagingCenterPage ->
+            False
+
+        MessagingGuide ->
+            False
+
+        PageNotFound _ ->
+            True
+
+        PinCodePage ->
+            True
+
+        ServiceWorkerPage ->
+            True
+
+        UserPage _ ->
+            False
+
+        WellbeingPage ->
+            False
+
+
+{-| Decide on the Sync status. Either keep the existing one, or set the next one,
 according to the order `SyncStatus` is defined.
 -}
 determineSyncStatus : Page -> Model -> Model
@@ -1088,6 +1125,9 @@ getImageFromBackendAuthorityEntity backendAuthorityEntity =
                     identifier.entity.signature
             in
             Just url
+
+        BackendAuthorityWellChildPhoto identifier ->
+            getImageFromMeasurement identifier
 
         _ ->
             Nothing
@@ -2829,3 +2869,29 @@ resolveIncidentDetailsMsg error =
 fileUploadFailureThreshold : Int
 fileUploadFailureThreshold =
     5
+
+
+{-| Classify an IndexedDB save failure from the raw error name reported by the
+JS port. `QuotaExceededError` (the device storage is full) is singled out
+because, unlike a transient failure, re-downloading and re-saving the same batch
+cannot succeed until space is freed.
+-}
+indexDbSaveErrorFromReason : Maybe String -> IndexDbSaveError
+indexDbSaveErrorFromReason reason =
+    case reason of
+        Just name ->
+            if isStorageFullError name then
+                IndexDbSaveErrorStorageFull
+
+            else
+                IndexDbSaveErrorOther name
+
+        Nothing ->
+            IndexDbSaveErrorOther "Unknown"
+
+
+isStorageFullError : String -> Bool
+isStorageFullError name =
+    -- Browsers report a full quota as `QuotaExceededError`; older Firefox used
+    -- `NS_ERROR_DOM_QUOTA_REACHED`. Match the substring to cover both casings.
+    String.contains "Quota" name || String.contains "QUOTA" name

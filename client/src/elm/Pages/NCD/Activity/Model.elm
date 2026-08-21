@@ -108,7 +108,9 @@ type Msg
     | SetRandomBloodSugarTestExecutionDate NominalDate
     | SetRandomBloodSugarTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetRandomBloodSugarResult String
+    | PreSaveRandomBloodSugarTest PersonId (Maybe ( NCDRandomBloodSugarTestId, NCDRandomBloodSugarTest )) (Maybe LaboratoryTask)
     | SaveRandomBloodSugarTest PersonId (Maybe ( NCDRandomBloodSugarTestId, NCDRandomBloodSugarTest )) (Maybe LaboratoryTask)
+    | SetMeasurementOutOfRangePopupState (List Measurement.Model.RangedMeasurement)
     | SetPregnancyTestFormBoolInput (Bool -> PregnancyTestForm Msg -> PregnancyTestForm Msg) Bool
     | SetPregnancyTestExecutionNote TestExecutionNote
     | SetPregnancyTestExecutionDate NominalDate
@@ -157,6 +159,7 @@ type alias Model =
     , laboratoryData : LaboratoryData
     , outsideCareData : OutsideCareData
     , nextStepsData : NextStepsData
+    , measurementOutOfRangePopupState : List Measurement.Model.RangedMeasurement
     }
 
 
@@ -170,6 +173,7 @@ emptyModel =
     , laboratoryData = emptyLaboratoryData
     , outsideCareData = emptyOutsideCareData
     , nextStepsData = emptyNextStepsData
+    , measurementOutOfRangePopupState = []
     }
 
 

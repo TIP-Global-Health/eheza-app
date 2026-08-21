@@ -20,7 +20,7 @@ import Json.Decode exposing (Decoder, andThen, at, bool, fail, field, list, map,
 import Json.Decode.Pipeline exposing (custom, optional, required)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
 import Translate.Utils exposing (decodeLanguage)
-import Utils.Json exposing (decodeEverySet, decodeWithFallback)
+import Utils.Json exposing (decodeEverySet, decodeListDroppingUnknown, decodeWithFallback)
 
 
 decodeGroupMeasurement : Decoder value -> Decoder (Measurement SessionId value)
@@ -3834,8 +3834,8 @@ decodeCall114 : Decoder Call114
 decodeCall114 =
     succeed Call114Value
         |> required "114_contact" (decodeEverySet decodeCall114Sign)
-        |> required "114_recommendation" (decodeEverySet (decodeWithFallback NoneOtherRecommendation114 decodeRecommendation114))
-        |> required "site_recommendation" (decodeEverySet (decodeWithFallback RecommendationSiteNotApplicable decodeRecommendationSite))
+        |> required "114_recommendation" (decodeEverySet decodeRecommendation114)
+        |> required "site_recommendation" (decodeEverySet decodeRecommendationSite)
         |> decodeAcuteIllnessMeasurement
 
 
@@ -4114,7 +4114,7 @@ decodeAcuteIllnessNutrition =
 
 decodeAcuteIllnessContactsTracing : Decoder AcuteIllnessContactsTracing
 decodeAcuteIllnessContactsTracing =
-    decodeWithFallback [] (list decodeContactTraceItemFromString)
+    decodeListDroppingUnknown decodeContactTraceItemFromString
         |> field "contacts_trace_data"
         |> decodeAcuteIllnessMeasurement
 

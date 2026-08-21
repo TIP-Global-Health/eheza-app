@@ -31,10 +31,11 @@ $base_query = db_select('file_managed', 'fm');
 $base_query->addField('fm', 'fid');
 $base_query->condition('fm.uri', 'public://whatsapp-upload%', 'LIKE');
 $base_query->condition('fm.timestamp', $hour_ago, '<');
+$base_query->orderBy('fm.fid');
 
 $count_query = clone $base_query;
 if ($fid) {
-  $count_query->condition('n.fid', $fid, '>');
+  $count_query->condition('fid', $fid, '>');
 }
 $executed = $count_query->execute();
 $total = $executed->rowCount();

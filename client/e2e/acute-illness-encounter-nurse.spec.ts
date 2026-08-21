@@ -234,6 +234,7 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
     //    MUAC + Nutrition tabs appear for child.
     //    Acute Findings: Sunken Eyes + Poor Skin Turgor (dehydration).
     await completePhysicalExam(page, {
+      checkMuacRange: true,
       respiratoryRate: '30',
       bodyTemp: '39.0',
       muac: '14',

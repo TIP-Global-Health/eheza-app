@@ -66,6 +66,7 @@ define('HEDLEY_STATS_SYNC_PATIENTS_DETAILS', 'patients_details');
 
 // Cache methods.
 define('HEDLEY_STATS_CACHE_GET', 'get');
+define('HEDLEY_STATS_CACHE_GET_TIMESTAMP', 'get_timestamp');
 define('HEDLEY_STATS_CACHE_SET', 'set');
 define('HEDLEY_STATS_CACHE_CLEAR', 'clear');
 
@@ -835,6 +836,13 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
   // UTC date and time on which statistics were generated.
   $timestamp = date('d-m-Y, H:i', $now - date('Z'));
   $stats['timestamp'] = $timestamp;
+
+  // The monthly figures are numbered by the month they were computed in, so
+  // the client needs that date to place them. It is the date the case
+  // management entry was cached, and it is read in the same local time the
+  // months are numbered in.
+  $generated = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET_TIMESTAMP, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, HEDLEY_STATS_PERIOD_ONE_YEAR);
+  $stats['stats_generated_date'] = date('Y-m-d', empty($generated) ? $now : $generated);
   // Update client of current hash for health center statistics.
   $stats['stats_cache_hash'] = $health_center_cached_hash;
 
@@ -921,14 +929,13 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   }
 
   // Pull all participants to which resolved encounters belong, including
-  // some patient data, outcome and concluded date.
+  // some patient data and outcome.
   $query = hedley_stats_get_base_query($health_center_id, 'individual_participant');
   $query->condition('node.nid', $individual_participants, 'IN');
 
   $fields_to_join = [
     'field_person',
     'field_outcome',
-    'field_date_concluded',
   ];
   foreach ($fields_to_join as $field) {
     hedley_general_join_field_to_query($query, 'node', $field, FALSE);
@@ -943,6 +950,11 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   $items = [];
   // Prepare illnesses data to be consumed by client side.
   foreach ($result as $row) {
+    if (empty($row->field_birth_date_value)) {
+      // Person got no birthdate set. We can't process
+      // its data on client, so we skip it.
+      continue;
+    }
     $items[$row->nid] = [
       'id' => $row->field_person,
       // Field for 'created' is added at hedley_stats_get_base_query().
@@ -952,7 +964,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
       // 'date concluded' field is not set when illness is resolved.
       // While we could do that for illness, 'date concluded' field was meant
       // to capture the date when pregnancy has ended - some date in past.
-      'date_concluded' => !empty($row->field_expected_field_expected_value2) ? date_format(date_create($row->field_date_concluded), 'Y-m-d') : NULL,
+      'date_concluded' => !empty($row->field_expected_field_expected_value2) ? date_format(date_create($row->field_expected_field_expected_value2), 'Y-m-d') : NULL,
       'outcome' => $row->field_outcome,
       'encounters' => [],
     ];
@@ -975,22 +987,28 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   $query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
 
   // Join with AI Encounter table, through which we can join measurements data.
-  $query->leftJoin('field_data_field_acute_illness_encounter', 'ai_encounter', 'ai_encounter.field_acute_illness_encounter_target_id = node.nid');
+  // Soft-deleted measurements are excluded via the ON clause, so their values
+  // are not pulled into the aggregates below.
+  $query->leftJoin('field_data_field_acute_illness_encounter', 'ai_encounter', hedley_stats_exclude_deleted_from_join(
+    'ai_encounter.field_acute_illness_encounter_target_id = node.nid',
+    'ai_encounter.entity_id'
+  ));
 
   // Pull data of health center referrals.
   $query->leftJoin('field_data_field_send_to_hc', 'send_to_hc', 'send_to_hc.entity_id = ai_encounter.entity_id');
   $query->addField('send_to_hc', 'field_send_to_hc_value');
   $query->addExpression("GROUP_CONCAT(DISTINCT send_to_hc.field_send_to_hc_value)", 'send_to_hc');
 
-  // Pull data of recorded fever at symptoms.
+  // Pull the longest fever reported and the highest temperature recorded at
+  // the encounter, since an encounter can hold more than one of each and it
+  // is a fever if any of them says so.
   $query->leftJoin('field_data_field_fever_period', 'fever_period', 'fever_period.entity_id = ai_encounter.entity_id');
   $query->addField('fever_period', 'field_fever_period_value');
-  $query->addExpression("GROUP_CONCAT(fever_period.field_fever_period_value)", 'fever_period');
+  $query->addExpression("MAX(fever_period.field_fever_period_value)", 'fever_period');
 
-  // Pull data of recorded fever at vitals.
   $query->leftJoin('field_data_field_body_temperature', 'body_temperature', 'body_temperature.entity_id = ai_encounter.entity_id');
   $query->addField('body_temperature', 'field_body_temperature_value');
-  $query->addExpression("GROUP_CONCAT(body_temperature.field_body_temperature_value)", 'body_temperature');
+  $query->addExpression("MAX(body_temperature.field_body_temperature_value)", 'body_temperature');
 
   // Pull data of isolations - COVID suspect.
   $query->leftJoin('field_data_field_isolation', 'isolation', 'isolation.entity_id = ai_encounter.entity_id');
@@ -1153,7 +1171,12 @@ function hedley_stats_get_prenatal_data($health_center_id) {
 
   // Join with Prenatal Encounter table,
   // through which we can join measurements data.
-  $query->leftJoin('field_data_field_prenatal_encounter', 'prenatal_encounter', 'prenatal_encounter.field_prenatal_encounter_target_id = node.nid');
+  // Soft-deleted measurements are excluded via the ON clause, so their values
+  // are not pulled into the aggregates below.
+  $query->leftJoin('field_data_field_prenatal_encounter', 'prenatal_encounter', hedley_stats_exclude_deleted_from_join(
+    'prenatal_encounter.field_prenatal_encounter_target_id = node.nid',
+    'prenatal_encounter.entity_id'
+  ));
 
   // Pull data of danger signs that were recorded during encounter.
   $query->leftJoin('field_data_field_danger_signs', 'danger_signs', 'danger_signs.entity_id = prenatal_encounter.entity_id');
@@ -1199,7 +1222,7 @@ function hedley_stats_get_prenatal_data($health_center_id) {
     }
 
     if (!empty($row->muac)) {
-      $item['muac'] = $row->muac;
+      $item['muac'] = hedley_stats_extract_first_value($row->muac);
     }
 
     $items[$row->field_individual_participant]['encounters'][] = $item;
@@ -1280,6 +1303,11 @@ function hedley_stats_get_ncd_data($health_center_id) {
   $items = [];
   // Prepare participant data to be consumed by client side.
   foreach ($result as $row) {
+    if (empty($row->field_birth_date_value)) {
+      // Person got no birthdate set. We can't process
+      // its data on client, so we skip it.
+      continue;
+    }
     $items[$row->nid] = [
       'id' => $row->field_person,
       // Field for 'created' is added at hedley_stats_get_base_query().
@@ -1302,7 +1330,13 @@ function hedley_stats_get_ncd_data($health_center_id) {
   }
   $base_query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
   // Join with NCD Encounter table, through which we can join measurements data.
-  $base_query->leftJoin('field_data_field_ncd_encounter', 'ncd_encounter', 'ncd_encounter.field_ncd_encounter_target_id = node.nid');
+  // Soft-deleted measurements are excluded via the ON clause, so their values
+  // are not pulled into the aggregates below (this base query is cloned into
+  // the measurement queries that follow).
+  $base_query->leftJoin('field_data_field_ncd_encounter', 'ncd_encounter', hedley_stats_exclude_deleted_from_join(
+    'ncd_encounter.field_ncd_encounter_target_id = node.nid',
+    'ncd_encounter.entity_id'
+  ));
 
   $query = clone $base_query;
   // Pull data of prenatal_diagnoses that were recorded during encounter.
@@ -1378,8 +1412,10 @@ function hedley_stats_get_ncd_data($health_center_id) {
       continue;
     }
 
-    $items[$row->field_individual_participant]['encounters'][$row->nid]['hiv_test_result'] = $row->test_result;
+    $items[$row->field_individual_participant]['encounters'][$row->nid]['hiv_test_result'] = hedley_stats_extract_first_value($row->test_result);
   }
+
+  $query = clone $base_query;
 
   // Run dedicated query to pull data of HIV test execution note recorded
   // at NCD HIV Test activity.
@@ -1406,7 +1442,7 @@ function hedley_stats_get_ncd_data($health_center_id) {
       continue;
     }
 
-    $items[$row->field_individual_participant]['encounters'][$row->nid]['hiv_test_execution_note'] = $row->test_execution_note;
+    $items[$row->field_individual_participant]['encounters'][$row->nid]['hiv_test_execution_note'] = hedley_stats_extract_first_value($row->test_execution_note);
   }
 
   foreach ($items as &$item) {
@@ -1554,6 +1590,11 @@ function hedley_stats_get_spv_data($health_center_id) {
   $items = [];
   // Prepare participant data to be consumed by client side.
   foreach ($result as $row) {
+    if (empty($row->field_birth_date_value)) {
+      // Person got no birthdate set. We can't process
+      // its data on client, so we skip it.
+      continue;
+    }
     $items[$row->nid] = [
       'id' => $row->field_person,
       // Field for 'created' is added at hedley_stats_get_base_query().
@@ -1580,7 +1621,13 @@ function hedley_stats_get_spv_data($health_center_id) {
 
   // Join with Well Child Encounter table, through which
   // we can join measurements data.
-  $base_query->leftJoin('field_data_field_well_child_encounter', 'well_child_encounter', 'well_child_encounter.field_well_child_encounter_target_id = node.nid');
+  // Soft-deleted measurements are excluded via the ON clause, so their values
+  // are not pulled into the aggregates below (this base query is cloned into
+  // the measurement queries that follow).
+  $base_query->leftJoin('field_data_field_well_child_encounter', 'well_child_encounter', hedley_stats_exclude_deleted_from_join(
+    'well_child_encounter.field_well_child_encounter_target_id = node.nid',
+    'well_child_encounter.entity_id'
+  ));
 
   $query = clone $base_query;
 
@@ -1747,6 +1794,11 @@ function hedley_stats_get_child_scorecard_data($health_center_id) {
   $items = [];
   // Prepare participant data to be consumed by client side.
   foreach ($result as $row) {
+    if (empty($row->field_birth_date_value)) {
+      // Person got no birthdate set. We can't process
+      // its data on client, so we skip it.
+      continue;
+    }
     $items[$row->nid] = [
       'id' => $row->field_person,
       // Field for 'created' is added at hedley_stats_get_base_query().
@@ -1772,7 +1824,13 @@ function hedley_stats_get_child_scorecard_data($health_center_id) {
 
   // Join with Well Child Encounter table, through which
   // we can join measurements data.
-  $base_query->leftJoin('field_data_field_child_scoreboard_encounter', 'child_scoreboard_encounter', 'child_scoreboard_encounter.field_child_scoreboard_encounter_target_id = node.nid');
+  // Soft-deleted measurements are excluded via the ON clause, so their values
+  // are not pulled into the aggregates below (this base query is cloned into
+  // the measurement queries that follow).
+  $base_query->leftJoin('field_data_field_child_scoreboard_encounter', 'child_scoreboard_encounter', hedley_stats_exclude_deleted_from_join(
+    'child_scoreboard_encounter.field_child_scoreboard_encounter_target_id = node.nid',
+    'child_scoreboard_encounter.entity_id'
+  ));
 
   $query = clone $base_query;
 
@@ -1978,6 +2036,11 @@ function hedley_stats_get_nutrition_individual_data($health_center_id) {
   $items = [];
   // Prepare participant data to be consumed by client side.
   foreach ($result as $row) {
+    if (empty($row->field_birth_date_value)) {
+      // Person got no birthdate set. We can't process
+      // its data on client, so we skip it.
+      continue;
+    }
     $items[$row->nid] = [
       'id' => $row->field_person,
       // Field for 'created' is added at hedley_stats_get_base_query().
@@ -2003,7 +2066,13 @@ function hedley_stats_get_nutrition_individual_data($health_center_id) {
 
   // Join with Nutrition Encounter table, through which we can
   // join measurements data.
-  $base_query->leftJoin('field_data_field_nutrition_encounter', 'nutrition_encounter', 'nutrition_encounter.field_nutrition_encounter_target_id = node.nid');
+  // Soft-deleted measurements are excluded via the ON clause, so their values
+  // are not pulled into the aggregates below (this base query is cloned into
+  // the measurement queries that follow).
+  $base_query->leftJoin('field_data_field_nutrition_encounter', 'nutrition_encounter', hedley_stats_exclude_deleted_from_join(
+    'nutrition_encounter.field_nutrition_encounter_target_id = node.nid',
+    'nutrition_encounter.entity_id'
+  ));
 
   $query = clone $base_query;
 
@@ -2268,8 +2337,14 @@ function hedley_stats_get_group_education_data($health_center_id, array &$patien
   $query->leftJoin('field_data_field_education_topics', 'et', 'et.entity_id = node.nid');
   $query->addField('et', 'field_education_topics_value');
   $query->addExpression("GROUP_CONCAT(DISTINCT et.field_education_topics_value)", 'education_topics');
-  // Resolve participants.
-  $query->leftJoin('field_data_field_participating_patients', 'pp', 'pp.entity_id = node.nid');
+  // Resolve participants. A person who was soft-deleted - most commonly the
+  // duplicate side of a patient merge - is still referenced by the session, so
+  // exclude them here: otherwise they keep being counted among the attendees,
+  // and their name and gender are shipped to the dashboard.
+  $query->leftJoin('field_data_field_participating_patients', 'pp', hedley_stats_exclude_deleted_from_join(
+    'pp.entity_id = node.nid',
+    'pp.field_participating_patients_target_id'
+  ));
   $query->addField('pp', 'field_participating_patients_target_id');
   $query->addExpression("GROUP_CONCAT(DISTINCT pp.field_participating_patients_target_id)", 'participating_patients');
   $query->groupBy('node.nid');
@@ -2693,6 +2768,17 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
       $periods_ranges[$period] = hedley_stats_get_period($period);
     }
 
+    // Load, in a single query, the sessions during which each person has
+    // measurements, so attendance can be determined in memory below instead of
+    // with a COUNT query per (participant, period). A measurement means the
+    // person was there, and so does an attendance record that says they came;
+    // one saying they did not is no evidence of either.
+    $all_sessions_ids = [];
+    foreach ($sessions_by_period as $period_sessions_ids) {
+      $all_sessions_ids = array_merge($all_sessions_ids, $period_sessions_ids);
+    }
+    $persons_sessions = hedley_activity_get_persons_sessions_attended(array_unique($all_sessions_ids));
+
     // Get PMTCT participants by clinic.
     $participants_ids = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, 5000);
     $participants_info = [];
@@ -2785,8 +2871,14 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
 
         $sessions_ids = $sessions_by_period[$period];
         if (!empty($sessions_ids)) {
-          $count = hedley_activity_count_person_measurements_taken_during_sessions($child_id, $sessions_ids);
-          if ($count == 0) {
+          $attended = FALSE;
+          foreach ($sessions_ids as $session_id) {
+            if (isset($persons_sessions[$child_id][$session_id])) {
+              $attended = TRUE;
+              break;
+            }
+          }
+          if (!$attended) {
             // The child missed the session during given period, because
             // no measurements was taken for them.
             $missed_session[] = $expected_person;
@@ -3449,6 +3541,40 @@ function hedley_stats_run_node_query_in_batches(SelectQuery $query, $batch = 100
 }
 
 /**
+ * Adds a soft-delete exclusion to a JOIN's ON condition.
+ *
+ * Soft-deleting a node only sets its field_deleted flag; the node and its field
+ * rows remain, so anything the statistics builders reach through a JOIN would
+ * otherwise keep being pulled into the aggregates on every recalculation. Two
+ * kinds of node are excluded this way:
+ *
+ *   - Measurements, reached by joining the field_<program>_encounter table
+ *     (whose entity_id is the measurement node ID) and then joining each value
+ *     field off that alias.
+ *   - Persons, reached through a reference field - e.g. an education session's
+ *     field_participating_patients, whose target_id is the person node ID.
+ *
+ * The exclusion is folded into the JOIN's ON clause (rather than added as a
+ * WHERE condition) so that a soft-deleted node is treated as absent from the
+ * LEFT JOIN - it simply does not appear - without dropping the row that joined
+ * to it. A WHERE filter would instead drop the whole encounter when all of its
+ * measurements are deleted, or the whole session when one attendee is.
+ *
+ * @param string $on_condition
+ *   The original ON condition of the join.
+ * @param string $entity_id
+ *   SQL reference, within that join, to the node ID whose field_deleted flag
+ *   should be honoured - e.g. "ai_encounter.entity_id" for a measurement, or
+ *   "pp.field_participating_patients_target_id" for a referenced person.
+ *
+ * @return string
+ *   The ON condition extended with the soft-delete exclusion.
+ */
+function hedley_stats_exclude_deleted_from_join($on_condition, $entity_id) {
+  return "($on_condition) AND NOT EXISTS (SELECT 1 FROM {field_data_field_deleted} hsd WHERE hsd.entity_id = $entity_id AND hsd.field_deleted_value = 1)";
+}
+
+/**
  * Base query for stats - pulls content in given period for Health Center.
  *
  * @param int $health_center_id
@@ -3510,10 +3636,11 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period = FA
     $date_field_name = $date_field . '.' . $date_field . '_value';
 
     $date = hedley_stats_get_period($period, $extend);
-    $query->condition($date_field_name, [
-      $date['start'],
-      $date['end'],
-    ], 'BETWEEN');
+    // Lower bound inclusive, upper bound exclusive: a period's end equals the
+    // next period's start (both at midnight), so an inclusive BETWEEN would
+    // count a boundary record in both adjacent periods.
+    $query->condition($date_field_name, $date['start'], '>=');
+    $query->condition($date_field_name, $date['end'], '<');
   }
 
   return $query;
@@ -3698,8 +3825,20 @@ function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $range = 100)
     ->range(0, $range);
 
   $result = $query->execute();
+  $ids = !empty($result['node']) ? array_keys($result['node']) : [];
 
-  return !empty($result['node']) ? array_keys($result['node']) : [];
+  if (count($ids) >= $range) {
+    // Results reached the cap and may be truncated. Log it rather than
+    // silently dropping participants from the statistics.
+    watchdog(
+      'hedley_stats',
+      'Clinic @clinic PMTCT participants: @count/@range; may be truncated.',
+      ['@clinic' => $clinic_id, '@range' => $range, '@count' => count($ids)],
+      WATCHDOG_WARNING
+    );
+  }
+
+  return $ids;
 }
 
 /**
@@ -3709,13 +3848,13 @@ function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $range = 100)
  *   The clinic node ID.
  * @param string $period
  *   The wanted period.
- * @param int $range
- *   The queries' range.
+ * @param int|null $range
+ *   (optional) Max number of results. NULL (the default) returns all sessions.
  *
  * @return array
  *   Node IDs if they exist or empty array if no nodes exist.
  */
-function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR, $range = 100) {
+function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR, $range = NULL) {
   $dates = hedley_stats_get_period($period);
 
   $query = hedley_general_create_entity_field_query_excluding_deleted();
@@ -3725,14 +3864,32 @@ function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_clinic', 'target_id', $clinic_id)
     // Meaning that we are still expecting those participants.
+    // Upper bound is exclusive: a period's end equals the next period's start
+    // (both at midnight), so '<=' would count a boundary session in both.
     ->fieldCondition('field_scheduled_date', 'value', $dates['start'], '>=')
-    ->fieldCondition('field_scheduled_date', 'value', $dates['end'], '<=')
-    ->propertyOrderBy('nid')
-    ->range(0, $range);
+    ->fieldCondition('field_scheduled_date', 'value', $dates['end'], '<')
+    ->propertyOrderBy('nid');
+
+  // Sessions per period are inherently bounded, so by default return them all
+  // rather than silently truncating at an arbitrary cap. A caller may still
+  // pass an explicit $range.
+  if ($range !== NULL) {
+    $query->range(0, $range);
+  }
 
   $result = $query->execute();
+  $ids = !empty($result['node']) ? array_keys($result['node']) : [];
 
-  return !empty($result['node']) ? array_keys($result['node']) : [];
+  if ($range !== NULL && count($ids) >= $range) {
+    watchdog(
+      'hedley_stats',
+      'Clinic @clinic sessions: @count/@range; may be truncated.',
+      ['@clinic' => $clinic_id, '@range' => $range, '@count' => count($ids)],
+      WATCHDOG_WARNING
+    );
+  }
+
+  return $ids;
 }
 
 /**
@@ -3759,6 +3916,10 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
     case HEDLEY_STATS_CACHE_GET:
       $cached = cache_get($cache_id);
       return !empty($cached) ? $cached->data['value'] : NULL;
+
+    case HEDLEY_STATS_CACHE_GET_TIMESTAMP:
+      $cached = cache_get($cache_id);
+      return isset($cached->data['timestamp']) ? $cached->data['timestamp'] : NULL;
 
     case HEDLEY_STATS_CACHE_SET:
       $cached = [

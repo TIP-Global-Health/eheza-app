@@ -76,7 +76,9 @@ test.describe('Nurse: NCD First Encounter — Male, Stage 1 Hypertension', () =>
     await completeMedicalHistory(page);
 
     // 5. Laboratory: perform all tests.
-    await completeLaboratory(page, { performTests: true });
+    // The blood glucose field is asked for a reading in the wrong unit on
+    // the way, and has to refuse it (#2123).
+    await completeLaboratory(page, { performTests: true, checkGlucoseRange: true });
 
     // 6. NextSteps: Stage 1 hypertension (first encounter, no complications)
     //    triggers HealthEducation only (no MedicationDistribution, no Referral).
@@ -390,7 +392,9 @@ test.describe('Nurse: NCD Recurrent Encounter — Lab Results', () => {
       labResultsCard,
       'Expected Lab Results activity card to be visible in recurrent NCD encounter.',
     ).toBeVisible({ timeout: 5000 });
-    await completeLabResults(page);
+    // The blood glucose field is asked for a reading in the wrong unit on
+    // the way, and has to refuse it (#2123).
+    await completeLabResults(page, { checkGlucoseRange: true });
 
     // RecurrentNextSteps should appear (lab results may trigger diagnosis).
     const nextStepsCard = page.locator('.icon-task-next-steps');

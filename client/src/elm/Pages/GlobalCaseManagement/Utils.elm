@@ -1,4 +1,4 @@
-module Pages.GlobalCaseManagement.Utils exposing (calculateDueDate, chwFilters, fillPersonName, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessEncounters, generateAcuteIllnessFollowUps, generateAcuteIllnessParticipants, generateHIVFollowUps, generateHIVParticipants, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalEncounters, generatePrenatalFollowUps, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, labTechFilters, labsResultsTestData, nurseFilters, resolveUniquePatientsFromFollowUps)
+module Pages.GlobalCaseManagement.Utils exposing (calculateDueDate, chwFilters, fillPersonName, filterFollowUpsOfResidents, filterResolvedFollowUps, followUpDueOptionByDate, generateAcuteIllnessEncounters, generateAcuteIllnessFollowUps, generateAcuteIllnessParticipants, generateHIVFollowUps, generateHIVParticipants, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalEncounters, generatePrenatalFollowUps, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, labTechFilters, labsResultsTestData, nurseFilters, resolveUniquePatientsFromFollowUps)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (AcuteIllnessEncounterId, HIVEncounterId, IndividualEncounterParticipantId, PersonId, PrenatalEncounterId, TuberculosisEncounterId)
@@ -472,8 +472,9 @@ filterResolvedFollowUps : NominalDate -> Maybe NominalDate -> Bool
 filterResolvedFollowUps limitDate resolutionDate =
     Maybe.map
         (\date ->
-            -- Resolution date was on limit date, or before that.
-            not <| Date.compare limitDate date == LT
+            -- Keep the follow up only if it was resolved AFTER the limit
+            -- date, meaning it was still open as of that date.
+            Date.compare limitDate date == LT
         )
         resolutionDate
         |> -- Do not filter follow up if resolution date is not set.

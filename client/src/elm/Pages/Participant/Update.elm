@@ -7,6 +7,7 @@ import EverySet
 import Measurement.Model
 import Measurement.Update
 import Pages.Participant.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..), Tab(..))
+import SyncManager.Model exposing (Site)
 
 
 {-| This is a bit of a variation on the usual `update` function.
@@ -27,16 +28,17 @@ And, we return a possible redirect.
 
 -}
 updateChild :
-    Msg ChildActivity Measurement.Model.MsgChild
+    Site
+    -> Msg ChildActivity Measurement.Model.MsgChild
     -> Model ChildActivity
     -> Measurement.Model.ModelChild
     -> ChildUpdateReturns
-updateChild msg model childForm =
+updateChild site msg model childForm =
     case msg of
         MsgMeasurement subMsg ->
             let
                 ( subModel, subCmd, outMsg ) =
-                    Measurement.Update.updateChild subMsg childForm
+                    Measurement.Update.updateChild site subMsg childForm
             in
             ChildUpdateReturns
                 model
@@ -63,7 +65,10 @@ updateChild msg model childForm =
             ChildUpdateReturns
                 { model | selectedActivity = Just val, dialogState = Nothing }
                 cmd
-                childForm
+                -- Leaving an activity forgets what its form was complaining
+                -- about: the warning belongs to the measurement that was being
+                -- entered, and the child's form is shared by all of them.
+                { childForm | measurementOutOfRangePopupState = [] }
                 Nothing
                 Nothing
 

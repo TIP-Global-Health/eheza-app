@@ -755,9 +755,23 @@ function hedley_update_7047() {
 }
 
 /**
- * Activate newly defined features set.
+ * Replace Rollbar error reporting with GlitchTip.
+ *
+ * The old module is only disabled, not uninstalled, so its code can stay in
+ * the build until every environment has run this update.
  */
 function hedley_update_7048() {
+  module_disable(['logs_rollbar']);
+  module_enable(['logs_glitchtip']);
+
+  variable_del('logs_rollbar_enabled');
+  variable_del('logs_rollbar_rollbar_access_token');
+}
+
+/**
+ * Activate newly defined features set.
+ */
+function hedley_update_7049() {
   $features = [
     'hedley_admin_feature_acute_illness_enabled',
     'hedley_admin_feature_antenatal_enabled',

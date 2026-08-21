@@ -152,6 +152,9 @@ drush -y updb
 cd $ROOT
 echo
 
+# Configure GlitchTip error reporting.
+configure_glitchtip
+
 if [ $DEMO_CONTENT ]; then
   import_demo_content
 fi

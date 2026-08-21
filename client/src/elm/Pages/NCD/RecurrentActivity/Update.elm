@@ -21,7 +21,7 @@ import Pages.GlobalCaseManagement.Utils exposing (labsResultsTestData)
 import Pages.NCD.RecurrentActivity.Model exposing (Model, Msg(..))
 import Pages.NCD.Utils exposing (medicationDistributionFormWithDefault, referralFormWithDefault, toMedicationDistributionValueWithDefault, toReferralValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (setMultiSelectInputValue)
+import Pages.Utils exposing (saveMeasurementMsgs, setMultiSelectInputValue)
 import RemoteData
 
 
@@ -75,6 +75,9 @@ update currentDate id db msg model =
                      in
                      (SetActivePage <| UserPage <| NCDRecurrentEncounterPage id) :: closeLabsResultsMsg
                     )
+
+        toIndexedDbMsg =
+            Backend.Model.MsgNCDEncounter id >> App.Model.MsgIndexedDb
     in
     case msg of
         NoOp ->
@@ -254,31 +257,15 @@ update currentDate id db msg model =
             )
 
         SaveUrineDipstickResult personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    toUrineDipstickResultValueWithDefault measurement model.labResultsData.urineDipstickTestForm
-                        |> Maybe.map
-                            (Backend.NCDEncounter.Model.SaveUrineDipstickTest personId measurementId
-                                >> Backend.Model.MsgNCDEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toUrineDipstickResultValueWithDefault
+                model.labResultsData.urineDipstickTestForm
+                saved
+                (Backend.NCDEncounter.Model.SaveUrineDipstickTest personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate id db) (generateLabResultsMsgs nextTask)
 
         SetRandomBloodSugar value ->
             let
@@ -286,7 +273,7 @@ update currentDate id db msg model =
                     model.labResultsData.randomBloodSugarTestForm
 
                 updatedForm =
-                    { form | sugarCount = String.toFloat value }
+                    { form | sugarCount = String.toFloat value, sugarCountDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -297,32 +284,39 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveRandomBloodSugarResult personId saved nextTask ->
+        PreSaveRandomBloodSugarResult personId saved nextTask ->
             let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
+                form =
                     getMeasurementValueFunc saved
+                        |> Measurement.Utils.randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
 
                 extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    toRandomBloodSugarResultValueWithDefault measurement model.labResultsData.randomBloodSugarTestForm
-                        |> Maybe.map
-                            (Backend.NCDEncounter.Model.SaveRandomBloodSugarTest personId measurementId
-                                >> Backend.Model.MsgNCDEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
+                    -- NCD has no lab tech, so the results form always draws
+                    -- the reading.
+                    Measurement.Utils.bloodGlucoseSaveMsgs True
+                        form.sugarCount
+                        (SaveRandomBloodSugarResult personId saved nextTask)
+                        SetMeasurementOutOfRangePopupState
             in
             ( model
             , Cmd.none
-            , appMsgs
+            , []
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetMeasurementOutOfRangePopupState state ->
+            ( { model | measurementOutOfRangePopupState = state }, Cmd.none, [] )
+
+        SaveRandomBloodSugarResult personId saved nextTask ->
+            ( model
+            , Cmd.none
+            , saveMeasurementMsgs toRandomBloodSugarResultValueWithDefault
+                model.labResultsData.randomBloodSugarTestForm
+                saved
+                (Backend.NCDEncounter.Model.SaveRandomBloodSugarTest personId)
+                toIndexedDbMsg
+            )
+                |> sequenceExtra (update currentDate id db) (generateLabResultsMsgs nextTask)
 
         SetCreatinineResult value ->
             let
@@ -330,7 +324,7 @@ update currentDate id db msg model =
                     model.labResultsData.creatinineTestForm
 
                 updatedForm =
-                    { form | creatinineResult = String.toFloat value }
+                    { form | creatinineResult = String.toFloat value, creatinineResultDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -347,7 +341,7 @@ update currentDate id db msg model =
                     model.labResultsData.creatinineTestForm
 
                 updatedForm =
-                    { form | bunResult = String.toFloat value }
+                    { form | bunResult = String.toFloat value, bunResultDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -359,31 +353,15 @@ update currentDate id db msg model =
             )
 
         SaveCreatinineResult personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    toCreatinineResultValueWithDefault measurement model.labResultsData.creatinineTestForm
-                        |> Maybe.map
-                            (Backend.NCDEncounter.Model.SaveCreatinineTest personId measurementId
-                                >> Backend.Model.MsgNCDEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toCreatinineResultValueWithDefault
+                model.labResultsData.creatinineTestForm
+                saved
+                (Backend.NCDEncounter.Model.SaveCreatinineTest personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate id db) (generateLabResultsMsgs nextTask)
 
         SetAltResult value ->
             let
@@ -391,7 +369,7 @@ update currentDate id db msg model =
                     model.labResultsData.liverFunctionTestForm
 
                 updatedForm =
-                    { form | altResult = String.toFloat value }
+                    { form | altResult = String.toFloat value, altResultDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -408,7 +386,7 @@ update currentDate id db msg model =
                     model.labResultsData.liverFunctionTestForm
 
                 updatedForm =
-                    { form | astResult = String.toFloat value }
+                    { form | astResult = String.toFloat value, astResultDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -420,31 +398,15 @@ update currentDate id db msg model =
             )
 
         SaveLiverFunctionResult personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    toLiverFunctionResultValueWithDefault measurement model.labResultsData.liverFunctionTestForm
-                        |> Maybe.map
-                            (Backend.NCDEncounter.Model.SaveLiverFunctionTest personId measurementId
-                                >> Backend.Model.MsgNCDEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toLiverFunctionResultValueWithDefault
+                model.labResultsData.liverFunctionTestForm
+                saved
+                (Backend.NCDEncounter.Model.SaveLiverFunctionTest personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate id db) (generateLabResultsMsgs nextTask)
 
         SetUnitOfMeasurement value ->
             let
@@ -542,31 +504,15 @@ update currentDate id db msg model =
             )
 
         SaveLipidPanelResult personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    toLipidPanelResultValueWithDefault measurement model.labResultsData.lipidPanelTestForm
-                        |> Maybe.map
-                            (Backend.NCDEncounter.Model.SaveLipidPanelTest personId measurementId
-                                >> Backend.Model.MsgNCDEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toLipidPanelResultValueWithDefault
+                model.labResultsData.lipidPanelTestForm
+                saved
+                (Backend.NCDEncounter.Model.SaveLipidPanelTest personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate id db) (generateLabResultsMsgs nextTask)
 
         SetActiveNextStepsTask task ->
             let
@@ -655,31 +601,15 @@ update currentDate id db msg model =
             )
 
         SaveMedicationDistribution personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs personId nextTask
-
-                appMsgs =
-                    toMedicationDistributionValueWithDefault measurement model.nextStepsData.medicationDistributionForm
-                        |> Maybe.map
-                            (Backend.NCDEncounter.Model.SaveMedicationDistribution personId measurementId
-                                >> Backend.Model.MsgNCDEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toMedicationDistributionValueWithDefault
+                model.nextStepsData.medicationDistributionForm
+                saved
+                (Backend.NCDEncounter.Model.SaveMedicationDistribution personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate id db) (generateNextStepsMsgs personId nextTask)
 
         SetReferralBoolInput updateFunc value ->
             let
@@ -737,31 +667,15 @@ update currentDate id db msg model =
             )
 
         SaveReferral personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs personId nextTask
-
-                appMsgs =
-                    toReferralValueWithDefault measurement model.nextStepsData.referralForm
-                        |> Maybe.map
-                            (Backend.NCDEncounter.Model.SaveReferral personId measurementId
-                                >> Backend.Model.MsgNCDEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toReferralValueWithDefault
+                model.nextStepsData.referralForm
+                saved
+                (Backend.NCDEncounter.Model.SaveReferral personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate id db) (generateNextStepsMsgs personId nextTask)
 
         CloseLabsResultsEntry personId labsResultsId value ->
             ( model

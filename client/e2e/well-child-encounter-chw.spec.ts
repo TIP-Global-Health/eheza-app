@@ -41,6 +41,17 @@ test.describe('CHW: Well Child NewbornExam Encounter', () => {
     await setupDevice(page, '2345', 'Akanduga');
   });
 
+  // Scenario: Newborn exam for a 1-month-old child (CHW).
+  // Activities: PregnancySummary, NutritionAssessment, Immunisation.
+  // Also verifies (issues #1981, #1998): PregnancySummary is saved twice.
+  //             First with no birth length available — the length is not asked
+  //             for then, so nothing holds the form up and it saves.
+  //             Then the activity is re-entered, a birth length is recorded,
+  //             and both measurements are entered in the wrong unit at once —
+  //             3 (kilograms) and 0.5 (metres). Saving is refused with a
+  //             warning naming BOTH; the activity is not left; only after 3000
+  //             and 50 are entered does it save. The second pass also covers
+  //             correcting measurements on a record that already exists.
   test('complete newborn exam with PregnancySummary, NutritionAssessment, Immunisation, verify backend sync', async ({ page, browser }) => {
     // Verify FeatureWellChild flag gates client UI + admin Reports surfaces.
     await verifyFeatureGatesEncounterButton(page, 'well_child', 'Well Child Visit', {
@@ -139,12 +150,15 @@ test.describe('CHW: Well Child PediatricCareChw Encounter with HomeVisit', () =>
     await completeDangerSigns(page);
 
     // 2. Nutrition Assessment: height, head circumference, MUAC, nutrition, weight.
+    //    Height is first saved as one that could not be taken, to check a CHW is
+    //    not stopped by the range check when nothing is being recorded.
     await completeNutritionAssessment(page, {
       height: '85',
       headCircumference: '48',
       muac: '14',
       weight: '12',
       nutritionSigns: [],
+      heightNotTakenFirst: true,
     });
 
     // 3. Home Visit: Feeding, Caring, Hygiene, FoodSecurity.

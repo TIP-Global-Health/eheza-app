@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId, NurseId, VillageId)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker, isLabTechnician)
+import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker, isLabTechnician, nurseAuthorizedForLocation)
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
 import Backend.Utils
@@ -37,6 +37,7 @@ import Utils.Html exposing (activityCard, activityCardWithCounter, spinner, view
 
 view :
     Language
+    -> Time.Zone
     -> Time.Posix
     -> EverySet SiteFeature
     -> Page
@@ -46,7 +47,7 @@ view :
     -> Model
     -> ModelIndexedDb
     -> Html Msg
-view language currentTime features activePage nurseData ( healthCenterId, villageId ) deviceName model db =
+view language zone currentTime features activePage nurseData ( healthCenterId, villageId ) deviceName model db =
     let
         ( header, content ) =
             case nurseData of
@@ -56,18 +57,11 @@ view language currentTime features activePage nurseData ( healthCenterId, villag
                             isCommunityHealthWorker nurse
 
                         authoritySelected =
-                            if isChw then
-                                villageId
-                                    |> Maybe.map (\id -> EverySet.member id nurse.villages)
-                                    |> Maybe.withDefault False
-
-                            else
-                                healthCenterId
-                                    |> Maybe.map (\id -> EverySet.member id nurse.healthCenters)
-                                    |> Maybe.withDefault False
+                            nurseAuthorizedForLocation villageId healthCenterId nurse
                     in
                     ( viewLoggedInHeader language features isChw authoritySelected
                     , viewLoggedInContent language
+                        zone
                         currentTime
                         features
                         nurseId
@@ -185,6 +179,7 @@ viewAnonymousContent language activePage nurseData model =
 
 viewLoggedInContent :
     Language
+    -> Time.Zone
     -> Time.Posix
     -> EverySet SiteFeature
     -> NurseId
@@ -196,7 +191,7 @@ viewLoggedInContent :
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId, villageId ) isChw deviceName authoritySelected db model =
+viewLoggedInContent language zone currentTime features nurseId nurse ( healthCenterId, villageId ) isChw deviceName authoritySelected db model =
     let
         logoutButton =
             button
@@ -211,7 +206,7 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
     if authoritySelected || (not <| authoritySelectionRequired isChw features) then
         let
             currentDate =
-                fromLocalDateTime currentTime
+                fromLocalDateTime zone currentTime
 
             deviceInfo =
                 deviceName

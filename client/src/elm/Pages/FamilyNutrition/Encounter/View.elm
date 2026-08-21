@@ -14,7 +14,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Measurement.Utils exposing (ahezaFormWithDefault, ahezaMotherFormWithDefault, getInputConstraintsMuac, muacFormWithDefault, withinConstraints)
+import Measurement.Utils exposing (ahezaFormWithDefault, ahezaMotherFormWithDefault, muacFormWithDefault)
 import Measurement.View
 import Pages.FamilyNutrition.Encounter.Model exposing (AssembledData, DialogType(..), FamilyMember(..), Model, Msg(..), Tab(..))
 import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData)
@@ -59,24 +59,30 @@ viewHeaderAndContent language currentDate site id model data =
 
         content =
             viewContent language currentDate site model data
-
-        dialog =
-            Maybe.map
-                (\state ->
-                    case state of
-                        DialogEndEncounter ->
-                            viewConfirmationDialog language
-                                Translate.EndEncounterQuestion
-                                Translate.OnceYouEndTheEncounter
-                                (CloseEncounter id)
-                                (SetDialogState Nothing)
-                )
-                model.dialogState
     in
     div [ class "page-encounter family-nutrition" ]
         [ header
         , content
-        , viewModal dialog
+        , viewModal <|
+            if List.isEmpty model.measurementOutOfRangePopupState then
+                Maybe.map
+                    (\state ->
+                        case state of
+                            DialogEndEncounter ->
+                                viewConfirmationDialog language
+                                    Translate.EndEncounterQuestion
+                                    Translate.OnceYouEndTheEncounter
+                                    (CloseEncounter id)
+                                    (SetDialogState Nothing)
+                    )
+                    model.dialogState
+
+            else
+                Just <|
+                    Measurement.View.measurementOutOfRangePopup language
+                        site
+                        model.measurementOutOfRangePopupState
+                        (SetMeasurementOutOfRangePopupState [])
         ]
 
 
@@ -551,30 +557,16 @@ viewMuacForm language currentDate site data model familyMember =
         ( tasksCompleted, tasksTotal ) =
             resolveTasksCompletedFromTotal tasks
 
-        constraints =
-            getInputConstraintsMuac site
-
-        currentValue =
-            case site of
-                SyncManager.Model.SiteBurundi ->
-                    Maybe.map ((*) 10) form.muac
-
-                _ ->
-                    form.muac
-
         disabled =
-            (tasksCompleted /= tasksTotal)
-                || (Maybe.map (withinConstraints constraints >> not) currentValue
-                        |> Maybe.withDefault True
-                   )
+            tasksCompleted /= tasksTotal
 
         saveMsg =
             case familyMember of
                 FamilyMemberMother ->
-                    SaveMuacMother data.participant.person data.measurements.muacMother
+                    PreSaveMuacMother data.participant.person data.measurements.muacMother
 
                 FamilyMemberChild childId ->
-                    SaveMuacChild childId (Dict.get childId data.measurements.muacChild)
+                    PreSaveMuacChild childId (Dict.get childId data.measurements.muacChild)
     in
     div [ class "ui full segment muac" ]
         [ div [ class "content" ]

@@ -3,7 +3,7 @@ import { setupDevice } from './helpers/auth';
 import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { syncAndWait } from './helpers/common';
+import { syncAndWait, queryPregnancyEdd, queryPrenatalLmp } from './helpers/common';
 import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createAdultFemaleAndStartEncounter,
@@ -113,6 +113,26 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     // PregnancyDating
     expect(nodes['last_menstrual_period'], 'last_menstrual_period should exist').toBe(true);
 
+    // EDD must be populated on the pregnancy after recording LMP + sync, and
+    // must equal LMP + 280 days. Guards the bug where the EDD update to the
+    // pregnancy was silently dropped while the LMP measurement still saved.
+    const edd = queryPregnancyEdd(fullName);
+    expect(edd, 'pregnancy EDD (field_expected_date_concluded) should be set').not.toBeNull();
+    // Verify the invariant EDD == LMP + 280 days against the LMP the backend
+    // actually stored, rather than re-deriving the expected date from the test's
+    // input. This keeps the assertion independent of any date-entry or timezone
+    // drift in the calendar picker -- the job here is to prove EDD is persisted
+    // and consistent with the stored LMP, not to re-check date entry.
+    const storedLmp = queryPrenatalLmp(fullName);
+    expect(
+      storedLmp,
+      'stored LMP date (field_last_menstrual_period) should be set',
+    ).not.toBeNull();
+    const [lmpYear, lmpMonth, lmpDay] = storedLmp!.split('-').map(Number);
+    const eddFromLmp = new Date(Date.UTC(lmpYear, lmpMonth - 1, lmpDay + 280));
+    const expectedEdd = `${eddFromLmp.getUTCFullYear()}-${String(eddFromLmp.getUTCMonth() + 1).padStart(2, '0')}-${String(eddFromLmp.getUTCDate()).padStart(2, '0')}`;
+    expect(edd, 'EDD should equal stored LMP + 280 days').toBe(expectedEdd);
+
     // History
     expect(nodes['obstetric_history'], 'obstetric_history should exist').toBe(true);
     expect(nodes['obstetric_history_step2'], 'obstetric_history_step2 should exist').toBe(true);
@@ -193,7 +213,7 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
 
     await completePregnancyDating(page, lmpDate);
     await completeHistory(page);
-    await completeExamination(page);
+    await completeExamination(page, { checkRanges: true });
     await completeFamilyPlanning(page);
     await completeDangerSigns(page);
     await completeSymptomReview(page);

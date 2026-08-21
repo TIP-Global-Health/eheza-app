@@ -14,6 +14,7 @@ import Json.Encode
 import List.Extra
 import List.Zipper as Zipper
 import Maybe.Extra exposing (isJust)
+import Pages.Utils exposing (dropLeadingMinus)
 import RemoteData exposing (RemoteData, WebData)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Model
@@ -133,7 +134,7 @@ viewSyncSettings model =
                     , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
                     , Html.Attributes.required True
                     , value <| String.fromInt syncSpeed.idle
-                    , onInput SetSyncSpeedIdle
+                    , onInput (dropLeadingMinus >> SetSyncSpeedIdle)
                     ]
                     []
                 , div [ class "ui basic label" ] [ text "ms" ]
@@ -150,7 +151,7 @@ viewSyncSettings model =
                     , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
                     , Html.Attributes.required True
                     , value <| String.fromInt syncSpeed.cycle
-                    , onInput SetSyncSpeedCycle
+                    , onInput (dropLeadingMinus >> SetSyncSpeedCycle)
                     ]
                     []
                 , div [ class "ui basic label" ] [ text "ms" ]
@@ -167,7 +168,7 @@ viewSyncSettings model =
                     , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
                     , Html.Attributes.required True
                     , value <| String.fromInt syncSpeed.offline
-                    , onInput SetSyncSpeedOffline
+                    , onInput (dropLeadingMinus >> SetSyncSpeedOffline)
                     ]
                     []
                 , div [ class "ui basic label" ] [ text "ms" ]
@@ -211,7 +212,7 @@ viewSyncDownloadGeneral model webData =
                     ]
 
             RemoteData.Failure error ->
-                text <| Debug.toString error
+                text <| Utils.WebData.viewErrorForRollbar error
 
             RemoteData.Loading ->
                 spinner
@@ -299,7 +300,7 @@ viewSyncDownloadAuthority db model webData =
                             ]
 
                     RemoteData.Failure error ->
-                        text <| Debug.toString error
+                        text <| Utils.WebData.viewErrorForRollbar error
 
                     RemoteData.Loading ->
                         spinner
@@ -1008,7 +1009,7 @@ viewSyncStatus db model =
         , class "segment ui"
         ]
         [ summary [] [ text "Sync Status" ]
-        , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
+        , div [] [ text <| "Sync status: " ++ syncStatusToString model.syncStatus ]
         , case model.syncStatus of
             SyncDownloadGeneral webData ->
                 viewSyncDownloadGeneral model webData
@@ -1019,3 +1020,37 @@ viewSyncStatus db model =
             _ ->
                 emptyNode
         ]
+
+
+syncStatusToString : SyncStatus -> String
+syncStatusToString status =
+    case status of
+        SyncIdle ->
+            "SyncIdle"
+
+        SyncUploadPhoto _ _ ->
+            "SyncUploadPhoto"
+
+        SyncUploadScreenshot _ _ ->
+            "SyncUploadScreenshot"
+
+        SyncUploadGeneral _ ->
+            "SyncUploadGeneral"
+
+        SyncUploadWhatsApp _ ->
+            "SyncUploadWhatsApp"
+
+        SyncUploadAuthority _ ->
+            "SyncUploadAuthority"
+
+        SyncDownloadGeneral _ ->
+            "SyncDownloadGeneral"
+
+        SyncDownloadAuthority _ ->
+            "SyncDownloadAuthority"
+
+        SyncDownloadAuthorityDashboardStats _ ->
+            "SyncDownloadAuthorityDashboardStats"
+
+        SyncReportIncident _ ->
+            "SyncReportIncident"

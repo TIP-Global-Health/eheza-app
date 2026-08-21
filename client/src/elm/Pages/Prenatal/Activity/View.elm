@@ -7,7 +7,8 @@ import Backend.Measurement.Utils
     exposing
         ( getHeightValue
         , getMeasurementValueFunc
-        , muacValueFunc
+        , muacValueForSite
+        , muacValueFuncForSite
         , pregnancyTestResultToString
         , weightValueFunc
         )
@@ -97,7 +98,9 @@ import Pages.Prenatal.View
 import Pages.Utils
     exposing
         ( customButton
+        , dropLeadingMinus
         , maybeToBoolTask
+        , muacUnitTransIdForSite
         , resolveActiveTask
         , resolveNextTask
         , resolveTasksCompletedFromTotal
@@ -159,7 +162,18 @@ viewHeaderAndContent language currentDate zscores site features id isChw activit
         [ viewHeader language id activity assembled
         , viewContent language currentDate zscores site features isChw activity model assembled
         , viewModal <|
-            warningPopup language assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
+            case model.warningPopupState of
+                -- Answered here, where the site is known: the warning names the
+                -- unit a measurement is recorded in, and that differs by site.
+                Just (WarningPopupMeasurementOutOfRange measurements) ->
+                    Just <|
+                        Measurement.View.measurementOutOfRangePopup language
+                            site
+                            measurements
+                            (SetWarningPopupState Nothing)
+
+                _ ->
+                    warningPopup language assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
 
 
@@ -209,6 +223,17 @@ warningPopup language encounterDiagnoses setStateMsg state =
             let
                 data =
                     case popupType of
+                        -- Answered by the page, which knows the site.
+                        WarningPopupMeasurementOutOfRange _ ->
+                            Nothing
+
+                        WarningPopupMentalHealth mentalHealthAction ->
+                            Just
+                                ( p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupMessage ]
+                                , p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupInstructions ]
+                                , mentalHealthAction
+                                )
+
                         WarningPopupRegular ->
                             let
                                 nonUrgentDiagnoses =
@@ -271,11 +296,11 @@ warningPopup language encounterDiagnoses setStateMsg state =
                                     , setStateMsg Nothing
                                     )
 
-                        WarningPopupUrgent ( top, bottom ) ->
+                        WarningPopupTreatmentReview treatmentReviewAtion ->
                             Just
-                                ( p [] [ text top ]
-                                , p [] [ text bottom ]
-                                , setStateMsg Nothing
+                                ( p [] [ text <| translate language Translate.TreatmentReviewWarningPopupMessage ]
+                                , p [] [ text <| translate language Translate.TreatmentReviewWarningPopupInstructions ]
+                                , treatmentReviewAtion
                                 )
 
                         WarningPopupTuberculosis ->
@@ -285,18 +310,11 @@ warningPopup language encounterDiagnoses setStateMsg state =
                                 , setStateMsg Nothing
                                 )
 
-                        WarningPopupMentalHealth mentalHealthAction ->
+                        WarningPopupUrgent ( top, bottom ) ->
                             Just
-                                ( p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupMessage ]
-                                , p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupInstructions ]
-                                , mentalHealthAction
-                                )
-
-                        WarningPopupTreatmentReview treatmentReviewAtion ->
-                            Just
-                                ( p [] [ text <| translate language Translate.TreatmentReviewWarningPopupMessage ]
-                                , p [] [ text <| translate language Translate.TreatmentReviewWarningPopupInstructions ]
-                                , treatmentReviewAtion
+                                ( p [] [ text top ]
+                                , p [] [ text bottom ]
+                                , setStateMsg Nothing
                                 )
 
                         WarningPopupVitaminA treatmentReviewAtion ->
@@ -324,7 +342,7 @@ viewActivity language currentDate zscores site features isChw activity assembled
             viewHistoryContent language assembled model.historyData
 
         Examination ->
-            viewExaminationContent language currentDate zscores features assembled model.examinationData
+            viewExaminationContent language currentDate zscores site features assembled model.examinationData
 
         FamilyPlanning ->
             viewFamilyPlanningContent language assembled model.familyPlanningData
@@ -468,7 +486,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                                     prePregnancyWeight =
                                         Maybe.map (\(WeightInKg weight) -> String.fromFloat weight ++ "kg")
                                             value.prePregnancyWeight
-                                            |> Maybe.withDefault "Not Set"
+                                            |> Maybe.withDefault (translate language Translate.NotAvailable)
                                 in
                                 [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
                                 , viewLabel language Translate.LmpLabel
@@ -868,8 +886,8 @@ viewHistoryContent language assembled data =
     ]
 
 
-viewExaminationContent : Language -> NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> AssembledData -> ExaminationData -> List (Html Msg)
-viewExaminationContent language currentDate zscores features assembled data =
+viewExaminationContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> EverySet SiteFeature -> AssembledData -> ExaminationData -> List (Html Msg)
+viewExaminationContent language currentDate zscores site features assembled data =
     let
         tasks =
             resolveExaminationTasks assembled
@@ -989,7 +1007,7 @@ viewExaminationContent language currentDate zscores features assembled data =
                     healthyStartEnabled features
 
                 formWithIndicator =
-                    viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores isHealthyStart assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
+                    viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site isHealthyStart assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
             in
             ( Tuple.first formWithIndicator, Tuple.second formWithIndicator )
 
@@ -1043,13 +1061,13 @@ viewExaminationContent language currentDate zscores features assembled data =
                                     SaveVitals personId measurements.vitals nextTask
 
                                 NutritionAssessment ->
-                                    SaveNutritionAssessment personId measurements.nutrition previouslyMeasuredHeight isAdequateGWG nextTask
+                                    PreSaveNutritionAssessment personId measurements.nutrition previouslyMeasuredHeight isAdequateGWG nextTask
 
                                 CorePhysicalExam ->
                                     SaveCorePhysicalExam personId measurements.corePhysicalExam nextTask
 
                                 ObstetricalExam ->
-                                    SaveObstetricalExam personId measurements.obstetricalExam nextTask
+                                    PreSaveObstetricalExam personId measurements.obstetricalExam nextTask
 
                                 BreastExam ->
                                     SaveBreastExam personId measurements.breastExam nextTask
@@ -1058,11 +1076,7 @@ viewExaminationContent language currentDate zscores features assembled data =
                                     SaveGUExam personId measurements.guExam nextTask
                     in
                     div [ class "actions examination" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveAction
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveAction
                         ]
                 )
                 activeTask
@@ -1713,7 +1727,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                     SaveHemoglobinTest personId measurements.hemoglobinTest nextTask
 
                                 TaskRandomBloodSugarTest ->
-                                    SaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
+                                    PreSaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
 
                                 TaskHIVPCRTest ->
                                     SaveHIVPCRTest personId measurements.hivPCRTest nextTask
@@ -2460,11 +2474,7 @@ viewTreatmentReviewContent language currentDate assembled data =
                                     saveMsg
                     in
                     div [ class "actions treatment-review" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick action
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) action
                         ]
                 )
                 activeTask
@@ -3105,6 +3115,7 @@ medicalFormInputsAndTasks language form =
       , maybeToBoolTask form.physicalConditions
       , maybeToBoolTask form.infectiousDiseases
       , maybeToBoolTask form.mentalHealthIssues
+      , maybeToBoolTask form.preeclampsiaInFamily
       ]
     )
 
@@ -3184,8 +3195,8 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewNutritionAssessmentFormWithGWGIndicator : Language -> NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> ( Html Msg, Maybe Bool )
-viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores isHealthyStart assembled form previouslyMeasuredHeight prePregnancyWeight =
+viewNutritionAssessmentFormWithGWGIndicator : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> ( Html Msg, Maybe Bool )
+viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site isHealthyStart assembled form previouslyMeasuredHeight prePregnancyWeight =
     let
         hideHeightInput =
             isJust previouslyMeasuredHeight
@@ -3199,8 +3210,12 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores isHealt
         bmiUpdateFunc _ form_ =
             form_
 
-        muacUpdateFunc value form_ =
-            { form_ | muac = value, muacDirty = True }
+        -- MUAC is stored in cm; show it in mm at Burundi.
+        muacForView =
+            Maybe.map (muacValueForSite site) form.muac
+
+        muacUnitTransId =
+            muacUnitTransIdForSite site
 
         heightPreviousValue =
             resolvePreviousValue assembled .nutrition .height
@@ -3218,7 +3233,7 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores isHealt
 
         muacPreviousValue =
             resolvePreviousValue assembled .nutrition .muac
-                |> Maybe.map muacValueFunc
+                |> Maybe.map (muacValueFuncForSite site)
 
         calculatedBmi =
             calculateBmi form.height form.weight
@@ -3440,16 +3455,16 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores isHealt
                     [ div [ class "twelve wide column" ]
                         [ viewMeasurementInput
                             language
-                            form.muac
-                            (SetNutritionAssessmentMeasurement muacUpdateFunc)
+                            muacForView
+                            SetNutritionAssessmentMuac
                             "muac"
-                            Translate.UnitCentimeter
+                            muacUnitTransId
                         ]
                     , div [ class "four wide column" ]
                         [ nutritionalSupplementAlert
                         ]
                     ]
-               , viewPreviousMeasurement language muacPreviousValue Translate.UnitCentimeter
+               , viewPreviousMeasurement language muacPreviousValue muacUnitTransId
                ]
     , isAdequateGWG
     )
@@ -3812,24 +3827,24 @@ viewFollowUpForm language form =
 viewNewbornEnrolmentForm : Language -> AssembledData -> Html Msg
 viewNewbornEnrolmentForm language assembled =
     let
-        attributes =
+        enrolButton =
             Maybe.map
                 (\birthDate ->
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", isJust assembled.participant.newborn ) ]
-                    , onClick <|
-                        SetActivePage <|
+                    customButton language
+                        (isNothing assembled.participant.newborn)
+                        (SetActivePage <|
                             UserPage <|
                                 CreatePersonPage (Just assembled.participant.person) <|
                                     Backend.Person.Model.PrenatalNextStepsNewbornEnrolmentOrigin birthDate assembled.id
-                    ]
+                        )
+                        Translate.EnrolNewborn
                 )
                 assembled.participant.dateConcluded
-                |> Maybe.withDefault []
+                |> Maybe.withDefault (customButton language False NoOp Translate.EnrolNewborn)
     in
     div [ class "form newborn-enrolment" ]
         [ text <| translate language <| Translate.EnrolNewbornHelper <| isJust assembled.participant.newborn
-        , button attributes
-            [ text <| translate language Translate.EnrolNewborn ]
+        , enrolButton
         ]
 
 
@@ -4347,11 +4362,11 @@ viewUltrasoundContent language currentDate assembled data =
 
 viewNumberInput :
     Language
-    -> Maybe a
+    -> Maybe Int
     -> (String -> msg)
     -> String
     -> TranslationId
-    -> Maybe ( List (List (a -> Bool)), List (List (a -> Bool)) )
+    -> Maybe ( List (List (Int -> Bool)), List (List (Int -> Bool)) )
     -> Html msg
 viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId maybeAlertConditions =
     let
@@ -4359,7 +4374,7 @@ viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId 
             maybeCurrentValue
                 |> unwrap
                     ""
-                    Debug.toString
+                    String.fromInt
 
         ( labelWidth, inputWidth, alert ) =
             maybeAlertConditions
@@ -4382,7 +4397,7 @@ viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId 
                     [ type_ "number"
                     , Html.Attributes.min "0"
                     , Html.Attributes.max "99"
-                    , onInput setMsg
+                    , onInput (dropLeadingMinus >> setMsg)
                     , value currentValue
                     ]
                     []

@@ -26,6 +26,7 @@ import Measurement.Utils
         , urineDipstickResultFormAndTasks
         , urineDipstickResultFormWithDefault
         )
+import Measurement.View
 import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
 import Pages.NCD.RecurrentActivity.Model exposing (Model, Msg(..), NextStepsData)
 import Pages.NCD.RecurrentActivity.Types exposing (NextStepsTask(..))
@@ -42,24 +43,36 @@ import Pages.Utils
         , viewSaveAction
         , viewTasksCount
         )
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> NCDEncounterId -> NCDRecurrentActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id activity db model =
+view : Language -> NominalDate -> Site -> NCDEncounterId -> NCDRecurrentActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site id activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id activity model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site id activity model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> NCDEncounterId -> NCDRecurrentActivity -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id activity model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> NCDEncounterId -> NCDRecurrentActivity -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site id activity model assembled =
     div [ class "page-activity ncd" ]
         [ viewHeader language (NCDRecurrentEncounterPage id) (Translate.NCDRecurrentActivitiesTitle activity)
         , viewContent language currentDate activity model assembled
+        , viewModal <|
+            if List.isEmpty model.measurementOutOfRangePopupState then
+                Nothing
+
+            else
+                Just <|
+                    Measurement.View.measurementOutOfRangePopup language
+                        site
+                        model.measurementOutOfRangePopupState
+                        (SetMeasurementOutOfRangePopupState [])
         ]
 
 
@@ -227,7 +240,7 @@ viewLabResultsContent language assembled model =
                         saveMsg =
                             case task of
                                 TaskRandomBloodSugarTest ->
-                                    SaveRandomBloodSugarResult personId measurements.randomBloodSugarTest nextTask |> Just
+                                    PreSaveRandomBloodSugarResult personId measurements.randomBloodSugarTest nextTask |> Just
 
                                 TaskUrineDipstickTest ->
                                     SaveUrineDipstickResult personId measurements.urineDipstickTest nextTask |> Just

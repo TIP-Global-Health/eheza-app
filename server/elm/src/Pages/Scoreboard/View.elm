@@ -93,17 +93,14 @@ viewScoreboardData language currentDate data model =
                                                         ageInMonths =
                                                             diffMonths record.birthDate targetDateForMonth
 
-                                                        gap =
-                                                            ageInMonths - gapInMonths
-
                                                         existedDuringExaminationMonth =
                                                             -- Making sure patient was already created during examination month.
                                                             Date.compare record.created targetDateForMonth == LT
                                                     in
                                                     if
                                                         existedDuringExaminationMonth
-                                                            && (gap >= 0)
-                                                            && (gap < 24)
+                                                            && (ageInMonths >= 0)
+                                                            && (ageInMonths < 24)
                                                     then
                                                         accumValue + 1
 
@@ -135,9 +132,14 @@ viewScoreboardData language currentDate data model =
         (topBar :: panes)
 
 
-{-| Resolves date for last day of examined month.
-For, current month, it's current date. For past month,
-it's last day of that month.
+{-| Resolves the date for the examined month.
+For the current month, it's the current date. For any other month (past or future),
+it's the last day of that month.
+
+Note that the returned date already accounts for the column offset, so an age
+measured against it is the age the patient had at that column. Do not subtract
+gapInMonths from such an age - that would apply the offset a second time.
+
 -}
 resolveTargetDateForMonth : Int -> NominalDate -> NominalDate
 resolveTargetDateForMonth gapInMonths currentDate =
@@ -192,11 +194,8 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnde
                                                 -- Making sure patient was already created during examination month.
                                                 Date.compare record.created targetDateForMonth == LT
 
-                                            gap =
-                                                ageInMonths - gapInMonths
-
                                             row2 =
-                                                if existedDuringExaminationMonth && gap == 0 then
+                                                if existedDuringExaminationMonth && ageInMonths == 0 then
                                                     accumValue.row2 + 1
 
                                                 else
@@ -205,7 +204,7 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnde
                                             row3 =
                                                 if
                                                     existedDuringExaminationMonth
-                                                        && (gap == 0)
+                                                        && (ageInMonths == 0)
                                                         && (record.lowBirthWeight == Just True)
                                                 then
                                                     accumValue.row3 + 1
@@ -493,18 +492,21 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                                 let
                                                     ageInMonths =
                                                         -- Using EDD date to properly resolve the month of
-                                                        -- prgnancy (as child may have been borm premature).
+                                                        -- pregnancy (as child may have been born premature).
                                                         diffMonths (Date.floor Month record.eddDate) targetDateForMonth
 
-                                                    gap =
-                                                        gapInMonths - ageInMonths
+                                                    monthsBeforeDelivery =
+                                                        -- Age is negative for months that precede the
+                                                        -- expected delivery date, which are the ones
+                                                        -- pregnancy is examined at.
+                                                        negate ageInMonths
                                                 in
                                                 if
                                                     --  We do not a condition to check if child existed during
                                                     -- examination month because we're examining pregnancy months
                                                     -- and it's likely that child did not existy on the system.
-                                                    (record.ncda.ancNewborn.row2 && gap > 0)
-                                                        && (gap < 10)
+                                                    (record.ncda.ancNewborn.row2 && monthsBeforeDelivery > 0)
+                                                        && (monthsBeforeDelivery < 10)
                                                 then
                                                     accumValue.row2 + 1
 
@@ -569,9 +571,6 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                             ageInMonths =
                                                 diffMonths (Date.floor Month record.birthDate) targetDateForMonth
 
-                                            ageInMonthsForIndexCell =
-                                                ageInMonths - gapInMonths
-
                                             row2AsAgeInMonths =
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
                                                     record.ncda.universalIntervention.row2
@@ -591,8 +590,8 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                             row1 =
                                                 if
                                                     not existedDuringExaminationMonth
-                                                        || (ageInMonthsForIndexCell < 0)
-                                                        || (ageInMonthsForIndexCell >= 24)
+                                                        || (ageInMonths < 0)
+                                                        || (ageInMonths >= 24)
                                                 then
                                                     accumValue.row1
 
@@ -601,7 +600,7 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                                         referenceDate =
                                                             -- We use it to determine if child was
                                                             -- behind on any of vaccines at that month.
-                                                            resolveLastDayForMonthX ageInMonthsForIndexCell record.birthDate
+                                                            resolveLastDayForMonthX ageInMonths record.birthDate
 
                                                         -- Filter out vaccinations that were performed
                                                         -- after the reference date.
@@ -620,7 +619,7 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                                             generateFutureVaccinationsData site
                                                                 record.birthDate
                                                                 vaccinationProgressOnReferrenceDate
-                                                                allVaccineTypes
+                                                                (allVaccineTypes site)
 
                                                         closestDateForVaccination =
                                                             List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
@@ -787,14 +786,11 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childre
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
                                                     record.ncda.nutritionBehavior.row4
 
-                                            gap =
-                                                ageInMonths - gapInMonths
-
                                             row1 =
                                                 if
                                                     existedDuringExaminationMonth
-                                                        && (gap >= 0)
-                                                        && (gap < 6)
+                                                        && (ageInMonths >= 0)
+                                                        && (ageInMonths < 6)
                                                         && record.ncda.nutritionBehavior.row1
                                                 then
                                                     accumValue.row1 + 1
@@ -924,9 +920,6 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
                                                     record.ncda.targetedInterventions.row6
 
-                                            gap =
-                                                ageInMonths - gapInMonths
-
                                             row1 =
                                                 -- FBFs are distrubuted for children at FBF groups, where
                                                 -- children age is up until 2 years old.
@@ -947,8 +940,8 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                 if
                                                     existedDuringExaminationMonth
                                                         && (not <| List.isEmpty row2AsAgeInMonths)
-                                                        && (gap >= 0)
-                                                        && (gap < 24)
+                                                        && (ageInMonths >= 0)
+                                                        && (ageInMonths < 24)
                                                 then
                                                     accumValue.row2 + 1
 
@@ -961,8 +954,8 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                 if
                                                     existedDuringExaminationMonth
                                                         && (not <| List.isEmpty row3AsAgeInMonths)
-                                                        && (gap >= 0)
-                                                        && (gap < 24)
+                                                        && (ageInMonths >= 0)
+                                                        && (ageInMonths < 24)
                                                 then
                                                     accumValue.row3 + 1
 
@@ -1055,7 +1048,10 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
                     valuesByViewMode viewMode childrenUnder2 itemValues
                         |> viewTableRow language currentDate yearSelectorGap (Translate.NCDAInfrastructureEnvironmentWashItemLabel item)
                 )
-                [ HasToilets, HasCleanWater, HasHandwashingFacility, InsecticideTreatedBedNets, HasKitchenGarden ]
+                -- In the order the rows are stored in, so that the label of a
+                -- row and the sign it counts cannot come apart. See
+                -- hedley_ncda.module, which fills them.
+                [ HasCleanWater, HasToilets, HasHandwashingFacility, InsecticideTreatedBedNets, HasKitchenGarden ]
                 values
 
         valuesByRow =

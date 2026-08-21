@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
 
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import { click } from './auth';
 import { drushEnv } from './device';
 
@@ -243,9 +243,266 @@ export function backdateEncounter(personName: string, encounterType: string, day
   console.error(`backdateEncounter(${encounterType}): failed after 5 attempts`);
 }
 
+/**
+ * Returns the EDD (`field_expected_date_concluded`, as a 'YYYY-MM-DD' string)
+ * set on a person's antenatal pregnancy (individual_participant), or null if it
+ * is not populated. Retries up to 10 times (5s apart) so it can be used for
+ * post-sync verification.
+ */
+export function queryPregnancyEdd(personName: string): string | null {
+  const { drushCmd, cwd } = drushEnv();
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+
+  const php = `
+    \\$name = base64_decode('${personNameB64}');
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$name)
+      ->execute();
+    if (empty(\\$r['node'])) { echo json_encode(['error' => 'Person not found']); return; }
+    \\$nid = key(\\$r['node']);
+
+    \\$pq = new EntityFieldQuery();
+    \\$pr = \\$pq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'individual_participant')
+      ->fieldCondition('field_person', 'target_id', \\$nid)
+      ->fieldCondition('field_encounter_type', 'value', 'antenatal')
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No pregnancy found']); return; }
+
+    \\$p = node_load(key(\\$pr['node']));
+    \\$edd = isset(\\$p->field_expected_date_concluded[LANGUAGE_NONE][0]['value'])
+      ? \\$p->field_expected_date_concluded[LANGUAGE_NONE][0]['value'] : null;
+    echo json_encode(['edd' => \\$edd]);
+  `;
+
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const output = execSync(`${drushCmd} eval "${php}"`, {
+        cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+      }).trim();
+      const parsed = JSON.parse(output);
+      if (!parsed.error && parsed.edd) {
+        // Stored as 'YYYY-MM-DD HH:MM:SS' or 'YYYY-MM-DD'; return the date part.
+        return String(parsed.edd).slice(0, 10);
+      }
+      console.log(`queryPregnancyEdd attempt ${attempt + 1}: ${parsed.error || 'EDD not set yet'}`);
+    } catch (err) {
+      console.log(`queryPregnancyEdd attempt ${attempt + 1}: error`, err);
+    }
+    if (attempt < 9) execSync('sleep 5');
+  }
+  return null;
+}
+
+/**
+ * Returns the stored LMP date (`field_last_menstrual_period` of the most recent
+ * `last_menstrual_period` measurement for the person's antenatal pregnancy) as a
+ * 'YYYY-MM-DD' string, or null if not found. Mirrors `queryPregnancyEdd`'s
+ * person -> pregnancy lookup and `populate-edd.php`'s LMP lookup (the measurement
+ * links to the pregnancy via `field_prenatal_encounter`). Retries to tolerate
+ * sync eventual-consistency. Used to assert EDD == LMP + 280 against the value
+ * the backend actually persisted, independent of how the date was entered.
+ */
+export function queryPrenatalLmp(personName: string): string | null {
+  const { drushCmd, cwd } = drushEnv();
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+
+  const php = `
+    \\$name = base64_decode('${personNameB64}');
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$name)
+      ->execute();
+    if (empty(\\$r['node'])) { echo json_encode(['error' => 'Person not found']); return; }
+    \\$nid = key(\\$r['node']);
+
+    \\$pq = new EntityFieldQuery();
+    \\$pr = \\$pq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'individual_participant')
+      ->fieldCondition('field_person', 'target_id', \\$nid)
+      ->fieldCondition('field_encounter_type', 'value', 'antenatal')
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No pregnancy found']); return; }
+    \\$participant_id = key(\\$pr['node']);
+
+    \\$encounters = hedley_person_load_individual_participant_encounters_ids(\\$participant_id);
+    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+
+    \\$lq = hedley_general_create_entity_field_query_excluding_deleted();
+    \\$lr = \\$lq->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'last_menstrual_period')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_prenatal_encounter', 'target_id', \\$encounters, 'IN')
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$lr['node'])) { echo json_encode(['error' => 'No LMP found']); return; }
+
+    \\$lmp = node_load(key(\\$lr['node']));
+    \\$date = isset(\\$lmp->field_last_menstrual_period[LANGUAGE_NONE][0]['value'])
+      ? \\$lmp->field_last_menstrual_period[LANGUAGE_NONE][0]['value'] : null;
+    echo json_encode(['lmp' => \\$date]);
+  `;
+
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const output = execSync(`${drushCmd} eval "${php}"`, {
+        cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+      }).trim();
+      const parsed = JSON.parse(output);
+      if (!parsed.error && parsed.lmp) {
+        // Stored as 'YYYY-MM-DD HH:MM:SS' or 'YYYY-MM-DD'; return the date part.
+        return String(parsed.lmp).slice(0, 10);
+      }
+      console.log(`queryPrenatalLmp attempt ${attempt + 1}: ${parsed.error || 'LMP not set yet'}`);
+    } catch (err) {
+      console.log(`queryPrenatalLmp attempt ${attempt + 1}: error`, err);
+    }
+    if (attempt < 9) execSync('sleep 5');
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Save helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Verify that measurements outside their range are refused, then enter values
+ * that are within it.
+ *
+ * Anthropometric measurements are stored in a particular unit, and a value in
+ * the wrong unit lands far outside the range that unit can take -- a birth
+ * weight typed in kilograms, a birth length typed in metres. Pressing the
+ * button to go on must show the warning, naming every measurement that is
+ * wrong, and save nothing (issue #1980).
+ *
+ * Call with the rest of the form already filled in, so that the button is
+ * active: Elm gives a button that is not active no click handler at all, and
+ * clicking it would do nothing.
+ *
+ * @param stillOnFormSelector - something on the form that must still be there
+ *   afterwards, proving the form was not left and nothing was saved.
+ * @param measurements - for each: the input's CSS id, the class the popup
+ *   carries for it, a value outside the range, and one within it.
+ * @param notNamed - classes of measurements that are in range, which the
+ *   warning must NOT carry. Without this a check that named every measurement
+ *   regardless, or one that lost its "is this even asked for" guard, would
+ *   still pass.
+ */
+export async function expectMeasurementsOutOfRangeRefused(
+  page: Page,
+  stillOnFormSelector: string,
+  measurements: Array<{
+    inputId: string;
+    popupClass: string;
+    bad: string;
+    good: string;
+    /** Words from the warning's line for this one. Give it for every
+     *  measurement to also check the order they are named in. */
+    saysInWarning?: string;
+  }>,
+  notNamed: string[] = [],
+): Promise<void> {
+  for (const m of measurements) {
+    await fillMeasurement(page, m.inputId, m.bad);
+    await page.waitForTimeout(WAIT.formInteraction);
+  }
+
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await saveBtn.waitFor({ timeout: 5000 });
+  // A button without `active` has no click handler, so the click below would be
+  // silently dropped and the warning would never appear.
+  await expect(saveBtn).toHaveClass(/active/);
+  await click(saveBtn, page);
+
+  const popup = page.locator('div.ui.active.modal.measurement-out-of-range');
+  await popup.waitFor({ timeout: 10000 });
+
+  // Match whole class names: `birth-weight-out-of-range` holds
+  // `weight-out-of-range` inside it, so a loose match names the wrong one.
+  const named = (cls: string) => new RegExp(`(^| )${cls}( |$)`);
+
+  // Every measurement that is wrong is named, not just the first one.
+  for (const m of measurements) {
+    await expect(popup).toHaveClass(named(m.popupClass));
+  }
+
+  // And nothing that is in range is named.
+  for (const cls of notNamed) {
+    await expect(popup).not.toHaveClass(named(cls));
+  }
+
+  // They are named in the order the form asks for them. Otherwise the nurse
+  // reads them in a different order to the fields in front of her.
+  if (measurements.length > 1 && measurements.every(m => m.saysInWarning)) {
+    const said = await popup.locator('.popup-action p').allTextContents();
+    expect(said.length, 'the warning says one line per measurement named').toBe(measurements.length);
+    measurements.forEach((m, i) => {
+      expect(said[i], `line ${i + 1} of the warning is about ${m.inputId}`)
+        .toContain(m.saysInWarning as string);
+    });
+  }
+
+  // The form is still up, so nothing out of range was saved.
+  await expect(page.locator(stillOnFormSelector).first()).toBeVisible();
+
+  await click(popup.locator('button.ui.primary.fluid.button'), page);
+  await popup.waitFor({ state: 'hidden', timeout: 10000 });
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  // Now the values as they are meant to be recorded.
+  for (const m of measurements) {
+    await fillMeasurement(page, m.inputId, m.good);
+    await page.waitForTimeout(WAIT.formInteraction);
+  }
+}
+
+/** A blood glucose reading inside the range the field takes (20-1200 mg/dL). */
+export const GLUCOSE_IN_RANGE = '120';
+
+/** A blood glucose reading as a glucometer set to millimoles per litre shows
+ *  it, which the field refuses because it reads as milligrams. */
+export const GLUCOSE_IN_MILLIMOLES = '12';
+
+/** Whether a numeric measurement input is the blood glucose one. */
+export async function isGlucoseInput(
+  input: import('@playwright/test').Locator,
+): Promise<boolean> {
+  return input.evaluate(
+    el => el.parentElement?.classList.contains('sugar-count') ?? false,
+  );
+}
+
+
+/**
+ * The blood glucose field refuses a reading typed in millimoles per litre, and
+ * says which unit it wants. Leaves a reading in range behind.
+ *
+ * Call it with the glucose input on screen.
+ */
+export async function expectGlucoseRangeRefusesMillimoles(page: Page): Promise<void> {
+  await expectMeasurementsOutOfRangeRefused(
+    page,
+    '.form-input.measurement.sugar-count',
+    [
+      {
+        inputId: 'sugar-count',
+        popupClass: 'blood-glucose-out-of-range',
+        bad: GLUCOSE_IN_MILLIMOLES,
+        good: GLUCOSE_IN_RANGE,
+      },
+    ],
+  );
+}
+
 
 /**
  * Click the Save button and wait for return to the encounter page.
@@ -275,7 +532,7 @@ export async function saveSubTask(page: Page): Promise<void> {
 
 /**
  * Locate a form input by its label text (grid row pattern).
- * Elm's etaque/elm-form does NOT set HTML name attributes on inputs,
+ * Elm's Gizra/elm-form does NOT set HTML name attributes on inputs,
  * so we locate by label text in the .ui.grid layout.
  */
 export function formInput(page: Page, labelText: string) {
@@ -380,11 +637,16 @@ export async function setDate(page: Page, date: Date, triggerSelector = '.date-i
   await page
     .locator('div.calendar > div.year > select')
     .selectOption(year);
+  // Let the Elm calendar grid re-render for the selected year/month before
+  // clicking the day; without these waits the click can race a stale grid and
+  // land on the wrong day (an off-by-one in date entry).
+  await page.waitForTimeout(WAIT.elmRerender);
 
   const monthValue = (date.getUTCMonth() + 1).toString();
   await page
     .locator('div.calendar > div.month > select')
     .selectOption(monthValue);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   const day = date.getUTCDate();
   const dayCell = page.locator(

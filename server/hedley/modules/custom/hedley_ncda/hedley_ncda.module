@@ -9,6 +9,19 @@ include_once 'hedley_ncda.features.inc';
 
 define('HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA', 'hedley_ncda_calculate_ncda_data');
 
+// Birth weight, in grams, below which a child counts as born underweight.
+// This is what puts the birth weight input in the red on the client, and the
+// aggregated scorecard counts the children it applies to - issues #543, #687.
+// Changing this leaves already calculated data behind, so recalculate the
+// children it moves afterwards, on every site. Which children those are
+// depends on what it moves from and to, and
+// scripts/recalculate-low-birth-weight.php is how it was done last time.
+define('HEDLEY_NCDA_LOW_BIRTH_WEIGHT_THRESHOLD', 2500);
+
+// Lowest birth weight, in grams, that can be read as a real measurement.
+// Mirrors getInputConstraintsBirthWeight.minVal on the client.
+define('HEDLEY_NCDA_MINIMAL_PLAUSIBLE_BIRTH_WEIGHT', 300);
+
 /**
  * Implements hook_menu().
  */
@@ -518,16 +531,24 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
   // was performed, at first NCDA questionnaire, otherwise.
   // Therefore, if we did not resolve birth weight from pregnancy summary,
   // we try to resolve from NCDA questionnaires.
-  if (empty($birth_weight)) {
+  // A weight we cannot read counts as one we do not have, so that both sides
+  // state the same rule - the client falls back the same way. NULL compares
+  // as zero here, so a missing weight still falls through.
+  if ($birth_weight < HEDLEY_NCDA_MINIMAL_PLAUSIBLE_BIRTH_WEIGHT) {
     foreach ($ncdas as $ncda) {
-      if (!empty($ncda->field_birth_weight) && !empty($ncda->field_weight[LANGUAGE_NONE][0]['value'])) {
+      if (!empty($ncda->field_birth_weight[LANGUAGE_NONE][0]['value'])) {
         $birth_weight = $ncda->field_birth_weight[LANGUAGE_NONE][0]['value'];
+        break;
       }
-      break;
     }
   }
-  if ($birth_weight) {
-    $data['low_birth_weight'] = $birth_weight < 2000;
+  // Birth weight is recorded in grams. A weight below the plausible minimum
+  // cannot be read: the smallest ones are kilograms typed into a grams field
+  // (issue #2008), and the rest cannot be interpreted at all. Leaving the
+  // indicator unset marks it as unknown, rather than claiming the child was
+  // not born underweight.
+  if ($birth_weight >= HEDLEY_NCDA_MINIMAL_PLAUSIBLE_BIRTH_WEIGHT) {
+    $data['low_birth_weight'] = $birth_weight < HEDLEY_NCDA_LOW_BIRTH_WEIGHT_THRESHOLD;
   }
 
   $empty_nutrition_values = [
@@ -678,12 +699,24 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
     if (!empty($encounters_ids)) {
       $encounters = node_load_multiple($encounters_ids);
       foreach ($encounters as $encounter) {
-        $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
+        // Encounters recorded before the type field was populated have no
+        // type. They count as ANC visits, which is how the client reads them
+        // too.
+        $encounter_type = NULL;
+        if (!empty($encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'])) {
+          $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
+        }
+
         if (in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum'])) {
           continue;
         }
 
-        $data['ncda']['pane1']['row1'][] = hedley_ncda_get_date_filed_value($encounter, 'field_scheduled_date');
+        $scheduled_date = hedley_ncda_get_date_filed_value($encounter, 'field_scheduled_date');
+        if (!$scheduled_date) {
+          continue;
+        }
+
+        $data['ncda']['pane1']['row1'][] = $scheduled_date;
       }
     }
   }
@@ -778,6 +811,11 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
           $data['ncda']['pane4']['row6'][] = $date_measured;
           break;
 
+        // The scorecard presents the rows of this pane in the order they are
+        // numbered here, and labels them by that order alone. Moving a sign to
+        // a different row moves the row it appears as, and every person
+        // already calculated keeps the numbering they were calculated with.
+        // See Pages/Scoreboard/View.elm.
         case 'has-clean-water':
           $data['ncda']['pane5']['row1'][] = $date_measured;
           break;
@@ -985,6 +1023,28 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
   }
 
   $encoded_data = json_encode($data);
+
+  // Assembling the data above may take seconds (hundreds of node loads), during
+  // which the person node could have been updated (device sync, admin edit).
+  // node_save() writes back every field of the object it's given, so saving the
+  // copy we started with would revert those updates. Reload before mutating, to
+  // keep the window between read and write as short as possible.
+  $person = node_load($person->nid, NULL, TRUE);
+  if (!$person) {
+    // Person was deleted while we were calculating.
+    return FALSE;
+  }
+
+  $stored = field_get_items('node', $person, 'field_ncda_data');
+  if ($stored && $stored[0]['value'] === $encoded_data) {
+    // The data is what is already stored. Saving it would write a revision
+    // that every device holding this person downloads again, to deliver
+    // nothing - which is most of the work when data is recalculated in bulk,
+    // since a recalculation is triggered per person and most of them have not
+    // changed.
+    return TRUE;
+  }
+
   $person->field_ncda_data[LANGUAGE_NONE][0]['value'] = $encoded_data;
   node_save($person);
 

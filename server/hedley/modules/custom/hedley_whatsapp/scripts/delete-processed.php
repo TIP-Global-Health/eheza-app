@@ -42,6 +42,7 @@ $or = db_or();
 $or->isNotNull('dc.field_date_concluded_value');
 $or->condition('da.field_delivery_attempts_value', $delivery_attempts, '>=');
 $base_query->condition($or);
+$base_query->orderBy('n.nid');
 
 $count_query = clone $base_query;
 if ($nid) {

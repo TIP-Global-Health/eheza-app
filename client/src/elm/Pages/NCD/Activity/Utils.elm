@@ -301,13 +301,14 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
                 + taskCompleted form.lungs
                 + taskCompleted form.abdomen
                 + taskCompleted form.heart
+                + taskCompleted form.heartMurmur
                 + ([ form.brittleHair
                    , form.paleConjuctiva
                    ]
                     |> List.map taskCompleted
                     |> List.sum
                   )
-            , 7
+            , 8
             )
 
 
@@ -480,7 +481,7 @@ toSocialHistoryValue form =
             [ Maybe.map (ifTrue SignDrinkAlcohol) form.alcohol
             , Maybe.map (ifTrue SignSmokeCigarettes) form.cigarettes
             , Maybe.map (ifTrue SignConsumeSalt) form.salt
-            , Maybe.map (ifTrue SignDifficult4TimesAYear) form.salt
+            , Maybe.map (ifTrue SignDifficult4TimesAYear) form.difficult4Times
             , Maybe.map (ifTrue SignHelpWithTreatmentAtHome) form.helpAtHome
             ]
                 |> Maybe.Extra.combine

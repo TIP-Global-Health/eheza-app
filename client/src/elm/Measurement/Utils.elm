@@ -1,11 +1,11 @@
-module Measurement.Utils exposing (OutsideCareConfig, ahezaFormWithDefault, ahezaMotherFormWithDefault, allNextStepsTasks, allVaccineTypes, behindOnVaccinationsByHistory, bloodGpRsResultFormAndTasks, bloodGpRsResultFormWithDefault, bloodGpRsTestFormWithDefault, bloodSmearResultNotSet, bloodSmearResultSet, contributingFactorsFormWithDefault, corePhysicalExamFormWithDefault, creatinineResultFormAndTasks, creatinineResultFormWithDefault, emptyContentAndTasksForPerformedLaboratoryTestConfig, emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig, emptyContentAndTasksLaboratoryResultConfig, emptyContentAndTasksLaboratoryTestInitialConfig, emptyContentAndTasksLaboratoryUniversalTestInitialConfig, expectParticipantConsent, expectUniversalTestResultTask, expectVaccineDoseForPerson, familyPlanningFormWithDefault, fbfFormToValue, followUpFormWithDefault, generateAssembledDataForChildScoreboard, generateAssembledDataForWellChild, generateFutureVaccinationsData, generateGroupNutritionAssessmentEntries, generateIndividualNutritionAssessmentEntries, generateVaccinationProgressDictByChildScoreboard, generateVaccinationProgressForVaccine, getAllDosesForVaccine, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getIntervalForVaccine, getMotherForm, getNextVaccineDose, getPreviousMeasurements, hba1cTestFormWithDefault, healthEducationFormWithDefault, heightFormWithDefault, hemoglobinResultFormAndTasks, hemoglobinResultFormWithDefault, hemoglobinTestFormWithDefault, hepatitisBResultFormAndTasks, hepatitisBResultFormWithDefault, hepatitisBTestFormWithDefault, hivPCRResultFormAndTasks, hivPCRResultFormWithDefault, hivPCRTestFormWithDefault, hivResultFollowUpsFormAndTasks, hivResultFormAndTasks, hivResultFormWithDefault, hivTestFormWithDefault, hivTestUniversalFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, isTestResultValid, laboratoryTaskIconClass, lactationFormToSigns, lipidPanelResultFormAndTasks, lipidPanelResultFormWithDefault, liverFunctionResultFormAndTasks, liverFunctionResultFormWithDefault, malariaResultFormAndTasks, malariaResultFormWithDefault, malariaTestFormWithDefault, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, muacMeasurementIsOff, ncdaFormWithDefault, nextVaccinationDataForVaccine, nonRDTFormWithDefault, nutritionCaringFormWithDefault, nutritionFeedingFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFoodSecurityFormWithDefault, nutritionFormWithDefault, nutritionHygieneFormWithDefault, ongoingTreatmentReviewFormWithDefault, outsideCareFormInputsAndTasks, outsideCareFormWithDefault, outsideCareMedicationOptionsAnemia, outsideCareMedicationOptionsHIV, outsideCareMedicationOptionsHypertension, outsideCareMedicationOptionsMalaria, outsideCareMedicationOptionsSyphilis, partnerHIVResultFollowUpsFormAndTasks, partnerHIVResultFormAndTasks, partnerHIVResultFormWithDefault, partnerHIVTestFormWithDefault, pregnancyTestFormWithDefault, randomBloodSugarFormWithDefault, randomBloodSugarResultFormAndTasks, randomBloodSugarResultFormWithDefault, randomBloodSugarUniversalFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveLabTestDate, resolveMedicationsNonAdministrationReasons, resolveNCDASteps, sendToHCFormWithDefault, syphilisResultFollowUpsFormAndTasks, syphilisResultFormAndTasks, syphilisResultFormWithDefault, syphilisTestFormWithDefault, testNotPerformedByWhyNotAtExecutionNote, testPerformedByExecutionNote, testPerformedByValue, toAdministrationNoteWithDefault, toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toBloodGpRsResultValueWithDefault, toBloodGpRsTestValueWithDefault, toContributingFactorsValueWithDefault, toCorePhysicalExamValueWithDefault, toCreatinineResultValueWithDefault, toCreatinineTestValueWithEmptyResults, toEverySet, toFamilyPlanningValueWithDefault, toFollowUpValueWithDefault, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVResultValueWithDefault, toHIVTestValueUniversalWithDefault, toHIVTestValueWithDefault, toHbA1cTestValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toHemoglobinResultValueWithDefault, toHemoglobinTestValueWithDefault, toHepatitisBResultValueWithDefault, toHepatitisBTestValueWithDefault, toLipidPanelResultValueWithDefault, toLipidPanelTestValueWithEmptyResults, toLiverFunctionResultValueWithDefault, toLiverFunctionTestValueWithEmptyResults, toMalariaResultValueWithDefault, toMalariaTestValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNonRDTValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toOutsideCareValueWithDefault, toPartnerHIVResultValueWithDefault, toPartnerHIVTestValueWithDefault, toPregnancyTestValueWithDefault, toRandomBloodSugarResultValueWithDefault, toRandomBloodSugarTestValueUniversalWithDefault, toRandomBloodSugarTestValueWithDefault, toSendToHCValueWithDefault, toSyphilisResultValueWithDefault, toSyphilisTestValueWithDefault, toUrineDipstickResultValueWithDefault, toUrineDipstickTestValueUniversalWithDefault, toUrineDipstickTestValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, treatmentReviewCustomReasonsForNotTakingInputsAndTasks, treatmentReviewInputsAndTasks, urineDipstickFormWithDefault, urineDipstickResultFormAndTasks, urineDipstickResultFormWithDefault, urineDipstickUniversalFormWithDefault, vaccinationFormDynamicContentAndTasks, vaccinationFormWithDefault, vaccineDoseToComparable, viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion, viewBloodGpRsTestForm, viewHIVPCRTestForm, viewHIVTestForm, viewHIVTestUniversalForm, viewHbA1cTestForm, viewHemoglobinTestForm, viewHepatitisBTestForm, viewMalariaTestForm, viewNonRDTForm, viewPartnerHIVTestForm, viewPregnancyTestForm, viewRandomBloodSugarTestForm, viewRandomBloodSugarTestUniversalForm, viewReinforceAdherenceQuestion, viewSelectInput, viewSyphilisTestForm, viewUrineDipstickTestForm, viewUrineDipstickTestUniversalForm, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault, withinConstraints)
+module Measurement.Utils exposing (OutsideCareConfig, ahezaFormWithDefault, ahezaMotherFormWithDefault, allNextStepsTasks, allVaccineTypes, behindOnVaccinationsByHistory, birthWeightOutsideConstraints, bloodGlucoseOutOfRange, bloodGlucoseSaveMsgs, bloodGpRsResultFormAndTasks, bloodGpRsResultFormWithDefault, bloodGpRsTestFormWithDefault, bloodSmearResultNotSet, bloodSmearResultSet, bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, corePhysicalExamFormWithDefault, creatinineResultFormAndTasks, creatinineResultFormWithDefault, emptyContentAndTasksForPerformedLaboratoryTestConfig, emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig, emptyContentAndTasksLaboratoryResultConfig, emptyContentAndTasksLaboratoryTestInitialConfig, emptyContentAndTasksLaboratoryUniversalTestInitialConfig, expectParticipantConsent, expectUniversalTestResultTask, expectVaccineDoseForPerson, familyPlanningFormWithDefault, fbfFormToValue, followUpFormWithDefault, generateAssembledDataForChildScoreboard, generateAssembledDataForWellChild, generateFutureVaccinationsData, generateGroupNutritionAssessmentEntries, generateIndividualNutritionAssessmentEntries, generateVaccinationProgressDictByChildScoreboard, generateVaccinationProgressForVaccine, getAllDosesForVaccine, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getIntervalForVaccine, getMotherForm, getNextVaccineDose, getPreviousMeasurements, hba1cTestFormWithDefault, healthEducationFormWithDefault, heightFormWithDefault, heightOutOfRange, hemoglobinResultFormAndTasks, hemoglobinResultFormWithDefault, hemoglobinTestFormWithDefault, hepatitisBResultFormAndTasks, hepatitisBResultFormWithDefault, hepatitisBTestFormWithDefault, hivPCRResultFormAndTasks, hivPCRResultFormWithDefault, hivPCRTestFormWithDefault, hivResultFollowUpsFormAndTasks, hivResultFormAndTasks, hivResultFormWithDefault, hivTestFormWithDefault, hivTestUniversalFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, isTestResultValid, laboratoryTaskIconClass, lactationFormToSigns, lipidPanelResultFormAndTasks, lipidPanelResultFormWithDefault, liverFunctionResultFormAndTasks, liverFunctionResultFormWithDefault, malariaResultFormAndTasks, malariaResultFormWithDefault, malariaTestFormWithDefault, measurementConstraints, measurementOutOfRange, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, muacMeasurementIsOff, muacOutOfRange, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nextVaccinationDataForVaccine, nonRDTFormWithDefault, nutritionCaringFormWithDefault, nutritionFeedingFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFoodSecurityFormWithDefault, nutritionFormWithDefault, nutritionHygieneFormWithDefault, ongoingTreatmentReviewFormWithDefault, outOfRange, outOfRangeAsEntered, outsideCareFormInputsAndTasks, outsideCareFormWithDefault, outsideCareMedicationOptionsAnemia, outsideCareMedicationOptionsHIV, outsideCareMedicationOptionsHypertension, outsideCareMedicationOptionsMalaria, outsideCareMedicationOptionsSyphilis, partnerHIVResultFollowUpsFormAndTasks, partnerHIVResultFormAndTasks, partnerHIVResultFormWithDefault, partnerHIVTestFormWithDefault, pregnancyTestFormWithDefault, randomBloodSugarFormWithDefault, randomBloodSugarResultFormAndTasks, randomBloodSugarResultFormWithDefault, randomBloodSugarUniversalFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveLabTestDate, resolveMedicationsNonAdministrationReasons, resolveNCDASteps, sendToHCFormWithDefault, setNCDAStep, showNCDAMeasurementOutOfRange, showNCDAQuestionsByNewbornExam, syphilisResultFollowUpsFormAndTasks, syphilisResultFormAndTasks, syphilisResultFormWithDefault, syphilisTestFormWithDefault, testNotPerformedByWhyNotAtExecutionNote, testPerformedByExecutionNote, testPerformedByValue, toAdministrationNoteWithDefault, toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toBloodGpRsResultValueWithDefault, toBloodGpRsTestValueWithDefault, toContributingFactorsValueWithDefault, toCorePhysicalExamValueWithDefault, toCreatinineResultValueWithDefault, toCreatinineTestValueWithEmptyResults, toEverySet, toFamilyPlanningValueWithDefault, toFollowUpValueWithDefault, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVResultValueWithDefault, toHIVTestValueUniversalWithDefault, toHIVTestValueWithDefault, toHbA1cTestValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toHemoglobinResultValueWithDefault, toHemoglobinTestValueWithDefault, toHepatitisBResultValueWithDefault, toHepatitisBTestValueWithDefault, toLipidPanelResultValueWithDefault, toLipidPanelTestValueWithEmptyResults, toLiverFunctionResultValueWithDefault, toLiverFunctionTestValueWithEmptyResults, toMalariaResultValueWithDefault, toMalariaTestValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNonRDTValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toOutsideCareValueWithDefault, toPartnerHIVResultValueWithDefault, toPartnerHIVTestValueWithDefault, toPregnancyTestValueWithDefault, toRandomBloodSugarResultValueWithDefault, toRandomBloodSugarTestValueUniversalWithDefault, toRandomBloodSugarTestValueWithDefault, toSendToHCValueWithDefault, toSyphilisResultValueWithDefault, toSyphilisTestValueWithDefault, toUrineDipstickResultValueWithDefault, toUrineDipstickTestValueUniversalWithDefault, toUrineDipstickTestValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, treatmentReviewCustomReasonsForNotTakingInputsAndTasks, treatmentReviewInputsAndTasks, urineDipstickFormWithDefault, urineDipstickResultFormAndTasks, urineDipstickResultFormWithDefault, urineDipstickUniversalFormWithDefault, vaccinationFormDynamicContentAndTasks, vaccinationFormWithDefault, vaccineDoseToComparable, viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion, viewBloodGpRsTestForm, viewHIVPCRTestForm, viewHIVTestForm, viewHIVTestUniversalForm, viewHbA1cTestForm, viewHemoglobinTestForm, viewHepatitisBTestForm, viewMalariaTestForm, viewNonRDTForm, viewPartnerHIVTestForm, viewPregnancyTestForm, viewRandomBloodSugarTestForm, viewRandomBloodSugarTestUniversalForm, viewReinforceAdherenceQuestion, viewSelectInput, viewSyphilisTestForm, viewUrineDipstickTestForm, viewUrineDipstickTestUniversalForm, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault, weightOutOfRange)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (bilirubinValueToString, bloodGroupToString, bloodSmearResultToString, currentValue, currentValues, getHeightValue, getMeasurementDateMeasuredFunc, getMeasurementValueFunc, glucoseValueToString, haemoglobinValueToString, ketoneValueToString, labExpirationPeriod, leukocytesValueToString, mapMeasurementData, muacIndicationForChild, muacValueFunc, nitriteValueToString, phValueToString, proteinValueToString, rhesusToString, testResultToString, unitOfMeasurementToString, urobilinogenValueToString, weightValueFunc)
+import Backend.Measurement.Utils exposing (bilirubinValueToString, bloodGroupToString, bloodSmearResultToString, currentValue, currentValues, getHeightValue, getMeasurementDateMeasuredFunc, getMeasurementValueFunc, glucoseValueToString, haemoglobinValueToString, ketoneValueToString, labExpirationPeriod, leukocytesValueToString, mapMeasurementData, muacIndicationForChild, muacValueForSite, muacValueFunc, nitriteValueToString, phValueToString, proteinValueToString, rhesusToString, testResultToString, unitOfMeasurementToString, urobilinogenValueToString, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
@@ -30,7 +30,7 @@ import Html.Events exposing (..)
 import List.Extra
 import LocalData
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (AhezaForm, BloodGpRsResultForm, BloodGpRsTestForm, ContentAndTasksForPerformedLaboratoryTestConfig, ContentAndTasksForPerformedLaboratoryUniversalTestConfig, ContentAndTasksLaboratoryResultConfig, ContentAndTasksLaboratoryTestInitialConfig, ContentAndTasksLaboratoryUniversalTestInitialConfig, ContributingFactorsForm, CorePhysicalExamForm, CreatinineResultForm, FamilyPlanningForm, FbfForm, FloatInputConstraints, FollowUpForm, HIVPCRResultForm, HIVPCRTestForm, HIVResultForm, HIVTestForm, HIVTestUniversalForm, HbA1cTestForm, HealthEducationForm, HeightForm, HemoglobinResultForm, HemoglobinTestForm, HepatitisBResultForm, HepatitisBTestForm, ImmunisationTask(..), LaboratoryTask(..), LipidPanelResultForm, LiverFunctionResultForm, MalariaResultForm, MalariaTestForm, MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MuacForm, NCDAData, NCDAForm, NCDAStep(..), NextStepsTask(..), NonRDTForm, NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OngoingTreatmentReviewForm, OutsideCareForm, OutsideCareStep(..), PartnerHIVResultForm, PartnerHIVTestForm, PregnancyTestForm, RandomBloodSugarResultForm, RandomBloodSugarTestForm, RandomBloodSugarTestUniversalForm, SendToHCForm, SyphilisResultForm, SyphilisTestForm, UrineDipstickResultForm, UrineDipstickTestForm, UrineDipstickTestUniversalForm, VaccinationForm, VaccinationFormDynamicContentAndTasksConfig, VaccinationFormViewMode(..), VaccinationProgressDict, VitalsForm, WeightForm, completedParticipantFormProgress, emptyContributingFactorsForm, emptyFbfForm, emptyHealthEducationForm, emptyMedicationAdministrationForm, emptyModelChild, emptyModelMother, emptyNCDAData, emptyNutritionFollowUpForm, emptySendToHCForm)
+import Measurement.Model exposing (AhezaForm, BloodGpRsResultForm, BloodGpRsTestForm, ContentAndTasksForPerformedLaboratoryTestConfig, ContentAndTasksForPerformedLaboratoryUniversalTestConfig, ContentAndTasksLaboratoryResultConfig, ContentAndTasksLaboratoryTestInitialConfig, ContentAndTasksLaboratoryUniversalTestInitialConfig, ContributingFactorsForm, CorePhysicalExamForm, CreatinineResultForm, FamilyPlanningForm, FbfForm, FloatInputConstraints, FollowUpForm, HIVPCRResultForm, HIVPCRTestForm, HIVResultForm, HIVTestForm, HIVTestUniversalForm, HbA1cTestForm, HealthEducationForm, HeightForm, HemoglobinResultForm, HemoglobinTestForm, HepatitisBResultForm, HepatitisBTestForm, ImmunisationTask(..), LaboratoryTask(..), LipidPanelResultForm, LiverFunctionResultForm, MalariaResultForm, MalariaTestForm, MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MuacForm, NCDAData, NCDAForm, NCDAStep(..), NextStepsTask(..), NonRDTForm, NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OngoingTreatmentReviewForm, OutsideCareForm, OutsideCareStep(..), PartnerHIVResultForm, PartnerHIVTestForm, PregnancyTestForm, RandomBloodSugarResultForm, RandomBloodSugarTestForm, RandomBloodSugarTestUniversalForm, RangedMeasurement(..), SendToHCForm, SyphilisResultForm, SyphilisTestForm, UrineDipstickResultForm, UrineDipstickTestForm, UrineDipstickTestUniversalForm, VaccinationForm, VaccinationFormDynamicContentAndTasksConfig, VaccinationFormViewMode(..), VaccinationProgressDict, VitalsForm, WeightForm, completedParticipantFormProgress, emptyContributingFactorsForm, emptyFbfForm, emptyHealthEducationForm, emptyMedicationAdministrationForm, emptyModelChild, emptyModelMother, emptyNCDAData, emptyNutritionFollowUpForm, emptySendToHCForm)
 import Pages.ChildScoreboard.Encounter.Model
 import Pages.Session.Model
 import Pages.Utils
@@ -77,6 +77,116 @@ toEverySet presentValue absentValue present =
 
     else
         EverySet.singleton absentValue
+
+
+{-| Blood glucose is recorded in milligrams per decilitre, and 20 to 1200 is
+the range that says so.
+
+The bottom is under what any meter reports: below it a meter shows LO rather
+than a number. A reading typed in millimoles per litre is about eighteen times
+smaller - 11.1 mmol/L is 200 mg/dL - so the low ones land under 20.
+
+The top is above what a laboratory reports, not what a meter shows: these forms
+also record results that came back from a laboratory, where a glucose in a
+hyperosmolar state runs well past what a meter can display.
+
+-}
+getInputConstraintsBloodGlucose : FloatInputConstraints
+getInputConstraintsBloodGlucose =
+    { minVal = 20
+    , maxVal = 1200
+    }
+
+
+{-| Birth weight is entered and stored in grams, so it has its own range.
+
+`getInputConstraintsWeight` below is in kilograms and must not be used here: it
+would refuse every newborn, whose weight in grams is far above its 200 maximum,
+while accepting a weight typed in kilograms, which is the mistake this range is
+here to catch.
+
+-}
+getInputConstraintsBirthWeight : FloatInputConstraints
+getInputConstraintsBirthWeight =
+    -- Wide enough for the extremes that do occur: babies have survived under
+    -- 500g, and a very large baby can be over 6000g. A weight typed in
+    -- kilograms is still far below all of them.
+    { minVal = 300
+    , maxVal = 7000
+    }
+
+
+{-| Birth weight, in grams, below which a child was born underweight. It puts
+the birth weight input in the red, and the aggregated scorecard counts the
+children it applies to - see issues #543 and #687.
+
+The backend applies the same threshold when it computes the aggregated
+scorecard, as HEDLEY\_NCDA\_LOW\_BIRTH\_WEIGHT\_THRESHOLD.
+
+-}
+lowBirthWeightThreshold : Float
+lowBirthWeightThreshold =
+    2500
+
+
+{-| Whether the child was born underweight, as far as the birth weight recorded
+for them can say.
+
+Nothing when no weight was recorded, and equally when the one recorded cannot be
+read: the smallest are kilograms typed into a grams field (issue #2008), and the
+rest cannot be interpreted at all. Answering that we do not know beats claiming
+the child was not born underweight, so this is what the scorecard, the red
+callout on the input, and the aggregated scorecard all ask.
+
+-}
+bornUnderweightByBirthWeight : Maybe WeightInGrm -> Maybe Bool
+bornUnderweightByBirthWeight =
+    Maybe.andThen
+        (\(WeightInGrm birthWeight) ->
+            if birthWeight < getInputConstraintsBirthWeight.minVal then
+                Nothing
+
+            else
+                Just (birthWeight < lowBirthWeightThreshold)
+        )
+
+
+{-| The Apgar score is a score out of 10, given twice: one minute after birth
+and again five minutes after. It is not a measurement of anything, so there is
+nothing else it could plausibly be.
+-}
+getInputConstraintsApgar : FloatInputConstraints
+getInputConstraintsApgar =
+    { minVal = 0
+    , maxVal = 10
+    }
+
+
+{-| Birth length is a newborn's length, so the height range above does not fit:
+it starts at 25cm and reaches 250cm, which is a grown adult.
+
+Wide enough for the extremes that do occur -- a very premature baby is far
+shorter than a baby born at term -- while still refusing a length that was
+entered in metres, or a weight entered by mistake.
+
+-}
+getInputConstraintsBirthLength : FloatInputConstraints
+getInputConstraintsBirthLength =
+    { minVal = 15
+    , maxVal = 60
+    }
+
+
+{-| The height of the uterus above the pubic bone, in centimetres. Wide enough
+for every week a pregnancy is measured at, and for the sites that record it from
+the first weeks; it refuses a value in millimetres, or a weight entered by
+mistake.
+-}
+getInputConstraintsFundalHeight : FloatInputConstraints
+getInputConstraintsFundalHeight =
+    { minVal = 1
+    , maxVal = 60
+    }
 
 
 getInputConstraintsHeight : FloatInputConstraints
@@ -159,8 +269,9 @@ fromChildMeasurementData site data =
         fromData .sendToHC (.value >> Just >> fromSendToHCValue)
             |> Maybe.withDefault emptySendToHCForm
     , ncdaData =
-        fromData .ncda (.value >> Just >> fromNCDAValue >> (\form -> NCDAData form Nothing))
+        fromData .ncda (.value >> Just >> fromNCDAValue >> (\form -> NCDAData form Nothing False))
             |> Maybe.withDefault emptyNCDAData
+    , measurementOutOfRangePopupState = []
     }
 
 
@@ -267,6 +378,271 @@ getChildForm site childId pages session =
 withinConstraints : FloatInputConstraints -> Float -> Bool
 withinConstraints constraints value =
     value >= constraints.minVal && value <= constraints.maxVal
+
+
+{-| True when a birth weight has been entered and is outside the range it can
+take. An unset weight is not reported: whether it still has to be taken is
+answered by the task count.
+-}
+birthWeightOutsideConstraints : Site -> Maybe WeightInGrm -> Bool
+birthWeightOutsideConstraints site birthWeight =
+    Maybe.map (\(WeightInGrm weight) -> weight) birthWeight
+        |> measurementOutOfRange site MeasurementBirthWeight
+
+
+{-| The measurement a form asks for, when it was entered outside the range it
+can take. Asked wherever the measurement is entered.
+
+A list, because the warning that names the measurements takes one, and because
+the forms that ask for several behind a single button are named the same way.
+
+A measurement the nurse said could not be taken is asked about like any other:
+the form it is asked of holds no value in that case, and a measurement that was
+not entered is not out of range.
+
+-}
+heightOutOfRange : Site -> HeightForm -> List RangedMeasurement
+heightOutOfRange site form =
+    outOfRange site MeasurementHeight form.height
+
+
+muacOutOfRange : Site -> MuacForm -> List RangedMeasurement
+muacOutOfRange site form =
+    outOfRange site MeasurementMuac form.muac
+
+
+weightOutOfRange : Site -> WeightForm -> List RangedMeasurement
+weightOutOfRange site form =
+    outOfRange site MeasurementWeight form.weight
+
+
+{-| The measurement, when a blood glucose reading the form is showing is
+outside the range it can take. Not site-aware: the field is milligrams per
+decilitre everywhere.
+
+`inputShown` is whether the form draws the glucose input. A value loaded from a
+saved record that the form does not show cannot be corrected, so asking about
+it would leave the task unsaveable.
+
+-}
+bloodGlucoseOutOfRange : Bool -> Maybe Float -> List RangedMeasurement
+bloodGlucoseOutOfRange inputShown value =
+    if inputShown then
+        Maybe.map (outOfRangeAsEntered getInputConstraintsBloodGlucose MeasurementBloodGlucose) value
+            |> Maybe.withDefault []
+
+    else
+        []
+
+
+{-| What a Save press produces for a blood glucose reading: the save itself, or
+the warning that names the reading.
+-}
+bloodGlucoseSaveMsgs : Bool -> Maybe Float -> msg -> (List RangedMeasurement -> msg) -> List msg
+bloodGlucoseSaveMsgs inputShown sugarCount saveMsg warnMsg =
+    case bloodGlucoseOutOfRange inputShown sugarCount of
+        [] ->
+            [ saveMsg ]
+
+        measurements ->
+            [ warnMsg measurements ]
+
+
+{-| The measurement, when what a form holds for it is outside the range it can
+take. For forms holding the value the way the measurements are stored, which is
+centimetres for MUAC; it is put into the unit it is shown in before comparing.
+-}
+outOfRange : Site -> RangedMeasurement -> Maybe Float -> List RangedMeasurement
+outOfRange site measurement value =
+    if measurementOutOfRange site measurement value then
+        [ measurement ]
+
+    else
+        []
+
+
+{-| The measurement a form asks for, when what was typed is outside the range it
+can take, given the range that form shows.
+
+For forms holding the value in the unit it is shown in. The group session forms
+do: their range is `getInputConstraintsMuac site`, and the value is compared
+before it is put into the unit it is stored in. Converting here as well would
+report every MUAC at the site that asks for millimetres.
+
+-}
+outOfRangeAsEntered : FloatInputConstraints -> RangedMeasurement -> Float -> List RangedMeasurement
+outOfRangeAsEntered constraints measurement value =
+    if withinConstraints constraints value then
+        []
+
+    else
+        [ measurement ]
+
+
+{-| The range a measurement has to be within, in the unit it is entered in.
+
+The Apgar scores have one too, though they are neither of the body nor carried
+in a unit: they are scores out of ten.
+
+-}
+measurementConstraints : Site -> RangedMeasurement -> FloatInputConstraints
+measurementConstraints site measurement =
+    case measurement of
+        MeasurementApgarFiveMinutes ->
+            getInputConstraintsApgar
+
+        MeasurementApgarOneMinute ->
+            getInputConstraintsApgar
+
+        MeasurementBirthLength ->
+            getInputConstraintsBirthLength
+
+        MeasurementBirthWeight ->
+            getInputConstraintsBirthWeight
+
+        MeasurementBloodGlucose ->
+            getInputConstraintsBloodGlucose
+
+        MeasurementFundalHeight ->
+            getInputConstraintsFundalHeight
+
+        MeasurementHeight ->
+            getInputConstraintsHeight
+
+        MeasurementMuac ->
+            getInputConstraintsMuac site
+
+        MeasurementWeight ->
+            getInputConstraintsWeight
+
+
+{-| True when a measurement has been entered and is outside the range it can
+take, in the unit it is entered in.
+
+An unset measurement is not reported. This answers "is what was entered wrong",
+which is what the warning shown on save is about; whether the measurement still
+has to be taken is already answered by the task count.
+
+MUAC is held on the forms in centimetres and shown in millimetres at Burundi, so
+it is put back into the unit it was entered in before it is compared. Ask here
+rather than comparing against the range directly, so that cannot be forgotten.
+
+-}
+measurementOutOfRange : Site -> RangedMeasurement -> Maybe Float -> Bool
+measurementOutOfRange site measurement value =
+    Maybe.map
+        (\number ->
+            not <|
+                withinConstraints (measurementConstraints site measurement)
+                    (asEntered site measurement number)
+        )
+        value
+        |> Maybe.withDefault False
+
+
+{-| A measurement as the nurse typed it, from the way the form holds it.
+-}
+asEntered : Site -> RangedMeasurement -> Float -> Float
+asEntered site measurement number =
+    case measurement of
+        MeasurementMuac ->
+            muacValueForSite site number
+
+        _ ->
+            number
+
+
+showNCDAQuestionsByNewbornExam : Maybe PregnancySummaryValue -> Bool
+showNCDAQuestionsByNewbornExam newbornExamPregnancySummary =
+    -- Verify that NCDA related questions were not answered at Newborn exam.
+    -- This can happen, because needed questions were added after
+    -- Newborn exam was launched, so, it could have been filled
+    -- without them.
+    -- It's enough to check if one of the questions was answered,
+    -- because both answereds are required to save the form.
+    Maybe.map (.birthWeight >> isNothing) newbornExamPregnancySummary
+        |> Maybe.withDefault True
+
+
+{-| Whether the NCDA form asks for a MUAC, which it does from six months of age.
+
+Named here so that the form and the check on what it holds cannot come to
+disagree: a MUAC that is checked but never shown leaves the nurse stopped by a
+measurement she has no way to correct.
+
+-}
+ncdaMuacAsked : NominalDate -> Person -> Bool
+ncdaMuacAsked currentDate person =
+    ageInMonths currentDate person
+        |> Maybe.map (\ageMonths -> ageMonths >= 6)
+        |> Maybe.withDefault False
+
+
+{-| The measurements the NCDA form holds outside their range, each with the
+step that asks for it.
+
+Only what the form actually shows is checked. The birth weight is asked on the
+Antenatal Care step, and only when the newborn exam did not already record it;
+the weight and MUAC are asked on the Nutrition Assessment step, which is not
+part of the form at a health centre; and the MUAC is asked from six months. All
+of that has to hold, because a value saved earlier stays on the form even once
+the question is gone, and stopping on a measurement that is nowhere to be seen
+would leave the form with no way out.
+
+A measurement that is not there is not out of range: an empty input is what the
+task count is for, and saying it was not taken empties it.
+
+The step comes back with the measurement so that the nurse can be shown the
+input she has to correct. The button is stopped on every step, so what it names
+is often asked on another one.
+
+-}
+ncdaMeasurementsOutOfRange :
+    Site
+    -> List NCDAStep
+    -> Maybe PregnancySummaryValue
+    -> Bool
+    -> NCDAForm
+    -> List ( RangedMeasurement, NCDAStep )
+ncdaMeasurementsOutOfRange site steps newbornExamPregnancySummary muacAsked form =
+    let
+        asked step =
+            List.member step steps
+
+        at step =
+            List.map (\measurement -> ( measurement, step ))
+
+        birthWeight =
+            if
+                asked NCDAStepAntenatalCare
+                    && showNCDAQuestionsByNewbornExam newbornExamPregnancySummary
+            then
+                Maybe.map (\(WeightInGrm grams) -> grams) form.birthWeight
+                    |> outOfRange site MeasurementBirthWeight
+                    |> at NCDAStepAntenatalCare
+
+            else
+                []
+
+        weight =
+            if asked NCDAStepNutritionAssessment then
+                Maybe.map (\(WeightInKg kilograms) -> kilograms) form.weight
+                    |> outOfRange site MeasurementWeight
+                    |> at NCDAStepNutritionAssessment
+
+            else
+                []
+
+        muac =
+            if asked NCDAStepNutritionAssessment && muacAsked then
+                Maybe.map (\(MuacInCm centimeters) -> centimeters) form.muac
+                    |> outOfRange site MeasurementMuac
+                    |> at NCDAStepNutritionAssessment
+
+            else
+                []
+    in
+    birthWeight ++ weight ++ muac
 
 
 lactationSignsToForm : EverySet LactationSign -> LactationForm
@@ -1236,11 +1612,19 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
                                 -- expected due date of first dose.
                                 |> Maybe.withDefault config.firstDoseExpectedFrom
 
+                        -- The range runs from the day the dose became due to
+                        -- yesterday. A dose that becomes due today was not due on any
+                        -- earlier day, so the range is that one day: earlier is before
+                        -- the dose could be given, and for a first dose of BCG or OPV
+                        -- it would be before the child was born.
+                        dateTo =
+                            Date.max (Date.add Days -1 currentDate) dateFrom
+
                         dateSelectorConfig =
                             { select = config.setVaccinationUpdateDateMsg
                             , close = config.setVaccinationUpdateDateSelectorStateMsg Nothing
                             , dateFrom = dateFrom
-                            , dateTo = Date.add Days -1 currentDate
+                            , dateTo = dateTo
                             , dateDefault = Just dateFrom
                             }
                     in
@@ -7842,8 +8226,10 @@ creatinineResultFormWithDefault form saved =
             (\value ->
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
-                , creatinineResult = or form.creatinineResult value.creatinineResult
-                , bunResult = or form.bunResult value.bunResult
+                , creatinineResult = maybeValueConsideringIsDirtyField form.creatinineResultDirty form.creatinineResult value.creatinineResult
+                , creatinineResultDirty = form.creatinineResultDirty
+                , bunResult = maybeValueConsideringIsDirtyField form.bunResultDirty form.bunResult value.bunResult
+                , bunResultDirty = form.bunResultDirty
                 }
             )
 
@@ -7875,8 +8261,10 @@ liverFunctionResultFormWithDefault form saved =
             (\value ->
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
-                , altResult = or form.altResult value.altResult
-                , astResult = or form.astResult value.astResult
+                , altResult = maybeValueConsideringIsDirtyField form.altResultDirty form.altResult value.altResult
+                , altResultDirty = form.altResultDirty
+                , astResult = maybeValueConsideringIsDirtyField form.astResultDirty form.astResult value.astResult
+                , astResultDirty = form.astResultDirty
                 }
             )
 
@@ -8346,15 +8734,65 @@ ncdaFormWithDefault form saved =
                 , birthWeight = or form.birthWeight value.birthWeight
 
                 -- Nutrition measurements.
-                , stuntingLevel = or form.stuntingLevel value.stuntingLevel
+                , stuntingLevel = measurementUnlessNotTaken form.stuntingLevelNotTaken form.stuntingLevel value.stuntingLevel
                 , stuntingLevelNotTaken = or form.stuntingLevelNotTaken (isNothing value.stuntingLevel |> Just)
-                , weight = or form.weight value.weight
+                , weight = measurementUnlessNotTaken form.weightNotTaken form.weight value.weight
                 , weightNotTaken = or form.weightNotTaken (isNothing value.weight |> Just)
-                , muac = or form.muac value.muac
+                , muac = measurementUnlessNotTaken form.muacNotTaken form.muac value.muac
                 , muacNotTaken = or form.muacNotTaken (isNothing value.muac |> Just)
                 , showsEdemaSigns = or form.showsEdemaSigns (EverySet.member ShowsEdemaSigns value.signs |> Just)
                 }
             )
+
+
+{-| What the form holds for a measurement once the one saved earlier is merged
+into it, and nothing when the nurse has said it was not taken.
+
+Ticking that empties the input and hides it, so the measurement saved earlier
+must not come back in its place: it would be live behind a box saying it was not
+taken, and saved again at the end of the flow.
+
+-}
+measurementUnlessNotTaken : Maybe Bool -> Maybe a -> Maybe a -> Maybe a
+measurementUnlessNotTaken notTaken onForm saved =
+    if notTaken == Just True then
+        Nothing
+
+    else
+        or onForm saved
+
+
+{-| Move the NCDA form to one of its steps.
+
+Said once here because four pages hold this form, and each of them moves it in
+two places: when the nurse picks a step, and when a warning names a measurement
+asked on another one.
+
+-}
+setNCDAStep : NCDAStep -> NCDAData -> NCDAData
+setNCDAStep step data =
+    let
+        form =
+            data.form
+    in
+    { data | form = { form | step = Just step } }
+
+
+{-| Show or hide the warning that names the measurements out of range.
+
+Showing it moves the form to the step that asks for the first of them, so that
+the input the warning names is the one behind it. Hiding it leaves the form
+where it is.
+
+-}
+showNCDAMeasurementOutOfRange : Maybe NCDAStep -> NCDAData -> NCDAData
+showNCDAMeasurementOutOfRange stepAsking data =
+    let
+        shown =
+            { data | showMeasurementOutOfRangePopup = stepAsking /= Nothing }
+    in
+    Maybe.map (\step -> setNCDAStep step shown) stepAsking
+        |> Maybe.withDefault shown
 
 
 toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm -> Maybe NCDAValue
@@ -9160,7 +9598,10 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
             -- All 3 dosed of DTP were given, it has passed
             -- at least 28 days since third dose, and, child
             -- is at last 18 months old.
-            Dict.get VaccineOPV vaccinationProgress
+            -- Burundi calls the DTP combo Pentavalent, and issue #926 asks for
+            -- this dose after three of them - not after three doses of polio,
+            -- which is a different vaccine with a fourth dose of its own.
+            Dict.get VaccineDTP vaccinationProgress
                 |> Maybe.andThen (Dict.get VaccineDoseThird)
                 |> Maybe.map
                     (\thirdDoseDate ->
@@ -9258,7 +9699,16 @@ nextVaccinationDataForVaccine :
 nextVaccinationDataForVaccine site maybeBirthDate vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
     Maybe.andThen
         (\birthDate ->
-            if getLastDoseForVaccine site initialOpvAdministered vaccineType == lastDoseAdministered then
+            let
+                dosesGiven =
+                    vaccineDoseToComparable lastDoseAdministered
+
+                dosesTheSiteExpects =
+                    vaccineDoseToComparable (getLastDoseForVaccine site initialOpvAdministered vaccineType)
+            in
+            if dosesGiven >= dosesTheSiteExpects then
+                -- A child holding every dose the site expects, or more, has
+                -- none left to receive.
                 Nothing
 
             else

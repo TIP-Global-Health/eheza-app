@@ -33,6 +33,12 @@ update currentDate context msg model =
                     Nothing
     in
     case msg of
+        Reset ->
+            ( emptyModel
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( model
             , Cmd.none

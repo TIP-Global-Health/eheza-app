@@ -1,4 +1,4 @@
-module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), BackendWhatsAppEntity, DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadPhotosMode(..), DownloadPhotosStatus(..), DownloadSyncResponse, Flags, IncidentContnentIdentifier, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoBatchResultRecord, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadFileResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbQueryUploadWhatsAppResultRecord, IndexDbSaveResult, IndexDbSaveResultTable(..), IndexDbSaveStatus(..), IndexDbUploadRemoteData, Model, Msg(..), PhotoBatchResult, Site(..), SiteFeature(..), SyncCycle(..), SyncIncidentType(..), SyncInfoAuthority, SyncInfoAuthorityForPort, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoGeneralForPort, SyncInfoStatus(..), SyncSpeed, SyncStatus(..), UploadFileError(..), UploadMethod(..), UploadRec, downloadRequestTimeout, emptyModel, emptySyncInfoAuthority, emptyUploadRec)
+module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), BackendWhatsAppEntity, DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadPhotosMode(..), DownloadPhotosStatus(..), DownloadSyncResponse, Flags, IncidentContnentIdentifier, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoBatchResultRecord, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadFileResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbQueryUploadWhatsAppResultRecord, IndexDbSaveError(..), IndexDbSaveResult, IndexDbSaveResultTable(..), IndexDbSaveStatus(..), IndexDbUploadRemoteData, Model, Msg(..), PhotoBatchResult, Site(..), SiteFeature(..), SyncCycle(..), SyncIncidentType(..), SyncInfoAuthority, SyncInfoAuthorityForPort, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoGeneralForPort, SyncInfoStatus(..), SyncSpeed, SyncStatus(..), UploadFileError(..), UploadMethod(..), UploadRec, downloadRequestTimeout, emptyModel, emptySyncInfoAuthority, emptyUploadRec, uploadRequestTimeout)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -416,6 +416,12 @@ type alias Model =
     -- by the response handler to reconcile per-photo outcomes against
     -- `deferredPhotos`.
     , bulkPhotosInFlight : List IndexDbQueryDeferredPhotoResultRecord
+
+    -- The most recent IndexedDB save failure, if the last save failed.
+    -- `IndexDbSaveErrorStorageFull` means a write hit the device storage
+    -- ceiling; in that state re-downloading is futile until space is freed.
+    -- Cleared on the next successful save.
+    , lastSaveError : Maybe IndexDbSaveError
     }
 
 
@@ -438,6 +444,7 @@ emptyModel flags =
     , bulkPhotosEndpointAvailable = Nothing
     , bulkPhotosConsecutiveBatchErrors = 0
     , bulkPhotosInFlight = []
+    , lastSaveError = Nothing
     }
 
 
@@ -634,6 +641,10 @@ type alias IndexDbSaveResult =
     { table : IndexDbSaveResultTable
     , status : IndexDbSaveStatus
     , timestamp : String
+
+    -- Error name reported by the JS port on failure (e.g.
+    -- "QuotaExceededError"); `Nothing` on success.
+    , reason : Maybe String
     }
 
 
@@ -647,6 +658,15 @@ type IndexDbSaveResultTable
 type IndexDbSaveStatus
     = IndexDbSaveFailure
     | IndexDbSaveSuccess
+
+
+{-| A classified IndexedDB save failure. `IndexDbSaveErrorStorageFull` (the
+device ran out of storage) is distinguished because retrying the same write
+cannot succeed until space is freed.
+-}
+type IndexDbSaveError
+    = IndexDbSaveErrorOther String
+    | IndexDbSaveErrorStorageFull
 
 
 type alias IndexDbQueryUploadPhotoResultRecord =
@@ -750,6 +770,19 @@ less than 3. Timeout is double the sum of the 2.
 downloadRequestTimeout : Int
 downloadRequestTimeout =
     (12000 + 3000) * 2
+
+
+{-| Upload requests (POST to /api/sync) carry a batch of changes and may run
+over slow rural connections, so we allow more headroom than downloads. The
+crucial point is that there is a timeout at all: without one, a stalled
+connection (e.g. a dropped mobile link that never sends a TCP RST) leaves the
+request in `Loading` indefinitely, wedging the entire upload phase until the
+app is manually reloaded. The value is in milliseconds, as expected by
+`HttpBuilder.withTimeout`.
+-}
+uploadRequestTimeout : Float
+uploadRequestTimeout =
+    60 * 1000
 
 
 type SyncIncidentType

@@ -1,4 +1,4 @@
-module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, contributingFactorsFormInutsAndTasks, followUpFormInputsAndTasks, healthEducationFormInutsAndTasks, heightFormAndTasks, muacFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewCorePhysicalExamForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewHeightForm, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDAContent, viewNutritionFollowUpForm, viewNutritionForm, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks)
+module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, contributingFactorsFormInutsAndTasks, followUpFormInputsAndTasks, healthEducationFormInutsAndTasks, heightFormAndTasks, measurementOutOfRangePopup, muacFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewCorePhysicalExamForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewHeightForm, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDAContent, viewNutritionFollowUpForm, viewNutritionForm, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks)
 
 {-| This module provides a form for entering measurements.
 -}
@@ -17,6 +17,7 @@ import Backend.Measurement.Utils
         , mapMeasurementData
         , muacIndicationForChild
         , muacIndicationForPerson
+        , muacValueForSite
         , nutritionSignToString
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -31,7 +32,6 @@ import Backend.NutritionEncounter.Utils
         , resolveNCDANotFilledAfterAgeOfSixMonths
         )
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths)
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Date
@@ -44,15 +44,18 @@ import Html.Events exposing (on, onClick, onInput)
 import Html.Parser.Util exposing (toVirtualDom)
 import Json.Decode
 import List.Extra exposing (greedyGroupsOf)
-import Maybe.Extra exposing (isJust, isNothing)
+import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, FamilyPlanningForm, FbfForm, FloatInputConstraints, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
-import Measurement.Utils exposing (contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault, withinConstraints)
+import Measurement.Model exposing (ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, FamilyPlanningForm, FbfForm, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, RangedMeasurement(..), SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
+import Measurement.Utils exposing (bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, measurementConstraints, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nutritionFollowUpFormWithDefault, outOfRangeAsEntered, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault)
 import Pages.Utils
     exposing
         ( concatInputsAndTasksSections
+        , dropLeadingMinus
         , isTaskCompleted
         , maybeToBoolTask
+        , muacUnitTransIdForSite
+        , setMuacValueForSite
         , taskCompleted
         , tasksBarId
         , viewBoolInput
@@ -106,7 +109,7 @@ viewChild language currentDate site isChw ( childId, child ) activity measuremen
             viewPhoto language (mapMeasurementData .photo measurements) model.photo
 
         Height ->
-            viewHeight language currentDate isChw child (mapMeasurementData .height measurements) previousValuesSet.height zscores model
+            viewHeight site language currentDate isChw child (mapMeasurementData .height measurements) previousValuesSet.height zscores model
 
         Muac ->
             viewMuac site language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
@@ -117,7 +120,7 @@ viewChild language currentDate site isChw ( childId, child ) activity measuremen
         -- Counseling ->
         --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
         Weight ->
-            viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousValuesSet.weight zscores model
+            viewWeight site language currentDate isChw child (mapMeasurementData .weight measurements) previousValuesSet.weight zscores model
 
         ContributingFactors ->
             viewContributingFactors language (mapMeasurementData .contributingFactors measurements) model.contributingFactorsForm
@@ -145,7 +148,11 @@ type alias FloatFormConfig id value =
     , zScoreLabelForAge : TranslationId
     , zScoreForAge : Maybe (ZScore.Model.Model -> Days -> Gender -> Float -> Maybe ZScore)
     , zScoreForHeightOrLength : Maybe (ZScore.Model.Model -> Days -> Centimetres -> Gender -> Float -> Maybe ZScore)
-    , constraints : FloatInputConstraints
+
+    -- Which measurement this form takes. The range it has to fall in follows
+    -- from it, and is said in one place so that the range the form states, the
+    -- range it enforces and the range the warning quotes cannot come apart.
+    , measurement : RangedMeasurement
     , unit : TranslationId
     , inputValue : ModelChild -> String
     , toBackendValue : String -> Maybe Float
@@ -164,7 +171,7 @@ heightFormConfig =
     , zScoreLabelForAge = Translate.ZScoreHeightForAge
     , zScoreForAge = Just <| \model age gender height -> zScoreLengthHeightForAge model age gender (Centimetres height)
     , zScoreForHeightOrLength = Nothing
-    , constraints = getInputConstraintsHeight
+    , measurement = MeasurementHeight
     , unit = Translate.UnitCentimeter
     , inputValue = .height
     , toBackendValue = String.toFloat
@@ -178,19 +185,11 @@ heightFormConfig =
 muacFormConfig : Site -> FloatFormConfig MuacId Muac
 muacFormConfig site =
     let
-        ( toBackendValue, unit ) =
-            case site of
-                SiteBurundi ->
-                    ( -- At Burundi, value is entered as mm, but we need to store it
-                      -- as cm. Therefore, we multiply by 0.1.
-                      String.toFloat >> Maybe.map ((*) 0.1 >> Round.roundNum 1)
-                    , Translate.UnitMillimeter
-                    )
+        toBackendValue =
+            setMuacValueForSite site
 
-                _ ->
-                    ( String.toFloat
-                    , Translate.UnitCentimeter
-                    )
+        unit =
+            muacUnitTransIdForSite site
     in
     { blockName = "muac"
     , activity = ChildActivity Muac
@@ -198,7 +197,7 @@ muacFormConfig site =
     , zScoreLabelForAge = Translate.ZScoreMuacForAge
     , zScoreForAge = Nothing
     , zScoreForHeightOrLength = Nothing
-    , constraints = getInputConstraintsMuac site
+    , measurement = MeasurementMuac
     , unit = unit
     , inputValue = .muac
     , toBackendValue = toBackendValue
@@ -217,7 +216,7 @@ weightFormConfig =
     , zScoreLabelForAge = Translate.ZScoreWeightForAge
     , zScoreForAge = Just <| \model age gender weight -> zScoreWeightForAge model age gender (Kilograms weight)
     , zScoreForHeightOrLength = Just zScoreForHeightOrLength
-    , constraints = getInputConstraintsWeight
+    , measurement = MeasurementWeight
     , unit = Translate.KilogramShorthand
     , inputValue = .weight
     , toBackendValue = String.toFloat
@@ -237,24 +236,30 @@ zScoreForHeightOrLength model (Days days) (Centimetres cm) gender weight =
         zScoreWeightForHeight model (ZScore.Model.Height cm) gender (Kilograms weight)
 
 
-viewHeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewHeight =
-    viewFloatForm heightFormConfig
+viewHeight : Site -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewHeight site =
+    viewFloatForm site heightFormConfig
 
 
-viewWeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewWeight =
-    viewFloatForm weightFormConfig
+viewWeight : Site -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewWeight site =
+    viewFloatForm site weightFormConfig
 
 
 viewMuac : Site -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewMuac site =
-    viewFloatForm (muacFormConfig site)
+    viewFloatForm site (muacFormConfig site)
 
 
-viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewFloatForm config language currentDate isChw child measurements previousValue zscores model =
+viewFloatForm : Site -> FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewFloatForm site config language currentDate isChw child measurements previousValue zscores model =
     let
+        -- The range this measurement has to fall in. Taken once, so that the
+        -- range the form states, the range it enforces and the range the
+        -- warning quotes cannot come apart.
+        constraints =
+            measurementConstraints site config.measurement
+
         -- What is the string input value from the form?
         inputValue =
             config.inputValue model
@@ -269,9 +274,9 @@ viewFloatForm config language currentDate isChw child measurements previousValue
             [ type_ "number"
             , placeholder <| translate language config.placeholderText
             , name config.blockName
-            , Attr.min <| String.fromFloat config.constraints.minVal
-            , Attr.max <| String.fromFloat config.constraints.maxVal
-            , onInput config.updateMsg
+            , Attr.min <| String.fromFloat constraints.minVal
+            , Attr.max <| String.fromFloat constraints.maxVal
+            , onInput (dropLeadingMinus >> config.updateMsg)
             , value inputValue
             ]
 
@@ -382,11 +387,15 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         saveMsg =
             Maybe.Extra.andThen2
                 (\asFloat forBackend ->
-                    if not <| withinConstraints config.constraints asFloat then
-                        Nothing
+                    case outOfRangeAsEntered constraints config.measurement asFloat of
+                        [] ->
+                            config.saveMsg (Maybe.map Tuple.first measurements.current) forBackend |> Just
 
-                    else
-                        config.saveMsg (Maybe.map Tuple.first measurements.current) forBackend |> Just
+                        outOfRange ->
+                            -- The button answers, and says what is wrong. What
+                            -- does not parse leaves it with nothing to do, as
+                            -- before: this form has no task count to say so.
+                            Just <| SetMeasurementOutOfRangePopupState outOfRange
                 )
                 inputAsFloat
                 backendValue
@@ -399,7 +408,7 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                 [ text <| translate language (Translate.ActivitiesTitle config.activity)
                 ]
             , p [ class "activity-helper" ] [ text <| translate language (Translate.ActivitiesHelp config.activity) ]
-            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper config.constraints) ]
+            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
             , div
                 [ class "ui form" ]
                 [ div [ class "ui grid" ]
@@ -433,6 +442,16 @@ viewFloatForm config language currentDate isChw child measurements previousValue
             ]
         , div [ class "actions" ] <|
             saveButton language saveMsg measurements
+        , viewModal <|
+            if List.isEmpty model.measurementOutOfRangePopupState then
+                Nothing
+
+            else
+                Just <|
+                    measurementOutOfRangePopup language
+                        site
+                        model.measurementOutOfRangePopupState
+                        (SetMeasurementOutOfRangePopupState [])
         ]
 
 
@@ -2400,16 +2419,24 @@ viewNCDAContent :
     -> Person
     -> NCDAContentConfig msg
     -> Maybe NCDASign
+    -> Bool
     -> NCDAForm
     -> ModelIndexedDb
     -> List (Html msg)
-viewNCDAContent language currentDate site personId person config helperState form db =
+viewNCDAContent language currentDate site personId person config helperState showMeasurementOutOfRangePopup form db =
     let
         steps =
             resolveNCDASteps currentDate person config.ncdaNeverFilled config.atHealthCenter
 
         currentStep =
             Maybe.Extra.or form.step (List.head steps)
+
+        measurementsOutOfRange =
+            ncdaMeasurementsOutOfRange site
+                steps
+                config.pregnancySummary
+                (ncdaMuacAsked currentDate person)
+                form
 
         viewTask step =
             let
@@ -2511,8 +2538,27 @@ viewNCDAContent language currentDate site personId person config helperState for
             Maybe.map
                 (\step ->
                     let
-                        actionButton =
-                            Pages.Utils.saveButton language (tasksCompleted == totalTasks)
+                        actionButton msg =
+                            -- The weight is asked on the first step but saved
+                            -- on the last one, so this button is stopped on
+                            -- every step, not only where it saves. The step
+                            -- tabs and the Back button still move between
+                            -- steps; what they cannot do is save, since the
+                            -- save is only reached through this button.
+                            Pages.Utils.saveButton language
+                                (tasksCompleted == totalTasks)
+                                (case List.head measurementsOutOfRange of
+                                    Just ( _, stepAsking ) ->
+                                        -- Open on the step that asks for it: the
+                                        -- button is stopped on every step, so what
+                                        -- the warning names is often asked on
+                                        -- another one, and the nurse is left to
+                                        -- go looking for it.
+                                        config.setMeasurementOutOfRangePopupMsg <| Just stepAsking
+
+                                    Nothing ->
+                                        msg
+                                )
                     in
                     if config.showTasksTray then
                         let
@@ -2580,6 +2626,20 @@ viewNCDAContent language currentDate site personId person config helperState for
                 )
                 currentStep
                 |> Maybe.withDefault ( emptyNode, emptyNode )
+
+        outOfRangeWarning =
+            if showMeasurementOutOfRangePopup then
+                Just <|
+                    measurementOutOfRangePopup language
+                        site
+                        (List.map Tuple.first measurementsOutOfRange)
+                        (config.setMeasurementOutOfRangePopupMsg Nothing)
+
+            else
+                Nothing
+
+        helperDialog =
+            viewNCDAHelperDialog language (config.setHelperStateMsg Nothing) helperState
     in
     [ header
     , viewTasksCount language tasksCompleted totalTasks
@@ -2588,8 +2648,10 @@ viewNCDAContent language currentDate site personId person config helperState for
             [ div [ class "ui form ncda" ] viewForm ]
         , actions
         ]
-    , viewModal <|
-        viewNCDAHelperDialog language (config.setHelperStateMsg Nothing) helperState
+
+    -- One at a time, and the warning wins: it answers what the nurse just
+    -- pressed, while the dialog only explains a question.
+    , viewModal <| Maybe.Extra.or outOfRangeWarning helperDialog
     ]
 
 
@@ -3224,7 +3286,7 @@ ncdaFormInputsAndTasks language currentDate site personId person config form cur
 
                         notTakenCheckbox =
                             [ div
-                                [ class "ui checkbox activity skip-step"
+                                [ class "ui checkbox activity skip-step stunting-level"
                                 , onClick <| config.setBoolInputMsg measurementNotTakenUpdateFunc measurementNotTakenValueWhenChecked
                                 ]
                                 [ input
@@ -3278,7 +3340,7 @@ ncdaFormInputsAndTasks language currentDate site personId person config form cur
 
                         notTakenCheckbox =
                             [ div
-                                [ class "ui checkbox activity skip-step"
+                                [ class "ui checkbox activity skip-step weight"
                                 , onClick <| config.setBoolInputMsg measurementNotTakenUpdateFunc measurementNotTakenValueWhenChecked
                                 ]
                                 [ input
@@ -3301,76 +3363,75 @@ ncdaFormInputsAndTasks language currentDate site personId person config form cur
                     )
 
                 ( muacInput, muacTask ) =
-                    ageInMonths currentDate person
-                        |> Maybe.map
-                            (\ageMonths ->
-                                if ageMonths >= 6 then
-                                    let
-                                        measurementNotTakenChecked =
-                                            form.muacNotTaken == Just True
+                    if ncdaMuacAsked currentDate person then
+                        let
+                            measurementNotTakenChecked =
+                                form.muacNotTaken == Just True
 
-                                        measurementNotTakenUpdateFunc value form_ =
-                                            { form_ | muacNotTaken = Just value, muac = Nothing }
+                            measurementNotTakenUpdateFunc value form_ =
+                                { form_ | muacNotTaken = Just value, muac = Nothing }
 
-                                        measurementNotTakenValueWhenChecked =
-                                            Maybe.map not form.muacNotTaken
-                                                |> Maybe.withDefault True
+                            measurementNotTakenValueWhenChecked =
+                                Maybe.map not form.muacNotTaken
+                                    |> Maybe.withDefault True
 
-                                        inputSection =
-                                            if measurementNotTakenChecked then
-                                                []
-
-                                            else
-                                                let
-                                                    muacAsFloat =
-                                                        Maybe.map (\(MuacInCm muac) -> muac)
-                                                            form.muac
-                                                in
-                                                [ div [ class "ui grid" ]
-                                                    [ div [ class "eleven wide column" ]
-                                                        [ viewMeasurementInput
-                                                            language
-                                                            muacAsFloat
-                                                            config.setMuacMsg
-                                                            "muac"
-                                                            Translate.UnitCentimeter
-                                                        ]
-                                                    , div
-                                                        [ class "five wide column" ]
-                                                        [ showMaybe <|
-                                                            Maybe.map (muacIndicationForChild >> viewColorAlertIndication language) form.muac
-                                                        ]
-                                                    ]
-                                                ]
-
-                                        notTakenCheckbox =
-                                            [ div
-                                                [ class "ui checkbox activity skip-step"
-                                                , onClick <| config.setBoolInputMsg measurementNotTakenUpdateFunc measurementNotTakenValueWhenChecked
-                                                ]
-                                                [ input
-                                                    [ type_ "checkbox"
-                                                    , checked measurementNotTakenChecked
-                                                    , classList [ ( "checked", measurementNotTakenChecked ) ]
-                                                    ]
-                                                    []
-                                                , label [] [ text <| translate language Translate.MeasurementNotTaken ]
-                                                ]
-                                            ]
-                                    in
-                                    ( viewLabel language Translate.MUAC :: inputSection ++ notTakenCheckbox
-                                    , [ if measurementNotTakenChecked then
-                                            form.muacNotTaken
-
-                                        else
-                                            maybeToBoolTask form.muac
-                                      ]
-                                    )
+                            inputSection =
+                                if measurementNotTakenChecked then
+                                    []
 
                                 else
-                                    ( [], [] )
-                            )
-                        |> Maybe.withDefault ( [], [] )
+                                    let
+                                        muacAsFloat =
+                                            -- MUAC is stored in cm; show it in mm at Burundi.
+                                            Maybe.map (\(MuacInCm muac) -> muacValueForSite site muac)
+                                                form.muac
+
+                                        unitTransId =
+                                            muacUnitTransIdForSite site
+                                    in
+                                    [ div [ class "ui grid" ]
+                                        [ div [ class "eleven wide column" ]
+                                            [ viewMeasurementInput
+                                                language
+                                                muacAsFloat
+                                                config.setMuacMsg
+                                                "muac"
+                                                unitTransId
+                                            ]
+                                        , div
+                                            [ class "five wide column" ]
+                                            [ showMaybe <|
+                                                Maybe.map (muacIndicationForChild >> viewColorAlertIndication language) form.muac
+                                            ]
+                                        ]
+                                    ]
+
+                            notTakenCheckbox =
+                                [ div
+                                    [ class "ui checkbox activity skip-step muac"
+                                    , onClick <| config.setBoolInputMsg measurementNotTakenUpdateFunc measurementNotTakenValueWhenChecked
+                                    ]
+                                    [ input
+                                        [ type_ "checkbox"
+                                        , checked measurementNotTakenChecked
+                                        , classList [ ( "checked", measurementNotTakenChecked ) ]
+                                        ]
+                                        []
+                                    , label [] [ text <| translate language Translate.MeasurementNotTaken ]
+                                    ]
+                                ]
+                        in
+                        ( viewLabel language Translate.MUAC :: inputSection ++ notTakenCheckbox
+                        , [ if measurementNotTakenChecked then
+                                form.muacNotTaken
+
+                            else
+                                maybeToBoolTask form.muac
+                          ]
+                        )
+
+                    else
+                        ( [], [] )
 
                 ( edemaInput, edemaTask ) =
                     inputsAndTasksForSign ShowsEdemaSigns
@@ -3617,16 +3678,76 @@ ancVisitsInpustAndTasks language personId person config form db =
         |> Maybe.withDefault ( [], [] )
 
 
-showNCDAQuestionsByNewbornExam : Maybe PregnancySummaryValue -> Bool
-showNCDAQuestionsByNewbornExam newbornExamPregnancySummary =
-    -- Verify that NCDA related questions were not answered at Neborn exam.
-    -- This can happen, because needed questions were added after
-    -- Newborn exam was launched, so, it could have been filled
-    -- without them.
-    -- It's enough to check if one of the questions was answered,
-    -- because both answereds are required to save the form.
-    Maybe.map (.birthWeight >> isNothing) newbornExamPregnancySummary
-        |> Maybe.withDefault True
+{-| Shown when measurements outside the range they can take would be carried
+forward: on saving a form, and on leaving a step of one that is filled in
+several. Closing it leaves the form as it was, so they can be entered again;
+nothing is saved and no step is left behind until they are in range.
+
+Takes every measurement that is wrong, not just the first: a form can ask for
+several behind one button, and being told about them one save at a time would be
+tiresome.
+
+-}
+measurementOutOfRangePopup : Language -> Site -> List RangedMeasurement -> msg -> Html msg
+measurementOutOfRangePopup language site measurements closeMsg =
+    Pages.Utils.customPopup language
+        True
+        Translate.Close
+        ("warning-popup measurement-out-of-range "
+            ++ String.join " " (List.map measurementOutOfRangeClass measurements)
+        )
+        ( div [ class "popup-action" ] <|
+            List.map
+                (\measurement ->
+                    p []
+                        [ text <| translate language <| Translate.MeasurementOutOfRangeWarning site measurement
+                        , text " "
+
+                        -- Said the way the range is said elsewhere in the app,
+                        -- which is already translated.
+                        , text <|
+                            translate language <|
+                                Translate.AllowedValuesRangeHelper (measurementConstraints site measurement)
+                        ]
+                )
+                measurements
+        , emptyNode
+        , closeMsg
+        )
+
+
+{-| Names the measurement on the popup, so that a test can tell which one it is
+about.
+-}
+measurementOutOfRangeClass : RangedMeasurement -> String
+measurementOutOfRangeClass measurement =
+    case measurement of
+        MeasurementApgarFiveMinutes ->
+            "apgar-five-minutes-out-of-range"
+
+        MeasurementApgarOneMinute ->
+            "apgar-one-minute-out-of-range"
+
+        MeasurementBirthLength ->
+            "birth-length-out-of-range"
+
+        MeasurementBirthWeight ->
+            "birth-weight-out-of-range"
+
+        MeasurementBloodGlucose ->
+            "blood-glucose-out-of-range"
+
+        MeasurementFundalHeight ->
+            "fundal-height-out-of-range"
+
+        MeasurementHeight ->
+            "height-out-of-range"
+
+        MeasurementMuac ->
+            "muac-out-of-range"
+
+        MeasurementWeight ->
+            "weight-out-of-range"
 
 
 birthWeightInputsAndTasks : Language -> Maybe WeightInGrm -> (String -> msg) -> ( List (Html msg), List (Maybe Bool) )
@@ -3634,8 +3755,8 @@ birthWeightInputsAndTasks language birthWeight setBirthWeightMsg =
     let
         colorAlertIndication =
             Maybe.map
-                (\weight ->
-                    if weight < 2500 then
+                (\bornUnderweight ->
+                    if bornUnderweight then
                         div
                             [ class "four wide column" ]
                             [ viewColorAlertIndication language ColorAlertRed ]
@@ -3643,7 +3764,7 @@ birthWeightInputsAndTasks language birthWeight setBirthWeightMsg =
                     else
                         emptyNode
                 )
-                birthWeightAsFloat
+                (bornUnderweightByBirthWeight birthWeight)
 
         birthWeightAsFloat =
             Maybe.map (\(WeightInGrm weight) -> weight)
@@ -3768,6 +3889,7 @@ viewNCDA language currentDate site childId child measurement data db =
             , setMuacMsg = SetMuac
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
+            , setMeasurementOutOfRangePopupMsg = SetMeasurementOutOfRangePopup
             , saveMsg =
                 toNCDAValueWithDefault saved data.form
                     |> Maybe.map (SaveNCDA existingId)
@@ -3782,6 +3904,7 @@ viewNCDA language currentDate site childId child measurement data db =
         child
         config
         data.helperState
+        data.showMeasurementOutOfRangePopup
         form
         db
         |> div [ class "form-content ncda" ]
@@ -4313,17 +4436,12 @@ muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg
         activity =
             Backend.NutritionActivity.Model.Muac
 
-        ( currentValue, unitTransId ) =
-            case site of
-                SiteBurundi ->
-                    ( -- Value is stored in cm, but for Burundi, we need to
-                      -- view it as mm. Therefore, multiplying by 10.
-                      Maybe.map ((*) 10) form.muac
-                    , Translate.UnitMillimeter
-                    )
+        currentValue =
+            -- MUAC is stored in cm; muacValueForSite shows it in mm at Burundi.
+            Maybe.map (muacValueForSite site) form.muac
 
-                _ ->
-                    ( form.muac, Translate.UnitCentimeter )
+        unitTransId =
+            muacUnitTransIdForSite site
 
         rangeHelper =
             if showRangeHelper then

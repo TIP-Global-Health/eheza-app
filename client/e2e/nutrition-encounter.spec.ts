@@ -90,52 +90,65 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
     expect(nodes.ncda, 'ncda node should exist').toBe(true);
   });
 
-  test('measurement validation rejects out-of-range values', async ({
+  // Scenario: each measurement is entered outside the range it can take, at
+  // both ends, and the nurse is told which one is wrong rather than being left
+  // with a Save button that does not answer (#1980).
+  test('an out-of-range measurement is refused with a warning that names it', async ({
     page,
   }) => {
     await createChildAndStartEncounter(page, { ageMonths: 24 });
 
-    const saveBtn = page.locator('button.ui.fluid.primary.button');
+    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
 
-    // --- Height validation ---
+    /** Enters a value that is out of range and checks what the nurse is told. */
+    const refuses = async (id: string, value: string, named: string) => {
+      await page
+        .locator(`.form-input.measurement.${id} input[type="number"]`)
+        .fill(value);
+      await page.waitForTimeout(WAIT.formInteraction);
+
+      // The button answers now; what refuses the value is the warning.
+      await expect(saveBtn, `save should answer for ${id} ${value}`).toHaveClass(/active/);
+      await click(saveBtn, page);
+
+      const popup = page.locator('div.ui.active.modal.measurement-out-of-range');
+      await popup.waitFor({ timeout: 10000 });
+      await expect(popup, `the warning should name the ${id}`).toHaveClass(
+        new RegExp(`(^| )${named}( |$)`),
+      );
+
+      // Still on the form, so nothing out of range was saved.
+      await expect(page.locator(`.form-input.measurement.${id}`).first()).toBeVisible();
+
+      await click(popup.locator('button.ui.primary.fluid.button'), page);
+      await popup.waitFor({ state: 'hidden', timeout: 10000 });
+      await page.waitForTimeout(WAIT.formInteraction);
+    };
+
+    // --- Height: 25 to 250 cm ---
     await enterHeight(page, '10');
-    await expect(saveBtn, 'save should be disabled for height 10 cm (too low)').toHaveClass(/disabled/);
-
-    await page
-      .locator('.form-input.measurement.height input[type="number"]')
-      .fill('260');
-    await expect(saveBtn, 'save should be disabled for height 260 cm (too high)').toHaveClass(/disabled/);
-
+    await refuses('height', '10', 'height-out-of-range');
+    await refuses('height', '260', 'height-out-of-range');
     await page
       .locator('.form-input.measurement.height input[type="number"]')
       .fill('85');
     await expect(saveBtn, 'save should be enabled for valid height 85 cm').toHaveClass(/active/);
     await saveActivity(page);
 
-    // --- Weight validation ---
+    // --- Weight: 0.5 to 200 kg ---
     await enterWeight(page, '0.1');
-    await expect(saveBtn, 'save should be disabled for weight 0.1 kg (too low)').toHaveClass(/disabled/);
-
-    await page
-      .locator('.form-input.measurement.weight input[type="number"]')
-      .fill('250');
-    await expect(saveBtn, 'save should be disabled for weight 250 kg (too high)').toHaveClass(/disabled/);
-
+    await refuses('weight', '0.1', 'weight-out-of-range');
+    await refuses('weight', '250', 'weight-out-of-range');
     await page
       .locator('.form-input.measurement.weight input[type="number"]')
       .fill('12');
     await expect(saveBtn, 'save should be enabled for valid weight 12 kg').toHaveClass(/active/);
     await saveActivity(page);
 
-    // --- MUAC validation ---
+    // --- MUAC: 5 to 99, in the unit the site asks for ---
     await enterMuac(page, '3');
-    await expect(saveBtn, 'save should be disabled for MUAC 3 cm (too low)').toHaveClass(/disabled/);
-
-    await page
-      .locator('.form-input.measurement.muac input[type="number"]')
-      .fill('100');
-    await expect(saveBtn, 'save should be disabled for MUAC 100 cm (too high)').toHaveClass(/disabled/);
-
+    await refuses('muac', '3', 'muac-out-of-range');
+    await refuses('muac', '100', 'muac-out-of-range');
     await page
       .locator('.form-input.measurement.muac input[type="number"]')
       .fill('14');

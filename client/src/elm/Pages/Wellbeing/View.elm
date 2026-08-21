@@ -12,11 +12,11 @@ import Time
 import Translate exposing (Language, translate, translateText)
 
 
-view : Language -> Time.Posix -> Nurse -> Html Msg
-view language currentTime nurse =
+view : Language -> Time.Zone -> Time.Posix -> Nurse -> Html Msg
+view language zone currentTime nurse =
     let
         currentDate =
-            fromLocalDateTime currentTime
+            fromLocalDateTime zone currentTime
 
         numberOfUnreadMessages =
             resolveNumberOfUnreadMessages currentTime currentDate nurse

@@ -90,6 +90,23 @@ rules =
             [ "src/elm/LocalConfig.Example.elm"
             , "src/elm/Config.Deploy.elm"
             , "src/elm/App/Model.elm"
+
+            -- Diagnosis predicates exposed only for the unit tests in
+            -- Pages/AcuteIllness/Activity/Test.elm. elm-review treats test
+            -- modules as unreachable, so their usages don't count here.
+            , "src/elm/Pages/AcuteIllness/Activity/Utils.elm"
+
+            -- Pre-pregnancy BMI classifiers exposed only for the unit tests in
+            -- Pages/Prenatal/Activity/Test.elm (same reason).
+            , "src/elm/Pages/Prenatal/Activity/Utils.elm"
+
+            -- NCD blood-pressure staging conditions exposed only for the unit
+            -- tests in Pages/NCD/Test.elm (same reason).
+            , "src/elm/Pages/NCD/Utils.elm"
+
+            -- Underweight z-score classifiers exposed only for the unit tests
+            -- in Backend/NutritionEncounter/Test.elm (same reason).
+            , "src/elm/Backend/NutritionEncounter/Utils.elm"
             ]
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule

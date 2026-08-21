@@ -1,0 +1,639 @@
+<?php
+
+/**
+ * @file
+ * Tests for the patient-merge (consolidation) flow.
+ */
+
+/**
+ * HedleyPatientConsolidation.
+ *
+ * Exercises how merging a duplicate patient into an original moves the
+ * duplicate's content onto the original.
+ */
+class HedleyPatientConsolidation extends HedleyWebTestBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp([
+      'hedley_patient',
+      'hedley_person',
+    ]);
+
+    // The merge helpers live in the drush include.
+    module_load_include('inc', 'hedley_patient', 'hedley_patient.drush');
+  }
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyPatientConsolidation tests',
+      'description' => 'Tests the patient-merge (consolidation) flow.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * Creates a bare person node.
+   *
+   * @param string $name
+   *   The first name, for readable failures.
+   * @param array $shards
+   *   Optional; health center node IDs to assign as the person's shards.
+   *
+   * @return int
+   *   The person node ID.
+   */
+  protected function createPerson($name, array $shards = []) {
+    $node = $this->drupalCreateNode(['type' => 'person']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_first_name->set($name);
+    // field_second_name is required on the person bundle. node_save() does not
+    // enforce that (Drupal 7 skips field validation on programmatic save), but
+    // set it anyway so the person gets a proper title, as createMother does.
+    $wrapper->field_second_name->set('Test');
+    if (!empty($shards)) {
+      $wrapper->field_shards->set($shards);
+    }
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * The shard (health center) node IDs assigned to a node.
+   *
+   * @param int $nid
+   *   The node ID.
+   *
+   * @return array
+   *   Sorted shard node IDs.
+   */
+  protected function shardsOf($nid) {
+    $shards = entity_metadata_wrapper('node', node_load($nid, NULL, TRUE))
+      ->field_shards->value(['identifier' => TRUE]);
+    $shards = empty($shards) ? [] : $shards;
+    sort($shards);
+
+    return $shards;
+  }
+
+  /**
+   * The live relationships a person takes part in, as person:by:related_to.
+   *
+   * @param int $person_id
+   *   The person node ID.
+   *
+   * @return array
+   *   Sorted triples describing each live relationship.
+   */
+  protected function relationshipTriples($person_id) {
+    $triples = [];
+    foreach (_hedley_patient_relationships_for_person($person_id) as $id) {
+      $wrapper = entity_metadata_wrapper('node', $id);
+      $triples[] = implode(':', [
+        $wrapper->field_person->getIdentifier(),
+        $wrapper->field_related_by->value(),
+        $wrapper->field_related_to->getIdentifier(),
+      ]);
+    }
+    sort($triples);
+
+    return $triples;
+  }
+
+  /**
+   * Creates an education session with the given attendees.
+   *
+   * @param array $participants
+   *   Person node IDs attending the session.
+   *
+   * @return int
+   *   The education session node ID.
+   */
+  protected function createEducationSession(array $participants) {
+    $node = $this->drupalCreateNode(['type' => 'education_session']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $scheduled = date('Y-m-d', strtotime('-2 days'));
+    $wrapper->field_scheduled_date->set([
+      'value' => $scheduled,
+      'value2' => $scheduled,
+    ]);
+    $wrapper->field_education_topics->set(['malaria']);
+    $wrapper->field_participating_patients->set($participants);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * The sorted attendee node IDs of an education session.
+   *
+   * @param int $session_id
+   *   The education session node ID.
+   *
+   * @return array
+   *   Sorted person node IDs.
+   */
+  protected function sessionAttendees($session_id) {
+    $ids = entity_metadata_wrapper('node', node_load($session_id, NULL, TRUE))
+      ->field_participating_patients->value(['identifier' => TRUE]);
+    $ids = empty($ids) ? [] : $ids;
+    sort($ids);
+
+    return $ids;
+  }
+
+  /**
+   * Creates a pregnancy participant for a parent and its newborn.
+   *
+   * @param int $parent
+   *   The parent's person node ID.
+   * @param int $newborn
+   *   The newborn's person node ID.
+   *
+   * @return int
+   *   The individual_participant node ID.
+   */
+  protected function createPregnancyParticipant($parent, $newborn) {
+    $node = $this->drupalCreateNode(['type' => 'individual_participant']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($parent);
+    $wrapper->field_encounter_type->set('antenatal');
+    $wrapper->field_newborn->set($newborn);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * The person a participant names as its newborn.
+   *
+   * @param int $participant_id
+   *   The individual_participant node ID.
+   *
+   * @return int|null
+   *   The newborn person node ID, or NULL.
+   */
+  protected function participantNewborn($participant_id) {
+    return entity_metadata_wrapper('node', node_load($participant_id, NULL, TRUE))
+      ->field_newborn->getIdentifier();
+  }
+
+  /**
+   * Creates a WhatsApp record about a person.
+   *
+   * @param int $person
+   *   The person the shared report is about.
+   *
+   * @return int
+   *   The whatsapp_record node ID.
+   */
+  protected function createWhatsAppRecord($person) {
+    $node = $this->drupalCreateNode(['type' => 'whatsapp_record']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    // Everything the bundle marks required, so the fixture is a record that
+    // could exist rather than one that only survives because Drupal 7 skips
+    // field validation on a programmatic save.
+    $wrapper->field_person->set($person);
+    $wrapper->field_date_measured->set(REQUEST_TIME);
+    $wrapper->field_phone_number->set('250780000000');
+    $wrapper->field_report_type->set('antenatal');
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Creates a trace contact, reported by one person about another.
+   *
+   * @param int $reporter
+   *   The person who reported the contact, held in field_person.
+   * @param int $referred
+   *   The person who was contacted, held in field_referred_person.
+   *
+   * @return int
+   *   The acute_illness_trace_contact node ID.
+   */
+  protected function createTraceContact($reporter, $referred) {
+    $node = $this->drupalCreateNode(['type' => 'acute_illness_trace_contact']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($reporter);
+    $wrapper->field_referred_person->set($referred);
+    $wrapper->field_date_measured->set(REQUEST_TIME);
+    // The bundle also marks field_acute_illness_encounter and field_nurse
+    // required, and both are left out on purpose. Without an encounter the
+    // contact is not discoverable as a measurement of the reporter, which is
+    // the state under test: field_referred_person has to be re-pointed by the
+    // new helper rather than swept up with the reporter's measurements.
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Whether a node is still live, that is not marked deleted.
+   *
+   * @param int $nid
+   *   The node ID.
+   *
+   * @return bool
+   *   TRUE when field_deleted is not set.
+   */
+  protected function isLive($nid) {
+    $deleted = entity_metadata_wrapper('node', node_load($nid, NULL, TRUE))
+      ->field_deleted->value();
+
+    return empty($deleted);
+  }
+
+  /**
+   * The person a node names through a single-value person reference.
+   *
+   * @param int $nid
+   *   The node ID.
+   * @param string $field
+   *   The field name, for example 'field_referred_person'.
+   *
+   * @return int|null
+   *   The person node ID, or NULL.
+   */
+  protected function personNamedBy($nid, $field) {
+    return entity_metadata_wrapper('node', node_load($nid, NULL, TRUE))
+      ->{$field}->getIdentifier();
+  }
+
+  /**
+   * Merging a duplicate transfers the content that references it.
+   *
+   * Covers the non-measurement links the merge has to move by hand:
+   * relationships (cases 1-6), education-session attendance (cases 7-9), the
+   * pregnancy->newborn link (cases 10-11), WhatsApp records (cases 12-13), the
+   * second person reference on a trace contact (cases 14-15) and the adult who
+   * brings a child to a group (cases 16-18). All cases
+   * operate on disjoint people, so bundling them under one test method keeps
+   * the hedley-profile install (~5 min in CI) paid once.
+   */
+  public function testContentIsTransferredOnMerge() {
+    // 1. A duplicate child's link to its mother moves to the original child.
+    $mother = $this->createPerson('Mother');
+    $originalChild = $this->createPerson('OriginalChild');
+    $duplicateChild = $this->createPerson('DuplicateChild');
+    $this->createRelationship($mother, $duplicateChild, 'parent');
+
+    _consolidate_patient_relationships($originalChild, $duplicateChild);
+
+    $this->assertEqual(
+      $this->relationshipTriples($originalChild),
+      [implode(':', [$mother, 'parent', $originalChild])],
+      'The mother link is transferred to the original child.'
+    );
+
+    // 2. When the original already holds the same link, it is not duplicated.
+    $mother = $this->createPerson('Mother2');
+    $originalChild = $this->createPerson('OriginalChild2');
+    $duplicateChild = $this->createPerson('DuplicateChild2');
+    $this->createRelationship($mother, $originalChild, 'parent');
+    $this->createRelationship($mother, $duplicateChild, 'parent');
+
+    _consolidate_patient_relationships($originalChild, $duplicateChild);
+
+    $this->assertEqual(
+      $this->relationshipTriples($originalChild),
+      [implode(':', [$mother, 'parent', $originalChild])],
+      'A relationship the original already holds is not duplicated.'
+    );
+
+    // 3. A relationship between the two merged patients is dropped, not turned
+    // into the original pointing at itself.
+    $originalChild = $this->createPerson('OriginalChild3');
+    $duplicateChild = $this->createPerson('DuplicateChild3');
+    $this->createRelationship($originalChild, $duplicateChild, 'caregiver');
+
+    _consolidate_patient_relationships($originalChild, $duplicateChild);
+
+    $this->assertEqual(
+      $this->relationshipTriples($originalChild),
+      [],
+      'A relationship between the two patients being merged is dropped.'
+    );
+
+    // 4. When the duplicate is the adult, its link to a child moves too.
+    $originalMother = $this->createPerson('OriginalMother4');
+    $duplicateMother = $this->createPerson('DuplicateMother4');
+    $child = $this->createPerson('Child4');
+    $this->createRelationship($duplicateMother, $child, 'parent');
+
+    _consolidate_patient_relationships($originalMother, $duplicateMother);
+
+    $this->assertEqual(
+      $this->relationshipTriples($originalMother),
+      [implode(':', [$originalMother, 'parent', $child])],
+      'The duplicate adult\'s link to a child is transferred.'
+    );
+
+    // 5. The re-pointed relationship picks up the original's shards, so it
+    // reaches the original's devices. The duplicate's shards would otherwise
+    // stick, hiding the link on any health center the original has but the
+    // duplicate did not.
+    $hc1 = $this->createHealthCenter();
+    $hc2 = $this->createHealthCenter();
+    $mother = $this->createPerson('Mother5', [$hc1]);
+    $originalChild = $this->createPerson('OriginalChild5', [$hc1, $hc2]);
+    $duplicateChild = $this->createPerson('DuplicateChild5', [$hc1]);
+    $this->createRelationship($mother, $duplicateChild, 'parent');
+
+    _consolidate_patient_relationships($originalChild, $duplicateChild);
+
+    $originalChildRelationships = _hedley_patient_relationships_for_person($originalChild);
+    $relationshipId = reset($originalChildRelationships);
+    $expectedShards = array_values(array_unique(array_merge($this->shardsOf($mother), $this->shardsOf($originalChild))));
+    sort($expectedShards);
+    $this->assertEqual(
+      $this->shardsOf($relationshipId),
+      $expectedShards,
+      'The re-pointed relationship carries the union of the mother and original shards.'
+    );
+    $this->assertTrue(
+      in_array($hc2, $this->shardsOf($relationshipId)),
+      'The relationship reaches the health center only the original belonged to.'
+    );
+
+    // 6. Through the full merge path, the relationship is re-pointed BEFORE the
+    // duplicate is deleted, so the person-delete cascade cannot destroy it.
+    // This guards the ordering in _consolidate_patients_execute(): move the
+    // re-point after the field_deleted save and this fails.
+    $mother = $this->createPerson('Mother6');
+    $original = $this->createPerson('Original6');
+    $duplicate = $this->createPerson('Duplicate6');
+    $this->createRelationship($mother, $duplicate, 'parent');
+
+    _consolidate_patients_execute($original, $duplicate);
+
+    $this->assertEqual(
+      $this->relationshipTriples($original),
+      [implode(':', [$mother, 'parent', $original])],
+      'The full merge transfers the relationship instead of letting the cascade delete it.'
+    );
+
+    // 7. A duplicate's education-session attendance moves to the original, so
+    // the session no longer lists a person who was merged away.
+    $original = $this->createPerson('Original7');
+    $duplicate = $this->createPerson('Duplicate7');
+    $other = $this->createPerson('Other7');
+    $session = $this->createEducationSession([$duplicate, $other]);
+
+    _consolidate_patient_education_sessions($original, $duplicate);
+
+    $expected = [$original, $other];
+    sort($expected);
+    $this->assertEqual(
+      $this->sessionAttendees($session),
+      $expected,
+      'The duplicate is replaced by the original in the session attendees.'
+    );
+
+    // 8. When both attended the same session, the original is not listed twice.
+    $original = $this->createPerson('Original8');
+    $duplicate = $this->createPerson('Duplicate8');
+    $other = $this->createPerson('Other8');
+    $session = $this->createEducationSession([$original, $duplicate, $other]);
+
+    _consolidate_patient_education_sessions($original, $duplicate);
+
+    $expected = [$original, $other];
+    sort($expected);
+    $this->assertEqual(
+      $this->sessionAttendees($session),
+      $expected,
+      'A session both attended lists the original once, not twice.'
+    );
+
+    // 9. Through the full merge path, the session is re-pointed before the
+    // duplicate is deleted, so the session never keeps a merged-away attendee.
+    $original = $this->createPerson('Original9');
+    $duplicate = $this->createPerson('Duplicate9');
+    $session = $this->createEducationSession([$duplicate]);
+
+    _consolidate_patients_execute($original, $duplicate);
+
+    $this->assertEqual(
+      $this->sessionAttendees($session),
+      [$original],
+      'The full merge re-points the session attendee to the original.'
+    );
+
+    // 10. When the duplicate is a newborn, the parent's pregnancy participant
+    // is re-pointed at the original child.
+    $parent = $this->createPerson('Parent10');
+    $originalChild = $this->createPerson('OriginalChild10');
+    $duplicateChild = $this->createPerson('DuplicateChild10');
+    $participant = $this->createPregnancyParticipant($parent, $duplicateChild);
+
+    _consolidate_patient_newborn_references($originalChild, $duplicateChild);
+
+    $this->assertEqual(
+      $this->participantNewborn($participant),
+      $originalChild,
+      'The pregnancy participant names the original child as its newborn.'
+    );
+
+    // 11. The same through the full merge path.
+    $parent = $this->createPerson('Parent11');
+    $originalChild = $this->createPerson('OriginalChild11');
+    $duplicateChild = $this->createPerson('DuplicateChild11');
+    $participant = $this->createPregnancyParticipant($parent, $duplicateChild);
+
+    _consolidate_patients_execute($originalChild, $duplicateChild);
+
+    $this->assertEqual(
+      $this->participantNewborn($participant),
+      $originalChild,
+      'The full merge re-points the pregnancy participant to the original child.'
+    );
+
+    // 12. A WhatsApp record about the duplicate names the original instead.
+    $original = $this->createPerson('Original12');
+    $duplicate = $this->createPerson('Duplicate12');
+    $record = $this->createWhatsAppRecord($duplicate);
+
+    _consolidate_patient_whatsapp_records($original, $duplicate);
+
+    $this->assertEqual(
+      $this->personNamedBy($record, 'field_person'),
+      $original,
+      'The WhatsApp record is about the original.'
+    );
+
+    // 13. The same through the full merge path, which is what proves the
+    // re-point happens before the duplicate is marked deleted.
+    $original = $this->createPerson('Original13');
+    $duplicate = $this->createPerson('Duplicate13');
+    $record = $this->createWhatsAppRecord($duplicate);
+
+    _consolidate_patients_execute($original, $duplicate);
+
+    $this->assertEqual(
+      $this->personNamedBy($record, 'field_person'),
+      $original,
+      'The full merge re-points the WhatsApp record to the original.'
+    );
+
+    // 14. A trace contact referring to the duplicate refers to the original.
+    // The reporter is a third person, which is the real shape: the duplicate is
+    // the person who was contacted, not the one who reported it.
+    $reporter = $this->createPerson('Reporter14');
+    $original = $this->createPerson('Original14');
+    $duplicate = $this->createPerson('Duplicate14');
+    $contact = $this->createTraceContact($reporter, $duplicate);
+
+    _consolidate_patient_trace_contact_referrals($original, $duplicate);
+
+    $this->assertEqual(
+      $this->personNamedBy($contact, 'field_referred_person'),
+      $original,
+      'The trace contact refers to the original.'
+    );
+    $this->assertEqual(
+      $this->personNamedBy($contact, 'field_person'),
+      $reporter,
+      'The person who reported the contact is left alone.'
+    );
+
+    // 15. The same through the full merge path.
+    $reporter = $this->createPerson('Reporter15');
+    $original = $this->createPerson('Original15');
+    $duplicate = $this->createPerson('Duplicate15');
+    $contact = $this->createTraceContact($reporter, $duplicate);
+
+    _consolidate_patients_execute($original, $duplicate);
+
+    $this->assertEqual(
+      $this->personNamedBy($contact, 'field_referred_person'),
+      $original,
+      'The full merge re-points the trace contact to the original.'
+    );
+
+    // 16. When the duplicate is the adult who brings a child to a group, the
+    // participation moves to the original. Without this the cascade would
+    // soft-delete it, and the child would lose an enrolment because someone
+    // else was merged.
+    $clinic = $this->createClinic();
+    $child = $this->createPerson('Child16');
+    $original = $this->createPerson('Original16');
+    $duplicate = $this->createPerson('Duplicate16');
+    $participation = $this->createPMTCT($child, $duplicate, $clinic);
+
+    _consolidate_patients_execute($original, $duplicate);
+
+    $this->assertTrue(
+      $this->isLive($participation),
+      'The group participation survives the merge.'
+    );
+    $this->assertEqual(
+      $this->personNamedBy($participation, 'field_adult'),
+      $original,
+      'The original is now the adult who brings the child.'
+    );
+    $this->assertEqual(
+      $this->personNamedBy($participation, 'field_person'),
+      $child,
+      'The enrolled child is left alone.'
+    );
+
+    // 17. A participation the original already holds for the same child and
+    // group is dropped rather than duplicated.
+    $clinic = $this->createClinic();
+    $child = $this->createPerson('Child17');
+    $original = $this->createPerson('Original17');
+    $duplicate = $this->createPerson('Duplicate17');
+    $kept = $this->createPMTCT($child, $original, $clinic);
+    $redundant = $this->createPMTCT($child, $duplicate, $clinic);
+
+    _consolidate_patient_group_participations($original, $duplicate);
+
+    $this->assertTrue($this->isLive($kept), 'The original keeps its own participation.');
+    $this->assertFalse(
+      $this->isLive($redundant),
+      'The duplicate participation for the same child and group is dropped.'
+    );
+
+    // 18. A participation where the original is the enrolled child is dropped,
+    // rather than making the original its own adult.
+    $clinic = $this->createClinic();
+    $original = $this->createPerson('Original18');
+    $duplicate = $this->createPerson('Duplicate18');
+    $selfReferential = $this->createPMTCT($original, $duplicate, $clinic);
+
+    _consolidate_patient_group_participations($original, $duplicate);
+
+    $this->assertFalse(
+      $this->isLive($selfReferential),
+      'A participation naming the original on both sides is dropped.'
+    );
+  }
+
+  /**
+   * A two-person linking record keeps the union of both persons' shards.
+   *
+   * A relationship or pmtct_participant links two people, so its shards must be
+   * the union of both. hedley_patient_recalculate_shards_for_person_content()
+   * propagates one person's shards to their content, and must keep the union
+   * for these records. Otherwise the record drops off a health center that
+   * only the other person belongs to.
+   */
+  public function testLinkingRecordShardsSurviveRecalculation() {
+    $hc1 = $this->createHealthCenter();
+    $hc2 = $this->createHealthCenter();
+
+    // The adult syncs to one health center; the child to two.
+    $adult = $this->createPerson('AdultB057', [$hc1]);
+    $child = $this->createPerson('ChildB057', [$hc1, $hc2]);
+
+    // The relationship presave assigns the union of both persons' shards.
+    $relationship = $this->createRelationship($adult, $child, 'parent');
+
+    $union = [$hc1, $hc2];
+    sort($union);
+    $this->assertEqual(
+      $this->shardsOf($relationship),
+      $union,
+      'The relationship starts with the union of both persons\' shards.'
+    );
+
+    // Recalculating the adult's content must not reset the relationship to the
+    // adult's shards alone, which would drop the child-only health center.
+    hedley_patient_recalculate_shards_for_person_content($adult);
+    $this->assertEqual(
+      $this->shardsOf($relationship),
+      $union,
+      'Recalculating the adult keeps the child-only shard on the relationship.'
+    );
+
+    // Recalculating the child's content likewise leaves the union intact.
+    hedley_patient_recalculate_shards_for_person_content($child);
+    $this->assertEqual(
+      $this->shardsOf($relationship),
+      $union,
+      'Recalculating the child keeps the union on the relationship.'
+    );
+
+    // A person can own content that is not sharded at all. A whatsapp_record
+    // names its person with field_person, so the recalculation finds it, but
+    // the bundle has no field_shards instance - asking a wrapper for one
+    // throws, and takes the person save that triggered this down with it.
+    $shared = $this->createPerson('SharedAboutB057', [$hc1]);
+    $record = $this->drupalCreateNode(['type' => 'whatsapp_record']);
+    $wrapper = entity_metadata_wrapper('node', $record);
+    $wrapper->field_person->set($shared);
+    $wrapper->save();
+
+    hedley_patient_recalculate_shards_for_person_content($shared);
+    $this->pass('Recalculating a person who has a WhatsApp record does not throw.');
+  }
+
+}

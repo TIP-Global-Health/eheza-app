@@ -29,7 +29,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (LabResultsData, Model, Msg(..))
 import Pages.Prenatal.RecurrentActivity.Utils exposing (toHealthEducationValueWithDefault)
 import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, referralFormWithDefault, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault)
-import Pages.Utils exposing (nonAdministrationReasonToSign, setMultiSelectInputValue)
+import Pages.Utils exposing (nonAdministrationReasonToSign, saveMeasurementMsgs, setMultiSelectInputValue)
 import RemoteData
 
 
@@ -63,6 +63,9 @@ update id isLabTech db msg model =
         generateNextStepsMsgs nextTask =
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
+
+        toIndexedDbMsg =
+            Backend.Model.MsgPrenatalEncounter id >> App.Model.MsgIndexedDb
     in
     case msg of
         NoOp ->
@@ -76,6 +79,14 @@ update id isLabTech db msg model =
 
         SetAlertsDialogState value ->
             ( { model | showAlertsDialog = value }, Cmd.none, [] )
+
+        SetMeasurementOutOfRangePopupState state ->
+            let
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | measurementOutOfRangePopupState = state })
+            in
+            ( { model | labResultsData = updatedData }, Cmd.none, [] )
 
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
@@ -212,31 +223,15 @@ update id isLabTech db msg model =
             )
 
         SaveSyphilisResult personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    toSyphilisResultValueWithDefault isLabTech measurement model.labResultsData.syphilisTestForm
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveSyphilisTest personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs (toSyphilisResultValueWithDefault isLabTech)
+                model.labResultsData.syphilisTestForm
+                saved
+                (Backend.PrenatalEncounter.Model.SaveSyphilisTest personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) (generateLabResultsMsgs nextTask)
 
         SetHepatitisBTestFormBoolInput formUpdateFunc value ->
             let
@@ -290,31 +285,15 @@ update id isLabTech db msg model =
             )
 
         SaveHepatitisBResult personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    toHepatitisBResultValueWithDefault measurement model.labResultsData.hepatitisBTestForm
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toHepatitisBResultValueWithDefault
+                model.labResultsData.hepatitisBTestForm
+                saved
+                (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) (generateLabResultsMsgs nextTask)
 
         SetBloodGpRsTestFormBoolInput formUpdateFunc value ->
             let
@@ -385,31 +364,15 @@ update id isLabTech db msg model =
             )
 
         SaveBloodGpRsResult personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    toBloodGpRsResultValueWithDefault measurement model.labResultsData.bloodGpRsTestForm
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveBloodGpRsTest personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toBloodGpRsResultValueWithDefault
+                model.labResultsData.bloodGpRsTestForm
+                saved
+                (Backend.PrenatalEncounter.Model.SaveBloodGpRsTest personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) (generateLabResultsMsgs nextTask)
 
         SetUrineDipstickTestFormBoolInput formUpdateFunc value ->
             let
@@ -599,31 +562,15 @@ update id isLabTech db msg model =
             )
 
         SaveUrineDipstickResult personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    toUrineDipstickResultValueWithDefault measurement model.labResultsData.urineDipstickTestForm
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveUrineDipstickTest personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toUrineDipstickResultValueWithDefault
+                model.labResultsData.urineDipstickTestForm
+                saved
+                (Backend.PrenatalEncounter.Model.SaveUrineDipstickTest personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) (generateLabResultsMsgs nextTask)
 
         SetHemoglobinTestFormBoolInput formUpdateFunc value ->
             let
@@ -665,7 +612,7 @@ update id isLabTech db msg model =
                     model.labResultsData.hemoglobinTestForm
 
                 updatedForm =
-                    { form | hemoglobinCount = String.toFloat value }
+                    { form | hemoglobinCount = String.toFloat value, hemoglobinCountDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -677,31 +624,15 @@ update id isLabTech db msg model =
             )
 
         SaveHemoglobinResult personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    toHemoglobinResultValueWithDefault measurement model.labResultsData.hemoglobinTestForm
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveHemoglobinTest personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toHemoglobinResultValueWithDefault
+                model.labResultsData.hemoglobinTestForm
+                saved
+                (Backend.PrenatalEncounter.Model.SaveHemoglobinTest personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) (generateLabResultsMsgs nextTask)
 
         SetRandomBloodSugarTestFormBoolInput formUpdateFunc value ->
             let
@@ -743,7 +674,7 @@ update id isLabTech db msg model =
                     model.labResultsData.randomBloodSugarTestForm
 
                 updatedForm =
-                    { form | sugarCount = String.toFloat value }
+                    { form | sugarCount = String.toFloat value, sugarCountDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -754,32 +685,39 @@ update id isLabTech db msg model =
             , []
             )
 
-        SaveRandomBloodSugarResult personId saved nextTask ->
+        PreSaveRandomBloodSugarResult personId saved nextTask ->
             let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
+                form =
                     getMeasurementValueFunc saved
+                        |> Measurement.Utils.randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
+
+                -- A lab tech is shown the reading only once they confirm
+                -- the test was run, which is the condition the form uses.
+                inputShown =
+                    not isLabTech || form.runConfirmedByLabTech == Just True
 
                 extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    toRandomBloodSugarResultValueWithDefault measurement model.labResultsData.randomBloodSugarTestForm
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
+                    Measurement.Utils.bloodGlucoseSaveMsgs inputShown
+                        form.sugarCount
+                        (SaveRandomBloodSugarResult personId saved nextTask)
+                        SetMeasurementOutOfRangePopupState
             in
             ( model
             , Cmd.none
-            , appMsgs
+            , []
             )
                 |> sequenceExtra (update id isLabTech db) extraMsgs
+
+        SaveRandomBloodSugarResult personId saved nextTask ->
+            ( model
+            , Cmd.none
+            , saveMeasurementMsgs toRandomBloodSugarResultValueWithDefault
+                model.labResultsData.randomBloodSugarTestForm
+                saved
+                (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId)
+                toIndexedDbMsg
+            )
+                |> sequenceExtra (update id isLabTech db) (generateLabResultsMsgs nextTask)
 
         SetHIVPCRTestFormBoolInput formUpdateFunc value ->
             let
@@ -845,7 +783,7 @@ update id isLabTech db msg model =
                     model.labResultsData.hivPCRTestForm
 
                 updatedForm =
-                    { form | hivViralLoad = String.toFloat value }
+                    { form | hivViralLoad = String.toFloat value, hivViralLoadDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -857,31 +795,15 @@ update id isLabTech db msg model =
             )
 
         SaveHIVPCRResult personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    toHIVPCRResultValueWithDefault measurement model.labResultsData.hivPCRTestForm
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toHIVPCRResultValueWithDefault
+                model.labResultsData.hivPCRTestForm
+                saved
+                (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) (generateLabResultsMsgs nextTask)
 
         SetHIVTestFormBoolInput formUpdateFunc value ->
             let
@@ -945,32 +867,15 @@ update id isLabTech db msg model =
             )
 
         SaveHIVResult personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    model.labResultsData.hivTestForm
-                        |> toHIVResultValueWithDefault isLabTech measurement
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveHIVTest personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs (toHIVResultValueWithDefault isLabTech)
+                model.labResultsData.hivTestForm
+                saved
+                (Backend.PrenatalEncounter.Model.SaveHIVTest personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) (generateLabResultsMsgs nextTask)
 
         SetPartnerHIVTestFormBoolInput formUpdateFunc value ->
             let
@@ -1024,32 +929,15 @@ update id isLabTech db msg model =
             )
 
         SavePartnerHIVResult personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    model.labResultsData.partnerHIVTestForm
-                        |> toPartnerHIVResultValueWithDefault isLabTech measurement
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SavePartnerHIVTest personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs (toPartnerHIVResultValueWithDefault isLabTech)
+                model.labResultsData.partnerHIVTestForm
+                saved
+                (Backend.PrenatalEncounter.Model.SavePartnerHIVTest personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) (generateLabResultsMsgs nextTask)
 
         SetMalariaTestFormBoolInput formUpdateFunc value ->
             let
@@ -1120,32 +1008,15 @@ update id isLabTech db msg model =
             )
 
         SaveMalariaResult personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLabResultsMsgs nextTask
-
-                appMsgs =
-                    model.labResultsData.malariaTestForm
-                        |> toMalariaResultValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveMalariaTest personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toMalariaResultValueWithDefault
+                model.labResultsData.malariaTestForm
+                saved
+                (Backend.PrenatalEncounter.Model.SaveMalariaTest personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) (generateLabResultsMsgs nextTask)
 
         SetActiveNextStepsTask task ->
             let
@@ -1214,32 +1085,15 @@ update id isLabTech db msg model =
             )
 
         SaveSendToHC personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    model.nextStepsData.referralForm
-                        |> toPrenatalReferralValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveSendToHC personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toPrenatalReferralValueWithDefault
+                model.nextStepsData.referralForm
+                saved
+                (Backend.PrenatalEncounter.Model.SaveSendToHC personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) (generateNextStepsMsgs nextTask)
 
         SetMedicationDistributionBoolInput formUpdateFunc value ->
             let
@@ -1312,32 +1166,15 @@ update id isLabTech db msg model =
             )
 
         SaveMedicationDistribution personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    model.nextStepsData.medicationDistributionForm
-                        |> toMedicationDistributionValueWithDefaultRecurrentPhase measurement
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveMedicationDistribution personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toMedicationDistributionValueWithDefaultRecurrentPhase
+                model.nextStepsData.medicationDistributionForm
+                saved
+                (Backend.PrenatalEncounter.Model.SaveMedicationDistribution personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) (generateNextStepsMsgs nextTask)
 
         SetHealthEducationBoolInput formUpdateFunc value ->
             let
@@ -1354,32 +1191,15 @@ update id isLabTech db msg model =
             )
 
         SaveHealthEducation personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    model.nextStepsData.healthEducationForm
-                        |> toHealthEducationValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.PrenatalEncounter.Model.SaveHealthEducation personId measurementId
-                                >> Backend.Model.MsgPrenatalEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toHealthEducationValueWithDefault
+                model.nextStepsData.healthEducationForm
+                saved
+                (Backend.PrenatalEncounter.Model.SaveHealthEducation personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) (generateNextStepsMsgs nextTask)
 
         SetMalariaPreventionBoolInput formUpdateFunc value ->
             let
@@ -1749,7 +1569,7 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
                     data.hemoglobinTestForm
 
                 updatedForm =
-                    { form | hemoglobinCount = String.toFloat value }
+                    { form | hemoglobinCount = String.toFloat value, hemoglobinCountDirty = True }
             in
             ( { data | hemoglobinTestForm = updatedForm }
             , Cmd.none
@@ -1786,12 +1606,38 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
                     data.randomBloodSugarTestForm
 
                 updatedForm =
-                    { form | sugarCount = String.toFloat value }
+                    { form | sugarCount = String.toFloat value, sugarCountDirty = True }
             in
             ( { data | randomBloodSugarTestForm = updatedForm }
             , Cmd.none
             , []
             )
+
+        SetMeasurementOutOfRangePopupState state ->
+            ( { data | measurementOutOfRangePopupState = state }, Cmd.none, [] )
+
+        PreSaveRandomBloodSugarResult personId saved nextTask ->
+            let
+                form =
+                    getMeasurementValueFunc saved
+                        |> Measurement.Utils.randomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
+
+                -- A lab tech is shown the reading only once they confirm
+                -- the test was run, which is the condition the form uses.
+                inputShown =
+                    not isLabTech || form.runConfirmedByLabTech == Just True
+
+                nextMsgs =
+                    Measurement.Utils.bloodGlucoseSaveMsgs inputShown
+                        form.sugarCount
+                        (SaveRandomBloodSugarResult personId saved nextTask)
+                        SetMeasurementOutOfRangePopupState
+            in
+            ( data
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) nextMsgs
 
         SaveRandomBloodSugarResult personId saved _ ->
             let
@@ -1846,7 +1692,7 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
                     data.hivPCRTestForm
 
                 updatedForm =
-                    { form | hivViralLoad = String.toFloat value }
+                    { form | hivViralLoad = String.toFloat value, hivViralLoadDirty = True }
             in
             ( { data | hivPCRTestForm = updatedForm }
             , Cmd.none
@@ -1877,6 +1723,178 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
             )
                 |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
 
-        -- Other messages are not related to Labs History, and will not be sent.
+        SetHIVTestResult value ->
+            let
+                form =
+                    data.hivTestForm
+
+                updatedForm =
+                    { form
+                        | testResult = testResultFromString value
+                        , hivProgramHC = Nothing
+                        , hivProgramHCDirty = True
+                        , partnerHIVPositive = Nothing
+                        , partnerHIVPositiveDirty = True
+                        , partnerTakingARV = Nothing
+                        , partnerTakingARVDirty = True
+                        , partnerSurpressedViralLoad = Nothing
+                        , partnerSurpressedViralLoadDirty = True
+                    }
+            in
+            ( { data | hivTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    data.hivTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+            in
+            ( { data | hivTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveHIVResult personId saved _ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                form =
+                    data.hivTestForm
+
+                appMsgs =
+                    toHIVResultValueWithDefault isLabTech measurement form
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveHIVTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter labEncounterId
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( data
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
+
+        SetPartnerHIVTestResult value ->
+            let
+                form =
+                    data.partnerHIVTestForm
+
+                updatedForm =
+                    { form | testResult = testResultFromString value }
+            in
+            ( { data | partnerHIVTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetPartnerHIVTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    data.partnerHIVTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+            in
+            ( { data | partnerHIVTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SavePartnerHIVResult personId saved _ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                form =
+                    data.partnerHIVTestForm
+
+                appMsgs =
+                    toPartnerHIVResultValueWithDefault isLabTech measurement form
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SavePartnerHIVTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter labEncounterId
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( data
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
+
+        SetMalariaTestResult value ->
+            let
+                form =
+                    data.malariaTestForm
+
+                updatedForm =
+                    { form | testResult = testResultFromString value }
+            in
+            ( { data | malariaTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetBloodSmearResult value ->
+            let
+                form =
+                    data.malariaTestForm
+
+                updatedForm =
+                    { form | bloodSmearResult = bloodSmearResultFromString value }
+            in
+            ( { data | malariaTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveMalariaResult personId saved _ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                form =
+                    data.malariaTestForm
+
+                appMsgs =
+                    toMalariaResultValueWithDefault measurement form
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveMalariaTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter labEncounterId
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( data
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
+
+        -- Any other message is not related to Labs History. NOTE: every lab test
+        -- form rendered on this page MUST have its Set/Save branches handled above;
+        -- otherwise its input is silently dropped here (this is what broke
+        -- HIV/Partner-HIV/Malaria result entry until these branches were added).
         _ ->
             ( data, Cmd.none, [] )

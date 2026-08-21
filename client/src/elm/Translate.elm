@@ -1059,6 +1059,7 @@ type TranslationId
     | MastitisRecommendedTreatmentHeader Bool
     | MastitisRecommendedTreatmentHelper
     | MeasurementNotTaken
+    | MeasurementOutOfRangeWarning Site Measurement.Model.RangedMeasurement
     | MedicationCausingHypertension MedicationCausingHypertension
     | MedicationCausingHypertensionQuestion
     | MedicalCondition MedicalCondition
@@ -2097,6 +2098,8 @@ type TranslationId
     | StatusLabel
     | StopSyncing
     | StorageQuota { usage : Int, quota : Int }
+    | StorageQuotaAlmostFull
+    | StorageQuotaFull
     | SubmitPairingCode
     | Success
     | SyncGeneral
@@ -4047,7 +4050,7 @@ translationSet trans =
                 DefectNeuralTubes ->
                     { english = "Neural Tubes Defects"
                     , kinyarwanda = Just "Urutirigongo rudafunze neza"
-                    , kirundi = Nothing
+                    , kirundi = Just "Ubumuga bw'uruti rw'umugongo"
                     , somali = Just "Cudurka Dareen Sidaha Daadsan ee Laf Dhabrta"
                     }
 
@@ -4368,21 +4371,21 @@ translationSet trans =
         ByMouthDailyForXDays days ->
             { english = "by mouth daily x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "ku munsi / mu  minsi " ++ String.fromInt days
-            , kirundi = Just <| "Gucisha mu kanwa buri munsi mu iminsi " ++ String.fromInt days
+            , kirundi = Just <| "gucisha mu kanwa buri munsi mu iminsi " ++ String.fromInt days
             , somali = Just <| "Afka maalinki x " ++ String.fromInt days ++ " maalin"
             }
 
         ByMouthTwiceADayForXDays days ->
             { english = "by mouth twice per day x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
-            , kirundi = Just <| "Gucisha mu kanwa incuro 2 k'umunsi mu iminsi " ++ String.fromInt days
+            , kirundi = Just <| "gucisha mu kanwa incuro 2 k'umunsi mu iminsi " ++ String.fromInt days
             , somali = Just <| "afka laba jeer maalinki x " ++ String.fromInt days ++ " maalin"
             }
 
         ByMouthThreeTimesADayForXDays days ->
             { english = "by mouth three times per day x " ++ String.fromInt days ++ " days"
-            , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
-            , kirundi = Just "Kumira incuro 3 k'umunsi mu kiringo (Igitigiri) iminsi"
+            , kinyarwanda = Just <| "inshuro 3 ku munsi/ mu minsi " ++ String.fromInt days
+            , kirundi = Just <| "kumira incuro 3 k'umunsi mu iminsi " ++ String.fromInt days
             , somali = Just <| "afka 3 jeer maalinki x " ++ String.fromInt days ++ " maalin"
             }
 
@@ -4614,7 +4617,7 @@ translationSet trans =
         ChildCleanQuestion ->
             { english = "Is the sick child clean"
             , kinyarwanda = Just "Ese umwana urwaye afite isuku"
-            , kirundi = Just "Mbega umwana arwaye arafise isuku"
+            , kirundi = Just "Mbega umwana arafise isuku"
             , somali = Just "Canuga xanuunsan nadaafad ma leeyahay"
             }
 
@@ -5740,7 +5743,7 @@ translationSet trans =
         DeliveryComplicationsPresentQuestion ->
             { english = "Were there any complications with the delivery"
             , kinyarwanda = Just "Haba hari ibibazo umubyeyi yagize abyara"
-            , kirundi = Just "Hoba hari ingorane zijanye no kuvyara, zijanye no gutanga"
+            , kirundi = Just " Hoba hari ingorane zijanye no kuvyara"
             , somali = Just "Ma jireen wax dhibaatooyin ah oo la xiriira dhalmada"
             }
 
@@ -6265,7 +6268,7 @@ translationSet trans =
 
                 UseMediumPhrases ->
                     { english = "Does the child use 4-5 word sentences"
-                    , kinyarwanda = Just "Umwana ashobora gukora interuro zigizwe n'amagambo 2 kugera kuri 4"
+                    , kinyarwanda = Just "Umwana ashobora gukora interuro zigizwe n'amagambo 4 kugera kuri 5"
                     , kirundi = Just "Mbega umwana arakoresha amungane 4-5"
                     , somali = Nothing
                     }
@@ -7163,7 +7166,7 @@ translationSet trans =
         FeelingBetter ->
             { english = "Feeling Better"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Yagize mitende"
             , somali = Nothing
             }
 
@@ -9178,7 +9181,7 @@ translationSet trans =
                     if isChw then
                         { english = "Select Well Child Visit"
                         , kinyarwanda = Just "Hitamo Isura ku buzima bwiza bw'umwana"
-                        , kirundi = Nothing
+                        , kirundi = Just "Emeza kugendera urugo rufise umwana"
                         , somali = Just "Dooro Booqashada Canuga Fayow"
                         }
 
@@ -11503,7 +11506,7 @@ translationSet trans =
 
         Low ->
             { english = "Low"
-            , kinyarwanda = Just "Kwemeza amakosa"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Just "Hoose"
             }
@@ -12071,6 +12074,80 @@ translationSet trans =
             , somali = Just "Lama awoodo in la qaado cabirka, ka bood qeybtan"
             }
 
+        MeasurementOutOfRangeWarning site measurement ->
+            case measurement of
+                Measurement.Model.MeasurementApgarFiveMinutes ->
+                    { english = "The Apgar score at five minutes is a score out of 10, not a measurement."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementApgarOneMinute ->
+                    { english = "The Apgar score at one minute is a score out of 10, not a measurement."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementBirthLength ->
+                    { english = "Birth length is recorded in centimetres."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementBirthWeight ->
+                    { english = "Birth weight is recorded in grams, not kilograms: a weight of 3 kilograms is entered as 3000."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementBloodGlucose ->
+                    { english = "Blood glucose is recorded in milligrams per decilitre, not millimoles per litre: a reading of 11.1 mmol/L is entered as 200."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementFundalHeight ->
+                    { english = "Fundal height is recorded in centimetres."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementHeight ->
+                    { english = "Height is recorded in centimetres."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementMuac ->
+                    case site of
+                        SiteBurundi ->
+                            { english = "MUAC is recorded in millimetres."
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            , somali = Nothing
+                            }
+
+                        _ ->
+                            { english = "MUAC is recorded in centimetres."
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            , somali = Nothing
+                            }
+
+                Measurement.Model.MeasurementWeight ->
+                    { english = "Weight is recorded in kilograms."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
         MedicationCausingHypertension medication ->
             case medication of
                 MedicationOestrogens ->
@@ -12381,7 +12458,7 @@ translationSet trans =
         MedicalHistory ->
             { english = "Medical History"
             , kinyarwanda = Just "Amateka y'uburwayi busanzwe"
-            , kirundi = Just "Akahise ko m'ubuvuzi"
+            , kirundi = Just "Kahise k'ubuvuzi"
             , somali = Just "Taariikhda Xanuunka"
             }
 
@@ -12578,7 +12655,7 @@ translationSet trans =
             { english = "Ciprofloxacin (1000mg): by mouth as a single dose"
             , kinyarwanda = Just "Kunywa ikinini cya Ciplofoloxacine (1000mg) inshuro imwe"
             , kirundi = Just "Ciprofloxacine (1000 mg) : Kumira igipimo kimwe/idozi imwe"
-            , somali = Just "Ciprofloxacin (100mg): afka hal doos "
+            , somali = Just "Ciprofloxacin (1000mg): afka hal doos "
             }
 
         MedicationDistributionNoticeGonorrheaPartnerMed2 ->
@@ -13208,7 +13285,7 @@ translationSet trans =
         NationalId ->
             { english = "National ID"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Karangamuntu"
             , somali = Just "Aqoonsiga Qaran"
             }
 
@@ -14969,7 +15046,7 @@ translationSet trans =
 
         NotFollowingRecommendationQuestion ->
             { english = "Why recommendations were not followed"
-            , kinyarwanda = Just "Nta bipimo byafashwe"
+            , kinyarwanda = Nothing
             , kirundi = Just "Kubera iki ivyifuzo bitakurikijwe"
             , somali = Just "Talooyinka maxaa loo raaci waayay"
             }
@@ -15288,7 +15365,7 @@ translationSet trans =
                 ReceiveSupplement ->
                     { english = "Did you receive food supplement"
                     , kinyarwanda = Just "Waba warahawe inyongeramirire"
-                    , kirundi = Just "Yaba yararonse ingaburo ibereye"
+                    , kirundi = Just "Mbega umwana yararonse ingaburo"
                     , somali = Nothing
                     }
 
@@ -15309,14 +15386,14 @@ translationSet trans =
                 SupplementShared ->
                     { english = "Is the food supplement being shared or eaten only by the sick child"
                     , kinyarwanda = Just "Ese inyongeramirire yaba ifatwa n'umwana urwaye gusa cyangwa yaba ayisangira n'abandi"
-                    , kirundi = Just "Za ngaburo wakuye kwa muganga uziha umwana arwaye wenyene canke azisangira n’abandi"
+                    , kirundi = Just "Za ngaburo wakuye kwa muganga uziha umwana wenyene canke azisangira n’abandi"
                     , somali = Just "Nafaqeeyaha ma cunay canuga xanuunsan kaligiis mise waa lala cunay"
                     }
 
                 EncouragedToEat ->
                     { english = "Does someone help / encourage the sick child to eat"
                     , kinyarwanda = Just "Hari umuntu waba afasha cyangwa ashishikariza umwana kurya"
-                    , kirundi = Just "Mbega hari uwufasha/uwuremesha umwana arwaye gufungura"
+                    , kirundi = Just "Mbega hari uwufasha/uwuremesha umwana gufungura"
                     , somali = Just "Qof maku caawiyaa / ku dhiiri geliyaa canuga xanuunsan inuu wax cuno"
                     }
 
@@ -15389,7 +15466,7 @@ translationSet trans =
                 FoodCovered ->
                     { english = "Is the food / RUTF covered and free from flies"
                     , kinyarwanda = Just "Ese ibiryo/RUTUFU birapfundikiye kandi nta sazi zibiriho"
-                    , kirundi = Just "Mbenga ibifungugwa - ATPE: Aliment Thérapeutique prêt à l'Emploi birapfutswe kandi birakingiwe insazi"
+                    , kirundi = Just "Mbega ibifungugwa - Ingaburo ibereye birapfutswe kandi birakingiwe insazi"
                     , somali = Just "Cunnada / RUTF mala daboolay, oo tixsigana malaga daboolay"
                     }
 
@@ -15425,7 +15502,7 @@ translationSet trans =
                 Rutf ->
                     { english = "RUTF"
                     , kinyarwanda = Just "RUTUFU"
-                    , kirundi = Just "ATPE: Aliment Thérapeutique prêt à l'Emploi"
+                    , kirundi = Just "Ingaburo ibereye"
                     , somali = Nothing
                     }
 
@@ -25129,7 +25206,7 @@ translationSet trans =
         SearchBy ->
             { english = "Search by"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Kurondera umuntu wifashisha"
             , somali = Nothing
             }
 
@@ -26456,6 +26533,20 @@ translationSet trans =
             , somali = Just <| "Keydka la adeegsaday " ++ String.fromInt (quota.usage // (1024 * 1024)) ++ " MB ga la heli karo " ++ String.fromInt (quota.quota // (1024 * 1024)) ++ " MB"
             }
 
+        StorageQuotaAlmostFull ->
+            { english = "Device storage is almost full. Sync now and free up space to avoid losing data."
+            , kinyarwanda = Just "Umwanya wo kubika ku gikoresho hafi kuzura. Huza amakuru ubu kandi ubone umwanya kugira ngo udatakaze amakuru."
+            , kirundi = Just "Ububiko bw'igikoresho buri hafi kuzura. Huza amakuru ubu kandi uronke umwanya kugira ngo ntutakaze amakuru."
+            , somali = Just "Keydka qalabku wuxuu ku dhow yahay inuu buuxo. Hadda Howl geli oo meel bannee si aadan u lumin xogta."
+            }
+
+        StorageQuotaFull ->
+            { english = "Device storage is full. New records may not be saved. Sync and free up space now."
+            , kinyarwanda = Just "Umwanya wo kubika ku gikoresho wuzuye. Amakuru mashya ashobora kutabikwa. Huza amakuru kandi ubone umwanya ubu."
+            , kirundi = Just "Ububiko bw'igikoresho bwuzuye. Amakuru mashasha ntashobora kubikwa. Huza amakuru kandi uronke umwanya ubu."
+            , somali = Just "Keydka qalabku waa buuxaa. Diiwaannada cusub laga yaabo inaan la keydin. Hadda Howl geli oo meel bannee."
+            }
+
         SubmitPairingCode ->
             { english = "Submit Pairing Code"
             , kinyarwanda = Just "Umubare uhuza igikoresho cy'ikoranabuhanga na apulikasiyo"
@@ -26495,7 +26586,7 @@ translationSet trans =
         TakenAsPrescribed ->
             { english = "Taken as prescribed"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Yafashe imiti nk'uko vyategetswe na muganga"
             , somali = Nothing
             }
 
@@ -26750,7 +26841,7 @@ translationSet trans =
 
             else if arvs then
                 { english = "At the previous visit you were given TDF + 3TC (1 tablet), to be taken by mouth 1x a day."
-                , kinyarwanda = Just "Mu isura riheruka wahawe ikinini cya Tenofoviri na Lamividine na Dulutogaraviri (50mg), ikinini kimwe ku munsi."
+                , kinyarwanda = Just "Mu isura riheruka wahawe ikinini cya Tenofoviri na Lamividine, ikinini kimwe ku munsi."
                 , kirundi = Just "Aho uherukira kuza, wahawe FTD + 3TC (ikinini 1), umuti/ikinini wo/co gufata (kumira) rimwe (1) ku munsi."
                 , somali = Nothing
                 }
@@ -27452,7 +27543,7 @@ translationSet trans =
         UnableToTakeMeasurement ->
             { english = "Unable to take measurement"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Ibipimo ntivyafashwe"
             , somali = Nothing
             }
 
@@ -30645,7 +30736,7 @@ translateMonth month short =
         Nov ->
             if short then
                 { english = "Nov"
-                , kinyarwanda = Just "Ukw"
+                , kinyarwanda = Just "Ugu"
                 , kirundi = Just "Muny"
                 , somali = Nothing
                 }
@@ -30924,7 +31015,7 @@ translateFormError error =
             translateValidationError e
 
 
-{-| This one is hampered by the fact that the field names in etaque/elm-form
+{-| This one is hampered by the fact that the field names in Gizra/elm-form
 are untyped strings, but we do our best.
 -}
 translateFormField : String -> TranslationSet String

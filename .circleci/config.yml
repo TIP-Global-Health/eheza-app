@@ -1,7 +1,6 @@
-version: 2
+version: 2.1
 
 workflows:
-  version: 2
   build:
     jobs:
       - lint_phpcs
@@ -9,6 +8,7 @@ workflows:
       - lint_elm_review
       - lint_shellcheck
       - test_zscore
+      - test_elm
       - test_simpletest_linux:
           requires:
             - lint_phpcs
@@ -72,6 +72,17 @@ jobs:
       - run:
           name: Run standalone Z-Score calculation tests
           command: php server/hedley/modules/custom/hedley_zscore/tests/run_zscore_tests.php
+  test_elm:
+    docker:
+      - image: cimg/node:18.20
+    environment:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    steps:
+      - checkout
+      - run:
+          name: Run Elm unit tests
+          command: ci-scripts/test_elm.sh
+          no_output_timeout: 5m
   test_simpletest_linux:
     machine:
       image: ubuntu-2204:current
@@ -89,12 +100,11 @@ jobs:
       - run:
           name: Free port 3000 for host-side serving
           command: rm -f .ddev/docker-compose.client-http.yaml
-      - run:
-          name: Install DDEV
-          command: ci-scripts/install_ddev.sh
-      - run:
-          name: Install Drupal
-          command: ci-scripts/install_drupal.sh
+      # Build the client (npm/bower/gulp/Elm) BEFORE starting DDEV. The Elm
+      # compile is memory-intensive; running it alongside the DDEV containers
+      # (MariaDB/PHP, heavy after the Drupal install) exhausted physical RAM,
+      # so the compile thrashed on swap, made no progress, and stalled past the
+      # no-output timeout. Compiling first gives Elm the full machine RAM.
       - run:
           name: Install and build client
           command: ci-scripts/install_client.sh
@@ -103,6 +113,12 @@ jobs:
           name: Verify Elm compiled
           command: |
             test -f client/serve/Main.js || (echo "Main.js not found - Elm compilation failed" && exit 1)
+      - run:
+          name: Install DDEV
+          command: ci-scripts/install_ddev.sh
+      - run:
+          name: Install Drupal
+          command: ci-scripts/install_drupal.sh
       - run:
           name: Install Playwright browsers
           command: cd client && DEBIAN_FRONTEND=noninteractive npx playwright install --with-deps chromium
@@ -124,10 +140,13 @@ jobs:
             exit 1
       - run:
           name: Run E2E tests
-          command: cd client && npx playwright test prenatal tuberculosis && npx playwright test --grep-invert "Well Child|NCD|HIV|Tuberculosis|Child Scoreboard|Prenatal|Family Nutrition|Group Nutrition|Group Education|Stock Management|Admin Reports|Bulk Photo Fetch"
+          command: cd client && export TZ=UTC && npx playwright test prenatal tuberculosis && npx playwright test --grep-invert "Well Child|NCD|HIV|Tuberculosis|Child Scoreboard|Prenatal|Family Nutrition|Group Nutrition|Group Education|Stock Management|Admin Reports|Bulk Photo Fetch"
           no_output_timeout: 15m
       - store_artifacts:
           path: client/test-results
+          # Screenshots are captured only on failure, so the default
+          # on_success would drop them exactly when they are needed.
+          when: always
           destination: playwright-results
   e2e_playwright_2:
     machine:
@@ -138,12 +157,11 @@ jobs:
       - run:
           name: Free port 3000 for host-side serving
           command: rm -f .ddev/docker-compose.client-http.yaml
-      - run:
-          name: Install DDEV
-          command: ci-scripts/install_ddev.sh
-      - run:
-          name: Install Drupal
-          command: ci-scripts/install_drupal.sh
+      # Build the client (npm/bower/gulp/Elm) BEFORE starting DDEV. The Elm
+      # compile is memory-intensive; running it alongside the DDEV containers
+      # (MariaDB/PHP, heavy after the Drupal install) exhausted physical RAM,
+      # so the compile thrashed on swap, made no progress, and stalled past the
+      # no-output timeout. Compiling first gives Elm the full machine RAM.
       - run:
           name: Install and build client
           command: ci-scripts/install_client.sh
@@ -152,6 +170,12 @@ jobs:
           name: Verify Elm compiled
           command: |
             test -f client/serve/Main.js || (echo "Main.js not found - Elm compilation failed" && exit 1)
+      - run:
+          name: Install DDEV
+          command: ci-scripts/install_ddev.sh
+      - run:
+          name: Install Drupal
+          command: ci-scripts/install_drupal.sh
       - run:
           name: Install Playwright browsers
           command: cd client && DEBIAN_FRONTEND=noninteractive npx playwright install --with-deps chromium
@@ -173,10 +197,13 @@ jobs:
             exit 1
       - run:
           name: Run E2E tests
-          command: cd client && npx playwright test well-child ncd hiv child-scoreboard family-nutrition group-session education-session stock-management sync-bulk-photos
+          command: cd client && export TZ=UTC && npx playwright test well-child ncd hiv child-scoreboard family-nutrition group-session education-session stock-management sync-bulk-photos
           no_output_timeout: 15m
       - store_artifacts:
           path: client/test-results
+          # Screenshots are captured only on failure, so the default
+          # on_success would drop them exactly when they are needed.
+          when: always
           destination: playwright-results
   e2e_reporting:
     machine:
@@ -187,12 +214,11 @@ jobs:
       - run:
           name: Free port 3000 for host-side serving
           command: rm -f .ddev/docker-compose.client-http.yaml
-      - run:
-          name: Install DDEV
-          command: ci-scripts/install_ddev.sh
-      - run:
-          name: Install Drupal
-          command: ci-scripts/install_drupal.sh
+      # Build the client (npm/bower/gulp/Elm) BEFORE starting DDEV. The Elm
+      # compile is memory-intensive; running it alongside the DDEV containers
+      # (MariaDB/PHP, heavy after the Drupal install) exhausted physical RAM,
+      # so the compile thrashed on swap, made no progress, and stalled past the
+      # no-output timeout. Compiling first gives Elm the full machine RAM.
       - run:
           name: Install and build client
           command: ci-scripts/install_client.sh
@@ -201,6 +227,12 @@ jobs:
           name: Verify Elm compiled
           command: |
             test -f client/serve/Main.js || (echo "Main.js not found - Elm compilation failed" && exit 1)
+      - run:
+          name: Install DDEV
+          command: ci-scripts/install_ddev.sh
+      - run:
+          name: Install Drupal
+          command: ci-scripts/install_drupal.sh
       - run:
           name: Install Playwright browsers
           command: cd client && DEBIAN_FRONTEND=noninteractive npx playwright install --with-deps chromium
@@ -222,8 +254,11 @@ jobs:
             exit 1
       - run:
           name: Run E2E reporting tests
-          command: cd client && npx playwright test reporting
+          command: cd client && export TZ=UTC && npx playwright test reporting
           no_output_timeout: 15m
       - store_artifacts:
           path: client/test-results
+          # Screenshots are captured only on failure, so the default
+          # on_success would drop them exactly when they are needed.
+          when: always
           destination: playwright-results

@@ -58,6 +58,7 @@ encodeDashboardStatsRaw stats =
     , encodeVillagesWithResidents stats.villagesWithResidents
     , encodePatientsDetails stats.patientsDetails
     , ( "timestamp", string stats.timestamp )
+    , ( "stats_generated_date", maybe encodeYYYYMMDD stats.statsGeneratedDate )
     , ( "stats_cache_hash", string stats.cacheHash )
     ]
 
@@ -419,7 +420,7 @@ encodeSPVEncounterDataItem item =
 
         zscoreUnderweight =
             Maybe.map (\value -> [ ( "zscore_underweight", float value ) ])
-                item.zscoreStunting
+                item.zscoreUnderweight
                 |> Maybe.withDefault []
 
         zscoreWasting =
@@ -507,7 +508,7 @@ encodeNutritionIndividualEncounterDataItem item =
 
         zscoreUnderweight =
             Maybe.map (\value -> [ ( "zscore_underweight", float value ) ])
-                item.zscoreStunting
+                item.zscoreUnderweight
                 |> Maybe.withDefault []
 
         zscoreWasting =
@@ -553,7 +554,7 @@ encodeNutritionGroupEncounterDataItem item =
 
         zscoreUnderweight =
             Maybe.map (\value -> [ ( "zscore_underweight", float value ) ])
-                item.zscoreStunting
+                item.zscoreUnderweight
                 |> Maybe.withDefault []
 
         zscoreWasting =

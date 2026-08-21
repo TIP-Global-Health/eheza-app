@@ -7,7 +7,7 @@ import {
 } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { WAIT, syncAndWait } from './helpers/common';
+import { WAIT, expectMeasurementsOutOfRangeRefused, syncAndWait } from './helpers/common';
 import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createChildAndStartEncounter,
@@ -62,12 +62,26 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
       isChw: true,
     });
 
-    // Weight: 12 kg
-    await enterWeight(page, '12');
+    // Weight: 850 kg first, which is a decimal in the wrong place. The warning
+    // names it and the form stays up, then 12 kg is recorded.
+    await enterWeight(page, '850');
+    await expectMeasurementsOutOfRangeRefused(
+      page,
+      '.form-input.measurement.weight',
+      [{ inputId: 'weight', popupClass: 'weight-out-of-range', bad: '850', good: '12' }],
+      ['height-out-of-range', 'muac-out-of-range'],
+    );
     await saveActivity(page);
 
-    // MUAC: 14 cm
-    await enterMuac(page, '14');
+    // MUAC: 125 first, which is millimetres typed where centimetres are asked
+    // for, then 14 cm is recorded.
+    await enterMuac(page, '125');
+    await expectMeasurementsOutOfRangeRefused(
+      page,
+      '.form-input.measurement.muac',
+      [{ inputId: 'muac', popupClass: 'muac-out-of-range', bad: '125', good: '14' }],
+      ['height-out-of-range', 'weight-out-of-range'],
+    );
     await saveActivity(page);
 
     // Nutrition signs: None

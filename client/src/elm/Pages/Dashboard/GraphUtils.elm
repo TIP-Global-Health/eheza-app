@@ -26,7 +26,7 @@ import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Color exposing (Color)
 import Pages.Dashboard.Model exposing (FeverCause(..), allFeverCauses)
 import Scale exposing (BandScale, ContinuousScale, defaultBandConfig)
-import Time exposing (Month)
+import Time exposing (Month(..))
 import TypedSvg exposing (g, line, rect)
 import TypedSvg.Attributes as Explicit
 import TypedSvg.Attributes.InPx exposing (height, rx, ry, strokeWidth, x, x1, x2, y, y1, y2)
@@ -114,7 +114,47 @@ yScale yScaleMax =
 
 xAxis : List ( Month, Nutrition ) -> Svg msg
 xAxis data =
-    Axis.bottom [] (Scale.toRenderable Debug.toString (xScale data))
+    Axis.bottom [] (Scale.toRenderable monthToString (xScale data))
+
+
+monthToString : Month -> String
+monthToString month =
+    case month of
+        Jan ->
+            "Jan"
+
+        Feb ->
+            "Feb"
+
+        Mar ->
+            "Mar"
+
+        Apr ->
+            "Apr"
+
+        May ->
+            "May"
+
+        Jun ->
+            "Jun"
+
+        Jul ->
+            "Jul"
+
+        Aug ->
+            "Aug"
+
+        Sep ->
+            "Sep"
+
+        Oct ->
+            "Oct"
+
+        Nov ->
+            "Nov"
+
+        Dec ->
+            "Dec"
 
 
 yAxis : Float -> Svg msg

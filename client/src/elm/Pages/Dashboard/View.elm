@@ -30,6 +30,7 @@ import Backend.Dashboard.Model
         )
 import Backend.Entities exposing (HealthCenterId, VillageId)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..))
+import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
@@ -47,7 +48,6 @@ import Backend.Utils
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
-import Debug exposing (toString)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, isDiffTruthy, toLastDayOfMonth)
@@ -59,7 +59,7 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Utils exposing (generateFutureVaccinationsData)
 import Pages.Dashboard.GraphUtils exposing (barChartHeight, barChartWidth, column, familyPlanningSignToColor, familyPlanningSignsColors, feverCauseToColor, feverCausesColors, gridXScale, gridYScale, padding, pieChartHeight, pieChartWidth, radius, xAxis, xGridLine, xScale, yAxis, yGridLine)
 import Pages.Dashboard.Model exposing (BeneficiariesTableLabels(..), CardValueSeverity(..), DashboardFilter(..), DashboardSubFilter(..), FamilyPlanningSignsCounter, FeverCause(..), FilterGender(..), FilterPeriod(..), FilterProgramType(..), FilterType(..), MalnorishedNutritionData, ModalState(..), Model, MonthlyChartType(..), Msg(..), StatsCard, caseManagementFilters, caseManagementSubFilters, filterGenders, filterPeriodsForStatsPage, maxMonthGap, monthlyChartFilters)
-import Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isNurseEncounter, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+import Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isNurseEncounter, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 import Pages.Page
     exposing
         ( AcuteIllnessSubPage(..)
@@ -74,6 +74,7 @@ import Pages.Prenatal.Utils exposing (preeclampsiaDiagnoses, severeAnemiaDiagnos
 import Pages.Utils
     exposing
         ( calculatePercentage
+        , percentageOfTotal
         , resolveSelectedDateForMonthSelector
         , viewCustomAction
         , viewCustomSelectListInput
@@ -352,16 +353,22 @@ viewStatsPage language currentDate stats model =
 
     else
         let
-            currentMonth =
-                Date.month currentDate
+            -- The monthly figures below are numbered by the month they were
+            -- computed in, so that is the month they are looked up by. The
+            -- records are filtered by their own dates, which are read against
+            -- today: filtering them from the month of computation would hide
+            -- the ones recorded after it.
+            statsMonth =
+                resolveStatsDate currentDate stats.statsGeneratedDate
+                    |> Date.month
                     |> Date.monthToNumber
 
             ( modelWithLastMonth, displayedMonth ) =
                 if model.period == ThisMonth then
-                    ( { model | period = LastMonth }, currentMonth )
+                    ( { model | period = LastMonth }, statsMonth )
 
                 else
-                    ( { model | period = ThreeMonthsAgo }, resolvePreviousMonth currentMonth )
+                    ( { model | period = ThreeMonthsAgo }, resolvePreviousMonth statsMonth )
 
             currentPeriodStats =
                 filterStatsWithinPeriod currentDate model.period stats
@@ -449,7 +456,8 @@ viewCaseManagementPage language currentDate stats patientsDetails model =
     else
         let
             currentMonth =
-                Date.month currentDate
+                resolveStatsDate currentDate stats.statsGeneratedDate
+                    |> Date.month
                     |> Date.monthToNumber
 
             tableDataUnsorted =
@@ -618,11 +626,27 @@ viewMonthCell ( month, cellData ) =
     let
         class =
             classList
-                [ ( String.toLower <| Debug.toString cellData.class, True )
+                [ ( nutritionStatusToClass cellData.class, True )
                 , ( String.fromInt month, True )
                 ]
     in
     td [ class ] [ span [] [ text cellData.value ] ]
+
+
+nutritionStatusToClass : Backend.Dashboard.Model.NutritionStatus -> String
+nutritionStatusToClass status =
+    case status of
+        Backend.Dashboard.Model.Good ->
+            "good"
+
+        Backend.Dashboard.Model.Moderate ->
+            "moderate"
+
+        Backend.Dashboard.Model.Neutral ->
+            "neutral"
+
+        Backend.Dashboard.Model.Severe ->
+            "severe"
 
 
 viewFiltersPane : Language -> DashboardPage -> ModelIndexedDb -> Model -> Html Msg
@@ -1197,6 +1221,11 @@ viewGastroPage language isChw dateLastDayOfSelectedMonth acuteIllnessData encoun
 viewNutritionChartsPage : Language -> NominalDate -> NutritionPageData -> Model -> List (Html Msg)
 viewNutritionChartsPage language currentDate data model =
     let
+        chartsMonth =
+            resolveStatsDate currentDate data.statsGeneratedDate
+                |> Date.month
+                |> Date.monthToNumber
+
         links =
             case model.programTypeFilter of
                 FilterProgramFbf ->
@@ -1215,10 +1244,10 @@ viewNutritionChartsPage language currentDate data model =
             [ viewTotalEncounters language data.totalEncounters
             ]
         , div [ class "sixteen wide column" ]
-            [ viewMonthlyChart language currentDate MonthlyChartTotals FilterBeneficiariesChart data.totalsGraphData model.currentBeneficiariesChartsFilter
+            [ viewMonthlyChart language chartsMonth MonthlyChartTotals FilterBeneficiariesChart data.totalsGraphData model.currentBeneficiariesChartsFilter
             ]
         , div [ class "sixteen wide column" ]
-            [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart data.newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
+            [ viewMonthlyChart language chartsMonth MonthlyChartIncidence FilterBeneficiariesIncidenceChart data.newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
             ]
         , links
         ]
@@ -1541,9 +1570,7 @@ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYe
                 |> List.sum
 
         percentageThisYear =
-            (toFloat goodThisYear / toFloat allThisYear)
-                * 100
-                |> round
+            percentageOfTotal goodThisYear allThisYear
 
         percentageLastYear =
             calculatePercentage goodThisYear goodLastYear
@@ -2110,13 +2137,9 @@ viewFamilyPlanning language stats =
         ]
 
 
-viewMonthlyChart : Language -> NominalDate -> MonthlyChartType -> FilterType -> Dict Int TotalBeneficiaries -> DashboardFilter -> Html Msg
-viewMonthlyChart language currentDate chartType filterType data currentFilter =
+viewMonthlyChart : Language -> Int -> MonthlyChartType -> FilterType -> Dict Int TotalBeneficiaries -> DashboardFilter -> Html Msg
+viewMonthlyChart language currentMonth chartType filterType data currentFilter =
     let
-        currentMonth =
-            Date.month currentDate
-                |> Date.monthToNumber
-
         ( thisYear, lastYear ) =
             data
                 |> Dict.toList
@@ -2328,7 +2351,7 @@ viewFamilyPlanningDonutChart language stats =
                 dict
                     |> Dict.toList
                     |> List.filter (\( sign, _ ) -> sign /= NoFamilyPlanning)
-                    |> List.sortBy (\( name, _ ) -> Debug.toString name)
+                    |> List.sortBy (\( name, _ ) -> encodeFamilyPlanningSignAsString name)
         in
         div [ class "content" ]
             [ viewPieChart familyPlanningSignsColors signs
@@ -2414,7 +2437,7 @@ viewPieChartLegend language translateFunc colorFunc signs =
                             "1"
 
                         else
-                            toString percentage
+                            String.fromInt percentage
                 in
                 div [ class "legend-item" ]
                     [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
@@ -3133,7 +3156,7 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
                     List.filter isGoodNutritionEncounter encountersForSelectedMonth
                         |> List.length
             in
-            round (100 * toFloat goodNutritionEncounters / toFloat totalEncountersCompleted)
+            percentageOfTotal goodNutritionEncounters totalEncountersCompleted
 
         -- Total Nutrition encounters performed during selected month.
         totalEncountersCompleted =
@@ -3143,7 +3166,7 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
         -- at encounter during selected month or previously, and did not have
         -- an encounter afterwards that indicated that condition was resolved.
         totalBeneficiariesWasting =
-            countCurrentlyDiagnosedByValue .zscoreWasting (\zscore -> zscore < 2)
+            countCurrentlyDiagnosedByValue .zscoreWasting (\zscore -> zscore < -2)
 
         -- Number of children who are had firs diagnosis of wasting during
         -- selected month.
@@ -3175,7 +3198,7 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
         -- encounter during selected month or previously, and did not have an
         -- encounter afterwards that indicated that condition was resolved.
         numberOfStunting =
-            countCurrentlyDiagnosedByValue .zscoreStunting (\zscore -> zscore < 2)
+            countCurrentlyDiagnosedByValue .zscoreStunting (\zscore -> zscore < -2)
 
         -- Number of Children who had either micro or macrocephaly diagnosed at
         -- encounter during selected month or previously, and did not have an

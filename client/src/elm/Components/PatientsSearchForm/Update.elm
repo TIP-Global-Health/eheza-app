@@ -28,9 +28,19 @@ update msg model =
                     else
                         ModeSearchByNationalId
             in
-            ( { model | mode = mode, input = "", search = Nothing }
-            , Cmd.none
-            )
+            if mode == model.mode then
+                -- The mode asked for is the one already in use, so what has
+                -- been typed stays where it is.
+                ( model, Cmd.none )
+
+            else
+                ( { model | mode = mode, input = "", search = Nothing }
+                , Cmd.none
+                )
+                    -- The debouncer holds the last input it was given, so a
+                    -- search typed a moment ago would otherwise arrive after
+                    -- the switch and be run in the mode it was not typed for.
+                    |> sequence update [ MsgDebouncer <| provideInput <| SetSearch "" ]
 
         SetSearch search ->
             let
@@ -51,17 +61,32 @@ update msg model =
         SetInput input ->
             case model.mode of
                 ModeSearchByName ->
-                    ( { model | input = input }
+                    ( { model
+                        | input = input
+                        , search =
+                            if String.isEmpty (String.trim input) then
+                                Nothing
+
+                            else
+                                model.search
+                      }
                     , Cmd.none
                     )
                         |> sequence update [ MsgDebouncer <| provideInput <| SetSearch input ]
 
                 ModeSearchByNationalId ->
-                    let
-                        asNumber =
-                            String.toInt input
-                    in
-                    if isJust asNumber then
+                    if String.isEmpty (String.trim input) then
+                        -- An emptied field searches for nothing, so the results
+                        -- of what it held go with it. The empty input goes to
+                        -- the debouncer too: it holds the last input it was
+                        -- given, and a number given a moment earlier would
+                        -- otherwise arrive half a second later and search again.
+                        ( { model | input = input, search = Nothing }
+                        , Cmd.none
+                        )
+                            |> sequence update [ MsgDebouncer <| provideInput <| SetSearch "" ]
+
+                    else if isJust (String.toInt input) then
                         ( { model | input = input }
                         , Cmd.none
                         )

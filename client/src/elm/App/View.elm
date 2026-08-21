@@ -1,10 +1,10 @@
 module App.View exposing (view)
 
-import App.Model exposing (ConfiguredModel, Model, Msg(..), MsgLoggedIn(..))
+import App.Model exposing (ConfiguredModel, Model, Msg(..), MsgLoggedIn(..), StorageQuota)
 import App.Utils exposing (getLoggedIn, getLoggedInData)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician, nurseAuthorizedForLocation)
 import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperation(..))
 import Browser
 import Config.Model
@@ -12,7 +12,7 @@ import Config.View
 import Error.View
 import EverySet exposing (EverySet)
 import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (divKeyed, emptyNode)
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
@@ -107,6 +107,7 @@ import Pages.Prenatal.RecurrentEncounter.Model
 import Pages.Prenatal.RecurrentEncounter.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
+import Pages.Router exposing (pageToFragment)
 import Pages.Session.Model
 import Pages.Session.View
 import Pages.StockManagement.Model
@@ -130,7 +131,7 @@ import Pages.WellChild.ProgressReport.View
 import Pages.Wellbeing.View
 import RemoteData exposing (RemoteData(..))
 import ServiceWorker.View
-import SyncManager.Model exposing (Site(..), SiteFeature)
+import SyncManager.Model exposing (IndexDbSaveError(..), Site(..), SiteFeature)
 import SyncManager.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
@@ -160,12 +161,21 @@ view model =
 {-| Given some HTML, wrap it in the new flex-box based structure.
 -}
 flexPageWrapper : Config.Model.Model -> Model -> Html Msg -> Html Msg
-flexPageWrapper config model html =
+flexPageWrapper config model =
+    flexPageWrapperKeyed (pageKey model.activePage) config model
+
+
+{-| Like `flexPageWrapper`, for the places that show one page while the app is
+on another. Say which page is really being shown, so that it is keyed as itself
+rather than as the page it stands in for.
+-}
+flexPageWrapperKeyed : String -> Config.Model.Model -> Model -> Html Msg -> Html Msg
+flexPageWrapperKeyed key config model html =
     let
         syncManager =
             if model.activePage == DevicePage then
-                [ Error.View.view model.language model.configuration model.errors
-                , Html.map MsgSyncManager (SyncManager.View.view model.language model.configuration model.indexedDb model.syncManager)
+                [ ( "errors", Error.View.view model.language model.configuration model.errors )
+                , ( "sync-manager", Html.map MsgSyncManager (SyncManager.View.view model.language model.configuration model.indexedDb model.syncManager) )
                 ]
 
             else
@@ -176,19 +186,83 @@ flexPageWrapper config model html =
                 [ class "page-content" ]
                 [ html ]
     in
-    div [ class "page container" ] <|
-        (viewLanguageSwitcherAndVersion config model :: syncManager)
-            ++ [ content ]
+    divKeyed [ class "page container" ] <|
+        [ ( "language-switcher", viewLanguageSwitcherAndVersion config model )
+        , ( "storage-warning", viewStorageWarning model )
+        ]
+            ++ syncManager
+            ++ [ ( key, content ) ]
 
 
 {-| Given some HTML, wrap it the old way.
 -}
 oldPageWrapper : Config.Model.Model -> Model -> Html Msg -> Html Msg
 oldPageWrapper config model html =
-    div [ class "container" ]
-        [ viewLanguageSwitcherAndVersion config model
-        , html
+    divKeyed [ class "container" ]
+        [ ( "language-switcher", viewLanguageSwitcherAndVersion config model )
+        , ( "storage-warning", viewStorageWarning model )
+        , ( pageKey model.activePage, html )
         ]
+
+
+{-| A key for the page being shown, so that moving to another page throws the
+old page's elements away instead of letting the new page reuse them.
+
+Reusing them mixes the two pages up: a text field left over from the page being
+left keeps the handler that reads what is typed into it, while the field now
+belongs to the page being entered. What the field sends is then read as the
+wrong kind of value, which stops the app.
+
+-}
+pageKey : Page -> String
+pageKey page =
+    pageToFragment page
+        |> Maybe.withDefault "page-not-found"
+
+
+{-| A banner warning that the device's local storage is filling up or full.
+
+It reads two independent signals already in the model: `storageQuota` (the
+proactive `navigator.storage.estimate()` poll) drives an early "almost full"
+warning, and a `StorageFull` save failure recorded by the SyncManager (the
+reactive signal from the save path) escalates to a "data may not be saving"
+alert. Rendered in the shared page chrome so it shows on every screen, not just
+the Device page where the raw quota is otherwise buried.
+
+-}
+viewStorageWarning : Model -> Html Msg
+viewStorageWarning model =
+    if model.syncManager.lastSaveError == Just IndexDbSaveErrorStorageFull then
+        viewStorageBanner "ui error message" (translate model.language Translate.StorageQuotaFull)
+
+    else if storageAlmostFull model.storageQuota then
+        viewStorageBanner "ui warning message" (translate model.language Translate.StorageQuotaAlmostFull)
+
+    else
+        emptyNode
+
+
+storageAlmostFull : Maybe StorageQuota -> Bool
+storageAlmostFull storageQuota =
+    case storageQuota of
+        Just { usage, quota } ->
+            quota > 0 && toFloat usage / toFloat quota >= storageQuotaWarningThreshold
+
+        Nothing ->
+            False
+
+
+viewStorageBanner : String -> String -> Html Msg
+viewStorageBanner messageClass message =
+    div [ class <| messageClass ++ " storage-warning" ]
+        [ text message ]
+
+
+{-| Fraction of the storage quota at which we start warning the nurse.
+-}
+storageQuotaWarningThreshold : Float
+storageQuotaWarningThreshold =
+    0.9
 
 
 {-| The language switcher view which sets a preferred language for each user and
@@ -287,7 +361,7 @@ viewConfiguredModel model configured =
         -- service worker for the normal operation of the app).
         ServiceWorker.View.view model.currentTime model.language model.serviceWorker
             |> Html.map MsgServiceWorker
-            |> flexPageWrapper configured.config model
+            |> flexPageWrapperKeyed (pageKey ServiceWorkerPage) configured.config model
 
     else
         let
@@ -306,12 +380,13 @@ viewConfiguredModel model configured =
                 _ ->
                     Pages.Device.View.view model.language features configured.device model configured.devicePage
                         |> Html.map MsgPageDevice
-                        |> flexPageWrapper configured.config model
+                        |> flexPageWrapperKeyed (pageKey DevicePage) configured.config model
 
         else
             let
                 viewMainPage =
                     Pages.PinCode.View.view model.language
+                        model.zone
                         model.currentTime
                         features
                         model.activePage
@@ -321,7 +396,7 @@ viewConfiguredModel model configured =
                         configured.pinCodePage
                         model.indexedDb
                         |> Html.map MsgPagePinCode
-                        |> flexPageWrapper configured.config model
+                        |> flexPageWrapperKeyed (pageKey PinCodePage) configured.config model
 
                 deviceName =
                     if String.isEmpty model.syncManager.syncInfoGeneral.deviceName then
@@ -352,6 +427,7 @@ viewConfiguredModel model configured =
                                             |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
                                 in
                                 Pages.MessagingCenter.View.view model.language
+                                    model.zone
                                     model.currentTime
                                     nurseId
                                     nurse
@@ -370,7 +446,7 @@ viewConfiguredModel model configured =
                                     ( nurseId, nurse ) =
                                         loggedInModel.nurse
                                 in
-                                Pages.Wellbeing.View.view model.language model.currentTime nurse
+                                Pages.Wellbeing.View.view model.language model.zone model.currentTime nurse
                                     |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
                                     |> flexPageWrapper configured.config model
                             )
@@ -408,21 +484,25 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
     case getLoggedInData model of
         Just ( healthCenterId, loggedInModel ) ->
             let
-                selectedAuthorizedHealthCenter =
+                loggedInNurse =
                     Tuple.second loggedInModel.nurse
-                        |> .healthCenters
-                        |> EverySet.member healthCenterId
+
+                -- Authorize per village for a CHW, per health center otherwise -
+                -- the same gate the PinCode screen applies. Without this, a
+                -- synced nurse revision that drops the selected village leaves a
+                -- CHW silently working under a location they no longer belong to
+                -- (their parent health center still passes a health-center-only
+                -- check); now they fall through to the PinCode screen instead.
+                selectedAuthorizedLocation =
+                    nurseAuthorizedForLocation model.villageId (Just healthCenterId) loggedInNurse
             in
-            if selectedAuthorizedHealthCenter then
+            if selectedAuthorizedLocation then
                 let
                     currentDate =
-                        fromLocalDateTime model.currentTime
+                        fromLocalDateTime model.zone model.currentTime
 
                     ( isChw, isLabTech ) =
-                        Tuple.second loggedInModel.nurse
-                            |> (\nurse ->
-                                    ( isCommunityHealthWorker nurse, isLabTechnician nurse )
-                               )
+                        ( isCommunityHealthWorker loggedInNurse, isLabTechnician loggedInNurse )
                 in
                 case page of
                     MyAccountPage ->
@@ -720,6 +800,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.Prenatal.RecurrentActivity.View.view model.language
                             currentDate
+                            site
                             (Tuple.second loggedInModel.nurse)
                             id
                             activity
@@ -734,7 +815,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, labEncounterId, lab ) loggedInModel.prenatalLabsHistoryPages
                                     |> Maybe.withDefault Pages.Prenatal.RecurrentActivity.Model.emptyLabResultsData
                         in
-                        Pages.Prenatal.RecurrentActivity.View.viewLabsHistory model.language currentDate id labEncounterId lab model.indexedDb page_
+                        Pages.Prenatal.RecurrentActivity.View.viewLabsHistory model.language currentDate site id labEncounterId lab model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalLabsHistory id labEncounterId lab)
                             |> flexPageWrapper configured.config model
 
@@ -986,7 +1067,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, activity ) loggedInModel.ncdRecurrentActivityPages
                                     |> Maybe.withDefault Pages.NCD.RecurrentActivity.Model.emptyModel
                         in
-                        Pages.NCD.RecurrentActivity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.NCD.RecurrentActivity.View.view model.language currentDate site id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDRecurrentActivity id activity)
                             |> flexPageWrapper configured.config model
 
@@ -1201,6 +1282,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
 
             else
                 Pages.PinCode.View.view model.language
+                    model.zone
                     model.currentTime
                     features
                     model.activePage
@@ -1210,10 +1292,11 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                     configured.pinCodePage
                     model.indexedDb
                     |> Html.map MsgPagePinCode
-                    |> flexPageWrapper configured.config model
+                    |> flexPageWrapperKeyed (pageKey PinCodePage) configured.config model
 
         Nothing ->
             Pages.PinCode.View.view model.language
+                model.zone
                 model.currentTime
                 features
                 model.activePage
@@ -1223,4 +1306,4 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                 configured.pinCodePage
                 model.indexedDb
                 |> Html.map MsgPagePinCode
-                |> flexPageWrapper configured.config model
+                |> flexPageWrapperKeyed (pageKey PinCodePage) configured.config model

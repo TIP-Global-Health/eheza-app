@@ -37,7 +37,9 @@ type Msg
     | SetBilirubin String
     | SaveUrineDipstickResult PersonId (Maybe ( NCDUrineDipstickTestId, NCDUrineDipstickTest )) (Maybe LaboratoryTask)
     | SetRandomBloodSugar String
+    | PreSaveRandomBloodSugarResult PersonId (Maybe ( NCDRandomBloodSugarTestId, NCDRandomBloodSugarTest )) (Maybe LaboratoryTask)
     | SaveRandomBloodSugarResult PersonId (Maybe ( NCDRandomBloodSugarTestId, NCDRandomBloodSugarTest )) (Maybe LaboratoryTask)
+    | SetMeasurementOutOfRangePopupState (List Measurement.Model.RangedMeasurement)
     | SetCreatinineResult String
     | SetBUNResult String
     | SaveCreatinineResult PersonId (Maybe ( NCDCreatinineTestId, NCDCreatinineTest )) (Maybe LaboratoryTask)
@@ -65,6 +67,7 @@ type Msg
 type alias Model =
     { labResultsData : LabResultsData
     , nextStepsData : NextStepsData
+    , measurementOutOfRangePopupState : List Measurement.Model.RangedMeasurement
     }
 
 
@@ -72,6 +75,7 @@ emptyModel : Model
 emptyModel =
     { labResultsData = emptyLabResultsData
     , nextStepsData = emptyNextStepsData
+    , measurementOutOfRangePopupState = []
     }
 
 

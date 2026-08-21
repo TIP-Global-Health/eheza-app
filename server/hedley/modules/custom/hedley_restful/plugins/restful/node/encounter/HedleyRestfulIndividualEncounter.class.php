@@ -120,8 +120,12 @@ class HedleyRestfulIndividualEncounter extends HedleyRestfulSyncBase {
       unset($item->field_scheduled_date_field_scheduled_date_value2);
 
       foreach ($this->multiFields as $field_name) {
+        // An encounter starts with none of these set (no diagnoses, no skipped
+        // forms), so guard the explode: without it an empty field syncs as a
+        // single empty string instead of nothing at all. Same guard as
+        // HedleyRestfulActivityBase.
         $public_name = str_replace('field_', '', $field_name);
-        $item->{$public_name} = explode(',', $item->{$public_name});
+        $item->{$public_name} = !empty($item->{$public_name}) ? explode(',', $item->{$public_name}) : NULL;
       }
 
       foreach ($this->dateFields as $field_name) {

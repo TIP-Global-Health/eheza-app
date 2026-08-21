@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import { click } from './auth';
 import {
   WAIT,
@@ -457,6 +457,8 @@ export async function completePhysicalExam(
     respiratoryRate?: string;
     bodyTemp?: string;
     muac?: string;
+    // Type a MUAC in the wrong unit first, and check the nurse is told.
+    checkMuacRange?: boolean;
     /** General acute findings to select (e.g. ['Sunken Eyes', 'Poor Skin Turgor']). Empty = "None of the above". */
     acuteFindingsGeneral?: string[];
     /** Respiratory acute findings to select. Empty = "None of the above". */
@@ -523,12 +525,30 @@ export async function completePhysicalExam(
   const muacTab = page.locator('.link-section:has(.icon-activity-task.icon-physical-exam-muac)');
   if (await muacTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'physical-exam-muac');
+
+    const saveMuac = page.locator('.actions.symptoms button.ui.fluid.primary.button');
+
+    if (options?.checkMuacRange) {
+      // Millimetres typed where centimetres are asked for. The button answers
+      // and the warning names the measurement; nothing is saved.
+      await fillMeasurement(page, 'muac', '125');
+      await page.waitForTimeout(WAIT.formInteraction);
+      await expect(saveMuac, 'save should answer for a MUAC of 125').not.toHaveClass(/disabled/);
+      await click(saveMuac, page);
+
+      const popup = page.locator('div.ui.active.modal.measurement-out-of-range');
+      await popup.waitFor({ timeout: 10000 });
+      await expect(popup, 'the warning should name the MUAC').toHaveClass(
+        /(^| )muac-out-of-range( |$)/,
+      );
+      await click(popup.locator('button.ui.primary.fluid.button'), page);
+      await popup.waitFor({ state: 'hidden', timeout: 10000 });
+      await page.waitForTimeout(WAIT.formInteraction);
+    }
+
     await fillMeasurement(page, 'muac', muac);
     // Save MUAC.
-    await click(
-      page.locator('.actions.symptoms button.ui.fluid.primary.button'),
-      page,
-    );
+    await click(saveMuac, page);
     await page.waitForTimeout(WAIT.elmRerender);
   }
 

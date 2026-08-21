@@ -10,10 +10,11 @@ import Backend.NutritionEncounter.Model
 import EverySet
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
-import Measurement.Utils exposing (contributingFactorsFormWithDefault, ncdaFormWithDefault, nutritionFormWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toWeightValueWithDefault)
+import Measurement.Model exposing (RangedMeasurement)
+import Measurement.Utils exposing (contributingFactorsFormWithDefault, heightFormWithDefault, heightOutOfRange, muacFormWithDefault, muacOutOfRange, ncdaFormWithDefault, nutritionFormWithDefault, setNCDAStep, showNCDAMeasurementOutOfRange, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toWeightValueWithDefault, weightFormWithDefault, weightOutOfRange)
 import Pages.Nutrition.Activity.Model exposing (Model, Msg(..), emptyPhotoData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (setMuacValueForSite, setMultiSelectInputValue)
+import Pages.Utils exposing (saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 
@@ -34,6 +35,9 @@ update site id db msg model =
         generateNextStepsMsgs nextTask =
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| NutritionEncounterPage id ]
+
+        toIndexedDbMsg =
+            Backend.Model.MsgNutritionEncounter id >> App.Model.MsgIndexedDb
     in
     case msg of
         NoOp ->
@@ -43,13 +47,38 @@ update site id db msg model =
             )
 
         SetActivePage page ->
-            ( model
+            -- Leaving the activity forgets what it was complaining about.
+            ( { model | measurementOutOfRangePopupState = [] }
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
 
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
+
+        SetMeasurementOutOfRangePopupState state ->
+            ( { model | measurementOutOfRangePopupState = state }, Cmd.none, [] )
+
+        PreSaveHeight skippedForms personId saved ->
+            (getMeasurementValueFunc saved
+                |> heightFormWithDefault skippedForms model.heightData.form
+                |> heightOutOfRange site
+            )
+                |> preSaveMeasurement site id db model (SaveHeight skippedForms personId saved)
+
+        PreSaveMuac personId saved ->
+            (getMeasurementValueFunc saved
+                |> muacFormWithDefault model.muacData.form
+                |> muacOutOfRange site
+            )
+                |> preSaveMeasurement site id db model (SaveMuac personId saved)
+
+        PreSaveWeight skippedForms personId saved ->
+            (getMeasurementValueFunc saved
+                |> weightFormWithDefault skippedForms model.weightData.form
+                |> weightOutOfRange site
+            )
+                |> preSaveMeasurement site id db model (SaveWeight skippedForms personId saved)
 
         SetHeight string ->
             let
@@ -492,16 +521,13 @@ update site id db msg model =
             )
 
         SetNCDAFormStep step ->
-            let
-                updatedForm =
-                    model.ncdaData.form
-                        |> (\form -> { form | step = Just step })
+            ( { model | ncdaData = setNCDAStep step model.ncdaData }
+            , Cmd.none
+            , []
+            )
 
-                updatedData =
-                    model.ncdaData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | ncdaData = updatedData }
+        SetMeasurementOutOfRangePopup stepAsking ->
+            ( { model | ncdaData = showNCDAMeasurementOutOfRange stepAsking model.ncdaData }
             , Cmd.none
             , []
             )
@@ -605,31 +631,15 @@ update site id db msg model =
             )
 
         SaveSendToHC personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    toSendToHCValueWithDefault measurement model.nextStepsData.sendToHCForm
-                        |> Maybe.map
-                            (Backend.NutritionEncounter.Model.SaveSendToHC personId measurementId
-                                >> Backend.Model.MsgNutritionEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toSendToHCValueWithDefault
+                model.nextStepsData.sendToHCForm
+                saved
+                (Backend.NutritionEncounter.Model.SaveSendToHC personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site id db) extraMsgs
+                |> sequenceExtra (update site id db) (generateNextStepsMsgs nextTask)
 
         SetProvidedEducationForDiagnosis value ->
             let
@@ -666,31 +676,15 @@ update site id db msg model =
             )
 
         SaveHealthEducation personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    toHealthEducationValueWithDefault measurement model.nextStepsData.healthEducationForm
-                        |> Maybe.map
-                            (Backend.NutritionEncounter.Model.SaveHealthEducation personId measurementId
-                                >> Backend.Model.MsgNutritionEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toHealthEducationValueWithDefault
+                model.nextStepsData.healthEducationForm
+                saved
+                (Backend.NutritionEncounter.Model.SaveHealthEducation personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site id db) extraMsgs
+                |> sequenceExtra (update site id db) (generateNextStepsMsgs nextTask)
 
         SetContributingFactorsSign sign ->
             let
@@ -722,31 +716,15 @@ update site id db msg model =
             )
 
         SaveContributingFactors personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    toContributingFactorsValueWithDefault measurement model.nextStepsData.contributingFactorsForm
-                        |> Maybe.map
-                            (Backend.NutritionEncounter.Model.SaveContributingFactors personId measurementId
-                                >> Backend.Model.MsgNutritionEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toContributingFactorsValueWithDefault
+                model.nextStepsData.contributingFactorsForm
+                saved
+                (Backend.NutritionEncounter.Model.SaveContributingFactors personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site id db) extraMsgs
+                |> sequenceExtra (update site id db) (generateNextStepsMsgs nextTask)
 
         SetFollowUpOption option ->
             let
@@ -767,30 +745,45 @@ update site id db msg model =
 
         SaveFollowUp personId saved assesment nextTask ->
             let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
                 form =
                     model.nextStepsData.followUpForm
-
-                appMsgs =
-                    toNutritionFollowUpValueWithDefault measurement { form | assesment = Just assesment }
-                        |> Maybe.map
-                            (Backend.NutritionEncounter.Model.SaveFollowUp personId measurementId
-                                >> Backend.Model.MsgNutritionEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toNutritionFollowUpValueWithDefault
+                { form | assesment = Just assesment }
+                saved
+                (Backend.NutritionEncounter.Model.SaveFollowUp personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site id db) extraMsgs
+                |> sequenceExtra (update site id db) (generateNextStepsMsgs nextTask)
+
+
+{-| Saves a measurement, unless it was entered outside the range it can take.
+
+The nurse is told which measurement is wrong and the form is left as it is, so
+it can be entered again. Nothing is saved until it is within range.
+
+-}
+preSaveMeasurement :
+    Site
+    -> NutritionEncounterId
+    -> ModelIndexedDb
+    -> Model
+    -> Msg
+    -> List RangedMeasurement
+    -> ( Model, Cmd Msg, List App.Model.Msg )
+preSaveMeasurement site id db model saveMsg outOfRange =
+    let
+        extraMsgs =
+            if List.isEmpty outOfRange then
+                [ saveMsg ]
+
+            else
+                [ SetMeasurementOutOfRangePopupState outOfRange ]
+    in
+    ( model
+    , Cmd.none
+    , []
+    )
+        |> sequenceExtra (update site id db) extraMsgs

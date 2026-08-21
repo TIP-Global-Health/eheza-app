@@ -29,7 +29,11 @@ fetch currentDate personId db =
                     )
                 |> Maybe.withDefault []
     in
-    [ FetchPerson personId
+    -- See Pages.Nutrition.ProgressReport.Fetch: the child's report renders the
+    -- Next Appointment pane, which needs the health centers, and nothing else
+    -- on this page fetches them.
+    [ FetchHealthCenters
+    , FetchPerson personId
     , FetchRelationshipsForPerson personId
     , FetchEducationSessionsForPerson personId
     ]

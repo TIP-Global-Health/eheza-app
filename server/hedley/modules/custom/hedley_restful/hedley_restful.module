@@ -318,49 +318,6 @@ function hedley_restful_timestamp_only_date($value) {
 }
 
 /**
- * Get restful output programmatically.
- *
- * @return array
- *   The restful output.
- */
-function hedley_restful_output_from_handler($handler_name, array $nids, $account) {
-  $output = [];
-  node_load_multiple($nids);
-
-  $handler = restful_get_restful_handler($handler_name);
-  $handler->setAccount($account);
-
-  foreach ($nids as $nid) {
-    $response = $handler->get($nid);
-    $output[] = $response[0];
-  }
-
-  return $output;
-}
-
-/**
- * Get restful output for multiple bundles.
- *
- * @return array
- *   The restful output
- */
-function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $account) {
-  $output = [];
-
-  foreach ($nids as $nid) {
-    $wrapper = entity_metadata_wrapper('node', $nid);
-
-    $handler = restful_get_restful_handler($bundleHandlers[$wrapper->getBundle()]);
-    $handler->setAccount($account);
-    $response = $handler->get($nid);
-
-    $output[] = $response[0];
-  }
-
-  return $output;
-}
-
-/**
  * Resolve nodes IDs using provided UUIDs.
  *
  * @param array $uuids
@@ -393,9 +350,24 @@ function hedley_restful_resolve_nids_for_uuids(array $uuids) {
  *   The Node ID. False, if not found.
  */
 function hedley_restful_resolve_nid_for_uuid($uuid) {
-  $result = hedley_restful_resolve_nids_for_uuids([$uuid]);
+  // Request-level cache so a UUID that recurs across a sync batch (participant,
+  // encounter, session, health center, ...) is resolved with a single query.
+  $cache = &drupal_static(__FUNCTION__, []);
+  if (isset($cache[$uuid])) {
+    return $cache[$uuid];
+  }
 
-  return empty($result) ? FALSE : reset($result);
+  $result = hedley_restful_resolve_nids_for_uuids([$uuid]);
+  $nid = empty($result) ? FALSE : reset($result);
+
+  // Cache positive results only. A UUID can be looked up before it is created
+  // by a later item in the same batch; caching FALSE would make that later
+  // reference fail. The UUID -> nid mapping, once it exists, is stable.
+  if ($nid !== FALSE) {
+    $cache[$uuid] = $nid;
+  }
+
+  return $nid;
 }
 
 /**
@@ -417,56 +389,6 @@ function hedley_restful_uuid_to_nid($uuid) {
   }
 
   return $result;
-}
-
-/**
- * Run a query in batches.
- *
- * Given a base query, performs the query in batches and calls a callback
- * function with each batch of results.
- *
- * Before calling the callback for each batch, we do a `noad_load_multiple`,
- * so you don't have to.
- *
- * After the callback returns, we reset the cache for the specific IDs in
- * that batch. So, this is good for cases where you only need to access
- * each entity once, and don't want the cache to grow. (We don't clear the
- * cache completely, so any pre-existing nodes will remain).
- *
- * @param \EntityFieldQuery $base_query
- *   The base query. We will clone this query and adjust the offset to
- *    get the results in batches.
- * @param int $batch_size
- *   The size of each batch.
- * @param callable $function
- *   The callback to execute. It will be called with the three parameters.
- *    - The current offset
- *    - The total number of items.
- *    - An array of node IDs, being the current batch of query results.
- */
-function hedley_restful_query_in_batches(\EntityFieldQuery $base_query, $batch_size, callable $function) {
-  $offset = 0;
-
-  $query_count = clone $base_query;
-  $count = $query_count->count()->execute();
-
-  while ($offset < $count) {
-    $query = clone $base_query;
-    $result = $query->range($offset, $batch_size)->execute();
-
-    if (empty($result['node'])) {
-      // None left.
-      return;
-    }
-
-    $keys = array_keys($result['node']);
-    node_load_multiple($keys);
-
-    call_user_func($function, $offset, $count, $keys);
-
-    $offset += $batch_size;
-    entity_get_controller('node')->resetCache($keys);
-  }
 }
 
 /**

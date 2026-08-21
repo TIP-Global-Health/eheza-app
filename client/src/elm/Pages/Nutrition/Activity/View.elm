@@ -33,7 +33,7 @@ import Measurement.Model
         , NCDAData
         , NextStepsTask(..)
         )
-import Measurement.Utils exposing (allNextStepsTasks, contributingFactorsFormWithDefault, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, heightFormWithDefault, muacFormWithDefault, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, sendToHCFormWithDefault, weightFormWithDefault, withinConstraints)
+import Measurement.Utils exposing (allNextStepsTasks, contributingFactorsFormWithDefault, healthEducationFormWithDefault, heightFormWithDefault, muacFormWithDefault, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, sendToHCFormWithDefault, weightFormWithDefault)
 import Measurement.View
     exposing
         ( heightFormAndTasks
@@ -61,7 +61,7 @@ import Pages.Utils
         , viewSaveAction
         , viewTasksCount
         )
-import SyncManager.Model exposing (Site(..))
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -111,9 +111,17 @@ viewHeaderAndContent language currentDate zscores site id activity isChw db mode
         [ header
         , content
         , viewModal <|
-            warningPopup language
-                (SetWarningPopupState [])
-                model.warningPopupState
+            if List.isEmpty model.measurementOutOfRangePopupState then
+                warningPopup language
+                    (SetWarningPopupState [])
+                    model.warningPopupState
+
+            else
+                Just <|
+                    Measurement.View.measurementOutOfRangePopup language
+                        site
+                        model.measurementOutOfRangePopupState
+                        (SetMeasurementOutOfRangePopupState [])
         ]
 
 
@@ -252,23 +260,15 @@ viewHeightContent language currentDate zscores isChw assembled data previousValu
             List.map taskCompleted tasks
                 |> List.sum
 
-        constraints =
-            getInputConstraintsHeight
-
         disabled =
-            (form.measurementNotTaken /= Just True)
-                && ((tasksCompleted /= totalTasks)
-                        || (Maybe.map (withinConstraints constraints >> not) form.height
-                                |> Maybe.withDefault True
-                           )
-                   )
+            tasksCompleted /= totalTasks
     in
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             formForView
         , viewSaveAction language
-            (SaveHeight assembled.encounter.skippedForms assembled.participant.person assembled.measurements.height)
+            (PreSaveHeight assembled.encounter.skippedForms assembled.participant.person assembled.measurements.height)
             disabled
         ]
     ]
@@ -287,24 +287,8 @@ viewMuacContent language currentDate site assembled data previousValue =
         ( tasksCompleted, tasksTotal ) =
             resolveTasksCompletedFromTotal tasks
 
-        constraints =
-            getInputConstraintsMuac site
-
-        currentValue =
-            case site of
-                SiteBurundi ->
-                    -- Value is stored in cm, but for Burundi, we need to
-                    -- view it as mm. Therefore, multiplying by 10.
-                    Maybe.map ((*) 10) form.muac
-
-                _ ->
-                    form.muac
-
         disabled =
-            (tasksCompleted /= tasksTotal)
-                || (Maybe.map (withinConstraints constraints >> not) currentValue
-                        |> Maybe.withDefault True
-                   )
+            tasksCompleted /= tasksTotal
     in
     [ viewTasksCount language tasksCompleted tasksTotal
     , div [ class "ui full segment" ]
@@ -313,7 +297,7 @@ viewMuacContent language currentDate site assembled data previousValue =
                 inputs
             ]
         , viewSaveAction language
-            (SaveMuac assembled.participant.person assembled.measurements.muac)
+            (PreSaveMuac assembled.participant.person assembled.measurements.muac)
             disabled
         ]
     ]
@@ -462,23 +446,15 @@ viewWeightContent language currentDate zscores site isChw assembled data previou
         heightValue =
             getMeasurementValueFunc assembled.measurements.height
 
-        constraints =
-            getInputConstraintsWeight
-
         disabled =
-            (form.measurementNotTaken /= Just True)
-                && ((tasksCompleted /= totalTasks)
-                        || (Maybe.map (withinConstraints constraints >> not) form.weight
-                                |> Maybe.withDefault True
-                           )
-                   )
+            tasksCompleted /= totalTasks
     in
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             formForView
         , viewSaveAction language
-            (SaveWeight assembled.encounter.skippedForms assembled.participant.person assembled.measurements.weight)
+            (PreSaveWeight assembled.encounter.skippedForms assembled.participant.person assembled.measurements.weight)
             disabled
         ]
     ]
@@ -517,6 +493,7 @@ viewNCDAContent language currentDate site assembled data db =
             , setMuacMsg = SetMuacForNCDA
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
+            , setMeasurementOutOfRangePopupMsg = SetMeasurementOutOfRangePopup
             , saveMsg = SaveNCDA personId assembled.measurements.ncda
             }
     in
@@ -527,6 +504,7 @@ viewNCDAContent language currentDate site assembled data db =
         assembled.person
         config
         data.helperState
+        data.showMeasurementOutOfRangePopup
         form
         db
 

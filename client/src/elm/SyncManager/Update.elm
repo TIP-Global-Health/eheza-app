@@ -18,7 +18,7 @@ import Json.Encode
 import List.Zipper as Zipper
 import Maybe.Extra
 import Pages.Page exposing (Page)
-import RemoteData
+import RemoteData exposing (RemoteData)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseAuthorityStats, decodeDownloadSyncResponseGeneral)
 import SyncManager.Encoder
@@ -36,6 +36,14 @@ import SyncManager.Utils
 import Time
 import Utils.WebData
 import Version
+
+
+{-| True when either the local IndexedDB write or the backend request of a sync
+record is still in progress. Used to avoid re-issuing a step already running.
+-}
+isRecordLoading : { a | indexDbRemoteData : RemoteData e1 v1, backendRemoteData : RemoteData e2 v2 } -> Bool
+isRecordLoading record =
+    RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData
 
 
 update : Time.Posix -> Page -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
@@ -96,7 +104,15 @@ update currentTime activePage dbVersion device msg model =
                     [ MsgDebouncer <| provideInput TryDownloadingPhotos ]
 
         RefreshPage ->
-            SubModelReturn model (refreshPage ()) noError []
+            if SyncManager.Utils.pageAllowsBackgroundRefresh activePage then
+                SubModelReturn model (refreshPage ()) noError []
+
+            else
+                -- The nurse is in a logged-in workflow - they may have navigated
+                -- here while the reload was pending - so reloading would discard
+                -- unsaved form entries. Skip it; the newly-synced data still
+                -- surfaces through the regular fetch.
+                noChange
 
         BackendAuthorityFetch ->
             case model.syncStatus of
@@ -734,7 +750,11 @@ update currentTime activePage dbVersion device msg model =
                                 -- Init also sends all unsent items from dbErrors table.
                                 initRollbarCmd =
                                     if List.length data.entities < 500 && (not <| String.isEmpty data.rollbarToken) then
-                                        initRollbar { device = data.deviceName, token = data.rollbarToken }
+                                        initRollbar
+                                            { device = data.deviceName
+                                            , token = data.rollbarToken
+                                            , version = Version.version.build
+                                            }
 
                                     else
                                         Cmd.none
@@ -840,7 +860,7 @@ update currentTime activePage dbVersion device msg model =
                                 , sendSyncInfoGeneralCmd syncInfoGeneral
                                 ]
                             )
-                            (maybeHttpError model.downloadAuthorityResponse "Backend.SyncManager.Update" "BackendGeneralFetchedDataSavedHandle")
+                            (maybeHttpError model.downloadGeneralResponse "Backend.SyncManager.Update" "BackendGeneralFetchedDataSavedHandle")
                             appMsgs
                     )
                     (RemoteData.toMaybe model.downloadGeneralResponse)
@@ -933,7 +953,7 @@ update currentTime activePage dbVersion device msg model =
                     noChange
 
                 DownloadPhotosInProcess (DownloadPhotosBatch record) ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 
@@ -954,7 +974,7 @@ update currentTime activePage dbVersion device msg model =
                             { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosBatch recordUpdated) }
 
                 DownloadPhotosInProcess (DownloadPhotosAll record) ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 
@@ -986,7 +1006,7 @@ update currentTime activePage dbVersion device msg model =
                     noChange
 
                 DownloadPhotosInProcess (DownloadPhotosBatch record) ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         noChange
 
                     else
@@ -1006,7 +1026,7 @@ update currentTime activePage dbVersion device msg model =
                             { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosBatch recordUpdated) }
 
                 DownloadPhotosInProcess (DownloadPhotosAll record) ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         noChange
 
                     else
@@ -1032,7 +1052,7 @@ update currentTime activePage dbVersion device msg model =
             -- Get a entities for upload from IndexDB.
             case model.syncStatus of
                 SyncUploadGeneral record ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 
@@ -1059,10 +1079,7 @@ update currentTime activePage dbVersion device msg model =
             -- Get a entities for upload from IndexDB.
             case model.syncStatus of
                 SyncUploadWhatsApp record ->
-                    if
-                        RemoteData.isLoading record.indexDbRemoteData
-                            || RemoteData.isLoading record.backendRemoteData
-                    then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 
@@ -1089,7 +1106,7 @@ update currentTime activePage dbVersion device msg model =
             -- Get a entities for upload from IndexDB.
             case model.syncStatus of
                 SyncUploadAuthority record ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 
@@ -1244,8 +1261,9 @@ update currentTime activePage dbVersion device msg model =
                                     , HttpBuilder.post (device.backendUrl ++ "/api/sync")
                                         |> withQueryParams [ ( "access_token", device.accessToken ) ]
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord dbVersion result)
-                                        -- We don't need to decode anything, as we just want to have
-                                        -- the browser download it.
+                                        -- We don't need to decode the response body; the upload only
+                                        -- needs to know whether it succeeded.
+                                        |> HttpBuilder.withTimeout uploadRequestTimeout
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadAuthorityHandle result)
                                     )
 
@@ -1436,8 +1454,9 @@ update currentTime activePage dbVersion device msg model =
                                     , HttpBuilder.post (device.backendUrl ++ "/api/sync")
                                         |> withQueryParams [ ( "access_token", device.accessToken ) ]
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord dbVersion result)
-                                        -- We don't need to decode anything, as we just want to have
-                                        -- the browser download it.
+                                        -- We don't need to decode the response body; the upload only
+                                        -- needs to know whether it succeeded.
+                                        |> HttpBuilder.withTimeout uploadRequestTimeout
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle result)
                                     )
 
@@ -1589,6 +1608,7 @@ update currentTime activePage dbVersion device msg model =
                                     , HttpBuilder.post (device.backendUrl ++ "/api/sync")
                                         |> withQueryParams [ ( "access_token", device.accessToken ) ]
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadWhatsAppResultRecord dbVersion result)
+                                        |> HttpBuilder.withTimeout uploadRequestTimeout
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadWhatsAppHandle result)
                                     )
 
@@ -2281,6 +2301,12 @@ update currentTime activePage dbVersion device msg model =
                 Ok indexDbSaveResult ->
                     case indexDbSaveResult.status of
                         IndexDbSaveSuccess ->
+                            let
+                                -- A save just succeeded, so any previously
+                                -- recorded save failure is no longer current.
+                                clearedModel =
+                                    { model | lastSaveError = Nothing }
+                            in
                             case indexDbSaveResult.table of
                                 IndexDbSaveResultTableAutority ->
                                     update
@@ -2289,7 +2315,7 @@ update currentTime activePage dbVersion device msg model =
                                         dbVersion
                                         device
                                         (BackendAuthorityFetchedDataSavedHandle indexDbSaveResult.timestamp)
-                                        model
+                                        clearedModel
 
                                 IndexDbSaveResultTableDeferredPhotos ->
                                     -- Deferred-photo rows have just landed in IndexedDB.
@@ -2301,7 +2327,7 @@ update currentTime activePage dbVersion device msg model =
                                         dbVersion
                                         device
                                         TryDownloadingPhotos
-                                        model
+                                        clearedModel
 
                                 IndexDbSaveResultTableGeneral ->
                                     update
@@ -2310,15 +2336,54 @@ update currentTime activePage dbVersion device msg model =
                                         dbVersion
                                         device
                                         (BackendGeneralFetchedDataSavedHandle indexDbSaveResult.timestamp)
-                                        model
+                                        clearedModel
 
                                 _ ->
-                                    noChange
+                                    SubModelReturn clearedModel Cmd.none noError []
 
                         IndexDbSaveFailure ->
-                            -- For now, we don't make any special handling,
-                            -- so when request times out, we will retry.
-                            noChange
+                            -- A save into IndexedDB actually failed (e.g.
+                            -- QuotaExceededError when device storage is full).
+                            -- Record the failure so the condition is observable --
+                            -- for storage-full, it drives a user-facing banner.
+                            -- The download lanes complete only on save SUCCESS, so
+                            -- a lane waiting on this save would stay Loading
+                            -- forever, with the 30s timeout re-fetching the same
+                            -- batch (the revision cursor advances only on save
+                            -- success). Park it back to idle instead; the next
+                            -- sync cycle retries the batch cleanly. We must NOT
+                            -- dispatch the FetchedDataSavedHandle completion here:
+                            -- that would advance the cursor past unsaved entities.
+                            let
+                                modelWithError =
+                                    { model | lastSaveError = Just (SyncManager.Utils.indexDbSaveErrorFromReason indexDbSaveResult.reason) }
+
+                                -- Same in-flight guard as the save-success
+                                -- handlers: a reply for a superseded (timed-out)
+                                -- request must not touch the current lane.
+                                parkIfCurrentRequest =
+                                    if indexDbSaveResult.timestamp == requestTimestamp then
+                                        { modelWithError | syncStatus = SyncIdle }
+
+                                    else
+                                        modelWithError
+
+                                parkedModel =
+                                    case ( indexDbSaveResult.table, modelWithError.syncStatus ) of
+                                        ( IndexDbSaveResultTableAutority, SyncDownloadAuthority _ ) ->
+                                            parkIfCurrentRequest
+
+                                        ( IndexDbSaveResultTableGeneral, SyncDownloadGeneral _ ) ->
+                                            parkIfCurrentRequest
+
+                                        _ ->
+                                            modelWithError
+                            in
+                            SubModelReturn
+                                parkedModel
+                                Cmd.none
+                                noError
+                                []
 
                 Err error ->
                     SubModelReturn

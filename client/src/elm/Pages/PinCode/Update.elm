@@ -6,8 +6,8 @@ import Time
 import Time.Extra
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
-update msg model =
+update : Time.Posix -> Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
+update currentTime msg model =
     case msg of
         HandleLoginClicked ->
             ( { model | code = "" }
@@ -41,9 +41,11 @@ update msg model =
 
         HandleNotificationResponse accept ->
             let
+                -- An hour from now. Adding to the time already stored would
+                -- land in the past whenever more than an hour has passed since
+                -- it was set, and the dialog shows again straight away.
                 nextNotification =
-                    Maybe.map (Time.Extra.add Time.Extra.Hour 1 Time.utc)
-                        model.nextNotification
+                    Just <| Time.Extra.add Time.Extra.Hour 1 Time.utc currentTime
 
                 outMsg =
                     if accept then

@@ -55,48 +55,14 @@ function hedley_setup_variables() {
     'restful_file_upload' => 1,
     // Files settings.
     'file_default_scheme' => 'public',
-    // Rollbar settings.
-    'logs_rollbar_enabled' => TRUE,
-    'logs_rollbar_rollbar_access_token' => '4cd2c323d59d422bb838f87a8bc84ba7',
+    // Error reporting. The GlitchTip DSN is deliberately not set here: it is
+    // an ingest key and this repository is public. See the logs_glitchtip
+    // README for where operators configure it.
+    'logs_glitchtip_enabled' => TRUE,
   );
 
   foreach ($variables as $key => $value) {
     variable_set($key, $value);
-  }
-}
-
-/**
- * Task callback; Setup blocks.
- */
-function hedley_setup_blocks() {
-  $default_theme = variable_get('theme_default', 'bartik');
-
-  $blocks = array(
-    array(
-      'module' => 'system',
-      'delta' => 'user-menu',
-      'theme' => $default_theme,
-      'status' => 1,
-      'weight' => 0,
-      'region' => 'header',
-      'pages' => '',
-      'title' => '<none>',
-      'cache' => DRUPAL_NO_CACHE,
-    ),
-  );
-
-  drupal_static_reset();
-  _block_rehash($default_theme);
-  foreach ($blocks as $record) {
-    $module = array_shift($record);
-    $delta = array_shift($record);
-    $theme = array_shift($record);
-    db_update('block')
-      ->fields($record)
-      ->condition('module', $module)
-      ->condition('delta', $delta)
-      ->condition('theme', $theme)
-      ->execute();
   }
 }
 

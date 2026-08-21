@@ -1,6 +1,6 @@
-module Backend.Utils exposing (acuteIllnessEnabled, antenatalEnabled, anyOfCaseManagementFeaturesEnabled, anyOfDashboardFeaturesEnabled, anyOfEncounterTypesEnabled, authoritySelectionRequired, editMeasurementCmd, everySetsEqual, familyNutritionEnabled, gpsCoordinatesEnabled, groupEducationEnabled, groupEncountersEnabled, healthyStartEnabled, hivManagementEnabled, individualEncountersEnabled, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, ncdEnabled, ncdaEnabled, nutritionEnabled, nutritionGroupEnabled, nutritionIndividualEnabled, reportToWhatsAppEnabled, resolveFamilyParticipantForPerson, resolveFamilyParticipantsForPerson, resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson, saveMeasurementCmd, stockManagementHCEnabled, stockManagementVillageEnabled, sw, tuberculosisManagementEnabled, wellChildEnabled)
+module Backend.Utils exposing (acuteIllnessEnabled, antenatalEnabled, anyOfCaseManagementFeaturesEnabled, anyOfDashboardFeaturesEnabled, anyOfEncounterTypesEnabled, authoritySelectionRequired, editMeasurementCmd, everySetsEqual, familyNutritionEnabled, gpsCoordinatesEnabled, groupEducationEnabled, groupEncountersEnabled, healthyStartEnabled, hivManagementEnabled, individualEncountersEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, ncdEnabled, ncdaEnabled, nutritionEnabled, nutritionGroupEnabled, nutritionIndividualEnabled, reportToWhatsAppEnabled, resolveFamilyParticipantForPerson, resolveFamilyParticipantsForPerson, resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson, saveMeasurementCmd, stockManagementHCEnabled, stockManagementVillageEnabled, sw, tuberculosisManagementEnabled, wellChildEnabled)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
@@ -33,6 +33,25 @@ import SyncManager.Model exposing (SiteFeature(..))
 sw : Restful.Endpoint.CrudOperations w e k v c p
 sw =
     applyBackendUrl "/sw"
+
+
+{-| Is a create for this key already on its way to the backend?
+
+Entities are created optimistically: we mark the slot `Loading`, POST, and only
+navigate away once the response lands in the `HandlePosted...` handler. Until
+then the button that triggered the create is still on screen and still live, so
+a second tap would POST a second entity. Callers use this to ignore that tap.
+
+Only `Loading` blocks: a create that failed can be retried, and a key that
+already holds a `Success` from an earlier create is free to create again (a
+participant may legitimately get another encounter later on).
+
+-}
+isPostInFlight : k -> Dict k (RemoteData e a) -> Bool
+isPostInFlight key dict =
+    Dict.get key dict
+        |> Maybe.map RemoteData.isLoading
+        |> Maybe.withDefault False
 
 
 mapChildMeasurements : PersonId -> (ChildMeasurementList -> ChildMeasurementList) -> ModelIndexedDb -> ModelIndexedDb

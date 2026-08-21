@@ -33,6 +33,15 @@ MYSQL_HOSTNAME="127.0.0.1"
 MYSQL_DB_NAME="drupal_elm_starter"
 
 
+# GlitchTip error reporting.
+# The DSN is an ingest key, so it is never committed. Leave it empty to keep
+# error reporting off, which is what local and CI environments want.
+# The environment name is what identifies a self-hosted server as a real
+# deployment; without it nothing is sent even when a DSN is present.
+GLITCHTIP_DSN=""
+GLITCHTIP_ENVIRONMENT=""
+
+
 # Pantheon deployment details
 PROFILE="hedley"
 MAKE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

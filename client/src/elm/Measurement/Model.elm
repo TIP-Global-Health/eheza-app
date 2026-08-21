@@ -1,4 +1,4 @@
-module Measurement.Model exposing (AhezaForm, BloodGpRsResultForm, BloodGpRsTestForm, ContentAndTasksForPerformedLaboratoryTestConfig, ContentAndTasksForPerformedLaboratoryUniversalTestConfig, ContentAndTasksLaboratoryResultConfig, ContentAndTasksLaboratoryTestInitialConfig, ContentAndTasksLaboratoryUniversalTestInitialConfig, ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, CreatinineResultForm, DropZoneFile, FamilyPlanningForm, FbfForm, FloatInputConstraints, FollowUpForm, GroupOfFoods(..), HIVPCRResultForm, HIVPCRTestForm, HIVResultForm, HIVTestForm, HIVTestUniversalForm, HbA1cTestForm, HealthEducationForm, HeightForm, HemoglobinResultForm, HemoglobinTestForm, HepatitisBResultForm, HepatitisBTestForm, ImmunisationTask(..), InvokationModule(..), LaboratoryTask(..), LipidPanelResultForm, LiverFunctionResultForm, MalariaResultForm, MalariaTestForm, MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NextStepsTask(..), NonRDTForm, NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OngoingTreatmentReviewForm, OutMsgChild(..), OutMsgMother(..), OutsideCareForm, OutsideCareStep(..), ParticipantFormProgress, ParticipantFormUI, PartnerHIVResultForm, PartnerHIVTestForm, PhotoForm, PregnancyTestForm, RandomBloodSugarResultForm, RandomBloodSugarTestForm, RandomBloodSugarTestUniversalForm, SendToHCForm, SyphilisResultForm, SyphilisTestForm, UrineDipstickResultForm, UrineDipstickTestForm, UrineDipstickTestUniversalForm, VaccinationForm, VaccinationFormDynamicContentAndTasksConfig, VaccinationFormViewMode(..), VaccinationProgressDict, VaccinationStatus(..), VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, completedParticipantFormProgress, emptyAhezaForm, emptyBloodGpRsResultForm, emptyBloodGpRsTestForm, emptyContributingFactorsForm, emptyCorePhysicalExamForm, emptyCreatinineResultForm, emptyFamilyPlanningForm, emptyFbfForm, emptyFollowUpForm, emptyHIVPCRResultForm, emptyHIVPCRTestForm, emptyHIVResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHbA1cTestForm, emptyHealthEducationForm, emptyHeightForm, emptyHemoglobinResultForm, emptyHemoglobinTestForm, emptyHepatitisBResultForm, emptyHepatitisBTestForm, emptyLipidPanelResultForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyMedicationAdministrationForm, emptyModelChild, emptyModelMother, emptyMuacForm, emptyNCDAData, emptyNonRDTForm, emptyNutritionCaringForm, emptyNutritionFeedingForm, emptyNutritionFollowUpForm, emptyNutritionFoodSecurityForm, emptyNutritionForm, emptyNutritionHygieneForm, emptyOngoingTreatmentReviewForm, emptyOutsideCareForm, emptyParticipantFormProgress, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPhotoForm, emptyPregnancyTestForm, emptyRandomBloodSugarResultForm, emptyRandomBloodSugarTestForm, emptyRandomBloodSugarTestUniversalForm, emptySendToHCForm, emptySyphilisResultForm, emptySyphilisTestForm, emptyUrineDipstickResultForm, emptyUrineDipstickTestForm, emptyUrineDipstickTestUniversalForm, emptyVaccinationForm, emptyVitalsForm, emptyWeightForm)
+module Measurement.Model exposing (AhezaForm, BloodGpRsResultForm, BloodGpRsTestForm, ContentAndTasksForPerformedLaboratoryTestConfig, ContentAndTasksForPerformedLaboratoryUniversalTestConfig, ContentAndTasksLaboratoryResultConfig, ContentAndTasksLaboratoryTestInitialConfig, ContentAndTasksLaboratoryUniversalTestInitialConfig, ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, CreatinineResultForm, DropZoneFile, FamilyPlanningForm, FbfForm, FloatInputConstraints, FollowUpForm, GroupOfFoods(..), HIVPCRResultForm, HIVPCRTestForm, HIVResultForm, HIVTestForm, HIVTestUniversalForm, HbA1cTestForm, HealthEducationForm, HeightForm, HemoglobinResultForm, HemoglobinTestForm, HepatitisBResultForm, HepatitisBTestForm, ImmunisationTask(..), InvokationModule(..), LaboratoryTask(..), LipidPanelResultForm, LiverFunctionResultForm, MalariaResultForm, MalariaTestForm, MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NextStepsTask(..), NonRDTForm, NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OngoingTreatmentReviewForm, OutMsgChild(..), OutMsgMother(..), OutsideCareForm, OutsideCareStep(..), ParticipantFormProgress, ParticipantFormUI, PartnerHIVResultForm, PartnerHIVTestForm, PhotoForm, PregnancyTestForm, RandomBloodSugarResultForm, RandomBloodSugarTestForm, RandomBloodSugarTestUniversalForm, RangedMeasurement(..), SendToHCForm, SyphilisResultForm, SyphilisTestForm, UrineDipstickResultForm, UrineDipstickTestForm, UrineDipstickTestUniversalForm, VaccinationForm, VaccinationFormDynamicContentAndTasksConfig, VaccinationFormViewMode(..), VaccinationProgressDict, VaccinationStatus(..), VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, completedParticipantFormProgress, emptyAhezaForm, emptyBloodGpRsResultForm, emptyBloodGpRsTestForm, emptyContributingFactorsForm, emptyCorePhysicalExamForm, emptyCreatinineResultForm, emptyFamilyPlanningForm, emptyFbfForm, emptyFollowUpForm, emptyHIVPCRResultForm, emptyHIVPCRTestForm, emptyHIVResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHbA1cTestForm, emptyHealthEducationForm, emptyHeightForm, emptyHemoglobinResultForm, emptyHemoglobinTestForm, emptyHepatitisBResultForm, emptyHepatitisBTestForm, emptyLipidPanelResultForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyMedicationAdministrationForm, emptyModelChild, emptyModelMother, emptyMuacForm, emptyNCDAData, emptyNCDAForm, emptyNonRDTForm, emptyNutritionCaringForm, emptyNutritionFeedingForm, emptyNutritionFollowUpForm, emptyNutritionFoodSecurityForm, emptyNutritionForm, emptyNutritionHygieneForm, emptyOngoingTreatmentReviewForm, emptyOutsideCareForm, emptyParticipantFormProgress, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPhotoForm, emptyPregnancyTestForm, emptyRandomBloodSugarResultForm, emptyRandomBloodSugarTestForm, emptyRandomBloodSugarTestUniversalForm, emptySendToHCForm, emptySyphilisResultForm, emptySyphilisTestForm, emptyUrineDipstickResultForm, emptyUrineDipstickTestForm, emptyUrineDipstickTestUniversalForm, emptyVaccinationForm, emptyVitalsForm, emptyWeightForm)
 
 {-| These modules manage the UI for the various measurements relating to a
 participant.
@@ -52,6 +52,10 @@ type alias ModelChild =
     , healthEducationForm : HealthEducationForm
     , sendToHCForm : SendToHCForm
     , ncdaData : NCDAData
+
+    -- The measurements this form asks for that were entered outside the range
+    -- they can take, named on a warning until the nurse closes it.
+    , measurementOutOfRangePopupState : List RangedMeasurement
     }
 
 
@@ -77,6 +81,7 @@ emptyModelChild =
     , healthEducationForm = emptyHealthEducationForm
     , sendToHCForm = emptySendToHCForm
     , ncdaData = emptyNCDAData
+    , measurementOutOfRangePopupState = []
     }
 
 
@@ -226,6 +231,34 @@ type alias FloatInputConstraints =
     }
 
 
+{-| A measurement entered as a number, and so one with a range the number has to
+be within.
+
+Naming the measurement lets one warning say which of them is wrong, on the forms
+that ask for several behind a single button.
+
+Most are measurements of the body; the Apgar scores are not, but they are asked
+for as numbers with a range in the same way, and are refused by the same warning
+when what is entered cannot be one.
+
+The range is asked for along with the site, because MUAC is entered in
+millimetres at Burundi and in centimetres everywhere else. The site is passed
+alongside rather than held here: this module is below the one the site is
+defined in.
+
+-}
+type RangedMeasurement
+    = MeasurementApgarFiveMinutes
+    | MeasurementApgarOneMinute
+    | MeasurementBirthLength
+    | MeasurementBirthWeight
+    | MeasurementBloodGlucose
+    | MeasurementFundalHeight
+    | MeasurementHeight
+    | MeasurementMuac
+    | MeasurementWeight
+
+
 {-| Represents the "file" that DropZone gives us when
 the upload is complete. There are several things we
 could get from this ... for now, just the location.
@@ -241,6 +274,7 @@ type MsgChild
     | SendOutMsgChild OutMsgChild
     | SetDistributedAmountForChild String
     | SetDistributoinNoticeForChild DistributionNotice
+    | SetMeasurementOutOfRangePopupState (List RangedMeasurement)
     | UpdateHeight String
     | UpdateMuac String
     | UpdateWeight String
@@ -256,6 +290,7 @@ type MsgChild
     | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
+    | SetMeasurementOutOfRangePopup (Maybe NCDAStep)
     | SetChildReceivesVitaminA ReceiveOption
     | SetStuntingLevel StuntingLevel
     | SetWeight String
@@ -1720,31 +1755,48 @@ type alias CreatinineResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , creatinineResult : Maybe Float
+    , creatinineResultDirty : Bool
     , bunResult : Maybe Float
+    , bunResultDirty : Bool
     }
 
 
 emptyCreatinineResultForm : CreatinineResultForm
 emptyCreatinineResultForm =
-    CreatinineResultForm Nothing Nothing Nothing Nothing
+    { executionNote = Nothing
+    , executionDate = Nothing
+    , creatinineResult = Nothing
+    , creatinineResultDirty = False
+    , bunResult = Nothing
+    , bunResultDirty = False
+    }
 
 
 type alias LiverFunctionResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , altResult : Maybe Float
+    , altResultDirty : Bool
     , astResult : Maybe Float
+    , astResultDirty : Bool
     }
 
 
 emptyLiverFunctionResultForm : LiverFunctionResultForm
 emptyLiverFunctionResultForm =
-    LiverFunctionResultForm Nothing Nothing Nothing Nothing
+    { executionNote = Nothing
+    , executionDate = Nothing
+    , altResult = Nothing
+    , altResultDirty = False
+    , astResult = Nothing
+    , astResultDirty = False
+    }
 
 
 type alias NCDAData =
     { form : NCDAForm
     , helperState : Maybe NCDASign
+    , showMeasurementOutOfRangePopup : Bool
     }
 
 
@@ -1752,6 +1804,7 @@ emptyNCDAData : NCDAData
 emptyNCDAData =
     { form = emptyNCDAForm
     , helperState = Nothing
+    , showMeasurementOutOfRangePopup = False
     }
 
 
@@ -1966,6 +2019,7 @@ type alias NCDAContentConfig msg =
     , setMuacMsg : String -> msg
     , setStepMsg : NCDAStep -> msg
     , setHelperStateMsg : Maybe NCDASign -> msg
+    , setMeasurementOutOfRangePopupMsg : Maybe NCDAStep -> msg
     , saveMsg : msg
     }
 

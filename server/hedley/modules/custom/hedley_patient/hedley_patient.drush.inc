@@ -224,12 +224,421 @@ function _consolidate_patients_execute($original, $duplicate) {
     }
   }
 
+  // Relationships are not measurements, so the loop above never sees them.
+  // Re-point them before the duplicate is marked deleted: once they point at
+  // the original (a live person), the delete cascade - which soft-deletes the
+  // relationships that still reference the duplicate - leaves them alone.
+  $messages[] = _consolidate_patient_relationships($original, $duplicate);
+
+  // Education sessions reference their attendees, and are not measurements
+  // either. Re-point the duplicate to the original in every session it
+  // attended, so the original is recorded as the attendee rather than a
+  // person who no longer exists.
+  $messages[] = _consolidate_patient_education_sessions($original, $duplicate);
+
+  // When the duplicate is a newborn, the parent's pregnancy participant points
+  // at it through field_newborn. That field is not among the ones the delete
+  // cascade follows, so re-point it here or the participant would keep naming a
+  // person who no longer exists.
+  $messages[] = _consolidate_patient_newborn_references($original, $duplicate);
+
+  // A group participation names the adult who brings the child, and that is
+  // the reference the delete cascade DOES follow - so leaving it behind would
+  // not dangle, it would soft-delete another child's enrolment.
+  $messages[] = _consolidate_patient_group_participations($original, $duplicate);
+
+  // A WhatsApp record names the person a report was shared about. It carries no
+  // encounter indicator, so it is not a measurement and the loop above never
+  // sees it either.
+  $messages[] = _consolidate_patient_whatsapp_records($original, $duplicate);
+
+  // A trace contact IS a measurement, so the loop above re-pointed the person
+  // who reported it. It holds a second reference - the person who was contacted
+  // - which the loop does not touch.
+  $messages[] = _consolidate_patient_trace_contact_referrals($original, $duplicate);
+
   // Mark duplicate patient as Deleted.
   $wrapper_duplicate->field_deleted->set(TRUE);
   $wrapper_duplicate->save();
 
   $messages[] = 'SUCCESS! All consolidations completed!';
   return $messages;
+}
+
+/**
+ * Re-points the duplicate patient's relationships onto the original patient.
+ *
+ * A relationship is one node - field_person (the parent/caregiver) is related
+ * to field_related_to (the child/cared-for) by field_related_by. A person
+ * appears as field_person when they are the adult and as field_related_to when
+ * they are the child, so the duplicate may sit on either side.
+ *
+ * For each of the duplicate's relationships we move its side to the original,
+ * except:
+ *   - a relationship that would then point the original at itself (the two
+ *     patients were directly related) is redundant, so it is deleted;
+ *   - a relationship the original already holds (same other person, same
+ *     relation, same direction) would be a duplicate, so it is deleted.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_relationships($original, $duplicate) {
+  // The duplicate's relationships, from either side.
+  $relationship_ids = _hedley_patient_relationships_for_person($duplicate);
+
+  // The relationships the original already holds, keyed so we can spot a
+  // would-be duplicate. The key is person + related_by + related_to.
+  $existing = [];
+  foreach (_hedley_patient_relationships_for_person($original) as $relationship_id) {
+    $wrapper = entity_metadata_wrapper('node', $relationship_id);
+    $key = _hedley_patient_relationship_key(
+      $wrapper->field_person->getIdentifier(),
+      $wrapper->field_related_by->value(),
+      $wrapper->field_related_to->getIdentifier()
+    );
+    $existing[$key] = TRUE;
+  }
+
+  $repointed = $dropped = 0;
+  foreach ($relationship_ids as $relationship_id) {
+    $wrapper = entity_metadata_wrapper('node', $relationship_id);
+    $person = $wrapper->field_person->getIdentifier();
+    $related_to = $wrapper->field_related_to->getIdentifier();
+
+    // Move whichever side is the duplicate onto the original.
+    $new_person = ($person == $duplicate) ? $original : $person;
+    $new_related_to = ($related_to == $duplicate) ? $original : $related_to;
+
+    $key = _hedley_patient_relationship_key($new_person, $wrapper->field_related_by->value(), $new_related_to);
+
+    if ($new_person == $new_related_to || isset($existing[$key])) {
+      // Self-referential (the two patients were related to each other) or a
+      // relationship the original already has - either way, redundant.
+      $wrapper->field_deleted->set(TRUE);
+      $wrapper->save();
+      $dropped++;
+      continue;
+    }
+
+    $wrapper->field_person->set($new_person);
+    $wrapper->field_related_to->set($new_related_to);
+    // Clear the shards so the presave hook recomputes them from the new
+    // endpoints. hedley_device_assign_shards() leaves an already-populated
+    // field alone, so without this the relationship keeps the duplicate's
+    // shards and misses any the original has but the duplicate did not - and
+    // the transferred link would not reach all of the original's devices.
+    $wrapper->field_shards->set([]);
+    $wrapper->save();
+    // A later relationship of the duplicate might now duplicate this one.
+    $existing[$key] = TRUE;
+    $repointed++;
+  }
+
+  return format_string('Relationships: @repointed re-pointed to the original, @dropped dropped as redundant.', [
+    '@repointed' => $repointed,
+    '@dropped' => $dropped,
+  ]);
+}
+
+/**
+ * Non-deleted node IDs of one bundle that reference a person via given fields.
+ *
+ * @param int $person_id
+ *   Node ID of the person.
+ * @param array $fields
+ *   The reference fields to look through.
+ * @param string $bundle
+ *   The node bundle to keep.
+ *
+ * @return array
+ *   Node IDs of that bundle, keyed by ID.
+ */
+function _hedley_patient_content_referencing_person($person_id, array $fields, $bundle) {
+  $entries = hedley_general_get_person_content_associated_by_fields($person_id, $fields);
+
+  $ids = [];
+  foreach ($entries as $entry) {
+    if ($entry->bundle === $bundle) {
+      $ids[$entry->entity_id] = $entry->entity_id;
+    }
+  }
+
+  return $ids;
+}
+
+/**
+ * All non-deleted relationship node IDs a person takes part in, either side.
+ *
+ * @param int $person_id
+ *   Node ID of the person.
+ *
+ * @return array
+ *   Relationship node IDs.
+ */
+function _hedley_patient_relationships_for_person($person_id) {
+  return _hedley_patient_content_referencing_person($person_id, [
+    'field_person',
+    'field_related_to',
+  ], 'relationship');
+}
+
+/**
+ * Builds a comparison key identifying a relationship by its content.
+ *
+ * @param int $person_id
+ *   The field_person target.
+ * @param string $related_by
+ *   The field_related_by value.
+ * @param int $related_to_id
+ *   The field_related_to target.
+ *
+ * @return string
+ *   The key.
+ */
+function _hedley_patient_relationship_key($person_id, $related_by, $related_to_id) {
+  return implode(':', [$person_id, $related_by, $related_to_id]);
+}
+
+/**
+ * Re-points the duplicate patient to the original in its education sessions.
+ *
+ * A session's field_participating_patients is a multi-value list of the people
+ * who attended it. Replace the duplicate with the original in every session it
+ * attended; if the original attended the same session, the duplicate's entry
+ * is simply dropped so the original is not listed twice.
+ *
+ * Unlike a relationship, a session is not soft-deleted by the person-delete
+ * cascade (it belongs to the health center, not the attendee), so this exists
+ * only to keep the attendee list accurate - a merged-away person should not
+ * remain among a session's participants.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_education_sessions($original, $duplicate) {
+  $session_ids = _hedley_patient_content_referencing_person($duplicate, [
+    'field_participating_patients',
+  ], 'education_session');
+
+  $updated = 0;
+  foreach ($session_ids as $session_id) {
+    $wrapper = entity_metadata_wrapper('node', $session_id);
+    $participants = $wrapper->field_participating_patients->value(['identifier' => TRUE]);
+
+    $new_participants = [];
+    $seen = [];
+    foreach ($participants as $participant_id) {
+      $participant_id = ($participant_id == $duplicate) ? $original : $participant_id;
+      // Skip if we already have this participant (the original may have
+      // attended the same session). Node IDs used as array keys normalise any
+      // int/string difference, so this needs no explicit comparison.
+      if (!isset($seen[$participant_id])) {
+        $seen[$participant_id] = TRUE;
+        $new_participants[] = $participant_id;
+      }
+    }
+
+    $wrapper->field_participating_patients->set($new_participants);
+    $wrapper->save();
+    $updated++;
+  }
+
+  return format_string('Education sessions: @updated re-pointed to the original.', [
+    '@updated' => $updated,
+  ]);
+}
+
+/**
+ * Re-points a parent's pregnancy participant from the newborn duplicate.
+ *
+ * An individual_participant records a pregnancy through field_person (the
+ * parent) and field_newborn (the child it resulted in). When the duplicate is
+ * that child, the participant keeps naming it after the merge, because
+ * field_newborn is not one of the fields the person-delete cascade follows.
+ * Re-point those participants at the original.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_newborn_references($original, $duplicate) {
+  $participant_ids = _hedley_patient_content_referencing_person($duplicate, [
+    'field_newborn',
+  ], 'individual_participant');
+
+  _associate_content_by_field($participant_ids, 'field_newborn', $original);
+
+  return format_string('Newborn references: @count re-pointed to the original.', [
+    '@count' => count($participant_ids),
+  ]);
+}
+
+/**
+ * Re-points the duplicate patient's WhatsApp records at the original.
+ *
+ * A whatsapp_record names the person a report was shared about, through
+ * field_person. It carries no encounter indicator, so it is not a measurement
+ * type and the consolidation's measurement sweep never sees it. Left alone, the
+ * record of a report that was sent keeps naming a person who no longer exists.
+ *
+ * No shard handling: the bundle carries no field_shards at all, so there is
+ * nothing to recompute. It has no field_deleted either, which is why the
+ * person-delete cascade leaves the record in place rather than soft-deleting
+ * it along with the duplicate.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_whatsapp_records($original, $duplicate) {
+  $record_ids = _hedley_patient_content_referencing_person($duplicate, [
+    'field_person',
+  ], 'whatsapp_record');
+
+  _associate_content_by_field($record_ids, 'field_person', $original);
+
+  return format_string('WhatsApp records: @count re-pointed to the original.', [
+    '@count' => count($record_ids),
+  ]);
+}
+
+/**
+ * Re-points group participations the duplicate patient holds as the adult.
+ *
+ * A pmtct_participant enrols a child in a group, and names the adult who brings
+ * them in field_adult. That is the one person reference where leaving the
+ * duplicate in place does not merely dangle: field_adult IS followed by the
+ * person-delete cascade, so marking the duplicate deleted soft-deletes the
+ * participation - and the child, who has nothing to do with this merge, loses
+ * a group enrolment.
+ *
+ * Participations where the duplicate is the CHILD are a separate matter, left
+ * alone here: _consolidate_session_content_validate() refuses the merge unless
+ * the original already participates in every group the duplicate has
+ * measurements in, so the enrolment the child needs is already there.
+ *
+ * Shards are cleared so the presave hook recomputes them. A participant is a
+ * two-person node - hedley_device_assign_shards() gives it the union of both
+ * persons' shards - and it leaves an already-populated field alone, so without
+ * this the participation would keep the duplicate's shards and miss any health
+ * center only the original belongs to.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_group_participations($original, $duplicate) {
+  $participant_ids = _hedley_patient_content_referencing_person($duplicate, [
+    'field_adult',
+  ], 'pmtct_participant');
+
+  // What the original already brings a child to, keyed child + group, so a
+  // participation it already holds is not created twice.
+  $existing = [];
+  $original_ids = _hedley_patient_content_referencing_person($original, [
+    'field_adult',
+  ], 'pmtct_participant');
+  foreach ($original_ids as $id) {
+    $wrapper = entity_metadata_wrapper('node', $id);
+    $key = $wrapper->field_person->getIdentifier() . ':' . $wrapper->field_clinic->getIdentifier();
+    $existing[$key] = TRUE;
+  }
+
+  $repointed = $dropped = 0;
+  foreach ($participant_ids as $id) {
+    $wrapper = entity_metadata_wrapper('node', $id);
+    $child = $wrapper->field_person->getIdentifier();
+    $key = $child . ':' . $wrapper->field_clinic->getIdentifier();
+
+    if ($child == $original || isset($existing[$key])) {
+      // Either the original is the child of this participation, so re-pointing
+      // would make it its own adult, or it already brings that child to that
+      // group. Redundant either way.
+      $wrapper->field_deleted->set(TRUE);
+      $wrapper->save();
+      $dropped++;
+      continue;
+    }
+
+    $wrapper->field_adult->set($original);
+    $wrapper->field_shards->set([]);
+    $wrapper->save();
+    // A later participation of the duplicate might now duplicate this one.
+    $existing[$key] = TRUE;
+    $repointed++;
+  }
+
+  return format_string('Group participations: @repointed re-pointed to the original, @dropped dropped as redundant.', [
+    '@repointed' => $repointed,
+    '@dropped' => $dropped,
+  ]);
+}
+
+/**
+ * Re-points trace contacts that refer to the duplicate patient.
+ *
+ * An acute_illness_trace_contact is a measurement, so the sweep above already
+ * re-points its field_person - the person who reported the contact. It holds a
+ * second person reference the sweep does not touch: field_referred_person, the
+ * person who was contacted. When the duplicate is that person, the trace
+ * contact keeps naming them after the merge.
+ *
+ * No shard handling: a trace contact's shards derive from field_person, which
+ * the measurement sweep has already dealt with, not from field_referred_person.
+ *
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_patient_trace_contact_referrals($original, $duplicate) {
+  $contact_ids = _hedley_patient_content_referencing_person($duplicate, [
+    'field_referred_person',
+  ], 'acute_illness_trace_contact');
+
+  _associate_content_by_field($contact_ids, 'field_referred_person', $original);
+
+  return format_string('Trace contact referrals: @count re-pointed to the original.', [
+    '@count' => count($contact_ids),
+  ]);
 }
 
 /**

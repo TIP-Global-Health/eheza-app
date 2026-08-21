@@ -1518,6 +1518,7 @@ decodeIndexDbSaveResult =
         |> required "table" decodeIndexDbSaveResultTable
         |> required "status" decodeIndexDbSaveStatus
         |> required "timestamp" string
+        |> optional "reason" (nullable string) Nothing
 
 
 decodeIndexDbSaveResultTable : Decoder IndexDbSaveResultTable

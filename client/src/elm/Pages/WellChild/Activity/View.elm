@@ -39,6 +39,7 @@ import Measurement.Utils exposing (contributingFactorsFormWithDefault, generateF
 import Measurement.View
     exposing
         ( birthWeightInputsAndTasks
+        , measurementOutOfRangePopup
         , nutritionCaringInputsAndTasks
         , nutritionFeedingInputsAndTasks
         , nutritionFoodSecurityInputsAndTasks
@@ -133,7 +134,7 @@ viewHeaderAndContent language currentDate zscores site features id isChw activit
         [ header
         , content
         , viewModal <|
-            viewWarningPopup language model.warningPopupState
+            viewWarningPopup language site model.warningPopupState
         ]
 
 
@@ -172,22 +173,26 @@ viewContent language currentDate zscores site features isChw activity db model a
         |> div [ class "ui unstackable items" ]
 
 
-viewWarningPopup : Language -> Maybe WarningPopupType -> Maybe (Html Msg)
-viewWarningPopup language warningPopupState =
+viewWarningPopup : Language -> Site -> Maybe WarningPopupType -> Maybe (Html Msg)
+viewWarningPopup language site warningPopupState =
     warningPopupState
         |> Maybe.andThen
             (\popupType ->
                 case popupType of
+                    PopupMacrocephaly personId saved nextTask ->
+                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMacrocephalyWarning
+
+                    PopupMeasurementOutOfRange measurements ->
+                        Just <|
+                            measurementOutOfRangePopup language site measurements (SetWarningPopupState Nothing)
+
+                    PopupMicrocephaly personId saved nextTask ->
+                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMicrocephalyWarning
+
                     PopupNutritionAssessment assessment ->
                         warningPopup language
                             (SetWarningPopupState Nothing)
                             assessment
-
-                    PopupMacrocephaly personId saved nextTask ->
-                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMacrocephalyWarning
-
-                    PopupMicrocephaly personId saved nextTask ->
-                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMicrocephalyWarning
             )
 
 
@@ -331,6 +336,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                     (\value pregnancySummaryForm ->
                         { pregnancySummaryForm
                             | birthWeight = String.toFloat value |> Maybe.map WeightInGrm
+                            , birthWeightDirty = True
                         }
                     )
                 )
@@ -572,7 +578,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                     ++ birthDefectsSection
             ]
         , viewSaveAction language
-            (SavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary)
+            (PreSavePregnancySummary assembled.participant.person assembled.measurements.pregnancySummary)
             disabled
         ]
     ]
@@ -889,13 +895,13 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
                         saveMsg =
                             case task of
                                 TaskHeight ->
-                                    SaveHeight assembled.encounter.skippedForms personId measurements.height nextTask
+                                    PreSaveHeight assembled.encounter.skippedForms personId measurements.height nextTask
 
                                 TaskHeadCircumference ->
                                     PreSaveHeadCircumference personId headCircumferenceZScore measurements.headCircumference nextTask
 
                                 TaskMuac ->
-                                    SaveMuac personId measurements.muac nextTask
+                                    PreSaveMuac personId measurements.muac nextTask
 
                                 TaskNutrition ->
                                     let
@@ -906,7 +912,7 @@ viewNutritionAssessmenContent language currentDate site zscores isChw assembled 
                                     SaveNutrition personId measurements.nutrition assessment nextTask
 
                                 TaskWeight ->
-                                    SaveWeight assembled.encounter.skippedForms personId measurements.weight nextTask
+                                    PreSaveWeight assembled.encounter.skippedForms personId measurements.weight nextTask
 
                         disabled =
                             tasksCompleted /= totalTasks
@@ -2163,6 +2169,7 @@ viewNCDAContent language currentDate site assembled data db =
             , setMuacMsg = SetMuacForNCDA
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
+            , setMeasurementOutOfRangePopupMsg = SetMeasurementOutOfRangePopup
             , saveMsg = SaveNCDA personId assembled.measurements.ncda
             }
     in
@@ -2173,6 +2180,7 @@ viewNCDAContent language currentDate site assembled data db =
         assembled.person
         config
         data.helperState
+        data.showMeasurementOutOfRangePopup
         form
         db
 
