@@ -3,12 +3,15 @@ module SyncManager.Test exposing (all)
 import Device.Model exposing (Device)
 import EverySet
 import Expect
+import Http
 import Json.Encode
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData
 import SyncManager.Model
     exposing
-        ( DownloadPhotosStatus(..)
+        ( BackendGeneralEntity
+        , DownloadPhotosStatus(..)
+        , DownloadSyncResponse
         , Flags
         , IndexDbSaveError(..)
         , Model
@@ -59,6 +62,17 @@ testDevice =
     , refreshToken = ""
     , backendUrl = ""
     , deviceId = Nothing
+    }
+
+
+emptyGeneralResponse : DownloadSyncResponse BackendGeneralEntity
+emptyGeneralResponse =
+    { entities = []
+    , revisionCount = 0
+    , deviceName = ""
+    , rollbarToken = ""
+    , site = SiteUnknown
+    , features = EverySet.empty
     }
 
 
@@ -272,6 +286,27 @@ all =
                     |> .model
                     |> .syncStatus
                     |> Expect.equal (SyncDownloadAuthority RemoteData.Loading)
+
+        -- Each download lane reports its Http errors against its own
+        -- response. The general lane runs before the authority lane, so when
+        -- the general batch is saved the authority response still holds the
+        -- previous cycle's outcome, and a failure there is not a general
+        -- error.
+        , test "BackendGeneralFetchedDataSavedHandle reports no error while the authority response still holds a previous failure" <|
+            \() ->
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (BackendGeneralFetchedDataSavedHandle "0")
+                    { testModel
+                        | downloadGeneralResponse = RemoteData.Success emptyGeneralResponse
+                        , downloadAuthorityResponse = RemoteData.Failure Http.NetworkError
+                        , downloadRequestTime = Time.millisToPosix 0
+                    }
+                    |> .error
+                    |> Expect.equal Nothing
 
         -- A long catch-up sync can schedule a page reload. It must not fire
         -- while a nurse is logged in and possibly mid-form, or their unsaved

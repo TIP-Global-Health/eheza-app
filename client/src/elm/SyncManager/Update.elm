@@ -860,7 +860,7 @@ update currentTime activePage dbVersion device msg model =
                                 , sendSyncInfoGeneralCmd syncInfoGeneral
                                 ]
                             )
-                            (maybeHttpError model.downloadAuthorityResponse "Backend.SyncManager.Update" "BackendGeneralFetchedDataSavedHandle")
+                            (maybeHttpError model.downloadGeneralResponse "Backend.SyncManager.Update" "BackendGeneralFetchedDataSavedHandle")
                             appMsgs
                     )
                     (RemoteData.toMaybe model.downloadGeneralResponse)
