@@ -35,6 +35,14 @@ Read all entries before every run; append new ones only at the end of a run.
   restricted to a role (nurse vs CHW vs lab tech — some encounter types are role-exclusive;
   see the e2e knowledge base) before reporting it unreachable.
 
+## Occluded Chrome window: the one root cause behind four symptoms
+
+Before treating any of the four as its own problem, check `document.hidden`. A hidden window
+gives: a frozen DOM (below), screenshots that time out after 30 s, clicks that never reach
+the page, and a flat 5 s cost on every click, hover and screenshot instead of ~0.2 s
+(measured both ways — see app-map). Raising the window is the fix for all of them, and it is
+the user who has to do it: `resize_window` changes the OS window without clearing `hidden`.
+
 ## Occluded Chrome window freezes the app under test
 
 - **Symptom:** clicks change the URL hash but the page never re-renders; `form_input` on a
@@ -73,8 +81,10 @@ Read all entries before every run; append new ones only at the end of a run.
 - **Symptom:** sync errors repeating `Could not find UUID: <uuid>` in the app's Error log;
   last successful contact weeks old; nothing uploads or downloads.
 - **Wrong conclusion:** the backend or the PR under test broke sync.
-- **Rule:** after a server DB reinstall, a browser device's queued uploads reference UUIDs
-  that no longer exist, and the FIFO upload lane jams permanently. Recover by wiping the
+- **Rule:** after a server DB reinstall — which also happens whenever someone runs
+  `server/install` — a browser device's queued uploads reference UUIDs that no longer exist,
+  and the FIFO upload lane jams permanently. Treat "the server was reinstalled" as an order
+  to wipe the browser before the next run, not as something to discover through sync errors. Recover by wiping the
   app's local state completely and re-pairing a fresh device node: unregister the service
   worker, delete the caches **including the `config` cache** (it holds the pairing/robot
   credentials and the sync baseline — deleting only the `sync` IndexedDB leaves the app
@@ -87,3 +97,69 @@ Read all entries before every run; append new ones only at the end of a run.
 - **Wrong conclusion:** the issue does not exist or gh is misconfigured.
 - **Rule:** use the REST API instead: `gh api repos/TIP-Global-Health/eheza-app/issues/<n>`
   (and `.../pulls/<n>`, `.../issues/<n>/comments`).
+
+## A PR's commit list can contain work a later commit in the same PR undoes
+
+- **Symptom:** the test plan is built from the PR's commit messages, and the behaviour
+  the plan is about is simply not there in the app.
+- **Wrong conclusion:** the feature is broken, or the build is stale.
+- **Rule:** on a long PR, commit subjects describe intent at the time, not the merged
+  result. Before planning, check the **merged tree** for the identifier the commit
+  introduced (`git grep <newSymbol> <mergeCommit> -- client/src`). A subject like
+  "Leave X where it is" or "Take out ..." late in the list is usually a revert of an
+  earlier one. Plan against the code that merged, not against the story of getting there.
+
+## Clicking a text field the browser can autofill locks the extension out of the tab
+
+- **Symptom:** after clicking a field and typing, every browser tool fails with
+  "Cannot access a chrome-extension:// URL of different extension" — screenshots too.
+- **Wrong conclusion:** the extension crashed, or the app hung.
+- **Rule:** an autofill popup traps automation focus the same way a native select does.
+  It happens on the PIN field and on ordinary text fields the browser has saved values
+  for — the registration form's First Name did it after a few registrations. Set such
+  fields with `find` + `form_input` on the field's ref rather than clicking and typing.
+  Recovery is the same as for selects: close the tab (pairing and IndexedDB survive),
+  reopen the URL you were on — the app restores the page from the hash.
+
+## Screenshot timing out is the occlusion pitfall, not a frozen app
+
+- **Symptom:** `Page.captureScreenshot` times out after 30s, while `javascript_tool`
+  still answers and reports `document.hidden: true`; clicks appear to do nothing.
+- **Wrong conclusion:** the renderer is frozen.
+- **Rule:** the tab is fully hidden (window covered or not the active tab), so there is
+  no compositor to capture from and Elm's requestAnimationFrame render never runs.
+  `resize_window` brings the window back and screenshots start working again; the Web
+  Lock keepalive does not help with this one.
+
+## Reading a dependent dropdown before the DOM has caught up
+
+- **Symptom:** a cascading select (District after Province, MONTH after YEAR) reads as
+  empty in JS right after the parent was set, so the run concludes the cascade is broken.
+- **Wrong conclusion:** Elm ignored the change event.
+- **Rule:** this is the occluded-window freeze again — Elm's model advanced, the DOM had
+  not. Setting selects from JS works (`value` then `input` **and** `change` events, both
+  bubbling); what is missing is the render. Take a screenshot to force the frame, then
+  read the dependent options. Also note that changing YEAR rebuilds the MONTH list, so
+  set the year first and re-read the month options before choosing one.
+
+## Clicks stop reaching the page while the tool still reports success
+
+- **Symptom:** `computer left_click` returns "Clicked at (x, y)" — by coordinate or by ref —
+  and nothing happens. The app does not advance, and the injected cursor does not move
+  either, which is the giveaway: even a plain mousemove is not arriving.
+- **Wrong conclusion:** the coordinates are wrong, the click is landing on an overlay, or
+  the app is busy. Re-clicking, re-finding the ref and resizing the window all fail the
+  same way, which burns a lot of the run.
+- **Rule:** prove it in one call before theorising. Install counters —
+  `window.__ev={move:0,down:0}; document.addEventListener('mousemove',()=>__ev.move++,true);
+  document.addEventListener('mousedown',()=>__ev.down++,true)` — then click and read
+  `window.__ev`. Both still 0 means input delivery to that tab is dead, not a targeting
+  problem. `document.elementFromPoint` on the target's real rect will happily confirm the
+  button is on top and clickable, which is a red herring. Recovery is the usual one: close
+  the tab and reopen the URL (pairing and IndexedDB survive). Export whatever the recording
+  already holds first — the frames captured up to that point are still good evidence.
+  Seen twice, both times at the **health-centre choice right after a nurse signs in on a
+  freshly paired device**, while the first sync is still running: the OS pointer still moves
+  on screen but the page's own listeners never fire. Treat that screen on a fresh pairing as
+  a known place to lose input, and plan the recording so the scenario's evidence is captured
+  before it.
