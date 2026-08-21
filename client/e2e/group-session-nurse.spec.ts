@@ -3,6 +3,7 @@ import { click, setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { setFeatureFlag, verifyFeatureGatesClinicalAssessmentButton } from './helpers/feature-flags';
 import {
   navigateToNurseGroupSession,
   createMotherOnAttendancePage,
@@ -47,6 +48,7 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
 
   test('FBF group session: all activities including NextSteps', async ({
     page,
+    browser,
   }) => {
     // Scenario: Nurse creates an FBF group session with abnormal nutrition
     //   values (Edema sign + low MUAC) to trigger all activities including
@@ -56,6 +58,34 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
     //   SendToHC, FollowUp.
     // Mother activities: FamilyPlanning, Lactation, MotherFbf.
     // Backend: Verifies 14 node types (all group session content types).
+
+    // Verify FeatureNutritionGroup flag gates client UI + admin Reports surfaces.
+    // (On nurse the gate is unambiguous: group_education isn't part of the compound for non-CHW.)
+    //
+    // family_nutrition is dropped for this gate-check so the on/off cycle of
+    // nutrition_group exercises both admin Reports gates for FBF data
+    // in one pass:
+    //   - OFF phase (both flags off): SQ dropdown drops 'fbf-distribution'
+    //     entirely (visibleReportTypes gate, both contributing features off).
+    //   - ON phase (nutrition_group on, family_nutrition off): dropdown
+    //     reappears and the 3 FBF rows render
+    //     (visibleFbfDistributionCategories gate, FBF rows track
+    //     nutrition_group; Aheza rows correctly absent under family_nutrition).
+    try {
+      setFeatureFlag('family_nutrition', false);
+      await verifyFeatureGatesClinicalAssessmentButton(page, 'nutrition_group', 'group-assessment', {
+        browser,
+        admin: {
+          sqOptions: ['fbf-distribution'],
+          sqDemographicsRows: ['PMTCT', 'FBF', 'Sorwathe', 'CBNP', 'ACHI'],
+          sqFbfDistributionRows: ['fbf-child', 'fbf-mother', 'fbf-child-achi'],
+          completionOptions: ['nutrition-group'],
+        },
+      });
+    } finally {
+      setFeatureFlag('family_nutrition', true);
+      await syncAndWait(page);
+    }
 
     // 1. Navigate to FBF group session.
     await navigateToNurseGroupSession(page, 'FBF', 'Nyange I');

@@ -1,7 +1,8 @@
 module Backend.Completion.Model exposing (ActivitiesCompletionData, AcuteIllnessActivity(..), ChildScoreboardActivity(..), CompletionData, EncounterData, HIVActivity(..), HomeVisitActivity(..), Msg(..), NCDActivity(..), NutritionChildActivity(..), NutritionGroupEncounterData, NutritionMotherActivity(..), PrenatalActivity(..), SyncResponse, TakenBy(..), TuberculosisActivity(..), WellChildActivity(..), WellChildEncounterData, WellChildEncounterType(..))
 
-import App.Types exposing (Site)
+import App.Types exposing (Site, SiteFeature)
 import Backend.Components.Model exposing (ReportParams, SelectedEntity)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
 import RemoteData exposing (WebData)
@@ -9,6 +10,7 @@ import RemoteData exposing (WebData)
 
 type alias CompletionData =
     { site : Site
+    , features : EverySet SiteFeature
     , entityName : String
     , entityType : SelectedEntity
     , params : ReportParams

@@ -767,3 +767,21 @@ function hedley_update_7048() {
   variable_del('logs_rollbar_enabled');
   variable_del('logs_rollbar_rollbar_access_token');
 }
+
+/**
+ * Activate newly defined features set.
+ */
+function hedley_update_7049() {
+  $features = [
+    'hedley_admin_feature_acute_illness_enabled',
+    'hedley_admin_feature_antenatal_enabled',
+    'hedley_admin_feature_ncd_enabled',
+    'hedley_admin_feature_nutrition_group_enabled',
+    'hedley_admin_feature_nutrition_individual_enabled',
+    'hedley_admin_feature_well_child_enabled',
+  ];
+
+  foreach ($features as $feature) {
+    variable_set($feature, 1);
+  }
+}

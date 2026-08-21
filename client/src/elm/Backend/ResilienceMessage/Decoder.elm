@@ -1,7 +1,7 @@
-module Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessages)
+module Backend.ResilienceMessage.Decoder exposing (decodeReasonForNotConsenting, decodeResilienceMessages)
 
 import AssocList as Dict exposing (Dict)
-import Backend.ResilienceMessage.Model exposing (ResilienceCategory, ResilienceMessage, ResilienceMessageOrder)
+import Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting(..), ResilienceCategory, ResilienceMessage, ResilienceMessageOrder)
 import Backend.ResilienceMessage.Utils exposing (generateResilienceMessageId, resilienceCategoryFromString, resilienceMessageOrderFromString)
 import Gizra.Json exposing (decodeInt)
 import Gizra.TimePosix exposing (decodeSecondsAsPosix)
@@ -57,4 +57,33 @@ decodeResilienceMessageOrder =
                             s
                                 ++ " is not a recognized ResilienceMessageOrder."
                         )
+            )
+
+
+decodeReasonForNotConsenting : Decoder ReasonForNotConsenting
+decodeReasonForNotConsenting =
+    string
+        |> andThen
+            (\str ->
+                case str of
+                    "many-other-commitments" ->
+                        succeed ManyOtherCommitments
+
+                    "no-dedicated-time" ->
+                        succeed NoDedicatedTimeForTheProgram
+
+                    "program-not-addressing-stressors" ->
+                        succeed ProgramNotAddressingMyStressors
+
+                    "do-not-want-to-be-seen-as-struggling" ->
+                        succeed DontWantToBeSeenAsStruggling
+
+                    "tried-similar-program" ->
+                        succeed TriedSimilarProgramBefore
+
+                    "not-interested" ->
+                        succeed NotInterestedInProgram
+
+                    _ ->
+                        fail ("Unknown reason for not consenting: " ++ str)
             )

@@ -1,13 +1,21 @@
 module Pages.PinCode.View exposing (view)
 
 import AssocList as Dict
-import Backend.Entities exposing (..)
+import Backend.Entities exposing (HealthCenterId, NurseId, VillageId)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker, isLabTechnician, nurseAuthorizedForLocation)
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
-import Backend.Utils exposing (stockManagementHCEnabled, stockManagementVillageEnabled)
+import Backend.Utils
+    exposing
+        ( anyOfCaseManagementFeaturesEnabled
+        , anyOfDashboardFeaturesEnabled
+        , anyOfEncounterTypesEnabled
+        , authoritySelectionRequired
+        , stockManagementHCEnabled
+        , stockManagementVillageEnabled
+        )
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -48,10 +56,10 @@ view language zone currentTime features activePage nurseData ( healthCenterId, v
                         isChw =
                             isCommunityHealthWorker nurse
 
-                        selectedAuthorizedLocation =
+                        authoritySelected =
                             nurseAuthorizedForLocation villageId healthCenterId nurse
                     in
-                    ( viewLoggedInHeader language isChw selectedAuthorizedLocation
+                    ( viewLoggedInHeader language features isChw authoritySelected
                     , viewLoggedInContent language
                         zone
                         currentTime
@@ -61,7 +69,7 @@ view language zone currentTime features activePage nurseData ( healthCenterId, v
                         ( healthCenterId, villageId )
                         isChw
                         deviceName
-                        selectedAuthorizedLocation
+                        authoritySelected
                         db
                         model
                     )
@@ -75,9 +83,9 @@ view language zone currentTime features activePage nurseData ( healthCenterId, v
         |> div [ class "ui basic segment page-pincode" ]
 
 
-viewLoggedInHeader : Language -> Bool -> Bool -> Html Msg
-viewLoggedInHeader language isChw selectedAuthorizedLocation =
-    if selectedAuthorizedLocation then
+viewLoggedInHeader : Language -> EverySet SiteFeature -> Bool -> Bool -> Html Msg
+viewLoggedInHeader language features isChw authoritySelected =
+    if authoritySelected || (not <| authoritySelectionRequired isChw features) then
         viewLogo language
 
     else
@@ -183,7 +191,7 @@ viewLoggedInContent :
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewLoggedInContent language zone currentTime features nurseId nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db model =
+viewLoggedInContent language zone currentTime features nurseId nurse ( healthCenterId, villageId ) isChw deviceName authoritySelected db model =
     let
         logoutButton =
             button
@@ -195,13 +203,10 @@ viewLoggedInContent language zone currentTime features nurseId nurse ( healthCen
                     |> text
                 ]
     in
-    if selectedAuthorizedLocation then
+    if authoritySelected || (not <| authoritySelectionRequired isChw features) then
         let
             currentDate =
                 fromLocalDateTime zone currentTime
-
-            isLabTech =
-                isLabTechnician nurse
 
             deviceInfo =
                 deviceName
@@ -260,7 +265,7 @@ viewLoggedInContent language zone currentTime features nurseId nurse ( healthCen
 
                             MenuWellbeing ->
                                 ( "messaging-center"
-                                , UserPage WellbeingPage
+                                , WellbeingPage
                                 )
 
                             MenuStockManagement ->
@@ -282,33 +287,34 @@ viewLoggedInContent language zone currentTime features nurseId nurse ( healthCen
                     (SendOutMsg <| SetActivePage navigationPage)
 
             activities =
+                let
+                    isLabTech =
+                        isLabTechnician nurse
+
+                    encountersEnabled =
+                        anyOfEncounterTypesEnabled isChw features
+
+                    viewMenus menus isOn =
+                        if isOn then
+                            menus
+
+                        else
+                            []
+                in
                 if isLabTech then
-                    [ MenuCaseManagement
-                    , MenuDeviceStatus
-                    ]
+                    viewMenus [ MenuCaseManagement ] encountersEnabled
+                        ++ [ MenuDeviceStatus ]
 
                 else
-                    [ MenuClinical
-                    , MenuParticipantDirectory
-                    , MenuDashboards
-                    , MenuCaseManagement
-                    , MenuDeviceStatus
-                    ]
-                        ++ (if nurse.resilienceProgramEnabled then
-                                [ MenuWellbeing ]
-
-                            else
-                                []
-                           )
-                        ++ (if
-                                (stockManagementHCEnabled features && not isChw)
-                                    || (stockManagementVillageEnabled features && isChw)
-                            then
-                                [ MenuStockManagement ]
-
-                            else
-                                []
-                           )
+                    viewMenus [ MenuClinical, MenuParticipantDirectory ] encountersEnabled
+                        ++ viewMenus [ MenuDashboards ] (anyOfDashboardFeaturesEnabled isChw features)
+                        ++ viewMenus [ MenuCaseManagement ] (anyOfCaseManagementFeaturesEnabled isChw features)
+                        ++ viewMenus [ MenuWellbeing ] nurse.resilienceProgramEnabled
+                        ++ viewMenus [ MenuStockManagement ]
+                            ((stockManagementHCEnabled features && not isChw)
+                                || (stockManagementVillageEnabled features && isChw)
+                            )
+                        ++ [ MenuDeviceStatus ]
 
             cards =
                 div [ class "wrap-cards" ]

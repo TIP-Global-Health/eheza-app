@@ -3,6 +3,7 @@ import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesPinCodeMenuIcon } from './helpers/feature-flags';
 import {
   navigateToStockManagement,
   completeReceiveStock,
@@ -45,6 +46,9 @@ test.describe('Nurse: Stock Management — Full Flow', () => {
   });
 
   test('receive stock, correct entry (subtraction + addition), view details, verify backend', async ({ page }) => {
+    // Verify FeatureStockManagementHC flag gates the Stock Management menu icon on PinCode (nurse).
+    await verifyFeatureGatesPinCodeMenuIcon(page, 'stock_management_hc', 'stock-management');
+
     // Get baseline count of stock_update nodes before test.
     const baseline = queryStockUpdateNodes('Nyange Health Center');
     const initialCount = baseline.count;

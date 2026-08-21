@@ -4,7 +4,7 @@ import App.Model
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..))
 import Translate exposing (Language, translate, translateText)
 
 
@@ -18,7 +18,7 @@ view language =
                     ]
                 , span
                     [ class "link-back"
-                    , onClick <| App.Model.SetActivePage <| UserPage WellbeingPage
+                    , onClick <| App.Model.SetActivePage WellbeingPage
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]

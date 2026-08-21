@@ -9,6 +9,7 @@ import {
   saveSubTask,
   syncAndWait,
 } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createChildAndStartWellChildEncounter,
   completePregnancySummary,
@@ -51,7 +52,16 @@ test.describe('CHW: Well Child NewbornExam Encounter', () => {
   //             warning naming BOTH; the activity is not left; only after 3000
   //             and 50 are entered does it save. The second pass also covers
   //             correcting measurements on a record that already exists.
-  test('complete newborn exam with PregnancySummary, NutritionAssessment, Immunisation, verify backend sync', async ({ page }) => {
+  test('complete newborn exam with PregnancySummary, NutritionAssessment, Immunisation, verify backend sync', async ({ page, browser }) => {
+    // Verify FeatureWellChild flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'well_child', 'Well Child Visit', {
+      browser,
+      admin: {
+        sqOptions: ['postnatal-care'],
+        sqDemographicsRows: ['Standard Pediatric Visit'],
+        completionOptions: ['newborn-exam', 'well-child'],
+      },
+    });
 
     const { fullName } = await createChildAndStartWellChildEncounter(page, {
       ageMonths: 1,

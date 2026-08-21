@@ -2,11 +2,13 @@ module Pages.Reports.Update exposing (update)
 
 import App.Model exposing (PagesReturn)
 import App.Ports
+import App.Types exposing (SiteFeature(..))
 import AssocList as Dict
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model exposing (PatientData)
 import Date exposing (Unit(..))
 import Error.Utils exposing (noError)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra
 import Pages.Reports.Model exposing (Model, Msg(..), NutritionReportData, ReportType(..))
@@ -36,7 +38,7 @@ update currentDate modelBackend msg model =
                                     ( model.nutritionReportData, Cmd.none )
 
                                 else
-                                    ( Loading, performNutritionReportDataCalculation currentDate data.records )
+                                    ( Loading, performNutritionReportDataCalculation currentDate data.features data.records )
 
                             _ ->
                                 ( model.nutritionReportData, Cmd.none )
@@ -106,16 +108,31 @@ update currentDate modelBackend msg model =
                 []
 
 
-performNutritionReportDataCalculation : NominalDate -> List PatientData -> Cmd Msg
-performNutritionReportDataCalculation currentDate data =
+performNutritionReportDataCalculation : NominalDate -> EverySet SiteFeature -> List PatientData -> Cmd Msg
+performNutritionReportDataCalculation currentDate features data =
     Task.perform (Result.mapError (always "Calculations failed") >> NutritionReportDataCalculationCompleted)
-        (wrapInResultTask <| calculateNutritionReportDataTask currentDate data)
+        (wrapInResultTask <| calculateNutritionReportDataTask currentDate features data)
 
 
-calculateNutritionReportDataTask : NominalDate -> List PatientData -> Task String NutritionReportData
-calculateNutritionReportDataTask currentDate data =
+calculateNutritionReportDataTask : NominalDate -> EverySet SiteFeature -> List PatientData -> Task String NutritionReportData
+calculateNutritionReportDataTask currentDate features data =
     Task.succeed
         (let
+            memberFeature f =
+                EverySet.member f features
+
+            wellChildEnabled =
+                memberFeature FeatureWellChild
+
+            nutritionIndividualEnabled =
+                memberFeature FeatureNutritionIndividual
+
+            nutritionGroupEnabled =
+                memberFeature FeatureNutritionGroup
+
+            familyNutritionEnabled =
+                memberFeature FeatureFamilyNutrition
+
             records =
                 List.filter
                     (\record ->
@@ -143,60 +160,74 @@ calculateNutritionReportDataTask currentDate data =
             filterByYear encounter =
                 Date.year encounter.startDate >= startingYear
 
+            seriesIf flag series =
+                if flag then
+                    series
+
+                else
+                    Nothing
+
             allEncounters =
                 List.concatMap
                     (\record ->
-                        [ Maybe.map
-                            (List.concat
-                                >> List.filter filterByYear
-                                >> List.map
-                                    (\item ->
-                                        -- WellChildEncounterData mirrors NutritionEncounterData's
-                                        -- shape (date, nutritionData, muacCm) plus immunisationData;
-                                        -- well-child wire doesn't carry edema or FBF distribution
-                                        -- today, so default both to absent.
-                                        ( record.id
-                                        , { startDate = item.startDate
-                                          , nutritionData = item.nutritionData
-                                          , muacCm = item.muacCm
-                                          , hasEdema = False
-                                          , fbfAmount = Nothing
-                                          }
+                        [ seriesIf wellChildEnabled <|
+                            Maybe.map
+                                (List.concat
+                                    >> List.filter filterByYear
+                                    >> List.map
+                                        (\item ->
+                                            -- WellChildEncounterData mirrors NutritionEncounterData's
+                                            -- shape (date, nutritionData, muacCm) plus immunisationData;
+                                            -- well-child wire doesn't carry edema or FBF distribution
+                                            -- today, so default both to absent.
+                                            ( record.id
+                                            , { startDate = item.startDate
+                                              , nutritionData = item.nutritionData
+                                              , muacCm = item.muacCm
+                                              , hasEdema = False
+                                              , fbfAmount = Nothing
+                                              }
+                                            )
                                         )
-                                    )
-                            )
-                            record.wellChildData
-                        , Maybe.map
-                            (List.concat
-                                >> List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
-                            )
-                            record.individualNutritionData
-                        , Maybe.map
-                            (List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
-                            )
-                            record.groupNutritionPmtctData
-                        , Maybe.map
-                            (List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
-                            )
-                            record.groupNutritionFbfData
-                        , Maybe.map
-                            (List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
-                            )
-                            record.groupNutritionSorwatheData
-                        , Maybe.map
-                            (List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
-                            )
-                            record.groupNutritionChwData
-                        , Maybe.map
-                            (List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
-                            )
-                            record.groupNutritionAchiData
+                                )
+                                record.wellChildData
+                        , seriesIf nutritionIndividualEnabled <|
+                            Maybe.map
+                                (List.concat
+                                    >> List.filter filterByYear
+                                    >> List.map (Tuple.pair record.id)
+                                )
+                                record.individualNutritionData
+                        , seriesIf nutritionGroupEnabled <|
+                            Maybe.map
+                                (List.filter filterByYear
+                                    >> List.map (Tuple.pair record.id)
+                                )
+                                record.groupNutritionPmtctData
+                        , seriesIf nutritionGroupEnabled <|
+                            Maybe.map
+                                (List.filter filterByYear
+                                    >> List.map (Tuple.pair record.id)
+                                )
+                                record.groupNutritionFbfData
+                        , seriesIf nutritionGroupEnabled <|
+                            Maybe.map
+                                (List.filter filterByYear
+                                    >> List.map (Tuple.pair record.id)
+                                )
+                                record.groupNutritionSorwatheData
+                        , seriesIf nutritionGroupEnabled <|
+                            Maybe.map
+                                (List.filter filterByYear
+                                    >> List.map (Tuple.pair record.id)
+                                )
+                                record.groupNutritionChwData
+                        , seriesIf nutritionGroupEnabled <|
+                            Maybe.map
+                                (List.filter filterByYear
+                                    >> List.map (Tuple.pair record.id)
+                                )
+                                record.groupNutritionAchiData
                         ]
                             |> Maybe.Extra.values
                             |> List.concat
@@ -213,17 +244,21 @@ calculateNutritionReportDataTask currentDate data =
             -- above, and the Demographics row already counts them
             -- elsewhere.
             familyNutritionEncounters =
-                List.concatMap
-                    (\record ->
-                        record.familyNutritionMuacData
-                            |> Maybe.map
-                                (List.concat
-                                    >> List.filter filterByYear
-                                    >> List.map (Tuple.pair record.id)
-                                )
-                            |> Maybe.withDefault []
-                    )
-                    records
+                if familyNutritionEnabled then
+                    List.concatMap
+                        (\record ->
+                            record.familyNutritionMuacData
+                                |> Maybe.map
+                                    (List.concat
+                                        >> List.filter filterByYear
+                                        >> List.map (Tuple.pair record.id)
+                                    )
+                                |> Maybe.withDefault []
+                        )
+                        records
+
+                else
+                    []
 
             insertMetricsForMonth ( year, month ) encounterMetrics accum =
                 let

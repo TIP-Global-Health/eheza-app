@@ -1,4 +1,4 @@
-module Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
+module Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting(..), ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
 
 import Time
 
@@ -21,6 +21,15 @@ type ResilienceCategory
     | ResilienceCategoryConnecting
     | ResilienceCategorySelfCare
     | ResilienceCategoryEndOfPeriod
+
+
+type ReasonForNotConsenting
+    = ManyOtherCommitments
+    | NoDedicatedTimeForTheProgram
+    | ProgramNotAddressingMyStressors
+    | DontWantToBeSeenAsStruggling
+    | TriedSimilarProgramBefore
+    | NotInterestedInProgram
 
 
 type ResilienceMessageOrder

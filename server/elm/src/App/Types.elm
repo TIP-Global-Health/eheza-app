@@ -35,13 +35,19 @@ client/src/elm/SyncManager/Model.elm and the canonical list in
 hedley\_admin\_get\_available\_features (PHP). Update all together.
 -}
 type SiteFeature
-    = FeatureFamilyNutrition
+    = FeatureAcuteIllness
+    | FeatureAntenatal
+    | FeatureFamilyNutrition
     | FeatureGPSCoordinates
     | FeatureGroupEducation
     | FeatureHealthyStart
     | FeatureHIVManagement
+    | FeatureNCD
     | FeatureNCDA
+    | FeatureNutritionGroup
+    | FeatureNutritionIndividual
     | FeatureReportToWhatsApp
     | FeatureStockManagementHC
     | FeatureStockManagementVillage
     | FeatureTuberculosisManagement
+    | FeatureWellChild
