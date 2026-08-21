@@ -124,7 +124,8 @@ type CorrectionEntryType
 
 
 type Msg
-    = SetActivePage Page
+    = Reset
+    | SetActivePage Page
     | SetDisplayMode DisplayMode
     | StoreSignature
     | ClearSignaturePad

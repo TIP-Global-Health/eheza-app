@@ -109,10 +109,12 @@ generateStockManagementDataFromDistributions currentDate allDistributions allSto
                     (Date.add Date.Months 1 currentDate)
                 |> dateToMonthYear
 
-        -- Average month consumption is calculated by number of distributions issued
-        -- during past 6 months, so we use this data structure to calculate it.
+        -- Average month consumption is the amount distributed during the past 6
+        -- months divided by 6, so we use this data structure to calculate it.
+        -- The current month (gap 0) is included so its own window can be looked
+        -- up here; the window is always the 6 months before the month.
         distributionsByMonth =
-            List.range 1 18
+            List.range 0 18
                 |> List.map
                     (\monthGap ->
                         let

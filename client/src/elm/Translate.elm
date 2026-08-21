@@ -1059,6 +1059,7 @@ type TranslationId
     | MastitisRecommendedTreatmentHeader Bool
     | MastitisRecommendedTreatmentHelper
     | MeasurementNotTaken
+    | MeasurementOutOfRangeWarning Site Measurement.Model.RangedMeasurement
     | MedicationCausingHypertension MedicationCausingHypertension
     | MedicationCausingHypertensionQuestion
     | MedicalCondition MedicalCondition
@@ -12056,6 +12057,80 @@ translationSet trans =
             , kirundi = Nothing
             , somali = Just "Lama awoodo in la qaado cabirka, ka bood qeybtan"
             }
+
+        MeasurementOutOfRangeWarning site measurement ->
+            case measurement of
+                Measurement.Model.MeasurementApgarFiveMinutes ->
+                    { english = "The Apgar score at five minutes is a score out of 10, not a measurement."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementApgarOneMinute ->
+                    { english = "The Apgar score at one minute is a score out of 10, not a measurement."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementBirthLength ->
+                    { english = "Birth length is recorded in centimetres."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementBirthWeight ->
+                    { english = "Birth weight is recorded in grams, not kilograms: a weight of 3 kilograms is entered as 3000."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementBloodGlucose ->
+                    { english = "Blood glucose is recorded in milligrams per decilitre, not millimoles per litre: a reading of 11.1 mmol/L is entered as 200."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementFundalHeight ->
+                    { english = "Fundal height is recorded in centimetres."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementHeight ->
+                    { english = "Height is recorded in centimetres."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementMuac ->
+                    case site of
+                        SiteBurundi ->
+                            { english = "MUAC is recorded in millimetres."
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            , somali = Nothing
+                            }
+
+                        _ ->
+                            { english = "MUAC is recorded in centimetres."
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            , somali = Nothing
+                            }
+
+                Measurement.Model.MeasurementWeight ->
+                    { english = "Weight is recorded in kilograms."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
         MedicationCausingHypertension medication ->
             case medication of
@@ -30775,7 +30850,7 @@ translateFormError error =
             translateValidationError e
 
 
-{-| This one is hampered by the fact that the field names in etaque/elm-form
+{-| This one is hampered by the fact that the field names in Gizra/elm-form
 are untyped strings, but we do our best.
 -}
 translateFormField : String -> TranslationSet String

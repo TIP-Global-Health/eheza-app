@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
 
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import { click } from './auth';
 import { drushEnv } from './device';
 
@@ -375,6 +375,136 @@ export function queryPrenatalLmp(personName: string): string | null {
 // ---------------------------------------------------------------------------
 
 /**
+ * Verify that measurements outside their range are refused, then enter values
+ * that are within it.
+ *
+ * Anthropometric measurements are stored in a particular unit, and a value in
+ * the wrong unit lands far outside the range that unit can take -- a birth
+ * weight typed in kilograms, a birth length typed in metres. Pressing the
+ * button to go on must show the warning, naming every measurement that is
+ * wrong, and save nothing (issue #1980).
+ *
+ * Call with the rest of the form already filled in, so that the button is
+ * active: Elm gives a button that is not active no click handler at all, and
+ * clicking it would do nothing.
+ *
+ * @param stillOnFormSelector - something on the form that must still be there
+ *   afterwards, proving the form was not left and nothing was saved.
+ * @param measurements - for each: the input's CSS id, the class the popup
+ *   carries for it, a value outside the range, and one within it.
+ * @param notNamed - classes of measurements that are in range, which the
+ *   warning must NOT carry. Without this a check that named every measurement
+ *   regardless, or one that lost its "is this even asked for" guard, would
+ *   still pass.
+ */
+export async function expectMeasurementsOutOfRangeRefused(
+  page: Page,
+  stillOnFormSelector: string,
+  measurements: Array<{
+    inputId: string;
+    popupClass: string;
+    bad: string;
+    good: string;
+    /** Words from the warning's line for this one. Give it for every
+     *  measurement to also check the order they are named in. */
+    saysInWarning?: string;
+  }>,
+  notNamed: string[] = [],
+): Promise<void> {
+  for (const m of measurements) {
+    await fillMeasurement(page, m.inputId, m.bad);
+    await page.waitForTimeout(WAIT.formInteraction);
+  }
+
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await saveBtn.waitFor({ timeout: 5000 });
+  // A button without `active` has no click handler, so the click below would be
+  // silently dropped and the warning would never appear.
+  await expect(saveBtn).toHaveClass(/active/);
+  await click(saveBtn, page);
+
+  const popup = page.locator('div.ui.active.modal.measurement-out-of-range');
+  await popup.waitFor({ timeout: 10000 });
+
+  // Match whole class names: `birth-weight-out-of-range` holds
+  // `weight-out-of-range` inside it, so a loose match names the wrong one.
+  const named = (cls: string) => new RegExp(`(^| )${cls}( |$)`);
+
+  // Every measurement that is wrong is named, not just the first one.
+  for (const m of measurements) {
+    await expect(popup).toHaveClass(named(m.popupClass));
+  }
+
+  // And nothing that is in range is named.
+  for (const cls of notNamed) {
+    await expect(popup).not.toHaveClass(named(cls));
+  }
+
+  // They are named in the order the form asks for them. Otherwise the nurse
+  // reads them in a different order to the fields in front of her.
+  if (measurements.length > 1 && measurements.every(m => m.saysInWarning)) {
+    const said = await popup.locator('.popup-action p').allTextContents();
+    expect(said.length, 'the warning says one line per measurement named').toBe(measurements.length);
+    measurements.forEach((m, i) => {
+      expect(said[i], `line ${i + 1} of the warning is about ${m.inputId}`)
+        .toContain(m.saysInWarning as string);
+    });
+  }
+
+  // The form is still up, so nothing out of range was saved.
+  await expect(page.locator(stillOnFormSelector).first()).toBeVisible();
+
+  await click(popup.locator('button.ui.primary.fluid.button'), page);
+  await popup.waitFor({ state: 'hidden', timeout: 10000 });
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  // Now the values as they are meant to be recorded.
+  for (const m of measurements) {
+    await fillMeasurement(page, m.inputId, m.good);
+    await page.waitForTimeout(WAIT.formInteraction);
+  }
+}
+
+/** A blood glucose reading inside the range the field takes (20-1200 mg/dL). */
+export const GLUCOSE_IN_RANGE = '120';
+
+/** A blood glucose reading as a glucometer set to millimoles per litre shows
+ *  it, which the field refuses because it reads as milligrams. */
+export const GLUCOSE_IN_MILLIMOLES = '12';
+
+/** Whether a numeric measurement input is the blood glucose one. */
+export async function isGlucoseInput(
+  input: import('@playwright/test').Locator,
+): Promise<boolean> {
+  return input.evaluate(
+    el => el.parentElement?.classList.contains('sugar-count') ?? false,
+  );
+}
+
+
+/**
+ * The blood glucose field refuses a reading typed in millimoles per litre, and
+ * says which unit it wants. Leaves a reading in range behind.
+ *
+ * Call it with the glucose input on screen.
+ */
+export async function expectGlucoseRangeRefusesMillimoles(page: Page): Promise<void> {
+  await expectMeasurementsOutOfRangeRefused(
+    page,
+    '.form-input.measurement.sugar-count',
+    [
+      {
+        inputId: 'sugar-count',
+        popupClass: 'blood-glucose-out-of-range',
+        bad: GLUCOSE_IN_MILLIMOLES,
+        good: GLUCOSE_IN_RANGE,
+      },
+    ],
+  );
+}
+
+
+/**
  * Click the Save button and wait for return to the encounter page.
  * @param encounterType - CSS class for the encounter page (e.g., 'ncd', 'prenatal').
  */
@@ -402,7 +532,7 @@ export async function saveSubTask(page: Page): Promise<void> {
 
 /**
  * Locate a form input by its label text (grid row pattern).
- * Elm's etaque/elm-form does NOT set HTML name attributes on inputs,
+ * Elm's Gizra/elm-form does NOT set HTML name attributes on inputs,
  * so we locate by label text in the .ui.grid layout.
  */
 export function formInput(page: Page, labelText: string) {

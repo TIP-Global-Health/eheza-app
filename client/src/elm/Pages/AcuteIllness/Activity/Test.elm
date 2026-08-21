@@ -23,11 +23,15 @@ import Backend.Measurement.Model
         , SymptomsRespiratorySign(..)
         , VitalsValue
         )
+import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
+import Measurement.Model exposing (RangedMeasurement(..), emptyMuacForm)
+import Pages.AcuteIllness.Activity.Model exposing (Msg(..), emptyCovidTestingForm, emptyModel)
+import Pages.AcuteIllness.Activity.Update exposing (update)
 import Pages.AcuteIllness.Activity.Utils
     exposing
         ( malariaDangerSignsPresent
@@ -43,10 +47,11 @@ import Pages.AcuteIllness.Activity.Utils
         , respiratoryRateElevatedByAge
         , respiratoryRateElevatedByAgeForCovid19
         , symptomMaxDuration
+        , toCovidTestingValueWithDefault
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
-import SyncManager.Model exposing (SiteFeature(..))
+import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
 import Time
 
@@ -870,4 +875,83 @@ all =
         , orsDosageTest
         , zincDosageTest
         , amoxicillinDosageTest
+        , preSaveMuacTest
+        , covidTestingRoundTripTest
+        ]
+
+
+{-| Re-opening a saved COVID rapid test used to reconstruct some results wrong:
+"unable to run while pregnant" came back as "performed / not pregnant" (and
+re-saved as no value), and a plain positive came back flagged pregnant (and
+re-saved as positive-and-pregnant). Saving from the edited form therefore
+corrupted the record. Every result must survive a form round-trip unchanged.
+-}
+covidTestingRoundTripTest : Test
+covidTestingRoundTripTest =
+    let
+        roundTrip result =
+            toCovidTestingValueWithDefault
+                (Just (CovidTestingValue result Nothing))
+                emptyCovidTestingForm
+                |> Expect.equal (Just (CovidTestingValue result Nothing))
+    in
+    describe "COVID rapid test result round-trips through the form unchanged"
+        [ test "unable to run while pregnant (was lost on re-save)" <|
+            \_ -> roundTrip RapidTestUnableToRunAndPregnant
+        , test "positive (was silently turned into positive-and-pregnant)" <|
+            \_ -> roundTrip RapidTestPositive
+        , test "positive and pregnant" <|
+            \_ -> roundTrip RapidTestPositiveAndPregnant
+        , test "negative" <|
+            \_ -> roundTrip RapidTestNegative
+        , test "unable to run" <|
+            \_ -> roundTrip RapidTestUnableToRun
+        ]
+
+
+{-| A mistyped MUAC used to deaden the Save button with nothing on screen to
+say why. The measurement is named on a warning instead, and nothing is saved
+until it is entered again.
+-}
+preSaveMuacTest : Test
+preSaveMuacTest =
+    let
+        preSave site muac =
+            let
+                data =
+                    emptyModel.physicalExamData
+
+                model =
+                    { emptyModel
+                        | physicalExamData = { data | muacForm = { emptyMuacForm | muac = muac } }
+                    }
+
+                ( updatedModel, _, appMsgs ) =
+                    update site
+                        Nothing
+                        (toEntityUuid "encounter")
+                        emptyModelIndexedDb
+                        (PreSaveMuac (toEntityUuid "person") Nothing Nothing)
+                        model
+            in
+            -- What the warning names, and whether anything was saved.
+            ( updatedModel.measurementOutOfRangePopupState, not <| List.isEmpty appMsgs )
+    in
+    describe "the MUAC save gate"
+        [ test "Rwanda: a plausible 12.5 cm names nothing and saves" <|
+            \_ ->
+                preSave SiteRwanda (Just 12.5)
+                    |> Expect.equal ( [], True )
+        , test "Rwanda: 125, a mm value typed into a cm field, is named and saves nothing" <|
+            \_ ->
+                preSave SiteRwanda (Just 125)
+                    |> Expect.equal ( [ MeasurementMuac ], False )
+        , test "Burundi: a form holding 12.5 cm is 125 mm there, so it names nothing and saves" <|
+            \_ ->
+                preSave SiteBurundi (Just 12.5)
+                    |> Expect.equal ( [], True )
+        , test "Burundi: a form holding 1.25 cm is 12.5 mm there, below the range" <|
+            \_ ->
+                preSave SiteBurundi (Just 1.25)
+                    |> Expect.equal ( [ MeasurementMuac ], False )
         ]

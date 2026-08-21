@@ -182,6 +182,50 @@ function hedley_general_get_person_measurements($person_id, array $measurement_t
 }
 
 /**
+ * Every field through which content references a person.
+ *
+ * This is the single list of the ways a person can be pointed at. It exists
+ * because the subsystems that have to follow those references - the patient
+ * merge, the shard recalculation, the delete cascade - each used to carry
+ * their own hardcoded subset, so a newly introduced reference field could
+ * (and did) escape all of them at once, silently.
+ *
+ * Adding a new field that references a person? Add it here, and then decide,
+ * explicitly, what each of these should do with it:
+ *
+ *   - hedley_patient_consolidate_patients() - the patient merge: content of
+ *     the duplicate has to be re-pointed at the original, or it is lost when
+ *     the duplicate is marked deleted.
+ *   - hedley_person_content_affected_by_deletion() - the delete cascade.
+ *   - hedley_patient_recalculate_shards_for_person_content() - shard recalc.
+ *
+ * Those consumers deliberately use subsets of this list; each one documents
+ * what it leaves out and why. HedleyAdminIntegrityTests asserts that this
+ * list stays complete, so a new reference field fails the build until it has
+ * been considered here.
+ *
+ * @return array
+ *   List of field names.
+ */
+function hedley_general_get_person_association_fields() {
+  return [
+    // Measurements, participants (group, individual and family), relationships
+    // and WhatsApp records all point at their person with this.
+    'field_person',
+    // The adult side of a group (PMTCT) participation.
+    'field_adult',
+    // The other side of a relationship.
+    'field_related_to',
+    // An education session's attendees.
+    'field_participating_patients',
+    // The child a pregnancy resulted in, held by the mother's participant.
+    'field_newborn',
+    // The person an acute illness trace contact refers to.
+    'field_referred_person',
+  ];
+}
+
+/**
  * Resolves all content associated with person using association fields.
  *
  * For example, 'field_person' associates all measurements taken for person.
@@ -485,6 +529,47 @@ function hedley_general_shards_by_person($nid) {
   $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
 
   return !empty($shards) ? $shards : [];
+}
+
+/**
+ * Resolves the shards for a two-person linking node.
+ *
+ * A pmtct_participant or relationship links two people, so it must reach every
+ * device that syncs either of them. Its shards are therefore the union of both
+ * persons' shards.
+ *
+ * @param object $node
+ *   A pmtct_participant or relationship node.
+ *
+ * @return array
+ *   The union of both linked persons' shards.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function hedley_general_two_person_node_shards($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  // The two person-reference fields differ by bundle.
+  if ($node->type == 'relationship') {
+    $person_ids = [
+      $wrapper->field_person->getIdentifier(),
+      $wrapper->field_related_to->getIdentifier(),
+    ];
+  }
+  else {
+    $person_ids = [
+      $wrapper->field_person->getIdentifier(),
+      $wrapper->field_adult->getIdentifier(),
+    ];
+  }
+
+  $shards = [];
+  foreach ($person_ids as $person_id) {
+    $person_shards = hedley_general_shards_by_person($person_id);
+    $shards = array_merge($shards, $person_shards);
+  }
+
+  return array_unique($shards);
 }
 
 /**

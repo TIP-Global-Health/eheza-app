@@ -1,26 +1,22 @@
 module Pages.FamilyNutrition.ProgressReport.Svg exposing (viewMuacChart)
 
+import Backend.Measurement.Utils exposing (muacValueForSite)
 import Html exposing (Html)
 import Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolygon, drawPolyline, heightPx, referenceHorizontalLines, referenceVerticalLines, referenceVerticalNumbers, widthPx, withinRange)
+import Pages.Utils exposing (muacUnitTransIdForSite)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import SyncManager.Model exposing (Site(..))
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 
 
 viewMuacChart : Language -> Site -> Bool -> { years : Int, months : Int } -> List ( Float, Float ) -> Html any
 viewMuacChart language site isAdult anchorAge muacPoints =
     let
-        isBurundi =
-            site == SiteBurundi
-
-        -- Factor to convert cm values to display units (mm for Burundi).
+        -- The chart is drawn in cm. muacValueForSite says what a value reads
+        -- as at this site, so what one cm reads as is what to scale by.
         displayFactor =
-            if isBurundi then
-                10
-
-            else
-                1
+            round (muacValueForSite site 1)
 
         horizontalParts =
             36
@@ -43,20 +39,16 @@ viewMuacChart language site isAdult anchorAge muacPoints =
 
         ( redThreshold, yellowThreshold ) =
             if isAdult then
-                ( 18.5 * toFloat displayFactor, 22 * toFloat displayFactor )
+                ( muacValueForSite site 18.5, muacValueForSite site 22 )
 
             else
-                ( 11.5 * toFloat displayFactor, 12.5 * toFloat displayFactor )
+                ( muacValueForSite site 11.5, muacValueForSite site 12.5 )
 
         verticalNumberGap =
             2 * displayFactor
 
         unitTransId =
-            if isBurundi then
-                Translate.UnitMillimeter
-
-            else
-                Translate.UnitCentimeter
+            muacUnitTransIdForSite site
 
         yAxisLabel =
             translate language Translate.MUAC
@@ -94,16 +86,13 @@ viewMuacChart language site isAdult anchorAge muacPoints =
         verticalMaxFloat =
             toFloat verticalMax
 
-        displayFactorFloat =
-            toFloat displayFactor
-
         measurements =
             muacPoints
                 |> List.filterMap
                     (\( monthOffset, muacCm ) ->
                         let
                             muacDisplay =
-                                muacCm * displayFactorFloat
+                                muacValueForSite site muacCm
 
                             gridPos =
                                 monthOffset + 3

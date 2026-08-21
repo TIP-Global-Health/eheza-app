@@ -607,10 +607,10 @@ prenatalActivityFromMapping mapped =
             Just PrenatalIron
 
         "d1" ->
-            Just PrenatalMebendazole
+            Just PrenatalMMS
 
         "e1" ->
-            Just PrenatalMMS
+            Just PrenatalMebendazole
 
         "f1" ->
             Just PrenatalAspirin

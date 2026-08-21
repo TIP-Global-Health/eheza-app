@@ -41,7 +41,7 @@ import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
-import Measurement.Model exposing (VaccinationFormViewMode(..))
+import Measurement.Model exposing (RangedMeasurement(..), VaccinationFormViewMode(..))
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
@@ -70,14 +70,15 @@ import Measurement.Utils
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (Model, Msg(..), emptyPregnancyDatingForm)
 import Pages.Prenatal.Activity.Types exposing (ImmunisationTask(..), ObstetricHistoryStep(..), SymptomReviewStep(..), WarningPopupType(..))
-import Pages.Prenatal.Activity.Utils exposing (birthPlanFormWithDefault, breastExamFormWithDefault, dangerSignsFormWithDefault, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormWithDefault, medicalHistoryFormWithDefault, mentalHealthFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType)
+import Pages.Prenatal.Activity.Utils exposing (birthPlanFormWithDefault, breastExamFormWithDefault, dangerSignsFormWithDefault, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormWithDefault, medicalHistoryFormWithDefault, mentalHealthFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, prenatalNutritionFormWithDefault, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType)
 import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultInitialPhase, referralFormWithDefault, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toPrenatalReferralValueWithDefault)
-import Pages.Utils exposing (insertIntoSet, nonAdministrationReasonToSign, saveMeasurementMsgs, setMultiSelectInputValue, tasksBarId)
+import Pages.Utils exposing (insertIntoSet, nonAdministrationReasonToSign, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, tasksBarId)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site)
 
 
-update : NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate id db msg model =
+update : NominalDate -> Site -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate site id db msg model =
     let
         medicalHistoryForm =
             Dict.get id db.prenatalMeasurements
@@ -581,7 +582,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SetCSectionReason reason ->
             let
@@ -716,7 +717,7 @@ update currentDate id db msg model =
             , Cmd.none
             , App.Model.ScrollToElement tasksBarId :: appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SetMedicalHistorySigns value ->
             let
@@ -828,7 +829,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveMedicalHistory personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateHistoryMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateHistoryMsgs nextTask)
 
         SetSocialBoolInput formUpdateFunc value ->
             let
@@ -854,7 +855,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveSocialHistory personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateHistoryMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateHistoryMsgs nextTask)
 
         SetOutsideCareStep step ->
             let
@@ -1002,7 +1003,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveOutsideCare personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateHistoryMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateHistoryMsgs nextTask)
 
         SetActiveExaminationTask task ->
             let
@@ -1054,7 +1055,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveVitals personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateExaminationMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateExaminationMsgs nextTask)
 
         SetNutritionAssessmentMeasurement formUpdateFunc value ->
             let
@@ -1070,6 +1071,83 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        SetNutritionAssessmentMuac string ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.examinationData.nutritionAssessmentForm
+                                |> (\form -> { form | muac = setMuacValueForSite site string, muacDirty = True })
+                    in
+                    model.examinationData
+                        |> (\data -> { data | nutritionAssessmentForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        PreSaveNutritionAssessment personId saved maybeHeight isAdequateGWG nextTask ->
+            let
+                form =
+                    getMeasurementValueFunc saved
+                        |> prenatalNutritionFormWithDefault model.examinationData.nutritionAssessmentForm
+
+                outOfRange =
+                    List.concat
+                        [ -- A height measured at an earlier encounter is carried
+                          -- over and its input is not drawn, so there would be
+                          -- nothing on screen to enter again.
+                          if maybeHeight /= Nothing then
+                            []
+
+                          else
+                            Measurement.Utils.outOfRange site MeasurementHeight form.height
+                        , Measurement.Utils.outOfRange site MeasurementWeight form.weight
+                        , Measurement.Utils.outOfRange site MeasurementMuac form.muac
+                        ]
+
+                extraMsgs =
+                    if List.isEmpty outOfRange then
+                        [ SaveNutritionAssessment personId saved maybeHeight isAdequateGWG nextTask ]
+
+                    else
+                        [ SetWarningPopupState <| Just <| WarningPopupMeasurementOutOfRange outOfRange ]
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate site id db) extraMsgs
+
+        PreSaveObstetricalExam personId saved nextTask ->
+            let
+                form =
+                    getMeasurementValueFunc saved
+                        |> obstetricalExamFormWithDefault model.examinationData.obstetricalExamForm
+
+                outOfRange =
+                    -- Asked for only when the uterus can be felt; the input is
+                    -- not drawn otherwise.
+                    if form.fundalPalpable == Just True then
+                        Measurement.Utils.outOfRange site MeasurementFundalHeight form.fundalHeight
+
+                    else
+                        []
+
+                extraMsgs =
+                    if List.isEmpty outOfRange then
+                        [ SaveObstetricalExam personId saved nextTask ]
+
+                    else
+                        [ SetWarningPopupState <| Just <| WarningPopupMeasurementOutOfRange outOfRange ]
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SaveNutritionAssessment personId saved maybeHeight isAdequateGWG nextTask ->
             let
@@ -1113,7 +1191,7 @@ update currentDate id db msg model =
             , Cmd.none
             , saveMsg ++ setAdequateGWGMsg
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SetCorePhysicalExamBoolInput formUpdateFunc value ->
             let
@@ -1259,7 +1337,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveCorePhysicalExam personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateExaminationMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateExaminationMsgs nextTask)
 
         SetObstetricalExamBoolInput formUpdateFunc value ->
             let
@@ -1412,7 +1490,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveObstetricalExam personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateExaminationMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateExaminationMsgs nextTask)
 
         SetBreastExamBoolInput formUpdateFunc value ->
             let
@@ -1487,7 +1565,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveBreastExam personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateExaminationMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateExaminationMsgs nextTask)
 
         SetGUExamBoolInput formUpdateFunc value ->
             let
@@ -1548,7 +1626,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveGUExam personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateExaminationMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateExaminationMsgs nextTask)
 
         SetFamilyPlanningSign sign ->
             let
@@ -1655,7 +1733,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveAspirin personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateMedicationMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateMedicationMsgs nextTask)
 
         SetCalciumAdministered value ->
             let
@@ -1696,7 +1774,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveCalcium personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateMedicationMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateMedicationMsgs nextTask)
 
         SetFefolAdministered value ->
             let
@@ -1737,7 +1815,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveFefol personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateMedicationMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateMedicationMsgs nextTask)
 
         SetFolateAdministered value ->
             let
@@ -1778,7 +1856,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveFolate personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateMedicationMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateMedicationMsgs nextTask)
 
         SetIronAdministered value ->
             let
@@ -1819,7 +1897,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveIron personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateMedicationMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateMedicationMsgs nextTask)
 
         SetMMSAdministered value ->
             let
@@ -1860,7 +1938,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveMMS personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateMedicationMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateMedicationMsgs nextTask)
 
         SetMebendazoleAdministered value ->
             let
@@ -1901,7 +1979,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveMebendazole personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateMedicationMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateMedicationMsgs nextTask)
 
         SetMalariaPreventionBoolInput formUpdateFunc value ->
             let
@@ -2267,7 +2345,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveHIVTest personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateLaboratoryMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateLaboratoryMsgs nextTask)
 
         SetSyphilisTestFormBoolInput formUpdateFunc value ->
             let
@@ -2357,7 +2435,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveSyphilisTest personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateLaboratoryMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateLaboratoryMsgs nextTask)
 
         SetHepatitisBTestFormBoolInput formUpdateFunc value ->
             let
@@ -2419,7 +2497,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateLaboratoryMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateLaboratoryMsgs nextTask)
 
         SetMalariaTestFormBoolInput formUpdateFunc value ->
             let
@@ -2503,7 +2581,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveMalariaTest personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateLaboratoryMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateLaboratoryMsgs nextTask)
 
         SetBloodGpRsTestFormBoolInput formUpdateFunc value ->
             let
@@ -2582,7 +2660,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveBloodGpRsTest personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateLaboratoryMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateLaboratoryMsgs nextTask)
 
         SetUrineDipstickTestFormBoolInput formUpdateFunc value ->
             let
@@ -2818,7 +2896,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveUrineDipstickTest personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateLaboratoryMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateLaboratoryMsgs nextTask)
 
         SetHemoglobinTestFormBoolInput formUpdateFunc value ->
             let
@@ -2880,7 +2958,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveHemoglobinTest personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateLaboratoryMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateLaboratoryMsgs nextTask)
 
         SetRandomBloodSugarTestFormBoolInput formUpdateFunc value ->
             let
@@ -2933,6 +3011,29 @@ update currentDate id db msg model =
             , []
             )
 
+        PreSaveRandomBloodSugarTest personId saved nextTask ->
+            let
+                form =
+                    getMeasurementValueFunc saved
+                        |> Measurement.Utils.randomBloodSugarUniversalFormWithDefault model.laboratoryData.randomBloodSugarTestForm
+
+                -- The reading is drawn only for a test performed and read on
+                -- the spot, which is the condition the form itself uses.
+                inputShown =
+                    form.testPerformed == Just True && form.immediateResult == Just True
+
+                extraMsgs =
+                    Measurement.Utils.bloodGlucoseSaveMsgs inputShown
+                        form.sugarCount
+                        (SaveRandomBloodSugarTest personId saved nextTask)
+                        (SetWarningPopupState << Just << WarningPopupMeasurementOutOfRange)
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate site id db) extraMsgs
+
         SaveRandomBloodSugarTest personId saved nextTask ->
             ( model
             , Cmd.none
@@ -2942,7 +3043,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateLaboratoryMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateLaboratoryMsgs nextTask)
 
         SetHIVPCRTestFormBoolInput formUpdateFunc value ->
             let
@@ -3028,7 +3129,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateLaboratoryMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateLaboratoryMsgs nextTask)
 
         SetPartnerHIVTestFormBoolInput formUpdateFunc value ->
             let
@@ -3096,7 +3197,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SavePartnerHIVTest personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateLaboratoryMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateLaboratoryMsgs nextTask)
 
         SetLabsHistoryCompleted value ->
             let
@@ -3203,7 +3304,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveHealthEducation personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateNextStepsMsgs secondPhaseRequired nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateNextStepsMsgs secondPhaseRequired nextTask)
 
         SetFollowUpOption option ->
             let
@@ -3250,7 +3351,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SaveNewbornEnrollment secondPhaseRequired nextTask ->
             let
@@ -3261,7 +3362,7 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SetReferralBoolInput updateFunc value ->
             let
@@ -3344,7 +3445,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveSendToHC personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateNextStepsMsgs secondPhaseRequired nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateNextStepsMsgs secondPhaseRequired nextTask)
 
         SetAppointmentDateSelectorState state ->
             let
@@ -3385,7 +3486,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveAppointmentConfirmation personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateNextStepsMsgs secondPhaseRequired nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateNextStepsMsgs secondPhaseRequired nextTask)
 
         SetMedicationDistributionBoolInput formUpdateFunc value ->
             let
@@ -3487,7 +3588,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveMedicationDistribution personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateNextStepsMsgs secondPhaseRequired nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateNextStepsMsgs secondPhaseRequired nextTask)
 
         SaveWait personId measurementId updatedValue ->
             let
@@ -3509,7 +3610,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SaveNextVisitDate date secondPhaseRequired nextTask ->
             let
@@ -3526,7 +3627,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SetSymptomReviewStep step ->
             let
@@ -3565,7 +3666,7 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SetPrenatalSymptom symptom ->
             let
@@ -3708,7 +3809,7 @@ update currentDate id db msg model =
                 (Backend.PrenatalEncounter.Model.SaveMedication personId)
                 toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) (generateMedicationSubActivityMsgs nextTask)
+                |> sequenceExtra (update currentDate site id db) (generateMedicationSubActivityMsgs nextTask)
 
         SetMentalHealthStep step ->
             let
@@ -3801,7 +3902,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SetActiveImmunisationTask task ->
             let
@@ -4046,7 +4147,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SetPostpartumTreatmentReviewBoolInput formUpdateFunc value ->
             let

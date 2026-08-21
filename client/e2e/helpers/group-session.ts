@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import { execSync } from 'child_process';
 import { click } from './auth';
 import { drushEnv } from './device';
@@ -548,11 +548,39 @@ async function saveActivity(page: Page) {
 }
 
 /**
+ * Enters a value that is outside the range the form shows, and checks the nurse
+ * is told which measurement is wrong rather than left with a Save button that
+ * does not answer.
+ */
+async function refusesOutOfRange(page: Page, input: string, value: string, named: string) {
+  await page.locator(input).fill(value);
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  const saveBtn = page.locator('#save-form');
+  await expect(saveBtn, `save should answer for ${named} ${value}`).not.toHaveClass(/disabled/);
+  await click(saveBtn, page);
+
+  const popup = page.locator('div.ui.active.modal.measurement-out-of-range');
+  await popup.waitFor({ timeout: 10000 });
+  await expect(popup, `the warning should name the ${named}`).toHaveClass(
+    new RegExp(`(^| )${named}( |$)`),
+  );
+
+  await click(popup.locator('button.ui.primary.fluid.button'), page);
+  await popup.waitFor({ state: 'hidden', timeout: 10000 });
+  await page.waitForTimeout(WAIT.formInteraction);
+}
+
+/**
  * Complete the Height activity for a child.
  */
-export async function completeHeight(page: Page, value: string) {
+export async function completeHeight(page: Page, value: string, checkRange = false) {
   await openActivity(page, 'Height');
-  await page.locator('input[type="number"][name="height"]').fill(value);
+  const input = 'input[type="number"][name="height"]';
+  if (checkRange) {
+    await refusesOutOfRange(page, input, '1050', 'height-out-of-range');
+  }
+  await page.locator(input).fill(value);
   await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
@@ -560,9 +588,13 @@ export async function completeHeight(page: Page, value: string) {
 /**
  * Complete the Weight activity for a child.
  */
-export async function completeWeight(page: Page, value: string) {
+export async function completeWeight(page: Page, value: string, checkRange = false) {
   await openActivity(page, 'Weight');
-  await page.locator('input[type="number"][name="weight"]').fill(value);
+  const input = 'input[type="number"][name="weight"]';
+  if (checkRange) {
+    await refusesOutOfRange(page, input, '850', 'weight-out-of-range');
+  }
+  await page.locator(input).fill(value);
   await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
@@ -570,11 +602,16 @@ export async function completeWeight(page: Page, value: string) {
 /**
  * Complete the MUAC activity for a child.
  */
-export async function completeMuac(page: Page, value: string) {
+export async function completeMuac(page: Page, value: string, checkRange = false) {
   await openActivity(page, 'MUAC');
-  // MUAC uses a number input (spinbutton) — find it near the Save button.
-  const muacInput = page.locator('input[type="number"]').first();
-  await muacInput.fill(value);
+  const input = 'input[type="number"][name="muac"]';
+  if (checkRange) {
+    // Millimetres typed where centimetres are asked for, which is the mistake
+    // the range is here to catch. Out of range at the sites asking for
+    // centimetres, which is every site this suite runs against.
+    await refusesOutOfRange(page, input, '125', 'muac-out-of-range');
+  }
+  await page.locator(input).fill(value);
   await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }

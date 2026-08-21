@@ -13,8 +13,6 @@ var configUrlRegex = /\/sw\/config/;
 var credentialsUrlRegex = /\/sw\/config\/device$/;
 var credentialsUrl = '/sw/config/device';
 
-var deviceUuidUrl = '/sw/config/device-uuid';
-
 var photosDownloadCache = "photos";
 var photosUploadCache = "photos-upload";
 var screenshotsUploadCache = "screenshots-upload";
@@ -92,7 +90,6 @@ var tableForType = {
     health_education: 'shards',
     height: 'shards',
     hiv_diagnostics: 'shards',
-    hiv_dot: 'shards',
     hiv_encounter: 'shards',
     hiv_follow_up: 'shards',
     hiv_health_education: 'shards',

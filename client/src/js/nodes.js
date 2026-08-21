@@ -654,7 +654,7 @@
                     if (node.date_concluded != undefined && typeof node.date_concluded != 'undefined') {
                         var resolutionDate = new Date(node.date_concluded);
                         if (followUpMeasurementsTypesUsedByDashboard.includes(node.type)) {
-                          resolutionDate.setMonth(today.getMonth() + 6);
+                          resolutionDate.setMonth(resolutionDate.getMonth() + 6);
                         }
 
                         if (resolutionDate < today) {
@@ -926,12 +926,9 @@
                     // No need ot wory about combinations of several params.
                     var nameContains = params.get('name_contains');
                     if (nameContains) {
-                        // For the case when there's more than one word as an input,
-                        // we generate an array of lowercase words.
-                        var words = nameContains.split(' ');
-                        words.forEach(function (word, index) {
-                          words[index] = word.toLowerCase();
-                        });
+                        // Tokenized by the function that builds name_search, so
+                        // what is searched for and what was indexed cannot differ.
+                        var words = gatherWords(nameContains);
 
                         modifyQuery = modifyQuery.then(function () {
                             // We search for resulting persons that start with any of the input words (apply 'OR' condition).
@@ -1272,7 +1269,7 @@
                   return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
               }
           } else {
-              return Promise.reject('Could not find clinic: ' + session.clinic);
+              return Promise.reject('Could not find clinic: ' + clinicId);
           }
       });
     }
@@ -1296,41 +1293,21 @@
         return Promise.reject(response);
     }
 
-    // For things created on the backend, we use a v5 UUID which is a
-    // combination of a v4 device UUID and a high-res timestamp. So, we'll do
-    // the same thing here.  That is, we'll generate a v4 device UUID, and
-    // we'll use it with a high-res timestamp to create a v5 UUID. That ought
-    // to provide a sufficient guarantee of no UUID collisions.
+    // A random UUID, because a derived one collided.
+    //
+    // This used to hash a high-res timestamp against a per-device UUID, to
+    // mirror what the backend does. The backend hashes uniqid(), which
+    // carries its own entropy; this hashed a browser clock, which carries
+    // none - and browsers clamp that clock to roughly 100 microseconds as a
+    // Spectre mitigation, so two nodes created in the same bucket on one
+    // device hashed to the same UUID. It happened on live: a relationship
+    // and its pmtct participant, created in one update cycle, each collided
+    // with their sibling.
+    //
+    // Nothing derives these UUIDs from anything, so there is nothing to
+    // reproduce and no reason to hash. Random has no such bucket to share.
     function makeUuid () {
-        var timestamp = String(performance.timeOrigin + performance.now());
-
-        return caches.open(configCache).then(function (cache) {
-            return cache.match(deviceUuidUrl).then(function (response) {
-                if (response) {
-                    return response.text();
-                } else {
-                    var uuid = kelektivUuid.v4();
-
-                    var cachedResponse = new Response(uuid, {
-                        status: 200,
-                        statusTest: 'OK',
-                        headers: {
-                            'Content-Type': 'application/text'
-                        }
-                    });
-
-                    var cachedRequest = new Request (deviceUuidUrl, {
-                        method: 'GET'
-                    });
-
-                    return cache.put(cachedRequest, cachedResponse).then(function () {
-                        return Promise.resolve(uuid);
-                    });
-                }
-            });
-        }).then(function (deviceUuid) {
-            return Promise.resolve(kelektivUuid.v5(timestamp, deviceUuid));
-        });
+        return Promise.resolve(kelektivUuid.v4());
     }
 
     /**

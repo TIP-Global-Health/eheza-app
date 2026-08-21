@@ -140,6 +140,7 @@ import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import Url exposing (Url)
 import Utils.WebData
+import Version
 import ZScore.Model
 import ZScore.Update
 
@@ -663,7 +664,7 @@ update msg model =
                                     data.prenatalActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.Prenatal.Activity.Model.emptyModel
-                                        |> Pages.Prenatal.Activity.Update.update currentDate id model.indexedDb subMsg
+                                        |> Pages.Prenatal.Activity.Update.update currentDate site id model.indexedDb subMsg
                             in
                             ( { data | prenatalActivityPages = Dict.insert ( id, activity ) subModel data.prenatalActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
@@ -1053,7 +1054,7 @@ update msg model =
                 (\configured ->
                     let
                         ( subModel, subCmd, outMsg ) =
-                            Pages.PinCode.Update.update subMsg configured.pinCodePage
+                            Pages.PinCode.Update.update model.currentTime subMsg configured.pinCodePage
 
                         ( extraMsgs, extraCmds ) =
                             Maybe.map
@@ -1147,6 +1148,17 @@ update msg model =
                 cmd =
                     Nav.pushUrl model.navigationKey (Url.toString redirectUrl)
 
+                -- Messages to run only when we actually arrive at the page,
+                -- not when we're already on it. Pages that clear a form on
+                -- entry use this, so navigating within a page doesn't wipe
+                -- what the user is typing.
+                onEntry msgs =
+                    if model.activePage == page then
+                        []
+
+                    else
+                        msgs
+
                 extraMsgs =
                     case page of
                         -- When navigating to Device page (which is used for Sync management), trigger Sync.
@@ -1161,10 +1173,7 @@ update msg model =
                         UserPage (RelationshipPage id1 id2 initiator) ->
                             let
                                 resetMsgs =
-                                    if model.activePage == page then
-                                        []
-
-                                    else
+                                    onEntry
                                         [ Pages.Relationship.Model.Reset initiator
                                             |> MsgPageRelationship id1 id2
                                             |> MsgLoggedIn
@@ -1198,31 +1207,35 @@ update msg model =
 
                         -- When starting a new person registration, clear the (singleton)
                         -- create form, so a previous patient's abandoned entry can't
-                        -- pre-fill the next person's form. Only on a genuine page change,
-                        -- not when already on the page.
+                        -- pre-fill the next person's form.
                         UserPage (CreatePersonPage _ _) ->
-                            if model.activePage == page then
-                                []
-
-                            else
-                                Pages.Person.Model.ResetCreateForm
+                            onEntry
+                                [ Pages.Person.Model.ResetCreateForm
                                     |> MsgPageCreatePerson
                                     |> MsgLoggedIn
-                                    |> List.singleton
+                                ]
 
                         -- Likewise clear the (per-person) edit form on entry, so a
                         -- previously abandoned, unsaved edit isn't shown as the current
                         -- value and can't clobber a value synced from another device --
                         -- with the form empty, the view re-seeds it from the DB.
                         UserPage (EditPersonPage id) ->
-                            if model.activePage == page then
-                                []
-
-                            else
-                                Pages.Person.Model.ResetEditForm
+                            onEntry
+                                [ Pages.Person.Model.ResetEditForm
                                     |> MsgPageEditPerson id
                                     |> MsgLoggedIn
-                                    |> List.singleton
+                                ]
+
+                        -- Clear the (singleton) stock management page on entry, so a
+                        -- signed but abandoned form isn't shown again -- with its old
+                        -- signature and quantities -- and saved with today's date. Also
+                        -- returns the page to its main view and the current month.
+                        UserPage StockManagementPage ->
+                            onEntry
+                                [ Pages.StockManagement.Model.Reset
+                                    |> MsgPageStockManagement
+                                    |> MsgLoggedIn
+                                ]
 
                         _ ->
                             []
@@ -1547,6 +1560,7 @@ update msg model =
                                             { source = "sync"
                                             , message = message
                                             , md5 = MD5.hex message
+                                            , version = Version.version.build
                                             }
 
                                     IndexedDB ->
@@ -1554,6 +1568,7 @@ update msg model =
                                             { source = "db"
                                             , message = message
                                             , md5 = ""
+                                            , version = Version.version.build
                                             }
 
                                     ServiceWorker ->
@@ -1561,6 +1576,7 @@ update msg model =
                                             { source = "sw"
                                             , message = message
                                             , md5 = ""
+                                            , version = Version.version.build
                                             }
                         in
                         case errorType of

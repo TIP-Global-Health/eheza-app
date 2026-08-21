@@ -80,8 +80,11 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *
    *   1. Total encounters by period (last_year / this_year split).
    *   2. Case management aggregation across moderate/severe branches.
-   *   3. Session attendance (smoke check that the function runs).
+   *   3. Session attendance (smoke check that the function runs), and what
+   *      counts as having attended one (B-152a).
    *   4. Stats-blob sync with cache-hash invalidation.
+   *   5. Soft-deleted measurements are excluded from stats aggregates (B-032).
+   *   6. Soft-deleted persons are excluded from group education stats (B-033).
    */
   public function testStatsCalculations() {
     // 1. Total encounters.
@@ -164,6 +167,43 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       }
     }
 
+    // 3b. What counts as attending a session.
+    //
+    // A measurement means the person was there, and so does the attendance
+    // record - but only when it says so. Marking someone absent updates it to
+    // attended = FALSE rather than removing it, so counting the record itself
+    // turned an absence into proof of attendance.
+    $this->resetHealthCenter();
+    $session_nid = $this->createSession($this->clinicId, strtotime('-1 week'));
+    $nurse = $this->createNurse($this->clinicId);
+
+    $mother_nid = $this->createMother($this->clinicId);
+    $measured_child = $this->createChild($mother_nid, $this->healthCenterId, strtotime('-23 months'), strtotime('-23 months'));
+    $attended_only_child = $this->createChild($mother_nid, $this->healthCenterId, strtotime('-23 months'), strtotime('-23 months'));
+    $absent_child = $this->createChild($mother_nid, $this->healthCenterId, strtotime('-23 months'), strtotime('-23 months'));
+
+    // One child was weighed, one was marked present and nothing was taken,
+    // one was marked absent. Only the last is not evidence of attending.
+    $this->createAttendance($this->healthCenterId, $session_nid, $nurse->uid, $measured_child, TRUE, strtotime('-1 week'));
+    $this->createWeight('weight', $session_nid, $measured_child, 12, strtotime('-1 week'));
+    $this->createAttendance($this->healthCenterId, $session_nid, $nurse->uid, $attended_only_child, TRUE, strtotime('-1 week'));
+    $this->createAttendance($this->healthCenterId, $session_nid, $nurse->uid, $absent_child, FALSE, strtotime('-1 week'));
+
+    $persons_sessions = hedley_activity_get_persons_sessions_attended([$session_nid]);
+
+    $this->assertTrue(
+      !empty($persons_sessions[$measured_child][$session_nid]),
+      'A child who was weighed in the session counts as having attended it.'
+    );
+    $this->assertTrue(
+      !empty($persons_sessions[$attended_only_child][$session_nid]),
+      'A child marked present counts, even with nothing measured. The record says they came.'
+    );
+    $this->assertTrue(
+      empty($persons_sessions[$absent_child][$session_nid]),
+      'A child marked absent does not count. The record of the absence is not evidence of presence.'
+    );
+
     // 4. Sync handler with cache-hash invalidation.
     $this->resetHealthCenter();
     $this->createGroupNutritionData();
@@ -217,6 +257,25 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertFalse(empty($stats['ncd_data']));
     $this->assertFalse(empty($stats['prenatal_data']));
     $this->assertFalse(empty($stats['acute_illness_data']));
+
+    // One encounter recorded a temperature of 38.5 alongside a reading below
+    // the fever threshold, the other five days of fever alongside a report of
+    // none. Both are a fever.
+    $acute_illness_encounters = $stats['acute_illness_data'][0]['encounters'];
+    $this->assertEqual(count($acute_illness_encounters), 2);
+    foreach ($acute_illness_encounters as $acute_illness_encounter) {
+      $this->assertTrue($acute_illness_encounter['fever']);
+    }
+
+    // Two MUAC readings were recorded at the prenatal encounter, and two HIV
+    // tests at the NCD encounter. Each is reported as one value, since a list
+    // of them fails the dashboard's decoder.
+    $prenatal_encounter = $stats['prenatal_data'][0]['encounters'][0];
+    $this->assertTrue(in_array($prenatal_encounter['muac'], ['23.5', '24.5']));
+
+    $ncd_encounter = reset($stats['ncd_data'][0]['encounters']);
+    $this->assertTrue(in_array($ncd_encounter['hiv_test_result'], ['positive', 'negative']));
+    $this->assertTrue(in_array($ncd_encounter['hiv_test_execution_note'], ['test-performed', 'test-performed-today']));
     $this->assertFalse(empty($stats['child_scoreboard_data']));
     $this->assertFalse(empty($stats['spv_data']));
 
@@ -258,6 +317,137 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     // Check that we got the stats.
     $this->assertTrue(is_array($stats4));
+
+    // 5. Soft-deleted measurements are excluded from stats aggregates (B-032).
+    //
+    // An admin can soft-delete an individual measurement (field_deleted = TRUE)
+    // while its encounter stays live (VBO mark-as-deleted action, or the
+    // delete-duplicate-measurements script). The dashboard builders join
+    // measurement values off the field_<program>_encounter fan, which had no
+    // deleted filter, so the removed values kept feeding the dashboards on
+    // every recalculation. This scenario exercises the shared
+    // hedley_stats_exclude_deleted_from_join() helper through the nutrition
+    // individual builder as a representative of the six builders that use it.
+    $this->resetHealthCenter();
+    $created = $this->createIndividualNutritionEncounterData('-7 days', 11, 'edema');
+
+    // Baseline: the MUAC measurement is present in the stats.
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA, $this->healthCenterId);
+    $encounter_before = $this->extractFirstStatsEncounter(hedley_stats_get_nutrition_individual_data($this->healthCenterId));
+    $this->assertFalse(empty($encounter_before['muac']), 'MUAC measurement is present before deletion.');
+
+    // Soft-delete the MUAC measurement, leaving its encounter live.
+    $muac_wrapper = entity_metadata_wrapper('node', $created['muac']);
+    $muac_wrapper->field_deleted->set(TRUE);
+    $muac_wrapper->save();
+
+    // Recalculate: the deleted MUAC must be gone, while the encounter and its
+    // still-live nutrition sign must remain. Before the fix, the deleted MUAC
+    // value would still be pulled in here.
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA, $this->healthCenterId);
+    $encounter_after = $this->extractFirstStatsEncounter(hedley_stats_get_nutrition_individual_data($this->healthCenterId));
+    $this->assertFalse(empty($encounter_after), 'Encounter is retained after its measurement is soft-deleted.');
+    $this->assertTrue(empty($encounter_after['muac']), 'Soft-deleted MUAC is excluded from stats after recalculation.');
+    $this->assertEqual(['edema'], $encounter_after['nutrition_signs'], 'Live nutrition sign is retained.');
+
+    // 6. Soft-deleted persons are excluded from group education stats (B-033).
+    //
+    // Merging a duplicate patient soft-deletes the duplicate person, but
+    // nothing re-points the education sessions that reference them. Those
+    // sessions kept counting the deleted person among their attendees, and
+    // shipped their name and gender to the dashboard.
+    $this->resetHealthCenter();
+    $live = $this->createMother($this->clinicId);
+    $duplicate = $this->createMother($this->clinicId);
+    $this->createEducationSession([$live, $duplicate]);
+
+    // Baseline: both attendees are counted, and both have details.
+    $patients_details = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_GROUP_EDUCATION_DATA, $this->healthCenterId);
+    $before = $this->extractEducationParticipants(hedley_stats_get_group_education_data($this->healthCenterId, $patients_details));
+    $this->assertEqual([$live, $duplicate], $before, 'Both attendees are counted before the merge.');
+    $this->assertFalse(empty($patients_details[$duplicate]), 'The duplicate has details before the merge.');
+
+    // Merge the duplicate away, as hedley_patient's merge flow does.
+    $duplicate_wrapper = entity_metadata_wrapper('node', $duplicate);
+    $duplicate_wrapper->field_deleted->set(TRUE);
+    $duplicate_wrapper->save();
+
+    // The session keeps its live attendee; the deleted person is neither
+    // counted nor described. Before the fix, both assertions failed.
+    $patients_details = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_GROUP_EDUCATION_DATA, $this->healthCenterId);
+    $after = $this->extractEducationParticipants(hedley_stats_get_group_education_data($this->healthCenterId, $patients_details));
+    $this->assertEqual([$live], $after, 'The soft-deleted attendee is no longer counted.');
+    $this->assertTrue(empty($patients_details[$duplicate]), 'The soft-deleted attendee\'s name is not shipped to the dashboard.');
+  }
+
+  /**
+   * Create an education session attended by the given persons.
+   *
+   * @param array $participants
+   *   Person node IDs attending the session.
+   *
+   * @return int
+   *   The education session node ID.
+   */
+  protected function createEducationSession(array $participants) {
+    $node = $this->drupalCreateNode(['type' => 'education_session']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $scheduled_date = date('Y-m-d', strtotime('-3 days'));
+    $wrapper->field_scheduled_date->set([
+      'value' => $scheduled_date,
+      'value2' => $scheduled_date,
+    ]);
+    $wrapper->field_education_topics->set(['malaria']);
+    $wrapper->field_participating_patients->set($participants);
+    $wrapper->field_shards->set([$this->healthCenterId]);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Flatten the participant IDs out of a group-education stats structure.
+   *
+   * @param array $data
+   *   A hedley_stats_get_group_education_data() result: sessions by village.
+   *
+   * @return array
+   *   Sorted participant node IDs, as integers.
+   */
+  protected function extractEducationParticipants(array $data) {
+    $participants = [];
+    foreach ($data as $sessions) {
+      foreach ($sessions as $session) {
+        foreach ($session['participating_patients'] as $participant) {
+          $participants[] = (int) $participant;
+        }
+      }
+    }
+    sort($participants);
+
+    return $participants;
+  }
+
+  /**
+   * Return the first encounter from a program *_data stats structure.
+   *
+   * @param array $data
+   *   A stats builder result: a list of participant items, each with an
+   *   'encounters' list.
+   *
+   * @return array
+   *   The first participant's first encounter, or an empty array if none.
+   */
+  protected function extractFirstStatsEncounter(array $data) {
+    $participant = reset($data);
+    if (empty($participant) || empty($participant['encounters'])) {
+      return [];
+    }
+
+    return reset($participant['encounters']);
   }
 
   /**
@@ -335,30 +525,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   }
 
   /**
-   * Assert the stats coming back from the "total beneficiaries" function.
-   *
-   * @param array $beneficiaries
-   *   The data from the stats function.
-   * @param int $severe_count
-   *   The expected "severe" count.
-   * @param int $moderate_count
-   *   The expected "moderate" count.
-   * @param int $session_month
-   *   The session month, in order to know where to look in the data.
-   */
-  protected function assertTotalBeneficiaries(array $beneficiaries, $severe_count, $moderate_count, $session_month) {
-    // Make sure number match the number of people added this year.
-    $this->assertEqual($severe_count, $beneficiaries[$session_month]['stunting'][HEDLEY_STATS_SEVERE]);
-    $this->assertEqual($moderate_count, $beneficiaries[$session_month]['stunting'][HEDLEY_STATS_MODERATE]);
-    $this->assertEqual($severe_count, $beneficiaries[$session_month]['underweight'][HEDLEY_STATS_SEVERE]);
-    $this->assertEqual($moderate_count, $beneficiaries[$session_month]['underweight'][HEDLEY_STATS_MODERATE]);
-    $this->assertEqual($severe_count, $beneficiaries[$session_month]['wasting'][HEDLEY_STATS_SEVERE]);
-    $this->assertEqual($moderate_count, $beneficiaries[$session_month]['wasting'][HEDLEY_STATS_MODERATE]);
-    $this->assertEqual($severe_count, $beneficiaries[$session_month]['muac'][HEDLEY_STATS_SEVERE]);
-    $this->assertEqual($moderate_count, $beneficiaries[$session_month]['muac'][HEDLEY_STATS_MODERATE]);
-  }
-
-  /**
    * Load an AQ Item.
    *
    * @param string $item_title
@@ -406,6 +572,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *   Nutrition sign value to record.
    * @param float $weight_value
    *   Weight value to record.
+   *
+   * @return array
+   *   The created node IDs, keyed by 'encounter', 'muac', 'height', 'weight'
+   *   and 'nutrition'.
    */
   protected function createIndividualNutritionEncounterData($timestamp = '-7 days', $muac_value = 11, $nutrition_sign = 'edema', $weight_value = 9) {
     $date = strtotime($timestamp);
@@ -441,10 +611,13 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     ];
     node_save($encounter);
 
-    $this->createMuac('nutrition_muac', $encounter->nid, $child_id, $muac_value, $date);
-    $this->createHeight('nutrition_height', $encounter->nid, $child_id, 68, $date);
-    $this->createWeight('nutrition_weight', $encounter->nid, $child_id, $weight_value, $date);
-    $this->createNutrition('nutrition_nutrition', $encounter->nid, $child_id, $nutrition_sign, $date);
+    return [
+      'encounter' => $encounter->nid,
+      'muac' => $this->createMuac('nutrition_muac', $encounter->nid, $child_id, $muac_value, $date),
+      'height' => $this->createHeight('nutrition_height', $encounter->nid, $child_id, 68, $date),
+      'weight' => $this->createWeight('nutrition_weight', $encounter->nid, $child_id, $weight_value, $date),
+      'nutrition' => $this->createNutrition('nutrition_nutrition', $encounter->nid, $child_id, $nutrition_sign, $date),
+    ];
   }
 
   /**
@@ -526,6 +699,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createCoreExam('ncd_core_exam', $encounter->nid, $mother_id, $date);
     $this->createNcdVitals($encounter->nid, $mother_id, $date);
     $this->createNcdFamilyPlanning($encounter->nid, $mother_id, $date);
+    // Two tests, differing, so that the statistics are asked for one result
+    // rather than the list of them.
+    $this->createNcdHivTest($encounter->nid, $mother_id, 'positive', 'test-performed', $date);
+    $this->createNcdHivTest($encounter->nid, $mother_id, 'negative', 'test-performed-today', $date);
   }
 
   /**
@@ -558,9 +735,38 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createAcuteIllnessSymptoms('symptoms_gi', $encounter->nid, $child_id, $date);
     $this->createAcuteIllnessSymptoms('symptoms_general', $encounter->nid, $child_id, $date);
     $this->createAcuteIllnessSymptoms('symptoms_respiratory', $encounter->nid, $child_id, $date);
+    // Two measurements, the second one feverish, so that the statistics are
+    // asked which of them decides.
     $this->createAcuteIllnessVitals($encounter->nid, $child_id, $date);
+    $this->createAcuteIllnessVitals($encounter->nid, $child_id, $date, 38.5);
     $this->createAcuteIllnessCoreExam($encounter->nid, $child_id, $date);
     $this->createAcuteFindings($encounter->nid, $child_id, $date);
+
+    // A second encounter where no temperature reaches the fever threshold, so
+    // that the fever periods are what decides. The first of them reports no
+    // fever and the second reports five days of it.
+    $second_encounter = (object) [
+      'type' => 'acute_illness_encounter',
+      'title' => 'Acute illness encounter with a reported fever',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $date),
+            'value2' => date('Y-m-d', $date),
+          ],
+        ],
+      ],
+    ];
+    node_save($second_encounter);
+
+    $this->createAcuteIllnessSymptoms('symptoms_general', $second_encounter->nid, $child_id, $date, 0);
+    $this->createAcuteIllnessSymptoms('symptoms_general', $second_encounter->nid, $child_id, $date, 5);
+    $this->createAcuteIllnessVitals($second_encounter->nid, $child_id, $date);
   }
 
   /**
@@ -590,6 +796,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     ];
     node_save($encounter);
 
+    // Two readings, differing, so that the statistics are asked for one value
+    // rather than the list of them.
+    $this->createPrenatalNutrition($encounter->nid, $mother_id, 23.5, $date);
+    $this->createPrenatalNutrition($encounter->nid, $mother_id, 24.5, $date);
     $this->createPrenatalBreastfeeding($encounter->nid, $mother_id, $date);
     $this->createBreastExam($encounter->nid, $mother_id, $date);
     $this->createCoreExam('core_physical_exam', $encounter->nid, $mother_id, $date);

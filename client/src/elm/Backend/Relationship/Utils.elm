@@ -1,7 +1,31 @@
-module Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
+module Backend.Relationship.Utils exposing (isChildRelation, toMyRelationship, toRelationship)
 
 import Backend.Entities exposing (..)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..), Relationship)
+
+
+{-| From the reference person's point of view, is the related person a child
+they are responsible for - either their own child (`MyChild`) or one they are a
+caregiver for (`MyCaregiven`)?
+
+Used both to decide which related persons to fetch and which to assemble as
+family members for a Family Nutrition encounter, so the two stay in step.
+
+-}
+isChildRelation : MyRelatedBy -> Bool
+isChildRelation relatedBy =
+    case relatedBy of
+        MyChild ->
+            True
+
+        MyCaregiven ->
+            True
+
+        MyParent ->
+            False
+
+        MyCaregiver ->
+            False
 
 
 {-| Consider a `Relationship` from the point of view of the specified person.

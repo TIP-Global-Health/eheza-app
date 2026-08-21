@@ -10,7 +10,8 @@ import Backend.Measurement.Utils exposing (ahezaDistributionReasonFromString, ge
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
-import Measurement.Utils exposing (toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toMuacValueWithDefault)
+import Measurement.Model exposing (RangedMeasurement)
+import Measurement.Utils exposing (muacFormWithDefault, muacOutOfRange, toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toMuacValueWithDefault)
 import Pages.FamilyNutrition.Encounter.Model exposing (FamilyMember(..), Model, Msg(..), Tab(..), emptyAhezaData, emptyMuacData, emptyPhotoData)
 import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData, nextFamilyMemberWithPendingActivities)
 import Pages.Page exposing (Page(..))
@@ -113,6 +114,23 @@ update site id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update site id db) extraMsgs
+
+        SetMeasurementOutOfRangePopupState state ->
+            ( { model | measurementOutOfRangePopupState = state }, Cmd.none, [] )
+
+        PreSaveMuacChild personId saved ->
+            (getMeasurementValueFunc saved
+                |> muacFormWithDefault model.muacData.form
+                |> muacOutOfRange site
+            )
+                |> preSaveMuac site id db model (SaveMuacChild personId saved)
+
+        PreSaveMuacMother personId saved ->
+            (getMeasurementValueFunc saved
+                |> muacFormWithDefault model.muacData.form
+                |> muacOutOfRange site
+            )
+                |> preSaveMuac site id db model (SaveMuacMother personId saved)
 
         SaveMuacChild personId saved ->
             let
@@ -302,7 +320,8 @@ update site id db msg model =
                         _ ->
                             Cmd.none
             in
-            ( { model | selectedActivity = activity }, cmd, [] )
+            -- Leaving the activity forgets what it was complaining about.
+            ( { model | selectedActivity = activity, measurementOutOfRangePopupState = [] }, cmd, [] )
 
         SetSelectedFamilyMember member ->
             let
@@ -321,6 +340,7 @@ update site id db msg model =
                 , ahezaData = emptyAhezaData
                 , muacData = emptyMuacData
                 , photoData = emptyPhotoData
+                , measurementOutOfRangePopupState = []
               }
             , cmd
             , []
@@ -376,3 +396,34 @@ generateAutoAdvanceMsgs encounterId triggeringCompletedActivity db maybeMember =
                                     [ SetSelectedFamilyMember Nothing ]
                     )
                 |> Maybe.withDefault []
+
+
+{-| Saves a MUAC, unless it was entered outside the range it can take.
+
+The nurse is told and the form is left as it is, so it can be entered again.
+Nothing is saved until it is within range. This encounter shows no range above
+the input, so the warning is the only place the range is said.
+
+-}
+preSaveMuac :
+    Site
+    -> FamilyNutritionEncounterId
+    -> ModelIndexedDb
+    -> Model
+    -> Msg
+    -> List RangedMeasurement
+    -> ( Model, Cmd Msg, List App.Model.Msg )
+preSaveMuac site id db model saveMsg outOfRange =
+    let
+        extraMsgs =
+            if List.isEmpty outOfRange then
+                [ saveMsg ]
+
+            else
+                [ SetMeasurementOutOfRangePopupState outOfRange ]
+    in
+    ( model
+    , Cmd.none
+    , []
+    )
+        |> sequenceExtra (update site id db) extraMsgs

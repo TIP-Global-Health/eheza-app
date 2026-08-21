@@ -41,7 +41,7 @@ import Measurement.Utils
         , treatmentReviewInputsAndTasks
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (viewSendToHealthCenterForm, viewSendToHospitalForm)
+import Measurement.View exposing (measurementOutOfRangePopup, viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.AcuteIllness.Activity.Model exposing (AcuteFindingsForm, AcuteIllnessCoreExamForm, AcuteIllnessNutritionForm, ContactsTracingForm, ContactsTracingFormState(..), CovidTestingForm, DangerSignsData, FollowUpForm, LaboratoryData, MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, OngoingTreatmentData, PhysicalExamData, PriorTreatmentData, RecordContactDetailsData, RegisterContactData, ReviewDangerSignsForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TreatmentReviewForm, emptyRecordContactDetailsData, emptyRegisterContactData)
 import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), DangerSignsTask(..), NextStepsTask(..), OngoingTreatmentTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomsTask(..))
 import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nutritionFormInutsAndTasks, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveNextStepsTasks, resolvePreviousValue, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vomitingAtSymptoms)
@@ -52,8 +52,10 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.View
 import Pages.Utils
     exposing
-        ( resolveActiveTask
+        ( customButton
+        , resolveActiveTask
         , resolveNextTask
+        , saveButton
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxValueInput
@@ -105,10 +107,18 @@ viewHeaderAndContent language currentDate site geoInfo id isChw activity db mode
                 SetWarningPopupState
                 assembled
         , viewModal <|
-            pertinentSymptomsPopup language
-                model.showPertinentSymptomsPopup
-                (SetPertinentSymptomsPopupState False)
-                assembled.measurements
+            if List.isEmpty model.measurementOutOfRangePopupState then
+                pertinentSymptomsPopup language
+                    model.showPertinentSymptomsPopup
+                    (SetPertinentSymptomsPopupState False)
+                    assembled.measurements
+
+            else
+                Just <|
+                    measurementOutOfRangePopup language
+                        site
+                        model.measurementOutOfRangePopupState
+                        (SetMeasurementOutOfRangePopupState [])
         ]
 
 
@@ -514,11 +524,7 @@ viewAcuteIllnessSymptomsContent language ( personId, measurements ) data =
                                     SaveSymptomsGI personId measurements.symptomsGI nextTask
                     in
                     div [ class "actions symptoms" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveMsg
                         ]
                 )
                 activeTask
@@ -807,20 +813,19 @@ viewAcuteIllnessPhysicalExam language currentDate site isChw assembled data =
                                         SaveCoreExam personId measurements.coreExam nextTask
 
                                     PhysicalExamMuac ->
-                                        SaveMuac personId measurements.muac nextTask
+                                        PreSaveMuac personId measurements.muac nextTask
 
                                     PhysicalExamAcuteFindings ->
                                         SaveAcuteFindings personId measurements.acuteFindings nextTask
 
                                     PhysicalExamNutrition ->
                                         SaveNutrition personId measurements.nutrition nextTask
+
+                            disabled =
+                                tasksCompleted /= totalTasks
                         in
                         div [ class "actions symptoms" ]
-                            [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                , onClick saveMsg
-                                ]
-                                [ text <| translate language Translate.Save ]
+                            [ saveButton language (not disabled) saveMsg
                             ]
                     )
                 |> Maybe.withDefault emptyNode
@@ -988,11 +993,7 @@ viewAcuteIllnessLaboratory language currentDate isChw assembled data =
                                     SaveCovidTesting assembled.participant.person assembled.measurements.covidTesting nextTask_
                     in
                     div [ class "actions malaria-testing" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveMsg
                         ]
                 )
                 activeTask
@@ -1107,11 +1108,7 @@ viewAcuteIllnessPriorTreatment language ( personId, measurements ) data =
                                     SaveTreatmentReview personId measurements.treatmentReview
                     in
                     div [ class "actions malaria-testing" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveMsg
                         ]
                 )
                 activeTask
@@ -1388,11 +1385,7 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo isChw assembled db d
                                         tasksCompleted /= totalTasks
                         in
                         div [ class "actions next-steps" ]
-                            [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-                                , onClick saveMsg
-                                ]
-                                [ text <| translate language saveLabel ]
+                            [ customButton language (not disabled) saveMsg saveLabel
                             ]
                 )
                 activeTask
@@ -1506,11 +1499,7 @@ viewAcuteIllnessOngoingTreatment language ( personId, measurements ) data =
                                     SaveOngoingTreatmentReview personId measurements.treatmentOngoing
                     in
                     div [ class "actions treatment-ongoing" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveMsg
                         ]
                 )
                 activeTask
@@ -1619,11 +1608,7 @@ viewAcuteIllnessDangerSigns language ( personId, measurements ) data =
                                     SaveReviewDangerSigns personId measurements.dangerSigns
                     in
                     div [ class "actions treatment-ongoing" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
+                        [ saveButton language (tasksCompleted == totalTasks) saveMsg
                         ]
                 )
                 activeTask

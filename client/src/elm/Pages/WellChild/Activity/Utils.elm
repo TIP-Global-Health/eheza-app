@@ -1,4 +1,4 @@
-module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveFirstEncounterDateAfterMilestone, resolveNextDateForImmunisationVisit, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
+module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, pregnancySummaryMeasurementsOutOfRange, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -25,8 +25,8 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
-import Measurement.Model exposing (ImmunisationTask(..), InvokationModule(..), MedicationAdministrationFormConfig, VitalsFormConfig, VitalsFormMode(..))
-import Measurement.Utils exposing (behindOnVaccinationsByHistory, contributingFactorsFormWithDefault, expectVaccineDoseForPerson, generateFutureVaccinationsData, getAllDosesForVaccine, getIntervalForVaccine, getPreviousMeasurements, healthEducationFormWithDefault, heightFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, nextVaccinationDataForVaccine, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, sendToHCFormWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault)
+import Measurement.Model exposing (ImmunisationTask(..), InvokationModule(..), MedicationAdministrationFormConfig, RangedMeasurement(..), VitalsFormConfig, VitalsFormMode(..))
+import Measurement.Utils exposing (behindOnVaccinationsByHistory, contributingFactorsFormWithDefault, expectVaccineDoseForPerson, generateFutureVaccinationsData, getAllDosesForVaccine, getIntervalForVaccine, getPreviousMeasurements, healthEducationFormWithDefault, heightFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, measurementOutOfRange, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, nextVaccinationDataForVaccine, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, sendToHCFormWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault)
 import Measurement.View
     exposing
         ( contributingFactorsFormInutsAndTasks
@@ -46,6 +46,7 @@ import Pages.Utils
         , ifNullableTrue
         , ifTrue
         , maybeToBoolTask
+        , maybeValueConsideringIsDirtyField
         , resolveTasksCompletedFromTotal
         , taskAnyCompleted
         , valueConsideringIsDirtyField
@@ -209,6 +210,54 @@ expectActivity currentDate zscores site features isChw assembled db activity =
             assembled.encounter.encounterType == PediatricCareChw
 
 
+{-| The measurements on the newborn exam that hold a value outside their range.
+
+Only what the form asks for is checked. Each of the Apgar scores and the birth
+length is behind a question of its own, and its input is not drawn when the
+answer is no - stopping on one that is nowhere to be seen would leave the form
+impossible to save.
+
+The birth weight is asked for every time, so it is checked every time.
+
+-}
+pregnancySummaryMeasurementsOutOfRange : Site -> PregnancySummaryForm -> List RangedMeasurement
+pregnancySummaryMeasurementsOutOfRange site form =
+    let
+        asked available value =
+            if available == Just True then
+                value
+
+            else
+                Nothing
+
+        apgar =
+            -- The score is out of 10, so a number that could not be one is
+            -- almost always something else typed into the box. Asked first,
+            -- because that is where the form asks for them.
+            [ ( MeasurementApgarOneMinute, asked form.apgarScoresAvailable form.apgarOneMin )
+            , ( MeasurementApgarFiveMinutes, asked form.apgarScoresAvailable form.apgarFiveMin )
+            ]
+    in
+    List.filterMap
+        (\( measurement, value ) ->
+            if measurementOutOfRange site measurement value then
+                Just measurement
+
+            else
+                Nothing
+        )
+        (apgar
+            ++ [ ( MeasurementBirthWeight
+                 , Maybe.map (\(WeightInGrm weight) -> weight) form.birthWeight
+                 )
+               , ( MeasurementBirthLength
+                 , asked form.birthLengthAvailable form.birthLength
+                    |> Maybe.map (\(HeightInCm length) -> length)
+                 )
+               ]
+        )
+
+
 pregnancySummaryFormWithDefault : PregnancySummaryForm -> Maybe PregnancySummaryValue -> PregnancySummaryForm
 pregnancySummaryFormWithDefault form saved =
     saved
@@ -232,6 +281,18 @@ pregnancySummaryFormWithDefault form saved =
 
                     signsFromValue =
                         EverySet.toList value.signs
+
+                    -- A record can hold a measurement without the sign that
+                    -- says it was asked for: the two are stored apart, and the
+                    -- signs fall back to none when they cannot be read. Asking
+                    -- the value as well as the sign makes what is stored
+                    -- visible, so the nurse can correct or confirm it and the
+                    -- range check can reach it. Were only the sign asked, the
+                    -- input would stay hidden while the measurement it holds
+                    -- was written back out on every save.
+                    asked sign values =
+                        List.member sign signsFromValue
+                            || List.any isJust values
                 in
                 { expectedDateConcluded = or form.expectedDateConcluded (Just value.expectedDateConcluded)
                 , dateSelectorPopupState = form.dateSelectorPopupState
@@ -239,13 +300,18 @@ pregnancySummaryFormWithDefault form saved =
                     or form.deliveryComplicationsPresent
                         (listNotEmptyWithException NoDeliveryComplications deliveryComplications |> Just)
                 , deliveryComplications = or form.deliveryComplications (Just deliveryComplications)
-                , apgarScoresAvailable = or form.apgarScoresAvailable (List.member ApgarScores signsFromValue |> Just)
-                , apgarOneMin = or form.apgarOneMin (Maybe.andThen .apgarOneMin saved)
-                , apgarFiveMin = or form.apgarFiveMin (Maybe.andThen .apgarFiveMin saved)
+                , apgarScoresAvailable =
+                    or form.apgarScoresAvailable
+                        (asked ApgarScores [ value.apgarOneMin, value.apgarFiveMin ] |> Just)
+                , apgarOneMin = maybeValueConsideringIsDirtyField form.apgarDirty form.apgarOneMin (Maybe.andThen .apgarOneMin saved)
+                , apgarFiveMin = maybeValueConsideringIsDirtyField form.apgarDirty form.apgarFiveMin (Maybe.andThen .apgarFiveMin saved)
                 , apgarDirty = form.apgarDirty
-                , birthWeight = or form.birthWeight (Maybe.andThen .birthWeight saved)
-                , birthLengthAvailable = or form.birthLengthAvailable (List.member BirthLength signsFromValue |> Just)
-                , birthLength = or form.birthLength (Maybe.andThen .birthLength saved)
+                , birthWeight = maybeValueConsideringIsDirtyField form.birthWeightDirty form.birthWeight (Maybe.andThen .birthWeight saved)
+                , birthWeightDirty = form.birthWeightDirty
+                , birthLengthAvailable =
+                    or form.birthLengthAvailable
+                        (asked BirthLength [ Maybe.map (\(HeightInCm length) -> length) value.birthLength ] |> Just)
+                , birthLength = maybeValueConsideringIsDirtyField form.birthLengthDirty form.birthLength (Maybe.andThen .birthLength saved)
                 , birthLengthDirty = form.birthLengthDirty
                 , birthDefectsPresent =
                     or form.birthDefectsPresent
@@ -1860,65 +1926,82 @@ generateNextDateForECDVisit currentDate assembled =
         |> Maybe.andThen
             (\birthDate ->
                 let
-                    ageWeeks =
-                        Date.diff Weeks birthDate currentDate
-
                     noRemainingSigns =
                         List.isEmpty <| generateRemianingECDSignsAfterCurrentEncounter currentDate assembled
                 in
-                if ageWeeks < 6 then
-                    -- Since 6 weeks question appear from age of 5 weeks,
-                    -- we check if they were completed then.
-                    -- If so, we schedule next ECD visit to following
-                    -- milestone, which is at 14 weeks.
-                    if ageWeeks == 5 && noRemainingSigns then
-                        Just <| Date.add Weeks 14 birthDate
-
-                    else
-                        Just <| Date.add Weeks 6 birthDate
-
-                else if ageWeeks < 14 then
-                    -- Since 14 weeks question appear from age of 13 weeks,
-                    -- we check if they were completed then.
-                    -- If so, we schedule next ECD visit to following
-                    -- milestone, which is at 6 months.
-                    if ageWeeks == 13 && noRemainingSigns then
-                        Just <| Date.add Months 6 birthDate
-
-                    else
-                        Just <| Date.add Weeks 14 birthDate
-
-                else
-                    let
-                        ageMonths =
-                            Date.diff Months birthDate currentDate
-                    in
-                    if ageMonths < 6 then
-                        Just <| Date.add Months 6 birthDate
-
-                    else if ageMonths < 15 then
-                        Just <| Date.add Months 15 birthDate
-
-                    else
-                        let
-                            ageYears =
-                                Date.diff Years birthDate currentDate
-                        in
-                        if ageYears < 2 then
-                            Just <| Date.add Years 2 birthDate
-
-                        else if ageYears < 3 then
-                            Just <| Date.add Years 3 birthDate
-
-                        else if ageYears < 4 then
-                            Just <| Date.add Years 4 birthDate
-
-                        else if not noRemainingSigns then
-                            Just <| Date.add Months 6 currentDate
-
-                        else
-                            Nothing
+                resolveNextDateForECDVisit currentDate birthDate noRemainingSigns
             )
+
+
+{-| Resolves the date for the next ECD visit from the child's birth date and
+whether the current milestone's signs are all done. Extracted from
+generateNextDateForECDVisit so the ladder can be unit tested without an
+AssembledData value.
+
+Each rung matches an ECD sign group that becomes assessable at that age.
+
+-}
+resolveNextDateForECDVisit : NominalDate -> NominalDate -> Bool -> Maybe NominalDate
+resolveNextDateForECDVisit currentDate birthDate noRemainingSigns =
+    let
+        ageWeeks =
+            Date.diff Weeks birthDate currentDate
+    in
+    if ageWeeks < 6 then
+        -- Since 6 weeks question appear from age of 5 weeks,
+        -- we check if they were completed then.
+        -- If so, we schedule next ECD visit to following
+        -- milestone, which is at 14 weeks.
+        if ageWeeks == 5 && noRemainingSigns then
+            Just <| Date.add Weeks 14 birthDate
+
+        else
+            Just <| Date.add Weeks 6 birthDate
+
+    else if ageWeeks < 14 then
+        -- Since 14 weeks question appear from age of 13 weeks,
+        -- we check if they were completed then.
+        -- If so, we schedule next ECD visit to following
+        -- milestone, which is at 6 months.
+        if ageWeeks == 13 && noRemainingSigns then
+            Just <| Date.add Months 6 birthDate
+
+        else
+            Just <| Date.add Weeks 14 birthDate
+
+    else
+        let
+            ageMonths =
+                Date.diff Months birthDate currentDate
+        in
+        if ageMonths < 6 then
+            Just <| Date.add Months 6 birthDate
+
+        else if ageMonths < 15 then
+            Just <| Date.add Months 15 birthDate
+
+        else if ageMonths < 18 then
+            Just <| Date.add Months 18 birthDate
+
+        else
+            let
+                ageYears =
+                    Date.diff Years birthDate currentDate
+            in
+            if ageYears < 2 then
+                Just <| Date.add Years 2 birthDate
+
+            else if ageYears < 3 then
+                Just <| Date.add Years 3 birthDate
+
+            else if ageYears < 4 then
+                Just <| Date.add Years 4 birthDate
+
+            else if not noRemainingSigns then
+                Just <| Date.add Months 6 currentDate
+
+            else
+                Nothing
 
 
 generateNextDateForMedicationVisit : NominalDate -> Site -> AssembledData -> Maybe NominalDate

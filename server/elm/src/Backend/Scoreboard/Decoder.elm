@@ -7,10 +7,11 @@ import Backend.Scoreboard.Model exposing (ANCNewbornData, CriterionBySeverities,
 import Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine)
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, bool, field, list, map, maybe, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Maybe.Extra exposing (isNothing)
+import Utils.NominalDate exposing (calendarMonth)
 
 
 decodeScoreboardData : Decoder ScoreboardData
@@ -24,70 +25,66 @@ decodeScoreboardData =
         |> hardcoded Nothing
 
 
-decodeSyncResponse : NominalDate -> Decoder SyncResponse
-decodeSyncResponse currentDate =
+decodeSyncResponse : Decoder SyncResponse
+decodeSyncResponse =
     field "data"
         (succeed SyncResponse
-            |> required "batch" (list (decodePatientData currentDate))
+            |> required "batch" (list decodePatientData)
             |> required "total_remaining" decodeInt
             |> required "last" decodeInt
         )
 
 
-decodePatientData : NominalDate -> Decoder PatientData
-decodePatientData currentDate =
+decodePatientData : Decoder PatientData
+decodePatientData =
     succeed PatientData
         |> required "created" decodeYYYYMMDD
         |> required "birth_date" decodeYYYYMMDD
         |> required "edd_date" decodeYYYYMMDD
         |> optional "low_birth_weight" (maybe bool) Nothing
-        |> optional "nutrition" (decodeNutritionCriterionsData currentDate) emptyNutritionCriterionsData
-        |> optional "ncda" (decodeNCDAData currentDate) emptyNCDAData
+        |> optional "nutrition" decodeNutritionCriterionsData emptyNutritionCriterionsData
+        |> optional "ncda" decodeNCDAData emptyNCDAData
 
 
-decodeNutritionCriterionsData : NominalDate -> Decoder NutritionCriterionsData
-decodeNutritionCriterionsData currentDate =
+decodeNutritionCriterionsData : Decoder NutritionCriterionsData
+decodeNutritionCriterionsData =
     succeed NutritionCriterionsData
-        |> required "stunting" (decodeCriterionBySeverities currentDate)
-        |> required "underweight" (decodeCriterionBySeverities currentDate)
-        |> required "wasting" (decodeCriterionBySeverities currentDate)
-        |> required "muac" (decodeCriterionBySeverities currentDate)
+        |> required "stunting" decodeCriterionBySeverities
+        |> required "underweight" decodeCriterionBySeverities
+        |> required "wasting" decodeCriterionBySeverities
+        |> required "muac" decodeCriterionBySeverities
 
 
-decodeCriterionBySeverities : NominalDate -> Decoder CriterionBySeverities
-decodeCriterionBySeverities currentDate =
+decodeCriterionBySeverities : Decoder CriterionBySeverities
+decodeCriterionBySeverities =
     succeed CriterionBySeverities
         |> optional "severe" (list decodeYYYYMMDD) []
         |> optional "moderate" (list decodeYYYYMMDD) []
         |> optional "normal" (list decodeYYYYMMDD) []
-        |> map (sainitzeCriterionBySeverities currentDate)
+        |> map sanitizeCriterionBySeverities
 
 
 {-| Guiding rule is that patient should have only one severity value
 during calendar month.
 In case there are multuple severities, most severe one needs to be selected.
 -}
-sainitzeCriterionBySeverities : NominalDate -> CriterionBySeverities -> CriterionBySeverities
-sainitzeCriterionBySeverities currentDate data =
+sanitizeCriterionBySeverities : CriterionBySeverities -> CriterionBySeverities
+sanitizeCriterionBySeverities data =
     let
-        -- Transfering from list to dict with diff months as key makes
-        -- sure we get only single value for given months.
+        -- Keying by the month the measurement was taken in leaves one value
+        -- per month, which is the month the scorecard presents it under.
         severeDict =
-            List.map (\date -> ( diffMonths date currentDate, date ))
+            List.map (\date -> ( calendarMonth date, date ))
                 data.severe
                 |> Dict.fromList
 
-        -- Transfering from list to dict with diff months as key makes
-        -- sure we get only single value for given months.
         moderateDict =
-            List.map (\date -> ( diffMonths date currentDate, date ))
+            List.map (\date -> ( calendarMonth date, date ))
                 data.moderate
                 |> Dict.fromList
 
-        -- Transfering from list to dict with diff months as key makes
-        -- sure we get only single value for given months.
         normalDict =
-            List.map (\date -> ( diffMonths date currentDate, date ))
+            List.map (\date -> ( calendarMonth date, date ))
                 data.normal
                 |> Dict.fromList
 
@@ -127,31 +124,31 @@ sainitzeCriterionBySeverities currentDate data =
     }
 
 
-decodeNCDAData : NominalDate -> Decoder NCDAData
-decodeNCDAData currentDate =
+decodeNCDAData : Decoder NCDAData
+decodeNCDAData =
     succeed NCDAData
-        |> optional "pane1" (decodeANCNewbornData currentDate) emptyANCNewbornData
-        |> optional "pane2" (decodeUniversalInterventionData currentDate) emptyUniversalInterventionData
-        |> optional "pane3" (decodeNutritionBehaviorData currentDate) emptyNutritionBehaviorData
-        |> optional "pane4" (decodeTargetedInterventionsData currentDate) emptyTargetedInterventionsData
-        |> optional "pane5" (decodeInfrastructureEnvironmentWashData currentDate) emptyInfrastructureEnvironmentWashData
+        |> optional "pane1" decodeANCNewbornData emptyANCNewbornData
+        |> optional "pane2" decodeUniversalInterventionData emptyUniversalInterventionData
+        |> optional "pane3" decodeNutritionBehaviorData emptyNutritionBehaviorData
+        |> optional "pane4" decodeTargetedInterventionsData emptyTargetedInterventionsData
+        |> optional "pane5" decodeInfrastructureEnvironmentWashData emptyInfrastructureEnvironmentWashData
 
 
-decodeANCNewbornData : NominalDate -> Decoder ANCNewbornData
-decodeANCNewbornData currentDate =
+decodeANCNewbornData : Decoder ANCNewbornData
+decodeANCNewbornData =
     succeed ANCNewbornData
-        |> optional "row1" (decodeMonthlyValues currentDate) []
+        |> optional "row1" decodeMonthlyValues []
         |> optional "row2" bool False
 
 
-decodeUniversalInterventionData : NominalDate -> Decoder UniversalInterventionData
-decodeUniversalInterventionData currentDate =
+decodeUniversalInterventionData : Decoder UniversalInterventionData
+decodeUniversalInterventionData =
     succeed UniversalInterventionData
         |> optional "row1" decodeVaccinationProgressDict Dict.empty
-        |> optional "row2" (decodeMonthlyValues currentDate) []
-        |> optional "row3" (decodeMonthlyValues currentDate) []
-        |> optional "row4" (decodeMonthlyValues currentDate) []
-        |> optional "row5" (decodeMonthlyValues currentDate) []
+        |> optional "row2" decodeMonthlyValues []
+        |> optional "row3" decodeMonthlyValues []
+        |> optional "row4" decodeMonthlyValues []
+        |> optional "row5" decodeMonthlyValues []
 
 
 decodeVaccinationProgressDict : Decoder VaccinationProgressDict
@@ -188,47 +185,47 @@ rawVaccinationDataToVaccinationProgressDict data =
         |> Dict.fromList
 
 
-decodeNutritionBehaviorData : NominalDate -> Decoder NutritionBehaviorData
-decodeNutritionBehaviorData currentDate =
+decodeNutritionBehaviorData : Decoder NutritionBehaviorData
+decodeNutritionBehaviorData =
     succeed NutritionBehaviorData
         |> optional "row1" bool False
-        |> optional "row2" (decodeMonthlyValues currentDate) []
-        |> optional "row3" (decodeMonthlyValues currentDate) []
-        |> optional "row4" (decodeMonthlyValues currentDate) []
+        |> optional "row2" decodeMonthlyValues []
+        |> optional "row3" decodeMonthlyValues []
+        |> optional "row4" decodeMonthlyValues []
 
 
-decodeTargetedInterventionsData : NominalDate -> Decoder TargetedInterventionsData
-decodeTargetedInterventionsData currentDate =
+decodeTargetedInterventionsData : Decoder TargetedInterventionsData
+decodeTargetedInterventionsData =
     succeed TargetedInterventionsData
-        |> optional "row1" (decodeMonthlyValues currentDate) []
-        |> optional "row2" (decodeMonthlyValues currentDate) []
-        |> optional "row3" (decodeMonthlyValues currentDate) []
-        |> optional "row4" (decodeMonthlyValues currentDate) []
-        |> optional "row5" (decodeMonthlyValues currentDate) []
-        |> optional "row6" (decodeMonthlyValues currentDate) []
+        |> optional "row1" decodeMonthlyValues []
+        |> optional "row2" decodeMonthlyValues []
+        |> optional "row3" decodeMonthlyValues []
+        |> optional "row4" decodeMonthlyValues []
+        |> optional "row5" decodeMonthlyValues []
+        |> optional "row6" decodeMonthlyValues []
 
 
-decodeInfrastructureEnvironmentWashData : NominalDate -> Decoder InfrastructureEnvironmentWashData
-decodeInfrastructureEnvironmentWashData currentDate =
+decodeInfrastructureEnvironmentWashData : Decoder InfrastructureEnvironmentWashData
+decodeInfrastructureEnvironmentWashData =
     succeed InfrastructureEnvironmentWashData
-        |> optional "row1" (decodeMonthlyValues currentDate) []
-        |> optional "row2" (decodeMonthlyValues currentDate) []
-        |> optional "row3" (decodeMonthlyValues currentDate) []
-        |> optional "row4" (decodeMonthlyValues currentDate) []
-        |> optional "row5" (decodeMonthlyValues currentDate) []
+        |> optional "row1" decodeMonthlyValues []
+        |> optional "row2" decodeMonthlyValues []
+        |> optional "row3" decodeMonthlyValues []
+        |> optional "row4" decodeMonthlyValues []
+        |> optional "row5" decodeMonthlyValues []
 
 
-decodeMonthlyValues : NominalDate -> Decoder (List NominalDate)
-decodeMonthlyValues currentDate =
+decodeMonthlyValues : Decoder (List NominalDate)
+decodeMonthlyValues =
     list decodeYYYYMMDD
-        |> map (sanitizeSingleValuePerMonth currentDate)
+        |> map sanitizeSingleValuePerMonth
 
 
-sanitizeSingleValuePerMonth : NominalDate -> List NominalDate -> List NominalDate
-sanitizeSingleValuePerMonth currentDate dates =
-    -- Transfering from list to dict with diff months as key makes
-    -- sure we get only single value for given months.
-    List.map (\date -> ( diffMonths date currentDate, date ))
+sanitizeSingleValuePerMonth : List NominalDate -> List NominalDate
+sanitizeSingleValuePerMonth dates =
+    -- Keying by the month the measurement was taken in leaves one value per
+    -- month, which is the month the scorecard presents it under.
+    List.map (\date -> ( calendarMonth date, date ))
         dates
         |> Dict.fromList
         |> Dict.values

@@ -596,7 +596,26 @@ elmApp.ports.sendSyncSpeed.subscribe(function(syncSpeed) {
  * whole-batch error) goes back via the bulkPhotoFetchHandle port.
  */
 elmApp.ports.bulkPhotoFetch.subscribe(async function(params) {
-  const outcome = await self.bulkPhotos.handleBulkPhotoFetch(params);
+  // Belt and braces: the handler guards its own failure paths, but a reply
+  // must reach Elm on every exit, or the photos lane stays Loading forever.
+  // bulkPhotos.js can be absent while the app updates, when a new app.js
+  // runs against a stale cache. Reading the handler off a missing module
+  // throws before a catch can attach, so check for it first, and take the
+  // whole call through try/catch so a handler of any shape still replies.
+  let outcome;
+  if (self.bulkPhotos && typeof self.bulkPhotos.handleBulkPhotoFetch === 'function') {
+    try {
+      outcome = await self.bulkPhotos.handleBulkPhotoFetch(params);
+    } catch (e) {
+      outcome = { 'batchError': 0, 'error': String(e) };
+    }
+  } else {
+    // The file cannot turn up later in this session, so send what a server
+    // without the bulk endpoint sends. Photos are then fetched one at a
+    // time from the next cycle, rather than after three whole-batch
+    // errors. 404 is the signal Elm reads for that, not an HTTP status.
+    outcome = { 'batchError': 404, 'error': 'bulkPhotos.js not loaded' };
+  }
   elmApp.ports.bulkPhotoFetchHandle.send(outcome);
 });
 
@@ -733,7 +752,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         const cache = await caches.open(photosUploadCache);
 
-        result.forEach(async function(row, index) {
+        await Promise.all(result.map(async function(row, index) {
             const cachedResponse = await cache.match(row.photo);
 
             if (cachedResponse) {
@@ -813,8 +832,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             }
 
             return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: row});
-        });
-      })();
+        }));
+      })().catch((e) => sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'UploadError', reason: String(e)}));
       break;
 
     case 'IndexDbQueryUploadScreenshot':
@@ -837,7 +856,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         const screenshotsUploadCache = "screenshots-upload";
         const cache = await caches.open(screenshotsUploadCache);
 
-        result.forEach(async function(row, index) {
+        await Promise.all(result.map(async function(row, index) {
             const cachedResponse = await cache.match(row.screenshot);
 
             if (cachedResponse) {
@@ -910,8 +929,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             }
 
             return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: row});
-        });
-      })();
+        }));
+      })().catch((e) => sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'UploadError', reason: String(e)}));
       break;
 
     case 'IndexDbQueryUploadGeneral':
@@ -948,7 +967,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         };
 
         return sendIndexedDbFetchResult(queryType, resultToSend);
-      })();
+      })().catch((e) => sendIndexedDbFetchResult(queryType, {'entities': [], 'remaining': 0, 'error': String(e)}));
       break;
 
     case 'IndexDbQueryUploadWhatsApp':
@@ -983,7 +1002,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         };
 
         return sendIndexedDbFetchResult(queryType, resultToSend);
-      })();
+      })().catch((e) => sendIndexedDbFetchResult(queryType, {'entities': [], 'remaining': 0, 'error': String(e)}));
       break;
 
     case 'IndexDbQueryUploadAuthority':
@@ -1045,7 +1064,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         }
 
         return sendIndexedDbFetchResult(queryType, resultToSend);
-      })();
+      })().catch((e) => sendIndexedDbFetchResult(queryType, {'entities': [], 'remaining': 0, 'error': String(e)}));
       break;
 
     case 'IndexDbQueryDeferredPhoto':
@@ -1170,6 +1189,13 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .equals(data)
             .limit(1)
             .toArray();
+
+        if (!result.length) {
+          // The uuid is not among the shards this device holds, so there is
+          // nothing to describe. The reply still goes back, because the
+          // report that asked is waiting for one.
+          return sendIndexedDbFetchResult(queryType, JSON.stringify([]));
+        }
 
         let entities = [result[0]];
 
@@ -1345,10 +1371,13 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           }
         }
 
-        if (entities) {
-          return sendIndexedDbFetchResult(queryType, JSON.stringify(entities));
-        }
-      })();
+        return sendIndexedDbFetchResult(queryType, JSON.stringify(entities));
+      })().catch((e) => {
+        // The backend reads this reply as a list of entities, so the reply
+        // stays a list whatever went wrong, and the reason is reported.
+        rollbar.log('IndexDbQueryGetShardsEntityByUuid: ' + String(e));
+        return sendIndexedDbFetchResult(queryType, JSON.stringify([]));
+      });
         break;
 
     default:
@@ -1732,7 +1761,9 @@ elmApp.ports.initRollbar.subscribe(function(data) {
           environment: 'all',
           client: {
             javascript: {
-              code_version: '1.0',
+              // The build the report came from, so a stack trace can be read
+              // against the bundle that produced it.
+              code_version: data.version,
             }
           },
           person: {
@@ -1762,7 +1793,15 @@ elmApp.ports.initRollbar.subscribe(function(data) {
       // Send all items.
       let localIds = [];
       result.forEach(function(row) {
-          rollbar.log(row.error);
+          // The report carries the build that sends it, which is not the build
+          // that recorded it when the app updated in between. Rows written
+          // before this was kept have no build to say.
+          if (row.version) {
+              rollbar.log(row.error, { recordedOnVersion: row.version });
+          }
+          else {
+              rollbar.log(row.error);
+          }
           localIds.push(row.localId);
       })
 
@@ -1802,7 +1841,9 @@ elmApp.ports.logByRollbar.subscribe(function(data) {
             break;
 
         case 'db':
-            await dbSync.dbErrors.add({ error: data.message, isSynced: 0 });
+            // Kept until Rollbar is ready, which can be after the app updates,
+            // so keep the build this was recorded on with it.
+            await dbSync.dbErrors.add({ error: data.message, version: data.version, isSynced: 0 });
             break;
       }
 
@@ -1978,11 +2019,15 @@ elmApp.ports.serviceWorkerOut.subscribe(function(message) {
       break;
 
     case 'Update':
-      // This happens on its own every 24 hours or so, but we can force a
-      // check for updates if we like.
+      // Checked automatically every hour, and on demand from the version UI.
+      // The check fetches service-worker.js, which rejects when the device is
+      // offline -- routine for an offline-first app, so ignore it. The hourly
+      // timer checks again anyway.
       navigator.serviceWorker.getRegistration().then(function(reg) {
-        reg.update();
-      });
+        if (reg) {
+          return reg.update();
+        }
+      }).catch(function() {});
       break;
 
     case 'SkipWaiting':
@@ -1993,10 +2038,10 @@ elmApp.ports.serviceWorkerOut.subscribe(function(message) {
       // provide. So we make this explicit rather than automatic -- we don't
       // want to reload at some moment the user isn't expecting.
       navigator.serviceWorker.getRegistration().then(function(reg) {
-        if (reg.waiting) {
+        if (reg && reg.waiting) {
           reg.waiting.postMessage('SkipWaiting');
         }
-      });
+      }).catch(function() {});
       break;
   }
 });

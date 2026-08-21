@@ -3,12 +3,15 @@ module SyncManager.Test exposing (all)
 import Device.Model exposing (Device)
 import EverySet
 import Expect
+import Http
 import Json.Encode
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData
 import SyncManager.Model
     exposing
-        ( DownloadPhotosStatus(..)
+        ( BackendGeneralEntity
+        , DownloadPhotosStatus(..)
+        , DownloadSyncResponse
         , Flags
         , IndexDbSaveError(..)
         , Model
@@ -20,7 +23,7 @@ import SyncManager.Model
         , emptyModel
         )
 import SyncManager.Update
-import SyncManager.Utils exposing (determineDownloadPhotosStatus)
+import SyncManager.Utils exposing (determineDownloadPhotosStatus, pageAllowsBackgroundRefresh)
 import Test exposing (Test, describe, test)
 import Time
 
@@ -62,9 +65,20 @@ testDevice =
     }
 
 
+emptyGeneralResponse : DownloadSyncResponse BackendGeneralEntity
+emptyGeneralResponse =
+    { entities = []
+    , revisionCount = 0
+    , deviceName = ""
+    , rollbarToken = ""
+    , site = SiteUnknown
+    , features = EverySet.empty
+    }
+
+
 all : Test
 all =
-    describe "SyncManager photo lane"
+    describe "SyncManager"
         [ test "determineDownloadPhotosStatus progresses the photo lane while the data lane is downloading" <|
             \() ->
                 determineDownloadPhotosStatus
@@ -170,4 +184,143 @@ all =
                     |> .model
                     |> .lastSaveError
                     |> Expect.equal Nothing
+
+        -- The download lanes complete only on save success, so a batch-save
+        -- failure must park the waiting lane back to idle (retried next
+        -- cycle) instead of leaving it Loading forever. downloadRequestTime
+        -- is set explicitly in each test, so the in-flight request
+        -- timestamp is "0".
+        , test "SavedAtIndexDbHandle parks a Loading Authority download lane to idle when its batch save fails" <|
+            \() ->
+                let
+                    saveResult =
+                        Json.Encode.object
+                            [ ( "table", Json.Encode.string "Authority" )
+                            , ( "status", Json.Encode.string "Failure" )
+                            , ( "timestamp", Json.Encode.string "0" )
+                            , ( "reason", Json.Encode.string "QuotaExceededError" )
+                            ]
+                in
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (SavedAtIndexDbHandle saveResult)
+                    { testModel
+                        | syncStatus = SyncDownloadAuthority RemoteData.Loading
+                        , downloadRequestTime = Time.millisToPosix 0
+                    }
+                    |> .model
+                    |> .syncStatus
+                    |> Expect.equal SyncIdle
+        , test "SavedAtIndexDbHandle parks a Loading General download lane to idle when its batch save fails" <|
+            \() ->
+                let
+                    saveResult =
+                        Json.Encode.object
+                            [ ( "table", Json.Encode.string "General" )
+                            , ( "status", Json.Encode.string "Failure" )
+                            , ( "timestamp", Json.Encode.string "0" )
+                            , ( "reason", Json.Encode.string "QuotaExceededError" )
+                            ]
+                in
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (SavedAtIndexDbHandle saveResult)
+                    { testModel
+                        | syncStatus = SyncDownloadGeneral RemoteData.Loading
+                        , downloadRequestTime = Time.millisToPosix 0
+                    }
+                    |> .model
+                    |> .syncStatus
+                    |> Expect.equal SyncIdle
+        , test "SavedAtIndexDbHandle ignores a save failure from a superseded (timed-out) request" <|
+            \() ->
+                let
+                    saveResult =
+                        Json.Encode.object
+                            [ ( "table", Json.Encode.string "Authority" )
+                            , ( "status", Json.Encode.string "Failure" )
+                            , ( "timestamp", Json.Encode.string "999" )
+                            , ( "reason", Json.Encode.string "QuotaExceededError" )
+                            ]
+                in
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (SavedAtIndexDbHandle saveResult)
+                    { testModel
+                        | syncStatus = SyncDownloadAuthority RemoteData.Loading
+                        , downloadRequestTime = Time.millisToPosix 0
+                    }
+                    |> .model
+                    |> .syncStatus
+                    |> Expect.equal (SyncDownloadAuthority RemoteData.Loading)
+        , test "SavedAtIndexDbHandle leaves the download lane alone when another table's save fails" <|
+            \() ->
+                let
+                    saveResult =
+                        Json.Encode.object
+                            [ ( "table", Json.Encode.string "DeferredPhotos" )
+                            , ( "status", Json.Encode.string "Failure" )
+                            , ( "timestamp", Json.Encode.string "0" )
+                            , ( "reason", Json.Encode.string "QuotaExceededError" )
+                            ]
+                in
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (SavedAtIndexDbHandle saveResult)
+                    { testModel
+                        | syncStatus = SyncDownloadAuthority RemoteData.Loading
+                        , downloadRequestTime = Time.millisToPosix 0
+                    }
+                    |> .model
+                    |> .syncStatus
+                    |> Expect.equal (SyncDownloadAuthority RemoteData.Loading)
+
+        -- Each download lane reports its Http errors against its own
+        -- response. The general lane runs before the authority lane, so when
+        -- the general batch is saved the authority response still holds the
+        -- previous cycle's outcome, and a failure there is not a general
+        -- error.
+        , test "BackendGeneralFetchedDataSavedHandle reports no error while the authority response still holds a previous failure" <|
+            \() ->
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (BackendGeneralFetchedDataSavedHandle "0")
+                    { testModel
+                        | downloadGeneralResponse = RemoteData.Success emptyGeneralResponse
+                        , downloadAuthorityResponse = RemoteData.Failure Http.NetworkError
+                        , downloadRequestTime = Time.millisToPosix 0
+                    }
+                    |> .error
+                    |> Expect.equal Nothing
+
+        -- A long catch-up sync can schedule a page reload. It must not fire
+        -- while a nurse is logged in and possibly mid-form, or their unsaved
+        -- entries are lost; it is only allowed on the pre-login screens.
+        , test "background refresh is skipped on a logged-in page" <|
+            \() ->
+                pageAllowsBackgroundRefresh (UserPage ClinicalPage)
+                    |> Expect.equal False
+        , test "background refresh is allowed on the PIN page" <|
+            \() ->
+                pageAllowsBackgroundRefresh PinCodePage
+                    |> Expect.equal True
+        , test "background refresh is allowed on the device page" <|
+            \() ->
+                pageAllowsBackgroundRefresh DevicePage
+                    |> Expect.equal True
         ]

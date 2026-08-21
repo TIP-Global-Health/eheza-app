@@ -17,6 +17,7 @@ import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.EducationSession.Model
 import Backend.EducationSession.Update
+import Backend.EducationSession.Utils
 import Backend.Endpoints exposing (ComputedDashboardParams, PersonParams(..), PmtctParticipantParams(..), SessionParams(..), acuteIllnessEncounterEndpoint, acuteIllnessMeasurementsEndpoint, acuteIllnessTraceContactEndpoint, childMeasurementListEndpoint, childScoreboardEncounterEndpoint, childScoreboardMeasurementsEndpoint, clinicEndpoint, computedDashboardEndpoint, counselingScheduleEndpoint, counselingTopicEndpoint, educationSessionEndpoint, familyEncounterParticipantEndpoint, familyNutritionEncounterEndpoint, familyNutritionMeasurementsEndpoint, followUpMeasurementsEndpoint, healthCenterEndpoint, hivEncounterEndpoint, hivMeasurementsEndpoint, homeVisitEncounterEndpoint, homeVisitMeasurementsEndpoint, individualEncounterParticipantEndpoint, motherMeasurementListEndpoint, ncdEncounterEndpoint, ncdMeasurementsEndpoint, nutritionEncounterEndpoint, nutritionMeasurementsEndpoint, participantFormEndpoint, personEndpoint, pmtctParticipantEndpoint, pregnancyByNewbornEndpoint, prenatalEncounterEndpoint, prenatalMeasurementsEndpoint, relationshipEndpoint, resilienceSurveyEndpoint, sessionEndpoint, stockManagementMeasurementsEndpoint, tuberculosisEncounterEndpoint, tuberculosisMeasurementsEndpoint, villageEndpoint, villageStockManagementMeasurementsEndpoint, wellChildEncounterEndpoint, wellChildMeasurementsEndpoint)
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model
@@ -85,7 +86,7 @@ import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
-import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, sw)
+import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, sw)
 import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
@@ -4062,7 +4063,14 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 ( subModel, subCmd, appMsgs ) =
                     Backend.EducationSession.Update.update sessionId encounter subMsg requests
             in
-            ( { model | educationSessionRequests = Dict.insert sessionId subModel model.educationSessionRequests }
+            ( { model
+                | educationSessions =
+                    -- The update is applied to the sessions dict right away, since that
+                    -- dict is what the next PATCH is rebuilt from. See the docs at
+                    -- applyUpdateToSessions.
+                    Backend.EducationSession.Utils.applyUpdateToSessions sessionId subMsg model.educationSessions
+                , educationSessionRequests = Dict.insert sessionId subModel model.educationSessionRequests
+              }
             , Cmd.map (MsgEducationSession sessionId) subCmd
             , appMsgs
             )
@@ -4111,16 +4119,17 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
         MsgIndividualEncounterParticipant participantId subMsg ->
             let
-                participant =
+                -- The full cache state is passed down, so that a dropped
+                -- update can report what stood in the way of applying it.
+                participantState =
                     Dict.get participantId model.individualParticipants
-                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get participantId model.individualEncounterParticipantRequests
                         |> Maybe.withDefault Backend.IndividualEncounterParticipant.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.IndividualEncounterParticipant.Update.update currentDate participantId participant subMsg requests
+                    Backend.IndividualEncounterParticipant.Update.update currentDate participantId participantState subMsg requests
             in
             ( { model | individualEncounterParticipantRequests = Dict.insert participantId subModel model.individualEncounterParticipantRequests }
             , Cmd.map (MsgIndividualEncounterParticipant participantId) subCmd
@@ -4190,11 +4199,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostPmtctParticipant initiator data ->
-            ( { model | postPmtctParticipant = Dict.insert data.child Loading model.postPmtctParticipant }
-            , sw.post pmtctParticipantEndpoint data
-                |> toCmd (RemoteData.fromResult >> HandlePostedPmtctParticipant data.child initiator)
-            , []
-            )
+            if isPostInFlight data.child model.postPmtctParticipant then
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postPmtctParticipant = Dict.insert data.child Loading model.postPmtctParticipant }
+                , sw.post pmtctParticipantEndpoint data
+                    |> toCmd (RemoteData.fromResult >> HandlePostedPmtctParticipant data.child initiator)
+                , []
+                )
 
         HandlePostedPmtctParticipant id initiator data ->
             let
@@ -4229,146 +4242,150 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostRelationship personId myRelationship addGroup initiator ->
-            let
-                normalized =
-                    toRelationship personId myRelationship healthCenterId
+            if isPostInFlight personId model.postRelationship then
+                ( model, Cmd.none, [] )
 
-                -- If we'd also like to add these people to a group, construct
-                -- a Msg to do that.
-                extraMsgs =
-                    addGroup
-                        |> Maybe.map
-                            (\clinicId ->
-                                let
-                                    defaultAdultActivities =
-                                        case normalized.relatedBy of
-                                            ParentOf ->
-                                                MotherActivities
+            else
+                let
+                    normalized =
+                        toRelationship personId myRelationship healthCenterId
 
-                                            CaregiverFor ->
-                                                CaregiverActivities
+                    -- If we'd also like to add these people to a group, construct
+                    -- a Msg to do that.
+                    extraMsgs =
+                        addGroup
+                            |> Maybe.map
+                                (\clinicId ->
+                                    let
+                                        defaultAdultActivities =
+                                            case normalized.relatedBy of
+                                                ParentOf ->
+                                                    MotherActivities
 
-                                    childBirthDate =
-                                        Dict.get normalized.relatedTo model.people
-                                            |> Maybe.withDefault NotAsked
-                                            |> RemoteData.toMaybe
-                                            |> Maybe.andThen .birthDate
+                                                CaregiverFor ->
+                                                    CaregiverActivities
 
-                                    -- The start date determines when we start expecting this pair
-                                    -- to be attending a group encounter. We'll look to see if we
-                                    -- know the child's birth date. Normally, we will, because
-                                    -- we've probably just entered it, or we've loaded the child
-                                    -- for some other reason. We won't try to fetch the child here
-                                    -- if we don't have the child, at least for now, because it
-                                    -- would add complexity. If we don't know the child's
-                                    -- birthdate, we'll default to 28 days ago. That should be
-                                    -- enough so that, if we're in the middle of a group encounter,
-                                    -- the child will be expected at that group encounter.
-                                    defaultStartDate =
-                                        childBirthDate
-                                            |> Maybe.withDefault (Date.add Days -28 currentDate)
+                                        childBirthDate =
+                                            Dict.get normalized.relatedTo model.people
+                                                |> Maybe.withDefault NotAsked
+                                                |> RemoteData.toMaybe
+                                                |> Maybe.andThen .birthDate
 
-                                    -- For all groups but Sorwathe, we expect child to graduate from programm
-                                    -- after 26 months. Therefore, if we can resolve clinic type and child birthday,
-                                    -- we'll set expected graduation date.
-                                    defaultEndDate =
-                                        model.clinics
-                                            |> RemoteData.toMaybe
-                                            |> Maybe.andThen
-                                                (Dict.get clinicId
-                                                    >> Maybe.andThen
-                                                        (\clinic ->
-                                                            if List.member clinic.clinicType [ Sorwathe, Achi ] then
-                                                                Nothing
+                                        -- The start date determines when we start expecting this pair
+                                        -- to be attending a group encounter. We'll look to see if we
+                                        -- know the child's birth date. Normally, we will, because
+                                        -- we've probably just entered it, or we've loaded the child
+                                        -- for some other reason. We won't try to fetch the child here
+                                        -- if we don't have the child, at least for now, because it
+                                        -- would add complexity. If we don't know the child's
+                                        -- birthdate, we'll default to 28 days ago. That should be
+                                        -- enough so that, if we're in the middle of a group encounter,
+                                        -- the child will be expected at that group encounter.
+                                        defaultStartDate =
+                                            childBirthDate
+                                                |> Maybe.withDefault (Date.add Days -28 currentDate)
 
-                                                            else
-                                                                Maybe.map (Date.add Months graduatingAgeInMonth) childBirthDate
-                                                        )
-                                                )
-                                in
-                                PostPmtctParticipant initiator
-                                    { adult = normalized.person
-                                    , child = normalized.relatedTo
-                                    , adultActivities = defaultAdultActivities
-                                    , start = defaultStartDate
-                                    , end = defaultEndDate
-                                    , clinic = clinicId
-                                    , deleted = False
-                                    }
-                            )
-                        |> Maybe.Extra.toList
+                                        -- For all groups but Sorwathe, we expect child to graduate from programm
+                                        -- after 26 months. Therefore, if we can resolve clinic type and child birthday,
+                                        -- we'll set expected graduation date.
+                                        defaultEndDate =
+                                            model.clinics
+                                                |> RemoteData.toMaybe
+                                                |> Maybe.andThen
+                                                    (Dict.get clinicId
+                                                        >> Maybe.andThen
+                                                            (\clinic ->
+                                                                if List.member clinic.clinicType [ Sorwathe, Achi ] then
+                                                                    Nothing
 
-                -- We want to patch any relationship between these two,
-                -- whether or not reversed.
-                query1 =
-                    sw.select relationshipEndpoint
-                        { person = Just normalized.person
-                        , relatedTo = Just normalized.relatedTo
-                        }
-                        |> toTask
-                        |> Task.map (.items >> Dict.fromList)
+                                                                else
+                                                                    Maybe.map (Date.add Months graduatingAgeInMonth) childBirthDate
+                                                            )
+                                                    )
+                                    in
+                                    PostPmtctParticipant initiator
+                                        { adult = normalized.person
+                                        , child = normalized.relatedTo
+                                        , adultActivities = defaultAdultActivities
+                                        , start = defaultStartDate
+                                        , end = defaultEndDate
+                                        , clinic = clinicId
+                                        , deleted = False
+                                        }
+                                )
+                            |> Maybe.Extra.toList
 
-                query2 =
-                    sw.select relationshipEndpoint
-                        { person = Just normalized.relatedTo
-                        , relatedTo = Just normalized.person
-                        }
-                        |> toTask
-                        |> Task.map (.items >> Dict.fromList)
+                    -- We want to patch any relationship between these two,
+                    -- whether or not reversed.
+                    query1 =
+                        sw.select relationshipEndpoint
+                            { person = Just normalized.person
+                            , relatedTo = Just normalized.relatedTo
+                            }
+                            |> toTask
+                            |> Task.map (.items >> Dict.fromList)
 
-                existingRelationship =
-                    Task.map2 Dict.union query1 query2
-                        |> Task.map (Dict.toList >> List.head)
+                    query2 =
+                        sw.select relationshipEndpoint
+                            { person = Just normalized.relatedTo
+                            , relatedTo = Just normalized.person
+                            }
+                            |> toTask
+                            |> Task.map (.items >> Dict.fromList)
 
-                relationshipCmd =
-                    existingRelationship
-                        |> Task.andThen
-                            (\existing ->
-                                case existing of
-                                    Nothing ->
-                                        sw.post relationshipEndpoint normalized
-                                            |> toTask
-                                            |> Task.map (always myRelationship)
+                    existingRelationship =
+                        Task.map2 Dict.union query1 query2
+                            |> Task.map (Dict.toList >> List.head)
 
-                                    Just ( relationshipId, relationship ) ->
-                                        let
-                                            changes =
-                                                encodeRelationshipChanges { old = relationship, new = normalized }
-                                        in
-                                        if List.isEmpty changes then
-                                            -- If no changes, we just report success without posting to the DB
-                                            Task.succeed myRelationship
-
-                                        else
-                                            object changes
-                                                |> sw.patchAny relationshipEndpoint relationshipId
+                    relationshipCmd =
+                        existingRelationship
+                            |> Task.andThen
+                                (\existing ->
+                                    case existing of
+                                        Nothing ->
+                                            sw.post relationshipEndpoint normalized
                                                 |> toTask
                                                 |> Task.map (always myRelationship)
-                            )
-                        |> RemoteData.fromTask
-                        |> Task.perform (HandlePostedRelationship personId initiator)
-            in
-            ( { model | postRelationship = Dict.insert personId Loading model.postRelationship }
-            , relationshipCmd
-            , []
-            )
-                |> sequenceExtra
-                    (updateIndexedDb language
-                        currentDate
-                        currentTime
-                        coordinates
-                        zscores
-                        site
-                        features
-                        nurseId
-                        healthCenterId
-                        villageId
-                        isChw
-                        isLabTech
-                        activePage
-                        syncManager
-                    )
-                    extraMsgs
+
+                                        Just ( relationshipId, relationship ) ->
+                                            let
+                                                changes =
+                                                    encodeRelationshipChanges { old = relationship, new = normalized }
+                                            in
+                                            if List.isEmpty changes then
+                                                -- If no changes, we just report success without posting to the DB
+                                                Task.succeed myRelationship
+
+                                            else
+                                                object changes
+                                                    |> sw.patchAny relationshipEndpoint relationshipId
+                                                    |> toTask
+                                                    |> Task.map (always myRelationship)
+                                )
+                            |> RemoteData.fromTask
+                            |> Task.perform (HandlePostedRelationship personId initiator)
+                in
+                ( { model | postRelationship = Dict.insert personId Loading model.postRelationship }
+                , relationshipCmd
+                , []
+                )
+                    |> sequenceExtra
+                        (updateIndexedDb language
+                            currentDate
+                            currentTime
+                            coordinates
+                            zscores
+                            site
+                            features
+                            nurseId
+                            healthCenterId
+                            villageId
+                            isChw
+                            isLabTech
+                            activePage
+                            syncManager
+                        )
+                        extraMsgs
 
         HandlePostedRelationship personId initiator data ->
             let
@@ -4412,20 +4429,26 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostPerson relation initiator person ->
-            let
-                -- Adding GPS coordinates.
-                personWithCoordinates =
-                    if gpsCoordinatesEnabled features && person.saveGPSLocation then
-                        updatePersonWithCooridnates person coordinates
+            if RemoteData.isLoading model.postPerson then
+                -- A person create is already on its way; ignore the duplicate,
+                -- so a double-tapped "Save" can't register the same patient twice.
+                ( model, Cmd.none, [] )
 
-                    else
-                        person
-            in
-            ( { model | postPerson = Loading }
-            , sw.post personEndpoint personWithCoordinates
-                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedPerson relation initiator)
-            , []
-            )
+            else
+                let
+                    -- Adding GPS coordinates.
+                    personWithCoordinates =
+                        if gpsCoordinatesEnabled features && person.saveGPSLocation then
+                            updatePersonWithCoordinates person coordinates
+
+                        else
+                            person
+                in
+                ( { model | postPerson = Loading }
+                , sw.post personEndpoint personWithCoordinates
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedPerson relation initiator)
+                , []
+                )
 
         HandlePostedPerson relation initiator data ->
             let
@@ -4605,13 +4628,31 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
         PatchPerson origin personId person ->
             let
-                -- Adding GPS coordinates.
+                -- The edit form has no coordinate inputs, so it always reports
+                -- Nothing for them. Patching that in would erase the location
+                -- recorded at registration, so the stored one is carried over.
+                personWithStoredCoordinates =
+                    Dict.get personId model.people
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (\stored ->
+                                { person
+                                    | registrationLatitude = stored.registrationLatitude
+                                    , registrationLongitude = stored.registrationLongitude
+                                }
+                            )
+                        |> Maybe.withDefault person
+
+                -- Adding GPS coordinates. Laid over the stored ones, rather
+                -- than offered instead of them, because a reading that was
+                -- asked for is not always a reading that arrived: without a
+                -- fix this leaves what is stored alone.
                 personWithCoordinates =
                     if gpsCoordinatesEnabled features && person.saveGPSLocation then
-                        updatePersonWithCooridnates person coordinates
+                        updatePersonWithCoordinates personWithStoredCoordinates coordinates
 
                     else
-                        person
+                        personWithStoredCoordinates
             in
             ( { model | postPerson = Loading }
             , sw.patchFull personEndpoint personId personWithCoordinates
@@ -4651,11 +4692,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostSession session ->
-            ( { model | postSession = Loading }
-            , sw.post sessionEndpoint session
-                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedSession)
-            , []
-            )
+            if RemoteData.isLoading model.postSession then
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postSession = Loading }
+                , sw.post sessionEndpoint session
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedSession)
+                , []
+                )
 
         HandlePostedSession data ->
             let
@@ -4679,13 +4724,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostIndividualEncounterParticipant extraData session ->
-            let
-                alreadyInFlight =
-                    Dict.get session.person model.postIndividualEncounterParticipant
-                        |> Maybe.map RemoteData.isLoading
-                        |> Maybe.withDefault False
-            in
-            if alreadyInFlight then
+            if isPostInFlight session.person model.postIndividualEncounterParticipant then
                 -- A create for this person is already in flight; ignore the
                 -- duplicate, so a double-tapped "begin encounter" button can't
                 -- open two encounter participants (e.g. two open pregnancies).
@@ -4807,11 +4846,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostPrenatalEncounter postCreateDestination prenatalEncounter ->
-            ( { model | postPrenatalEncounter = Dict.insert prenatalEncounter.participant Loading model.postPrenatalEncounter }
-            , sw.post prenatalEncounterEndpoint prenatalEncounter
-                |> toCmd (RemoteData.fromResult >> HandlePostedPrenatalEncounter prenatalEncounter.participant postCreateDestination)
-            , []
-            )
+            if isPostInFlight prenatalEncounter.participant model.postPrenatalEncounter then
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postPrenatalEncounter = Dict.insert prenatalEncounter.participant Loading model.postPrenatalEncounter }
+                , sw.post prenatalEncounterEndpoint prenatalEncounter
+                    |> toCmd (RemoteData.fromResult >> HandlePostedPrenatalEncounter prenatalEncounter.participant postCreateDestination)
+                , []
+                )
 
         HandlePostedPrenatalEncounter participantId postCreateDestination data ->
             let
@@ -4854,11 +4897,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostNutritionEncounter nutritionEncounter ->
-            ( { model | postNutritionEncounter = Dict.insert nutritionEncounter.participant Loading model.postNutritionEncounter }
-            , sw.post nutritionEncounterEndpoint nutritionEncounter
-                |> toCmd (RemoteData.fromResult >> HandlePostedNutritionEncounter nutritionEncounter.participant)
-            , []
-            )
+            if isPostInFlight nutritionEncounter.participant model.postNutritionEncounter then
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postNutritionEncounter = Dict.insert nutritionEncounter.participant Loading model.postNutritionEncounter }
+                , sw.post nutritionEncounterEndpoint nutritionEncounter
+                    |> toCmd (RemoteData.fromResult >> HandlePostedNutritionEncounter nutritionEncounter.participant)
+                , []
+                )
 
         HandlePostedNutritionEncounter participantId data ->
             let
@@ -4882,11 +4929,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostHomeVisitEncounter homeVisitEncounter ->
-            ( { model | postHomeVisitEncounter = Dict.insert homeVisitEncounter.participant Loading model.postHomeVisitEncounter }
-            , sw.post homeVisitEncounterEndpoint homeVisitEncounter
-                |> toCmd (RemoteData.fromResult >> HandlePostedHomeVisitEncounter homeVisitEncounter.participant)
-            , []
-            )
+            if isPostInFlight homeVisitEncounter.participant model.postHomeVisitEncounter then
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postHomeVisitEncounter = Dict.insert homeVisitEncounter.participant Loading model.postHomeVisitEncounter }
+                , sw.post homeVisitEncounterEndpoint homeVisitEncounter
+                    |> toCmd (RemoteData.fromResult >> HandlePostedHomeVisitEncounter homeVisitEncounter.participant)
+                , []
+                )
 
         HandlePostedHomeVisitEncounter participantId data ->
             let
@@ -4910,11 +4961,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostWellChildEncounter wellChildEncounter ->
-            ( { model | postWellChildEncounter = Dict.insert wellChildEncounter.participant Loading model.postWellChildEncounter }
-            , sw.post wellChildEncounterEndpoint wellChildEncounter
-                |> toCmd (RemoteData.fromResult >> HandlePostedWellChildEncounter wellChildEncounter.participant)
-            , []
-            )
+            if isPostInFlight wellChildEncounter.participant model.postWellChildEncounter then
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postWellChildEncounter = Dict.insert wellChildEncounter.participant Loading model.postWellChildEncounter }
+                , sw.post wellChildEncounterEndpoint wellChildEncounter
+                    |> toCmd (RemoteData.fromResult >> HandlePostedWellChildEncounter wellChildEncounter.participant)
+                , []
+                )
 
         HandlePostedWellChildEncounter participantId data ->
             let
@@ -4938,11 +4993,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostAcuteIllnessEncounter acuteIllnessEncounter ->
-            ( { model | postAcuteIllnessEncounter = Dict.insert acuteIllnessEncounter.participant Loading model.postAcuteIllnessEncounter }
-            , sw.post acuteIllnessEncounterEndpoint acuteIllnessEncounter
-                |> toCmd (RemoteData.fromResult >> HandlePostedAcuteIllnessEncounter acuteIllnessEncounter.participant)
-            , []
-            )
+            if isPostInFlight acuteIllnessEncounter.participant model.postAcuteIllnessEncounter then
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postAcuteIllnessEncounter = Dict.insert acuteIllnessEncounter.participant Loading model.postAcuteIllnessEncounter }
+                , sw.post acuteIllnessEncounterEndpoint acuteIllnessEncounter
+                    |> toCmd (RemoteData.fromResult >> HandlePostedAcuteIllnessEncounter acuteIllnessEncounter.participant)
+                , []
+                )
 
         HandlePostedAcuteIllnessEncounter participantId data ->
             let
@@ -4966,11 +5025,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostNCDEncounter ncdEncounter ->
-            ( { model | postNCDEncounter = Dict.insert ncdEncounter.participant Loading model.postNCDEncounter }
-            , sw.post ncdEncounterEndpoint ncdEncounter
-                |> toCmd (RemoteData.fromResult >> HandlePostedNCDEncounter ncdEncounter.participant)
-            , []
-            )
+            if isPostInFlight ncdEncounter.participant model.postNCDEncounter then
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postNCDEncounter = Dict.insert ncdEncounter.participant Loading model.postNCDEncounter }
+                , sw.post ncdEncounterEndpoint ncdEncounter
+                    |> toCmd (RemoteData.fromResult >> HandlePostedNCDEncounter ncdEncounter.participant)
+                , []
+                )
 
         HandlePostedNCDEncounter participantId data ->
             let
@@ -4994,11 +5057,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostChildScoreboardEncounter childScoreboardEncounter ->
-            ( { model | postChildScoreboardEncounter = Dict.insert childScoreboardEncounter.participant Loading model.postChildScoreboardEncounter }
-            , sw.post childScoreboardEncounterEndpoint childScoreboardEncounter
-                |> toCmd (RemoteData.fromResult >> HandlePostedChildScoreboardEncounter childScoreboardEncounter.participant)
-            , []
-            )
+            if isPostInFlight childScoreboardEncounter.participant model.postChildScoreboardEncounter then
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postChildScoreboardEncounter = Dict.insert childScoreboardEncounter.participant Loading model.postChildScoreboardEncounter }
+                , sw.post childScoreboardEncounterEndpoint childScoreboardEncounter
+                    |> toCmd (RemoteData.fromResult >> HandlePostedChildScoreboardEncounter childScoreboardEncounter.participant)
+                , []
+                )
 
         HandlePostedChildScoreboardEncounter participantId data ->
             let
@@ -5022,11 +5089,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostTuberculosisEncounter tuberculosisEncounter ->
-            ( { model | postTuberculosisEncounter = Dict.insert tuberculosisEncounter.participant Loading model.postTuberculosisEncounter }
-            , sw.post tuberculosisEncounterEndpoint tuberculosisEncounter
-                |> toCmd (RemoteData.fromResult >> HandlePostedTuberculosisEncounter tuberculosisEncounter.participant)
-            , []
-            )
+            if isPostInFlight tuberculosisEncounter.participant model.postTuberculosisEncounter then
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postTuberculosisEncounter = Dict.insert tuberculosisEncounter.participant Loading model.postTuberculosisEncounter }
+                , sw.post tuberculosisEncounterEndpoint tuberculosisEncounter
+                    |> toCmd (RemoteData.fromResult >> HandlePostedTuberculosisEncounter tuberculosisEncounter.participant)
+                , []
+                )
 
         HandlePostedTuberculosisEncounter participantId data ->
             let
@@ -5050,11 +5121,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostHIVEncounter hivEncounter ->
-            ( { model | postHIVEncounter = Dict.insert hivEncounter.participant Loading model.postHIVEncounter }
-            , sw.post hivEncounterEndpoint hivEncounter
-                |> toCmd (RemoteData.fromResult >> HandlePostedHIVEncounter hivEncounter.participant)
-            , []
-            )
+            if isPostInFlight hivEncounter.participant model.postHIVEncounter then
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postHIVEncounter = Dict.insert hivEncounter.participant Loading model.postHIVEncounter }
+                , sw.post hivEncounterEndpoint hivEncounter
+                    |> toCmd (RemoteData.fromResult >> HandlePostedHIVEncounter hivEncounter.participant)
+                , []
+                )
 
         HandlePostedHIVEncounter participantId data ->
             let
@@ -5078,11 +5153,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostEducationSession educationSession ->
-            ( { model | postEducationSession = Loading }
-            , sw.post educationSessionEndpoint educationSession
-                |> toCmd (RemoteData.fromResult >> HandlePostedEducationSession)
-            , []
-            )
+            if RemoteData.isLoading model.postEducationSession then
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postEducationSession = Loading }
+                , sw.post educationSessionEndpoint educationSession
+                    |> toCmd (RemoteData.fromResult >> HandlePostedEducationSession)
+                , []
+                )
 
         HandlePostedEducationSession data ->
             let
@@ -5106,13 +5185,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostFamilyEncounterParticipant session ->
-            let
-                alreadyInFlight =
-                    Dict.get session.person model.postFamilyEncounterParticipant
-                        |> Maybe.map RemoteData.isLoading
-                        |> Maybe.withDefault False
-            in
-            if alreadyInFlight then
+            if isPostInFlight session.person model.postFamilyEncounterParticipant then
                 -- Already creating a family encounter participant for this
                 -- person; ignore the double-tap.
                 ( model, Cmd.none, [] )
@@ -5149,11 +5222,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostFamilyNutritionEncounter familyNutritionEncounter ->
-            ( { model | postFamilyNutritionEncounter = Dict.insert familyNutritionEncounter.participant Loading model.postFamilyNutritionEncounter }
-            , sw.post familyNutritionEncounterEndpoint familyNutritionEncounter
-                |> toCmd (RemoteData.fromResult >> HandlePostedFamilyNutritionEncounter familyNutritionEncounter.participant)
-            , []
-            )
+            if isPostInFlight familyNutritionEncounter.participant model.postFamilyNutritionEncounter then
+                ( model, Cmd.none, [] )
+
+            else
+                ( { model | postFamilyNutritionEncounter = Dict.insert familyNutritionEncounter.participant Loading model.postFamilyNutritionEncounter }
+                , sw.post familyNutritionEncounterEndpoint familyNutritionEncounter
+                    |> toCmd (RemoteData.fromResult >> HandlePostedFamilyNutritionEncounter familyNutritionEncounter.participant)
+                , []
+                )
 
         HandlePostedFamilyNutritionEncounter participantId data ->
             let
@@ -10393,8 +10470,8 @@ generateTuberculosisEncounterCompletedMsgs currentDate after id =
         |> Maybe.withDefault []
 
 
-updatePersonWithCooridnates : Person -> Maybe App.Model.GPSCoordinates -> Person
-updatePersonWithCooridnates person =
+updatePersonWithCoordinates : Person -> Maybe App.Model.GPSCoordinates -> Person
+updatePersonWithCoordinates person =
     Maybe.map
         (\coordinates ->
             { person

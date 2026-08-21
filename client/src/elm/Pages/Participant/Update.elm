@@ -65,7 +65,10 @@ updateChild site msg model childForm =
             ChildUpdateReturns
                 { model | selectedActivity = Just val, dialogState = Nothing }
                 cmd
-                childForm
+                -- Leaving an activity forgets what its form was complaining
+                -- about: the warning belongs to the measurement that was being
+                -- entered, and the child's form is shared by all of them.
+                { childForm | measurementOutOfRangePopupState = [] }
                 Nothing
                 Nothing
 

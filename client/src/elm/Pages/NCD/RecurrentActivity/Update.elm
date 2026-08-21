@@ -284,6 +284,29 @@ update currentDate id db msg model =
             , []
             )
 
+        PreSaveRandomBloodSugarResult personId saved nextTask ->
+            let
+                form =
+                    getMeasurementValueFunc saved
+                        |> Measurement.Utils.randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
+
+                extraMsgs =
+                    -- NCD has no lab tech, so the results form always draws
+                    -- the reading.
+                    Measurement.Utils.bloodGlucoseSaveMsgs True
+                        form.sugarCount
+                        (SaveRandomBloodSugarResult personId saved nextTask)
+                        SetMeasurementOutOfRangePopupState
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetMeasurementOutOfRangePopupState state ->
+            ( { model | measurementOutOfRangePopupState = state }, Cmd.none, [] )
+
         SaveRandomBloodSugarResult personId saved nextTask ->
             ( model
             , Cmd.none
@@ -301,7 +324,7 @@ update currentDate id db msg model =
                     model.labResultsData.creatinineTestForm
 
                 updatedForm =
-                    { form | creatinineResult = String.toFloat value }
+                    { form | creatinineResult = String.toFloat value, creatinineResultDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -318,7 +341,7 @@ update currentDate id db msg model =
                     model.labResultsData.creatinineTestForm
 
                 updatedForm =
-                    { form | bunResult = String.toFloat value }
+                    { form | bunResult = String.toFloat value, bunResultDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -346,7 +369,7 @@ update currentDate id db msg model =
                     model.labResultsData.liverFunctionTestForm
 
                 updatedForm =
-                    { form | altResult = String.toFloat value }
+                    { form | altResult = String.toFloat value, altResultDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -363,7 +386,7 @@ update currentDate id db msg model =
                     model.labResultsData.liverFunctionTestForm
 
                 updatedForm =
-                    { form | astResult = String.toFloat value }
+                    { form | astResult = String.toFloat value, astResultDirty = True }
 
                 updatedData =
                     model.labResultsData

@@ -30,7 +30,8 @@ $base_query = hedley_general_create_entity_field_query_excluding_deleted();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
-  ->propertyCondition('status', NODE_PUBLISHED);
+  ->propertyCondition('status', NODE_PUBLISHED)
+  ->propertyOrderBy('nid');
 
 if ($exclude_set) {
   $base_query->addTag('exclude_set_reports_data');

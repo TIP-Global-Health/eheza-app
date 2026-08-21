@@ -1,7 +1,6 @@
-version: 2
+version: 2.1
 
 workflows:
-  version: 2
   build:
     jobs:
       - lint_phpcs
@@ -145,6 +144,9 @@ jobs:
           no_output_timeout: 15m
       - store_artifacts:
           path: client/test-results
+          # Screenshots are captured only on failure, so the default
+          # on_success would drop them exactly when they are needed.
+          when: always
           destination: playwright-results
   e2e_playwright_2:
     machine:
@@ -199,6 +201,9 @@ jobs:
           no_output_timeout: 15m
       - store_artifacts:
           path: client/test-results
+          # Screenshots are captured only on failure, so the default
+          # on_success would drop them exactly when they are needed.
+          when: always
           destination: playwright-results
   e2e_reporting:
     machine:
@@ -253,4 +258,7 @@ jobs:
           no_output_timeout: 15m
       - store_artifacts:
           path: client/test-results
+          # Screenshots are captured only on failure, so the default
+          # on_success would drop them exactly when they are needed.
+          when: always
           destination: playwright-results

@@ -280,21 +280,10 @@ function hedley_device_assign_shards($node, $wrapper) {
         break;
 
       case 'pmtct_participant':
-        // Participant shards are the union of adult and child shards.
-        $child_id = $wrapper->field_person->getIdentifier();
-        $adult_id = $wrapper->field_adult->getIdentifier();
-        $shards_child = hedley_general_shards_by_person($child_id);
-        $shards_adult = hedley_general_shards_by_person($adult_id);
-        $shards = array_unique(array_merge($shards_child, $shards_adult));
-        break;
-
       case 'relationship':
-        // Relationship shards are the union of adult and child shards.
-        $child_id = $wrapper->field_related_to->getIdentifier();
-        $adult_id = $wrapper->field_person->getIdentifier();
-        $shards_child = hedley_general_shards_by_person($child_id);
-        $shards_adult = hedley_general_shards_by_person($adult_id);
-        $shards = array_unique(array_merge($shards_child, $shards_adult));
+        // Participant and relationship shards are the union of both linked
+        // persons' shards.
+        $shards = hedley_general_two_person_node_shards($node);
         break;
 
       case 'stock_update':

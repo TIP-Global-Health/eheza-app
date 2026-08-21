@@ -448,50 +448,23 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
 }
 
 /**
- * Counts measurements taken for person during all given sessions.
+ * Loads, per person, the sessions they attended.
  *
- * @param int $person_id
- *   The person node ID.
- * @param array $sessions_ids
- *   The IDs of the sessions.
+ * Attending is evidenced either by a measurement taken during the session, or
+ * by an attendance record that says they came. An attendance record saying
+ * they did not is no evidence at all.
  *
- * @return int
- *   Number of measurements.
- */
-function hedley_activity_count_person_measurements_taken_during_sessions($person_id, array $sessions_ids) {
-  $query = hedley_general_create_db_select_query_excluding_deleted('node');
-  $query->fields('node', ['nid']);
-  $query->condition('status', NODE_PUBLISHED);
-
-  $person_field = 'field_person';
-  hedley_general_join_field_to_query($query, 'node', $person_field);
-  $person_field_name = $person_field . '.' . $person_field . '_target_id';
-  $query->condition($person_field_name, $person_id);
-
-  $session_field = 'field_session';
-  hedley_general_join_field_to_query($query, 'node', $session_field);
-  $session_field_name = $session_field . '.' . $session_field . '_target_id';
-  $query->condition($session_field_name, $sessions_ids, 'IN');
-
-  return $query->countQuery()->execute()->fetchField();
-}
-
-/**
- * Loads, per person, the sessions during which they have measurements.
- *
- * Batched companion to
- * hedley_activity_count_person_measurements_taken_during_sessions(): instead of
- * one COUNT query per person, this resolves attendance for many persons at once
- * with a single query, so callers can determine it in memory.
+ * Resolves attendance for many persons at once with a single query, rather
+ * than a COUNT query per person, so callers can determine it in memory.
  *
  * @param array $sessions_ids
  *   The session node IDs to consider.
  *
  * @return array
  *   A map keyed by person node ID; each value is a set of session node IDs (as
- *   array keys) during which that person has at least one measurement.
+ *   array keys) that person attended.
  */
-function hedley_activity_get_persons_sessions_with_measurements(array $sessions_ids) {
+function hedley_activity_get_persons_sessions_attended(array $sessions_ids) {
   $persons_sessions = [];
   if (empty($sessions_ids)) {
     return $persons_sessions;
@@ -507,6 +480,25 @@ function hedley_activity_get_persons_sessions_with_measurements(array $sessions_
   hedley_general_join_field_to_query($query, 'node', $session_field);
   $session_field_name = $session_field . '.' . $session_field . '_target_id';
   $query->condition($session_field_name, $sessions_ids, 'IN');
+
+  // A measurement means the person was there, and so does the attendance
+  // record - but only when it says so. Marking someone absent updates it to
+  // attended = FALSE rather than removing it, so the record exists either way
+  // and its value, not its presence, is what answers the question. Counting
+  // the record itself turned an absence into proof of attendance.
+  //
+  // The join is left, because only the attendance bundle carries the field;
+  // every other measurement passes on the first condition. It is made by hand
+  // rather than through the usual helper, which would also add the value to
+  // the SELECT list and so to the DISTINCT below - a person with both a
+  // measurement and an attendance record would come back as two rows where
+  // one will do, in the query that exists to be the cheap bulk path.
+  $query->leftJoin('field_data_field_attended', 'field_attended', 'node.nid = field_attended.entity_id');
+  $query->condition(
+    db_or()
+      ->condition('node.type', HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE, '<>')
+      ->condition('field_attended.field_attended_value', 1)
+  );
 
   $query->distinct();
 

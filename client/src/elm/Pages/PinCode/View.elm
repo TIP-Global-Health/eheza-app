@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker, isLabTechnician)
+import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker, isLabTechnician, nurseAuthorizedForLocation)
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
 import Backend.Utils exposing (stockManagementHCEnabled, stockManagementVillageEnabled)
@@ -49,15 +49,7 @@ view language zone currentTime features activePage nurseData ( healthCenterId, v
                             isCommunityHealthWorker nurse
 
                         selectedAuthorizedLocation =
-                            if isChw then
-                                villageId
-                                    |> Maybe.map (\id -> EverySet.member id nurse.villages)
-                                    |> Maybe.withDefault False
-
-                            else
-                                healthCenterId
-                                    |> Maybe.map (\id -> EverySet.member id nurse.healthCenters)
-                                    |> Maybe.withDefault False
+                            nurseAuthorizedForLocation villageId healthCenterId nurse
                     in
                     ( viewLoggedInHeader language isChw selectedAuthorizedLocation
                     , viewLoggedInContent language

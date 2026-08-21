@@ -7,6 +7,9 @@ export default defineConfig({
   globalSetup: './e2e/global-setup.ts',
   globalTeardown: recording ? './e2e/global-teardown.ts' : undefined,
   testDir: './e2e',
+  // A committed test.only would otherwise shrink a shard to one test and
+  // leave the job green, and e2e is the only functional gate on a release.
+  forbidOnly: !!process.env.CI,
   timeout: 120000,
   retries: 0,
   workers: 1,

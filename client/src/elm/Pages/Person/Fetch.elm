@@ -1,4 +1,4 @@
-module Pages.Person.Fetch exposing (fetch, fetchForCreateOrEdit)
+module Pages.Person.Fetch exposing (fetch, fetchForCreateOrEdit, fetchSessionForInitiator)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -31,18 +31,10 @@ fetch id initiator db =
                         >> List.map FetchPerson
                     )
                 |> RemoteData.withDefault []
-
-        initiatorDependentContent =
-            case initiator of
-                GroupEncounterOrigin sessionId ->
-                    [ FetchSession sessionId ]
-
-                _ ->
-                    []
     in
     fetchFamilyMembers id db
         ++ participantMembers
-        ++ initiatorDependentContent
+        ++ fetchSessionForInitiator initiator
         ++ [ FetchPerson id
            , FetchRelationshipsForPerson id
            , FetchParticipantsForPerson id
@@ -50,8 +42,8 @@ fetch id initiator db =
            ]
 
 
-fetchForCreateOrEdit : Maybe PersonId -> ModelIndexedDb -> List MsgIndexedDb
-fetchForCreateOrEdit related db =
+fetchForCreateOrEdit : Maybe PersonId -> Initiator -> ModelIndexedDb -> List MsgIndexedDb
+fetchForCreateOrEdit related initiator db =
     [ FetchHealthCenters
     , FetchVillages
     , FetchClinics
@@ -60,6 +52,21 @@ fetchForCreateOrEdit related db =
                 |> Maybe.map (\id -> FetchPerson id :: fetchFamilyMembers id db)
                 |> Maybe.withDefault []
            )
+        ++ fetchSessionForInitiator initiator
+
+
+{-| Fetches the session a page was opened from, when it was opened from a group
+encounter. The pages that use this read the session to decide what to offer:
+which group to add someone to, and which children are the right age for it.
+-}
+fetchSessionForInitiator : Initiator -> List MsgIndexedDb
+fetchSessionForInitiator initiator =
+    case initiator of
+        GroupEncounterOrigin sessionId ->
+            [ FetchSession sessionId ]
+
+        _ ->
+            []
 
 
 fetchFamilyMembers : PersonId -> ModelIndexedDb -> List MsgIndexedDb

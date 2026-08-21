@@ -1,5 +1,7 @@
 module Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), ObstetricHistoryStep(..), PrePregnancyClassification(..), SymptomReviewStep(..), TreatmentReviewTask(..), WarningPopupType(..))
 
+import Measurement.Model exposing (RangedMeasurement)
+
 
 type ExaminationTask
     = BreastExam
@@ -48,11 +50,12 @@ type ImmunisationTask
 
 
 type WarningPopupType msg
-    = WarningPopupUrgent ( String, String )
-    | WarningPopupRegular
-    | WarningPopupTuberculosis
+    = WarningPopupMeasurementOutOfRange (List RangedMeasurement)
     | WarningPopupMentalHealth msg
+    | WarningPopupRegular
     | WarningPopupTreatmentReview msg
+    | WarningPopupTuberculosis
+    | WarningPopupUrgent ( String, String )
     | WarningPopupVitaminA msg
 
 

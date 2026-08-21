@@ -1127,31 +1127,6 @@ function hedley_person_import_form_callback(array $form, array $form_state) {
 }
 
 /**
- * Get a relationships by a person.
- *
- * @param int $child_id
- *   The node ID of child.
- * @param string $relation_type
- *   Optional; the type of the relation, can be either "parent" or "caregiver".
- *
- * @return array
- *   Node IDs if they exist or empty array if no nodes exist.
- */
-function hedley_person_get_child_relationships($child_id, $relation_type = 'parent') {
-  $query = hedley_general_create_entity_field_query_excluding_deleted();
-  $query
-    ->entityCondition('entity_type', 'node')
-    ->propertyCondition('type', 'relationship')
-    ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_related_to', 'target_id', $child_id)
-    ->fieldCondition('field_related_by', 'value', $relation_type);
-
-  $result = $query->execute();
-
-  return !empty($result['node']) ? array_keys($result['node']) : [];
-}
-
-/**
  * Implements hook_node_presave().
  *
  * If person is marked as deleted, verifies it got no measurements.
@@ -1541,11 +1516,27 @@ function hedley_person_load_individual_encounter_measurements_ids($nid, $bundle 
  *   List of nodes IDs to be marked as deleted.
  */
 function hedley_person_content_affected_by_deletion($person_id) {
-  $association_fields = [
-    'field_person',
-    'field_adult',
-    'field_related_to',
-  ];
+  // Of all the ways a person can be referenced, only the ones below point at
+  // content that belongs TO this person, and so should follow them into
+  // deletion. The rest are deliberately left out:
+  //
+  //   - field_participating_patients: the education session belongs to the
+  //     health center, not to one of its attendees.
+  //   - field_newborn: that reference is held by the parent's pregnancy
+  //     participant, so deleting the child must not delete that pregnancy.
+  //   - field_referred_person: the trace contact belongs to the encounter of
+  //     the index patient, not to the person it refers to.
+  //
+  // Those references are simply left pointing at a deleted person - see the
+  // patient-merge gaps they cause.
+  $association_fields = array_values(array_diff(
+    hedley_general_get_person_association_fields(),
+    [
+      'field_participating_patients',
+      'field_newborn',
+      'field_referred_person',
+    ]
+  ));
   $entries = hedley_general_get_person_content_associated_by_fields($person_id, $association_fields);
 
   $bundles = [
