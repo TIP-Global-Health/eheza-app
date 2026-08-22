@@ -225,9 +225,12 @@ class RoboFile extends Tasks {
    * later, once memory has been reclaimed and with whatever the killed run
    * managed to rebuild already in place.
    *
-   * Retrying is safe because every step here can be run again: `cc all` and
-   * `fra -y` are idempotent, `updb -y` resumes at the first update that has not
-   * been recorded as run, and `uli` just mints another login link.
+   * Most of these steps can simply be run again: `cc all` and `fra -y` are
+   * idempotent, and `uli` just mints another login link. `updb -y` is the one
+   * to watch. An update hook is recorded as run only once it finishes, so a
+   * hook killed part-way is never recorded and the retry runs it from the
+   * start - and update hooks are not written to be idempotent. Read the update
+   * output before trusting a retried `updb -y`.
    *
    * @param string $environment
    *   The Pantheon environment to run on, as `<site>.<env>`.
