@@ -465,6 +465,45 @@ export async function expectMeasurementsOutOfRangeRefused(
   }
 }
 
+/** A blood glucose reading inside the range the field takes (20-1200 mg/dL). */
+export const GLUCOSE_IN_RANGE = '120';
+
+/** A blood glucose reading as a glucometer set to millimoles per litre shows
+ *  it, which the field refuses because it reads as milligrams. */
+export const GLUCOSE_IN_MILLIMOLES = '12';
+
+/** Whether a numeric measurement input is the blood glucose one. */
+export async function isGlucoseInput(
+  input: import('@playwright/test').Locator,
+): Promise<boolean> {
+  return input.evaluate(
+    el => el.parentElement?.classList.contains('sugar-count') ?? false,
+  );
+}
+
+
+/**
+ * The blood glucose field refuses a reading typed in millimoles per litre, and
+ * says which unit it wants. Leaves a reading in range behind.
+ *
+ * Call it with the glucose input on screen.
+ */
+export async function expectGlucoseRangeRefusesMillimoles(page: Page): Promise<void> {
+  await expectMeasurementsOutOfRangeRefused(
+    page,
+    '.form-input.measurement.sugar-count',
+    [
+      {
+        inputId: 'sugar-count',
+        popupClass: 'blood-glucose-out-of-range',
+        bad: GLUCOSE_IN_MILLIMOLES,
+        good: GLUCOSE_IN_RANGE,
+      },
+    ],
+  );
+}
+
+
 /**
  * Click the Save button and wait for return to the encounter page.
  * @param encounterType - CSS class for the encounter page (e.g., 'ncd', 'prenatal').

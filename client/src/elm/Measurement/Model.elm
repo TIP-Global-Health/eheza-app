@@ -252,6 +252,7 @@ type RangedMeasurement
     | MeasurementApgarOneMinute
     | MeasurementBirthLength
     | MeasurementBirthWeight
+    | MeasurementBloodGlucose
     | MeasurementFundalHeight
     | MeasurementHeight
     | MeasurementMuac

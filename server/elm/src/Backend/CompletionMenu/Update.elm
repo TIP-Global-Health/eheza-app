@@ -1,7 +1,7 @@
 module Backend.CompletionMenu.Update exposing (update)
 
-import Backend.CompletionMenu.Decoder exposing (decodeMenuData)
 import Backend.CompletionMenu.Model exposing (Msg(..))
+import Backend.Components.Decoder exposing (decodeMenuData)
 import Backend.Model exposing (ModelBackend)
 import Backend.Types exposing (BackendReturn)
 import Error.Utils exposing (noError)

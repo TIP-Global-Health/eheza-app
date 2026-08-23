@@ -284,6 +284,29 @@ update currentDate id db msg model =
             , []
             )
 
+        PreSaveRandomBloodSugarResult personId saved nextTask ->
+            let
+                form =
+                    getMeasurementValueFunc saved
+                        |> Measurement.Utils.randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
+
+                extraMsgs =
+                    -- NCD has no lab tech, so the results form always draws
+                    -- the reading.
+                    Measurement.Utils.bloodGlucoseSaveMsgs True
+                        form.sugarCount
+                        (SaveRandomBloodSugarResult personId saved nextTask)
+                        SetMeasurementOutOfRangePopupState
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetMeasurementOutOfRangePopupState state ->
+            ( { model | measurementOutOfRangePopupState = state }, Cmd.none, [] )
+
         SaveRandomBloodSugarResult personId saved nextTask ->
             ( model
             , Cmd.none

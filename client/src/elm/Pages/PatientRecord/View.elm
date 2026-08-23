@@ -31,10 +31,11 @@ import Pages.Report.Utils exposing (diagnosisEntryStatusToString)
 import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries)
 import Pages.Utils
     exposing
-        ( viewStartEncounterButton
+        ( viewPaneHeading
+        , viewStartEncounterButton
         )
 import Pages.WellChild.ProgressReport.Model
-import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading)
+import Pages.WellChild.ProgressReport.View
 import RemoteData
 import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (Language, translate, translateText)

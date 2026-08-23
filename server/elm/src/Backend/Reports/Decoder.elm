@@ -2,15 +2,16 @@ module Backend.Reports.Decoder exposing (decodeReportsData, decodeSyncResponse)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
+import Backend.Components.Model exposing (SyncResponse)
 import Backend.Decoder exposing (decodeSite, decodeSiteFeatures, decodeWithFallback)
-import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), MotherFbfEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SyncResponse, WellChildEncounterData)
+import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), MotherFbfEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, WellChildEncounterData)
 import Backend.Reports.Utils exposing (genderFromString)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, fail, field, list, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, fail, list, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, optionalAt, required)
 import Maybe.Extra
 
@@ -28,14 +29,9 @@ decodeReportsData =
         |> hardcoded Nothing
 
 
-decodeSyncResponse : Decoder SyncResponse
+decodeSyncResponse : Decoder (SyncResponse PatientData)
 decodeSyncResponse =
-    field "data"
-        (succeed SyncResponse
-            |> required "batch" (list decodePatientData)
-            |> required "total_remaining" decodeInt
-            |> required "last" decodeInt
-        )
+    Backend.Components.Decoder.decodeSyncResponse decodePatientData
 
 
 decodePatientData : Decoder PatientData

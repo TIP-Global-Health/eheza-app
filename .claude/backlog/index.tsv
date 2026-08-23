@@ -1,0 +1,231 @@
+id	tier	status	severity	issue	pr	round	title
+B-001	1	IMPLEMENTED		1900	1901		Duplicate `"deleted"` key in 3 measurement encoders resurrects soft-deleted records
+B-002	2	IMPLEMENTED		1906	1907		Dashboard follow-up `setMonth` bug under-counts follow-ups ~half the year
+B-003	2	IMPLEMENTED		1931	1932		Subsequent-encounter double-tap still duplicates encounters (R9-3 scope-out)
+B-004	3	IMPLEMENTED		1969	1973		Stock Management signed-form leak across navigation (R3-2/R8-4 class)
+B-005	2	IMPLEMENTED		2029	2030		Concurrent view exports silently swallowed
+B-006	4	REFUTED					photos.js catch returns `undefined` from respondWith
+B-007	4	REFUTED	LOW				SW stale IndexedDB handles — SPLIT VERDICT (verification sweep 2026-07-06): statistics.js half ❌ REFUTED; nodes.js half 
+B-008	1	IMPLEMENTED	HIGH	1902	1903		IndexedDB save-failure wedges download lane in `Loading`
+B-009	3	IMPLEMENTED		1965	1966		Dashboard "NaN%" on empty denominators
+B-010	4	READY					Shard-blind IndexedDB queries scan every shard on multi-HC tablets
+B-011	4	IMPLEMENTED		1914	1915		Signature-less stock_updates dropped from sync (innerJoin on optional field)
+B-012	4	READY					Device title→robot-user collision
+B-013	4	READY					Pairing-code consume wipes code before token mint, no transaction
+B-014	4	READY					Remaining UTC residuals (R2-4 class, grouped)
+B-015	4	READY					/api/file-upload: no extension/size limits
+B-016	4	READY					No server-side range validation on clinical numerics
+B-018	4	READY					MUAC unit-LABEL selection still inline per site
+B-019	3	PARKED					hedley_view_export requeue path missing switchUserBack
+B-020	1	PARKED					Stats recalc non-atomic → dashboard blanks/stale for an HC
+B-021	4	READY	LOW				Unbatched soft-delete cascade can time out (CORRECTED: availability only, atomic rollback)
+B-022	4	READY					i18n objective leftover: Kirundi prose in `english` field
+B-023	4	READY				10	Stale merge-conflict "REVIEW:" comment committed on develop
+B-024	2	IMPLEMENTED		1937	1938	10	4 of 5 progress-report pages never fetch health centers → Next-Appointment "Location" renders blank
+B-025	1	IMPLEMENTED	HIGH	1888	1889	10	Upload lanes wedge the WHOLE sync cycle permanently when the JS handler dies without replying
+B-026	1	IMPLEMENTED	HIGH	1898	1899	10	Deferred-photo download lane wedges permanently on mid-body network drop
+B-027	2	PARKED				10	WhatsApp screenshot pipeline: several failure paths emit no completion event → nurse trapped behind a Close-less modal
+B-028	4	IMPLEMENTED			2077	10	`IndexDbQueryGetShardsEntityByUuid` crashes on not-found — its PRIMARY use case → sync-incident diagnostics never sent
+B-029	2	IMPLEMENTED		1916	1917	10	WellChild nutrition-assessment saves accept out-of-range height/weight (feeds z-scores); same shared forms are constrain
+B-030	3	IMPLEMENTED		1957	1958	10	Newborn-exam Pregnancy Summary: dirty flags set but NEVER read; birthWeight has no flag → contradictory/unclearable reco
+B-031	3	IMPLEMENTED		1959	1960	10	NCD creatinine/BUN/ALT/AST results: clear-goes-stale (missing dirty flags; lipid panel in the SAME file has them)
+B-032	2	IMPLEMENTED		1908	1909	10	hedley_stats dashboard queries join measurement values with NO deleted filter (module has zero `field_data_field_deleted
+B-033	2	IMPLEMENTED		1935	1936	10	Group-education stats count soft-deleted persons and ship their names to the dashboard
+B-034	4	WONTFIX				10	GWG backfill script computes/writes indicators from soft-deleted prenatal content
+B-035	4	READY				10	SW `RegistrationFailed` reports `"{}"`
+B-036	4	READY				10	NutritionFeeding `sachetsPerDay` deliberately cleared on supplement-type change, silently resurrected at save
+B-037	1	IMPLEMENTED		1890	1891	10	Prenatal Medical History: `preeclampsiaInFamily` required by the payload but NOT counted → Save at "4/4" silently discar
+B-038	3	PARKED				11	No handling for Dexie open/upgrade failure (VersionError on bundle rollback, quota-aborted upgrade) → device silently st
+B-039	4	READY				11	13 residual strict-false `deleted` filters (incl. `view()` — the GET-by-uuid path for EVERY type) + a countQuery double-
+B-040	4	READY				11	IndexedDB/Cache-Storage housekeeping: WhatsApp screenshot PNGs never deleted from Cache Storage (+3 dead-row accumulatio
+B-041	1	IMPLEMENTED		1892	1893	11	Dashboard HIV undercounts known-positive patients: the "dedicated" execution-note query reuses `$query` instead of cloni
+B-042	2	IMPLEMENTED		1933	1934	11	Nutrition-report prevalence %: denominator deduped by child but numerator keeps per-encounter duplicates → percentages i
+B-043	3	IMPLEMENTED		2092	2093	11	Acute-illness fever + prenatal MUAC read a GROUP_CONCAT list with a scalar cast → wrong flag on duplicate measurements; 
+B-044	2	IMPLEMENTED		1910	1911	11	Villages without a health center are silently dropped from the all-devices sync feed (innerJoin field_uuid via optional 
+B-045	2	IMPLEMENTED		1914	1915	11	Five photo classes + 2 single-ref classes inner-join on an OPTIONAL field → rows silently dropped from sync (exact sibli
+B-046	2	IMPLEMENTED		1939	1940	11	`explode(',', NULL)` on empty multi-value fields emits `[""]` → phantom empty participant UUID
+B-047		READY				11	Revoked/deleted nurse's PIN keeps working forever: client drops the `deleted`/`status` tombstone and re-saves the nurse 
+B-048	2	IMPLEMENTED		1919	1920	11	CHW village authorization is enforced only on the PinCode page; every UserPage checks the HC but never the village → rea
+B-049	2	PARKED				11	"Stop Syncing" a health center silently strands its queued unsynced measurements; the pending-upload counter vanishes wi
+B-050	3	IMPLEMENTED		1955	1956	11	Background catch-up sync (>45s) force-reloads the page mid-workflow, discarding a nurse's in-progress form entries
+B-051	4	READY	LOW			11	PIN cached before validation + non-logout session end leaves the previous nurse's HC/village selection to be silently in
+B-052	1	IMPLEMENTED		1896	1897	11	WellChild immunisation "next visit" date returns Nothing for on-schedule children: the 6-month long-interval branch is d
+B-053	3	IMPLEMENTED		1961	1962	11	WellChild ECD next-visit ladder skips the 18-month rung → 18-month developmental screening late
+B-054	2	IMPLEMENTED		1904	1905	11	`filterResolvedFollowUps` comparison is INVERTED: keeps already-resolved follow-ups, drops still-open ones (same class a
+B-055		IMPLEMENTED		2050	2051	11	✅ **CLINICIAN GATE LIFTED 2026-08-06 — the requirement is written down and says DTP.** Traced `29a578fde` ("Logic for su
+B-056	4	WONTFIX				12	NCD isolated diabetes is medicated but never referred: `referForDiabetes` requires coexisting hypertension, `medicateFor
+B-057	3	IMPLEMENTED		1963	1964	12	pmtct_participant / relationship shards: post-insert recalc SETs one person's shards, clobbering the presave two-person 
+B-058	2	SPLIT				12	Cross-worker lost update (NCDA + Reports workers full-node_save the same person)
+B-059	2	WONTFIX				12	view_export batch worker's `FILE_APPEND` is non-idempotent → re-processing a batch duplicates rows in the delivered CSV
+B-060	3	IMPLEMENTED		1967	1968	13	"Months of Stock" projection dead in Receive-Stock form: current-month consumption average always 0
+B-061	4	READY	LOW			13	Stock summary folds subtraction corrections into "Received" → negative/net "Received" inconsistent with the detail view'
+B-062	2	IMPLEMENTED		1927	1928	13	Education-session PATCHes rebuild the full node from the async-updated cache, not the authoritative Pages ViewMode → tim
+B-063	4	READY	LOW			14	Malformed clinic list: subsequent same-type clinics wrapped in a nested array
+B-064	2	IMPLEMENTED		1923	1924	14	Child scorecard immunization "behind-by-month" row mis-buckets for children born on day 29/30/31 (month-indexing off-by-
+B-065	1	PARKED				14	Editing a person's address cascades onto their PARENT/CAREGIVER (not just children), and fires on every edit (not just a
+B-066	2	IMPLEMENTED		1921	1922	14	FamilyNutrition: caregiven (`MyCaregiven`) children are never fetched → they silently vanish from the encounter
+B-067	2	IMPLEMENTED		1925	1926	14	Scorecard Dewormer & ECD rows fold in nurse (HC) questionnaires → false red "X" where Vitamin A correctly shows "-"
+B-068	3	CLOSED			1946	14	`consolidate-patients` merge tool never migrates the duplicate's relationships → surviving patient loses family links
+B-069	1	IMPLEMENTED		1894	1895	15	Dashboard "Total Beneficiaries Wasting" & "# of Stunting" use `< 2` instead of `< -2` → grossly over-count (~98% of a no
+B-070	3	IMPLEMENTED		1953	1954	15	AcuteIllness `fromCovidTestingValue` mis-reconstructs pregnant/positive COVID results on edit
+B-071	4	IMPLEMENTED		2126	2127	15	SyncManager General save-handler reports errors against the wrong response var (copy-paste from the authority twin) → mi
+B-072	3	IMPLEMENTED		1951	1952	15	CorePhysicalExam `heartMurmur` required by save but not counted (B-037 class, SHARED → BOTH NCD and Prenatal)
+B-073	4	READY	LOW			16	PersonsPage (relation mode): `relationshipsByPerson` never fetched → "already related" filter silently off
+B-074	3	READY	MED-LOW			16	GroupEncounterOrigin `db.sessions` reads never fetched on People / Relationship / CreatePerson pages (systemic: initiato
+B-075	4	READY				16	Elm sync-incident `incident_type` off the backend allowed-values list
+B-076	3	REFUTED				16	❌ REFUTED 2026-07-22 (traced end-to-end before implementing). ⚠ DO NOT re-pitch — the described symptom is unreachable.
+B-077	4	READY				16	Locality enumeration for large-dataset reports lacks bundle/deleted filters → junk/empty report_data nodes
+B-078	4	READY				16	NCDA scorecard: `continue` on empty Vitamin A skips the MUAC/stunting block in the same loop
+B-079		CLOSED				16	Demographics report 50-year age-band gap (person exactly 50.0y dropped from totals)
+B-080	4	READY				16	`hedley_device_assign_shards` education_session edit branch leaves `$shards` undefined (PHP notice)
+B-081	4	READY				16	CLAUDE.md doc drift (one doc PR): feature-flag names + missing flag + stale CI-job count
+B-082	4	READY				16	`SaveMotherFbf` inserts into a copy of the WRONG tracker dict
+B-083		READY				16	HC-level stock view counts village-tagged stock updates as receipts
+B-084	3	IMPLEMENTED			1979	16	Shared `viewNumberInput` accepts hand-typed negatives (HTML min="0" only)
+B-085	4	READY				16	Person shards not recomputed on health-center change
+B-086	4	READY				16	AQ dedup "stuck task" check uses ENQUEUE time, not processing-start
+B-087	3	PARKED				16	view_export worker returns permanent FAILURE when the final-batch MAIL fails → user silently never receives a fully-buil
+B-088	4	READY				16	No `hook_node_delete` in hedley_ncda / hedley_reports / hedley_stats → hard-delete (super_user_mode only) leaves stale a
+B-089	4	READY				16	Kirundi `MissedDosesOfMedication` missing leading space ("3y'imiti")
+B-090	4	READY				16	Stats case-management "month 13" cutoff not midnight-anchored
+B-091	4	READY				16	Prenatal syphilis medication guard omits `syphilisAdverseEventsHospitalization`
+B-092	4	READY				16	a11y PR1: shared/shell primitives (~30 sites: `Pages/Utils` viewAlert :1154 / viewPhotoThumb :1249 / exclamation :1356, 
+B-093	4	READY				16	a11y PR2: group-session flow (~34 sites: Attendance/Activities/Participants nav tabs + check-in/out toggles, EducationSe
+B-094	4	READY				16	a11y PR3: Prenatal + NCD (~27 sites: 13 imgs incl. ProgressReport timeline icons, 14 back-links incl. span-onClick varia
+B-095	4	READY				16	a11y PR4: child-health encounters (~43 sites: AcuteIllness/WellChild/ChildScoreboard/Nutrition/HomeVisit/FamilyNutrition
+B-096	2	SKIPPED				16	advancedqueue_release_timeout=0: crashed PROCESSING items are never re-claimed
+B-097	4	READY	LOW			16	check_plain() hardening for the 2 hedley_admin tables (4 cells)
+B-098	2	IMPLEMENTED		1929	1930	16	NCDA AQ worker `node_save($person)` lost-update window — concurrent person edits silently reverted
+B-099	3	READY	LOW			16	`hedley_ncda/scripts/generate-data-for-all.php` keyset pagination WITHOUT `propertyOrderBy('nid')` — backfill can silent
+B-100	3	IMPLEMENTED		2087	2088	16	NCDA pane1.row1 appends raw `FALSE` when a prenatal encounter lacks `field_scheduled_date` → would fail the WHOLE distri
+B-101	4	READY	LOW			16	NCDA AQ worker returns SUCCESS for nonexistent/hard-deleted person
+B-102	4	IMPLEMENTED		2098	2099	16	Delete dead `hiv_dot` entry from sw.js entity table
+B-103	4	READY				16	Delete 7 unimported client Elm modules (1,926 lines) + truqu/elm-base64 dep
+B-104		READY				16	Delete 6 unimported server/elm modules (609 lines)
+B-105		READY				16	Delete AllDict dead internals: `min` (:172-182, unexported + only self-recursive) + `showFlag` (:327-337, zero callers)
+B-106		READY				16	npm cleanup: 18 dead deps + dead `bower` gulp task + wiredep
+B-107	4	READY				16	Manifest/lockfile orphans: client/yarn.lock + root package-lock.json + client/composer.{json,lock} + bower exif-js
+B-108	3	PARKED				16	🅿 PARKED by user 2026-07-21 after BOTH candidate fixes were built, high-reviewed, and rejected. ⚠ DO NOT re-pitch "make 
+B-109	3	REFUTED				16	export-patients.php clobbers the child's name with the parent's + children header/row column mismatch
+B-110	3	WONTFIX				16	Native `./install -d` demo import silently yields 0 people/HCs/villages
+B-111	4	READY	LOW			16	Counseling-session demo migration links no session ("today" filter vs static 2019-2020 session dates)
+B-112	4	CLOSED	LOW		2095	16	Geolocation term-builder: stale by-name parent cache on revisited prefixes → children can attach to the wrong parent
+B-113	2	IMPLEMENTED		1945	1946		Patient merge never transfers RELATIONSHIPS → family links silently lost
+B-114	2	IMPLEMENTED		1947	1948		Patient merge never re-points education_session.field_participating_patients (ROOT CAUSE of B-033)
+B-115	2	IMPLEMENTED		2025	2026		Patient merge never re-points whatsapp_record.field_person
+B-116	2	IMPLEMENTED		1949	1950		Patient merge never re-points individual_participant.field_newborn (pregnancy → newborn link)
+B-117	2	IMPLEMENTED		2025	2026		Patient merge never re-points acute_illness_trace_contact.field_referred_person
+B-118	2	IMPLEMENTED		1941	1942		ROOT CAUSE: no canonical "person association fields" list
+B-119	2	WONTFIX					Legacy `child` / `mother` bundles carry field_person and are invisible to the merge
+B-120	2	READY	MED				Backfill: repair relationships AND group participations destroyed by PAST patient merges
+B-121	1	CLOSED		1980	2007	16	✅ SUPERSEDED/DELIVERED by the range-gate programme (PR #2007, merged 2026-08-02; issue #1980 closed) — re-checked agains
+B-122	1	SPLIT		1981		16	✅ INPUT-GATE HALF DELIVERED (issue #1981 CLOSED 2026-07-27; gram-scaled `getInputConstraintsBirthWeight` shipped with th
+B-123	1	CLOSED		1982		16	✅ FIXED on develop (issue #1982 CLOSED 2026-07-26; verified in code 2026-08-03/R17: input converts via `setMuacValueForS
+B-124		READY				16	WellChild birth-length range gate can't be tested, because the task computation lives inside a view function
+B-125	2	CLOSED				17	✅ **CLOSED 2026-08-09 — the data does not contain the risk. Swept all four production sites; zero hits.**
+B-126	3	IMPLEMENTED		2060	2061	17	✅ IMPLEMENTED 2026-08-10 (issue #2060, PR #2061, branch `b126-client-uuid-collision`, base develop @4a900c7b8, commit ba
+B-127	4	IMPLEMENTED		2039	2040	17	✅ IMPLEMENTED 2026-08-05 (issue #2039, PR #2040, branch `b127-php-dead-code`, base develop @50c26c37c, commit 680287a98)
+B-128	1	IMPLEMENTED		2033	2034	17	✅ IMPLEMENTED 2026-08-04 (issue #2033, PR #2034, branch `b128-scoreboard-month-offset`, base develop @c37f2fe3c, commit 
+B-129	1	IMPLEMENTED		2037	2038	17	✅ IMPLEMENTED 2026-08-04 (issue #2037, PR #2038, branch `b129-wash-rows-swapped`, base develop @c37f2fe3c, commits 11fb5
+B-130	1	IMPLEMENTED		2044	2045	17	✅ IMPLEMENTED 2026-08-06 (issue #2044, PR #2045, branch `b130-scoreboard-calendar-month-buckets`, base develop @417df78d
+B-131	1	IMPLEMENTED		2046	2047	17	✅ IMPLEMENTED 2026-08-06 (issue #2046, PR #2047, branch `b131-server-vaccination-engine-drift`, base develop @417df78d2,
+B-132	4	READY	LOW			17	server/elm `Gizra/NominalDate.fromLocalDateTime` still uses `Time.utc` (client was fixed in #1832)
+B-133	4	READY	LOW			17	Reports: Acute-Illness "no diagnosis" row reads the LATEST encounter's diagnosis; initial encounter is where diagnosis l
+B-134	3	READY	MED			17	ChildScoreboard progress report: end-encounter dialog CANNOT be cancelled, and the diarrhea→acute-illness referral popup
+B-135	4	READY	LOW			17	Service-worker decode errors reach Rollbar labeled "db" instead of the purpose-built "sw" source
+B-136	4	READY	LOW			17	Dead-constructor deletion batch from the R17 NoUnused run (~550-650 lines)
+B-137	4	READY	LOW			18	server/elm dead code: 3 unconstructable language variants + a dead SendSyncRequest path ×3 apps
+B-138	2	REFUTED				18	❌ **REFUTED 2026-08-09 — the premise is BACKWARDS. ⛔ Do NOT re-propose.**
+B-139	4	READY				18	Labs-history sub-updater will silently swallow 18 lab-tech messages the day labs-history is opened to lab techs
+B-140	3	CLOSED				18	❌ **CLOSED 2026-08-13 — NOT REQUIRED (user decision). ⛔ Do NOT re-propose the transfer.**
+B-141	1	IMPLEMENTED		2048	2049	18	✅ IMPLEMENTED 2026-08-06 (issue #2048, PR #2049 stacked on #2047 — **retarget to develop after it merges**, branch `b141
+B-142	3	CLOSED	MED			18	hedley_admin demographics/outcome report scripts use 2022-frozen vocabularies (2 parts)
+B-143	2	READY	HIGH			18	RoboFile deploy chain swallows its own failures (3 defects, one PR)
+B-144	2	READY	HIGH			18	`gulp publish` cannot fail on an Elm compile error → a broken production artifact ships with all steps green
+B-145	2	PARKED	HIGH			18	⚠ DECISION NEEDED: repo `pantheon.yml` is NEVER deployed — live envs have NO workflows, and **DB clones to multidev/test
+B-146	3	PARKED	MED			18	Deploy safety cluster, part 2 (human-error hardening)
+B-147	3	READY	MED			18	AcuteIllness inline save buttons: view-only gating, handler always attached, NO update-side completeness guard → keyboar
+B-148	4	READY	LOW			18	Sync observability: upload-lane error replies decode as empty successful batches (+ storage-full banner flicker)
+B-149	1	IMPLEMENTED		2035	2036	18	✅ IMPLEMENTED 2026-08-04 (issue #2035, PR #2036, branch `b149-low-birth-weight-threshold`, base develop @c37f2fe3c, comm
+B-150	3	IMPLEMENTED		2058	2059	18	✅ IMPLEMENTED 2026-08-09 (issue #2058, PR #2059, branch `b150-person-edit-wipes-gps-coordinates`, base develop @220a6b1e
+B-151	3	IMPLEMENTED		2094	2095	18	Duplicate "Murambi" sector under Rulindo (ids 3847/3869) breaks reverse geo lookup — can SILENTLY block CHW registration
+B-152		IMPLEMENTED	LOW			18	Small-backend audit batch (case_management / activity / user / whatsapp) — mixed CONFIRMED-minor + PLAUSIBLE · LOW-MED ·
+B-153	3	CLOSED			2036	18	✅ **CLOSED 2026-08-10 — NO CODE ISSUE REMAINS.** Mechanism solved (below), already fixed on develop by PR #2036, and con
+B-154	3	IMPLEMENTED		2096	2097	18	A child with more doses recorded than the schedule expects can never read as up to date
+B-155	3	READY	MED			18	Retire the phpcs advisory workaround: upgrade the sniffer, and move its configuration into the repo
+B-156	4	READY	LOW			19	Fallback fileId 5002 (cache-evicted photo/screenshot unstick) is environment-coupled: the file exists ONLY on ihangane
+B-157	2	READY	HIGH			19	CI gating cluster: the only server-side test job can pass with ZERO tests run, + 6 smaller gate defects
+B-158	2	PARKED	MED			19	🅿 **PARKED (user, 2026-08-11)** — presented as the next Tier 2 item and declined without a stated reason; ⛔ do NOT re-pi
+B-159	4	READY	LOW			19	client JS glue minors batch (3 independent one-liners)
+B-160		READY	LOW			19	HIV case-management dummy-follow-up suppression uses "ever had ANY hiv_follow_up row" as proxy for "followed up after TH
+B-161	2	READY	MED-HIGH			19	Well-child Completion report treats EVERY previously-administered medication as never administered (enrichment written t
+B-162	3	READY	MED-LOW			19	Two contradictory definitions of "attended a group session" feed the same Dashboard: Total Encounters counts ONLY attend
+B-163	3	IMPLEMENTED	MED	2089	2090	19	Dashboard monthly buckets are anchored at stats-GENERATION time but re-anchored at VIEW time → stale cache shifts whole 
+B-164	3	READY	MED			19	Vaccination "administered previously" flow on the day a dose first becomes due: inverted empty date range, dead calendar
+B-165	4	IMPLEMENTED	LOW		2081	19	PatientsSearchForm minors ×2 (shared search widget: People / IndividualEncounterParticipants / FamilyEncounterParticipan
+B-166	3	STALE	MED-LOW			19	Wellbeing notification "Ignore" reschedules from the STALE timestamp → instant-reappear modal loop
+B-167	4	READY	LOW			19	Wellbeing/MessagingCenter minors batch — mixed CONFIRMED / PLAUSIBLE · LOW · R19 Unit 1 · READY
+B-168	3	MONITORING				19	EDD trickle (user investigation 2026-08-13) — ⚠ **CONCLUSION REVERSED same day: the deployed FIXED build still drops EDD
+B-169	2	IMPLEMENTED	HIGH	2083	2084	19	CircleCI config declares `version: 2`, which stops compiling at the end-of-life date — ALL CI dies, and the date lands o
+B-170	3	CLOSED	HIGH			19	Download-lane POISON RECORD: `obstetric_history_step2` missing `obstetric_history` fails the client decoder
+B-171	3	CLOSED				19	Dashboard's "Last updated" always reads as just now, whatever the age of the figures beside it
+B-172	4	READY	LOW			20	Dashboard decoder: dict KEYS parsed with a defaulting parser — a key-format change collapses buckets silently instead of
+B-173	4	READY	LOW			20	Sync + Dashboard decoders: blanket `oneOf [decode, succeed EMPTY]` fallbacks read a decode FAILURE of present data as "n
+B-174	3	IMPLEMENTED		2121	2122	20	✅ IMPLEMENTED 2026-08-20 (issue #2121, PR #2122) — Dashboard stats: `date_create(NULL)` fabricates TODAY for missing dat
+B-175	3	READY				20	Dashboard stats: a person with no gender makes the WHOLE health-centre statistics payload undecodable — devices' dashboa
+B-176	4	READY				20	Contact tracing: a comma typed in a contact's name or phone silently deletes traced contacts from the record
+B-177	4	READY				20	Sync: an `acute_illness_encounter` with no diagnosis value poisons the main authority download batch
+B-178	3	IMPLEMENTED		2100	2101	20	Completion report: prenatal MMS and Mebendazole rows show EACH OTHER's numbers (wire-token swap)
+B-179	3	READY				20	Completion report: postpartum Mental Health ~85% invisible
+B-180	3	READY				20	Completion report: primigravida first visits permanently under 100% (obstetric_history_step2 expected though the app ski
+B-181	3	READY				20	Completion report: Ultrasound activity (healthy_start) does not exist server-side
+B-182	3	IMPLEMENTED		2102	2103	20	NCD completion: women 45-49 invisible for Family Planning + Pregnancy Test, and pregnancy-test validity reads the HIV te
+B-183	3	READY				20	Prenatal completion: chw-1 after a health-center visit is charged for Pregnancy Dating the app hides
+B-184	4	READY				20	Prenatal completion: postpartum SpecialityCare triggers omit hypertension
+B-185	4	READY				20	Completion generation: `--exclude_set` incremental runs would corrupt encounter history (subsequent encounters classify 
+B-186	3	READY				20	Prenatal completion: the mental-health check CLOBBERS every earlier health-education trigger
+B-187	3	READY				20	Prenatal completion: medication-distribution port drifts ×6 (preeclampsia continuation, Mebendazole-on-missing-questionn
+B-188	3	IMPLEMENTED		2104	2105	20	Dashboard ANC: the "# of Women with 4 Visits or more" card never counts visits — any pregnancy with ONE nurse encounter 
+B-189	3	READY				20	Dashboard ChildWellness: the ECD donut's "Behind" slice is almost entirely NOT-ASSESSED children (incl. children counted
+B-190	3	READY				20	Aggregated scoreboard ANC ≥4 gate counts raw appended dates (no dedup) vs client's deduped union — threshold pregnancies
+B-191	3	READY	LOW			20	Case management: prenatal follow-ups arriving at/after pregnancy conclusion are never auto-resolved — permanent invisibl
+B-192	3	READY				21	Sync: hard-deleting an individual_participant silently DROPS its encounters from sync — 3 live orphans (one written POST
+B-193	3	READY				21	Data: ~50 orphan measurements referencing hard-deleted sessions/encounters — silent mangle only (tolerated nulls), casca
+B-194	3	READY				21	Prenatal: EDD-null pregnancies are ACTIVE FOREVER, and years-old open encounters get resurrected for new pregnancies
+B-195	3	READY				21	Prenatal: create-button db-lag race mints DUPLICATE active pregnancies (≤8 per person) and same-day duplicate encounters
+B-196	3	STALE				21	Prenatal: participant EDD goes STALE when LMP is edited/re-dated — the B-140 dropped-patch mechanism has a live data tra
+B-197	3	READY				21	Prenatal/reports: 591 regular ANC encounters dated AFTER pregnancy conclusion are counted as ANC visits — partly by-desi
+B-198	3	READY				21	Group enrolments SILENTLY LOST in upload: 742 persons have group measurements on the server but NO pmtct_participant any
+B-199	3	READY				21	Group enrolment/relationship duplicates from unconditional posts and local-dedup races: 1,101 children double-enrolled i
+B-200	3	IMPLEMENTED		2123	2124	21	✅ IMPLEMENTED 2026-08-20 (issue #2123, PR #2124, range 20-600 per user) — Blood glucose: mg/dL field takes mmol/L-typed 
+B-201		IMPLEMENTED				22	server/elm duplication batch: 7 PR groups, ~400-500 net lines removable, ZERO drift found
+B-202		IMPLEMENTED				22	client duplication batch: 16 merge items in 5 area PRs, ~320 app lines (+~200 tests/minors), ZERO missed-fix drift
+B-203		READY		2117		22	CI never checks that the committed `elm-main.js` matches `server/elm/src` (READY, CONFIRMED, issue #2117)
+B-204		IMPLEMENTED		2119	2120	22	shared progress-report pane helpers live inside the Well Child view (✅ IMPLEMENTED, issue #2119, PR #2120)
+G-01		READY				16	Photo-encoder dispatch guard (CI script)
+G-02		READY				16	Elm-version lockstep guard (CI script)
+G-03		STALE				16	Prune 4 STALE NoDebug.TodoOrToString waivers
+G-04		READY				16	E2E spec-partition guard (CI script)
+G-05		READY				16	Tier-1 clinical-translation guard (CI script + curated list)
+G-06		READY				16	Custom elm-review rule: NoMultiSelectWithoutSentinel
+G-07		READY				16	Alphabetical-ordering RATCHET (CI script)
+TH-00		READY				16	shared gating-assertion helpers in e2e common.ts (FOUNDATION — do first)
+TH-01		READY				16	child-scoreboard NCDA "Universal Interventions" negative-path fold-in
+TH-02		READY				16	home-visit "Feeding" negative-path fold-in
+TH-03		READY				16	family-nutrition "Aheza (Mother)" negative-path fold-in
+TH-04		READY				16	nutrition-chw NextSteps "SendToHC" fold-in
+TH-05		READY				16	nutrition-nurse NCDA "Infrastructure & Environment" fold-in
+TH-06		READY				16	well-child-nurse Immunisation per-vaccine fold-in
+TH-07		READY				16	well-child-chw PregnancySummary fold-in
+TH-08		READY				16	NCD CoreExam fold-in (B-072 heritage — the exact trap class)
+TH-09		READY				16	HIV TreatmentReview fold-in
+TH-10		READY				16	Tuberculosis DOT fold-in
+TH-11		READY				16	StockManagement ReceiveStock fold-in (nurse + chw)
+TH-12		READY				16	Lab-tech prenatal LabResults fold-in
+TH-13		READY				16	Prenatal nurse Medical History fold-in (THE B-037 SITE — reference design)
+TH-14		READY				16	AcuteIllness `completeSymptoms` conditional-count fold-in (cough duration + intractable vomiting)
+TH-15		READY				16	AcuteIllness `completeOngoingTreatment` fold-in (4-question shared treatment review)
+TH-16		READY				16	Pin AcuteIllness SUBSEQUENT-encounter diagnosis branch (zero coverage today)
+TH-17		READY				16	Pin COVID path edge branches + suspect threshold
+TH-18		READY				16	Pin Prenatal emergency-referral aggregation + hypertension-like hierarchy (un-pinned engines)
+TH-19		READY				16	Extend Nutrition assessment pins: boundaries + combination markers + over-6mo asymmetry

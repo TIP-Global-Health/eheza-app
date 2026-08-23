@@ -20,3 +20,4 @@ vendor
 test-results/
 e2e-recordings/
 playwright-report/
+qa-recordings/

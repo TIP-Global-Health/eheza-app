@@ -83,7 +83,7 @@ ddev robo deploy:pantheon 2>&1 | tee /tmp/deploy-dev.log
 ```
 Tell the user explicitly: **at the "Commit changes and deploy?" prompt, review the printed `git status` of the Pantheon repo** and confirm only if the change-set is exactly what they expect. When it returns, `Read` `/tmp/deploy-dev.log` to verify the push + auto-run `cc all`/`updb`/`fra`/`uli` — don't ask for a paste.
 
-What this command does automatically (so you don't double-run it): rsyncs the build into the Pantheon clone, commits + pushes to Pantheon `master`, then runs on **Dev** `cc all` (twice), `updb -y`, **`fra -y`**, **`cc all`**, and `uli`.
+What this command does automatically (so you don't double-run it): rsyncs the build into the Pantheon clone, commits + pushes to Pantheon `master`, then runs on **Dev** `cc all` (twice), `updb -y`, **`fra -y`**, **`cc all`**, and `uli`. Each of those steps is retried up to 3 times with a growing pause, so one transient kill no longer aborts the rest.
 
 > Pantheon's `master` branch = the **Dev** environment, not production. This step only updates Dev; promotion to Test/Live is Step 5.
 
@@ -91,11 +91,13 @@ What this command does automatically (so you don't double-run it): rsyncs the bu
 
 The robo deploy already ran `cc all`/`updb`/`fra`/`cc all`/`uli` itself — confirm in the log. So just sanity-check the env (open the `uli` login link from the deploy output, smoke-test the app). If the deploy added manual steps (new variables, migrations), run those too.
 
+If a step failed every attempt, the deploy aborted there and the exception names it — the env is on the new code with that step and the ones after it un-run. **Do not promote past it**; see *A post-deploy step dies with exit 137* in the shared reference, finish the remaining steps by hand, and re-verify.
+
 > ⚠️ **If you promote via the Pantheon dashboard GUI** (Test/Live tabs) instead of `deploy:pantheon-sync`, the robo command never runs, so **`updb`/`fra`/`cc all` do NOT run** on that env — do them by hand: `ddev exec terminus remote:drush <PANTHEON_NAME>.<env> -- updb -y`, then `-- fra -y`, then `-- cc all`.
 
 ## Step 5 — Promote Dev → Test → Live
 
-Do these **in order**, pausing for the user and re-verifying between each. Each `deploy:pantheon-sync` runs `terminus env:deploy` then `cc all`×2 + `updb -y` + **`fra -y` + `cc all`** + `uli` on that env.
+Do these **in order**, pausing for the user and re-verifying between each. Each `deploy:pantheon-sync` runs `terminus env:deploy` then `cc all`×2 + `updb -y` + **`fra -y` + `cc all`** + `uli` on that env, retrying each drush step up to 3 times.
 
 1. 🔴 User runs (tee'd): `ddev robo deploy:pantheon-sync test 2>&1 | tee /tmp/deploy-test.log` → `Read` the log (confirm `updb`/`fra`/`cc` ran) → verify on the Test URL.
 2. Pause for explicit user go-ahead (this next one hits production).
