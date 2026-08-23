@@ -10084,7 +10084,7 @@ var $author$project$Backend$Completion$Update$update = F4(
 				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
 		}
 	});
-var $author$project$Backend$CompletionMenu$Model$MenuData = F3(
+var $author$project$Backend$Components$Model$MenuData = F3(
 	function (site, healthCenters, scope) {
 		return {healthCenters: healthCenters, scope: scope, site: site};
 	});
@@ -10124,7 +10124,7 @@ var $elm$json$Json$Decode$maybe = function (decoder) {
 				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
 			]));
 };
-var $author$project$Backend$CompletionMenu$Decoder$decodeMenuData = A4(
+var $author$project$Backend$Components$Decoder$decodeMenuData = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 	'scope',
 	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
@@ -10137,7 +10137,7 @@ var $author$project$Backend$CompletionMenu$Decoder$decodeMenuData = A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 			'site',
 			$author$project$Backend$Decoder$decodeSite,
-			$elm$json$Json$Decode$succeed($author$project$Backend$CompletionMenu$Model$MenuData))));
+			$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$MenuData))));
 var $author$project$Backend$CompletionMenu$Update$update = F2(
 	function (msg, model) {
 		var value = msg.a;
@@ -10145,7 +10145,7 @@ var $author$project$Backend$CompletionMenu$Update$update = F2(
 			model,
 			{
 				completionMenuData: $elm$core$Maybe$Just(
-					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$CompletionMenu$Decoder$decodeMenuData, value))
+					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Components$Decoder$decodeMenuData, value))
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
@@ -10356,10 +10356,6 @@ var $author$project$Backend$Reports$Decoder$decodeReportsData = A2(
 								'site',
 								$author$project$Backend$Decoder$decodeSite,
 								$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData)))))))));
-var $author$project$Backend$Reports$Model$SyncResponse = F3(
-	function (records, totalRemaining, lastIdSynced) {
-		return {lastIdSynced: lastIdSynced, records: records, totalRemaining: totalRemaining};
-	});
 var $author$project$Backend$Reports$Model$Female = {$: 'Female'};
 var $author$project$Backend$Reports$Model$PatientData = function (id) {
 	return function (created) {
@@ -11508,22 +11504,38 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 																					'id',
 																					$author$project$Gizra$Json$decodeInt,
 																					$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData))))))))))))))))))))));
-var $author$project$Backend$Reports$Decoder$decodeSyncResponse = A2(
-	$elm$json$Json$Decode$field,
-	'data',
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'last',
-		$author$project$Gizra$Json$decodeInt,
+var $author$project$Backend$Components$Model$SyncResponse = F3(
+	function (records, totalRemaining, lastIdSynced) {
+		return {lastIdSynced: lastIdSynced, records: records, totalRemaining: totalRemaining};
+	});
+var $author$project$Backend$Components$Decoder$decodeSyncResponse = function (decodeRecord) {
+	return A2(
+		$elm$json$Json$Decode$field,
+		'data',
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'total_remaining',
+			'last',
 			$author$project$Gizra$Json$decodeInt,
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'batch',
-				$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
-				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$SyncResponse)))));
+				'total_remaining',
+				$author$project$Gizra$Json$decodeInt,
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'batch',
+					$elm$json$Json$Decode$list(decodeRecord),
+					$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$SyncResponse)))));
+};
+var $author$project$Backend$Reports$Decoder$decodeSyncResponse = $author$project$Backend$Components$Decoder$decodeSyncResponse($author$project$Backend$Reports$Decoder$decodePatientData);
+var $author$project$Backend$Components$Sync$mergeSyncResponse = F2(
+	function (response, data) {
+		return _Utils_update(
+			data,
+			{
+				records: _Utils_ap(data.records, response.records),
+				remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining)
+			});
+	});
 var $author$project$Backend$Reports$Update$update = F4(
 	function (backendUrl, csrfToken, msg, model) {
 		var config = {
@@ -11543,15 +11555,7 @@ var $author$project$Backend$Reports$Update$update = F4(
 			getRemaining: function ($) {
 				return $.totalRemaining;
 			},
-			mergeResponse: F2(
-				function (response, data) {
-					return _Utils_update(
-						data,
-						{
-							records: _Utils_ap(data.records, response.records),
-							remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining)
-						});
-				}),
+			mergeResponse: $author$project$Backend$Components$Sync$mergeSyncResponse,
 			setData: F2(
 				function (v, m) {
 					return _Utils_update(
@@ -11573,24 +11577,6 @@ var $author$project$Backend$Reports$Update$update = F4(
 				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
 		}
 	});
-var $author$project$Backend$ReportsMenu$Model$MenuData = F3(
-	function (site, healthCenters, scope) {
-		return {healthCenters: healthCenters, scope: scope, site: site};
-	});
-var $author$project$Backend$ReportsMenu$Decoder$decodeMenuData = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'scope',
-	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
-	$elm$core$Maybe$Nothing,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'health_centers',
-		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'site',
-			$author$project$Backend$Decoder$decodeSite,
-			$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$MenuData))));
 var $author$project$Backend$ReportsMenu$Update$update = F2(
 	function (msg, model) {
 		var value = msg.a;
@@ -11598,7 +11584,7 @@ var $author$project$Backend$ReportsMenu$Update$update = F2(
 			model,
 			{
 				reportsMenuData: $elm$core$Maybe$Just(
-					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$ReportsMenu$Decoder$decodeMenuData, value))
+					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Components$Decoder$decodeMenuData, value))
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
@@ -11632,10 +11618,6 @@ var $author$project$Backend$Scoreboard$Decoder$decodeScoreboardData = A2(
 						'site',
 						$author$project$Backend$Decoder$decodeSite,
 						$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ScoreboardData)))))));
-var $author$project$Backend$Scoreboard$Model$SyncResponse = F3(
-	function (records, totalRemaining, lastIdSynced) {
-		return {lastIdSynced: lastIdSynced, records: records, totalRemaining: totalRemaining};
-	});
 var $author$project$Backend$Scoreboard$Model$PatientData = F6(
 	function (created, birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
 		return {birthDate: birthDate, created: created, eddDate: eddDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
@@ -12110,22 +12092,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodePatientData = A4(
 						'created',
 						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 						$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData)))))));
-var $author$project$Backend$Scoreboard$Decoder$decodeSyncResponse = A2(
-	$elm$json$Json$Decode$field,
-	'data',
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'last',
-		$author$project$Gizra$Json$decodeInt,
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'total_remaining',
-			$author$project$Gizra$Json$decodeInt,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'batch',
-				$elm$json$Json$Decode$list($author$project$Backend$Scoreboard$Decoder$decodePatientData),
-				$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$SyncResponse)))));
+var $author$project$Backend$Scoreboard$Decoder$decodeSyncResponse = $author$project$Backend$Components$Decoder$decodeSyncResponse($author$project$Backend$Scoreboard$Decoder$decodePatientData);
 var $author$project$Backend$Scoreboard$Update$update = F4(
 	function (backendUrl, csrfToken, msg, model) {
 		var config = {
@@ -12145,15 +12112,7 @@ var $author$project$Backend$Scoreboard$Update$update = F4(
 			getRemaining: function ($) {
 				return $.totalRemaining;
 			},
-			mergeResponse: F2(
-				function (response, data) {
-					return _Utils_update(
-						data,
-						{
-							records: _Utils_ap(data.records, response.records),
-							remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining)
-						});
-				}),
+			mergeResponse: $author$project$Backend$Components$Sync$mergeSyncResponse,
 			setData: F2(
 				function (v, m) {
 					return _Utils_update(

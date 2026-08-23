@@ -1,8 +1,7 @@
 module Pages.CompletionMenu.View exposing (view)
 
 import App.Types exposing (Language)
-import Backend.CompletionMenu.Model exposing (MenuData)
-import Backend.Components.Model exposing (MenuScope(..))
+import Backend.Components.Model exposing (MenuData, MenuScope(..))
 import Backend.Model exposing (ModelBackend)
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
