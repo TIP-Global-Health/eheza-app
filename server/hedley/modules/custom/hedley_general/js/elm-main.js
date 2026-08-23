@@ -15041,7 +15041,6 @@ var $author$project$Error$View$view = F2(
 				]));
 	});
 var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
-var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$Pages$Utils$viewBackendData = F2(
 	function (backendData, viewFunc) {
 		if (backendData.$ === 'Just') {
@@ -15051,7 +15050,7 @@ var $author$project$Pages$Utils$viewBackendData = F2(
 			} else {
 				var err = backendData.a.a;
 				return $elm$html$Html$text(
-					$elm$core$Debug$toString(err));
+					$elm$json$Json$Decode$errorToString(err));
 			}
 		} else {
 			return $author$project$Gizra$Html$emptyNode;

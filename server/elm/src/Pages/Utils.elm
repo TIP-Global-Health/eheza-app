@@ -43,7 +43,7 @@ viewBackendData backendData viewFunc =
             viewFunc data
 
         Just (Err err) ->
-            text <| Debug.toString err
+            text <| Json.Decode.errorToString err
 
         Nothing ->
             emptyNode

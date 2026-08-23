@@ -57,11 +57,6 @@ rules =
     , NoConfusingPrefixOperator.rule
     , NoDebug.Log.rule
     , NoDebug.TodoOrToString.rule
-        -- Pages.Utils is exempt for one use: viewBackendData renders a
-        -- decoder error with Debug.toString. Nothing else there may use Debug.
-        |> Rule.ignoreErrorsForFiles
-            [ "src/Pages/Utils.elm"
-            ]
     , NoExposingEverything.rule
     , NoMissingTypeAnnotation.rule
         |> Rule.ignoreErrorsForFiles

@@ -1223,8 +1223,8 @@ generateMonthlyIncidenceTableData language currentDate heading encountersByMonth
         )
 
 
-{-| A table with one row per month, covering the 12 months before current
-date. The given function resolves row metrics from the month's index
+{-| A table with one column per month, covering the 12 months before current
+date. The given function resolves column metrics from the month's index
 (1 = last month, 12 = a year ago).
 -}
 generateMonthlyTableData :
