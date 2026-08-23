@@ -12,16 +12,15 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.FamilyNutrition.Encounter.Model exposing (AssembledData, FamilyMember(..))
 import Pages.FamilyNutrition.Encounter.Utils exposing (generateAssembledData)
+import Pages.FamilyNutrition.Encounter.View exposing (viewFamilyMemberDetails)
 import Pages.FamilyNutrition.ProgressReport.Model exposing (Model, Msg(..))
 import Pages.FamilyNutrition.ProgressReport.Svg as Svg
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.View exposing (viewEntries)
-import Pages.Utils exposing (isAboveAgeOf2Years)
 import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading)
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
-import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths, renderDate, sortTuplesByDateDesc)
+import Utils.NominalDate exposing (sortTuplesByDateDesc)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -89,76 +88,8 @@ viewContent :
     -> AssembledData
     -> Html Msg
 viewContent language currentDate site model data =
-    let
-        displayPerson =
-            case model.selectedFamilyMember of
-                FamilyMemberMother ->
-                    data.person
-
-                FamilyMemberChild childId ->
-                    List.filter (\( cid, _ ) -> cid == childId) data.children
-                        |> List.head
-                        |> Maybe.map Tuple.second
-                        |> Maybe.withDefault data.person
-
-        isAdult =
-            isPersonAnAdult currentDate displayPerson
-                |> Maybe.withDefault True
-
-        thumbnailClass =
-            if isAdult then
-                "mother"
-
-            else
-                "child"
-
-        dateOfBirth =
-            displayPerson.birthDate
-                |> Maybe.map (renderDate language)
-                |> Maybe.withDefault (translate language Translate.NotAvailable)
-                |> Translate.ReportDOB
-                |> translate language
-                |> text
-
-        age =
-            displayPerson.birthDate
-                |> Maybe.map
-                    (\birthDate ->
-                        let
-                            renderAgeFunc =
-                                if isAboveAgeOf2Years currentDate displayPerson then
-                                    renderAgeYearsMonths
-
-                                else
-                                    renderAgeMonthsDays
-                        in
-                        renderAgeFunc language birthDate currentDate
-                    )
-                |> Maybe.withDefault (translate language Translate.NotAvailable)
-                |> Translate.ReportAge
-                |> translate language
-                |> text
-
-        gender =
-            displayPerson.gender
-                |> Translate.Gender
-                |> translate language
-                |> text
-    in
     div [ class "ui report unstackable items" ]
-        [ div [ class ("ui unstackable items participant-page " ++ thumbnailClass) ]
-            [ div [ class "item" ]
-                [ div [ class "ui image" ]
-                    [ thumbnailImage thumbnailClass displayPerson.avatarUrl displayPerson.name 222 222 ]
-                , div [ class "content" ]
-                    [ h2 [ class "ui header" ]
-                        [ text displayPerson.name ]
-                    , p []
-                        [ dateOfBirth, br [] [], age, br [] [], gender ]
-                    , viewFamilyMemberLinks model data
-                    ]
-                ]
-            ]
+        [ viewFamilyMemberDetails language currentDate data model.selectedFamilyMember (viewFamilyMemberLinks model data)
         , viewAhezaPane language model data
         , viewMuacPane language currentDate site model data
         ]

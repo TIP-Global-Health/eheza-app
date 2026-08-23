@@ -1,4 +1,4 @@
-module Pages.FamilyNutrition.Encounter.View exposing (view)
+module Pages.FamilyNutrition.Encounter.View exposing (view, viewFamilyMemberDetails)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -131,6 +131,17 @@ viewContentForMember :
     -> FamilyMember
     -> Html Msg
 viewContentForMember language currentDate site model data familyMember =
+    (viewFamilyMemberDetails language currentDate data familyMember (viewFamilyMemberLinks model data)
+        :: viewMainPageContent language currentDate site data model familyMember
+    )
+        |> div [ class "ui items" ]
+
+
+{-| The header for the selected family member: photo, name, date of birth,
+age and gender, with the given family member links underneath.
+-}
+viewFamilyMemberDetails : Language -> NominalDate -> AssembledData -> FamilyMember -> Html any -> Html any
+viewFamilyMemberDetails language currentDate data familyMember familyMemberLinks =
     let
         displayPerson =
             case familyMember of
@@ -187,7 +198,7 @@ viewContentForMember language currentDate site model data familyMember =
                 |> translate language
                 |> text
     in
-    (div [ class ("ui unstackable items participant-page " ++ thumbnailClass) ]
+    div [ class ("ui unstackable items participant-page " ++ thumbnailClass) ]
         [ div [ class "item" ]
             [ div [ class "ui image" ]
                 [ thumbnailImage thumbnailClass displayPerson.avatarUrl displayPerson.name 222 222 ]
@@ -196,13 +207,10 @@ viewContentForMember language currentDate site model data familyMember =
                     [ text displayPerson.name ]
                 , p []
                     [ dateOfBirth, br [] [], age, br [] [], gender ]
-                , viewFamilyMemberLinks model data
+                , familyMemberLinks
                 ]
             ]
         ]
-        :: viewMainPageContent language currentDate site data model familyMember
-    )
-        |> div [ class "ui items" ]
 
 
 viewContentAllCompleted :
