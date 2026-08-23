@@ -4,8 +4,6 @@ module Pages.WellChild.ProgressReport.View exposing
     , resolveLastDayForMonthX
     , view
     , viewNutritionSigns
-    , viewPaneHeading
-    , viewPersonInfoPane
     , viewProgressReport
     )
 
@@ -78,7 +76,8 @@ import Pages.Utils
         , viewEncounterActionButton
         , viewEndEncounterButton
         , viewEndEncounterMenuForProgressReport
-        , viewPersonDetailsExtended
+        , viewPaneHeading
+        , viewPersonInfoPane
         , viewStartEncounterButton
         )
 import Pages.WellChild.Activity.Utils
@@ -643,15 +642,6 @@ viewActions language features initiator activeTab msgReportToWhatsAppDialogMsg b
         )
         bottomActionData
         |> Maybe.withDefault []
-
-
-viewPersonInfoPane : Language -> NominalDate -> Person -> Html any
-viewPersonInfoPane language currentDate person =
-    div [ class "pane person-details" ]
-        [ viewPaneHeading language Translate.PatientInformation
-        , div [ class "patient-info" ] <|
-            viewPersonDetailsExtended language currentDate person
-        ]
 
 
 viewDiagnosisPane :
@@ -1592,12 +1582,6 @@ viewNextAppointmentPane language child individualWellChildMeasurements db =
             entriesHeading
                 :: viewEntries language entries
         ]
-
-
-viewPaneHeading : Language -> TranslationId -> Html any
-viewPaneHeading language label =
-    div [ class "pane-heading" ]
-        [ text <| translate language label ]
 
 
 viewNCDAScorecard :

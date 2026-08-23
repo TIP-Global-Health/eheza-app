@@ -54,8 +54,9 @@ import Pages.Utils
     exposing
         ( viewConfirmationDialog
         , viewEndEncounterMenuForProgressReport
+        , viewPaneHeading
+        , viewPersonInfoPane
         )
-import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading, viewPersonInfoPane)
 import RemoteData
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, translate)

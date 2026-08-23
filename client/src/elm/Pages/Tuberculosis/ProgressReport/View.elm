@@ -33,8 +33,9 @@ import Pages.Utils
     exposing
         ( viewConfirmationDialog
         , viewEndEncounterMenuForProgressReport
+        , viewPaneHeading
+        , viewPersonInfoPane
         )
-import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading, viewPersonInfoPane)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)

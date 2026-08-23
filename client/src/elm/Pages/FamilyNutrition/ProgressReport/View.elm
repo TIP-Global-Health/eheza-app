@@ -17,7 +17,7 @@ import Pages.FamilyNutrition.ProgressReport.Model exposing (Model, Msg(..))
 import Pages.FamilyNutrition.ProgressReport.Svg as Svg
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.View exposing (viewEntries)
-import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading)
+import Pages.Utils exposing (viewPaneHeading)
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
