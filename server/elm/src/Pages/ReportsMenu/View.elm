@@ -1,9 +1,8 @@
 module Pages.ReportsMenu.View exposing (view)
 
 import App.Types exposing (Language)
-import Backend.Components.Model exposing (MenuScope(..))
+import Backend.Components.Model exposing (MenuData, MenuScope(..))
 import Backend.Model exposing (ModelBackend)
-import Backend.ReportsMenu.Model exposing (MenuData)
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
