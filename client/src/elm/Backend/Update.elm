@@ -107,8 +107,7 @@ import Pages.AcuteIllness.Activity.Utils
         , mandatoryActivitiesCompletedSubsequentVisit
         , noImprovementOnSubsequentVisit
         , resolveAcuteIllnessDiagnosis
-        , resolveNextStepFirstEncounter
-        , resolveNextStepSubsequentEncounter
+        , resolveNextStep
         , respiratoryRateAbnormalForAge
         )
 import Pages.AcuteIllness.Encounter.Model
@@ -9891,7 +9890,7 @@ generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id assembledBefor
         case diagnosisAfterChange of
             Just newDiagnosis ->
                 updateAcuteIllnessDiagnosisMsg id newDiagnosis
-                    :: (resolveNextStepFirstEncounter currentDate isChw assembledAfter
+                    :: (resolveNextStep currentDate isChw assembledAfter
                             |> generateMsgsForNewDiagnosis isChw id newDiagnosis
                        )
 
@@ -10001,7 +10000,7 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate features isChw dat
                     []
 
             setActiveTaskMsg =
-                resolveNextStepSubsequentEncounter currentDate isChw data
+                resolveNextStep currentDate isChw data
                     |> Maybe.map
                         (Pages.AcuteIllness.Activity.Model.SetActiveNextStepsTask
                             >> App.Model.MsgPageAcuteIllnessActivity data.id AcuteIllnessNextSteps

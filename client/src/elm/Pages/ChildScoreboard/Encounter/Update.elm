@@ -1,4 +1,4 @@
-module Pages.ChildScoreboard.Encounter.Update exposing (update)
+module Pages.ChildScoreboard.Encounter.Update exposing (closeEncounterMsgs, update)
 
 import App.Model
 import Backend.ChildScoreboardEncounter.Model
@@ -46,9 +46,9 @@ update msg model =
             )
 
 
-{-| Closing the encounter, without saying where to go next. The two callers
-disagree about that: ending normally returns to the PIN code page, while a
-referral carries on to the acute illness encounter.
+{-| Closing the encounter, without saying where to go next. Callers disagree
+about that: ending normally returns to the PIN code page, while a referral
+carries on to the acute illness encounter.
 -}
 closeEncounterMsgs : ChildScoreboardEncounterId -> List App.Model.Msg
 closeEncounterMsgs id =

@@ -1,12 +1,14 @@
 import { Page, Locator, expect } from '@playwright/test';
 import { click } from './auth';
 import {
-  WAIT,
   answerYesNo,
   backdateEncounter,
   clickSubTaskTab,
+  expectGlucoseRangeRefusesMillimoles,
   fillMeasurement,
   formInput,
+  GLUCOSE_IN_RANGE,
+  isGlucoseInput,
   openActivity,
   queryMeasurementNodes,
   registerAdult,
@@ -15,6 +17,7 @@ import {
   selectByLabel,
   selectCheckbox,
   setDate,
+  WAIT,
 } from './common';
 
 // ---------------------------------------------------------------------------
@@ -996,7 +999,11 @@ export async function completeLaboratoryNurseForLab(page: Page): Promise<string[
  * 3. Save.
  * Returns the list of completed test tab labels.
  */
-export async function completeLabResultsAsLabTech(page: Page): Promise<string[]> {
+export async function completeLabResultsAsLabTech(
+  page: Page,
+  options?: { checkGlucoseRange?: boolean },
+): Promise<string[]> {
+  const checkGlucoseRange = options?.checkGlucoseRange ?? false;
   const completedTests: string[] = [];
   const allTabs = page.locator('.link-section');
   const tabCount = await allTabs.count();
@@ -1058,7 +1065,15 @@ export async function completeLabResultsAsLabTech(page: Page): Promise<string[]>
       if (await numInput.isVisible().catch(() => false)) {
         const currentVal = await numInput.inputValue();
         if (!currentVal) {
-          await numInput.fill('12');
+          if (await isGlucoseInput(numInput)) {
+            if (checkGlucoseRange) {
+              await expectGlucoseRangeRefusesMillimoles(page);
+            } else {
+              await numInput.fill(GLUCOSE_IN_RANGE);
+            }
+          } else {
+            await numInput.fill('12');
+          }
           await page.waitForTimeout(WAIT.formInteraction);
         }
       }

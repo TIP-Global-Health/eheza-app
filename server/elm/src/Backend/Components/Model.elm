@@ -1,7 +1,9 @@
-module Backend.Components.Model exposing (HealthCenterData, HealthCenterId, MenuScope(..), PersonId, ReportParams, SelectedEntity(..))
+module Backend.Components.Model exposing (HealthCenterData, HealthCenterId, MenuData, MenuScope(..), PersonId, ReportParams, SelectedEntity(..), SyncResponse)
 
 {-| The return value of Backend update functions
 -}
+
+import App.Types exposing (Site)
 
 
 type alias HealthCenterData =
@@ -23,6 +25,13 @@ type MenuScope
     | ScopeHealthCenters
 
 
+type alias MenuData =
+    { site : Site
+    , healthCenters : List HealthCenterData
+    , scope : Maybe MenuScope
+    }
+
+
 type SelectedEntity
     = EntityGlobal
     | EntityProvince
@@ -40,4 +49,11 @@ type alias ReportParams =
     , cell : Maybe String
     , village : Maybe String
     , healthCenter : Maybe HealthCenterId
+    }
+
+
+type alias SyncResponse record =
+    { records : List record
+    , totalRemaining : Int
+    , lastIdSynced : PersonId
     }

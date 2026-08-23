@@ -11,7 +11,6 @@ import Backend.Measurement.Model
         , AcuteFindingsValue
         , AcuteIllnessMeasurements
         , CovidTestingValue
-        , Gender(..)
         , HeartCPESign
         , LungsCPESign
         , Measurement
@@ -53,6 +52,7 @@ import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (testPerson)
 import Time
 
 
@@ -67,26 +67,12 @@ dummyDate =
     Date.fromCalendarDate 2020 Time.Jan 1
 
 
-{-| Wrap a measurement `value` into the full `Measurement` record shape that
-the `AcuteIllnessMeasurements` fields require, paired with a dummy entity id.
-
-The signature is polymorphic in the id tag, encounter type, and value, so it
-unifies with each concrete `AcuteIllnessMeasurements` field type.
-
+{-| Wrap a measurement `value` into the shape the `AcuteIllnessMeasurements`
+fields require, with `dummyDate` as `dateMeasured`.
 -}
 wrapMeasurement : value -> Maybe ( EntityUuid id, Measurement encounter value )
 wrapMeasurement value =
-    Just
-        ( toEntityUuid "dummy-id"
-        , { dateMeasured = dummyDate
-          , nurse = Nothing
-          , healthCenter = Nothing
-          , participantId = toEntityUuid "dummy-person"
-          , deleted = False
-          , encounterId = Nothing
-          , value = value
-          }
-        )
+    TestFixtures.wrapMeasurement dummyDate value
 
 
 emptyAcuteIllnessMeasurements : AcuteIllnessMeasurements
@@ -187,44 +173,6 @@ currentDate =
     Date.fromCalendarDate 2020 Time.Jun 1
 
 
-{-| An adult person. Everything except birthDate/gender is defaulted/empty.
--}
-testPerson : Person
-testPerson =
-    { name = "Test Person"
-    , firstName = "Test"
-    , secondName = "Person"
-    , nationalIdNumber = Nothing
-    , hmisNumber = Nothing
-    , avatarUrl = Nothing
-    , birthDate = Just (Date.fromCalendarDate 1985 Time.Jan 1)
-    , isDateOfBirthEstimated = False
-    , gender = Female
-    , hivStatus = Nothing
-    , numberOfChildren = Nothing
-    , modeOfDelivery = Nothing
-    , ubudehe = Nothing
-    , educationLevel = Nothing
-    , maritalStatus = Nothing
-    , province = Nothing
-    , district = Nothing
-    , sector = Nothing
-    , cell = Nothing
-    , village = Nothing
-    , registrationLatitude = Nothing
-    , registrationLongitude = Nothing
-    , saveGPSLocation = False
-    , telephoneNumber = Nothing
-    , spouseName = Nothing
-    , spousePhoneNumber = Nothing
-    , nextOfKinName = Nothing
-    , nextOfKinPhoneNumber = Nothing
-    , healthCenterId = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
-
-
 dummyEncounter : AcuteIllnessEncounterModel.AcuteIllnessEncounter
 dummyEncounter =
     { participant = toEntityUuid "dummy-participant"
@@ -240,18 +188,7 @@ dummyEncounter =
 
 dummyParticipant : IndividualEncounterParticipant
 dummyParticipant =
-    { person = toEntityUuid "dummy-person"
-    , encounterType = AcuteIllnessEncounter
-    , startDate = currentDate
-    , endDate = Nothing
-    , eddDate = Nothing
-    , dateConcluded = Nothing
-    , outcome = Nothing
-    , deliveryLocation = Nothing
-    , newborn = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
+    TestFixtures.testParticipant currentDate AcuteIllnessEncounter
 
 
 {-| Build an `AssembledData` wrapping `testPerson` and the given measurements.

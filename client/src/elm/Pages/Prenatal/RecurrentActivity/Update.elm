@@ -80,6 +80,14 @@ update id isLabTech db msg model =
         SetAlertsDialogState value ->
             ( { model | showAlertsDialog = value }, Cmd.none, [] )
 
+        SetMeasurementOutOfRangePopupState state ->
+            let
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | measurementOutOfRangePopupState = state })
+            in
+            ( { model | labResultsData = updatedData }, Cmd.none, [] )
+
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
 
@@ -676,6 +684,29 @@ update id isLabTech db msg model =
             , Cmd.none
             , []
             )
+
+        PreSaveRandomBloodSugarResult personId saved nextTask ->
+            let
+                form =
+                    getMeasurementValueFunc saved
+                        |> Measurement.Utils.randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
+
+                -- A lab tech is shown the reading only once they confirm
+                -- the test was run, which is the condition the form uses.
+                inputShown =
+                    not isLabTech || form.runConfirmedByLabTech == Just True
+
+                extraMsgs =
+                    Measurement.Utils.bloodGlucoseSaveMsgs inputShown
+                        form.sugarCount
+                        (SaveRandomBloodSugarResult personId saved nextTask)
+                        SetMeasurementOutOfRangePopupState
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SaveRandomBloodSugarResult personId saved nextTask ->
             ( model
@@ -1581,6 +1612,32 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
             , Cmd.none
             , []
             )
+
+        SetMeasurementOutOfRangePopupState state ->
+            ( { data | measurementOutOfRangePopupState = state }, Cmd.none, [] )
+
+        PreSaveRandomBloodSugarResult personId saved nextTask ->
+            let
+                form =
+                    getMeasurementValueFunc saved
+                        |> Measurement.Utils.randomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
+
+                -- A lab tech is shown the reading only once they confirm
+                -- the test was run, which is the condition the form uses.
+                inputShown =
+                    not isLabTech || form.runConfirmedByLabTech == Just True
+
+                nextMsgs =
+                    Measurement.Utils.bloodGlucoseSaveMsgs inputShown
+                        form.sugarCount
+                        (SaveRandomBloodSugarResult personId saved nextTask)
+                        SetMeasurementOutOfRangePopupState
+            in
+            ( data
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) nextMsgs
 
         SaveRandomBloodSugarResult personId saved _ ->
             let

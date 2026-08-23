@@ -4,7 +4,6 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model
     exposing
         ( CreatinineTestValue
-        , Gender(..)
         , GlucoseValue(..)
         , Measurement
         , MedicalCondition(..)
@@ -14,11 +13,9 @@ import Backend.Measurement.Model
         , TestExecutionNote(..)
         , TestPrerequisite(..)
         , UrineDipstickTestValue
-        , VitalsValue
         )
 import Backend.NCDEncounter.Model as NCDEncounterModel
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
-import Backend.Person.Model exposing (Person)
 import Date
 import EverySet exposing (EverySet)
 import Expect
@@ -34,6 +31,7 @@ import Pages.NCD.Utils
         )
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (testPerson)
 import Time
 
 
@@ -154,22 +152,12 @@ dummyDate =
     Date.fromCalendarDate 2020 Time.Jun 1
 
 
-{-| Wrap a measurement value into the `Maybe ( id, Measurement encounter value )`
-shape stored on `NCDMeasurements`. Polymorphic in both `id` and `encounter`.
+{-| Wrap a measurement value into the shape stored on `NCDMeasurements`, with
+`dummyDate` as `dateMeasured`.
 -}
 wrapMeasurement : value -> Maybe ( EntityUuid id, Measurement encounter value )
 wrapMeasurement value =
-    Just
-        ( toEntityUuid "dummy-id"
-        , { dateMeasured = dummyDate
-          , nurse = Nothing
-          , healthCenter = Nothing
-          , participantId = toEntityUuid "dummy-person"
-          , deleted = False
-          , encounterId = Nothing
-          , value = value
-          }
-        )
+    TestFixtures.wrapMeasurement dummyDate value
 
 
 emptyNCDMeasurements : NCDMeasurements
@@ -203,18 +191,6 @@ emptyNCDMeasurements =
 -- VALUE BUILDERS
 
 
-vitalsValueWith : Float -> Float -> VitalsValue
-vitalsValueWith sys dia =
-    { sys = Just sys
-    , dia = Just dia
-    , heartRate = Nothing
-    , respiratoryRate = Nothing
-    , bodyTemperature = Nothing
-    , sysRepeated = Nothing
-    , diaRepeated = Nothing
-    }
-
-
 creatinineValueWith : Float -> CreatinineTestValue
 creatinineValueWith creatinineResult =
     { executionNote = TestNoteRunToday
@@ -236,24 +212,6 @@ urineProteinValue protein =
     , protein = Just protein
     , ph = Nothing
     , glucose = Nothing
-    , leukocytes = Nothing
-    , nitrite = Nothing
-    , urobilinogen = Nothing
-    , haemoglobin = Nothing
-    , ketone = Nothing
-    , bilirubin = Nothing
-    }
-
-
-urineGlucoseValue : GlucoseValue -> UrineDipstickTestValue
-urineGlucoseValue glucose =
-    { testVariant = Nothing
-    , executionNote = TestNoteRunToday
-    , executionDate = Nothing
-    , testPrerequisites = Nothing
-    , protein = Nothing
-    , ph = Nothing
-    , glucose = Just glucose
     , leukocytes = Nothing
     , nitrite = Nothing
     , urobilinogen = Nothing
@@ -286,7 +244,7 @@ randomBloodSugarValue fasting sugar =
 
 withVitals : Float -> Float -> NCDMeasurements -> NCDMeasurements
 withVitals sys dia measurements =
-    { measurements | vitals = wrapMeasurement (vitalsValueWith sys dia) }
+    { measurements | vitals = wrapMeasurement (TestFixtures.vitalsValueWith sys dia) }
 
 
 withCoMorbidities : EverySet MedicalCondition -> NCDMeasurements -> NCDMeasurements
@@ -306,7 +264,7 @@ withUrineProtein protein measurements =
 
 withUrineGlucose : GlucoseValue -> NCDMeasurements -> NCDMeasurements
 withUrineGlucose glucose measurements =
-    { measurements | urineDipstickTest = wrapMeasurement (urineGlucoseValue glucose) }
+    { measurements | urineDipstickTest = wrapMeasurement (TestFixtures.urineGlucoseValue glucose) }
 
 
 withRandomBloodSugar : Bool -> Float -> NCDMeasurements -> NCDMeasurements
@@ -316,44 +274,6 @@ withRandomBloodSugar fasting sugar measurements =
 
 
 -- ASSEMBLED DATA FIXTURE
-
-
-{-| An adult person. Everything except birthDate/gender is defaulted/empty.
--}
-testPerson : Person
-testPerson =
-    { name = "Test Person"
-    , firstName = "Test"
-    , secondName = "Person"
-    , nationalIdNumber = Nothing
-    , hmisNumber = Nothing
-    , avatarUrl = Nothing
-    , birthDate = Just (Date.fromCalendarDate 1985 Time.Jan 1)
-    , isDateOfBirthEstimated = False
-    , gender = Female
-    , hivStatus = Nothing
-    , numberOfChildren = Nothing
-    , modeOfDelivery = Nothing
-    , ubudehe = Nothing
-    , educationLevel = Nothing
-    , maritalStatus = Nothing
-    , province = Nothing
-    , district = Nothing
-    , sector = Nothing
-    , cell = Nothing
-    , village = Nothing
-    , registrationLatitude = Nothing
-    , registrationLongitude = Nothing
-    , saveGPSLocation = False
-    , telephoneNumber = Nothing
-    , spouseName = Nothing
-    , spousePhoneNumber = Nothing
-    , nextOfKinName = Nothing
-    , nextOfKinPhoneNumber = Nothing
-    , healthCenterId = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
 
 
 {-| Dummy NCD encounter. CRITICAL: `diagnoses = EverySet.empty` (first encounter)
@@ -372,18 +292,7 @@ dummyEncounter =
 
 dummyParticipant : IndividualEncounterParticipant
 dummyParticipant =
-    { person = toEntityUuid "dummy-person"
-    , encounterType = NCDEncounter
-    , startDate = dummyDate
-    , endDate = Nothing
-    , eddDate = Nothing
-    , dateConcluded = Nothing
-    , outcome = Nothing
-    , deliveryLocation = Nothing
-    , newborn = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
+    TestFixtures.testParticipant dummyDate NCDEncounter
 
 
 {-| Build a first-encounter `AssembledData` for the given measurements.

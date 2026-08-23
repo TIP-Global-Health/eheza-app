@@ -1050,27 +1050,12 @@ healthEducationFormInutsAndTasks language setProvidedEducationForDiagnosisMsg se
     concatInputsAndTasksSections
         [ ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
             , div [ class "instructions" ]
-                [ viewHealthEducationLabel language Translate.ProvideHealthEducationShort "icon-open-book" Nothing
+                [ viewActionTakenLabel language Translate.ProvideHealthEducationShort "icon-open-book" Nothing
                 ]
             ]
           , []
           )
         , healthEducationSection
-        ]
-
-
-viewHealthEducationLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
-viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
-    let
-        message =
-            div [] <|
-                (text <| translate language actionTranslationId)
-                    :: renderDatePart language maybeDate
-                    ++ [ text "." ]
-    in
-    div [ class "header icon-label" ]
-        [ i [ class iconClass ] []
-        , message
         ]
 
 
@@ -3733,6 +3718,9 @@ measurementOutOfRangeClass measurement =
 
         MeasurementBirthWeight ->
             "birth-weight-out-of-range"
+
+        MeasurementBloodGlucose ->
+            "blood-glucose-out-of-range"
 
         MeasurementFundalHeight ->
             "fundal-height-out-of-range"

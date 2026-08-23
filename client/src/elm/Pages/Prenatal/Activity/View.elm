@@ -1727,7 +1727,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                     SaveHemoglobinTest personId measurements.hemoglobinTest nextTask
 
                                 TaskRandomBloodSugarTest ->
-                                    SaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
+                                    PreSaveRandomBloodSugarTest personId measurements.randomBloodSugarTest nextTask
 
                                 TaskHIVPCRTest ->
                                     SaveHIVPCRTest personId measurements.hivPCRTest nextTask

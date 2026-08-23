@@ -1,7 +1,7 @@
 module Backend.Measurement.Test exposing (all)
 
 import Backend.Measurement.Encoder exposing (encodeMedicalHistoryValue)
-import Backend.Measurement.Model exposing (ColorAlertIndication(..), GlucoseValue(..), HeadCircumferenceInCm(..), MuacInCm(..), OccursInFamilySign(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..), UrineDipstickTestValue)
+import Backend.Measurement.Model exposing (ColorAlertIndication(..), GlucoseValue(..), HeadCircumferenceInCm(..), MuacInCm(..), OccursInFamilySign(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..))
 import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, headCircumferenceIndication, muacIndicationForAdult, muacIndicationForChild, muacValueFuncForSite)
 import EverySet
 import Expect
@@ -9,6 +9,7 @@ import Json.Decode
 import Json.Encode
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (urineGlucoseValue)
 
 
 muacIndicationTest : Test
@@ -109,27 +110,6 @@ rbsValue fasting sugar =
     }
 
 
-{-| A Urine Dipstick test value with the given glucose reading; all other fields
-are defaulted (the classifier reads only `.glucose`).
--}
-urineValue : GlucoseValue -> UrineDipstickTestValue
-urineValue glucose =
-    { testVariant = Nothing
-    , executionNote = TestNoteRunToday
-    , executionDate = Nothing
-    , testPrerequisites = Nothing
-    , protein = Nothing
-    , ph = Nothing
-    , glucose = Just glucose
-    , leukocytes = Nothing
-    , nitrite = Nothing
-    , urobilinogen = Nothing
-    , haemoglobin = Nothing
-    , ketone = Nothing
-    , bilirubin = Nothing
-    }
-
-
 diabetesBySugarCountTest : Test
 diabetesBySugarCountTest =
     -- Clinical (ADA) oracle: fasting plasma glucose >= 126 mg/dL is diabetes;
@@ -164,15 +144,15 @@ diabetesByUrineGlucoseTest =
     -- Oracle: glucosuria of +2 or more indicates diabetes.
     describe "diabetesByUrineGlucose"
         [ test "Glucose0 -> not diabetes" <|
-            \_ -> diabetesByUrineGlucose (urineValue Glucose0) |> Expect.equal False
+            \_ -> diabetesByUrineGlucose (urineGlucoseValue Glucose0) |> Expect.equal False
         , test "GlucosePlus1 -> not diabetes" <|
-            \_ -> diabetesByUrineGlucose (urineValue GlucosePlus1) |> Expect.equal False
+            \_ -> diabetesByUrineGlucose (urineGlucoseValue GlucosePlus1) |> Expect.equal False
         , test "GlucosePlus2 -> diabetes (threshold)" <|
-            \_ -> diabetesByUrineGlucose (urineValue GlucosePlus2) |> Expect.equal True
+            \_ -> diabetesByUrineGlucose (urineGlucoseValue GlucosePlus2) |> Expect.equal True
         , test "GlucosePlus3 -> diabetes" <|
-            \_ -> diabetesByUrineGlucose (urineValue GlucosePlus3) |> Expect.equal True
+            \_ -> diabetesByUrineGlucose (urineGlucoseValue GlucosePlus3) |> Expect.equal True
         , test "GlucosePlus4 -> diabetes" <|
-            \_ -> diabetesByUrineGlucose (urineValue GlucosePlus4) |> Expect.equal True
+            \_ -> diabetesByUrineGlucose (urineGlucoseValue GlucosePlus4) |> Expect.equal True
         ]
 
 
