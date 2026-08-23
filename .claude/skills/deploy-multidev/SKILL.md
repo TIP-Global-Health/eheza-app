@@ -86,11 +86,13 @@ ddev robo deploy:pantheon <env> 2>&1 | tee /tmp/deploy-<env>.log
 ```
 Tell the user explicitly: **at the "Commit changes and deploy?" prompt, review the printed `git status` of the Pantheon clone** and confirm only if the change-set is exactly what they expect. When it returns, `Read` `/tmp/deploy-<env>.log` to verify the push + auto-run `cc all`/`updb`/`fra`/`uli` — don't ask for a paste.
 
-What this does automatically (so you don't double-run it): rsyncs the build into the clone, checks out the `<env>` branch, commits + pushes to it, then runs on that **multidev** env `cc all` (twice), `updb -y`, **`fra -y`**, **`cc all`**, and `uli`. It touches **only** that multidev env.
+What this does automatically (so you don't double-run it): rsyncs the build into the clone, checks out the `<env>` branch, commits + pushes to it, then runs on that **multidev** env `cc all` (twice), `updb -y`, **`fra -y`**, **`cc all`**, and `uli`. Each of those steps is retried up to 3 times with a growing pause, so one transient kill no longer aborts the rest. It touches **only** that multidev env.
 
 ## Step 4 — Post-deploy / verify
 
 The deploy already ran `cc all`/`updb`/`fra`/`cc all`/`uli` itself — confirm in the log. So just verify: open the `uli` login link from the deploy output (or the multidev URL `https://<env>-<PANTHEON_NAME>.pantheonsite.io`) and smoke-test. Run any manual steps the change introduced (new variables, migrations).
+
+If a step failed every attempt, the deploy aborted there and the exception names it — the env is on the new code with that step and the ones after it un-run. See *A post-deploy step dies with exit 137* in the shared reference before re-running the remainder by hand.
 
 ---
 

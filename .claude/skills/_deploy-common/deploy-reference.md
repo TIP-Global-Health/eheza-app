@@ -26,13 +26,14 @@ and `server/RoboFile.php`.
 6. rsyncs `www/.` (server) and `client/dist/.` (app) into the clone, excluding `.git`, `.ddev`, `client`, etc.
 7. Prints `git status`, then asks **"Commit changes and deploy?"** (interactive — needs a human).
 8. On confirm: `git add .`, commit if there is anything to commit, then `git push` to Pantheon. Nothing to commit is not a failure — re-running a deploy after fixing something on the Pantheon side finds no change to make, and the push still runs in case an earlier run committed without pushing.
-9. Calls `deployPantheonSync(<env>, FALSE)` → runs `cc all` (×2), `updb -y`, `fra -y`, `cc all`, `uli` on that env.
+9. Calls `deployPantheonSync(<env>, FALSE)` → runs `cc all` (×2), `updb -y`, `fra -y`, `cc all`, `uli` on that env, each with retries.
 
 `$branchName == 'master'` maps to the Pantheon **`dev`** environment.
 
 ### `deployPantheonSync($env = 'test', $doDeploy = TRUE)` — `ddev robo deploy:pantheon-sync <env>`
 - If `$doDeploy`: `terminus env:deploy <PANTHEON_NAME>.<env>` (promotes code from the previous env).
 - Then always: `terminus remote:drush <env> -- cc all` (×2), `updb -y`, `fra -y`, `cc all`, `uli`.
+- **Each drush step is attempted up to `DEPLOY_STEP_ATTEMPTS` (3) times**, waiting `DEPLOY_STEP_RETRY_DELAY` (15s) × attempts already made between tries — 15s, then 30s. A step that fails every attempt aborts the run, and the exception names the step, so you can see which one and what it left un-run. Most steps simply run again: `cc all` and `fra -y` are idempotent, and `uli` just mints another link. **`updb -y` is the one to watch** — an update hook is recorded as run only once it finishes, so a hook killed part-way is never recorded and the retry runs it from the start, and update hooks are not written to be idempotent.
 
 ### `generateReleaseNotes($tag = NULL)` — `ddev robo generate:release-notes [tag]`
 - Lists changes **since** `$tag`. So `$tag` is the **previous** release tag (releasing `v1.17.2` → pass `v1.17.1`).
@@ -102,6 +103,7 @@ reflect the newly-selected site's data.
 - **Pushed to the wrong site** — caused by a stale `PANTHEON_NAME`. Fix `.ddev/config.local.yaml` and **`ddev restart`** (env vars only reload on restart) before re-deploying.
 - **Empty changelog** — you passed the *new* tag to `generate:release-notes` instead of the previous one.
 - **SSH auth errors (git push to Pantheon)** — re-run `ddev auth ssh`; confirm Pantheon team membership and that your SSH key is on the Pantheon account.
+- **A post-deploy step dies with exit 137** — 137 is SIGKILL, and it comes back from the *remote* drush process: the appserver container ran out of memory and the kernel killed it. It lands on the cache rebuild (usually the second `cc all`), because a `cc all` only empties the cache tables and the *next* bootstrap is what rebuilds the code registry, menu router and plugin caches from cold. A large code change makes that rebuild bigger, an orphaned module row makes it noisier, and web traffic hitting the same cold cache competes for the same memory ceiling. The steps retry themselves now, so a single kill no longer aborts the deploy. If all attempts fail, read the output before re-running: a killed `updb -y` may have left an update hook part-applied and unrecorded, so check which updates ran before running it again. Then re-run the remaining steps by hand (`ddev exec terminus remote:drush <site>.<env> -- <step>`), one at a time — and check first whether the log says a module is *"missing from the file system"*: a genuinely orphaned row (absent from both the branch and the pushed clone) should be deleted with `sql-query "DELETE FROM system WHERE name = '<module>'"`, since it adds work to every rebuild.
 - **`terminus` "You are not logged in"** — `ddev auth ssh` does **not** authenticate terminus. Set `TERMINUS_MACHINE_TOKEN` in `.ddev/config.local.yaml` (see prerequisites) and `ddev restart`, or run **`ddev terminus-auth`** (logs terminus in from the token; or `ddev terminus-auth <token>`); verify with `ddev exec terminus auth:whoami`. The `robo` deploy may already have **pushed the code** before failing here — so after authenticating, just re-run the post-deploy `remote:drush` steps (`cc all` ×2, `updb -y`, `uli`, `fra -y`) rather than the whole deploy.
 
 ## Branch note
