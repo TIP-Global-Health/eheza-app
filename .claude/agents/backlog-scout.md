@@ -1,6 +1,6 @@
 ---
 name: backlog-scout
-description: Audits one module or area of the E-Heza codebase for correctness defects and returns both any candidate findings and a coverage verdict. Used by the discovery skill to fan out a round; not for implementing anything.
+description: Audits one module or area of the E-Heza codebase for correctness defects and returns both any candidate findings and a coverage verdict. Used by the run-backlog-discovery skill to fan out a round; not for implementing anything.
 tools: Bash, Read, Grep, Glob
 ---
 

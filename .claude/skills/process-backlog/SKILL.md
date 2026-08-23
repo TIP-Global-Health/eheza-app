@@ -1,6 +1,6 @@
 ---
-name: backlog
-description: Work the E-Heza improvement backlog with the user — survey what is queued and in which tier, present an item for their decision, then build and ship the ones they approve. Trigger when the user wants to work the backlog, asks what items are queued or what the tiers hold, asks to see or present an item, or names an item to implement (e.g. "what do we have?", "what is in tier 2?", "present the scoreboard one"). NOT for finding new items — that is the discovery skill.
+name: process-backlog
+description: Work the E-Heza improvement backlog with the user — survey what is queued and in which tier, present an item for their decision, then build and ship the ones they approve. Trigger when the user wants to work the backlog, asks what items are queued or what the tiers hold, asks to see or present an item, or names an item to implement (e.g. "what do we have?", "what is in tier 2?", "present the scoreboard one"). NOT for finding new items — that is the run-backlog-discovery skill.
 ---
 
 # Backlog seat — E-Heza improvement work

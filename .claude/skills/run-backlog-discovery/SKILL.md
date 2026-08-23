@@ -1,6 +1,6 @@
 ---
-name: discovery
-description: Run a discovery round over the E-Heza codebase — frame the round, fan out module/lens agents, adversarially verify every candidate, and append verified findings to the improvement backlog. Trigger when the user asks to run discovery, start or continue a round, look for new improvement items, or audit an area for findings. NOT for implementing what is already queued — that is the backlog skill.
+name: run-backlog-discovery
+description: Run a discovery round over the E-Heza codebase — frame the round, fan out module/lens agents, adversarially verify every candidate, and append verified findings to the improvement backlog. Trigger when the user asks to run discovery, start or continue a round, look for new improvement items, or audit an area for findings. NOT for implementing what is already queued — that is the process-backlog skill.
 ---
 
 # Discovery seat — E-Heza improvement rounds

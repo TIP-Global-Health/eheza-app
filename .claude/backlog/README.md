@@ -1,6 +1,6 @@
 # Improvement backlog
 
-State for the `/backlog` and `/discovery` skills. The skills describe *how* to work; everything
+State for the `/process-backlog` and `/run-backlog-discovery` skills. The skills describe *how* to work; everything
 here is *what has happened*. Nothing in this directory belongs in a skill file, and no skill file
 should record a round number, a tier count or a cursor.
 
@@ -51,9 +51,9 @@ An entry marked MONITORING must say two things, or it will rot: **what it is wai
 the user — is still actionable today: the action is to ask. Those stay READY and say so in their
 prose. MONITORING is only for waiting on evidence that no one can produce on demand.
 
-⚠ MONITORING is the status most likely to become a graveyard, so the `/backlog` survey lists
+⚠ MONITORING is the status most likely to become a graveyard, so the `/process-backlog` survey lists
 these every session alongside the ready counts. If one has been waiting for something that has
 since happened, it is no longer monitoring.
 
 ⚠ `READY` does not mean approved. Approval happens only when an item is presented in the
-`/backlog` seat, and the only record of the user's judgement is `PARKED` with their rationale.
+`/process-backlog` seat, and the only record of the user's judgement is `PARKED` with their rationale.
