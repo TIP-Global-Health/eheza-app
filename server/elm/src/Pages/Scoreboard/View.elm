@@ -13,7 +13,7 @@ import Html.Events exposing (onClick)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Scoreboard.Model exposing (Model, Msg(..), NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..), ViewMode(..))
 import Pages.Scoreboard.Utils exposing (allVaccineTypes, generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
-import Pages.Utils exposing (viewYearSelector)
+import Pages.Utils exposing (viewBackendData, viewYearSelector)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.NominalDate exposing (equalByYearAndMonth)
@@ -21,15 +21,8 @@ import Utils.NominalDate exposing (equalByYearAndMonth)
 
 view : Language -> NominalDate -> ModelBackend -> Model -> Html Msg
 view language currentDate modelBackend model =
-    case modelBackend.scoreboardData of
-        Just (Ok data) ->
-            viewScoreboardData language currentDate data model
-
-        Just (Err err) ->
-            text <| Debug.toString err
-
-        Nothing ->
-            emptyNode
+    viewBackendData modelBackend.scoreboardData
+        (\data -> viewScoreboardData language currentDate data model)
 
 
 viewScoreboardData : Language -> NominalDate -> ScoreboardData -> Model -> Html Msg
