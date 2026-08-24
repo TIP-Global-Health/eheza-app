@@ -21,6 +21,8 @@ import {
   startSubsequentEncounter,
   completeDangerSigns,
   completeOngoingTreatment,
+  openProgressReport,
+  returnToEncounterFromReport,
 } from './helpers/acute-illness';
 
 test.describe('CHW: Acute Illness Initial Encounter — Uncomplicated Pneumonia', () => {
@@ -68,6 +70,29 @@ test.describe('CHW: Acute Illness Initial Encounter — Uncomplicated Pneumonia'
     // After completing all 3 mandatory activities (Symptoms, Physical Exam,
     // Prior Treatment), the app diagnoses "Uncomplicated Pneumonia" and
     // shows the encounter as complete — no Laboratory or Next Steps needed.
+
+    // Progress report covers the whole illness, and this encounter is the
+    // only one of it, so everything the report shows comes from here.
+    await openProgressReport(page);
+
+    const report = page.locator('div.page-report.acute-illness');
+    await expect(report.locator('.pane.assessment'))
+      .toContainText('Uncomplicated Pneumonia');
+
+    const symptoms = report.locator('.pane.symptoms');
+    await expect(symptoms).toContainText('Cough');
+    await expect(symptoms).toContainText('Nasal Congestion');
+    await expect(symptoms).toContainText('Sore Throat');
+
+    // One row, holding the vitals entered at the physical exam. Respiratory
+    // rate renders as "32 bpm", body temperature as "37 °C".
+    const respiratoryRate = report.locator('.pane.physical-exam td.respiratory-rate');
+    await expect(respiratoryRate).toHaveCount(1);
+    await expect(respiratoryRate).toContainText('32');
+    await expect(report.locator('.pane.physical-exam td.body-temperature'))
+      .toContainText('37');
+
+    await returnToEncounterFromReport(page);
 
     // End encounter.
     await endEncounter(page);
@@ -214,6 +239,21 @@ test.describe('CHW: Acute Illness Initial + Subsequent Encounter', () => {
       respiratoryRate: '22',
       bodyTemp: '38.0',
     });
+
+    // Both encounters of the illness belong on the report, the one being
+    // viewed included. Rows are ordered most recent first.
+    await openProgressReport(page);
+
+    const subsequentReport = page.locator('div.page-report.acute-illness');
+    const rates = subsequentReport.locator('.pane.physical-exam td.respiratory-rate');
+    await expect(rates).toHaveCount(2);
+    await expect(rates.first()).toContainText('22');
+    await expect(rates.last()).toContainText('18');
+
+    // Symptoms are the ones recorded at the encounter that opened the illness.
+    await expect(subsequentReport.locator('.pane.symptoms')).toContainText('Fever');
+
+    await returnToEncounterFromReport(page);
 
     // 3. Ongoing Treatment.
     await completeOngoingTreatment(page);

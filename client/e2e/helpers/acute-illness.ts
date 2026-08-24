@@ -147,6 +147,28 @@ export async function startNewAcuteIllness(page: Page) {
 }
 
 /**
+ * Open the progress report from the encounter page.
+ * The "Progress Report" tab navigates straight to the report, rather than
+ * switching tabs in place.
+ */
+export async function openProgressReport(page: Page) {
+  const reportsTab = page.locator('#reports-tab');
+  await reportsTab.waitFor({ timeout: 15000 });
+  await click(reportsTab, page);
+  await page.locator('div.page-report.acute-illness').waitFor({ timeout: 15000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
+/**
+ * Return from the progress report to the encounter it was opened from.
+ */
+export async function returnToEncounterFromReport(page: Page) {
+  await click(page.locator('div.page-report.acute-illness span.link-back'), page);
+  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 15000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
+/**
  * End the current acute illness encounter: click "End Encounter",
  * confirm in the dialog, wait for navigation away.
  */
