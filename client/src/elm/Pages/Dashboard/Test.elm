@@ -3,14 +3,17 @@ module Pages.Dashboard.Test exposing (all)
 import AssocList as Dict
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
-import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStatsRaw, NutritionStatus(..), NutritionValue)
+import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStatsRaw, NutritionStatus(..), NutritionValue, SPVDataItem, SPVEncounterDataItem)
 import Backend.Measurement.Model exposing (Gender(..))
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Date
+import EverySet
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode
 import Json.Encode
-import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates)
+import Pages.Dashboard.Model exposing (ECDStatus(..))
+import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, resolveECDStatus)
 import Test exposing (Test, describe, test)
 import Time
 
@@ -127,9 +130,107 @@ statsStorageRoundTripTest =
         ]
 
 
+{-| A nurse (`PediatricCare`) encounter on `startDate`, carrying `warnings`.
+-}
+spvEncounterOn : NominalDate -> List EncounterWarning -> SPVEncounterDataItem
+spvEncounterOn startDate warnings =
+    { startDate = startDate
+    , encounterType = PediatricCare
+    , warnings = EverySet.fromList warnings
+    , zscoreStunting = Nothing
+    , zscoreUnderweight = Nothing
+    , zscoreWasting = Nothing
+    , muac = Nothing
+    , nutritionSigns = EverySet.empty
+    , bcgImminizationDates = EverySet.empty
+    , opvImminizationDates = EverySet.empty
+    , dtpImminizationDates = EverySet.empty
+    , dtpStandaloneImminizationDates = EverySet.empty
+    , pcv13ImminizationDates = EverySet.empty
+    , rotarixImminizationDates = EverySet.empty
+    , ipvImminizationDates = EverySet.empty
+    , mrImminizationDates = EverySet.empty
+    , hpvImminizationDates = EverySet.empty
+    }
+
+
+spvEncounter : Int -> List EncounterWarning -> SPVEncounterDataItem
+spvEncounter dayOfJuly =
+    spvEncounterOn (Date.fromCalendarDate 2026 Time.Jul dayOfJuly)
+
+
+childSeenAt : List SPVEncounterDataItem -> SPVDataItem
+childSeenAt encounters =
+    { identifier = 1
+    , created = Date.fromCalendarDate 2026 Time.Jan 1
+    , birthDate = Date.fromCalendarDate 2025 Time.Jan 1
+    , gender = Female
+    , encounters = encounters
+    }
+
+
+resolveECDStatusTest : Test
+resolveECDStatusTest =
+    let
+        endOfJuly =
+            Date.fromCalendarDate 2026 Time.Jul 31
+
+        resolve =
+            childSeenAt >> resolveECDStatus endOfJuly
+    in
+    describe "resolveECDStatus"
+        [ test "a child whose latest verdict is on track is on track" <|
+            \_ ->
+                resolve [ spvEncounter 10 [ NoECDMilstoneWarning ] ]
+                    |> Expect.equal (Just ECDOnTrack)
+        , test "a child whose latest verdict is behind is behind" <|
+            \_ ->
+                resolve [ spvEncounter 10 [ WarningECDMilestoneBehind ] ]
+                    |> Expect.equal (Just ECDBehind)
+        , test "a child seen but never assessed is not assessed, not behind" <|
+            \_ ->
+                -- The ECD activity is only offered while milestones are still
+                -- outstanding, so a child who has completed them all - or was
+                -- seen for something else entirely - carries no ECD verdict.
+                -- Counting that as behind is what this report used to do.
+                resolve [ spvEncounter 10 [ NoEncounterWarnings ] ]
+                    |> Expect.equal (Just ECDNotAssessed)
+        , test "a later encounter with no verdict does not erase the verdict before it" <|
+            \_ ->
+                resolve
+                    [ spvEncounter 10 [ NoECDMilstoneWarning ]
+                    , spvEncounter 20 [ NoHeadCircumferenceWarning ]
+                    ]
+                    |> Expect.equal (Just ECDOnTrack)
+        , test "the most recent verdict wins" <|
+            \_ ->
+                resolve
+                    [ spvEncounter 10 [ NoECDMilstoneWarning ]
+                    , spvEncounter 20 [ WarningECDMilestoneReferToSpecialist ]
+                    ]
+                    |> Expect.equal (Just ECDBehind)
+        , test "encounters after the selected month are not read" <|
+            \_ ->
+                resolve
+                    [ spvEncounter 10 [ NoECDMilstoneWarning ]
+                    , spvEncounterOn (Date.fromCalendarDate 2026 Time.Aug 5) [ WarningECDMilestoneBehind ]
+                    ]
+                    |> Expect.equal (Just ECDOnTrack)
+        , test "a child with no nurse encounter is not part of the report at all" <|
+            \_ ->
+                let
+                    nurseEncounter =
+                        spvEncounter 10 [ NoECDMilstoneWarning ]
+                in
+                resolve [ { nurseEncounter | encounterType = NewbornExam } ]
+                    |> Expect.equal Nothing
+        ]
+
+
 all : Test
 all =
     describe "Pages.Dashboard.Utils"
         [ caseManagementMergeDuplicatesTest
+        , resolveECDStatusTest
         , statsStorageRoundTripTest
         ]

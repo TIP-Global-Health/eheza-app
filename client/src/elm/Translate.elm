@@ -1223,6 +1223,7 @@ type TranslationId
     | NoChildrenRegisteredInTheSystem
     | NoneOfTheAbove
     | NoneOfThese
+    | NotAssessed
     | NotAvailable
     | NotFollowingRecommendationQuestion
     | NotIndicated
@@ -15019,6 +15020,13 @@ translationSet trans =
             , kinyarwanda = Just "Nta na kimwe"
             , kirundi = Just "Nta nimwe muri izi"
             , somali = Just "Midan aan kuwaas ahayn"
+            }
+
+        NotAssessed ->
+            { english = "Not Assessed"
+            , kinyarwanda = Just "Ntibyasuzumwe"
+            , kirundi = Just "Ntivyasuzumwe"
+            , somali = Just "Lama qiimeyn"
             }
 
         NotAvailable ->

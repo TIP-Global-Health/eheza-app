@@ -1,4 +1,4 @@
-module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, resolveECDStatus, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -26,6 +26,7 @@ import Backend.Dashboard.Model
         , PrenatalDataItem
         , PrenatalEncounterDataItem
         , ProgramType(..)
+        , SPVDataItem
         , SPVEncounterDataItem
         , TotalBeneficiaries
         , TotalEncountersData
@@ -55,6 +56,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Village.Utils exposing (resolveVillageResidents)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..), ecdMilestoneWarnings)
 import Date exposing (Unit(..), isBetween)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, toLastDayOfMonth)
@@ -62,7 +64,7 @@ import List.Extra
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (VaccinationProgressDict)
 import Measurement.Utils exposing (allVaccineTypes)
-import Pages.Dashboard.Model exposing (FilterPeriod(..), FilterProgramType(..), Model)
+import Pages.Dashboard.Model exposing (ECDStatus(..), FilterPeriod(..), FilterProgramType(..), Model)
 import Pages.GlobalCaseManagement.Utils
     exposing
         ( fillPersonName
@@ -1912,3 +1914,53 @@ withinOrAfterSelectedMonth dateLastDayOfSelectedMonth date =
 isAcuteIllnessNurseEncounter : AcuteIllnessEncounterDataItem -> Bool
 isAcuteIllnessNurseEncounter encounter =
     encounter.encounterType /= AcuteIllnessEncounterCHW
+
+
+isSPVNurseEncounter : SPVEncounterDataItem -> Bool
+isSPVNurseEncounter encounter =
+    encounter.encounterType == PediatricCare
+
+
+{-| The child's ECD standing, taken from their most recent nurse encounter that
+carries an ECD verdict. Encounters where the ECD activity was never done carry
+no verdict, so reading only the latest encounter reports 'nobody asked' as
+'behind' - and a child who has completed every milestone for their age is
+offered the activity no longer, so finishing would count as falling behind.
+
+`Nothing` means the child has no nurse encounter up to the selected month at
+all, and so is not part of this report. A child who was seen but never assessed
+is `Just ECDNotAssessed`.
+
+-}
+resolveECDStatus : NominalDate -> SPVDataItem -> Maybe ECDStatus
+resolveECDStatus dateLastDayOfSelectedMonth item =
+    let
+        nurseEncounters =
+            List.filter
+                (\encounter ->
+                    isSPVNurseEncounter encounter
+                        && withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth encounter.startDate
+                )
+                item.encounters
+    in
+    if List.isEmpty nurseEncounters then
+        Nothing
+
+    else
+        List.filter
+            (\encounter ->
+                List.any (\warning -> EverySet.member warning encounter.warnings) ecdMilestoneWarnings
+            )
+            nurseEncounters
+            |> List.sortWith (sortByDateDesc .startDate)
+            |> List.head
+            |> Maybe.map
+                (\encounter ->
+                    if EverySet.member NoECDMilstoneWarning encounter.warnings then
+                        ECDOnTrack
+
+                    else
+                        ECDBehind
+                )
+            |> Maybe.withDefault ECDNotAssessed
+            |> Just
