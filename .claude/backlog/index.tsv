@@ -207,6 +207,9 @@ B-206	4	IMPLEMENTED		2137	2138	22	Child wellness dashboard: the "# of Children S
 B-207	4	IMPLEMENTED		2139	2140	22	Dashboard donut charts: a period with no children renders every slice as "NaN%"
 B-208	3	IMPLEMENTED		2141	2142	22	Child wellness dashboard: a child registered twice is counted twice, and half their encounters are dropped
 B-209	4	PARKED			2136	22	Child Wellness dashboard: the ECD donut counts a wider period than the card above it, so the two read as breakdown and d
+B-210	3	READY	MED			23	Antenatal progress report: an outside-care Syphilis or Moderate Anemia diagnosis never shows the medication that was rec
+B-211	4	READY	LOW			23	Antenatal progress report: an outside-care HIV diagnosis with "None of these" medication prints as "treated with None of
+B-212	3	READY	MED			23	Antenatal progress report: NCD-program referral lines are shown/hidden by ARV-program enrolment, not NCD enrolment — CON
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
