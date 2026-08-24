@@ -55,7 +55,18 @@ Everything else of mine has merged: the four that were red on the 2026-08-17 Git
 (#2090, #2095, #2097, #2099) and the whole R22 stack (#2108…#2116). The GitHub incident is over and
 was never a real signal — all of those went green on rerun.
 
-## The queue, as of 2026-08-24 — **109 READY**
+## Round 23 ran 2026-08-24 (after the bookkeeping below) — 15 new items, 2 of them tier 2 and LIVE
+
+B-210..B-224 (see `rounds.md` R23). **Tier 2 now holds B-213** (NCDA scorecard grades every past
+height/weight at the child's age TODAY — earlier months turn red as the child grows; disagrees with
+the server scorecard) **and B-220** (Acute Illness progress report never renders the encounter it was
+opened for — regression from `04e4bd9a8`, v1.14.0; a first visit's report shows nothing). Both are on
+`origin/main`. Tier 3 gained B-210/B-212 (prenatal report outside-care + NCD referral lines), B-214,
+B-215 (adult Patient Record never fetches acute-illness history), B-216 (adult DOB edit rewrites
+children's enrolment dates server-side), B-217 (merge accepts original == duplicate), B-221 (partner
+HIV test never triggers the prenatal assessment). Counts after R23: **124 READY — T2 4 · T3 19 · T4 67**.
+
+## The queue, as of 2026-08-24 morning (pre-R23) — **109 READY**
 
 | tier | READY | reality |
 |---|---|---|
