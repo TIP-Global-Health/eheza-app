@@ -210,6 +210,18 @@ B-209	4	PARKED			2136	22	Child Wellness dashboard: the ECD donut counts a wider 
 B-210	3	READY	MED			23	Antenatal progress report: an outside-care Syphilis or Moderate Anemia diagnosis never shows the medication that was rec
 B-211	4	READY	LOW			23	Antenatal progress report: an outside-care HIV diagnosis with "None of these" medication prints as "treated with None of
 B-212	3	READY	MED			23	Antenatal progress report: NCD-program referral lines are shown/hidden by ARV-program enrolment, not NCD enrolment — CON
+B-213	2	READY	HIGH			23	NCDA scorecard "Fill the Blanks": every past height/weight is graded against the child's age TODAY, so earlier months tu
+B-214	3	READY	MED			23	Child progress report: "the last Well Child encounter" is whichever sorts first by UUID, so the Next Appointment pane ca
+B-215	3	READY	MED			23	Patient Record (adult): the Acute Illness pane — the DEFAULT filter — never fetches its encounters, so an adult's illnes
+B-216	3	READY	MED-HIGH			23	Person: correcting an ADULT's birth date rewrites the enrolment/graduation dates of every child they bring to a group — 
+B-217	3	READY	MED			23	Patient consolidation: the tool accepts original == duplicate (and unloadable / already-deleted ids) and then soft-delet
+B-218	4	READY	MED-LOW			23	Person: un-deleting a person does not un-delete what its deletion cascaded (relationships, group enrolments, pregnancies
+B-219	4	READY	LOW			23	Patient consolidation: moved measurements/encounters/participants keep the DUPLICATE's shards, so transferred history ca
+B-220	2	READY	HIGH			23	Acute Illness progress report: the encounter it was opened for is never rendered — a first visit's report shows no diagn
+B-221	3	READY	MED			23	Prenatal: saving the Partner HIV test never re-runs the diagnosis assessment, so a discordant-partnership diagnosis reac
+B-222	4	READY	LOW			23	Person edit: a failed PATCH is recorded as `Success`, so the edit form shows no error — CONFIRMED (orchestrator-read han
+B-223	4	READY	LOW			23	Backend/Update revision minors ×2: (a) `PrenatalFefolRevision`/`PrenatalAspirinRevision` ignore `deleted`; (b) removing 
+B-224	4	READY	LOW			23	NCD progress report: the pregnancy-test row is hidden on every follow-up encounter, so an earlier pregnancy result becom
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
