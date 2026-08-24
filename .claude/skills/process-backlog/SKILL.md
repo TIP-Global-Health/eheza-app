@@ -105,6 +105,11 @@ number, tier line, and any side-findings noticed while building appended as new 
   08-20, 08-24). The 08-24 one went: review agent replied in chat → I verified the findings and
   wrote the analysis for the user → posted nothing. Mechanics and the full history are in
   `pr-first-review-workflow` in memory.
+- ⛔ **Close the loop on every review thread when the fix lands**, and **commit + push the backlog
+  files on `develop`** in the same step that records them. Three separate misses in one day traced
+  to the same shape — work lands, record lags — so treat "the record disagrees with the repository"
+  as a defect in its own right. A `Stop` hook commits the files as a backstop; it does not excuse
+  skipping the step.
 - ⛔ **Never request Copilot without asking first.** Offer it, say what it would cover, wait.
 - CI must run on these PRs — no `[ci skip]`. **The user merges**, with `--delete-branch`.
 - Do not generate new proposals here and do not re-mine cleared areas. That is the discovery

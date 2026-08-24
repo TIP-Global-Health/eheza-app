@@ -50,7 +50,17 @@ re-check afterwards.
 exactly right and sometimes overstated. Reply per thread with the fixing commit.
 
 **7. Bookkeep immediately** (compaction-safe): entry status → `✅ IMPLEMENTED (issue #, PR #,
-branch, base sha, what was verified)`, update the tier line, append side-findings as new minors.
+branch, base sha, what was verified)`, update the tier line, append side-findings as new minors,
+run `reindex.py`, **then commit and push those files on `develop`** with `[ci skip]` — staging the
+paths explicitly, never `git add -A` (`server/.pantheon-*` are untracked and not gitignored). A
+record that exists only in the working tree is not a record.
+⛔ **And close the loop on the PR: a push that answers a review finding is not finished until that
+finding's thread says so.** Not "eventually" — in the same step that pushes the fix. A thread left
+at *awaiting decision* after the work shipped contradicts the code, and is the same failure as
+never posting it.
+📌 A `Stop` hook (`.claude/hooks/commit-bookkeeping.sh`) commits and pushes these paths as a net,
+and warns instead when the tree is not on `develop`. It is a backstop for a miss, not the plan —
+its generated message says far less than one written here.
 
 ## Traps that have cost a cycle
 
