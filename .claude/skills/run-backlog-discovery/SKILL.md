@@ -15,7 +15,8 @@ user's decision happens later, in the backlog seat, when an item is presented. A
 the round and produces approvals nobody recorded.
 
 What the user *does* frame is the round itself — which surfaces to sweep, and how deep. Propose
-that, then run.
+that, **wait for an explicit go, and only then run.** Reading state and writing the plan is free;
+spawning the first agent is not — nothing fans out until the user has approved the plan.
 
 ## State to read first, in this order
 
@@ -46,8 +47,11 @@ clears modules is productive, not dry.
 
 1. **Frame** — pick the units. Prefer `☐` rows in the coverage table, vertical program slices
    (Elm pages + backend module + RESTful + decoders for one program), and the big shared files.
-   Put the plan to the user before spending agents on it.
-2. **Fan out** — one `backlog-scout` agent per unit, worktree-isolated. Their brief is in the
+   Present the plan to the user: round number, the units (one line each — what it covers and
+   why it was picked), the agent count, and what is deliberately left out. **Then stop and wait
+   for approval.** This is a blocking gate, not a courtesy — do not spawn any agent, and do not
+   write to the backlog, until the user says go. If they adjust the plan, revise and re-present.
+2. **Fan out** (after the go) — one `backlog-scout` agent per unit, worktree-isolated. Their brief is in the
    agent definition; do not restate the verification standard in each prompt.
 3. **Verify yourself** — every candidate an agent returns, end to end, against
    `knowledge/verification-standard.md`. An agent's confidence is not evidence.
