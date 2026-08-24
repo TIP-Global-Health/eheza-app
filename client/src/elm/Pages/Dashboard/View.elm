@@ -52,7 +52,7 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Utils exposing (generateFutureVaccinationsData)
 import Pages.Dashboard.GraphUtils exposing (barChartHeight, barChartWidth, column, familyPlanningSignToColor, familyPlanningSignsColors, feverCauseToColor, feverCausesColors, gridXScale, gridYScale, padding, pieChartHeight, pieChartWidth, radius, xAxis, xGridLine, xScale, yAxis, yGridLine)
 import Pages.Dashboard.Model exposing (BeneficiariesTableLabels(..), CardValueSeverity(..), DashboardFilter(..), DashboardSubFilter(..), ECDStatus(..), FamilyPlanningSignsCounter, FeverCause(..), FilterGender(..), FilterPeriod(..), FilterProgramType(..), FilterType(..), MalnorishedNutritionData, ModalState(..), Model, MonthlyChartType(..), Msg(..), StatsCard, caseManagementFilters, caseManagementSubFilters, filterGenders, filterPeriodsForStatsPage, maxMonthGap, monthlyChartFilters)
-import Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countChildrenSeenForSelectedMonth, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, resolveECDStatus, resolveStatsDate, spvDataMergeDuplicates, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+import Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countChildrenSeenForSelectedMonth, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, dataItemMergeDuplicates, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, resolveECDStatus, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 import Pages.Page
     exposing
         ( AcuteIllnessSubPage(..)
@@ -2763,10 +2763,13 @@ viewChildWellnessPage language currentDate site activePage assembled model =
 
 
 viewChildWellnessOverviewPage : Language -> Site -> NominalDate -> List SPVDataItem -> List ChildScoreboardDataItem -> List (Html Msg)
-viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth rawSPVDataItems childScoreboardDataItem =
+viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth rawSPVDataItems rawChildScoreboardDataItems =
     let
         spvDataItems =
-            spvDataMergeDuplicates rawSPVDataItems
+            dataItemMergeDuplicates rawSPVDataItems
+
+        childScoreboardDataItem =
+            dataItemMergeDuplicates rawChildScoreboardDataItems
 
         numberOfChildrenSeen =
             countChildrenSeenForSelectedMonth dateLastDayOfSelectedMonth spvDataItems
@@ -3036,6 +3039,9 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
                         accum
                 )
                 Dict.empty
+                -- Sort DESC by date, so it will be easier to resolve last
+                -- occurance of encounter values.
+                >> Dict.map (\_ encounters -> List.sortWith (sortByDateDesc .startDate) encounters)
 
         encountersForSelectedMonth =
             getEncountersForSelectedMonth dateLastDayOfSelectedMonth dataItems

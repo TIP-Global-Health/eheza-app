@@ -1,4 +1,4 @@
-module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countChildrenSeenForSelectedMonth, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, resolveECDStatus, resolveStatsDate, spvDataMergeDuplicates, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countChildrenSeenForSelectedMonth, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, dataItemMergeDuplicates, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, resolveECDStatus, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -330,9 +330,15 @@ caseManagementMergeDuplicates cases =
 {-| One item per child. The statistics feed builds an item per individual
 participant, so a child registered into a second participant arrives as two
 items sharing an identifier, with their encounters split between them.
+
+Well-child and child-scoreboard items are both shaped this way, hence the
+extensible record.
+
 -}
-spvDataMergeDuplicates : List SPVDataItem -> List SPVDataItem
-spvDataMergeDuplicates items =
+dataItemMergeDuplicates :
+    List { a | identifier : PersonIdentifier, encounters : List b }
+    -> List { a | identifier : PersonIdentifier, encounters : List b }
+dataItemMergeDuplicates items =
     List.foldl
         (\candidate accum ->
             Dict.get candidate.identifier accum
@@ -1941,9 +1947,9 @@ isAcuteIllnessNurseEncounter encounter =
 
 {-| Children with at least one nurse encounter in the selected month.
 
-Counting the encounters would count a child seen twice that month twice, and
-counting the items would count a child twice as well: an item is an individual
-participant, and the same child can hold more than one. Hence the identifiers.
+Counting the encounters would count a child seen twice that month twice. The
+identifiers are then a guard rather than a necessity: callers on this page merge
+the items per child first, but this counts children whether they did or not.
 
 -}
 countChildrenSeenForSelectedMonth : NominalDate -> List SPVDataItem -> Int
