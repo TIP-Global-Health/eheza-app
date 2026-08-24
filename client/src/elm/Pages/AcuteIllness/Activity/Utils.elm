@@ -87,11 +87,11 @@ expectActivity currentDate isChw assembled activity =
             else
                 let
                     initialWithSubsequent =
-                        if List.isEmpty assembled.secondInitialWithSubsequent then
-                            assembled.firstInitialWithSubsequent
+                        if List.isEmpty assembled.previousSecondInitialWithSubsequent then
+                            assembled.previousFirstInitialWithSubsequent
 
                         else
-                            assembled.secondInitialWithSubsequent
+                            assembled.previousSecondInitialWithSubsequent
                 in
                 -- Show activity, if medication was perscribed at any of previous encounters.
                 List.filterMap
@@ -1995,11 +1995,11 @@ expectLaboratoryTask currentDate isChw assembled task =
             else
                 let
                     initialWithSubsequent =
-                        if List.isEmpty assembled.secondInitialWithSubsequent then
-                            assembled.firstInitialWithSubsequent
+                        if List.isEmpty assembled.previousSecondInitialWithSubsequent then
+                            assembled.previousFirstInitialWithSubsequent
 
                         else
-                            assembled.secondInitialWithSubsequent
+                            assembled.previousSecondInitialWithSubsequent
                 in
                 -- If patient was not diagnosed with Covid, and fever is recorded
                 -- on current encounter, and patient did not test positive

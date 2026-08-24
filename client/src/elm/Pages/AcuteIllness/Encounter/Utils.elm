@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData, getAcuteIllnessDiagnosisForParticipant)
+module Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, generateAssembledData, getAcuteIllnessDiagnosisForParticipant, splitByInitialNurseEncounter)
 
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -92,37 +92,64 @@ generateAssembledData currentDate features id isChw db =
                     resolveAcuteIllnessDiagnosis currentDate features isChw data
                         |> Maybe.map (\diagnosis -> ( currentDate, diagnosis ))
 
-                ( firstInitialWithSubsequent, secondInitialWithSubsequent ) =
-                    let
-                        nurseEncounterIndex =
-                            List.indexedMap (\index encounterData -> ( index, encounterData.encounterType ))
-                                data.previousEncountersData
-                                |> List.filter (Tuple.second >> (==) AcuteIllnessEncounterNurse)
-                                |> List.reverse
-                                |> List.head
-                                |> Maybe.map Tuple.first
-                    in
-                    Maybe.map
-                        (\nurseIndex ->
-                            if nurseIndex == 0 then
-                                ( data.previousEncountersData, [] )
-
-                            else
-                                ( List.take nurseIndex data.previousEncountersData
-                                , List.drop nurseIndex data.previousEncountersData
-                                )
-                        )
-                        nurseEncounterIndex
-                        |> Maybe.withDefault ( data.previousEncountersData, [] )
+                ( previousFirstInitialWithSubsequent, previousSecondInitialWithSubsequent ) =
+                    splitByInitialNurseEncounter data.previousEncountersData
             in
             { data
                 | initialEncounter = initialEncounter
                 , diagnosis = currentDiagnosis
-                , firstInitialWithSubsequent = firstInitialWithSubsequent
-                , secondInitialWithSubsequent = secondInitialWithSubsequent
+                , previousFirstInitialWithSubsequent = previousFirstInitialWithSubsequent
+                , previousSecondInitialWithSubsequent = previousSecondInitialWithSubsequent
             }
         )
         assembled
+
+
+{-| All encounters of the illness, ordered by date, with the encounter
+that is being viewed at the end.
+-}
+generateAllEncountersData : AssembledData -> List AcuteIllnessEncounterData
+generateAllEncountersData assembled =
+    assembled.previousEncountersData
+        ++ [ AcuteIllnessEncounterData assembled.id
+                assembled.encounter.encounterType
+                assembled.encounter.startDate
+                assembled.encounter.sequenceNumber
+                assembled.encounter.diagnosis
+                assembled.measurements
+           ]
+
+
+{-| Splits encounters into the sequence that starts at the initial CHW
+encounter, and the one that starts at the encounter where nurse took over.
+When nurse ran the first encounter, there is no CHW sequence, so all
+encounters belong to the first one.
+-}
+splitByInitialNurseEncounter :
+    List AcuteIllnessEncounterData
+    -> ( List AcuteIllnessEncounterData, List AcuteIllnessEncounterData )
+splitByInitialNurseEncounter encountersData =
+    let
+        nurseEncounterIndex =
+            List.indexedMap (\index encounterData -> ( index, encounterData.encounterType ))
+                encountersData
+                |> List.filter (Tuple.second >> (==) AcuteIllnessEncounterNurse)
+                |> List.reverse
+                |> List.head
+                |> Maybe.map Tuple.first
+    in
+    Maybe.map
+        (\nurseIndex ->
+            if nurseIndex == 0 then
+                ( encountersData, [] )
+
+            else
+                ( List.take nurseIndex encountersData
+                , List.drop nurseIndex encountersData
+                )
+        )
+        nurseEncounterIndex
+        |> Maybe.withDefault ( encountersData, [] )
 
 
 generatePreviousMeasurements :
