@@ -1,12 +1,6 @@
----
-name: improvement-coverage-map
-description: "Lens registry + cleared-clean and declined classes for the E-Heza forward-run review rounds — read BEFORE planning any new round's lenses"
-metadata: 
-  node_type: memory
-  type: project
-  originSessionId: fe67129f-3904-4e60-a53e-fb53032a4e27
-  modified: 2026-08-18T22:30:06.453Z
----
+# Coverage map — lens registry, module coverage table, declined classes, verification lessons
+
+Read before framing any discovery round (see `README.md`).
 
 # Review coverage map (rounds 1+)
 

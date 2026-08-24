@@ -1,16 +1,7 @@
----
-name: improvement-backlog
-description: Implementation-ready backlog of verified E-Heza improvement findings (forward-run rounds 10+) — Fable 5 appends verified findings per round; Opus 4.8 implements from here when the user instructs
-metadata: 
-  node_type: memory
-  type: project
-  originSessionId: fe67129f-3904-4e60-a53e-fb53032a4e27
-  modified: 2026-08-19T10:16:03.759Z
----
 
-# E-Heza improvement backlog (forward-run regime)
+# Priority queue — tier lines, conventions, live gotchas
 
-**Process** (decided 2026-07-02): Fable 5 sessions run discovery rounds forward (Round 10 → cap 50), self-verify every candidate, and append findings here. Opus 4.8 sessions implement from this backlog ONLY when the user instructs — top-down by the priority list unless told otherwise. CONFIRMED items need no re-litigation, but DO re-locate anchors first (line numbers drift; snippets/function names are authoritative). Dry-stop: 3 consecutive rounds with zero new verified findings ends the run. Companions: [[improvement-coverage-map]] (lenses, cleared-clean + declined classes), [[improvement-forward-run-flow]] (the regime), [[code-review-improvement-ledger]] (rounds 1–9 history; parked items live THERE, not here).
+**Process:** `/run-backlog-discovery` finds and verifies into `items/`; `/process-backlog` presents, builds and ships. Layout in `README.md`.
 
 **Statuses:** READY (implementation-ready) · IMPLEMENTED (PR#) · DECLINED (user) · STALE (superseded by drift).
 **Verification labels:** CONFIRMED (Fable traced end-to-end) · PLAUSIBLE (agent-found, mechanism solid, not fully traced — re-verify before coding).

@@ -1,12 +1,6 @@
----
-name: code-review-improvement-ledger
-description: Running ledger of all E-Heza code-review improvement proposals across rounds (done/parked/proposed) — read before any new "suggest N improvements" sweep so nothing is re-proposed
-metadata:
-  node_type: memory
-  type: project
-  originSessionId: 3a0f2003-dc62-444e-8130-8870758fa415
-  modified: 2026-08-09T09:36:05.150Z
----
+# Rounds 1–9 ledger (frozen archive)
+
+The pre-backlog "suggest N improvements" rounds. Kept for the declined/parked rationale; nothing here is queued.
 
 The user runs a recurring "review the code, suggest N improvements" exercise (no new features incoming; goal = robustness / readability / stability / speed / UX; **bugs are top priority**). They want a persistent record so already-suggested items — done **and** parked — are never re-pitched. **Append each new round here.** Related: [[improvement-1b-poison-batch-not-quick-fix]].
 
