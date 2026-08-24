@@ -18,6 +18,8 @@ import {
   startSubsequentEncounter,
   completeDangerSigns,
   completeOngoingTreatment,
+  openProgressReport,
+  returnToEncounterFromReport,
 } from './helpers/acute-illness';
 
 test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria Uncomplicated', () => {
@@ -137,6 +139,23 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
       respiratoryRate: '16',
       bodyTemp: '37.0',
     });
+
+    // Progress report holds both encounters of the illness, the one being
+    // viewed included. Rows are ordered most recent first.
+    await openProgressReport(page);
+
+    const report = page.locator('div.page-report.acute-illness');
+    const rates = report.locator('.pane.physical-exam td.respiratory-rate');
+    await expect(rates).toHaveCount(2);
+    await expect(rates.first()).toContainText('16');
+    await expect(rates.last()).toContainText('18');
+
+    // Assessment and symptoms come from the encounter that opened the illness.
+    await expect(report.locator('.pane.assessment'))
+      .toContainText('Malaria Without Complications');
+    await expect(report.locator('.pane.symptoms')).toContainText('Fever');
+
+    await returnToEncounterFromReport(page);
 
     // 3. Ongoing Treatment: taking medication, no issues.
     // After saving, the app shows a diagnosis popup ("Improving") and
