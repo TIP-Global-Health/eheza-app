@@ -2768,7 +2768,7 @@ viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth rawSPVDat
         spvDataItems =
             dataItemMergeDuplicates rawSPVDataItems
 
-        childScoreboardDataItem =
+        childScoreboardDataItems =
             dataItemMergeDuplicates rawChildScoreboardDataItems
 
         numberOfChildrenSeen =
@@ -2786,7 +2786,7 @@ viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth rawSPVDat
                 |> Dict.fromList
 
         childScoreboardDict =
-            List.map (\item -> ( item.identifier, item )) childScoreboardDataItem
+            List.map (\item -> ( item.identifier, item )) childScoreboardDataItems
                 |> Dict.fromList
 
         allIdentifiers =
@@ -2955,7 +2955,7 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
                     value1
                         ++ value2
                         |> -- Sort DESC by date, so it will be easier to resolve l
-                           -- ast occurance of encounter values.
+                           -- ast occurrence of encounter values.
                            List.sortWith (sortByDateDesc .startDate)
                         |> Dict.insert key
                 )
@@ -3035,12 +3035,12 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
             List.foldl
                 (\item accum ->
                     Dict.update item.identifier
-                        (Maybe.withDefault [] >> (\encounters -> Just (encounters ++ item.encounters)))
+                        (Maybe.withDefault [] >> (\encounters -> Just (item.encounters ++ encounters)))
                         accum
                 )
                 Dict.empty
                 -- Sort DESC by date, so it will be easier to resolve last
-                -- occurance of encounter values.
+                -- occurrence of encounter values.
                 >> Dict.map (\_ encounters -> List.sortWith (sortByDateDesc .startDate) encounters)
 
         encountersForSelectedMonth =

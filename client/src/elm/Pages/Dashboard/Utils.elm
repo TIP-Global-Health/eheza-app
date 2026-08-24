@@ -344,7 +344,7 @@ dataItemMergeDuplicates items =
             Dict.get candidate.identifier accum
                 |> Maybe.map
                     (\current ->
-                        Dict.insert current.identifier
+                        Dict.insert candidate.identifier
                             { current | encounters = current.encounters ++ candidate.encounters }
                             accum
                     )
@@ -1947,9 +1947,10 @@ isAcuteIllnessNurseEncounter encounter =
 
 {-| Children with at least one nurse encounter in the selected month.
 
-Counting the encounters would count a child seen twice that month twice. The
-identifiers are then a guard rather than a necessity: callers on this page merge
-the items per child first, but this counts children whether they did or not.
+Counting the encounters would count a child seen twice that month twice, and
+counting the items would too, since an item is a participant rather than a child.
+Callers on this page merge the items per child before calling, so the identifiers
+are a guard rather than a necessity - the count is right either way.
 
 -}
 countChildrenSeenForSelectedMonth : NominalDate -> List SPVDataItem -> Int
