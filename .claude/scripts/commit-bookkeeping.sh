@@ -11,7 +11,7 @@
 set -u
 cd "${CLAUDE_PROJECT_DIR:-/var/www/html/ihangane}" 2>/dev/null || exit 0
 
-PATHS=(.claude/backlog .claude/skills .claude/scripts .claude/agents .claude/settings.json)
+PATHS=(.claude/backlog .claude/memory .claude/skills .claude/scripts .claude/agents .claude/settings.json)
 
 dirty=$(git status --porcelain -- "${PATHS[@]}" 2>/dev/null)
 [ -z "$dirty" ] && exit 0

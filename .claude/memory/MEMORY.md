@@ -1,0 +1,33 @@
+# Memory index
+
+- [⏩ SESSION HANDOFF](SESSION-HANDOFF.md) — pointer only: the live cursor is the repo's `.claude/backlog/HANDOFF.md` — read it FIRST when resuming
+
+- [Rollbar post-deploy triage 2026-07](rollbar-postdeploy-triage-2026-07.md) — Jul-7 deploy verified; obstetric_history_step2 REST drop JAMS old-app devices' sync (device list inside); reg.update() no-catch = new top noise; str.trim crash site found
+- [Prod AdvancedQueue is Jenkins-serialized](prod-advancedqueue-jenkins-serialized.md) — concurrent builds OFF → no two AQ workers per site DB; closed B-058pt2/B-059 as won't-fix (single-worker bugs still real)
+- [PR-first review workflow](pr-first-review-workflow.md) — PR goes up BEFORE the review; ⛔ **POST FINDINGS TO THE PR INLINE THE MOMENT THE REVIEW LANDS IN CHAT — 4 misses, latest 2026-08-24**; then present analysis and **wait for approval** before fixing; ⛔ never auto-run `high`; ⛔ never request Copilot without asking
+- [Design brief: sync-jam visibility](design-brief-sync-jam-visibility.md) — poison-batch Option A; banner + incidents for jammed upload lanes (facts verified 2026-07-06)
+- [Design brief: per-record commit](design-brief-backend-per-record-commit.md) — poison-batch Option C; per-item transactions + outcomes on /api/sync; ⚠ capability-flag rollout is mandatory (old clients delete whole batch on 200)
+- [Design brief: AssocList→Dict + rendering](design-brief-assoclist-dict-migration.md) — parked R2-#3; measure-first, Html.Lazy (0 uses today!), fork-internal O(n²) fixes, UuidDict for hot fields; AssocList is a VENDORED fork
+- [Design brief: module splits](design-brief-module-splits.md) — parked R2-#5; Backend/Update extraction → Measurement/Utils clusters → Translate per-domain nested unions (in-file precedent exists)
+- [gh pr edit workaround](gh-pr-edit-projectcards-workaround.md) — `gh pr edit` fails on eheza-app (Projects-classic GraphQL); use `gh api ... pulls/N -X PATCH`
+- [Release issue reconciliation](release-issue-reconciliation.md) — post-release sweep to close delivered-but-open issues (PRs merge to develop, non-default → Fixes #N never auto-closes); tag-range→PR refs→open filter→close recipe + judgment caveats
+- [Verify by running](verify-by-running-not-reasoning.md) — when a claim can be checked by running it, run it; check the whole chain, stub the failure branches, discrimination-test the fix
+- [Run e2e tests locally](e2e-local-run-procedure.md) — switch the MAIN tree to the branch (gulp only builds that tree), wait for gulp to finish compiling, then run from the main tree; needs `EHEZA_SITE=rwanda`
+- [Run phpcs locally](run-phpcs-locally.md) — composer+php are on the host; install drupal/coder and run Drupal/DrupalPractice (binary at `~/.config/composer/vendor/bin/phpcs`)
+- [CI simpletest time budget](ci-simpletest-time-budget.md) — CI job durations + 25-min goal; each SimpleTest class = a full install; E2E (24.8–30min) is the real long pole, not simpletest (22.9); prefer out-of-band verification or fold into an existing test method
+- [#1b poison-batch not a quick fix](improvement-1b-poison-batch-not-quick-fix.md) — naive client-side skip/quarantine is INVALID (FIFO + mandatory FK deps); only Option A (visibility UX) or Option C (backend per-record commit)
+- [Request Copilot review via API](request-copilot-review-via-api.md) — ⛔ ask first, never automatic; POST `copilot-pull-request-reviewer[bot]` to the requested_reviewers REST endpoint; verify via REST not `gh pr view`
+- [Delete branch on merge](delete-branch-on-merge.md) — standing preference: merge PRs with `--delete-branch` (delete-on-merge); `gh api -X DELETE` with curl `-w` silently no-ops, use `git push origin --delete`
+- [Code duplication rule](code-duplication-rule.md) — ⛔ 100% rule: duplication includes the SAME EXPRESSION evaluated twice, not just copied blocks; a helper with one caller belongs in its `let` (repo CLAUDE.md, PR #2091)
+- [Issue/PR titles AND bodies](meaningful-issue-and-pr-titles.md) — ⛔ **100% rule**: title = `<Feature area>: <defect>` — names the DEFECT not the mechanism, AND says WHERE; bodies describe current state only — **no verification sections, no process narrative**; same for code comments (codified in repo CLAUDE.md, PR #2068)
+- [PR description issue-link first line](pr-description-issue-link-first-line.md) — rule: PR body's FIRST line must link the issue (`Fixes #<n>`), not only the commit message
+- [Deploy tooling + aos-backend state](deploy-tooling-and-aos-backend-state.md) — deploy skills/`ddev terminus-auth`/RoboFile-fra (#1827/#1828) + the half-finished aos-backend multidev deploy to finish
+- [Deploy multidev recurring gotchas](deploy-multidev-recurring-gotchas.md) — lock-file dirty-tree abort (skip-worktree) + orphaned-module `cc all` Exit-137 crash (delete system rows: admin_views_system_display, hedley_pusher)
+- [elm-review before every push](elm-review-before-every-push.md) — ⛔ clone-and-review the COMMITTED state before pushing Elm; skipping it turned CI red twice (always leftover imports)
+- [Elm full type-check needs elm make Main](elm-fulltest-needs-elm-make-main.md) — `elm-test` only compiles test-reachable modules; run `elm make src/elm/Main.elm` after app-wide Elm changes
+- [elm-version must match compiler exactly](elm-version-must-match-compiler-exactly.md) — ⛔ ALWAYS 0.19.2 (user rule); ✅ host-global elm IS 0.19.2 since 2026-07-26 so `--compiler`/elm192 are obsolete, but global elm-test is still 0.19.1 → use the project-local one; a 0.19.1 run silently rewrites elm.json's pin; bumps are a lockstep cut across all 4 elm.json + every install site
+- [Gizra/elm-form fork](gizra-elm-form-fork.md) — we now publish/maintain `Gizra/elm-form` (archived etaque pinned test 1.x, blocking 0.19.2); Elm packages are immutable, new names start at 1.0.0
+- [Client cannot use elm --optimize](client-cannot-use-elm-optimize.md) — 7 `Debug.todo` in `Utils/AllDict.elm` block it; `gulp publish` ships dev-mode Elm, terser does all minification (unlock = follow-up win)
+- [Elm 0.19.2 Debug.todo off-by-one](elm-0192-debug-todo-region-offbyone.md) — 0.19.2 emits 0-based regions; `TODO ... on line N` really means line N+1 (unreported upstream bug)
+- [Photo upload fileId encoder wiring](photo-upload-fileid-encoder-wiring.md) — new photo-bearing content type MUST be added to the `replacePhotoWithFileId` dispatch in `SyncManager/Encoder.elm` or the photo link breaks silently
+- [Local verification vs CI](local-verification-vs-ci.md) — CI carries the full suites; locally run elm make + the check that discriminates THIS change (byte-diff for moves, fail-first test for logic)

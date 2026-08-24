@@ -116,15 +116,13 @@ These do **not** travel, and each new station recreates them:
 |---|---|---|
 | `.claude/settings.local.json` | globally gitignored | more permission prompts; nothing breaks |
 | `.git/info/exclude` | per-clone by design | `.claude/hooks/` is excluded here only |
-| `~/.claude/projects/<project>/memory/` | outside the repo | **the durable process knowledge is absent** |
 | `client/src/elm/LocalConfig.elm`, `.ddev/config.local.yaml` | gitignored config | covered by Local Setup above |
 | `server/.pantheon-*/` | deploy checkouts | recreated by the deploy skills |
 
-The memory directory is the one with teeth: it holds the accumulated rules, verification
-lessons and declined-work decisions, and a station without it will re-derive or repeat
-them. To move it, copy the directory across, or point `autoMemoryDirectory` at a path
-inside the repository — that key is deliberately ignored in checked-in project settings,
-so it has to be set per station in `.claude/settings.local.json`.
+Memory lives in the repo only because each station points Claude Code at it: set
+`"autoMemoryDirectory": "<repo>/.claude/memory"` in `.claude/settings.local.json` — that key is
+deliberately ignored in checked-in project settings, so it has to be set per station. Without it a
+station writes to `~/.claude/projects/<project>/memory/` and the two copies drift.
 
 ## Code Conventions
 
