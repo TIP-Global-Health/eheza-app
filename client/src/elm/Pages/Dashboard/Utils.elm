@@ -79,6 +79,7 @@ import Pages.GlobalCaseManagement.View
         , generateNutritionFollowUpEntries
         , generatePrenatalFollowUpEntries
         )
+import Set
 import SyncManager.Model exposing (Site)
 import Utils.NominalDate exposing (sortByDate, sortByDateDesc)
 
@@ -1935,8 +1936,8 @@ countChildrenSeenForSelectedMonth dateLastDayOfSelectedMonth =
                 item.encounters
         )
         >> List.map .identifier
-        >> EverySet.fromList
-        >> EverySet.size
+        >> Set.fromList
+        >> Set.size
 
 
 isSPVNurseEncounter : SPVEncounterDataItem -> Bool
