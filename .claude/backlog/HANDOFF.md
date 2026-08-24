@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24
+description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R24 added same day
 metadata: 
   node_type: memory
   type: project
@@ -54,6 +54,21 @@ What changes because of this:
 Everything else of mine has merged: the four that were red on the 2026-08-17 GitHub incident
 (#2090, #2095, #2097, #2099) and the whole R22 stack (#2108…#2116). The GitHub incident is over and
 was never a real signal — all of those went green on rerun.
+
+## Round 24 ran 2026-08-24 (after R23) — 10 new items, 1 tier 2, 5 tier 3
+
+B-225..B-234 (see `rounds.md` R24). **Tier 2 gained B-232** (CHW Case Management immunization pane
+lists a child only on the day the follow-up was scheduled — a copy of the nutrition entry generator
+whose `LT` test can never pass when the scheduling and acting encounter are both Well Child; long-standing,
+ask whether the pane is relied on before building). Tier 3 gained B-226 (nurse Postpartum button opens a
+second encounter over an open antenatal one), B-227 (prenatal lab-results Blood Smear row: predicate inverted
+by `5d553d346`, never shows a result), B-230 (`gonorrhea-continued` encoded but undecodable → silently
+dropped since 2022; the ONLY encoder⊄decoder gap in all 209 list fields), B-231 (TB pane drops the patient
+when the TB item is newer than the AI TB-suspect item), B-233 (AI-TB / dummy-HIV entries create duplicate
+participants). Tier 4: B-225 (report-state change-guard dead → 2 user_saves per sync), B-228, B-229, B-234.
+B-036 extended (feeding-form derived signs), B-019 (parked) annotated. Counts after R24: **134 READY —
+T2 5 · T3 24 · T4 71**. ⚠ Two sizing queries the classifier blocked are written out in B-227 and B-230
+for the user to run on live. Dry-stop counter: 0.
 
 ## Round 23 ran 2026-08-24 (after the bookkeeping below) — 15 new items, 2 of them tier 2 and LIVE
 
