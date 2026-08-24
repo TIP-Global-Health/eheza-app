@@ -967,7 +967,9 @@ viewAcuteIllnessOverviewPage language isChw encounters =
 
 viewDonutChart : Language -> TranslationId -> (a -> TranslationId) -> (a -> Color) -> Dict a Color -> List ( a, Int ) -> Html Msg
 viewDonutChart language label translationFunc toColorFunc colors data =
-    if List.isEmpty data then
+    -- Callers may pass a slice per category with a count of zero, so an empty
+    -- list is not the only way to have nothing to draw.
+    if List.all (Tuple.second >> (==) 0) data then
         div [ class "no-data-message" ] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
 
     else
