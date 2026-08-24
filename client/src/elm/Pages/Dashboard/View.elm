@@ -2892,23 +2892,16 @@ viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth spvDataIt
         notAssessedColor =
             Color.rgb (185 / 255) (185 / 255) (185 / 255)
 
-        toColorFunc item =
-            case item of
-                Translate.OnTrack ->
-                    onTrackColor
-
-                Translate.NotAssessed ->
-                    notAssessedColor
-
-                _ ->
-                    behindColor
-
         colors =
             [ ( Translate.OnTrack, onTrackColor )
             , ( Translate.Behind, behindColor )
             , ( Translate.NotAssessed, notAssessedColor )
             ]
                 |> Dict.fromList
+
+        toColorFunc item =
+            Dict.get item colors
+                |> Maybe.withDefault behindColor
     in
     [ div [ class "ui grid" ]
         [ div [ class "three column row center" ]
