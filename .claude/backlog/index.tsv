@@ -227,6 +227,7 @@ B-226	3	READY	MED			24	Prenatal participant page (nurse): "Postpartum" opens a s
 B-227	3	READY	MED			24	Prenatal lab results: the Blood Smear row never shows a result, so a malaria diagnosis made by smear has no lab-results 
 B-228	4	READY	LOW			24	Acute illness: closing an illness never sets the participant's `dateConcluded`, so Case Management keeps showing the con
 B-229	4	READY	LOW			24	Trace contact: an edit issued while the contact is not in the cache is dropped silently with the request stuck at `Loadi
+B-230	3	READY	MED			24	Prenatal diagnoses: `gonorrhea-continued` is encoded and stored but the client decoder has no branch for it, so the diag
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

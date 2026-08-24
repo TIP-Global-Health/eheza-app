@@ -146,3 +146,4 @@ Units (7 worktree scouts, one wave): (1) hedley_restful NON-sync endpoints + hed
 - **Unit 7 (small client pages) COMPLETE** → B-227 (MED, tier 3; `5d553d346` inverted the smear predicate — scout's "date always Nothing" leg was half wrong, corrected in the entry), B-036 extended (derived feeding signs), eatenWithWater = already-recorded inert minor. Coverage row added.
 - **Unit 2 (17 sub-updaters) COMPLETE** → B-228 (LOW, tier 4), B-229 (LOW, tier 4, race not reproduced); B-082 re-found and dropped. Coverage row added.
 - **Unit 6 (5 small server modules) COMPLETE — ✅ CLEAN**; F1 = B-019 (🅿 parked, not re-pitched), F2 moot (`views_ui` enabled on ihangane.live, checked), F3 minors noted on B-019. Coverage row added.
+- **Unit 4 (allowed_values ↔ Elm, 209 fields) COMPLETE** → B-230 (MED, tier 3; the only encoder⊄decoder gap). Coverage row added; the durable facts in B-230's tail.
