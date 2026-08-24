@@ -13,7 +13,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode
 import Json.Encode
 import Pages.Dashboard.Model exposing (ECDStatus(..))
-import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, resolveECDStatus)
+import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, resolveECDStatus, spvDataMergeDuplicates)
 import Test exposing (Test, describe, test)
 import Time
 
@@ -283,11 +283,49 @@ countChildrenSeenForSelectedMonthTest =
         ]
 
 
+spvDataMergeDuplicatesTest : Test
+spvDataMergeDuplicatesTest =
+    describe "spvDataMergeDuplicates"
+        [ test "a child registered into two participants becomes one item holding both sets of encounters" <|
+            \_ ->
+                -- The statistics feed builds an item per individual
+                -- participant, so keeping one of the two would drop the
+                -- encounters recorded against the other.
+                spvDataMergeDuplicates
+                    [ childSeenAt 1 [ spvEncounter 3 [ NoECDMilstoneWarning ] ]
+                    , childSeenAt 1 [ spvEncounter 24 [ WarningECDMilestoneBehind ] ]
+                    ]
+                    |> List.map (.encounters >> List.length)
+                    |> Expect.equal [ 2 ]
+        , test "distinct children are left alone" <|
+            \_ ->
+                spvDataMergeDuplicates
+                    [ childSeenAt 1 [ spvEncounter 3 [ NoECDMilstoneWarning ] ]
+                    , childSeenAt 2 [ spvEncounter 24 [ NoECDMilstoneWarning ] ]
+                    ]
+                    |> List.map .identifier
+                    |> List.sort
+                    |> Expect.equal [ 1, 2 ]
+        , test "a verdict recorded against the earlier participant still decides the status" <|
+            \_ ->
+                -- Without the merge the surviving item can be the one that
+                -- never carried an ECD verdict, and the child reads as
+                -- never assessed.
+                spvDataMergeDuplicates
+                    [ childSeenAt 1 [ spvEncounter 3 [ NoECDMilstoneWarning ] ]
+                    , childSeenAt 1 [ spvEncounter 24 [ NoEncounterWarnings ] ]
+                    ]
+                    |> List.filterMap (resolveECDStatus (Date.fromCalendarDate 2026 Time.Jul 31))
+                    |> Expect.equal [ ECDOnTrack ]
+        ]
+
+
 all : Test
 all =
     describe "Pages.Dashboard.Utils"
         [ caseManagementMergeDuplicatesTest
         , countChildrenSeenForSelectedMonthTest
         , resolveECDStatusTest
+        , spvDataMergeDuplicatesTest
         , statsStorageRoundTripTest
         ]
