@@ -105,8 +105,8 @@ generateAssembledData currentDate features id isChw db =
         assembled
 
 
-{-| All encounters of the illness, ordered by date, with the encounter
-that is being viewed at the end.
+{-| All encounters of the illness, ordered by date. Report is viewed for
+the most recent encounter of the illness, so the one being viewed comes last.
 -}
 generateAllEncountersData : AssembledData -> List AcuteIllnessEncounterData
 generateAllEncountersData assembled =
