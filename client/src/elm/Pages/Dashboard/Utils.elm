@@ -1916,8 +1916,12 @@ isAcuteIllnessNurseEncounter encounter =
     encounter.encounterType /= AcuteIllnessEncounterCHW
 
 
-{-| Children with at least one nurse encounter in the selected month. Counting
-the encounters instead would count a child seen twice that month twice.
+{-| Children with at least one nurse encounter in the selected month.
+
+Counting the encounters would count a child seen twice that month twice, and
+counting the items would count a child twice as well: an item is an individual
+participant, and the same child can hold more than one. Hence the identifiers.
+
 -}
 countChildrenSeenForSelectedMonth : NominalDate -> List SPVDataItem -> Int
 countChildrenSeenForSelectedMonth dateLastDayOfSelectedMonth =
@@ -1930,7 +1934,9 @@ countChildrenSeenForSelectedMonth dateLastDayOfSelectedMonth =
                 )
                 item.encounters
         )
-        >> List.length
+        >> List.map .identifier
+        >> EverySet.fromList
+        >> EverySet.size
 
 
 isSPVNurseEncounter : SPVEncounterDataItem -> Bool

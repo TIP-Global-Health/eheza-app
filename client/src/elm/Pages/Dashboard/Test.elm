@@ -3,7 +3,7 @@ module Pages.Dashboard.Test exposing (all)
 import AssocList as Dict
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
-import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStatsRaw, NutritionStatus(..), NutritionValue, SPVDataItem, SPVEncounterDataItem)
+import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStatsRaw, NutritionStatus(..), NutritionValue, PersonIdentifier, SPVDataItem, SPVEncounterDataItem)
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Date
@@ -159,9 +159,12 @@ spvEncounter dayOfJuly =
     spvEncounterOn (Date.fromCalendarDate 2026 Time.Jul dayOfJuly)
 
 
-childSeenAt : List SPVEncounterDataItem -> SPVDataItem
-childSeenAt encounters =
-    { identifier = 1
+{-| One well-child individual participant for the child with `identifier`. The
+same child can hold more than one, which is why the identifier is a parameter.
+-}
+childSeenAt : PersonIdentifier -> List SPVEncounterDataItem -> SPVDataItem
+childSeenAt identifier encounters =
+    { identifier = identifier
     , created = Date.fromCalendarDate 2026 Time.Jan 1
     , birthDate = Date.fromCalendarDate 2025 Time.Jan 1
     , gender = Female
@@ -176,7 +179,7 @@ resolveECDStatusTest =
             Date.fromCalendarDate 2026 Time.Jul 31
 
         resolve =
-            childSeenAt >> resolveECDStatus endOfJuly
+            childSeenAt 1 >> resolveECDStatus endOfJuly
     in
     describe "resolveECDStatus"
         [ test "a child whose latest verdict is on track is on track" <|
@@ -240,23 +243,32 @@ countChildrenSeenForSelectedMonthTest =
         [ test "a child seen twice in the month counts once" <|
             \_ ->
                 count
-                    [ childSeenAt
+                    [ childSeenAt 1
                         [ spvEncounter 3 [ NoECDMilstoneWarning ]
                         , spvEncounter 24 [ NoECDMilstoneWarning ]
                         ]
                     ]
                     |> Expect.equal 1
-        , test "each child seen counts once" <|
+        , test "two children seen count twice" <|
             \_ ->
                 count
-                    [ childSeenAt [ spvEncounter 3 [ NoECDMilstoneWarning ] ]
-                    , childSeenAt [ spvEncounter 24 [ NoECDMilstoneWarning ] ]
+                    [ childSeenAt 1 [ spvEncounter 3 [ NoECDMilstoneWarning ] ]
+                    , childSeenAt 2 [ spvEncounter 24 [ NoECDMilstoneWarning ] ]
                     ]
                     |> Expect.equal 2
+        , test "one child holding two participants counts once" <|
+            \_ ->
+                -- An item is an individual participant, not a child, and the
+                -- same child can hold more than one.
+                count
+                    [ childSeenAt 1 [ spvEncounter 3 [ NoECDMilstoneWarning ] ]
+                    , childSeenAt 1 [ spvEncounter 24 [ NoECDMilstoneWarning ] ]
+                    ]
+                    |> Expect.equal 1
         , test "a child seen only in another month is not counted" <|
             \_ ->
                 count
-                    [ childSeenAt
+                    [ childSeenAt 1
                         [ spvEncounterOn (Date.fromCalendarDate 2026 Time.Jun 20) [ NoECDMilstoneWarning ] ]
                     ]
                     |> Expect.equal 0
@@ -266,7 +278,7 @@ countChildrenSeenForSelectedMonthTest =
                     nurseEncounter =
                         spvEncounter 10 [ NoECDMilstoneWarning ]
                 in
-                count [ childSeenAt [ { nurseEncounter | encounterType = NewbornExam } ] ]
+                count [ childSeenAt 1 [ { nurseEncounter | encounterType = NewbornExam } ] ]
                     |> Expect.equal 0
         ]
 
