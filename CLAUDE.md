@@ -102,6 +102,30 @@ ddev gulp
 
 Default credentials (created by migration): pairing code `12345678`, nurse PIN `1234`, Drupal admin `admin`/`admin`.
 
+### Moving a station
+
+Work moves between machines through the repository, so anything the work depends on
+belongs in it. These travel because they are tracked: `.claude/backlog/` (the queue and
+its entries), `.claude/skills/`, `.claude/agents/`, `.claude/scripts/`, and
+`.claude/settings.json` — which wires the `Stop` hook that commits and pushes the backlog
+on `develop`, so records cannot be left behind on the station that made them.
+
+These do **not** travel, and each new station recreates them:
+
+| what | why it stays | cost of not having it |
+|---|---|---|
+| `.claude/settings.local.json` | globally gitignored | more permission prompts; nothing breaks |
+| `.git/info/exclude` | per-clone by design | `.claude/hooks/` is excluded here only |
+| `~/.claude/projects/<project>/memory/` | outside the repo | **the durable process knowledge is absent** |
+| `client/src/elm/LocalConfig.elm`, `.ddev/config.local.yaml` | gitignored config | covered by Local Setup above |
+| `server/.pantheon-*/` | deploy checkouts | recreated by the deploy skills |
+
+The memory directory is the one with teeth: it holds the accumulated rules, verification
+lessons and declined-work decisions, and a station without it will re-derive or repeat
+them. To move it, copy the directory across, or point `autoMemoryDirectory` at a path
+inside the repository — that key is deliberately ignored in checked-in project settings,
+so it has to be set per station in `.claude/settings.local.json`.
+
 ## Code Conventions
 
 ### Alphabetical Ordering in Elm
