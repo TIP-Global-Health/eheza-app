@@ -222,6 +222,8 @@ B-221	3	READY	MED			23	Prenatal: saving the Partner HIV test never re-runs the d
 B-222	4	READY	LOW			23	Person edit: a failed PATCH is recorded as `Success`, so the edit form shows no error — CONFIRMED (orchestrator-read han
 B-223	4	READY	LOW			23	Backend/Update revision minors ×2: (a) `PrenatalFefolRevision`/`PrenatalAspirinRevision` ignore `deleted`; (b) removing 
 B-224	4	READY	LOW			23	NCD progress report: the pregnancy-test row is hidden on every follow-up encounter, so an earlier pregnancy result becom
+B-225	4	READY	LOW			24	Sync report-state: the "only save when changed" guard never passes, so every sync cycle rewrites the device user twice
+B-226	3	READY	MED			24	Prenatal participant page (nurse): "Postpartum" opens a second encounter while an antenatal encounter is still open, orp
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
