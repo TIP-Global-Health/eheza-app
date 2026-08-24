@@ -106,7 +106,8 @@ Default credentials (created by migration): pairing code `12345678`, nurse PIN `
 
 Work moves between machines through the repository, so anything the work depends on
 belongs in it. These travel because they are tracked: `.claude/backlog/` (the queue and
-its entries), `.claude/skills/`, `.claude/agents/`, `.claude/scripts/`, and
+its entries), `.claude/memory/` (the accumulated rules, verification lessons and declined-work
+decisions), `.claude/skills/`, `.claude/agents/`, `.claude/scripts/`, and
 `.claude/settings.json` — which wires the `Stop` hook that commits and pushes the backlog
 on `develop`, so records cannot be left behind on the station that made them.
 
