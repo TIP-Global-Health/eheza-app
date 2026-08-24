@@ -13,7 +13,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode
 import Json.Encode
 import Pages.Dashboard.Model exposing (ECDStatus(..))
-import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, resolveECDStatus)
+import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, resolveECDStatus)
 import Test exposing (Test, describe, test)
 import Time
 
@@ -227,10 +227,55 @@ resolveECDStatusTest =
         ]
 
 
+countChildrenSeenForSelectedMonthTest : Test
+countChildrenSeenForSelectedMonthTest =
+    let
+        endOfJuly =
+            Date.fromCalendarDate 2026 Time.Jul 31
+
+        count =
+            countChildrenSeenForSelectedMonth endOfJuly
+    in
+    describe "countChildrenSeenForSelectedMonth"
+        [ test "a child seen twice in the month counts once" <|
+            \_ ->
+                count
+                    [ childSeenAt
+                        [ spvEncounter 3 [ NoECDMilstoneWarning ]
+                        , spvEncounter 24 [ NoECDMilstoneWarning ]
+                        ]
+                    ]
+                    |> Expect.equal 1
+        , test "each child seen counts once" <|
+            \_ ->
+                count
+                    [ childSeenAt [ spvEncounter 3 [ NoECDMilstoneWarning ] ]
+                    , childSeenAt [ spvEncounter 24 [ NoECDMilstoneWarning ] ]
+                    ]
+                    |> Expect.equal 2
+        , test "a child seen only in another month is not counted" <|
+            \_ ->
+                count
+                    [ childSeenAt
+                        [ spvEncounterOn (Date.fromCalendarDate 2026 Time.Jun 20) [ NoECDMilstoneWarning ] ]
+                    ]
+                    |> Expect.equal 0
+        , test "a child seen only by a CHW is not counted" <|
+            \_ ->
+                let
+                    nurseEncounter =
+                        spvEncounter 10 [ NoECDMilstoneWarning ]
+                in
+                count [ childSeenAt [ { nurseEncounter | encounterType = NewbornExam } ] ]
+                    |> Expect.equal 0
+        ]
+
+
 all : Test
 all =
     describe "Pages.Dashboard.Utils"
         [ caseManagementMergeDuplicatesTest
+        , countChildrenSeenForSelectedMonthTest
         , resolveECDStatusTest
         , statsStorageRoundTripTest
         ]
