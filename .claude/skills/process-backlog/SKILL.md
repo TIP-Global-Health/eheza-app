@@ -95,6 +95,16 @@ number, tier line, and any side-findings noticed while building appended as new 
   `/code-review medium <branch>`. A PR announcement without it is an unfinished turn, and a vague
   "want a review?" does not count. This is a known, repeated failure — see
   `pr-first-review-workflow` in memory.
+- ⛔ **Post every review finding to the PR, inline, BEFORE reporting anything about the review in
+  chat.** The review agent reports back into the transcript — **that is not delivery.** A review is
+  not finished until its findings are on the PR, anchored to the lines they concern, one comment per
+  finding, phrased as the finding was RAISED rather than as your answer to it. This covers findings
+  you fix, skip, refute, or had already fixed. Only when a line is genuinely outside a diff hunk do
+  you fall back to a file-level comment, and only then to the PR body — saying which and why.
+  ⛔ This is a **known, repeated failure of mine — four recorded instances** (2026-08-18, 08-19,
+  08-20, 08-24). The 08-24 one went: review agent replied in chat → I verified the findings and
+  wrote the analysis for the user → posted nothing. Mechanics and the full history are in
+  `pr-first-review-workflow` in memory.
 - ⛔ **Never request Copilot without asking first.** Offer it, say what it would cover, wait.
 - CI must run on these PRs — no `[ci skip]`. **The user merges**, with `--delete-branch`.
 - Do not generate new proposals here and do not re-mine cleared areas. That is the discovery

@@ -16,7 +16,9 @@ PATTERNS = [
     (r'✅\s*SUPERSEDED|✅\s*CLOSED|❌\s*CLOSED|✅\s*DONE|✅\s*FIXED', 'CLOSED'),
     (r'⬖\s*SPLIT', 'SPLIT'), (r'⏭\s*SKIPPED', 'SKIPPED'),
     (r'\bMONITORING\b', 'MONITORING'),
-    (r'\bSTALE\b', 'STALE'), (r'\bREADY\b', 'READY'),
+    # STALE must sit in a lifecycle position (after an em-dash / middot / bold marker);
+    # a bare \bSTALE\b also matched entries whose TITLE says "goes STALE" or "4 STALE waivers"
+    (r'(?:^|—|·|\*\*)\s*STALE\b', 'STALE'), (r'\bREADY\b', 'READY'),
 ]
 def status_of(t):
     t = t.replace('*', '')          # markdown bold sits between the emoji and the word
