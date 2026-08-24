@@ -57,5 +57,3 @@ since happened, it is no longer monitoring.
 
 ⚠ `READY` does not mean approved. Approval happens only when an item is presented in the
 `/process-backlog` seat, and the only record of the user's judgement is `PARKED` with their rationale.
-
-<!-- hook pipe-test 9566aafee -->
