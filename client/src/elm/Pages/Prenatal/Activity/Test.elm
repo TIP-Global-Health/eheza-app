@@ -43,9 +43,9 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (RangedMeasurement(..))
 import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
-import Pages.Prenatal.Activity.Types exposing (PrePregnancyClassification(..), WarningPopupType(..))
+import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
@@ -101,6 +101,65 @@ zscoreToPrePregnancyClassificationTest =
             \_ -> zscoreToPrePregnancyClassification 2.0 |> Expect.equal PrePregnancyOverweight
         , test "+2.5 -> obese" <|
             \_ -> zscoreToPrePregnancyClassification 2.5 |> Expect.equal PrePregnancyObesity
+        ]
+
+
+
+-- HEALTHY START GESTATIONAL WEIGHT GAIN
+--
+-- Expected gain comes from the Healthy Start protocol (the independent
+-- oracle): a woman not severely undernourished at booking is expected to gain
+-- 60 g per day, one who was severely undernourished 73 g per day, and 23.5 g
+-- per day covers the part of the period before 13 weeks. Gain is adequate when
+-- it meets or exceeds the expected gain for the period.
+--
+-- Both weighings here fall after 13 weeks, so only the later rate applies:
+-- 25 days at 60 g per day is an expected gain of 1.5 kg.
+
+
+{-| The previous weighing, 25 days before `currentDate`. With an LMP 28 weeks
+back, that date is well past 13 weeks of gestation.
+-}
+previousWeightDate25Days : NominalDate
+previousWeightDate25Days =
+    Date.add Date.Days -25 currentDate
+
+
+{-| Classify a gain from 60 kg to `currentWeight` over those 25 days.
+-}
+classifyHealthyStartGWG : PrePregnancyClassification -> Float -> Maybe GWGClassification
+classifyHealthyStartGWG prePregnancyClassification currentWeight =
+    resolveGWGClassificationForHealthyStart currentDate
+        prePregnancyClassification
+        60.0
+        previousWeightDate25Days
+        currentWeight
+        (testAssembled28Weeks emptyPrenatalMeasurements)
+
+
+resolveGWGClassificationForHealthyStartTest : Test
+resolveGWGClassificationForHealthyStartTest =
+    describe "resolveGWGClassificationForHealthyStart (Healthy Start expected daily gain)"
+        [ test "gain of 1.0 kg, below the expected 1.5 kg -> inadequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 61.0
+                    |> Expect.equal (Just GWGInadequate)
+        , test "gain of exactly the expected 1.5 kg -> adequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 61.5
+                    |> Expect.equal (Just GWGAdequate)
+        , test "gain of 2.5 kg, above the expected 1.5 kg -> adequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 62.5
+                    |> Expect.equal (Just GWGAdequate)
+        , test "1.0 kg lost over the period -> inadequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 59.0
+                    |> Expect.equal (Just GWGInadequate)
+        , test "severely undernourished at booking: 1.5 kg is short of the expected 1.825 kg -> inadequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyUnderWeight 61.5
+                    |> Expect.equal (Just GWGInadequate)
         ]
 
 
@@ -1258,6 +1317,7 @@ all =
         [ measurementOutOfRangeTest
         , bmiToPrePregnancyClassificationTest
         , zscoreToPrePregnancyClassificationTest
+        , resolveGWGClassificationForHealthyStartTest
         , generatePrenatalDiagnosesForNurseLabsTest
         , generatePrenatalDiagnosesForNurseRecurrentLabsTest
         , generatePrenatalAssesmentForChwTest

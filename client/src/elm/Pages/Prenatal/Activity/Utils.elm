@@ -1801,6 +1801,8 @@ weight gain rates split at 13 weeks gestational age:
   - From 13 weeks onward, it uses a different per-day rate for later
     trimesters.
 
+Gain is adequate when it meets or exceeds the expected gain for the period.
+
 -}
 resolveGWGClassificationForHealthyStart : NominalDate -> PrePregnancyClassification -> Float -> NominalDate -> Float -> AssembledData -> Maybe GWGClassification
 resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification previousWeight previousWeightDate currentWeight assembled =
@@ -1847,7 +1849,7 @@ resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification p
                 actualWeightGain =
                     currentWeight - previousWeight
             in
-            if actualWeightGain <= expectedWeightGain then
+            if actualWeightGain >= expectedWeightGain then
                 GWGAdequate
 
             else
