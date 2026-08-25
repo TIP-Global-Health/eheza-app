@@ -12,6 +12,7 @@ export type ReportModule =
   | 'acute-illness'
   | 'child-scoreboard'
   | 'family-nutrition'
+  | 'group-session'
   | 'ncd'
   | 'nutrition'
   | 'prenatal'
@@ -27,6 +28,13 @@ interface ReportConfig {
    * tab opens the report itself.
    */
   link?: string;
+  /** Where that link sits, when it is not the usual report wrapper. */
+  linkSelector?: string;
+  /**
+   * Tab to select on the way back, for modules where reaching the report
+   * leaves the page on a tab that hides the activities.
+   */
+  restoreTab?: string;
   /** Root of the report page. */
   root: string;
   /** Root of the encounter page the report was opened from. */
@@ -48,6 +56,16 @@ const REPORTS: Record<ReportModule, ReportConfig> = {
     tab: '#reports-tab',
     root: 'div.page-report.family-nutrition',
     encounter: 'div.page-encounter.family-nutrition',
+  },
+  'group-session': {
+    tab: '#progressreport-tab',
+    link: 'View Progress Report',
+    linkSelector: 'a:has(.icon-progress-report)',
+    root: 'div.page-report.well-child',
+    // A participant inside a session has no page of its own to wait for, so
+    // the tab the report was opened from stands for the page it belongs to.
+    encounter: '#progressreport-tab',
+    restoreTab: '#pending-tab',
   },
   ncd: {
     tab: '#reports-tab',
@@ -108,7 +126,7 @@ export async function openReport(page: Page, module: ReportModule) {
 
   if (config.link) {
     const reportLink = page
-      .locator('.reports-wrapper .report-wrapper')
+      .locator(config.linkSelector ?? '.reports-wrapper .report-wrapper')
       .filter({ hasText: config.link });
     await reportLink.waitFor({ timeout: 10000 });
     await click(reportLink, page);
@@ -131,4 +149,9 @@ export async function closeReport(page: Page, module: ReportModule) {
   await click(page.locator(`${config.root} .link-back .icon-back`), page);
   await page.locator(config.encounter).waitFor({ timeout: 15000 });
   await page.waitForTimeout(WAIT.elmRerender);
+
+  if (config.restoreTab) {
+    await click(page.locator(config.restoreTab), page);
+    await page.waitForTimeout(WAIT.elmRerender);
+  }
 }
