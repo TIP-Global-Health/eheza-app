@@ -92,6 +92,14 @@ const REPORTS: Record<ReportModule, ReportConfig> = {
  */
 export async function openReport(page: Page, module: ReportModule) {
   const config = REPORTS[module];
+  const report = page.locator(config.root);
+
+  // Saving the last activity of an encounter opens the report by itself in
+  // some modules, so the tab is only needed when it is not already open.
+  const alreadyOpen = await report.isVisible({ timeout: 1000 }).catch(() => false);
+  if (alreadyOpen) {
+    return report;
+  }
 
   const tab = page.locator(config.tab);
   await tab.waitFor({ timeout: 15000 });
@@ -106,7 +114,6 @@ export async function openReport(page: Page, module: ReportModule) {
     await click(reportLink, page);
   }
 
-  const report = page.locator(config.root);
   await report.waitFor({ timeout: 15000 });
   await page.waitForTimeout(WAIT.elmRerender);
 
