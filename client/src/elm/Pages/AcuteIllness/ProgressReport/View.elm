@@ -36,7 +36,7 @@ import Pages.AcuteIllness.Activity.Utils
         , viewTabletsPrescription
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
-import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
+import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, generateAssembledData, splitByInitialNurseEncounter)
 import Pages.AcuteIllness.Encounter.View exposing (allowEndingEncounter, partitionActivities)
 import Pages.AcuteIllness.ProgressReport.Model exposing (AcuteIllnessStatus(..), Model, Msg(..))
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
@@ -82,6 +82,12 @@ viewContent :
     -> Html Msg
 viewContent language currentDate site features id isChw initiator model assembled =
     let
+        -- Report covers the whole illness, therefore, encounter that is
+        -- being viewed is part of the sequences as well.
+        ( firstInitialWithSubsequent, secondInitialWithSubsequent ) =
+            generateAllEncountersData assembled
+                |> splitByInitialNurseEncounter
+
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
@@ -123,12 +129,12 @@ viewContent language currentDate site features id isChw initiator model assemble
             , Html.Attributes.id "report-content"
             ]
             [ viewPersonInfoPane language currentDate assembled.person
-            , viewAssessmentPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewSymptomsPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent
-            , viewPhysicalExamPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewNutritionSignsPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent
-            , viewTreatmentPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewActionsTakenPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
+            , viewAssessmentPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled
+            , viewSymptomsPane language firstInitialWithSubsequent secondInitialWithSubsequent
+            , viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled
+            , viewNutritionSignsPane language firstInitialWithSubsequent secondInitialWithSubsequent
+            , viewTreatmentPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled
+            , viewActionsTakenPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled
             , viewNextStepsPane language currentDate assembled
             , -- Actions are hidden when 'Share via WhatsApp' dialog is open,
               -- so they do not appear on generated screenshot.
