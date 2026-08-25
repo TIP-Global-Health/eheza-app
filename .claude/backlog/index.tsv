@@ -232,7 +232,7 @@ B-231	3	READY	MED-HIGH			24	Case Management TB pane: a patient with a TB follow-
 B-232	2	READY	HIGH			24	Case Management immunization pane: a child is listed only on the day the follow-up was scheduled, never afterwards — the
 B-233	3	READY	MED			24	Case Management TB/HIV entries: starting an encounter from an AI-derived TB entry or a positive-test HIV entry creates a
 B-234	4	READY	MED-LOW			24	Case Management (CHW): village scoping skips the TB and HIV follow-ups, so their encounters and participants are fetched
-B-235	2	READY	HIGH			25	Prenatal nutrition (Healthy Start): the gestational weight-gain verdict is inverted, so a woman gaining too little is to
+B-235	2	IMPLEMENTED	HIGH			25	Prenatal nutrition (Healthy Start): the gestational weight-gain verdict is inverted, so a woman gaining too little is to
 B-236	3	READY	MED-HIGH			25	Prenatal symptoms: whether vaginal discharge counts as "continued" is decided by the patient's **gonorrhea** history, so
 B-237	3	READY	MED			25	Prenatal HIV: a discordant partnership found from the **partner's** lab result is filed as initial-phase because the pha
 B-238	4	READY	LOW			25	Prenatal ultrasound: opening the execution-date calendar and closing it without picking a day counts the form 6/6 and en
@@ -265,6 +265,7 @@ B-264	4	READY	MED-LOW			25	Dashboard monthly charts divide a case-management num
 B-265	4	READY	LOW			25	Reports recalculation ignores session and clinic edits, so a corrected session date or a re-categorised group leaves eve
 B-266	3	READY	MED			25	WhatsApp uploads carry no UUID, so the sync POST's duplicate guard cannot fire and a retried batch sends the patient the
 B-267	4	READY	LOW			25	Three latent traps in the RESTful writable contract, all unreachable today
+B-268	3	READY	MED			25	Prenatal progress report (Healthy Start): the weight-gain chart classifies from the self-reported pre-pregnancy weight i
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

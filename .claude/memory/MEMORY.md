@@ -11,6 +11,7 @@
 - [Design brief: module splits](design-brief-module-splits.md) — parked R2-#5; Backend/Update extraction → Measurement/Utils clusters → Translate per-domain nested unions (in-file precedent exists)
 - [gh pr edit workaround](gh-pr-edit-projectcards-workaround.md) — `gh pr edit` fails on eheza-app (Projects-classic GraphQL); use `gh api ... pulls/N -X PATCH`
 - [Release issue reconciliation](release-issue-reconciliation.md) — post-release sweep to close delivered-but-open issues (PRs merge to develop, non-default → Fixes #N never auto-closes); tag-range→PR refs→open filter→close recipe + judgment caveats
+- [Read the issue for requirements](read-the-issue-for-requirements.md) — ⛔ doubt about INTENDED behaviour → commit→PR→issue and read the spec; also before calling a fix "revert that commit"
 - [Verify by running](verify-by-running-not-reasoning.md) — when a claim can be checked by running it, run it; check the whole chain, stub the failure branches, discrimination-test the fix
 - [Run e2e tests locally](e2e-local-run-procedure.md) — switch the MAIN tree to the branch (gulp only builds that tree), wait for gulp to finish compiling, then run from the main tree; needs `EHEZA_SITE=rwanda`
 - [Run phpcs locally](run-phpcs-locally.md) — composer+php are on the host; install drupal/coder and run Drupal/DrupalPractice (binary at `~/.config/composer/vendor/bin/phpcs`)

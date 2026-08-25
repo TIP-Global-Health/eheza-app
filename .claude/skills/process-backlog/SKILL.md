@@ -69,6 +69,8 @@ The user names one. Lay out, from the entry **and from the code as it stands tod
 - anything the entry flags as gated: a clinician call, a live query, a sibling item it interacts with
 
 Re-locate the anchors first. Line numbers drift; snippets and function names are authoritative.
+And if anything about the *intended* behaviour is open, read the issue behind the code before
+presenting — see the hard rule below.
 
 ### 3. Wait for the decision
 Stop. The answer is "implement", "park", or "skip". Do not start building because the item looks
@@ -110,6 +112,15 @@ number, tier line, and any side-findings noticed while building appended as new 
   to the same shape — work lands, record lags — so treat "the record disagrees with the repository"
   as a defect in its own right. A `Stop` hook commits the files as a backstop; it does not excuse
   skipping the step.
+- ⛔ **When the requirement is in doubt, go and read it.** Any question about what the code is
+  *supposed* to do — is this verdict the right way round, is this threshold correct, was this
+  deliberate — is answered by the issue, not by reasoning from the code. The trail:
+  `gh api repos/TIP-Global-Health/eheza-app/commits/<sha>/pulls` → the PR → its body's issue link
+  → `gh issue view <n>`. Feature work here carries a written spec in the issue, often step by step;
+  ⛔ do not present a fix direction, and do not build one, while that spec is unread.
+  ⚠ Read it before deciding the fix is a revert, too: on B-235 the spec's exact wording
+  (*"equal to or greater than"*) made the pre-flip code wrong at the boundary as well, so reverting
+  the offending commit would have shipped a second, quieter defect.
 - ⛔ **Never request Copilot without asking first.** Offer it, say what it would cover, wait.
 - CI must run on these PRs — no `[ci skip]`. **The user merges**, with `--delete-branch`.
 - Do not generate new proposals here and do not re-mine cleared areas. That is the discovery
