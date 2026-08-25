@@ -79,6 +79,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewTextInput
         )
+import Round
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
@@ -1848,8 +1849,16 @@ resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification p
 
                 actualWeightGain =
                     currentWeight - previousWeight
+
+                -- Weights are recorded to a tenth of a kilogram, while the
+                -- expected gain is a sum of daily rates, so the two carry
+                -- different rounding error. Compare them to the nearest ten
+                -- grams, far finer than a scale shows, so a gain that meets
+                -- the target exactly is not read as falling short.
+                toNearestTenGrams =
+                    Round.roundNum 2
             in
-            if actualWeightGain >= expectedWeightGain then
+            if toNearestTenGrams actualWeightGain >= toNearestTenGrams expectedWeightGain then
                 GWGAdequate
 
             else
