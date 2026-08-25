@@ -13,7 +13,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode
 import Json.Encode
 import Pages.Dashboard.Model exposing (ECDStatus(..))
-import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, resolveECDStatus)
+import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, dataItemMergeDuplicates, resolveECDStatus)
 import Test exposing (Test, describe, test)
 import Time
 
@@ -162,6 +162,11 @@ spvEncounter dayOfJuly =
 {-| One well-child individual participant for the child with `identifier`. The
 same child can hold more than one, which is why the identifier is a parameter.
 -}
+day : Int -> NominalDate
+day n =
+    Date.fromCalendarDate 2026 Time.Jul n
+
+
 childSeenAt : PersonIdentifier -> List SPVEncounterDataItem -> SPVDataItem
 childSeenAt identifier encounters =
     { identifier = identifier
@@ -283,11 +288,59 @@ countChildrenSeenForSelectedMonthTest =
         ]
 
 
+dataItemMergeDuplicatesTest : Test
+dataItemMergeDuplicatesTest =
+    describe "dataItemMergeDuplicates"
+        [ test "a child registered into two participants becomes one item holding both sets of encounters" <|
+            \_ ->
+                -- The statistics feed builds an item per individual
+                -- participant, so keeping one of the two would drop the
+                -- encounters recorded against the other.
+                dataItemMergeDuplicates
+                    [ childSeenAt 1 [ spvEncounter 3 [ NoECDMilstoneWarning ] ]
+                    , childSeenAt 1 [ spvEncounter 24 [ WarningECDMilestoneBehind ] ]
+                    ]
+                    |> List.map (.encounters >> List.length)
+                    |> Expect.equal [ 2 ]
+        , test "a child-scoreboard item is merged the same way" <|
+            \_ ->
+                -- The helper is shared with the child-scoreboard feed, whose
+                -- items carry a different encounter type.
+                dataItemMergeDuplicates
+                    [ { identifier = 1, created = day 1, birthDate = day 1, gender = Female, encounters = [ "a" ] }
+                    , { identifier = 1, created = day 1, birthDate = day 1, gender = Female, encounters = [ "b" ] }
+                    ]
+                    |> List.map .encounters
+                    |> Expect.equal [ [ "a", "b" ] ]
+        , test "distinct children are left alone" <|
+            \_ ->
+                dataItemMergeDuplicates
+                    [ childSeenAt 1 [ spvEncounter 3 [ NoECDMilstoneWarning ] ]
+                    , childSeenAt 2 [ spvEncounter 24 [ NoECDMilstoneWarning ] ]
+                    ]
+                    |> List.map .identifier
+                    |> List.sort
+                    |> Expect.equal [ 1, 2 ]
+        , test "a verdict recorded against the earlier participant still decides the status" <|
+            \_ ->
+                -- Without the merge the surviving item can be the one that
+                -- never carried an ECD verdict, and the child reads as
+                -- never assessed.
+                dataItemMergeDuplicates
+                    [ childSeenAt 1 [ spvEncounter 3 [ NoECDMilstoneWarning ] ]
+                    , childSeenAt 1 [ spvEncounter 24 [ NoEncounterWarnings ] ]
+                    ]
+                    |> List.filterMap (resolveECDStatus (Date.fromCalendarDate 2026 Time.Jul 31))
+                    |> Expect.equal [ ECDOnTrack ]
+        ]
+
+
 all : Test
 all =
     describe "Pages.Dashboard.Utils"
         [ caseManagementMergeDuplicatesTest
         , countChildrenSeenForSelectedMonthTest
         , resolveECDStatusTest
+        , dataItemMergeDuplicatesTest
         , statsStorageRoundTripTest
         ]
