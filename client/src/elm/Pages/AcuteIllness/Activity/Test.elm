@@ -48,7 +48,8 @@ import Pages.AcuteIllness.Activity.Utils
         , symptomMaxDuration
         , toCovidTestingValueWithDefault
         )
-import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
+import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
+import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, splitByInitialNurseEncounter)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
@@ -186,6 +187,17 @@ dummyEncounter =
     }
 
 
+testEncounterData : String -> AcuteIllnessEncounterType -> AcuteIllnessEncounterData
+testEncounterData id encounterType =
+    { id = toEntityUuid id
+    , encounterType = encounterType
+    , startDate = currentDate
+    , sequenceNumber = 1
+    , diagnosis = NoAcuteIllnessDiagnosis
+    , measurements = emptyAcuteIllnessMeasurements
+    }
+
+
 dummyParticipant : IndividualEncounterParticipant
 dummyParticipant =
     TestFixtures.testParticipant currentDate AcuteIllnessEncounter
@@ -203,8 +215,8 @@ testAssembled initialEncounter measurements =
     , person = testPerson
     , measurements = measurements
     , previousEncountersData = []
-    , firstInitialWithSubsequent = []
-    , secondInitialWithSubsequent = []
+    , previousFirstInitialWithSubsequent = []
+    , previousSecondInitialWithSubsequent = []
     , initialEncounter = initialEncounter
     , diagnosis = Nothing
     }
@@ -814,6 +826,8 @@ all =
         , amoxicillinDosageTest
         , preSaveMuacTest
         , covidTestingRoundTripTest
+        , generateAllEncountersDataTest
+        , splitByInitialNurseEncounterTest
         ]
 
 
@@ -891,4 +905,73 @@ preSaveMuacTest =
             \_ ->
                 preSave SiteBurundi (Just 1.25)
                     |> Expect.equal ( [ MeasurementMuac ], False )
+        ]
+
+
+{-| Progress report covers the whole illness, so the encounter that is being
+viewed must be part of the data it is generated from. When it is not, an
+illness that has got a single encounter produces no data at all, and every
+pane of the report comes out empty.
+-}
+generateAllEncountersDataTest : Test
+generateAllEncountersDataTest =
+    let
+        assembled =
+            testAssembled True emptyAcuteIllnessMeasurements
+    in
+    describe "generateAllEncountersData"
+        [ test "includes the encounter being viewed when there are no previous encounters" <|
+            \_ ->
+                generateAllEncountersData assembled
+                    |> List.map .id
+                    |> Expect.equal [ assembled.id ]
+        , test "places the encounter being viewed after the previous ones" <|
+            \_ ->
+                generateAllEncountersData
+                    { assembled
+                        | previousEncountersData =
+                            [ testEncounterData "first" AcuteIllnessEncounterCHW
+                            , testEncounterData "second" AcuteIllnessEncounterCHW
+                            ]
+                    }
+                    |> List.map .id
+                    |> Expect.equal [ toEntityUuid "first", toEntityUuid "second", assembled.id ]
+        ]
+
+
+splitByInitialNurseEncounterTest : Test
+splitByInitialNurseEncounterTest =
+    let
+        expectSplit encountersData ( expectedFirst, expectedSecond ) =
+            splitByInitialNurseEncounter encountersData
+                |> Tuple.mapBoth (List.map .id) (List.map .id)
+                |> Expect.equal ( List.map toEntityUuid expectedFirst, List.map toEntityUuid expectedSecond )
+    in
+    describe "splitByInitialNurseEncounter"
+        [ test "keeps CHW encounters in a single sequence" <|
+            \_ ->
+                expectSplit
+                    [ testEncounterData "chw1" AcuteIllnessEncounterCHW
+                    , testEncounterData "chw2" AcuteIllnessEncounterCHW
+                    ]
+                    ( [ "chw1", "chw2" ], [] )
+        , test "keeps encounters in a single sequence when nurse ran the first one" <|
+            \_ ->
+                expectSplit
+                    [ testEncounterData "nurse" AcuteIllnessEncounterNurse
+                    , testEncounterData "nurseSubsequent" AcuteIllnessEncounterNurseSubsequent
+                    ]
+                    ( [ "nurse", "nurseSubsequent" ], [] )
+        , test "starts second sequence at the encounter where nurse took over" <|
+            \_ ->
+                expectSplit
+                    [ testEncounterData "chw1" AcuteIllnessEncounterCHW
+                    , testEncounterData "chw2" AcuteIllnessEncounterCHW
+                    , testEncounterData "nurse" AcuteIllnessEncounterNurse
+                    , testEncounterData "nurseSubsequent" AcuteIllnessEncounterNurseSubsequent
+                    ]
+                    ( [ "chw1", "chw2" ], [ "nurse", "nurseSubsequent" ] )
+        , test "returns empty sequences for no encounters" <|
+            \_ ->
+                expectSplit [] ( [], [] )
         ]

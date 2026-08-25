@@ -49,8 +49,13 @@ type alias AssembledData =
     , person : Person
     , measurements : AcuteIllnessMeasurements
     , previousEncountersData : List AcuteIllnessEncounterData
-    , firstInitialWithSubsequent : List AcuteIllnessEncounterData
-    , secondInitialWithSubsequent : List AcuteIllnessEncounterData
+
+    -- Previous encounters, split into the sequence that starts at the
+    -- initial CHW encounter, and the one that starts at the encounter
+    -- where nurse took over. The encounter that is being viewed is not
+    -- part of either sequence.
+    , previousFirstInitialWithSubsequent : List AcuteIllnessEncounterData
+    , previousSecondInitialWithSubsequent : List AcuteIllnessEncounterData
 
     -- Intial encounter is the one where all measurements are taken and
     -- initial diagnosis is made.
