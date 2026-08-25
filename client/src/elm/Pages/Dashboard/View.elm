@@ -38,7 +38,7 @@ import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Utils exposing (groupEducationEnabled)
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
 import EverySet exposing (EverySet)
@@ -51,8 +51,8 @@ import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Utils exposing (generateFutureVaccinationsData)
 import Pages.Dashboard.GraphUtils exposing (barChartHeight, barChartWidth, column, familyPlanningSignToColor, familyPlanningSignsColors, feverCauseToColor, feverCausesColors, gridXScale, gridYScale, padding, pieChartHeight, pieChartWidth, radius, xAxis, xGridLine, xScale, yAxis, yGridLine)
-import Pages.Dashboard.Model exposing (BeneficiariesTableLabels(..), CardValueSeverity(..), DashboardFilter(..), DashboardSubFilter(..), FamilyPlanningSignsCounter, FeverCause(..), FilterGender(..), FilterPeriod(..), FilterProgramType(..), FilterType(..), MalnorishedNutritionData, ModalState(..), Model, MonthlyChartType(..), Msg(..), StatsCard, caseManagementFilters, caseManagementSubFilters, filterGenders, filterPeriodsForStatsPage, maxMonthGap, monthlyChartFilters)
-import Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+import Pages.Dashboard.Model exposing (BeneficiariesTableLabels(..), CardValueSeverity(..), DashboardFilter(..), DashboardSubFilter(..), ECDStatus(..), FamilyPlanningSignsCounter, FeverCause(..), FilterGender(..), FilterPeriod(..), FilterProgramType(..), FilterType(..), MalnorishedNutritionData, ModalState(..), Model, MonthlyChartType(..), Msg(..), StatsCard, caseManagementFilters, caseManagementSubFilters, filterGenders, filterPeriodsForStatsPage, maxMonthGap, monthlyChartFilters)
+import Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, resolveECDStatus, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 import Pages.Page
     exposing
         ( AcuteIllnessSubPage(..)
@@ -2767,35 +2767,15 @@ viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth spvDataIt
     let
         numberOfChildrenSeen =
             getEncountersForSelectedMonth dateLastDayOfSelectedMonth spvDataItems
-                |> List.filter isNurseEncounter
+                |> List.filter isSPVNurseEncounter
                 |> List.length
 
-        -- For each participant, we resolve last SPV encounter.
-        ecdDataItems =
-            List.filterMap
-                (\item ->
-                    List.filter
-                        (\encounter ->
-                            isNurseEncounter encounter
-                                && withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth encounter.startDate
-                        )
-                        item.encounters
-                        |> List.sortWith (sortByDateDesc .startDate)
-                        |> List.head
-                )
-                spvDataItems
+        ecdStatuses =
+            List.filterMap (resolveECDStatus dateLastDayOfSelectedMonth) spvDataItems
 
-        isNurseEncounter =
-            .encounterType >> (==) PediatricCare
-
-        ecdOnTrack =
-            List.filter
-                (\encounter -> EverySet.member NoECDMilstoneWarning encounter.warnings)
-                ecdDataItems
+        countECDStatus status =
+            List.filter ((==) status) ecdStatuses
                 |> List.length
-
-        ecdBehind =
-            List.length ecdDataItems - ecdOnTrack
 
         spvDataDict =
             List.map (\item -> ( item.identifier, item )) spvDataItems
@@ -2893,8 +2873,9 @@ viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth spvDataIt
             List.length immunizationDataItems - immunizationOnTrack
 
         ecdChartData =
-            [ ( Translate.OnTrack, ecdOnTrack )
-            , ( Translate.Behind, ecdBehind )
+            [ ( Translate.OnTrack, countECDStatus ECDOnTrack )
+            , ( Translate.Behind, countECDStatus ECDBehind )
+            , ( Translate.NotAssessed, countECDStatus ECDNotAssessed )
             ]
 
         immunizationChartData =
@@ -2902,19 +2883,25 @@ viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth spvDataIt
             , ( Translate.Behind, immunizationBehind )
             ]
 
-        toColorFunc item =
-            case item of
-                Translate.OnTrack ->
-                    Color.rgb (27 / 255) (207 / 255) (193 / 255)
+        onTrackColor =
+            Color.rgb (27 / 255) (207 / 255) (193 / 255)
 
-                _ ->
-                    Color.rgb (240 / 255) (111 / 255) (107 / 255)
+        behindColor =
+            Color.rgb (240 / 255) (111 / 255) (107 / 255)
+
+        notAssessedColor =
+            Color.rgb (185 / 255) (185 / 255) (185 / 255)
 
         colors =
-            [ ( Translate.OnTrack, Color.rgb (27 / 255) (207 / 255) (193 / 255) )
-            , ( Translate.Behind, Color.rgb (240 / 255) (111 / 255) (107 / 255) )
+            [ ( Translate.OnTrack, onTrackColor )
+            , ( Translate.Behind, behindColor )
+            , ( Translate.NotAssessed, notAssessedColor )
             ]
                 |> Dict.fromList
+
+        toColorFunc item =
+            Dict.get item colors
+                |> Maybe.withDefault behindColor
     in
     [ div [ class "ui grid" ]
         [ div [ class "three column row center" ]
@@ -2971,7 +2958,7 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
                 (\item ->
                     let
                         encounters =
-                            generateEncounters (.encounterType >> (==) PediatricCare) .warnings item.encounters
+                            generateEncounters isSPVNurseEncounter .warnings item.encounters
                     in
                     if List.isEmpty encounters then
                         Nothing
