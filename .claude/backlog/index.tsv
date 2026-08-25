@@ -232,6 +232,39 @@ B-231	3	READY	MED-HIGH			24	Case Management TB pane: a patient with a TB follow-
 B-232	2	READY	HIGH			24	Case Management immunization pane: a child is listed only on the day the follow-up was scheduled, never afterwards — the
 B-233	3	READY	MED			24	Case Management TB/HIV entries: starting an encounter from an AI-derived TB entry or a positive-test HIV entry creates a
 B-234	4	READY	MED-LOW			24	Case Management (CHW): village scoping skips the TB and HIV follow-ups, so their encounters and participants are fetched
+B-235	2	READY	HIGH			25	Prenatal nutrition (Healthy Start): the gestational weight-gain verdict is inverted, so a woman gaining too little is to
+B-236	3	READY	MED-HIGH			25	Prenatal symptoms: whether vaginal discharge counts as "continued" is decided by the patient's **gonorrhea** history, so
+B-237	3	READY	MED			25	Prenatal HIV: a discordant partnership found from the **partner's** lab result is filed as initial-phase because the pha
+B-238	4	READY	LOW			25	Prenatal ultrasound: opening the execution-date calendar and closing it without picking a day counts the form 6/6 and en
+B-239	3	READY	MED-HIGH			25	Prenatal recurrent labs: the Partner HIV follow-up form has no Save button, so the answers can never be recorded and the
+B-240	3	READY	MED			25	Prenatal recurrent labs: an operator-precedence slip makes a **positive** lab HIV result suppress the HIV follow-up, so 
+B-241	3	READY	MED			25	Prenatal recurrent Next Steps: choosing a hypertension treatment other than the recommended one raises an unanswerable q
+B-242	2	READY	HIGH			25	Dashboard ANC: the "Current Pregnancies" filter has its date operands swapped, so it counts only pregnancies registered 
+B-243	3	READY	MED-HIGH			25	Dashboard nutrition: individual Nutrition encounters send weight-for-age under the stunting key, so the "# of Stunting" 
+B-244	2	READY	HIGH			25	Person edit: saving a person whose photo was not re-taken sends `"photo": null`, and the backend deletes the stored phot
+B-245	3	READY	MED-HIGH			25	Statistical Queries: 15 prenatal diagnoses are missing from the report mapping, so encounters carrying only those are co
+B-246	3	READY	MED			25	Completion report: its query filters on publication status instead of the soft-delete flag, so encounters an administrat
+B-247	3	READY	MED-HIGH			25	Nutrition report: the Elm half throws away edema on well-child encounters, so the same child is SAM at district scope an
+B-248	3	READY	MED			25	Stats simpletest: three scenarios — including the B-032 and B-033 soft-delete regression tests — have exited early witho
+B-249	3	READY	MED			25	Dashboard family planning: the donut buckets each record by the date it was uploaded, not the date it was measured
+B-250	3	READY	MED			25	Dashboard stats: soft-deleted people still appear in case management, beneficiaries and attendance, so a merged-away dup
+B-251	3	READY	MED			25	Progress-report lab pane: urine-dipstick rows are built from an unfiltered list, so a long-only test also renders a phan
+B-252	4	READY	LOW			25	NCD progress report: the Partner HIV lab row ignores its own display flag, so every NCD report shows a permanently blank
+B-253	4	READY	LOW			25	Pregnancy Outcome page reads an arbitrary encounter instead of the latest, so Gravida and Para can render as `----`
+B-254	4	READY	LOW			25	Prenatal participant page picks an arbitrary pregnancy when a person has two active ones, so encounters can land on the 
+B-255	4	READY	LOW			25	CHW progress report: the breech/transverse alert re-grades a stale exam against TODAY's gestational age, so a normal EGA
+B-256	4	READY	MED-LOW			25	Well-child registration: a birth date exactly 13 years back is offered, and then the form demands two fields it never re
+B-257	4	READY	LOW			25	Duplicate-patient lookup is triggered by any text field over 13 characters and sized to Rwanda's ID, so the duplicate wa
+B-258	4	READY	LOW			25	Person edit page never fetches relationships, so after a page reload an address change silently skips the children
+B-259	4	READY	LOW			25	A freshly opened person form greets the nurse with "Person has been saved"
+B-260	4	READY	LOW			25	Strict decoders on optional stats values: two dashboard enum sites lack the fallback their siblings have, and one requir
+B-261	4	READY	LOW			25	Dashboard case-management table: columns are sorted by bare month number, so they come out of order when the stats month
+B-262	4	READY	LOW			25	Person-counting cards that count participants or measurements instead of people (three siblings, one family)
+B-263	4	READY	LOW			25	Dashboard's copy of the vaccination-progress builder drops DTP-standalone after a fourth dose date, so the Burundi immun
+B-264	4	READY	MED-LOW			25	Dashboard monthly charts divide a case-management numerator by a beneficiaries denominator from a different population
+B-265	4	READY	LOW			25	Reports recalculation ignores session and clinic edits, so a corrected session date or a re-categorised group leaves eve
+B-266	3	READY	MED			25	WhatsApp uploads carry no UUID, so the sync POST's duplicate guard cannot fire and a retried batch sends the patient the
+B-267	4	READY	LOW			25	Three latent traps in the RESTful writable contract, all unreachable today
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

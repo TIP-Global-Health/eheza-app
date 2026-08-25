@@ -1,11 +1,11 @@
 ---
 name: session-handoff
-description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R24 added same day
+description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25
 metadata: 
   node_type: memory
   type: project
   originSessionId: d78d3330-6ce4-4b84-aa0a-57da7f422346
-  modified: 2026-08-24
+  modified: 2026-08-25
 ---
 
 # Session handoff — E-Heza improvement work
@@ -54,6 +54,41 @@ What changes because of this:
 Everything else of mine has merged: the four that were red on the 2026-08-17 GitHub incident
 (#2090, #2095, #2097, #2099) and the whole R22 stack (#2108…#2116). The GitHub incident is over and
 was never a real signal — all of those went green on rerun.
+
+## Round 25 ran 2026-08-25 — 33 new items, THREE tier 2, all three LIVE
+
+B-235..B-267 (see `rounds.md` R25). A 9-unit coverage sweep over the surfaces R24 named un-rowed
+plus the biggest thematic-only files. **Tier 2 gained three, and every one is deployed:**
+
+- **B-242** — the dashboard's "Current Pregnancies" / "Mothers in ANC" card has its date operands
+  swapped, so it counts only pregnancies registered **on the reference day** (which is *today* for
+  the default view) instead of every pregnancy open that month. Live since `a07da69ea`, 2023-12-28.
+- **B-244** — editing a person whose photo was not re-taken sends `"photo": null` and the backend
+  **deletes the stored photo**. The exact shape B-150 fixed for GPS, on a key that fix did not cover;
+  a parent's address edit propagates to children, so it can wipe theirs too.
+- **B-235** — the Healthy Start gestational-weight-gain verdict is inverted (a woman gaining too
+  little is told "Adequate"; weight loss is the most "adequate" result). Flipped deliberately in a
+  one-line change, `45f215dbd`, against both its own chart and its non-Healthy-Start sibling.
+  ⚠ **Gated on one query the classifier blocked:** `terminus drush ihangane.live -- vget
+  hedley_admin_feature_healthy_start_enabled`. The variable exists on **ihangane only** (absent on
+  the other three, and absent = off), so this is Rwanda-or-nothing — if it reads `0` the item is
+  inert and drops to tier 4.
+
+Tier 3 gained 13, including **B-239** (the Partner HIV follow-up form has no Save button, so that
+encounter can never be ended), **B-245** (15 prenatal diagnoses unmapped → diagnosed encounters
+counted as "No Prenatal Diagnosis"), **B-247** (edema dropped for well-child → the same child is
+SAM at district scope and not-SAM at sector scope), **B-266** (WhatsApp uploads carry no UUID, so a
+retried batch sends the patient the report twice) and **B-248** (below). Counts after R25:
+**167 READY — T2 8 · T3 38 · T4 87 · untiered 34.** Dry-stop counter: 0.
+
+⚠ **B-248 contradicts something already written in this backlog.** Three `HedleyStatsCalculation`
+scenarios — including the B-032 and B-033 soft-delete regression tests — have exited early without
+running since a 2020 commit titled *"Make Travis pass"*, and CI has reported them green ever since.
+Both of those entries claim "CI green … new scenario ran end-to-end". That claim does not hold.
+**A passing CI job is not evidence a scenario ran.**
+
+Four sizing queries are written into their entries for the user to run: B-235 (the flag above),
+B-244 (photo revisions vs current), B-245 (the 15 diagnosis values), B-266 (duplicate whatsapp_records).
 
 ## Round 24 ran 2026-08-24 (after R23) — 10 new items, 1 tier 2, 5 tier 3
 
