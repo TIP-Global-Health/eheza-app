@@ -3,7 +3,7 @@ module Pages.Dashboard.Test exposing (all)
 import AssocList as Dict
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
-import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStatsRaw, NutritionStatus(..), NutritionValue, SPVDataItem, SPVEncounterDataItem)
+import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStatsRaw, NutritionStatus(..), NutritionValue, PersonIdentifier, SPVDataItem, SPVEncounterDataItem)
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Date
@@ -13,7 +13,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode
 import Json.Encode
 import Pages.Dashboard.Model exposing (ECDStatus(..))
-import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, resolveECDStatus)
+import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, resolveECDStatus)
 import Test exposing (Test, describe, test)
 import Time
 
@@ -159,9 +159,12 @@ spvEncounter dayOfJuly =
     spvEncounterOn (Date.fromCalendarDate 2026 Time.Jul dayOfJuly)
 
 
-childSeenAt : List SPVEncounterDataItem -> SPVDataItem
-childSeenAt encounters =
-    { identifier = 1
+{-| One well-child individual participant for the child with `identifier`. The
+same child can hold more than one, which is why the identifier is a parameter.
+-}
+childSeenAt : PersonIdentifier -> List SPVEncounterDataItem -> SPVDataItem
+childSeenAt identifier encounters =
+    { identifier = identifier
     , created = Date.fromCalendarDate 2026 Time.Jan 1
     , birthDate = Date.fromCalendarDate 2025 Time.Jan 1
     , gender = Female
@@ -176,7 +179,7 @@ resolveECDStatusTest =
             Date.fromCalendarDate 2026 Time.Jul 31
 
         resolve =
-            childSeenAt >> resolveECDStatus endOfJuly
+            childSeenAt 1 >> resolveECDStatus endOfJuly
     in
     describe "resolveECDStatus"
         [ test "a child whose latest verdict is on track is on track" <|
@@ -227,10 +230,64 @@ resolveECDStatusTest =
         ]
 
 
+countChildrenSeenForSelectedMonthTest : Test
+countChildrenSeenForSelectedMonthTest =
+    let
+        endOfJuly =
+            Date.fromCalendarDate 2026 Time.Jul 31
+
+        count =
+            countChildrenSeenForSelectedMonth endOfJuly
+    in
+    describe "countChildrenSeenForSelectedMonth"
+        [ test "a child seen twice in the month counts once" <|
+            \_ ->
+                count
+                    [ childSeenAt 1
+                        [ spvEncounter 3 [ NoECDMilstoneWarning ]
+                        , spvEncounter 24 [ NoECDMilstoneWarning ]
+                        ]
+                    ]
+                    |> Expect.equal 1
+        , test "two children seen count twice" <|
+            \_ ->
+                count
+                    [ childSeenAt 1 [ spvEncounter 3 [ NoECDMilstoneWarning ] ]
+                    , childSeenAt 2 [ spvEncounter 24 [ NoECDMilstoneWarning ] ]
+                    ]
+                    |> Expect.equal 2
+        , test "one child holding two participants counts once" <|
+            \_ ->
+                -- An item is an individual participant, not a child, and the
+                -- same child can hold more than one.
+                count
+                    [ childSeenAt 1 [ spvEncounter 3 [ NoECDMilstoneWarning ] ]
+                    , childSeenAt 1 [ spvEncounter 24 [ NoECDMilstoneWarning ] ]
+                    ]
+                    |> Expect.equal 1
+        , test "a child seen only in another month is not counted" <|
+            \_ ->
+                count
+                    [ childSeenAt 1
+                        [ spvEncounterOn (Date.fromCalendarDate 2026 Time.Jun 20) [ NoECDMilstoneWarning ] ]
+                    ]
+                    |> Expect.equal 0
+        , test "a child seen only by a CHW is not counted" <|
+            \_ ->
+                let
+                    nurseEncounter =
+                        spvEncounter 10 [ NoECDMilstoneWarning ]
+                in
+                count [ childSeenAt 1 [ { nurseEncounter | encounterType = NewbornExam } ] ]
+                    |> Expect.equal 0
+        ]
+
+
 all : Test
 all =
     describe "Pages.Dashboard.Utils"
         [ caseManagementMergeDuplicatesTest
+        , countChildrenSeenForSelectedMonthTest
         , resolveECDStatusTest
         , statsStorageRoundTripTest
         ]

@@ -1,4 +1,4 @@
-module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, resolveECDStatus, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countChildrenSeenForSelectedMonth, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, resolveECDStatus, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -79,6 +79,7 @@ import Pages.GlobalCaseManagement.View
         , generateNutritionFollowUpEntries
         , generatePrenatalFollowUpEntries
         )
+import Set
 import SyncManager.Model exposing (Site)
 import Utils.NominalDate exposing (sortByDate, sortByDateDesc)
 
@@ -1914,6 +1915,29 @@ withinOrAfterSelectedMonth dateLastDayOfSelectedMonth date =
 isAcuteIllnessNurseEncounter : AcuteIllnessEncounterDataItem -> Bool
 isAcuteIllnessNurseEncounter encounter =
     encounter.encounterType /= AcuteIllnessEncounterCHW
+
+
+{-| Children with at least one nurse encounter in the selected month.
+
+Counting the encounters would count a child seen twice that month twice, and
+counting the items would count a child twice as well: an item is an individual
+participant, and the same child can hold more than one. Hence the identifiers.
+
+-}
+countChildrenSeenForSelectedMonth : NominalDate -> List SPVDataItem -> Int
+countChildrenSeenForSelectedMonth dateLastDayOfSelectedMonth =
+    List.filter
+        (\item ->
+            List.any
+                (\encounter ->
+                    isSPVNurseEncounter encounter
+                        && withinSelectedMonth dateLastDayOfSelectedMonth encounter.startDate
+                )
+                item.encounters
+        )
+        >> List.map .identifier
+        >> Set.fromList
+        >> Set.size
 
 
 isSPVNurseEncounter : SPVEncounterDataItem -> Bool
