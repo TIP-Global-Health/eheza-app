@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains \HedleyMigrateNurses.
+ * Contains \HedleyMigrateResilienceSurveys.
  */
 
 /**
  * Class HedleyMigrateNurses.
  */
-class HedleyMigrateNurses extends HedleyMigrateBase {
+class HedleyMigrateResilienceSurveys extends HedleyMigrateBase {
 
   /**
    * {@inheritdoc}
@@ -18,7 +18,7 @@ class HedleyMigrateNurses extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  public $bundle = 'nurse';
+  public $bundle = 'resilience_survey';
 
   /**
    * {@inheritdoc}
@@ -30,19 +30,10 @@ class HedleyMigrateNurses extends HedleyMigrateBase {
       $columns, [
         'id',
         'title',
-        'field_role',
-        'field_pin_code',
-        'created',
-        // New.
-        'field_resilience_program',
-        'field_resilience_start_date',
-        'field_resilience_role',
-        'field_birth_date',
-        'field_gender',
-        'field_education_level',
-        'field_ubudehe',
-        'field_marital_status',
-        'field_next_reminder',
+        'field_nurse',
+        'field_date_measured',
+        'field_resilience_survey_type',
+        'field_resilience_survey_signs',
       ]
     );
   }
@@ -55,14 +46,7 @@ class HedleyMigrateNurses extends HedleyMigrateBase {
 
     return array_merge(
       $mappings, [
-        'field_pin_code',
-        'field_resilience_program',
-        'field_resilience_role',
-        'field_gender',
-        'field_education_level',
-        'field_ubudehe',
-        'field_marital_status',
-        'field_next_reminder',
+        'field_resilience_survey_type',
       ]
     );
   }
@@ -75,7 +59,7 @@ class HedleyMigrateNurses extends HedleyMigrateBase {
 
     return array_merge(
       $mappings, [
-        'field_role',
+        'field_resilience_survey_signs',
       ]
     );
   }
@@ -88,12 +72,16 @@ class HedleyMigrateNurses extends HedleyMigrateBase {
   public function __construct($arguments) {
     parent::__construct($arguments);
 
-    $this
-      ->addFieldMapping('field_resilience_start_date', 'field_resilience_start_date')
-      ->callbacks([$this, 'dateProcess']);
+    $this->dependencies = [
+      'HedleyMigrateNurses',
+    ];
 
     $this
-      ->addFieldMapping('field_birth_date', 'field_birth_date')
+      ->addFieldMapping('field_nurse', 'field_nurse')
+      ->sourceMigration('HedleyMigrateNurses');
+
+    $this
+      ->addFieldMapping('field_date_measured', 'field_date_measured')
       ->callbacks([$this, 'dateProcess']);
   }
 

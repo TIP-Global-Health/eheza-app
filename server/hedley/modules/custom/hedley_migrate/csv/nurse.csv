@@ -1,6 +1,17 @@
-id,title,field_role,field_health_centers,field_villages,field_pin_code,created
-188,Maya,nurse,4|5,,1234,1592244289
-189,Jojo,chw,4|5,140|165,2345,1592244289
-190,PhePhe,nurse,4|5,,4321,1592244289
-191,YumYum,chw,4|5,140|165,5432,1592244289
-192,LabTech,lab-tech,4|5,,3333,1592244289
+id,title,field_role,field_pin_code,created,field_resilience_program,field_resilience_start_date,field_resilience_role,field_birth_date,field_gender,field_education_level,field_ubudehe,field_marital_status,field_next_reminder
+1627763,Joseph HITIMANA,nurse,6992,1649920819,1,2024-08-26,,,,,,,1726905600
+1627758,Mary Rose UWIZEYIMANA,nurse,9459,1649920659,1,2024-08-26,,,,,,,1729260964
+3856395,Ndahayo Safi,nurse,3589,1712149574,1,2024-08-26,,,,,,,1729022767
+1627761,Esther Nyiranzigiyimana ,nurse,5981,1649920755,1,2024-08-26,,,,,,,1728890780
+3128895,Nyirabashyitsi Patricie,nurse,5866,1691484332,1,2024-08-26,,,,,,,1727251200
+1592985,Gentille NYIRAMATUNGO,nurse,4243,1649227555,1,2024-08-26,,,,,,,
+1592988,Seraphine MUKAMURENZI,nurse,3048,1649227829,1,2024-08-26,,,,,,,1726905600
+4196825,Hyacinthe MUKAKALISA,nurse,6061,1724676842,1,2024-08-26,,,,,,,1727341763
+1627766,Louise UWIMANA KABERA,nurse,6120,1649920912,1,2024-08-26,,,,,,,1729627059
+1627765,Beathe UMULISA,nurse,7911,1649920884,1,2024-08-26,,,,,,,1729698776
+1627760,Alexie BENIHIRWE,nurse,6614,1649920725,1,2024-08-26,,,,,,,1728483756
+1627759,Ancille KABAGWIRE,nurse,9643,1649920691,1,2024-08-26,,,,,,,1728483366
+4196850,Mukandashimye Demetrie,nurse,9027,1724681192,1,2024-08-26,,,,,,,1729517959
+1592987,Jacqueline KAYITESI,nurse,9329,1649227772,1,2024-08-26,,,,,,,1729674904
+1592989,Ulimuze UTAZIRUBANDA,nurse,1042,1649227900,1,2024-08-26,,,,,,,1729676534
+4004781,Nyirahitimana Dative ,nurse,6589,1716809563,1,2024-08-26,,,,,,,1729680895
