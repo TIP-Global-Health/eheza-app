@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
@@ -18,8 +19,6 @@ import {
   startSubsequentEncounter,
   completeDangerSigns,
   completeOngoingTreatment,
-  openProgressReport,
-  returnToEncounterFromReport,
 } from './helpers/acute-illness';
 
 test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria Uncomplicated', () => {
@@ -142,9 +141,7 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
 
     // Progress report holds both encounters of the illness, the one being
     // viewed included. Rows are ordered most recent first.
-    await openProgressReport(page);
-
-    const report = page.locator('div.page-report.acute-illness');
+    const report = await openReport(page, 'acute-illness');
     const rates = report.locator('.pane.physical-exam td.respiratory-rate');
     await expect(rates).toHaveCount(2);
     await expect(rates.first()).toContainText('16');
@@ -155,7 +152,7 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
       .toContainText('Malaria Without Complications');
     await expect(report.locator('.pane.symptoms')).toContainText('Fever');
 
-    await returnToEncounterFromReport(page);
+    await closeReport(page, 'acute-illness');
 
     // 3. Ongoing Treatment: taking medication, no issues.
     // After saving, the app shows a diagnosis popup ("Improving") and
