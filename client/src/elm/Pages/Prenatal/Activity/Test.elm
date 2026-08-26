@@ -43,9 +43,9 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (RangedMeasurement(..))
 import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
-import Pages.Prenatal.Activity.Types exposing (PrePregnancyClassification(..), WarningPopupType(..))
+import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
@@ -101,6 +101,78 @@ zscoreToPrePregnancyClassificationTest =
             \_ -> zscoreToPrePregnancyClassification 2.0 |> Expect.equal PrePregnancyOverweight
         , test "+2.5 -> obese" <|
             \_ -> zscoreToPrePregnancyClassification 2.5 |> Expect.equal PrePregnancyObesity
+        ]
+
+
+
+-- HEALTHY START GESTATIONAL WEIGHT GAIN
+--
+-- Expected gain comes from the Healthy Start protocol (the independent
+-- oracle): a woman not severely undernourished at booking is expected to gain
+-- 60 g per day, one who was severely undernourished 73 g per day, and 23.5 g
+-- per day covers the part of the period before 13 weeks. Gain is adequate when
+-- it meets or exceeds the expected gain for the period.
+--
+-- Both weighings here fall after 13 weeks, so only the later rate applies:
+-- 25 days at 60 g per day is an expected gain of 1.5 kg, 30 days one of 1.8 kg.
+
+
+{-| Classify a gain from 60 kg to `currentWeight` over `days` ending on
+`currentDate`. With an LMP 28 weeks back, both weighings are well past 13 weeks
+of gestation.
+-}
+classifyHealthyStartGWG : PrePregnancyClassification -> Int -> Float -> Maybe GWGClassification
+classifyHealthyStartGWG prePregnancyClassification days currentWeight =
+    resolveGWGClassificationForHealthyStart currentDate
+        prePregnancyClassification
+        60.0
+        (Date.add Date.Days -days currentDate)
+        currentWeight
+        (testAssembled28Weeks emptyPrenatalMeasurements)
+
+
+resolveGWGClassificationForHealthyStartTest : Test
+resolveGWGClassificationForHealthyStartTest =
+    describe "resolveGWGClassificationForHealthyStart (Healthy Start expected daily gain)"
+        [ test "over 25 days, a gain of 1.0 kg is below the expected 1.5 kg -> inadequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 25 61.0
+                    |> Expect.equal (Just GWGInadequate)
+        , test "over 25 days, a gain of exactly the expected 1.5 kg -> adequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 25 61.5
+                    |> Expect.equal (Just GWGAdequate)
+        , test "over 30 days, a gain of exactly the expected 1.8 kg -> adequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 30 61.8
+                    |> Expect.equal (Just GWGAdequate)
+        , test "over 25 days, a gain of 2.5 kg is above the expected 1.5 kg -> adequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 25 62.5
+                    |> Expect.equal (Just GWGAdequate)
+        , test "1.0 kg lost over the period -> inadequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 25 59.0
+                    |> Expect.equal (Just GWGInadequate)
+        , test "severely undernourished at booking: over 25 days, 1.5 kg is short of the expected 1.825 kg -> inadequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyUnderWeight 25 61.5
+                    |> Expect.equal (Just GWGInadequate)
+        , test "a gain of exactly the expected amount is adequate at every five-day interval up to 20 weeks" <|
+            \_ ->
+                -- At 60 g per day a five-day interval expects 0.3 kg, so these
+                -- are the intervals where a woman exactly on target shows a
+                -- whole tenth of a kilogram on the scale. The list is the
+                -- intervals that came back anything other than adequate.
+                List.range 1 28
+                    |> List.filter
+                        (\fiveDayBlocks ->
+                            classifyHealthyStartGWG PrePregnancyNormal
+                                (fiveDayBlocks * 5)
+                                (60.0 + 0.3 * toFloat fiveDayBlocks)
+                                /= Just GWGAdequate
+                        )
+                    |> Expect.equal []
         ]
 
 
@@ -1258,6 +1330,7 @@ all =
         [ measurementOutOfRangeTest
         , bmiToPrePregnancyClassificationTest
         , zscoreToPrePregnancyClassificationTest
+        , resolveGWGClassificationForHealthyStartTest
         , generatePrenatalDiagnosesForNurseLabsTest
         , generatePrenatalDiagnosesForNurseRecurrentLabsTest
         , generatePrenatalAssesmentForChwTest
