@@ -44,11 +44,12 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — ONE PR
+## Open right now — TWO PRs
 
 | PR | branch | item | CI |
 |---|---|---|---|
 | #2150 | `b235-healthy-start-gwg-inverted` | B-235 | **10/10 green**, reviewed, awaiting the user's merge |
+| #2152 | `b244-person-edit-wipes-photo` | B-244 | pushed 2026-08-26, awaiting review + merge |
 
 Everything else of mine has merged: **#2134 (B-194)** and **#2136 (B-189)** went in on 2026-08-25,
 the four that were red on the 2026-08-17 GitHub incident (#2090, #2095, #2097, #2099), and the whole
@@ -63,9 +64,16 @@ plus the biggest thematic-only files. **Tier 2 gained three, and every one is de
 - **B-242** — the dashboard's "Current Pregnancies" / "Mothers in ANC" card has its date operands
   swapped, so it counts only pregnancies registered **on the reference day** (which is *today* for
   the default view) instead of every pregnancy open that month. Live since `a07da69ea`, 2023-12-28.
-- **B-244** — editing a person whose photo was not re-taken sends `"photo": null` and the backend
-  **deletes the stored photo**. The exact shape B-150 fixed for GPS, on a key that fix did not cover;
-  a parent's address edit propagates to children, so it can wipe theirs too.
+- **B-244** ✅ **SHIPPED 2026-08-26 — issue #2151, PR #2152 (open, awaiting review + merge).** Editing a
+  person whose photo was not re-taken sent `"photo": null` and the backend **deleted the stored photo**.
+  The exact shape B-150 fixed for GPS, on a key that fix did not cover; a parent's address edit
+  propagates to children, so it took theirs too. Live measurement: **3,215 persons already wiped**
+  (ihangane 3,164 · vhw 50 · uvl 1 · tip-somalia 0), every one still recoverable, and the repair script
+  ships with the fix. ⭐ Fixing the SHARED encoder helper rather than the person branch also closed the
+  entry's untraced tail (the five photo measurements + the stock-update signature) — and exposed that
+  the person branch had been a hand-copy of `doEncode`, so it collapsed into that call.
+  ⚠ The backend guard is person-only: a measurement PATCH with a null photo is protected by the client
+  fix alone.
 - **B-235** ✅ **SHIPPED 2026-08-25 — issue #2149, PR #2150 (open, green, awaiting merge).** The
   Healthy Start gestational-weight-gain verdict was inverted (a woman gaining too little told
   "Adequate"; weight loss the most "adequate" result), flipped deliberately by `45f215dbd`. The flag

@@ -241,7 +241,7 @@ B-240	3	READY	MED			25	Prenatal recurrent labs: an operator-precedence slip make
 B-241	3	READY	MED			25	Prenatal recurrent Next Steps: choosing a hypertension treatment other than the recommended one raises an unanswerable q
 B-242	2	READY	HIGH			25	Dashboard ANC: the "Current Pregnancies" filter has its date operands swapped, so it counts only pregnancies registered 
 B-243	3	READY	MED-HIGH			25	Dashboard nutrition: individual Nutrition encounters send weight-for-age under the stunting key, so the "# of Stunting" 
-B-244	2	READY	HIGH			25	Person edit: saving a person whose photo was not re-taken sends `"photo": null`, and the backend deletes the stored phot
+B-244	2	IMPLEMENTED		2151	2152	25	✅ IMPLEMENTED 2026-08-26 (issue #2151, PR #2152, branch `b244-person-edit-wipes-photo`, base develop @99093f9e4, commit 
 B-245	3	READY	MED-HIGH			25	Statistical Queries: 15 prenatal diagnoses are missing from the report mapping, so encounters carrying only those are co
 B-246	3	READY	MED			25	Completion report: its query filters on publication status instead of the soft-delete flag, so encounters an administrat
 B-247	3	READY	MED-HIGH			25	Nutrition report: the Elm half throws away edema on well-child encounters, so the same child is SAM at district scope an
