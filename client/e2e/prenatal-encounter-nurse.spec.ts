@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import { verifyCaseManagementEntry } from './helpers/case-management';
@@ -82,6 +83,16 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     // PrenatalPhoto skipped (file upload; encounter allows ending without it).
 
     // End encounter.
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'prenatal');
+    await expect(report).toContainText(fullName);
+    await expect(report).toContainText(/weeks/i);
+    await closeReport(page, 'prenatal');
+    const demographics = await openReport(page, 'prenatal-demographics');
+    await expect(demographics).toContainText(fullName.split(' ').slice(-1)[0]);
+    await expect(demographics).toContainText(/female/i);
+    await closeReport(page, 'prenatal-demographics');
+
     await endPrenatalEncounter(page);
 
     // Sync to backend.
@@ -212,6 +223,12 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
     // HIV known positive → triggers HIV PCR in subsequent + SpecialityCare in postpartum.
     await completeLaboratoryNurse(page, { hivPositive: true });
     await completeNextSteps(page);
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'prenatal');
+    await expect(report).toContainText(fullName);
+    await expect(report).toContainText(/weeks/i);
+    await closeReport(page, 'prenatal');
+
     await endPrenatalEncounter(page);
 
     // Sync + backdate initial encounter to 2 weeks ago.

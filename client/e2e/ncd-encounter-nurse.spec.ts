@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import { verifyCaseManagementEntry } from './helpers/case-management';
@@ -77,6 +78,12 @@ test.describe('Nurse: NCD First Encounter — Male, Stage 1 Hypertension', () =>
     // FamilyPlanning should NOT appear (male patient).
 
     // End encounter.
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'ncd');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await expect(report).toContainText('Stage One Hypertension');
+    await closeReport(page, 'ncd');
+
     await endNCDEncounter(page);
 
     // Sync to backend.
@@ -185,6 +192,11 @@ test.describe('Nurse: NCD First Encounter — Female, Stage 3 Hypertension', () 
     await completeNextSteps(page);
 
     // End encounter.
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'ncd');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await closeReport(page, 'ncd');
+
     await endNCDEncounter(page);
 
     // Sync to backend.
@@ -270,6 +282,11 @@ test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
     await completeExamination(page);
     await completeMedicalHistory(page);
     await completeLaboratory(page);
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'ncd');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await closeReport(page, 'ncd');
+
     await endNCDEncounter(page);
 
     // Sync first encounter.
@@ -357,6 +374,11 @@ test.describe('Nurse: NCD Recurrent Encounter — Lab Results', () => {
 
     // Laboratory: mark tests as performed (so ncd_labs_results is created).
     await completeLaboratory(page, { performTests: true });
+
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'ncd');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await closeReport(page, 'ncd');
 
     await endNCDEncounter(page);
 

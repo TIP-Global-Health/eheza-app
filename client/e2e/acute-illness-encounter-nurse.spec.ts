@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
@@ -18,8 +19,6 @@ import {
   startSubsequentEncounter,
   completeDangerSigns,
   completeOngoingTreatment,
-  openProgressReport,
-  returnToEncounterFromReport,
 } from './helpers/acute-illness';
 
 test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria Uncomplicated', () => {
@@ -142,9 +141,7 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
 
     // Progress report holds both encounters of the illness, the one being
     // viewed included. Rows are ordered most recent first.
-    await openProgressReport(page);
-
-    const report = page.locator('div.page-report.acute-illness');
+    const report = await openReport(page, 'acute-illness');
     const rates = report.locator('.pane.physical-exam td.respiratory-rate');
     await expect(rates).toHaveCount(2);
     await expect(rates.first()).toContainText('16');
@@ -155,7 +152,7 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
       .toContainText('Malaria Without Complications');
     await expect(report.locator('.pane.symptoms')).toContainText('Fever');
 
-    await returnToEncounterFromReport(page);
+    await closeReport(page, 'acute-illness');
 
     // 3. Ongoing Treatment: taking medication, no issues.
     // After saving, the app shows a diagnosis popup ("Improving") and
@@ -310,5 +307,114 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
     // NextSteps.
     expect(nodes['send_to_hc'], 'send_to_hc should exist').toBe(true);
     expect(nodes['acute_illness_follow_up'], 'acute_illness_follow_up should exist').toBe(true);
+  });
+});
+
+// =========================================================================
+// Test 3: CHW opens the illness, nurse takes it over
+// =========================================================================
+
+test.describe('Nurse takeover: Acute Illness opened by CHW', () => {
+  test.describe.configure({ timeout: 900000 });
+
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '2345', 'Akanduga');
+  });
+
+  test('nurse takeover report holds both encounters and reads the nurse as initial', async ({ page }) => {
+
+    // === PART 1: CHW opens the illness ===
+    const { fullName } = await createAdultAndStartEncounter(page, {
+      isChw: true,
+      gender: 'male',
+    });
+
+    // Malaria, so the illness is one the app goes on pursuing — a fever with
+    // a negative test is filed as Fever of Unknown Origin and closed.
+    // The nurse records different symptoms below, so the report can be asked
+    // which of the two it treats as the start of the illness.
+    await completeSymptoms(page, {
+      general: ['Fever', 'Chills'],
+      respiratory: [],
+      gi: [],
+    });
+
+    await completePhysicalExam(page, {
+      isChw: true,
+      respiratoryRate: '18',
+      bodyTemp: '38.5',
+    });
+
+    await completePriorTreatment(page);
+
+    await completeLaboratory(page, {
+      malariaResult: 'Positive',
+      isPregnant: false,
+    });
+
+    await completeNextSteps(page, {
+      hasMedicationDistribution: true,
+      hasFollowUp: true,
+      hasSendToHC: true,
+      hasContactTracing: false,
+      hasSymptomsRelief: false,
+      hasHealthEducation: true,
+    });
+
+    await endEncounter(page);
+    await syncAndWait(page);
+
+    // === PART 2: the nurse takes the illness over ===
+
+    // Backdate so the app allows another encounter on the same illness.
+    backdateAcuteIllnessEncounter(fullName);
+    await syncAndWait(page);
+
+    // Same device, nurse credentials at the health center.
+    await setupDevice(page, '1234', 'Nyange Health Center');
+
+    await navigateToParticipantPage(page, fullName);
+    await startSubsequentEncounter(page);
+
+    // A nurse taking over runs a full encounter, so symptoms are collected
+    // again. Respiratory ones this time, which the CHW did not record.
+    await completeSymptoms(page, {
+      general: [],
+      respiratory: ['Cough', 'Nasal Congestion'],
+      gi: [],
+    });
+
+    await completePhysicalExam(page, {
+      sys: '120',
+      dia: '80',
+      heartRate: '80',
+      respiratoryRate: '26',
+      bodyTemp: '37.2',
+    });
+
+    await completePriorTreatment(page);
+
+    // Report holds the whole illness: a row for the CHW encounter and one
+    // for the nurse encounter, most recent first.
+    const report = await openReport(page, 'acute-illness');
+    const rates = report.locator('.pane.physical-exam td.respiratory-rate');
+    await expect(rates).toHaveCount(2);
+    await expect(rates.first()).toContainText('26');
+    await expect(rates.last()).toContainText('18');
+
+    // The nurse encounter starts the illness anew, so the symptoms shown are
+    // the ones the nurse recorded, not the ones the CHW opened with.
+    const symptoms = report.locator('.pane.symptoms');
+    await expect(symptoms).toContainText('Cough');
+    await expect(symptoms).not.toContainText('Chills');
+
+    await closeReport(page, 'acute-illness');
   });
 });
