@@ -91,9 +91,10 @@ running since a 2020 commit titled *"Make Travis pass"*, and CI has reported the
 Both of those entries claim "CI green … new scenario ran end-to-end". That claim does not hold.
 **A passing CI job is not evidence a scenario ran.**
 
-Three sizing queries are still written into their entries for the user to run: B-244 (photo
-revisions vs current), B-245 (the 15 diagnosis values), B-266 (duplicate whatsapp_records). B-235's
-has been answered.
+Two sizing queries are still open in their entries: B-245 (the 15 diagnosis values) and B-266
+(duplicate whatsapp_records). B-235's and **B-244's** are answered — B-244 measured **3,215 persons
+whose photo was wiped** (ihangane 3,164 · vhw 50 · uvl 1 · tip-somalia 0), every one recoverable
+from the revision table.
 
 ## Round 24 ran 2026-08-24 (after R23) — 10 new items, 1 tier 2, 5 tier 3
 
@@ -252,10 +253,13 @@ for exactly this).
 - ⚠ **CI caches no packages.** Every Elm and composer job re-fetches from GitHub each run, so any
   GitHub hiccup reddens an unrelated PR. Caching `~/.elm` would delete the class, and pairs naturally
   with B-157(e).
-- **Terminus works** for read-only live queries: `terminus drush <site>.live -- sqlq "…"`. Keep each
-  query SIMPLE (the permission classifier blocks multi-subquery SELECTs); one subquery is fine.
-  ⚠ **The auto-mode classifier can also block it outright** (it blocked B-120's 3-table join on
-  2026-08-24) — hand the user the command rather than fighting it.
+- **Terminus live queries are ALLOWED as of 2026-08-26.** `.claude/settings.local.json` carries four
+  rules — `Bash(terminus drush <site>.live -- sqlq *)` for `ihangane`, `vhw`, `tip-somalia`, `uvl` — so
+  read-only live queries run without a prompt, joins included. ⚠ The rule is **station-local**
+  (`settings.local.json` is gitignored), so a new station re-adds it; the classifier blocks
+  `terminus drush … sqlq` outright without it, at any query complexity — it refuses the command
+  SHAPE, not the SQL, so a bare `COUNT(*)` is blocked just the same. The rule is prefix-matched and
+  therefore does not distinguish SELECT from a write; treat that as a rule of conduct, not a guard.
 - **Live sites:** `ihangane` (rwanda), `vhw` (burundi), `tip-somalia`, `uvl`. ⚠ `eheza-site` is
   **Drupal 11.4.4 / drush 13** — D7 idioms (`vget`, `sqlq`) fail there.
 - **Elm: ⛔ ALWAYS 0.19.2.** Host global `elm` is 0.19.2; use project-local
