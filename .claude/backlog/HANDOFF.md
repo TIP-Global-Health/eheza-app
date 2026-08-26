@@ -92,6 +92,10 @@ SAM at district scope and not-SAM at sector scope), **B-266** (WhatsApp uploads 
 retried batch sends the patient the report twice) and **B-248** (below). Counts after R25:
 **167 READY — T2 7 · T3 39 · T4 87 · untiered 34** (after B-235 shipped and B-268 was
 split out of it). Dry-stop counter: 0.
+⚠ Superseded 2026-08-26: **B-220 was already shipped by the user as PR #2144** (issue #2143, merged
+2026-08-25), so the counts are **165 READY — T2 5 · T3 39 · T4 87 · untiered 34**. Tier 2 READY is
+B-120, B-195, B-213, B-232, B-242. B-244 (PR #2152) is being carried by a PARALLEL session — do not
+touch it from this seat.
 
 ⚠ **B-248 contradicts something already written in this backlog.** Three `HedleyStatsCalculation`
 scenarios — including the B-032 and B-033 soft-delete regression tests — have exited early without
@@ -123,9 +127,9 @@ for the user to run on live. Dry-stop counter: 0.
 
 B-210..B-224 (see `rounds.md` R23). **Tier 2 now holds B-213** (NCDA scorecard grades every past
 height/weight at the child's age TODAY — earlier months turn red as the child grows; disagrees with
-the server scorecard) **and B-220** (Acute Illness progress report never renders the encounter it was
-opened for — regression from `04e4bd9a8`, v1.14.0; a first visit's report shows nothing). Both are on
-`origin/main`. Tier 3 gained B-210/B-212 (prenatal report outside-care + NCD referral lines), B-214,
+the server scorecard) **and B-220** ✅ **IMPLEMENTED 2026-08-25 by the user (issue #2143, PR #2144, merged) — not from
+this seat** (Acute Illness progress report never rendered the encounter it was opened for — regression
+from `04e4bd9a8`, v1.14.0; a first visit's report showed nothing). Both were on `origin/main`. Tier 3 gained B-210/B-212 (prenatal report outside-care + NCD referral lines), B-214,
 B-215 (adult Patient Record never fetches acute-illness history), B-216 (adult DOB edit rewrites
 children's enrolment dates server-side), B-217 (merge accepts original == duplicate), B-221 (partner
 HIV test never triggers the prenatal assessment). Counts after R23: **124 READY — T2 4 · T3 19 · T4 67**.

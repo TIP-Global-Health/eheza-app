@@ -217,7 +217,7 @@ B-216	3	READY	MED-HIGH			23	Person: correcting an ADULT's birth date rewrites th
 B-217	3	READY	MED			23	Patient consolidation: the tool accepts original == duplicate (and unloadable / already-deleted ids) and then soft-delet
 B-218	4	READY	MED-LOW			23	Person: un-deleting a person does not un-delete what its deletion cascaded (relationships, group enrolments, pregnancies
 B-219	4	READY	LOW			23	Patient consolidation: moved measurements/encounters/participants keep the DUPLICATE's shards, so transferred history ca
-B-220	2	READY	HIGH			23	Acute Illness progress report: the encounter it was opened for is never rendered — a first visit's report shows no diagn
+B-220	2	IMPLEMENTED	HIGH	2143	2144	23	Acute Illness progress report: the encounter it was opened for is never rendered — a first visit's report shows no diagn
 B-221	3	READY	MED			23	Prenatal: saving the Partner HIV test never re-runs the diagnosis assessment, so a discordant-partnership diagnosis reac
 B-222	4	READY	LOW			23	Person edit: a failed PATCH is recorded as `Success`, so the edit form shows no error — CONFIRMED (orchestrator-read han
 B-223	4	READY	LOW			23	Backend/Update revision minors ×2: (a) `PrenatalFefolRevision`/`PrenatalAspirinRevision` ignore `deleted`; (b) removing 
