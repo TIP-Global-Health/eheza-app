@@ -44,12 +44,13 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — TWO PRs
+## Open right now — ONE PR
 
 | PR | branch | item | CI |
 |---|---|---|---|
-| #2150 | `b235-healthy-start-gwg-inverted` | B-235 | **10/10 green**, reviewed, awaiting the user's merge |
-| #2152 | `b244-person-edit-wipes-photo` | B-244 | pushed 2026-08-26, awaiting review + merge |
+| #2152 | `b244-person-edit-wipes-photo` | B-244 | reviewed (no findings), CI re-running after the coverage commit |
+
+**#2150 (B-235) merged 2026-08-26**, along with #2146 (the e2e progress-report coverage work).
 
 Everything else of mine has merged: **#2134 (B-194)** and **#2136 (B-189)** went in on 2026-08-25,
 the four that were red on the 2026-08-17 GitHub incident (#2090, #2095, #2097, #2099), and the whole
@@ -73,7 +74,9 @@ plus the biggest thematic-only files. **Tier 2 gained three, and every one is de
   entry's untraced tail (the five photo measurements + the stock-update signature) — and exposed that
   the person branch had been a hand-copy of `doEncode`, so it collapsed into that call.
   ⚠ The backend guard is person-only: a measurement PATCH with a null photo is protected by the client
-  fix alone.
+  fix alone. Reviewed with **no findings**; its one observation — no server-side coverage of the guard —
+  was answered in `22ec44d27` by folding the scenario into `HedleyRestfulBulkPhotosTest`'s existing
+  method (the B-032 pattern: no new install).
 - **B-235** ✅ **SHIPPED 2026-08-25 — issue #2149, PR #2150 (open, green, awaiting merge).** The
   Healthy Start gestational-weight-gain verdict was inverted (a woman gaining too little told
   "Adequate"; weight loss the most "adequate" result), flipped deliberately by `45f215dbd`. The flag
