@@ -49,6 +49,7 @@ What changes because of this:
 | PR | branch | item | CI |
 |---|---|---|---|
 | #2152 | `b244-person-edit-wipes-photo` | B-244 | reviewed (no findings); 10/10 green at `22ec44d27`, re-running after `05e8b9c9b` |
+| #2154 | `b242-current-pregnancies-date-swapped` | B-242 | pushed 2026-08-26, awaiting review + merge |
 
 **#2150 (B-235) merged 2026-08-26**, along with #2146 (the e2e progress-report coverage work).
 
@@ -62,9 +63,14 @@ green on rerun.
 B-235..B-267 (see `rounds.md` R25). A 9-unit coverage sweep over the surfaces R24 named un-rowed
 plus the biggest thematic-only files. **Tier 2 gained three, and every one is deployed:**
 
-- **B-242** — the dashboard's "Current Pregnancies" / "Mothers in ANC" card has its date operands
-  swapped, so it counts only pregnancies registered **on the reference day** (which is *today* for
-  the default view) instead of every pregnancy open that month. Live since `a07da69ea`, 2023-12-28.
+- **B-242** ✅ **SHIPPED 2026-08-26 — issue #2153, PR #2154 (open, awaiting review + merge).** The
+  dashboard's "Current Pregnancies" / "Mothers in ANC" card had its date operands swapped, so it counted
+  only pregnancies registered **on the reference day** (which is *today* for the default view) instead of
+  every pregnancy open that month. Live since `a07da69ea`, 2023-12-28.
+  ⭐ **The entry's "swap the operands" fix shape was wrong** — `withinOrBeforeSelectedMonth` already
+  existed in the same file, exported and reached from eight other counts, so the filter calls it; two
+  correct-but-hand-rolled copies of the same comparison were folded in at the user's request. The same
+  helper feeds the "With Danger Signs" cards and the high-risk total, which were wrong the same way.
 - **B-244** ✅ **SHIPPED 2026-08-26 — issue #2151, PR #2152 (open, awaiting review + merge).** Editing a
   person whose photo was not re-taken sent `"photo": null` and the backend **deleted the stored photo**.
   The exact shape B-150 fixed for GPS, on a key that fix did not cover; a parent's address edit
@@ -100,9 +106,9 @@ retried batch sends the patient the report twice) and **B-248** (below). Counts 
 split out of it). Dry-stop counter: 0.
 ⚠ Superseded 2026-08-26: **B-220 was already shipped by the user as PR #2144** (issue #2143, merged
 2026-08-25), so the counts are **165 READY — T2 5 · T3 39 · T4 87 · untiered 34**. Tier 2 READY is
-B-195, B-213, B-232, B-242 — **B-120 was 🅿 PARKED by the user on 2026-08-26** (*"18 overall is too
-little to create a script for it"*), so tier 2 READY is **4** and the queue total **164**. B-244
-(PR #2152) is being carried by a PARALLEL session — do not touch it from this seat.
+B-195, B-213 and B-232 only: **B-120 was 🅿 PARKED by the user on 2026-08-26** (*"18 overall is too
+little to create a script for it"*) and **B-242 shipped the same day as PR #2154**, so tier 2 READY is
+**3**. B-244 (PR #2152) is being carried by a PARALLEL session — do not touch it from this seat.
 
 ⚠ **B-248 contradicts something already written in this backlog.** Three `HedleyStatsCalculation`
 scenarios — including the B-032 and B-033 soft-delete regression tests — have exited early without
@@ -146,7 +152,7 @@ HIV test never triggers the prenatal assessment). Counts after R23: **124 READY 
 | tier | READY | reality |
 |---|---|---|
 | **1** | 0 | empty |
-| **2** | **0** | ⚠ superseded 2026-08-26: **B-120 is 🅿 PARKED** by the user, and the tier-2 items added since are B-195/B-213/B-232/B-242 (B-220 shipped as PR #2144, B-244 is a parallel session). |
+| **2** | **0** | ⚠ superseded 2026-08-26: **B-120 is 🅿 PARKED** by the user; tier 2 READY is now **B-195/B-213/B-232** (B-220 shipped as PR #2144, B-242 as PR #2154, B-244 is a parallel session). |
 | **3** | **13** | ~6 buildable; **6 of the 13 are one question away** (below) and 1 needs a user decision |
 | **4** | **61** | the deep pool — unchanged in character |
 | untiered | 34 | 26 = the never-started TH-track (test hardening) and G-track (CI guards); 8 = confirm-before-build |
