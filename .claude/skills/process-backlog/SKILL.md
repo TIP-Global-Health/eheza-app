@@ -27,6 +27,12 @@ every session; they move under long ones, so re-read a tier line before picking 
 
 All of it is in `.claude/backlog/` (see its README for the layout).
 
+⛔ **Check the main tree's branch before reading any of it.** The files come from whatever branch
+`/var/www/html/ihangane` is checked out on, and bookkeeping is only ever committed on `develop` — so
+a tree parked on a feature branch serves a stale queue silently. Run
+`git log --oneline HEAD..origin/develop -- .claude/backlog/` first; if it is non-empty, read from
+`origin/develop` and do the bookkeeping in a `develop` worktree instead of switching the main tree.
+
 | what | where |
 |---|---|
 | the index — one row per item, derived | `.claude/backlog/index.tsv` |

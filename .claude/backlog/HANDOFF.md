@@ -1,11 +1,11 @@
 ---
 name: session-handoff
-description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25
+description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, B-235 shipped 2026-08-26
 metadata: 
   node_type: memory
   type: project
   originSessionId: d78d3330-6ce4-4b84-aa0a-57da7f422346
-  modified: 2026-08-25
+  modified: 2026-08-26
 ---
 
 # Session handoff — E-Heza improvement work
@@ -44,16 +44,16 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — TWO PRs
+## Open right now — ONE PR
 
 | PR | branch | item | CI |
 |---|---|---|---|
-| #2134 | `b194-edd-null-pregnancy-expiry` | B-194 | **10/10 green**, awaiting the user's merge |
-| #2136 | `b189-ecd-donut-not-assessed` | B-189 | pushed 2026-08-24, CI running, review not yet run |
+| #2150 | `b235-healthy-start-gwg-inverted` | B-235 | **10/10 green**, reviewed, awaiting the user's merge |
 
-Everything else of mine has merged: the four that were red on the 2026-08-17 GitHub incident
-(#2090, #2095, #2097, #2099) and the whole R22 stack (#2108…#2116). The GitHub incident is over and
-was never a real signal — all of those went green on rerun.
+Everything else of mine has merged: **#2134 (B-194)** and **#2136 (B-189)** went in on 2026-08-25,
+the four that were red on the 2026-08-17 GitHub incident (#2090, #2095, #2097, #2099), and the whole
+R22 stack (#2108…#2116). The GitHub incident is over and was never a real signal — all of those went
+green on rerun.
 
 ## Round 25 ran 2026-08-25 — 33 new items, THREE tier 2, all three LIVE
 
@@ -66,20 +66,24 @@ plus the biggest thematic-only files. **Tier 2 gained three, and every one is de
 - **B-244** — editing a person whose photo was not re-taken sends `"photo": null` and the backend
   **deletes the stored photo**. The exact shape B-150 fixed for GPS, on a key that fix did not cover;
   a parent's address edit propagates to children, so it can wipe theirs too.
-- **B-235** — the Healthy Start gestational-weight-gain verdict is inverted (a woman gaining too
-  little is told "Adequate"; weight loss is the most "adequate" result). Flipped deliberately in a
-  one-line change, `45f215dbd`, against both its own chart and its non-Healthy-Start sibling.
-  ⚠ **Gated on one query the classifier blocked:** `terminus drush ihangane.live -- vget
-  hedley_admin_feature_healthy_start_enabled`. The variable exists on **ihangane only** (absent on
-  the other three, and absent = off), so this is Rwanda-or-nothing — if it reads `0` the item is
-  inert and drops to tier 4.
+- **B-235** ✅ **SHIPPED 2026-08-25 — issue #2149, PR #2150 (open, green, awaiting merge).** The
+  Healthy Start gestational-weight-gain verdict was inverted (a woman gaining too little told
+  "Adequate"; weight loss the most "adequate" result), flipped deliberately by `45f215dbd`. The flag
+  gate is **answered**: `hedley_admin_feature_healthy_start_enabled: 1` on `ihangane` (absent on the
+  other three), so it was live clinical guidance, deployed since v1.17.0.
+  ⭐ **The "needs a product answer" gate dissolved on reading issue #1604** — the spec states the rule
+  outright, and it also makes a plain revert wrong: the pre-flip code used strict `>`, so an
+  exactly-on-target gain read Inadequate. Its adjacent note is confirmed and split out as **B-268**
+  (the progress-report chart classifies from the self-reported pre-pregnancy weight where the spec
+  and the activity use the booking weight).
 
 Tier 3 gained 13, including **B-239** (the Partner HIV follow-up form has no Save button, so that
 encounter can never be ended), **B-245** (15 prenatal diagnoses unmapped → diagnosed encounters
 counted as "No Prenatal Diagnosis"), **B-247** (edema dropped for well-child → the same child is
 SAM at district scope and not-SAM at sector scope), **B-266** (WhatsApp uploads carry no UUID, so a
 retried batch sends the patient the report twice) and **B-248** (below). Counts after R25:
-**167 READY — T2 8 · T3 38 · T4 87 · untiered 34.** Dry-stop counter: 0.
+**167 READY — T2 7 · T3 39 · T4 87 · untiered 34** (after B-235 shipped and B-268 was
+split out of it). Dry-stop counter: 0.
 
 ⚠ **B-248 contradicts something already written in this backlog.** Three `HedleyStatsCalculation`
 scenarios — including the B-032 and B-033 soft-delete regression tests — have exited early without
@@ -87,8 +91,9 @@ running since a 2020 commit titled *"Make Travis pass"*, and CI has reported the
 Both of those entries claim "CI green … new scenario ran end-to-end". That claim does not hold.
 **A passing CI job is not evidence a scenario ran.**
 
-Four sizing queries are written into their entries for the user to run: B-235 (the flag above),
-B-244 (photo revisions vs current), B-245 (the 15 diagnosis values), B-266 (duplicate whatsapp_records).
+Three sizing queries are still written into their entries for the user to run: B-244 (photo
+revisions vs current), B-245 (the 15 diagnosis values), B-266 (duplicate whatsapp_records). B-235's
+has been answered.
 
 ## Round 24 ran 2026-08-24 (after R23) — 10 new items, 1 tier 2, 5 tier 3
 
@@ -225,6 +230,14 @@ for exactly this).
 10. **Never touch the main working tree.** Worktree per item; release it the moment the PR is pushed.
     (The `.claude/backlog/` files are the one exception — bookkeeping is edited in place.)
 11. **Record the entry status the moment a PR merges** — see the bookkeeping note above.
+12. ⛔ **Read the backlog from `develop`, and check the main tree's branch first.** The files are
+    read from whatever branch `/var/www/html/ihangane` happens to be on, and the `Stop` hook only
+    commits them on `develop` — so a main tree parked on a feature branch serves a **stale queue with
+    no warning**. On 2026-08-26 it was two commits behind and B-235 was surveyed to the user as READY
+    and flag-gated when it had shipped the day before. Start every session with
+    `git log --oneline HEAD..origin/develop -- .claude/backlog/`; if it is non-empty, read the files
+    from `origin/develop` (`git show origin/develop:<path>`) or in a `develop` worktree, and do the
+    bookkeeping there rather than switching the main tree.
 
 ## ENVIRONMENT
 
