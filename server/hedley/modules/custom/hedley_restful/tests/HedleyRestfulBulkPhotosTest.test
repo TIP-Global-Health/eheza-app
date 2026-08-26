@@ -6,7 +6,11 @@
  */
 
 /**
- * Tests the /api/bulk-photos REST endpoint.
+ * Tests the photo paths of the REST API.
+ *
+ * Two subjects share one install: the /api/bulk-photos container, and the
+ * guard on /api/sync that keeps a person's stored photo when an edit sends
+ * no photo of its own.
  *
  * The endpoint accepts a list of styled-photo URLs and returns a custom
  * binary container: 8-byte LE uint64 manifest length, then UTF-8 JSON
@@ -28,8 +32,8 @@ class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
    */
   public static function getInfo() {
     return [
-      'name' => 'Bulk photo fetch endpoint',
-      'description' => 'POST /api/bulk-photos container format and per-item statuses.',
+      'name' => 'Photo endpoints',
+      'description' => 'POST /api/bulk-photos container format, and the person photo guard on /api/sync.',
       'group' => 'Hedley restful',
     ];
   }
@@ -71,6 +75,100 @@ class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
     $this->assertEqual('image/png', $manifest_item['mime']);
     $this->assertFalse(isset($manifest_item['_bytes']), '_bytes is stripped from public manifest.');
     $this->assertEqual($size, strlen($parsed['binary']), 'Binary section length matches.');
+
+    $this->checkPersonPatchKeepsPhoto();
+  }
+
+  /**
+   * A person edit that sends no photo of its own keeps the stored one.
+   *
+   * Called from testSingleOkItemHappyPath rather than run as a test of its
+   * own, because each test method reinstalls the site.
+   */
+  protected function checkPersonPatchKeepsPhoto() {
+    $user = $this->drupalCreateUser(['bypass node access']);
+    $file = $this->createPhotoFile();
+
+    $node = $this->drupalCreateNode(['type' => 'person']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_first_name->set('Guard');
+    $wrapper->field_second_name->set('Test');
+    $wrapper->field_gender->set('female');
+    $wrapper->field_birth_date->set(strtotime('1990-01-01'));
+    $wrapper->field_photo->set(['fid' => $file->fid]);
+    $wrapper->save();
+
+    // Reload to get the auto-generated UUID.
+    $node = node_load($node->nid, NULL, TRUE);
+    $uuid = entity_metadata_wrapper('node', $node)->field_uuid->value();
+
+    /** @var \HedleyRestfulSync $handler */
+    $handler = restful_get_restful_handler('sync');
+    $handler->setAccount($user);
+
+    // A client that has not been updated still sends the photo it was
+    // seeded with as NULL, alongside the field the nurse did change.
+    $handler->setRequest([
+      'db_version' => HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION,
+      'changes' => [
+        [
+          'type' => 'person',
+          'method' => 'PATCH',
+          'uuid' => $uuid,
+          'data' => ['first_name' => 'Edited', 'photo' => NULL],
+        ],
+      ],
+    ]);
+    $handler->handleChanges();
+
+    $edited = node_load($node->nid, NULL, TRUE);
+    $this->assertEqual($file->fid, $this->photoFid($edited), 'An edit sending a null photo keeps the stored one.');
+    $this->assertEqual('Edited', $edited->field_first_name[LANGUAGE_NONE][0]['value'], 'The rest of that edit is applied.');
+
+    // An edit that did re-take the photo still replaces it.
+    $replacement = $this->createPhotoFile();
+    $handler->setRequest([
+      'db_version' => HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION,
+      'changes' => [
+        [
+          'type' => 'person',
+          'method' => 'PATCH',
+          'uuid' => $uuid,
+          'data' => ['photo' => (int) $replacement->fid],
+        ],
+      ],
+    ]);
+    $handler->handleChanges();
+
+    $edited = node_load($node->nid, NULL, TRUE);
+    $this->assertEqual($replacement->fid, $this->photoFid($edited), 'An edit carrying a new photo replaces the stored one.');
+  }
+
+  /**
+   * The file ID a person holds, or NULL where the field is empty.
+   *
+   * Read this way so that an emptied field fails the assertion it is read
+   * for, rather than raising a notice on a missing index.
+   *
+   * @param object $node
+   *   The person node.
+   *
+   * @return int|null
+   *   The file ID.
+   */
+  protected function photoFid($node) {
+    return empty($node->field_photo[LANGUAGE_NONE][0]['fid']) ? NULL : $node->field_photo[LANGUAGE_NONE][0]['fid'];
+  }
+
+  /**
+   * Save one of the simpletest images as a file entity.
+   *
+   * @return object
+   *   The file object.
+   */
+  protected function createPhotoFile() {
+    $destination = 'public://' . $this->randomName() . '.png';
+    return file_save_data($this->loadTestImageBytes(), $destination, FILE_EXISTS_RENAME);
   }
 
   /**
