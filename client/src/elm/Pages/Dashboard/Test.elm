@@ -3,8 +3,9 @@ module Pages.Dashboard.Test exposing (all)
 import AssocList as Dict
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
-import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStatsRaw, NutritionStatus(..), NutritionValue, PersonIdentifier, SPVDataItem, SPVEncounterDataItem)
+import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStatsRaw, NutritionStatus(..), NutritionValue, PersonIdentifier, PrenatalDataItem, PrenatalEncounterDataItem, SPVDataItem, SPVEncounterDataItem)
 import Backend.Measurement.Model exposing (Gender(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Date
 import EverySet
@@ -13,7 +14,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode
 import Json.Encode
 import Pages.Dashboard.Model exposing (ECDStatus(..))
-import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, dataItemMergeDuplicates, resolveECDStatus)
+import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, countCurrentlyPregnantForSelectedMonth, dataItemMergeDuplicates, resolveECDStatus)
 import Test exposing (Test, describe, test)
 import Time
 
@@ -288,6 +289,61 @@ countChildrenSeenForSelectedMonthTest =
         ]
 
 
+{-| A pregnancy registered on `created`, still open, expected to conclude well
+after the month being reported on, with a single nurse encounter.
+-}
+openPregnancyRegisteredOn : NominalDate -> PrenatalDataItem
+openPregnancyRegisteredOn created =
+    { identifier = 1
+    , created = created
+    , expectedDateConcluded = Just (Date.fromCalendarDate 2026 Time.Dec 1)
+    , dateConcluded = Nothing
+    , outcome = Nothing
+    , deliveryLocation = Nothing
+    , encounters = [ prenatalEncounterOn (Date.fromCalendarDate 2026 Time.Apr 1) ]
+    }
+
+
+prenatalEncounterOn : NominalDate -> PrenatalEncounterDataItem
+prenatalEncounterOn startDate =
+    { startDate = startDate
+    , encounterType = NurseEncounter
+    , dangerSigns = EverySet.empty
+    , diagnoses = EverySet.empty
+    , muac = Nothing
+    , sendToHCSigns = EverySet.empty
+    }
+
+
+countCurrentlyPregnantForSelectedMonthTest : Test
+countCurrentlyPregnantForSelectedMonthTest =
+    let
+        endOfJuly =
+            Date.fromCalendarDate 2026 Time.Jul 31
+
+        count =
+            countCurrentlyPregnantForSelectedMonth endOfJuly False
+    in
+    describe "countCurrentlyPregnantForSelectedMonth"
+        [ test "a pregnancy registered months earlier is still counted" <|
+            \_ ->
+                -- A woman is counted for every month her pregnancy is open,
+                -- not only for the month she was registered in. Reading the
+                -- registration date the other way round leaves the card
+                -- showing the few women registered on the reference day.
+                count [ openPregnancyRegisteredOn (Date.fromCalendarDate 2026 Time.Mar 10) ]
+                    |> Expect.equal 1
+        , test "a pregnancy registered within the month is counted" <|
+            \_ ->
+                count [ openPregnancyRegisteredOn (Date.fromCalendarDate 2026 Time.Jul 20) ]
+                    |> Expect.equal 1
+        , test "a pregnancy registered after the month is not counted" <|
+            \_ ->
+                count [ openPregnancyRegisteredOn (Date.fromCalendarDate 2026 Time.Aug 3) ]
+                    |> Expect.equal 0
+        ]
+
+
 dataItemMergeDuplicatesTest : Test
 dataItemMergeDuplicatesTest =
     describe "dataItemMergeDuplicates"
@@ -340,6 +396,7 @@ all =
     describe "Pages.Dashboard.Utils"
         [ caseManagementMergeDuplicatesTest
         , countChildrenSeenForSelectedMonthTest
+        , countCurrentlyPregnantForSelectedMonthTest
         , resolveECDStatusTest
         , dataItemMergeDuplicatesTest
         , statsStorageRoundTripTest

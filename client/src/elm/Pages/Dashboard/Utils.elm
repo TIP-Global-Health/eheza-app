@@ -920,9 +920,8 @@ getCurrentlyPregnantForSelectedMonth dateLastDayOfSelectedMonth isChw =
     List.filter
         (\pregnancy ->
             let
-                -- Pregnancy was tracked during current month, or before.
                 createdDateFilter =
-                    not <| Date.compare dateLastDayOfSelectedMonth pregnancy.created == GT
+                    withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth pregnancy.created
 
                 -- Expected date exists, and is set to 3 weeks or less,
                 -- before the beggining of the range.
@@ -1022,7 +1021,7 @@ countPregnanciesDueWithin4MonthsForSelectedMonth dateLastDayOfSelectedMonth isCh
                 facilityFilter =
                     let
                         encountersTilldateLastDayOfSelectedMonth =
-                            List.filter (\encounter -> not <| Date.compare encounter.startDate dateLastDayOfSelectedMonth == GT)
+                            List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth)
                                 pregnancy.encounters
                     in
                     if isChw then
@@ -1087,7 +1086,7 @@ countPregnanciesWith4VisitsOrMoreForSelectedMonth dateLastDayOfSelectedMonth =
                         encountersTillLastDayOfSelectedMonth =
                             List.filter
                                 (\encounter ->
-                                    (not <| Date.compare encounter.startDate dateLastDayOfSelectedMonth == GT)
+                                    withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth encounter.startDate
                                         && (not <| isPostpartumEncounter encounter)
                                 )
                                 pregnancy.encounters
