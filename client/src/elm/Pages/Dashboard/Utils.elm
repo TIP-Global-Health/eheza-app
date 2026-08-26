@@ -920,6 +920,13 @@ getCurrentlyPregnantForSelectedMonth dateLastDayOfSelectedMonth isChw =
     List.filter
         (\pregnancy ->
             let
+                -- A woman belongs to the facility that had seen her by the end
+                -- of the month being reported on, so encounters that came later
+                -- do not decide it.
+                encountersTillLastDayOfSelectedMonth =
+                    List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth)
+                        pregnancy.encounters
+
                 createdDateFilter =
                     withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth pregnancy.created
 
@@ -946,7 +953,7 @@ getCurrentlyPregnantForSelectedMonth dateLastDayOfSelectedMonth isChw =
                         Nothing ->
                             True
             in
-            facilityFilter pregnancy.encounters
+            facilityFilter encountersTillLastDayOfSelectedMonth
                 && createdDateFilter
                 && expectedDateConcludedFilter
                 && actualDateConcludedFilter

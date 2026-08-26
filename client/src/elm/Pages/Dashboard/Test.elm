@@ -341,6 +341,42 @@ countCurrentlyPregnantForSelectedMonthTest =
             \_ ->
                 count [ openPregnancyRegisteredOn (Date.fromCalendarDate 2026 Time.Aug 3) ]
                     |> Expect.equal 0
+        , test "an encounter after the month does not place the woman at the facility" <|
+            \_ ->
+                -- A woman counts for a facility once it has seen her. Reading
+                -- her whole encounter list would let a later visit change a
+                -- month that has already been reported.
+                let
+                    pregnancy =
+                        openPregnancyRegisteredOn (Date.fromCalendarDate 2026 Time.Mar 10)
+                in
+                count
+                    [ { pregnancy | encounters = [ prenatalEncounterOn (Date.fromCalendarDate 2026 Time.Sep 15) ] } ]
+                    |> Expect.equal 0
+        , test "the CHW count reads the same encounters" <|
+            \_ ->
+                let
+                    pregnancy =
+                        openPregnancyRegisteredOn (Date.fromCalendarDate 2026 Time.Mar 10)
+
+                    chwEncounter =
+                        prenatalEncounterOn (Date.fromCalendarDate 2026 Time.Sep 15)
+                in
+                countCurrentlyPregnantForSelectedMonth endOfJuly
+                    True
+                    [ { pregnancy | encounters = [ { chwEncounter | encounterType = ChwFirstEncounter } ] } ]
+                    |> Expect.equal 0
+        , test "a woman seen only by a CHW is not counted at the health centre" <|
+            \_ ->
+                let
+                    pregnancy =
+                        openPregnancyRegisteredOn (Date.fromCalendarDate 2026 Time.Mar 10)
+
+                    chwEncounter =
+                        prenatalEncounterOn (Date.fromCalendarDate 2026 Time.Apr 1)
+                in
+                count [ { pregnancy | encounters = [ { chwEncounter | encounterType = ChwFirstEncounter } ] } ]
+                    |> Expect.equal 0
         ]
 
 
