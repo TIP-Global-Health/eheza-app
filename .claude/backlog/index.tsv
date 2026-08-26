@@ -266,6 +266,7 @@ B-265	4	READY	LOW			25	Reports recalculation ignores session and clinic edits, s
 B-266	3	READY	MED			25	WhatsApp uploads carry no UUID, so the sync POST's duplicate guard cannot fire and a retried batch sends the patient the
 B-267	4	READY	LOW			25	Three latent traps in the RESTful writable contract, all unreachable today
 B-268	3	READY	MED			25	Prenatal progress report (Healthy Start): the weight-gain chart classifies from the self-reported pre-pregnancy weight i
+B-269	3	READY	MED			25	`HedleyRestfulBulkPhotosTest` has never run: it declares the group `Hedley restful` while the test job runs the group `H
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

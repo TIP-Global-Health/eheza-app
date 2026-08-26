@@ -48,7 +48,7 @@ What changes because of this:
 
 | PR | branch | item | CI |
 |---|---|---|---|
-| #2152 | `b244-person-edit-wipes-photo` | B-244 | reviewed (no findings), CI re-running after the coverage commit |
+| #2152 | `b244-person-edit-wipes-photo` | B-244 | reviewed (no findings); 10/10 green at `22ec44d27`, re-running after `05e8b9c9b` |
 
 **#2150 (B-235) merged 2026-08-26**, along with #2146 (the e2e progress-report coverage work).
 
@@ -75,8 +75,11 @@ plus the biggest thematic-only files. **Tier 2 gained three, and every one is de
   the person branch had been a hand-copy of `doEncode`, so it collapsed into that call.
   ⚠ The backend guard is person-only: a measurement PATCH with a null photo is protected by the client
   fix alone. Reviewed with **no findings**; its one observation — no server-side coverage of the guard —
-  was answered in `22ec44d27` by folding the scenario into `HedleyRestfulBulkPhotosTest`'s existing
-  method (the B-032 pattern: no new install).
+  was answered by folding the scenario into an existing method (the B-032 pattern: no new install).
+  ⚠ **The first attempt at that landed in a class that never runs** — `HedleyRestfulBulkPhotosTest`
+  declares the group `Hedley restful` while the job runs `Hedley` — and was caught only by grepping the
+  CI log for the new assertions. Moved to `HedleyPatientConsolidation` in `05e8b9c9b`; the dead group is
+  filed as **B-269**. ⭐ **Grep the CI log for a new test's own assertion text before calling it covered.**
 - **B-235** ✅ **SHIPPED 2026-08-25 — issue #2149, PR #2150 (open, green, awaiting merge).** The
   Healthy Start gestational-weight-gain verdict was inverted (a woman gaining too little told
   "Adequate"; weight loss the most "adequate" result), flipped deliberately by `45f215dbd`. The flag
