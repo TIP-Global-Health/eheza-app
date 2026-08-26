@@ -239,7 +239,7 @@ B-238	4	READY	LOW			25	Prenatal ultrasound: opening the execution-date calendar 
 B-239	3	READY	MED-HIGH			25	Prenatal recurrent labs: the Partner HIV follow-up form has no Save button, so the answers can never be recorded and the
 B-240	3	READY	MED			25	Prenatal recurrent labs: an operator-precedence slip makes a **positive** lab HIV result suppress the HIV follow-up, so 
 B-241	3	READY	MED			25	Prenatal recurrent Next Steps: choosing a hypertension treatment other than the recommended one raises an unanswerable q
-B-242	2	READY	HIGH			25	Dashboard ANC: the "Current Pregnancies" filter has its date operands swapped, so it counts only pregnancies registered 
+B-242	2	IMPLEMENTED	HIGH	2153	2154	25	Dashboard ANC: the "Current Pregnancies" filter has its date operands swapped, so it counts only pregnancies registered 
 B-243	3	READY	MED-HIGH			25	Dashboard nutrition: individual Nutrition encounters send weight-for-age under the stunting key, so the "# of Stunting" 
 B-244	2	IMPLEMENTED		2151	2152	25	✅ IMPLEMENTED 2026-08-26 (issue #2151, PR #2152, branch `b244-person-edit-wipes-photo`, base develop @99093f9e4, commit 
 B-245	3	READY	MED-HIGH			25	Statistical Queries: 15 prenatal diagnoses are missing from the report mapping, so encounters carrying only those are co
