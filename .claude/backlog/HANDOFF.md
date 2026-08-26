@@ -97,8 +97,9 @@ retried batch sends the patient the report twice) and **B-248** (below). Counts 
 split out of it). Dry-stop counter: 0.
 ⚠ Superseded 2026-08-26: **B-220 was already shipped by the user as PR #2144** (issue #2143, merged
 2026-08-25), so the counts are **165 READY — T2 5 · T3 39 · T4 87 · untiered 34**. Tier 2 READY is
-B-120, B-195, B-213, B-232, B-242. B-244 (PR #2152) is being carried by a PARALLEL session — do not
-touch it from this seat.
+B-195, B-213, B-232, B-242 — **B-120 was 🅿 PARKED by the user on 2026-08-26** (*"18 overall is too
+little to create a script for it"*), so tier 2 READY is **4** and the queue total **164**. B-244
+(PR #2152) is being carried by a PARALLEL session — do not touch it from this seat.
 
 ⚠ **B-248 contradicts something already written in this backlog.** Three `HedleyStatsCalculation`
 scenarios — including the B-032 and B-033 soft-delete regression tests — have exited early without
@@ -142,7 +143,7 @@ HIV test never triggers the prenatal assessment). Counts after R23: **124 READY 
 | tier | READY | reality |
 |---|---|---|
 | **1** | 0 | empty |
-| **2** | **1** | only **B-120**, and it needs a live query + a team answer before it is code. B-189 shipped as PR #2136 on 2026-08-24. |
+| **2** | **0** | ⚠ superseded 2026-08-26: **B-120 is 🅿 PARKED** by the user, and the tier-2 items added since are B-195/B-213/B-232/B-242 (B-220 shipped as PR #2144, B-244 is a parallel session). |
 | **3** | **13** | ~6 buildable; **6 of the 13 are one question away** (below) and 1 needs a user decision |
 | **4** | **61** | the deep pool — unchanged in character |
 | untiered | 34 | 26 = the never-started TH-track (test hardening) and G-track (CI guards); 8 = confirm-before-build |

@@ -117,7 +117,7 @@ B-116	2	IMPLEMENTED		1949	1950		Patient merge never re-points individual_partici
 B-117	2	IMPLEMENTED		2025	2026		Patient merge never re-points acute_illness_trace_contact.field_referred_person
 B-118	2	IMPLEMENTED		1941	1942		ROOT CAUSE: no canonical "person association fields" list
 B-119	2	WONTFIX					Legacy `child` / `mother` bundles carry field_person and are invisible to the merge
-B-120	2	READY	MED				Backfill: repair relationships AND group participations destroyed by PAST patient merges
+B-120	2	PARKED	MED				Backfill: repair relationships AND group participations destroyed by PAST patient merges
 B-121	1	CLOSED		1980	2007	16	✅ SUPERSEDED/DELIVERED by the range-gate programme (PR #2007, merged 2026-08-02; issue #1980 closed) — re-checked agains
 B-122	1	SPLIT		1981		16	✅ INPUT-GATE HALF DELIVERED (issue #1981 CLOSED 2026-07-27; gram-scaled `getInputConstraintsBirthWeight` shipped with th
 B-123	1	CLOSED		1982		16	✅ FIXED on develop (issue #1982 CLOSED 2026-07-26; verified in code 2026-08-03/R17: input converts via `setMuacValueForS
