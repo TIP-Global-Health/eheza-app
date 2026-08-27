@@ -230,7 +230,10 @@ for exactly this).
 
 - **B-171** ❌ user: *"Close this item. I see no value in it."* All three fix shapes are covered.
 - **B-142** ❌ user: *"These scripts are not in use."* ⭐ The `hedley_admin/scripts` declined class has
-  **five** closures and ZERO live members. Repo-side liveness signals are worthless there — ask.
+  **five** closures. Repo-side liveness signals are worthless there — ask.
+  ⚠ **Corrected 2026-08-27: the class does NOT have zero live members.** The user named two that run
+  **daily from Jenkins**: `delete-duplicate-measurements.php` and `delete-duplicates.php`. Asking is
+  still the rule; "no live members" was an overreach from five individual closures.
 - **B-079** ❌ user 2026-08-17: *"Those scripts are not in use anymore."*
 - **B-038**, **B-158** 🅿 parked by user, no reason given.
 - **B-028** ✅ closed as a duplicate of B-159 — the same defect found twice under two ids.
