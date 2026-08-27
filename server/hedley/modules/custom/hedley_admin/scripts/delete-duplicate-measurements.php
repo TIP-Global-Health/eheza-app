@@ -28,10 +28,15 @@ $memory_limit = drush_get_option('memory_limit', 800);
 $fields = field_info_fields();
 $encounter_types = hedley_general_get_encounter_types();
 
-// Bundles that hold one node per person. A group session covers everyone in
-// the group, and a family nutrition encounter covers the mother and each
-// child in the family, so two of these in one encounter are two records
-// rather than a duplicate.
+// Every measurement bundle names its person. Grouping by it changes nothing
+// where an encounter covers one person, and keeps the records apart where it
+// covers several - a group session, or a family nutrition encounter with the
+// mother and each child.
+//
+// Two bundles would need more than the person, and do not get it because
+// their features are dead: a participant_consent is one per form signed, and
+// an acute illness trace contact is one per contact traced, whose own
+// field_person is the patient. Reviving either means keying it here first.
 $person_bundles = $fields['field_person']['bundles']['node'];
 
 $total_deleted = 0;
@@ -67,6 +72,7 @@ foreach ($encounter_types as $encounter_type) {
         $person_id = $data->field_person_target_id;
         if (!$person_id) {
           // Can not resolve duplicates due to failure to retrieve person ID.
+          drush_print("Skipping $bundle duplicates at $encounter_type $encounter - no person.");
           continue;
         }
         $query->leftJoin('field_data_field_person', 'fp', 'fp.entity_id = et.entity_id');
