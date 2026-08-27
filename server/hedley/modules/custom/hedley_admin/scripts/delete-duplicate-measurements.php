@@ -28,6 +28,12 @@ $memory_limit = drush_get_option('memory_limit', 800);
 $fields = field_info_fields();
 $encounter_types = hedley_general_get_encounter_types();
 
+// Bundles that hold one node per person. A group session covers everyone in
+// the group, and a family nutrition encounter covers the mother and each
+// child in the family, so two of these in one encounter are two records
+// rather than a duplicate.
+$person_bundles = $fields['field_person']['bundles']['node'];
+
 $total_deleted = 0;
 
 foreach ($encounter_types as $encounter_type) {
@@ -35,16 +41,17 @@ foreach ($encounter_types as $encounter_type) {
   $deleted_for_encounter = 0;
   $bundles = $fields["field_$encounter_type"]['bundles']['node'];
   foreach ($bundles as $bundle) {
+    $group_by_person = in_array($bundle, $person_bundles);
     $query = db_select("field_data_field_$encounter_type", 'et');
     $query->addField('et', "field_{$encounter_type}_target_id");
-    if ($encounter_type == 'session') {
+    if ($group_by_person) {
       $query->leftJoin('field_data_field_person', 'fp', 'fp.entity_id = et.entity_id');
       $query->addField('fp', 'field_person_target_id');
     }
     $query->condition('et.bundle', $bundle);
     $query->addExpression("COUNT(et.field_{$encounter_type}_target_id)", 'total');
     $query->groupBy("et.field_{$encounter_type}_target_id");
-    if ($encounter_type == 'session') {
+    if ($group_by_person) {
       $query->groupBy("fp.field_person_target_id");
     }
     $query->havingCondition('total', 1, '>');
@@ -56,7 +63,7 @@ foreach ($encounter_types as $encounter_type) {
       $query = db_select("field_data_field_$encounter_type", 'et');
       $query->leftJoin('node', 'n', 'n.nid = et.entity_id');
       $query->addField('et', 'entity_id');
-      if ($encounter_type == 'session') {
+      if ($group_by_person) {
         $person_id = $data->field_person_target_id;
         if (!$person_id) {
           // Can not resolve duplicates due to failure to retrieve person ID.
