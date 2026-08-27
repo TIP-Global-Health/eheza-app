@@ -157,7 +157,7 @@ HIV test never triggers the prenatal assessment). Counts after R23: **124 READY 
 | tier | READY | reality |
 |---|---|---|
 | **1** | 0 | empty |
-| **2** | **0** | ⚠ superseded 2026-08-26: **B-120 is 🅿 PARKED** by the user; tier 2 READY is now **B-195/B-213/B-232** (B-220 shipped as PR #2144, B-242 as PR #2154, B-244 is a parallel session). ⚠ 2026-08-27: **B-195's measurement half is PR #2156** — the item stays READY for its participant level and repair. |
+| **2** | **0** | ⚠ superseded 2026-08-26: **B-120 is 🅿 PARKED** by the user; tier 2 READY is now **B-195/B-213/B-232** (B-220 shipped as PR #2144, B-242 as PR #2154, B-244 is a parallel session). ⏸ 2026-08-27: **B-195's measurement guard PR #2156 is ON HOLD by the user** — read the entry before touching it. |
 | **3** | **13** | ~6 buildable; **6 of the 13 are one question away** (below) and 1 needs a user decision |
 | **4** | **61** | the deep pool — unchanged in character |
 | untiered | 34 | 26 = the never-started TH-track (test hardening) and G-track (CI guards); 8 = confirm-before-build |
@@ -166,8 +166,11 @@ HIV test never triggers the prenatal assessment). Counts after R23: **124 READY 
 
 ⬇ **B-157 was re-tiered 2 → 4 on 2026-08-24** (user: *"seems like infra issue. Why is it T2?"*). Its tier was inherited from part **(a)** — the only server-side test job going green with zero tests run — which shipped in PR #2067. The remaining **(e)** unpinned `npx elm-review` and **(f)** `test_shell.sh` coverage gap are CI hardening with a developer-only blast radius; they now sit in tier 4, next in spirit to the untiered G-track guard tooling. ⭐ **The general rule this produced: when the part that earned a split item's tier ships, RE-TIER THE REMAINDER.** Severity was dropped to MED-LOW the same morning without the tier following, which left a leftover being presented as the top of tier 2.
 
-🚢 **B-195, measurement half, shipped 2026-08-27** — issue #2155, PR #2156. Saving a measurement
-again now edits the stored one instead of creating a second the app can never show. Three kinds of
+⏸ **B-195, measurement half, IS ON HOLD 2026-08-27** — issue #2155, PR #2156, now a **draft**.
+The user, after the review: *"It seems to be dealing with core functionality, and I feel it's too
+dangerous."* Five findings are posted inline and unaddressed, the first being that the guard does
+not close the race it was written for. It would have made saving a measurement again edit the stored
+one instead of creating a second the app can never show. Three kinds of
 record legitimately repeat and were exempted: family-nutrition per child, participant consent per
 form, acute-illness trace contacts. ⚠ The same four rules are missing from
 `hedley_admin/scripts/delete-duplicate-measurements.php`, which had already deleted a second child's
