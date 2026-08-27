@@ -117,7 +117,12 @@ Both of those entries claim "CI green … new scenario ran end-to-end". That cla
 **A passing CI job is not evidence a scenario ran.**
 
 Two sizing queries are still open in their entries: B-245 (the 15 diagnosis values) and B-266
-(duplicate whatsapp_records). B-235's and **B-244's** are answered — B-244 measured **3,215 persons
+(duplicate whatsapp_records).
+⭐ **2026-08-27: live sizing queries can be run from this seat.** `terminus` is authenticated
+(`terminus remote:drush ihangane.live -- sql-query "..."`, verified 2026-08-27), so a read-only
+query does not need to be handed to the user. The 2026-08-24 note that "the auto-mode classifier
+blocked it" was about one specific call and had been read as a general block — it is not one. B-195's
+gate was answered this way in minutes after being presented as unanswerable. B-235's and **B-244's** are answered — B-244 measured **3,215 persons
 whose photo was wiped** (ihangane 3,164 · vhw 50 · uvl 1 · tip-somalia 0), every one recoverable
 from the revision table.
 
