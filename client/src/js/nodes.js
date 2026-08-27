@@ -326,90 +326,187 @@
         }).catch(sendErrorResponses);
     }
 
+    // Fields that scope a measurement to the encounter it was taken in. A
+    // measurement carries exactly one of them.
+    var measurementParentFields = [
+        'acute_illness_encounter',
+        'child_scoreboard_encounter',
+        'family_nutrition_encounter',
+        'hiv_encounter',
+        'home_visit_encounter',
+        'ncd_encounter',
+        'nutrition_encounter',
+        'prenatal_encounter',
+        'session',
+        'tuberculosis_encounter',
+        'well_child_encounter'
+    ];
+
+    // Types that may appear more than once for the same person in the same
+    // encounter. A trace contact holds one traced contact, and an encounter
+    // has as many as were traced.
+    var repeatableMeasurementTypes = [
+        'acute_illness_trace_contact'
+    ];
+
+    // Fields that complete the key where the person is not enough. A mother
+    // signs one consent per form in a session.
+    var extraMeasurementKeyFields = {
+        participant_consent: ['participant_form']
+    };
+
+    // A measurement belongs to one person in one encounter, so saving it again
+    // is an edit of the one already stored. That is also how the app reads
+    // them back - `viewMeasurements` hands Elm a single node per type. When a
+    // page stops responding a nurse taps save repeatedly, and each tap that
+    // creates a node adds a copy the app can never show.
+    //
+    // Resolves with the UUID to write to, or null when this is a first save.
+    function findMeasurementToUpdate (table, type, json) {
+        if (table !== dbSync.shards) {
+            // Measurements are Authority content.
+            return Promise.resolve(null);
+        }
+
+        if (repeatableMeasurementTypes.includes(type)) {
+            return Promise.resolve(null);
+        }
+
+        var parentField = measurementParentFields.find(function (field) {
+            return json[field];
+        });
+
+        if (!parentField) {
+            // Not a measurement.
+            return Promise.resolve(null);
+        }
+
+        var keyFields = [parentField, 'person'].concat(extraMeasurementKeyFields[type] || []);
+
+        // `session` is not indexed, but a group measurement always names its
+        // person, and a person holds few of them.
+        var indexedField = parentField === 'session' ? 'person' : parentField;
+
+        if (!json[indexedField]) {
+            return Promise.resolve(null);
+        }
+
+        return table.where(indexedField).equals(json[indexedField]).and(function (item) {
+            return item.type === type && item.deleted !== true && keyFields.every(function (field) {
+                return item[field] === json[field];
+            });
+        }).toArray().catch(databaseError).then(function (nodes) {
+            if (nodes.length === 0) {
+                return null;
+            }
+
+            // Highest vid was edited last, so it is the one the app displays.
+            nodes.sort(function (a, b) {
+                return b.vid - a.vid;
+            });
+
+            return nodes[0].uuid;
+        });
+    }
+
     function postNode (request, type) {
         return dbSync.open().catch(databaseError).then(function () {
             return getTableForType(type).then(function (table) {
+                // Cloned before the body is read, so that a repeated save can
+                // be handed on with its body intact.
+                var repeatedSave = request.clone();
+
                 return request.json().catch(jsonError).then(function (json) {
-                    return makeUuid().then(function (uuid) {
-                        json.uuid = uuid;
-                        json.type = type;
-                        json.status = Status.published;
-
-                        // Not entirely clear whose job it should be to figure
-                        // out the shard, but we'll do it here for now.
-                        var addShard = Promise.resolve(json);
-
-                        if (table === dbSync.shards) {
-                            addShard = determineShard(json).then(function (shard) {
-                                json.shard = shard;
-
-                                return Promise.resolve(json);
-                            });
+                    return findMeasurementToUpdate(table, type, json).then(function (existing) {
+                        if (existing) {
+                            return patchNode(repeatedSave, type, existing);
                         }
 
-                        return addShard.then(function (json) {
-                            return table.put(json).catch(databaseError).then(function () {
-                                return sendRevisedNode(table, uuid).then(function () {
-                                    var tableName = table.name;
-                                    // For hooks to be able to work, we need to declare the
-                                    // tables that may be altered due to a change. In this case
-                                    // We want to allow adding pending upload photos.
-                                    // See for example dbSync.nodeChanges.hook().
-                                    return db.transaction('rw', tableName, dbSync.nodeChanges, dbSync.shardChanges, dbSync.authorityPhotoUploadChanges, function() {
-                                          var body = JSON.stringify({
-                                              data: [json]
-                                          });
-
-                                          var response = new Response(body, {
-                                              status: 200,
-                                              statusText: 'OK',
-                                              headers: {
-                                                  'Content-Type': 'application/json'
-                                              }
-                                          });
-
-                                          var change = {
-                                              type: type,
-                                              uuid: uuid,
-                                              method: 'POST',
-                                              data: json,
-                                              timestamp: Date.now(),
-                                              // Mark entity as not synced.
-                                              isSynced: 0
-                                          };
-
-                                          var changeTable = dbSync.nodeChanges;
-
-                                          if (tableName === 'shards') {
-                                              changeTable = dbSync.shardChanges;
-                                              change.shard = json.shard;
-                                          }
-
-                                          return changeTable.add(change).catch(function (err) {
-                                              // If there was a failure, we try again, assuming it
-                                              // may have been a glitch. If operation fails again,
-                                              // we log error with Rollbar.
-                                              return changeTable.add(change).catch(function (err) {
-                                                  var reject = new Response(body, {
-                                                      status: 400,
-                                                      statusText: 'Failure: POST at changes table'
-                                                  });
-
-                                                  return Promise.resolve(reject);
-                                              }).then(function (localId) {
-                                                  return Promise.resolve(response);
-                                              });
-                                          }).then(function (localId) {
-                                              return Promise.resolve(response);
-                                          });
-                                    });
-                                });
-                            });
-                        });
+                        return createNode(table, type, json);
                     });
                 });
             });
         }).catch(sendErrorResponses);
+    }
+
+    function createNode (table, type, json) {
+        return makeUuid().then(function (uuid) {
+            json.uuid = uuid;
+            json.type = type;
+            json.status = Status.published;
+
+            // Not entirely clear whose job it should be to figure
+            // out the shard, but we'll do it here for now.
+            var addShard = Promise.resolve(json);
+
+            if (table === dbSync.shards) {
+                addShard = determineShard(json).then(function (shard) {
+                    json.shard = shard;
+
+                    return Promise.resolve(json);
+                });
+            }
+
+            return addShard.then(function (json) {
+                return table.put(json).catch(databaseError).then(function () {
+                    return sendRevisedNode(table, uuid).then(function () {
+                        var tableName = table.name;
+                        // For hooks to be able to work, we need to declare the
+                        // tables that may be altered due to a change. In this case
+                        // We want to allow adding pending upload photos.
+                        // See for example dbSync.nodeChanges.hook().
+                        return db.transaction('rw', tableName, dbSync.nodeChanges, dbSync.shardChanges, dbSync.authorityPhotoUploadChanges, function() {
+                              var body = JSON.stringify({
+                                  data: [json]
+                              });
+
+                              var response = new Response(body, {
+                                  status: 200,
+                                  statusText: 'OK',
+                                  headers: {
+                                      'Content-Type': 'application/json'
+                                  }
+                              });
+
+                              var change = {
+                                  type: type,
+                                  uuid: uuid,
+                                  method: 'POST',
+                                  data: json,
+                                  timestamp: Date.now(),
+                                  // Mark entity as not synced.
+                                  isSynced: 0
+                              };
+
+                              var changeTable = dbSync.nodeChanges;
+
+                              if (tableName === 'shards') {
+                                  changeTable = dbSync.shardChanges;
+                                  change.shard = json.shard;
+                              }
+
+                              return changeTable.add(change).catch(function (err) {
+                                  // If there was a failure, we try again, assuming it
+                                  // may have been a glitch. If operation fails again,
+                                  // we log error with Rollbar.
+                                  return changeTable.add(change).catch(function (err) {
+                                      var reject = new Response(body, {
+                                          status: 400,
+                                          statusText: 'Failure: POST at changes table'
+                                      });
+
+                                      return Promise.resolve(reject);
+                                  }).then(function (localId) {
+                                      return Promise.resolve(response);
+                                  });
+                              }).then(function (localId) {
+                                  return Promise.resolve(response);
+                              });
+                        });
+                    });
+                });
+            });
+        });
     }
 
     function view (type, uuid) {
