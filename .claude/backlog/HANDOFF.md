@@ -44,12 +44,14 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — ONE PR
+## Open right now — FOUR PRs
 
 | PR | branch | item | CI |
 |---|---|---|---|
 | #2152 | `b244-person-edit-wipes-photo` | B-244 | reviewed (no findings); 10/10 green at `22ec44d27`, re-running after `05e8b9c9b` |
 | #2154 | `b242-current-pregnancies-date-swapped` | B-242 | pushed 2026-08-26, awaiting review + merge |
+| #2160 | `B-243-nutrition-zscore-alias` | B-243 | pushed 2026-08-27, awaiting review + merge |
+| #2162 | `B-230-gonorrhea-continued-decoder` | B-230 | pushed 2026-08-27, 10/10 green, awaiting review + merge |
 
 **#2150 (B-235) merged 2026-08-26**, along with #2146 (the e2e progress-report coverage work).
 
