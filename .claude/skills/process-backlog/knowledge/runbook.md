@@ -4,13 +4,23 @@ Validated across PRs #1889–#2099. Every warning here was paid for once already
 
 ## Per finding
 
-**1. Worktree.** `git fetch origin develop` (develop advances mid-session), `git worktree prune`
-(dead sessions leave prunable worktrees in wiped tmpfs scratchpads), then
-`git worktree add <scratchpad>/wt-<id> -b <id>-slug origin/develop`.
-⛔ Never switch the main tree — the user is working in it.
+**1. Worktree.** `.claude/scripts/new-worktree.sh <id>-slug` — it fetches `origin/develop`, prunes,
+refuses a branch another session already holds, creates the worktree and does step 2's symlinks.
+By hand: `git worktree add /var/www/html/ihangane-wt/<id>-slug -b <id>-slug origin/develop`.
 
-**2. Elm build inputs** (skip for PHP/JS-only). Symlink from the main tree's `client/`:
-`node_modules`, `src/generated`, `src/elm/LocalConfig.elm`.
+Worktrees are **durable and shared**. They live in `/var/www/html/ihangane-wt/`, not in the session
+scratchpad, so they outlive the session that made them and every other session sees them with
+`git worktree list`. About 30 MB each — the heavy directories are symlinked in step 2.
+
+⛔ **Never switch the main tree.** `/var/www/html/ihangane` is parked on `develop` permanently. It
+is the backlog source of truth, the symlink donor for step 2, and the one tree ddev and gulp build.
+A feature branch checked out there serves a stale queue and stops the `Stop` hook committing.
+
+⛔ **Read `git worktree list` before claiming an item** — sessions run in parallel and another one
+may already hold it. `git worktree prune` clears entries whose directory was removed by hand.
+
+**2. Elm build inputs** — done for you by the script in step 1; by hand, symlink from the main
+tree's `client/`: `node_modules`, `src/generated`, `src/elm/LocalConfig.elm`.
 ⚠ **elm-stuff: `mkdir` a fresh one — do NOT symlink.** elm-test writes a generated project whose
 relative source-directories resolve *through* the symlink into the main tree, so it silently
 compiles and tests the main tree's sources and every pass is vacuous. Cold compile ~1–2 min.
@@ -32,10 +42,10 @@ compiles and tests the main tree's sources and every pass is vacuous. Cold compi
   (stash or revert the fix), then restore. For mechanical one-liners, compile + suite is enough;
   don't build heavy fixtures to test a sign flip.
 
-**4. Release the worktree the moment the PR is pushed.** `git worktree remove <path> --force` once
-`git status --short` and `git log @{u}..` are both empty. The user checks branches out locally and
-a held worktree makes their `git checkout` fail. Recreating one later costs a minute; holding one
-costs them every time.
+**4. Remove the worktree when the PR merges** — not when it is pushed. `git worktree remove <path>`
+once `git status --short` and `git log @{u}..` are both empty. Holding it while the PR is open is
+correct: review findings land against that branch, and nothing else needs the directory now that the
+main tree stays on `develop`.
 
 **5. Ship.** `gh issue create` (mechanism / impact / fix) → commit `Fixes #N` with the
 `Co-Authored-By` trailer and **no `[ci skip]`** → `git push -u` → `gh pr create --base develop`.

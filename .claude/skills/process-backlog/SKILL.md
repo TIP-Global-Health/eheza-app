@@ -29,9 +29,11 @@ All of it is in `.claude/backlog/` (see its README for the layout).
 
 ⛔ **Check the main tree's branch before reading any of it.** The files come from whatever branch
 `/var/www/html/ihangane` is checked out on, and bookkeeping is only ever committed on `develop` — so
-a tree parked on a feature branch serves a stale queue silently. Run
-`git log --oneline HEAD..origin/develop -- .claude/backlog/` first; if it is non-empty, read from
-`origin/develop` and do the bookkeeping in a `develop` worktree instead of switching the main tree.
+a tree parked on a feature branch serves a stale queue silently. The main tree is supposed to stay
+on `develop` permanently; still run
+`git log --oneline HEAD..origin/develop -- .claude/backlog/` first, and `git pull --ff-only` when it
+is behind. If it is on a feature branch, something broke the invariant: read from `origin/develop`
+(`git show origin/develop:<path>`) and say so, rather than switching it out from under whoever did.
 
 | what | where |
 |---|---|
@@ -98,7 +100,13 @@ number, tier line, and any side-findings noticed while building appended as new 
 ## Hard rules
 
 - ⛔ **Never switch or modify the main tree** (`/var/www/html/ihangane`) — the user works there in
-  a parallel terminal. One isolated worktree per finding, released the moment the PR is up.
+  a parallel terminal, and it is parked on `develop` permanently as the backlog source of truth and
+  the one tree ddev and gulp build. One worktree per finding under `/var/www/html/ihangane-wt/<id>`,
+  kept until the PR merges.
+- ⛔ **Sessions run in parallel — claim before you build.** `git worktree list` shows what other
+  sessions already hold; check it before starting an item, and never work in another session's
+  worktree. ⚠ The running app (ddev, `gulp`, local e2e, `ddev simpletest`) is a **single instance**
+  rooted in the main tree — ask the user before taking it.
 - ⛔ **Ask for the review, every time.** The message announcing a PR must carry the copy-pasteable
   `/code-review medium <branch>`. A PR announcement without it is an unfinished turn, and a vague
   "want a review?" does not count. This is a known, repeated failure — see
