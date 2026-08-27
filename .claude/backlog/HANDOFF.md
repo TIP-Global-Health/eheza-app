@@ -170,9 +170,9 @@ HIV test never triggers the prenatal assessment). Counts after R23: **124 READY 
 again now edits the stored one instead of creating a second the app can never show. Three kinds of
 record legitimately repeat and were exempted: family-nutrition per child, participant consent per
 form, acute-illness trace contacts. ⚠ The same four rules are missing from
-`hedley_admin/scripts/delete-duplicate-measurements.php`, which has already deleted a second child's
+`hedley_admin/scripts/delete-duplicate-measurements.php`, which had already deleted a second child's
 family-nutrition records on `tip-somalia.live` (encounters 1410 and 2402, five nodes, swept
-2026-05-11). The user deferred that fix on 2026-08-27 — it is unfiled and live.
+2026-05-11). ✅ That script is **issue #2157, PR #2158**, shipped the same day.
 
 ✅ **B-189 shipped 2026-08-24** — issue #2135, PR #2136. The ECD donut now classifies from the most recent nurse encounter carrying an ECD verdict and puts seen-but-never-assessed children in a third grey **Not Assessed** slice, matching the rule the progress report already applied. Live: 56 genuine ECD warnings against ~21,000 no-verdict nurse encounters, so the red slice was ~0.25% real.
 
