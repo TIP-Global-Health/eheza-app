@@ -107,8 +107,9 @@ Default credentials (created by migration): pairing code `12345678`, nurse PIN `
 Several Claude Code sessions work different backlog items at once, so **the main tree
 (`/var/www/html/ihangane`) stays on `develop` permanently.** It is the backlog source of truth, the
 symlink donor for worktree builds, and the one tree ddev and gulp build. Each item gets its own
-durable worktree at `<repo>-wt/<branch>`, created by `.claude/scripts/new-worktree.sh <branch>` and
-removed when its PR merges; `git worktree list` shows what every session currently holds.
+worktree at `<repo>-wt/<branch>`, created by `.claude/scripts/new-worktree.sh <branch>` when the work
+starts and released once it is pushed — recreated by the same script if review brings more work;
+`git worktree list` shows what every session currently holds.
 
 Two things stay single-instance, and no worktree scheme changes that:
 
