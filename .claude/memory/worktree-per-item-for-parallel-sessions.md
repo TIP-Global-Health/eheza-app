@@ -1,14 +1,20 @@
 ---
 name: worktree-per-item-for-parallel-sessions
-description: "Main tree stays on develop; each item gets a durable worktree at <repo>-wt/<branch> — reinstated 2026-08-27 so sessions can run in parallel"
+description: "Main tree stays on develop; each item is worked in a worktree at <repo>-wt/<branch>, created to work and released after pushing — reinstated 2026-08-27, lifecycle corrected 2026-08-28"
 metadata:
   node_type: memory
   type: feedback
 ---
 
 **The main tree (`/var/www/html/ihangane`) stays on `develop` permanently. Each item is worked in
-its own durable worktree at `/var/www/html/ihangane-wt/<branch>`, made by
-`.claude/scripts/new-worktree.sh <branch>` and kept until its PR merges.** (User, 2026-08-27.)
+its own worktree at `/var/www/html/ihangane-wt/<branch>`, made by
+`.claude/scripts/new-worktree.sh <branch>`.** (User, 2026-08-27.)
+
+**A worktree lasts as long as the working session, not as long as the PR.** Create it when you are
+about to work the branch; **release it once the work is pushed**. If more work is needed — review
+findings, a rework — recreate it with the same script. (User, 2026-08-28: *"Whenever you want to work
+on the branch, you recreate with `.claude/scripts/new-worktree.sh`, after you done working and push,
+you release it. If more work needed, as a result of review for example, you recreate it again."*)
 
 This **replaces `develop-in-the-main-tree`** (2026-07-27), which had retired the worktree rule and
 said to check the issue branch out in the main tree. That rule is dead — deleted, not parked.
@@ -25,7 +31,8 @@ branch serves a stale queue), and the `Stop` hook refuses to commit bookkeeping 
    and `LocalConfig.elm`, and makes `client/elm-stuff` a **real directory** (symlinking it makes
    every compile and test silently run against the main tree's sources).
 2. `git worktree list` is the claim board — read it before starting an item.
-3. `git worktree remove <path>` when the PR merges, not when it is pushed.
+3. `git worktree remove <path>` once the work is pushed — not only when the PR merges. Recreate on
+   demand for the next round of work on that branch.
 4. **Always `git -C <path>`, never a bare `cd`** across two trees — the `cd` persists and silently
    retargets everything after it. That mistake cost two rounds on 2026-07-27.
 

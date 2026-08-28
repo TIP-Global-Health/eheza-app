@@ -275,8 +275,9 @@ for exactly this).
 9. **Verify liveness before deleting or trusting a script** — and for `hedley_admin/scripts`, ask the
    user rather than inferring.
 10. **Never touch the main working tree.** It is parked on `develop` permanently (2026-08-27) so
-    parallel sessions can each hold their own branch. Worktrees are durable and shared, one per item
-    at `/var/www/html/ihangane-wt/<id>`, kept until the PR merges; `git worktree list` is the claim
+    parallel sessions can each hold their own branch. One worktree per item at
+    `/var/www/html/ihangane-wt/<id>`, created to work the branch and **released once the work is
+    pushed**; recreate it if review brings more work. `git worktree list` is the claim
     board — check it before starting an item.
     (The `.claude/backlog/` files are the one exception — bookkeeping is edited in place.)
 11. **Record the entry status the moment a PR merges** — see the bookkeeping note above.
