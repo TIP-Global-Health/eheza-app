@@ -277,6 +277,12 @@ B-276	4	READY	LOW			26	Acute Illness malaria RDT edit: changing a saved non-posi
 B-277	3	READY	MED			26	Well Child immunisation (Burundi): the DTP-booster Save handler reads the DTP primary-series form, so what the nurse ent
 B-278	4	READY	LOW			26	Well Child head circumference: correcting a reading that triggered the macro/microcephaly popup leaves the warning on th
 B-279	4	READY	LOW			26	Well Child head circumference "not taken" checkbox toggles the raw form, so after a reload the first click on a saved no
+B-280	3	READY	MED-LOW			26	Acute Illness subsequent visit: a diagnosis once written to the encounter is never corrected, even when the RDT or dange
+B-281	4	READY	LOW			26	Shared Yes/No-with-reason forms: flipping the answer back to Yes persists the stale "why not" reason alongside it, in th
+B-282	4	READY	LOW			26	Acute Illness participant page: with two illnesses started today, whether "New illness" is disabled, opens the existing 
+B-283	4	READY	LOW			26	NCDA questionnaire (Child Scoreboard, Nutrition, Well Child): after a reload, switching a parent question to "No" keeps 
+B-284	4	READY	LOW			26	TB and HIV "not diagnosed": the participant is closed but the encounter is never ended, so every screening that finds no
+B-285	3	READY	MED-LOW			26	TB/HIV follow-up medication task: the "still taking the prescribed medications?" question shows Kirundi text to every us
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
