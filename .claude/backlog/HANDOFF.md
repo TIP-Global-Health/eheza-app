@@ -1,11 +1,11 @@
 ---
 name: session-handoff
-description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, B-235 shipped 2026-08-26
+description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, open-PR section rewritten 2026-08-30 after a five-PR build session
 metadata: 
   node_type: memory
   type: project
   originSessionId: d78d3330-6ce4-4b84-aa0a-57da7f422346
-  modified: 2026-08-26
+  modified: 2026-08-30
 ---
 
 # Session handoff — E-Heza improvement work
@@ -44,21 +44,62 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — FOUR PRs
+## Open right now — FOUR PRs, all from the 2026-08-30 session
 
-| PR | branch | item | CI |
-|---|---|---|---|
-| #2152 | `b244-person-edit-wipes-photo` | B-244 | reviewed (no findings); 10/10 green at `22ec44d27`, re-running after `05e8b9c9b` |
-| #2154 | `b242-current-pregnancies-date-swapped` | B-242 | pushed 2026-08-26, awaiting review + merge |
-| #2160 | `B-243-nutrition-zscore-alias` | B-243 | pushed 2026-08-27, awaiting review + merge |
-| #2162 | `B-230-gonorrhea-continued-decoder` | B-230 | pushed 2026-08-27, 10/10 green, awaiting review + merge |
+⚠ This section was stale until 2026-08-30: it listed #2152/#2154/#2160/#2162 as open, and **all four
+merged** (B-244, B-242, B-243, B-230 — every one now `IMPLEMENTED`). Do not trust an "open PRs"
+table without checking `gh pr list`.
 
-**#2150 (B-235) merged 2026-08-26**, along with #2146 (the e2e progress-report coverage work).
+| PR | issue | item | branch | state |
+|---|---|---|---|---|
+| #2164 | #2163 | **B-247** | `B-247-wellchild-edema` | reviewed (no findings), **10/10 green**, awaiting merge |
+| #2166 | #2165 | **B-212** | `B-212-ncd-referral-enrolment-flag` | reviewed (no bugs), **10/10 green**, awaiting merge |
+| #2168 | #2167 | **B-239** | `B-239-partner-hiv-followup-save` | reviewed (no findings), **10/10 green**, awaiting merge |
+| #2170 | #2169 | **B-214 + B-253** | `B-214-latest-encounter-sort` | reviewed (4 findings, 2 REFUTED); 3 commits; CI re-running on `eb37046ab` |
 
-Everything else of mine has merged: **#2134 (B-194)** and **#2136 (B-189)** went in on 2026-08-25,
-the four that were red on the 2026-08-17 GitHub incident (#2090, #2095, #2097, #2099), and the whole
-R22 stack (#2108…#2116). The GitHub incident is over and was never a real signal — all of those went
-green on rerun.
+**#2156 (B-195 measurement guard) is still a DRAFT and still ON HOLD** by the user (2026-08-27,
+*"too dangerous"*), with five unaddressed inline findings. ⛔ Do not re-pitch it.
+
+Worktrees held by this session, all to be removed **when their PR merges**, not before:
+`ihangane-wt/{B-247-wellchild-edema, B-212-ncd-referral-enrolment-flag, B-239-partner-hiv-followup-save, B-214-latest-encounter-sort}`.
+
+### What the 2026-08-30 session shipped, and the four lessons worth carrying
+
+Five items in one sitting, all tier 3/4 "easy win" shaped — the user asked for more of the
+#2160/#2162 shape (single file, few lines, mechanically certain, no product question).
+
+- **B-247** (#2164) — nutrition report dropped edema for Standard Pediatric Visits, so the same child
+  was SAM at District scope and not-SAM at Sector scope. ⚠ `server/elm` changes **must ship the
+  rebuilt committed bundle** (`hedley_general/js/elm-main.js`); CI compares it byte-for-byte.
+- **B-212** (#2166) — the progress report's NCD referral line was gated on the ARV enrolment answer.
+- **B-239** (#2168) — the Partner HIV follow-up form had no Save button, so that encounter could
+  never be ended.
+- **B-214 + B-253** (#2170, one PR) — two pages took the head of a UUID-ordered encounter list. Plus
+  two user-approved follow-ups: the sorted prenatal accessor is renamed
+  `getPrenatalEncountersForParticipantDesc` (it had shared a name with the raw one, which is
+  *how B-253 happened*), and `Prenatal/Participant/View` now calls it instead of repeating its body.
+
+⭐ **Four durable lessons:**
+1. **An arbitrary `List.head` is not automatically a defect.** The B-214 review reported two more
+   sites in `Measurement/Utils.elm` as the same bug; both were **refuted** — the vaccination fold is
+   `assembled.measurements :: previousMeasurements`, and `generatePreviousMeasurements` excludes only
+   the anchor, so the set is anchor-independent. Check what actually depends on the choice.
+2. ⛔ **A stale `client/elm-stuff` makes `elm-review` invent an unused import.** It flagged
+   `Backend.Entities` in a file that uses `PrenatalEncounterId`, on a commit CI had already passed.
+   `rm -rf client/elm-stuff client/review/elm-stuff` and re-run before believing it. Now in memory.
+3. ✅ **And elm-review still earns its place:** on B-253 it caught a real regression the change
+   introduced (`List.head` on `List.map`) that would have turned CI red.
+4. **GitHub refuses a file-level PR comment on a path outside the diff**
+   (`pull_request_review_thread.path could not be resolved`) — fall back to a PR comment and say why.
+
+Side-findings filed rather than folded in: **B-270** (same-milestone-window ECD status decided
+arbitrarily) and **B-271** (same dose at two encounters — winning date depends on the anchor). Both
+are the same `AssocList.fromList` last-wins class.
+
+Earlier merges, for context: **#2150 (B-235)** and **#2146** (e2e progress-report coverage) merged
+2026-08-26; **#2134 (B-194)** and **#2136 (B-189)** on 2026-08-25; the four red on the 2026-08-17
+GitHub incident (#2090, #2095, #2097, #2099) and the whole R22 stack (#2108…#2116). That incident is
+over and was never a real signal.
 
 ## Round 25 ran 2026-08-25 — 33 new items, THREE tier 2, all three LIVE
 
