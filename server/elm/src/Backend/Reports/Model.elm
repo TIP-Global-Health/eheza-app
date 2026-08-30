@@ -231,6 +231,7 @@ type alias WellChildEncounterData =
     { startDate : NominalDate
     , nutritionData : Maybe NutritionData
     , muacCm : Maybe Float
+    , hasEdema : Bool
     , immunisationData : Maybe (Dict VaccineType (EverySet NominalDate))
     }
 

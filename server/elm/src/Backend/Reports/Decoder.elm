@@ -756,13 +756,14 @@ decodeWellChildEncounterData =
                             |> Maybe.map
                                 (\startDate ->
                                     let
-                                        ( nutritionData, muacCm ) =
-                                            nutritionDataFromString second
+                                        ( nutritionData, muacCm, hasEdema ) =
+                                            parseAnthropometryPayload second
                                     in
                                     succeed
                                         (WellChildEncounterData startDate
                                             nutritionData
                                             muacCm
+                                            hasEdema
                                             (immunisationDataFromString third)
                                         )
                                 )
@@ -771,29 +772,6 @@ decodeWellChildEncounterData =
                     _ ->
                         fail "Failed to decode WellChildEncounterData"
             )
-
-
-
--- Wire format from hedley_reports_nutrition_metrics_to_string is
--- "<stunting>,<underweight>,<wasting>,<muac>,<edema>" (PRs #1479/#1481
--- established this order to fix issue 3199; do not reorder without
--- updating the PHP encoder/decoder in lockstep). NutritionData carries
--- the three z-scores; MUAC is returned alongside as the tuple's second
--- component so callers can store it on their encounter type (mirroring
--- parseNutritionEncounterPayload below). The edema token is discarded
--- because WellChildEncounterData doesn't carry edema today.
-
-
-nutritionDataFromString : String -> ( Maybe NutritionData, Maybe Float )
-nutritionDataFromString s =
-    case String.split "," s of
-        [ stunting, underweight, wasting, muac, _ ] ->
-            ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting))
-            , String.toFloat muac
-            )
-
-        _ ->
-            ( Nothing, Nothing )
 
 
 immunisationDataFromString : String -> Maybe (Dict VaccineType (EverySet NominalDate))
@@ -872,7 +850,7 @@ vaccineTypeFromMapping s =
 -- "<stunting>,<underweight>,<wasting>,<muac>,<edema>" (PRs #1479/#1481
 -- established this order to fix issue 3199). NutritionData carries the
 -- three z-scores; MUAC and edema flow alongside in the tuple so they
--- can be stored on NutritionEncounterData's top-level muacCm/hasEdema
+-- can be stored on the encounter type's top-level muacCm/hasEdema
 -- fields without duplicating data inside the nested NutritionData.
 
 
