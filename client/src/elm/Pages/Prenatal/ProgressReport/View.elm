@@ -920,11 +920,14 @@ viewMedicalDiagnosisPane language isChw firstNurseEncounterMeasurements assemble
                                 |> Maybe.map
                                     (\value ->
                                         let
+                                            notEnrolledTo program =
+                                                not <| EverySet.member program value
+
                                             arvEntry =
                                                 resolveARVReferralDiagnosis assembled.nursePreviousEncountersData
                                                     |> Maybe.map
                                                         (\diagnosis ->
-                                                            if not <| EverySet.member EnrolledToARVProgram value then
+                                                            if notEnrolledTo EnrolledToARVProgram then
                                                                 viewProgramReferralEntry language data.startDate diagnosis FacilityARVProgram
 
                                                             else
@@ -936,7 +939,7 @@ viewMedicalDiagnosisPane language isChw firstNurseEncounterMeasurements assemble
                                                 resolveNCDReferralDiagnoses assembled.nursePreviousEncountersData
                                                     |> List.concatMap
                                                         (\diagnosis ->
-                                                            if not <| EverySet.member EnrolledToARVProgram value then
+                                                            if notEnrolledTo EnrolledToNCDProgram then
                                                                 viewProgramReferralEntry language data.startDate diagnosis FacilityNCDProgram
 
                                                             else
