@@ -211,7 +211,7 @@ B-210	3	READY	MED			23	Antenatal progress report: an outside-care Syphilis or Mo
 B-211	4	READY	LOW			23	Antenatal progress report: an outside-care HIV diagnosis with "None of these" medication prints as "treated with None of
 B-212	3	IMPLEMENTED	MED			23	Antenatal progress report: NCD-program referral lines are shown/hidden by ARV-program enrolment, not NCD enrolment
 B-213	2	READY	HIGH			23	NCDA scorecard "Fill the Blanks": every past height/weight is graded against the child's age TODAY, so earlier months tu
-B-214	3	READY	MED			23	Child progress report: "the last Well Child encounter" is whichever sorts first by UUID, so the Next Appointment pane ca
+B-214	3	IMPLEMENTED	MED			23	Child progress report: "the last Well Child encounter" is whichever sorts first by UUID, so the Next Appointment pane ca
 B-215	3	READY	MED			23	Patient Record (adult): the Acute Illness pane — the DEFAULT filter — never fetches its encounters, so an adult's illnes
 B-216	3	READY	MED-HIGH			23	Person: correcting an ADULT's birth date rewrites the enrolment/graduation dates of every child they bring to a group — 
 B-217	3	READY	MED			23	Patient consolidation: the tool accepts original == duplicate (and unloadable / already-deleted ids) and then soft-delet
@@ -250,7 +250,7 @@ B-249	3	READY	MED			25	Dashboard family planning: the donut buckets each record 
 B-250	3	READY	MED			25	Dashboard stats: soft-deleted people still appear in case management, beneficiaries and attendance, so a merged-away dup
 B-251	3	READY	MED			25	Progress-report lab pane: urine-dipstick rows are built from an unfiltered list, so a long-only test also renders a phan
 B-252	4	READY	LOW			25	NCD progress report: the Partner HIV lab row ignores its own display flag, so every NCD report shows a permanently blank
-B-253	4	READY	LOW			25	Pregnancy Outcome page reads an arbitrary encounter instead of the latest, so Gravida and Para can render as `----`
+B-253	4	IMPLEMENTED	LOW			25	Pregnancy Outcome page reads an arbitrary encounter instead of the latest, so Gravida and Para can render as `----`
 B-254	4	READY	LOW			25	Prenatal participant page picks an arbitrary pregnancy when a person has two active ones, so encounters can land on the 
 B-255	4	READY	LOW			25	CHW progress report: the breech/transverse alert re-grades a stale exam against TODAY's gestational age, so a normal EGA
 B-256	4	READY	MED-LOW			25	Well-child registration: a birth date exactly 13 years back is offered, and then the form demands two fields it never re
@@ -267,6 +267,7 @@ B-266	3	READY	MED			25	WhatsApp uploads carry no UUID, so the sync POST's duplic
 B-267	4	READY	LOW			25	Three latent traps in the RESTful writable contract, all unreachable today
 B-268	3	READY	MED			25	Prenatal progress report (Healthy Start): the weight-gain chart classifies from the self-reported pre-pregnancy weight i
 B-269	3	READY	MED			25	`HedleyRestfulBulkPhotosTest` has never run: it declares the group `Hedley restful` while the test job runs the group `H
+B-270	4	READY	LOW			25	Child progress report ECD pane: when two Well Child encounters fall in the same pediatric-care milestone window, the one
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
