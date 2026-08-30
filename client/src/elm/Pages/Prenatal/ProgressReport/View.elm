@@ -924,27 +924,27 @@ viewMedicalDiagnosisPane language isChw firstNurseEncounterMeasurements assemble
                                                 not <| EverySet.member program value
 
                                             arvEntry =
-                                                resolveARVReferralDiagnosis assembled.nursePreviousEncountersData
-                                                    |> Maybe.map
-                                                        (\diagnosis ->
-                                                            if notEnrolledTo EnrolledToARVProgram then
+                                                if notEnrolledTo EnrolledToARVProgram then
+                                                    resolveARVReferralDiagnosis assembled.nursePreviousEncountersData
+                                                        |> Maybe.map
+                                                            (\diagnosis ->
                                                                 viewProgramReferralEntry language data.startDate diagnosis FacilityARVProgram
+                                                            )
+                                                        |> Maybe.withDefault []
 
-                                                            else
-                                                                []
-                                                        )
-                                                    |> Maybe.withDefault []
+                                                else
+                                                    []
 
                                             ncdEntries =
-                                                resolveNCDReferralDiagnoses assembled.nursePreviousEncountersData
-                                                    |> List.concatMap
-                                                        (\diagnosis ->
-                                                            if notEnrolledTo EnrolledToNCDProgram then
+                                                if notEnrolledTo EnrolledToNCDProgram then
+                                                    resolveNCDReferralDiagnoses assembled.nursePreviousEncountersData
+                                                        |> List.concatMap
+                                                            (\diagnosis ->
                                                                 viewProgramReferralEntry language data.startDate diagnosis FacilityNCDProgram
+                                                            )
 
-                                                            else
-                                                                []
-                                                        )
+                                                else
+                                                    []
                                         in
                                         arvEntry ++ ncdEntries
                                     )
