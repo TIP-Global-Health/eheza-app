@@ -92,6 +92,9 @@ Five items in one sitting, all tier 3/4 "easy win" shaped — the user asked for
 4. **GitHub refuses a file-level PR comment on a path outside the diff**
    (`pull_request_review_thread.path could not be resolved`) — fall back to a PR comment and say why.
 
+**Counts after this session (authoritative — later sections quote R25-era numbers): 159 READY —
+T2 3 · T3 34 · T4 88 · untiered 34.** Tier 2 READY is B-195 (half on hold), B-213 and B-232.
+
 Side-findings filed rather than folded in: **B-270** (same-milestone-window ECD status decided
 arbitrarily) and **B-271** (same dose at two encounters — winning date depends on the anchor). Both
 are the same `AssocList.fromList` last-wins class.
