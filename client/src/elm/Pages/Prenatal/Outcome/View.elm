@@ -13,7 +13,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, getPrenatalEncountersForParticipant)
+import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, getPrenatalEncountersForParticipantDesc)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Outcome.Model exposing (Model, Msg(..))
@@ -28,7 +28,7 @@ view : Language -> NominalDate -> IndividualEncounterParticipantId -> Bool -> Re
 view language currentDate id isChw initiator db model =
     let
         lastEncounterId =
-            getPrenatalEncountersForParticipant db id
+            getPrenatalEncountersForParticipantDesc db id
                 |> List.head
                 |> Maybe.map Tuple.first
 

@@ -46,7 +46,7 @@ import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, Acu
 import Pages.GlobalCaseManagement.Utils exposing (chwFilters, fillPersonName, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessFollowUps, generateHIVFollowUps, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps, generateTuberculosisFollowUps, labTechFilters, labsResultsTestData, nurseFilters)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Utils
-import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
+import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipantDesc)
 import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Report.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Pages.Utils exposing (viewBySyncStatus)
@@ -725,7 +725,7 @@ generatePrenatalFollowUpEntryData limitDate db ( participantId, personId ) item 
     else
         let
             allEncountersWithIds =
-                getPrenatalEncountersForParticipant db participantId
+                getPrenatalEncountersForParticipantDesc db participantId
                     |> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
                     -- Sort DESC
                     |> List.sortWith sortEncounterTuplesDesc

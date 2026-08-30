@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Maybe.Extra
-import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
+import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipantDesc)
 import RemoteData
 
 
@@ -17,7 +17,7 @@ fetch participantId db =
                 |> Maybe.map .person
 
         encountersIds =
-            getPrenatalEncountersForParticipant db participantId
+            getPrenatalEncountersForParticipantDesc db participantId
                 |> List.map Tuple.first
 
         lastEncounterId =
