@@ -268,6 +268,7 @@ B-267	4	READY	LOW			25	Three latent traps in the RESTful writable contract, all 
 B-268	3	READY	MED			25	Prenatal progress report (Healthy Start): the weight-gain chart classifies from the self-reported pre-pregnancy weight i
 B-269	3	READY	MED			25	`HedleyRestfulBulkPhotosTest` has never run: it declares the group `Hedley restful` while the test job runs the group `H
 B-270	4	READY	LOW			25	Child progress report ECD pane: when two Well Child encounters fall in the same pediatric-care milestone window, the one
+B-271	4	READY	LOW			25	Vaccination progress: when two encounters record the same dose with different dates, which date wins depends on an arbit
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
