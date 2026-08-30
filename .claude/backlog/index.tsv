@@ -283,6 +283,11 @@ B-282	4	READY	LOW			26	Acute Illness participant page: with two illnesses starte
 B-283	4	READY	LOW			26	NCDA questionnaire (Child Scoreboard, Nutrition, Well Child): after a reload, switching a parent question to "No" keeps 
 B-284	4	READY	LOW			26	TB and HIV "not diagnosed": the participant is closed but the encounter is never ended, so every screening that finds no
 B-285	3	READY	MED-LOW			26	TB/HIV follow-up medication task: the "still taking the prescribed medications?" question shows Kirundi text to every us
+B-286	3	READY	MED			26	NCD hypertension staging compares against the encounter's OWN just-written stage: a Stage-3 patient with one low reading
+B-287	3	READY	MED-LOW			26	NCD labs Case Management entry is closed by the final lab result BEFORE that result's diagnosis exists, so the Next Step
+B-288	3	READY	MED			26	NCD: diabetes found from a point-of-care blood-sugar reading at the initial phase gets no medication or referral task, b
+B-289	3	READY	MED			26	NCD: a pregnancy found by test at the first encounter is forgotten at every later encounter — the full antihypertensive 
+B-290	3	READY	MED			26	NCD Social History: the drinks-per-week answer is never saved — the encoder writes the cigarettes count into the `bevera
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

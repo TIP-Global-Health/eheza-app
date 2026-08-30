@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, open-PR section rewritten 2026-08-30 after a five-PR build session
+description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, open-PR section rewritten 2026-08-30 after a five-PR build session, R26 added 2026-08-30 evening
 metadata: 
   node_type: memory
   type: project
@@ -92,7 +92,7 @@ Five items in one sitting, all tier 3/4 "easy win" shaped — the user asked for
 4. **GitHub refuses a file-level PR comment on a path outside the diff**
    (`pull_request_review_thread.path could not be resolved`) — fall back to a PR comment and say why.
 
-**Counts after this session (authoritative — later sections quote R25-era numbers): 159 READY —
+⚠ Superseded by R26 the same evening — see the Round 26 section: **178 READY — T2 3 · T3 44 · T4 97 · untiered 34**. Pre-R26 counts: 159 READY —
 T2 3 · T3 34 · T4 88 · untiered 34.** Tier 2 READY is B-195 (half on hold), B-213 and B-232.
 
 Side-findings filed rather than folded in: **B-270** (same-milestone-window ECD status decided
@@ -103,6 +103,42 @@ Earlier merges, for context: **#2150 (B-235)** and **#2146** (e2e progress-repor
 2026-08-26; **#2134 (B-194)** and **#2136 (B-189)** on 2026-08-25; the four red on the 2026-08-17
 GitHub incident (#2090, #2095, #2097, #2099) and the whole R22 stack (#2108…#2116). That incident is
 over and was never a real signal.
+
+## Round 26 ran 2026-08-30 (evening, after the five-PR session) — 19 new items, ZERO tier 2, 9 tier 3, three of them DEPLOYED
+
+B-272..B-290 (see `rounds.md` R26, `queue.md` R26 line). An 8-unit coverage sweep giving WellChild, AcuteIllness and NCD the
+unit-depth re-read that turned Prenatal's R14 "clean" into 19 items in R25, plus the FIRST coverage rows for
+`Backend/Measurement/` (Model+Utils ✅ clean; Decoder+Encoder ◒). Run in two waves at the user's request (4 + 5; the
+unit-7 scout died on an API rate limit and was rerun). **Counts after R26: 178 READY — T2 3 · T3 44 · T4 97 · untiered 34.**
+Tier 2 READY is unchanged (B-195 half on hold, B-213, B-232). Dry-stop counter: 0.
+
+**The three deployed ones, all sized on live:**
+- **B-277** Burundi Well Child (+ Child Scoreboard twin): the DTP-booster Save reads `dtpForm` instead of `dtpStandaloneForm`,
+  so the 18-month booster entry is never stored — `vhw.live` has **2 DTP-standalone records, both dose-less**. One word, two files.
+- **B-290** all sites: the NCD social-history encoder writes `cigarettesPerWeek` under `beverages_per_week` (refactor slip
+  `c9610431b`, 2024-01-18) — last differing pair on `ihangane.live` is 2023-09-13; **88 drinkers' counts lost** since. One word.
+- **B-285** all sites: a TB/HIV follow-up question's ENGLISH string was overwritten with Kirundi in `4a4e5e838` (2025-08-20).
+  Two lines. (The "wrong language in field" exception to the translation-quality decline applies.)
+
+**The tier-2-shaped one that stayed tier 3:** **B-286** — NCD hypertension staging includes the encounter's OWN just-written
+stage in the history it compares against, so a Stage-3 patient with one sys<100 reading is stepped down TWICE in one visit
+(vitals save → Stage2, the always-expected RBS save → Stage1), and a mistyped BP cannot be corrected downward. Deployed
+since 2022 — but `ihangane.live` has 65 sys<100 NCD readings and **none in a patient with a prior Stage 2/3**, so it has never
+fired. Promote if the correction ratchet alone is judged enough.
+
+**Two families rather than many items:** the raw-form-handler shape (B-274 AI medication reason with a REAL consumer — the
+referral gate; B-279, B-283 siblings; NCD siblings proven INERT) and the same-session Yes/No-with-reason refill (**B-281**, four
+AI handlers + NCD referral + shared `SendToHC`/`HealthEducation` halves used by every program). Each is one idiom fix in shared
+code; do not present them per program.
+
+**Two things this round corrected in the record:** (1) B-272's "only Well Child's list is DESC" was wrong — NCD is DESC too,
+same one-line fix, folded into B-272. (2) The handoff suggestion below that "`optional` tolerates MISSING but never MALFORMED"
+is imprecise: pipeline 1.0.1's `optional` is `oneOf [ decoder, Decode.null fallback ]`, so a present `null` yields the
+fallback; only a present NON-null value the inner decoder rejects fails. The whole `optional`-enum class in
+`Backend/Measurement/Decoder.elm` is null-safe (unit 7, mechanically).
+
+**One candidate refuted on live data** (symptoms_general period counters added after the bundle: 0 of 21,420 nodes lack them).
+⚠ Framing slip: the plan named `Pages/WellChild/Utils.elm`, which does not exist; the scout audited `Encounter/Utils.elm`.
 
 ## Round 25 ran 2026-08-25 — 33 new items, THREE tier 2, all three LIVE
 
