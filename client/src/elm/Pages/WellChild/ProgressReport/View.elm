@@ -369,6 +369,8 @@ assembleProgresReportData site childId db =
         lastWellChildEncounterId =
             Maybe.andThen
                 (getWellChildEncountersForParticipant db
+                    -- Sort DESC
+                    >> List.sortWith sortEncounterTuplesDesc
                     >> (List.head >> Maybe.map Tuple.first)
                 )
                 individualWellChildParticipantId

@@ -4,7 +4,6 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterParticipantOutcome(..), IndividualParticipantInitiator(..), allPregnancyOutcome)
 import Backend.IndividualEncounterParticipant.Utils exposing (pregnancyOutcomeToString)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Backend.PrenatalEncounter.Model exposing (RecordPreganancyInitiator(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -14,7 +13,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
+import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, getPrenatalEncountersForParticipant)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Outcome.Model exposing (Model, Msg(..))
@@ -30,9 +29,8 @@ view language currentDate id isChw initiator db model =
     let
         lastEncounterId =
             getPrenatalEncountersForParticipant db id
-                |> List.map Tuple.first
-                |> List.reverse
                 |> List.head
+                |> Maybe.map Tuple.first
 
         data =
             lastEncounterId
