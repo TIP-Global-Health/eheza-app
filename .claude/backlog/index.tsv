@@ -271,6 +271,9 @@ B-270	4	READY	LOW			25	Child progress report ECD pane: when two Well Child encou
 B-271	4	READY	LOW			25	Vaccination progress: when two encounters record the same dose with different dates, which date wins depends on an arbit
 B-272	3	READY	MED-LOW			26	Well Child vitals: the "previous" respiratory rate and temperature shown beside the inputs are the child's OLDEST readin
 B-273	4	READY	LOW			26	Newborn Exam Pregnancy Summary: re-editing a record saved as "no complications" / "no defects", switching to Yes and sav
+B-274	3	READY	MED-LOW			26	Acute Illness medication distribution: after a reload, switching a medicine from "not given (out of stock / allergy)" to
+B-275	4	READY	LOW			26	Acute Illness subsequent visit: a positive-and-pregnant malaria RDT is not treated as "malaria diagnosed at this encount
+B-276	4	READY	LOW			26	Acute Illness malaria RDT edit: changing a saved non-positive result to Positive pre-answers "Currently pregnant?" as No
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
