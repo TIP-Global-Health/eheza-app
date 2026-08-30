@@ -727,8 +727,6 @@ generatePrenatalFollowUpEntryData limitDate db ( participantId, personId ) item 
             allEncountersWithIds =
                 getPrenatalEncountersForParticipantDesc db participantId
                     |> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
-                    -- Sort DESC
-                    |> List.sortWith sortEncounterTuplesDesc
 
             allChwEncountersWithIds =
                 List.filter (Tuple.second >> .encounterType >> isNurseEncounter >> not) allEncountersWithIds
