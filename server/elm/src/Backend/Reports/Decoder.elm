@@ -848,8 +848,9 @@ vaccineTypeFromMapping s =
 
 -- Wire format from hedley_reports_nutrition_metrics_to_string is
 -- "<stunting>,<underweight>,<wasting>,<muac>,<edema>" (PRs #1479/#1481
--- established this order to fix issue 3199). NutritionData carries the
--- three z-scores; MUAC and edema flow alongside in the tuple so they
+-- established this order to fix issue 3199; do not reorder without
+-- updating the PHP encoder/decoder in lockstep). NutritionData carries
+-- the three z-scores; MUAC and edema flow alongside in the tuple so they
 -- can be stored on the encounter type's top-level muacCm/hasEdema
 -- fields without duplicating data inside the nested NutritionData.
 
