@@ -236,7 +236,7 @@ B-235	2	IMPLEMENTED	HIGH			25	Prenatal nutrition (Healthy Start): the gestationa
 B-236	3	READY	MED-HIGH			25	Prenatal symptoms: whether vaginal discharge counts as "continued" is decided by the patient's **gonorrhea** history, so
 B-237	3	READY	MED			25	Prenatal HIV: a discordant partnership found from the **partner's** lab result is filed as initial-phase because the pha
 B-238	4	READY	LOW			25	Prenatal ultrasound: opening the execution-date calendar and closing it without picking a day counts the form 6/6 and en
-B-239	3	READY	MED-HIGH			25	Prenatal recurrent labs: the Partner HIV follow-up form has no Save button, so the answers can never be recorded and the
+B-239	3	IMPLEMENTED	MED-HIGH			25	Prenatal recurrent labs: the Partner HIV follow-up form has no Save button, so the answers can never be recorded and the
 B-240	3	READY	MED			25	Prenatal recurrent labs: an operator-precedence slip makes a **positive** lab HIV result suppress the HIV follow-up, so 
 B-241	3	READY	MED			25	Prenatal recurrent Next Steps: choosing a hypertension treatment other than the recommended one raises an unanswerable q
 B-242	2	IMPLEMENTED	HIGH	2153	2154	25	Dashboard ANC: the "Current Pregnancies" filter has its date operands swapped, so it counts only pregnancies registered 
