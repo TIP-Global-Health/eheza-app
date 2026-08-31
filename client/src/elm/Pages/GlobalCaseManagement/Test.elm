@@ -144,11 +144,11 @@ generateTuberculosisFollowUpsTests =
                     |> Tuple.first
                     |> Dict.keys
                     |> Expect.equal [ ( participantId, personId ) ]
-        , test "takes the Acute Illness date when that follow up is the more recent" <|
+        , test "takes the Acute Illness date when that follow up is the more recent, keeping the Tuberculosis encounter" <|
             \_ ->
                 run (Date.fromCalendarDate 2026 Time.Jun 1) (Date.fromCalendarDate 2026 Time.Jun 10)
                     |> Tuple.first
                     |> Dict.values
-                    |> List.map .dateMeasured
-                    |> Expect.equal [ Date.fromCalendarDate 2026 Time.Jun 10 ]
+                    |> List.map (\item -> ( item.dateMeasured, item.encounterId ))
+                    |> Expect.equal [ ( Date.fromCalendarDate 2026 Time.Jun 10, Just encounterId ) ]
         ]
