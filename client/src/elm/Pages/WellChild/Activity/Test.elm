@@ -467,22 +467,22 @@ dtpStandaloneSaveTests =
         today =
             Date.fromCalendarDate 2026 Time.Aug 31
 
-        boosterForm =
-            { emptyVaccinationForm
-                | administeredDoses = Just (EverySet.singleton VaccineDoseFirst)
-                , administrationDates = Just (EverySet.singleton today)
-                , administrationNote = Just AdministeredToday
-            }
-
-        model =
-            let
-                data =
-                    emptyModel.immunisationData
-            in
-            { emptyModel | immunisationData = { data | dtpStandaloneForm = boosterForm } }
-
         savedValue =
             let
+                model =
+                    let
+                        boosterForm =
+                            { emptyVaccinationForm
+                                | administeredDoses = Just (EverySet.singleton VaccineDoseFirst)
+                                , administrationDates = Just (EverySet.singleton today)
+                                , administrationNote = Just AdministeredToday
+                            }
+
+                        data =
+                            emptyModel.immunisationData
+                    in
+                    { emptyModel | immunisationData = { data | dtpStandaloneForm = boosterForm } }
+
                 ( _, _, appMsgs ) =
                     update today
                         SiteBurundi
