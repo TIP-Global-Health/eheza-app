@@ -24,7 +24,7 @@ import Maybe.Extra
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (Model, Msg(..), PatientRecordFilter(..), PatientType(..), ViewMode(..))
-import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
+import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipantDesc)
 import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive)
 import Pages.Report.Model exposing (PaneEntryStatus(..))
 import Pages.Report.Utils exposing (diagnosisEntryStatusToString)
@@ -545,7 +545,7 @@ viewAntenatalEntry :
 viewAntenatalEntry language currentDate personId db ( ( participantId, status ), data ) =
     let
         encounters =
-            getPrenatalEncountersForParticipant db participantId
+            getPrenatalEncountersForParticipantDesc db participantId
 
         maybeLastEncounterId =
             List.head encounters
@@ -627,7 +627,7 @@ viewFamilyPlanningPane language personId prenatalParticipantsIds db =
             ( familyPlanning.dateMeasured, familyPlanning.value )
 
         prenatalEncountersIds =
-            List.concatMap (getPrenatalEncountersForParticipant db >> List.map Tuple.first)
+            List.concatMap (getPrenatalEncountersForParticipantDesc db >> List.map Tuple.first)
                 prenatalParticipantsIds
     in
     div [ class "pane family-planning" ]
