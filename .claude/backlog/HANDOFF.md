@@ -104,7 +104,7 @@ Earlier merges, for context: **#2150 (B-235)** and **#2146** (e2e progress-repor
 GitHub incident (#2090, #2095, #2097, #2099) and the whole R22 stack (#2108…#2116). That incident is
 over and was never a real signal.
 
-## Round 26 ran 2026-08-30 (evening, after the five-PR session) — 19 new items, ZERO tier 2, 9 tier 3, three of them DEPLOYED
+## Round 26 ran 2026-08-30 (evening, after the five-PR session) — 19 new items, ZERO tier 2, 10 tier 3, three of them DEPLOYED
 
 B-272..B-290 (see `rounds.md` R26, `queue.md` R26 line). An 8-unit coverage sweep giving WellChild, AcuteIllness and NCD the
 unit-depth re-read that turned Prenatal's R14 "clean" into 19 items in R25, plus the FIRST coverage rows for
