@@ -228,7 +228,7 @@ B-227	3	READY	MED			24	Prenatal lab results: the Blood Smear row never shows a r
 B-228	4	READY	LOW			24	Acute illness: closing an illness never sets the participant's `dateConcluded`, so Case Management keeps showing the con
 B-229	4	READY	LOW			24	Trace contact: an edit issued while the contact is not in the cache is dropped silently with the request stuck at `Loadi
 B-230	3	IMPLEMENTED	MED			24	Prenatal diagnoses: `gonorrhea-continued` is encoded and stored but the client decoder has no branch for it, so the diag
-B-231	3	READY	MED-HIGH			24	Case Management TB pane: a patient with a TB follow-up newer than their acute-illness TB-suspect follow-up disappears fr
+B-231	3	IMPLEMENTED	MED-HIGH			24	Case Management TB pane: a patient with a TB follow-up newer than their acute-illness TB-suspect follow-up disappears fr
 B-232	2	READY	HIGH			24	Case Management immunization pane: a child is listed only on the day the follow-up was scheduled, never afterwards — the
 B-233	3	READY	MED			24	Case Management TB/HIV entries: starting an encounter from an AI-derived TB entry or a positive-test HIV entry creates a
 B-234	4	READY	MED-LOW			24	Case Management (CHW): village scoping skips the TB and HIV follow-ups, so their encounters and participants are fetched
