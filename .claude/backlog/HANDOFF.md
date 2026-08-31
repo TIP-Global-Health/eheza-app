@@ -51,7 +51,8 @@ What changes because of this:
 
 | PR | issue | item | branch | state |
 |---|---|---|---|---|
-| #2176 | #2175 | **B-285** | `B-285-prescribed-medications-english` | open, CI running, review to be requested (this session) |
+| #2176 | #2175 | **B-285** | `B-285-prescribed-medications-english` | open, reviewed CLEAN (zero findings), fast CI tier green, e2e running (this session) |
+| #2178 | #2177 | **B-277** | `B-277-dtp-standalone-save-form` | open, CI running, review to be requested (this session) |
 | #2174 | #2173 | **B-290** | `B-290-social-history-beverages` | open — a PARALLEL session's; do not touch from this seat |
 | #2172 | — | **B-231** | `B-231-tb-pane-drops-patient` | open — a PARALLEL session's; do not touch from this seat |
 

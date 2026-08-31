@@ -274,7 +274,7 @@ B-273	4	READY	LOW			26	Newborn Exam Pregnancy Summary: re-editing a record saved
 B-274	3	READY	MED-LOW			26	Acute Illness medication distribution: after a reload, switching a medicine from "not given (out of stock / allergy)" to
 B-275	4	READY	LOW			26	Acute Illness subsequent visit: a positive-and-pregnant malaria RDT is not treated as "malaria diagnosed at this encount
 B-276	4	READY	LOW			26	Acute Illness malaria RDT edit: changing a saved non-positive result to Positive pre-answers "Currently pregnant?" as No
-B-277	3	READY	MED			26	Well Child immunisation (Burundi): the DTP-booster Save handler reads the DTP primary-series form, so what the nurse ent
+B-277	3	IMPLEMENTED	MED			26	Well Child immunisation (Burundi): the DTP-booster Save handler reads the DTP primary-series form, so what the nurse ent
 B-278	4	READY	LOW			26	Well Child head circumference: correcting a reading that triggered the macro/microcephaly popup leaves the warning on th
 B-279	4	READY	LOW			26	Well Child head circumference "not taken" checkbox toggles the raw form, so after a reload the first click on a saved no
 B-280	3	READY	MED-LOW			26	Acute Illness subsequent visit: a diagnosis once written to the encounter is never corrected, even when the RDT or dange
