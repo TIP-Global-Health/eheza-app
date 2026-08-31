@@ -517,7 +517,7 @@ update currentDate site id db msg model =
             ( model
             , Cmd.none
             , saveMeasurementMsgs toVaccinationValueWithDefault
-                model.immunisationData.dtpForm
+                model.immunisationData.dtpStandaloneForm
                 saved
                 (Backend.ChildScoreboardEncounter.Model.SaveDTPStandaloneImmunisation personId)
                 toIndexedDbMsg

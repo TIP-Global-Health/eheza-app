@@ -1,17 +1,22 @@
 module Pages.WellChild.Activity.Test exposing (all)
 
+import App.Model
 import Backend.Measurement.Model
     exposing
-        ( HeightInCm(..)
+        ( AdministrationNote(..)
+        , HeightInCm(..)
         , PregnancySummarySign(..)
         , PregnancySummaryValue
+        , VaccinationValue
+        , VaccineDose(..)
         , WeightInGrm(..)
         )
 import Backend.Model exposing (emptyModelIndexedDb)
+import Backend.WellChildEncounter.Model
 import Date
 import EverySet
 import Expect
-import Measurement.Model exposing (RangedMeasurement(..), emptyHeightForm, emptyMuacForm, emptyWeightForm)
+import Measurement.Model exposing (RangedMeasurement(..), emptyHeightForm, emptyMuacForm, emptyVaccinationForm, emptyWeightForm)
 import Pages.WellChild.Activity.Model exposing (Msg(..), WarningPopupType(..), emptyModel, emptyPregnancySummaryForm)
 import Pages.WellChild.Activity.Update exposing (update)
 import Pages.WellChild.Activity.Utils
@@ -35,6 +40,7 @@ all =
         , pregnancySummaryFormWithDefaultTests
         , pregnancySummaryMeasurementsOutOfRangeTests
         , nutritionAssessmentGateTests
+        , dtpStandaloneSaveTests
         ]
 
 
@@ -449,4 +455,58 @@ pregnancySummaryFormWithDefaultTests =
                         |> pregnancySummaryMeasurementsOutOfRange SiteRwanda
                         |> Expect.equal [ MeasurementApgarFiveMinutes, MeasurementBirthLength ]
             ]
+        ]
+
+
+{-| The DTP-standalone (booster) task keeps its own form, separate from the
+DTP primary-series form. Saving it must store what that form holds.
+-}
+dtpStandaloneSaveTests : Test
+dtpStandaloneSaveTests =
+    let
+        today =
+            Date.fromCalendarDate 2026 Time.Aug 31
+
+        boosterForm =
+            { emptyVaccinationForm
+                | administeredDoses = Just (EverySet.singleton VaccineDoseFirst)
+                , administrationDates = Just (EverySet.singleton today)
+                , administrationNote = Just AdministeredToday
+            }
+
+        model =
+            let
+                data =
+                    emptyModel.immunisationData
+            in
+            { emptyModel | immunisationData = { data | dtpStandaloneForm = boosterForm } }
+
+        savedValue =
+            let
+                ( _, _, appMsgs ) =
+                    update today
+                        SiteBurundi
+                        (toEntityUuid "encounter")
+                        emptyModelIndexedDb
+                        (SaveDTPStandaloneImmunisation (toEntityUuid "person") Nothing Nothing)
+                        model
+            in
+            case appMsgs of
+                (App.Model.MsgIndexedDb (Backend.Model.MsgWellChildEncounter _ (Backend.WellChildEncounter.Model.SaveDTPStandaloneImmunisation _ _ value))) :: _ ->
+                    Just value
+
+                _ ->
+                    Nothing
+    in
+    describe "the DTP-standalone save"
+        [ test "stores the doses, dates and note entered on the DTP-standalone form" <|
+            \_ ->
+                savedValue
+                    |> Expect.equal
+                        (Just
+                            (VaccinationValue (EverySet.singleton VaccineDoseFirst)
+                                (EverySet.singleton today)
+                                AdministeredToday
+                            )
+                        )
         ]
