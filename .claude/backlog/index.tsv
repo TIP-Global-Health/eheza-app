@@ -282,7 +282,7 @@ B-281	4	READY	LOW			26	Shared Yes/No-with-reason forms: flipping the answer back
 B-282	4	READY	LOW			26	Acute Illness participant page: with two illnesses started today, whether "New illness" is disabled, opens the existing 
 B-283	4	READY	LOW			26	NCDA questionnaire (Child Scoreboard, Nutrition, Well Child): after a reload, switching a parent question to "No" keeps 
 B-284	4	READY	LOW			26	TB and HIV "not diagnosed": the participant is closed but the encounter is never ended, so every screening that finds no
-B-285	3	READY	MED-LOW			26	TB/HIV follow-up medication task: the "still taking the prescribed medications?" question shows Kirundi text to every us
+B-285	3	IMPLEMENTED	MED-LOW			26	TB/HIV follow-up medication task: the "still taking the prescribed medications?" question shows Kirundi text to every us
 B-286	3	READY	MED			26	NCD hypertension staging compares against the encounter's OWN just-written stage: a Stage-3 patient with one low reading
 B-287	3	READY	MED-LOW			26	NCD labs Case Management entry is closed by the final lab result BEFORE that result's diagnosis exists, so the Next Step
 B-288	3	READY	MED			26	NCD: diabetes found from a point-of-care blood-sugar reading at the initial phase gets no medication or referral task, b
