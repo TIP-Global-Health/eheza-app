@@ -19989,9 +19989,9 @@ translationSet trans =
                     }
 
         PrescribedMedicationsChangedQuestion ->
-            { english = "Suzuma ko umurwayi agifise imiti yandikiwe kandi ko ayifata uko vyategekanijwe"
+            { english = "Please check the medications that were prescribed. Is the patient still taking the medications listed above"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Suzuma ko umurwayi agifise imiti yandikiwe kandi ko ayifata uko vyategekanijwe"
             , somali = Nothing
             }
 
