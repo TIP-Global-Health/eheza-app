@@ -44,18 +44,18 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — FOUR PRs, all from the 2026-08-30 session
+## Open right now — updated 2026-08-31 midday
 
-⚠ This section was stale until 2026-08-30: it listed #2152/#2154/#2160/#2162 as open, and **all four
-merged** (B-244, B-242, B-243, B-230 — every one now `IMPLEMENTED`). Do not trust an "open PRs"
-table without checking `gh pr list`.
+**All four 2026-08-30 PRs MERGED on 2026-08-31 morning** (#2164 B-247 at 09:47, #2166 B-212 at 09:52,
+#2168 B-239 at 09:52, #2170 B-214+B-253 at 10:24). Their worktrees are released.
 
 | PR | issue | item | branch | state |
 |---|---|---|---|---|
-| #2164 | #2163 | **B-247** | `B-247-wellchild-edema` | reviewed (no findings), **10/10 green**, awaiting merge |
-| #2166 | #2165 | **B-212** | `B-212-ncd-referral-enrolment-flag` | reviewed (no bugs), **10/10 green**, awaiting merge |
-| #2168 | #2167 | **B-239** | `B-239-partner-hiv-followup-save` | reviewed (no findings), **10/10 green**, awaiting merge |
-| #2170 | #2169 | **B-214 + B-253** | `B-214-latest-encounter-sort` | reviewed (4 findings, 2 REFUTED); 3 commits; CI re-running on `eb37046ab` |
+| #2176 | #2175 | **B-285** | `B-285-prescribed-medications-english` | open, CI running, review to be requested (this session) |
+| #2174 | #2173 | **B-290** | `B-290-social-history-beverages` | open — a PARALLEL session's; do not touch from this seat |
+| #2172 | — | **B-231** | `B-231-tb-pane-drops-patient` | open — a PARALLEL session's; do not touch from this seat |
+
+(Older non-backlog PRs — #1720/#1698/#1694/#1626/#1487/#1411/#924 — are external or DO-NOT-MERGE and stay out of this table.)
 
 **#2156 (B-195 measurement guard) is still a DRAFT and still ON HOLD** by the user (2026-08-27,
 *"too dangerous"*), with five unaddressed inline findings. ⛔ Do not re-pitch it.
@@ -115,9 +115,9 @@ Tier 2 READY is unchanged (B-195 half on hold, B-213, B-232). Dry-stop counter: 
 **The three deployed ones, all sized on live:**
 - **B-277** Burundi Well Child (+ Child Scoreboard twin): the DTP-booster Save reads `dtpForm` instead of `dtpStandaloneForm`,
   so the 18-month booster entry is never stored — `vhw.live` has **2 DTP-standalone records, both dose-less**. One word, two files.
-- **B-290** all sites: the NCD social-history encoder writes `cigarettesPerWeek` under `beverages_per_week` (refactor slip
+- **B-290** ✅ IMPLEMENTED (issue #2173, PR #2174, open — parallel session, 2026-08-31) — all sites: the NCD social-history encoder writes `cigarettesPerWeek` under `beverages_per_week` (refactor slip
   `c9610431b`, 2024-01-18) — last differing pair on `ihangane.live` is 2023-09-13; **88 drinkers' counts lost** since. One word.
-- **B-285** all sites: a TB/HIV follow-up question's ENGLISH string was overwritten with Kirundi in `4a4e5e838` (2025-08-20).
+- **B-285** ✅ IMPLEMENTED (issue #2175, PR #2176, open, 2026-08-31) — all sites: a TB/HIV follow-up question's ENGLISH string was overwritten with Kirundi in `4a4e5e838` (2025-08-20).
   Two lines. (The "wrong language in field" exception to the translation-quality decline applies.)
 
 **The tier-2-shaped one that stayed tier 3:** **B-286** — NCD hypertension staging includes the encounter's OWN just-written
