@@ -288,6 +288,20 @@ B-287	3	READY	MED-LOW			26	NCD labs Case Management entry is closed by the final
 B-288	3	READY	MED			26	NCD: diabetes found from a point-of-care blood-sugar reading at the initial phase gets no medication or referral task, b
 B-289	3	READY	MED			26	NCD: a pregnancy found by test at the first encounter is forgotten at every later encounter — the full antihypertensive 
 B-290	3	IMPLEMENTED	MED			26	NCD Social History: the drinks-per-week answer is never saved — the encoder writes the cigarettes count into the `bevera
+B-291	4	READY	MED-LOW			27	NCDA Antenatal Care step (all four hosts): tapping an already-recorded ANC month silently stores a phantom ANC visit dat
+B-292	3	READY	MED			27	Immunisation (Well Child + Child Scoreboard): for a child followed by BOTH programs, the form derives the interval gate 
+B-293	4	READY	LOW			27	Dashboard immunization donut + NCDA scorecard row: a dose administered ON the reference day is read as not given, so the
+B-294	3	READY	MED			27	Nutrition (individual): the assessment stored on the `nutrition_nutrition` measurement goes stale when signs are saved b
+B-295	4	READY	MED-LOW			27	Nutrition (individual, CHW): saving Height/Weight as "unable to take" leaves the previously saved measurement alive and 
+B-296	3	READY	MED-LOW			27	Group sessions: a child enrolled under TWO adults is checked in only through an arbitrary head of the enrolment list — b
+B-297	4	READY	LOW			27	Group sessions: nothing has closed a session since mid-2023 — the close flow was removed but the closed-session guard re
+B-298	4	READY	MED-LOW			27	Group measurement forms: the save button's double-submission guard and error indication are dead — `EditableSession.upda
+B-299	3	READY	MED-LOW			27	Stock Management (CHW village): a saved stock update never reaches the village view in-session — the revision path updat
+B-300	4	READY	MED-LOW			27	Stock Management (CHW village): the monthly data is computed as soon as measurements load, without waiting for the villa
+B-301	4	READY	LOW			27	Stock Management: the oldest history row opens month details at gap 12 while the clamp is 11, and the back arrow then pa
+B-302	4	READY	LOW			27	Stock Management (CHW village): the computed data cache is keyed by health center but holds one village's figures — a CH
+B-303	3	READY	MED			27	Translate: clinical-content translation errors batch — wrong dosage, wrong instruction, collapsed screening options, wro
+B-304	3	READY	MED-LOW			27	Translate: copied-neighbor label batch — a lab/service/category label answers the WRONG English source (10 sites, each v
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

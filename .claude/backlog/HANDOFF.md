@@ -1,11 +1,11 @@
 ---
 name: session-handoff
-description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, open-PR section rewritten 2026-08-30 after a five-PR build session, R26 added 2026-08-30 evening
+description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, open-PR section rewritten 2026-08-30 after a five-PR build session, R26 added 2026-08-30 evening, R27 added 2026-09-01
 metadata: 
   node_type: memory
   type: project
   originSessionId: d78d3330-6ce4-4b84-aa0a-57da7f422346
-  modified: 2026-08-30
+  modified: 2026-09-01
 ---
 
 # Session handoff — E-Heza improvement work
@@ -104,6 +104,17 @@ Earlier merges, for context: **#2150 (B-235)** and **#2146** (e2e progress-repor
 2026-08-26; **#2134 (B-194)** and **#2136 (B-189)** on 2026-08-25; the four red on the 2026-08-17
 GitHub incident (#2090, #2095, #2097, #2099) and the whole R22 stack (#2108…#2116). That incident is
 over and was never a real signal.
+
+## Round 27 ran 2026-08-31 → 09-01 — 14 new items, ZERO tier 2, 6 tier 3; first-ever rows for Measurement/View and Translate
+
+B-291..B-304 (see `rounds.md` R27, `queue.md` R27 line). A 7-unit coverage sweep: shared Measurement form builders (first row), vaccination engine internals, Pages/Nutrition at R26 depth, group-session flow (first re-read since R13), StockManagement, a first mechanical Translate objective-wrongness sweep (3,552+448 records), and the client Backend entity layer. All seven scouts were killed by the session cap on launch evening; six were resumed next morning via SendMessage with context intact. **Counts after R27: 188 READY — T2 3 · T3 46 · T4 105 · untiered 34.** Dry-stop counter: 0.
+
+Headlines, all live-sized from this seat (12 terminus queries this round):
+- **B-292** ⭐ DEPLOYED — the vendored AssocList's `merge` REVERSES per-vaccine dose order, and the immunisation form reads the FIRST dose as "last": interval gate + catch-up date range wrong for every child followed by BOTH WellChild and ChildScoreboard — **3,802 such children on ihangane** (0 on vhw/uvl/tip-somalia).
+- **B-294** — the assessment stored on nutrition measurements goes stale (**269** live divergent encounters); `populate-nutrition-assessment.php` exists on the server solely to repair this field, and the client keeps re-creating what it backfills.
+- **B-296** — **604** children enrolled under two adults in one clinic; group check-in reads an arbitrary head of that list, so a child brought by the caregiver can be unmeasurable for the whole session.
+- **B-303/B-304** — 16 objectively wrong translations (the allowed exception classes only): a wrong Carvedilol dose (5.25 vs 6.25 mg), two EPDS screening options collapsed to one Kirundi string, a 5-seconds ECD threshold that reads 1 second in Somali, and a Burundi main-menu button overwritten with another feature's name.
+- ⭐ **Four-site feature-flag map snapshotted** (in the coverage lessons): HC stock OFF everywhere, village stock = tip-somalia only, ncda/healthy_start/group_education = ihangane only. Size the flag before tiering a flag-gated finding.
 
 ## Round 26 ran 2026-08-30 (evening, after the five-PR session) — 19 new items, ZERO tier 2, 10 tier 3, three of them DEPLOYED
 
