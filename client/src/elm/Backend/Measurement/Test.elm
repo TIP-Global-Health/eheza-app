@@ -189,7 +189,7 @@ ncdSocialHistoryEncodeTest =
     -- fixture gives them different values on purpose -- equal counts would
     -- pass even if both keys were fed from the same field.
     let
-        encodedCount key =
+        encoded =
             encodeNCDSocialHistoryValue
                 { signs = EverySet.singleton SignDrinkAlcohol
                 , foodGroup = FoodGroupVegetables
@@ -197,7 +197,9 @@ ncdSocialHistoryEncodeTest =
                 , cigarettesPerWeek = Just 7
                 }
                 |> Json.Encode.object
-                |> Json.Decode.decodeValue (Json.Decode.field key Json.Decode.int)
+
+        encodedCount key =
+            Json.Decode.decodeValue (Json.Decode.field key Json.Decode.int) encoded
     in
     describe "encodeNCDSocialHistoryValue keeps the two per-week counts apart"
         [ test "beverages_per_week carries the drinks count" <|
