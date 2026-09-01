@@ -38,7 +38,6 @@ import Backend.Measurement.Model
         , LabsResultsReviewState(..)
         , Measurements
         , TestExecutionNote(..)
-        , VillageStockManagementMeasurements
         , WellChildSymptom(..)
         )
 import Backend.Measurement.Utils
@@ -87,7 +86,7 @@ import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
-import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, sw)
+import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, sw, updateVillageStockManagementCaches)
 import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
@@ -5252,33 +5251,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , Cmd.none
             , rollbarOnFailure ++ appMsgs
             )
-
-
-{-| A revision that affects village stock management: merge it into the
-village measurements cache and mark the village data for recalculation,
-the way the health-center caches are kept current.
--}
-updateVillageStockManagementCaches : Maybe HealthCenterId -> (VillageStockManagementMeasurements -> VillageStockManagementMeasurements) -> ModelIndexedDb -> ModelIndexedDb
-updateVillageStockManagementCaches healthCenterId func model =
-    case healthCenterId of
-        Just id ->
-            let
-                mapped =
-                    Dict.get id model.villageStockManagementMeasurements
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map
-                            (\measurements ->
-                                Dict.insert id (func measurements |> Success) model.villageStockManagementMeasurements
-                            )
-                        |> Maybe.withDefault model.villageStockManagementMeasurements
-            in
-            { model
-                | villageStockManagementMeasurements = mapped
-                , villageStockManagementData = Dict.insert id NotAsked model.villageStockManagementData
-            }
-
-        Nothing ->
-            model
 
 
 {-| The extra return value indicates whether we need to recalculate our
