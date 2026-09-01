@@ -269,7 +269,7 @@ B-268	3	READY	MED			25	Prenatal progress report (Healthy Start): the weight-gain
 B-269	3	READY	MED			25	`HedleyRestfulBulkPhotosTest` has never run: it declares the group `Hedley restful` while the test job runs the group `H
 B-270	4	READY	LOW			25	Child progress report ECD pane: when two Well Child encounters fall in the same pediatric-care milestone window, the one
 B-271	4	READY	LOW			25	Vaccination progress: when two encounters record the same dose with different dates, which date wins depends on an arbit
-B-272	3	READY	MED-LOW			26	Well Child vitals: the "previous" respiratory rate and temperature shown beside the inputs are the child's OLDEST readin
+B-272	3	IMPLEMENTED	MED-LOW	2179	2180	26	Well Child vitals: the "previous" respiratory rate and temperature shown beside the inputs are the child's OLDEST readin
 B-273	4	READY	LOW			26	Newborn Exam Pregnancy Summary: re-editing a record saved as "no complications" / "no defects", switching to Yes and sav
 B-274	3	READY	MED-LOW			26	Acute Illness medication distribution: after a reload, switching a medicine from "not given (out of stock / allergy)" to
 B-275	4	READY	LOW			26	Acute Illness subsequent visit: a positive-and-pregnant malaria RDT is not treated as "malaria diagnosed at this encount
