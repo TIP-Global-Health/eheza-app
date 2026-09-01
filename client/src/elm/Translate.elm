@@ -17113,7 +17113,7 @@ translationSet trans =
                 DiagnosisPROM ->
                     { english = "Premature Rupture of Membranes (PROM)"
                     , kinyarwanda = Just "Isuha yamenetse hakiri kare"
-                    , kirundi = Just "Itabuka ry'isimbizo y'umwana mu gitereko imbere yuko imbanyi ishika kw'itarike yayo/igihe cayo"
+                    , kirundi = Nothing
                     , somali = Nothing
                     }
 
