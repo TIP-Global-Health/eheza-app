@@ -458,8 +458,9 @@ pregnancySummaryFormWithDefaultTests =
         ]
 
 
-{-| The DTP-standalone (booster) task keeps its own form, separate from the
-DTP primary-series form. Saving it must store what that form holds.
+{-| The DTP-standalone task keeps its own form (`dtpStandaloneForm`), separate
+from the DTP form (`dtpForm`). Saving it must store what `dtpStandaloneForm`
+holds.
 -}
 dtpStandaloneSaveTests : Test
 dtpStandaloneSaveTests =
@@ -467,46 +468,83 @@ dtpStandaloneSaveTests =
         today =
             Date.fromCalendarDate 2026 Time.Aug 31
 
-        savedValue =
-            let
-                model =
-                    let
-                        boosterForm =
-                            { emptyVaccinationForm
-                                | administeredDoses = Just (EverySet.singleton VaccineDoseFirst)
-                                , administrationDates = Just (EverySet.singleton today)
-                                , administrationNote = Just AdministeredToday
-                            }
+        enteredDoses =
+            EverySet.singleton VaccineDoseFirst
 
-                        data =
-                            emptyModel.immunisationData
-                    in
-                    { emptyModel | immunisationData = { data | dtpStandaloneForm = boosterForm } }
+        enteredDates =
+            EverySet.singleton today
+
+        encounterId =
+            toEntityUuid "encounter"
+
+        personId =
+            toEntityUuid "person"
+
+        saveMsgs form saved =
+            let
+                data =
+                    emptyModel.immunisationData
 
                 ( _, _, appMsgs ) =
                     update today
-                        SiteBurundi
-                        (toEntityUuid "encounter")
+                        SiteRwanda
+                        encounterId
                         emptyModelIndexedDb
-                        (SaveDTPStandaloneImmunisation (toEntityUuid "person") Nothing Nothing)
-                        model
+                        (SaveDTPStandaloneImmunisation personId saved Nothing)
+                        { emptyModel | immunisationData = { data | dtpStandaloneForm = form } }
             in
-            case appMsgs of
-                (App.Model.MsgIndexedDb (Backend.Model.MsgWellChildEncounter _ (Backend.WellChildEncounter.Model.SaveDTPStandaloneImmunisation _ _ value))) :: _ ->
-                    Just value
+            appMsgs
 
-                _ ->
-                    Nothing
+        expectedSaveMsg measurementId value =
+            App.Model.MsgIndexedDb
+                (Backend.Model.MsgWellChildEncounter encounterId
+                    (Backend.WellChildEncounter.Model.SaveDTPStandaloneImmunisation personId measurementId value)
+                )
     in
     describe "the DTP-standalone save"
         [ test "stores the doses, dates and note entered on the DTP-standalone form" <|
             \_ ->
-                savedValue
+                saveMsgs
+                    { emptyVaccinationForm
+                        | administeredDoses = Just enteredDoses
+                        , administrationDates = Just enteredDates
+                        , administrationNote = Just AdministeredToday
+                    }
+                    Nothing
                     |> Expect.equal
-                        (Just
-                            (VaccinationValue (EverySet.singleton VaccineDoseFirst)
-                                (EverySet.singleton today)
-                                AdministeredToday
-                            )
-                        )
+                        [ expectedSaveMsg Nothing
+                            (VaccinationValue enteredDoses enteredDates AdministeredToday)
+                        ]
+        , test "on edit, takes doses and dates from the saved measurement and saves under its id" <|
+            \_ ->
+                let
+                    measurementId =
+                        toEntityUuid "measurement"
+
+                    savedDoses =
+                        EverySet.singleton VaccineDoseSecond
+
+                    savedDates =
+                        EverySet.singleton (Date.fromCalendarDate 2026 Time.Aug 24)
+
+                    measurement =
+                        { dateMeasured = today
+                        , nurse = Nothing
+                        , healthCenter = Nothing
+                        , participantId = personId
+                        , deleted = False
+                        , encounterId = Just encounterId
+                        , value = VaccinationValue savedDoses savedDates AdministeredPreviously
+                        }
+                in
+                saveMsgs
+                    { emptyVaccinationForm
+                        | administrationNote = Just AdministeredToday
+                        , administrationNoteDirty = True
+                    }
+                    (Just ( measurementId, measurement ))
+                    |> Expect.equal
+                        [ expectedSaveMsg (Just measurementId)
+                            (VaccinationValue savedDoses savedDates AdministeredToday)
+                        ]
         ]
