@@ -277,7 +277,7 @@ B-276	4	READY	LOW			26	Acute Illness malaria RDT edit: changing a saved non-posi
 B-277	3	IMPLEMENTED	MED			26	Well Child immunisation (Burundi): the DTP-booster Save handler reads the DTP primary-series form, so what the nurse ent
 B-278	4	READY	LOW			26	Well Child head circumference: correcting a reading that triggered the macro/microcephaly popup leaves the warning on th
 B-279	4	READY	LOW			26	Well Child head circumference "not taken" checkbox toggles the raw form, so after a reload the first click on a saved no
-B-280	3	READY	MED-LOW			26	Acute Illness subsequent visit: a diagnosis once written to the encounter is never corrected, even when the RDT or dange
+B-280	3	IMPLEMENTED	MED-LOW	2184	2185	26	Acute Illness subsequent visit: a diagnosis once written to the encounter is never corrected, even when the RDT or dange
 B-281	4	READY	LOW			26	Shared Yes/No-with-reason forms: flipping the answer back to Yes persists the stale "why not" reason alongside it, in th
 B-282	4	READY	LOW			26	Acute Illness participant page: with two illnesses started today, whether "New illness" is disabled, opens the existing 
 B-283	4	READY	LOW			26	NCDA questionnaire (Child Scoreboard, Nutrition, Well Child): after a reload, switching a parent question to "No" keeps 
