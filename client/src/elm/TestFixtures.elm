@@ -1,5 +1,6 @@
 module TestFixtures exposing
-    ( testChild
+    ( emptyAcuteIllnessMeasurements
+    , testChild
     , testParticipant
     , testPerson
     , urineGlucoseValue
@@ -13,7 +14,8 @@ module TestFixtures exposing
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType)
 import Backend.Measurement.Model
     exposing
-        ( Gender(..)
+        ( AcuteIllnessMeasurements
+        , Gender(..)
         , GlucoseValue
         , Measurement
         , TestExecutionNote(..)
@@ -149,4 +151,32 @@ urineGlucoseValue glucose =
     , haemoglobin = Nothing
     , ketone = Nothing
     , bilirubin = Nothing
+    }
+
+
+emptyAcuteIllnessMeasurements : AcuteIllnessMeasurements
+emptyAcuteIllnessMeasurements =
+    { symptomsGeneral = Nothing
+    , symptomsRespiratory = Nothing
+    , symptomsGI = Nothing
+    , vitals = Nothing
+    , acuteFindings = Nothing
+    , malariaTesting = Nothing
+    , travelHistory = Nothing
+    , exposure = Nothing
+    , isolation = Nothing
+    , hcContact = Nothing
+    , call114 = Nothing
+    , treatmentReview = Nothing
+    , sendToHC = Nothing
+    , medicationDistribution = Nothing
+    , muac = Nothing
+    , treatmentOngoing = Nothing
+    , dangerSigns = Nothing
+    , nutrition = Nothing
+    , healthEducation = Nothing
+    , followUp = Nothing
+    , coreExam = Nothing
+    , covidTesting = Nothing
+    , contactsTracing = Nothing
     }

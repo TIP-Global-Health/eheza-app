@@ -53,7 +53,7 @@ import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, s
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
-import TestFixtures exposing (testPerson)
+import TestFixtures exposing (emptyAcuteIllnessMeasurements, testPerson)
 import Time
 
 
@@ -74,34 +74,6 @@ fields require, with `dummyDate` as `dateMeasured`.
 wrapMeasurement : value -> Maybe ( EntityUuid id, Measurement encounter value )
 wrapMeasurement value =
     TestFixtures.wrapMeasurement dummyDate value
-
-
-emptyAcuteIllnessMeasurements : AcuteIllnessMeasurements
-emptyAcuteIllnessMeasurements =
-    { symptomsGeneral = Nothing
-    , symptomsRespiratory = Nothing
-    , symptomsGI = Nothing
-    , vitals = Nothing
-    , acuteFindings = Nothing
-    , malariaTesting = Nothing
-    , travelHistory = Nothing
-    , exposure = Nothing
-    , isolation = Nothing
-    , hcContact = Nothing
-    , call114 = Nothing
-    , treatmentReview = Nothing
-    , sendToHC = Nothing
-    , medicationDistribution = Nothing
-    , muac = Nothing
-    , treatmentOngoing = Nothing
-    , dangerSigns = Nothing
-    , nutrition = Nothing
-    , healthEducation = Nothing
-    , followUp = Nothing
-    , coreExam = Nothing
-    , covidTesting = Nothing
-    , contactsTracing = Nothing
-    }
 
 
 

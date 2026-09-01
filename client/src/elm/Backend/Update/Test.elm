@@ -18,7 +18,7 @@ import Expect
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
-import TestFixtures exposing (testParticipant, testPerson, vitalsValueWith, wrapMeasurement)
+import TestFixtures exposing (emptyAcuteIllnessMeasurements, testParticipant, testPerson, vitalsValueWith, wrapMeasurement)
 import Time
 
 
@@ -26,34 +26,6 @@ all : Test
 all =
     describe "Backend.Update"
         [ subsequentEncounterDiagnosisTests ]
-
-
-emptyAcuteIllnessMeasurements : AcuteIllnessMeasurements
-emptyAcuteIllnessMeasurements =
-    { symptomsGeneral = Nothing
-    , symptomsRespiratory = Nothing
-    , symptomsGI = Nothing
-    , vitals = Nothing
-    , acuteFindings = Nothing
-    , malariaTesting = Nothing
-    , travelHistory = Nothing
-    , exposure = Nothing
-    , isolation = Nothing
-    , hcContact = Nothing
-    , call114 = Nothing
-    , treatmentReview = Nothing
-    , sendToHC = Nothing
-    , medicationDistribution = Nothing
-    , muac = Nothing
-    , treatmentOngoing = Nothing
-    , dangerSigns = Nothing
-    , nutrition = Nothing
-    , healthEducation = Nothing
-    , followUp = Nothing
-    , coreExam = Nothing
-    , covidTesting = Nothing
-    , contactsTracing = Nothing
-    }
 
 
 {-| The diagnosis stored on a subsequent Acute Illness encounter follows the
