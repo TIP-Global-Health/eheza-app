@@ -54,7 +54,7 @@ morning's four merged — #2178/#2172/#2174/#2176, issues closed, worktrees rele
 | #2180 | #2179 | **B-272** | `B-272-vitals-previous-reading` | green, reviewed CLEAN (zero findings) |
 | #2183 | #2181+#2182 | **B-303+B-304** | `B-303-B-304-translate-corrections` | green, review done; ⚠ ONE OPEN THREAD: the altitude finding (dosage literals per branch/language in `TreatmentDetailsHypertension`) awaits a user decision — fold/file/drop |
 | #2185 | #2184 | **B-280** | `B-280-subsequent-diagnosis-correction` | green, review done (fixture finding fixed; follow-up finding filed as B-306) |
-| #2187 | #2186 | **B-299** | `B-299-village-stock-cache` | fast tier green, slow jobs running on the review-fix head; review done (placement finding fixed `91be8e22d`, recompute-cost finding ACCEPTED by user) |
+| #2187 | #2186 | **B-299** | `B-299-village-stock-cache` | green, review done (placement finding fixed `91be8e22d`, recompute-cost finding ACCEPTED by user) |
 
 Worktrees held by this session, to be removed **when their PR merges**: `ihangane-wt/{B-272-vitals-previous-reading, B-303-B-304-translate-corrections, B-280-subsequent-diagnosis-correction, B-299-village-stock-cache}`.
 
