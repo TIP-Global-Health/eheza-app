@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, open-PR section rewritten 2026-08-30 after a five-PR build session, R26 added 2026-08-30 evening, R27 added 2026-09-01
+description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, R26 added 2026-08-30 evening, R27 added 2026-09-01, open-PR section cleared 2026-09-01 midday (all four PRs merged)
 metadata: 
   node_type: memory
   type: project
