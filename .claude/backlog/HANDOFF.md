@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, R26 added 2026-08-30 evening, R27 added 2026-09-01, open-PR section cleared 2026-09-01 midday (all four PRs merged)
+description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, R26 added 2026-08-30 evening, R27 added 2026-09-01, open-PR section rewritten 2026-09-01 evening (four new PRs open, reviewed, awaiting merge)
 metadata: 
   node_type: memory
   type: project
@@ -44,14 +44,25 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — updated 2026-09-01 midday
+## Open right now — updated 2026-09-01 evening
 
-**No open backlog PRs.** The last four merged on 2026-09-01: #2178 (B-277, 07:12), #2172 (B-231,
-07:13), #2174 (B-290, 07:15), #2176 (B-285, 09:34). Their issues (#2177, #2171, #2173, #2175) are
-closed by hand, all `ihangane-wt/` worktrees are released, and the B-277/B-285/B-231/B-290 entries
-are marked IMPLEMENTED. B-305 (tier 4) is the recorded follow-up from the #2178 review: a data
-repair for the pre-fix DTP-standalone records on vhw.live, to be re-counted on the release day that
-ships the fix.
+**Four backlog PRs open, all reviewed, all awaiting the user's merge** (built this session after the
+morning's four merged — #2178/#2172/#2174/#2176, issues closed, worktrees released):
+
+| PR | issue | item | branch | state |
+|---|---|---|---|---|
+| #2180 | #2179 | **B-272** | `B-272-vitals-previous-reading` | green, reviewed CLEAN (zero findings) |
+| #2183 | #2181+#2182 | **B-303+B-304** | `B-303-B-304-translate-corrections` | green, review done; ⚠ ONE OPEN THREAD: the altitude finding (dosage literals per branch/language in `TreatmentDetailsHypertension`) awaits a user decision — fold/file/drop |
+| #2185 | #2184 | **B-280** | `B-280-subsequent-diagnosis-correction` | green, review done (fixture finding fixed; follow-up finding filed as B-306) |
+| #2187 | #2186 | **B-299** | `B-299-village-stock-cache` | fast tier green, slow jobs running on the review-fix head; review done (placement finding fixed `91be8e22d`, recompute-cost finding ACCEPTED by user) |
+
+Worktrees held by this session, to be removed **when their PR merges**: `ihangane-wt/{B-272-vitals-previous-reading, B-303-B-304-translate-corrections, B-280-subsequent-diagnosis-correction, B-299-village-stock-cache}`.
+
+⭐ Session lessons already in memory: `elm-test-cannot-import-backend-update` (two CI kills before
+diagnosis). B-305 (tier 4) remains the recorded #2178 follow-up: re-count the vhw.live
+DTP-standalone records on the release day that ships the fix. **B-306** (tier 4) filed from the
+#2185 review: an AI follow-up keeps the diagnosis it was saved with.
+**Counts: 185 READY — T2 3 · T3 41 · T4 107 · untiered 34.**
 
 (Older non-backlog PRs — #1720/#1698/#1694/#1626/#1487/#1411/#924 — are external or DO-NOT-MERGE and stay out of this table.)
 
