@@ -366,7 +366,8 @@ generateTuberculosisFollowUps limitDate db followUps followUpsFromAcuteIllness =
                 |> Maybe.map
                     (\itemFromAcuteIllness ->
                         ( -- In case acute illness item is more recent that the one we have
-                          -- from Tuberculosis encounter, replace it.
+                          -- from Tuberculosis encounter, replace it. Otherwise, we keep
+                          -- the one from Tuberculosis encounter.
                           if Date.compare item.dateMeasured itemFromAcuteIllness.dateMeasured == LT then
                             Dict.insert ( participantId, personId )
                                 -- When replacing, we assign encounter ID, as acute illness
@@ -375,7 +376,7 @@ generateTuberculosisFollowUps limitDate db followUps followUpsFromAcuteIllness =
                                 accum
 
                           else
-                            accum
+                            Dict.insert ( participantId, personId ) item accum
                         , -- Item for person was found in 'generic' Tuberculosis dict,
                           -- No matter if it's used or dropped, we remove it from Acute Illness dict,
                           Dict.remove personId acuteIllnessDict
