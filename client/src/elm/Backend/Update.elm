@@ -1,4 +1,4 @@
-module Backend.Update exposing (generateSuspectedDiagnosisMsgsSubsequentEncounter, updateIndexedDb)
+module Backend.Update exposing (updateIndexedDb)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
@@ -106,9 +106,9 @@ import Pages.AcuteIllness.Activity.Utils
         ( activityCompleted
         , mandatoryActivitiesCompletedSubsequentVisit
         , noImprovementOnSubsequentVisit
-        , resolveAcuteIllnessDiagnosis
         , resolveNextStep
         , respiratoryRateAbnormalForAge
+        , subsequentEncounterDiagnosisUpdate
         )
 import Pages.AcuteIllness.Encounter.Model
 import Pages.AcuteIllness.Encounter.Utils
@@ -9986,20 +9986,10 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter :
 generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate features isChw data =
     if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data then
         let
-            diagnosisByCurrentEncounterMeasurements =
-                resolveAcuteIllnessDiagnosis currentDate features isChw data
-                    |> Maybe.withDefault NoAcuteIllnessDiagnosis
-
             setDiagnosisMsg =
-                -- The diagnosis derived from current measurements replaces the
-                -- stored one when they differ, so correcting a measurement
-                -- corrects the diagnosis - including clearing it, when the
-                -- measurements no longer support any diagnosis.
-                if data.encounter.diagnosis /= diagnosisByCurrentEncounterMeasurements then
-                    [ updateAcuteIllnessDiagnosisMsg data.id diagnosisByCurrentEncounterMeasurements ]
-
-                else
-                    []
+                subsequentEncounterDiagnosisUpdate currentDate features isChw data
+                    |> Maybe.map (updateAcuteIllnessDiagnosisMsg data.id >> List.singleton)
+                    |> Maybe.withDefault []
 
             setActiveTaskMsg =
                 resolveNextStep currentDate isChw data

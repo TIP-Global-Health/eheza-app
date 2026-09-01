@@ -9,6 +9,7 @@ import Backend.Measurement.Model
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
         , AcuteFindingsValue
+        , AcuteIllnessDangerSign(..)
         , AcuteIllnessMeasurements
         , CovidTestingValue
         , HeartCPESign
@@ -45,6 +46,7 @@ import Pages.AcuteIllness.Activity.Utils
         , respiratoryInfectionDangerSignsPresent
         , respiratoryRateElevatedByAge
         , respiratoryRateElevatedByAgeForCovid19
+        , subsequentEncounterDiagnosisUpdate
         , symptomMaxDuration
         , toCovidTestingValueWithDefault
         )
@@ -780,6 +782,53 @@ amoxicillinDosageTest =
         ]
 
 
+subsequentEncounterDiagnosisUpdateTest : Test
+subsequentEncounterDiagnosisUpdateTest =
+    let
+        diagnosisUpdate storedDiagnosis rdtResult dangerSigns =
+            let
+                assembled =
+                    testAssembled False
+                        { emptyAcuteIllnessMeasurements
+                            | dangerSigns = wrapMeasurement dangerSigns
+                            , malariaTesting = wrapMeasurement rdtResult
+                        }
+
+                encounter =
+                    assembled.encounter
+            in
+            subsequentEncounterDiagnosisUpdate currentDate
+                EverySet.empty
+                True
+                { assembled | encounter = { encounter | diagnosis = storedDiagnosis } }
+
+        noDangerSigns =
+            EverySet.singleton NoAcuteIllnessDangerSign
+    in
+    describe "subsequentEncounterDiagnosisUpdate"
+        [ test "a diagnosis is written once the measurements produce one" <|
+            \_ ->
+                diagnosisUpdate NoAcuteIllnessDiagnosis RapidTestPositive noDangerSigns
+                    |> Expect.equal (Just DiagnosisMalariaUncomplicated)
+        , test "a corrected danger-sign set replaces the stored diagnosis" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaComplicated RapidTestPositive noDangerSigns
+                    |> Expect.equal (Just DiagnosisMalariaUncomplicated)
+        , test "a corrected negative RDT clears the stored diagnosis" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaUncomplicated RapidTestNegative noDangerSigns
+                    |> Expect.equal (Just NoAcuteIllnessDiagnosis)
+        , test "a diagnosis matching the measurements is not rewritten" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaUncomplicated RapidTestPositive noDangerSigns
+                    |> Expect.equal Nothing
+        , test "danger signs beside a positive RDT make the diagnosis complicated" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaUncomplicated RapidTestPositive (EverySet.singleton DangerSignConvulsions)
+                    |> Expect.equal (Just DiagnosisMalariaComplicated)
+        ]
+
+
 all : Test
 all =
     describe "Acute Illness diagnosis and dosing tests"
@@ -788,6 +837,7 @@ all =
         , malariaDangerSignsPresentTest
         , respiratoryInfectionDangerSignsPresentTest
         , resolveAcuteIllnessDiagnosisByMalariaRDTTest
+        , subsequentEncounterDiagnosisUpdateTest
         , gastrointestinalSymptomsTest
         , resolveAcuteIllnessDiagnosisNonCovidTest
         , resolveAcuteIllnessDiagnosisTuberculosisTest
