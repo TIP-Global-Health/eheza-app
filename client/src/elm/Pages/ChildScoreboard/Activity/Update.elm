@@ -10,6 +10,7 @@ import Backend.Measurement.Model
         , MuacInCm(..)
         , WeightInGrm(..)
         , WeightInKg(..)
+        , WellChildVaccineType(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -495,7 +496,7 @@ update currentDate site id db msg model =
             ( model
             , Cmd.none
             , saveMeasurementMsgs toVaccinationValueWithDefault
-                model.immunisationData.bcgForm
+                (getFormByVaccineTypeFunc VaccineBCG model.immunisationData)
                 saved
                 (Backend.ChildScoreboardEncounter.Model.SaveBCGImmunisation personId)
                 toIndexedDbMsg
@@ -506,7 +507,7 @@ update currentDate site id db msg model =
             ( model
             , Cmd.none
             , saveMeasurementMsgs toVaccinationValueWithDefault
-                model.immunisationData.dtpForm
+                (getFormByVaccineTypeFunc VaccineDTP model.immunisationData)
                 saved
                 (Backend.ChildScoreboardEncounter.Model.SaveDTPImmunisation personId)
                 toIndexedDbMsg
@@ -517,7 +518,7 @@ update currentDate site id db msg model =
             ( model
             , Cmd.none
             , saveMeasurementMsgs toVaccinationValueWithDefault
-                model.immunisationData.dtpStandaloneForm
+                (getFormByVaccineTypeFunc VaccineDTPStandalone model.immunisationData)
                 saved
                 (Backend.ChildScoreboardEncounter.Model.SaveDTPStandaloneImmunisation personId)
                 toIndexedDbMsg
@@ -528,7 +529,7 @@ update currentDate site id db msg model =
             ( model
             , Cmd.none
             , saveMeasurementMsgs toVaccinationValueWithDefault
-                model.immunisationData.ipvForm
+                (getFormByVaccineTypeFunc VaccineIPV model.immunisationData)
                 saved
                 (Backend.ChildScoreboardEncounter.Model.SaveIPVImmunisation personId)
                 toIndexedDbMsg
@@ -539,7 +540,7 @@ update currentDate site id db msg model =
             ( model
             , Cmd.none
             , saveMeasurementMsgs toVaccinationValueWithDefault
-                model.immunisationData.mrForm
+                (getFormByVaccineTypeFunc VaccineMR model.immunisationData)
                 saved
                 (Backend.ChildScoreboardEncounter.Model.SaveMRImmunisation personId)
                 toIndexedDbMsg
@@ -550,7 +551,7 @@ update currentDate site id db msg model =
             ( model
             , Cmd.none
             , saveMeasurementMsgs toVaccinationValueWithDefault
-                model.immunisationData.opvForm
+                (getFormByVaccineTypeFunc VaccineOPV model.immunisationData)
                 saved
                 (Backend.ChildScoreboardEncounter.Model.SaveOPVImmunisation personId)
                 toIndexedDbMsg
@@ -561,7 +562,7 @@ update currentDate site id db msg model =
             ( model
             , Cmd.none
             , saveMeasurementMsgs toVaccinationValueWithDefault
-                model.immunisationData.pcv13Form
+                (getFormByVaccineTypeFunc VaccinePCV13 model.immunisationData)
                 saved
                 (Backend.ChildScoreboardEncounter.Model.SavePCV13Immunisation personId)
                 toIndexedDbMsg
@@ -572,7 +573,7 @@ update currentDate site id db msg model =
             ( model
             , Cmd.none
             , saveMeasurementMsgs toVaccinationValueWithDefault
-                model.immunisationData.rotarixForm
+                (getFormByVaccineTypeFunc VaccineRotarix model.immunisationData)
                 saved
                 (Backend.ChildScoreboardEncounter.Model.SaveRotarixImmunisation personId)
                 toIndexedDbMsg
