@@ -44,25 +44,19 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — updated 2026-08-31 midday
+## Open right now — updated 2026-09-01 midday
 
-**All four 2026-08-30 PRs MERGED on 2026-08-31 morning** (#2164 B-247 at 09:47, #2166 B-212 at 09:52,
-#2168 B-239 at 09:52, #2170 B-214+B-253 at 10:24). Their worktrees are released.
-
-| PR | issue | item | branch | state |
-|---|---|---|---|---|
-| #2176 | #2175 | **B-285** | `B-285-prescribed-medications-english` | open, reviewed CLEAN (zero findings), fast CI tier green, e2e running (this session) |
-| #2178 | #2177 | **B-277** | `B-277-dtp-standalone-save-form` | open, CI running, review to be requested (this session) |
-| #2174 | #2173 | **B-290** | `B-290-social-history-beverages` | open — a PARALLEL session's; do not touch from this seat |
-| #2172 | — | **B-231** | `B-231-tb-pane-drops-patient` | open — a PARALLEL session's; do not touch from this seat |
+**No open backlog PRs.** The last four merged on 2026-09-01: #2178 (B-277, 07:12), #2172 (B-231,
+07:13), #2174 (B-290, 07:15), #2176 (B-285, 09:34). Their issues (#2177, #2171, #2173, #2175) are
+closed by hand, all `ihangane-wt/` worktrees are released, and the B-277/B-285/B-231/B-290 entries
+are marked IMPLEMENTED. B-305 (tier 4) is the recorded follow-up from the #2178 review: a data
+repair for the pre-fix DTP-standalone records on vhw.live, to be re-counted on the release day that
+ships the fix.
 
 (Older non-backlog PRs — #1720/#1698/#1694/#1626/#1487/#1411/#924 — are external or DO-NOT-MERGE and stay out of this table.)
 
 **#2156 (B-195 measurement guard) is still a DRAFT and still ON HOLD** by the user (2026-08-27,
 *"too dangerous"*), with five unaddressed inline findings. ⛔ Do not re-pitch it.
-
-Worktrees held by this session, all to be removed **when their PR merges**, not before:
-`ihangane-wt/{B-247-wellchild-edema, B-212-ncd-referral-enrolment-flag, B-239-partner-hiv-followup-save, B-214-latest-encounter-sort}`.
 
 ### What the 2026-08-30 session shipped, and the four lessons worth carrying
 
