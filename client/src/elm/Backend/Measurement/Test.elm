@@ -1,7 +1,7 @@
 module Backend.Measurement.Test exposing (all)
 
-import Backend.Measurement.Encoder exposing (encodeMedicalHistoryValue)
-import Backend.Measurement.Model exposing (ColorAlertIndication(..), GlucoseValue(..), HeadCircumferenceInCm(..), MuacInCm(..), OccursInFamilySign(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..))
+import Backend.Measurement.Encoder exposing (encodeMedicalHistoryValue, encodeNCDSocialHistoryValue)
+import Backend.Measurement.Model exposing (ColorAlertIndication(..), FoodGroup(..), GlucoseValue(..), HeadCircumferenceInCm(..), MuacInCm(..), NCDSocialHistorySign(..), OccursInFamilySign(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..))
 import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, headCircumferenceIndication, muacIndicationForAdult, muacIndicationForChild, muacValueFuncForSite)
 import EverySet
 import Expect
@@ -183,6 +183,32 @@ preeclampsiaInFamilyEncodeTest =
         ]
 
 
+ncdSocialHistoryEncodeTest : Test
+ncdSocialHistoryEncodeTest =
+    -- Regression: the two per-week counts must reach their own keys. The
+    -- fixture gives them different values on purpose -- equal counts would
+    -- pass even if both keys were fed from the same field.
+    let
+        encoded =
+            encodeNCDSocialHistoryValue
+                { signs = EverySet.singleton SignDrinkAlcohol
+                , foodGroup = FoodGroupVegetables
+                , beveragesPerWeek = Just 3
+                , cigarettesPerWeek = Just 7
+                }
+                |> Json.Encode.object
+
+        encodedCount key =
+            Json.Decode.decodeValue (Json.Decode.field key Json.Decode.int) encoded
+    in
+    describe "encodeNCDSocialHistoryValue keeps the two per-week counts apart"
+        [ test "beverages_per_week carries the drinks count" <|
+            \_ -> encodedCount "beverages_per_week" |> Expect.equal (Ok 3)
+        , test "cigarettes_per_week carries the cigarettes count" <|
+            \_ -> encodedCount "cigarettes_per_week" |> Expect.equal (Ok 7)
+        ]
+
+
 muacValueFuncForSiteTest : Test
 muacValueFuncForSiteTest =
     -- MUAC is stored in cm; Burundi displays it in mm (x10), other sites in cm.
@@ -210,5 +236,6 @@ all =
         , diabetesBySugarCountTest
         , diabetesByUrineGlucoseTest
         , preeclampsiaInFamilyEncodeTest
+        , ncdSocialHistoryEncodeTest
         , muacValueFuncForSiteTest
         ]
