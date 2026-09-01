@@ -1,17 +1,22 @@
 module Pages.WellChild.Activity.Test exposing (all)
 
+import App.Model
 import Backend.Measurement.Model
     exposing
-        ( HeightInCm(..)
+        ( AdministrationNote(..)
+        , HeightInCm(..)
         , PregnancySummarySign(..)
         , PregnancySummaryValue
+        , VaccinationValue
+        , VaccineDose(..)
         , WeightInGrm(..)
         )
 import Backend.Model exposing (emptyModelIndexedDb)
+import Backend.WellChildEncounter.Model
 import Date
 import EverySet
 import Expect
-import Measurement.Model exposing (RangedMeasurement(..), emptyHeightForm, emptyMuacForm, emptyWeightForm)
+import Measurement.Model exposing (RangedMeasurement(..), emptyHeightForm, emptyMuacForm, emptyVaccinationForm, emptyWeightForm)
 import Pages.WellChild.Activity.Model exposing (Msg(..), WarningPopupType(..), emptyModel, emptyPregnancySummaryForm)
 import Pages.WellChild.Activity.Update exposing (update)
 import Pages.WellChild.Activity.Utils
@@ -35,6 +40,7 @@ all =
         , pregnancySummaryFormWithDefaultTests
         , pregnancySummaryMeasurementsOutOfRangeTests
         , nutritionAssessmentGateTests
+        , dtpStandaloneSaveTests
         ]
 
 
@@ -449,4 +455,96 @@ pregnancySummaryFormWithDefaultTests =
                         |> pregnancySummaryMeasurementsOutOfRange SiteRwanda
                         |> Expect.equal [ MeasurementApgarFiveMinutes, MeasurementBirthLength ]
             ]
+        ]
+
+
+{-| The DTP-standalone task keeps its own form (`dtpStandaloneForm`), separate
+from the DTP form (`dtpForm`). Saving it must store what `dtpStandaloneForm`
+holds.
+-}
+dtpStandaloneSaveTests : Test
+dtpStandaloneSaveTests =
+    let
+        today =
+            Date.fromCalendarDate 2026 Time.Aug 31
+
+        enteredDoses =
+            EverySet.singleton VaccineDoseFirst
+
+        enteredDates =
+            EverySet.singleton today
+
+        encounterId =
+            toEntityUuid "encounter"
+
+        personId =
+            toEntityUuid "person"
+
+        saveMsgs form saved =
+            let
+                data =
+                    emptyModel.immunisationData
+
+                ( _, _, appMsgs ) =
+                    update today
+                        SiteRwanda
+                        encounterId
+                        emptyModelIndexedDb
+                        (SaveDTPStandaloneImmunisation personId saved Nothing)
+                        { emptyModel | immunisationData = { data | dtpStandaloneForm = form } }
+            in
+            appMsgs
+
+        expectedSaveMsg measurementId value =
+            App.Model.MsgIndexedDb
+                (Backend.Model.MsgWellChildEncounter encounterId
+                    (Backend.WellChildEncounter.Model.SaveDTPStandaloneImmunisation personId measurementId value)
+                )
+    in
+    describe "the DTP-standalone save"
+        [ test "stores the doses, dates and note entered on the DTP-standalone form" <|
+            \_ ->
+                saveMsgs
+                    { emptyVaccinationForm
+                        | administeredDoses = Just enteredDoses
+                        , administrationDates = Just enteredDates
+                        , administrationNote = Just AdministeredToday
+                    }
+                    Nothing
+                    |> Expect.equal
+                        [ expectedSaveMsg Nothing
+                            (VaccinationValue enteredDoses enteredDates AdministeredToday)
+                        ]
+        , test "on edit, takes doses and dates from the saved measurement and saves under its id" <|
+            \_ ->
+                let
+                    measurementId =
+                        toEntityUuid "measurement"
+
+                    savedDoses =
+                        EverySet.singleton VaccineDoseSecond
+
+                    savedDates =
+                        EverySet.singleton (Date.fromCalendarDate 2026 Time.Aug 24)
+
+                    measurement =
+                        { dateMeasured = today
+                        , nurse = Nothing
+                        , healthCenter = Nothing
+                        , participantId = personId
+                        , deleted = False
+                        , encounterId = Just encounterId
+                        , value = VaccinationValue savedDoses savedDates AdministeredPreviously
+                        }
+                in
+                saveMsgs
+                    { emptyVaccinationForm
+                        | administrationNote = Just AdministeredToday
+                        , administrationNoteDirty = True
+                    }
+                    (Just ( measurementId, measurement ))
+                    |> Expect.equal
+                        [ expectedSaveMsg (Just measurementId)
+                            (VaccinationValue savedDoses savedDates AdministeredToday)
+                        ]
         ]
