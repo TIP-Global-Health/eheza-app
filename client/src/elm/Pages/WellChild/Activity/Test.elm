@@ -1,6 +1,8 @@
 module Pages.WellChild.Activity.Test exposing (all)
 
 import App.Model
+import AssocList as Dict
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model
     exposing
         ( AdministrationNote(..)
@@ -10,6 +12,7 @@ import Backend.Measurement.Model
         , VaccinationValue
         , VaccineDose(..)
         , WeightInGrm(..)
+        , WellChildMeasurements
         )
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.WellChildEncounter.Model
@@ -25,10 +28,12 @@ import Pages.WellChild.Activity.Utils
         , pregnancySummaryMeasurementsOutOfRange
         , resolveFirstEncounterDateAfterMilestone
         , resolveNextDateForECDVisit
+        , resolvePreviousMaybeValue
         )
 import Restful.Endpoint exposing (toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (testParticipant, testPerson, vitalsValueWith, wrapMeasurement)
 import Time
 
 
@@ -41,6 +46,106 @@ all =
         , pregnancySummaryMeasurementsOutOfRangeTests
         , nutritionAssessmentGateTests
         , dtpStandaloneSaveTests
+        , resolvePreviousMaybeValueTests
+        ]
+
+
+emptyWellChildMeasurements : WellChildMeasurements
+emptyWellChildMeasurements =
+    { pregnancySummary = Nothing
+    , symptomsReview = Nothing
+    , vitals = Nothing
+    , height = Nothing
+    , muac = Nothing
+    , nutrition = Nothing
+    , photo = Nothing
+    , weight = Nothing
+    , contributingFactors = Nothing
+    , healthEducation = Nothing
+    , followUp = Nothing
+    , sendToHC = Nothing
+    , headCircumference = Nothing
+    , ecd = Nothing
+    , albendazole = Nothing
+    , mebendezole = Nothing
+    , vitaminA = Nothing
+    , nextVisit = Nothing
+    , bcgImmunisation = Nothing
+    , dtpImmunisation = Nothing
+    , dtpStandaloneImmunisation = Nothing
+    , hpvImmunisation = Nothing
+    , ipvImmunisation = Nothing
+    , mrImmunisation = Nothing
+    , opvImmunisation = Nothing
+    , pcv13Immunisation = Nothing
+    , rotarixImmunisation = Nothing
+    , ncda = Nothing
+    , feeding = Nothing
+    , hygiene = Nothing
+    , foodSecurity = Nothing
+    , caring = Nothing
+    }
+
+
+resolvePreviousMaybeValueTests : Test
+resolvePreviousMaybeValueTests =
+    let
+        currentDate =
+            Date.fromCalendarDate 2026 Time.Jul 27
+
+        dateMonthsAgo monthsAgo =
+            Date.add Date.Months -monthsAgo currentDate
+
+        rowAt monthsAgo measurements =
+            ( dateMonthsAgo monthsAgo
+            , ( toEntityUuid ("prev-encounter-" ++ String.fromInt monthsAgo), measurements )
+            )
+
+        withTemperature temperature =
+            let
+                vitalsValue =
+                    vitalsValueWith 120 80
+            in
+            { emptyWellChildMeasurements
+                | vitals = wrapMeasurement currentDate { vitalsValue | bodyTemperature = Just temperature }
+            }
+
+        -- The history is passed most recent first, the order
+        -- generatePreviousMeasurements produces.
+        resolveTemperatureWith previous =
+            resolvePreviousMaybeValue
+                { id = toEntityUuid "current-encounter"
+                , encounter =
+                    Backend.WellChildEncounter.Model.emptyWellChildEncounter
+                        (toEntityUuid "participant")
+                        currentDate
+                        Backend.WellChildEncounter.Model.PediatricCare
+                        Nothing
+                , participant = testParticipant currentDate WellChildEncounter
+                , person = testPerson
+                , measurements = emptyWellChildMeasurements
+                , previousMeasurementsWithDates = previous
+                , vaccinationHistory = Dict.empty
+                , vaccinationProgress = Dict.empty
+                }
+                .vitals
+                .bodyTemperature
+    in
+    describe "resolvePreviousMaybeValue"
+        [ test "the previous value is the most recent recorded one" <|
+            \_ ->
+                resolveTemperatureWith
+                    [ rowAt 1 (withTemperature 37.5)
+                    , rowAt 2 (withTemperature 36.5)
+                    ]
+                    |> Expect.equal (Just 37.5)
+        , test "an encounter where the value was not recorded is skipped" <|
+            \_ ->
+                resolveTemperatureWith
+                    [ rowAt 1 { emptyWellChildMeasurements | vitals = wrapMeasurement (dateMonthsAgo 1) (vitalsValueWith 120 80) }
+                    , rowAt 2 (withTemperature 36.5)
+                    ]
+                    |> Expect.equal (Just 36.5)
         ]
 
 

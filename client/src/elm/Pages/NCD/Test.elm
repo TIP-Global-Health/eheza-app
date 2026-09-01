@@ -20,6 +20,7 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
+import Pages.NCD.Activity.Utils exposing (resolvePreviousMaybeValue)
 import Pages.NCD.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.NCD.Utils
     exposing
@@ -450,6 +451,43 @@ generateNCDDiagnosesTest =
         ]
 
 
+resolvePreviousMaybeValueTest : Test
+resolvePreviousMaybeValueTest =
+    let
+        previousEncounterAt monthsAgo measurements =
+            { id = toEntityUuid ("prev-encounter-" ++ String.fromInt monthsAgo)
+            , startDate = Date.add Date.Months -monthsAgo dummyDate
+            , diagnoses = EverySet.empty
+            , measurements = measurements
+            }
+
+        -- The history is passed most recent first, the order
+        -- generatePreviousEncountersData produces.
+        resolveSysWith previous =
+            let
+                assembled =
+                    ncdAssembled emptyNCDMeasurements
+            in
+            resolvePreviousMaybeValue { assembled | previousEncountersData = previous } .vitals .sys
+    in
+    describe "resolvePreviousMaybeValue"
+        [ test "the previous value is the most recent recorded one" <|
+            \_ ->
+                resolveSysWith
+                    [ previousEncounterAt 1 (emptyNCDMeasurements |> withVitals 150 80)
+                    , previousEncounterAt 2 (emptyNCDMeasurements |> withVitals 100 80)
+                    ]
+                    |> Expect.equal (Just 150)
+        , test "an encounter where the value was not recorded is skipped" <|
+            \_ ->
+                resolveSysWith
+                    [ previousEncounterAt 1 emptyNCDMeasurements
+                    , previousEncounterAt 2 (emptyNCDMeasurements |> withVitals 100 80)
+                    ]
+                    |> Expect.equal (Just 100)
+        ]
+
+
 all : Test
 all =
     describe "NCD diagnosis tests"
@@ -459,4 +497,5 @@ all =
         , lowerHypertensionStageTest
         , generateNCDDiagnosesTest
         , hypertensionHierarchyTest
+        , resolvePreviousMaybeValueTest
         ]
