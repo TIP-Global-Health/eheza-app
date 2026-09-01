@@ -302,6 +302,7 @@ B-301	4	READY	LOW			27	Stock Management: the oldest history row opens month deta
 B-302	4	READY	LOW			27	Stock Management (CHW village): the computed data cache is keyed by health center but holds one village's figures — a CH
 B-303	3	READY	MED			27	Translate: clinical-content translation errors batch — wrong dosage, wrong instruction, collapsed screening options, wro
 B-304	3	READY	MED-LOW			27	Translate: copied-neighbor label batch — a lab/service/category label answers the WRONG English source (10 sites, each v
+B-305	4	READY	LOW			26	Well Child immunisation (Burundi): pre-fix DTP-standalone records hold the DTP form's contents and keep blocking the boo
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
