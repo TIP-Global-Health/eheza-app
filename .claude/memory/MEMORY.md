@@ -4,6 +4,7 @@
 
 - [Rollbar post-deploy triage 2026-07](rollbar-postdeploy-triage-2026-07.md) — Jul-7 deploy verified; obstetric_history_step2 REST drop JAMS old-app devices' sync (device list inside); reg.update() no-catch = new top noise; str.trim crash site found
 - [Prod AdvancedQueue is Jenkins-serialized](prod-advancedqueue-jenkins-serialized.md) — concurrent builds OFF → no two AQ workers per site DB; closed B-058pt2/B-059 as won't-fix (single-worker bugs still real)
+- [Show code snippets when citing](show-code-snippets-when-citing.md) — ⛔ **100% rule** (user, 2026-09-01): mentioning code in a file means SHOWING the snippet (`-- path:lines` header + today's real code, `...`-elided), never a bare file:line reference
 - [PR-first review workflow](pr-first-review-workflow.md) — PR goes up BEFORE the review; ⛔ **POST FINDINGS TO THE PR INLINE THE MOMENT THE REVIEW LANDS IN CHAT — 4 misses, latest 2026-08-24**; then present analysis and **wait for approval** before fixing; ⛔ never auto-run `high`; ⛔ never request Copilot without asking
 - [Design brief: sync-jam visibility](design-brief-sync-jam-visibility.md) — poison-batch Option A; banner + incidents for jammed upload lanes (facts verified 2026-07-06)
 - [Design brief: per-record commit](design-brief-backend-per-record-commit.md) — poison-batch Option C; per-item transactions + outcomes on /api/sync; ⚠ capability-flag rollout is mandatory (old clients delete whole batch on 200)

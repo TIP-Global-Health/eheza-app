@@ -99,6 +99,10 @@ number, tier line, and any side-findings noticed while building appended as new 
 
 ## Hard rules
 
+- ⛔ **Mentioning code means showing it.** Any presentation, review analysis, or explanation
+  that cites code in a file shows the snippet itself — a `-- path:lines` comment header plus
+  the real lines as they stand today, elided with `...` where irrelevant, annotated inline
+  where it helps. Never a bare `file.elm:123` reference (user hard rule, 2026-09-01).
 - ⛔ **Never switch or modify the main tree** (`/var/www/html/ihangane`) — the user works there in
   a parallel terminal, and it is parked on `develop` permanently as the backlog source of truth and
   the one tree ddev and gulp build. One worktree per finding under `/var/www/html/ihangane-wt/<id>`,
