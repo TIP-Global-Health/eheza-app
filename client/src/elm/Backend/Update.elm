@@ -1,4 +1,4 @@
-module Backend.Update exposing (updateIndexedDb)
+module Backend.Update exposing (generateSuspectedDiagnosisMsgsSubsequentEncounter, updateIndexedDb)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
@@ -9991,9 +9991,11 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate features isChw dat
                     |> Maybe.withDefault NoAcuteIllnessDiagnosis
 
             setDiagnosisMsg =
-                -- We have an update to diagnosis based on current measurements,
-                -- and it is not yet set for the encounter.
-                if data.encounter.diagnosis == NoAcuteIllnessDiagnosis && diagnosisByCurrentEncounterMeasurements /= NoAcuteIllnessDiagnosis then
+                -- The diagnosis derived from current measurements replaces the
+                -- stored one when they differ, so correcting a measurement
+                -- corrects the diagnosis - including clearing it, when the
+                -- measurements no longer support any diagnosis.
+                if data.encounter.diagnosis /= diagnosisByCurrentEncounterMeasurements then
                     [ updateAcuteIllnessDiagnosisMsg data.id diagnosisByCurrentEncounterMeasurements ]
 
                 else
