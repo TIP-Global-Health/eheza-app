@@ -38,6 +38,7 @@ import Backend.Measurement.Model
         , LabsResultsReviewState(..)
         , Measurements
         , TestExecutionNote(..)
+        , VillageStockManagementMeasurements
         , WellChildSymptom(..)
         )
 import Backend.Measurement.Utils
@@ -5253,6 +5254,33 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
 
+{-| A revision that affects village stock management: merge it into the
+village measurements cache and mark the village data for recalculation,
+the way the health-center caches are kept current.
+-}
+updateVillageStockManagementCaches : Maybe HealthCenterId -> (VillageStockManagementMeasurements -> VillageStockManagementMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+updateVillageStockManagementCaches healthCenterId func model =
+    case healthCenterId of
+        Just id ->
+            let
+                mapped =
+                    Dict.get id model.villageStockManagementMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (\measurements ->
+                                Dict.insert id (func measurements |> Success) model.villageStockManagementMeasurements
+                            )
+                        |> Maybe.withDefault model.villageStockManagementMeasurements
+            in
+            { model
+                | villageStockManagementMeasurements = mapped
+                , villageStockManagementData = Dict.insert id NotAsked model.villageStockManagementData
+            }
+
+        Nothing ->
+            model
+
+
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more
 nuanced way.
@@ -5466,6 +5494,8 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 data.encounterId
                 (\measurements -> { measurements | ahezaChild = familyMeasurementActionConsideringDeletedField uuid data measurements.ahezaChild })
                 model
+                |> updateVillageStockManagementCaches healthCenterId
+                    (\measurements -> { measurements | ahezaChild = measurementActionConsideringDeletedField uuid data measurements.ahezaChild })
             , recalc
             )
 
@@ -5483,6 +5513,8 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     }
                 )
                 model
+                |> updateVillageStockManagementCaches healthCenterId
+                    (\measurements -> { measurements | ahezaMother = measurementActionConsideringDeletedField uuid data measurements.ahezaMother })
             , recalc
             )
 
@@ -7853,11 +7885,12 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
 
         StockUpdateRevision uuid data ->
             let
+                setStockUpdate measurements =
+                    { measurements | stockUpdate = measurementActionConsideringDeletedField uuid data measurements.stockUpdate }
+
                 modelWithMappedStockManagement =
-                    mapStockManagementMeasurements
-                        healthCenterId
-                        (\measurements -> { measurements | stockUpdate = measurementActionConsideringDeletedField uuid data measurements.stockUpdate })
-                        modelWithStockUpdateRecalc
+                    mapStockManagementMeasurements healthCenterId setStockUpdate modelWithStockUpdateRecalc
+                        |> updateVillageStockManagementCaches healthCenterId setStockUpdate
 
                 -- This revision may cause stock management data to become obsolete,
                 -- therefore, we 'mark' it for recalculation.
