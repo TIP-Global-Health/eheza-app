@@ -341,11 +341,13 @@ viewEncounterAlreadyTookPlaceTodayDialog language dataType =
                         , text "."
                         ]
                     , div [ class "actions" ]
-                        [ button
-                            [ class "ui primary fluid button"
-                            , onClick <| SetDialogState Nothing
+                        [ div [ class "two ui buttons" ]
+                            [ button
+                                [ class "ui primary fluid button"
+                                , onClick <| SetDialogState Nothing
+                                ]
+                                [ text <| translate language Translate.OK ]
                             ]
-                            [ text <| translate language Translate.OK ]
                         ]
                     ]
             )
