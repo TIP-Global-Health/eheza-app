@@ -210,7 +210,7 @@ B-209	4	PARKED			2136	22	Child Wellness dashboard: the ECD donut counts a wider 
 B-210	3	READY	MED			23	Antenatal progress report: an outside-care Syphilis or Moderate Anemia diagnosis never shows the medication that was rec
 B-211	4	READY	LOW			23	Antenatal progress report: an outside-care HIV diagnosis with "None of these" medication prints as "treated with None of
 B-212	3	IMPLEMENTED	MED			23	Antenatal progress report: NCD-program referral lines are shown/hidden by ARV-program enrolment, not NCD enrolment
-B-213	2	READY	HIGH			23	NCDA scorecard "Fill the Blanks": every past height/weight is graded against the child's age TODAY, so earlier months tu
+B-213	2	IMPLEMENTED	HIGH	2188	2189	23	NCDA scorecard "Fill the Blanks": every past height/weight is graded against the child's age TODAY, so earlier months tu
 B-214	3	IMPLEMENTED	MED			23	Child progress report: "the last Well Child encounter" is whichever sorts first by UUID, so the Next Appointment pane ca
 B-215	3	READY	MED			23	Patient Record (adult): the Acute Illness pane — the DEFAULT filter — never fetches its encounters, so an adult's illnes
 B-216	3	READY	MED-HIGH			23	Person: correcting an ADULT's birth date rewrites the enrolment/graduation dates of every child they bring to a group — 

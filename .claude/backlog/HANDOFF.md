@@ -55,14 +55,15 @@ morning's four merged — #2178/#2172/#2174/#2176, issues closed, worktrees rele
 | #2183 | #2181+#2182 | **B-303+B-304** | `B-303-B-304-translate-corrections` | green, review done; ⚠ ONE OPEN THREAD: the altitude finding (dosage literals per branch/language in `TreatmentDetailsHypertension`) awaits a user decision — fold/file/drop |
 | #2185 | #2184 | **B-280** | `B-280-subsequent-diagnosis-correction` | green, review done (fixture finding fixed; follow-up finding filed as B-306) |
 | #2187 | #2186 | **B-299** | `B-299-village-stock-cache` | green, review done (placement finding fixed `91be8e22d`, recompute-cost finding ACCEPTED by user) |
+| #2189 | #2188 | **B-213** | `B-213-scorecard-age-at-measurement` | ⏳ pushed 2026-09-02, CI running, review not yet run |
 
-Worktrees held by this session, to be removed **when their PR merges**: `ihangane-wt/{B-272-vitals-previous-reading, B-303-B-304-translate-corrections, B-280-subsequent-diagnosis-correction, B-299-village-stock-cache}`.
+Worktrees held, to be removed **when their PR merges**: `ihangane-wt/{B-272-vitals-previous-reading, B-303-B-304-translate-corrections, B-280-subsequent-diagnosis-correction, B-299-village-stock-cache, B-213-scorecard-age-at-measurement}`.
 
 ⭐ Session lessons already in memory: `elm-test-cannot-import-backend-update` (two CI kills before
 diagnosis). B-305 (tier 4) remains the recorded #2178 follow-up: re-count the vhw.live
 DTP-standalone records on the release day that ships the fix. **B-306** (tier 4) filed from the
 #2185 review: an AI follow-up keeps the diagnosis it was saved with.
-**Counts: 185 READY — T2 3 · T3 41 · T4 107 · untiered 34.**
+**Counts after B-213 shipped (2026-09-02): 184 READY — T2 2 · T3 41 · T4 107 · untiered 34.** Tier 2 READY is now **B-195** (half on hold as #2156, ⛔ do not re-pitch) and **B-232**.
 
 (Older non-backlog PRs — #1720/#1698/#1694/#1626/#1487/#1411/#924 — are external or DO-NOT-MERGE and stay out of this table.)
 
