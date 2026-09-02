@@ -304,6 +304,7 @@ B-303	3	IMPLEMENTED	MED	2181	2183	27	Translate: clinical-content translation err
 B-304	3	IMPLEMENTED	MED-LOW	2182	2183	27	Translate: copied-neighbor label batch — a lab/service/category label answers the WRONG English source (10 sites, each v
 B-305	4	READY	LOW			26	Well Child immunisation (Burundi): pre-fix DTP-standalone records hold the DTP form's contents and keep blocking the boo
 B-306	4	READY	LOW			26	Acute Illness follow-up: a saved follow-up keeps the diagnosis it was saved with, so a later diagnosis correction leaves
+B-307	3	READY	MED			24	Case Management follow-up entries: tapping one always creates a NEW encounter, so a second encounter can be opened the s
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
