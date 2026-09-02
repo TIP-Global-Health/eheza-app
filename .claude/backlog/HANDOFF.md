@@ -56,14 +56,17 @@ morning's four merged — #2178/#2172/#2174/#2176, issues closed, worktrees rele
 | #2185 | #2184 | **B-280** | `B-280-subsequent-diagnosis-correction` | green, review done (fixture finding fixed; follow-up finding filed as B-306) |
 | #2187 | #2186 | **B-299** | `B-299-village-stock-cache` | green, review done (placement finding fixed `91be8e22d`, recompute-cost finding ACCEPTED by user) |
 | #2189 | #2188 | **B-213** | `B-213-scorecard-age-at-measurement` | **fully green** (all 10 checks incl. simpletest + 3 e2e), review done — ZERO correctness findings; its one quality finding (the two new helpers are structurally identical) DECLINED by the user (*"leave it"*), thread closed |
+| #2191 | #2190 | **B-232** | `B-232-immunization-followup-pane` | pushed 2026-09-02, CI running, **review not yet requested** |
 
-Worktrees held, to be removed **when their PR merges**: `ihangane-wt/{B-272-vitals-previous-reading, B-303-B-304-translate-corrections, B-280-subsequent-diagnosis-correction, B-299-village-stock-cache, B-213-scorecard-age-at-measurement}`.
+Worktrees held, to be removed **when their PR merges**: `ihangane-wt/{B-272-vitals-previous-reading, B-303-B-304-translate-corrections, B-280-subsequent-diagnosis-correction, B-299-village-stock-cache, B-213-scorecard-age-at-measurement, B-232-immunization-followup-pane}`.
 
 ⭐ Session lessons already in memory: `elm-test-cannot-import-backend-update` (two CI kills before
 diagnosis). B-305 (tier 4) remains the recorded #2178 follow-up: re-count the vhw.live
 DTP-standalone records on the release day that ships the fix. **B-306** (tier 4) filed from the
 #2185 review: an AI follow-up keeps the diagnosis it was saved with.
 **Counts after B-213 shipped (2026-09-02): 184 READY — T2 2 · T3 41 · T4 107 · untiered 34.** Tier 2 READY is now **B-195** (half on hold as #2156, ⛔ do not re-pitch) and **B-232**.
+⚠ Superseded the same day: **B-232 shipped as issue #2190 / PR #2191**, so counts are **183 READY — T2 1 · T3 41 · T4 107 · untiered 34**, and **tier 2 READY is B-195 alone — which is half on hold, so tier 2 is effectively empty and tier 3 is the working tier.** Three facts B-232 leaves behind: (1) `NextVisitValue.resolutionDate` is never written anywhere, so the encounter comparison is the ONLY gate on that pane; (2) the entry's warning that fixing the `LT` "would expose a second defect" does NOT hold — `startFollowUpEncounterWellChild` posts an encounter unconditionally and the entry is already visible on the scheduling day, so the same-day double-encounter risk is pre-existing and unchanged (worth its own item if the user wants a guard); (3) ⛔ in a test file, `Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))` collides with `Backend.TuberculosisEncounter.Model.TuberculosisEncounter` — the encounter-type variants share names with the encounter record types, so import it qualified.
+⭐ **Testable seam found:** `Pages/GlobalCaseManagement/View.elm` is ALREADY in the elm-test module graph (`Pages/Dashboard/Test.elm` → `Pages/Dashboard/Utils.elm` → it), so exposing a generator from it and unit-testing it costs no new OOM exposure. The same is true for any module `Pages/Dashboard/Utils.elm` reaches.
 
 (Older non-backlog PRs — #1720/#1698/#1694/#1626/#1487/#1411/#924 — are external or DO-NOT-MERGE and stay out of this table.)
 
