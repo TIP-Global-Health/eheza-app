@@ -144,9 +144,12 @@ startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data =
 
 startFollowUpEncounterAcuteIllness : NominalDate -> HealthCenterId -> ModelIndexedDb -> FollowUpAcuteIllnessData -> List App.Model.Msg
 startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data =
-    unlessEncounterStartedToday currentDate
+    unlessEncounterActiveToday currentDate
         AcuteIllnessEncounterPage
-        (getAcuteIllnessEncountersForParticipant db data.participantId)
+        (getAcuteIllnessEncountersForParticipant db data.participantId
+            -- A nurse encounter is not ours to enter, and ours is not theirs.
+            |> List.filter (Tuple.second >> .encounterType >> (==) AcuteIllnessEncounterCHW)
+        )
         [ emptyAcuteIllnessEncounter data.participantId currentDate data.sequenceNumber AcuteIllnessEncounterCHW (Just selectedHealthCenter)
             |> Backend.Model.PostAcuteIllnessEncounter
             |> App.Model.MsgIndexedDb
@@ -161,7 +164,11 @@ startFollowUpEncounterWellChild currentDate selectedHealthCenter db data =
             (\sessionId ->
                 unlessEncounterStartedToday currentDate
                     WellChildEncounterPage
-                    (getWellChildEncountersForParticipant db sessionId)
+                    (getWellChildEncountersForParticipant db sessionId
+                        -- A nurse encounter is not ours to enter, and does not
+                        -- stand in for the CHW visit.
+                        |> List.filter (Tuple.second >> .encounterType >> (/=) PediatricCare)
+                    )
                     [ emptyWellChildEncounter sessionId currentDate PediatricCareChw (Just selectedHealthCenter)
                         |> Backend.Model.PostWellChildEncounter
                         |> App.Model.MsgIndexedDb
@@ -220,8 +227,8 @@ startFollowUpEncounterHIV currentDate selectedHealthCenter db data =
 
 {-| A follow up entry must never open a second encounter on a day the patient
 already had one, which is the rule the participant pages apply. When today's
-encounter is still open we go to it, and when it was already completed we do
-nothing. Otherwise, we run the messages that create a new encounter.
+encounter is still open we go to it, and when it was already completed there is
+nothing to do. Otherwise, we run the messages that create a new encounter.
 -}
 unlessEncounterStartedToday :
     NominalDate
@@ -232,10 +239,37 @@ unlessEncounterStartedToday :
 unlessEncounterStartedToday currentDate encounterPage encounters createMsgs =
     case resolveEncounterStartedToday currentDate encounters of
         EncounterActiveToday encounterId ->
-            [ App.Model.SetActivePage <| UserPage <| encounterPage encounterId ]
+            navigateToEncounterMsgs encounterPage encounterId
 
         EncounterCompletedToday ->
             []
 
         NoEncounterStartedToday ->
             createMsgs
+
+
+{-| Acute Illness follows a different rule, which its participant page applies:
+a patient whose condition changes is seen again the same day, on a subsequent
+encounter. So only an encounter still open takes the place of a new one.
+-}
+unlessEncounterActiveToday :
+    NominalDate
+    -> (encounterId -> UserPage)
+    -> List ( encounterId, { a | startDate : NominalDate, endDate : Maybe NominalDate } )
+    -> List App.Model.Msg
+    -> List App.Model.Msg
+unlessEncounterActiveToday currentDate encounterPage encounters createMsgs =
+    case resolveEncounterStartedToday currentDate encounters of
+        EncounterActiveToday encounterId ->
+            navigateToEncounterMsgs encounterPage encounterId
+
+        EncounterCompletedToday ->
+            createMsgs
+
+        NoEncounterStartedToday ->
+            createMsgs
+
+
+navigateToEncounterMsgs : (encounterId -> UserPage) -> encounterId -> List App.Model.Msg
+navigateToEncounterMsgs encounterPage encounterId =
+    [ App.Model.SetActivePage <| UserPage <| encounterPage encounterId ]
