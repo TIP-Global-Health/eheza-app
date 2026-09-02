@@ -56,7 +56,7 @@ morning's four merged — #2178/#2172/#2174/#2176, issues closed, worktrees rele
 | #2185 | #2184 | **B-280** | `B-280-subsequent-diagnosis-correction` | green, review done (fixture finding fixed; follow-up finding filed as B-306) |
 | #2187 | #2186 | **B-299** | `B-299-village-stock-cache` | green, review done (placement finding fixed `91be8e22d`, recompute-cost finding ACCEPTED by user) |
 | #2189 | #2188 | **B-213** | `B-213-scorecard-age-at-measurement` | **fully green** (all 10 checks incl. simpletest + 3 e2e), review done — ZERO correctness findings; its one quality finding (the two new helpers are structurally identical) DECLINED by the user (*"leave it"*), thread closed |
-| #2191 | #2190 | **B-232** | `B-232-immunization-followup-pane` | pushed 2026-09-02, CI running, **review not yet requested** |
+| #2191 | #2190 | **B-232** | `B-232-immunization-followup-pane` | **fully green** (all 10 checks incl. simpletest + 3 e2e), review done — no correctness findings; **TWO LOW FINDINGS OPEN, awaiting a user decision**: (1) resolution is day-granular so a same-day SECOND Well Child encounter never clears the entry — comment / encounter-identity fix / new item?, (2) the pane's own `limitDate` line is untested (the reviewer's suggested remedy does NOT close it — only a shared `followUpsLimitDate` helper across all six panes would) |
 
 Worktrees held, to be removed **when their PR merges**: `ihangane-wt/{B-272-vitals-previous-reading, B-303-B-304-translate-corrections, B-280-subsequent-diagnosis-correction, B-299-village-stock-cache, B-213-scorecard-age-at-measurement, B-232-immunization-followup-pane}`.
 
