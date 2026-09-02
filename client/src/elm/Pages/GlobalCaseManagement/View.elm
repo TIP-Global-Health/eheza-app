@@ -42,7 +42,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Maybe.Extra exposing (isNothing)
-import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, AcuteIllnessFollowUpItem, CaseManagementFilter(..), ContactsTracingEntryData, FollowUpAcuteIllnessData, FollowUpDueOption(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpImmunizationData, FollowUpNutritionData, FollowUpPrenatalData, FollowUpTuberculosisData, HIVFollowUpEntry, HIVFollowUpItem, ImmunizationFollowUpEntry, ImmunizationFollowUpItem, LabsEntryState(..), Model, Msg(..), NCDLabsEntryData, NutritionFollowUpEntry, NutritionFollowUpItem, PrenatalFollowUpEntry, PrenatalFollowUpItem, PrenatalLabsEntryData, TuberculosisFollowUpEntry, TuberculosisFollowUpItem)
+import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, AcuteIllnessFollowUpItem, CaseManagementFilter(..), ContactsTracingEntryData, FollowUpAcuteIllnessData, FollowUpDialogState(..), FollowUpDueOption(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpImmunizationData, FollowUpNutritionData, FollowUpPrenatalData, FollowUpTuberculosisData, HIVFollowUpEntry, HIVFollowUpItem, ImmunizationFollowUpEntry, ImmunizationFollowUpItem, LabsEntryState(..), Model, Msg(..), NCDLabsEntryData, NutritionFollowUpEntry, NutritionFollowUpItem, PrenatalFollowUpEntry, PrenatalFollowUpItem, PrenatalLabsEntryData, TuberculosisFollowUpEntry, TuberculosisFollowUpItem)
 import Pages.GlobalCaseManagement.Utils exposing (chwFilters, fillPersonName, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessFollowUps, generateHIVFollowUps, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps, generateTuberculosisFollowUps, labTechFilters, labsResultsTestData, nurseFilters)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Utils
@@ -251,70 +251,105 @@ viewContentForNurse language currentDate isLabTech model db followUps =
             :: panesForView
 
 
-viewEntryPopUp : Language -> NominalDate -> Maybe FollowUpEncounterDataType -> Maybe (Html Msg)
+viewEntryPopUp : Language -> NominalDate -> Maybe FollowUpDialogState -> Maybe (Html Msg)
 viewEntryPopUp language currentDate =
     Maybe.map
-        (\dataType ->
-            case dataType of
-                FollowUpPrenatal data ->
-                    viewStartFollowUpPrenatalEncounterDialog language currentDate data
+        (\dialogState ->
+            case dialogState of
+                DialogEncounterAlreadyTookPlaceToday dataType ->
+                    viewEncounterAlreadyTookPlaceTodayDialog language dataType
 
-                _ ->
-                    viewStartFollowUpEncounterDialog language dataType
+                DialogStartFollowUpEncounter dataType ->
+                    case dataType of
+                        FollowUpPrenatal data ->
+                            viewStartFollowUpPrenatalEncounterDialog language currentDate data
+
+                        _ ->
+                            viewStartFollowUpEncounterDialog language dataType
         )
+
+
+{-| The encounter type a follow up entry would start, and the patient's name.
+Prenatal has its own dialog, and Contacts Tracing is not a follow up encounter.
+-}
+followUpEncounterTypeAndName : FollowUpEncounterDataType -> Maybe ( IndividualEncounterType, String )
+followUpEncounterTypeAndName dataType =
+    case dataType of
+        CaseManagementContactsTracing ->
+            Nothing
+
+        FollowUpAcuteIllness data ->
+            Just ( AcuteIllnessEncounter, data.personName )
+
+        FollowUpHIV data ->
+            Just ( HIVEncounter, data.personName )
+
+        FollowUpImmunization data ->
+            Just ( WellChildEncounter, data.personName )
+
+        FollowUpNutrition data ->
+            Just ( HomeVisitEncounter, data.personName )
+
+        FollowUpPrenatal _ ->
+            Nothing
+
+        FollowUpTuberculosis data ->
+            Just ( TuberculosisEncounter, data.personName )
 
 
 viewStartFollowUpEncounterDialog : Language -> FollowUpEncounterDataType -> Html Msg
 viewStartFollowUpEncounterDialog language dataType =
-    let
-        startFollowUpDialog encounterType personName =
-            div [ class "ui active modal" ]
-                [ div [ class "content" ]
-                    [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion encounterType
-                    , text " "
-                    , span [ class "person-name" ] [ text personName ]
-                    , text "?"
-                    ]
-                , div [ class "actions" ]
-                    [ div [ class "two ui buttons" ]
-                        [ button
-                            [ class "ui primary fluid button"
-                            , onClick <| StartFollowUpEncounter dataType
+    followUpEncounterTypeAndName dataType
+        |> Maybe.map
+            (\( encounterType, personName ) ->
+                div [ class "ui active modal" ]
+                    [ div [ class "content" ]
+                        [ text <| translate language <| Translate.EncounterTypeFollowUpQuestion encounterType
+                        , text " "
+                        , span [ class "person-name" ] [ text personName ]
+                        , text "?"
+                        ]
+                    , div [ class "actions" ]
+                        [ div [ class "two ui buttons" ]
+                            [ button
+                                [ class "ui primary fluid button"
+                                , onClick <| StartFollowUpEncounter dataType
+                                ]
+                                [ text <| translate language Translate.Yes ]
+                            , button
+                                [ class "ui fluid button"
+                                , onClick <| SetDialogState Nothing
+                                ]
+                                [ text <| translate language Translate.No ]
                             ]
-                            [ text <| translate language Translate.Yes ]
-                        , button
-                            [ class "ui fluid button"
-                            , onClick <| SetDialogState Nothing
-                            ]
-                            [ text <| translate language Translate.No ]
                         ]
                     ]
-                ]
-    in
-    case dataType of
-        FollowUpNutrition data ->
-            startFollowUpDialog HomeVisitEncounter data.personName
+            )
+        |> Maybe.withDefault emptyNode
 
-        FollowUpAcuteIllness data ->
-            startFollowUpDialog AcuteIllnessEncounter data.personName
 
-        FollowUpImmunization data ->
-            startFollowUpDialog WellChildEncounter data.personName
-
-        FollowUpTuberculosis data ->
-            startFollowUpDialog TuberculosisEncounter data.personName
-
-        FollowUpHIV data ->
-            startFollowUpDialog HIVEncounter data.personName
-
-        -- We should never get here, since Prenatal got
-        -- it's own dialog.
-        FollowUpPrenatal _ ->
-            emptyNode
-
-        -- This is not a follow up encounter.
-        CaseManagementContactsTracing ->
-            emptyNode
+viewEncounterAlreadyTookPlaceTodayDialog : Language -> FollowUpEncounterDataType -> Html Msg
+viewEncounterAlreadyTookPlaceTodayDialog language dataType =
+    followUpEncounterTypeAndName dataType
+        |> Maybe.map
+            (\( _, personName ) ->
+                div [ class "ui active modal" ]
+                    [ div [ class "content" ]
+                        [ text <| translate language Translate.EncounterAlreadyTookPlaceTodayLabel
+                        , text " "
+                        , span [ class "person-name" ] [ text personName ]
+                        , text "."
+                        ]
+                    , div [ class "actions" ]
+                        [ button
+                            [ class "ui primary fluid button"
+                            , onClick <| SetDialogState Nothing
+                            ]
+                            [ text <| translate language Translate.OK ]
+                        ]
+                    ]
+            )
+        |> Maybe.withDefault emptyNode
 
 
 viewStartFollowUpPrenatalEncounterDialog : Language -> NominalDate -> FollowUpPrenatalData -> Html Msg
@@ -1095,7 +1130,7 @@ viewFollowUpEntry language dueOption personName mPopupData assessment =
                 (\popupData ->
                     div
                         [ class "icon-forward"
-                        , onClick <| SetDialogState <| Just popupData
+                        , onClick <| SetDialogState <| Just <| DialogStartFollowUpEncounter popupData
                         ]
                         []
                 )

@@ -677,6 +677,7 @@ type TranslationId
     | EmergencyReferralHelperReferToEmergencyObstetricCareServices
     | DangerSignsTask DangerSignsTask
     | EmptyString
+    | EncounterAlreadyTookPlaceTodayLabel
     | EncounterDate
     | Encounters
     | EncounterTypes
@@ -6518,6 +6519,13 @@ translationSet trans =
 
         EmptyString ->
             { english = ""
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        EncounterAlreadyTookPlaceTodayLabel ->
+            { english = "An encounter has already taken place today for"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
