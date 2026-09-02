@@ -1,0 +1,430 @@
+resource_type,owner,owner_type,source,from_concept_url,map_type,to_source_url,to_concept_code,to_concept_name,confidence
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-001/,SAME-AS,/orgs/CIEL/sources/CIEL/,122983,Vomiting,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-002/,SAME-AS,/orgs/CIEL/sources/CIEL/,121,Myalgia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-003/,SAME-AS,/orgs/CIEL/sources/CIEL/,871,Chills,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-004/,SAME-AS,/orgs/CIEL/sources/CIEL/,133027,Night sweats,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-005/,SAME-AS,/orgs/CIEL/sources/CIEL/,139084,Headache,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-006/,SAME-AS,/orgs/CIEL/sources/CIEL/,159861,Unable to drink or breastfeed,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-007/,SAME-AS,/orgs/CIEL/sources/CIEL/,163484,Refuses to eat,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-008/,SAME-AS,/orgs/CIEL/sources/CIEL/,140939,Excessive thirst,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-009/,SAME-AS,/orgs/CIEL/sources/CIEL/,5192,Icteric sclera,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-010/,SAME-AS,/orgs/CIEL/sources/CIEL/,147241,Bleeding,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-011/,SAME-AS,/orgs/CIEL/sources/CIEL/,138905,Hemoptysis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-012/,SAME-AS,/orgs/CIEL/sources/CIEL/,143264,Cough,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-013/,SAME-AS,/orgs/CIEL/sources/CIEL/,115403,Rhinorrhoea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-014/,SAME-AS,/orgs/CIEL/sources/CIEL/,122496,Dyspnea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-015/,SAME-AS,/orgs/CIEL/sources/CIEL/,158843,Sore throat,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-016/,SAME-AS,/orgs/CIEL/sources/CIEL/,135589,Loss of sense of smell,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-017/,SAME-AS,/orgs/CIEL/sources/CIEL/,120749,Chest pain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-018/,SAME-AS,/orgs/CIEL/sources/CIEL/,138868,Haemorrhagic diarrhoea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-019/,SAME-AS,/orgs/CIEL/sources/CIEL/,5978,Nausea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-020/,SAME-AS,/orgs/CIEL/sources/CIEL/,164457,Sunken eyes,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-021/,SAME-AS,/orgs/CIEL/sources/CIEL/,168121,Loss of skin turgor,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-022/,SAME-AS,/orgs/CIEL/sources/CIEL/,136443,Jaundice,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-023/,SAME-AS,/orgs/CIEL/sources/CIEL/,136119,Laryngismus stridulus,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-024/,SAME-AS,/orgs/CIEL/sources/CIEL/,136768,Intercostal recession,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-CS-001/,SAME-AS,/orgs/CIEL/sources/CIEL/,5916,Birth weight (kg),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-CS-002/,SAME-AS,/orgs/CIEL/sources/CIEL/,1590,Number of antenatal visits current pregnancy,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-001/,SAME-AS,/orgs/CIEL/sources/CIEL/,165085,Dolutegravir,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-002/,SAME-AS,/orgs/CIEL/sources/CIEL/,78643,Lamivudine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-003/,SAME-AS,/orgs/CIEL/sources/CIEL/,84795,Tenofovir,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-004/,SAME-AS,/orgs/CIEL/sources/CIEL/,165086,Dolutegravir / Lamivudine / Tenofovir disoproxil regimen,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-005/,SAME-AS,/orgs/CIEL/sources/CIEL/,159809,Atazanavir / ritonavir,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-006/,SAME-AS,/orgs/CIEL/sources/CIEL/,103166,Abacavir / lamivudine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-007/,SAME-AS,/orgs/CIEL/sources/CIEL/,161364,Lamivudine / tenofovir disoproxil,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-008/,SAME-AS,/orgs/CIEL/sources/CIEL/,86663,Zidovudine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-009/,SAME-AS,/orgs/CIEL/sources/CIEL/,1652,Lamivudine / nevirapine / zidovudine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-010/,SAME-AS,/orgs/CIEL/sources/CIEL/,164505,Lamivudine / efavirenz / tenofovir,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-011/,SAME-AS,/orgs/CIEL/sources/CIEL/,630,Lamivudine / zidovudine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-012/,SAME-AS,/orgs/CIEL/sources/CIEL/,794,Lopinavir / ritonavir,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-013/,SAME-AS,/orgs/CIEL/sources/CIEL/,162796,Darunavir / Ritonavir,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-014/,SAME-AS,/orgs/CIEL/sources/CIEL/,154378,Raltegravir,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-015/,SAME-AS,/orgs/CIEL/sources/CIEL/,75523,Efavirenz,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-016/,SAME-AS,/orgs/CIEL/sources/CIEL/,80586,Nevirapine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-017/,SAME-AS,/orgs/CIEL/sources/CIEL/,159810,Etravirine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-018/,SAME-AS,/orgs/CIEL/sources/CIEL/,70056,Abacavir,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-019/,SAME-AS,/orgs/CIEL/sources/CIEL/,105281,Sulfamethoxazole / trimethoprim,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-020/,SAME-AS,/orgs/CIEL/sources/CIEL/,512,Rash,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-021/,SAME-AS,/orgs/CIEL/sources/CIEL/,165271,Severe abdominal pain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-022/,SAME-AS,/orgs/CIEL/sources/CIEL/,111721,Mouth ulceration,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-023/,SAME-AS,/orgs/CIEL/sources/CIEL/,856,HIV viral load,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-024/,SAME-AS,/orgs/CIEL/sources/CIEL/,5497,CD4 count,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-001/,SAME-AS,/orgs/CIEL/sources/CIEL/,164364,Serum creatinine (mg/dL),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-003/,SAME-AS,/orgs/CIEL/sources/CIEL/,654,Serum glutamic-pyruvic transaminase,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-004/,SAME-AS,/orgs/CIEL/sources/CIEL/,653,Serum glutamic-oxaloacetic transaminase,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-005/,SAME-AS,/orgs/CIEL/sources/CIEL/,166040,Serum or plasma total cholesterol measurement (mg/dL),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-006/,SAME-AS,/orgs/CIEL/sources/CIEL/,166046,High-density lipoprotein cholesterol measurement (mg/dL),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-007/,SAME-AS,/orgs/CIEL/sources/CIEL/,166045,Serum or plasma low-density lipoprotein cholesterol measurement (mg/dL),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-008/,SAME-AS,/orgs/CIEL/sources/CIEL/,166039,Serum or plasma triglyceride measurement (mg/dL),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-009/,SAME-AS,/orgs/CIEL/sources/CIEL/,159644,Glycosylated hemoglobin A measurement,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-010/,SAME-AS,/orgs/CIEL/sources/CIEL/,1169,HIV infected,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-011/,SAME-AS,/orgs/CIEL/sources/CIEL/,119481,Diabetes mellitus,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-012/,SAME-AS,/orgs/CIEL/sources/CIEL/,145438,Chronic kidney disease,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-013/,SAME-AS,/orgs/CIEL/sources/CIEL/,117399,Hypertension,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-014/,SAME-AS,/orgs/CIEL/sources/CIEL/,1449,Gestational diabetes,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-015/,SAME-AS,/orgs/CIEL/sources/CIEL/,129251,Pre-eclampsia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-016/,SAME-AS,/orgs/CIEL/sources/CIEL/,170138,Diabetic neuropathy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-017/,SAME-AS,/orgs/CIEL/sources/CIEL/,113338,Renal failure,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-018/,SAME-AS,/orgs/CIEL/sources/CIEL/,116128,Malaria,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-019/,SAME-AS,/orgs/CIEL/sources/CIEL/,112141,Tuberculosis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-020/,SAME-AS,/orgs/CIEL/sources/CIEL/,120557,Chronic viral hepatitis B,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-021/,SAME-AS,/orgs/CIEL/sources/CIEL/,112493,Syphilis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-022/,SAME-AS,/orgs/CIEL/sources/CIEL/,142429,Diabetic retinopathy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-023/,SAME-AS,/orgs/CIEL/sources/CIEL/,121629,Anaemia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-024/,SAME-AS,/orgs/CIEL/sources/CIEL/,118938,Vision Problem,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-025/,SAME-AS,/orgs/CIEL/sources/CIEL/,139081,Severe headache,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-026/,SAME-AS,/orgs/CIEL/sources/CIEL/,135592,Loss of consciousness,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-027/,SAME-AS,/orgs/CIEL/sources/CIEL/,129510,Polyuria,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-028/,SAME-AS,/orgs/CIEL/sources/CIEL/,121543,Anxiety,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-029/,SAME-AS,/orgs/CIEL/sources/CIEL/,832,Weight loss,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-030/,SAME-AS,/orgs/CIEL/sources/CIEL/,148346,Ascites,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-031/,SAME-AS,/orgs/CIEL/sources/CIEL/,138961,Hemiparesis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-032/,SAME-AS,/orgs/CIEL/sources/CIEL/,5108,Abnormal gait,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-033/,SAME-AS,/orgs/CIEL/sources/CIEL/,141645,Dysarthria,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-034/,SAME-AS,/orgs/CIEL/sources/CIEL/,123067,Vision loss,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-035/,SAME-AS,/orgs/CIEL/sources/CIEL/,147104,Blurred vision,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-036/,SAME-AS,/orgs/CIEL/sources/CIEL/,131689,Orthopnea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-037/,SAME-AS,/orgs/CIEL/sources/CIEL/,130783,Paroxysmal nocturnal dyspnea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-038/,SAME-AS,/orgs/CIEL/sources/CIEL/,116225,Low back pain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-039/,SAME-AS,/orgs/CIEL/sources/CIEL/,133469,Neck pain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-040/,SAME-AS,/orgs/CIEL/sources/CIEL/,77897,Ibuprofen,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-041/,SAME-AS,/orgs/CIEL/sources/CIEL/,162298,ACE inhibitors,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-042/,SAME-AS,/orgs/CIEL/sources/CIEL/,162299,ARBs (angiotensin II receptor blockers),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-043/,SAME-AS,/orgs/CIEL/sources/CIEL/,77696,Hydrochlorothiazide,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-044/,SAME-AS,/orgs/CIEL/sources/CIEL/,79723,Methyldopa,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-045/,SAME-AS,/orgs/CIEL/sources/CIEL/,77675,Hydralazine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-046/,SAME-AS,/orgs/CIEL/sources/CIEL/,79651,Metformin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-047/,SAME-AS,/orgs/CIEL/sources/CIEL/,77071,Glyburide,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-048/,SAME-AS,/orgs/CIEL/sources/CIEL/,78056,Insulin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-049/,SAME-AS,/orgs/CIEL/sources/CIEL/,159449,Alcohol use status,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-050/,SAME-AS,/orgs/CIEL/sources/CIEL/,163731,Tobacco use status,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-001/,SAME-AS,/orgs/CIEL/sources/CIEL/,5089,Weight (kg),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-002/,SAME-AS,/orgs/CIEL/sources/CIEL/,6019,Abdominal swelling,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-003/,SAME-AS,/orgs/CIEL/sources/CIEL/,148278,Asteatosis cutis,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-004/,SAME-AS,/orgs/CIEL/sources/CIEL/,460,Oedema,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-005/,SAME-AS,/orgs/CIEL/sources/CIEL/,6031,Poor appetite,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-006/,SAME-AS,/orgs/CIEL/sources/CIEL/,134722,Malnutrition of moderate degree (Gomez: 60% to Less than 75% of Standard Weight),medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-007/,SAME-AS,/orgs/CIEL/sources/CIEL/,162331,Severe uncomplicated malnutrition,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-008/,SAME-AS,/orgs/CIEL/sources/CIEL/,142412,Diarrhoea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-009/,SAME-AS,/orgs/CIEL/sources/CIEL/,190,Condoms,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-010/,SAME-AS,/orgs/CIEL/sources/CIEL/,5275,Intrauterine device,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-011/,SAME-AS,/orgs/CIEL/sources/CIEL/,1873,Jadelle (implantable contraceptive),medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-012/,SAME-AS,/orgs/CIEL/sources/CIEL/,5279,Injectable contraceptives,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-013/,SAME-AS,/orgs/CIEL/sources/CIEL/,159783,Combined oral contraceptive pills,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-014/,SAME-AS,/orgs/CIEL/sources/CIEL/,1472,Tubal ligation procedure,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-015/,SAME-AS,/orgs/CIEL/sources/CIEL/,1489,Vasectomy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-016/,SAME-AS,/orgs/CIEL/sources/CIEL/,136163,Lactational amenorrhea,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-017/,SAME-AS,/orgs/CIEL/sources/CIEL/,5632,Currently breastfeeding child,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-018/,SAME-AS,/orgs/CIEL/sources/CIEL/,162558,Disability,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-020/,SAME-AS,/orgs/CIEL/sources/CIEL/,159922,Deworming,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-001/,SAME-AS,/orgs/CIEL/sources/CIEL/,166102,First name,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-002/,SAME-AS,/orgs/CIEL/sources/CIEL/,166103,Last name,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-003/,SAME-AS,/orgs/CIEL/sources/CIEL/,163084,National identification number,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-004/,SAME-AS,/orgs/CIEL/sources/CIEL/,1533,Respondent gender,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-005/,SAME-AS,/orgs/CIEL/sources/CIEL/,159576,HIV status,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-006/,SAME-AS,/orgs/CIEL/sources/CIEL/,5630,Method of delivery,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-007/,SAME-AS,/orgs/CIEL/sources/CIEL/,1712,Highest education level,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-008/,SAME-AS,/orgs/CIEL/sources/CIEL/,1054,Civil status,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-009/,SAME-AS,/orgs/CIEL/sources/CIEL/,159635,Contact phone number,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-010/,SAME-AS,/orgs/CIEL/sources/CIEL/,162729,Next of kin name (text),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-001/,SAME-AS,/orgs/CIEL/sources/CIEL/,5085,Systolic blood pressure,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-002/,SAME-AS,/orgs/CIEL/sources/CIEL/,5086,Diastolic blood pressure,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-003/,SAME-AS,/orgs/CIEL/sources/CIEL/,5087,Pulse,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-004/,SAME-AS,/orgs/CIEL/sources/CIEL/,5242,Respiratory rate,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-005/,SAME-AS,/orgs/CIEL/sources/CIEL/,5088,Temperature (C),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-006/,SAME-AS,/orgs/CIEL/sources/CIEL/,5090,Height (cm),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-008/,SAME-AS,/orgs/CIEL/sources/CIEL/,1343,Mid-upper arm circumference (cm),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-009/,SAME-AS,/orgs/CIEL/sources/CIEL/,1439,Fundal height,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-010/,SAME-AS,/orgs/CIEL/sources/CIEL/,1440,Fetal heart rate,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-011/,SAME-AS,/orgs/CIEL/sources/CIEL/,162108,Fetal movements present,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-012/,SAME-AS,/orgs/CIEL/sources/CIEL/,160090,Fetal presentation,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-013/,SAME-AS,/orgs/CIEL/sources/CIEL/,166893,Abdominal scar indicative of prior caesarean section,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-014/,SAME-AS,/orgs/CIEL/sources/CIEL/,1434,Currently pregnant,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-015/,SAME-AS,/orgs/CIEL/sources/CIEL/,5624,Gravida,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-016/,SAME-AS,/orgs/CIEL/sources/CIEL/,1053,Parity,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-017/,SAME-AS,/orgs/CIEL/sources/CIEL/,160077,Number of prior stillbirths,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-018/,SAME-AS,/orgs/CIEL/sources/CIEL/,1823,Number of abortions/miscarriages,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-019/,SAME-AS,/orgs/CIEL/sources/CIEL/,1825,Total number of living children,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-020/,SAME-AS,/orgs/CIEL/sources/CIEL/,1427,Date of last menstrual period,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-021/,SAME-AS,/orgs/CIEL/sources/CIEL/,147232,Vaginal bleeding,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-023/,SAME-AS,/orgs/CIEL/sources/CIEL/,206,Seizure,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-024/,SAME-AS,/orgs/CIEL/sources/CIEL/,151,Abdominal pain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-025/,SAME-AS,/orgs/CIEL/sources/CIEL/,142373,Difficulty breathing,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-026/,SAME-AS,/orgs/CIEL/sources/CIEL/,140238,Fever,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-027/,SAME-AS,/orgs/CIEL/sources/CIEL/,5226,Weakness,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-028/,SAME-AS,/orgs/CIEL/sources/CIEL/,165217,Imminent vaginal delivery,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-030/,SAME-AS,/orgs/CIEL/sources/CIEL/,130334,Persistent vomiting,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-031/,SAME-AS,/orgs/CIEL/sources/CIEL/,123818,Unconscious,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-032/,SAME-AS,/orgs/CIEL/sources/CIEL/,126069,Spontaneous rupture of membranes,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-033/,SAME-AS,/orgs/CIEL/sources/CIEL/,153316,Premature Uterine Contractions,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-034/,SAME-AS,/orgs/CIEL/sources/CIEL/,146931,Breast lump,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-035/,SAME-AS,/orgs/CIEL/sources/CIEL/,115914,Mastitis-postpartum,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-036/,SAME-AS,/orgs/CIEL/sources/CIEL/,516,Pale conjunctiva,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-037/,SAME-AS,/orgs/CIEL/sources/CIEL/,136522,Irregular heartbeat,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-039/,SAME-AS,/orgs/CIEL/sources/CIEL/,117772,Goiter,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-040/,SAME-AS,/orgs/CIEL/sources/CIEL/,135488,Lymphadenopathy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-042/,SAME-AS,/orgs/CIEL/sources/CIEL/,127640,Respiratory crackles,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-043/,SAME-AS,/orgs/CIEL/sources/CIEL/,5008,Hepatomegaly,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-044/,SAME-AS,/orgs/CIEL/sources/CIEL/,5009,Splenomegaly,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-045/,SAME-AS,/orgs/CIEL/sources/CIEL/,5245,Pallor,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-046/,SAME-AS,/orgs/CIEL/sources/CIEL/,130428,Peripheral edema,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-047/,SAME-AS,/orgs/CIEL/sources/CIEL/,118729,Lower Extremity Edema,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-048/,SAME-AS,/orgs/CIEL/sources/CIEL/,773,Ferrous sulfate and folic acid,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-049/,SAME-AS,/orgs/CIEL/sources/CIEL/,79413,Mebendazole,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-050/,SAME-AS,/orgs/CIEL/sources/CIEL/,76613,Folic acid,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-051/,SAME-AS,/orgs/CIEL/sources/CIEL/,86339,Vitamin A,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-052/,SAME-AS,/orgs/CIEL/sources/CIEL/,71617,Aspirin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-053/,SAME-AS,/orgs/CIEL/sources/CIEL/,72660,Calcium carbonate,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-054/,SAME-AS,/orgs/CIEL/sources/CIEL/,159427,Result of HIV test,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-055/,SAME-AS,/orgs/CIEL/sources/CIEL/,165303,Rapid syphilis test,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-056/,SAME-AS,/orgs/CIEL/sources/CIEL/,159430,Hepatitis B Surface Antigen Test,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-057/,SAME-AS,/orgs/CIEL/sources/CIEL/,1643,Rapid test for malaria,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-058/,SAME-AS,/orgs/CIEL/sources/CIEL/,21,Haemoglobin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-059/,SAME-AS,/orgs/CIEL/sources/CIEL/,887,Serum glucose,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-060/,SAME-AS,/orgs/CIEL/sources/CIEL/,1875,Urine protein (dipstick),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-061/,SAME-AS,/orgs/CIEL/sources/CIEL/,159734,"Glucose measurement, qualitative, urine",high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-062/,SAME-AS,/orgs/CIEL/sources/CIEL/,163684,Leukocytes presence in urine sediment by light microscopy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-063/,SAME-AS,/orgs/CIEL/sources/CIEL/,161440,Urine nitrite test,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-065/,SAME-AS,/orgs/CIEL/sources/CIEL/,300,Blood typing,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-066/,SAME-AS,/orgs/CIEL/sources/CIEL/,160232,Rhesus blood grouping test,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-067/,SAME-AS,/orgs/CIEL/sources/CIEL/,1386,Current contraceptive use,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-068/,SAME-AS,/orgs/CIEL/sources/CIEL/,17,Diptheria tetanus booster,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-069/,SAME-AS,/orgs/CIEL/sources/CIEL/,159855,Received insecticide treated bednet,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-070/,SAME-AS,/orgs/CIEL/sources/CIEL/,45,Urine pregnancy test,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-001/,SAME-AS,/orgs/CIEL/sources/CIEL/,42,"Pneumonia, tuberculous",high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-002/,SAME-AS,/orgs/CIEL/sources/CIEL/,5042,"Mycobacterium tuberculosis, extrapulmonary",high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-003/,SAME-AS,/orgs/CIEL/sources/CIEL/,140501,Fatigue,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-004/,SAME-AS,/orgs/CIEL/sources/CIEL/,767,Rifampicin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-005/,SAME-AS,/orgs/CIEL/sources/CIEL/,78280,Isoniazid,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-006/,SAME-AS,/orgs/CIEL/sources/CIEL/,82900,Pyrazinamide,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-007/,SAME-AS,/orgs/CIEL/sources/CIEL/,75948,Ethambutol,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-008/,SAME-AS,/orgs/CIEL/sources/CIEL/,1131,Rifampicin isoniazid pyrazinamide and ethambutol,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-009/,SAME-AS,/orgs/CIEL/sources/CIEL/,1194,Rifampicin and isoniazid,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-001/,SAME-AS,/orgs/CIEL/sources/CIEL/,5314,Head circumference,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-002/,SAME-AS,/orgs/CIEL/sources/CIEL/,71902,BCG vaccine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-004/,SAME-AS,/orgs/CIEL/sources/CIEL/,781,Diphtheria tetanus and pertussis vaccination,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-005/,SAME-AS,/orgs/CIEL/sources/CIEL/,165575,Streptococcus pneumoniae serotype 1/3/4/5/6A/6B/7F/9V/14/18C/19A/19F/23F capsular antigen diphtheria CRM197 protein conjugate vaccine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-006/,SAME-AS,/orgs/CIEL/sources/CIEL/,83531,"Rotavirus vaccine, live",high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-007/,SAME-AS,/orgs/CIEL/sources/CIEL/,1422,"Polio vaccination, inactivated",high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-008/,SAME-AS,/orgs/CIEL/sources/CIEL/,162586,Measles-rubella vaccine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-009/,SAME-AS,/orgs/CIEL/sources/CIEL/,116334,Lethargy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-010/,SAME-AS,/orgs/CIEL/sources/CIEL/,132407,Omphalitis of the newborn,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-011/,SAME-AS,/orgs/CIEL/sources/CIEL/,5170,Nuchal rigidity,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-012/,SAME-AS,/orgs/CIEL/sources/CIEL/,124954,Tetanus neonatorum,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0001/,SAME-AS,/orgs/CIEL/sources/CIEL/,1808,Abdomen,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0007/,SAME-AS,/orgs/CIEL/sources/CIEL/,1116,Abnormal,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0013/,SAME-AS,/orgs/CIEL/sources/CIEL/,125782,Stridor,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0021/,SAME-AS,/orgs/CIEL/sources/CIEL/,127639,Respiratory distress,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0024/,SAME-AS,/orgs/CIEL/sources/CIEL/,116127,Malaria Complicated NEC,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0042/,SAME-AS,/orgs/CIEL/sources/CIEL/,160205,Acute malnutrition,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0049/,SAME-AS,/orgs/CIEL/sources/CIEL/,1391,Physical exam,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0059/,SAME-AS,/orgs/CIEL/sources/CIEL/,70439,Albendazole,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0064/,SAME-AS,/orgs/CIEL/sources/CIEL/,1622,Antenatal care services,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0070/,SAME-AS,/orgs/CIEL/sources/CIEL/,121375,Asthma,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0079/,SAME-AS,/orgs/CIEL/sources/CIEL/,145063,Cleft palate,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0080/,SAME-AS,/orgs/CIEL/sources/CIEL/,125043,Talipes equinovarus,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0081/,SAME-AS,/orgs/CIEL/sources/CIEL/,135427,Macrocephaly,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0082/,SAME-AS,/orgs/CIEL/sources/CIEL/,139569,Gastroschisis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0083/,SAME-AS,/orgs/CIEL/sources/CIEL/,117698,Hearing loss,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0085/,SAME-AS,/orgs/CIEL/sources/CIEL/,138010,Hypospadias,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0086/,SAME-AS,/orgs/CIEL/sources/CIEL/,116954,Inguinal hernia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0087/,SAME-AS,/orgs/CIEL/sources/CIEL/,134213,Microcephalus,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0093/,SAME-AS,/orgs/CIEL/sources/CIEL/,119975,Congenital abnormality,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0094/,SAME-AS,/orgs/CIEL/sources/CIEL/,887,Serum glucose,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0096/,SAME-AS,/orgs/CIEL/sources/CIEL/,5086,Diastolic blood pressure,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0097/,SAME-AS,/orgs/CIEL/sources/CIEL/,5085,Systolic blood pressure,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0101/,SAME-AS,/orgs/CIEL/sources/CIEL/,1342,Body mass index,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0105/,SAME-AS,/orgs/CIEL/sources/CIEL/,5242,Respiratory rate,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0111/,SAME-AS,/orgs/CIEL/sources/CIEL/,146909,Brittle hair,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0112/,SAME-AS,/orgs/CIEL/sources/CIEL/,72650,Calcium,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0113/,SAME-AS,/orgs/CIEL/sources/CIEL/,120939,Candidiasis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0129/,SAME-AS,/orgs/CIEL/sources/CIEL/,150915,Abdominal distension,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0130/,SAME-AS,/orgs/CIEL/sources/CIEL/,155134,Apathy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0131/,SAME-AS,/orgs/CIEL/sources/CIEL/,6031,Poor appetite,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0134/,SAME-AS,/orgs/CIEL/sources/CIEL/,1421,Immunization history,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0137/,SAME-AS,/orgs/CIEL/sources/CIEL/,168592,Chronic hypertension,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0148/,SAME-AS,/orgs/CIEL/sources/CIEL/,996,Constipation,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0157/,SAME-AS,/orgs/CIEL/sources/CIEL/,113054,Convulsions,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0162/,SAME-AS,/orgs/CIEL/sources/CIEL/,1171,Cesarean section,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0173/,SAME-AS,/orgs/CIEL/sources/CIEL/,169895,Excessive bleeding,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0175/,SAME-AS,/orgs/CIEL/sources/CIEL/,127990,Fever of unknown origin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0177/,SAME-AS,/orgs/CIEL/sources/CIEL/,117767,Gonorrhea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0178/,SAME-AS,/orgs/CIEL/sources/CIEL/,169140,Group of people,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0182/,SAME-AS,/orgs/CIEL/sources/CIEL/,1172,Breech delivery,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0183/,SAME-AS,/orgs/CIEL/sources/CIEL/,1882,Emergency (status),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0191/,SAME-AS,/orgs/CIEL/sources/CIEL/,165217,Imminent vaginal delivery,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0203/,SAME-AS,/orgs/CIEL/sources/CIEL/,166575,Date of birth,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0206/,SAME-AS,/orgs/CIEL/sources/CIEL/,159739,Emergency caesarean section,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0208/,SAME-AS,/orgs/CIEL/sources/CIEL/,134612,Maternal death,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0209/,SAME-AS,/orgs/CIEL/sources/CIEL/,1572,Location of birth,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0216/,SAME-AS,/orgs/CIEL/sources/CIEL/,159948,Diagnosis date,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0220/,SAME-AS,/orgs/CIEL/sources/CIEL/,162689,District,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0221/,SAME-AS,/orgs/CIEL/sources/CIEL/,166575,Date of birth,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0225/,SAME-AS,/orgs/CIEL/sources/CIEL/,118744,Eclampsia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0229/,SAME-AS,/orgs/CIEL/sources/CIEL/,5596,Estimated date of confinement,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0245/,SAME-AS,/orgs/CIEL/sources/CIEL/,5596,Estimated date of confinement,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0249/,SAME-AS,/orgs/CIEL/sources/CIEL/,162502,Expiration date,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0250/,SAME-AS,/orgs/CIEL/sources/CIEL/,162605,Travel history,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0256/,SAME-AS,/orgs/CIEL/sources/CIEL/,160766,Family history of pre-eclampsia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0262/,SAME-AS,/orgs/CIEL/sources/CIEL/,159837,Hysterectomy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0265/,SAME-AS,/orgs/CIEL/sources/CIEL/,5275,Intrauterine device,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0278/,SAME-AS,/orgs/CIEL/sources/CIEL/,159914,Twins,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0301/,SAME-AS,/orgs/CIEL/sources/CIEL/,162545,Dairy food,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0307/,SAME-AS,/orgs/CIEL/sources/CIEL/,112937,Growth,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0309/,SAME-AS,/orgs/CIEL/sources/CIEL/,163794,Inadequate,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0310/,SAME-AS,/orgs/CIEL/sources/CIEL/,166909,Adequate,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0325/,SAME-AS,/orgs/CIEL/sources/CIEL/,139059,Heartburn,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0328/,SAME-AS,/orgs/CIEL/sources/CIEL/,139063,Heart murmur,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0331/,SAME-AS,/orgs/CIEL/sources/CIEL/,126424,Sinus tachycardia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0335/,SAME-AS,/orgs/CIEL/sources/CIEL/,1408,High,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0365/,SAME-AS,/orgs/CIEL/sources/CIEL/,105281,Sulfamethoxazole / trimethoprim,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0372/,SAME-AS,/orgs/CIEL/sources/CIEL/,703,Positive,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0379/,SAME-AS,/orgs/CIEL/sources/CIEL/,160662,Number of instances of stock outs of key tracer drugs in the last month,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0380/,SAME-AS,/orgs/CIEL/sources/CIEL/,169222,Home visit,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0388/,SAME-AS,/orgs/CIEL/sources/CIEL/,1421,Immunization history,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0408/,SAME-AS,/orgs/CIEL/sources/CIEL/,162362,Kilogram,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0419/,SAME-AS,/orgs/CIEL/sources/CIEL/,1429,Rh type,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0430/,SAME-AS,/orgs/CIEL/sources/CIEL/,1369,Urobilinogen,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0438/,SAME-AS,/orgs/CIEL/sources/CIEL/,655,Total bilirubin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0440/,SAME-AS,/orgs/CIEL/sources/CIEL/,857,Blood urea nitrogen,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0441/,SAME-AS,/orgs/CIEL/sources/CIEL/,654,Serum glutamic-pyruvic transaminase,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0442/,SAME-AS,/orgs/CIEL/sources/CIEL/,653,Serum glutamic-oxaloacetic transaminase,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0444/,SAME-AS,/orgs/CIEL/sources/CIEL/,111759,Hepatitis B,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0445/,SAME-AS,/orgs/CIEL/sources/CIEL/,887,Serum glucose,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0446/,SAME-AS,/orgs/CIEL/sources/CIEL/,1618,Urine dipstick,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0452/,SAME-AS,/orgs/CIEL/sources/CIEL/,1008,Low-density lipoprotein cholesterol (mmol/L),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0453/,SAME-AS,/orgs/CIEL/sources/CIEL/,1007,High-density lipoprotein cholesterol measurement (mmol/L),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0489/,SAME-AS,/orgs/CIEL/sources/CIEL/,162216,Partner HIV test history,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0512/,SAME-AS,/orgs/CIEL/sources/CIEL/,1009,Triglycerides (mmol/L),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0528/,SAME-AS,/orgs/CIEL/sources/CIEL/,1234,Left lower extremity,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0529/,SAME-AS,/orgs/CIEL/sources/CIEL/,1235,Right lower extremity,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0530/,SAME-AS,/orgs/CIEL/sources/CIEL/,166338,Lower limb,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0538/,SAME-AS,/orgs/CIEL/sources/CIEL/,1010,Lipid panel,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0543/,SAME-AS,/orgs/CIEL/sources/CIEL/,1407,Low,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0569/,SAME-AS,/orgs/CIEL/sources/CIEL/,134615,Mastitis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0579/,SAME-AS,/orgs/CIEL/sources/CIEL/,5622,Other,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0580/,SAME-AS,/orgs/CIEL/sources/CIEL/,114362,Paralysis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0581/,SAME-AS,/orgs/CIEL/sources/CIEL/,131034,Pain in pelvis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0583/,SAME-AS,/orgs/CIEL/sources/CIEL/,1180,Postpartum,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0584/,SAME-AS,/orgs/CIEL/sources/CIEL/,113859,Pregnancy-induced hypertension,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0590/,SAME-AS,/orgs/CIEL/sources/CIEL/,1058,Divorced,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0591/,SAME-AS,/orgs/CIEL/sources/CIEL/,5555,Married,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0592/,SAME-AS,/orgs/CIEL/sources/CIEL/,5615,Not married,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0593/,SAME-AS,/orgs/CIEL/sources/CIEL/,1059,Widowed,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0594/,SAME-AS,/orgs/CIEL/sources/CIEL/,1060,Living with partner,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0598/,SAME-AS,/orgs/CIEL/sources/CIEL/,931,Amitriptyline,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0601/,SAME-AS,/orgs/CIEL/sources/CIEL/,6033,Renal disease,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0603/,SAME-AS,/orgs/CIEL/sources/CIEL/,115268,Neuropathy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0609/,SAME-AS,/orgs/CIEL/sources/CIEL/,77696,Hydrochlorothiazide,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0610/,SAME-AS,/orgs/CIEL/sources/CIEL/,163213,Calcium channel blockers,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0617/,SAME-AS,/orgs/CIEL/sources/CIEL/,113155,Schizophrenia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0618/,SAME-AS,/orgs/CIEL/sources/CIEL/,124193,Traumatic injury,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0621/,SAME-AS,/orgs/CIEL/sources/CIEL/,161189,Medication,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0622/,SAME-AS,/orgs/CIEL/sources/CIEL/,71160,Amoxicillin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0623/,SAME-AS,/orgs/CIEL/sources/CIEL/,71617,Aspirin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0624/,SAME-AS,/orgs/CIEL/sources/CIEL/,1447,Artemether / lumefantrine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0626/,SAME-AS,/orgs/CIEL/sources/CIEL/,86672,Zinc,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0628/,SAME-AS,/orgs/CIEL/sources/CIEL/,70116,Acetaminophen,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0629/,SAME-AS,/orgs/CIEL/sources/CIEL/,78643,Lamivudine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0630/,SAME-AS,/orgs/CIEL/sources/CIEL/,165085,Dolutegravir,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0631/,SAME-AS,/orgs/CIEL/sources/CIEL/,78218,Iron,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0632/,SAME-AS,/orgs/CIEL/sources/CIEL/,73041,Ceftriaxone,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0633/,SAME-AS,/orgs/CIEL/sources/CIEL/,71780,Azithromycin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0634/,SAME-AS,/orgs/CIEL/sources/CIEL/,79782,Metronidazole,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0635/,SAME-AS,/orgs/CIEL/sources/CIEL/,75222,Doxycycline,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0636/,SAME-AS,/orgs/CIEL/sources/CIEL/,160741,Medication history,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0641/,SAME-AS,/orgs/CIEL/sources/CIEL/,125811,Stress,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0652/,SAME-AS,/orgs/CIEL/sources/CIEL/,1593,Mother's name,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0655/,SAME-AS,/orgs/CIEL/sources/CIEL/,1343,Mid-upper arm circumference (cm),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0666/,SAME-AS,/orgs/CIEL/sources/CIEL/,140070,Flank pain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0677/,SAME-AS,/orgs/CIEL/sources/CIEL/,130987,Palpitations,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0678/,SAME-AS,/orgs/CIEL/sources/CIEL/,112200,Tremor,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0692/,SAME-AS,/orgs/CIEL/sources/CIEL/,117201,Increased thirst,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0694/,SAME-AS,/orgs/CIEL/sources/CIEL/,166340,Lower back,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0699/,SAME-AS,/orgs/CIEL/sources/CIEL/,151927,Family history of hypertension,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0702/,SAME-AS,/orgs/CIEL/sources/CIEL/,166327,Neck,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0705/,SAME-AS,/orgs/CIEL/sources/CIEL/,664,Negative,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0706/,SAME-AS,/orgs/CIEL/sources/CIEL/,1090,Never,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0717/,SAME-AS,/orgs/CIEL/sources/CIEL/,165183,Supplies not available,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0731/,SAME-AS,/orgs/CIEL/sources/CIEL/,163303,Moderate acute malnutrition,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0732/,SAME-AS,/orgs/CIEL/sources/CIEL/,163302,Severe acute malnutrition,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0740/,SAME-AS,/orgs/CIEL/sources/CIEL/,5314,Head circumference,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0742/,SAME-AS,/orgs/CIEL/sources/CIEL/,1527,Parent,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0743/,SAME-AS,/orgs/CIEL/sources/CIEL/,973,Grandparent,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0744/,SAME-AS,/orgs/CIEL/sources/CIEL/,972,Sibling,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0745/,SAME-AS,/orgs/CIEL/sources/CIEL/,163502,Neighbor,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0759/,SAME-AS,/orgs/CIEL/sources/CIEL/,116214,Hypotension,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0768/,SAME-AS,/orgs/CIEL/sources/CIEL/,112917,Foetus small-for-dates,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0770/,SAME-AS,/orgs/CIEL/sources/CIEL/,114413,Overweight,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0779/,SAME-AS,/orgs/CIEL/sources/CIEL/,5271,Family planning,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0782/,SAME-AS,/orgs/CIEL/sources/CIEL/,165048,Pediatric specialty,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0793/,SAME-AS,/orgs/CIEL/sources/CIEL/,114127,Placenta praevia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0797/,SAME-AS,/orgs/CIEL/sources/CIEL/,163894,Swelling,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0799/,SAME-AS,/orgs/CIEL/sources/CIEL/,156567,Hematoma,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0808/,SAME-AS,/orgs/CIEL/sources/CIEL/,115779,Migraine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0809/,SAME-AS,/orgs/CIEL/sources/CIEL/,150917,Abdominal colic,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0811/,SAME-AS,/orgs/CIEL/sources/CIEL/,971,Father,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0812/,SAME-AS,/orgs/CIEL/sources/CIEL/,970,Mother,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0813/,SAME-AS,/orgs/CIEL/sources/CIEL/,160273,Grandfather,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0820/,SAME-AS,/orgs/CIEL/sources/CIEL/,1721,First trimester,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0821/,SAME-AS,/orgs/CIEL/sources/CIEL/,1722,Second trimester,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0822/,SAME-AS,/orgs/CIEL/sources/CIEL/,1723,Third trimester,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0834/,SAME-AS,/orgs/CIEL/sources/CIEL/,115257,Neurosyphilis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0838/,SAME-AS,/orgs/CIEL/sources/CIEL/,48,"Pregnancy, miscarriage",high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0839/,SAME-AS,/orgs/CIEL/sources/CIEL/,134006,Molar pregnancy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0840/,SAME-AS,/orgs/CIEL/sources/CIEL/,130108,Placental abruption,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0841/,SAME-AS,/orgs/CIEL/sources/CIEL/,127259,Rupture of uterus,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0842/,SAME-AS,/orgs/CIEL/sources/CIEL/,141596,Dystocia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0844/,SAME-AS,/orgs/CIEL/sources/CIEL/,46,Ectopic pregnancy without intrauterine pregnancy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0848/,SAME-AS,/orgs/CIEL/sources/CIEL/,1292,Deep venous thrombosis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0851/,SAME-AS,/orgs/CIEL/sources/CIEL/,111633,Urinary tract infection,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0852/,SAME-AS,/orgs/CIEL/sources/CIEL/,122110,Pyelonephritis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0873/,SAME-AS,/orgs/CIEL/sources/CIEL/,111636,Urinary incontinence,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0877/,SAME-AS,/orgs/CIEL/sources/CIEL/,133473,Nausea and vomiting,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0881/,SAME-AS,/orgs/CIEL/sources/CIEL/,139251,Grief,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0885/,SAME-AS,/orgs/CIEL/sources/CIEL/,773,Ferrous sulfate and folic acid,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0886/,SAME-AS,/orgs/CIEL/sources/CIEL/,76609,Folate,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0896/,SAME-AS,/orgs/CIEL/sources/CIEL/,163606,Burning on urination,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0907/,SAME-AS,/orgs/CIEL/sources/CIEL/,112411,Suicide risk,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0917/,SAME-AS,/orgs/CIEL/sources/CIEL/,124957,Tetanus,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0921/,SAME-AS,/orgs/CIEL/sources/CIEL/,161033,Pregnancy outcome,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0927/,SAME-AS,/orgs/CIEL/sources/CIEL/,115115,Obesity,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0940/,SAME-AS,/orgs/CIEL/sources/CIEL/,165851,Province,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0954/,SAME-AS,/orgs/CIEL/sources/CIEL/,115838,Memory impairment,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0993/,SAME-AS,/orgs/CIEL/sources/CIEL/,6033,Renal disease,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1011/,SAME-AS,/orgs/CIEL/sources/CIEL/,162044,Severe anaemia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1027/,SAME-AS,/orgs/CIEL/sources/CIEL/,139546,Generalized pain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1029/,SAME-AS,/orgs/CIEL/sources/CIEL/,162706,Unable to eat,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1036/,SAME-AS,/orgs/CIEL/sources/CIEL/,133502,Nasal congestion,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1037/,SAME-AS,/orgs/CIEL/sources/CIEL/,141600,Shortness of breath,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1049/,SAME-AS,/orgs/CIEL/sources/CIEL/,1006,Total cholesterol (mmol/L),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1052/,SAME-AS,/orgs/CIEL/sources/CIEL/,1185,Treatment,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1073/,SAME-AS,/orgs/CIEL/sources/CIEL/,159950,Uncomplicated malaria,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1074/,SAME-AS,/orgs/CIEL/sources/CIEL/,123814,Underweight,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1081/,SAME-AS,/orgs/CIEL/sources/CIEL/,72794,Capreomycin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1092/,SAME-AS,/orgs/CIEL/sources/CIEL/,162595,Vaginal delivery,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1097/,SAME-AS,/orgs/CIEL/sources/CIEL/,1354,Village,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1102/,SAME-AS,/orgs/CIEL/sources/CIEL/,5544,Weight gain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1105/,SAME-AS,/orgs/CIEL/sources/CIEL/,161136,Birth history,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1130/,SAME-AS,/orgs/CIEL/sources/CIEL/,886,Bacillus Calmette–Guérin vaccine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1131/,SAME-AS,/orgs/CIEL/sources/CIEL/,1213,Human papillomavirus,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1136/,SAME-AS,/orgs/CIEL/sources/CIEL/,159698,"Rotavirus Vaccine, Live Attenuated, G1P[8] Human 89-12 strain",high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1137/,SAME-AS,/orgs/CIEL/sources/CIEL/,162207,Routine child exam,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1140/,SAME-AS,/orgs/CIEL/sources/CIEL/,165416,Sequence number,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1145/,SAME-AS,/orgs/CIEL/sources/CIEL/,1577,Nurse,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1166/,SAME-AS,/orgs/CIEL/sources/CIEL/,5916,Birth weight (kg),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1170/,SAME-AS,/orgs/CIEL/sources/CIEL/,165344,Supplement type,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1182/,SAME-AS,/orgs/CIEL/sources/CIEL/,116616,Irregular menstrual cycle,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1183/,SAME-AS,/orgs/CIEL/sources/CIEL/,148117,Autoimmune disease,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1189/,SAME-AS,/orgs/CIEL/sources/CIEL/,1067,Unknown,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1195/,SAME-AS,/orgs/CIEL/sources/CIEL/,166400,Reason for cesarean delivery,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1208/,SAME-AS,/orgs/CIEL/sources/CIEL/,160427,Bednet,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1257/,SAME-AS,/orgs/CIEL/sources/CIEL/,156095,Dry mouth,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1281/,SAME-AS,/orgs/CIEL/sources/CIEL/,1503,Birth length,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1317/,SAME-AS,/orgs/CIEL/sources/CIEL/,1356,HIV Test,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1345/,SAME-AS,/orgs/CIEL/sources/CIEL/,166575,Date of birth,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1347/,SAME-AS,/orgs/CIEL/sources/CIEL/,1825,Total number of living children,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1348/,SAME-AS,/orgs/CIEL/sources/CIEL/,1712,Highest education level,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1349/,SAME-AS,/orgs/CIEL/sources/CIEL/,161135,Partner full name,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1352/,SAME-AS,/orgs/CIEL/sources/CIEL/,1528,Child,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1353/,SAME-AS,/orgs/CIEL/sources/CIEL/,166044,Adult,high
