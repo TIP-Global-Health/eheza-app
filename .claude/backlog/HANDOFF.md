@@ -55,7 +55,7 @@ morning's four merged — #2178/#2172/#2174/#2176, issues closed, worktrees rele
 | #2183 | #2181+#2182 | **B-303+B-304** | `B-303-B-304-translate-corrections` | green, review done; ⚠ ONE OPEN THREAD: the altitude finding (dosage literals per branch/language in `TreatmentDetailsHypertension`) awaits a user decision — fold/file/drop |
 | #2185 | #2184 | **B-280** | `B-280-subsequent-diagnosis-correction` | green, review done (fixture finding fixed; follow-up finding filed as B-306) |
 | #2187 | #2186 | **B-299** | `B-299-village-stock-cache` | green, review done (placement finding fixed `91be8e22d`, recompute-cost finding ACCEPTED by user) |
-| #2189 | #2188 | **B-213** | `B-213-scorecard-age-at-measurement` | lint+unit green (e2e/simpletest still running at handoff), review done — ZERO correctness findings; its one quality finding (the two new helpers are structurally identical) DECLINED by the user (*"leave it"*), thread closed |
+| #2189 | #2188 | **B-213** | `B-213-scorecard-age-at-measurement` | **fully green** (all 10 checks incl. simpletest + 3 e2e), review done — ZERO correctness findings; its one quality finding (the two new helpers are structurally identical) DECLINED by the user (*"leave it"*), thread closed |
 
 Worktrees held, to be removed **when their PR merges**: `ihangane-wt/{B-272-vitals-previous-reading, B-303-B-304-translate-corrections, B-280-subsequent-diagnosis-correction, B-299-village-stock-cache, B-213-scorecard-age-at-measurement}`.
 
