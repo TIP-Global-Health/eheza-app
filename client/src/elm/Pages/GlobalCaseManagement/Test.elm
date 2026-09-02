@@ -7,8 +7,8 @@ import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Date
 import EverySet
 import Expect
-import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpItem)
-import Pages.GlobalCaseManagement.Utils exposing (filterResolvedFollowUps, generateTuberculosisFollowUps)
+import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpItem, EncounterStartedToday(..))
+import Pages.GlobalCaseManagement.Utils exposing (filterResolvedFollowUps, generateTuberculosisFollowUps, resolveEncounterStartedToday)
 import RemoteData
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
@@ -20,6 +20,7 @@ all =
     describe "Pages.GlobalCaseManagement"
         [ filterResolvedFollowUpsTests
         , generateTuberculosisFollowUpsTests
+        , resolveEncounterStartedTodayTests
         ]
 
 
@@ -151,4 +152,63 @@ generateTuberculosisFollowUpsTests =
                     |> Dict.values
                     |> List.map (\item -> ( item.dateMeasured, item.encounterId ))
                     |> Expect.equal [ ( Date.fromCalendarDate 2026 Time.Jun 10, Just encounterId ) ]
+        ]
+
+
+{-| Tapping a Case Management follow up entry must not open a second encounter
+on a day the patient already had one. Today's open encounter is offered
+instead, and a completed one leaves nothing to do.
+-}
+resolveEncounterStartedTodayTests : Test
+resolveEncounterStartedTodayTests =
+    let
+        currentDate =
+            Date.fromCalendarDate 2026 Time.Jun 15
+
+        encounter id startDate endDate =
+            ( toEntityUuid id
+            , { startDate = startDate, endDate = endDate }
+            )
+
+        today =
+            currentDate
+
+        yesterday =
+            Date.fromCalendarDate 2026 Time.Jun 14
+    in
+    describe "resolveEncounterStartedToday"
+        [ test "reports no encounter when the patient has none at all" <|
+            \_ ->
+                resolveEncounterStartedToday currentDate []
+                    |> Expect.equal NoEncounterStartedToday
+        , test "reports no encounter when every encounter predates today" <|
+            \_ ->
+                resolveEncounterStartedToday currentDate
+                    [ encounter "a" yesterday (Just yesterday) ]
+                    |> Expect.equal NoEncounterStartedToday
+        , test "offers today's encounter while it is still open" <|
+            \_ ->
+                resolveEncounterStartedToday currentDate
+                    [ encounter "a" yesterday (Just yesterday), encounter "b" today Nothing ]
+                    |> Expect.equal (EncounterActiveToday <| toEntityUuid "b")
+        , test "reports a completed encounter when today's was already closed" <|
+            \_ ->
+                resolveEncounterStartedToday currentDate
+                    [ encounter "a" today (Just today) ]
+                    |> Expect.equal EncounterCompletedToday
+        , test "offers the open one when today holds both a closed and an open encounter" <|
+            \_ ->
+                resolveEncounterStartedToday currentDate
+                    [ encounter "a" today (Just today), encounter "b" today Nothing ]
+                    |> Expect.equal (EncounterActiveToday <| toEntityUuid "b")
+        , test "ignores an encounter left open on an earlier day" <|
+            \_ ->
+                resolveEncounterStartedToday currentDate
+                    [ encounter "a" yesterday Nothing ]
+                    |> Expect.equal NoEncounterStartedToday
+        , test "does not offer an encounter left open on an earlier day when today's was completed" <|
+            \_ ->
+                resolveEncounterStartedToday currentDate
+                    [ encounter "a" yesterday Nothing, encounter "b" today (Just today) ]
+                    |> Expect.equal EncounterCompletedToday
         ]

@@ -1,4 +1,4 @@
-module Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, AcuteIllnessFollowUpItem, CaseManagementFilter(..), ContactsTracingEntryData, FollowUpAcuteIllnessData, FollowUpDueOption(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpImmunizationData, FollowUpNutritionData, FollowUpPatients, FollowUpPrenatalData, FollowUpTuberculosisData, HIVFollowUpEntry, HIVFollowUpItem, ImmunizationFollowUpEntry, ImmunizationFollowUpItem, LabsEntryState(..), Model, Msg(..), NCDLabsEntryData, NutritionFollowUpEntry, NutritionFollowUpItem, PrenatalFollowUpEntry, PrenatalFollowUpItem, PrenatalLabsEntryData, TuberculosisFollowUpEntry, TuberculosisFollowUpItem, emptyModel)
+module Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, AcuteIllnessFollowUpItem, CaseManagementFilter(..), ContactsTracingEntryData, EncounterStartedToday(..), FollowUpAcuteIllnessData, FollowUpDueOption(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpImmunizationData, FollowUpNutritionData, FollowUpPatients, FollowUpPrenatalData, FollowUpTuberculosisData, HIVFollowUpEntry, HIVFollowUpItem, ImmunizationFollowUpEntry, ImmunizationFollowUpItem, LabsEntryState(..), Model, Msg(..), NCDLabsEntryData, NutritionFollowUpEntry, NutritionFollowUpItem, PrenatalFollowUpEntry, PrenatalFollowUpItem, PrenatalLabsEntryData, TuberculosisFollowUpEntry, TuberculosisFollowUpItem, emptyModel)
 
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
@@ -153,6 +153,15 @@ type FollowUpEncounterDataType
     | FollowUpTuberculosis FollowUpTuberculosisData
     | FollowUpHIV FollowUpHIVData
     | CaseManagementContactsTracing
+
+
+{-| Whether the patient already had an encounter of the relevant type today,
+and if that encounter is still open, which one it is. Variants are alphabetical.
+-}
+type EncounterStartedToday encounterId
+    = EncounterActiveToday encounterId
+    | EncounterCompletedToday
+    | NoEncounterStartedToday
 
 
 type alias FollowUpNutritionData =
