@@ -1,4 +1,4 @@
-module Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, AcuteIllnessFollowUpItem, CaseManagementFilter(..), ContactsTracingEntryData, FollowUpAcuteIllnessData, FollowUpDueOption(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpImmunizationData, FollowUpNutritionData, FollowUpPatients, FollowUpPrenatalData, FollowUpTuberculosisData, HIVFollowUpEntry, HIVFollowUpItem, ImmunizationFollowUpEntry, ImmunizationFollowUpItem, LabsEntryState(..), Model, Msg(..), NCDLabsEntryData, NutritionFollowUpEntry, NutritionFollowUpItem, PrenatalFollowUpEntry, PrenatalFollowUpItem, PrenatalLabsEntryData, TuberculosisFollowUpEntry, TuberculosisFollowUpItem, emptyModel)
+module Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, AcuteIllnessFollowUpItem, CaseManagementFilter(..), ContactsTracingEntryData, EncounterStartedToday(..), FollowUpAcuteIllnessData, FollowUpDialogState(..), FollowUpDueOption(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpImmunizationData, FollowUpNutritionData, FollowUpPatients, FollowUpPrenatalData, FollowUpTuberculosisData, HIVFollowUpEntry, HIVFollowUpItem, ImmunizationFollowUpEntry, ImmunizationFollowUpItem, LabsEntryState(..), Model, Msg(..), NCDLabsEntryData, NutritionFollowUpEntry, NutritionFollowUpItem, PrenatalFollowUpEntry, PrenatalFollowUpItem, PrenatalLabsEntryData, TuberculosisFollowUpEntry, TuberculosisFollowUpItem, emptyModel)
 
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
@@ -17,7 +17,7 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { filter : Maybe CaseManagementFilter
-    , dialogState : Maybe FollowUpEncounterDataType
+    , dialogState : Maybe FollowUpDialogState
     }
 
 
@@ -145,6 +145,15 @@ type alias HIVFollowUpEntry =
     }
 
 
+{-| Tapping a follow up entry normally asks whether to start an encounter. When
+the patient already had one of that type today it says so instead, since no new
+encounter can be started. Variants are alphabetical.
+-}
+type FollowUpDialogState
+    = DialogEncounterAlreadyTookPlaceToday FollowUpEncounterDataType
+    | DialogStartFollowUpEncounter FollowUpEncounterDataType
+
+
 type FollowUpEncounterDataType
     = FollowUpNutrition FollowUpNutritionData
     | FollowUpAcuteIllness FollowUpAcuteIllnessData
@@ -153,6 +162,15 @@ type FollowUpEncounterDataType
     | FollowUpTuberculosis FollowUpTuberculosisData
     | FollowUpHIV FollowUpHIVData
     | CaseManagementContactsTracing
+
+
+{-| Whether the patient already had an encounter of the relevant type today,
+and if that encounter is still open, which one it is. Variants are alphabetical.
+-}
+type EncounterStartedToday encounterId
+    = EncounterActiveToday encounterId
+    | EncounterCompletedToday
+    | NoEncounterStartedToday
 
 
 type alias FollowUpNutritionData =
@@ -243,7 +261,7 @@ type alias FollowUpPatients =
 type Msg
     = SetActivePage Page
     | SetFilter (Maybe CaseManagementFilter)
-    | SetDialogState (Maybe FollowUpEncounterDataType)
+    | SetDialogState (Maybe FollowUpDialogState)
     | StartFollowUpEncounter FollowUpEncounterDataType
     | StartPrenatalFollowUpEncounter IndividualEncounterParticipantId Bool PrenatalEncounterType
     | HandleUrgentPrenatalDiagnoses PrenatalEncounterId ( String, String )
