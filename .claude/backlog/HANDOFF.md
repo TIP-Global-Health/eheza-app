@@ -121,7 +121,7 @@ B-308..B-322 (see `rounds.md` R28, `queue.md` R28 line). A 6-unit coverage sweep
 rows at R25+ depth: SyncManager (R15 row), Measurement/Utils (R13), vendored collections + every order-trusting consumer (never
 rowed), server/elm admin apps (R17), hedley_ncda PHP (R16), ZScore chart rendering (R23 not-read tail). All six scouts were
 killed by the session cap minutes after launch and resumed via SendMessage with context intact (R27's remedy; ~5 min to finish).
-**Counts after R28: 192 READY — T2 4 · T3 46 · T4 108 · untiered 34.** Tier 2 READY = B-195 (half on hold) + the three below.
+**Counts after R28 + the re-tier: 192 READY — T1 8 · T2 4 · T3 38 · T4 108 · untiered 34.** Tier 2 READY = B-195 (half on hold) + the three below; tier 1 = the eight diagnosis-path items.
 Dry-stop counter: 0.
 
 Headlines, all live-sized from this seat (7 terminus queries):
@@ -139,12 +139,7 @@ Headlines, all live-sized from this seat (7 terminus queries):
 - ⭐ **Durable (in the coverage lessons):** two assoc-list implementations with OPPOSITE order semantics coexist — the vendored
   fork (client `Dict`) appends, upstream (`EverySet`, server `Dict`) prepends/reverses; `Date.diff Months` truncates toward zero.
 
-⚠ **Open tiering question from the user (2026-09-03):** *"B-236 was classified as T3 … this is a bug when diagnosis is determined,
-which causes an illness not to be detected. That's top priority."* The tier lines define T1 = HIGH/MED-HIGH, yet B-236 (MED-HIGH),
-B-245 (MED-HIGH) and now B-311 sit below that. Past orchestrators tiered by blast radius (population, routing-vs-detection) and
-left severity as a separate label. Candidates for re-tiering if the user's rule ("wrong diagnosis determination = top tier") is
-adopted: B-286, B-289, B-288, B-240, B-237, B-221, B-320, B-319 (all tier 3 today). Awaiting the user's answer — do not re-tier
-without it.
+✅ **Standing rule adopted (user, 2026-09-03): a defect in how a diagnosis or its care pathway is determined is TIER 1 regardless of how many patients hit it.** Re-tiered 3 → 1: B-221, B-237, B-240, B-286, B-288, B-289, B-319, B-320 (+ B-236 for the record). Severity labels unchanged — they describe blast radius, the tier is priority. Scope: the decision logic (which diagnosis fires, what it routes to) — not reports, case-management listings, form refills or display panes that mention a diagnosis. **Tier 1 READY is now 8** — the first non-empty tier 1 since R17. Counts after the re-tier: 192 READY — T1 8 · T2 4 · T3 38 · T4 108 · untiered 34.
 
 ## Round 27 ran 2026-08-31 → 09-01 — 14 new items, ZERO tier 2, 6 tier 3; first-ever rows for Measurement/View and Translate
 

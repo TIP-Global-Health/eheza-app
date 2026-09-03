@@ -3,6 +3,7 @@
 
 **Process:** `/run-backlog-discovery` finds and verifies into `items/`; `/process-backlog` presents, builds and ships. Layout in `README.md`.
 
+**Tiering rule (user, 2026-09-03):** a defect in how a diagnosis or its care pathway is determined is TIER 1 regardless of population — see the Tier 1 line.
 **Statuses:** READY (implementation-ready) · IMPLEMENTED (PR#) · DECLINED (user) · STALE (superseded by drift).
 **Verification labels:** CONFIRMED (Fable traced end-to-end) · PLAUSIBLE (agent-found, mechanism solid, not fully traced — re-verify before coding).
 
@@ -25,7 +26,7 @@
 ## Priority queue (MEATIEST FIRST — re-tiered 2026-07-06 after the verification sweep; Opus implements top-down)
 **VERIFICATION SWEEP 2026-07-06 (Fable, 5 worktree-isolated agents + orchestrator self-verification): ALL 15 PLAUSIBLEs resolved — zero PLAUSIBLE labels remain.** 11 confirmed (several with corrected mechanism/severity), B-006 impact-refuted (⚠ do-not-fix tombstone), B-007 split (stats half refuted), B-011/B-021 downgraded, B-014c refuted. Gates answered: B-058 (~serialized in prod, ask-ops), B-063 (PDO impact REFUTED → cleanup), B-042 (dups REAL, worked example). Every remaining queue item is now CONFIRMED — Opus can implement without re-litigation (re-locate anchors first; snippets authoritative).
 
-**Tier 1 — top severity (HIGH / MED-HIGH):**
+**Tier 1 — top severity (HIGH / MED-HIGH) — AND, standing rule (user, 2026-09-03): any defect in how a DIAGNOSIS or its CARE PATHWAY is determined, regardless of how many patients hit it.** The severity label keeps describing blast radius; the tier is priority. Re-tiered 3 → 1 under the rule on 2026-09-03: **B-221, B-237, B-240, B-286, B-288, B-289, B-319, B-320** (+ B-236 for the record, already shipped as PR #2195). Applies to the decision logic itself — which diagnosis fires, which treatment/referral it routes to — not to report rows, case-management listings, form refills or display panes that mention a diagnosis (B-133, B-227, B-245, B-274, B-275, B-287, B-306 stay where they are).
 ~~⭐ NEXT UP~~ **RESOLVED (verified 2026-08-03/R17):** **B-122** ✅ input gate delivered with the range-gate programme (#1981 closed; data repair = #2008, customer-blocked) · **B-123** ✅ fixed (#1982 closed) · **B-121** ✅ superseded by PR #2007 (#1980 closed; head-circumference residue stays clinician-gated — see entry).
 ⭐ **R17 adds (2026-08-03): B-128** ✅ IMPLEMENTED (issue #2033, PR #2034, 2026-08-04) — aggregated NCDA Scoreboard double-shifted month offset. Siblings in tier 2: B-129 (WASH rows swapped), B-130 (decoder month-bucketing), B-131 (vaccination-engine drift ×3).
 ⭐ **R18 adds (2026-08-04): B-149** ✅ IMPLEMENTED (issue #2035, PR #2036, 2026-08-04) — aggregated scoreboard LBW threshold 2000 → 2500 g; siblings (b)-(e) in the entry are still OPEN. **Tier 1 is now EMPTY** — B-128 shipped as PR #2034 and B-149 as PR #2036 (both 2026-08-04). Remaining scoreboard-stack siblings B-129/130/131/138 (+B-141 PHP twin) sit in tier 2, being taken ONE BY ONE per user instruction 2026-08-04 (separate PRs, not one stack).
