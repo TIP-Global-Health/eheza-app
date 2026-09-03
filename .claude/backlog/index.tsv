@@ -249,7 +249,7 @@ B-248	3	READY	MED			25	Stats simpletest: three scenarios — including the B-032
 B-249	3	READY	MED			25	Dashboard family planning: the donut buckets each record by the date it was uploaded, not the date it was measured
 B-250	3	READY	MED			25	Dashboard stats: soft-deleted people still appear in case management, beneficiaries and attendance, so a merged-away dup
 B-251	3	READY	MED			25	Progress-report lab pane: urine-dipstick rows are built from an unfiltered list, so a long-only test also renders a phan
-B-252	4	READY	LOW			25	NCD progress report: the Partner HIV lab row ignores its own display flag, so every NCD report shows a permanently blank
+B-252	4	IMPLEMENTED	LOW	2198	2200	25	NCD progress report: the Partner HIV lab row ignores its own display flag, so every NCD report shows a permanently blank
 B-253	4	IMPLEMENTED	LOW			25	Pregnancy Outcome page reads an arbitrary encounter instead of the latest, so Gravida and Para can render as `----`
 B-254	4	READY	LOW			25	Prenatal participant page picks an arbitrary pregnancy when a person has two active ones, so encounters can land on the 
 B-255	4	READY	LOW			25	CHW progress report: the breech/transverse alert re-grades a stale exam against TODAY's gestational age, so a normal EGA
@@ -290,7 +290,7 @@ B-289	3	READY	MED			26	NCD: a pregnancy found by test at the first encounter is 
 B-290	3	IMPLEMENTED	MED			26	NCD Social History: the drinks-per-week answer is never saved — the encoder writes the cigarettes count into the `bevera
 B-291	4	READY	MED-LOW			27	NCDA Antenatal Care step (all four hosts): tapping an already-recorded ANC month silently stores a phantom ANC visit dat
 B-292	3	READY	MED			27	Immunisation (Well Child + Child Scoreboard): for a child followed by BOTH programs, the form derives the interval gate 
-B-293	4	READY	LOW			27	Dashboard immunization donut + NCDA scorecard row: a dose administered ON the reference day is read as not given, so the
+B-293	4	IMPLEMENTED	LOW	2199	2201	27	Dashboard immunization donut + NCDA scorecard row: a dose administered ON the reference day is read as not given, so the
 B-294	3	READY	MED			27	Nutrition (individual): the assessment stored on the `nutrition_nutrition` measurement goes stale when signs are saved b
 B-295	4	READY	MED-LOW			27	Nutrition (individual, CHW): saving Height/Weight as "unable to take" leaves the previously saved measurement alive and 
 B-296	3	READY	MED-LOW			27	Group sessions: a child enrolled under TWO adults is checked in only through an arbitrary head of the enrolment list — b
