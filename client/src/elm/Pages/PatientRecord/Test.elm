@@ -33,9 +33,9 @@ all =
         prenatalParticipantId =
             toEntityUuid "prenatal-participant"
 
-        -- Born 1985, so an adult at currentDate.
         db =
             { emptyModelIndexedDb
+              -- The shared fixture is born 1985, so an adult at currentDate.
                 | people = Dict.singleton personId (RemoteData.Success TestFixtures.testPerson)
                 , individualParticipantsByPerson =
                     Dict.singleton personId
@@ -59,7 +59,7 @@ all =
             \_ ->
                 List.member (FetchAcuteIllnessEncountersForParticipants [ acuteIllnessParticipantId ]) msgs
                     |> Expect.equal True
-        , test "the prenatal participant is not asked for as an acute illness" <|
+        , test "and still asks for the antenatal encounters it asked for before" <|
             \_ ->
                 List.member (FetchPrenatalEncountersForParticipants [ prenatalParticipantId ]) msgs
                     |> Expect.equal True
