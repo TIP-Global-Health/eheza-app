@@ -1,5 +1,6 @@
 module Pages.GlobalCaseManagement.View exposing
     ( generateAcuteIllnessFollowUpEntries
+    , generateImmunizationFollowUpEntries
     , generateNutritionFollowUpEntries
     , generatePrenatalFollowUpEntries
     , view
@@ -1569,8 +1570,13 @@ viewNCDLabsEntry language data =
 viewImmunizationPane : Language -> NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> Html Msg
 viewImmunizationPane language currentDate itemsDict db =
     let
+        limitDate =
+            -- Set limit date for tomorrow, so that we
+            -- load all available follow ups.
+            Date.add Days 1 currentDate
+
         entries =
-            generateImmunizationFollowUpEntries currentDate itemsDict db
+            generateImmunizationFollowUpEntries limitDate itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -1613,15 +1619,18 @@ generateImmunizationFollowUpEntryData limitDate db personId item =
     in
     Maybe.map
         (\encounter ->
-            -- Last Well Child encounter occurred before follow up was scheduled.
-            if Date.compare encounter.startDate item.dateMeasured == LT then
-                Just <| ImmunizationFollowUpEntry personId item
+            -- A Well Child encounter that started after the follow up was
+            -- scheduled is where the immunisation would have been given, so
+            -- the follow up is done. The encounter that scheduled it starts
+            -- on the same day it was measured, and does not count.
+            if Date.compare encounter.startDate item.dateMeasured == GT then
+                Nothing
 
             else
-                Nothing
+                Just <| ImmunizationFollowUpEntry personId item
         )
         lastWellChildEncounter
-        |> -- No Home Visit encounter found.
+        |> -- No Well Child encounter found.
            Maybe.withDefault
             (Just <| ImmunizationFollowUpEntry personId item)
 
