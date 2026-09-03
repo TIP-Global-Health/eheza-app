@@ -1,14 +1,17 @@
-module Pages.Utils exposing (calculatePercentage, generateReportsHeaderImage, launchDate, viewCustomLabel, viewCustomSelectListInput, viewGeoLocationSelectListInput, viewLoadDataButton, viewMenuActionButton, viewSelectListInput, viewYearSelector, wrapSelectListInput)
+module Pages.Utils exposing (calculatePercentage, dateSelectorDefault, generateReportsHeaderImage, launchDate, viewBackendData, viewCustomLabel, viewCustomSelectListInput, viewGeoLocationSelectListInput, viewLoadDataButton, viewMenuActionButton, viewSelectListInput, viewYearSelector, wrapSelectListInput)
 
 import App.Types exposing (Language)
 import Backend.Entities exposing (toEntityId)
 import Date
+import DateSelector.Model exposing (DateSelectorConfig)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Icons
+import Json.Decode
+import Maybe.Extra
 import Round
 import Svg.Attributes
 import Time exposing (Month(..))
@@ -23,6 +26,27 @@ calculatePercentage nominator total =
 
     else
         Round.round 2 ((toFloat nominator / toFloat total) * 100) ++ "%"
+
+
+{-| The date shown as selected when a date selector opens - the date
+already picked, or the selector's default when nothing was picked yet.
+-}
+dateSelectorDefault : Maybe NominalDate -> Maybe (DateSelectorConfig msg) -> Maybe NominalDate
+dateSelectorDefault selectedDate state =
+    Maybe.Extra.or selectedDate (Maybe.andThen .dateDefault state)
+
+
+viewBackendData : Maybe (Result Json.Decode.Error a) -> (a -> Html msg) -> Html msg
+viewBackendData backendData viewFunc =
+    case backendData of
+        Just (Ok data) ->
+            viewFunc data
+
+        Just (Err err) ->
+            text <| Json.Decode.errorToString err
+
+        Nothing ->
+            emptyNode
 
 
 viewYearSelector : NominalDate -> Int -> (Int -> msg) -> Html msg

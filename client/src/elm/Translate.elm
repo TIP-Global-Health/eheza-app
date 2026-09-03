@@ -677,6 +677,7 @@ type TranslationId
     | EmergencyReferralHelperReferToEmergencyObstetricCareServices
     | DangerSignsTask DangerSignsTask
     | EmptyString
+    | EncounterAlreadyTookPlaceTodayLabel
     | EncounterDate
     | Encounters
     | EncounterTypes
@@ -1223,6 +1224,7 @@ type TranslationId
     | NoChildrenRegisteredInTheSystem
     | NoneOfTheAbove
     | NoneOfThese
+    | NotAssessed
     | NotAvailable
     | NotFollowingRecommendationQuestion
     | NotIndicated
@@ -2402,7 +2404,7 @@ translationSet trans =
                 FacilityANCServices ->
                     { english = "Will you accompany the patient to ANC services"
                     , kinyarwanda = Just "Uzaherekeza umubyeyi muri serivise yita kubuzima bw'umubyeyi utwite"
-                    , kirundi = Just "Uzoherekeza umugwayi mu gisata kiraba ingwara zitandukira"
+                    , kirundi = Nothing
                     , somali = Nothing
                     }
 
@@ -6275,7 +6277,7 @@ translationSet trans =
                     { english = "Can the child hop and stand on one foot for up to 5 seconds"
                     , kinyarwanda = Just "Umwana ashobora guhagarara ku kaguru kamwe akandi kanenetse mu gihe cy'amasegonda 5"
                     , kirundi = Just "Mbega umwana arashobora gusimba no guhagarara ku kirenge kimwe/k'ukuguru kumwe gushika ku masegonda atanu (5)"
-                    , somali = Just "Canuga maku istaagi karaa hal lug 1 ilbiriqsi"
+                    , somali = Just "Canuga maku istaagi karaa hal lug 5 ilbiriqsi"
                     }
 
                 UseLongPhrases ->
@@ -6517,6 +6519,13 @@ translationSet trans =
 
         EmptyString ->
             { english = ""
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        EncounterAlreadyTookPlaceTodayLabel ->
+            { english = "An encounter has already taken place today for"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -7565,7 +7574,7 @@ translationSet trans =
         GroupAssessment ->
             { english = "Group Encounter"
             , kinyarwanda = Just "Gukorera itsinda"
-            , kirundi = Just "Inyigisho mukibano"
+            , kirundi = Just "Kubonano y'umurwi"
             , somali = Just "Ogaanshiyo Koox"
             }
 
@@ -10161,7 +10170,7 @@ translationSet trans =
 
         LaboratoryALTLabel ->
             { english = "ALT"
-            , kinyarwanda = Just "Ikizamini cy'Impyiko"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
             }
@@ -10886,7 +10895,7 @@ translationSet trans =
 
                 LabResultsHistoryALT _ ->
                     { english = "ALT Test History"
-                    , kinyarwanda = Just "Amakuru ku kizamini cy'Impyiko"
+                    , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
                     }
@@ -15021,6 +15030,13 @@ translationSet trans =
             , somali = Just "Midan aan kuwaas ahayn"
             }
 
+        NotAssessed ->
+            { english = "Not Assessed"
+            , kinyarwanda = Just "Ntibyasuzumwe"
+            , kirundi = Just "Ntivyasuzumwe"
+            , somali = Just "Lama qiimeyn"
+            }
+
         NotAvailable ->
             { english = "not available"
             , kinyarwanda = Just "Ntibiboneste"
@@ -15243,7 +15259,7 @@ translationSet trans =
 
                 AssesmentMalnutritionSigns _ ->
                     { english = "Malnutrition Signs"
-                    , kinyarwanda = Just "Ifite ibimenyetso mpuruza"
+                    , kinyarwanda = Nothing
                     , kirundi = Just "Ibimenyetso vy'ingwara yo gufungura nabi"
                     , somali = Nothing
                     }
@@ -16313,7 +16329,7 @@ translationSet trans =
 
         PlaceholderEnterMUAC ->
             { english = "Enter MUAC here…"
-            , kinyarwanda = Just "Andika uburebure hano…"
+            , kinyarwanda = Nothing
             , kirundi = Just "Andika uburinganira bw'umuzingi w'ukoboko ngaha..."
             , somali = Just "Geli MUAC halkan…"
             }
@@ -17105,7 +17121,7 @@ translationSet trans =
                 DiagnosisPROM ->
                     { english = "Premature Rupture of Membranes (PROM)"
                     , kinyarwanda = Just "Isuha yamenetse hakiri kare"
-                    , kirundi = Just "Itabuka ry'isimbizo y'umwana mu gitereko imbere yuko imbanyi ishika kw'itarike yayo/igihe cayo"
+                    , kirundi = Nothing
                     , somali = Nothing
                     }
 
@@ -17541,7 +17557,7 @@ translationSet trans =
                 DiagnosisPROM ->
                     { english = "PROM"
                     , kinyarwanda = Just "Isuha yamenetse hakiri kare"
-                    , kirundi = Just " Itabuka ry'isimbizo y'umwana mu gitereko imbere yuko imbanyi ishika kw'itarike yayo"
+                    , kirundi = Nothing
                     , somali = Nothing
                     }
 
@@ -18871,7 +18887,7 @@ translationSet trans =
                         MentalHealthQuestionOption2 ->
                             { english = "Definitely not so much now"
                             , kinyarwanda = Just "Ntago ari cyane na gato"
-                            , kirundi = Just "Si vyinshi cane ubu"
+                            , kirundi = Nothing
                             , somali = Nothing
                             }
 
@@ -19981,9 +19997,9 @@ translationSet trans =
                     }
 
         PrescribedMedicationsChangedQuestion ->
-            { english = "Suzuma ko umurwayi agifise imiti yandikiwe kandi ko ayifata uko vyategekanijwe"
+            { english = "Please check the medications that were prescribed. Is the patient still taking the medications listed above"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Suzuma ko umurwayi agifise imiti yandikiwe kandi ko ayifata uko vyategekanijwe"
             , somali = Nothing
             }
 
@@ -20491,7 +20507,7 @@ translationSet trans =
 
                 TreatmentAluminiumHydroxide ->
                     { english = "1 tablet by mouth 3x a day for 7 days"
-                    , kinyarwanda = Just "kunywa ikinini 1 inshuro ku munsi mu minsi 7"
+                    , kinyarwanda = Just "kunywa ikinini 1 inshuro 3 ku munsi mu minsi 7"
                     , kirundi = Just "Ikinini 1 co kumira incuro 3 ku munsi, mu minsi 7"
                     , somali = Nothing
                     }
@@ -20575,7 +20591,7 @@ translationSet trans =
                 TreatmentCaptopril ->
                     { english = "1 tablet by mouth 3 times a day"
                     , kinyarwanda = Just "ikinini kimwe mu kanwa inshuro 3 ku munsi"
-                    , kirundi = Just "Ugufata ikinini 1, ukimize, 3 ku munsi mu minsi 5"
+                    , kirundi = Just "Ugufata ikinini 1, ukimize, 3 ku munsi"
                     , somali = Nothing
                     }
 
@@ -25403,7 +25419,7 @@ translationSet trans =
         ReportToWhatsAppPhoneUpdateAtProfileQuestionPrefix ->
             { english = "Would you like to update the patient profile for"
             , kinyarwanda = Nothing
-            , kirundi = Just "Mbega iyi nimero ya WhatsApp y'umurwayi/umuvyeyi niyo"
+            , kirundi = Nothing
             , somali = Just "Ma dooneysaa inaad cusbooneysiiso feylka bukaankaee leh lambarka"
             }
 
@@ -26717,14 +26733,14 @@ translationSet trans =
 
                 TreatmentHypertensionAddCarvedilol ->
                     { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 4x a day and Carvedilol (6.25mg), to be taken by mouth 2x a day for " ++ diagnosis ++ "."
-                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro enye ku munsi na Karuvedilole (5.25mg), mu kanwa inshuro 2 ku munsi ku ndwara ya " ++ diagnosis ++ "."
+                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro enye ku munsi na Karuvedilole (6.25mg), mu kanwa inshuro 2 ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     , kirundi = Just <| "Aho uherukira kuza, wahawe méthyldopa (250 mg), umuti wo kumira kane (4) ku munsi hamwe na carvédilol (6,25 mg) wo kumira 2 ku munsi ku ngwara ya" ++ diagnosis ++ "."
                     , somali = Nothing
                     }
 
                 TreatmentHypertensionAddAmlodipine ->
                     { english = "At the previous visit you were given Methyldopa (250mg), to be taken by mouth 4x a day and Carvedilol (6.25mg), to be taken by mouth 2x a day and Amlodipine (5mg), by mouth 1x a day for " ++ diagnosis ++ "."
-                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro enye ku munsi na Karuvedilole (5.25mg), mu kanwa inshuro 2 ku munsi na Amlodipine (5mg), mu kanwa inshuro imwe ku munsi ku ndwara ya " ++ diagnosis ++ "."
+                    , kinyarwanda = Just <| "Mu isura riheruka wahawe Metilidopa (250mg), mu kanwa Inshuro enye ku munsi na Karuvedilole (6.25mg), mu kanwa inshuro 2 ku munsi na Amlodipine (5mg), mu kanwa inshuro imwe ku munsi ku ndwara ya " ++ diagnosis ++ "."
                     , kirundi = Just <| "Aho uherukira kuza, wahawe méthyldopa (250 mg), umuti wo kumira kane (4) ku munsi hamwe na carvédilol (6,25 mg) wo kumira 2 ku munsi na amlodipine (5 mg) wo kumira 1 ku munsi ku ngwara ya" ++ diagnosis ++ "."
                     , somali = Nothing
                     }
@@ -26903,7 +26919,7 @@ translationSet trans =
         TreatmentReviewWarningPopupInstructions ->
             { english = "Further evaluation necessary"
             , kinyarwanda = Just "Gusuzuma byimbitse"
-            , kirundi = Just "Umurwayi atubahiriza ivyo bamubwiye"
+            , kirundi = Nothing
             , somali = Just "Qiimeyn Dheeraad ah waa Muhiim"
             }
 
@@ -27005,7 +27021,7 @@ translationSet trans =
                 FollowUpTestingEndMonth2 ->
                     { english = "If positive, Culture and DST - Continuation phase."
                     , kinyarwanda = Just "Niba akigaragaza igituntu, kilitire na DST ari negatifu, umurwayi akomeza imiti yo mu cyiciro gikurikiyeho(RH mu mezi ane)."
-                    , kirundi = Just "If positive, Culture and DST, and retest after 15 days."
+                    , kirundi = Nothing
                     , somali = Just "Tognaan, Beerid iyo DST - wajiga sii wadida"
                     }
 
@@ -30251,8 +30267,8 @@ translateDashboard trans =
 
         TotalBeneficiariesWasting ->
             { english = "Total Beneficiaries Wasting"
-            , kinyarwanda = Just "Umubare w'abana bose bafite"
-            , kirundi = Just "Abagenerwabikorwa bose"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             , somali = Nothing
             }
 

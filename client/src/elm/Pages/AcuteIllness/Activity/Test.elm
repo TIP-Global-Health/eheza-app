@@ -9,9 +9,9 @@ import Backend.Measurement.Model
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
         , AcuteFindingsValue
+        , AcuteIllnessDangerSign(..)
         , AcuteIllnessMeasurements
         , CovidTestingValue
-        , Gender(..)
         , HeartCPESign
         , LungsCPESign
         , Measurement
@@ -46,6 +46,7 @@ import Pages.AcuteIllness.Activity.Utils
         , respiratoryInfectionDangerSignsPresent
         , respiratoryRateElevatedByAge
         , respiratoryRateElevatedByAgeForCovid19
+        , subsequentEncounterDiagnosisUpdate
         , symptomMaxDuration
         , toCovidTestingValueWithDefault
         )
@@ -54,6 +55,7 @@ import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, s
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (emptyAcuteIllnessMeasurements, testPerson)
 import Time
 
 
@@ -68,54 +70,12 @@ dummyDate =
     Date.fromCalendarDate 2020 Time.Jan 1
 
 
-{-| Wrap a measurement `value` into the full `Measurement` record shape that
-the `AcuteIllnessMeasurements` fields require, paired with a dummy entity id.
-
-The signature is polymorphic in the id tag, encounter type, and value, so it
-unifies with each concrete `AcuteIllnessMeasurements` field type.
-
+{-| Wrap a measurement `value` into the shape the `AcuteIllnessMeasurements`
+fields require, with `dummyDate` as `dateMeasured`.
 -}
 wrapMeasurement : value -> Maybe ( EntityUuid id, Measurement encounter value )
 wrapMeasurement value =
-    Just
-        ( toEntityUuid "dummy-id"
-        , { dateMeasured = dummyDate
-          , nurse = Nothing
-          , healthCenter = Nothing
-          , participantId = toEntityUuid "dummy-person"
-          , deleted = False
-          , encounterId = Nothing
-          , value = value
-          }
-        )
-
-
-emptyAcuteIllnessMeasurements : AcuteIllnessMeasurements
-emptyAcuteIllnessMeasurements =
-    { symptomsGeneral = Nothing
-    , symptomsRespiratory = Nothing
-    , symptomsGI = Nothing
-    , vitals = Nothing
-    , acuteFindings = Nothing
-    , malariaTesting = Nothing
-    , travelHistory = Nothing
-    , exposure = Nothing
-    , isolation = Nothing
-    , hcContact = Nothing
-    , call114 = Nothing
-    , treatmentReview = Nothing
-    , sendToHC = Nothing
-    , medicationDistribution = Nothing
-    , muac = Nothing
-    , treatmentOngoing = Nothing
-    , dangerSigns = Nothing
-    , nutrition = Nothing
-    , healthEducation = Nothing
-    , followUp = Nothing
-    , coreExam = Nothing
-    , covidTesting = Nothing
-    , contactsTracing = Nothing
-    }
+    TestFixtures.wrapMeasurement dummyDate value
 
 
 
@@ -188,44 +148,6 @@ currentDate =
     Date.fromCalendarDate 2020 Time.Jun 1
 
 
-{-| An adult person. Everything except birthDate/gender is defaulted/empty.
--}
-testPerson : Person
-testPerson =
-    { name = "Test Person"
-    , firstName = "Test"
-    , secondName = "Person"
-    , nationalIdNumber = Nothing
-    , hmisNumber = Nothing
-    , avatarUrl = Nothing
-    , birthDate = Just (Date.fromCalendarDate 1985 Time.Jan 1)
-    , isDateOfBirthEstimated = False
-    , gender = Female
-    , hivStatus = Nothing
-    , numberOfChildren = Nothing
-    , modeOfDelivery = Nothing
-    , ubudehe = Nothing
-    , educationLevel = Nothing
-    , maritalStatus = Nothing
-    , province = Nothing
-    , district = Nothing
-    , sector = Nothing
-    , cell = Nothing
-    , village = Nothing
-    , registrationLatitude = Nothing
-    , registrationLongitude = Nothing
-    , saveGPSLocation = False
-    , telephoneNumber = Nothing
-    , spouseName = Nothing
-    , spousePhoneNumber = Nothing
-    , nextOfKinName = Nothing
-    , nextOfKinPhoneNumber = Nothing
-    , healthCenterId = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
-
-
 dummyEncounter : AcuteIllnessEncounterModel.AcuteIllnessEncounter
 dummyEncounter =
     { participant = toEntityUuid "dummy-participant"
@@ -252,18 +174,7 @@ testEncounterData id encounterType =
 
 dummyParticipant : IndividualEncounterParticipant
 dummyParticipant =
-    { person = toEntityUuid "dummy-person"
-    , encounterType = AcuteIllnessEncounter
-    , startDate = currentDate
-    , endDate = Nothing
-    , eddDate = Nothing
-    , dateConcluded = Nothing
-    , outcome = Nothing
-    , deliveryLocation = Nothing
-    , newborn = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
+    TestFixtures.testParticipant currentDate AcuteIllnessEncounter
 
 
 {-| Build an `AssembledData` wrapping `testPerson` and the given measurements.
@@ -871,6 +782,53 @@ amoxicillinDosageTest =
         ]
 
 
+subsequentEncounterDiagnosisUpdateTest : Test
+subsequentEncounterDiagnosisUpdateTest =
+    let
+        diagnosisUpdate storedDiagnosis rdtResult dangerSigns =
+            let
+                assembled =
+                    testAssembled False
+                        { emptyAcuteIllnessMeasurements
+                            | dangerSigns = wrapMeasurement dangerSigns
+                            , malariaTesting = wrapMeasurement rdtResult
+                        }
+
+                encounter =
+                    assembled.encounter
+            in
+            subsequentEncounterDiagnosisUpdate currentDate
+                EverySet.empty
+                True
+                { assembled | encounter = { encounter | diagnosis = storedDiagnosis } }
+
+        noDangerSigns =
+            EverySet.singleton NoAcuteIllnessDangerSign
+    in
+    describe "subsequentEncounterDiagnosisUpdate"
+        [ test "a diagnosis is written once the measurements produce one" <|
+            \_ ->
+                diagnosisUpdate NoAcuteIllnessDiagnosis RapidTestPositive noDangerSigns
+                    |> Expect.equal (Just DiagnosisMalariaUncomplicated)
+        , test "a corrected danger-sign set replaces the stored diagnosis" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaComplicated RapidTestPositive noDangerSigns
+                    |> Expect.equal (Just DiagnosisMalariaUncomplicated)
+        , test "a corrected negative RDT clears the stored diagnosis" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaUncomplicated RapidTestNegative noDangerSigns
+                    |> Expect.equal (Just NoAcuteIllnessDiagnosis)
+        , test "a diagnosis matching the measurements is not rewritten" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaUncomplicated RapidTestPositive noDangerSigns
+                    |> Expect.equal Nothing
+        , test "danger signs beside a positive RDT make the diagnosis complicated" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaUncomplicated RapidTestPositive (EverySet.singleton DangerSignConvulsions)
+                    |> Expect.equal (Just DiagnosisMalariaComplicated)
+        ]
+
+
 all : Test
 all =
     describe "Acute Illness diagnosis and dosing tests"
@@ -879,6 +837,7 @@ all =
         , malariaDangerSignsPresentTest
         , respiratoryInfectionDangerSignsPresentTest
         , resolveAcuteIllnessDiagnosisByMalariaRDTTest
+        , subsequentEncounterDiagnosisUpdateTest
         , gastrointestinalSymptomsTest
         , resolveAcuteIllnessDiagnosisNonCovidTest
         , resolveAcuteIllnessDiagnosisTuberculosisTest

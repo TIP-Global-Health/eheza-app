@@ -1,12 +1,12 @@
 module Pages.WellChild.ProgressReport.View exposing
     ( distributeByListIndex
     , generateUniversalInterventionsValues
+    , heightCellValuesByAgeInMonths
     , resolveLastDayForMonthX
     , view
     , viewNutritionSigns
-    , viewPaneHeading
-    , viewPersonInfoPane
     , viewProgressReport
+    , weightCellValuesByAgeInMonths
     )
 
 import AssocList as Dict exposing (Dict)
@@ -78,7 +78,8 @@ import Pages.Utils
         , viewEncounterActionButton
         , viewEndEncounterButton
         , viewEndEncounterMenuForProgressReport
-        , viewPersonDetailsExtended
+        , viewPaneHeading
+        , viewPersonInfoPane
         , viewStartEncounterButton
         )
 import Pages.WellChild.Activity.Utils
@@ -115,7 +116,7 @@ import Utils.NominalDate
         , sortTuplesByDateDesc
         )
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..), Days, Kilograms(..), Length(..), Months(..))
+import ZScore.Model exposing (Centimetres(..), Days, Kilograms(..), Length(..), Months(..), ZScore)
 import ZScore.Utils exposing (diffDays, zScoreLengthHeightForAge, zScoreWeightForAge)
 import ZScore.View
 
@@ -370,6 +371,8 @@ assembleProgresReportData site childId db =
         lastWellChildEncounterId =
             Maybe.andThen
                 (getWellChildEncountersForParticipant db
+                    -- Sort DESC
+                    >> List.sortWith sortEncounterTuplesDesc
                     >> (List.head >> Maybe.map Tuple.first)
                 )
                 individualWellChildParticipantId
@@ -643,15 +646,6 @@ viewActions language features initiator activeTab msgReportToWhatsAppDialogMsg b
         )
         bottomActionData
         |> Maybe.withDefault []
-
-
-viewPersonInfoPane : Language -> NominalDate -> Person -> Html any
-viewPersonInfoPane language currentDate person =
-    div [ class "pane person-details" ]
-        [ viewPaneHeading language Translate.PatientInformation
-        , div [ class "patient-info" ] <|
-            viewPersonDetailsExtended language currentDate person
-        ]
 
 
 viewDiagnosisPane :
@@ -1592,12 +1586,6 @@ viewNextAppointmentPane language child individualWellChildMeasurements db =
             entriesHeading
                 :: viewEntries language entries
         ]
-
-
-viewPaneHeading : Language -> TranslationId -> Html any
-viewPaneHeading language label =
-    div [ class "pane-heading" ]
-        [ text <| translate language label ]
 
 
 viewNCDAScorecard :
@@ -2630,11 +2618,6 @@ viewFillTheBlanksPane language currentDate zscores child allNCDAQuestionnaires g
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
 
-        maybeAgeInDays =
-            Maybe.map
-                (\birthDate -> diffDays birthDate currentDate)
-                child.birthDate
-
         heightsValues =
             generateFillTheBlanksValues heightsByAgeInMonths
 
@@ -2671,22 +2654,7 @@ viewFillTheBlanksPane language currentDate zscores child allNCDAQuestionnaires g
                 heightsByAgeInMonthsWithDateFromNCDA
 
         heightsByAgeInMonthsWithDateFromNutrition =
-            Maybe.map
-                (\ageInDays ->
-                    List.filterMap
-                        (\( date, set ) ->
-                            Maybe.andThen
-                                (\(HeightInCm height) ->
-                                    zScoreLengthHeightForAge zscores ageInDays child.gender (Centimetres height)
-                                        |> Maybe.map (\zscore -> ( date, cellValueByZscore zscore ))
-                                )
-                                set.height
-                        )
-                        allValuesSetFromNutrition
-                )
-                maybeAgeInDays
-                |> Maybe.withDefault []
-                |> distributeByAgeInMonthsWithDate child
+            heightCellValuesByAgeInMonths zscores child allValuesSetFromNutrition
 
         heightsByAgeInMonthsWithDateFromNCDA =
             List.filterMap
@@ -2710,54 +2678,8 @@ viewFillTheBlanksPane language currentDate zscores child allNCDAQuestionnaires g
 
         weightsByAgeInMonths =
             mergeValuesByAgeInMonthsWithDateDicts
-                weightsByAgeInMonthsWithDateFromNutrition
-                weightsByAgeInMonthsWithDateFromNCDA
-
-        weightsByAgeInMonthsWithDateFromNutrition =
-            Maybe.map
-                (\ageInDays ->
-                    List.filterMap
-                        (\( date, set ) ->
-                            Maybe.andThen
-                                (\(WeightInKg weight) ->
-                                    zScoreWeightForAge zscores ageInDays child.gender (Kilograms weight)
-                                        |> Maybe.map (\zscore -> ( date, cellValueByZscore zscore ))
-                                )
-                                set.weight
-                        )
-                        allValuesSetFromNutrition
-                )
-                maybeAgeInDays
-                |> Maybe.withDefault []
-                |> distributeByAgeInMonthsWithDate child
-
-        weightsByAgeInMonthsWithDateFromNCDA =
-            Maybe.map
-                (\ageInDays ->
-                    List.filterMap
-                        (\( date, set ) ->
-                            Maybe.andThen
-                                (\(WeightInKg weight) ->
-                                    zScoreWeightForAge zscores ageInDays child.gender (Kilograms weight)
-                                        |> Maybe.map (\zscore -> ( date, cellValueByZscore zscore ))
-                                )
-                                set.weight
-                        )
-                        ncdaValuesSet
-                )
-                maybeAgeInDays
-                |> Maybe.withDefault []
-                |> distributeByAgeInMonthsWithDate child
-
-        cellValueByZscore zscore =
-            if zscore < -3 then
-                NCDACellValueT
-
-            else if zscore < -2 then
-                NCDACellValueH
-
-            else
-                NCDACellValueC
+                (weightCellValuesByAgeInMonths zscores child allValuesSetFromNutrition)
+                (weightCellValuesByAgeInMonths zscores child ncdaValuesSet)
 
         muacsByAgeInMonths =
             mergeValuesByAgeInMonthsWithDateDicts
@@ -3059,6 +2981,72 @@ viewTableRow language itemTransId pregnancyValues zeroToFiveValues sixToTwentyFo
             sixToTwentyFourValues
             |> div [ class "months" ]
         ]
+
+
+{-| Grades every height against the child's age on the day it was taken,
+which is the age the height-for-age chart uses for the same values.
+-}
+heightCellValuesByAgeInMonths :
+    ZScore.Model.Model
+    -> Person
+    -> List ( NominalDate, { a | height : Maybe HeightInCm } )
+    -> Maybe (Dict Int ( NominalDate, NCDACellValue ))
+heightCellValuesByAgeInMonths zscores child valuesSet =
+    Maybe.map
+        (\birthDate ->
+            List.filterMap
+                (\( date, set ) ->
+                    Maybe.andThen
+                        (\(HeightInCm height) ->
+                            zScoreLengthHeightForAge zscores (diffDays birthDate date) child.gender (Centimetres height)
+                                |> Maybe.map (\zscore -> ( date, cellValueByZscore zscore ))
+                        )
+                        set.height
+                )
+                valuesSet
+        )
+        child.birthDate
+        |> Maybe.withDefault []
+        |> distributeByAgeInMonthsWithDate child
+
+
+{-| Grades every weight against the child's age on the day it was taken,
+which is the age the weight-for-age chart uses for the same values.
+-}
+weightCellValuesByAgeInMonths :
+    ZScore.Model.Model
+    -> Person
+    -> List ( NominalDate, { a | weight : Maybe WeightInKg } )
+    -> Maybe (Dict Int ( NominalDate, NCDACellValue ))
+weightCellValuesByAgeInMonths zscores child valuesSet =
+    Maybe.map
+        (\birthDate ->
+            List.filterMap
+                (\( date, set ) ->
+                    Maybe.andThen
+                        (\(WeightInKg weight) ->
+                            zScoreWeightForAge zscores (diffDays birthDate date) child.gender (Kilograms weight)
+                                |> Maybe.map (\zscore -> ( date, cellValueByZscore zscore ))
+                        )
+                        set.weight
+                )
+                valuesSet
+        )
+        child.birthDate
+        |> Maybe.withDefault []
+        |> distributeByAgeInMonthsWithDate child
+
+
+cellValueByZscore : ZScore -> NCDACellValue
+cellValueByZscore zscore =
+    if zscore < -3 then
+        NCDACellValueT
+
+    else if zscore < -2 then
+        NCDACellValueH
+
+    else
+        NCDACellValueC
 
 
 distributeByAgeInMonthsWithDate : Person -> List ( NominalDate, a ) -> Maybe (Dict Int ( NominalDate, a ))

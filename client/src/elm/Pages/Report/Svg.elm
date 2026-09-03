@@ -1,4 +1,4 @@
-module Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolygon, drawPolyline, heightPx, referenceHorizontalLines, referenceHorizontalNumbers, referenceVerticalLines, referenceVerticalNumbers, svgMarker, widthPx, withinRange)
+module Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolygon, drawPolyline, frame, heightPx, referenceHorizontalLines, referenceHorizontalNumbers, referenceVerticalLines, referenceVerticalNumbers, svgMarker, widthPx, withinRange)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -178,3 +178,25 @@ dimensionsPx =
     , right = 737.7
     , bottom = 506.7
     }
+
+
+frame : Svg any
+frame =
+    g
+        []
+        [ rect
+            [ class "chart-outer-frame"
+            , height "447.9"
+            , width "728.5"
+            , x "56.7"
+            , y "101.1"
+            ]
+            []
+        , rect
+            [ height "386.8"
+            , width "626.8"
+            , x "110.9"
+            , y "119.9"
+            ]
+            []
+        ]

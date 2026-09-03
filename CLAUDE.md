@@ -102,6 +102,48 @@ ddev gulp
 
 Default credentials (created by migration): pairing code `12345678`, nurse PIN `1234`, Drupal admin `admin`/`admin`.
 
+### Parallel sessions
+
+Several Claude Code sessions work different backlog items at once, so **the main tree
+(`/var/www/html/ihangane`) stays on `develop` permanently.** It is the backlog source of truth, the
+symlink donor for worktree builds, and the one tree ddev and gulp build. Each item gets its own
+worktree at `<repo>-wt/<branch>`, created by `.claude/scripts/new-worktree.sh <branch>` when the work
+starts and released once it is pushed — recreated by the same script if review brings more work;
+`git worktree list` shows what every session currently holds.
+
+Two things stay single-instance, and no worktree scheme changes that:
+
+- **The running app** — one DDEV project rooted in the main tree, so `ddev gulp`, local e2e and
+  `ddev simpletest` are shared. Ask before taking them.
+- **Bookkeeping edits.** Separate `.claude/backlog/items/<id>.md` files are safe to write in
+  parallel; `HANDOFF.md` and `queue.md` are not. Re-read immediately before writing them. The `Stop`
+  hook serializes its own commit with `flock` and rebases onto whatever another session pushed
+  first, so the git side of the race is handled — the working-tree side is not.
+
+### Moving a station
+
+Work moves between machines through the repository, so anything the work depends on
+belongs in it. These travel because they are tracked: `.claude/backlog/` (the queue and
+its entries), `.claude/memory/` (the accumulated rules, verification lessons and declined-work
+decisions), `.claude/skills/`, `.claude/agents/`, `.claude/scripts/`, and
+`.claude/settings.json` — which wires the `Stop` hook that commits and pushes the backlog
+on `develop`, so records cannot be left behind on the station that made them.
+
+These do **not** travel, and each new station recreates them:
+
+| what | why it stays | cost of not having it |
+|---|---|---|
+| `.claude/settings.local.json` | globally gitignored | more permission prompts; nothing breaks |
+| `.git/info/exclude` | per-clone by design | `.claude/hooks/` is excluded here only |
+| `client/src/elm/LocalConfig.elm`, `.ddev/config.local.yaml` | gitignored config | covered by Local Setup above |
+| `server/.pantheon-*/` | deploy checkouts | recreated by the deploy skills |
+| `<repo>-wt/` | per-item worktrees | recreated by `.claude/scripts/new-worktree.sh <branch>` |
+
+Memory lives in the repo only because each station points Claude Code at it: set
+`"autoMemoryDirectory": "<repo>/.claude/memory"` in `.claude/settings.local.json` — that key is
+deliberately ignored in checked-in project settings, so it has to be set per station. Without it a
+station writes to `~/.claude/projects/<project>/memory/` and the two copies drift.
+
 ## Code Conventions
 
 ### Alphabetical Ordering in Elm

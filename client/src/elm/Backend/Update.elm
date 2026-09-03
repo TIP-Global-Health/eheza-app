@@ -86,7 +86,7 @@ import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
-import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, sw)
+import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, sw, updateVillageStockManagementCaches)
 import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
@@ -106,10 +106,9 @@ import Pages.AcuteIllness.Activity.Utils
         ( activityCompleted
         , mandatoryActivitiesCompletedSubsequentVisit
         , noImprovementOnSubsequentVisit
-        , resolveAcuteIllnessDiagnosis
-        , resolveNextStepFirstEncounter
-        , resolveNextStepSubsequentEncounter
+        , resolveNextStep
         , respiratoryRateAbnormalForAge
+        , subsequentEncounterDiagnosisUpdate
         )
 import Pages.AcuteIllness.Encounter.Model
 import Pages.AcuteIllness.Encounter.Utils
@@ -5467,6 +5466,8 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 data.encounterId
                 (\measurements -> { measurements | ahezaChild = familyMeasurementActionConsideringDeletedField uuid data measurements.ahezaChild })
                 model
+                |> updateVillageStockManagementCaches healthCenterId
+                    (\measurements -> { measurements | ahezaChild = measurementActionConsideringDeletedField uuid data measurements.ahezaChild })
             , recalc
             )
 
@@ -5484,6 +5485,8 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     }
                 )
                 model
+                |> updateVillageStockManagementCaches healthCenterId
+                    (\measurements -> { measurements | ahezaMother = measurementActionConsideringDeletedField uuid data measurements.ahezaMother })
             , recalc
             )
 
@@ -7854,11 +7857,12 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
 
         StockUpdateRevision uuid data ->
             let
+                setStockUpdate measurements =
+                    { measurements | stockUpdate = measurementActionConsideringDeletedField uuid data measurements.stockUpdate }
+
                 modelWithMappedStockManagement =
-                    mapStockManagementMeasurements
-                        healthCenterId
-                        (\measurements -> { measurements | stockUpdate = measurementActionConsideringDeletedField uuid data measurements.stockUpdate })
-                        modelWithStockUpdateRecalc
+                    mapStockManagementMeasurements healthCenterId setStockUpdate modelWithStockUpdateRecalc
+                        |> updateVillageStockManagementCaches healthCenterId setStockUpdate
 
                 -- This revision may cause stock management data to become obsolete,
                 -- therefore, we 'mark' it for recalculation.
@@ -9891,7 +9895,7 @@ generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id assembledBefor
         case diagnosisAfterChange of
             Just newDiagnosis ->
                 updateAcuteIllnessDiagnosisMsg id newDiagnosis
-                    :: (resolveNextStepFirstEncounter currentDate isChw assembledAfter
+                    :: (resolveNextStep currentDate isChw assembledAfter
                             |> generateMsgsForNewDiagnosis isChw id newDiagnosis
                        )
 
@@ -9987,21 +9991,13 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter :
 generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate features isChw data =
     if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data then
         let
-            diagnosisByCurrentEncounterMeasurements =
-                resolveAcuteIllnessDiagnosis currentDate features isChw data
-                    |> Maybe.withDefault NoAcuteIllnessDiagnosis
-
             setDiagnosisMsg =
-                -- We have an update to diagnosis based on current measurements,
-                -- and it is not yet set for the encounter.
-                if data.encounter.diagnosis == NoAcuteIllnessDiagnosis && diagnosisByCurrentEncounterMeasurements /= NoAcuteIllnessDiagnosis then
-                    [ updateAcuteIllnessDiagnosisMsg data.id diagnosisByCurrentEncounterMeasurements ]
-
-                else
-                    []
+                subsequentEncounterDiagnosisUpdate currentDate features isChw data
+                    |> Maybe.map (updateAcuteIllnessDiagnosisMsg data.id >> List.singleton)
+                    |> Maybe.withDefault []
 
             setActiveTaskMsg =
-                resolveNextStepSubsequentEncounter currentDate isChw data
+                resolveNextStep currentDate isChw data
                     |> Maybe.map
                         (Pages.AcuteIllness.Activity.Model.SetActiveNextStepsTask
                             >> App.Model.MsgPageAcuteIllnessActivity data.id AcuteIllnessNextSteps

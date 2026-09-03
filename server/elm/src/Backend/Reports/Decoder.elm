@@ -2,15 +2,16 @@ module Backend.Reports.Decoder exposing (decodeReportsData, decodeSyncResponse)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
+import Backend.Components.Model exposing (SyncResponse)
 import Backend.Decoder exposing (decodeSite, decodeSiteFeatures, decodeWithFallback)
-import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), MotherFbfEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SyncResponse, WellChildEncounterData)
+import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), MotherFbfEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, WellChildEncounterData)
 import Backend.Reports.Utils exposing (genderFromString)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, fail, field, list, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, fail, list, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, optionalAt, required)
 import Maybe.Extra
 
@@ -28,14 +29,9 @@ decodeReportsData =
         |> hardcoded Nothing
 
 
-decodeSyncResponse : Decoder SyncResponse
+decodeSyncResponse : Decoder (SyncResponse PatientData)
 decodeSyncResponse =
-    field "data"
-        (succeed SyncResponse
-            |> required "batch" (list decodePatientData)
-            |> required "total_remaining" decodeInt
-            |> required "last" decodeInt
-        )
+    Backend.Components.Decoder.decodeSyncResponse decodePatientData
 
 
 decodePatientData : Decoder PatientData
@@ -760,13 +756,14 @@ decodeWellChildEncounterData =
                             |> Maybe.map
                                 (\startDate ->
                                     let
-                                        ( nutritionData, muacCm ) =
-                                            nutritionDataFromString second
+                                        ( nutritionData, muacCm, hasEdema ) =
+                                            parseAnthropometryPayload second
                                     in
                                     succeed
                                         (WellChildEncounterData startDate
                                             nutritionData
                                             muacCm
+                                            hasEdema
                                             (immunisationDataFromString third)
                                         )
                                 )
@@ -775,29 +772,6 @@ decodeWellChildEncounterData =
                     _ ->
                         fail "Failed to decode WellChildEncounterData"
             )
-
-
-
--- Wire format from hedley_reports_nutrition_metrics_to_string is
--- "<stunting>,<underweight>,<wasting>,<muac>,<edema>" (PRs #1479/#1481
--- established this order to fix issue 3199; do not reorder without
--- updating the PHP encoder/decoder in lockstep). NutritionData carries
--- the three z-scores; MUAC is returned alongside as the tuple's second
--- component so callers can store it on their encounter type (mirroring
--- parseNutritionEncounterPayload below). The edema token is discarded
--- because WellChildEncounterData doesn't carry edema today.
-
-
-nutritionDataFromString : String -> ( Maybe NutritionData, Maybe Float )
-nutritionDataFromString s =
-    case String.split "," s of
-        [ stunting, underweight, wasting, muac, _ ] ->
-            ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting))
-            , String.toFloat muac
-            )
-
-        _ ->
-            ( Nothing, Nothing )
 
 
 immunisationDataFromString : String -> Maybe (Dict VaccineType (EverySet NominalDate))
@@ -874,9 +848,10 @@ vaccineTypeFromMapping s =
 
 -- Wire format from hedley_reports_nutrition_metrics_to_string is
 -- "<stunting>,<underweight>,<wasting>,<muac>,<edema>" (PRs #1479/#1481
--- established this order to fix issue 3199). NutritionData carries the
--- three z-scores; MUAC and edema flow alongside in the tuple so they
--- can be stored on NutritionEncounterData's top-level muacCm/hasEdema
+-- established this order to fix issue 3199; do not reorder without
+-- updating the PHP encoder/decoder in lockstep). NutritionData carries
+-- the three z-scores; MUAC and edema flow alongside in the tuple so they
+-- can be stored on the encounter type's top-level muacCm/hasEdema
 -- fields without duplicating data inside the nested NutritionData.
 
 

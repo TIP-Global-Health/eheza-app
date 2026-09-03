@@ -71,7 +71,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (VaccinationStatus(..))
 import Measurement.Utils
     exposing
         ( outsideCareMedicationOptionsAnemia
@@ -83,11 +82,11 @@ import Measurement.Utils
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Utils
     exposing
-        ( generateFutureVaccinationsDataByProgress
-        , resolveMeasuredHeight
+        ( resolveMeasuredHeight
         , resolvePrePregnancyClassification
         , resolvePrePregnancyWeight
         , respiratoryRateElevated
+        , viewVaccinationOverview
         , weightGainStandardsByPrePregnancyClassificationHealthyStart
         , weightGainStandardsPerPrePregnancyClassification
         )
@@ -99,7 +98,6 @@ import Pages.Prenatal.ProgressReport.Svg
     exposing
         ( viewBMIForEGA
         , viewFundalHeightForEGA
-        , viewMarkers
         , viewWeightGainForEGA
         , viewWeightGainForEGAHealthyStart
         )
@@ -133,6 +131,7 @@ import Utils.Html exposing (thumbnailImage, viewModal)
 import Utils.NominalDate exposing (sortByDateDesc)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
+import ZScore.View exposing (viewMarkers)
 
 
 view :
@@ -921,28 +920,31 @@ viewMedicalDiagnosisPane language isChw firstNurseEncounterMeasurements assemble
                                 |> Maybe.map
                                     (\value ->
                                         let
-                                            arvEntry =
-                                                resolveARVReferralDiagnosis assembled.nursePreviousEncountersData
-                                                    |> Maybe.map
-                                                        (\diagnosis ->
-                                                            if not <| EverySet.member EnrolledToARVProgram value then
-                                                                viewProgramReferralEntry language data.startDate diagnosis FacilityARVProgram
+                                            notEnrolledTo program =
+                                                not <| EverySet.member program value
 
-                                                            else
-                                                                []
-                                                        )
-                                                    |> Maybe.withDefault []
+                                            arvEntry =
+                                                if notEnrolledTo EnrolledToARVProgram then
+                                                    resolveARVReferralDiagnosis assembled.nursePreviousEncountersData
+                                                        |> Maybe.map
+                                                            (\diagnosis ->
+                                                                viewProgramReferralEntry language data.startDate diagnosis FacilityARVProgram
+                                                            )
+                                                        |> Maybe.withDefault []
+
+                                                else
+                                                    []
 
                                             ncdEntries =
-                                                resolveNCDReferralDiagnoses assembled.nursePreviousEncountersData
-                                                    |> List.concatMap
-                                                        (\diagnosis ->
-                                                            if not <| EverySet.member EnrolledToARVProgram value then
+                                                if notEnrolledTo EnrolledToNCDProgram then
+                                                    resolveNCDReferralDiagnoses assembled.nursePreviousEncountersData
+                                                        |> List.concatMap
+                                                            (\diagnosis ->
                                                                 viewProgramReferralEntry language data.startDate diagnosis FacilityNCDProgram
+                                                            )
 
-                                                            else
-                                                                []
-                                                        )
+                                                else
+                                                    []
                                         in
                                         arvEntry ++ ncdEntries
                                     )
@@ -1309,67 +1311,6 @@ viewVaccinationHistoryPane language currentDate assembled =
         , div [ class "pane-content" ] <|
             viewVaccinationOverview language currentDate assembled
         ]
-
-
-viewVaccinationOverview :
-    Language
-    -> NominalDate
-    -> AssembledData
-    -> List (Html any)
-viewVaccinationOverview language currentDate assembled =
-    let
-        entriesHeading =
-            div [ class "heading vaccination" ]
-                [ div [ class "name" ] [ text <| translate language Translate.Immunisation ]
-                , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
-                , div [ class "next-due" ] [ text <| translate language Translate.NextDue ]
-                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
-                ]
-
-        futureVaccinationsData =
-            generateFutureVaccinationsDataByProgress currentDate assembled
-                |> Dict.fromList
-
-        entries =
-            Dict.toList assembled.vaccinationProgress
-                |> List.map viewVaccinationEntry
-
-        viewVaccinationEntry ( vaccineType, doses ) =
-            let
-                nextDue =
-                    Dict.get vaccineType futureVaccinationsData
-                        |> Maybe.Extra.join
-                        |> Maybe.map Tuple.second
-
-                nextDueText =
-                    Maybe.map formatDDMMYYYY nextDue
-                        |> Maybe.withDefault ""
-
-                ( status, statusClass ) =
-                    Maybe.map
-                        (\dueDate ->
-                            if Date.compare dueDate currentDate == LT then
-                                ( StatusBehind, "behind" )
-
-                            else
-                                ( StatusUpToDate, "up-to-date" )
-                        )
-                        nextDue
-                        |> Maybe.withDefault ( StatusCompleted, "completed" )
-            in
-            div [ class "entry vaccination" ]
-                [ div [ class "cell name" ] [ text <| translate language <| Translate.PrenatalVaccineLabel vaccineType ]
-                , Dict.values doses
-                    |> List.sortWith Date.compare
-                    |> List.map (formatDDMMYYYY >> text >> List.singleton >> p [])
-                    |> div [ class "cell date" ]
-                , div [ classList [ ( "cell next-due ", True ), ( "red", status == StatusBehind ) ] ]
-                    [ text nextDueText ]
-                , div [ class <| "cell status " ++ statusClass ]
-                    [ text <| translate language <| Translate.VaccinationStatus status ]
-                ]
-    in
-    entriesHeading :: entries
 
 
 viewChwActivityPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg

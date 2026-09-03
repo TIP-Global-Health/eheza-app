@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import {
@@ -60,6 +61,12 @@ test.describe('CHW: Tuberculosis Initial Encounter — Positive Diagnosis', () =
     await completeNextSteps(page);
 
     // End encounter.
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'tuberculosis');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await expect(report.locator('.pane.summary')).toContainText('Pulmonary');
+    await closeReport(page, 'tuberculosis');
+
     await endTBEncounter(page);
 
     // Sync to backend.
@@ -140,6 +147,11 @@ test.describe('CHW: Tuberculosis Subsequent Encounter — Symptoms + Referral', 
     await completeDiagnostics(page, { path: 'positive-pulmonary' });
     await completeMedication(page);
     await completeNextSteps(page);
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'tuberculosis');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await closeReport(page, 'tuberculosis');
+
     await endTBEncounter(page);
 
     // Sync initial encounter.

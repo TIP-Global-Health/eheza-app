@@ -575,6 +575,111 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
       $this->isLive($selfReferential),
       'A participation naming the original on both sides is dropped.'
     );
+
+    $this->checkPersonPatchKeepsPhoto();
+  }
+
+  /**
+   * A person edit that sends no photo of its own keeps the stored one.
+   *
+   * Called from testContentIsTransferredOnMerge rather than run as a test of
+   * its own, because each test method reinstalls the site.
+   */
+  protected function checkPersonPatchKeepsPhoto() {
+    $user = $this->drupalCreateUser(['bypass node access']);
+    $file = $this->createPhotoFile();
+
+    $person = $this->createPerson('Photographed');
+    $wrapper = entity_metadata_wrapper('node', node_load($person, NULL, TRUE));
+    $wrapper->field_gender->set('female');
+    $wrapper->field_birth_date->set(strtotime('1990-01-01'));
+    $wrapper->field_photo->set(['fid' => $file->fid]);
+    $wrapper->save();
+
+    // Reload for the UUID, which is assigned on save.
+    $uuid = entity_metadata_wrapper('node', node_load($person, NULL, TRUE))
+      ->field_uuid->value();
+
+    /** @var \HedleyRestfulSync $handler */
+    $handler = restful_get_restful_handler('sync');
+    $handler->setAccount($user);
+
+    // A client that has not been updated still sends the photo it was seeded
+    // with as NULL, alongside the field the nurse did change.
+    $handler->setRequest([
+      'db_version' => HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION,
+      'changes' => [
+        [
+          'type' => 'person',
+          'method' => 'PATCH',
+          'uuid' => $uuid,
+          'data' => ['first_name' => 'Edited', 'photo' => NULL],
+        ],
+      ],
+    ]);
+    $handler->handleChanges();
+
+    $edited = node_load($person, NULL, TRUE);
+    $this->assertEqual(
+      $file->fid,
+      $this->photoFid($edited),
+      'An edit sending a null photo keeps the stored one.'
+    );
+    $this->assertEqual(
+      'Edited',
+      $edited->field_first_name[LANGUAGE_NONE][0]['value'],
+      'The rest of that edit is applied.'
+    );
+
+    // An edit that did re-take the photo still replaces it.
+    $replacement = $this->createPhotoFile();
+    $handler->setRequest([
+      'db_version' => HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION,
+      'changes' => [
+        [
+          'type' => 'person',
+          'method' => 'PATCH',
+          'uuid' => $uuid,
+          'data' => ['photo' => (int) $replacement->fid],
+        ],
+      ],
+    ]);
+    $handler->handleChanges();
+
+    $this->assertEqual(
+      $replacement->fid,
+      $this->photoFid(node_load($person, NULL, TRUE)),
+      'An edit carrying a new photo replaces the stored one.'
+    );
+  }
+
+  /**
+   * Save one of the simpletest images as a file entity.
+   *
+   * @return object
+   *   The file object.
+   */
+  protected function createPhotoFile() {
+    $files = $this->drupalGetTestFiles('image');
+    $source = reset($files);
+    $destination = 'public://' . $this->randomName() . '.png';
+    return file_save_data(file_get_contents($source->uri), $destination, FILE_EXISTS_RENAME);
+  }
+
+  /**
+   * The file ID a person holds, or NULL where the field is empty.
+   *
+   * Read this way so that an emptied field fails the assertion it is read
+   * for, rather than raising a notice on a missing index.
+   *
+   * @param object $node
+   *   The person node.
+   *
+   * @return int|null
+   *   The file ID.
+   */
+  protected function photoFid($node) {
+    return empty($node->field_photo[LANGUAGE_NONE][0]['fid']) ? NULL : $node->field_photo[LANGUAGE_NONE][0]['fid'];
   }
 
   /**

@@ -10,7 +10,6 @@ import Backend.Measurement.Model
         , CorePhysicalExamValue
         , DangerSign(..)
         , DangerSignsValue
-        , Gender(..)
         , HIVPCRTestValue
         , HIVTestValue
         , HemoglobinTestValue
@@ -44,13 +43,14 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (RangedMeasurement(..))
 import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
-import Pages.Prenatal.Activity.Types exposing (PrePregnancyClassification(..), WarningPopupType(..))
+import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
+import TestFixtures
 import Time
 
 
@@ -105,6 +105,78 @@ zscoreToPrePregnancyClassificationTest =
 
 
 
+-- HEALTHY START GESTATIONAL WEIGHT GAIN
+--
+-- Expected gain comes from the Healthy Start protocol (the independent
+-- oracle): a woman not severely undernourished at booking is expected to gain
+-- 60 g per day, one who was severely undernourished 73 g per day, and 23.5 g
+-- per day covers the part of the period before 13 weeks. Gain is adequate when
+-- it meets or exceeds the expected gain for the period.
+--
+-- Both weighings here fall after 13 weeks, so only the later rate applies:
+-- 25 days at 60 g per day is an expected gain of 1.5 kg, 30 days one of 1.8 kg.
+
+
+{-| Classify a gain from 60 kg to `currentWeight` over `days` ending on
+`currentDate`. With an LMP 28 weeks back, both weighings are well past 13 weeks
+of gestation.
+-}
+classifyHealthyStartGWG : PrePregnancyClassification -> Int -> Float -> Maybe GWGClassification
+classifyHealthyStartGWG prePregnancyClassification days currentWeight =
+    resolveGWGClassificationForHealthyStart currentDate
+        prePregnancyClassification
+        60.0
+        (Date.add Date.Days -days currentDate)
+        currentWeight
+        (testAssembled28Weeks emptyPrenatalMeasurements)
+
+
+resolveGWGClassificationForHealthyStartTest : Test
+resolveGWGClassificationForHealthyStartTest =
+    describe "resolveGWGClassificationForHealthyStart (Healthy Start expected daily gain)"
+        [ test "over 25 days, a gain of 1.0 kg is below the expected 1.5 kg -> inadequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 25 61.0
+                    |> Expect.equal (Just GWGInadequate)
+        , test "over 25 days, a gain of exactly the expected 1.5 kg -> adequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 25 61.5
+                    |> Expect.equal (Just GWGAdequate)
+        , test "over 30 days, a gain of exactly the expected 1.8 kg -> adequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 30 61.8
+                    |> Expect.equal (Just GWGAdequate)
+        , test "over 25 days, a gain of 2.5 kg is above the expected 1.5 kg -> adequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 25 62.5
+                    |> Expect.equal (Just GWGAdequate)
+        , test "1.0 kg lost over the period -> inadequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 25 59.0
+                    |> Expect.equal (Just GWGInadequate)
+        , test "severely undernourished at booking: over 25 days, 1.5 kg is short of the expected 1.825 kg -> inadequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyUnderWeight 25 61.5
+                    |> Expect.equal (Just GWGInadequate)
+        , test "a gain of exactly the expected amount is adequate at every five-day interval up to 20 weeks" <|
+            \_ ->
+                -- At 60 g per day a five-day interval expects 0.3 kg, so these
+                -- are the intervals where a woman exactly on target shows a
+                -- whole tenth of a kilogram on the scale. The list is the
+                -- intervals that came back anything other than adequate.
+                List.range 1 28
+                    |> List.filter
+                        (\fiveDayBlocks ->
+                            classifyHealthyStartGWG PrePregnancyNormal
+                                (fiveDayBlocks * 5)
+                                (60.0 + 0.3 * toFloat fiveDayBlocks)
+                                /= Just GWGAdequate
+                        )
+                    |> Expect.equal []
+        ]
+
+
+
 -- LAB-DRIVEN DIAGNOSIS FIXTURES
 --
 -- End-to-end tests for `generatePrenatalDiagnosesForNurse` on an initial-phase
@@ -137,65 +209,23 @@ dummyDate =
     currentDate
 
 
-{-| Wrap a measurement `value` into the full `Measurement` record shape that
-the `PrenatalMeasurements` fields require, paired with a dummy entity id.
-
-The signature is polymorphic in the id tag, encounter type, and value, so it
-unifies with each concrete `PrenatalMeasurements` field type.
-
+{-| Wrap a measurement `value` into the shape the `PrenatalMeasurements`
+fields require, with `dummyDate` as `dateMeasured`.
 -}
 wrapMeasurement : value -> Maybe ( EntityUuid id, Measurement encounter value )
 wrapMeasurement value =
-    Just
-        ( toEntityUuid "dummy-id"
-        , { dateMeasured = dummyDate
-          , nurse = Nothing
-          , healthCenter = Nothing
-          , participantId = toEntityUuid "dummy-person"
-          , deleted = False
-          , encounterId = Nothing
-          , value = value
-          }
-        )
+    TestFixtures.wrapMeasurement dummyDate value
 
 
-{-| An adult female person. Everything except birthDate/gender is
-defaulted/empty (mirrors `testPerson` in the acute-illness test file).
+{-| The shared adult female fixture, but born 1990: age 30 at `currentDate`.
 -}
 testPerson : Person
 testPerson =
-    { name = "Test Person"
-    , firstName = "Test"
-    , secondName = "Person"
-    , nationalIdNumber = Nothing
-    , hmisNumber = Nothing
-    , avatarUrl = Nothing
-    , birthDate = Just (Date.fromCalendarDate 1990 Time.Jan 1)
-    , isDateOfBirthEstimated = False
-    , gender = Female
-    , hivStatus = Nothing
-    , numberOfChildren = Nothing
-    , modeOfDelivery = Nothing
-    , ubudehe = Nothing
-    , educationLevel = Nothing
-    , maritalStatus = Nothing
-    , province = Nothing
-    , district = Nothing
-    , sector = Nothing
-    , cell = Nothing
-    , village = Nothing
-    , registrationLatitude = Nothing
-    , registrationLongitude = Nothing
-    , saveGPSLocation = False
-    , telephoneNumber = Nothing
-    , spouseName = Nothing
-    , spousePhoneNumber = Nothing
-    , nextOfKinName = Nothing
-    , nextOfKinPhoneNumber = Nothing
-    , healthCenterId = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
+    let
+        base =
+            TestFixtures.testPerson
+    in
+    { base | birthDate = Just (Date.fromCalendarDate 1990 Time.Jan 1) }
 
 
 {-| An initial-phase nurse encounter (`NurseEncounter`), with no prior
@@ -218,18 +248,7 @@ testEncounter =
 
 testParticipant : IndividualEncounterParticipant
 testParticipant =
-    { person = toEntityUuid "dummy-person"
-    , encounterType = AntenatalEncounter
-    , startDate = currentDate
-    , endDate = Nothing
-    , eddDate = Nothing
-    , dateConcluded = Nothing
-    , outcome = Nothing
-    , deliveryLocation = Nothing
-    , newborn = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
+    TestFixtures.testParticipant currentDate AntenatalEncounter
 
 
 {-| One reusable `AssembledData` for an initial-phase nurse encounter at
@@ -529,25 +548,11 @@ withHemoglobinNonImmediate count measurements =
     { measurements | hemoglobinTest = wrapMeasurement (hemoglobinTestValueNonImmediate count) }
 
 
-{-| Vitals with the given systolic/diastolic blood pressure. Respiratory rate
-is left unset so the anemia-complication path (which keys off an elevated
-respiratory rate) stays inert.
+{-| Vitals with the given systolic/diastolic blood pressure.
 -}
-vitalsValueWith : Float -> Float -> VitalsValue
-vitalsValueWith sys dia =
-    { sys = Just sys
-    , dia = Just dia
-    , heartRate = Nothing
-    , respiratoryRate = Nothing
-    , bodyTemperature = Nothing
-    , sysRepeated = Nothing
-    , diaRepeated = Nothing
-    }
-
-
 withVitals : Float -> Float -> PrenatalMeasurements -> PrenatalMeasurements
 withVitals sys dia measurements =
-    { measurements | vitals = wrapMeasurement (vitalsValueWith sys dia) }
+    { measurements | vitals = wrapMeasurement (TestFixtures.vitalsValueWith sys dia) }
 
 
 {-| Vitals with a normal initial reading (120/80, so the _initial_ BP is not
@@ -1325,6 +1330,7 @@ all =
         [ measurementOutOfRangeTest
         , bmiToPrePregnancyClassificationTest
         , zscoreToPrePregnancyClassificationTest
+        , resolveGWGClassificationForHealthyStartTest
         , generatePrenatalDiagnosesForNurseLabsTest
         , generatePrenatalDiagnosesForNurseRecurrentLabsTest
         , generatePrenatalAssesmentForChwTest

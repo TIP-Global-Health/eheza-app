@@ -1,4 +1,4 @@
-module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isNurseEncounter, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countChildrenSeenForSelectedMonth, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, dataItemMergeDuplicates, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, resolveECDStatus, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -26,6 +26,7 @@ import Backend.Dashboard.Model
         , PrenatalDataItem
         , PrenatalEncounterDataItem
         , ProgramType(..)
+        , SPVDataItem
         , SPVEncounterDataItem
         , TotalBeneficiaries
         , TotalEncountersData
@@ -53,7 +54,9 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Village.Utils exposing (resolveVillageResidents)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..), ecdMilestoneWarnings)
 import Date exposing (Unit(..), isBetween)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, toLastDayOfMonth)
@@ -61,7 +64,7 @@ import List.Extra
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (VaccinationProgressDict)
 import Measurement.Utils exposing (allVaccineTypes)
-import Pages.Dashboard.Model exposing (FilterPeriod(..), FilterProgramType(..), Model)
+import Pages.Dashboard.Model exposing (ECDStatus(..), FilterPeriod(..), FilterProgramType(..), Model)
 import Pages.GlobalCaseManagement.Utils
     exposing
         ( fillPersonName
@@ -76,6 +79,7 @@ import Pages.GlobalCaseManagement.View
         , generateNutritionFollowUpEntries
         , generatePrenatalFollowUpEntries
         )
+import Set
 import SyncManager.Model exposing (Site)
 import Utils.NominalDate exposing (sortByDate, sortByDateDesc)
 
@@ -320,6 +324,34 @@ caseManagementMergeDuplicates cases =
         )
         Dict.empty
         cases
+        |> Dict.values
+
+
+{-| One item per child. The statistics feed builds an item per individual
+participant, so a child registered into a second participant arrives as two
+items sharing an identifier, with their encounters split between them.
+
+Well-child and child-scoreboard items are both shaped this way, hence the
+extensible record.
+
+-}
+dataItemMergeDuplicates :
+    List { a | identifier : PersonIdentifier, encounters : List b }
+    -> List { a | identifier : PersonIdentifier, encounters : List b }
+dataItemMergeDuplicates items =
+    List.foldl
+        (\candidate accum ->
+            Dict.get candidate.identifier accum
+                |> Maybe.map
+                    (\current ->
+                        Dict.insert candidate.identifier
+                            { current | encounters = current.encounters ++ candidate.encounters }
+                            accum
+                    )
+                |> Maybe.withDefault (Dict.insert candidate.identifier candidate accum)
+        )
+        Dict.empty
+        items
         |> Dict.values
 
 
@@ -837,11 +869,6 @@ filterNewlyDiagnosesMalnutritionForSelectedMonth dateLastDayOfSelectedMonth =
         )
 
 
-isNurseEncounter : PrenatalEncounterDataItem -> Bool
-isNurseEncounter encounter =
-    List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
-
-
 isPostpartumEncounter : PrenatalEncounterDataItem -> Bool
 isPostpartumEncounter encounter =
     List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
@@ -855,7 +882,7 @@ countNewlyIdentifiedPregananciesForSelectedMonth dateLastDayOfSelectedMonth isCh
                 (\pregnancy ->
                     List.sortWith (sortByDate .startDate) pregnancy.encounters
                         |> List.head
-                        |> Maybe.map isNurseEncounter
+                        |> Maybe.map (.encounterType >> isNurseEncounter)
                         |> Maybe.withDefault False
                 )
                 itemsList
@@ -885,17 +912,23 @@ getCurrentlyPregnantForSelectedMonth dateLastDayOfSelectedMonth isChw =
 
         facilityFilter encounters =
             if isChw then
-                List.any (isNurseEncounter >> not) encounters
+                List.any (.encounterType >> isNurseEncounter >> not) encounters
 
             else
-                List.any isNurseEncounter encounters
+                List.any (.encounterType >> isNurseEncounter) encounters
     in
     List.filter
         (\pregnancy ->
             let
-                -- Pregnancy was tracked during current month, or before.
+                -- A woman belongs to the facility that had seen her by the end
+                -- of the month being reported on, so encounters that came later
+                -- do not decide it.
+                encountersTillLastDayOfSelectedMonth =
+                    List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth)
+                        pregnancy.encounters
+
                 createdDateFilter =
-                    not <| Date.compare dateLastDayOfSelectedMonth pregnancy.created == GT
+                    withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth pregnancy.created
 
                 -- Expected date exists, and is set to 3 weeks or less,
                 -- before the beggining of the range.
@@ -920,7 +953,7 @@ getCurrentlyPregnantForSelectedMonth dateLastDayOfSelectedMonth isChw =
                         Nothing ->
                             True
             in
-            facilityFilter pregnancy.encounters
+            facilityFilter encountersTillLastDayOfSelectedMonth
                 && createdDateFilter
                 && expectedDateConcludedFilter
                 && actualDateConcludedFilter
@@ -995,14 +1028,14 @@ countPregnanciesDueWithin4MonthsForSelectedMonth dateLastDayOfSelectedMonth isCh
                 facilityFilter =
                     let
                         encountersTilldateLastDayOfSelectedMonth =
-                            List.filter (\encounter -> not <| Date.compare encounter.startDate dateLastDayOfSelectedMonth == GT)
+                            List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth)
                                 pregnancy.encounters
                     in
                     if isChw then
-                        List.any (isNurseEncounter >> not) encountersTilldateLastDayOfSelectedMonth
+                        List.any (.encounterType >> isNurseEncounter >> not) encountersTilldateLastDayOfSelectedMonth
 
                     else
-                        List.any isNurseEncounter encountersTilldateLastDayOfSelectedMonth
+                        List.any (.encounterType >> isNurseEncounter) encountersTilldateLastDayOfSelectedMonth
 
                 -- Either pregnanacy is not concluded, or, it was concluded
                 -- after selected months has ended.
@@ -1060,13 +1093,13 @@ countPregnanciesWith4VisitsOrMoreForSelectedMonth dateLastDayOfSelectedMonth =
                         encountersTillLastDayOfSelectedMonth =
                             List.filter
                                 (\encounter ->
-                                    (not <| Date.compare encounter.startDate dateLastDayOfSelectedMonth == GT)
+                                    withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth encounter.startDate
                                         && (not <| isPostpartumEncounter encounter)
                                 )
                                 pregnancy.encounters
                     in
                     (List.length encountersTillLastDayOfSelectedMonth >= 4)
-                        && List.any isNurseEncounter encountersTillLastDayOfSelectedMonth
+                        && List.any (.encounterType >> isNurseEncounter) encountersTillLastDayOfSelectedMonth
             in
             encountersFilter && dateConcludedFilter
         )
@@ -1082,7 +1115,7 @@ countHospitalReferralsForSelectedMonth dateLastDayOfSelectedMonth =
         (.encounters
             >> List.any
                 (\encounter ->
-                    isNurseEncounter encounter
+                    isNurseEncounter encounter.encounterType
                         && withinSelectedMonth dateLastDayOfSelectedMonth encounter.startDate
                         && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
                 )
@@ -1916,3 +1949,77 @@ withinOrAfterSelectedMonth dateLastDayOfSelectedMonth date =
 isAcuteIllnessNurseEncounter : AcuteIllnessEncounterDataItem -> Bool
 isAcuteIllnessNurseEncounter encounter =
     encounter.encounterType /= AcuteIllnessEncounterCHW
+
+
+{-| Children with at least one nurse encounter in the selected month.
+
+Counting the encounters would count a child seen twice that month twice, and
+counting the items would too, since an item is a participant rather than a child.
+Callers on this page merge the items per child before calling, so the identifiers
+are a guard rather than a necessity - the count is right either way.
+
+-}
+countChildrenSeenForSelectedMonth : NominalDate -> List SPVDataItem -> Int
+countChildrenSeenForSelectedMonth dateLastDayOfSelectedMonth =
+    List.filter
+        (\item ->
+            List.any
+                (\encounter ->
+                    isSPVNurseEncounter encounter
+                        && withinSelectedMonth dateLastDayOfSelectedMonth encounter.startDate
+                )
+                item.encounters
+        )
+        >> List.map .identifier
+        >> Set.fromList
+        >> Set.size
+
+
+isSPVNurseEncounter : SPVEncounterDataItem -> Bool
+isSPVNurseEncounter encounter =
+    encounter.encounterType == PediatricCare
+
+
+{-| The child's ECD standing, taken from their most recent nurse encounter that
+carries an ECD verdict. Encounters where the ECD activity was never done carry
+no verdict, so reading only the latest encounter reports 'nobody asked' as
+'behind' - and a child who has completed every milestone for their age is
+offered the activity no longer, so finishing would count as falling behind.
+
+`Nothing` means the child has no nurse encounter up to the selected month at
+all, and so is not part of this report. A child who was seen but never assessed
+is `Just ECDNotAssessed`.
+
+-}
+resolveECDStatus : NominalDate -> SPVDataItem -> Maybe ECDStatus
+resolveECDStatus dateLastDayOfSelectedMonth item =
+    let
+        nurseEncounters =
+            List.filter
+                (\encounter ->
+                    isSPVNurseEncounter encounter
+                        && withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth encounter.startDate
+                )
+                item.encounters
+    in
+    if List.isEmpty nurseEncounters then
+        Nothing
+
+    else
+        List.filter
+            (\encounter ->
+                List.any (\warning -> EverySet.member warning encounter.warnings) ecdMilestoneWarnings
+            )
+            nurseEncounters
+            |> List.sortWith (sortByDateDesc .startDate)
+            |> List.head
+            |> Maybe.map
+                (\encounter ->
+                    if EverySet.member NoECDMilstoneWarning encounter.warnings then
+                        ECDOnTrack
+
+                    else
+                        ECDBehind
+                )
+            |> Maybe.withDefault ECDNotAssessed
+            |> Just

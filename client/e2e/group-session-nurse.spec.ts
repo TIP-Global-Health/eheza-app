@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { click, setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
@@ -87,6 +88,12 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
     await completeNutritionSignsAbnormal(page); // Edema → triggers NextSteps
     await completeChildFbf(page);
     await completeNCDA(page);
+
+    // Progress report must show what was measured for this child.
+    const report = await openReport(page, 'group-session');
+    await expect(report.locator('.pane.person-details')).toContainText(child.fullName);
+    await closeReport(page, 'group-session');
+
 
     // 6. NextSteps triggered by abnormal values. Complete all 4.
     await completeContributingFactors(page);
