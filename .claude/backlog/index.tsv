@@ -86,7 +86,7 @@ B-085	4	READY				16	Person shards not recomputed on health-center change
 B-086	4	READY				16	AQ dedup "stuck task" check uses ENQUEUE time, not processing-start
 B-087	3	PARKED				16	view_export worker returns permanent FAILURE when the final-batch MAIL fails → user silently never receives a fully-buil
 B-088	4	READY				16	No `hook_node_delete` in hedley_ncda / hedley_reports / hedley_stats → hard-delete (super_user_mode only) leaves stale a
-B-089	4	READY				16	Kirundi `MissedDosesOfMedication` missing leading space ("3y'imiti")
+B-089	4	IMPLEMENTED		2202	2200	16	Kirundi `MissedDosesOfMedication` missing leading space ("3y'imiti")
 B-090	4	READY				16	Stats case-management "month 13" cutoff not midnight-anchored
 B-091	4	READY				16	Prenatal syphilis medication guard omits `syphilisAdverseEventsHospitalization`
 B-092	4	READY				16	a11y PR1: shared/shell primitives (~30 sites: `Pages/Utils` viewAlert :1154 / viewPhotoThumb :1249 / exclamation :1356, 
