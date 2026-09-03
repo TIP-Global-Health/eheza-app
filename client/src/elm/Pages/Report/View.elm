@@ -990,6 +990,7 @@ viewLabResultsPane language currentDate viewForConfirmation mode setLabResultsMo
                     , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHIVPCR hivPCRTestResults)
                         |> showIf displayConfig.hivPCR
                     , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryPartnerHIV partnerHIVTestResults)
+                        |> showIf displayConfig.partnerHIV
                     , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistorySyphilis syphilisTestResults)
                         |> showIf displayConfig.syphilis
                     , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHepatitisB hepatitisBTestResults)
