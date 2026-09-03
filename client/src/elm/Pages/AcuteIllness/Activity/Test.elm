@@ -9,6 +9,7 @@ import Backend.Measurement.Model
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
         , AcuteFindingsValue
+        , AcuteIllnessDangerSign(..)
         , AcuteIllnessMeasurements
         , CovidTestingValue
         , HeartCPESign
@@ -45,6 +46,7 @@ import Pages.AcuteIllness.Activity.Utils
         , respiratoryInfectionDangerSignsPresent
         , respiratoryRateElevatedByAge
         , respiratoryRateElevatedByAgeForCovid19
+        , subsequentEncounterDiagnosisUpdate
         , symptomMaxDuration
         , toCovidTestingValueWithDefault
         )
@@ -53,7 +55,7 @@ import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, s
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
-import TestFixtures exposing (testPerson)
+import TestFixtures exposing (emptyAcuteIllnessMeasurements, testPerson)
 import Time
 
 
@@ -74,34 +76,6 @@ fields require, with `dummyDate` as `dateMeasured`.
 wrapMeasurement : value -> Maybe ( EntityUuid id, Measurement encounter value )
 wrapMeasurement value =
     TestFixtures.wrapMeasurement dummyDate value
-
-
-emptyAcuteIllnessMeasurements : AcuteIllnessMeasurements
-emptyAcuteIllnessMeasurements =
-    { symptomsGeneral = Nothing
-    , symptomsRespiratory = Nothing
-    , symptomsGI = Nothing
-    , vitals = Nothing
-    , acuteFindings = Nothing
-    , malariaTesting = Nothing
-    , travelHistory = Nothing
-    , exposure = Nothing
-    , isolation = Nothing
-    , hcContact = Nothing
-    , call114 = Nothing
-    , treatmentReview = Nothing
-    , sendToHC = Nothing
-    , medicationDistribution = Nothing
-    , muac = Nothing
-    , treatmentOngoing = Nothing
-    , dangerSigns = Nothing
-    , nutrition = Nothing
-    , healthEducation = Nothing
-    , followUp = Nothing
-    , coreExam = Nothing
-    , covidTesting = Nothing
-    , contactsTracing = Nothing
-    }
 
 
 
@@ -808,6 +782,53 @@ amoxicillinDosageTest =
         ]
 
 
+subsequentEncounterDiagnosisUpdateTest : Test
+subsequentEncounterDiagnosisUpdateTest =
+    let
+        diagnosisUpdate storedDiagnosis rdtResult dangerSigns =
+            let
+                assembled =
+                    testAssembled False
+                        { emptyAcuteIllnessMeasurements
+                            | dangerSigns = wrapMeasurement dangerSigns
+                            , malariaTesting = wrapMeasurement rdtResult
+                        }
+
+                encounter =
+                    assembled.encounter
+            in
+            subsequentEncounterDiagnosisUpdate currentDate
+                EverySet.empty
+                True
+                { assembled | encounter = { encounter | diagnosis = storedDiagnosis } }
+
+        noDangerSigns =
+            EverySet.singleton NoAcuteIllnessDangerSign
+    in
+    describe "subsequentEncounterDiagnosisUpdate"
+        [ test "a diagnosis is written once the measurements produce one" <|
+            \_ ->
+                diagnosisUpdate NoAcuteIllnessDiagnosis RapidTestPositive noDangerSigns
+                    |> Expect.equal (Just DiagnosisMalariaUncomplicated)
+        , test "a corrected danger-sign set replaces the stored diagnosis" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaComplicated RapidTestPositive noDangerSigns
+                    |> Expect.equal (Just DiagnosisMalariaUncomplicated)
+        , test "a corrected negative RDT clears the stored diagnosis" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaUncomplicated RapidTestNegative noDangerSigns
+                    |> Expect.equal (Just NoAcuteIllnessDiagnosis)
+        , test "a diagnosis matching the measurements is not rewritten" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaUncomplicated RapidTestPositive noDangerSigns
+                    |> Expect.equal Nothing
+        , test "danger signs beside a positive RDT make the diagnosis complicated" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaUncomplicated RapidTestPositive (EverySet.singleton DangerSignConvulsions)
+                    |> Expect.equal (Just DiagnosisMalariaComplicated)
+        ]
+
+
 all : Test
 all =
     describe "Acute Illness diagnosis and dosing tests"
@@ -816,6 +837,7 @@ all =
         , malariaDangerSignsPresentTest
         , respiratoryInfectionDangerSignsPresentTest
         , resolveAcuteIllnessDiagnosisByMalariaRDTTest
+        , subsequentEncounterDiagnosisUpdateTest
         , gastrointestinalSymptomsTest
         , resolveAcuteIllnessDiagnosisNonCovidTest
         , resolveAcuteIllnessDiagnosisTuberculosisTest

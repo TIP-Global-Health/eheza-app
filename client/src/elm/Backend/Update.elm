@@ -106,9 +106,9 @@ import Pages.AcuteIllness.Activity.Utils
         ( activityCompleted
         , mandatoryActivitiesCompletedSubsequentVisit
         , noImprovementOnSubsequentVisit
-        , resolveAcuteIllnessDiagnosis
         , resolveNextStep
         , respiratoryRateAbnormalForAge
+        , subsequentEncounterDiagnosisUpdate
         )
 import Pages.AcuteIllness.Encounter.Model
 import Pages.AcuteIllness.Encounter.Utils
@@ -9986,18 +9986,10 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter :
 generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate features isChw data =
     if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data then
         let
-            diagnosisByCurrentEncounterMeasurements =
-                resolveAcuteIllnessDiagnosis currentDate features isChw data
-                    |> Maybe.withDefault NoAcuteIllnessDiagnosis
-
             setDiagnosisMsg =
-                -- We have an update to diagnosis based on current measurements,
-                -- and it is not yet set for the encounter.
-                if data.encounter.diagnosis == NoAcuteIllnessDiagnosis && diagnosisByCurrentEncounterMeasurements /= NoAcuteIllnessDiagnosis then
-                    [ updateAcuteIllnessDiagnosisMsg data.id diagnosisByCurrentEncounterMeasurements ]
-
-                else
-                    []
+                subsequentEncounterDiagnosisUpdate currentDate features isChw data
+                    |> Maybe.map (updateAcuteIllnessDiagnosisMsg data.id >> List.singleton)
+                    |> Maybe.withDefault []
 
             setActiveTaskMsg =
                 resolveNextStep currentDate isChw data
