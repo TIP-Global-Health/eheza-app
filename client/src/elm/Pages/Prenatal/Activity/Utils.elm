@@ -3112,11 +3112,11 @@ matchSymptomsPrenatalDiagnosis egaInWeeks assembled diagnosis =
 
         DiagnosisTrichomonasOrBacterialVaginosis ->
             trichomonasOrBacterialVaginosisDiagnosed
-                && (not <| diagnosedPreviously DiagnosisGonorrhea assembled)
+                && (not <| diagnosedPreviously DiagnosisTrichomonasOrBacterialVaginosis assembled)
 
         DiagnosisTrichomonasOrBacterialVaginosisContinued ->
             trichomonasOrBacterialVaginosisDiagnosed
-                && diagnosedPreviously DiagnosisGonorrhea assembled
+                && diagnosedPreviously DiagnosisTrichomonasOrBacterialVaginosis assembled
 
         Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
             symptomRecorded assembled.measurements CoughContinuous
