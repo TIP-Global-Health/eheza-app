@@ -2418,7 +2418,7 @@ viewUniversalInterventionsPane language currentDate site child nurseQuestionnair
                                             (\_ dosesDict ->
                                                 Dict.filter
                                                     (\_ administeredDate ->
-                                                        Date.compare administeredDate referenceDate == LT
+                                                        Date.compare administeredDate referenceDate /= GT
                                                     )
                                                     dosesDict
                                             )
