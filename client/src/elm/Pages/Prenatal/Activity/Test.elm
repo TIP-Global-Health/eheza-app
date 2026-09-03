@@ -21,6 +21,8 @@ import Backend.Measurement.Model
         , PrenatalMeasurements
         , PrenatalMentalHealthQuestion(..)
         , PrenatalMentalHealthQuestionOption(..)
+        , PrenatalSymptom(..)
+        , PrenatalSymptomQuestion(..)
         , ProteinValue(..)
         , RandomBloodSugarTestValue
         , Rhesus(..)
@@ -1324,6 +1326,100 @@ suicideRiskDiagnosedBySignsTest =
         ]
 
 
+{-| Abnormal vaginal discharge splits into three diagnoses by the two follow up
+questions. Answering no to both is trichomonas or bacterial vaginosis; each
+diagnosis then has a "continued" variant, chosen by whether the patient was
+given that same diagnosis at an earlier nurse encounter. The plain variant
+prescribes medication, the continued one refers to hospital.
+-}
+vaginalDischargeContinuedTest : Test
+vaginalDischargeContinuedTest =
+    let
+        withVaginalDischarge questions measurements =
+            { measurements
+                | symptomReview =
+                    wrapMeasurement
+                        { symptoms = EverySet.singleton AbnormalVaginalDischarge
+                        , symptomQuestions = questions
+                        , flankPainSign = Nothing
+                        }
+            }
+
+        -- No vaginal itching and no partner urethral discharge.
+        bacterialVaginosis =
+            withVaginalDischarge EverySet.empty
+
+        gonorrhea =
+            withVaginalDischarge (EverySet.singleton SymptomQuestionPartnerUrethralDischarge)
+
+        previousEncounterWith diagnoses =
+            { startDate = Date.add Date.Weeks -4 currentDate
+            , diagnoses = EverySet.fromList diagnoses
+            , pastDiagnoses = EverySet.empty
+            , measurements = emptyPrenatalMeasurements
+            }
+
+        diagnoseNurseAfter previousDiagnoses measurements =
+            let
+                assembled =
+                    testAssembled measurements
+            in
+            generatePrenatalDiagnosesForNurse currentDate
+                { assembled | nursePreviousEncountersData = [ previousEncounterWith previousDiagnoses ] }
+    in
+    describe "generatePrenatalDiagnosesForNurse - abnormal vaginal discharge, continued variants"
+        [ test "first episode -> the plain diagnosis" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> bacterialVaginosis
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosis
+                    |> Expect.equal True
+        , test "diagnosed at an earlier encounter -> the continued diagnosis" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> bacterialVaginosis
+                    |> diagnoseNurseAfter [ DiagnosisTrichomonasOrBacterialVaginosis ]
+                    |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosisContinued
+                    |> Expect.equal True
+        , test "diagnosed at an earlier encounter -> the plain diagnosis is not given as well" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> bacterialVaginosis
+                    |> diagnoseNurseAfter [ DiagnosisTrichomonasOrBacterialVaginosis ]
+                    |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosis
+                    |> Expect.equal False
+        , test "an earlier gonorrhea does not make a first episode continued" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> bacterialVaginosis
+                    |> diagnoseNurseAfter [ DiagnosisGonorrhea ]
+                    |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosisContinued
+                    |> Expect.equal False
+        , test "an earlier gonorrhea leaves a first episode at the plain diagnosis" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> bacterialVaginosis
+                    |> diagnoseNurseAfter [ DiagnosisGonorrhea ]
+                    |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosis
+                    |> Expect.equal True
+        , test "an earlier bacterial vaginosis does not make a first gonorrhea continued" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> gonorrhea
+                    |> diagnoseNurseAfter [ DiagnosisTrichomonasOrBacterialVaginosis ]
+                    |> EverySet.member DiagnosisGonorrheaContinued
+                    |> Expect.equal False
+        , test "gonorrhea diagnosed at an earlier encounter -> the continued diagnosis" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> gonorrhea
+                    |> diagnoseNurseAfter [ DiagnosisGonorrhea ]
+                    |> EverySet.member DiagnosisGonorrheaContinued
+                    |> Expect.equal True
+        ]
+
+
 all : Test
 all =
     describe "Prenatal Activity tests"
@@ -1345,6 +1441,7 @@ all =
         , generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest
         , generatePrenatalDiagnosesForNurseEGA37PlusPreeclampsiaRecurrentTest
         , suicideRiskDiagnosedBySignsTest
+        , vaginalDischargeContinuedTest
         ]
 
 
