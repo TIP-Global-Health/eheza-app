@@ -305,6 +305,21 @@ B-304	3	IMPLEMENTED	MED-LOW	2182	2183	27	Translate: copied-neighbor label batch 
 B-305	4	READY	LOW			26	Well Child immunisation (Burundi): pre-fix DTP-standalone records hold the DTP form's contents and keep blocking the boo
 B-306	4	READY	LOW			26	Acute Illness follow-up: a saved follow-up keeps the diagnosis it was saved with, so a later diagnosis correction leaves
 B-307	3	IMPLEMENTED	MED	2192	2193	24	Case Management follow-up entries: tapping one always creates a NEW encounter, so a second encounter can be opened the s
+B-308	2	READY	MED			28	Statistical Queries › Acute Illness: three respiratory diagnosis rows show each other's counts — the PHP code table and 
+B-309	3	READY	MED-LOW			28	Statistical Queries › Postnatal Care: "Up to date with immunization" rows never see doses recorded at Child Scoreboard e
+B-310	4	READY	LOW			28	Aggregated NCDA scoreboard: the shared "children under 2" denominator uses the exact birth date while every age-gated nu
+B-311	2	READY	MED-HIGH			28	Aggregated NCDA scoreboard: the "born in the last 3 years" cutoff is evaluated at request time, so every historical colu
+B-312	3	READY	MED-LOW			28	Aggregated NCDA scoreboard, "Iron during pregnancy" row: the nine counted months sit one month before the pregnancy — th
+B-313	4	READY	LOW			28	NCDA scoreboard (server blob): nothing re-triggers a child's recalculation when the pregnancy-side inputs change — newbo
+B-314	3	READY	MED-LOW			28	Growth charts: on three charts the y-axis gridlines and labels are spaced by tick index while the points are plotted by 
+B-315	3	READY	MED-LOW			28	Growth charts: a measurement outside the chart's x-range is pinned to the frame edge instead of dropped, so a 24–26-mont
+B-316	4	READY	LOW			28	Z-score tables: a failed table download on first load is never retried and never shown, so growth charts render without 
+B-317	2	READY	MED-HIGH			28	Sync download: a response arriving after its 30-second timeout is applied under whichever health centre is current by th
+B-318	3	READY	MED			28	Sync: the dashboard-statistics download has no timeout and no elapsed-time guard, so one stalled request wedges uploads 
+B-319	3	READY	MED			28	Prenatal labs (lab technician): a blood-smear order opens pre-answered "test will NOT be performed today" with the nurse
+B-320	3	READY	MED			28	Prenatal HIV test: correcting to "known as positive" after a negative RDT keeps the result and the partner answers, so t
+B-321	4	READY	LOW			28	NCD Laboratory (urine dipstick, creatinine, liver function, lipid panel): re-saving a test task after its results were e
+B-322	4	READY	LOW			28	Child progress report, Diagnosis pane: "Malnutrition signs" is listed twice for one date, because the nutrition-derived 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

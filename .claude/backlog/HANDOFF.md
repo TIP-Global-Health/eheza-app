@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, R26 added 2026-08-30 evening, R27 added 2026-09-01, open-PR section rewritten 2026-09-01 evening and extended 2026-09-02 with B-213 (five PRs open, reviewed, awaiting merge)
+description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, R26 added 2026-08-30 evening, R27 added 2026-09-01, R28 added 2026-09-03, open-PR section rewritten 2026-09-01 evening and extended 2026-09-02 with B-213 (five PRs open, reviewed, awaiting merge)
 metadata: 
   node_type: memory
   type: project
@@ -114,6 +114,37 @@ Earlier merges, for context: **#2150 (B-235)** and **#2146** (e2e progress-repor
 2026-08-26; **#2134 (B-194)** and **#2136 (B-189)** on 2026-08-25; the four red on the 2026-08-17
 GitHub incident (#2090, #2095, #2097, #2099) and the whole R22 stack (#2108…#2116). That incident is
 over and was never a real signal.
+
+## Round 28 ran 2026-09-03 — 15 new items, THREE tier 2, all three deployed; every old ✅ infrastructure row re-read yielded
+
+B-308..B-322 (see `rounds.md` R28, `queue.md` R28 line). A 6-unit coverage sweep of the oldest surviving ✅/◒ infrastructure
+rows at R25+ depth: SyncManager (R15 row), Measurement/Utils (R13), vendored collections + every order-trusting consumer (never
+rowed), server/elm admin apps (R17), hedley_ncda PHP (R16), ZScore chart rendering (R23 not-read tail). All six scouts were
+killed by the session cap minutes after launch and resumed via SendMessage with context intact (R27's remedy; ~5 min to finish).
+**Counts after R28: 192 READY — T2 4 · T3 46 · T4 108 · untiered 34.** Tier 2 READY = B-195 (half on hold) + the three below.
+Dry-stop counter: 0.
+
+Headlines, all live-sized from this seat (7 terminus queries):
+- **B-308** ⭐ DEPLOYED — Statistical Queries › Acute Illness: the PHP code table and the server-Elm decoder rotate `j/k/l`, so
+  three respiratory rows show each other's counts (live 603 / 904 / 1,167 mis-rowed since 2024-06). ⚠ `reporting.spec.ts:1521`
+  asserts the WRONG row under a comment saying the opposite — the fix must move that assertion or the e2e job goes red.
+- **B-311** ⭐ DEPLOYED — the aggregated NCDA scoreboard's "born in the last 3 years" cutoff is evaluated per request while the app
+  serves columns back to Nov 2023: **29,202 of 61,044** children are absent from every historical column today, more each day.
+- **B-317** ⭐ DEPLOYED — sync download: a response arriving after its 30-second timeout is applied under whichever health centre
+  is current by then; a two-HC device can write HC-A's cursor onto HC-B and never download HC-B's older records. Silent.
+- Clinical tier 3: **B-319** (lab tech opens a blood-smear order pre-answered "will not be performed"; one Save cancels it — 40 open
+  orders today), **B-320** (correcting an HIV test to "known as positive" keeps the negative result + partner answers → Discordant
+  Partnership diagnosis + TDF3TC for an HIV-positive woman), **B-314/B-315** (growth-chart gridlines off by up to 1.75 cm; 24–26-month
+  points pinned to the 2-year edge read ~0.25 z healthier — 5,981 children).
+- ⭐ **Durable (in the coverage lessons):** two assoc-list implementations with OPPOSITE order semantics coexist — the vendored
+  fork (client `Dict`) appends, upstream (`EverySet`, server `Dict`) prepends/reverses; `Date.diff Months` truncates toward zero.
+
+⚠ **Open tiering question from the user (2026-09-03):** *"B-236 was classified as T3 … this is a bug when diagnosis is determined,
+which causes an illness not to be detected. That's top priority."* The tier lines define T1 = HIGH/MED-HIGH, yet B-236 (MED-HIGH),
+B-245 (MED-HIGH) and now B-311 sit below that. Past orchestrators tiered by blast radius (population, routing-vs-detection) and
+left severity as a separate label. Candidates for re-tiering if the user's rule ("wrong diagnosis determination = top tier") is
+adopted: B-286, B-289, B-288, B-240, B-237, B-221, B-320, B-319 (all tier 3 today). Awaiting the user's answer — do not re-tier
+without it.
 
 ## Round 27 ran 2026-08-31 → 09-01 — 14 new items, ZERO tier 2, 6 tier 3; first-ever rows for Measurement/View and Translate
 
