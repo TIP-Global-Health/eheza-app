@@ -86,7 +86,7 @@ import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
-import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, sw)
+import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, sw, updateVillageStockManagementCaches)
 import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
@@ -5466,6 +5466,8 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 data.encounterId
                 (\measurements -> { measurements | ahezaChild = familyMeasurementActionConsideringDeletedField uuid data measurements.ahezaChild })
                 model
+                |> updateVillageStockManagementCaches healthCenterId
+                    (\measurements -> { measurements | ahezaChild = measurementActionConsideringDeletedField uuid data measurements.ahezaChild })
             , recalc
             )
 
@@ -5483,6 +5485,8 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     }
                 )
                 model
+                |> updateVillageStockManagementCaches healthCenterId
+                    (\measurements -> { measurements | ahezaMother = measurementActionConsideringDeletedField uuid data measurements.ahezaMother })
             , recalc
             )
 
@@ -7853,11 +7857,12 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
 
         StockUpdateRevision uuid data ->
             let
+                setStockUpdate measurements =
+                    { measurements | stockUpdate = measurementActionConsideringDeletedField uuid data measurements.stockUpdate }
+
                 modelWithMappedStockManagement =
-                    mapStockManagementMeasurements
-                        healthCenterId
-                        (\measurements -> { measurements | stockUpdate = measurementActionConsideringDeletedField uuid data measurements.stockUpdate })
-                        modelWithStockUpdateRecalc
+                    mapStockManagementMeasurements healthCenterId setStockUpdate modelWithStockUpdateRecalc
+                        |> updateVillageStockManagementCaches healthCenterId setStockUpdate
 
                 -- This revision may cause stock management data to become obsolete,
                 -- therefore, we 'mark' it for recalculation.
