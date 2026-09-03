@@ -2844,7 +2844,7 @@ viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth rawSPVDat
                         (\_ dosesDict ->
                             Dict.filter
                                 (\_ administeredDate ->
-                                    Date.compare administeredDate dateLastDayOfSelectedMonth == LT
+                                    withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth administeredDate
                                 )
                                 dosesDict
                         )
