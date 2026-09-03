@@ -13115,7 +13115,7 @@ translationSet trans =
             else
                 { english = "Missed " ++ String.fromInt val ++ " doses of medication"
                 , kinyarwanda = Just <| "Yasimbutse gufata imiti inshuro " ++ String.fromInt val
-                , kirundi = Just <| "Kwibagira amadoze " ++ String.fromInt val ++ "y'imiti"
+                , kirundi = Just <| "Kwibagira amadoze " ++ String.fromInt val ++ " y'imiti"
                 , somali = Nothing
                 }
 
