@@ -19,7 +19,7 @@ B-018	4	READY					MUAC unit-LABEL selection still inline per site
 B-019	3	PARKED					hedley_view_export requeue path missing switchUserBack
 B-020	1	PARKED					Stats recalc non-atomic → dashboard blanks/stale for an HC
 B-021	4	READY	LOW				Unbatched soft-delete cascade can time out (CORRECTED: availability only, atomic rollback)
-B-022	4	READY					i18n objective leftover: Kirundi prose in `english` field
+B-022	4	CLOSED					i18n objective leftover: Kirundi prose in `english` field
 B-023	4	READY				10	Stale merge-conflict "REVIEW:" comment committed on develop
 B-024	2	IMPLEMENTED		1937	1938	10	4 of 5 progress-report pages never fetch health centers → Next-Appointment "Location" renders blank
 B-025	1	IMPLEMENTED	HIGH	1888	1889	10	Upload lanes wedge the WHOLE sync cycle permanently when the JS handler dies without replying
