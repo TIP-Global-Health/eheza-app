@@ -367,6 +367,16 @@ immediateResultPrerequisites =
     Just (EverySet.singleton PrerequisiteImmediateResult)
 
 
+{-| What a test sent to the lab stores: the immediate-result question was
+asked and answered No. Distinct from `Nothing`, which is what a test stores
+when the question was never asked at all - a partner known to be positive, a
+result taken from history, or a record from before the question existed.
+-}
+deferredResultPrerequisites : Maybe (EverySet TestPrerequisite)
+deferredResultPrerequisites =
+    Just (EverySet.singleton NoTestPrerequisites)
+
+
 {-| HIV test with the given execution note, prerequisites and result. No
 partner/HIV signs (so this never trips discordant-partnership).
 -}
@@ -520,10 +530,11 @@ withMalariaTestNonImmediate measurements =
 -- DISCORDANT-PARTNERSHIP BUILDERS
 --
 -- The diagnosis has two sources: the partner's own HIV test, and the partner
--- signs recorded on the patient's own HIV test. The question behind the second
--- source was removed from the HIV test form, so only older encounters carry it.
--- The Initial/Recurrent split follows the source that matched, so these
--- builders vary the execution note and prerequisites of each test on its own.
+-- signs recorded on the patient's own HIV test. The second question is drawn
+-- on the HIV test form while the partner's own result is unavailable, so both
+-- sources are live. The Initial/Recurrent split follows the source that
+-- matched, so these builders vary the execution note and prerequisites of each
+-- test on its own.
 
 
 {-| Partner HIV test with the given execution note and prerequisites, positive,
@@ -1352,13 +1363,13 @@ generatePrenatalDiagnosesForNurseDiscordantPartnershipTest =
             \_ ->
                 emptyPrenatalMeasurements
                     |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
-                    |> withPartnerHIVTestPositive TestNoteRunToday Nothing
+                    |> withPartnerHIVTestPositive TestNoteRunToday deferredResultPrerequisites
                     |> discordantPartnershipPhases
                     |> Expect.equal ( False, True )
         , test "partner test positive and immediate, patient HIV negative and NOT immediate -> Recurrent phase" <|
             \_ ->
                 emptyPrenatalMeasurements
-                    |> withHIVTestNegative TestNoteRunToday Nothing
+                    |> withHIVTestNegative TestNoteRunToday deferredResultPrerequisites
                     |> withPartnerHIVTestPositive TestNoteRunToday immediateResultPrerequisites
                     |> discordantPartnershipPhases
                     |> Expect.equal ( False, True )
@@ -1395,6 +1406,12 @@ generatePrenatalDiagnosesForNurseDiscordantPartnershipTest =
                     |> withHIVTestPartnerPositiveSigns TestNoteRunPreviously Nothing
                     |> discordantPartnershipPhases
                     |> Expect.equal ( True, False )
+        , test "partner signs on the patient's HIV test sent to the lab -> Recurrent phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestPartnerPositiveSigns TestNoteRunToday deferredResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, True )
         ]
 
 

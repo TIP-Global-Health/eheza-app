@@ -40,6 +40,7 @@ import Measurement.Model
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
+        , expectUniversalTestResultTask
         , getNextVaccineDose
         , isTestResultValid
         , latestVaccinationDataForVaccine
@@ -2296,6 +2297,14 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     (.hivViralLoad >> Maybe.map (\viralLoad -> viralLoad >= 20))
                 |> Maybe.withDefault False
 
+        -- Partner is not taking ARVs, or is taking them without reaching
+        -- surpressed viral load.
+        partnerNotSurpressed hivSigns =
+            not
+                (EverySet.member PartnerTakingARV hivSigns
+                    && EverySet.member PartnerSurpressedViralLoad hivSigns
+                )
+
         discordantPartnershipByHIVTest =
             getMeasurementValueFunc measurements.hivTest
                 |> Maybe.andThen .hivSigns
@@ -2303,14 +2312,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     (\hivSigns ->
                         -- Partner is HIV positive.
                         EverySet.member PartnerHIVPositive hivSigns
-                            && (-- Partner is not taking ARVs.
-                                (not <| EverySet.member PartnerTakingARV hivSigns)
-                                    || -- Partner is taking ARVs, but did not
-                                       -- reach surpressed viral load.
-                                       (EverySet.member PartnerTakingARV hivSigns
-                                            && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
-                                       )
-                               )
+                            && partnerNotSurpressed hivSigns
                     )
                 |> Maybe.withDefault False
 
@@ -2335,18 +2337,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                                                 && (value.testResult == Just TestPositive)
                                            )
                                 then
-                                    Maybe.map
-                                        (\hivSigns ->
-                                            (-- Partner is not taking ARVs.
-                                             (not <| EverySet.member PartnerTakingARV hivSigns)
-                                                || -- Partner is taking ARVs, but did not
-                                                   -- reach surpressed viral load.
-                                                   (EverySet.member PartnerTakingARV hivSigns
-                                                        && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
-                                                   )
-                                            )
-                                        )
-                                        value.hivSigns
+                                    Maybe.map partnerNotSurpressed value.hivSigns
                                         |> Maybe.withDefault False
 
                                 else
@@ -2782,21 +2773,16 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisDiscordantPartnershipInitialPhase ->
             let
-                -- Result of a test is known already at initial phase, when
-                -- test was run with immediate result, or when no test was
-                -- needed - patient is known as positive, or result was taken
-                -- from patient's history.
+                -- Result of a test is known already at initial phase, unless
+                -- a result task is expected at the recurrent one. That covers
+                -- a test run with immediate result, and a test that needed no
+                -- lab at all - partner known as positive, or result taken from
+                -- history.
                 resultKnownAtInitialPhase getMeasurementFunc =
-                    immediateResult getMeasurementFunc
-                        || (getMeasurementFunc measurements
-                                |> getMeasurementValueFunc
-                                |> Maybe.map
-                                    (\value ->
-                                        List.member value.executionNote
-                                            [ TestNoteKnownAsPositive, TestNoteRunPreviously ]
-                                    )
-                                |> Maybe.withDefault False
-                           )
+                    getMeasurementFunc measurements
+                        |> getMeasurementValueFunc
+                        |> Maybe.map (expectUniversalTestResultTask >> not)
+                        |> Maybe.withDefault False
             in
             (discordantPartnershipByHIVTest && resultKnownAtInitialPhase .hivTest)
                 || (discordantPartnershipByPartnerHIVTest

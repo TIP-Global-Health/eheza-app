@@ -407,6 +407,7 @@ export function queryPrenatalDiagnoses(personName: string): string[] | null {
     if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
 
     \\$encounter = node_load(max(\\$encounters));
+    if (empty(\\$encounter)) { echo json_encode(['error' => 'Encounter not loaded']); return; }
     \\$diagnoses = [];
     if (!empty(\\$encounter->field_prenatal_diagnoses[LANGUAGE_NONE])) {
       foreach (\\$encounter->field_prenatal_diagnoses[LANGUAGE_NONE] as \\$item) {
@@ -422,8 +423,15 @@ export function queryPrenatalDiagnoses(personName: string): string[] | null {
         cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
       }).trim();
       const parsed = JSON.parse(output);
-      if (!parsed.error) return parsed.diagnoses as string[];
-      console.log(`queryPrenatalDiagnoses attempt ${attempt + 1}: ${parsed.error}`);
+      // The encounter node exists from the moment the encounter starts and its
+      // diagnoses are written later, so an empty set is retried rather than
+      // returned -- otherwise a lagging sync reads as "no diagnosis". An
+      // encounter that genuinely has none returns [] once the retries run out.
+      if (!parsed.error && parsed.diagnoses.length > 0) {
+        return parsed.diagnoses as string[];
+      }
+      if (!parsed.error && attempt === 9) return [];
+      console.log(`queryPrenatalDiagnoses attempt ${attempt + 1}: ${parsed.error || 'no diagnoses yet'}`);
     } catch (err) {
       console.log(`queryPrenatalDiagnoses attempt ${attempt + 1}: error`, err);
     }

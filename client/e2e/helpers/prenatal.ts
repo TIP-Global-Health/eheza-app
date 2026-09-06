@@ -949,6 +949,7 @@ export async function completeLaboratoryNurseForLab(
   options?: { hivPointOfCareNegative?: boolean },
 ): Promise<string[]> {
   const hivPointOfCareNegative = options?.hivPointOfCareNegative ?? false;
+  let hivPointOfCareDone = false;
   await openActivity(page, 'prenatal', 'laboratory');
 
   const completedTests: string[] = [];
@@ -991,10 +992,7 @@ export async function completeLaboratoryNurseForLab(
     // The patient's own HIV test can be run point of care while the rest go to
     // the lab. That mix is what puts a partner result in the recurrent phase
     // while the patient's own result is already known.
-    const isHivTab = hivPointOfCareNegative
-      && /^\s*HIV\s*$/i.test(tabLabel)
-      && !tabLabel.includes('Partner')
-      && !tabLabel.includes('PCR');
+    const isHivTab = hivPointOfCareNegative && /^\s*HIV\s*$/i.test(tabLabel);
 
     // 3. "Immediate result?" → Lab (the "No" side of the bool input), or
     // Point of Care for the HIV test when asked for.
@@ -1006,14 +1004,15 @@ export async function completeLaboratoryNurseForLab(
         await page.waitForTimeout(WAIT.elmRerender);
 
         const resultSelect = page.locator('select.form-input').first();
-        if (await resultSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
-          const negOption = resultSelect.locator('option', { hasText: 'Negative' });
-          if (await negOption.count() > 0) {
-            const val = await negOption.first().getAttribute('value');
-            if (val) await resultSelect.selectOption(val);
-          }
-          await page.waitForTimeout(WAIT.formInteraction);
+        await resultSelect.waitFor({ timeout: 5000 });
+        const negOption = resultSelect.locator('option', { hasText: 'Negative' });
+        const negValue = await negOption.first().getAttribute('value');
+        if (!negValue) {
+          throw new Error('HIV test: no Negative option to select');
         }
+        await resultSelect.selectOption(negValue);
+        await page.waitForTimeout(WAIT.formInteraction);
+        hivPointOfCareDone = true;
 
         // With the partner's own test still pending, a negative result on the
         // patient's test asks her whether her partner is HIV positive. Answer
@@ -1050,6 +1049,16 @@ export async function completeLaboratoryNurseForLab(
       completedTests.push(tabLabel);
       await page.waitForTimeout(WAIT.elmRerender);
     }
+  }
+
+  // A caller asking for the point-of-care HIV test is asking for a specific
+  // mix of immediate and lab results. Falling back to sending that test to the
+  // lab as well would leave the caller's test passing while proving nothing, so
+  // say so instead.
+  if (hivPointOfCareNegative && !hivPointOfCareDone) {
+    throw new Error(
+      `HIV test was not run point of care. Tabs seen: ${completedTests.join(', ')}`,
+    );
   }
 
   // Wait for return to encounter page.
