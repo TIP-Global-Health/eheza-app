@@ -53,7 +53,7 @@ What changes because of this:
 **Open backlog PRs on 2026-09-06 afternoon, awaiting the user's merge:**
 - **#2204 (B-221, tier 1, issue #2203)** — pushed as test-only commit `9a143760e` first so CI shows the new e2e case FAILING against the old code, then the fix `18295f218`; watch `e2e_playwright_1` on each.
 - **#2206 (B-237, tier 1, issue #2205)** — its e2e run is confirmed (passes on the fix, fails first on develop).
-- **#2208 (B-240, tier 1, issue #2207)** — the HIV follow-up task's `not <| A || B` precedence slip; new `Pages/Prenatal/RecurrentActivity/Test.elm` (6 cases, 2 fail against develop). ⭐ Live-sized from this seat: 200 lab-entered HIV results on ihangane, **all negative**, and zero on the other three sites — the defect has never fired.
+- **#2208 (B-240, tier 1, issue #2207)** — **fully green (all 10 checks incl. simpletest + 3 e2e), reviewed CLEAN (zero correctness findings; both sub-threshold notes posted and answered on the PR, neither a change).** The HIV follow-up task's `not <| A || B` precedence slip; new `Pages/Prenatal/RecurrentActivity/Test.elm` (6 cases, 2 fail against develop). ⭐ Live-sized from this seat: 200 lab-entered HIV results on ihangane, **all negative**, and zero on the other three sites — the defect has never fired.
 
 #2156 (B-195 measurement half) stays a DRAFT on hold.
 
