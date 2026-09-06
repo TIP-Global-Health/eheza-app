@@ -1,10 +1,10 @@
 import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
-import { setupDevice } from './helpers/auth';
+import { click, setupDevice } from './helpers/auth';
 import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { clickSubTaskTab, openActivity, syncAndWait, queryPregnancyEdd, queryPrenatalLmp } from './helpers/common';
+import { clickSubTaskTab, openActivity, syncAndWait, queryPregnancyEdd, queryPrenatalLmp, queryPrenatalDiagnoses, WAIT } from './helpers/common';
 import {
   createAdultFemaleAndStartEncounter,
   startPrenatalEncounter,
@@ -21,6 +21,8 @@ import {
   completeImmunisation,
   completeMedication,
   completeLaboratoryNurse,
+  completeLaboratoryNurseForLab,
+  completeLabResultsAsLabTech,
   completeNextSteps,
   dismissWarningPopup,
   completeTreatmentReview,
@@ -459,5 +461,82 @@ test.describe('Nurse: Prenatal Recurrent Encounter (BP Recheck)', () => {
     const expectedTypes = ['prenatal_labs_results'];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
     expect(nodes['prenatal_labs_results'], 'prenatal_labs_results should exist').toBe(true);
+  });
+
+});
+
+// =========================================================================
+// Test 4: Nurse Recurrent Encounter (lab results)
+// =========================================================================
+
+test.describe('Nurse: Prenatal Recurrent Encounter (Lab Results)', () => {
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '1234', 'Nyange Health Center');
+  });
+
+  test('partner HIV result from the lab is diagnosed as a recurrent-phase discordant partnership', async ({
+    page,
+  }) => {
+    // Full initial encounter + sync + case management + recurrent lab results.
+    test.setTimeout(600000);
+    const lmpDate = new Date();
+    lmpDate.setDate(lmpDate.getDate() - 30 * 7);
+
+    // --- Phase 1: initial encounter, patient HIV point of care, partner to lab ---
+    const { fullName } = await createAdultFemaleAndStartEncounter(page, {
+      isChw: false,
+      encounterType: 'first',
+    });
+
+    await completePregnancyDating(page, lmpDate);
+    await completeHistory(page);
+    await completeExamination(page);
+    await completeFamilyPlanning(page);
+    await completeDangerSigns(page);
+    await completeSymptomReview(page);
+    await completeMalariaPrevention(page);
+    await completeMentalHealth(page);
+    await completeImmunisation(page);
+    await completeMedication(page);
+    // The patient's own HIV test is run point of care and is negative, so her
+    // result is known during the initial phase. Everything else, the Partner
+    // HIV test included, goes to the lab, so the partner's result only arrives
+    // at the recurrent phase. That mix is what decides the phase the
+    // discordant-partnership diagnosis is recorded under.
+    await completeLaboratoryNurseForLab(page, { hivPointOfCareNegative: true });
+    // Labs are pending, so NextSteps offers the Wait sub-task and pauses.
+    const completedSteps = await completeNextSteps(page);
+    expect(completedSteps, 'completedSteps should contain wait sub-task').toContain('wait');
+
+    // --- Phase 2: sync, then reopen the encounter from Case Management ---
+    await syncAndWait(page);
+    await navigateToCaseManagement(page);
+    await openRecurrentEncounterFromCaseManagement(page, fullName);
+
+    // --- Phase 3: enter the lab results, partner HIV positive, no ARVs ---
+    await click(page.locator('.icon-task-laboratory'), page);
+    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
+    const completedResults = await completeLabResultsAsLabTech(page);
+    expect(completedResults.length, 'at least one lab result should have been completed').toBeGreaterThan(0);
+    await page.waitForTimeout(WAIT.pageNavigation);
+
+    // --- Phase 4: sync and read the diagnoses off the encounter ---
+    await syncAndWait(page);
+
+    const diagnoses = queryPrenatalDiagnoses(fullName);
+    expect(diagnoses, 'encounter diagnoses should be readable').not.toBeNull();
+    // The partner's result arrived at the recurrent phase, so the diagnosis
+    // belongs to that phase -- that is the variant the recurrent Next Steps
+    // prescribes PrEP for. Recorded as the initial-phase variant, the
+    // prescription is offered in a phase that is already over.
+    expect(diagnoses, 'discordant partnership should be recorded for the recurrent phase').toContain('partner-hiv-recurrent');
+    expect(diagnoses, 'discordant partnership should NOT be recorded for the initial phase').not.toContain('partner-hiv');
   });
 });
