@@ -526,22 +526,29 @@ withMalariaTestNonImmediate measurements =
 -- builders vary the execution note and prerequisites of each test on its own.
 
 
-{-| Partner HIV test, run today, positive, partner not taking ARVs - the
-discordant-partnership condition.
+{-| Partner HIV test with the given execution note and prerequisites, positive,
+partner not taking ARVs - the discordant-partnership condition. A partner known
+to be positive is not tested, so no result is recorded for that note, and the
+immediate-result question is never asked - the prerequisites stay `Nothing`.
 -}
-partnerHIVTestValuePositive : Maybe (EverySet TestPrerequisite) -> PartnerHIVTestValue
-partnerHIVTestValuePositive prerequisites =
-    { executionNote = TestNoteRunToday
+partnerHIVTestValuePositive : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> PartnerHIVTestValue
+partnerHIVTestValuePositive executionNote prerequisites =
+    { executionNote = executionNote
     , executionDate = Just dummyDate
     , testPrerequisites = prerequisites
-    , testResult = Just TestPositive
+    , testResult =
+        if executionNote == TestNoteKnownAsPositive then
+            Nothing
+
+        else
+            Just TestPositive
     , hivSigns = Just (EverySet.singleton NoPrenatalHIVSign)
     }
 
 
-withPartnerHIVTestPositive : Maybe (EverySet TestPrerequisite) -> PrenatalMeasurements -> PrenatalMeasurements
-withPartnerHIVTestPositive prerequisites measurements =
-    { measurements | partnerHIVTest = wrapMeasurement (partnerHIVTestValuePositive prerequisites) }
+withPartnerHIVTestPositive : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> PrenatalMeasurements -> PrenatalMeasurements
+withPartnerHIVTestPositive executionNote prerequisites measurements =
+    { measurements | partnerHIVTest = wrapMeasurement (partnerHIVTestValuePositive executionNote prerequisites) }
 
 
 withHIVTestNegative : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> PrenatalMeasurements -> PrenatalMeasurements
@@ -549,14 +556,14 @@ withHIVTestNegative executionNote prerequisites measurements =
     { measurements | hivTest = wrapMeasurement (hivTestValueCustom executionNote prerequisites TestNegative) }
 
 
-{-| Patient's HIV test, run today with an immediate negative result, carrying
-the partner signs: partner positive, not taking ARVs.
+{-| Patient's HIV test, negative, carrying the partner signs: partner positive,
+not taking ARVs.
 -}
-withHIVTestPartnerPositiveSigns : PrenatalMeasurements -> PrenatalMeasurements
-withHIVTestPartnerPositiveSigns measurements =
+withHIVTestPartnerPositiveSigns : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> PrenatalMeasurements -> PrenatalMeasurements
+withHIVTestPartnerPositiveSigns executionNote prerequisites measurements =
     let
         value =
-            hivTestValueCustom TestNoteRunToday immediateResultPrerequisites TestNegative
+            hivTestValueCustom executionNote prerequisites TestNegative
     in
     { measurements
         | hivTest = wrapMeasurement { value | hivSigns = Just (EverySet.singleton PartnerHIVPositive) }
@@ -1338,34 +1345,54 @@ generatePrenatalDiagnosesForNurseDiscordantPartnershipTest =
             \_ ->
                 emptyPrenatalMeasurements
                     |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
-                    |> withPartnerHIVTestPositive immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive TestNoteRunToday immediateResultPrerequisites
                     |> discordantPartnershipPhases
                     |> Expect.equal ( True, False )
         , test "partner test positive and NOT immediate, patient HIV negative and immediate -> Recurrent phase" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
-                    |> withPartnerHIVTestPositive Nothing
+                    |> withPartnerHIVTestPositive TestNoteRunToday Nothing
                     |> discordantPartnershipPhases
                     |> Expect.equal ( False, True )
         , test "partner test positive and immediate, patient HIV negative and NOT immediate -> Recurrent phase" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> withHIVTestNegative TestNoteRunToday Nothing
-                    |> withPartnerHIVTestPositive immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive TestNoteRunToday immediateResultPrerequisites
                     |> discordantPartnershipPhases
                     |> Expect.equal ( False, True )
         , test "partner test positive and immediate, patient HIV negative from history -> Initial phase" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> withHIVTestNegative TestNoteRunPreviously Nothing
-                    |> withPartnerHIVTestPositive immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive TestNoteRunToday immediateResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
+        , test "partner known to be HIV positive, patient HIV negative and immediate -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive TestNoteKnownAsPositive Nothing
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
+        , test "partner test positive from history, patient HIV negative and immediate -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive TestNoteRunPreviously Nothing
                     |> discordantPartnershipPhases
                     |> Expect.equal ( True, False )
         , test "partner signs on the patient's immediate HIV test, no partner test -> Initial phase" <|
             \_ ->
                 emptyPrenatalMeasurements
-                    |> withHIVTestPartnerPositiveSigns
+                    |> withHIVTestPartnerPositiveSigns TestNoteRunToday immediateResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
+        , test "partner signs on the patient's HIV test taken from history -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestPartnerPositiveSigns TestNoteRunPreviously Nothing
                     |> discordantPartnershipPhases
                     |> Expect.equal ( True, False )
         ]

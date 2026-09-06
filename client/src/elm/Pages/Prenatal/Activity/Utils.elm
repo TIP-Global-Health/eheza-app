@@ -2782,21 +2782,26 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisDiscordantPartnershipInitialPhase ->
             let
-                -- Result of patient's HIV test is known already at initial
-                -- phase, when test was run with immediate result, or when it
-                -- was run previously, and result was taken from patient's
-                -- history.
-                patientHIVResultKnownAtInitialPhase =
-                    immediateResult .hivTest
-                        || (getMeasurementValueFunc measurements.hivTest
-                                |> Maybe.map (\value -> value.executionNote == TestNoteRunPreviously)
+                -- Result of a test is known already at initial phase, when
+                -- test was run with immediate result, or when no test was
+                -- needed - patient is known as positive, or result was taken
+                -- from patient's history.
+                resultKnownAtInitialPhase getMeasurementFunc =
+                    immediateResult getMeasurementFunc
+                        || (getMeasurementFunc measurements
+                                |> getMeasurementValueFunc
+                                |> Maybe.map
+                                    (\value ->
+                                        List.member value.executionNote
+                                            [ TestNoteKnownAsPositive, TestNoteRunPreviously ]
+                                    )
                                 |> Maybe.withDefault False
                            )
             in
-            (discordantPartnershipByHIVTest && immediateResult .hivTest)
+            (discordantPartnershipByHIVTest && resultKnownAtInitialPhase .hivTest)
                 || (discordantPartnershipByPartnerHIVTest
-                        && immediateResult .partnerHIVTest
-                        && patientHIVResultKnownAtInitialPhase
+                        && resultKnownAtInitialPhase .partnerHIVTest
+                        && resultKnownAtInitialPhase .hivTest
                    )
 
         DiagnosisDiscordantPartnershipRecurrentPhase ->
