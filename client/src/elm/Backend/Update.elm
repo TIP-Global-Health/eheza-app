@@ -3113,16 +3113,22 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
                     [ PrenatalPartnerHIVTestRevision _ data ] ->
                         let
-                            ( newModel, extraMsg ) =
+                            -- We do not catch changes done to model, because
+                            -- it's handled by `processRevisionAndAssessPrenatal`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.encounterId
                                     Backend.Measurement.Model.TestPartnerHIV
                                     data.value.executionNote
                                     (isJust data.value.testResult)
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
-                        , extraMsg
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
                         )
 
                     [ PrenatalHIVPCRTestRevision _ data ] ->
