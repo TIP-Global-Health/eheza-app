@@ -786,12 +786,15 @@ export async function completeMedication(
  */
 export async function completeLaboratoryNurse(
   page: Page,
-  options?: { hivPositive?: boolean; discordantPartnership?: boolean },
+  options?: {
+    // HIV test performed at point of care with this result; omitted = not performed.
+    hivResult?: 'positive' | 'negative';
+    // Partner known as HIV positive and not on ARVs, saved LAST, so that
+    // save alone has to raise the discordant partnership diagnosis.
+    discordantPartnership?: boolean;
+  },
 ): Promise<string[]> {
-  const hivPositive = options?.hivPositive ?? false;
-  // Patient HIV negative at point of care, partner known as HIV positive and
-  // not on ARVs. The Partner HIV tab is saved LAST, so that save alone has to
-  // raise the discordant partnership diagnosis.
+  const hivResult = options?.hivResult;
   const discordantPartnership = options?.discordantPartnership ?? false;
   await openActivity(page, 'prenatal', 'laboratory');
 
@@ -800,9 +803,15 @@ export async function completeLaboratoryNurse(
   // Iterate through all visible task tabs. We can't use icon classes because
   // Partner HIV, HIV, and HIV PCR all share the same icon-laboratory-hiv class.
   const allTabs = page.locator('.link-section');
-  const tabCount = await allTabs.count();
+  const tabLabels = await allTabs.allTextContents();
+  const tabOrder = tabLabels.map((_, i) => i);
+  if (discordantPartnership) {
+    // Partner HIV is the first tab; move it to the end so it is saved last.
+    const partnerIndex = tabLabels.findIndex(label => label.includes('Partner HIV'));
+    tabOrder.push(...tabOrder.splice(partnerIndex, 1));
+  }
 
-  for (let i = 0; i < tabCount; i++) {
+  for (const i of tabOrder) {
     const tab = allTabs.nth(i);
     if (!(await tab.isVisible())) continue;
 
@@ -821,25 +830,29 @@ export async function completeLaboratoryNurse(
       await page.waitForTimeout(WAIT.elmRerender);
     }
 
-    const tabLabel = (await tab.textContent()) || `tab-${i}`;
+    const tabLabel = tabLabels[i] || `tab-${i}`;
 
     // Answer yes/no fields by their specific CSS classes.
     // Fields appear sequentially: known-as-positive → test-performed → why-not → blood-smear.
 
     // Detect if this is the HIV tab (not Partner HIV, not HIV PCR).
-    const isHivTab = (hivPositive || discordantPartnership)
+    const isHivTab = hivResult !== undefined
       && /^\s*HIV\s*$/i.test(tabLabel)
       && !tabLabel.includes('Partner')
       && !tabLabel.includes('PCR');
 
-    // Partner HIV is filled after every other tab (see below).
-    if (discordantPartnership && tabLabel.includes('Partner HIV')) continue;
+    const isDiscordantPartnerTab = discordantPartnership && tabLabel.includes('Partner HIV');
 
-    // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B) → No
+    // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B) → No,
+    //    except the discordant partner → Yes, not taking ARVs.
     const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
     if (await knownPositive.isVisible().catch(() => false)) {
-      await click(knownPositive.locator('label', { hasText: 'No' }), page);
+      await answerYesNo(page, 'known-as-positive', isDiscordantPartnerTab ? 'Yes' : 'No');
       await page.waitForTimeout(WAIT.elmRerender);
+    }
+    if (isDiscordantPartnerTab) {
+      await answerYesNo(page, 'partner-taking-arv', 'No');
+      await page.waitForTimeout(WAIT.formInteraction);
     }
 
     // 2. "Will this test be performed today?"
@@ -861,7 +874,7 @@ export async function completeLaboratoryNurse(
         const resultSelect = page.locator('select.form-input').first();
         if (await resultSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
           const resultOption = resultSelect.locator('option', {
-            hasText: hivPositive ? 'Positive' : 'Negative',
+            hasText: hivResult === 'positive' ? 'Positive' : 'Negative',
           });
           if (await resultOption.count() > 0) {
             const val = await resultOption.getAttribute('value');
@@ -882,7 +895,7 @@ export async function completeLaboratoryNurse(
         // saved later, is what has to carry the diagnosis.
         const partnerPositive = page.locator('.form-input.yes-no.partner-hiv-positive');
         if (await partnerPositive.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await click(partnerPositive.locator('label', { hasText: 'No' }), page);
+          await answerYesNo(page, 'partner-hiv-positive', 'No');
           await page.waitForTimeout(WAIT.formInteraction);
         }
       } else {
@@ -913,20 +926,6 @@ export async function completeLaboratoryNurse(
       completedTests.push(tabLabel);
       await page.waitForTimeout(WAIT.elmRerender);
     }
-  }
-
-  if (discordantPartnership) {
-    // Partner HIV, saved last: known as positive, not taking ARVs.
-    const partnerTab = allTabs.filter({ hasText: 'Partner HIV' });
-    await click(partnerTab, page);
-    await page.waitForTimeout(WAIT.elmRerender);
-    await click(page.locator('.form-input.yes-no.known-as-positive label', { hasText: 'Yes' }), page);
-    await page.waitForTimeout(WAIT.elmRerender);
-    await click(page.locator('.form-input.yes-no.partner-taking-arv label', { hasText: 'No' }), page);
-    await page.waitForTimeout(WAIT.formInteraction);
-    await click(page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }), page);
-    completedTests.push('Partner HIV');
-    await page.waitForTimeout(WAIT.elmRerender);
   }
 
   // Wait for return to encounter page.
@@ -1139,10 +1138,6 @@ export async function completeLabResultsAsLabTech(
 }
 
 /**
- * Complete NextSteps: iterate through visible sub-task tabs.
- * Creates: appointment_confirmation, prenatal_follow_up, prenatal_send_to_hc, etc.
- */
-/**
  * Dismiss the warning popup that may open with Next Steps
  * (e.g., "Depression not Likely").
  */
@@ -1154,6 +1149,10 @@ export async function dismissWarningPopup(page: Page) {
   }
 }
 
+/**
+ * Complete NextSteps: iterate through visible sub-task tabs.
+ * Creates: appointment_confirmation, prenatal_follow_up, prenatal_send_to_hc, etc.
+ */
 export async function completeNextSteps(page: Page): Promise<string[]> {
   // For CHW encounters with no danger signs, the icon changes to
   // "appointment-confirmation" instead of "next-steps".
