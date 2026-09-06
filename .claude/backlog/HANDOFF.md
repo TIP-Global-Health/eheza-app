@@ -44,7 +44,15 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — updated 2026-09-01 evening
+## Open right now — updated 2026-09-06
+
+**All seven PRs in the 2026-09-01 table below MERGED on 2026-09-03** (#2180, #2183, #2185, #2187, #2189, #2191, #2193; issues closed). Their worktrees (`B-272-…`, `B-303-B-304-…`, `B-280-…`, `B-299-…`, `B-213-…`, `B-307-…`) were still held on 2026-09-06 and can be removed.
+
+**Open backlog PRs on 2026-09-06, all green on all checks, awaiting the user's merge:** #2201 (B-293), #2200 (B-252 + B-089), #2197 (B-215), #2195 (B-236). Plus **#2204 (B-221, tier 1, issue #2203)** built 2026-09-06 — pushed as test-only commit `9a143760e` first so CI shows the new e2e case FAILING against the old code, then the fix `18295f218`; watch `e2e_playwright_1` on each. #2156 (B-195 measurement half) stays a DRAFT on hold.
+
+**B-168 (MONITORING):** its two-week no-event window closed on 2026-09-06 (release 2026-08-23). The Rollbar check is the user's — either outcome moves it out of MONITORING.
+
+### The 2026-09-01 table (historical — everything in it merged 2026-09-03)
 
 **Four backlog PRs open, all reviewed, all awaiting the user's merge** (built this session after the
 morning's four merged — #2178/#2172/#2174/#2176, issues closed, worktrees released):
