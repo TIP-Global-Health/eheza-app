@@ -1,10 +1,10 @@
 import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
-import { setupDevice } from './helpers/auth';
+import { setupDevice, click } from './helpers/auth';
 import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { syncAndWait, queryPregnancyEdd, queryPrenatalLmp } from './helpers/common';
+import { openActivity, syncAndWait, queryPregnancyEdd, queryPrenatalLmp } from './helpers/common';
 import {
   createAdultFemaleAndStartEncounter,
   startPrenatalEncounter,
@@ -22,6 +22,7 @@ import {
   completeMedication,
   completeLaboratoryNurse,
   completeNextSteps,
+  dismissWarningPopup,
   completeTreatmentReview,
   completeBreastfeeding,
   completeSpecialityCare,
@@ -174,6 +175,45 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     expect(nodes['prenatal_health_education'], 'prenatal_health_education should exist').toBe(true);
     expect(nodes['prenatal_send_to_hc'], 'prenatal_send_to_hc should exist').toBe(true);
     expect(nodes['prenatal_medication_distribution'], 'prenatal_medication_distribution should exist').toBe(true);
+  });
+
+  test('partner HIV positive after a negative HIV test offers TDF + 3TC', async ({
+    page,
+  }) => {
+    test.setTimeout(600000);
+    const lmpDate = new Date();
+    lmpDate.setDate(lmpDate.getDate() - 30 * 7);
+
+    await createAdultFemaleAndStartEncounter(page, {
+      isChw: false,
+      encounterType: 'first',
+    });
+
+    await completePregnancyDating(page, lmpDate);
+    await completeHistory(page);
+    // Normal BP: nothing but the discordant partnership can put
+    // medication on Next Steps.
+    await completeExamination(page, { vitals: { sys: '120', dia: '80' } });
+    await completeFamilyPlanning(page);
+    await completeDangerSigns(page);
+    await completeSymptomReview(page);
+    await completeMalariaPrevention(page);
+    await completeMentalHealth(page);
+    await completeImmunisation(page);
+    await completeMedication(page);
+    // HIV negative, then the partner recorded as HIV positive. The partner
+    // test is the last lab saved, so that save alone raises the diagnosis.
+    await completeLaboratoryNurse(page, { discordantPartnership: true });
+
+    // The discordant partnership diagnosis puts TDF + 3TC on Next Steps.
+    await openActivity(page, 'prenatal', 'next-steps');
+    await dismissWarningPopup(page);
+    const medicationTab = page.locator(
+      '.link-section:has(.icon-activity-task.icon-next-steps-treatment)',
+    );
+    await expect(medicationTab, 'Next Steps should offer medication').toBeVisible();
+    await click(medicationTab, page);
+    await expect(page.locator('div.page-activity.prenatal')).toContainText('TDF + 3TC');
   });
 });
 

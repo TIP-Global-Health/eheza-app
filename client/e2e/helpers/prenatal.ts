@@ -786,9 +786,13 @@ export async function completeMedication(
  */
 export async function completeLaboratoryNurse(
   page: Page,
-  options?: { hivPositive?: boolean },
+  options?: { hivPositive?: boolean; discordantPartnership?: boolean },
 ): Promise<string[]> {
   const hivPositive = options?.hivPositive ?? false;
+  // Patient HIV negative at point of care, partner known as HIV positive and
+  // not on ARVs. The Partner HIV tab is saved LAST, so that save alone has to
+  // raise the discordant partnership diagnosis.
+  const discordantPartnership = options?.discordantPartnership ?? false;
   await openActivity(page, 'prenatal', 'laboratory');
 
   const completedTests: string[] = [];
@@ -823,10 +827,13 @@ export async function completeLaboratoryNurse(
     // Fields appear sequentially: known-as-positive → test-performed → why-not → blood-smear.
 
     // Detect if this is the HIV tab (not Partner HIV, not HIV PCR).
-    const isHivTab = hivPositive
+    const isHivTab = (hivPositive || discordantPartnership)
       && /^\s*HIV\s*$/i.test(tabLabel)
       && !tabLabel.includes('Partner')
       && !tabLabel.includes('PCR');
+
+    // Partner HIV is filled after every other tab (see below).
+    if (discordantPartnership && tabLabel.includes('Partner HIV')) continue;
 
     // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B) → No
     const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
@@ -839,7 +846,7 @@ export async function completeLaboratoryNurse(
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
       if (isHivTab) {
-        // HIV tab: perform the test with positive result.
+        // HIV tab: perform the test at point of care.
         await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
         await page.waitForTimeout(WAIT.elmRerender);
 
@@ -850,12 +857,14 @@ export async function completeLaboratoryNurse(
           await page.waitForTimeout(WAIT.elmRerender);
         }
 
-        // Select result: "Positive"
+        // Select result.
         const resultSelect = page.locator('select.form-input').first();
         if (await resultSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
-          const posOption = resultSelect.locator('option', { hasText: 'Positive' });
-          if (await posOption.count() > 0) {
-            const val = await posOption.getAttribute('value');
+          const resultOption = resultSelect.locator('option', {
+            hasText: hivPositive ? 'Positive' : 'Negative',
+          });
+          if (await resultOption.count() > 0) {
+            const val = await resultOption.getAttribute('value');
             if (val) await resultSelect.selectOption(val);
           }
           await page.waitForTimeout(WAIT.formInteraction);
@@ -865,6 +874,15 @@ export async function completeLaboratoryNurse(
         const hivProgram = page.locator('.form-input.yes-no.hiv-program');
         if (await hivProgram.isVisible({ timeout: 2000 }).catch(() => false)) {
           await click(hivProgram.locator('label', { hasText: 'Yes' }), page);
+          await page.waitForTimeout(WAIT.formInteraction);
+        }
+
+        // A negative result while the partner test is still unrecorded asks
+        // "Is partner known to be HIV positive?" → No. The partner tab,
+        // saved later, is what has to carry the diagnosis.
+        const partnerPositive = page.locator('.form-input.yes-no.partner-hiv-positive');
+        if (await partnerPositive.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await click(partnerPositive.locator('label', { hasText: 'No' }), page);
           await page.waitForTimeout(WAIT.formInteraction);
         }
       } else {
@@ -895,6 +913,20 @@ export async function completeLaboratoryNurse(
       completedTests.push(tabLabel);
       await page.waitForTimeout(WAIT.elmRerender);
     }
+  }
+
+  if (discordantPartnership) {
+    // Partner HIV, saved last: known as positive, not taking ARVs.
+    const partnerTab = allTabs.filter({ hasText: 'Partner HIV' });
+    await click(partnerTab, page);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await click(page.locator('.form-input.yes-no.known-as-positive label', { hasText: 'Yes' }), page);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await click(page.locator('.form-input.yes-no.partner-taking-arv label', { hasText: 'No' }), page);
+    await page.waitForTimeout(WAIT.formInteraction);
+    await click(page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }), page);
+    completedTests.push('Partner HIV');
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 
   // Wait for return to encounter page.
@@ -1110,6 +1142,18 @@ export async function completeLabResultsAsLabTech(
  * Complete NextSteps: iterate through visible sub-task tabs.
  * Creates: appointment_confirmation, prenatal_follow_up, prenatal_send_to_hc, etc.
  */
+/**
+ * Dismiss the warning popup that may open with Next Steps
+ * (e.g., "Depression not Likely").
+ */
+export async function dismissWarningPopup(page: Page) {
+  const warningContinue = page.locator('button', { hasText: 'Continue' });
+  if (await warningContinue.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await warningContinue.click({ force: true });
+    await page.waitForTimeout(WAIT.elmRerender);
+  }
+}
+
 export async function completeNextSteps(page: Page): Promise<string[]> {
   // For CHW encounters with no danger signs, the icon changes to
   // "appointment-confirmation" instead of "next-steps".
@@ -1125,12 +1169,7 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
     return [];
   }
 
-  // Dismiss any warning popup that may appear (e.g., "Depression not Likely").
-  const warningContinue = page.locator('button', { hasText: 'Continue' });
-  if (await warningContinue.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await warningContinue.click({ force: true });
-    await page.waitForTimeout(WAIT.elmRerender);
-  }
+  await dismissWarningPopup(page);
 
   const completedSteps: string[] = [];
   const nextStepIcons = [
