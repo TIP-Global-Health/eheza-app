@@ -48,9 +48,20 @@ What changes because of this:
 
 **All seven PRs in the 2026-09-01 table below MERGED on 2026-09-03** (#2180, #2183, #2185, #2187, #2189, #2191, #2193; issues closed). Their worktrees (`B-272-…`, `B-303-B-304-…`, `B-280-…`, `B-299-…`, `B-213-…`, `B-307-…`) were still held on 2026-09-06 and can be removed.
 
-**Open backlog PRs on 2026-09-06, all green on all checks, awaiting the user's merge:** #2201 (B-293), #2200 (B-252 + B-089), #2197 (B-215), #2195 (B-236). Plus **#2204 (B-221, tier 1, issue #2203)** built 2026-09-06 — pushed as test-only commit `9a143760e` first so CI shows the new e2e case FAILING against the old code, then the fix `18295f218`; watch `e2e_playwright_1` on each. #2156 (B-195 measurement half) stays a DRAFT on hold.
+**#2195 (B-236), #2197 (B-215), #2200 (B-252 + B-089) and #2201 (B-293) MERGED 2026-09-06 morning** — their worktrees can be removed.
 
-**B-168 (MONITORING):** its two-week no-event window closed on 2026-09-06 (release 2026-08-23). The Rollbar check is the user's — either outcome moves it out of MONITORING.
+**Open backlog PRs on 2026-09-06 afternoon, awaiting the user's merge:**
+- **#2204 (B-221, tier 1, issue #2203)** — pushed as test-only commit `9a143760e` first so CI shows the new e2e case FAILING against the old code, then the fix `18295f218`; watch `e2e_playwright_1` on each.
+- **#2206 (B-237, tier 1, issue #2205)** — its e2e run is confirmed (passes on the fix, fails first on develop).
+- **#2208 (B-240, tier 1, issue #2207)** — the HIV follow-up task's `not <| A || B` precedence slip; new `Pages/Prenatal/RecurrentActivity/Test.elm` (6 cases, 2 fail against develop). ⭐ Live-sized from this seat: 200 lab-entered HIV results on ihangane, **all negative**, and zero on the other three sites — the defect has never fired.
+
+#2156 (B-195 measurement half) stays a DRAFT on hold.
+
+**B-168 (MONITORING):** its two-week no-event window closed on 2026-09-06 (release 2026-08-23). The Rollbar check is the user's — either outcome moves it out of MONITORING. Still the only MONITORING item, and still unchecked as of 2026-09-06 afternoon.
+
+⚠ **Invariant broken and restored on 2026-09-06:** the main tree was found checked out on `B-237-discordant-partnership-phase` (its e2e run borrows the main tree). A session reading the backlog then serves a stale queue silently — read from `origin/develop` with `git show` and say so rather than switching it back. The B-237 session returned it to `develop` the same afternoon.
+
+⭐ **Tier 2 is not empty any more** — the 2026-09-01 note below saying so is superseded. R28 refilled it: **B-195** (half on hold as #2156, ⛔ do not re-pitch), **B-308**, **B-311**, **B-317**. Tier 1 READY after B-240 shipped: **B-286, B-288, B-289, B-319, B-320, B-323** — the last two cluster with this one and with B-237 on the same prenatal HIV surface.
 
 ### The 2026-09-01 table (historical — everything in it merged 2026-09-03)
 
