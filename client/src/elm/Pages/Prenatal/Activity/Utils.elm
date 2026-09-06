@@ -2296,68 +2296,64 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     (.hivViralLoad >> Maybe.map (\viralLoad -> viralLoad >= 20))
                 |> Maybe.withDefault False
 
-        discordantPartnershipDiagnosed =
-            let
-                byHIVTest =
-                    getMeasurementValueFunc measurements.hivTest
-                        |> Maybe.andThen .hivSigns
-                        |> Maybe.map
-                            (\hivSigns ->
-                                -- Partner is HIV positive.
-                                EverySet.member PartnerHIVPositive hivSigns
-                                    && (-- Partner is not taking ARVs.
-                                        (not <| EverySet.member PartnerTakingARV hivSigns)
-                                            || -- Partner is taking ARVs, but did not
-                                               -- reach surpressed viral load.
-                                               (EverySet.member PartnerTakingARV hivSigns
-                                                    && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
-                                               )
+        discordantPartnershipByHIVTest =
+            getMeasurementValueFunc measurements.hivTest
+                |> Maybe.andThen .hivSigns
+                |> Maybe.map
+                    (\hivSigns ->
+                        -- Partner is HIV positive.
+                        EverySet.member PartnerHIVPositive hivSigns
+                            && (-- Partner is not taking ARVs.
+                                (not <| EverySet.member PartnerTakingARV hivSigns)
+                                    || -- Partner is taking ARVs, but did not
+                                       -- reach surpressed viral load.
+                                       (EverySet.member PartnerTakingARV hivSigns
+                                            && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
                                        )
+                               )
+                    )
+                |> Maybe.withDefault False
+
+        discordantPartnershipByPartnerHIVTest =
+            let
+                patientHIVNegative =
+                    getMeasurementValueFunc measurements.hivTest
+                        |> Maybe.map
+                            (\value ->
+                                List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                    && (value.testResult == Just TestNegative)
                             )
                         |> Maybe.withDefault False
-
-                byPartnerHIVTest =
-                    let
-                        patientHIVNegative =
-                            getMeasurementValueFunc measurements.hivTest
-                                |> Maybe.map
-                                    (\value ->
-                                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-                                            && (value.testResult == Just TestNegative)
-                                    )
-                                |> Maybe.withDefault False
-                    in
-                    patientHIVNegative
-                        && (getMeasurementValueFunc measurements.partnerHIVTest
-                                |> Maybe.map
-                                    (\value ->
-                                        if
-                                            (value.executionNote == TestNoteKnownAsPositive)
-                                                || (List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-                                                        && (value.testResult == Just TestPositive)
-                                                   )
-                                        then
-                                            Maybe.map
-                                                (\hivSigns ->
-                                                    (-- Partner is not taking ARVs.
-                                                     (not <| EverySet.member PartnerTakingARV hivSigns)
-                                                        || -- Partner is taking ARVs, but did not
-                                                           -- reach surpressed viral load.
-                                                           (EverySet.member PartnerTakingARV hivSigns
-                                                                && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
-                                                           )
-                                                    )
-                                                )
-                                                value.hivSigns
-                                                |> Maybe.withDefault False
-
-                                        else
-                                            False
-                                    )
-                                |> Maybe.withDefault False
-                           )
             in
-            byPartnerHIVTest || byHIVTest
+            patientHIVNegative
+                && (getMeasurementValueFunc measurements.partnerHIVTest
+                        |> Maybe.map
+                            (\value ->
+                                if
+                                    (value.executionNote == TestNoteKnownAsPositive)
+                                        || (List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                                && (value.testResult == Just TestPositive)
+                                           )
+                                then
+                                    Maybe.map
+                                        (\hivSigns ->
+                                            (-- Partner is not taking ARVs.
+                                             (not <| EverySet.member PartnerTakingARV hivSigns)
+                                                || -- Partner is taking ARVs, but did not
+                                                   -- reach surpressed viral load.
+                                                   (EverySet.member PartnerTakingARV hivSigns
+                                                        && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
+                                                   )
+                                            )
+                                        )
+                                        value.hivSigns
+                                        |> Maybe.withDefault False
+
+                                else
+                                    False
+                            )
+                        |> Maybe.withDefault False
+                   )
 
         syphilisDiagnosed =
             positiveSyphilisTest
@@ -2785,10 +2781,26 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 && (not <| diagnosedAtInitalPhase DiagnosisHIVDetectableViralLoadInitialPhase)
 
         DiagnosisDiscordantPartnershipInitialPhase ->
-            discordantPartnershipDiagnosed && immediateResult .hivTest
+            let
+                -- Result of patient's HIV test is known already at initial
+                -- phase, when test was run with immediate result, or when it
+                -- was run previously, and result was taken from patient's
+                -- history.
+                patientHIVResultKnownAtInitialPhase =
+                    immediateResult .hivTest
+                        || (getMeasurementValueFunc measurements.hivTest
+                                |> Maybe.map (\value -> value.executionNote == TestNoteRunPreviously)
+                                |> Maybe.withDefault False
+                           )
+            in
+            (discordantPartnershipByHIVTest && immediateResult .hivTest)
+                || (discordantPartnershipByPartnerHIVTest
+                        && immediateResult .partnerHIVTest
+                        && patientHIVResultKnownAtInitialPhase
+                   )
 
         DiagnosisDiscordantPartnershipRecurrentPhase ->
-            discordantPartnershipDiagnosed
+            (discordantPartnershipByPartnerHIVTest || discordantPartnershipByHIVTest)
                 && (not <| diagnosedAtInitalPhase DiagnosisDiscordantPartnershipInitialPhase)
 
         DiagnosisSyphilisInitialPhase ->

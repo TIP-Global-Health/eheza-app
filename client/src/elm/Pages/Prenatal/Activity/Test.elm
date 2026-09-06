@@ -17,7 +17,9 @@ import Backend.Measurement.Model
         , LungsCPESign
         , MalariaTestValue
         , Measurement
+        , PartnerHIVTestValue
         , PrenatalAssesment(..)
+        , PrenatalHIVSign(..)
         , PrenatalMeasurements
         , PrenatalMentalHealthQuestion(..)
         , PrenatalMentalHealthQuestionOption(..)
@@ -365,17 +367,25 @@ immediateResultPrerequisites =
     Just (EverySet.singleton PrerequisiteImmediateResult)
 
 
-{-| HIV test, run today with the given positive/negative result, immediate
-result. No partner/HIV signs (so this never trips discordant-partnership).
+{-| HIV test with the given execution note, prerequisites and result. No
+partner/HIV signs (so this never trips discordant-partnership).
 -}
-hivTestValueWith : TestResult -> HIVTestValue
-hivTestValueWith result =
-    { executionNote = TestNoteRunToday
+hivTestValueCustom : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> TestResult -> HIVTestValue
+hivTestValueCustom executionNote prerequisites result =
+    { executionNote = executionNote
     , executionDate = Just dummyDate
-    , testPrerequisites = immediateResultPrerequisites
+    , testPrerequisites = prerequisites
     , testResult = Just result
     , hivSigns = Nothing
     }
+
+
+{-| HIV test, run today with the given positive/negative result, immediate
+result.
+-}
+hivTestValueWith : TestResult -> HIVTestValue
+hivTestValueWith =
+    hivTestValueCustom TestNoteRunToday immediateResultPrerequisites
 
 
 syphilisTestValueWith : TestResult -> SyphilisTestValue encounterId
@@ -452,12 +462,7 @@ withMalariaTest result measurements =
 
 hivTestValueNonImmediate : HIVTestValue
 hivTestValueNonImmediate =
-    { executionNote = TestNoteRunToday
-    , executionDate = Just dummyDate
-    , testPrerequisites = Nothing
-    , testResult = Just TestPositive
-    , hivSigns = Nothing
-    }
+    hivTestValueCustom TestNoteRunToday Nothing TestPositive
 
 
 syphilisTestValueNonImmediate : SyphilisTestValue encounterId
@@ -509,6 +514,53 @@ withHepatitisBTestNonImmediate measurements =
 withMalariaTestNonImmediate : PrenatalMeasurements -> PrenatalMeasurements
 withMalariaTestNonImmediate measurements =
     { measurements | malariaTest = wrapMeasurement malariaTestValueNonImmediate }
+
+
+
+-- DISCORDANT-PARTNERSHIP BUILDERS
+--
+-- The diagnosis has two sources: the partner's own HIV test, and the partner
+-- signs recorded on the patient's own HIV test. The question behind the second
+-- source was removed from the HIV test form, so only older encounters carry it.
+-- The Initial/Recurrent split follows the source that matched, so these
+-- builders vary the execution note and prerequisites of each test on its own.
+
+
+{-| Partner HIV test, run today, positive, partner not taking ARVs - the
+discordant-partnership condition.
+-}
+partnerHIVTestValuePositive : Maybe (EverySet TestPrerequisite) -> PartnerHIVTestValue
+partnerHIVTestValuePositive prerequisites =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just dummyDate
+    , testPrerequisites = prerequisites
+    , testResult = Just TestPositive
+    , hivSigns = Just (EverySet.singleton NoPrenatalHIVSign)
+    }
+
+
+withPartnerHIVTestPositive : Maybe (EverySet TestPrerequisite) -> PrenatalMeasurements -> PrenatalMeasurements
+withPartnerHIVTestPositive prerequisites measurements =
+    { measurements | partnerHIVTest = wrapMeasurement (partnerHIVTestValuePositive prerequisites) }
+
+
+withHIVTestNegative : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> PrenatalMeasurements -> PrenatalMeasurements
+withHIVTestNegative executionNote prerequisites measurements =
+    { measurements | hivTest = wrapMeasurement (hivTestValueCustom executionNote prerequisites TestNegative) }
+
+
+{-| Patient's HIV test, run today with an immediate negative result, carrying
+the partner signs: partner positive, not taking ARVs.
+-}
+withHIVTestPartnerPositiveSigns : PrenatalMeasurements -> PrenatalMeasurements
+withHIVTestPartnerPositiveSigns measurements =
+    let
+        value =
+            hivTestValueCustom TestNoteRunToday immediateResultPrerequisites TestNegative
+    in
+    { measurements
+        | hivTest = wrapMeasurement { value | hivSigns = Just (EverySet.singleton PartnerHIVPositive) }
+    }
 
 
 {-| Hemoglobin test, run today with the given count, immediate result. The
@@ -1261,6 +1313,64 @@ generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest =
         ]
 
 
+{-| The discordant-partnership diagnosis carries an Initial and a Recurrent
+variant, and only the Recurrent one prescribes PrEP at the recurrent phase. The
+variant has to follow the test that produced the match: the partner's own test
+when the match came from there, and the patient's test when it came from the
+partner signs recorded on it. A match from the partner's test also needs the
+patient's own result, so that result must be known at the initial phase too -
+run with an immediate result, or taken from the patient's history.
+-}
+generatePrenatalDiagnosesForNurseDiscordantPartnershipTest : Test
+generatePrenatalDiagnosesForNurseDiscordantPartnershipTest =
+    let
+        discordantPartnershipPhases measurements =
+            let
+                diagnoses =
+                    diagnoseNurse measurements
+            in
+            ( EverySet.member DiagnosisDiscordantPartnershipInitialPhase diagnoses
+            , EverySet.member DiagnosisDiscordantPartnershipRecurrentPhase diagnoses
+            )
+    in
+    describe "generatePrenatalDiagnosesForNurse - discordant partnership phase"
+        [ test "partner test positive and immediate, patient HIV negative and immediate -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive immediateResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
+        , test "partner test positive and NOT immediate, patient HIV negative and immediate -> Recurrent phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive Nothing
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, True )
+        , test "partner test positive and immediate, patient HIV negative and NOT immediate -> Recurrent phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday Nothing
+                    |> withPartnerHIVTestPositive immediateResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, True )
+        , test "partner test positive and immediate, patient HIV negative from history -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunPreviously Nothing
+                    |> withPartnerHIVTestPositive immediateResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
+        , test "partner signs on the patient's immediate HIV test, no partner test -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestPartnerPositiveSigns
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
+        ]
+
+
 
 -- GROUP H -- EGA37+ RECURRENT PRE-ECLAMPSIA (nurse, EGA >= 37)
 --
@@ -1439,6 +1549,7 @@ all =
         , generatePrenatalDiagnosesForNurseHypertensionRecheckTest
         , generatePrenatalDiagnosesForNurseSeverePreeclampsiaRecurrentTest
         , generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest
+        , generatePrenatalDiagnosesForNurseDiscordantPartnershipTest
         , generatePrenatalDiagnosesForNurseEGA37PlusPreeclampsiaRecurrentTest
         , suicideRiskDiagnosedBySignsTest
         , vaginalDischargeContinuedTest
