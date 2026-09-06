@@ -234,7 +234,7 @@ B-233	3	READY	MED			24	Case Management TB/HIV entries: starting an encounter fro
 B-234	4	READY	MED-LOW			24	Case Management (CHW): village scoping skips the TB and HIV follow-ups, so their encounters and participants are fetched
 B-235	2	IMPLEMENTED	HIGH			25	Prenatal nutrition (Healthy Start): the gestational weight-gain verdict is inverted, so a woman gaining too little is to
 B-236	1	IMPLEMENTED	MED-HIGH	2194	2195	25	Prenatal symptoms: whether vaginal discharge counts as "continued" is decided by the patient's **gonorrhea** history, so
-B-237	1	READY	MED			25	Prenatal HIV: a discordant partnership found from the **partner's** lab result is filed as initial-phase because the pha
+B-237	1	IMPLEMENTED	MED	2205	2206	25	Prenatal HIV: a discordant partnership found from the **partner's** lab result is filed as initial-phase because the pha
 B-238	4	READY	LOW			25	Prenatal ultrasound: opening the execution-date calendar and closing it without picking a day counts the form 6/6 and en
 B-239	3	IMPLEMENTED	MED-HIGH			25	Prenatal recurrent labs: the Partner HIV follow-up form has no Save button, so the answers can never be recorded and the
 B-240	1	READY	MED			25	Prenatal recurrent labs: an operator-precedence slip makes a **positive** lab HIV result suppress the HIV follow-up, so 
