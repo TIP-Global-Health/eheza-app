@@ -384,12 +384,7 @@ nextStepsTaskCompleted currentDate assembled task =
         NextStepsMedicationDistribution ->
             let
                 medicationDistributionCompleted =
-                    let
-                        requiredMedications =
-                            resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
-                                |> List.concatMap (\( _, medications, _ ) -> medications)
-                    in
-                    requiredMedicationsAddressed requiredMedications assembled.measurements
+                    requiredMedicationsAddressed currentDate PrenatalEncounterPhaseRecurrent assembled
 
                 malariaTreatmentCompleted =
                     if diagnosedMalariaByPhase PrenatalEncounterPhaseRecurrent assembled then

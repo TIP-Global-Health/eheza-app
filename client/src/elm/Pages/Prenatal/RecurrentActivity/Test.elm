@@ -181,9 +181,9 @@ completedMedicationDistribution assembled =
 nextStepsMedicationDistributionCompletedTest : Test
 nextStepsMedicationDistributionCompletedTest =
     describe "nextStepsTaskCompleted NextStepsMedicationDistribution"
-        [ test "complete when no medication is required and none was given" <|
+        [ test "complete when no medication is required, even though the task was never opened" <|
             \_ ->
-                assembledWith [] [ NoMedicationDistributionSignsRecurrentPhase ] []
+                assembledWithoutMedicationDistribution []
                     |> completedMedicationDistribution
                     |> Expect.equal True
         , test "incomplete when a medication became required after the task was saved with nothing to give" <|

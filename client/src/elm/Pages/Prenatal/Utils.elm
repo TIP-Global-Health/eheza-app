@@ -43,7 +43,8 @@ import Pages.Utils
         , viewLabel
         , viewQuestionLabel
         )
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (TranslationId, translate)
+import Translate.Model exposing (Language(..))
 
 
 nurseEncounterNotPerformed : AssembledData -> Bool
@@ -1781,10 +1782,15 @@ either handed over, or marked as not given with a reason.
 A medication that was never answered leaves the activity incomplete, so a
 medication that becomes required after the activity was saved brings it back.
 -}
-requiredMedicationsAddressed : List MedicationDistributionSign -> PrenatalMeasurements -> Bool
-requiredMedicationsAddressed requiredMedications measurements =
+requiredMedicationsAddressed : NominalDate -> PrenatalEncounterPhase -> AssembledData -> Bool
+requiredMedicationsAddressed currentDate phase assembled =
+    let
+        requiredMedications =
+            resolveRequiredMedicationsSet English currentDate phase assembled
+                |> List.concatMap (\( _, medications, _ ) -> medications)
+    in
     List.isEmpty requiredMedications
-        || (getMeasurementValueFunc measurements.medicationDistribution
+        || (getMeasurementValueFunc assembled.measurements.medicationDistribution
                 |> Maybe.map
                     (\value ->
                         List.all (medicationDistributionResolveFromValue value >> isJust)
