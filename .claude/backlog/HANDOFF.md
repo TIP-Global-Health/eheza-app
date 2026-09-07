@@ -52,7 +52,7 @@ What changes because of this:
 
 **Open backlog PRs on 2026-09-06 afternoon, awaiting the user's merge:**
 - **#2204 (B-221, tier 1, issue #2203)** — pushed as test-only commit `9a143760e` first so CI shows the new e2e case FAILING against the old code, then the fix `18295f218`; watch `e2e_playwright_1` on each.
-- **#2206 (B-237, tier 1, issue #2205)** — its e2e run is confirmed (passes on the fix, fails first on develop).
+- **#2206 (B-237, tier 1, issue #2205)** — ⚠ **rebased onto `develop` and force-pushed 2026-09-07 (`e1ca33e80`), now MERGEABLE**; it had gone CONFLICTING after B-221 merged (one import line in `prenatal-encounter-nurse.spec.ts`, resolved as the union). A stray B-240 bookkeeping commit was dropped from it in the same rebase. — its e2e run is confirmed (passes on the fix, fails first on develop).
 - **#2208 (B-240, tier 1, issue #2207)** — **fully green (all 10 checks incl. simpletest + 3 e2e), reviewed CLEAN (zero correctness findings; both sub-threshold notes posted and answered on the PR, neither a change).** The HIV follow-up task's `not <| A || B` precedence slip; new `Pages/Prenatal/RecurrentActivity/Test.elm` (6 cases, 2 fail against develop). ⭐ Live-sized from this seat: 200 lab-entered HIV results on ihangane, **all negative**, and zero on the other three sites — the defect has never fired.
 
 #2156 (B-195 measurement half) stays a DRAFT on hold.
@@ -518,3 +518,5 @@ for exactly this).
 5. **The R21 live-data items now describe production behaviour**, not something waiting to ship —
    B-192, B-195, B-196, B-198, B-199 all came with live counts. That is a different argument for them
    than it was a week ago.
+
+⚠ **Environment gotcha found 2026-09-07:** `client/src/generated/Version.elm` in the **main tree** was left truncated by an interrupted `gulp version` task (two lines, no `version` declaration). It is gitignored and symlinked by every worktree, so it fails `elm make` **everywhere** with a `-- WEIRD DECLARATION` parse error naming the main tree's path — which reads like someone else's broken code, not a stale artifact. Regenerate the four lines `gulp` writes (`client/gulpfile.js:147-159`) rather than hunting the branch.
