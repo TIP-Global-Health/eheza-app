@@ -20,7 +20,6 @@ import Backend.Measurement.Model
         , NonReferralSign(..)
         , ObstetricHistoryStep2Sign(..)
         , OutsideCareMedication(..)
-        , PrenatalHIVSign(..)
         , PrenatalHealthEducationSign(..)
         , PrenatalMeasurements
         , PrenatalSymptomQuestion(..)
@@ -32,7 +31,6 @@ import Backend.Measurement.Model
         , SendToHCSign(..)
         , SpecialityCareSign(..)
         , TestExecutionNote(..)
-        , TestResult(..)
         )
 import Backend.Measurement.Utils
     exposing
@@ -78,7 +76,6 @@ import Measurement.Utils
         , outsideCareMedicationOptionsHypertension
         , outsideCareMedicationOptionsMalaria
         , outsideCareMedicationOptionsSyphilis
-        , testPerformedByExecutionNote
         )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Utils
@@ -114,6 +111,7 @@ import Pages.Prenatal.Utils
         , recommendedTreatmentSignsForMastitis
         , recommendedTreatmentSignsForSyphilis
         , resolveARVReferralDiagnosis
+        , resolveDiscordantCoupleStatus
         , resolveNCDReferralDiagnoses
         )
 import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsMode(..), LabsResultsValues)
@@ -967,78 +965,7 @@ viewMedicalDiagnosisPane language isChw firstNurseEncounterMeasurements assemble
                 |> ul []
 
         discordantCoupleStatus =
-            List.filterMap
-                (\encounterData ->
-                    let
-                        byHIVTest =
-                            getMeasurementValueFunc encounterData.measurements.hivTest
-                                |> Maybe.andThen .hivSigns
-                                |> Maybe.andThen
-                                    (\hivSigns ->
-                                        let
-                                            partnerPositive =
-                                                EverySet.member PartnerHIVPositive hivSigns
-                                        in
-                                        if partnerPositive then
-                                            let
-                                                takingARV =
-                                                    EverySet.member PartnerTakingARV hivSigns
-
-                                                surpressedViralLoad =
-                                                    EverySet.member PartnerSurpressedViralLoad hivSigns
-                                            in
-                                            Just <| Translate.DiscordantCoupleStatus takingARV surpressedViralLoad
-
-                                        else
-                                            Nothing
-                                    )
-
-                        byPartnerHIVTest =
-                            let
-                                patientHIVNegative =
-                                    getMeasurementValueFunc encounterData.measurements.hivTest
-                                        |> Maybe.map
-                                            (\value ->
-                                                testPerformedByExecutionNote value.executionNote
-                                                    && (value.testResult == Just TestNegative)
-                                            )
-                                        |> Maybe.withDefault False
-                            in
-                            if patientHIVNegative then
-                                getMeasurementValueFunc encounterData.measurements.partnerHIVTest
-                                    |> Maybe.andThen
-                                        (\value ->
-                                            let
-                                                partnerHIVPositive =
-                                                    (value.executionNote == TestNoteKnownAsPositive)
-                                                        || (testPerformedByExecutionNote value.executionNote
-                                                                && (value.testResult == Just TestPositive)
-                                                           )
-                                            in
-                                            if partnerHIVPositive then
-                                                Maybe.map
-                                                    (\hivSigns ->
-                                                        let
-                                                            takingARV =
-                                                                EverySet.member PartnerTakingARV hivSigns
-
-                                                            surpressedViralLoad =
-                                                                EverySet.member PartnerSurpressedViralLoad hivSigns
-                                                        in
-                                                        Translate.DiscordantCoupleStatus takingARV surpressedViralLoad
-                                                    )
-                                                    value.hivSigns
-
-                                            else
-                                                Nothing
-                                        )
-
-                            else
-                                Nothing
-                    in
-                    Maybe.Extra.or byPartnerHIVTest byHIVTest
-                )
-                allNurseEncountersData
+            List.filterMap (.measurements >> resolveDiscordantCoupleStatus) allNurseEncountersData
                 |> List.head
                 |> Maybe.map (translate language >> wrapWithLI)
                 |> Maybe.withDefault []

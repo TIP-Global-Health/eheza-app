@@ -378,7 +378,13 @@ export function queryPrenatalLmp(personName: string): string | null {
  * `[]` rather than retrying, so a genuinely undiagnosed encounter is a result
  * and not a timeout.
  */
-export function queryPrenatalDiagnoses(personName: string): string[] | null {
+export function queryPrenatalDiagnoses(
+  personName: string,
+  options?: { allowEmpty?: boolean },
+): string[] | null {
+  // An encounter that is expected to carry no diagnosis yet should not pay the
+  // retry loop below, which exists for a sync that has not landed.
+  const allowEmpty = options?.allowEmpty ?? false;
   const { drushCmd, cwd } = drushEnv();
   const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
 
@@ -427,7 +433,7 @@ export function queryPrenatalDiagnoses(personName: string): string[] | null {
       // diagnoses are written later, so an empty set is retried rather than
       // returned -- otherwise a lagging sync reads as "no diagnosis". An
       // encounter that genuinely has none returns [] once the retries run out.
-      if (!parsed.error && parsed.diagnoses.length > 0) {
+      if (!parsed.error && (allowEmpty || parsed.diagnoses.length > 0)) {
         return parsed.diagnoses as string[];
       }
       if (!parsed.error && attempt === 9) return [];

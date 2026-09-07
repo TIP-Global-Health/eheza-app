@@ -51,12 +51,13 @@ import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnan
 import Pages.Prenatal.Activity.Update exposing (update)
 import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Model exposing (AssembledData)
-import Pages.Prenatal.Utils exposing (resolvePartnerHIVTestResult)
+import Pages.Prenatal.Utils exposing (resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import TestFixtures
 import Time
+import Translate
 
 
 
@@ -1502,6 +1503,50 @@ resolvePartnerHIVTestResultTest =
         ]
 
 
+{-| The line the progress report shows for a discordant couple states what the
+partner's ARV and viral load status is. A lab technician can enter the partner's
+result but not those answers, so until the nurse answers them there is no status
+to state.
+-}
+resolveDiscordantCoupleStatusTest : Test
+resolveDiscordantCoupleStatusTest =
+    describe "resolveDiscordantCoupleStatus"
+        [ test "partner positive by a lab technician, follow ups not answered yet -> no status" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.singleton PrenatalHIVSignPendingInput)
+                    |> resolveDiscordantCoupleStatus
+                    |> Expect.equal Nothing
+        , test "partner positive by a lab technician, nurse answers partner not on ARVs -> not taking ARVs" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.singleton NoPrenatalHIVSign)
+                    |> resolveDiscordantCoupleStatus
+                    |> Expect.equal (Just <| Translate.DiscordantCoupleStatus False False)
+        , test "partner positive by a lab technician, nurse answers partner on ARVs and surpressed -> taking ARVs, surpressed" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.fromList [ PartnerTakingARV, PartnerSurpressedViralLoad ])
+                    |> resolveDiscordantCoupleStatus
+                    |> Expect.equal (Just <| Translate.DiscordantCoupleStatus True True)
+        , test "partner signs on the patient's own HIV test -> status from those signs" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestPartnerPositiveSigns TestNoteRunToday immediateResultPrerequisites
+                    |> resolveDiscordantCoupleStatus
+                    |> Expect.equal (Just <| Translate.DiscordantCoupleStatus False False)
+        , test "no partner test and no partner signs -> no status" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> resolveDiscordantCoupleStatus
+                    |> Expect.equal Nothing
+        ]
+
+
 
 -- GROUP H -- EGA37+ RECURRENT PRE-ECLAMPSIA (nurse, EGA >= 37)
 --
@@ -1682,6 +1727,7 @@ all =
         , generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest
         , generatePrenatalDiagnosesForNurseDiscordantPartnershipTest
         , resolvePartnerHIVTestResultTest
+        , resolveDiscordantCoupleStatusTest
         , generatePrenatalDiagnosesForNurseEGA37PlusPreeclampsiaRecurrentTest
         , suicideRiskDiagnosedBySignsTest
         , vaginalDischargeContinuedTest

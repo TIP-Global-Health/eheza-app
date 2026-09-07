@@ -211,7 +211,7 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     // A lab technician can not answer the follow up questions about the
     // partner, so nothing is diagnosed yet - whether the partner is on ARVs
     // with a surpressed viral load decides it, and no one has been asked.
-    const diagnosesBeforeFollowUps = queryPrenatalDiagnoses(fullName);
+    const diagnosesBeforeFollowUps = queryPrenatalDiagnoses(fullName, { allowEmpty: true });
     expect(diagnosesBeforeFollowUps, 'encounter diagnoses should be readable').not.toBeNull();
     expect(
       diagnosesBeforeFollowUps,

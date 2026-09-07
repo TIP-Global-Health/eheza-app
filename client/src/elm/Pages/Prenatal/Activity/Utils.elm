@@ -42,6 +42,7 @@ import Measurement.Utils
         ( corePhysicalExamFormWithDefault
         , expectUniversalTestResultTask
         , getNextVaccineDose
+        , hivSignsAnswered
         , isTestResultValid
         , latestVaccinationDataForVaccine
         , medicationAdministrationFormInputsAndTasks
@@ -2339,11 +2340,9 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                                 then
                                     Maybe.map
                                         (\hivSigns ->
-                                            -- A lab technician can not answer the follow up
-                                            -- questions about the partner, and marks them
-                                            -- pending for the nurse. Until the nurse answers,
+                                            -- Until the nurse answers the follow up questions,
                                             -- we do not know whether the partner is surpressed.
-                                            (not <| EverySet.member PrenatalHIVSignPendingInput hivSigns)
+                                            hivSignsAnswered hivSigns
                                                 && partnerNotSurpressed hivSigns
                                         )
                                         value.hivSigns
