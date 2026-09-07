@@ -15,6 +15,7 @@ import Maybe.Extra exposing (isJust, isNothing, or, unwrap)
 import Measurement.Utils
     exposing
         ( generateVaccinationProgressForVaccine
+        , testPerformedByExecutionNote
         , toEverySet
         , viewAdministeredMedicationCustomLabel
         , viewAdministeredMedicationQuestion
@@ -4515,7 +4516,7 @@ healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form 
                         getMeasurementValueFunc assembled.measurements.hivTest
                             |> Maybe.map
                                 (\value ->
-                                    List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                    testPerformedByExecutionNote value.executionNote
                                         && (value.testResult == Just TestNegative)
                                 )
                             |> Maybe.withDefault False
@@ -4678,14 +4679,14 @@ resolvePartnerHIVTestResult assembled =
             (\value ->
                 if
                     (value.executionNote == TestNoteKnownAsPositive)
-                        || (List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        || (testPerformedByExecutionNote value.executionNote
                                 && (value.testResult == Just TestPositive)
                            )
                 then
                     TestPositive
 
                 else if
-                    List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                    testPerformedByExecutionNote value.executionNote
                         && (value.testResult == Just TestNegative)
                 then
                     TestNegative
@@ -4695,7 +4696,7 @@ resolvePartnerHIVTestResult assembled =
                     -- HIV positive, and test resukt is not set, which means that it was sent to lab.
                     -- To indicate that follow up questions are not required, we set the result to
                     -- Negative, though it's not really determined yet.
-                    List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                    testPerformedByExecutionNote value.executionNote
                         && isNothing value.testResult
                 then
                     TestNegative

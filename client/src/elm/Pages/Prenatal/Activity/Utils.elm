@@ -2322,7 +2322,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     getMeasurementValueFunc measurements.hivTest
                         |> Maybe.map
                             (\value ->
-                                List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                testPerformedByExecutionNote value.executionNote
                                     && (value.testResult == Just TestNegative)
                             )
                         |> Maybe.withDefault False
@@ -2333,7 +2333,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                             (\value ->
                                 if
                                     (value.executionNote == TestNoteKnownAsPositive)
-                                        || (List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                        || (testPerformedByExecutionNote value.executionNote
                                                 && (value.testResult == Just TestPositive)
                                            )
                                 then

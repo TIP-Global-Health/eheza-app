@@ -78,6 +78,7 @@ import Measurement.Utils
         , outsideCareMedicationOptionsHypertension
         , outsideCareMedicationOptionsMalaria
         , outsideCareMedicationOptionsSyphilis
+        , testPerformedByExecutionNote
         )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Utils
@@ -998,7 +999,7 @@ viewMedicalDiagnosisPane language isChw firstNurseEncounterMeasurements assemble
                                     getMeasurementValueFunc encounterData.measurements.hivTest
                                         |> Maybe.map
                                             (\value ->
-                                                List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                                testPerformedByExecutionNote value.executionNote
                                                     && (value.testResult == Just TestNegative)
                                             )
                                         |> Maybe.withDefault False
@@ -1010,7 +1011,7 @@ viewMedicalDiagnosisPane language isChw firstNurseEncounterMeasurements assemble
                                             let
                                                 partnerHIVPositive =
                                                     (value.executionNote == TestNoteKnownAsPositive)
-                                                        || (List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                                        || (testPerformedByExecutionNote value.executionNote
                                                                 && (value.testResult == Just TestPositive)
                                                            )
                                             in
