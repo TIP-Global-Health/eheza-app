@@ -303,7 +303,10 @@ test.describe('Lab Tech and Nurse: a saved Next Steps task reopened by a later d
 
     // 9 g/dL is moderate anemia (7 <= count < 11). It puts Next Steps on the
     // encounter without putting any medication on it.
-    const completedResults = await completeLabResults(page, { hemoglobinCount: '9' });
+    const completedResults = await completeLabResults(page, {
+      hemoglobinCount: '9',
+      malariaNegative: true,
+    });
     expect(completedResults.length, 'at least one lab result should have been completed').toBeGreaterThan(0);
     await page.waitForTimeout(WAIT.pageNavigation);
     await syncAndWait(page);

@@ -1147,11 +1147,16 @@ export async function completeLaboratoryNurseForLab(
  */
 export async function completeLabResults(
   page: Page,
-  options?: { checkGlucoseRange?: boolean; hemoglobinCount?: string },
+  options?: {
+    checkGlucoseRange?: boolean;
+    hemoglobinCount?: string;
+    malariaNegative?: boolean;
+  },
 ): Promise<string[]> {
   const checkGlucoseRange = options?.checkGlucoseRange ?? false;
   // Above 11 g/dL, so no anemia is diagnosed unless a caller asks for it.
   const hemoglobinCount = options?.hemoglobinCount ?? '12';
+  const malariaNegative = options?.malariaNegative ?? false;
   const completedTests: string[] = [];
   const allTabs = page.locator('.link-section');
   const tabCount = await allTabs.count();
@@ -1181,6 +1186,22 @@ export async function completeLabResults(
     if (await testPerformed.isVisible().catch(() => false)) {
       await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
       await page.waitForTimeout(WAIT.elmRerender);
+    }
+
+    // A positive malaria result masks anemia, and puts its own treatment on
+    // Next Steps. Steer it before the generic pass below, which would take
+    // the first real option - Positive.
+    if (malariaNegative && /^\s*Malaria\s*$/i.test(tabLabel)) {
+      const resultSelect = page.locator('select.form-input').first();
+      if (await resultSelect.isVisible().catch(() => false)) {
+        const negOption = resultSelect.locator('option', { hasText: 'Negative' });
+        const negValue = await negOption.first().getAttribute('value');
+        if (!negValue) {
+          throw new Error('Malaria test: no Negative option to select');
+        }
+        await resultSelect.selectOption(negValue);
+        await page.waitForTimeout(WAIT.formInteraction);
+      }
     }
 
     // 2. Enter result — fill all visible select dropdowns and numeric inputs.
