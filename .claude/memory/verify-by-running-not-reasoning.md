@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: c7019686-e437-4d8b-9f2d-a2a4c507d45d
-  modified: 2026-07-27T10:37:45.190Z
+  modified: 2026-09-07
 ---
 
 When something can be verified by running it, run it. Reasoning about tooling behaviour
@@ -30,5 +30,12 @@ at the step I had changed.
   never reaches.
 - Read the library's own source when behaviour is in question (`node_modules/@playwright/test/
   .../runner/tasks.js` settled both the worker-config and the teardown-ordering questions).
+
+- ⛔ **"It self-corrects on the next save" is not a safety argument until I check what the window
+  lets a user WRITE.** On B-323 (PR #2210) I noticed a new diagnosis firing from a pending-input
+  marker, traced that the next save recomputes and withdraws it, and shipped it as harmless. Review
+  found the window is reachable and lets the nurse distribute PrEP from the wrong diagnosis — the
+  diagnosis withdraws, the recorded prescription does not. A transient wrong state is only harmless
+  if nothing durable can be written while it holds; enumerate what the UI offers during the window.
 
 Related: [[e2e-local-run-procedure]], [[pre-push-code-review-gate]]
