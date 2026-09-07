@@ -1150,13 +1150,16 @@ export async function completeLabResults(
   options?: {
     checkGlucoseRange?: boolean;
     hemoglobinCount?: string;
-    malariaNegative?: boolean;
+    negativeResultTests?: string[];
   },
 ): Promise<string[]> {
   const checkGlucoseRange = options?.checkGlucoseRange ?? false;
   // Above 11 g/dL, so no anemia is diagnosed unless a caller asks for it.
   const hemoglobinCount = options?.hemoglobinCount ?? '12';
-  const malariaNegative = options?.malariaNegative ?? false;
+  // Tabs, by their label, whose result should be Negative. The generic pass
+  // below takes the first real option of a dropdown, which is Positive for a
+  // test result, so a test that must not be diagnosed has to be named here.
+  const negativeResultTests = options?.negativeResultTests ?? [];
   const completedTests: string[] = [];
   const allTabs = page.locator('.link-section');
   const tabCount = await allTabs.count();
@@ -1188,16 +1191,16 @@ export async function completeLabResults(
       await page.waitForTimeout(WAIT.elmRerender);
     }
 
-    // A positive malaria result masks anemia, and puts its own treatment on
-    // Next Steps. Steer it before the generic pass below, which would take
-    // the first real option - Positive.
-    if (malariaNegative && /^\s*Malaria\s*$/i.test(tabLabel)) {
+    const wantsNegative = negativeResultTests.some(
+      name => name.trim().toLowerCase() === tabLabel.trim().toLowerCase(),
+    );
+    if (wantsNegative) {
       const resultSelect = page.locator('select.form-input').first();
       if (await resultSelect.isVisible().catch(() => false)) {
         const negOption = resultSelect.locator('option', { hasText: 'Negative' });
         const negValue = await negOption.first().getAttribute('value');
         if (!negValue) {
-          throw new Error('Malaria test: no Negative option to select');
+          throw new Error(`${tabLabel.trim()} test: no Negative option to select`);
         }
         await resultSelect.selectOption(negValue);
         await page.waitForTimeout(WAIT.formInteraction);

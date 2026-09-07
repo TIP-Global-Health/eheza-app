@@ -5,6 +5,7 @@ import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import {
   WAIT,
+  clickSubTaskTab,
   openActivity,
   openEncounterTab,
   syncAndWait,
@@ -303,9 +304,12 @@ test.describe('Lab Tech and Nurse: a saved Next Steps task reopened by a later d
 
     // 9 g/dL is moderate anemia (7 <= count < 11). It puts Next Steps on the
     // encounter without putting any medication on it.
+    // Malaria masks anemia and Hepatitis B adds a referral of its own, so
+    // both are kept negative: moderate anemia is the only thing the results
+    // diagnose, and it needs no medication.
     const completedResults = await completeLabResults(page, {
       hemoglobinCount: '9',
-      malariaNegative: true,
+      negativeResultTests: ['Malaria', 'Hepatitis B'],
     });
     expect(completedResults.length, 'at least one lab result should have been completed').toBeGreaterThan(0);
     await page.waitForTimeout(WAIT.pageNavigation);
@@ -349,6 +353,7 @@ test.describe('Lab Tech and Nurse: a saved Next Steps task reopened by a later d
 
     await openActivity(page, 'prenatal', 'next-steps');
     await dismissWarningPopup(page);
+    await clickSubTaskTab(page, 'next-steps-medication-distribution');
     await expect(
       page.locator('div.page-activity.prenatal'),
       'the medication the new diagnosis requires should be offered',
