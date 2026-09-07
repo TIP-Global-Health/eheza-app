@@ -6453,6 +6453,16 @@ contentAndTasksLaboratoryTestKnownAsPositive language config task form =
     )
 
 
+{-| Every option of a bool input fires on a tap, including the one already
+chosen. An answer that repeats what the form shows is not a correction, so the
+updates below leave the form alone: otherwise a stray tap would discard what
+the nurse has already entered, with no way back to it.
+-}
+knownAsPositiveUnchanged : Bool -> { f | knownAsPositive : Maybe Bool } -> Bool
+knownAsPositiveUnchanged knownAsPositive form =
+    form.knownAsPositive == Just knownAsPositive
+
+
 {-| Answering that the patient is known as positive replaces the test: nothing
 is performed today, and no date or execution note of a run remains.
 -}
@@ -6479,64 +6489,80 @@ knownAsPositiveUpdate :
             , executionDateDirty : Bool
         }
 knownAsPositiveUpdate knownAsPositive form =
-    let
-        executionNote =
-            if knownAsPositive then
-                Just TestNoteKnownAsPositive
+    if knownAsPositiveUnchanged knownAsPositive form then
+        form
 
-            else
-                Nothing
-    in
-    { form
-        | knownAsPositive = Just knownAsPositive
-        , testPerformed = Nothing
-        , testPerformedDirty = True
-        , executionNote = executionNote
-        , executionNoteDirty = True
-        , executionDate = Nothing
-        , executionDateDirty = True
-    }
+    else
+        let
+            executionNote =
+                if knownAsPositive then
+                    Just TestNoteKnownAsPositive
+
+                else
+                    Nothing
+        in
+        { form
+            | knownAsPositive = Just knownAsPositive
+            , testPerformed = Nothing
+            , testPerformedDirty = True
+            , executionNote = executionNote
+            , executionNoteDirty = True
+            , executionDate = Nothing
+            , executionDateDirty = True
+        }
 
 
-{-| The result of the patient's own HIV test, and the questions about the
-partner that are only asked when that result is negative, are cleared with the
-test they were recorded against.
+{-| The patient's own result is cleared with the test it belongs to, and so are
+the questions asked under it: whether she is in the HIV program at the health
+centre, asked on a positive result, and the three about the partner, asked on a
+negative one.
 -}
 knownAsPositiveUpdateHIVTest : Bool -> HIVTestUniversalForm -> HIVTestUniversalForm
 knownAsPositiveUpdateHIVTest knownAsPositive form =
-    let
-        updated =
-            knownAsPositiveUpdate knownAsPositive form
-    in
-    { updated
-        | testResult = Nothing
-        , testResultDirty = True
-        , hivProgramHC = Nothing
-        , hivProgramHCDirty = True
-        , partnerHIVPositive = Nothing
-        , partnerHIVPositiveDirty = True
-        , partnerTakingARV = Nothing
-        , partnerTakingARVDirty = True
-        , partnerSurpressedViralLoad = Nothing
-        , partnerSurpressedViralLoadDirty = True
-    }
+    if knownAsPositiveUnchanged knownAsPositive form then
+        form
+
+    else
+        let
+            updated =
+                knownAsPositiveUpdate knownAsPositive form
+        in
+        { updated
+            | testResult = Nothing
+            , testResultDirty = True
+            , hivProgramHC = Nothing
+            , hivProgramHCDirty = True
+            , partnerHIVPositive = Nothing
+            , partnerHIVPositiveDirty = True
+            , partnerTakingARV = Nothing
+            , partnerTakingARVDirty = True
+            , partnerSurpressedViralLoad = Nothing
+            , partnerSurpressedViralLoadDirty = True
+        }
 
 
-{-| The questions about the partner's ARVs are only asked when the partner's
-test says positive, so a partner known as positive is asked them afresh.
+{-| A partner known as positive is not tested, so the result is cleared with the
+test. The questions about the partner's ARVs are asked afresh: they follow from
+the partner being positive, not from the test that found it.
 -}
 knownAsPositiveUpdatePartnerHIVTest : Bool -> PartnerHIVTestForm -> PartnerHIVTestForm
 knownAsPositiveUpdatePartnerHIVTest knownAsPositive form =
-    let
-        updated =
-            knownAsPositiveUpdate knownAsPositive form
-    in
-    { updated
-        | partnerTakingARV = Nothing
-        , partnerTakingARVDirty = True
-        , partnerSurpressedViralLoad = Nothing
-        , partnerSurpressedViralLoadDirty = True
-    }
+    if knownAsPositiveUnchanged knownAsPositive form then
+        form
+
+    else
+        let
+            updated =
+                knownAsPositiveUpdate knownAsPositive form
+        in
+        { updated
+            | testResult = Nothing
+            , testResultDirty = True
+            , partnerTakingARV = Nothing
+            , partnerTakingARVDirty = True
+            , partnerSurpressedViralLoad = Nothing
+            , partnerSurpressedViralLoadDirty = True
+        }
 
 
 contentAndTasksLaboratoryUniversalTestKnownAsPositive :

@@ -915,10 +915,14 @@ ncdaFormWithDefaultNotTakenTest =
 
 
 {-| The questions that follow a test result are only asked while the answer to
-"known as positive" is No: the patient's own result and the partner questions
-under it on the HIV test, and the ARV questions on the partner's test. Saying
+"known as positive" is No: the patient's own result and the questions under it
+on the HIV test, and the result and ARV questions on the partner's test. Saying
 Yes withdraws them, so what they hold is cleared, and cleared as dirty, rather
 than read back from the saved value as a result the patient never had.
+
+An answer that repeats what the form already shows is not a correction, and a
+bool input fires on every tap, so it has to leave the entry alone.
+
 -}
 knownAsPositiveUpdateTest : Test
 knownAsPositiveUpdateTest =
@@ -934,6 +938,12 @@ knownAsPositiveUpdateTest =
                 , partnerHIVPositive = Just True
                 , partnerTakingARV = Just False
                 , partnerSurpressedViralLoad = Just False
+            }
+
+        knownPositiveHIVTest =
+            { emptyHIVTestUniversalForm
+                | knownAsPositive = Just True
+                , executionNote = Just TestNoteKnownAsPositive
             }
 
         answeredPartnerHIVTest =
@@ -982,20 +992,43 @@ knownAsPositiveUpdateTest =
                 in
                 ( updated.knownAsPositive, updated.executionNote, updated.testPerformed )
                     |> Expect.equal ( Just True, Just TestNoteKnownAsPositive, Nothing )
-        , test "HIV test: answering No leaves nothing claiming a test was run" <|
+        , test "HIV test: correcting back to No leaves nothing claiming a test was run" <|
             \_ ->
                 let
                     updated =
-                        knownAsPositiveUpdateHIVTest False answeredHIVTest
+                        knownAsPositiveUpdateHIVTest False knownPositiveHIVTest
                 in
                 ( updated.knownAsPositive, updated.executionNote, updated.testPerformed )
                     |> Expect.equal ( Just False, Nothing, Nothing )
-        , test "partner HIV test: the ARV questions are cleared" <|
+        , test "HIV test: re-tapping the No already chosen leaves the entry untouched" <|
+            \_ ->
+                knownAsPositiveUpdateHIVTest False answeredHIVTest
+                    |> Expect.equal answeredHIVTest
+        , test "HIV test: re-tapping the Yes already chosen leaves the entry untouched" <|
+            \_ ->
+                knownAsPositiveUpdateHIVTest True knownPositiveHIVTest
+                    |> Expect.equal knownPositiveHIVTest
+        , test "partner HIV test: the result and the ARV questions are cleared" <|
             \_ ->
                 let
                     updated =
                         knownAsPositiveUpdatePartnerHIVTest True answeredPartnerHIVTest
                 in
-                ( updated.partnerTakingARV, updated.partnerSurpressedViralLoad )
-                    |> Expect.equal ( Nothing, Nothing )
+                ( updated.testResult, updated.partnerTakingARV, updated.partnerSurpressedViralLoad )
+                    |> Expect.equal ( Nothing, Nothing, Nothing )
+        , test "partner HIV test: every cleared field is marked dirty" <|
+            \_ ->
+                let
+                    updated =
+                        knownAsPositiveUpdatePartnerHIVTest True answeredPartnerHIVTest
+                in
+                [ updated.testResultDirty
+                , updated.partnerTakingARVDirty
+                , updated.partnerSurpressedViralLoadDirty
+                ]
+                    |> Expect.equal [ True, True, True ]
+        , test "partner HIV test: re-tapping the No already chosen leaves the entry untouched" <|
+            \_ ->
+                knownAsPositiveUpdatePartnerHIVTest False answeredPartnerHIVTest
+                    |> Expect.equal answeredPartnerHIVTest
         ]
