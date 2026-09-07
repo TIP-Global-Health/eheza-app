@@ -968,6 +968,11 @@ export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
       .waitFor({ timeout: 10000 });
   }
 
+  // Every lab test has been saved by now, so Laboratory is listed under the
+  // encounter's completed activities rather than its pending ones.
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+
   await openActivity(page, 'prenatal', 'laboratory');
 
   const hivTab = page.locator('.link-section').filter({
@@ -984,6 +989,11 @@ export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
   await page
     .locator('div.page-encounter.prenatal')
     .waitFor({ timeout: 10000 });
+
+  // The tab the encounter page opens with, so what follows finds the
+  // activities that are still pending.
+  await click(page.locator('#pending-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
