@@ -49,9 +49,10 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     });
   }
 
-  test('nurse orders labs, lab tech enters results', async ({ page }) => {
-    // Multi-role test: full nurse encounter + lab tech encounter — needs extra time.
-    test.setTimeout(600000);
+  test('nurse orders labs, lab tech enters results, nurse answers the follow ups', async ({ page }) => {
+    // Multi-role test: nurse encounter, lab tech results, nurse follow ups —
+    // needs extra time.
+    test.setTimeout(900000);
     const lmpDate = new Date();
     lmpDate.setDate(lmpDate.getDate() - 30 * 7);
 
@@ -74,8 +75,11 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await completeMentalHealth(page);
     await completeImmunisation(page);
     await completeMedication(page);
-    // Order labs for lab processing (not point-of-care).
-    await completeLaboratoryNurseForLab(page);
+    // Order labs for lab processing (not point-of-care), except the patient's
+    // own HIV test, which is run point of care and is negative. That mix is
+    // what leaves the partner's result to arrive at the recurrent phase, with
+    // the patient's own result already known.
+    await completeLaboratoryNurseForLab(page, { hivPointOfCareNegative: true });
     // NextSteps: the "Wait" sub-task should appear because labs were ordered for lab.
     const completedSteps = await completeNextSteps(page);
     expect(completedSteps, 'completedSteps should contain wait sub-task').toContain('wait');
@@ -142,71 +146,13 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
       await page.waitForTimeout(WAIT.sectionTransition);
     }
 
-    // --- Phase 3: Sync and verify backend ---
+    // --- Phase 3: sync and verify the backend ---
     await syncAndWait(page);
 
     // Verify lab test measurement nodes exist in backend.
     const expectedTypes = ['prenatal_labs_results'];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
     expect(nodes['prenatal_labs_results'], 'prenatal_labs_results should exist').toBe(true);
-  });
-
-  test('lab tech enters a positive partner HIV result, and the nurse\'s follow ups turn it into a recurrent-phase discordant partnership', async ({
-    page,
-  }) => {
-    // Three roles' worth of navigation in one test - needs extra time.
-    test.setTimeout(900000);
-    const lmpDate = new Date();
-    lmpDate.setDate(lmpDate.getDate() - 30 * 7);
-
-    // --- Phase 1: nurse orders the partner HIV test for the lab ---
-    resetDevice();
-    await setupDevice(page, '1234', 'Nyange Health Center');
-
-    const { fullName } = await createAdultFemaleAndStartEncounter(page, {
-      isChw: false,
-      encounterType: 'first',
-    });
-
-    await completePregnancyDating(page, lmpDate);
-    await completeHistory(page);
-    await completeExamination(page);
-    await completeFamilyPlanning(page);
-    await completeDangerSigns(page);
-    await completeSymptomReview(page);
-    await completeMalariaPrevention(page);
-    await completeMentalHealth(page);
-    await completeImmunisation(page);
-    await completeMedication(page);
-    // The patient's own HIV test is run point of care and is negative, so her
-    // result is known during the initial phase. The Partner HIV test goes to
-    // the lab, which is what puts its result in the recurrent phase.
-    await completeLaboratoryNurseForLab(page, { hivPointOfCareNegative: true });
-    const completedSteps = await completeNextSteps(page);
-    expect(completedSteps, 'completedSteps should contain wait sub-task').toContain('wait');
-
-    await syncAndWait(page);
-
-    // --- Phase 2: the LAB TECH enters the results ---
-    // This is the step the nurse can not stand in for: the confirmation
-    // question that records the run as confirmed by a lab technician is only
-    // shown to one, and that is the execution note under test.
-    await switchUser(page, '3333');
-    await navigateToCaseManagement(page);
-
-    const entry = page.locator('.follow-up-entry', {
-      has: page.locator('.name', { hasText: fullName }),
-    });
-    await entry.waitFor({ timeout: 15000 });
-    await click(entry.locator('.icon-forward'), page);
-    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
-    await page.waitForTimeout(WAIT.elmRerender);
-
-    const completedResults = await completeLabResults(page);
-    expect(completedResults.length, 'at least one lab result should have been completed').toBeGreaterThan(0);
-    await page.waitForTimeout(WAIT.pageNavigation);
-
-    await syncAndWait(page);
 
     // A lab technician can not answer the follow up questions about the
     // partner, so nothing is diagnosed yet - whether the partner is on ARVs
@@ -218,7 +164,7 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
       'discordant partnership should NOT be recorded before the follow ups are answered',
     ).not.toContain('partner-hiv-recurrent');
 
-    // --- Phase 3: the nurse answers the follow ups the lab tech left ---
+    // --- Phase 4: the nurse answers the follow ups the lab tech left ---
     await switchUser(page, '1234');
     await navigateToCaseManagement(page);
     await openRecurrentEncounterFromCaseManagement(page, fullName);
@@ -233,7 +179,7 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     expect(completedFollowUps.length, 'at least one follow up should have been completed').toBeGreaterThan(0);
     await page.waitForTimeout(WAIT.pageNavigation);
 
-    // --- Phase 4: sync and read the diagnoses off the encounter ---
+    // --- Phase 5: sync and read the diagnoses off the encounter ---
     await syncAndWait(page);
 
     const diagnoses = queryPrenatalDiagnoses(fullName);
@@ -244,4 +190,5 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     expect(diagnoses, 'discordant partnership should be recorded for the recurrent phase').toContain('partner-hiv-recurrent');
     expect(diagnoses, 'discordant partnership should NOT be recorded for the initial phase').not.toContain('partner-hiv');
   });
+
 });
