@@ -628,6 +628,33 @@ export async function isGlucoseInput(
 
 
 /**
+ * The hemoglobin count field, told apart from the other numeric result inputs
+ * by the class its wrapper carries.
+ */
+export async function isHemoglobinInput(
+  input: import('@playwright/test').Locator,
+): Promise<boolean> {
+  return input.evaluate(
+    el => el.parentElement?.classList.contains('hemoglobin-count') ?? false,
+  );
+}
+
+
+/**
+ * Open one of the encounter page's activity tabs. Activities move from
+ * "pending" to "completed" as they are saved, and each tab lists only its own,
+ * so a card can only be found under the tab it currently belongs to.
+ */
+export async function openEncounterTab(
+  page: Page,
+  tab: 'pending' | 'completed',
+): Promise<void> {
+  await click(page.locator(`#${tab}-tab`), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
+
+/**
  * The blood glucose field refuses a reading typed in millimoles per litre, and
  * says which unit it wants. Leaves a reading in range behind.
  *

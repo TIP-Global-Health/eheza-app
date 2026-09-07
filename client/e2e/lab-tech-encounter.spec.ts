@@ -5,6 +5,8 @@ import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import {
   WAIT,
+  openActivity,
+  openEncounterTab,
   syncAndWait,
   queryPrenatalDiagnoses,
   queryPartnerHIVTestExecutionNote,
@@ -29,6 +31,8 @@ import {
   openLabsResultsReviewFromCaseManagement,
   acceptLabsResults,
   completeLabResults,
+  completeRecurrentNextSteps,
+  dismissWarningPopup,
   queryPrenatalNodes,
 } from './helpers/prenatal';
 
@@ -225,4 +229,126 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     expect(diagnoses, 'discordant partnership should NOT be recorded for the initial phase').not.toContain('partner-hiv');
   });
 
+});
+
+
+// =========================================================================
+// A later diagnosis reopens a Next Steps task that was already saved
+// =========================================================================
+
+// Scenario: the lab technician enters the results and leaves the follow up
+// questions for the nurse. Nothing about the partner is known until the nurse
+// answers them, so the encounter carries no diagnosis that needs a medication
+// yet - but a low hemoglobin count does put Next Steps on the encounter.
+// The nurse saves Next Steps first, and answers the follow ups after.
+// Conditions: hemoglobin 9 g/dL -> moderate anemia at the recurrent phase,
+// which offers Next Steps while requiring no medication. Partner positive and
+// not on ARVs -> a discordant partnership, which requires TDF + 3TC.
+// Verifies: the saved task returns to the encounter's pending activities once
+// the medication becomes required, and offers the medication.
+
+test.describe('Lab Tech and Nurse: a saved Next Steps task reopened by a later diagnosis', () => {
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '1234', 'Nyange Health Center');
+  });
+
+  test('a medication required after the task was saved brings the task back', async ({
+    page,
+  }) => {
+    test.setTimeout(600000);
+    const lmpDate = new Date();
+    lmpDate.setDate(lmpDate.getDate() - 30 * 7);
+
+    // --- Phase 1: the nurse runs the initial encounter, labs go to the lab ---
+    const { fullName } = await createAdultFemaleAndStartEncounter(page, {
+      isChw: false,
+      encounterType: 'first',
+    });
+
+    await completePregnancyDating(page, lmpDate);
+    await completeHistory(page);
+    await completeExamination(page);
+    await completeFamilyPlanning(page);
+    await completeDangerSigns(page);
+    await completeSymptomReview(page);
+    await completeMalariaPrevention(page);
+    await completeMentalHealth(page);
+    await completeImmunisation(page);
+    await completeMedication(page);
+    // Her own test is run point of care and is negative, so the partner's
+    // result is the one that arrives at the recurrent phase.
+    await completeLaboratoryNurseForLab(page, { hivPointOfCareNegative: true });
+    const completedSteps = await completeNextSteps(page);
+    expect(completedSteps, 'completedSteps should contain wait sub-task').toContain('wait');
+    await syncAndWait(page);
+
+    // --- Phase 2: the lab technician enters the results ---
+    await switchUser(page, '3333');
+    await navigateToCaseManagement(page);
+
+    const entry = page.locator('.follow-up-entry', {
+      has: page.locator('.name', { hasText: fullName }),
+    });
+    await entry.waitFor({ timeout: 15000 });
+    await click(entry.locator('.icon-forward'), page);
+    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    // 9 g/dL is moderate anemia (7 <= count < 11). It puts Next Steps on the
+    // encounter without putting any medication on it.
+    const completedResults = await completeLabResults(page, { hemoglobinCount: '9' });
+    expect(completedResults.length, 'at least one lab result should have been completed').toBeGreaterThan(0);
+    await page.waitForTimeout(WAIT.pageNavigation);
+    await syncAndWait(page);
+
+    // --- Phase 3: the nurse saves Next Steps before answering the follow ups ---
+    await switchUser(page, '1234');
+    await navigateToCaseManagement(page);
+    await openLabsResultsReviewFromCaseManagement(page, fullName);
+    await acceptLabsResults(page);
+
+    const savedTasks = await completeRecurrentNextSteps(page);
+    expect(savedTasks.length, 'at least one Next Steps task should have been saved').toBeGreaterThan(0);
+
+    // Saved with nothing to hand over, the task counts as done.
+    await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
+    await openEncounterTab(page, 'completed');
+    await expect(
+      page.locator('.icon-task-next-steps'),
+      'Next Steps should be listed as completed once it is saved',
+    ).toBeVisible({ timeout: 10000 });
+
+    // --- Phase 4: answering the follow ups makes a medication required ---
+    await openEncounterTab(page, 'pending');
+    await click(page.locator('.icon-task-laboratory-follow-ups'), page);
+    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    // Answers "Is partner taking ARVs?" with No, which is the discordant
+    // partnership condition, and TDF + 3TC is what it prescribes.
+    const completedFollowUps = await completeLabResults(page);
+    expect(completedFollowUps.length, 'at least one follow up should have been completed').toBeGreaterThan(0);
+    await page.waitForTimeout(WAIT.pageNavigation);
+
+    await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
+    await openEncounterTab(page, 'pending');
+    await expect(
+      page.locator('.icon-task-next-steps'),
+      'Next Steps should be pending again now that a medication is required',
+    ).toBeVisible({ timeout: 10000 });
+
+    await openActivity(page, 'prenatal', 'next-steps');
+    await dismissWarningPopup(page);
+    await expect(
+      page.locator('div.page-activity.prenatal'),
+      'the medication the new diagnosis requires should be offered',
+    ).toContainText('TDF + 3TC');
+  });
 });
