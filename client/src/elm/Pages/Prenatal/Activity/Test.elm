@@ -563,12 +563,13 @@ withPartnerHIVTestPositive executionNote prerequisites measurements =
     { measurements | partnerHIVTest = wrapMeasurement (partnerHIVTestValuePositive executionNote prerequisites) }
 
 
-{-| Partner HIV test entered by a lab technician: the execution note records
-the confirmed run, and the partner signs carry the pending-input sentinel,
-since a lab technician can not answer the follow-up questions.
+{-| Partner HIV test entered by a lab technician, with the partner signs in the
+state the given step leaves them: the lab technician's own save marks them
+pending, since only the nurse answers the follow up questions, and the nurse's
+follow ups replace that marker with the answers.
 -}
-withPartnerHIVTestByLabTech : TestResult -> PrenatalMeasurements -> PrenatalMeasurements
-withPartnerHIVTestByLabTech result measurements =
+withPartnerHIVTestByLabTech : TestResult -> EverySet PrenatalHIVSign -> PrenatalMeasurements -> PrenatalMeasurements
+withPartnerHIVTestByLabTech result hivSigns measurements =
     { measurements
         | partnerHIVTest =
             wrapMeasurement
@@ -576,7 +577,7 @@ withPartnerHIVTestByLabTech result measurements =
                 , executionDate = Just dummyDate
                 , testPrerequisites = deferredResultPrerequisites
                 , testResult = Just result
-                , hivSigns = Just (EverySet.singleton PrenatalHIVSignPendingInput)
+                , hivSigns = Just hivSigns
                 }
     }
 
@@ -1431,20 +1432,34 @@ generatePrenatalDiagnosesForNurseDiscordantPartnershipTest =
                     |> withHIVTestPartnerPositiveSigns TestNoteRunToday deferredResultPrerequisites
                     |> discordantPartnershipPhases
                     |> Expect.equal ( False, True )
-        , test "partner test positive entered by a lab technician, patient HIV negative and immediate -> Recurrent phase" <|
+        , test "partner test positive entered by a lab technician, the nurse has not answered the follow ups yet -> no diagnosis" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
-                    |> withPartnerHIVTestByLabTech TestPositive
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.singleton PrenatalHIVSignPendingInput)
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, False )
+        , test "partner test positive entered by a lab technician, nurse answers partner not on ARVs -> Recurrent phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.singleton NoPrenatalHIVSign)
                     |> discordantPartnershipPhases
                     |> Expect.equal ( False, True )
         , test "both tests sent to the lab, partner positive and patient negative entered there -> Recurrent phase" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> withHIVTestNegative TestNoteRunConfirmedByLabTech deferredResultPrerequisites
-                    |> withPartnerHIVTestByLabTech TestPositive
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.singleton NoPrenatalHIVSign)
                     |> discordantPartnershipPhases
                     |> Expect.equal ( False, True )
+        , test "partner test positive entered by a lab technician, nurse answers partner on ARVs with a surpressed viral load -> no diagnosis" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.fromList [ PartnerTakingARV, PartnerSurpressedViralLoad ])
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, False )
         ]
 
 
@@ -1464,13 +1479,13 @@ resolvePartnerHIVTestResultTest =
         [ test "positive result entered by a lab technician -> TestPositive" <|
             \_ ->
                 emptyPrenatalMeasurements
-                    |> withPartnerHIVTestByLabTech TestPositive
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.singleton PrenatalHIVSignPendingInput)
                     |> partnerResult
                     |> Expect.equal TestPositive
         , test "negative result entered by a lab technician -> TestNegative" <|
             \_ ->
                 emptyPrenatalMeasurements
-                    |> withPartnerHIVTestByLabTech TestNegative
+                    |> withPartnerHIVTestByLabTech TestNegative (EverySet.singleton PrenatalHIVSignPendingInput)
                     |> partnerResult
                     |> Expect.equal TestNegative
         , test "positive result the nurse ran today -> TestPositive" <|

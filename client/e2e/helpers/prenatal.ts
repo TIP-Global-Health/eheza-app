@@ -1077,7 +1077,14 @@ export async function completeLaboratoryNurseForLab(
  * 3. Save.
  * Returns the list of completed test tab labels.
  */
-export async function completeLabResultsAsLabTech(
+/**
+ * Complete the tabs of an open recurrent-phase lab activity as whoever is
+ * signed in — "Lab Results", or "Lab Results Follow Ups", which asks the
+ * questions a lab technician left for the nurse. The two activities and the
+ * two roles are shown different questions on the same tab layout, so every
+ * step below is guarded on the field being visible.
+ */
+export async function completeLabResults(
   page: Page,
   options?: { checkGlucoseRange?: boolean },
 ): Promise<string[]> {
@@ -1105,7 +1112,8 @@ export async function completeLabResultsAsLabTech(
 
     const tabLabel = (await tab.textContent()) || `tab-${i}`;
 
-    // 1. "Will this test be performed today?" → Yes (confirms run by lab tech)
+    // 1. "Will this test be performed today?" → Yes. Only a lab technician is
+    // asked this, and answering it records the run as confirmed by them.
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
       await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
@@ -1164,8 +1172,9 @@ export async function completeLabResultsAsLabTech(
       await page.waitForTimeout(WAIT.formInteraction);
     }
 
-    // "Is partner taking ARVs?" → No (Partner HIV only, and only for a nurse
-    // — a lab tech does not answer the follow-up questions). A positive
+    // "Is partner taking ARVs?" → No. Partner HIV only, and only for a nurse:
+    // a lab technician does not answer the follow up questions, they are left
+    // for the nurse in the "Lab Results Follow Ups" activity. A positive
     // partner who is not on ARVs is the discordant-partnership condition.
     const partnerTakingArv = page.locator('.form-input.yes-no.partner-taking-arv');
     if (await partnerTakingArv.isVisible({ timeout: 1000 }).catch(() => false)) {

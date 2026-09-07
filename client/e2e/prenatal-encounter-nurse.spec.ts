@@ -22,7 +22,7 @@ import {
   completeMedication,
   completeLaboratoryNurse,
   completeLaboratoryNurseForLab,
-  completeLabResultsAsLabTech,
+  completeLabResults,
   completeNextSteps,
   dismissWarningPopup,
   completeTreatmentReview,
@@ -523,7 +523,7 @@ test.describe('Nurse: Prenatal Recurrent Encounter (Lab Results)', () => {
     // --- Phase 3: enter the lab results, partner HIV positive, no ARVs ---
     await click(page.locator('.icon-task-laboratory'), page);
     await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
-    const completedResults = await completeLabResultsAsLabTech(page);
+    const completedResults = await completeLabResults(page);
     expect(completedResults.length, 'at least one lab result should have been completed').toBeGreaterThan(0);
     await page.waitForTimeout(WAIT.pageNavigation);
 

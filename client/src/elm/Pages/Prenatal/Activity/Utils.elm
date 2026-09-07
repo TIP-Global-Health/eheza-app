@@ -2337,7 +2337,16 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                                                 && (value.testResult == Just TestPositive)
                                            )
                                 then
-                                    Maybe.map partnerNotSurpressed value.hivSigns
+                                    Maybe.map
+                                        (\hivSigns ->
+                                            -- A lab technician can not answer the follow up
+                                            -- questions about the partner, and marks them
+                                            -- pending for the nurse. Until the nurse answers,
+                                            -- we do not know whether the partner is surpressed.
+                                            (not <| EverySet.member PrenatalHIVSignPendingInput hivSigns)
+                                                && partnerNotSurpressed hivSigns
+                                        )
+                                        value.hivSigns
                                         |> Maybe.withDefault False
 
                                 else
