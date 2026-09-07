@@ -3,7 +3,13 @@ import { click, setupDevice } from './helpers/auth';
 import { getClientPort } from './helpers/client-port';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { WAIT, syncAndWait, queryPrenatalDiagnoses } from './helpers/common';
+import {
+  WAIT,
+  syncAndWait,
+  queryPrenatalDiagnoses,
+  queryPartnerHIVTestExecutionNote,
+} from './helpers/common';
+import { openReport, closeReport } from './helpers/progress-report';
 import {
   createAdultFemaleAndStartEncounter,
   completePregnancyDating,
@@ -154,6 +160,14 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
     expect(nodes['prenatal_labs_results'], 'prenatal_labs_results should exist').toBe(true);
 
+    // The confirmed-run note is written by the lab technician's own save, so
+    // it is the signal that their data arrived. The assertion below expects an
+    // absence, and without this anchor a lagging sync would satisfy it.
+    expect(
+      queryPartnerHIVTestExecutionNote(fullName),
+      'partner HIV test should carry the lab technician confirmed-run note',
+    ).toBe('run-confirmed-by-lab-tech');
+
     // A lab technician can not answer the follow up questions about the
     // partner, so nothing is diagnosed yet - whether the partner is on ARVs
     // with a surpressed viral load decides it, and no one has been asked.
@@ -169,6 +183,15 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await navigateToCaseManagement(page);
     await openRecurrentEncounterFromCaseManagement(page, fullName);
 
+    // The progress report states what the partner's ARV status is, and it has
+    // nothing to state until the nurse answers the follow ups.
+    const reportBeforeFollowUps = await openReport(page, 'prenatal');
+    await expect(
+      reportBeforeFollowUps.locator('.medical-diagnosis li', { hasText: 'Discordant Couple' }),
+      'discordant couple status should not be stated before the follow ups are answered',
+    ).toHaveCount(0);
+    await closeReport(page, 'prenatal');
+
     await click(page.locator('.icon-task-laboratory-follow-ups'), page);
     await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
     await page.waitForTimeout(WAIT.elmRerender);
@@ -178,6 +201,14 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     const completedFollowUps = await completeLabResults(page);
     expect(completedFollowUps.length, 'at least one follow up should have been completed').toBeGreaterThan(0);
     await page.waitForTimeout(WAIT.pageNavigation);
+
+    // Answering the last recurrent activity opens the progress report itself,
+    // and the partner's status is stated on it now that it is known.
+    const reportAfterFollowUps = await openReport(page, 'prenatal');
+    await expect(
+      reportAfterFollowUps.locator('.medical-diagnosis li', { hasText: 'Discordant Couple' }),
+      'discordant couple status should state that the partner is not taking ARVs',
+    ).toHaveText(/Discordant Couple: Partner NOT taking ARVs/);
 
     // --- Phase 5: sync and read the diagnoses off the encounter ---
     await syncAndWait(page);
