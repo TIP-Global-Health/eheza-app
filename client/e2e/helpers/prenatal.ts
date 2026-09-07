@@ -944,7 +944,12 @@ export async function completeLaboratoryNurse(
  * Technician to enter later via Case Management.
  * Creates: prenatal_hiv_test, prenatal_syphilis_test, etc. with executionNote=RunToday.
  */
-export async function completeLaboratoryNurseForLab(page: Page): Promise<string[]> {
+export async function completeLaboratoryNurseForLab(
+  page: Page,
+  options?: { hivPointOfCareNegative?: boolean },
+): Promise<string[]> {
+  const hivPointOfCareNegative = options?.hivPointOfCareNegative ?? false;
+  let hivPointOfCareDone = false;
   await openActivity(page, 'prenatal', 'laboratory');
 
   const completedTests: string[] = [];
@@ -984,11 +989,43 @@ export async function completeLaboratoryNurseForLab(page: Page): Promise<string[
       await page.waitForTimeout(WAIT.elmRerender);
     }
 
-    // 3. "Immediate result?" → Lab (the "No" side of the bool input)
+    // The patient's own HIV test can be run point of care while the rest go to
+    // the lab. That mix is what puts a partner result in the recurrent phase
+    // while the patient's own result is already known.
+    const isHivTab = hivPointOfCareNegative && /^\s*HIV\s*$/i.test(tabLabel);
+
+    // 3. "Immediate result?" → Lab (the "No" side of the bool input), or
+    // Point of Care for the HIV test when asked for.
     const immediateResult = page.locator('.form-input.yes-no.immediate-result');
     if (await immediateResult.isVisible().catch(() => false)) {
-      await click(immediateResult.locator('label', { hasText: 'Lab' }), page);
-      await page.waitForTimeout(WAIT.elmRerender);
+      if (isHivTab) {
+        // First label is the "Yes" side: Point of Care.
+        await click(immediateResult.locator('label').first(), page);
+        await page.waitForTimeout(WAIT.elmRerender);
+
+        const resultSelect = page.locator('select.form-input').first();
+        await resultSelect.waitFor({ timeout: 5000 });
+        const negOption = resultSelect.locator('option', { hasText: 'Negative' });
+        const negValue = await negOption.first().getAttribute('value');
+        if (!negValue) {
+          throw new Error('HIV test: no Negative option to select');
+        }
+        await resultSelect.selectOption(negValue);
+        await page.waitForTimeout(WAIT.formInteraction);
+        hivPointOfCareDone = true;
+
+        // With the partner's own test still pending, a negative result on the
+        // patient's test asks her whether her partner is HIV positive. Answer
+        // No, so the diagnosis can only come from the partner's lab result.
+        const partnerHivPositive = page.locator('.form-input.yes-no.partner-hiv-positive');
+        if (await partnerHivPositive.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await click(partnerHivPositive.locator('label', { hasText: 'No' }), page);
+          await page.waitForTimeout(WAIT.formInteraction);
+        }
+      } else {
+        await click(immediateResult.locator('label', { hasText: 'Lab' }), page);
+        await page.waitForTimeout(WAIT.elmRerender);
+      }
     }
 
     // 4. "Urine Dipstick variant?" → Short Dip (checkbox, appears for Urine Dipstick)
@@ -1012,6 +1049,16 @@ export async function completeLaboratoryNurseForLab(page: Page): Promise<string[
       completedTests.push(tabLabel);
       await page.waitForTimeout(WAIT.elmRerender);
     }
+  }
+
+  // A caller asking for the point-of-care HIV test is asking for a specific
+  // mix of immediate and lab results. Falling back to sending that test to the
+  // lab as well would leave the caller's test passing while proving nothing, so
+  // say so instead.
+  if (hivPointOfCareNegative && !hivPointOfCareDone) {
+    throw new Error(
+      `HIV test was not run point of care. Tabs seen: ${completedTests.join(', ')}`,
+    );
   }
 
   // Wait for return to encounter page.
@@ -1114,6 +1161,15 @@ export async function completeLabResultsAsLabTech(
     const hivProgram = page.locator('.form-input.yes-no.hiv-program');
     if (await hivProgram.isVisible({ timeout: 1000 }).catch(() => false)) {
       await click(hivProgram.locator('label', { hasText: 'Yes' }), page);
+      await page.waitForTimeout(WAIT.formInteraction);
+    }
+
+    // "Is partner taking ARVs?" → No (Partner HIV only, and only for a nurse
+    // — a lab tech does not answer the follow-up questions). A positive
+    // partner who is not on ARVs is the discordant-partnership condition.
+    const partnerTakingArv = page.locator('.form-input.yes-no.partner-taking-arv');
+    if (await partnerTakingArv.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await click(partnerTakingArv.locator('label', { hasText: 'No' }), page);
       await page.waitForTimeout(WAIT.formInteraction);
     }
 

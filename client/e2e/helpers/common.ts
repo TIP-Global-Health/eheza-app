@@ -370,6 +370,76 @@ export function queryPrenatalLmp(personName: string): string | null {
   return null;
 }
 
+/**
+ * Returns the diagnoses recorded on the person's most recent antenatal
+ * encounter (`field_prenatal_diagnoses`), or null if the encounter cannot be
+ * found. Mirrors `queryPregnancyEdd`'s person -> pregnancy lookup and retries
+ * to tolerate sync eventual-consistency, but resolves an empty diagnosis set to
+ * `[]` rather than retrying, so a genuinely undiagnosed encounter is a result
+ * and not a timeout.
+ */
+export function queryPrenatalDiagnoses(personName: string): string[] | null {
+  const { drushCmd, cwd } = drushEnv();
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+
+  const php = `
+    \\$name = base64_decode('${personNameB64}');
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$name)
+      ->execute();
+    if (empty(\\$r['node'])) { echo json_encode(['error' => 'Person not found']); return; }
+    \\$nid = key(\\$r['node']);
+
+    \\$pq = new EntityFieldQuery();
+    \\$pr = \\$pq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'individual_participant')
+      ->fieldCondition('field_person', 'target_id', \\$nid)
+      ->fieldCondition('field_encounter_type', 'value', 'antenatal')
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No pregnancy found']); return; }
+    \\$participant_id = key(\\$pr['node']);
+
+    \\$encounters = hedley_person_load_individual_participant_encounters_ids(\\$participant_id);
+    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+
+    \\$encounter = node_load(max(\\$encounters));
+    if (empty(\\$encounter)) { echo json_encode(['error' => 'Encounter not loaded']); return; }
+    \\$diagnoses = [];
+    if (!empty(\\$encounter->field_prenatal_diagnoses[LANGUAGE_NONE])) {
+      foreach (\\$encounter->field_prenatal_diagnoses[LANGUAGE_NONE] as \\$item) {
+        \\$diagnoses[] = \\$item['value'];
+      }
+    }
+    echo json_encode(['diagnoses' => \\$diagnoses]);
+  `;
+
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const output = execSync(`${drushCmd} eval "${php}"`, {
+        cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+      }).trim();
+      const parsed = JSON.parse(output);
+      // The encounter node exists from the moment the encounter starts and its
+      // diagnoses are written later, so an empty set is retried rather than
+      // returned -- otherwise a lagging sync reads as "no diagnosis". An
+      // encounter that genuinely has none returns [] once the retries run out.
+      if (!parsed.error && parsed.diagnoses.length > 0) {
+        return parsed.diagnoses as string[];
+      }
+      if (!parsed.error && attempt === 9) return [];
+      console.log(`queryPrenatalDiagnoses attempt ${attempt + 1}: ${parsed.error || 'no diagnoses yet'}`);
+    } catch (err) {
+      console.log(`queryPrenatalDiagnoses attempt ${attempt + 1}: error`, err);
+    }
+    if (attempt < 9) execSync('sleep 5');
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Save helpers
 // ---------------------------------------------------------------------------
