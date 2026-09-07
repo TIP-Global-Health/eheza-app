@@ -320,7 +320,7 @@ B-319	1	READY	MED			28	Prenatal labs (lab technician): a blood-smear order opens
 B-320	1	READY	MED			28	Prenatal HIV test: correcting to "known as positive" after a negative RDT keeps the result and the partner answers, so t
 B-321	4	READY	LOW			28	NCD Laboratory (urine dipstick, creatinine, liver function, lipid panel): re-saving a test task after its results were e
 B-322	4	READY	LOW			28	Child progress report, Diagnosis pane: "Malnutrition signs" is listed twice for one date, because the nutrition-derived 
-B-323	1	READY	MED			28	Prenatal: a partner HIV result entered by a LAB TECHNICIAN produces no discordant-partnership diagnosis at all, because 
+B-323	1	IMPLEMENTED	MED			28	Prenatal: a partner HIV result entered by a LAB TECHNICIAN produces no discordant-partnership diagnosis at all, because 
 B-324	1	READY	MED-LOW			29	Acute Illness diagnosis: on a site without Tuberculosis Management, a COVID-suspect patient with a cough of more than tw
 B-325	2	READY	MED-HIGH			29	Sync download: the revision cursor advances past an upload whose transaction has not committed yet, so a second device a
 B-326	4	READY	LOW			29	Sync shards: a measurement is sharded by the person's health centres, not by the clinic that performed it, so an FBF dis
