@@ -958,6 +958,16 @@ export async function completeLaboratoryNurse(
  * PrEP to a woman who is HIV positive.
  */
 export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
+  // The correction can follow an activity, and Laboratory is opened from the
+  // encounter page, so step back to it when an activity is still on screen.
+  const activityPage = page.locator('div.page-activity.prenatal');
+  if (await activityPage.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await click(page.locator('.icon-back').first(), page);
+    await page
+      .locator('div.page-encounter.prenatal')
+      .waitFor({ timeout: 10000 });
+  }
+
   await openActivity(page, 'prenatal', 'laboratory');
 
   const hivTab = page.locator('.link-section').filter({
