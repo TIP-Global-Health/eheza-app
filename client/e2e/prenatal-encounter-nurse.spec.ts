@@ -236,14 +236,15 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     ).toHaveCount(0);
     await closeReport(page, 'prenatal');
 
-    // PrEP is what the diagnosis prescribes, and it is what must not be
-    // offered to a woman who is HIV positive.
-    await openActivity(page, 'prenatal', 'next-steps');
-    await dismissWarningPopup(page);
+    // PrEP is what the diagnosis prescribed, and with the diagnosis withdrawn
+    // there is nothing left for the encounter to do next: the activity that
+    // offered it is not offered at all.
+    await click(page.locator('#pending-tab'), page);
+    await page.waitForTimeout(WAIT.elmRerender);
     await expect(
-      page.locator('div.page-activity.prenatal'),
+      page.locator('.icon-task-next-steps'),
       'PrEP should not be offered once the patient is known as HIV positive',
-    ).not.toContainText('TDF + 3TC');
+    ).toHaveCount(0);
   });
 });
 
