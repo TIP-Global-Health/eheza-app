@@ -333,7 +333,7 @@ B-332	4	READY	LOW			29	Backend error reporting: the GlitchTip event buffer is a 
 B-333	3	READY	MED-LOW			29	Admin lists: the "E-ledger viewer" role, which the ledger scopes to the user's own health centres, can open every health
 B-334	4	READY	LOW			29	Admin sidebar: the "Create PMTCT Participation" link points at `node/add/pmtct-paticipation`, a path that does not exist
 B-335	4	READY	LOW			29	Family Nutrition: the "add child" tile disappears once the adult has 5 related people of ANY kind — own parents, caregiv
-B-336	1	READY	MED		2210	29	Prenatal recurrent Next Steps: a medication that becomes required AFTER the nurse saved that task is never offered — the
+B-336	1	IMPLEMENTED	MED	2213	2214	29	Prenatal recurrent Next Steps: a medication that becomes required AFTER the nurse saved that task is never offered — the
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
