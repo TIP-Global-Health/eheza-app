@@ -416,8 +416,8 @@ export function queryPartnerHIVTestExecutionNote(personName: string): string | n
     if (empty(\\$tr['node'])) { echo json_encode(['error' => 'No partner HIV test found']); return; }
 
     \\$test = node_load(key(\\$tr['node']));
-    \\$note = isset(\\$test->field_execution_note[LANGUAGE_NONE][0]['value'])
-      ? \\$test->field_execution_note[LANGUAGE_NONE][0]['value'] : null;
+    \\$note = isset(\\$test->field_test_execution_note[LANGUAGE_NONE][0]['value'])
+      ? \\$test->field_test_execution_note[LANGUAGE_NONE][0]['value'] : null;
     echo json_encode(['note' => \\$note]);
   `;
 

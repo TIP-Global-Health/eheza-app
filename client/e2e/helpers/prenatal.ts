@@ -1560,6 +1560,42 @@ export async function navigateToCaseManagement(page: Page) {
 }
 
 /**
+ * Open the results a lab technician entered, from the nurse's Case Management.
+ * Once every result is in, the entry opens the progress report for review
+ * rather than the encounter, so the report is what comes back.
+ */
+export async function openLabsResultsReviewFromCaseManagement(
+  page: Page,
+  personName: string,
+): Promise<Locator> {
+  const entry = page.locator('.follow-up-entry', {
+    has: page.locator('.name', { hasText: personName }),
+  });
+  await entry.waitFor({ timeout: 10000 });
+  await click(entry.locator('.icon-forward'), page);
+  const report = page.locator('div.page-report.clinical');
+  await report.waitFor({ timeout: 15000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+  return report;
+}
+
+/**
+ * Accept the results under review, which records the review and opens the
+ * recurrent encounter, where the nurse answers the follow up questions.
+ */
+export async function acceptLabsResults(page: Page): Promise<void> {
+  await click(
+    page.locator('button.ui.primary.fluid.button', { hasText: 'Review & Accept' }),
+    page,
+  );
+  await page
+    .locator('div.page-encounter.prenatal')
+    .waitFor({ timeout: 15000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
+
+/**
  * Open a recurrent encounter from the Case Management Prenatal Labs pane.
  * Finds the patient entry by name and clicks the forward icon.
  */

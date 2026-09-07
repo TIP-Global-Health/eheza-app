@@ -9,7 +9,7 @@ import {
   queryPrenatalDiagnoses,
   queryPartnerHIVTestExecutionNote,
 } from './helpers/common';
-import { openReport, closeReport } from './helpers/progress-report';
+import { openReport } from './helpers/progress-report';
 import {
   createAdultFemaleAndStartEncounter,
   completePregnancyDating,
@@ -26,7 +26,8 @@ import {
   completeNextSteps,
   endPrenatalEncounter,
   navigateToCaseManagement,
-  openRecurrentEncounterFromCaseManagement,
+  openLabsResultsReviewFromCaseManagement,
+  acceptLabsResults,
   completeLabResults,
   queryPrenatalNodes,
 } from './helpers/prenatal';
@@ -181,16 +182,18 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     // --- Phase 4: the nurse answers the follow ups the lab tech left ---
     await switchUser(page, '1234');
     await navigateToCaseManagement(page);
-    await openRecurrentEncounterFromCaseManagement(page, fullName);
 
-    // The progress report states what the partner's ARV status is, and it has
+    // Every result is in, so the entry opens the report for the nurse to
+    // review. The report states what the partner's ARV status is, and it has
     // nothing to state until the nurse answers the follow ups.
-    const reportBeforeFollowUps = await openReport(page, 'prenatal');
+    const reportBeforeFollowUps = await openLabsResultsReviewFromCaseManagement(page, fullName);
     await expect(
       reportBeforeFollowUps.locator('.medical-diagnosis li', { hasText: 'Discordant Couple' }),
       'discordant couple status should not be stated before the follow ups are answered',
     ).toHaveCount(0);
-    await closeReport(page, 'prenatal');
+
+    // Accepting the results is what opens the encounter the follow ups are on.
+    await acceptLabsResults(page);
 
     await click(page.locator('.icon-task-laboratory-follow-ups'), page);
     await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
