@@ -786,9 +786,16 @@ export async function completeMedication(
  */
 export async function completeLaboratoryNurse(
   page: Page,
-  options?: { hivPositive?: boolean },
+  options?: {
+    // HIV test performed at point of care with this result; omitted = not performed.
+    hivResult?: 'positive' | 'negative';
+    // Partner known as HIV positive and not on ARVs, saved LAST, so that
+    // save alone has to raise the discordant partnership diagnosis.
+    discordantPartnership?: boolean;
+  },
 ): Promise<string[]> {
-  const hivPositive = options?.hivPositive ?? false;
+  const hivResult = options?.hivResult;
+  const discordantPartnership = options?.discordantPartnership ?? false;
   await openActivity(page, 'prenatal', 'laboratory');
 
   const completedTests: string[] = [];
@@ -796,9 +803,15 @@ export async function completeLaboratoryNurse(
   // Iterate through all visible task tabs. We can't use icon classes because
   // Partner HIV, HIV, and HIV PCR all share the same icon-laboratory-hiv class.
   const allTabs = page.locator('.link-section');
-  const tabCount = await allTabs.count();
+  const tabLabels = await allTabs.allTextContents();
+  const tabOrder = tabLabels.map((_, i) => i);
+  if (discordantPartnership) {
+    // Partner HIV is the first tab; move it to the end so it is saved last.
+    const partnerIndex = tabLabels.findIndex(label => label.includes('Partner HIV'));
+    tabOrder.push(...tabOrder.splice(partnerIndex, 1));
+  }
 
-  for (let i = 0; i < tabCount; i++) {
+  for (const i of tabOrder) {
     const tab = allTabs.nth(i);
     if (!(await tab.isVisible())) continue;
 
@@ -817,29 +830,36 @@ export async function completeLaboratoryNurse(
       await page.waitForTimeout(WAIT.elmRerender);
     }
 
-    const tabLabel = (await tab.textContent()) || `tab-${i}`;
+    const tabLabel = tabLabels[i] || `tab-${i}`;
 
     // Answer yes/no fields by their specific CSS classes.
     // Fields appear sequentially: known-as-positive → test-performed → why-not → blood-smear.
 
     // Detect if this is the HIV tab (not Partner HIV, not HIV PCR).
-    const isHivTab = hivPositive
+    const isHivTab = hivResult !== undefined
       && /^\s*HIV\s*$/i.test(tabLabel)
       && !tabLabel.includes('Partner')
       && !tabLabel.includes('PCR');
 
-    // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B) → No
+    const isDiscordantPartnerTab = discordantPartnership && tabLabel.includes('Partner HIV');
+
+    // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B) → No,
+    //    except the discordant partner → Yes, not taking ARVs.
     const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
     if (await knownPositive.isVisible().catch(() => false)) {
-      await click(knownPositive.locator('label', { hasText: 'No' }), page);
+      await answerYesNo(page, 'known-as-positive', isDiscordantPartnerTab ? 'Yes' : 'No');
       await page.waitForTimeout(WAIT.elmRerender);
+    }
+    if (isDiscordantPartnerTab) {
+      await answerYesNo(page, 'partner-taking-arv', 'No');
+      await page.waitForTimeout(WAIT.formInteraction);
     }
 
     // 2. "Will this test be performed today?"
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
       if (isHivTab) {
-        // HIV tab: perform the test with positive result.
+        // HIV tab: perform the test at point of care.
         await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
         await page.waitForTimeout(WAIT.elmRerender);
 
@@ -850,12 +870,14 @@ export async function completeLaboratoryNurse(
           await page.waitForTimeout(WAIT.elmRerender);
         }
 
-        // Select result: "Positive"
+        // Select result.
         const resultSelect = page.locator('select.form-input').first();
         if (await resultSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
-          const posOption = resultSelect.locator('option', { hasText: 'Positive' });
-          if (await posOption.count() > 0) {
-            const val = await posOption.getAttribute('value');
+          const resultOption = resultSelect.locator('option', {
+            hasText: hivResult === 'positive' ? 'Positive' : 'Negative',
+          });
+          if (await resultOption.count() > 0) {
+            const val = await resultOption.getAttribute('value');
             if (val) await resultSelect.selectOption(val);
           }
           await page.waitForTimeout(WAIT.formInteraction);
@@ -865,6 +887,15 @@ export async function completeLaboratoryNurse(
         const hivProgram = page.locator('.form-input.yes-no.hiv-program');
         if (await hivProgram.isVisible({ timeout: 2000 }).catch(() => false)) {
           await click(hivProgram.locator('label', { hasText: 'Yes' }), page);
+          await page.waitForTimeout(WAIT.formInteraction);
+        }
+
+        // A negative result while the partner test is still unrecorded asks
+        // "Is partner known to be HIV positive?" → No. The partner tab,
+        // saved later, is what has to carry the diagnosis.
+        const partnerPositive = page.locator('.form-input.yes-no.partner-hiv-positive');
+        if (await partnerPositive.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await answerYesNo(page, 'partner-hiv-positive', 'No');
           await page.waitForTimeout(WAIT.formInteraction);
         }
       } else {
@@ -1107,6 +1138,18 @@ export async function completeLabResultsAsLabTech(
 }
 
 /**
+ * Dismiss the warning popup that may open with Next Steps
+ * (e.g., "Depression not Likely").
+ */
+export async function dismissWarningPopup(page: Page) {
+  const warningContinue = page.locator('button', { hasText: 'Continue' });
+  if (await warningContinue.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await warningContinue.click({ force: true });
+    await page.waitForTimeout(WAIT.elmRerender);
+  }
+}
+
+/**
  * Complete NextSteps: iterate through visible sub-task tabs.
  * Creates: appointment_confirmation, prenatal_follow_up, prenatal_send_to_hc, etc.
  */
@@ -1125,12 +1168,7 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
     return [];
   }
 
-  // Dismiss any warning popup that may appear (e.g., "Depression not Likely").
-  const warningContinue = page.locator('button', { hasText: 'Continue' });
-  if (await warningContinue.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await warningContinue.click({ force: true });
-    await page.waitForTimeout(WAIT.elmRerender);
-  }
+  await dismissWarningPopup(page);
 
   const completedSteps: string[] = [];
   const nextStepIcons = [
