@@ -43,4 +43,22 @@ at the step I had changed.
   marker meaning "not answered yet". The grep that found the defect is the grep that finds the fix
   sites; run it again after settling the fix, not only before.
 
-Related: [[e2e-local-run-procedure]], [[pre-push-code-review-gate]]
+- ⛔⛔ **A PASSING e2e proves nothing until I have seen it FAIL on the pre-fix build.** On B-336
+  (PR #2214) my new test was green for four consecutive runs against a bundle I had verified was
+  pre-fix — it was passing for a reason unrelated to the fix. The generic `completeLabResults`
+  helper takes the *first* real option of every result dropdown, i.e. **Positive**, so syphilis was
+  diagnosed too, and `syphilisTreatmentCompleted` — a separate conjunct of `nextStepsTaskCompleted`
+  — held the activity pending whatever the medication rule said. My steering had missed it because
+  the tab is labelled **"Syphilis - RPR"** and I matched the label exactly. Run the discrimination
+  first, and when a test passes where it should fail, stop reasoning and get evidence: the page
+  snapshot in `test-results/*/error-context.md`, the `.tasks-count` text, the actual DB row
+  (`field_prescribed_medication` held `none-recurrent`, confirming my model of the *write* was
+  right and my model of the *readers* was wrong).
+- ⛔ **A one-sided `toBeVisible` after clicking a tab is not an assertion.** A tab that failed to
+  switch leaves the other tab's cards on screen and the check passes either way. Assert present in
+  the expected tab AND absent from the other (`expectActivityInTab` in `client/e2e/helpers/common.ts`).
+- ⭐ In E-Heza, the assertion that actually catches "the encounter closed without doing X" is that
+  the app did **not** navigate to the progress report: completing the last recurrent activity opens
+  it, so `div.page-encounter.prenatal` failing to appear IS the defect.
+
+Related: [[e2e-local-run-procedure]], [[e2e-ci-partition-trap]], [[pre-push-code-review-gate]]
