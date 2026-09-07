@@ -37,5 +37,10 @@ at the step I had changed.
   found the window is reachable and lets the nurse distribute PrEP from the wrong diagnosis — the
   diagnosis withdraws, the recorded prescription does not. A transient wrong state is only harmless
   if nothing durable can be written while it holds; enumerate what the UI offers during the window.
+- ⛔ **After fixing one reader of a value, fix the LIST of readers.** On B-323 I widened an
+  execution-note test in four places, then guarded a sentinel in only one of the three that read
+  the same partner signs — the progress report went on asserting "Partner NOT taking ARVs" from a
+  marker meaning "not answered yet". The grep that found the defect is the grep that finds the fix
+  sites; run it again after settling the fix, not only before.
 
 Related: [[e2e-local-run-procedure]], [[pre-push-code-review-gate]]

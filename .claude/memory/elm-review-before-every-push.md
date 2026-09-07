@@ -52,3 +52,8 @@ and run the identical develop client in another worktree (clean) — then
 contradicts a green CI run is a cache artifact until a cleared cache reproduces it. The rule above
 is unchanged: still run it, still on the committed state.
 
+⚠ **`elm make` REBUILDS `elm-stuff`.** Clearing the cache and then running `elm make` before
+`elm-review` puts the phantom right back — the order that works is `elm make` and `elm-test`
+first, then `rm -rf client/elm-stuff client/review/elm-stuff` immediately before `elm-review`.
+Seen again on B-323 (2026-09-07): `Backend.Entities` reported unused in a file using
+`PrenatalEncounterId` twice; clean on the re-run.
