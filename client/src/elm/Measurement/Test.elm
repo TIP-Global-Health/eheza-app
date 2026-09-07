@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         , SkippedForm(..)
         , StuntingLevel(..)
         , TestExecutionNote(..)
+        , TestResult(..)
         , VaccineDose(..)
         , WeightInGrm(..)
         , WeightInKg(..)
@@ -19,7 +20,7 @@ import Backend.Measurement.Model
 import Date exposing (Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyModelChild, emptyNCDAData, emptyNCDAForm)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -34,6 +35,8 @@ import Measurement.Utils
         , getIntervalForVaccine
         , heightFormWithDefault
         , initialVaccinationDateByBirthDate
+        , knownAsPositiveUpdateHIVTest
+        , knownAsPositiveUpdatePartnerHIVTest
         , liverFunctionResultFormWithDefault
         , ncdaFormWithDefault
         , ncdaMeasurementsOutOfRange
@@ -701,6 +704,7 @@ all =
         , heightFormWithDefaultSkippedTest
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
+        , knownAsPositiveUpdateTest
         ]
 
 
@@ -907,4 +911,91 @@ ncdaFormWithDefaultNotTakenTest =
                 hydrate { emptyForm | weight = Just (WeightInKg 13) }
                     |> .weight
                     |> Expect.equal (Just (WeightInKg 13))
+        ]
+
+
+{-| The questions that follow a test result are only asked while the answer to
+"known as positive" is No: the patient's own result and the partner questions
+under it on the HIV test, and the ARV questions on the partner's test. Saying
+Yes withdraws them, so what they hold is cleared, and cleared as dirty, rather
+than read back from the saved value as a result the patient never had.
+-}
+knownAsPositiveUpdateTest : Test
+knownAsPositiveUpdateTest =
+    let
+        answeredHIVTest =
+            { emptyHIVTestUniversalForm
+                | knownAsPositive = Just False
+                , testPerformed = Just True
+                , immediateResult = Just True
+                , executionNote = Just TestNoteRunToday
+                , testResult = Just TestNegative
+                , hivProgramHC = Just False
+                , partnerHIVPositive = Just True
+                , partnerTakingARV = Just False
+                , partnerSurpressedViralLoad = Just False
+            }
+
+        answeredPartnerHIVTest =
+            { emptyPartnerHIVTestForm
+                | knownAsPositive = Just False
+                , testPerformed = Just True
+                , executionNote = Just TestNoteRunToday
+                , testResult = Just TestPositive
+                , partnerTakingARV = Just True
+                , partnerSurpressedViralLoad = Just True
+            }
+    in
+    describe "known as positive withdraws the answers that depend on the test"
+        [ test "HIV test: the result and every partner question are cleared" <|
+            \_ ->
+                let
+                    updated =
+                        knownAsPositiveUpdateHIVTest True answeredHIVTest
+                in
+                ( updated.testResult
+                , [ updated.hivProgramHC
+                  , updated.partnerHIVPositive
+                  , updated.partnerTakingARV
+                  , updated.partnerSurpressedViralLoad
+                  ]
+                )
+                    |> Expect.equal ( Nothing, [ Nothing, Nothing, Nothing, Nothing ] )
+        , test "HIV test: every cleared field is marked dirty, so the saved value is not read back over it" <|
+            \_ ->
+                let
+                    updated =
+                        knownAsPositiveUpdateHIVTest True answeredHIVTest
+                in
+                [ updated.testResultDirty
+                , updated.hivProgramHCDirty
+                , updated.partnerHIVPositiveDirty
+                , updated.partnerTakingARVDirty
+                , updated.partnerSurpressedViralLoadDirty
+                ]
+                    |> Expect.equal [ True, True, True, True, True ]
+        , test "HIV test: the execution note records that the patient is known as positive" <|
+            \_ ->
+                let
+                    updated =
+                        knownAsPositiveUpdateHIVTest True answeredHIVTest
+                in
+                ( updated.knownAsPositive, updated.executionNote, updated.testPerformed )
+                    |> Expect.equal ( Just True, Just TestNoteKnownAsPositive, Nothing )
+        , test "HIV test: answering No leaves nothing claiming a test was run" <|
+            \_ ->
+                let
+                    updated =
+                        knownAsPositiveUpdateHIVTest False answeredHIVTest
+                in
+                ( updated.knownAsPositive, updated.executionNote, updated.testPerformed )
+                    |> Expect.equal ( Just False, Nothing, Nothing )
+        , test "partner HIV test: the ARV questions are cleared" <|
+            \_ ->
+                let
+                    updated =
+                        knownAsPositiveUpdatePartnerHIVTest True answeredPartnerHIVTest
+                in
+                ( updated.partnerTakingARV, updated.partnerSurpressedViralLoad )
+                    |> Expect.equal ( Nothing, Nothing )
         ]

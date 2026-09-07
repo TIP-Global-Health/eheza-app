@@ -602,6 +602,20 @@ withHIVTestPartnerPositiveSigns executionNote prerequisites measurements =
     }
 
 
+{-| Patient's HIV test answered as known as positive, still carrying the
+negative result and the partner signs of the test that answer replaced.
+-}
+withHIVTestKnownAsPositiveCarryingSigns : PrenatalMeasurements -> PrenatalMeasurements
+withHIVTestKnownAsPositiveCarryingSigns measurements =
+    let
+        value =
+            hivTestValueCustom TestNoteKnownAsPositive immediateResultPrerequisites TestNegative
+    in
+    { measurements
+        | hivTest = wrapMeasurement { value | hivSigns = Just (EverySet.singleton PartnerHIVPositive) }
+    }
+
+
 {-| Hemoglobin test, run today with the given count, immediate result. The
 anemia/malaria-with-anemia diagnoses gate on `immediateResult .hemoglobinTest`,
 so the `PrerequisiteImmediateResult` prerequisite is required just like the
@@ -1459,6 +1473,19 @@ generatePrenatalDiagnosesForNurseDiscordantPartnershipTest =
                 emptyPrenatalMeasurements
                     |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
                     |> withPartnerHIVTestByLabTech TestPositive (EverySet.fromList [ PartnerTakingARV, PartnerSurpressedViralLoad ])
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, False )
+        , test "patient known as positive, partner signs of the replaced negative test still on it -> neither phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestKnownAsPositiveCarryingSigns
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, False )
+        , test "patient known as positive, partner test positive -> neither phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestKnownAsPositiveCarryingSigns
+                    |> withPartnerHIVTestPositive TestNoteRunToday immediateResultPrerequisites
                     |> discordantPartnershipPhases
                     |> Expect.equal ( False, False )
         ]
