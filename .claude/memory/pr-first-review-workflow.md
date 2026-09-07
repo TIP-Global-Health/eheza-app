@@ -8,7 +8,7 @@ metadata:
   modified: 2026-08-10T09:43:28.738Z
 ---
 
-Development process, **replacing the pre-push gate** (set 2026-07-27, user's words: *"when starting
+Development process (set 2026-07-27, user's words: *"when starting
 a development, before asking for a reiew, open a PR - I want to see the code. Then, after I run a
 review, I want the review comments to be made on that PR, so I could see them in Github. Then, you
 present your analysis, what needs fixing and don't execute before I approve."*):
@@ -45,11 +45,8 @@ present your analysis, what needs fixing and don't execute before I approve."*):
    That arrival is not delivery; it is the cue to post. Nothing about the finding's content — how
    minor, how pre-existing, how obviously declinable — changes that.
 
-   📌 **Structural fix applied the same day:** this rule now also lives in the repo, in
-   `.claude/skills/process-backlog/SKILL.md`'s hard-rules list, which is read at the start of every
-   backlog session. It previously covered only *asking for* the review, so the skill I consult right
-   before working was silent on posting — and the memory index one-liner, read hours earlier, was
-   the only thing carrying it.
+   📌 This rule also lives in `.claude/skills/process-backlog/SKILL.md`'s hard-rules list, which is
+   read at the start of every backlog session.
 
    **Posting the findings is the step that ENDS a review.** Do it before reporting anything to the
    user in chat — not after acting, not after deciding, not "once I've fixed them". A review is not
@@ -72,17 +69,14 @@ present your analysis, what needs fixing and don't execute before I approve."*):
    is not in the diff — which includes lines a later force-push REMOVED. To revise a posted comment:
    PATCH `pulls/comments/<id>` (inline) or `issues/comments/<id>` (PR-level).
 4. **Present my analysis** — which findings are real, which are not worth acting on, and why.
-5. **STOP. Do not fix anything until the user approves.** This is the part that changed: approval
-   now comes *after* the analysis, not before the review. Once approved, run it through: fix,
+5. **STOP. Do not fix anything until the user approves.** Approval comes *after* the analysis, not before the review. Once approved, run it through: fix,
    re-verify, push, watch CI to completion — but **ask before any Copilot request** (below).
 
 ## ⛔ NEVER request a Copilot review without asking first (2026-08-02)
 
-User's words: *"do not request copilot review automatically. Ask me if it's needed."* This
-**overrides** the old backlog convention ("GitHub issue + PR, CI must run, Copilot review
-requested") recorded in [[improvement-backlog]] — requesting Copilot is no longer part of the
-standing regime for a backlog PR, on the first pass or after a fix. Offer it, name what it would
-cover, and wait.
+User's words: *"do not request copilot review automatically. Ask me if it's needed."* Requesting
+Copilot is not part of the standing regime for a backlog PR, on the first pass or after a fix.
+Offer it, name what it would cover, and wait.
 
 **Why it matters — the quota is small and shared.** Copilot code review spends a monthly
 premium-request allowance shared with all other Copilot use, and it resets on the 1st. Observed on
@@ -100,14 +94,10 @@ is final beats one per push. There is no API to read the remaining balance — t
 endpoints need the `user` / `admin:org` scope the local token lacks, so the count comes from the
 GitHub Settings → Billing page, or from counting review bodies as above.
 
-## The push gate is retired (2026-07-27)
+## Nothing blocks `git push`
 
-The `hooks` block was removed from `.claude/settings.local.json`, so `git push` is no longer
-blocked. Verified empirically: with a deliberately wrong marker the push went through, and the
-change took effect **without restarting the session**. The script is still at
-`.claude/hooks/pre-push-review-gate.sh` if it is ever wanted back; `.git/eheza-review-marker` is
-deleted and no longer read. Nothing enforces the review now except this file — the review gates
-the **merge**, not the push.
+There is no pre-push hook: the review gates the **merge**, not the push, and nothing enforces it
+except this file. (`.claude/hooks/pre-push-review-gate.sh` is an unused script.)
 
 ## Posting findings to the PR
 
@@ -178,14 +168,12 @@ CONFIRMED defects a medium pass missed.
 
 **Comment/docs-only diffs:** still ASK (the 100% rule above admits no exceptions), but say in the
 same breath that the diff is comments/docs only and a review is probably not worth spending — let
-the user be the one to skip it. Superseded the old "skip step 2" wording on 2026-08-10.
+the user be the one to skip it.
 
 ## Invoking the review
 
-- ✅ **CORRECTED 2026-08-24: `Skill({skill: "code-review", args: "medium <branch>"})` WORKS** and
-  launches it as a background fork. The old note said `/code-review` was a built-in carrying
-  `disable-model-invocation` that the Skill tool refused — that is no longer true, and it appears in
-  the session's available-skills listing. Verified by running it on `children-seen-counts-children`.
+- `Skill({skill: "code-review", args: "medium <branch>"})` works and launches the review as a
+  background fork; it appears in the session's available-skills listing.
   ⛔ **This does NOT loosen the ask-the-user rule.** The user's process is that THEY run the review
   (they said so: *"after I run a review, I want the review comments to be made on that PR"*), and
   `high` is still never to be auto-run. Invoke it yourself only when the user plainly meant to and

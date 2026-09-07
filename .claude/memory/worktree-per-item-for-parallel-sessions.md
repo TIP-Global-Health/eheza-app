@@ -1,6 +1,6 @@
 ---
 name: worktree-per-item-for-parallel-sessions
-description: "Main tree stays on develop; each item is worked in a worktree at <repo>-wt/<branch>, created to work and released after pushing — reinstated 2026-08-27, lifecycle corrected 2026-08-28"
+description: "Main tree stays on develop; each item is worked in a worktree at <repo>-wt/<branch>, created to work and released after pushing"
 metadata:
   node_type: memory
   type: feedback
@@ -15,9 +15,6 @@ about to work the branch; **release it once the work is pushed**. If more work i
 findings, a rework — recreate it with the same script. (User, 2026-08-28: *"Whenever you want to work
 on the branch, you recreate with `.claude/scripts/new-worktree.sh`, after you done working and push,
 you release it. If more work needed, as a result of review for example, you recreate it again."*)
-
-This **replaces `develop-in-the-main-tree`** (2026-07-27), which had retired the worktree rule and
-said to check the issue branch out in the main tree. That rule is dead — deleted, not parked.
 
 **Why:** the user wants several Claude Code sessions working different backlog items at once. A
 single shared tree can only hold one branch, so main-tree working serialized every session. It also
@@ -36,7 +33,7 @@ branch serves a stale queue), and the `Stop` hook refuses to commit bookkeeping 
 4. **Always `git -C <path>`, never a bare `cd`** across two trees — the `cd` persists and silently
    retargets everything after it. That mistake cost two rounds on 2026-07-27.
 
-## What this does NOT solve — and it is the reason the rule was dropped in July
+## What this does NOT solve
 
 **`ddev gulp` still builds only the main tree's `client/`,** and the ddev project is a single
 instance rooted there. So local e2e and manual QA still need the branch's code in the main tree.

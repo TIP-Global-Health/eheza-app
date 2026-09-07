@@ -80,7 +80,7 @@ Offline-first: the Elm `SyncManager` handles bidirectional sync with the backend
 
 ### Feature Flags
 
-Programs are toggled via `drush vset hedley_admin_feature_<name>_enabled 1|0`. Flags include: `ncda`, `stock_management`, `tuberculosis_management`, `group_education`, `report_to_whatsapp`, `hiv_management`, `gps_coordinates`, `family_nutrition`.
+Programs are toggled via `drush vset hedley_admin_feature_<name>_enabled 1|0`. The flag names are `family_nutrition`, `gps_coordinates`, `group_education`, `healthy_start`, `hiv_management`, `ncda`, `report_to_whatsapp`, `stock_management_hc`, `stock_management_village`, `tuberculosis_management`; the canonical list is `hedley_admin_get_available_features()` in `hedley_admin.module`.
 
 ### Super User Mode
 

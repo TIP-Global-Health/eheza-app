@@ -3,9 +3,10 @@
 #
 #   .claude/scripts/new-worktree.sh <branch-name>
 #
-# Sessions run in parallel, so worktrees live outside any session's scratchpad
-# and stay until the PR merges. The main tree is never switched: it is parked on
-# develop and only donates the heavy build inputs through symlinks.
+# Sessions run in parallel, so worktrees live outside any session's scratchpad.
+# A worktree lasts one round of work: release it once the work is pushed and
+# recreate it here when more is needed. The main tree is never switched: it is
+# parked on develop and only donates the heavy build inputs through symlinks.
 
 set -eu
 
@@ -32,7 +33,13 @@ fi
 
 git fetch -q origin develop
 mkdir -p "$ROOT"
-git worktree add "$wt" -b "$branch" origin/develop
+# A released worktree leaves its branch behind; re-attach to it rather than
+# failing on `-b`, so a second round of work on the same branch is one command.
+if git show-ref --verify --quiet "refs/heads/$branch"; then
+  git worktree add "$wt" "$branch"
+else
+  git worktree add "$wt" -b "$branch" origin/develop
+fi
 
 # Build inputs the main tree already has. elm-stuff is deliberately NOT
 # symlinked: elm-test writes a generated project whose relative
@@ -46,5 +53,5 @@ mkdir -p "$wt/client/elm-stuff"
 
 echo
 echo "worktree: $wt"
-echo "branch:   $branch (from origin/develop at $(git rev-parse --short origin/develop))"
-echo "remove it when the PR merges:  git worktree remove $wt"
+echo "branch:   $branch (origin/develop is at $(git rev-parse --short origin/develop))"
+echo "release it once the work is pushed:  git worktree remove $wt"

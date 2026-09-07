@@ -89,8 +89,7 @@ and the date, before moving on.
 
 ### 4. Build
 Follow `knowledge/runbook.md` exactly — worktree per finding, verification gates per change type,
-issue → PR → review request. It is validated across dozens of PRs and its warnings were each paid
-for once already.
+issue → PR → review request.
 
 ### 5. Record
 Immediately, before the next item and before anything can be compacted away: entry status, PR
@@ -102,29 +101,26 @@ number, tier line, and any side-findings noticed while building appended as new 
 - ⛔ **Mentioning code means showing it.** Any presentation, review analysis, or explanation
   that cites code in a file shows the snippet itself — a `-- path:lines` comment header plus
   the real lines as they stand today, elided with `...` where irrelevant, annotated inline
-  where it helps. Never a bare `file.elm:123` reference (user hard rule, 2026-09-01).
+  where it helps. Never a bare `file.elm:123` reference.
 - ⛔ **Never switch or modify the main tree** (`/var/www/html/ihangane`) — the user works there in
   a parallel terminal, and it is parked on `develop` permanently as the backlog source of truth and
-  the one tree ddev and gulp build. One worktree per finding under `/var/www/html/ihangane-wt/<id>`,
-  kept until the PR merges.
+  the one tree ddev and gulp build. One worktree per finding at `<repo>-wt/<branch>` via
+  `.claude/scripts/new-worktree.sh <branch>`, released once the work is pushed and recreated by the
+  same script if review brings more work.
 - ⛔ **Sessions run in parallel — claim before you build.** `git worktree list` shows what other
   sessions already hold; check it before starting an item, and never work in another session's
   worktree. ⚠ The running app (ddev, `gulp`, local e2e, `ddev simpletest`) is a **single instance**
   rooted in the main tree — ask the user before taking it.
 - ⛔ **Ask for the review, every time.** The message announcing a PR must carry the copy-pasteable
   `/code-review medium <branch>`. A PR announcement without it is an unfinished turn, and a vague
-  "want a review?" does not count. This is a known, repeated failure — see
-  `pr-first-review-workflow` in memory.
+  "want a review?" does not count. Mechanics in `pr-first-review-workflow` in memory.
 - ⛔ **Post every review finding to the PR, inline, BEFORE reporting anything about the review in
-  chat.** The review agent reports back into the transcript — **that is not delivery.** A review is
-  not finished until its findings are on the PR, anchored to the lines they concern, one comment per
-  finding, phrased as the finding was RAISED rather than as your answer to it. This covers findings
-  you fix, skip, refute, or had already fixed. Only when a line is genuinely outside a diff hunk do
-  you fall back to a file-level comment, and only then to the PR body — saying which and why.
-  ⛔ This is a **known, repeated failure of mine — four recorded instances** (2026-08-18, 08-19,
-  08-20, 08-24). The 08-24 one went: review agent replied in chat → I verified the findings and
-  wrote the analysis for the user → posted nothing. Mechanics and the full history are in
-  `pr-first-review-workflow` in memory.
+  chat.** The review agent reports back into the transcript — that arrival is the cue to post, not
+  delivery. A review is not finished until its findings are on the PR, anchored to the lines they
+  concern, one comment per finding, phrased as the finding was RAISED rather than as your answer to
+  it. This covers findings you fix, skip, refute, or had already fixed. Only when a line is
+  genuinely outside a diff hunk do you fall back to a file-level comment, and only then to the PR
+  body — saying which and why. Mechanics in `pr-first-review-workflow` in memory.
 - ⛔ **Close the loop on every review thread when the fix lands**, and **commit + push the backlog
   files on `develop`** in the same step that records them. Three separate misses in one day traced
   to the same shape — work lands, record lags — so treat "the record disagrees with the repository"
@@ -136,9 +132,8 @@ number, tier line, and any side-findings noticed while building appended as new 
   `gh api repos/TIP-Global-Health/eheza-app/commits/<sha>/pulls` → the PR → its body's issue link
   → `gh issue view <n>`. Feature work here carries a written spec in the issue, often step by step;
   ⛔ do not present a fix direction, and do not build one, while that spec is unread.
-  ⚠ Read it before deciding the fix is a revert, too: on B-235 the spec's exact wording
-  (*"equal to or greater than"*) made the pre-flip code wrong at the boundary as well, so reverting
-  the offending commit would have shipped a second, quieter defect.
+  ⚠ Read it before deciding the fix is a revert, too: the code before the offending commit can be
+  wrong at a boundary the spec defines, so a revert can ship a second, quieter defect.
 - ⛔ **Never request Copilot without asking first.** Offer it, say what it would cover, wait.
 - CI must run on these PRs — no `[ci skip]`. **The user merges**, with `--delete-branch`.
 - Do not generate new proposals here and do not re-mine cleared areas. That is the discovery

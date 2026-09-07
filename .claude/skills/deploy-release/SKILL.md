@@ -83,7 +83,7 @@ ddev robo deploy:pantheon 2>&1 | tee /tmp/deploy-dev.log
 ```
 Tell the user explicitly: **at the "Commit changes and deploy?" prompt, review the printed `git status` of the Pantheon repo** and confirm only if the change-set is exactly what they expect. When it returns, `Read` `/tmp/deploy-dev.log` to verify the push + auto-run `cc all`/`updb`/`fra`/`uli` — don't ask for a paste.
 
-What this command does automatically (so you don't double-run it): rsyncs the build into the Pantheon clone, commits + pushes to Pantheon `master`, then runs on **Dev** `cc all` (twice), `updb -y`, **`fra -y`**, **`cc all`**, and `uli`. Each of those steps is retried up to 3 times with a growing pause, so one transient kill no longer aborts the rest.
+What this command does automatically (so you don't double-run it): rsyncs the build into the Pantheon clone, commits + pushes to Pantheon `master`, then runs on **Dev** `cc all` (twice), `updb -y`, **`fra -y`**, **`cc all`**, and `uli`. Each of those steps is retried up to 3 times with a growing pause, so one transient kill does not abort the rest.
 
 > Pantheon's `master` branch = the **Dev** environment, not production. This step only updates Dev; promotion to Test/Live is Step 5.
 

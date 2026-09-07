@@ -42,10 +42,10 @@ compiles and tests the main tree's sources and every pass is vacuous. Cold compi
   (stash or revert the fix), then restore. For mechanical one-liners, compile + suite is enough;
   don't build heavy fixtures to test a sign flip.
 
-**4. Remove the worktree when the PR merges** — not when it is pushed. `git worktree remove <path>`
-once `git status --short` and `git log @{u}..` are both empty. Holding it while the PR is open is
-correct: review findings land against that branch, and nothing else needs the directory now that the
-main tree stays on `develop`.
+**4. Remove the worktree once the work is pushed.** `git worktree remove <path>` once
+`git status --short` and `git log @{u}..` are both empty. If review findings bring more work,
+recreate it with `.claude/scripts/new-worktree.sh <branch>`; the branch lives on `origin`, not in
+the directory.
 
 **5. Ship.** `gh issue create` (mechanism / impact / fix) → commit `Fixes #N` with the
 `Co-Authored-By` trailer and **no `[ci skip]`** → `git push -u` → `gh pr create --base develop`.
