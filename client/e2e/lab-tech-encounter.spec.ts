@@ -6,6 +6,7 @@ import { resetDevice } from './helpers/device';
 import {
   WAIT,
   clickSubTaskTab,
+  expectActivityInTab,
   openActivity,
   openEncounterTab,
   syncAndWait,
@@ -304,12 +305,13 @@ test.describe('Lab Tech and Nurse: a saved Next Steps task reopened by a later d
 
     // 9 g/dL is moderate anemia (7 <= count < 11). It puts Next Steps on the
     // encounter without putting any medication on it.
-    // Malaria masks anemia and Hepatitis B adds a referral of its own, so
-    // both are kept negative: moderate anemia is the only thing the results
-    // diagnose, and it needs no medication.
+    // Only moderate anemia is left to diagnose, and it needs no medication.
+    // Malaria masks anemia, Hepatitis B adds a referral of its own, and
+    // Syphilis carries a treatment of its own that would keep Next Steps
+    // pending whatever the medication rule says.
     const completedResults = await completeLabResults(page, {
       hemoglobinCount: '9',
-      negativeResultTests: ['Malaria', 'Hepatitis B'],
+      negativeResultTests: ['Malaria', 'Hepatitis B', 'Syphilis'],
     });
     expect(completedResults.length, 'at least one lab result should have been completed').toBeGreaterThan(0);
     await page.waitForTimeout(WAIT.pageNavigation);
@@ -326,11 +328,12 @@ test.describe('Lab Tech and Nurse: a saved Next Steps task reopened by a later d
 
     // Saved with nothing to hand over, the task counts as done.
     await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
-    await openEncounterTab(page, 'completed');
-    await expect(
-      page.locator('.icon-task-next-steps'),
+    await expectActivityInTab(
+      page,
+      'next-steps',
+      'completed',
       'Next Steps should be listed as completed once it is saved',
-    ).toBeVisible({ timeout: 10000 });
+    );
 
     // --- Phase 4: answering the follow ups makes a medication required ---
     await openEncounterTab(page, 'pending');
@@ -344,12 +347,20 @@ test.describe('Lab Tech and Nurse: a saved Next Steps task reopened by a later d
     expect(completedFollowUps.length, 'at least one follow up should have been completed').toBeGreaterThan(0);
     await page.waitForTimeout(WAIT.pageNavigation);
 
-    await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
-    await openEncounterTab(page, 'pending');
+    // Answering the last recurrent activity opens the progress report, and
+    // the encounter is over. It is not the last one while a medication the
+    // encounter requires has not been offered.
     await expect(
-      page.locator('.icon-task-next-steps'),
+      page.locator('div.page-encounter.prenatal'),
+      'the encounter should not have completed while a required medication was never offered',
+    ).toBeVisible({ timeout: 15000 });
+
+    await expectActivityInTab(
+      page,
+      'next-steps',
+      'pending',
       'Next Steps should be pending again now that a medication is required',
-    ).toBeVisible({ timeout: 10000 });
+    );
 
     await openActivity(page, 'prenatal', 'next-steps');
     await dismissWarningPopup(page);

@@ -655,6 +655,33 @@ export async function openEncounterTab(
 
 
 /**
+ * Assert an activity is listed under one of the encounter page's tabs, and
+ * not under the other. Checking both sides is what makes the assertion mean
+ * something: a tab that failed to switch leaves the other tab's cards on
+ * screen, and a one sided check passes on them.
+ */
+export async function expectActivityInTab(
+  page: Page,
+  activityIcon: string,
+  tab: 'pending' | 'completed',
+  message: string,
+): Promise<void> {
+  const other = tab === 'pending' ? 'completed' : 'pending';
+  const card = page.locator(`.icon-task-${activityIcon}`);
+
+  await openEncounterTab(page, tab);
+  await expect(card, message).toBeVisible({ timeout: 10000 });
+
+  await openEncounterTab(page, other);
+  await expect(card, `${message} - and not under ${other}`).toBeHidden({
+    timeout: 10000,
+  });
+
+  await openEncounterTab(page, tab);
+}
+
+
+/**
  * The blood glucose field refuses a reading typed in millimoles per litre, and
  * says which unit it wants. Leaves a reading in range behind.
  *

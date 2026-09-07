@@ -1191,8 +1191,10 @@ export async function completeLabResults(
       await page.waitForTimeout(WAIT.elmRerender);
     }
 
-    const wantsNegative = negativeResultTests.some(
-      name => name.trim().toLowerCase() === tabLabel.trim().toLowerCase(),
+    // Matched loosely: a tab is labelled by its test, and some carry the
+    // method too - the syphilis tab reads "Syphilis - RPR".
+    const wantsNegative = negativeResultTests.some(name =>
+      tabLabel.trim().toLowerCase().includes(name.trim().toLowerCase()),
     );
     if (wantsNegative) {
       const resultSelect = page.locator('select.form-input').first();
