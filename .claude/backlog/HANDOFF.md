@@ -1,11 +1,11 @@
 ---
 name: session-handoff
-description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, R26 added 2026-08-30 evening, R27 added 2026-09-01, R28 added 2026-09-03, open-PR section rewritten 2026-09-01 evening and extended 2026-09-02 with B-213 (five PRs open, reviewed, awaiting merge)
+description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, R26 added 2026-08-30 evening, R27 added 2026-09-01, R28 added 2026-09-03, R29 added 2026-09-07, open-PR section rewritten 2026-09-01 evening and extended 2026-09-02 with B-213 (five PRs open, reviewed, awaiting merge)
 metadata: 
   node_type: memory
   type: project
   originSessionId: d78d3330-6ce4-4b84-aa0a-57da7f422346
-  modified: 2026-09-02
+  modified: 2026-09-07
 ---
 
 # Session handoff — E-Heza improvement work
@@ -44,7 +44,7 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — updated 2026-09-06
+## Open right now — updated 2026-09-07 (R29 recorded; the 2026-09-06 PR/worktree facts below unchanged)
 
 **All seven PRs in the 2026-09-01 table below MERGED on 2026-09-03** (#2180, #2183, #2185, #2187, #2189, #2191, #2193; issues closed). Their worktrees (`B-272-…`, `B-303-B-304-…`, `B-280-…`, `B-299-…`, `B-213-…`, `B-307-…`) were still held on 2026-09-06 and can be removed.
 
@@ -133,6 +133,21 @@ Earlier merges, for context: **#2150 (B-235)** and **#2146** (e2e progress-repor
 2026-08-26; **#2134 (B-194)** and **#2136 (B-189)** on 2026-08-25; the four red on the 2026-08-17
 GitHub incident (#2090, #2095, #2097, #2099) and the whole R22 stack (#2108…#2116). That incident is
 over and was never a real signal.
+
+## Round 29 ran 2026-09-06 → 09-07 — 12 new items, ONE tier 1, ONE tier 2 (deployed), the backend error trail found dead
+
+B-324..B-335 (see `rounds.md` R29, `queue.md` R29 line). A 6-unit coverage sweep: the diagnosis engines at tier-1 depth (AI resolver + nutrition family), the never-rowed server download core, login/HC-switch (R11 row), Fetch wiring (R10/R16), hedley_admin + hedley_health_center + hedley_chw + logs_glitchtip (R14 / never rowed), Family Nutrition + Home Visit (R14). All six scouts were killed by the session cap (03:30 reset) minutes after launch; the user asked for a 3-hour pause at 00:40, a one-shot timer resumed the seat at 03:43 and all five remaining scouts were resumed via SendMessage with context intact (R27/R28 remedy; ~2 min each to finish). **Counts after R29: 202 READY — T1 7 · T2 5 · T3 41 · T4 115 · untiered 34.** Dry-stop counter: 0.
+
+Headlines, live-sized from this seat (4 terminus queries on ihangane; the tip-somalia sizing ran inside the scout):
+- **B-324** tier 1 (diagnosis rule), tip-somalia only — the AI COVID path exits on a >2-week cough "to diagnose TB suspect", but TB suspect is feature-gated in the sibling path and tip-somalia has no TB feature: a COVID-suspect patient with a positive COVID RDT is stored as Fever of Unknown Origin / complicated RI. Two commits eight days apart (`ab3d0f982`, `b05e10417`), one copy updated.
+- **B-325** ⭐ tier 2, DEPLOYED all sites — sync download: the cursor is the batch's max vid, but vids are allocated at INSERT and visible at COMMIT (live: `innodb_autoinc_lock_mode=1`, `READ-COMMITTED`); an upload's 0–5 s transaction can commit below a cursor another device at the HC already advanced, and `node.vid > base` never serves those records again. Precondition (a worker's person re-save with a vid inside an upload's range, same shard) observed in 7 of 102 uploads in a week. ⚠ The parked per-record-commit brief would widen this window.
+- **B-331** ⭐ tier 3, DEPLOYED all sites — **backend error reporting has been dead since the release**: `logs_glitchtip` is enabled with a DSN (self-hosted `glitchtip.gizra.com`) but the Sentry SDK is not in `sites/all/vendor` (stale `composer.lock`; verified in the main tree and in `.pantheon-ihangane` `origin/master`), the module's "silently skip" guard hides it, and `hedley_update_7048` turned Rollbar off. The Rollbar-based post-deploy triage has no successor feed — B-168's "no event in two weeks" reading should be re-examined with this in mind (client Rollbar is a separate lane and unaffected; this is the PHP side).
+- **B-333** tier 3 — the E-ledger viewer role (3 active users on ihangane) reads every HC's children/mothers/measurements/CSVs: the listing views sit at Views' default `access content`, which the role holds.
+- **B-329** tier 3, ihangane — the group-session NCDA page fetches no individual data, so the "behind on vaccinations" sign can never be recorded there (5,762 group NCDAs live).
+- **B-317 amended** — a deterministic trigger (add/remove an HC while another HC downloads; `Zipper.fromList` refocuses on the head) plus a stats-lane inverse; fold into its fix.
+- Latent, dated: **B-327** — no unpair path on the client and contrib deletes expired tokens; live tokens are P5Y with the earliest expiry **2030-03-19** (5,725 tokens, 0 expired today).
+
+⭐ Durable (in the coverage lessons via `rounds.md`): monotonic cursors over auto-increments need a lag or a safe cursor; "skip silently rather than take the site down" guards must surface their own failure; a Views `perm` access type with no `perm` key = `access content`; a hard refresh lands on the page's OWN fetch — whole-table fetches from the PinCode page never run on that path.
 
 ## Round 28 ran 2026-09-03 — 15 new items, THREE tier 2, all three deployed; every old ✅ infrastructure row re-read yielded
 

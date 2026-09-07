@@ -322,6 +322,17 @@ B-321	4	READY	LOW			28	NCD Laboratory (urine dipstick, creatinine, liver functio
 B-322	4	READY	LOW			28	Child progress report, Diagnosis pane: "Malnutrition signs" is listed twice for one date, because the nutrition-derived 
 B-323	1	READY	MED			28	Prenatal: a partner HIV result entered by a LAB TECHNICIAN produces no discordant-partnership diagnosis at all, because 
 B-324	1	READY	MED-LOW			29	Acute Illness diagnosis: on a site without Tuberculosis Management, a COVID-suspect patient with a cough of more than tw
+B-325	2	READY	MED-HIGH			29	Sync download: the revision cursor advances past an upload whose transaction has not committed yet, so a second device a
+B-326	4	READY	LOW			29	Sync shards: a measurement is sharded by the person's health centres, not by the clinic that performed it, so an FBF dis
+B-327	4	READY	LOW			29	Device pairing: once a device is paired there is no way back to the pairing form, so when its access token expires (cont
+B-328	4	READY	LOW			29	Role gating: `viewUserPage` authorises by location only, so a lab technician or CHW reaches every nurse page through the
+B-329	3	READY	MED-LOW			29	Group session NCDA: the activity page never fetches the child's individual data, so the "behind on vaccinations" sign ca
+B-330	4	READY	LOW			29	Group "Begin new encounter" page: its fetch is empty, so after a reload at that URL the Group Assessment button is dead,
+B-331	3	READY	MED			29	Backend error reporting: the Sentry SDK that `logs_glitchtip` needs is not in the deployed vendor tree, so every backend
+B-332	4	READY	LOW			29	Backend error reporting: the GlitchTip event buffer is a `drupal_static`, and the stats/report/village builders call bar
+B-333	3	READY	MED-LOW			29	Admin lists: the "E-ledger viewer" role, which the ledger scopes to the user's own health centres, can open every health
+B-334	4	READY	LOW			29	Admin sidebar: the "Create PMTCT Participation" link points at `node/add/pmtct-paticipation`, a path that does not exist
+B-335	4	READY	LOW			29	Family Nutrition: the "add child" tile disappears once the adult has 5 related people of ANY kind — own parents, caregiv
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
