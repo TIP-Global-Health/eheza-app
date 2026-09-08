@@ -47,12 +47,17 @@ export async function pairDevice(page: Page, pairingCode = '99999999') {
   // which forces the app to show the pairing form. We keep the
   // service worker and its caches intact so nurse/health center
   // data remains available for PIN validation.
-  await page.goto('/');
+  //
+  // waitUntil 'commit' resolves goto/reload before Elm boots: a warm
+  // service worker serves the cached app fast enough that the router
+  // redirects to #pincode before the default 'load' event fires,
+  // which would abort the navigation as "interrupted".
+  await page.goto('/', { waitUntil: 'commit' });
   await page.evaluate(() => {
     localStorage.clear();
     sessionStorage.clear();
   });
-  await page.reload();
+  await page.reload({ waitUntil: 'commit' });
 
   const state = await waitForAppReady(page);
 

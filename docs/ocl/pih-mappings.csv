@@ -1,0 +1,219 @@
+resource_type,owner,owner_type,source,from_concept_url,map_type,to_source_url,to_concept_code,to_concept_name,confidence
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-001/,SAME-AS,/orgs/PIH/sources/PIH/,5980,Vomiting,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-002/,SAME-AS,/orgs/PIH/sources/PIH/,121,Myalgia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-003/,SAME-AS,/orgs/PIH/sources/PIH/,21078,Chills,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-004/,SAME-AS,/orgs/PIH/sources/PIH/,6029,Night sweats,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-005/,SAME-AS,/orgs/PIH/sources/PIH/,620,Headache,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-006/,SAME-AS,/orgs/PIH/sources/PIH/,20255,Unable to drink or breastfeed,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-007/,SAME-AS,/orgs/PIH/sources/PIH/,10700,Refuses to eat,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-008/,SAME-AS,/orgs/PIH/sources/PIH/,11927,Excessive thirst,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-009/,SAME-AS,/orgs/PIH/sources/PIH/,5192,Icteric sclera,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-010/,SAME-AS,/orgs/PIH/sources/PIH/,7102,Bleeding,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-011/,SAME-AS,/orgs/PIH/sources/PIH/,970,Hemoptysis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-012/,SAME-AS,/orgs/PIH/sources/PIH/,107,Cough,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-013/,SAME-AS,/orgs/PIH/sources/PIH/,6016,Nasal discharge,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-014/,SAME-AS,/orgs/PIH/sources/PIH/,5960,Dyspnea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-015/,SAME-AS,/orgs/PIH/sources/PIH/,12883,Sore throat,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-016/,SAME-AS,/orgs/PIH/sources/PIH/,12832,Loss of sense of smell,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-017/,SAME-AS,/orgs/PIH/sources/PIH/,136,Chest Pain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-018/,SAME-AS,/orgs/PIH/sources/PIH/,2135,Bloody diarrhea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-019/,SAME-AS,/orgs/PIH/sources/PIH/,5978,Nausea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-020/,SAME-AS,/orgs/PIH/sources/PIH/,14698,Sunken eyes,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-021/,SAME-AS,/orgs/PIH/sources/PIH/,14699,Slow skin turgor,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-022/,SAME-AS,/orgs/PIH/sources/PIH/,215,Jaundice,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-023/,SAME-AS,/orgs/PIH/sources/PIH/,10702,Laryngeal stridor,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-024/,SAME-AS,/orgs/PIH/sources/PIH/,12233,Intercostal recession,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-CS-001/,SAME-AS,/orgs/PIH/sources/PIH/,11067,Birth weight (kg),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-CS-002/,SAME-AS,/orgs/PIH/sources/PIH/,13321,Number of antenatal visits for current pregnancy,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-001/,SAME-AS,/orgs/PIH/sources/PIH/,11551,DTG,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-002/,SAME-AS,/orgs/PIH/sources/PIH/,628,3TC,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-003/,SAME-AS,/orgs/PIH/sources/PIH/,802,Tenofovir,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-004/,SAME-AS,/orgs/PIH/sources/PIH/,11552,TDF + 3TC + DTG,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-005/,SAME-AS,/orgs/PIH/sources/PIH/,10920,ATV/r,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-006/,SAME-AS,/orgs/PIH/sources/PIH/,12361,ABC + 3TC,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-007/,SAME-AS,/orgs/PIH/sources/PIH/,12360,TDF + 3TC,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-008/,SAME-AS,/orgs/PIH/sources/PIH/,797,AZT,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-009/,SAME-AS,/orgs/PIH/sources/PIH/,1610,AZT + 3TC + NVP,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-010/,SAME-AS,/orgs/PIH/sources/PIH/,2985,TDF + 3TC + EFV,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-011/,SAME-AS,/orgs/PIH/sources/PIH/,630,3TC + AZT,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-012/,SAME-AS,/orgs/PIH/sources/PIH/,10873,LPV/r,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-013/,SAME-AS,/orgs/PIH/sources/PIH/,13116,DVR/r,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-014/,SAME-AS,/orgs/PIH/sources/PIH/,13784,RAL,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-015/,SAME-AS,/orgs/PIH/sources/PIH/,633,EFV,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-016/,SAME-AS,/orgs/PIH/sources/PIH/,631,NVP,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-017/,SAME-AS,/orgs/PIH/sources/PIH/,13107,ETV,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-018/,SAME-AS,/orgs/PIH/sources/PIH/,814,Abacavir,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-019/,SAME-AS,/orgs/PIH/sources/PIH/,916,Cotrimoxazole,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-020/,SAME-AS,/orgs/PIH/sources/PIH/,512,Rash,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-021/,SAME-AS,/orgs/PIH/sources/PIH/,20026,Severe abdominal pain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-022/,SAME-AS,/orgs/PIH/sources/PIH/,3781,Mouth ulceration,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-023/,SAME-AS,/orgs/PIH/sources/PIH/,856,"HIV viral load, quantitative",high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-024/,SAME-AS,/orgs/PIH/sources/PIH/,5497,CD4,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HV-001/,SAME-AS,/orgs/PIH/sources/PIH/,10571,Supplement received,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-001/,SAME-AS,/orgs/PIH/sources/PIH/,9531,Creatinine (mg/dL),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-002/,SAME-AS,/orgs/PIH/sources/PIH/,12655,Blood urea nitrogen (mg/dL),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-003/,SAME-AS,/orgs/PIH/sources/PIH/,654,Serum Glutamic-Pyruvic Transaminase,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-004/,SAME-AS,/orgs/PIH/sources/PIH/,653,Serum Glutamic-Oxaloacetic Transaminase,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-005/,SAME-AS,/orgs/PIH/sources/PIH/,12991,Total cholesterol (mg/dL),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-006/,SAME-AS,/orgs/PIH/sources/PIH/,12993,HDL (mg/dL),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-007/,SAME-AS,/orgs/PIH/sources/PIH/,12992,LDL (mg/dL),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-008/,SAME-AS,/orgs/PIH/sources/PIH/,12990,Triglycerides (mg/dL),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-009/,SAME-AS,/orgs/PIH/sources/PIH/,7460,HbA1c,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-010/,SAME-AS,/orgs/PIH/sources/PIH/,1169,HIV infected,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-011/,SAME-AS,/orgs/PIH/sources/PIH/,3720,Diabetes,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-012/,SAME-AS,/orgs/PIH/sources/PIH/,3699,Chronic kidney disease,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-013/,SAME-AS,/orgs/PIH/sources/PIH/,903,Hypertension,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-014/,SAME-AS,/orgs/PIH/sources/PIH/,6693,Gestational diabetes,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-015/,SAME-AS,/orgs/PIH/sources/PIH/,47,Preeclampsia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-016/,SAME-AS,/orgs/PIH/sources/PIH/,21002,Diabetic neuropathy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-017/,SAME-AS,/orgs/PIH/sources/PIH/,3681,Renal failure,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-018/,SAME-AS,/orgs/PIH/sources/PIH/,123,Malaria,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-019/,SAME-AS,/orgs/PIH/sources/PIH/,58,Tuberculosis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-020/,SAME-AS,/orgs/PIH/sources/PIH/,14885,Chronic viral Hepatitis B,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-021/,SAME-AS,/orgs/PIH/sources/PIH/,223,Syphilis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-022/,SAME-AS,/orgs/PIH/sources/PIH/,14480,Diabetic retinopathy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-023/,SAME-AS,/orgs/PIH/sources/PIH/,3,Anemia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-024/,SAME-AS,/orgs/PIH/sources/PIH/,7486,Vision problem,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-025/,SAME-AS,/orgs/PIH/sources/PIH/,11786,Severe headache,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-026/,SAME-AS,/orgs/PIH/sources/PIH/,13341,Loss of consciousness,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-027/,SAME-AS,/orgs/PIH/sources/PIH/,11929,Polyuria,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-028/,SAME-AS,/orgs/PIH/sources/PIH/,2719,Anxiety,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-029/,SAME-AS,/orgs/PIH/sources/PIH/,832,Weight loss,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-030/,SAME-AS,/orgs/PIH/sources/PIH/,581,Ascites,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-031/,SAME-AS,/orgs/PIH/sources/PIH/,9332,Hemiparesis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-032/,SAME-AS,/orgs/PIH/sources/PIH/,5108,Abnormal gait,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-033/,SAME-AS,/orgs/PIH/sources/PIH/,10604,Dysarthria,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-034/,SAME-AS,/orgs/PIH/sources/PIH/,8582,Vision Loss,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-035/,SAME-AS,/orgs/PIH/sources/PIH/,20023,Blurred vision,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-036/,SAME-AS,/orgs/PIH/sources/PIH/,3486,Orthopnea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-037/,SAME-AS,/orgs/PIH/sources/PIH/,12488,Paroxysmal nocturnal dyspnea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-038/,SAME-AS,/orgs/PIH/sources/PIH/,456,Low back pain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-039/,SAME-AS,/orgs/PIH/sources/PIH/,8600,Neck pain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-040/,SAME-AS,/orgs/PIH/sources/PIH/,912,Ibuprofen,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-041/,SAME-AS,/orgs/PIH/sources/PIH/,10428,ACE inhibitors,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-042/,SAME-AS,/orgs/PIH/sources/PIH/,10434,ARBs (angiotensin II receptor blockers),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-043/,SAME-AS,/orgs/PIH/sources/PIH/,1243,Hydrochlorothiazide,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-044/,SAME-AS,/orgs/PIH/sources/PIH/,251,Methyldopa,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-045/,SAME-AS,/orgs/PIH/sources/PIH/,929,Hydralazine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-046/,SAME-AS,/orgs/PIH/sources/PIH/,4052,Metformin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-047/,SAME-AS,/orgs/PIH/sources/PIH/,4046,Glibenclamide,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-048/,SAME-AS,/orgs/PIH/sources/PIH/,14481,Insulin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-049/,SAME-AS,/orgs/PIH/sources/PIH/,1552,History of alcohol use,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-050/,SAME-AS,/orgs/PIH/sources/PIH/,2545,History of tobacco use,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-001/,SAME-AS,/orgs/PIH/sources/PIH/,5089,Weight (kg),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-002/,SAME-AS,/orgs/PIH/sources/PIH/,6019,Abdominal swelling,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-003/,SAME-AS,/orgs/PIH/sources/PIH/,10116,Asteatosis cutis,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-004/,SAME-AS,/orgs/PIH/sources/PIH/,460,Oedema,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-005/,SAME-AS,/orgs/PIH/sources/PIH/,6031,Decreased appetite,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-006/,SAME-AS,/orgs/PIH/sources/PIH/,1312,Moderate malnutrition,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-007/,SAME-AS,/orgs/PIH/sources/PIH/,11340,Severe uncomplicated malnutrition,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-008/,SAME-AS,/orgs/PIH/sources/PIH/,16,Diarrhea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-009/,SAME-AS,/orgs/PIH/sources/PIH/,190,Condoms,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-010/,SAME-AS,/orgs/PIH/sources/PIH/,5275,Intra uterine device (IUD),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-011/,SAME-AS,/orgs/PIH/sources/PIH/,12106,Jadelle (implantable contraceptive),medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-012/,SAME-AS,/orgs/PIH/sources/PIH/,5279,Injectable contraceptives,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-013/,SAME-AS,/orgs/PIH/sources/PIH/,13249,Combined oral contraceptive pills,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-014/,SAME-AS,/orgs/PIH/sources/PIH/,1719,Tubal ligation,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-015/,SAME-AS,/orgs/PIH/sources/PIH/,1721,Vasectomy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-016/,SAME-AS,/orgs/PIH/sources/PIH/,13158,Lactational amenorrhea,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-017/,SAME-AS,/orgs/PIH/sources/PIH/,5632,Breastfeeding child,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-018/,SAME-AS,/orgs/PIH/sources/PIH/,11805,Disability,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-019/,SAME-AS,/orgs/PIH/sources/PIH/,13534,Birth defects,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-020/,SAME-AS,/orgs/PIH/sources/PIH/,10570,Deworming,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-001/,SAME-AS,/orgs/PIH/sources/PIH/,2725,First name,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-002/,SAME-AS,/orgs/PIH/sources/PIH/,2724,Last name,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-003/,NARROWER-THAN,/orgs/PIH/sources/PIH/,13173,Identification number,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-004/,SAME-AS,/orgs/PIH/sources/PIH/,2845,Gender,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-005/,SAME-AS,/orgs/PIH/sources/PIH/,3753,HIV status,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-006/,SAME-AS,/orgs/PIH/sources/PIH/,5630,Method of delivery,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-007/,SAME-AS,/orgs/PIH/sources/PIH/,1688,Highest education level,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-008/,SAME-AS,/orgs/PIH/sources/PIH/,1054,Civil status,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-009/,SAME-AS,/orgs/PIH/sources/PIH/,2614,Mobile phone number,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-010/,SAME-AS,/orgs/PIH/sources/PIH/,13517,Next of kin name (text),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-001/,SAME-AS,/orgs/PIH/sources/PIH/,5085,Systolic,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-002/,SAME-AS,/orgs/PIH/sources/PIH/,5086,Diastolic,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-003/,SAME-AS,/orgs/PIH/sources/PIH/,5087,Pulse,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-004/,SAME-AS,/orgs/PIH/sources/PIH/,5242,Respiratory rate,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-005/,SAME-AS,/orgs/PIH/sources/PIH/,5088,Temperature (C),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-006/,SAME-AS,/orgs/PIH/sources/PIH/,5090,Height (cm),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-008/,SAME-AS,/orgs/PIH/sources/PIH/,1290,Middle Upper Arm Circumference (cm),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-009/,SAME-AS,/orgs/PIH/sources/PIH/,13028,Fundal height,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-010/,SAME-AS,/orgs/PIH/sources/PIH/,13199,Fetal heart rate,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-011/,SAME-AS,/orgs/PIH/sources/PIH/,20028,Fetal movements present,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-012/,SAME-AS,/orgs/PIH/sources/PIH/,13047,Fetal presentation,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-013/,SAME-AS,/orgs/PIH/sources/PIH/,15140,Abdominal scar indicative of prior caesarean section,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-014/,SAME-AS,/orgs/PIH/sources/PIH/,1755,Patient pregnant,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-015/,SAME-AS,/orgs/PIH/sources/PIH/,5624,Gravida,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-016/,SAME-AS,/orgs/PIH/sources/PIH/,1053,Parity,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-017/,SAME-AS,/orgs/PIH/sources/PIH/,13240,Number of prior stillbirths,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-018/,SAME-AS,/orgs/PIH/sources/PIH/,7012,Number of abortions/miscarriages,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-019/,SAME-AS,/orgs/PIH/sources/PIH/,11117,Total number of living children,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-020/,SAME-AS,/orgs/PIH/sources/PIH/,968,Date of last menstrual period,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-021/,SAME-AS,/orgs/PIH/sources/PIH/,13343,Vaginal bleeding,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-023/,SAME-AS,/orgs/PIH/sources/PIH/,206,Seizure,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-024/,SAME-AS,/orgs/PIH/sources/PIH/,151,Abdominal pain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-025/,SAME-AS,/orgs/PIH/sources/PIH/,5540,Difficulty breathing,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-026/,SAME-AS,/orgs/PIH/sources/PIH/,5945,Fever,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-027/,SAME-AS,/orgs/PIH/sources/PIH/,5226,Weakness,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-028/,SAME-AS,/orgs/PIH/sources/PIH/,20025,Imminent vaginal delivery,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-030/,SAME-AS,/orgs/PIH/sources/PIH/,10688,Persistent vomiting,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-031/,SAME-AS,/orgs/PIH/sources/PIH/,14120,Unconscious,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-032/,SAME-AS,/orgs/PIH/sources/PIH/,20050,Spontaneous rupture of membranes,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-033/,SAME-AS,/orgs/PIH/sources/PIH/,11788,Premature uterine contractions,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-034/,SAME-AS,/orgs/PIH/sources/PIH/,7998,Breast Lump,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-035/,SAME-AS,/orgs/PIH/sources/PIH/,13330,Mastitis-Postpartum,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-036/,SAME-AS,/orgs/PIH/sources/PIH/,516,Pale conjunctiva,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-037/,SAME-AS,/orgs/PIH/sources/PIH/,12621,Irregular heartbeat,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-039/,SAME-AS,/orgs/PIH/sources/PIH/,133,Goiter,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-040/,SAME-AS,/orgs/PIH/sources/PIH/,161,Lymphadenopathy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-041/,SAME-AS,/orgs/PIH/sources/PIH/,14623,Wheezing during clinical exam,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-042/,SAME-AS,/orgs/PIH/sources/PIH/,3239,Crackles,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-043/,SAME-AS,/orgs/PIH/sources/PIH/,5008,Hepatomegaly,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-044/,SAME-AS,/orgs/PIH/sources/PIH/,5009,Splenomegaly,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-045/,SAME-AS,/orgs/PIH/sources/PIH/,5245,Pallor,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-046/,SAME-AS,/orgs/PIH/sources/PIH/,12250,Peripheral edema,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-047/,SAME-AS,/orgs/PIH/sources/PIH/,12249,Lower extremity edema,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-048/,SAME-AS,/orgs/PIH/sources/PIH/,773,Ferrous sulphate + Folic acid,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-049/,SAME-AS,/orgs/PIH/sources/PIH/,244,Mebendazole,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-050/,SAME-AS,/orgs/PIH/sources/PIH/,257,Folic acid,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-051/,SAME-AS,/orgs/PIH/sources/PIH/,4063,Vitamin A,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-052/,SAME-AS,/orgs/PIH/sources/PIH/,88,Acetylsalicylic acid,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-053/,SAME-AS,/orgs/PIH/sources/PIH/,12119,Calcium carbonate,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-054/,SAME-AS,/orgs/PIH/sources/PIH/,2169,HIV test result,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-055/,SAME-AS,/orgs/PIH/sources/PIH/,12265,Rapid syphilis test,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-056/,SAME-AS,/orgs/PIH/sources/PIH/,2439,Hepatitis B surface antigen test,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-057/,SAME-AS,/orgs/PIH/sources/PIH/,11464,Malaria RDT,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-058/,SAME-AS,/orgs/PIH/sources/PIH/,21,Hemoglobin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-059/,SAME-AS,/orgs/PIH/sources/PIH/,887,Serum glucose,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-060/,SAME-AS,/orgs/PIH/sources/PIH/,12272,Urine protein (dipstick),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-061/,SAME-AS,/orgs/PIH/sources/PIH/,12292,"Glucose measurement, qualitative, urine",high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-062/,SAME-AS,/orgs/PIH/sources/PIH/,12312,White blood cells in urine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-063/,SAME-AS,/orgs/PIH/sources/PIH/,12273,Urine nitrite test,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-065/,SAME-AS,/orgs/PIH/sources/PIH/,300,Blood group,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-066/,SAME-AS,/orgs/PIH/sources/PIH/,20034,Rh factor,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-067/,SAME-AS,/orgs/PIH/sources/PIH/,1544,Contraceptive use,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-068/,SAME-AS,/orgs/PIH/sources/PIH/,17,Td booster,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-069/,SAME-AS,/orgs/PIH/sources/PIH/,13053,Received insecticide treated bednet,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-070/,SAME-AS,/orgs/PIH/sources/PIH/,45,Urine pregnancy test,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-001/,SAME-AS,/orgs/PIH/sources/PIH/,1549,Pulmonary tuberculosis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-002/,SAME-AS,/orgs/PIH/sources/PIH/,1547,Extra-pulmonary tuberculosis,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-003/,SAME-AS,/orgs/PIH/sources/PIH/,5949,Fatigue,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-004/,SAME-AS,/orgs/PIH/sources/PIH/,767,Rifampicin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-005/,SAME-AS,/orgs/PIH/sources/PIH/,656,Isoniazid,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-006/,SAME-AS,/orgs/PIH/sources/PIH/,5829,Pyrazinamide,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-007/,SAME-AS,/orgs/PIH/sources/PIH/,745,Ethambutol,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-008/,SAME-AS,/orgs/PIH/sources/PIH/,1131,Rifampicin + Isoniazid + Pyrazinamide + Ethambutol,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-TB-009/,SAME-AS,/orgs/PIH/sources/PIH/,1194,Rifampicin + Isoniazid,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-001/,SAME-AS,/orgs/PIH/sources/PIH/,5314,Head circumference (cm),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-002/,SAME-AS,/orgs/PIH/sources/PIH/,886,BCG vaccine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-003/,SAME-AS,/orgs/PIH/sources/PIH/,783,Oral polio vaccination,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-004/,SAME-AS,/orgs/PIH/sources/PIH/,781,Diphtheria Tetanus and Pertussis vaccination,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-005/,SAME-AS,/orgs/PIH/sources/PIH/,12549,Pneumococcal conjugate vaccine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-006/,SAME-AS,/orgs/PIH/sources/PIH/,10172,"Rotavirus vaccine, live",high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-007/,SAME-AS,/orgs/PIH/sources/PIH/,20677,"Polio vaccination, inactivated",high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-008/,SAME-AS,/orgs/PIH/sources/PIH/,10173,Measles-Rubella vaccine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-009/,SAME-AS,/orgs/PIH/sources/PIH/,14703,Lethargy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-010/,SAME-AS,/orgs/PIH/sources/PIH/,9432,Omphalitis of the newborn,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-011/,SAME-AS,/orgs/PIH/sources/PIH/,5170,Nuchal rigidity,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-WC-012/,SAME-AS,/orgs/PIH/sources/PIH/,7251,Neonatal tetanus,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1347/,SAME-AS,/orgs/PIH/sources/PIH/,11117,Total number of living children,medium
