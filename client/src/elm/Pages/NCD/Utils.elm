@@ -118,7 +118,12 @@ applyHypertensionDiagnosesLogic assembled diagnoses =
                 diagnoses
 
         currentHypertensionCondition =
-            resolveCurrentHypertensionCondition assembled
+            -- The stage we are about to write is compared against the stage
+            -- reached at previous encounters. The encounter being assessed is
+            -- left out on purpose: assessment re-runs on every measurement
+            -- save, so reading the stage it already carries would let each
+            -- re-run step down again from the result of the previous one.
+            resolveHypertensionCondition assembled.previousEncountersData
     in
     -- If no hypertension criteria is met, check if we can lower hypertension stage.
     if List.isEmpty hypertension && bloodPressureSatisfiesCondition lowerHypertensionStageCondition assembled then
@@ -217,7 +222,7 @@ matchNCDDiagnosis assembled diagnosis =
             reportedAnyOfCoMorbidities assembled [ MedicalConditionDiabetes, MedicalConditionGestationalDiabetes ]
 
         DiagnosisDiabetesRecurrent ->
-            if diagnosed DiagnosisDiabetesInitial assembled then
+            if matchNCDDiagnosis assembled DiagnosisDiabetesInitial then
                 False
 
             else

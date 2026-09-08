@@ -4,7 +4,7 @@ import { setupDevice } from './helpers/auth';
 import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { syncAndWait } from './helpers/common';
+import { queryNCDDiagnoses, syncAndWait } from './helpers/common';
 import {
   createAdultAndStartNCDEncounter,
   completeDangerSigns,
@@ -256,7 +256,7 @@ test.describe('Nurse: NCD First Encounter — Female, Stage 3 Hypertension', () 
 // Test 3: Nurse Subsequent NCD Encounter — OutsideCare replaces MedicalHistory
 // =========================================================================
 
-test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
+test.describe('Nurse: NCD Subsequent Encounter — OutsideCare and hypertension staging', () => {
   test.describe.configure({ timeout: 600000 });
 
   if (process.env.RECORD) {
@@ -271,7 +271,7 @@ test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
   });
 
   test('complete subsequent NCD encounter with OutsideCare, verify backend sync', async ({ page }) => {
-    // --- PART 1: Complete a first encounter (simplified) ---
+    // --- PART 1: Complete a first encounter, diagnosed Stage 3 ---
 
     const { fullName } = await createAdultAndStartNCDEncounter(page, {
       isFemale: false,
@@ -279,9 +279,12 @@ test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
 
     await completeDangerSigns(page);
     await completeSymptomReview(page);
-    await completeExamination(page);
+    // sys 180 / dia 110 is Stage 3, the history the subsequent encounter needs.
+    await completeExamination(page, { sys: '180', dia: '110' });
     await completeMedicalHistory(page);
     await completeLaboratory(page);
+    // Stage 3 requires medication and a hospital referral.
+    await completeNextSteps(page);
     // Progress report must show what this encounter recorded.
     const report = await openReport(page, 'ncd');
     await expect(report.locator('.pane.person-details')).toContainText(fullName);
@@ -291,6 +294,8 @@ test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
 
     // Sync first encounter.
     await syncAndWait(page);
+
+    expect(queryNCDDiagnoses(fullName)).toEqual(['hypertension-stage3']);
 
     // --- PART 2: Backdate and start subsequent encounter ---
 
@@ -309,14 +314,18 @@ test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
     // SymptomReview.
     await completeSymptomReview(page);
 
-    // Examination.
-    await completeExamination(page);
+    // Examination. A low reading (sys < 100) steps the stage down by one.
+    await completeExamination(page, { sys: '95', dia: '70' });
 
     // OutsideCare (replaces MedicalHistory for subsequent encounters).
     await completeOutsideCare(page);
 
-    // Laboratory.
+    // Laboratory. Saving the random blood sugar re-runs the assessment, which
+    // must reach the same stage the Vitals save did.
     await completeLaboratory(page);
+
+    // Stage 2 still requires medication.
+    await completeNextSteps(page);
 
     // End encounter.
     await endNCDEncounter(page);
@@ -339,6 +348,10 @@ test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
     expect(nodes['ncd_vitals'], 'ncd_vitals should exist').toBe(true);
     expect(nodes['ncd_core_exam'], 'ncd_core_exam should exist').toBe(true);
     expect(nodes['ncd_outside_care'], 'ncd_outside_care should exist').toBe(true);
+
+    // Stage 3 with one low reading steps down to Stage 2, once for the visit --
+    // not once per measurement saved in it.
+    expect(queryNCDDiagnoses(fullName)).toEqual(['hypertension-stage2']);
   });
 });
 
