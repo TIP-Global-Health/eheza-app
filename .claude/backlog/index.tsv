@@ -285,7 +285,7 @@ B-284	4	READY	LOW			26	TB and HIV "not diagnosed": the participant is closed but
 B-285	3	IMPLEMENTED	MED-LOW			26	TB/HIV follow-up medication task: the "still taking the prescribed medications?" question shows Kirundi text to every us
 B-286	1	IMPLEMENTED	MED	2215	2216	26	NCD hypertension staging compares against the encounter's OWN just-written stage: a Stage-3 patient with one low reading
 B-287	3	READY	MED-LOW			26	NCD labs Case Management entry is closed by the final lab result BEFORE that result's diagnosis exists, so the Next Step
-B-288	1	READY	MED			26	NCD: diabetes found from a point-of-care blood-sugar reading at the initial phase gets no medication or referral task, b
+B-288	1	IMPLEMENTED	MED	2219	2220	26	NCD: diabetes found from a point-of-care blood-sugar reading at the initial phase gets no medication or referral task, b
 B-289	1	READY	MED			26	NCD: a pregnancy found by test at the first encounter is forgotten at every later encounter — the full antihypertensive 
 B-290	3	IMPLEMENTED	MED			26	NCD Social History: the drinks-per-week answer is never saved — the encoder writes the cigarettes count into the `bevera
 B-291	4	READY	MED-LOW			27	NCDA Antenatal Care step (all four hosts): tapping an already-recorded ANC month silently stores a phantom ANC visit dat
@@ -334,6 +334,7 @@ B-333	3	READY	MED-LOW			29	Admin lists: the "E-ledger viewer" role, which the le
 B-334	4	READY	LOW			29	Admin sidebar: the "Create PMTCT Participation" link points at `node/add/pmtct-paticipation`, a path that does not exist
 B-335	4	READY	LOW			29	Family Nutrition: the "add child" tile disappears once the adult has 5 related people of ANY kind — own parents, caregiv
 B-336	1	IMPLEMENTED	MED	2213	2214	29	Prenatal recurrent Next Steps: a medication that becomes required AFTER the nurse saved that task is never offered — the
+B-337		READY				29	NCD: renal complications found at the initial phase may hit the same omission diabetes did — the Stage 1 hypertension me
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
