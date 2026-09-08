@@ -44,7 +44,37 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — updated 2026-09-07 (R29 recorded; the 2026-09-06 PR/worktree facts below unchanged)
+## Open right now — updated 2026-09-08
+
+⭐ **The board cleared on 2026-09-08.** #2204 (B-221), #2206 (B-237), #2208 (B-240) merged 2026-09-07;
+**#2210 (B-323), #2212 (B-320) and #2214 (B-336) merged 2026-09-08 05:25-05:27**, in stack order. The
+open-PR table below is historical — **no backlog PR was open when this session started**. Every
+worktree in `git worktree list` except `B-286-…` belongs to a merged PR and can be removed:
+`B-213`, `B-215`, `B-221`, `B-236`, `B-237`, `B-240`, `B-252`, `B-272`, `B-280`, `B-293`, `B-299`,
+`B-303-B-304`, `B-307`, `B-320`, `B-323`, `B-336`.
+
+**#2216 (B-286, tier 1, issue #2215) opened 2026-09-08** — NCD hypertension staging read the
+encounter's OWN just-written stage, so a Stage-3 patient with one low reading was stepped down twice
+in a visit and a mistyped BP could not be corrected downwards. Two lines in `Pages/NCD/Utils.elm`,
+7 new `Pages/NCD/Test.elm` cases (3 of which fail on pre-fix `Utils.elm`; the other 4 are guards that
+pass on both), and the existing NCD subsequent-encounter e2e case extended to assert
+`field_ncd_diagnoses` at both encounters. ⭐ **The diabetes half's intent came from the blame, not
+from reasoning:** `7c38c3a35` (2022-10-19) replaced `not <| matchNCDDiagnosis … DiabetesInitial` with
+`diagnosed … assembled` as a side effect of its real fix, so restoring the matcher is not a revert.
+📌 **The e2e has NOT been run** — it borrows the single-instance app.
+
+⚠ **B-286 is the generation layer under B-288.** B-286's diabetes fix makes
+`DiagnosisDiabetesRecurrent` reachable at the initial phase more often, which is exactly the state
+B-288 says no initial-phase rule handles — so **B-288 should be built on B-286, not beside it**.
+B-289 collides textually with B-288 in two `||` chains (`medicateForHypertension`'s Stage-1 arm and
+`expectNextStepsTask TaskHealthEducation`) and still has its `35eb194aa` intent gate unread.
+
+📌 **`reindex.py` derives status/issue/PR from the `### ` HEADING line only** (with a 1200-char
+fallback). An `✅ IMPLEMENTED` note added lower in the entry does not reach the index — that is what
+left B-320 and B-323 with blank issue/PR columns; both headings were repaired 2026-09-08.
+
+### The 2026-09-07 view (historical — everything in it has merged)
+
 
 **All seven PRs in the 2026-09-01 table below MERGED on 2026-09-03** (#2180, #2183, #2185, #2187, #2189, #2191, #2193; issues closed). Their worktrees (`B-272-…`, `B-303-B-304-…`, `B-280-…`, `B-299-…`, `B-213-…`, `B-307-…`) were still held on 2026-09-06 and can be removed.
 

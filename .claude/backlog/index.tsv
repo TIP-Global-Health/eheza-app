@@ -283,7 +283,7 @@ B-282	4	READY	LOW			26	Acute Illness participant page: with two illnesses starte
 B-283	4	READY	LOW			26	NCDA questionnaire (Child Scoreboard, Nutrition, Well Child): after a reload, switching a parent question to "No" keeps 
 B-284	4	READY	LOW			26	TB and HIV "not diagnosed": the participant is closed but the encounter is never ended, so every screening that finds no
 B-285	3	IMPLEMENTED	MED-LOW			26	TB/HIV follow-up medication task: the "still taking the prescribed medications?" question shows Kirundi text to every us
-B-286	1	READY	MED			26	NCD hypertension staging compares against the encounter's OWN just-written stage: a Stage-3 patient with one low reading
+B-286	1	IMPLEMENTED	MED	2215	2216	26	NCD hypertension staging compares against the encounter's OWN just-written stage: a Stage-3 patient with one low reading
 B-287	3	READY	MED-LOW			26	NCD labs Case Management entry is closed by the final lab result BEFORE that result's diagnosis exists, so the Next Step
 B-288	1	READY	MED			26	NCD: diabetes found from a point-of-care blood-sugar reading at the initial phase gets no medication or referral task, b
 B-289	1	READY	MED			26	NCD: a pregnancy found by test at the first encounter is forgotten at every later encounter — the full antihypertensive 
@@ -317,10 +317,10 @@ B-316	4	READY	LOW			28	Z-score tables: a failed table download on first load is 
 B-317	2	READY	MED-HIGH			28	Sync download: a response arriving after its 30-second timeout is applied under whichever health centre is current by th
 B-318	3	READY	MED			28	Sync: the dashboard-statistics download has no timeout and no elapsed-time guard, so one stalled request wedges uploads 
 B-319	1	READY	MED			28	Prenatal labs (lab technician): a blood-smear order opens pre-answered "test will NOT be performed today" with the nurse
-B-320	1	IMPLEMENTED	MED			28	Prenatal HIV test: correcting to "known as positive" after a negative RDT keeps the result and the partner answers, so t
+B-320	1	IMPLEMENTED	MED	2211	2212	28	Prenatal HIV test: correcting to "known as positive" after a negative RDT keeps the result and the partner answers, so t
 B-321	4	READY	LOW			28	NCD Laboratory (urine dipstick, creatinine, liver function, lipid panel): re-saving a test task after its results were e
 B-322	4	READY	LOW			28	Child progress report, Diagnosis pane: "Malnutrition signs" is listed twice for one date, because the nutrition-derived 
-B-323	1	IMPLEMENTED	MED			28	Prenatal: a partner HIV result entered by a LAB TECHNICIAN produces no discordant-partnership diagnosis at all, because 
+B-323	1	IMPLEMENTED	MED	2209	2210	28	Prenatal: a partner HIV result entered by a LAB TECHNICIAN produces no discordant-partnership diagnosis at all, because 
 B-324	1	READY	MED-LOW			29	Acute Illness diagnosis: on a site without Tuberculosis Management, a COVID-suspect patient with a cough of more than tw
 B-325	2	READY	MED-HIGH			29	Sync download: the revision cursor advances past an upload whose transaction has not committed yet, so a second device a
 B-326	4	READY	LOW			29	Sync shards: a measurement is sharded by the person's health centres, not by the clinic that performed it, so an FBF dis
