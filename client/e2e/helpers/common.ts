@@ -446,17 +446,23 @@ export function queryPartnerHIVTestExecutionNote(personName: string): string | n
  * sync eventual-consistency, but resolves an empty diagnosis set to `[]` rather
  * than retrying, so a genuinely undiagnosed encounter is a result and not a
  * timeout.
+ *
+ * `minEncounters` guards the "most recent" part: a caller asserting on the
+ * second encounter of a flow passes 2, and a reply naming fewer is a sync that
+ * has not landed rather than an answer -- without it the older encounter's
+ * diagnoses come back as if they were the newer encounter's.
  */
 function queryEncounterDiagnoses(
   label: string,
   personName: string,
   encounterType: string,
   diagnosesField: string,
-  options?: { allowEmpty?: boolean },
+  options?: { allowEmpty?: boolean; minEncounters?: number },
 ): string[] | null {
   // An encounter that is expected to carry no diagnosis yet should not pay the
   // retry loop below, which exists for a sync that has not landed.
   const allowEmpty = options?.allowEmpty ?? false;
+  const minEncounters = options?.minEncounters ?? 1;
   const { drushCmd, cwd } = drushEnv();
   const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
 
@@ -483,6 +489,7 @@ function queryEncounterDiagnoses(
 
     \\$encounters = hedley_person_load_individual_participant_encounters_ids(\\$participant_id);
     if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+    \\$count = count(\\$encounters);
 
     \\$encounter = node_load(max(\\$encounters));
     if (empty(\\$encounter)) { echo json_encode(['error' => 'Encounter not loaded']); return; }
@@ -492,7 +499,7 @@ function queryEncounterDiagnoses(
         \\$diagnoses[] = \\$item['value'];
       }
     }
-    echo json_encode(['diagnoses' => \\$diagnoses]);
+    echo json_encode(['diagnoses' => \\$diagnoses, 'encounters' => \\$count]);
   `;
 
   for (let attempt = 0; attempt < 10; attempt++) {
@@ -501,15 +508,21 @@ function queryEncounterDiagnoses(
         cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
       }).trim();
       const parsed = JSON.parse(output);
+      const newestEncounterSynced = !parsed.error && parsed.encounters >= minEncounters;
       // The encounter node exists from the moment the encounter starts and its
       // diagnoses are written later, so an empty set is retried rather than
       // returned -- otherwise a lagging sync reads as "no diagnosis". An
       // encounter that genuinely has none returns [] once the retries run out.
-      if (!parsed.error && (allowEmpty || parsed.diagnoses.length > 0)) {
+      if (newestEncounterSynced && (allowEmpty || parsed.diagnoses.length > 0)) {
         return parsed.diagnoses as string[];
       }
-      if (!parsed.error && attempt === 9) return [];
-      console.log(`${label} attempt ${attempt + 1}: ${parsed.error || 'no diagnoses yet'}`);
+      if (newestEncounterSynced && attempt === 9) return [];
+      const reason = parsed.error
+        ? parsed.error
+        : parsed.encounters < minEncounters
+          ? `only ${parsed.encounters} of ${minEncounters} encounters synced`
+          : 'no diagnoses yet';
+      console.log(`${label} attempt ${attempt + 1}: ${reason}`);
     } catch (err) {
       console.log(`${label} attempt ${attempt + 1}: error`, err);
     }
@@ -523,7 +536,7 @@ function queryEncounterDiagnoses(
  */
 export function queryPrenatalDiagnoses(
   personName: string,
-  options?: { allowEmpty?: boolean },
+  options?: { allowEmpty?: boolean; minEncounters?: number },
 ): string[] | null {
   return queryEncounterDiagnoses(
     'queryPrenatalDiagnoses',
@@ -539,7 +552,7 @@ export function queryPrenatalDiagnoses(
  */
 export function queryNCDDiagnoses(
   personName: string,
-  options?: { allowEmpty?: boolean },
+  options?: { allowEmpty?: boolean; minEncounters?: number },
 ): string[] | null {
   return queryEncounterDiagnoses(
     'queryNCDDiagnoses',

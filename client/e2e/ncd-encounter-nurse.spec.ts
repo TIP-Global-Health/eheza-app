@@ -350,8 +350,9 @@ test.describe('Nurse: NCD Subsequent Encounter — OutsideCare and hypertension 
     expect(nodes['ncd_outside_care'], 'ncd_outside_care should exist').toBe(true);
 
     // Stage 3 with one low reading steps down to Stage 2, once for the visit --
-    // not once per measurement saved in it.
-    expect(queryNCDDiagnoses(fullName)).toEqual(['hypertension-stage2']);
+    // not once per measurement saved in it. Both encounters must have synced,
+    // or the first encounter's Stage 3 would answer for the second.
+    expect(queryNCDDiagnoses(fullName, { minEncounters: 2 })).toEqual(['hypertension-stage2']);
   });
 });
 
