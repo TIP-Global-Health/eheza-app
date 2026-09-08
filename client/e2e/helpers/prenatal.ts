@@ -1077,7 +1077,14 @@ export async function completeLaboratoryNurseForLab(
  * 3. Save.
  * Returns the list of completed test tab labels.
  */
-export async function completeLabResultsAsLabTech(
+/**
+ * Complete the tabs of an open recurrent-phase lab activity as whoever is
+ * signed in — "Lab Results", or "Lab Results Follow Ups", which asks the
+ * questions a lab technician left for the nurse. The two activities and the
+ * two roles are shown different questions on the same tab layout, so every
+ * step below is guarded on the field being visible.
+ */
+export async function completeLabResults(
   page: Page,
   options?: { checkGlucoseRange?: boolean },
 ): Promise<string[]> {
@@ -1105,7 +1112,8 @@ export async function completeLabResultsAsLabTech(
 
     const tabLabel = (await tab.textContent()) || `tab-${i}`;
 
-    // 1. "Will this test be performed today?" → Yes (confirms run by lab tech)
+    // 1. "Will this test be performed today?" → Yes. Only a lab technician is
+    // asked this, and answering it records the run as confirmed by them.
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
       await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
@@ -1164,8 +1172,9 @@ export async function completeLabResultsAsLabTech(
       await page.waitForTimeout(WAIT.formInteraction);
     }
 
-    // "Is partner taking ARVs?" → No (Partner HIV only, and only for a nurse
-    // — a lab tech does not answer the follow-up questions). A positive
+    // "Is partner taking ARVs?" → No. Partner HIV only, and only for a nurse:
+    // a lab technician does not answer the follow up questions, they are left
+    // for the nurse in the "Lab Results Follow Ups" activity. A positive
     // partner who is not on ARVs is the discordant-partnership condition.
     const partnerTakingArv = page.locator('.form-input.yes-no.partner-taking-arv');
     if (await partnerTakingArv.isVisible({ timeout: 1000 }).catch(() => false)) {
@@ -1549,6 +1558,42 @@ export async function navigateToCaseManagement(page: Page) {
   await page.locator('.page-case-management').waitFor({ timeout: 10000 });
   await page.waitForTimeout(WAIT.elmRerender);
 }
+
+/**
+ * Open the results a lab technician entered, from the nurse's Case Management.
+ * Once every result is in, the entry opens the progress report for review
+ * rather than the encounter, so the report is what comes back.
+ */
+export async function openLabsResultsReviewFromCaseManagement(
+  page: Page,
+  personName: string,
+): Promise<Locator> {
+  const entry = page.locator('.follow-up-entry', {
+    has: page.locator('.name', { hasText: personName }),
+  });
+  await entry.waitFor({ timeout: 10000 });
+  await click(entry.locator('.icon-forward'), page);
+  const report = page.locator('div.page-report.clinical');
+  await report.waitFor({ timeout: 15000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+  return report;
+}
+
+/**
+ * Accept the results under review, which records the review and opens the
+ * recurrent encounter, where the nurse answers the follow up questions.
+ */
+export async function acceptLabsResults(page: Page): Promise<void> {
+  await click(
+    page.locator('button.ui.primary.fluid.button', { hasText: 'Review & Accept' }),
+    page,
+  );
+  await page
+    .locator('div.page-encounter.prenatal')
+    .waitFor({ timeout: 15000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
 
 /**
  * Open a recurrent encounter from the Case Management Prenatal Labs pane.

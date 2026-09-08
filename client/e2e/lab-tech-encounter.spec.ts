@@ -1,9 +1,15 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { click, setupDevice } from './helpers/auth';
 import { getClientPort } from './helpers/client-port';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { WAIT, syncAndWait } from './helpers/common';
+import {
+  WAIT,
+  syncAndWait,
+  queryPrenatalDiagnoses,
+  queryPartnerHIVTestExecutionNote,
+} from './helpers/common';
+import { openReport } from './helpers/progress-report';
 import {
   createAdultFemaleAndStartEncounter,
   completePregnancyDating,
@@ -20,9 +26,28 @@ import {
   completeNextSteps,
   endPrenatalEncounter,
   navigateToCaseManagement,
-  completeLabResultsAsLabTech,
+  openLabsResultsReviewFromCaseManagement,
+  acceptLabsResults,
+  completeLabResults,
   queryPrenatalNodes,
 } from './helpers/prenatal';
+
+/**
+ * Sign the current user out and hand the device to another one. Clearing the
+ * origin's storage drops the IndexedDB the previous role built up, so nothing
+ * it created locally leaks into the next session.
+ */
+async function switchUser(page: Page, pinCode: string) {
+  const client = await page.context().newCDPSession(page);
+  await client.send('Storage.clearDataForOrigin', {
+    origin: `http://localhost:${getClientPort()}`,
+    storageTypes: 'all',
+  });
+  await client.detach();
+
+  resetDevice();
+  await setupDevice(page, pinCode, 'Nyange Health Center');
+}
 
 test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
   if (process.env.RECORD) {
@@ -31,9 +56,10 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     });
   }
 
-  test('nurse orders labs, lab tech enters results', async ({ page }) => {
-    // Multi-role test: full nurse encounter + lab tech encounter — needs extra time.
-    test.setTimeout(600000);
+  test('nurse orders labs, lab tech enters results, nurse answers the follow ups', async ({ page }) => {
+    // Multi-role test: nurse encounter, lab tech results, nurse follow ups —
+    // needs extra time.
+    test.setTimeout(900000);
     const lmpDate = new Date();
     lmpDate.setDate(lmpDate.getDate() - 30 * 7);
 
@@ -56,8 +82,11 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await completeMentalHealth(page);
     await completeImmunisation(page);
     await completeMedication(page);
-    // Order labs for lab processing (not point-of-care).
-    await completeLaboratoryNurseForLab(page);
+    // Order labs for lab processing (not point-of-care), except the patient's
+    // own HIV test, which is run point of care and is negative. That mix is
+    // what leaves the partner's result to arrive at the recurrent phase, with
+    // the patient's own result already known.
+    await completeLaboratoryNurseForLab(page, { hivPointOfCareNegative: true });
     // NextSteps: the "Wait" sub-task should appear because labs were ordered for lab.
     const completedSteps = await completeNextSteps(page);
     expect(completedSteps, 'completedSteps should contain wait sub-task').toContain('wait');
@@ -66,17 +95,7 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await syncAndWait(page);
 
     // --- Phase 2: Lab Tech logs in and enters results via Case Management ---
-    // Clear all browser state (including IndexedDB) to ensure the nurse's
-    // locally-created nodes don't leak into the lab tech session.
-    const client = await page.context().newCDPSession(page);
-    await client.send('Storage.clearDataForOrigin', {
-      origin: `http://localhost:${getClientPort()}`,
-      storageTypes: 'all',
-    });
-    await client.detach();
-
-    resetDevice();
-    await setupDevice(page, '3333', 'Nyange Health Center');
+    await switchUser(page, '3333');
 
     // Verify Lab Tech sees restricted menu (Case Management + Device Status only).
     await page.locator('.icon-task-case-management').waitFor({ timeout: 10000 });
@@ -110,7 +129,7 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     // Complete lab results for all visible tests.
     // The blood glucose field is asked for a reading in the wrong unit on
     // the way, and has to refuse it (#2123).
-    const completedResults = await completeLabResultsAsLabTech(page, {
+    const completedResults = await completeLabResults(page, {
       checkGlucoseRange: true,
     });
     expect(completedResults.length, 'at least one lab result should have been completed').toBeGreaterThan(0);
@@ -134,12 +153,76 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
       await page.waitForTimeout(WAIT.sectionTransition);
     }
 
-    // --- Phase 3: Sync and verify backend ---
+    // --- Phase 3: sync and verify the backend ---
     await syncAndWait(page);
 
     // Verify lab test measurement nodes exist in backend.
     const expectedTypes = ['prenatal_labs_results'];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
     expect(nodes['prenatal_labs_results'], 'prenatal_labs_results should exist').toBe(true);
+
+    // The confirmed-run note is written by the lab technician's own save, so
+    // it is the signal that their data arrived. The assertion below expects an
+    // absence, and without this anchor a lagging sync would satisfy it.
+    expect(
+      queryPartnerHIVTestExecutionNote(fullName),
+      'partner HIV test should carry the lab technician confirmed-run note',
+    ).toBe('run-confirmed-by-lab-tech');
+
+    // A lab technician can not answer the follow up questions about the
+    // partner, so nothing is diagnosed yet - whether the partner is on ARVs
+    // with a surpressed viral load decides it, and no one has been asked.
+    const diagnosesBeforeFollowUps = queryPrenatalDiagnoses(fullName, { allowEmpty: true });
+    expect(diagnosesBeforeFollowUps, 'encounter diagnoses should be readable').not.toBeNull();
+    expect(
+      diagnosesBeforeFollowUps,
+      'discordant partnership should NOT be recorded before the follow ups are answered',
+    ).not.toContain('partner-hiv-recurrent');
+
+    // --- Phase 4: the nurse answers the follow ups the lab tech left ---
+    await switchUser(page, '1234');
+    await navigateToCaseManagement(page);
+
+    // Every result is in, so the entry opens the report for the nurse to
+    // review. The report states what the partner's ARV status is, and it has
+    // nothing to state until the nurse answers the follow ups.
+    const reportBeforeFollowUps = await openLabsResultsReviewFromCaseManagement(page, fullName);
+    await expect(
+      reportBeforeFollowUps.locator('.medical-diagnosis li', { hasText: 'Discordant Couple' }),
+      'discordant couple status should not be stated before the follow ups are answered',
+    ).toHaveCount(0);
+
+    // Accepting the results is what opens the encounter the follow ups are on.
+    await acceptLabsResults(page);
+
+    await click(page.locator('.icon-task-laboratory-follow-ups'), page);
+    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    // Answers "Is partner taking ARVs?" with No - a positive partner who is
+    // not on ARVs is the discordant-partnership condition.
+    const completedFollowUps = await completeLabResults(page);
+    expect(completedFollowUps.length, 'at least one follow up should have been completed').toBeGreaterThan(0);
+    await page.waitForTimeout(WAIT.pageNavigation);
+
+    // Answering the last recurrent activity opens the progress report itself,
+    // and the partner's status is stated on it now that it is known.
+    const reportAfterFollowUps = await openReport(page, 'prenatal');
+    await expect(
+      reportAfterFollowUps.locator('.medical-diagnosis li', { hasText: 'Discordant Couple' }),
+      'discordant couple status should state that the partner is not taking ARVs',
+    ).toHaveText(/Discordant Couple: Partner NOT taking ARVs/);
+
+    // --- Phase 5: sync and read the diagnoses off the encounter ---
+    await syncAndWait(page);
+
+    const diagnoses = queryPrenatalDiagnoses(fullName);
+    expect(diagnoses, 'encounter diagnoses should be readable').not.toBeNull();
+    // The partner's result arrived at the recurrent phase, so the diagnosis
+    // belongs to that phase - that is the variant the recurrent Next Steps
+    // prescribes PrEP for.
+    expect(diagnoses, 'discordant partnership should be recorded for the recurrent phase').toContain('partner-hiv-recurrent');
+    expect(diagnoses, 'discordant partnership should NOT be recorded for the initial phase').not.toContain('partner-hiv');
   });
+
 });

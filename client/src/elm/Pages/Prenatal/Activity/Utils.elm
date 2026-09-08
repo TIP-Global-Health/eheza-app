@@ -42,6 +42,7 @@ import Measurement.Utils
         ( corePhysicalExamFormWithDefault
         , expectUniversalTestResultTask
         , getNextVaccineDose
+        , hivSignsAnswered
         , isTestResultValid
         , latestVaccinationDataForVaccine
         , medicationAdministrationFormInputsAndTasks
@@ -2322,7 +2323,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     getMeasurementValueFunc measurements.hivTest
                         |> Maybe.map
                             (\value ->
-                                List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                testPerformedByExecutionNote value.executionNote
                                     && (value.testResult == Just TestNegative)
                             )
                         |> Maybe.withDefault False
@@ -2333,11 +2334,18 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                             (\value ->
                                 if
                                     (value.executionNote == TestNoteKnownAsPositive)
-                                        || (List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                        || (testPerformedByExecutionNote value.executionNote
                                                 && (value.testResult == Just TestPositive)
                                            )
                                 then
-                                    Maybe.map partnerNotSurpressed value.hivSigns
+                                    Maybe.map
+                                        (\hivSigns ->
+                                            -- Until the nurse answers the follow up questions,
+                                            -- we do not know whether the partner is surpressed.
+                                            hivSignsAnswered hivSigns
+                                                && partnerNotSurpressed hivSigns
+                                        )
+                                        value.hivSigns
                                         |> Maybe.withDefault False
 
                                 else
