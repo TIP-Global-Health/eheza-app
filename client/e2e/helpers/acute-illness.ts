@@ -1,5 +1,7 @@
 import { Page, expect } from '@playwright/test';
+import { execSync } from 'child_process';
 import { click } from './auth';
+import { drushEnv } from './device';
 import {
   WAIT,
   answerYesNo,
@@ -256,6 +258,40 @@ export async function startSubsequentEncounter(page: Page) {
  */
 export function backdateAcuteIllnessEncounter(personName: string) {
   backdateEncounter(personName, 'acute_illness_encounter', 7);
+}
+
+const tuberculosisFeatureFlag = 'hedley_admin_feature_tuberculosis_management_enabled';
+
+/**
+ * Read the Tuberculosis Management feature flag, or null when it is unset.
+ * With the flag on, a cough of more than two weeks is diagnosed as
+ * Tuberculosis Suspect ahead of every other diagnosis.
+ *
+ * Note: execSync with a hardcoded command — no user input involved.
+ */
+export function readTuberculosisManagementFeature(): string | null {
+  const { drushCmd, cwd } = drushEnv();
+  const output = execSync(
+    `${drushCmd} eval 'echo json_encode(variable_get("${tuberculosisFeatureFlag}", null));'`,
+    { cwd, timeout: 15000, encoding: 'utf-8', stdio: 'pipe' },
+  ).trim();
+  const value = JSON.parse(output);
+  return value === null ? null : String(value);
+}
+
+/**
+ * Set the Tuberculosis Management feature flag, or unset it with null.
+ * A device reads the flag from the sync response, so pair the device
+ * after changing it.
+ *
+ * Note: execSync with a hardcoded command — no user input involved.
+ */
+export function setTuberculosisManagementFeature(value: string | null) {
+  const { drushCmd, cwd } = drushEnv();
+  const command = value === null
+    ? `${drushCmd} vdel -y ${tuberculosisFeatureFlag}`
+    : `${drushCmd} vset ${tuberculosisFeatureFlag} ${value}`;
+  execSync(command, { cwd, timeout: 15000, encoding: 'utf-8', stdio: 'pipe' });
 }
 
 // ---------------------------------------------------------------------------

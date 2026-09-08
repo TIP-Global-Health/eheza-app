@@ -19,6 +19,8 @@ import {
   startSubsequentEncounter,
   completeDangerSigns,
   completeOngoingTreatment,
+  readTuberculosisManagementFeature,
+  setTuberculosisManagementFeature,
 } from './helpers/acute-illness';
 
 test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria Uncomplicated', () => {
@@ -414,6 +416,88 @@ test.describe('Nurse takeover: Acute Illness opened by CHW', () => {
     const symptoms = report.locator('.pane.symptoms');
     await expect(symptoms).toContainText('Cough');
     await expect(symptoms).not.toContainText('Chills');
+
+    await closeReport(page, 'acute-illness');
+  });
+});
+
+test.describe('Nurse: Acute Illness Initial Encounter — COVID-19 with a cough of more than two weeks', () => {
+  test.describe.configure({ timeout: 600000 });
+
+  // A cough of more than two weeks makes the patient a Tuberculosis Suspect
+  // only where Tuberculosis Management is on. This site runs without it, so
+  // the same cough must leave the COVID-19 diagnosis in place.
+  let tuberculosisFeature: string | null;
+
+  test.beforeAll(() => {
+    tuberculosisFeature = readTuberculosisManagementFeature();
+    setTuberculosisManagementFeature('0');
+  });
+
+  test.afterAll(() => {
+    setTuberculosisManagementFeature(tuberculosisFeature);
+  });
+
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '1234', 'Nyange Health Center');
+  });
+
+  test('positive COVID test with a cough of more than two weeks is diagnosed as COVID-19', async ({ page }) => {
+
+    await createAdultAndStartEncounter(page, {
+      isChw: false,
+      gender: 'male',
+    });
+
+    // 1. Symptoms: Fever with respiratory symptoms → suspected COVID-19;
+    //    the cough has lasted more than two weeks.
+    await completeSymptoms(page, {
+      general: ['Fever'],
+      respiratory: ['Cough', 'Nasal Congestion'],
+      coughMoreThan2Weeks: true,
+      gi: [],
+    });
+
+    // 2. Physical Exam: elevated temp, otherwise normal vitals.
+    await completePhysicalExam(page, {
+      sys: '110',
+      dia: '70',
+      heartRate: '80',
+      respiratoryRate: '18',
+      bodyTemp: '38.5',
+    });
+
+    // 3. Prior Treatment: no prior medication.
+    await completePriorTreatment(page);
+
+    // 4. Laboratory: Malaria RDT negative, COVID test positive.
+    await completeLaboratory(page, {
+      malariaResult: 'Negative',
+      covidTestPerformed: true,
+      covidResult: 'Positive',
+    });
+
+    // Saving the last mandatory activity opens Next Steps, and the report is
+    // reached from the encounter page.
+    const encounterPage = page.locator('div.page-encounter.acute-illness');
+    if (!(await encounterPage.isVisible().catch(() => false))) {
+      await page.locator('.link-back').first().click({ force: true });
+      await encounterPage.waitFor({ timeout: 15000 });
+    }
+
+    // The report reads the diagnosis stored on the encounter: COVID-19 with
+    // the respiratory symptoms, not a fever the app could not explain.
+    const report = await openReport(page, 'acute-illness');
+    const assessment = report.locator('.pane.assessment');
+    await expect(assessment).toContainText('COVID-19 with signs of Pneumonia');
+    await expect(assessment).not.toContainText('Fever of Unknown Origin');
 
     await closeReport(page, 'acute-illness');
   });
