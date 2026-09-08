@@ -276,7 +276,15 @@ export function readTuberculosisManagementFeature(): string | null {
     { cwd, timeout: 15000, encoding: 'utf-8', stdio: 'pipe' },
   ).trim();
   const value = JSON.parse(output);
-  return value === null ? null : String(value);
+  if (value === null) {
+    return null;
+  }
+  // A flag set as a boolean reads back as true/false, and both are truthy
+  // once written back as a string, so answer in the 1/0 the flags are set with.
+  if (typeof value === 'boolean') {
+    return value ? '1' : '0';
+  }
+  return String(value);
 }
 
 /**
@@ -284,9 +292,13 @@ export function readTuberculosisManagementFeature(): string | null {
  * A device reads the flag from the sync response, so pair the device
  * after changing it.
  *
- * Note: execSync with a hardcoded command — no user input involved.
+ * The value goes into a shell command, so only the 1/0 the feature flags
+ * are set with is accepted, and anything else is refused rather than run.
  */
 export function setTuberculosisManagementFeature(value: string | null) {
+  if (value !== null && value !== '0' && value !== '1') {
+    throw new Error(`Refusing to set the Tuberculosis flag to ${value}`);
+  }
   const { drushCmd, cwd } = drushEnv();
   const command = value === null
     ? `${drushCmd} vdel -y ${tuberculosisFeatureFlag}`

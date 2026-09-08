@@ -427,7 +427,14 @@ test.describe('Nurse: Acute Illness Initial Encounter — COVID-19 with a cough 
   // A cough of more than two weeks makes the patient a Tuberculosis Suspect
   // only where Tuberculosis Management is on. This site runs without it, so
   // the same cough must leave the COVID-19 diagnosis in place.
-  let tuberculosisFeature: string | null;
+  //
+  // The flag lives in the shared database and is put back below. A run killed
+  // between the two hooks leaves it off, and the Tuberculosis specs fail until
+  // it is set again, because the encounter tile is gated on it too.
+  //
+  // Undefined until the flag has been read, so a failed read restores nothing
+  // rather than writing a made-up value over it.
+  let tuberculosisFeature: string | null | undefined;
 
   test.beforeAll(() => {
     tuberculosisFeature = readTuberculosisManagementFeature();
@@ -435,7 +442,9 @@ test.describe('Nurse: Acute Illness Initial Encounter — COVID-19 with a cough 
   });
 
   test.afterAll(() => {
-    setTuberculosisManagementFeature(tuberculosisFeature);
+    if (tuberculosisFeature !== undefined) {
+      setTuberculosisManagementFeature(tuberculosisFeature);
+    }
   });
 
   if (process.env.RECORD) {
