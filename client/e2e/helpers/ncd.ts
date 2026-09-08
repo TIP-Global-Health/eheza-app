@@ -353,10 +353,13 @@ export async function completeOutsideCare(page: Page) {
  */
 export async function completeLaboratory(
   page: Page,
-  options?: { performTests?: boolean; checkGlucoseRange?: boolean },
+  options?: { performTests?: boolean; checkGlucoseRange?: boolean; glucose?: string },
 ) {
   const performTests = options?.performTests ?? false;
   const checkGlucoseRange = options?.checkGlucoseRange ?? false;
+  // A reading is only asked for on a test read at the point of care, so passing
+  // one also decides that the blood sugar tab is answered that way.
+  const glucose = options?.glucose ?? GLUCOSE_IN_RANGE;
 
   await openActivity(page, 'ncd', 'laboratory');
 
@@ -430,7 +433,7 @@ export async function completeLaboratory(
         // is never asked for here. The blood sugar tab has to be read on the
         // spot for its input to be drawn at all.
         const readOnTheSpot =
-          checkGlucoseRange &&
+          (checkGlucoseRange || glucose !== GLUCOSE_IN_RANGE) &&
           (await page
             .locator('div.label.header', { hasText: 'Random Blood Sugar' })
             .isVisible()
@@ -499,7 +502,7 @@ export async function completeLaboratory(
               if (checkGlucoseRange) {
                 await expectGlucoseRangeRefusesMillimoles(page);
               } else {
-                await input.fill(GLUCOSE_IN_RANGE);
+                await input.fill(glucose);
               }
             } else {
               await input.fill('5');
