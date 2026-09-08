@@ -2437,7 +2437,7 @@ resolveAcuteIllnessDiagnosis currentDate features isChw assembled =
         -- First we check for Covid19.
         let
             covid19AcuteIllnessDiagnosis =
-                covid19DiagnosisPath currentDate assembled.person isChw assembled.measurements
+                covid19DiagnosisPath currentDate features assembled.person isChw assembled.measurements
         in
         if isJust covid19AcuteIllnessDiagnosis then
             covid19AcuteIllnessDiagnosis
@@ -2500,16 +2500,16 @@ covid19SuspectDiagnosed measurements =
 {-| This may result in Covid diagnosis, or Malaria diagnosis,
 if Covid RDT could not be perfrmed.
 -}
-covid19DiagnosisPath : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-covid19DiagnosisPath currentDate person isChw measurements =
+covid19DiagnosisPath : NominalDate -> EverySet SiteFeature -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+covid19DiagnosisPath currentDate features person isChw measurements =
     if
         -- CHW may not diagnose COVID anymore.
         isChw
             || (not <| covid19SuspectDiagnosed measurements)
-            || -- In case we have cough symptom for more than 2 weeks,
-               -- we must diagnose Tuberculosis suspect.
+            || -- When Tuberculosis Management is enabled, cough symptom
+               -- for more than 2 weeks is diagnosed as Tuberculosis suspect.
                -- Therefore, we need to exit COVID19 path.
-               coughForMoreThan2Weeks measurements
+               (tuberculosisManagementEnabled features && coughForMoreThan2Weeks measurements)
     then
         Nothing
 
