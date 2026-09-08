@@ -493,7 +493,11 @@ test.describe('Nurse: NCD First Encounter — Point of Care Diabetes', () => {
 
     // Blood sugar read at the point of care, above the 200 mg/dL threshold for
     // a patient who has not fasted.
-    await completeLaboratory(page, { performTests: true, glucose: GLUCOSE_DIABETIC });
+    await completeLaboratory(page, {
+      performTests: true,
+      readOnTheSpot: true,
+      glucose: GLUCOSE_DIABETIC,
+    });
 
     // The diagnosis is made while the encounter is still in its initial phase,
     // so the medication is offered here rather than at a later visit.
