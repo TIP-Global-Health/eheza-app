@@ -792,10 +792,16 @@ export async function completeLaboratoryNurse(
     // Partner known as HIV positive and not on ARVs, saved LAST, so that
     // save alone has to raise the discordant partnership diagnosis.
     discordantPartnership?: boolean;
+    // Record the partner as HIV positive and not on ARVs on the patient's OWN
+    // HIV test, which is the other source of the discordant partnership. The
+    // question is only asked while the partner's own result is unknown, so it
+    // has to be answered on the HIV tab, before the partner tab is saved.
+    partnerPositiveOnHIVTab?: boolean;
   },
 ): Promise<string[]> {
   const hivResult = options?.hivResult;
   const discordantPartnership = options?.discordantPartnership ?? false;
+  const partnerPositiveOnHIVTab = options?.partnerPositiveOnHIVTab ?? false;
   await openActivity(page, 'prenatal', 'laboratory');
 
   const completedTests: string[] = [];
@@ -891,12 +897,18 @@ export async function completeLaboratoryNurse(
         }
 
         // A negative result while the partner test is still unrecorded asks
-        // "Is partner known to be HIV positive?" → No. The partner tab,
-        // saved later, is what has to carry the diagnosis.
+        // "Is partner known to be HIV positive?". Answered No, the partner
+        // tab saved later is what carries the diagnosis; answered Yes, the
+        // partner signs on this test carry it on their own.
         const partnerPositive = page.locator('.form-input.yes-no.partner-hiv-positive');
         if (await partnerPositive.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await answerYesNo(page, 'partner-hiv-positive', 'No');
+          await answerYesNo(page, 'partner-hiv-positive', partnerPositiveOnHIVTab ? 'Yes' : 'No');
           await page.waitForTimeout(WAIT.formInteraction);
+
+          if (partnerPositiveOnHIVTab) {
+            await answerYesNo(page, 'partner-taking-arv', 'No');
+            await page.waitForTimeout(WAIT.formInteraction);
+          }
         }
       } else {
         // All other tabs: test not performed.
@@ -934,6 +946,54 @@ export async function completeLaboratoryNurse(
     .waitFor({ timeout: 10000 });
 
   return completedTests;
+}
+
+/**
+ * Correct the patient's own HIV test to "known as positive" and save it.
+ *
+ * The answer means the patient is HIV positive and no test is performed, so
+ * the result and the questions asked under it are withdrawn from the screen.
+ * What they held has to go with them: read back, the partner answers of the
+ * negative test they replaced diagnose a discordant partnership and offer
+ * PrEP to a woman who is HIV positive.
+ */
+export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
+  // The correction can follow an activity, and Laboratory is opened from the
+  // encounter page, so step back to it when an activity is still on screen.
+  const activityPage = page.locator('div.page-activity.prenatal');
+  if (await activityPage.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await click(page.locator('.icon-back').first(), page);
+    await page
+      .locator('div.page-encounter.prenatal')
+      .waitFor({ timeout: 10000 });
+  }
+
+  // Every lab test has been saved by now, so Laboratory is listed under the
+  // encounter's completed activities rather than its pending ones.
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  await openActivity(page, 'prenatal', 'laboratory');
+
+  const hivTab = page.locator('.link-section').filter({
+    hasText: /^\s*HIV\s*$/,
+  });
+  await click(hivTab.first(), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  await answerYesNo(page, 'known-as-positive', 'Yes');
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await click(saveBtn, page);
+  await page
+    .locator('div.page-encounter.prenatal')
+    .waitFor({ timeout: 10000 });
+
+  // The tab the encounter page opens with, so what follows finds the
+  // activities that are still pending.
+  await click(page.locator('#pending-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**

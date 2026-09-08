@@ -22,6 +22,7 @@ import {
   completeMedication,
   completeLaboratoryNurse,
   completeLaboratoryNurseForLab,
+  correctHIVTestToKnownPositive,
   completeLabResults,
   completeNextSteps,
   dismissWarningPopup,
@@ -179,7 +180,7 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     expect(nodes['prenatal_medication_distribution'], 'prenatal_medication_distribution should exist').toBe(true);
   });
 
-  test('partner HIV positive after a negative HIV test offers TDF + 3TC', async ({
+  test('partner HIV positive after a negative HIV test offers TDF + 3TC, and withdraws it once the patient is known as positive', async ({
     page,
   }) => {
     test.setTimeout(600000);
@@ -203,9 +204,14 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     await completeMentalHealth(page);
     await completeImmunisation(page);
     await completeMedication(page);
-    // HIV negative, then the partner recorded as HIV positive. The partner
-    // test is the last lab saved, so that save alone raises the diagnosis.
-    await completeLaboratoryNurse(page, { hivResult: 'negative', discordantPartnership: true });
+    // HIV negative, with the partner recorded as HIV positive on both of the
+    // tests that can carry it: the patient's own HIV test, and the partner's
+    // test, which is the last lab saved.
+    await completeLaboratoryNurse(page, {
+      hivResult: 'negative',
+      discordantPartnership: true,
+      partnerPositiveOnHIVTab: true,
+    });
 
     // The discordant partnership diagnosis puts TDF + 3TC on Next Steps.
     await openActivity(page, 'prenatal', 'next-steps');
@@ -216,6 +222,31 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     await expect(medicationTab, 'Next Steps should offer medication').toBeVisible();
     await clickSubTaskTab(page, 'next-steps-treatment');
     await expect(page.locator('div.page-activity.prenatal')).toContainText('TDF + 3TC');
+
+    // Corrected to known as positive, the patient is HIV positive and both
+    // sources of the discordant partnership go with the negative result they
+    // were recorded against: the partner signs on her own test, and her own
+    // result, which the partner's test needs to see a discordant couple.
+    await correctHIVTestToKnownPositive(page);
+
+    const report = await openReport(page, 'prenatal');
+    await expect(
+      report.locator('.medical-diagnosis li', { hasText: 'Discordant Couple' }),
+      'a patient who is known as HIV positive is not a discordant couple',
+    ).toHaveCount(0);
+    await closeReport(page, 'prenatal');
+
+    // PrEP is what the diagnosis prescribes, and it is what must not be
+    // offered to a woman who is HIV positive. Reading the report leaves the
+    // encounter on its Reports tab, so the activities are asked for again.
+    await click(page.locator('#pending-tab'), page);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await openActivity(page, 'prenatal', 'next-steps');
+    await dismissWarningPopup(page);
+    await expect(
+      page.locator('div.page-activity.prenatal'),
+      'PrEP should not be offered once the patient is known as HIV positive',
+    ).not.toContainText('TDF + 3TC');
   });
 });
 
