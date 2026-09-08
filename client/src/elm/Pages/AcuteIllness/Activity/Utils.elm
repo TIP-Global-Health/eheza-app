@@ -2497,6 +2497,14 @@ covid19SuspectDiagnosed measurements =
     feverAndRdtNotPositive && (respiratorySymptomsCount > 0 || generalSymptomsCount > 1)
 
 
+{-| A cough that lasts more than 2 weeks makes the patient a Tuberculosis
+suspect, on sites where Tuberculosis Management is enabled.
+-}
+tuberculosisSuspectDiagnosed : EverySet SiteFeature -> AcuteIllnessMeasurements -> Bool
+tuberculosisSuspectDiagnosed features measurements =
+    tuberculosisManagementEnabled features && coughForMoreThan2Weeks measurements
+
+
 {-| This may result in Covid diagnosis, or Malaria diagnosis,
 if Covid RDT could not be perfrmed.
 -}
@@ -2506,10 +2514,9 @@ covid19DiagnosisPath currentDate features person isChw measurements =
         -- CHW may not diagnose COVID anymore.
         isChw
             || (not <| covid19SuspectDiagnosed measurements)
-            || -- When Tuberculosis Management is enabled, cough symptom
-               -- for more than 2 weeks is diagnosed as Tuberculosis suspect.
-               -- Therefore, we need to exit COVID19 path.
-               (tuberculosisManagementEnabled features && coughForMoreThan2Weeks measurements)
+            || -- Tuberculosis suspect is diagnosed instead of COVID19,
+               -- so we need to exit COVID19 path.
+               tuberculosisSuspectDiagnosed features measurements
     then
         Nothing
 
@@ -2617,7 +2624,7 @@ nonCovid19DiagnosisPath : NominalDate -> EverySet SiteFeature -> Person -> Bool 
 nonCovid19DiagnosisPath currentDate features person isChw measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
     if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
-        if tuberculosisManagementEnabled features && coughForMoreThan2Weeks measurements then
+        if tuberculosisSuspectDiagnosed features measurements then
             Just DiagnosisTuberculosisSuspect
 
         else if feverRecorded measurements then
