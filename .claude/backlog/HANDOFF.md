@@ -97,6 +97,22 @@ left B-320 and B-323 with blank issue/PR columns; both headings were repaired 20
 
 **All six prenatal-HIV PRs above (#2204, #2206, #2208, #2210, #2212, #2214) MERGED by 2026-09-08 05:26 UTC.** #2156 (B-195 measurement half) is now CLOSED, not on hold.
 
+## Issue gardening swept 2026-09-08 — the sweeps are CURRENT, nothing overdue
+
+⭐ **There is a `v1.18.2`, released 2026-08-25** (3 PRs: #2144, #2132, #2130) — the release table above stops at v1.18.1 and is incomplete, not wrong.
+
+Checked every PR merged from the `v1.18.0` cut (2026-07-07) to today, 160 of them, resolving each title/body/branch issue reference and its state:
+
+- **Released PRs: 34 in `v1.18.1` + 3 in `v1.18.2`, and every issue they deliver is CLOSED.** Zero overdue. The post-release sweeps were done properly, in both windows.
+- **40 issues are open because they are delivered on `develop` only**, awaiting the next release. That is the normal state here: PRs merge to `develop`, which is not the default branch, so `Fixes #N` never auto-closes (see `release-issue-reconciliation` in memory).
+- The next release is the open **#2128** (`develop`→`main`, opened 2026-08-21, now **326 commits** ahead). Its sweep closes those 40.
+- **4 of the 160 PRs carry no issue reference, all legitimately**: #2132 (Drupal core 7.106), #2125 (QA tooling skill), #2091 (the CLAUDE.md duplication rule), #1918 (the previous release PR).
+
+⚠ **Judgment cases for whoever runs the next sweep — do NOT blind-close these four:**
+- **#1604** ("Redefine GWG and AWG for Healthy Start ANC" [8h]) is a FALSE POSITIVE of the reference scan: PR #2150 only *cites* it as the source of the rule ("That is the rule issue #1604 sets out") while fixing #2149. The feature spec itself is not delivered by that PR. Leave open unless its whole scope is checked.
+- **#2106** (client duplication) and **#2107** (admin duplication) are audit issues each delivered by SEVERAL PRs (5 and 4). Confirm the triaged merge lists in their bodies are complete before closing.
+- **#2145** (e2e specs never read the progress report) was delivered by #2146 alone; check whether its scope was the whole class or one spec.
+
 **B-168 (MONITORING):** its two-week no-event window closed on 2026-09-06 (release 2026-08-23). The Rollbar check is the user's — either outcome moves it out of MONITORING. Still the only MONITORING item, and still unchecked as of 2026-09-06 afternoon.
 
 ⚠ **Invariant broken and restored on 2026-09-06:** the main tree was found checked out on `B-237-discordant-partnership-phase` (its e2e run borrows the main tree). A session reading the backlog then serves a stale queue silently — read from `origin/develop` with `git show` and say so rather than switching it back. The B-237 session returned it to `develop` the same afternoon.
