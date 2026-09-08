@@ -628,6 +628,60 @@ export async function isGlucoseInput(
 
 
 /**
+ * The hemoglobin count field, told apart from the other numeric result inputs
+ * by the class its wrapper carries.
+ */
+export async function isHemoglobinInput(
+  input: import('@playwright/test').Locator,
+): Promise<boolean> {
+  return input.evaluate(
+    el => el.parentElement?.classList.contains('hemoglobin-count') ?? false,
+  );
+}
+
+
+/**
+ * Open one of the encounter page's activity tabs. Activities move from
+ * "pending" to "completed" as they are saved, and each tab lists only its own,
+ * so a card can only be found under the tab it currently belongs to.
+ */
+export async function openEncounterTab(
+  page: Page,
+  tab: 'pending' | 'completed',
+): Promise<void> {
+  await click(page.locator(`#${tab}-tab`), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
+
+/**
+ * Assert an activity is listed under one of the encounter page's tabs, and
+ * not under the other. Checking both sides is what makes the assertion mean
+ * something: a tab that failed to switch leaves the other tab's cards on
+ * screen, and a one sided check passes on them.
+ */
+export async function expectActivityInTab(
+  page: Page,
+  activityIcon: string,
+  tab: 'pending' | 'completed',
+  message: string,
+): Promise<void> {
+  const other = tab === 'pending' ? 'completed' : 'pending';
+  const card = page.locator(`.icon-task-${activityIcon}`);
+
+  await openEncounterTab(page, tab);
+  await expect(card, message).toBeVisible({ timeout: 10000 });
+
+  await openEncounterTab(page, other);
+  await expect(card, `${message} - and not under ${other}`).toBeHidden({
+    timeout: 10000,
+  });
+
+  await openEncounterTab(page, tab);
+}
+
+
+/**
  * The blood glucose field refuses a reading typed in millimoles per litre, and
  * says which unit it wants. Leaves a reading in range behind.
  *

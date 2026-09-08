@@ -4,9 +4,12 @@ import AssocList as Dict
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model
     exposing
-        ( HIVTestValue
+        ( AdministrationNote(..)
+        , HIVTestValue
         , LaboratoryTest(..)
         , LabsResultsValue
+        , MedicationDistributionSign(..)
+        , MedicationNonAdministrationSign(..)
         , PartnerHIVTestValue
         , PrenatalMeasurements
         , TestExecutionNote(..)
@@ -14,13 +17,15 @@ import Backend.Measurement.Model
         , emptyPrenatalMeasurements
         )
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date
 import EverySet
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.Prenatal.Model exposing (AssembledData)
-import Pages.Prenatal.RecurrentActivity.Utils exposing (resolveLaboratoryResultFollowUpsTasks)
+import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
+import Pages.Prenatal.RecurrentActivity.Utils exposing (nextStepsTaskCompleted, resolveLaboratoryResultFollowUpsTasks)
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import TestFixtures
@@ -123,6 +128,101 @@ measurementsWith testsWithFollowUp hivResult partnerHIVResult =
     }
 
 
+{-| An encounter carrying the given diagnoses, and a Medication Distribution
+measurement listing what was handed over and what was marked as not given.
+-}
+assembledWith : List PrenatalDiagnosis -> List MedicationDistributionSign -> List MedicationNonAdministrationSign -> AssembledData
+assembledWith diagnoses distributionSigns nonAdministrationSigns =
+    let
+        assembled =
+            testAssembled
+                { emptyPrenatalMeasurements
+                    | medicationDistribution =
+                        TestFixtures.wrapMeasurement currentDate
+                            { distributionSigns = EverySet.fromList distributionSigns
+                            , nonAdministrationSigns = EverySet.fromList nonAdministrationSigns
+                            , recommendedTreatmentSigns = Nothing
+                            , avoidingGuidanceReason = Nothing
+                            , reinforceTreatmentSigns = Nothing
+                            }
+                }
+
+        encounter =
+            assembled.encounter
+    in
+    { assembled | encounter = { encounter | diagnoses = EverySet.fromList diagnoses } }
+
+
+{-| The same encounter, but the nurse never opened Medication Distribution.
+-}
+assembledWithoutMedicationDistribution : List PrenatalDiagnosis -> AssembledData
+assembledWithoutMedicationDistribution diagnoses =
+    let
+        assembled =
+            testAssembled emptyPrenatalMeasurements
+
+        encounter =
+            assembled.encounter
+    in
+    { assembled | encounter = { encounter | diagnoses = EverySet.fromList diagnoses } }
+
+
+completedMedicationDistribution : AssembledData -> Bool
+completedMedicationDistribution assembled =
+    nextStepsTaskCompleted currentDate assembled NextStepsMedicationDistribution
+
+
+
+-- Medication Distribution is complete when every medication the encounter
+-- requires was addressed. High risk of preeclampsia requires Aspirin, and an
+-- HIV diagnosis requires both TDF3TC and Dolutegravir.
+
+
+nextStepsMedicationDistributionCompletedTest : Test
+nextStepsMedicationDistributionCompletedTest =
+    describe "nextStepsTaskCompleted NextStepsMedicationDistribution"
+        [ test "complete when no medication is required, even though the task was never opened" <|
+            \_ ->
+                assembledWithoutMedicationDistribution []
+                    |> completedMedicationDistribution
+                    |> Expect.equal True
+        , test "incomplete when a medication became required after the task was saved with nothing to give" <|
+            \_ ->
+                assembledWith [ DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ] [ NoMedicationDistributionSignsRecurrentPhase ] []
+                    |> completedMedicationDistribution
+                    |> Expect.equal False
+        , test "complete when the required medication was handed over" <|
+            \_ ->
+                assembledWith [ DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ] [ Aspirin ] []
+                    |> completedMedicationDistribution
+                    |> Expect.equal True
+        , test "complete when the required medication was marked as not given, with a reason" <|
+            \_ ->
+                assembledWith [ DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ]
+                    [ NoMedicationDistributionSignsRecurrentPhase ]
+                    [ MedicationAspirin NonAdministrationLackOfStock ]
+                    |> completedMedicationDistribution
+                    |> Expect.equal True
+        , test "incomplete while one of two required medications is unanswered" <|
+            \_ ->
+                assembledWith [ DiagnosisHIVRecurrentPhase ] [ TDF3TC ] []
+                    |> completedMedicationDistribution
+                    |> Expect.equal False
+        , test "complete when both required medications were addressed" <|
+            \_ ->
+                assembledWith [ DiagnosisHIVRecurrentPhase ]
+                    [ TDF3TC ]
+                    [ MedicationDolutegravir NonAdministrationPatientDeclined ]
+                    |> completedMedicationDistribution
+                    |> Expect.equal True
+        , test "incomplete when a medication is required and the task was never opened" <|
+            \_ ->
+                assembledWithoutMedicationDistribution [ DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ]
+                    |> completedMedicationDistribution
+                    |> Expect.equal False
+        ]
+
+
 resolveLaboratoryResultFollowUpsTasksTest : Test
 resolveLaboratoryResultFollowUpsTasksTest =
     describe "resolveLaboratoryResultFollowUpsTasks"
@@ -168,4 +268,6 @@ resolveLaboratoryResultFollowUpsTasksTest =
 all : Test
 all =
     describe "Pages.Prenatal.RecurrentActivity.Utils"
-        [ resolveLaboratoryResultFollowUpsTasksTest ]
+        [ nextStepsMedicationDistributionCompletedTest
+        , resolveLaboratoryResultFollowUpsTasksTest
+        ]

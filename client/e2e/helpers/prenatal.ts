@@ -9,6 +9,7 @@ import {
   formInput,
   GLUCOSE_IN_RANGE,
   isGlucoseInput,
+  isHemoglobinInput,
   openActivity,
   queryMeasurementNodes,
   registerAdult,
@@ -1146,9 +1147,19 @@ export async function completeLaboratoryNurseForLab(
  */
 export async function completeLabResults(
   page: Page,
-  options?: { checkGlucoseRange?: boolean },
+  options?: {
+    checkGlucoseRange?: boolean;
+    hemoglobinCount?: string;
+    negativeResultTests?: string[];
+  },
 ): Promise<string[]> {
   const checkGlucoseRange = options?.checkGlucoseRange ?? false;
+  // Above 11 g/dL, so no anemia is diagnosed unless a caller asks for it.
+  const hemoglobinCount = options?.hemoglobinCount ?? '12';
+  // Tabs, by their label, whose result should be Negative. The generic pass
+  // below takes the first real option of a dropdown, which is Positive for a
+  // test result, so a test that must not be diagnosed has to be named here.
+  const negativeResultTests = options?.negativeResultTests ?? [];
   const completedTests: string[] = [];
   const allTabs = page.locator('.link-section');
   const tabCount = await allTabs.count();
@@ -1178,6 +1189,24 @@ export async function completeLabResults(
     if (await testPerformed.isVisible().catch(() => false)) {
       await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
       await page.waitForTimeout(WAIT.elmRerender);
+    }
+
+    // Matched loosely: a tab is labelled by its test, and some carry the
+    // method too - the syphilis tab reads "Syphilis - RPR".
+    const wantsNegative = negativeResultTests.some(name =>
+      tabLabel.trim().toLowerCase().includes(name.trim().toLowerCase()),
+    );
+    if (wantsNegative) {
+      const resultSelect = page.locator('select.form-input').first();
+      if (await resultSelect.isVisible().catch(() => false)) {
+        const negOption = resultSelect.locator('option', { hasText: 'Negative' });
+        const negValue = await negOption.first().getAttribute('value');
+        if (!negValue) {
+          throw new Error(`${tabLabel.trim()} test: no Negative option to select`);
+        }
+        await resultSelect.selectOption(negValue);
+        await page.waitForTimeout(WAIT.formInteraction);
+      }
     }
 
     // 2. Enter result — fill all visible select dropdowns and numeric inputs.
@@ -1217,6 +1246,8 @@ export async function completeLabResults(
             } else {
               await numInput.fill(GLUCOSE_IN_RANGE);
             }
+          } else if (await isHemoglobinInput(numInput)) {
+            await numInput.fill(hemoglobinCount);
           } else {
             await numInput.fill('12');
           }
@@ -1421,6 +1452,88 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
  * Complete TreatmentReview: iterate through medication review tabs.
  * Creates: medication
  */
+/**
+ * Complete every Next Steps task the recurrent encounter offers.
+ *
+ * Each task is its own tab with its own Save button, and the button only
+ * carries an onClick once every question the task asks is answered. Answering
+ * "Yes" everywhere keeps the encounter on the path where a medication is
+ * handed over and nothing is refused.
+ *
+ * Returns the labels of the tasks that were saved.
+ */
+export async function completeRecurrentNextSteps(page: Page): Promise<string[]> {
+  await openActivity(page, 'prenatal', 'next-steps');
+  await dismissWarningPopup(page);
+
+  const completedTasks: string[] = [];
+  const allTabs = page.locator('.link-section');
+  const tabCount = await allTabs.count();
+
+  for (let i = 0; i < tabCount; i++) {
+    const tab = allTabs.nth(i);
+    if (!(await tab.isVisible())) continue;
+
+    const isCompleted = await tab.evaluate(el =>
+      el.classList.contains('completed'),
+    ).catch(() => false);
+    if (isCompleted) continue;
+
+    const isActive = await tab.evaluate(el =>
+      el.classList.contains('active'),
+    ).catch(() => false);
+    if (!isActive) {
+      await click(tab, page);
+      await page.waitForTimeout(WAIT.elmRerender);
+    }
+
+    const tabLabel = (await tab.textContent()) || `tab-${i}`;
+
+    // Answering one question can reveal another, so keep going until a pass
+    // leaves nothing unanswered.
+    for (let pass = 0; pass < 5; pass++) {
+      const boolInputs = page.locator('.form-input.yes-no');
+      const boolCount = await boolInputs.count();
+      let answeredOne = false;
+
+      for (let b = 0; b < boolCount; b++) {
+        const boolInput = boolInputs.nth(b);
+        if (!(await boolInput.isVisible().catch(() => false))) continue;
+        // A chosen option carries the "checked" class on its radio.
+        const alreadyAnswered = await boolInput.locator('input.checked').count();
+        if (alreadyAnswered > 0) continue;
+
+        await click(boolInput.locator('label', { hasText: 'Yes' }).first(), page);
+        await page.waitForTimeout(WAIT.formInteraction);
+        answeredOne = true;
+      }
+
+      if (!answeredOne) break;
+    }
+
+    // Elm renders a disabled Save without an onClick, so clicking one does
+    // nothing and the test would hang on the next step. Say which task was
+    // left incomplete instead.
+    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+    await saveBtn.waitFor({ timeout: 10000 });
+    const saveActive = await saveBtn.evaluate(el => el.classList.contains('active'));
+    if (!saveActive) {
+      const counter = await page.locator('.tasks-count').textContent().catch(() => null);
+      throw new Error(
+        `Next Steps task "${tabLabel.trim()}" still has unanswered questions` +
+          (counter ? ` (${counter.trim()})` : '') +
+          ', so its Save button is inactive',
+      );
+    }
+
+    await saveSubTask(page);
+    completedTasks.push(tabLabel.trim());
+  }
+
+  return completedTasks;
+}
+
+
 export async function completeTreatmentReview(page: Page) {
   await openActivity(page, 'prenatal', 'prior-treatment');
 
