@@ -1295,8 +1295,15 @@ export async function completeLabResults(
       await page.waitForTimeout(WAIT.formInteraction);
     }
 
-    // Save this lab test tab.
-    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+    // Save this lab test tab. As in completeLaboratoryNurseForLab, an
+    // incomplete form leaves the button disabled as a class rather than as the
+    // disabled attribute, so it stays visible and clickable and the click does
+    // nothing - matching on the class is what keeps such a tab out of
+    // completedTests.
+    const saveBtn = page.locator(
+      'button.ui.fluid.primary.button:not(.disabled)',
+      { hasText: 'Save' },
+    );
     if (await saveBtn.isVisible()) {
       await click(saveBtn, page);
       completedTests.push(tabLabel);

@@ -2182,20 +2182,15 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                          testPerformedByExecutionNote value.executionNote
                             && (value.testResult == Just TestPositive)
                         )
-                            || (-- Malaria RDT was not run, but blood smear test
-                                -- was taken, and it's result indicates Malaria.
-                                List.member value.executionNote
-                                    [ TestNoteLackOfReagents
-                                    , TestNoteLackOfOtherSupplies
-                                    , TestNoteNoEquipment
-                                    , TestNoteBrokenEquipment
-                                    , TestNoteNotIndicated
+                            || (-- Blood smear test was taken instead of the RDT,
+                                -- and it's result indicates Malaria. Whoever
+                                -- read the smear, and whatever the note about
+                                -- the RDT says, the smear is the diagnosis.
+                                List.member value.bloodSmearResult
+                                    [ BloodSmearPlus
+                                    , BloodSmearPlusPlus
+                                    , BloodSmearPlusPlusPlus
                                     ]
-                                    && List.member value.bloodSmearResult
-                                        [ BloodSmearPlus
-                                        , BloodSmearPlusPlus
-                                        , BloodSmearPlusPlusPlus
-                                        ]
                                )
                     )
                 |> Maybe.withDefault False
