@@ -7,6 +7,7 @@ import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrine
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
+import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
@@ -973,34 +974,27 @@ patientIsPregnant assembled =
 
 
 {-| The pregnancy test is offered at every encounter, but it is not always
-performed, so the answer may have been given at an earlier one. We take the
-most recent encounter that answered the question, and a positive answer stops
-counting once the validity period has passed since it was recorded.
+recorded, so the answer may have been given at an earlier one. We take the most
+recent answer, and a positive answer stops counting once the validity period
+has passed since it was recorded.
 -}
 patientIsPregnantAtEncounter : NominalDate -> NCDMeasurements -> AssembledData -> Bool
 patientIsPregnantAtEncounter encounterDate encounterMeasurements assembled =
     let
         pregnancyAnswer ( startDate, measurements ) =
             getMeasurementValueFunc measurements.pregnancyTest
-                |> Maybe.andThen
+                |> Maybe.map
                     (\value ->
-                        let
-                            -- Execution date is not recorded when patient is known to
-                            -- be pregnant, so we fall back to the date of the encounter
-                            -- at which the answer was given.
-                            answerDate =
-                                Maybe.withDefault startDate value.executionDate
-                        in
-                        if (value.executionNote == TestNoteKnownAsPositive) || (value.testResult == Just TestPositive) then
-                            Just ( True, answerDate )
-
-                        else if value.testResult == Just TestNegative then
-                            Just ( False, answerDate )
-
-                        else
-                            -- Test was not performed, or its result is not
-                            -- conclusive, so this encounter gives no answer.
-                            Nothing
+                        ( -- "Is this patient known to be pregnant" is answered whenever the
+                          -- test is recorded, so any note other than the one that answer
+                          -- writes is the nurse answering that she is not.
+                          (value.executionNote == TestNoteKnownAsPositive)
+                            || (value.testResult == Just TestPositive)
+                        , -- Execution date is not recorded when patient is known to be
+                          -- pregnant, so we fall back to the date of the encounter at
+                          -- which the answer was given.
+                          Maybe.withDefault startDate value.executionDate
+                        )
                     )
     in
     (( encounterDate, encounterMeasurements )
@@ -1008,10 +1002,13 @@ patientIsPregnantAtEncounter encounterDate encounterMeasurements assembled =
             (filterPreviousEncountersDataToDate encounterDate assembled.previousEncountersData)
     )
         |> List.filterMap pregnancyAnswer
+        -- An answer can be dated before the encounter that recorded it, so the
+        -- most recent answer is not always the one from the latest encounter.
+        |> List.sortWith (\( _, date1 ) ( _, date2 ) -> Date.compare date2 date1)
         |> List.head
         |> Maybe.map
-            (\( isPositive, testDate ) ->
-                isPositive && (diffMonths testDate encounterDate < pregnancyTestValidityPeriod)
+            (\( isPositive, answerDate ) ->
+                isPositive && (diffMonths answerDate encounterDate < pregnancyTestValidityPeriod)
             )
         |> Maybe.withDefault False
 

@@ -729,17 +729,32 @@ pregnancyAcrossEncountersTest =
                     |> isPregnantWith
                         [ previousEncounterAt 9 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
                     |> Expect.equal False
-        , test "an encounter where the test was not indicated is skipped" <|
+        , -- Recording the test at all means "is this patient known to be
+          -- pregnant" was answered, so a test that was not performed still
+          -- carries that answer.
+          test "the test was not indicated at the encounter being assessed, over an earlier positive" <|
             \_ ->
                 (emptyNCDMeasurements |> withPregnancyTest TestNoteNotIndicated Nothing)
                     |> isPregnantWith
                         [ previousEncounterAt 2 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
-                    |> Expect.equal True
-        , test "an indeterminate result is skipped" <|
+                    |> Expect.equal False
+        , test "an indeterminate result at the encounter being assessed, over an earlier positive" <|
             \_ ->
                 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestIndeterminate))
                     |> isPregnantWith
                         [ previousEncounterAt 2 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
+                    |> Expect.equal False
+        , test "reported as known to be pregnant, then not known three months later" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteNotIndicated Nothing)
+                    |> isPregnantWith
+                        [ previousEncounterAt 3 (emptyNCDMeasurements |> withPregnancyTest TestNoteKnownAsPositive Nothing) ]
+                    |> Expect.equal False
+        , test "an answer dated before an earlier encounter's answer does not override it" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTestOn (Date.add Date.Months -10 dummyDate) TestPositive)
+                    |> isPregnantWith
+                        [ previousEncounterAt 1 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
                     |> Expect.equal True
         , test "a negative at the encounter being assessed overrides an earlier positive" <|
             \_ ->
