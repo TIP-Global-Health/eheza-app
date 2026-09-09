@@ -1,4 +1,4 @@
-module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralToFacilityCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefault, updateChronicDiagnoses)
+module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, patientIsPregnantAtEncounter, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralToFacilityCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefault, updateChronicDiagnoses)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -8,7 +8,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
@@ -402,7 +402,7 @@ recommendedTreatmentMeasurementTaken allowedSigns measurements =
 
 generateRecommendedTreatmentSignsForHypertension : AssembledData -> List RecommendedTreatmentSign
 generateRecommendedTreatmentSignsForHypertension assembled =
-    if patientIsPregnant assembled.measurements then
+    if patientIsPregnant assembled then
         [ TreatmentMethyldopa2
         , NoTreatmentForHypertension
         ]
@@ -611,7 +611,7 @@ medicateForHypertension phase assembled =
                                        -- it can only be diagnosed at recurrent phase.
                                        diagnosedAnyOf diabetesDiagnoses assembled
                                     || -- Pregnant women always get Methyldopa treatment.
-                                       patientIsPregnant assembled.measurements
+                                       patientIsPregnant assembled
 
                             _ ->
                                 True
@@ -661,7 +661,7 @@ recommendedTreatmentForHypertensionInputAndTask language setRecommendedTreatment
                 |> EverySet.toList
 
         ( header, instructions ) =
-            if patientIsPregnant assembled.measurements then
+            if patientIsPregnant assembled then
                 ( Translate.HypertensionAndPregnantHeader
                 , Translate.InstructionsChooseOneMedication
                 )
@@ -820,7 +820,7 @@ resolveReferralInputsAndTasks :
 resolveReferralInputsAndTasks language phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
     let
         facility =
-            if referForHypertension phase assembled && patientIsPregnant assembled.measurements then
+            if referForHypertension phase assembled && patientIsPregnant assembled then
                 FacilityANCServices
 
             else
@@ -951,7 +951,7 @@ referForHypertension phase assembled =
                 |> Maybe.map
                     (\condition ->
                         (condition == DiagnosisHypertensionStage3)
-                            || patientIsPregnant assembled.measurements
+                            || patientIsPregnant assembled
                     )
                 |> Maybe.withDefault False
 
@@ -959,13 +959,55 @@ referForHypertension phase assembled =
             False
 
 
-patientIsPregnant : NCDMeasurements -> Bool
-patientIsPregnant measurements =
-    getMeasurementValueFunc measurements.pregnancyTest
+{-| Number of months during which a positive pregnancy test keeps
+counting as an ongoing pregnancy.
+-}
+pregnancyTestValidityPeriod : Int
+pregnancyTestValidityPeriod =
+    9
+
+
+patientIsPregnant : AssembledData -> Bool
+patientIsPregnant assembled =
+    patientIsPregnantAtEncounter assembled.encounter.startDate assembled.measurements assembled
+
+
+{-| The pregnancy test is offered at every encounter, but it is not always
+performed, so the answer may have been given at an earlier one. We take the
+most recent encounter that answered the question, and a positive answer stops
+counting once the validity period has passed since it was recorded.
+-}
+patientIsPregnantAtEncounter : NominalDate -> NCDMeasurements -> AssembledData -> Bool
+patientIsPregnantAtEncounter encounterDate encounterMeasurements assembled =
+    let
+        pregnancyAnswer ( startDate, measurements ) =
+            getMeasurementValueFunc measurements.pregnancyTest
+                |> Maybe.andThen
+                    (\value ->
+                        if (value.executionNote == TestNoteKnownAsPositive) || (value.testResult == Just TestPositive) then
+                            -- Execution date is not recorded when patient is known to
+                            -- be pregnant, so we fall back to the date of the encounter
+                            -- at which it was reported.
+                            Just ( True, Maybe.withDefault startDate value.executionDate )
+
+                        else if value.testResult == Just TestNegative then
+                            Just ( False, startDate )
+
+                        else
+                            -- Test was not performed, or its result is not
+                            -- conclusive, so this encounter gives no answer.
+                            Nothing
+                    )
+    in
+    (( encounterDate, encounterMeasurements )
+        :: List.map (\data -> ( data.startDate, data.measurements ))
+            (filterPreviousEncountersDataToDate encounterDate assembled.previousEncountersData)
+    )
+        |> List.filterMap pregnancyAnswer
+        |> List.head
         |> Maybe.map
-            (\value ->
-                (value.executionNote == TestNoteKnownAsPositive)
-                    || (value.testResult == Just TestPositive)
+            (\( isPositive, testDate ) ->
+                isPositive && (diffMonths testDate encounterDate < pregnancyTestValidityPeriod)
             )
         |> Maybe.withDefault False
 

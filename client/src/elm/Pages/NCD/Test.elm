@@ -12,6 +12,7 @@ import Backend.Measurement.Model
         , RandomBloodSugarTestValue
         , TestExecutionNote(..)
         , TestPrerequisite(..)
+        , TestResult(..)
         , UrineDipstickTestValue
         )
 import Backend.NCDEncounter.Model as NCDEncounterModel
@@ -20,13 +21,15 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
+import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.NCD.Activity.Types exposing (NextStepsTask(..))
-import Pages.NCD.Activity.Utils exposing (resolveNextStepsTasks, resolvePreviousMaybeValue)
+import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask, resolveNextStepsTasks, resolvePreviousMaybeValue)
 import Pages.NCD.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.NCD.Utils
     exposing
         ( generateNCDDiagnoses
         , lowerHypertensionStageCondition
+        , patientIsPregnant
         , stage1BloodPressureCondition
         , stage2BloodPressureCondition
         , stage3BloodPressureCondition
@@ -274,6 +277,38 @@ withRandomBloodSugar fasting sugar measurements =
     { measurements | randomBloodSugarTest = wrapMeasurement (randomBloodSugarValue fasting sugar) }
 
 
+{-| Pregnancy test as recorded on an encounter, with no execution date -- the
+shape it has when the patient is reported as known to be pregnant, and when
+the test was not performed. The encounter date is then used as the date of
+the answer.
+-}
+withPregnancyTest : TestExecutionNote -> Maybe TestResult -> NCDMeasurements -> NCDMeasurements
+withPregnancyTest executionNote testResult measurements =
+    { measurements
+        | pregnancyTest =
+            wrapMeasurement
+                { executionNote = executionNote
+                , executionDate = Nothing
+                , testResult = testResult
+                }
+    }
+
+
+{-| Pregnancy test performed on a given date. This is the shape that used to
+stop the test being offered at any later encounter.
+-}
+withPregnancyTestOn : NominalDate -> TestResult -> NCDMeasurements -> NCDMeasurements
+withPregnancyTestOn executionDate testResult measurements =
+    { measurements
+        | pregnancyTest =
+            wrapMeasurement
+                { executionNote = TestNoteRunToday
+                , executionDate = Just executionDate
+                , testResult = Just testResult
+                }
+    }
+
+
 
 -- ASSEMBLED DATA FIXTURE
 
@@ -336,6 +371,18 @@ previousEncounterWith diagnoses =
     , startDate = Date.add Date.Months -1 dummyDate
     , diagnoses = EverySet.fromList diagnoses
     , measurements = emptyNCDMeasurements
+    }
+
+
+{-| A prior NCD encounter carrying the given measurements, held the given
+number of months before the encounter being assessed.
+-}
+previousEncounterAt : Int -> NCDMeasurements -> PreviousEncounterData
+previousEncounterAt monthsAgo measurements =
+    { id = toEntityUuid ("prev-encounter-" ++ String.fromInt monthsAgo)
+    , startDate = Date.add Date.Months -monthsAgo dummyDate
+    , diagnoses = EverySet.empty
+    , measurements = measurements
     }
 
 
@@ -598,13 +645,6 @@ nextStepsTasksTest =
 resolvePreviousMaybeValueTest : Test
 resolvePreviousMaybeValueTest =
     let
-        previousEncounterAt monthsAgo measurements =
-            { id = toEntityUuid ("prev-encounter-" ++ String.fromInt monthsAgo)
-            , startDate = Date.add Date.Months -monthsAgo dummyDate
-            , diagnoses = EverySet.empty
-            , measurements = measurements
-            }
-
         -- The history is passed most recent first, the order
         -- generatePreviousEncountersData produces.
         resolveSysWith previous =
@@ -632,6 +672,128 @@ resolvePreviousMaybeValueTest =
         ]
 
 
+pregnancyAcrossEncountersTest : Test
+pregnancyAcrossEncountersTest =
+    let
+        -- The history is passed most recent first, the order
+        -- generatePreviousEncountersData produces.
+        isPregnantWith previous measurements =
+            let
+                assembled =
+                    ncdAssembled measurements
+            in
+            patientIsPregnant { assembled | previousEncountersData = previous }
+    in
+    describe "patientIsPregnant"
+        [ test "positive test at the encounter being assessed" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive))
+                    |> isPregnantWith []
+                    |> Expect.equal True
+        , test "reported as known to be pregnant at the encounter being assessed" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteKnownAsPositive Nothing)
+                    |> isPregnantWith []
+                    |> Expect.equal True
+        , test "negative test at the encounter being assessed" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestNegative))
+                    |> isPregnantWith []
+                    |> Expect.equal False
+        , test "the question was never answered" <|
+            \_ ->
+                emptyNCDMeasurements
+                    |> isPregnantWith []
+                    |> Expect.equal False
+        , test "positive a month ago, nothing recorded since" <|
+            \_ ->
+                emptyNCDMeasurements
+                    |> isPregnantWith
+                        [ previousEncounterAt 1 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
+                    |> Expect.equal True
+        , test "reported as known to be pregnant a month ago, nothing recorded since" <|
+            \_ ->
+                emptyNCDMeasurements
+                    |> isPregnantWith
+                        [ previousEncounterAt 1 (emptyNCDMeasurements |> withPregnancyTest TestNoteKnownAsPositive Nothing) ]
+                    |> Expect.equal True
+        , test "positive 8 months ago is still within the validity period" <|
+            \_ ->
+                emptyNCDMeasurements
+                    |> isPregnantWith
+                        [ previousEncounterAt 8 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
+                    |> Expect.equal True
+        , test "positive 9 months ago has expired" <|
+            \_ ->
+                emptyNCDMeasurements
+                    |> isPregnantWith
+                        [ previousEncounterAt 9 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
+                    |> Expect.equal False
+        , test "an encounter where the test was not indicated is skipped" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteNotIndicated Nothing)
+                    |> isPregnantWith
+                        [ previousEncounterAt 2 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
+                    |> Expect.equal True
+        , test "an indeterminate result is skipped" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestIndeterminate))
+                    |> isPregnantWith
+                        [ previousEncounterAt 2 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
+                    |> Expect.equal True
+        , test "a negative at the encounter being assessed overrides an earlier positive" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestNegative))
+                    |> isPregnantWith
+                        [ previousEncounterAt 2 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
+                    |> Expect.equal False
+        , test "the most recent answer wins when several encounters answered" <|
+            \_ ->
+                emptyNCDMeasurements
+                    |> isPregnantWith
+                        [ previousEncounterAt 1 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestNegative))
+                        , previousEncounterAt 2 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive))
+                        ]
+                    |> Expect.equal False
+        ]
+
+
+pregnancyTestExpectedTest : Test
+pregnancyTestExpectedTest =
+    let
+        pregnancyTestExpectedWith previous =
+            let
+                assembled =
+                    ncdAssembled emptyNCDMeasurements
+            in
+            expectLaboratoryTask dummyDate { assembled | previousEncountersData = previous } TaskPregnancyTest
+    in
+    describe "expectLaboratoryTask TaskPregnancyTest"
+        [ test "offered at the first encounter" <|
+            \_ ->
+                pregnancyTestExpectedWith []
+                    |> Expect.equal True
+        , test "offered again after a negative test at a previous encounter" <|
+            \_ ->
+                pregnancyTestExpectedWith
+                    [ previousEncounterAt 1
+                        (emptyNCDMeasurements
+                            |> withPregnancyTestOn (Date.add Date.Months -1 dummyDate) TestNegative
+                        )
+                    ]
+                    |> Expect.equal True
+        , test "offered again after a positive test at a previous encounter" <|
+            \_ ->
+                pregnancyTestExpectedWith
+                    [ previousEncounterAt 1
+                        (emptyNCDMeasurements
+                            |> withPregnancyTestOn (Date.add Date.Months -1 dummyDate) TestPositive
+                        )
+                    ]
+                    |> Expect.equal True
+        ]
+
+
 all : Test
 all =
     describe "NCD diagnosis tests"
@@ -644,4 +806,6 @@ all =
         , reassessmentTest
         , nextStepsTasksTest
         , resolvePreviousMaybeValueTest
+        , pregnancyAcrossEncountersTest
+        , pregnancyTestExpectedTest
         ]
