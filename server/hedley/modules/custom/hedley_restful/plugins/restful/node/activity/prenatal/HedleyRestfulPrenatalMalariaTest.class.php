@@ -35,4 +35,17 @@ class HedleyRestfulPrenatalMalariaTest extends HedleyRestfulPrenatalActivityBase
     'field_execution_date',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
+    foreach ($items as &$item) {
+      $item->blood_smear_ordered = (bool) $item->blood_smear_ordered;
+    }
+
+    return $items;
+  }
+
 }
