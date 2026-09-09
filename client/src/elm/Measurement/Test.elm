@@ -22,7 +22,7 @@ import Backend.Measurement.Model
 import Date exposing (Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -47,6 +47,8 @@ import Measurement.Utils
         , outOfRangeAsEntered
         , setNCDAStep
         , showNCDAMeasurementOutOfRange
+        , toMalariaResultValueWithDefault
+        , toMalariaTestValueWithDefault
         )
 import Measurement.View exposing (viewColorAlertIndication)
 import SyncManager.Model exposing (Site(..))
@@ -696,6 +698,7 @@ orderedBloodSmear =
     , testPrerequisites = Just EverySet.empty
     , testResult = Nothing
     , bloodSmearResult = BloodSmearPendingInput
+    , bloodSmearOrdered = True
     }
 
 
@@ -738,6 +741,114 @@ malariaResultFormWithDefaultTest =
         ]
 
 
+{-| Whether the form asks about the blood smear or about the rapid test.
+
+The lab declining a test leaves no result and overwrites the execution note
+with the lab technician's own reason, so after a decline a smear and a rapid
+test look the same in both. What tells them apart is whether a smear was
+ordered, which is recorded once by the nurse and kept.
+
+-}
+malariaResultFormBloodSmearTakenTest : Test
+malariaResultFormBloodSmearTakenTest =
+    let
+        resolve value =
+            malariaResultFormWithDefault emptyMalariaResultForm (Just value)
+                |> .bloodSmearTaken
+
+        rapidTestAtLab =
+            { orderedBloodSmear
+                | executionNote = TestNoteRunToday
+                , bloodSmearResult = BloodSmearNotTaken
+                , bloodSmearOrdered = False
+            }
+    in
+    describe "malariaResultFormWithDefault, asking about the right test"
+        [ test "a smear ordered at the lab is a smear" <|
+            \_ ->
+                resolve orderedBloodSmear
+                    |> Expect.equal True
+        , test "a smear the lab did not run is still a smear" <|
+            \_ ->
+                resolve
+                    { orderedBloodSmear
+                        | executionNote = TestNoteBrokenEquipment
+                        , bloodSmearResult = BloodSmearNotTaken
+                    }
+                    |> Expect.equal True
+        , test "a smear the lab read is a smear" <|
+            \_ ->
+                resolve
+                    { orderedBloodSmear
+                        | executionNote = TestNoteRunConfirmedByLabTech
+                        , bloodSmearResult = BloodSmearNegative
+                    }
+                    |> Expect.equal True
+        , test "a rapid test sent to the lab is not a smear" <|
+            \_ ->
+                resolve rapidTestAtLab
+                    |> Expect.equal False
+        , test "a rapid test the lab did not run is still not a smear" <|
+            \_ ->
+                resolve { rapidTestAtLab | executionNote = TestNoteBrokenEquipment }
+                    |> Expect.equal False
+        , test "a smear ordered before the record said so is still a smear" <|
+            \_ ->
+                resolve { orderedBloodSmear | bloodSmearOrdered = False }
+                    |> Expect.equal True
+        ]
+
+
+{-| The record keeps saying what was ordered through everything the lab does
+with it - a decline included - so that reopening it asks about the same test.
+-}
+bloodSmearOrderedTest : Test
+bloodSmearOrderedTest =
+    let
+        declined saved =
+            toMalariaResultValueWithDefault (Just saved)
+                { emptyMalariaResultForm
+                    | runConfirmedByLabTech = Just False
+                    , executionNote = Just TestNoteBrokenEquipment
+                    , executionNoteDirty = True
+                }
+                |> Maybe.map .bloodSmearOrdered
+
+        ordered bloodSmearTaken =
+            toMalariaTestValueWithDefault Nothing
+                { emptyMalariaTestForm
+                    | testPerformed = Just False
+                    , executionNote = Just TestNoteLackOfReagents
+                    , bloodSmearTaken = Just bloodSmearTaken
+                    , immediateResult = Just False
+                }
+                |> Maybe.map .bloodSmearOrdered
+    in
+    describe "bloodSmearOrdered"
+        [ test "the nurse ordering a smear records it" <|
+            \_ ->
+                ordered True
+                    |> Expect.equal (Just True)
+        , test "the nurse declining the rapid test without a smear records none" <|
+            \_ ->
+                ordered False
+                    |> Expect.equal (Just False)
+        , test "the lab declining an ordered smear keeps it ordered" <|
+            \_ ->
+                declined orderedBloodSmear
+                    |> Expect.equal (Just True)
+        , test "the lab declining a rapid test does not invent an order" <|
+            \_ ->
+                declined
+                    { orderedBloodSmear
+                        | executionNote = TestNoteRunToday
+                        , bloodSmearResult = BloodSmearNotTaken
+                        , bloodSmearOrdered = False
+                    }
+                    |> Expect.equal (Just False)
+        ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
@@ -761,6 +872,8 @@ all =
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
         , malariaResultFormWithDefaultTest
+        , malariaResultFormBloodSmearTakenTest
+        , bloodSmearOrderedTest
         , knownAsPositiveUpdateTest
         ]
 

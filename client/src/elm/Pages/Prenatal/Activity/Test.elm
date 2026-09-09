@@ -433,6 +433,7 @@ malariaTestValueWith result =
     , testPrerequisites = immediateResultPrerequisites
     , testResult = Just result
     , bloodSmearResult = BloodSmearNotTaken
+    , bloodSmearOrdered = False
     }
 
 
@@ -505,6 +506,7 @@ malariaTestValueNonImmediate =
     , testPrerequisites = Nothing
     , testResult = Just TestPositive
     , bloodSmearResult = BloodSmearNotTaken
+    , bloodSmearOrdered = False
     }
 
 
@@ -1757,6 +1759,7 @@ malariaTestValueWithBloodSmear executionNote bloodSmearResult =
     , testPrerequisites = immediateResultPrerequisites
     , testResult = Nothing
     , bloodSmearResult = bloodSmearResult
+    , bloodSmearOrdered = True
     }
 
 

@@ -2634,7 +2634,7 @@ malariaTestFormWithDefault form =
                         value.testPrerequisites
 
                 bloodSmearTakenByValue =
-                    bloodSmearResultSet value.bloodSmearResult
+                    value.bloodSmearOrdered || bloodSmearResultSet value.bloodSmearResult
             in
             { testPerformed =
                 valueConsideringIsDirtyField form.testPerformedDirty
@@ -2689,12 +2689,12 @@ toMalariaTestValue form =
     Maybe.map
         (\executionNote ->
             let
+                bloodSmearOrdered =
+                    (form.testPerformed == Just False)
+                        && (form.bloodSmearTaken == Just True)
+
                 defaultBloodSmearResult =
-                    if
-                        (form.testPerformed == Just False)
-                            && (form.bloodSmearTaken == Just True)
-                            && (form.immediateResult == Just False)
-                    then
+                    if bloodSmearOrdered && (form.immediateResult == Just False) then
                         BloodSmearPendingInput
 
                     else
@@ -2705,6 +2705,7 @@ toMalariaTestValue form =
             , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , testResult = form.testResult
             , bloodSmearResult = Maybe.withDefault defaultBloodSmearResult form.bloodSmearResult
+            , bloodSmearOrdered = bloodSmearOrdered
             }
         )
         form.executionNote
@@ -7592,14 +7593,17 @@ malariaResultFormWithDefault form saved =
                         else
                             resolveRunConfirmedByLabTechFromValue value
 
+                    -- Records from before the bit existed carry only the
+                    -- result, so a pending order still counts as a smear.
                     bloodSmearTakenByValue =
-                        List.member value.bloodSmearResult
-                            [ BloodSmearNegative
-                            , BloodSmearPlus
-                            , BloodSmearPlusPlus
-                            , BloodSmearPlusPlusPlus
-                            , BloodSmearPendingInput
-                            ]
+                        value.bloodSmearOrdered
+                            || List.member value.bloodSmearResult
+                                [ BloodSmearNegative
+                                , BloodSmearPlus
+                                , BloodSmearPlusPlus
+                                , BloodSmearPlusPlusPlus
+                                , BloodSmearPendingInput
+                                ]
 
                     -- If we have an indication that Blood Smear test was
                     -- ordered on initail phase, empty it's value.
@@ -7656,6 +7660,7 @@ toMalariaResultValue form =
             , testPrerequisites = form.testPrerequisites
             , testResult = form.testResult
             , bloodSmearResult = Maybe.withDefault BloodSmearNotTaken form.bloodSmearResult
+            , bloodSmearOrdered = form.bloodSmearTaken
             }
         )
         form.executionNote

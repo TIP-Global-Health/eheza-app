@@ -9,6 +9,7 @@ import {
   queryPrenatalDiagnoses,
   queryPartnerHIVTestExecutionNote,
   queryMalariaTest,
+  answerYesNo,
 } from './helpers/common';
 import { openReport } from './helpers/progress-report';
 import {
@@ -156,7 +157,65 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
       'no reason for not performing the test should be offered before the question is answered',
     ).toHaveCount(0);
 
-    // Complete lab results for all visible tests.
+    // Decline the smear, then correct that answer. The decline leaves no
+    // result and overwrites the reason the nurse gave, so nothing but the
+    // record of what was ordered can tell this from a rapid test - and the
+    // corrected answer has to go on asking about the smear.
+    const malariaForm = page.locator('.ui.form.laboratory.prenatal-test-result');
+    await answerYesNo(page, 'test-performed', 'No');
+    await page.waitForTimeout(WAIT.elmRerender);
+    await click(page.locator('.why-not .ui.checkbox label').first(), page);
+    await page.waitForTimeout(WAIT.formInteraction);
+    await click(
+      page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' }),
+      page,
+    );
+    await page.waitForTimeout(WAIT.pageNavigation);
+
+    await click(malariaTab, page);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await answerYesNo(page, 'test-performed', 'Yes');
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    // Both sides asserted. The two result fields are told apart by their
+    // label and by the scale they offer, and asking only whether the wrong
+    // one is absent would pass on a form showing neither.
+    await expect(
+      malariaForm,
+      'the corrected answer should be asked for the blood smear result',
+    ).toContainText('Malaria Blood Smear Result');
+    await expect(
+      malariaForm,
+      'the corrected answer should NOT be asked for a rapid test result',
+    ).not.toContainText('Malaria Test Result');
+
+    // The leading empty option is kept in the comparison on purpose: it is
+    // what an unanswered select renders, and its absence is what a value the
+    // scale does not list looks like - the browser then shows the first real
+    // option as though it were chosen.
+    const smearSelect = malariaForm.locator('select.form-input');
+    const smearOptions = await smearSelect.locator('option').allTextContents();
+    expect(
+      smearOptions.map(o => o.trim()),
+      'the options offered should be an unanswered blood smear scale',
+    ).toEqual(['', 'Negative', '+', '++', '+++']);
+    expect(
+      await smearSelect.inputValue(),
+      'no smear result should be chosen before the lab technician chooses one',
+    ).toBe('');
+
+    // Record the smear result the corrected answer asked for, so the encounter
+    // carries a read smear rather than one the lab never ran.
+    await smearSelect.selectOption({ label: 'Negative' });
+    await page.waitForTimeout(WAIT.formInteraction);
+    await click(
+      page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' }),
+      page,
+    );
+    await page.waitForTimeout(WAIT.pageNavigation);
+
+    // Complete lab results for all visible tests. The malaria tab is already
+    // completed by the round trip above, so the helper skips it.
     // The blood glucose field is asked for a reading in the wrong unit on
     // the way, and has to refuse it (#2123).
     const completedResults = await completeLabResults(page, {
@@ -211,6 +270,14 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
       malariaTest?.note,
       'the malaria test should carry the lab technician confirmed-run note',
     ).toBe('run-confirmed-by-lab-tech');
+    expect(
+      malariaTest?.testResult,
+      'no rapid test was run, so the record should hold no rapid test result',
+    ).toBeNull();
+    expect(
+      malariaTest?.bloodSmearOrdered,
+      'the record should still say a blood smear was ordered',
+    ).toBe(true);
 
     // A lab technician can not answer the follow up questions about the
     // partner, so nothing is diagnosed yet - whether the partner is on ARVs

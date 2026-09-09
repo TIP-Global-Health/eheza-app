@@ -439,7 +439,12 @@ ${pregnancyEncountersPhp(personNameB64)}    if (empty(\\$encounters)) { echo jso
  */
 export function queryMalariaTest(
   personName: string,
-): { note: string | null; bloodSmearResult: string | null } | null {
+): {
+  note: string | null;
+  bloodSmearResult: string | null;
+  testResult: string | null;
+  bloodSmearOrdered: boolean;
+} | null {
   const { drushCmd, cwd } = drushEnv();
   const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
 
@@ -461,7 +466,10 @@ ${pregnancyEncountersPhp(personNameB64)}    if (empty(\\$encounters)) { echo jso
       ? \\$test->field_test_execution_note[LANGUAGE_NONE][0]['value'] : null;
     \\$smear = isset(\\$test->field_blood_smear_result[LANGUAGE_NONE][0]['value'])
       ? \\$test->field_blood_smear_result[LANGUAGE_NONE][0]['value'] : null;
-    echo json_encode(['note' => \\$note, 'smear' => \\$smear]);
+    \\$result = isset(\\$test->field_test_result[LANGUAGE_NONE][0]['value'])
+      ? \\$test->field_test_result[LANGUAGE_NONE][0]['value'] : null;
+    \\$ordered = !empty(\\$test->field_blood_smear_ordered[LANGUAGE_NONE][0]['value']);
+    echo json_encode(['note' => \\$note, 'smear' => \\$smear, 'result' => \\$result, 'ordered' => \\$ordered]);
   `;
 
   for (let attempt = 0; attempt < 10; attempt++) {
@@ -474,6 +482,8 @@ ${pregnancyEncountersPhp(personNameB64)}    if (empty(\\$encounters)) { echo jso
         return {
           note: parsed.note ? String(parsed.note) : null,
           bloodSmearResult: String(parsed.smear),
+          testResult: parsed.result ? String(parsed.result) : null,
+          bloodSmearOrdered: Boolean(parsed.ordered),
         };
       }
       console.log(`queryMalariaTest attempt ${attempt + 1}: ${parsed.error || 'blood smear still awaiting the lab'}`);
