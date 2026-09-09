@@ -1120,9 +1120,10 @@ type alias MalariaTestValue =
     , testResult : Maybe TestResult
     , bloodSmearResult : BloodSmearResult
 
-    -- Whether a blood smear was taken in place of the rapid test. Set by the
-    -- nurse when ordering it, and kept through everything the lab does with
-    -- it, so a smear the lab declined is still known to be a smear.
+    -- Whether a blood smear was taken in place of the rapid test. Set when the
+    -- nurse orders the smear; the lab's result save writes it back as True
+    -- whenever a smear was ordered or a smear result is present. So a smear
+    -- the lab declined is still known to be a smear.
     , bloodSmearOrdered : Bool
     }
 

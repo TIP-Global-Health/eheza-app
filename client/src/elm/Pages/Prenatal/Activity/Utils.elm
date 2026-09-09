@@ -2179,7 +2179,11 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 |> Maybe.map
                     (\value ->
                         (-- Malaria RDT was run, and positive result was recorded.
-                         testPerformedByExecutionNote value.executionNote
+                         -- A record that ordered a blood smear is excluded: the
+                         -- rapid test is the one thing it did not run, so any
+                         -- result on it is one no one entered for it.
+                         not value.bloodSmearOrdered
+                            && testPerformedByExecutionNote value.executionNote
                             && (value.testResult == Just TestPositive)
                         )
                             || (-- Blood smear test was taken instead of the RDT,

@@ -162,15 +162,21 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     // record of what was ordered can tell this from a rapid test - and the
     // corrected answer has to go on asking about the smear.
     const malariaForm = page.locator('.ui.form.laboratory.prenatal-test-result');
+    // Only the enabled Save carries the class; a form the app considers
+    // incomplete leaves a button that is still visible and still clickable,
+    // and clicking it does nothing.
+    const saveMalariaTab = async () => {
+      await click(
+        page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' }),
+        page,
+      );
+      await page.waitForTimeout(WAIT.pageNavigation);
+    };
     await answerYesNo(page, 'test-performed', 'No');
     await page.waitForTimeout(WAIT.elmRerender);
     await click(page.locator('.why-not .ui.checkbox label').first(), page);
     await page.waitForTimeout(WAIT.formInteraction);
-    await click(
-      page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' }),
-      page,
-    );
-    await page.waitForTimeout(WAIT.pageNavigation);
+    await saveMalariaTab();
 
     await click(malariaTab, page);
     await page.waitForTimeout(WAIT.elmRerender);
@@ -208,11 +214,7 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     // carries a read smear rather than one the lab never ran.
     await smearSelect.selectOption({ label: 'Negative' });
     await page.waitForTimeout(WAIT.formInteraction);
-    await click(
-      page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' }),
-      page,
-    );
-    await page.waitForTimeout(WAIT.pageNavigation);
+    await saveMalariaTab();
 
     // Complete lab results for all visible tests. The malaria tab is already
     // completed by the round trip above, so the helper skips it.

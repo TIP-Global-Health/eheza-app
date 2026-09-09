@@ -2634,7 +2634,7 @@ malariaTestFormWithDefault form =
                         value.testPrerequisites
 
                 bloodSmearTakenByValue =
-                    value.bloodSmearOrdered || bloodSmearResultSet value.bloodSmearResult
+                    bloodSmearOrderedByValue value
             in
             { testPerformed =
                 valueConsideringIsDirtyField form.testPerformedDirty
@@ -2676,6 +2676,19 @@ bloodSmearResultSet =
 bloodSmearResultNotSet : BloodSmearResult -> Bool
 bloodSmearResultNotSet value =
     List.member value [ BloodSmearPendingInput, BloodSmearNotTaken ]
+
+
+{-| Whether a blood smear was taken in place of the rapid test, which is what
+decides which of the two the forms ask about.
+
+`bloodSmearOrdered` answers it directly. A record saved before that field
+existed answers it by holding a smear result, an order still awaiting one
+included - only "not taken" means no smear.
+
+-}
+bloodSmearOrderedByValue : { v | bloodSmearOrdered : Bool, bloodSmearResult : BloodSmearResult } -> Bool
+bloodSmearOrderedByValue value =
+    value.bloodSmearOrdered || value.bloodSmearResult /= BloodSmearNotTaken
 
 
 toMalariaTestValueWithDefault : Maybe MalariaTestValue -> MalariaTestForm -> Maybe MalariaTestValue
@@ -7593,22 +7606,14 @@ malariaResultFormWithDefault form saved =
                         else
                             resolveRunConfirmedByLabTechFromValue value
 
-                    -- Records from before the bit existed carry only the
-                    -- result, so a pending order still counts as a smear.
                     bloodSmearTakenByValue =
-                        value.bloodSmearOrdered
-                            || List.member value.bloodSmearResult
-                                [ BloodSmearNegative
-                                , BloodSmearPlus
-                                , BloodSmearPlusPlus
-                                , BloodSmearPlusPlusPlus
-                                , BloodSmearPendingInput
-                                ]
+                        bloodSmearOrderedByValue value
 
-                    -- If we have an indication that Blood Smear test was
-                    -- ordered on initail phase, empty it's value.
+                    -- Neither value is a result the smear scale offers, so
+                    -- carrying one into the select would show its first option
+                    -- as the answer and count the task done.
                     bloodSmearResultByValue =
-                        if smearOrderedAtLab then
+                        if List.member value.bloodSmearResult [ BloodSmearPendingInput, BloodSmearNotTaken ] then
                             Nothing
 
                         else
@@ -7658,7 +7663,15 @@ toMalariaResultValue form =
             { executionNote = executionNoteConsideringLabTech
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
-            , testResult = form.testResult
+            , testResult =
+                if form.bloodSmearTaken then
+                    -- What was ordered is a smear, so a rapid test result on
+                    -- this record is one no one entered here. Reading it back
+                    -- as a rapid test that was run is how it diagnoses.
+                    Nothing
+
+                else
+                    form.testResult
             , bloodSmearResult = Maybe.withDefault BloodSmearNotTaken form.bloodSmearResult
             , bloodSmearOrdered = form.bloodSmearTaken
             }

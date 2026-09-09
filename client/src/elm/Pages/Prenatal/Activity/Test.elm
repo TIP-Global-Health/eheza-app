@@ -1763,6 +1763,18 @@ malariaTestValueWithBloodSmear executionNote bloodSmearResult =
     }
 
 
+{-| A blood smear that also carries a rapid test result, the way a client that
+does not know about the smear order writes one.
+-}
+withBloodSmearAndRapidTestResult : TestExecutionNote -> BloodSmearResult -> TestResult -> PrenatalMeasurements -> PrenatalMeasurements
+withBloodSmearAndRapidTestResult executionNote bloodSmearResult testResult measurements =
+    let
+        value =
+            malariaTestValueWithBloodSmear executionNote bloodSmearResult
+    in
+    { measurements | malariaTest = wrapMeasurement { value | testResult = Just testResult } }
+
+
 withBloodSmear : TestExecutionNote -> BloodSmearResult -> PrenatalMeasurements -> PrenatalMeasurements
 withBloodSmear executionNote bloodSmearResult measurements =
     { measurements
@@ -1805,6 +1817,16 @@ generatePrenatalDiagnosesForNurseBloodSmearTest =
             \_ ->
                 emptyPrenatalMeasurements
                     |> withBloodSmear TestNoteLackOfReagents BloodSmearPendingInput
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal False
+        , -- A record that ordered a smear did not run the rapid test, so a
+          -- rapid test result on it is one nobody entered for it. An older
+          -- client that still writes one must not diagnose through it.
+          test "a positive rapid test result on a record that ordered a smear diagnoses nothing" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withBloodSmearAndRapidTestResult TestNoteRunConfirmedByLabTech BloodSmearNegative TestPositive
                     |> diagnoseNurse
                     |> EverySet.member DiagnosisMalariaInitialPhase
                     |> Expect.equal False
