@@ -178,3 +178,181 @@ Even with the window visible, the costs that remain shape how a run should be wr
   put as many actions as possible in one `browser_batch`.
 - Deliberate `wait`s for sync are honest waits and cannot be optimised away; they were ~45 s
   of the pairing run and will dominate once the 5 s tax is gone.
+
+## Driving the app when the extension's tab will not render (2026-08-27)
+
+The `chrome-devtools-mcp` server is a working fallback driver when the claude-in-chrome tab
+sits at 0 fps (see pitfalls). It runs its **own headed Chrome on a fresh profile** —
+`visibility: "visible"`, 62 fps, viewport **1200 x 1777**, screenshots ~1862 px wide. Its
+`navigate_page` takes an `initScript` that runs before page scripts on every navigation, which
+is the reliable way to keep an instrumentation hook installed across reloads. What it cannot do
+is `gif_creator`; build recordings from `take_screenshot filePath=…` plus ffmpeg concat.
+
+Its a11y snapshot only exposes real controls (`button`, `textbox`, `select`). E-Heza's
+clickable `div`s are invisible to it, so most navigation is done by dispatching
+`mousemove/mousedown/mouseup/click` MouseEvents at the element's own rect from
+`evaluate_script`. Elm's `onClick` responds to those.
+
+## Capturing what the client actually uploads (2026-08-27)
+
+The sync upload is a **main-thread `elm/http` XHR** (`SyncManager/Update.elm` →
+`HttpBuilder.post (backendUrl ++ "/api/sync")`), not a service-worker fetch, so a page-level
+`XMLHttpRequest.prototype.send` hook sees the request body. This is the only way to tell a
+dropped key from a null one, because the backend ignores both identically — indispensable
+whenever a client-side encoder change has a backend guard shipping alongside it.
+
+## Sync gates on a freshly paired device (2026-08-27)
+
+- General sync runs on its own and fills the **`nodes`** store (~36 entities: nurses, villages,
+  health centers, counseling topics, participant forms).
+- Each health centre on Device Status starts at **"START SYNCING"** and downloads nothing until
+  clicked. Authority data then lands in the **`shards`** store (408 rows here; 78 persons).
+- The upload lane idles (default 600 s). **"TRY SYNCING WITH BACKEND"** forces a cycle.
+- IndexedDB `sync` stores: `nodes`, `shards`, `nodeChanges`, `shardChanges` (queued uploads),
+  `authorityPhotoUploadChanges` (photo rows, `{localId, photo, fileId}` — `fileId` is null
+  until the file itself is uploaded), `deferredPhotos`, `syncMetadata`, `statistics`.
+
+## Photos and the Dropzone (2026-08-27)
+
+The photo widget on the person form and on every photo activity is a **Dropzone** (`#dropzone`,
+`app.js attachDropzone`), not a camera — `acceptedFiles "jpg,jpeg,png,gif,image/*"`, posting to
+`cache-upload/images`. Clicking it opens a native file dialog, which freezes automation, so
+supply the file by dispatching `dragenter`/`dragover`/`drop` with a `DataTransfer` holding a
+`File` built from a canvas. The thumbnail turning into a `/cache-upload/images/<id>` URL is the
+signal it took, and that URL is what makes the service worker create the upload row.
+
+All 86 demo persons already carry a migration photo, so any of them is ready-made for a
+"photo that came down from the backend" scenario.
+
+## Navigation facts (2026-08-27)
+
+- Main-menu cards: `onClick` sits on `div.card > div.image` (`Utils/Html.elm`), not the card
+  or its label.
+- Clinical: `button.individual-assessment` / `button.group-assessment`.
+- Participant Directory row: `span.action-icon.forward` opens the person page. The **edit
+  pencil (`span.action-icon.edit`) is on the person page**, not on the directory row.
+- Person page → "Add Child" is `div.add-participant-icon-wrapper`.
+- Editing a demo person **requires Level of Education and Marital Status** — they are empty in
+  the migration data and the form refuses to save without them ("Validation Errors:
+  education_level is a required field"). Budget two extra selects into any person-edit run.
+- Registration DOB: click `div.date-input.field`; set YEAR (this rebuilds the MONTH list), set
+  MONTH, then click the day cell — the picker closes on the day click, so its own SAVE is gone
+  by then. Address cascade values: Amajyaruguru 2755 → Gakenke 2756 → Coko 2803 → Mbirima 2809
+  → Akanduga 2810; Nyange HC `5f89c5f3-34a2-5760-afc5-731db5c8cff9`.
+- **Relationships load slowly, they do not fail.** A person page can show "Family Members:
+  The server indicated the following error: Not Found" for a long while after a fresh pairing
+  — through several reloads and a service-worker update — and then simply start working. It is
+  a data-loading delay, not the `clinics-not-found-bug.md` defect. Keep reloading and waiting;
+  on this run it came good on a later reload and stayed good, including CREATE RELATIONSHIP.
+- The child-address propagation in `Pages/Person/Update.elm` needs **two** things loaded, not
+  one: `db.relationshipsByPerson` for the parent (the person page fetches it) **and** each
+  child as `Success` in `db.people`. Visiting the parent's page alone queues only the parent
+  PATCH. Open the child's own person page first (`#person/<child-uuid>/directory`), go back to
+  the parent, then edit — then the save queues a PATCH per child as well.
+
+## A measurement photo also becomes the person's photo (2026-08-27)
+
+Saving a photo measurement updates the **person's** `field_photo` too, server-side:
+`$person_wrapper->field_photo->set($wrapper->field_photo->value())` in
+`HedleyRestfulNutritionPhotos`, `HedleyRestfulPhotos`, `HedleyRestfulWellChildPhoto` and
+`HedleyRestfulPrenatalPhotos` (all around line 104-111). Intended behaviour, not a defect — but
+it means a person's photo fid changes as a side effect of an unrelated activity, so re-read the
+baseline before asserting anything about a person's photo after a photo activity has run.
+
+## Two browsers can serve two different builds (2026-08-27)
+
+The claude-in-chrome tab and the chrome-devtools-mcp Chrome are separate profiles with separate
+service-worker caches, so they can sit on **different builds of the app at the same time** —
+measured here as `a15a92e6b` in one and `05e8b9c9b` (branch HEAD) in the other, concurrently.
+Read the `Version:` string in the top-right of whichever browser is actually driving and match
+it against `git rev-parse --short HEAD` before trusting any result. Switching drivers mid-run
+does not carry the build over, and neither does it carry the pairing.
+
+## Driver preference, and the healthy-tab numbers (2026-08-27, after the extension reinstall)
+
+**claude-in-chrome is the preferred driver.** Its `browser_batch` runs many actions per round
+trip, and the model's own turn (~9 s) is the dominant cost once the tab is healthy — the
+chrome-devtools-mcp fallback has no batching, so a run there costs one round trip per single
+step. Reach for chrome-devtools-mcp only while a broken extension is being reinstalled.
+
+Healthy-tab baseline, measured right after the reinstall:
+
+| reading | healthy | broken (phantom tab) |
+|---|---|---|
+| rAF frames in 1.5 s | 40 (61 fps) | 0 |
+| `document.visibilityState` | `visible` | `hidden` |
+| `computer hover` | **22 ms** | 5011 ms |
+| `computer screenshot` | ~450 ms | ~450 ms (works either way — proves nothing) |
+
+Take these as the pass/fail line at the start of a run. The older "5 s per action when the
+window is hidden" table further up describes the same broken state; the cause was never window
+occlusion, it was the extension driving a tab Chrome never displayed.
+
+## Case Management panes: which one can show each state (2026-09-02)
+
+Each pane in `Pages/GlobalCaseManagement/View.elm` decides for itself whether an encounter
+clears its entry, and they disagree. This decides which pane a scenario can use:
+
+| pane | `limitDate` its view passes | same-day encounter clears the entry? |
+|---|---|---|
+| Child Nutrition (Home Visit) | `currentDate + 1` | **yes** — entry gone the moment today's home visit exists |
+| Acute Illness | `currentDate + 1` | no, but the follow-up must belong to the LAST encounter of the illness, and a diagnosis must resolve |
+| Immunization (Well Child) | `currentDate` | **no** — today's encounters are filtered out of the comparison, so the entry stays |
+| Prenatal | `currentDate + 1` | same shape as Acute Illness |
+
+So a scenario needing "an entry that is still tappable on a day the patient already has an
+encounter of that type" must use the **Immunization** pane. The immunization entry is in
+practice only visible on the day its Well Child encounter happened, which is also why that day
+is the one where the guard matters.
+
+## CHW route recipes (2026-09-02)
+
+- Individual encounter: main menu `div.card` whose text matches → its **`div.image`** →
+  `button.individual-assessment` ("Individual Encounter") → `button.encounter-type` (ACUTE
+  ILLNESS / ANTENATAL CARE / CHILD NUTRITION / WELL CHILD VISIT / CHILD SCORECARD / TB
+  MANAGEMENT / HIV MANAGEMENT) → type the name into the search field with `form_input` →
+  the result row's **`span.action-icon.forward`** (the row itself is not clickable) →
+  participant page.
+- The **nutrition participant page offers both** `NUTRITION ENCOUNTER` and `HOME VISIT
+  ENCOUNTER` as `div.ui.primary.button`, so a home visit is reachable there as well as from
+  the Case Management entry.
+- Case Management: `div.ui.segment.filters button` for the pane filter; each entry's tap
+  target is `div.icon-forward`, which the a11y tree does not expose — click it by its own
+  rect, scaled by `1568/innerWidth`.
+- Ending an encounter: the button carries `ui fluid primary button disabled` until the
+  mandatory activities are done, then `... active`. Acute Illness then shows an in-app
+  "END ENCOUNTER?" modal with CANCEL / CONTINUE; Well Child and Home Visit end with no modal.
+  All are in-app modals, never native dialogs.
+
+## Encounter recipes that produce a Case Management entry (2026-09-02)
+
+- **Child Nutrition (CHW) → Home Visit pane entry.** Save MUAC (11 reads RED), Nutrition
+  ("None of these"), Weight, Height — Next Steps appears only once all four are saved, and
+  arrives with an assessment popup (CONTINUE). Its tasks are Contributing Factors / Health
+  Education / Send to Health Center / **Follow Up**; saving Follow Up ("1 Day") alone is
+  enough to create the entry.
+- **Well Child (CHW) → Immunization pane entry.** Danger Signs (symptoms "None of these";
+  Vitals has two "Unable to take measurement" checkboxes for a CHW, which complete the task
+  without numbers) → Nutrition Assessment (Height / MUAC / Nutrition / Weight tabs) →
+  Immunizations (7 vaccine tabs; answer **No** to "received prior to today", save, and the
+  save advances to the next vaccine; the Overview tab's save returns to the encounter) →
+  **NEXT STEPS** then appears, with Health Education / Send to Health Center / **Next Visit**.
+  ⚠ Leave the vaccines **unadministered** — `generateASAPImmunisationDate` takes the earliest
+  future vaccination date, so a child who has just been given everything gets a future date
+  and **no entry appears**. An unvaccinated four-year-old reads "BEHIND" on the progress
+  report, which is the signal the entry will show.
+- **Acute Illness (CHW, adult) → Acute Illness pane entry.** Symptoms (General: Fever +
+  Chills; Respiratory and GI: "None of the above") → Physical Exam (Vitals RR 18 / temp 38.5;
+  Acute Findings: "None of the above" in **both** groups) → Prior Treatment (three yes/no, all
+  No) → **LABORATORY** then appears: Malaria RDT is a `<select.form-input.rapid-test-result>`
+  (never click it — set `value` and dispatch bubbling `input`+`change`), option value
+  `positive`, then "currently pregnant?" No → diagnosis **Uncomplicated Malaria** and Next
+  Steps with Medication Distribution (Coartem Yes) and **Follow Up** ("1 Day").
+  An adult keeps the Physical Exam to two tabs; a child adds MUAC and Nutrition.
+
+## The emulated viewport is not fixed across sessions (2026-09-02)
+
+Measured this run: `innerWidth/innerHeight` **1862 x 871**, screenshots returned 1568 px wide
+(scale 0.842) — and the geometry changed once mid-run without any `resize_window` call. The
+1200 x 1799 recorded on 2026-08-21 is therefore a reading, not a constant. Always measure
+`innerWidth` in the same call that computes a click coordinate, and prefer `ref` clicks.
