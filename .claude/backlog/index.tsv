@@ -316,7 +316,7 @@ B-315	3	READY	MED-LOW			28	Growth charts: a measurement outside the chart's x-ra
 B-316	4	READY	LOW			28	Z-score tables: a failed table download on first load is never retried and never shown, so growth charts render without 
 B-317	2	READY	MED-HIGH			28	Sync download: a response arriving after its 30-second timeout is applied under whichever health centre is current by th
 B-318	3	READY	MED			28	Sync: the dashboard-statistics download has no timeout and no elapsed-time guard, so one stalled request wedges uploads 
-B-319	1	READY	MED			28	Prenatal labs (lab technician): a blood-smear order opens pre-answered "test will NOT be performed today" with the nurse
+B-319	1	IMPLEMENTED	MED	2223	2224	28	Prenatal labs (lab technician): a blood-smear order opens pre-answered "test will NOT be performed today" with the nurse
 B-320	1	IMPLEMENTED	MED	2211	2212	28	Prenatal HIV test: correcting to "known as positive" after a negative RDT keeps the result and the partner answers, so t
 B-321	4	READY	LOW			28	NCD Laboratory (urine dipstick, creatinine, liver function, lipid panel): re-saving a test task after its results were e
 B-322	4	READY	LOW			28	Child progress report, Diagnosis pane: "Malnutrition signs" is listed twice for one date, because the nutrition-derived 
