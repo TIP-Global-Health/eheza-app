@@ -302,6 +302,18 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
       'discordant couple status should not be stated before the follow ups are answered',
     ).toHaveCount(0);
 
+    // The smear the lab technician read belongs in the lab results, and it is
+    // the only malaria result there: no rapid test was run. The names are
+    // matched exactly, because "Malaria Blood Smear" contains "Malaria".
+    await expect(
+      reportBeforeFollowUps.locator('.entry:has(.name:text-is("Malaria Blood Smear")) .result'),
+      'the blood smear should be listed with the result the lab technician read',
+    ).toHaveText('Negative');
+    await expect(
+      reportBeforeFollowUps.locator('.entry:has(.name:text-is("Malaria"))'),
+      'a blood smear should not be listed as a rapid test',
+    ).toHaveCount(0);
+
     // Accepting the results is what opens the encounter the follow ups are on.
     await acceptLabsResults(page);
 
