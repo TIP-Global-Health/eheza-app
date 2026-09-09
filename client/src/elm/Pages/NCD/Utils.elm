@@ -973,28 +973,39 @@ patientIsPregnant assembled =
     patientIsPregnantAtEncounter assembled.encounter.startDate assembled.measurements assembled
 
 
-{-| The pregnancy test is offered at every encounter, but it is not always
-recorded, so the answer may have been given at an earlier one. We take the most
-recent answer, and a positive answer stops counting once the validity period
-has passed since it was recorded.
+{-| The pregnancy test is offered at every encounter, but it does not always
+produce an answer, so the answer may have been given at an earlier one. We take
+the most recent answer, and a positive answer stops counting once the validity
+period has passed since it was recorded.
 -}
 patientIsPregnantAtEncounter : NominalDate -> NCDMeasurements -> AssembledData -> Bool
 patientIsPregnantAtEncounter encounterDate encounterMeasurements assembled =
     let
         pregnancyAnswer ( startDate, measurements ) =
             getMeasurementValueFunc measurements.pregnancyTest
-                |> Maybe.map
+                |> Maybe.andThen
                     (\value ->
-                        ( -- "Is this patient known to be pregnant" is answered whenever the
-                          -- test is recorded, so any note other than the one that answer
-                          -- writes is the nurse answering that she is not.
-                          (value.executionNote == TestNoteKnownAsPositive)
-                            || (value.testResult == Just TestPositive)
-                        , -- Execution date is not recorded when patient is known to be
-                          -- pregnant, so we fall back to the date of the encounter at
-                          -- which the answer was given.
-                          Maybe.withDefault startDate value.executionDate
-                        )
+                        let
+                            -- Execution date is not recorded when patient is known to be
+                            -- pregnant, so we fall back to the date of the encounter at
+                            -- which the answer was given.
+                            answerDate =
+                                Maybe.withDefault startDate value.executionDate
+                        in
+                        if (value.executionNote == TestNoteKnownAsPositive) || (value.testResult == Just TestPositive) then
+                            Just ( True, answerDate )
+
+                        else if (value.testResult == Just TestNegative) || (value.executionNote == TestNoteNotIndicated) then
+                            -- A test the nurse judged not to be indicated answers the
+                            -- question, because it is recorded only after she has answered
+                            -- that the patient is not known to be pregnant.
+                            Just ( False, answerDate )
+
+                        else
+                            -- The test could not be run, or its result is not conclusive.
+                            -- That says nothing about the patient, so an answer given at
+                            -- an earlier encounter still stands.
+                            Nothing
                     )
     in
     (( encounterDate, encounterMeasurements )

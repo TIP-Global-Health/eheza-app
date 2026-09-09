@@ -738,17 +738,37 @@ pregnancyAcrossEncountersTest =
                     |> isPregnantWith
                         [ previousEncounterAt 2 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
                     |> Expect.equal False
-        , test "an indeterminate result at the encounter being assessed, over an earlier positive" <|
+        , -- A test that could not be run, or whose result is not conclusive,
+          -- says nothing about the patient.
+          test "an indeterminate result does not override an earlier positive" <|
             \_ ->
                 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestIndeterminate))
                     |> isPregnantWith
                         [ previousEncounterAt 2 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
-                    |> Expect.equal False
+                    |> Expect.equal True
+        , test "a test that could not be run does not override an earlier positive" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteNoEquipment Nothing)
+                    |> isPregnantWith
+                        [ previousEncounterAt 2 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
+                    |> Expect.equal True
         , test "reported as known to be pregnant, then not known three months later" <|
             \_ ->
                 (emptyNCDMeasurements |> withPregnancyTest TestNoteNotIndicated Nothing)
                     |> isPregnantWith
                         [ previousEncounterAt 3 (emptyNCDMeasurements |> withPregnancyTest TestNoteKnownAsPositive Nothing) ]
+                    |> Expect.equal False
+        , -- The expiry boundary, measured from an execution date rather than
+          -- from the date of the encounter that recorded it.
+          test "a positive dated 8 months back is still current when recorded today" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTestOn (Date.add Date.Months -8 dummyDate) TestPositive)
+                    |> isPregnantWith []
+                    |> Expect.equal True
+        , test "a positive dated 9 months back has expired when recorded today" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTestOn (Date.add Date.Months -9 dummyDate) TestPositive)
+                    |> isPregnantWith []
                     |> Expect.equal False
         , test "an answer dated before an earlier encounter's answer does not override it" <|
             \_ ->
