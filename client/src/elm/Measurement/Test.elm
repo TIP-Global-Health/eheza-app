@@ -917,6 +917,20 @@ bloodSmearOrderedTest =
             \_ ->
                 declined orderedBloodSmear
                     |> Expect.equal (Just True)
+        , -- The lab confirming the run makes the nurse's form read the rapid
+          -- test as performed again; a save from it must not drop the order.
+          test "a nurse re-save after the lab read the smear keeps it ordered" <|
+            \_ ->
+                toMalariaTestValueWithDefault
+                    (Just
+                        { orderedBloodSmear
+                            | executionNote = TestNoteRunConfirmedByLabTech
+                            , bloodSmearResult = BloodSmearNegative
+                        }
+                    )
+                    emptyMalariaTestForm
+                    |> Maybe.map .bloodSmearOrdered
+                    |> Expect.equal (Just True)
         , test "the lab declining a rapid test does not invent an order" <|
             \_ ->
                 declined

@@ -1775,6 +1775,21 @@ withBloodSmearAndRapidTestResult executionNote bloodSmearResult testResult measu
     { measurements | malariaTest = wrapMeasurement { value | testResult = Just testResult } }
 
 
+{-| The same record as written before `bloodSmearOrdered` existed: the smear
+result is all that says a smear was taken.
+-}
+withLegacyBloodSmearAndRapidTestResult : TestExecutionNote -> BloodSmearResult -> TestResult -> PrenatalMeasurements -> PrenatalMeasurements
+withLegacyBloodSmearAndRapidTestResult executionNote bloodSmearResult testResult measurements =
+    let
+        value =
+            malariaTestValueWithBloodSmear executionNote bloodSmearResult
+    in
+    { measurements
+        | malariaTest =
+            wrapMeasurement { value | testResult = Just testResult, bloodSmearOrdered = False }
+    }
+
+
 withBloodSmear : TestExecutionNote -> BloodSmearResult -> PrenatalMeasurements -> PrenatalMeasurements
 withBloodSmear executionNote bloodSmearResult measurements =
     { measurements
@@ -1827,6 +1842,15 @@ generatePrenatalDiagnosesForNurseBloodSmearTest =
             \_ ->
                 emptyPrenatalMeasurements
                     |> withBloodSmearAndRapidTestResult TestNoteRunConfirmedByLabTech BloodSmearNegative TestPositive
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal False
+        , -- Same record, written before the order was recorded: the smear
+          -- result is the only thing that says a smear was taken.
+          test "a positive rapid test result on a legacy smear record diagnoses nothing" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withLegacyBloodSmearAndRapidTestResult TestNoteRunConfirmedByLabTech BloodSmearNegative TestPositive
                     |> diagnoseNurse
                     |> EverySet.member DiagnosisMalariaInitialPhase
                     |> Expect.equal False
