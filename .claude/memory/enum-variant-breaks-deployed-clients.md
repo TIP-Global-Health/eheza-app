@@ -26,6 +26,13 @@ vulnerable code is already on the devices, so no edit to the new PR can protect 
 - ✅ A new FIELD is safe in one release: Elm's pipeline decoders ignore JSON keys they do not
   ask for, and old clients simply do not send it (absent → `optional` default).
 - So when a record needs a new bit of information, prefer a new field over a new enum value.
+- ⚠ **The new-field route has its own trap, hit the same day:** a D7 `list_boolean` renders
+  as the STRING `"1"`, and the Elm decoders expect `bool`. Listing the field in the restful
+  class's `$fields` is not enough — it needs the `(bool)` cast in
+  `postExecuteQueryForViewWithDbSelect` (precedent: `field_patient_notified` in
+  `HedleyRestfulPrenatalLabsResults`). Without it the NEW client fails its own download by
+  the identical whole-batch mechanism: the lab-tech device in the e2e sat at "waiting for
+  Status: Success" for 120 s, while the watchdog showed the upload had succeeded.
 - Hygiene worth doing anyway, as its own cheap PR: wrap the strict enum decoders in
   `decodeWithFallback`, so the NEXT extension is possible without a two-release wait.
 - Related: [[improvement-1b-poison-batch-not-quick-fix]] (why the client cannot just skip the
