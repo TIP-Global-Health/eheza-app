@@ -4,7 +4,7 @@ import { setupDevice } from './helpers/auth';
 import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { queryNCDDiagnoses, syncAndWait } from './helpers/common';
+import { GLUCOSE_DIABETIC, queryNCDDiagnoses, syncAndWait } from './helpers/common';
 import {
   createAdultAndStartNCDEncounter,
   completeDangerSigns,
@@ -457,5 +457,71 @@ test.describe('Nurse: NCD Recurrent Encounter — Lab Results', () => {
     expect(nodes['ncd_social_history'], 'ncd_social_history should exist').toBe(true);
     expect(nodes['ncd_family_history'], 'ncd_family_history should exist').toBe(true);
     expect(nodes['ncd_outside_care'], 'ncd_outside_care should exist').toBe(true);
+  });
+});
+
+// =========================================================================
+// Test 5: Nurse First NCD Encounter — diabetes read at the point of care
+// =========================================================================
+
+test.describe('Nurse: NCD First Encounter — Point of Care Diabetes', () => {
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '1234', 'Nyange Health Center');
+  });
+
+  test('blood sugar read on the spot offers diabetes medication, verify backend sync', async ({ page }) => {
+    const { fullName } = await createAdultAndStartNCDEncounter(page, {
+      isFemale: false,
+    });
+
+    await completeDangerSigns(page);
+    await completeSymptomReview(page);
+
+    // Normal blood pressure, so the blood sugar is the only thing that can
+    // raise a diagnosis and the only thing that can ask for a Next Step.
+    await completeExamination(page);
+
+    // MedicalHistory answers "None", so diabetes is not reported either.
+    await completeMedicalHistory(page);
+
+    // Blood sugar read at the point of care, above the 200 mg/dL threshold for
+    // a patient who has not fasted.
+    await completeLaboratory(page, {
+      performTests: true,
+      readOnTheSpot: true,
+      glucose: GLUCOSE_DIABETIC,
+    });
+
+    // The diagnosis is made while the encounter is still in its initial phase,
+    // so the medication is offered here rather than at a later visit.
+    await completeNextSteps(page);
+
+    await endNCDEncounter(page);
+
+    await syncAndWait(page);
+
+    expect(queryNCDDiagnoses(fullName)).toEqual(['diabetes-recurrent']);
+
+    // Only the nodes this encounter must have are waited for; the query returns
+    // every NCD type either way, so health education is read from the same map.
+    const expectedTypes = [
+      'ncd_random_blood_sugar_test',
+      'ncd_medication_distribution',
+    ];
+    const nodes = queryNCDNodes(fullName, expectedTypes);
+
+    expect(nodes['ncd_random_blood_sugar_test'], 'ncd_random_blood_sugar_test should exist').toBe(true);
+    // Without the medication the encounter closes with a diabetes diagnosis on
+    // the record and nothing offered for it.
+    expect(nodes['ncd_medication_distribution'], 'ncd_medication_distribution should exist').toBe(true);
+    // Health education is for a Stage 1 hypertension with no other condition.
+    expect(nodes['ncd_health_education'], 'ncd_health_education should not exist').toBe(false);
   });
 });

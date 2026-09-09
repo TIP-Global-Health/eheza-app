@@ -665,6 +665,10 @@ export const GLUCOSE_IN_RANGE = '120';
  *  it, which the field refuses because it reads as milligrams. */
 export const GLUCOSE_IN_MILLIMOLES = '12';
 
+/** A blood glucose reading that diagnoses diabetes when the patient has not
+ *  fasted (the threshold is 200 mg/dL). */
+export const GLUCOSE_DIABETIC = '250';
+
 /** Whether a numeric measurement input is the blood glucose one. */
 export async function isGlucoseInput(
   input: import('@playwright/test').Locator,

@@ -20,7 +20,8 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.NCD.Activity.Utils exposing (resolvePreviousMaybeValue)
+import Pages.NCD.Activity.Types exposing (NextStepsTask(..))
+import Pages.NCD.Activity.Utils exposing (resolveNextStepsTasks, resolvePreviousMaybeValue)
 import Pages.NCD.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.NCD.Utils
     exposing
@@ -535,6 +536,65 @@ generateNCDDiagnosesTest =
         ]
 
 
+{-| The Next Steps tasks a first encounter offers for the given measurements.
+Generation runs first and its diagnoses are written onto the encounter, which is
+the order the app follows: every measurement save re-assesses, and the tasks are
+resolved from the set that assessment wrote.
+-}
+nextStepsTasksFor : NCDMeasurements -> List NextStepsTask
+nextStepsTasksFor measurements =
+    let
+        assembled =
+            ncdAssembled measurements
+
+        encounter =
+            assembled.encounter
+    in
+    resolveNextStepsTasks
+        { assembled | encounter = { encounter | diagnoses = generateNCDDiagnoses assembled } }
+
+
+nextStepsTasksTest : Test
+nextStepsTasksTest =
+    -- A blood sugar or urine glucose read at the point of care diagnoses
+    -- diabetes during the initial phase of the encounter, so the initial-phase
+    -- tasks have to treat it the same as a diabetes reported as a co-morbidity.
+    -- Oracle: a patient diagnosed diabetic is medicated at the visit where the
+    -- diagnosis is made.
+    describe "resolveNextStepsTasks - diabetes found from a reading taken at the point of care"
+        [ test "normal BP + blood sugar 250 -> medication is offered" <|
+            \_ ->
+                (baseMeasurements |> withRandomBloodSugar False 250)
+                    |> nextStepsTasksFor
+                    |> Expect.equal [ TaskMedicationDistribution ]
+        , test "normal BP + urine glucose +3 -> medication is offered" <|
+            \_ ->
+                (baseMeasurements |> withUrineGlucose GlucosePlus3)
+                    |> nextStepsTasksFor
+                    |> Expect.equal [ TaskMedicationDistribution ]
+        , test "Stage 1 BP + blood sugar 250 -> medication and referral, and no health education" <|
+            \_ ->
+                (baseMeasurements |> withVitals 145 95 |> withRandomBloodSugar False 250)
+                    |> nextStepsTasksFor
+                    |> Expect.equal [ TaskMedicationDistribution, TaskReferral ]
+        , test "Stage 1 BP alone -> health education only" <|
+            \_ ->
+                (baseMeasurements |> withVitals 145 95)
+                    |> nextStepsTasksFor
+                    |> Expect.equal [ TaskHealthEducation ]
+        , test "diabetes reported as a co-morbidity -> medication is offered, as before" <|
+            \_ ->
+                (baseMeasurements |> withCoMorbidities (EverySet.singleton MedicalConditionDiabetes))
+                    |> nextStepsTasksFor
+                    |> Expect.equal [ TaskMedicationDistribution ]
+        , test "normal BP, no diabetes -> no tasks at all" <|
+            \_ ->
+                baseMeasurements
+                    |> nextStepsTasksFor
+                    |> Expect.equal []
+        ]
+
+
 resolvePreviousMaybeValueTest : Test
 resolvePreviousMaybeValueTest =
     let
@@ -582,5 +642,6 @@ all =
         , generateNCDDiagnosesTest
         , hypertensionHierarchyTest
         , reassessmentTest
+        , nextStepsTasksTest
         , resolvePreviousMaybeValueTest
         ]

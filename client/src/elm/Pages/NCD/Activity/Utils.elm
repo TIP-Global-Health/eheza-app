@@ -142,7 +142,7 @@ expectNextStepsTask assembled task =
                 -- Not diagnosed any Hypertension diagnoses at previous encounters.
                 && (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled.previousEncountersData)
                 -- Not diagnosed any Diaberes / RenalComplications diagnoses at current or previous encounters.
-                && (not <| diagnosedAnyOf [ DiagnosisRenalComplications, DiagnosisDiabetesInitial ] assembled)
+                && (not <| diagnosedAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled)
                 && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled.previousEncountersData)
                 && -- Pregnant women always get Methyldopa treatment, so, no health education is provided.
                    (not <| patientIsPregnant assembled.measurements)

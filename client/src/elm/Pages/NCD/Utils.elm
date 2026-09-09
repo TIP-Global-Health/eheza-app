@@ -581,7 +581,9 @@ medicateForDiabetes : NCDEncounterPhase -> AssembledData -> Bool
 medicateForDiabetes phase assembled =
     case phase of
         NCDEncounterPhaseInitial ->
-            diagnosed DiagnosisDiabetesInitial assembled
+            -- Diabetes reported as a co-morbidity, or found from a blood sugar
+            -- or urine glucose reading taken at the point of care.
+            diagnosedAnyOf diabetesDiagnoses assembled
                 || diagnosedPreviouslyWithDiabetes assembled.previousEncountersData
 
         NCDEncounterPhaseRecurrent ->
@@ -607,7 +609,7 @@ medicateForHypertension phase assembled =
                                     || -- Diabetes diagnosed at initial phase of encounter.
                                        -- Note that we do not check for Renal Complications, since
                                        -- it can only be diagnosed at recurrent phase.
-                                       diagnosed DiagnosisDiabetesInitial assembled
+                                       diagnosedAnyOf diabetesDiagnoses assembled
                                     || -- Pregnant women always get Methyldopa treatment.
                                        patientIsPregnant assembled.measurements
 
@@ -728,8 +730,8 @@ recommendedTreatmentForDiabetesInputAndTask language options setRecommendedTreat
                 form.recommendedTreatmentSigns
 
         header =
-            -- We specify values at diganosis only if diagnosis was made as a result
-            -- of lab test (which can happen only on recurrent phase of encounter).
+            -- We specify values at diganosis only if diagnosis was made as a
+            -- result of a test, rather than reported as a co-morbidity.
             if diagnosed DiagnosisDiabetesRecurrent assembled then
                 let
                     bySugarCount =
@@ -974,7 +976,7 @@ referForDiabetes phase assembled =
         && (case phase of
                 NCDEncounterPhaseInitial ->
                     diagnosedPreviouslyWithDiabetes assembled.previousEncountersData
-                        || diagnosed DiagnosisDiabetesInitial assembled
+                        || diagnosedAnyOf diabetesDiagnoses assembled
 
                 NCDEncounterPhaseRecurrent ->
                     diagnosed DiagnosisDiabetesRecurrent assembled
