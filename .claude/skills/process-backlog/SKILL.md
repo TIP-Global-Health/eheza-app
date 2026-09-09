@@ -121,6 +121,12 @@ number, tier line, and any side-findings noticed while building appended as new 
   it. This covers findings you fix, skip, refute, or had already fixed. Only when a line is
   genuinely outside a diff hunk do you fall back to a file-level comment, and only then to the PR
   body — saying which and why. Mechanics in `pr-first-review-workflow` in memory.
+- ⛔ **Then give every finding its comment link in the chat analysis.** "Finding 1 / 2 / 3" means
+  nothing on GitHub, so each finding you present must carry the URL of the comment you just posted
+  for it — read them back with
+  `gh api repos/O/R/pulls/<N>/comments --jq '.[] | "\(.path):\(.line)  \(.html_url)"'` after
+  posting, and put the link on the finding's own heading. Applies to every finding, in every round,
+  including ones you decline; the point is that the user can open the thread you are talking about.
 - ⛔ **Close the loop on every review thread when the fix lands**, and **commit + push the backlog
   files on `develop`** in the same step that records them. Three separate misses in one day traced
   to the same shape — work lands, record lags — so treat "the record disagrees with the repository"
