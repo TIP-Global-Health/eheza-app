@@ -277,8 +277,9 @@ withRandomBloodSugar fasting sugar measurements =
 -- ASSEMBLED DATA FIXTURE
 
 
-{-| Dummy NCD encounter. CRITICAL: `diagnoses = EverySet.empty` (first encounter)
-so the hypertension-hierarchy / determined-conditions pipeline steps are no-ops.
+{-| Dummy NCD encounter, carrying no diagnoses. With the history empty too, the
+hypertension-hierarchy / determined-conditions pipeline steps are no-ops.
+`assembledWithHistory` overrides `diagnoses` where a re-assessment is under test.
 -}
 dummyEncounter : NCDEncounterModel.NCDEncounter
 dummyEncounter =
@@ -337,19 +338,43 @@ previousEncounterWith diagnoses =
     }
 
 
+{-| An `AssembledData` with one prior encounter in the history, and with the
+encounter being assessed already carrying `encounterDiagnoses`.
+-}
+assembledWithHistory : List NCDDiagnosis -> List NCDDiagnosis -> NCDMeasurements -> AssembledData
+assembledWithHistory encounterDiagnoses previousDiagnoses measurements =
+    { id = toEntityUuid "dummy-encounter"
+    , encounter = { dummyEncounter | diagnoses = EverySet.fromList encounterDiagnoses }
+    , participant = dummyParticipant
+    , person = testPerson
+    , measurements = measurements
+    , previousEncountersData = [ previousEncounterWith previousDiagnoses ]
+    }
+
+
 {-| Like `expectDiagnoses`, but with one prior encounter in the history -- to
 exercise the hypertension escalation / persistence / lowering logic.
 -}
 expectDiagnosesWithHistory : List NCDDiagnosis -> List NCDDiagnosis -> NCDMeasurements -> Expect.Expectation
 expectDiagnosesWithHistory previousDiagnoses expected measurements =
-    generateNCDDiagnoses
-        { id = toEntityUuid "dummy-encounter"
-        , encounter = dummyEncounter
-        , participant = dummyParticipant
-        , person = testPerson
-        , measurements = measurements
-        , previousEncountersData = [ previousEncounterWith previousDiagnoses ]
-        }
+    assembledWithHistory [] previousDiagnoses measurements
+        |> generateNCDDiagnoses
+        |> Expect.equal (EverySet.fromList expected)
+
+
+{-| Like `expectDiagnosesWithHistory`, but the encounter being assessed already
+carries diagnoses of its own -- the state every assessment after the first
+measurement save runs in.
+-}
+expectDiagnosesOnReassessment :
+    List NCDDiagnosis
+    -> List NCDDiagnosis
+    -> List NCDDiagnosis
+    -> NCDMeasurements
+    -> Expect.Expectation
+expectDiagnosesOnReassessment encounterDiagnoses previousDiagnoses expected measurements =
+    assembledWithHistory encounterDiagnoses previousDiagnoses measurements
+        |> generateNCDDiagnoses
         |> Expect.equal (EverySet.fromList expected)
 
 
@@ -386,6 +411,65 @@ hypertensionHierarchyTest =
             \_ ->
                 (baseMeasurements |> withVitals 95 70)
                     |> expectDiagnosesWithHistory [] []
+        ]
+
+
+reassessmentTest : Test
+reassessmentTest =
+    -- Diagnoses are regenerated on every Vitals, CoMorbidities, RandomBloodSugar,
+    -- UrineDipstick and Creatinine save, and the result is written back onto the
+    -- encounter. Generation must therefore give the same answer on the second and
+    -- third save of a visit as it gave on the first.
+    describe "generateNCDDiagnoses - re-assessment of an encounter that already carries diagnoses"
+        [ test "prior Stage 3 + low reading, Stage 2 already written -> stays Stage 2 (step down once per visit)" <|
+            \_ ->
+                (baseMeasurements |> withVitals 95 70)
+                    |> expectDiagnosesOnReassessment
+                        [ DiagnosisHypertensionStage2 ]
+                        [ DiagnosisHypertensionStage3 ]
+                        [ DiagnosisHypertensionStage2 ]
+        , test "prior Stage 2 + low reading, Stage 1 already written -> stays Stage 1" <|
+            \_ ->
+                (baseMeasurements |> withVitals 95 70)
+                    |> expectDiagnosesOnReassessment
+                        [ DiagnosisHypertensionStage1 ]
+                        [ DiagnosisHypertensionStage2 ]
+                        [ DiagnosisHypertensionStage1 ]
+        , test "no history, Stage 3 already written, reading corrected to 145/95 -> Stage 1" <|
+            \_ ->
+                (baseMeasurements |> withVitals 145 95)
+                    |> expectDiagnosesOnReassessment
+                        [ DiagnosisHypertensionStage3 ]
+                        []
+                        [ DiagnosisHypertensionStage1 ]
+        , test "no history, Stage 3 already written, reading corrected to 120/80 -> no diagnosis" <|
+            \_ ->
+                baseMeasurements
+                    |> expectDiagnosesOnReassessment
+                        [ DiagnosisHypertensionStage3 ]
+                        []
+                        []
+        , test "prior Stage 1 + Stage-3 reading, Stage 3 already written -> stays Stage 3 (escalation is idempotent)" <|
+            \_ ->
+                (baseMeasurements |> withVitals 185 85)
+                    |> expectDiagnosesOnReassessment
+                        [ DiagnosisHypertensionStage3 ]
+                        [ DiagnosisHypertensionStage1 ]
+                        [ DiagnosisHypertensionStage3 ]
+        , test "prior Stage 3 + Stage-1 reading, Stage 3 already written -> stays Stage 3 (no downgrade)" <|
+            \_ ->
+                (baseMeasurements |> withVitals 145 95)
+                    |> expectDiagnosesOnReassessment
+                        [ DiagnosisHypertensionStage3 ]
+                        [ DiagnosisHypertensionStage3 ]
+                        [ DiagnosisHypertensionStage3 ]
+        , test "diabetes co-morbidity unticked, Diabetes written, sugar count on file -> diagnosed from the sugar count" <|
+            \_ ->
+                (baseMeasurements |> withRandomBloodSugar True 150)
+                    |> expectDiagnosesOnReassessment
+                        [ DiagnosisDiabetesInitial ]
+                        []
+                        [ DiagnosisDiabetesRecurrent ]
         ]
 
 
@@ -497,5 +581,6 @@ all =
         , lowerHypertensionStageTest
         , generateNCDDiagnosesTest
         , hypertensionHierarchyTest
+        , reassessmentTest
         , resolvePreviousMaybeValueTest
         ]
