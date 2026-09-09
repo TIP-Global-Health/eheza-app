@@ -224,7 +224,7 @@ B-223	4	READY	LOW			23	Backend/Update revision minors ×2: (a) `PrenatalFefolRev
 B-224	4	READY	LOW			23	NCD progress report: the pregnancy-test row is hidden on every follow-up encounter, so an earlier pregnancy result becom
 B-225	4	READY	LOW			24	Sync report-state: the "only save when changed" guard never passes, so every sync cycle rewrites the device user twice
 B-226	3	READY	MED			24	Prenatal participant page (nurse): "Postpartum" opens a second encounter while an antenatal encounter is still open, orp
-B-227	3	READY	MED			24	Prenatal lab results: the Blood Smear row never shows a result, so a malaria diagnosis made by smear has no lab-results 
+B-227	3	IMPLEMENTED	MED	2227	2229	24	Prenatal lab results: the Blood Smear row never shows a result, so a malaria diagnosis made by smear has no lab-results 
 B-228	4	READY	LOW			24	Acute illness: closing an illness never sets the participant's `dateConcluded`, so Case Management keeps showing the con
 B-229	4	READY	LOW			24	Trace contact: an edit issued while the contact is not in the cache is dropped silently with the request stuck at `Loadi
 B-230	3	IMPLEMENTED	MED			24	Prenatal diagnoses: `gonorrhea-continued` is encoded and stored but the client decoder has no branch for it, so the diag
