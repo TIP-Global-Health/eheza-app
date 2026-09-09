@@ -2437,7 +2437,7 @@ resolveAcuteIllnessDiagnosis currentDate features isChw assembled =
         -- First we check for Covid19.
         let
             covid19AcuteIllnessDiagnosis =
-                covid19DiagnosisPath currentDate assembled.person isChw assembled.measurements
+                covid19DiagnosisPath currentDate features assembled.person isChw assembled.measurements
         in
         if isJust covid19AcuteIllnessDiagnosis then
             covid19AcuteIllnessDiagnosis
@@ -2497,19 +2497,26 @@ covid19SuspectDiagnosed measurements =
     feverAndRdtNotPositive && (respiratorySymptomsCount > 0 || generalSymptomsCount > 1)
 
 
+{-| A cough that lasts more than 2 weeks makes the patient a Tuberculosis
+suspect, on sites where Tuberculosis Management is enabled.
+-}
+tuberculosisSuspectDiagnosed : EverySet SiteFeature -> AcuteIllnessMeasurements -> Bool
+tuberculosisSuspectDiagnosed features measurements =
+    tuberculosisManagementEnabled features && coughForMoreThan2Weeks measurements
+
+
 {-| This may result in Covid diagnosis, or Malaria diagnosis,
 if Covid RDT could not be perfrmed.
 -}
-covid19DiagnosisPath : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-covid19DiagnosisPath currentDate person isChw measurements =
+covid19DiagnosisPath : NominalDate -> EverySet SiteFeature -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+covid19DiagnosisPath currentDate features person isChw measurements =
     if
         -- CHW may not diagnose COVID anymore.
         isChw
             || (not <| covid19SuspectDiagnosed measurements)
-            || -- In case we have cough symptom for more than 2 weeks,
-               -- we must diagnose Tuberculosis suspect.
-               -- Therefore, we need to exit COVID19 path.
-               coughForMoreThan2Weeks measurements
+            || -- Tuberculosis suspect is diagnosed instead of COVID19,
+               -- so we need to exit COVID19 path.
+               tuberculosisSuspectDiagnosed features measurements
     then
         Nothing
 
@@ -2617,7 +2624,7 @@ nonCovid19DiagnosisPath : NominalDate -> EverySet SiteFeature -> Person -> Bool 
 nonCovid19DiagnosisPath currentDate features person isChw measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
     if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
-        if tuberculosisManagementEnabled features && coughForMoreThan2Weeks measurements then
+        if tuberculosisSuspectDiagnosed features measurements then
             Just DiagnosisTuberculosisSuspect
 
         else if feverRecorded measurements then

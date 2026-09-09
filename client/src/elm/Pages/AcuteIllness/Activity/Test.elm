@@ -665,6 +665,29 @@ resolveAcuteIllnessDiagnosisCovidTest =
                     |> withCovidTesting RapidTestPositive
                     |> resolveNurse
                     |> Expect.equal (Just DiagnosisLowRiskCovid19)
+        , test "TB feature off + respiratory Cough for more than 2 weeks + positive COVID test -> PneuminialCovid19" <|
+            \_ ->
+                gateBaseNurse
+                    |> withMalariaTesting RapidTestNegative
+                    |> withVitals (Just 38) Nothing (Just 110) (Just 70)
+                    |> withSymptomsRespiratoryDuration Cough symptomMaxDuration
+                    |> withCovidTesting RapidTestPositive
+                    |> resolveNurse
+                    |> Expect.equal (Just DiagnosisPneuminialCovid19)
+        , test "TB feature on + respiratory Cough for more than 2 weeks + positive COVID test -> TuberculosisSuspect" <|
+            \_ ->
+                gateBaseNurse
+                    |> withMalariaTesting RapidTestNegative
+                    |> withVitals (Just 38) Nothing (Just 110) (Just 70)
+                    |> withSymptomsRespiratoryDuration Cough symptomMaxDuration
+                    |> withCovidTesting RapidTestPositive
+                    |> (\measurements ->
+                            resolveAcuteIllnessDiagnosis currentDate
+                                (EverySet.singleton FeatureTuberculosisManagement)
+                                False
+                                (testAssembled True measurements)
+                       )
+                    |> Expect.equal (Just DiagnosisTuberculosisSuspect)
         ]
 
 
