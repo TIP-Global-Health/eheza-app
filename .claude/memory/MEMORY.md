@@ -41,5 +41,6 @@
 - [Gizra/elm-form fork](gizra-elm-form-fork.md) — we now publish/maintain `Gizra/elm-form` (archived etaque pinned test 1.x, blocking 0.19.2); Elm packages are immutable, new names start at 1.0.0
 - [Client cannot use elm --optimize](client-cannot-use-elm-optimize.md) — 7 `Debug.todo` in `Utils/AllDict.elm` block it; `gulp publish` ships dev-mode Elm, terser does all minification (unlock = follow-up win)
 - [Elm 0.19.2 Debug.todo off-by-one](elm-0192-debug-todo-region-offbyone.md) — 0.19.2 emits 0-based regions; `TODO ... on line N` really means line N+1 (unreported upstream bug)
+- [Enum variant breaks deployed clients](enum-variant-breaks-deployed-clients.md) — ⛔ a new VALUE on a client-decoded enum jams old devices' sync (strict decoder + whole-batch `list`); needs a two-release rollout — a new FIELD is safe in one; found on B-338 / PR #2228
 - [Photo upload fileId encoder wiring](photo-upload-fileid-encoder-wiring.md) — new photo-bearing content type MUST be added to the `replacePhotoWithFileId` dispatch in `SyncManager/Encoder.elm` or the photo link breaks silently
 - [Local verification vs CI](local-verification-vs-ci.md) — CI carries the full suites; locally run elm make + the check that discriminates THIS change (byte-diff for moves, fail-first test for logic)
