@@ -984,14 +984,18 @@ patientIsPregnantAtEncounter encounterDate encounterMeasurements assembled =
             getMeasurementValueFunc measurements.pregnancyTest
                 |> Maybe.andThen
                     (\value ->
-                        if (value.executionNote == TestNoteKnownAsPositive) || (value.testResult == Just TestPositive) then
+                        let
                             -- Execution date is not recorded when patient is known to
                             -- be pregnant, so we fall back to the date of the encounter
-                            -- at which it was reported.
-                            Just ( True, Maybe.withDefault startDate value.executionDate )
+                            -- at which the answer was given.
+                            answerDate =
+                                Maybe.withDefault startDate value.executionDate
+                        in
+                        if (value.executionNote == TestNoteKnownAsPositive) || (value.testResult == Just TestPositive) then
+                            Just ( True, answerDate )
 
                         else if value.testResult == Just TestNegative then
-                            Just ( False, startDate )
+                            Just ( False, answerDate )
 
                         else
                             -- Test was not performed, or its result is not
