@@ -1,4 +1,4 @@
-module Pages.Report.Utils exposing (altResultNormal, astResultNormal, bilirubinResultNormal, bloodSmearResultNormal, bunResultNormal, compareAcuteIllnessEncounters, compareAcuteIllnessEncountersDesc, creatinineResultNormal, diagnosisEntryStatusToString, generateBloodSmearTestResults, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant, getRandomBloodSugarResultValue, glucoseResultNormal, hba1cResultNormal, hdlCholesterolResultNormal, hemoglobinResultNormal, hepatitisBResultNormal, hivPCRResultNormal, hivResultNormal, ketoneResultNormal, ldlCholesterolResultNormal, leukocytesResultNormal, malariaResultNormal, nitriteResultNormal, partnerHIVResultNormal, phResultNormal, pregnancyResultNormal, proteinResultNormal, randomBloodSugarResultFromValue, randomBloodSugarResultNormal, rhesusResultsNormal, syphilisResultNormal, totalCholesterolResultNormal, triglyceridesResultNormal, urineHaemoglobinValueResultNormal, urobilinogenResultNormal)
+module Pages.Report.Utils exposing (altResultNormal, astResultNormal, bilirubinResultNormal, bloodSmearResultNormal, bunResultNormal, compareAcuteIllnessEncounters, compareAcuteIllnessEncountersDesc, creatinineResultNormal, diagnosisEntryStatusToString, generateBloodSmearTestResults, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant, getRandomBloodSugarResultValue, glucoseResultNormal, hba1cResultNormal, hdlCholesterolResultNormal, hemoglobinResultNormal, hepatitisBResultNormal, hivPCRResultNormal, hivResultNormal, ketoneResultNormal, ldlCholesterolResultNormal, leukocytesResultNormal, malariaRapidTestValues, malariaResultNormal, nitriteResultNormal, partnerHIVResultNormal, phResultNormal, pregnancyResultNormal, proteinResultNormal, randomBloodSugarResultFromValue, randomBloodSugarResultNormal, rhesusResultsNormal, syphilisResultNormal, totalCholesterolResultNormal, triglyceridesResultNormal, urineHaemoglobinValueResultNormal, urobilinogenResultNormal)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
@@ -48,6 +48,16 @@ bloodSmearResultNormal : BloodSmearResult -> Bool
 bloodSmearResultNormal value =
     bloodSmearResultNotSet value
         || (value == BloodSmearNegative)
+
+
+{-| Malaria tests that were run as a rapid test. A blood smear is recorded on
+the same measurement and carries the same execution note once the lab confirms
+the run, so it has to be taken out of the rapid test's history or it appears
+there as an entry with no result.
+-}
+malariaRapidTestValues : List MalariaTestValue -> List MalariaTestValue
+malariaRapidTestValues =
+    List.filter (.bloodSmearOrdered >> not)
 
 
 {-| Blood smears for the lab results history, most recent first. A smear

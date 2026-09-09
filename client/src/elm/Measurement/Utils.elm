@@ -4474,7 +4474,9 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
                                         Just currentDate
 
                                     else
-                                        form_.executionDate
+                                        -- Neither test happened, so there is no
+                                        -- date to record for either of them.
+                                        Nothing
                             in
                             { form_
                                 | bloodSmearTaken = Just value

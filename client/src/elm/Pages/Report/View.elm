@@ -15,7 +15,7 @@ import Measurement.Model exposing (LaboratoryTask(..))
 import Measurement.Utils exposing (testPerformedByExecutionNote)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), LabsResultsDisplayConfig, LabsResultsValues, PaneEntryStatus, TestReport(..))
-import Pages.Report.Utils exposing (altResultNormal, astResultNormal, bilirubinResultNormal, bloodSmearResultNormal, bunResultNormal, creatinineResultNormal, diagnosisEntryStatusToString, generateBloodSmearTestResults, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant, getRandomBloodSugarResultValue, glucoseResultNormal, hba1cResultNormal, hdlCholesterolResultNormal, hemoglobinResultNormal, hepatitisBResultNormal, hivPCRResultNormal, hivResultNormal, ketoneResultNormal, ldlCholesterolResultNormal, leukocytesResultNormal, malariaResultNormal, nitriteResultNormal, partnerHIVResultNormal, phResultNormal, pregnancyResultNormal, proteinResultNormal, randomBloodSugarResultFromValue, randomBloodSugarResultNormal, rhesusResultsNormal, syphilisResultNormal, totalCholesterolResultNormal, triglyceridesResultNormal, urineHaemoglobinValueResultNormal, urobilinogenResultNormal)
+import Pages.Report.Utils exposing (altResultNormal, astResultNormal, bilirubinResultNormal, bloodSmearResultNormal, bunResultNormal, creatinineResultNormal, diagnosisEntryStatusToString, generateBloodSmearTestResults, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant, getRandomBloodSugarResultValue, glucoseResultNormal, hba1cResultNormal, hdlCholesterolResultNormal, hemoglobinResultNormal, hepatitisBResultNormal, hivPCRResultNormal, hivResultNormal, ketoneResultNormal, ldlCholesterolResultNormal, leukocytesResultNormal, malariaRapidTestValues, malariaResultNormal, nitriteResultNormal, partnerHIVResultNormal, phResultNormal, pregnancyResultNormal, proteinResultNormal, randomBloodSugarResultFromValue, randomBloodSugarResultNormal, rhesusResultsNormal, syphilisResultNormal, totalCholesterolResultNormal, triglyceridesResultNormal, urineHaemoglobinValueResultNormal, urobilinogenResultNormal)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
@@ -869,7 +869,7 @@ viewLabResultsPane language currentDate viewForConfirmation mode setLabResultsMo
                             getTestResultsKnownAsPositive .hepatitisB .testResult
 
                         malariaTestResults =
-                            getTestResults .malaria .testResult
+                            getTestResults (.malaria >> malariaRapidTestValues) .testResult
 
                         randomBloodSugarResults =
                             List.filterMap randomBloodSugarResultFromValue data.randomBloodSugar

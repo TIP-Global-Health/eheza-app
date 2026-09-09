@@ -5,11 +5,12 @@ import Backend.Measurement.Model
         ( BloodSmearResult(..)
         , MalariaTestValue
         , TestExecutionNote(..)
+        , TestResult(..)
         )
 import Date
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Report.Utils exposing (generateBloodSmearTestResults)
+import Pages.Report.Utils exposing (generateBloodSmearTestResults, malariaRapidTestValues)
 import Test exposing (Test, describe, test)
 import Time
 
@@ -36,6 +37,44 @@ smearValue executionDate bloodSmearResult =
     , bloodSmearResult = bloodSmearResult
     , bloodSmearOrdered = True
     }
+
+
+{-| A malaria test that was run as a rapid test, which is the only way a rapid
+test result is recorded.
+-}
+rapidTestValue : TestResult -> MalariaTestValue
+rapidTestValue testResult =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just dummyDate
+    , testPrerequisites = Nothing
+    , testResult = Just testResult
+    , bloodSmearResult = BloodSmearNotTaken
+    , bloodSmearOrdered = False
+    }
+
+
+malariaRapidTestValuesTest : Test
+malariaRapidTestValuesTest =
+    describe "malariaRapidTestValues"
+        [ test "a rapid test is kept" <|
+            \_ ->
+                malariaRapidTestValues [ rapidTestValue TestNegative ]
+                    |> Expect.equal [ rapidTestValue TestNegative ]
+        , -- Once the lab confirms the run, a smear carries an execution note
+          -- that reads as performed, and a date. Left in, it shows on the rapid
+          -- test's history as an entry with no result.
+          test "a blood smear is not a rapid test" <|
+            \_ ->
+                malariaRapidTestValues [ smearValue (Just dummyDate) BloodSmearNegative ]
+                    |> Expect.equal []
+        , test "a smear is dropped from among rapid tests" <|
+            \_ ->
+                malariaRapidTestValues
+                    [ rapidTestValue TestNegative
+                    , smearValue (Just dummyDate) BloodSmearPlus
+                    ]
+                    |> Expect.equal [ rapidTestValue TestNegative ]
+        ]
 
 
 bloodSmearTestResultsTest : Test
@@ -79,4 +118,6 @@ bloodSmearTestResultsTest =
 all : Test
 all =
     describe "Progress report lab results"
-        [ bloodSmearTestResultsTest ]
+        [ bloodSmearTestResultsTest
+        , malariaRapidTestValuesTest
+        ]
