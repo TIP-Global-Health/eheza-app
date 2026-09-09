@@ -4468,10 +4468,11 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
                         \value form_ ->
                             let
                                 -- The smear is taken at this encounter, whoever
-                                -- reads it and whenever they do.
+                                -- reads it and whenever they do. Answering the
+                                -- question again does not move the date.
                                 executionDate =
                                     if value then
-                                        Just currentDate
+                                        or form_.executionDate (Just currentDate)
 
                                     else
                                         -- Neither test happened, so there is no

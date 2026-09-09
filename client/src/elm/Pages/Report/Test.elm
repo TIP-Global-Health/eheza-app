@@ -25,7 +25,7 @@ dummyDate =
     Date.fromCalendarDate 2020 Time.Jun 1
 
 
-{-| The date a measurement was recorded, which stands in for a smear that
+{-| The date a measurement was last saved, which stands in for a smear that
 carries no execution date of its own. Deliberately not `dummyDate`, so a test
 cannot pass by confusing the two.
 -}
@@ -125,9 +125,10 @@ bloodSmearTestResultsTest =
             \_ ->
                 generateBloodSmearTestResults [ smearValue (Just dummyDate) BloodSmearNotTaken ]
                     |> Expect.equal []
-        , -- A smear the lab read carries no execution date, and every record
-          -- made before the smear was given a date of its own carries none.
-          test "a smear with no date of its own is listed under the date it was recorded" <|
+        , -- A smear recorded before the date was written carries none. It is
+          -- listed under the date its measurement was last saved, which is the
+          -- day someone read it rather than the day it was taken.
+          test "a smear with no date of its own is listed under the date it was last saved" <|
             \_ ->
                 generateBloodSmearTestResults [ smearValue Nothing BloodSmearNegative ]
                     |> Expect.equal [ ( dateMeasured, Just BloodSmearNegative ) ]

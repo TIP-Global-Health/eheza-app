@@ -66,10 +66,15 @@ malariaRapidTestValues =
 
 
 {-| Blood smears for the lab results history, most recent first. A smear
-belongs there once it has been read, and it is listed under the date the smear
-was taken. A smear is only ever taken when the rapid test was not performed, so
-having a result is the whole test. A smear the lab read carries no date of its
-own, so the date its measurement was recorded stands in.
+belongs there once it has been read, and it is listed under the date it was
+taken. A smear is only ever taken when the rapid test was not performed, so
+having a result is the whole test.
+
+A smear recorded before that date was written carries none, and there is no
+record of when it was taken. Those are listed under the date their measurement
+was last saved, which is the day someone read the smear rather than the day it
+was taken, and which two smears read on the same day share.
+
 -}
 generateBloodSmearTestResults : List ( NominalDate, MalariaTestValue ) -> List ( NominalDate, Maybe BloodSmearResult )
 generateBloodSmearTestResults values =
