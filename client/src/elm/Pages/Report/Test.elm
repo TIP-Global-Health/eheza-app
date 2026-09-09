@@ -25,32 +25,45 @@ dummyDate =
     Date.fromCalendarDate 2020 Time.Jun 1
 
 
+{-| The date a measurement was recorded, which stands in for a smear that
+carries no execution date of its own. Deliberately not `dummyDate`, so a test
+cannot pass by confusing the two.
+-}
+dateMeasured : NominalDate
+dateMeasured =
+    Date.fromCalendarDate 2020 Time.Jul 15
+
+
 {-| A malaria test where the rapid test was not performed and a blood smear was
 taken instead, which is the only way a smear is recorded.
 -}
-smearValue : Maybe NominalDate -> BloodSmearResult -> MalariaTestValue
+smearValue : Maybe NominalDate -> BloodSmearResult -> ( NominalDate, MalariaTestValue )
 smearValue executionDate bloodSmearResult =
-    { executionNote = TestNoteNotIndicated
-    , executionDate = executionDate
-    , testPrerequisites = Nothing
-    , testResult = Nothing
-    , bloodSmearResult = bloodSmearResult
-    , bloodSmearOrdered = True
-    }
+    ( dateMeasured
+    , { executionNote = TestNoteNotIndicated
+      , executionDate = executionDate
+      , testPrerequisites = Nothing
+      , testResult = Nothing
+      , bloodSmearResult = bloodSmearResult
+      , bloodSmearOrdered = True
+      }
+    )
 
 
 {-| A malaria test that was run as a rapid test, which is the only way a rapid
 test result is recorded.
 -}
-rapidTestValue : TestResult -> MalariaTestValue
+rapidTestValue : TestResult -> ( NominalDate, MalariaTestValue )
 rapidTestValue testResult =
-    { executionNote = TestNoteRunToday
-    , executionDate = Just dummyDate
-    , testPrerequisites = Nothing
-    , testResult = Just testResult
-    , bloodSmearResult = BloodSmearNotTaken
-    , bloodSmearOrdered = False
-    }
+    ( dateMeasured
+    , { executionNote = TestNoteRunToday
+      , executionDate = Just dummyDate
+      , testPrerequisites = Nothing
+      , testResult = Just testResult
+      , bloodSmearResult = BloodSmearNotTaken
+      , bloodSmearOrdered = False
+      }
+    )
 
 
 malariaRapidTestValuesTest : Test
@@ -66,6 +79,22 @@ malariaRapidTestValuesTest =
           test "a blood smear is not a rapid test" <|
             \_ ->
                 malariaRapidTestValues [ smearValue (Just dummyDate) BloodSmearNegative ]
+                    |> Expect.equal []
+        , -- Records made before `bloodSmearOrdered` existed decode as not
+          -- ordered, so the result is what says the record is a smear.
+          test "a smear from before the ordered flag is not a rapid test" <|
+            \_ ->
+                malariaRapidTestValues
+                    [ ( dateMeasured
+                      , { executionNote = TestNoteNotIndicated
+                        , executionDate = Nothing
+                        , testPrerequisites = Nothing
+                        , testResult = Nothing
+                        , bloodSmearResult = BloodSmearNegative
+                        , bloodSmearOrdered = False
+                        }
+                      )
+                    ]
                     |> Expect.equal []
         , test "a smear is dropped from among rapid tests" <|
             \_ ->
@@ -96,12 +125,12 @@ bloodSmearTestResultsTest =
             \_ ->
                 generateBloodSmearTestResults [ smearValue (Just dummyDate) BloodSmearNotTaken ]
                     |> Expect.equal []
-        , -- Records made before the smear was given a date of its own carry
-          -- none, and there is nothing to list them under.
-          test "a smear with no date is not listed" <|
+        , -- A smear the lab read carries no execution date, and every record
+          -- made before the smear was given a date of its own carries none.
+          test "a smear with no date of its own is listed under the date it was recorded" <|
             \_ ->
                 generateBloodSmearTestResults [ smearValue Nothing BloodSmearNegative ]
-                    |> Expect.equal []
+                    |> Expect.equal [ ( dateMeasured, Just BloodSmearNegative ) ]
         , test "smears are listed most recent first" <|
             \_ ->
                 generateBloodSmearTestResults

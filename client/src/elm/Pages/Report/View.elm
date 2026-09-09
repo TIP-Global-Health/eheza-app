@@ -869,7 +869,7 @@ viewLabResultsPane language currentDate viewForConfirmation mode setLabResultsMo
                             getTestResultsKnownAsPositive .hepatitisB .testResult
 
                         malariaTestResults =
-                            getTestResults (.malaria >> malariaRapidTestValues) .testResult
+                            getTestResults (.malaria >> malariaRapidTestValues >> List.map Tuple.second) .testResult
 
                         randomBloodSugarResults =
                             List.filterMap randomBloodSugarResultFromValue data.randomBloodSugar

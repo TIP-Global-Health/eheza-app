@@ -53,25 +53,33 @@ bloodSmearResultNormal value =
 {-| Malaria tests that were run as a rapid test. A blood smear is recorded on
 the same measurement and carries the same execution note once the lab confirms
 the run, so it has to be taken out of the rapid test's history or it appears
-there as an entry with no result.
+there as an entry with no result. A record that carries a smear result is a
+smear whatever the ordered flag says, which is how records made before that
+flag existed are recognised.
 -}
-malariaRapidTestValues : List MalariaTestValue -> List MalariaTestValue
+malariaRapidTestValues : List ( NominalDate, MalariaTestValue ) -> List ( NominalDate, MalariaTestValue )
 malariaRapidTestValues =
-    List.filter (.bloodSmearOrdered >> not)
+    List.filter
+        (\( _, value ) ->
+            not (value.bloodSmearOrdered || bloodSmearResultSet value.bloodSmearResult)
+        )
 
 
 {-| Blood smears for the lab results history, most recent first. A smear
 belongs there once it has been read, and it is listed under the date the smear
 was taken. A smear is only ever taken when the rapid test was not performed, so
-having a result is the whole test.
+having a result is the whole test. A smear the lab read carries no date of its
+own, so the date its measurement was recorded stands in.
 -}
-generateBloodSmearTestResults : List MalariaTestValue -> List ( NominalDate, Maybe BloodSmearResult )
+generateBloodSmearTestResults : List ( NominalDate, MalariaTestValue ) -> List ( NominalDate, Maybe BloodSmearResult )
 generateBloodSmearTestResults values =
     List.filterMap
-        (\value ->
+        (\( dateMeasured, value ) ->
             if bloodSmearResultSet value.bloodSmearResult then
-                Maybe.map (\executionDate -> ( executionDate, Just value.bloodSmearResult ))
-                    value.executionDate
+                Just
+                    ( Maybe.withDefault dateMeasured value.executionDate
+                    , Just value.bloodSmearResult
+                    )
 
             else
                 Nothing
