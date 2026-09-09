@@ -4,9 +4,11 @@ import AssocList as Dict
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model
     exposing
-        ( HIVTestValue
+        ( BloodSmearResult(..)
+        , HIVTestValue
         , LaboratoryTest(..)
         , LabsResultsValue
+        , MalariaTestValue
         , PartnerHIVTestValue
         , PrenatalMeasurements
         , TestExecutionNote(..)
@@ -20,7 +22,11 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.Prenatal.Model exposing (AssembledData)
-import Pages.Prenatal.RecurrentActivity.Utils exposing (resolveLaboratoryResultFollowUpsTasks)
+import Pages.Prenatal.RecurrentActivity.Utils
+    exposing
+        ( laboratoryResultTaskCompleted
+        , resolveLaboratoryResultFollowUpsTasks
+        )
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import TestFixtures
@@ -165,7 +171,54 @@ resolveLaboratoryResultFollowUpsTasksTest =
         ]
 
 
+{-| Measurements of an encounter whose malaria test was sent to the lab, so a
+result is expected at the recurrent phase. The nurse did not run the rapid
+test and gave a reason; what became of the blood smear is the argument.
+-}
+measurementsWithMalariaTest : TestExecutionNote -> BloodSmearResult -> PrenatalMeasurements
+measurementsWithMalariaTest executionNote bloodSmearResult =
+    let
+        malariaTestValue : MalariaTestValue
+        malariaTestValue =
+            { executionNote = executionNote
+            , executionDate = Just currentDate
+            , testPrerequisites = Just EverySet.empty
+            , testResult = Nothing
+            , bloodSmearResult = bloodSmearResult
+            }
+    in
+    { emptyPrenatalMeasurements
+        | malariaTest = TestFixtures.wrapMeasurement currentDate malariaTestValue
+    }
+
+
+laboratoryResultTaskCompletedMalariaTest : Test
+laboratoryResultTaskCompletedMalariaTest =
+    let
+        resolve executionNote bloodSmearResult =
+            measurementsWithMalariaTest executionNote bloodSmearResult
+                |> testAssembled
+                |> (\assembled -> laboratoryResultTaskCompleted True assembled TaskMalariaTest)
+    in
+    describe "laboratoryResultTaskCompleted, on the malaria test"
+        [ test "a blood smear ordered at the lab is not complete, it is awaited" <|
+            \_ ->
+                resolve TestNoteLackOfReagents BloodSmearPendingInput
+                    |> Expect.equal False
+        , test "a blood smear the lab technician declined is complete" <|
+            \_ ->
+                resolve TestNoteLackOfReagents BloodSmearNotTaken
+                    |> Expect.equal True
+        , test "a blood smear the lab technician read is complete" <|
+            \_ ->
+                resolve TestNoteRunConfirmedByLabTech BloodSmearNegative
+                    |> Expect.equal True
+        ]
+
+
 all : Test
 all =
     describe "Pages.Prenatal.RecurrentActivity.Utils"
-        [ resolveLaboratoryResultFollowUpsTasksTest ]
+        [ resolveLaboratoryResultFollowUpsTasksTest
+        , laboratoryResultTaskCompletedMalariaTest
+        ]

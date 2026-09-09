@@ -7578,8 +7578,11 @@ malariaResultFormWithDefault form saved =
             form
             (\value ->
                 let
+                    smearOrderedAtLab =
+                        value.bloodSmearResult == BloodSmearPendingInput
+
                     runConfirmedByLabTechFromValue =
-                        if value.bloodSmearResult == BloodSmearPendingInput then
+                        if smearOrderedAtLab then
                             -- The execution note explains why the nurse did not
                             -- run the RDT. It says nothing about the blood smear
                             -- they ordered instead, which no one has answered for
@@ -7601,7 +7604,7 @@ malariaResultFormWithDefault form saved =
                     -- If we have an indication that Blood Smear test was
                     -- ordered on initail phase, empty it's value.
                     bloodSmearResultByValue =
-                        if value.bloodSmearResult == BloodSmearPendingInput then
+                        if smearOrderedAtLab then
                             Nothing
 
                         else

@@ -155,8 +155,16 @@ laboratoryResultTaskCompleted isLabTech assembled task =
                     getMeasurementValueFunc assembled.measurements.malariaTest
                         |> Maybe.map
                             (\value ->
-                                (testPerformedByExecutionNote value.executionNote && isJust value.testResult)
-                                    || bloodSmearResultSet value.bloodSmearResult
+                                if value.bloodSmearResult == BloodSmearPendingInput then
+                                    -- A smear ordered at the lab is still owed
+                                    -- a result, whatever the note about the
+                                    -- rapid test says.
+                                    False
+
+                                else
+                                    testNotPerformedByWhyNotAtExecutionNote value.executionNote
+                                        || (testPerformedByExecutionNote value.executionNote && isJust value.testResult)
+                                        || bloodSmearResultSet value.bloodSmearResult
                             )
                         |> Maybe.withDefault False
             in

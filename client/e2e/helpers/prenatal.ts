@@ -1079,7 +1079,6 @@ export async function completeLaboratoryNurseForLab(
       await bloodSmear.waitFor({ timeout: 5000 });
       await click(bloodSmear.locator('label', { hasText: 'Yes' }), page);
       await page.waitForTimeout(WAIT.elmRerender);
-      bloodSmearDone = true;
     }
 
     // 3. "Immediate result?" → Lab (the "No" side of the bool input), or
@@ -1130,11 +1129,20 @@ export async function completeLaboratoryNurseForLab(
       await page.waitForTimeout(WAIT.formInteraction);
     }
 
-    // Save this lab test tab.
-    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+    // Save this lab test tab. An incomplete form leaves the button disabled,
+    // which Elm renders as a class and no click handler rather than the
+    // disabled attribute - so it is still visible, still clickable, and the
+    // click does nothing. Matching on the class is what tells the two apart.
+    const saveBtn = page.locator(
+      'button.ui.fluid.primary.button:not(.disabled)',
+      { hasText: 'Save' },
+    );
     if (await saveBtn.isVisible()) {
       await click(saveBtn, page);
       completedTests.push(tabLabel);
+      if (isBloodSmearTab) {
+        bloodSmearDone = true;
+      }
       await page.waitForTimeout(WAIT.elmRerender);
     }
   }
