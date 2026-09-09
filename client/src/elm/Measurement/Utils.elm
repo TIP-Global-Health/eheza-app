@@ -7579,7 +7579,15 @@ malariaResultFormWithDefault form saved =
             (\value ->
                 let
                     runConfirmedByLabTechFromValue =
-                        resolveRunConfirmedByLabTechFromValue value
+                        if value.bloodSmearResult == BloodSmearPendingInput then
+                            -- The execution note explains why the nurse did not
+                            -- run the RDT. It says nothing about the blood smear
+                            -- they ordered instead, which no one has answered for
+                            -- yet.
+                            Nothing
+
+                        else
+                            resolveRunConfirmedByLabTechFromValue value
 
                     bloodSmearTakenByValue =
                         List.member value.bloodSmearResult
