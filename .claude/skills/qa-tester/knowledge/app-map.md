@@ -356,3 +356,32 @@ Measured this run: `innerWidth/innerHeight` **1862 x 871**, screenshots returned
 (scale 0.842) — and the geometry changed once mid-run without any `resize_window` call. The
 1200 x 1799 recorded on 2026-08-21 is therefore a reading, not a constant. Always measure
 `innerWidth` in the same call that computes a click coordinate, and prefer `ref` clicks.
+## Navigation facts (discovered 2026-09-09)
+
+- ⛔ **A freshly paired device does not sync a health centre by itself.** Clinical shows
+  "Data is not synced — Please sync data for selected Health Center", and in the `sync`
+  IndexedDB both `shards` and `syncMetadata` read `[]` while `nodes` (general data) is
+  populated. The switch is a **"START SYNCING" button per health centre on the Device Status
+  page** — click it once for the centre under test, then Clinical works. Picking the health
+  centre at sign-in does NOT start it. Budget a minute; "TRY SYNCING WITH BACKEND" at the top
+  of the same page forces a round now.
+- The lab technician (PIN 3333) picks a health centre at sign-in like the nurse, and the main
+  menu then shows only CASE MANAGEMENT and DEVICE STATUS.
+- Lab tech → Case Management opens with the ANC Labs pane already showing; an ordered
+  encounter is one row, `<person> | ORDERED | ANC Lab Results | →`. The forward arrow opens
+  `#prenatal-recurrent-activity/<uuid>/laboratory` — the Lab Results tab strip (Partner HIV /
+  HIV / Syphilis - RPR / Hepatitis B / Malaria / Blood Group / Urine Dipstick / Hemoglobin /
+  Random Blood Sugar), each tab its own task count and Save.
+- **Menu tiles are `div.card` with click handlers, not links** — `read_page filter:interactive`
+  does not list them and a `find` ref usually lands on the inner label, which has no handler.
+  Read their centres with
+  `document.querySelectorAll('div.card')` + `getBoundingClientRect()` and click by coordinate.
+- ⚠ **Screenshot scale is not fixed at 0.755.** The window was resized mid-run and the ratio
+  became 1512/1860 = 0.813. Compute it per screenshot (`k = <screenshot width> / innerWidth`)
+  rather than reusing a number from earlier in the run.
+- A disabled Save is `button.ui.fluid.primary.button.disabled`; an enabled one carries
+  `.active` instead (`customButton`, `Pages/Utils.elm`). Neither sets the `disabled`
+  attribute, so read the class to tell them apart.
+- The selected side of a yes/no input is `input.checked` inside
+  `.form-input.yes-no.<name>` — **the label carries no `active` class**, so `label.active`
+  matches nothing on either code path.

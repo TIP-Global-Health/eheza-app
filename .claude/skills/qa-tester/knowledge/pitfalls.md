@@ -362,3 +362,26 @@ the user who has to do it: `resize_window` changes the OS window without clearin
   same device and same signed-in nurse. Wait and re-read (or take a screenshot to force the
   frame) before concluding anything; a pairing code spent on this is wasted, and codes are
   single-use.
+## Asserting on a marker the app never renders
+
+- **Symptom:** a check for "nothing is selected" passes, and so does a check that would have
+  had to fail — the assertion is green on the fixed build and on the broken one.
+- **Wrong conclusion:** the behaviour is verified.
+- **Rule:** confirm the marker exists in the DOM the app actually produces before believing
+  an absence. `viewCustomBoolInput` marks the chosen side on the `input`
+  (`classList [ ( "checked", isChecked ) ]`), never on the `label`, so `label.active` is
+  count-0 always. An assertion that an element is absent is worth only as much as the proof
+  that it is ever present. Same shape as the stale-warning and disabled-Save traps: read the
+  Elm view function, not the rendered screenshot, when deciding what to assert on.
+
+## Building a fixture by hand when the app can build it for you
+
+- **Symptom:** the run spends its whole budget on setup — registration, dating, eleven
+  activities — before reaching the one screen under test, and never gets there.
+- **Wrong conclusion:** manual QA is not worth it for this change.
+- **Rule:** setup and verification are separable. Drive the setup through the app's own forms
+  with a throwaway Playwright spec in the scratchpad reusing `client/e2e/helpers/*` (35s for a
+  prenatal encounter with labs ordered), then do the manual pass on the screen that matters.
+  The fixture is still made by the real UI, so nothing is faked — say in the report which half
+  was automated. Delete the throwaway spec afterwards: a stray file in `client/e2e/` joins a
+  CI job.
