@@ -4466,11 +4466,23 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
 
                     updateFunc =
                         \value form_ ->
+                            let
+                                -- The smear is taken at this encounter, whoever
+                                -- reads it and whenever they do.
+                                executionDate =
+                                    if value then
+                                        Just currentDate
+
+                                    else
+                                        form_.executionDate
+                            in
                             { form_
                                 | bloodSmearTaken = Just value
                                 , bloodSmearTakenDirty = True
                                 , bloodSmearResult = Nothing
                                 , bloodSmearResultDirty = True
+                                , executionDate = executionDate
+                                , executionDateDirty = True
                             }
                 in
                 ( [ viewQuestionLabel language Translate.BloodSmearQuestion
