@@ -4,7 +4,7 @@ import { setupDevice } from './helpers/auth';
 import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { syncAndWait } from './helpers/common';
+import { GLUCOSE_DIABETIC, openActivity, queryNCDDiagnoses, syncAndWait } from './helpers/common';
 import {
   createAdultAndStartNCDEncounter,
   completeDangerSigns,
@@ -145,7 +145,9 @@ test.describe('Nurse: NCD First Encounter — Male, Stage 1 Hypertension', () =>
 // Test 2: Nurse First NCD Encounter — Female, Stage 3 Hypertension + Referral
 // =========================================================================
 
-test.describe('Nurse: NCD First Encounter — Female, Stage 3 Hypertension', () => {
+test.describe('Nurse: NCD First Encounter — Female, Stage 3 Hypertension, and the pregnancy test at the next encounter', () => {
+  test.describe.configure({ timeout: 600000 });
+
   if (process.env.RECORD) {
     test.beforeEach(async ({ page }) => {
       await page.addInitScript(installCursorScript());
@@ -249,6 +251,25 @@ test.describe('Nurse: NCD First Encounter — Female, Stage 3 Hypertension', () 
     expect(nodes['ncd_hba1c_test'], 'ncd_hba1c_test should exist').toBe(true);
     // Referral created (Stage 3 hypertension).
     expect(nodes['ncd_referral'], 'ncd_referral should exist').toBe(true);
+
+    // --- The pregnancy test is offered again at the next encounter ---
+    // completeLaboratory performs the test and records a negative result. A
+    // performed test used to remove this tab for every later encounter, and
+    // the "Is this patient known to be pregnant" question lives inside it, so
+    // a pregnancy beginning after this encounter could never be recorded.
+
+    backdateNCDEncounter(fullName);
+    await syncAndWait(page);
+
+    await navigateToParticipantPage(page, fullName);
+    await startNCDEncounter(page);
+
+    await openActivity(page, 'ncd', 'laboratory');
+    await expect(
+      page.locator('.link-section:has(.icon-activity-task)', {
+        hasText: 'Pregnancy',
+      }),
+    ).toBeVisible();
   });
 });
 
@@ -256,7 +277,7 @@ test.describe('Nurse: NCD First Encounter — Female, Stage 3 Hypertension', () 
 // Test 3: Nurse Subsequent NCD Encounter — OutsideCare replaces MedicalHistory
 // =========================================================================
 
-test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
+test.describe('Nurse: NCD Subsequent Encounter — OutsideCare and hypertension staging', () => {
   test.describe.configure({ timeout: 600000 });
 
   if (process.env.RECORD) {
@@ -271,7 +292,7 @@ test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
   });
 
   test('complete subsequent NCD encounter with OutsideCare, verify backend sync', async ({ page }) => {
-    // --- PART 1: Complete a first encounter (simplified) ---
+    // --- PART 1: Complete a first encounter, diagnosed Stage 3 ---
 
     const { fullName } = await createAdultAndStartNCDEncounter(page, {
       isFemale: false,
@@ -279,9 +300,12 @@ test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
 
     await completeDangerSigns(page);
     await completeSymptomReview(page);
-    await completeExamination(page);
+    // sys 180 / dia 110 is Stage 3, the history the subsequent encounter needs.
+    await completeExamination(page, { sys: '180', dia: '110' });
     await completeMedicalHistory(page);
     await completeLaboratory(page);
+    // Stage 3 requires medication and a hospital referral.
+    await completeNextSteps(page);
     // Progress report must show what this encounter recorded.
     const report = await openReport(page, 'ncd');
     await expect(report.locator('.pane.person-details')).toContainText(fullName);
@@ -291,6 +315,8 @@ test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
 
     // Sync first encounter.
     await syncAndWait(page);
+
+    expect(queryNCDDiagnoses(fullName)).toEqual(['hypertension-stage3']);
 
     // --- PART 2: Backdate and start subsequent encounter ---
 
@@ -309,14 +335,18 @@ test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
     // SymptomReview.
     await completeSymptomReview(page);
 
-    // Examination.
-    await completeExamination(page);
+    // Examination. A low reading (sys < 100) steps the stage down by one.
+    await completeExamination(page, { sys: '95', dia: '70' });
 
     // OutsideCare (replaces MedicalHistory for subsequent encounters).
     await completeOutsideCare(page);
 
-    // Laboratory.
+    // Laboratory. Saving the random blood sugar re-runs the assessment, which
+    // must reach the same stage the Vitals save did.
     await completeLaboratory(page);
+
+    // Stage 2 still requires medication.
+    await completeNextSteps(page);
 
     // End encounter.
     await endNCDEncounter(page);
@@ -339,6 +369,11 @@ test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
     expect(nodes['ncd_vitals'], 'ncd_vitals should exist').toBe(true);
     expect(nodes['ncd_core_exam'], 'ncd_core_exam should exist').toBe(true);
     expect(nodes['ncd_outside_care'], 'ncd_outside_care should exist').toBe(true);
+
+    // Stage 3 with one low reading steps down to Stage 2, once for the visit --
+    // not once per measurement saved in it. Both encounters must have synced,
+    // or the first encounter's Stage 3 would answer for the second.
+    expect(queryNCDDiagnoses(fullName, { minEncounters: 2 })).toEqual(['hypertension-stage2']);
   });
 });
 
@@ -443,5 +478,71 @@ test.describe('Nurse: NCD Recurrent Encounter — Lab Results', () => {
     expect(nodes['ncd_social_history'], 'ncd_social_history should exist').toBe(true);
     expect(nodes['ncd_family_history'], 'ncd_family_history should exist').toBe(true);
     expect(nodes['ncd_outside_care'], 'ncd_outside_care should exist').toBe(true);
+  });
+});
+
+// =========================================================================
+// Test 5: Nurse First NCD Encounter — diabetes read at the point of care
+// =========================================================================
+
+test.describe('Nurse: NCD First Encounter — Point of Care Diabetes', () => {
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '1234', 'Nyange Health Center');
+  });
+
+  test('blood sugar read on the spot offers diabetes medication, verify backend sync', async ({ page }) => {
+    const { fullName } = await createAdultAndStartNCDEncounter(page, {
+      isFemale: false,
+    });
+
+    await completeDangerSigns(page);
+    await completeSymptomReview(page);
+
+    // Normal blood pressure, so the blood sugar is the only thing that can
+    // raise a diagnosis and the only thing that can ask for a Next Step.
+    await completeExamination(page);
+
+    // MedicalHistory answers "None", so diabetes is not reported either.
+    await completeMedicalHistory(page);
+
+    // Blood sugar read at the point of care, above the 200 mg/dL threshold for
+    // a patient who has not fasted.
+    await completeLaboratory(page, {
+      performTests: true,
+      readOnTheSpot: true,
+      glucose: GLUCOSE_DIABETIC,
+    });
+
+    // The diagnosis is made while the encounter is still in its initial phase,
+    // so the medication is offered here rather than at a later visit.
+    await completeNextSteps(page);
+
+    await endNCDEncounter(page);
+
+    await syncAndWait(page);
+
+    expect(queryNCDDiagnoses(fullName)).toEqual(['diabetes-recurrent']);
+
+    // Only the nodes this encounter must have are waited for; the query returns
+    // every NCD type either way, so health education is read from the same map.
+    const expectedTypes = [
+      'ncd_random_blood_sugar_test',
+      'ncd_medication_distribution',
+    ];
+    const nodes = queryNCDNodes(fullName, expectedTypes);
+
+    expect(nodes['ncd_random_blood_sugar_test'], 'ncd_random_blood_sugar_test should exist').toBe(true);
+    // Without the medication the encounter closes with a diabetes diagnosis on
+    // the record and nothing offered for it.
+    expect(nodes['ncd_medication_distribution'], 'ncd_medication_distribution should exist').toBe(true);
+    // Health education is for a Stage 1 hypertension with no other condition.
+    expect(nodes['ncd_health_education'], 'ncd_health_education should not exist').toBe(false);
   });
 });

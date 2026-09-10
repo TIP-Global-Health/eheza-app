@@ -69,6 +69,18 @@ present your analysis, what needs fixing and don't execute before I approve."*):
    is not in the diff — which includes lines a later force-push REMOVED. To revise a posted comment:
    PATCH `pulls/comments/<id>` (inline) or `issues/comments/<id>` (PR-level).
 4. **Present my analysis** — which findings are real, which are not worth acting on, and why.
+   ⛔ **Every finding carries the link to its own PR comment** (user, 2026-09-09: *"when review is
+   analysed, findings are treated as finding 1, 2, 3 ... But it's hard to match which is which on
+   Github. I want you to printout the review comments as well."*). Numbering them in chat is
+   meaningless on GitHub. After posting, read the URLs back and put each on its finding's heading:
+
+   ```bash
+   gh api repos/TIP-Global-Health/eheza-app/pulls/<N>/comments \
+     --jq '.[] | "\(.path):\(.line)  \(.html_url)"'
+   ```
+
+   `html_url` is also returned per comment in the POST response. Every finding, every round,
+   declined ones included.
 5. **STOP. Do not fix anything until the user approves.** Approval comes *after* the analysis, not before the review. Once approved, run it through: fix,
    re-verify, push, watch CI to completion — but **ask before any Copilot request** (below).
 

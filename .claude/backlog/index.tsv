@@ -224,7 +224,7 @@ B-223	4	READY	LOW			23	Backend/Update revision minors ×2: (a) `PrenatalFefolRev
 B-224	4	READY	LOW			23	NCD progress report: the pregnancy-test row is hidden on every follow-up encounter, so an earlier pregnancy result becom
 B-225	4	READY	LOW			24	Sync report-state: the "only save when changed" guard never passes, so every sync cycle rewrites the device user twice
 B-226	3	READY	MED			24	Prenatal participant page (nurse): "Postpartum" opens a second encounter while an antenatal encounter is still open, orp
-B-227	3	READY	MED			24	Prenatal lab results: the Blood Smear row never shows a result, so a malaria diagnosis made by smear has no lab-results 
+B-227	3	IMPLEMENTED	MED	2227	2229	24	Prenatal lab results: the Blood Smear row never shows a result, so a malaria diagnosis made by smear has no lab-results 
 B-228	4	READY	LOW			24	Acute illness: closing an illness never sets the participant's `dateConcluded`, so Case Management keeps showing the con
 B-229	4	READY	LOW			24	Trace contact: an edit issued while the contact is not in the cache is dropped silently with the request stuck at `Loadi
 B-230	3	IMPLEMENTED	MED			24	Prenatal diagnoses: `gonorrhea-continued` is encoded and stored but the client decoder has no branch for it, so the diag
@@ -316,7 +316,7 @@ B-315	3	READY	MED-LOW			28	Growth charts: a measurement outside the chart's x-ra
 B-316	4	READY	LOW			28	Z-score tables: a failed table download on first load is never retried and never shown, so growth charts render without 
 B-317	2	READY	MED-HIGH			28	Sync download: a response arriving after its 30-second timeout is applied under whichever health centre is current by th
 B-318	3	READY	MED			28	Sync: the dashboard-statistics download has no timeout and no elapsed-time guard, so one stalled request wedges uploads 
-B-319	1	READY	MED			28	Prenatal labs (lab technician): a blood-smear order opens pre-answered "test will NOT be performed today" with the nurse
+B-319	1	IMPLEMENTED	MED	2223	2224	28	Prenatal labs (lab technician): a blood-smear order opens pre-answered "test will NOT be performed today" with the nurse
 B-320	1	IMPLEMENTED	MED	2211	2212	28	Prenatal HIV test: correcting to "known as positive" after a negative RDT keeps the result and the partner answers, so t
 B-321	4	READY	LOW			28	NCD Laboratory (urine dipstick, creatinine, liver function, lipid panel): re-saving a test task after its results were e
 B-322	4	READY	LOW			28	Child progress report, Diagnosis pane: "Malnutrition signs" is listed twice for one date, because the nutrition-derived 
@@ -335,6 +335,7 @@ B-334	4	READY	LOW			29	Admin sidebar: the "Create PMTCT Participation" link poin
 B-335	4	READY	LOW			29	Family Nutrition: the "add child" tile disappears once the adult has 5 related people of ANY kind — own parents, caregiv
 B-336	1	IMPLEMENTED	MED	2213	2214	29	Prenatal recurrent Next Steps: a medication that becomes required AFTER the nurse saved that task is never offered — the
 B-337		READY				29	NCD: renal complications found at the initial phase may hit the same omission diabetes did — the Stage 1 hypertension me
+B-338	1	READY	MED-HIGH	2226		29	Prenatal labs (lab technician): a blood smear declined and then corrected is recorded as a RAPID TEST, so a positive ans
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

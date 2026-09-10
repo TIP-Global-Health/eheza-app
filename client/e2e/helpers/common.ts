@@ -245,11 +245,11 @@ export function backdateEncounter(personName: string, encounterType: string, day
 
 /**
  * The PHP each query below opens with: resolve the person by name, take their
- * most recent pregnancy, and load that pregnancy's encounter ids into
- * `$encounters`. Each caller adds its own bundle query on top and echoes the
- * JSON it asked for.
+ * most recent participant of the given encounter type, and load that
+ * participant's encounter ids into `$encounters`. Each caller adds its own
+ * query on top and echoes the JSON it asked for.
  */
-function pregnancyEncountersPhp(personNameB64: string): string {
+function participantEncountersPhp(personNameB64: string, encounterType: string): string {
   return `    \\$name = base64_decode('${personNameB64}');
     \\$q = new EntityFieldQuery();
     \\$r = \\$q->entityCondition('entity_type', 'node')
@@ -263,11 +263,11 @@ function pregnancyEncountersPhp(personNameB64: string): string {
     \\$pr = \\$pq->entityCondition('entity_type', 'node')
       ->propertyCondition('type', 'individual_participant')
       ->fieldCondition('field_person', 'target_id', \\$nid)
-      ->fieldCondition('field_encounter_type', 'value', 'antenatal')
+      ->fieldCondition('field_encounter_type', 'value', '${encounterType}')
       ->propertyOrderBy('nid', 'DESC')
       ->range(0, 1)
       ->execute();
-    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No pregnancy found']); return; }
+    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No participant found']); return; }
     \\$participant_id = key(\\$pr['node']);
 
     \\$encounters = hedley_person_load_individual_participant_encounters_ids(\\$participant_id);
@@ -344,7 +344,7 @@ export function queryPrenatalLmp(personName: string): string | null {
   const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
 
   const php = `
-${pregnancyEncountersPhp(personNameB64)}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+${participantEncountersPhp(personNameB64, 'antenatal')}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
 
     \\$lq = hedley_general_create_entity_field_query_excluding_deleted();
     \\$lr = \\$lq->entityCondition('entity_type', 'node')
@@ -393,7 +393,7 @@ export function queryPartnerHIVTestExecutionNote(personName: string): string | n
   const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
 
   const php = `
-${pregnancyEncountersPhp(personNameB64)}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+${participantEncountersPhp(personNameB64, 'antenatal')}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
 
     \\$tq = hedley_general_create_entity_field_query_excluding_deleted();
     \\$tr = \\$tq->entityCondition('entity_type', 'node')
@@ -444,7 +444,7 @@ export function queryMalariaTest(
   const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
 
   const php = `
-${pregnancyEncountersPhp(personNameB64)}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+${participantEncountersPhp(personNameB64, 'antenatal')}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
 
     \\$tq = hedley_general_create_entity_field_query_excluding_deleted();
     \\$tr = \\$tq->entityCondition('entity_type', 'node')
@@ -487,35 +487,45 @@ ${pregnancyEncountersPhp(personNameB64)}    if (empty(\\$encounters)) { echo jso
 
 
 /**
- * Returns the diagnoses recorded on the person's most recent antenatal
- * encounter (`field_prenatal_diagnoses`), or null if the encounter cannot be
- * found. Mirrors `queryPregnancyEdd`'s person -> pregnancy lookup and retries
- * to tolerate sync eventual-consistency, but resolves an empty diagnosis set to
- * `[]` rather than retrying, so a genuinely undiagnosed encounter is a result
- * and not a timeout.
+ * Returns the diagnoses recorded on the person's most recent encounter of the
+ * given type, or null if the encounter cannot be found. Mirrors
+ * `queryPregnancyEdd`'s person -> participant lookup and retries to tolerate
+ * sync eventual-consistency, but resolves an empty diagnosis set to `[]` rather
+ * than retrying, so a genuinely undiagnosed encounter is a result and not a
+ * timeout.
+ *
+ * `minEncounters` guards the "most recent" part: a caller asserting on the
+ * second encounter of a flow passes 2, and a reply naming fewer is a sync that
+ * has not landed rather than an answer -- without it the older encounter's
+ * diagnoses come back as if they were the newer encounter's.
  */
-export function queryPrenatalDiagnoses(
+function queryEncounterDiagnoses(
+  label: string,
   personName: string,
-  options?: { allowEmpty?: boolean },
+  encounterType: string,
+  diagnosesField: string,
+  options?: { allowEmpty?: boolean; minEncounters?: number },
 ): string[] | null {
   // An encounter that is expected to carry no diagnosis yet should not pay the
   // retry loop below, which exists for a sync that has not landed.
   const allowEmpty = options?.allowEmpty ?? false;
+  const minEncounters = options?.minEncounters ?? 1;
   const { drushCmd, cwd } = drushEnv();
   const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
 
   const php = `
-${pregnancyEncountersPhp(personNameB64)}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+${participantEncountersPhp(personNameB64, encounterType)}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+    \\$count = count(\\$encounters);
 
     \\$encounter = node_load(max(\\$encounters));
     if (empty(\\$encounter)) { echo json_encode(['error' => 'Encounter not loaded']); return; }
     \\$diagnoses = [];
-    if (!empty(\\$encounter->field_prenatal_diagnoses[LANGUAGE_NONE])) {
-      foreach (\\$encounter->field_prenatal_diagnoses[LANGUAGE_NONE] as \\$item) {
+    if (!empty(\\$encounter->${diagnosesField}[LANGUAGE_NONE])) {
+      foreach (\\$encounter->${diagnosesField}[LANGUAGE_NONE] as \\$item) {
         \\$diagnoses[] = \\$item['value'];
       }
     }
-    echo json_encode(['diagnoses' => \\$diagnoses]);
+    echo json_encode(['diagnoses' => \\$diagnoses, 'encounters' => \\$count]);
   `;
 
   for (let attempt = 0; attempt < 10; attempt++) {
@@ -524,21 +534,59 @@ ${pregnancyEncountersPhp(personNameB64)}    if (empty(\\$encounters)) { echo jso
         cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
       }).trim();
       const parsed = JSON.parse(output);
+      const newestEncounterSynced = !parsed.error && parsed.encounters >= minEncounters;
       // The encounter node exists from the moment the encounter starts and its
       // diagnoses are written later, so an empty set is retried rather than
       // returned -- otherwise a lagging sync reads as "no diagnosis". An
       // encounter that genuinely has none returns [] once the retries run out.
-      if (!parsed.error && (allowEmpty || parsed.diagnoses.length > 0)) {
+      if (newestEncounterSynced && (allowEmpty || parsed.diagnoses.length > 0)) {
         return parsed.diagnoses as string[];
       }
-      if (!parsed.error && attempt === 9) return [];
-      console.log(`queryPrenatalDiagnoses attempt ${attempt + 1}: ${parsed.error || 'no diagnoses yet'}`);
+      if (newestEncounterSynced && attempt === 9) return [];
+      const reason = parsed.error
+        ? parsed.error
+        : parsed.encounters < minEncounters
+          ? `only ${parsed.encounters} of ${minEncounters} encounters synced`
+          : 'no diagnoses yet';
+      console.log(`${label} attempt ${attempt + 1}: ${reason}`);
     } catch (err) {
-      console.log(`queryPrenatalDiagnoses attempt ${attempt + 1}: error`, err);
+      console.log(`${label} attempt ${attempt + 1}: error`, err);
     }
     if (attempt < 9) execSync('sleep 5');
   }
   return null;
+}
+
+/**
+ * Diagnoses on the person's most recent antenatal encounter.
+ */
+export function queryPrenatalDiagnoses(
+  personName: string,
+  options?: { allowEmpty?: boolean; minEncounters?: number },
+): string[] | null {
+  return queryEncounterDiagnoses(
+    'queryPrenatalDiagnoses',
+    personName,
+    'antenatal',
+    'field_prenatal_diagnoses',
+    options,
+  );
+}
+
+/**
+ * Diagnoses on the person's most recent NCD encounter.
+ */
+export function queryNCDDiagnoses(
+  personName: string,
+  options?: { allowEmpty?: boolean; minEncounters?: number },
+): string[] | null {
+  return queryEncounterDiagnoses(
+    'queryNCDDiagnoses',
+    personName,
+    'ncd',
+    'field_ncd_diagnoses',
+    options,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -642,6 +690,10 @@ export const GLUCOSE_IN_RANGE = '120';
 /** A blood glucose reading as a glucometer set to millimoles per litre shows
  *  it, which the field refuses because it reads as milligrams. */
 export const GLUCOSE_IN_MILLIMOLES = '12';
+
+/** A blood glucose reading that diagnoses diabetes when the patient has not
+ *  fasted (the threshold is 200 mg/dL). */
+export const GLUCOSE_DIABETIC = '250';
 
 /** Whether a numeric measurement input is the blood glucose one. */
 export async function isGlucoseInput(
