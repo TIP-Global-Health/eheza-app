@@ -8,6 +8,7 @@ import {
   syncAndWait,
   queryPrenatalDiagnoses,
   queryPartnerHIVTestExecutionNote,
+  queryMalariaTest,
 } from './helpers/common';
 import { openReport } from './helpers/progress-report';
 import {
@@ -86,7 +87,14 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     // own HIV test, which is run point of care and is negative. That mix is
     // what leaves the partner's result to arrive at the recurrent phase, with
     // the patient's own result already known.
-    await completeLaboratoryNurseForLab(page, { hivPointOfCareNegative: true });
+    // The malaria test is ordered the other way round: no rapid test, a reason
+    // given for that, and a blood smear sent to the lab instead. It is the one
+    // order that reaches the lab technician carrying a reason a test was not
+    // performed - which is the nurse's reason, about a different test.
+    await completeLaboratoryNurseForLab(page, {
+      hivPointOfCareNegative: true,
+      bloodSmearAtLab: true,
+    });
     // NextSteps: the "Wait" sub-task should appear because labs were ordered for lab.
     const completedSteps = await completeNextSteps(page);
     expect(completedSteps, 'completedSteps should contain wait sub-task').toContain('wait');
@@ -125,6 +133,28 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await click(entry.locator('.icon-forward'), page);
     await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
     await page.waitForTimeout(WAIT.elmRerender);
+
+    // The blood smear the nurse ordered is a test nobody has answered for yet.
+    // Read it before anything else fills the form in: the reason the nurse
+    // gave for not running the rapid test must not be showing here as the lab
+    // technician's own answer.
+    const malariaTab = page.locator('.link-section', { hasText: /^\s*Malaria\s*$/ });
+    await malariaTab.waitFor({ timeout: 10000 });
+    await click(malariaTab, page);
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    await expect(
+      page.locator('.form-input.yes-no.test-performed'),
+      'the lab technician should be asked whether the test is performed today',
+    ).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.locator('.form-input.yes-no.test-performed input.checked'),
+      'the lab technician should be asked, not answered for',
+    ).toHaveCount(0);
+    await expect(
+      page.locator('.why-not'),
+      'no reason for not performing the test should be offered before the question is answered',
+    ).toHaveCount(0);
 
     // Complete lab results for all visible tests.
     // The blood glucose field is asked for a reading in the wrong unit on
@@ -167,6 +197,19 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     expect(
       queryPartnerHIVTestExecutionNote(fullName),
       'partner HIV test should carry the lab technician confirmed-run note',
+    ).toBe('run-confirmed-by-lab-tech');
+
+    // The smear was ordered at the lab, so the lab technician's answers are
+    // what closes it: the run they confirmed, and the result they read.
+    const malariaTest = queryMalariaTest(fullName);
+    expect(malariaTest, 'malaria test should be readable').not.toBeNull();
+    expect(
+      malariaTest?.bloodSmearResult,
+      'the blood smear should carry the result the lab technician read',
+    ).toBe('negative');
+    expect(
+      malariaTest?.note,
+      'the malaria test should carry the lab technician confirmed-run note',
     ).toBe('run-confirmed-by-lab-tech');
 
     // A lab technician can not answer the follow up questions about the

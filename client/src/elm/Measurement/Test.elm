@@ -3,10 +3,12 @@ module Measurement.Test exposing (all)
 import AssocList as Dict
 import Backend.Measurement.Model
     exposing
-        ( ColorAlertIndication(..)
+        ( BloodSmearResult(..)
+        , ColorAlertIndication(..)
         , CreatinineTestValue
         , HeightInCm(..)
         , LiverFunctionTestValue
+        , MalariaTestValue
         , MuacInCm(..)
         , SkippedForm(..)
         , StuntingLevel(..)
@@ -20,7 +22,7 @@ import Backend.Measurement.Model
 import Date exposing (Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -38,6 +40,7 @@ import Measurement.Utils
         , knownAsPositiveUpdateHIVTest
         , knownAsPositiveUpdatePartnerHIVTest
         , liverFunctionResultFormWithDefault
+        , malariaResultFormWithDefault
         , ncdaFormWithDefault
         , ncdaMeasurementsOutOfRange
         , nextVaccinationDataForVaccine
@@ -682,6 +685,59 @@ liverFunctionResultFormWithDefaultTest =
         ]
 
 
+{-| A malaria test the nurse did not run as an RDT, ordering a blood smear at
+the lab instead. The execution note says why the RDT was not run; the pending
+marker says the smear is still owed a result.
+-}
+orderedBloodSmear : MalariaTestValue
+orderedBloodSmear =
+    { executionNote = TestNoteLackOfReagents
+    , executionDate = Just (Date.fromCalendarDate 2024 Time.Jan 1)
+    , testPrerequisites = Just EverySet.empty
+    , testResult = Nothing
+    , bloodSmearResult = BloodSmearPendingInput
+    }
+
+
+malariaResultFormWithDefaultTest : Test
+malariaResultFormWithDefaultTest =
+    let
+        resolve value =
+            malariaResultFormWithDefault emptyMalariaResultForm (Just value)
+    in
+    describe "malariaResultFormWithDefault"
+        [ test "an ordered blood smear leaves the lab technician's confirmation unanswered" <|
+            \_ ->
+                resolve orderedBloodSmear
+                    |> .runConfirmedByLabTech
+                    |> Expect.equal Nothing
+        , test "an ordered blood smear is a smear, so the smear result is asked for" <|
+            \_ ->
+                resolve orderedBloodSmear
+                    |> .bloodSmearTaken
+                    |> Expect.equal True
+        , test "an ordered blood smear carries no result yet" <|
+            \_ ->
+                resolve orderedBloodSmear
+                    |> .bloodSmearResult
+                    |> Expect.equal Nothing
+        , test "a smear the lab technician cancelled keeps their No" <|
+            \_ ->
+                resolve { orderedBloodSmear | bloodSmearResult = BloodSmearNotTaken }
+                    |> .runConfirmedByLabTech
+                    |> Expect.equal (Just False)
+        , test "a smear the lab technician ran keeps their Yes" <|
+            \_ ->
+                resolve
+                    { orderedBloodSmear
+                        | executionNote = TestNoteRunConfirmedByLabTech
+                        , bloodSmearResult = BloodSmearNegative
+                    }
+                    |> .runConfirmedByLabTech
+                    |> Expect.equal (Just True)
+        ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
@@ -704,6 +760,7 @@ all =
         , heightFormWithDefaultSkippedTest
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
+        , malariaResultFormWithDefaultTest
         , knownAsPositiveUpdateTest
         ]
 

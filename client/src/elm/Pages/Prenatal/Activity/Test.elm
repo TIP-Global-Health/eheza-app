@@ -1733,6 +1733,94 @@ vaginalDischargeContinuedTest =
         ]
 
 
+
+-- BLOOD SMEAR AS THE MALARIA DIAGNOSIS
+--
+-- When the rapid test cannot be run, a blood smear is taken instead and read
+-- at the lab; issue #631 introduced it as "a different way to diagnose
+-- malaria". Whoever reads the smear, the smear result is the diagnosis.
+--
+-- Two people can record that result, and they leave DIFFERENT execution notes.
+-- A nurse entering it keeps the nurse's reason for not running the RDT; a lab
+-- technician confirming the run replaces the note with
+-- `TestNoteRunConfirmedByLabTech` (`toMalariaResultValue`). Neither of them
+-- writes a `testResult`, because the form shows the smear input instead.
+
+
+{-| A malaria test the nurse did not run as an RDT, with a blood smear read in
+its place — under the execution note the given reader leaves behind.
+-}
+malariaTestValueWithBloodSmear : TestExecutionNote -> BloodSmearResult -> MalariaTestValue
+malariaTestValueWithBloodSmear executionNote bloodSmearResult =
+    { executionNote = executionNote
+    , executionDate = Just dummyDate
+    , testPrerequisites = immediateResultPrerequisites
+    , testResult = Nothing
+    , bloodSmearResult = bloodSmearResult
+    }
+
+
+withBloodSmear : TestExecutionNote -> BloodSmearResult -> PrenatalMeasurements -> PrenatalMeasurements
+withBloodSmear executionNote bloodSmearResult measurements =
+    { measurements
+        | malariaTest = wrapMeasurement (malariaTestValueWithBloodSmear executionNote bloodSmearResult)
+    }
+
+
+generatePrenatalDiagnosesForNurseBloodSmearTest : Test
+generatePrenatalDiagnosesForNurseBloodSmearTest =
+    describe "generatePrenatalDiagnosesForNurse - malaria read from a blood smear"
+        [ test "smear + under the nurse's reason -> DiagnosisMalariaInitialPhase present" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withBloodSmear TestNoteLackOfReagents BloodSmearPlus
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal True
+        , test "smear + under the lab technician's confirmed-run note -> DiagnosisMalariaInitialPhase present" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withBloodSmear TestNoteRunConfirmedByLabTech BloodSmearPlus
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal True
+        , test "smear +++ under the lab technician's confirmed-run note -> DiagnosisMalariaInitialPhase present" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withBloodSmear TestNoteRunConfirmedByLabTech BloodSmearPlusPlusPlus
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal True
+        , test "smear negative under the lab technician's confirmed-run note -> DiagnosisMalariaInitialPhase absent" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withBloodSmear TestNoteRunConfirmedByLabTech BloodSmearNegative
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal False
+        , test "a smear still awaited by the lab diagnoses nothing" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withBloodSmear TestNoteLackOfReagents BloodSmearPendingInput
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal False
+        , test "smear + read by the lab technician, with Hb 9, is malaria WITH anemia - not anemia alone" <|
+            \_ ->
+                let
+                    diagnoses =
+                        emptyPrenatalMeasurements
+                            |> withBloodSmear TestNoteRunConfirmedByLabTech BloodSmearPlus
+                            |> withHemoglobin 9
+                            |> diagnoseNurse
+                in
+                ( EverySet.member DiagnosisMalariaWithAnemiaInitialPhase diagnoses
+                , EverySet.member DiagnosisModerateAnemiaInitialPhase diagnoses
+                )
+                    |> Expect.equal ( True, False )
+        ]
+
+
 all : Test
 all =
     describe "Prenatal Activity tests"
@@ -1745,6 +1833,7 @@ all =
         , generatePrenatalAssesmentForChwTest
         , generatePrenatalDiagnosesForNurseAnemiaTest
         , generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest
+        , generatePrenatalDiagnosesForNurseBloodSmearTest
         , generatePrenatalDiagnosesForNurseModeratePreeclampsiaTest
         , generatePrenatalDiagnosesForNurseModeratePreeclampsiaRecurrentTest
         , generatePrenatalDiagnosesForNurseAnemiaRecurrentTest

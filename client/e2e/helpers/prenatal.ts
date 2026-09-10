@@ -1003,13 +1003,20 @@ export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
  * for the immediate-result question. This leaves results pending for a Lab
  * Technician to enter later via Case Management.
  * Creates: prenatal_hiv_test, prenatal_syphilis_test, etc. with executionNote=RunToday.
+ *
+ * `bloodSmearAtLab` orders the malaria test the other way round: the rapid
+ * test is not run, a reason is given for that, and a blood smear is taken and
+ * sent to the lab. It is the one order that reaches the lab technician
+ * carrying a reason a test was not performed.
  */
 export async function completeLaboratoryNurseForLab(
   page: Page,
-  options?: { hivPointOfCareNegative?: boolean },
+  options?: { hivPointOfCareNegative?: boolean; bloodSmearAtLab?: boolean },
 ): Promise<string[]> {
   const hivPointOfCareNegative = options?.hivPointOfCareNegative ?? false;
+  const bloodSmearAtLab = options?.bloodSmearAtLab ?? false;
   let hivPointOfCareDone = false;
+  let bloodSmearDone = false;
   await openActivity(page, 'prenatal', 'laboratory');
 
   const completedTests: string[] = [];
@@ -1042,17 +1049,37 @@ export async function completeLaboratoryNurseForLab(
       await page.waitForTimeout(WAIT.elmRerender);
     }
 
-    // 2. "Will this test be performed today?" → Yes
-    const testPerformed = page.locator('.form-input.yes-no.test-performed');
-    if (await testPerformed.isVisible().catch(() => false)) {
-      await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
-      await page.waitForTimeout(WAIT.elmRerender);
-    }
-
     // The patient's own HIV test can be run point of care while the rest go to
     // the lab. That mix is what puts a partner result in the recurrent phase
     // while the patient's own result is already known.
     const isHivTab = hivPointOfCareNegative && /^\s*HIV\s*$/i.test(tabLabel);
+    const isBloodSmearTab = bloodSmearAtLab && /^\s*Malaria\s*$/i.test(tabLabel);
+
+    // 2. "Will this test be performed today?" → Yes, except the malaria test
+    // the caller asked for a blood smear on, which is not performed.
+    const testPerformed = page.locator('.form-input.yes-no.test-performed');
+    if (await testPerformed.isVisible().catch(() => false)) {
+      await click(
+        testPerformed.locator('label', { hasText: isBloodSmearTab ? 'No' : 'Yes' }),
+        page,
+      );
+      await page.waitForTimeout(WAIT.elmRerender);
+    }
+
+    // 2b. The reason the rapid test was not run, and the blood smear taken
+    // in its place. The reason belongs to the rapid test alone - the smear is
+    // taken, and its result is what the lab is being asked for.
+    if (isBloodSmearTab) {
+      const whyNot = page.locator('.why-not .ui.checkbox label').first();
+      await whyNot.waitFor({ timeout: 5000 });
+      await click(whyNot, page);
+      await page.waitForTimeout(WAIT.formInteraction);
+
+      const bloodSmear = page.locator('.form-input.yes-no.got-results-previously');
+      await bloodSmear.waitFor({ timeout: 5000 });
+      await click(bloodSmear.locator('label', { hasText: 'Yes' }), page);
+      await page.waitForTimeout(WAIT.elmRerender);
+    }
 
     // 3. "Immediate result?" → Lab (the "No" side of the bool input), or
     // Point of Care for the HIV test when asked for.
@@ -1102,11 +1129,20 @@ export async function completeLaboratoryNurseForLab(
       await page.waitForTimeout(WAIT.formInteraction);
     }
 
-    // Save this lab test tab.
-    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+    // Save this lab test tab. An incomplete form leaves the button disabled,
+    // which Elm renders as a class and no click handler rather than the
+    // disabled attribute - so it is still visible, still clickable, and the
+    // click does nothing. Matching on the class is what tells the two apart.
+    const saveBtn = page.locator(
+      'button.ui.fluid.primary.button:not(.disabled)',
+      { hasText: 'Save' },
+    );
     if (await saveBtn.isVisible()) {
       await click(saveBtn, page);
       completedTests.push(tabLabel);
+      if (isBloodSmearTab) {
+        bloodSmearDone = true;
+      }
       await page.waitForTimeout(WAIT.elmRerender);
     }
   }
@@ -1118,6 +1154,15 @@ export async function completeLaboratoryNurseForLab(
   if (hivPointOfCareNegative && !hivPointOfCareDone) {
     throw new Error(
       `HIV test was not run point of care. Tabs seen: ${completedTests.join(', ')}`,
+    );
+  }
+
+  // Same reasoning: without the smear order there is nothing pending for the
+  // lab technician to be asked about, and the caller's assertions would hold
+  // against any code at all.
+  if (bloodSmearAtLab && !bloodSmearDone) {
+    throw new Error(
+      `No blood smear was ordered on the malaria test. Tabs seen: ${completedTests.join(', ')}`,
     );
   }
 
@@ -1250,8 +1295,15 @@ export async function completeLabResults(
       await page.waitForTimeout(WAIT.formInteraction);
     }
 
-    // Save this lab test tab.
-    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+    // Save this lab test tab. As in completeLaboratoryNurseForLab, an
+    // incomplete form leaves the button disabled as a class rather than as the
+    // disabled attribute, so it stays visible and clickable and the click does
+    // nothing - matching on the class is what keeps such a tab out of
+    // completedTests.
+    const saveBtn = page.locator(
+      'button.ui.fluid.primary.button:not(.disabled)',
+      { hasText: 'Save' },
+    );
     if (await saveBtn.isVisible()) {
       await click(saveBtn, page);
       completedTests.push(tabLabel);

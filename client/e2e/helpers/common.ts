@@ -244,6 +244,38 @@ export function backdateEncounter(personName: string, encounterType: string, day
 }
 
 /**
+ * The PHP each query below opens with: resolve the person by name, take their
+ * most recent participant of the given encounter type, and load that
+ * participant's encounter ids into `$encounters`. Each caller adds its own
+ * query on top and echoes the JSON it asked for.
+ */
+function participantEncountersPhp(personNameB64: string, encounterType: string): string {
+  return `    \\$name = base64_decode('${personNameB64}');
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$name)
+      ->execute();
+    if (empty(\\$r['node'])) { echo json_encode(['error' => 'Person not found']); return; }
+    \\$nid = key(\\$r['node']);
+
+    \\$pq = new EntityFieldQuery();
+    \\$pr = \\$pq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'individual_participant')
+      ->fieldCondition('field_person', 'target_id', \\$nid)
+      ->fieldCondition('field_encounter_type', 'value', '${encounterType}')
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No participant found']); return; }
+    \\$participant_id = key(\\$pr['node']);
+
+    \\$encounters = hedley_person_load_individual_participant_encounters_ids(\\$participant_id);
+`;
+}
+
+
+/**
  * Returns the EDD (`field_expected_date_concluded`, as a 'YYYY-MM-DD' string)
  * set on a person's antenatal pregnancy (individual_participant), or null if it
  * is not populated. Retries up to 10 times (5s apart) so it can be used for
@@ -312,28 +344,7 @@ export function queryPrenatalLmp(personName: string): string | null {
   const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
 
   const php = `
-    \\$name = base64_decode('${personNameB64}');
-    \\$q = new EntityFieldQuery();
-    \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$name)
-      ->execute();
-    if (empty(\\$r['node'])) { echo json_encode(['error' => 'Person not found']); return; }
-    \\$nid = key(\\$r['node']);
-
-    \\$pq = new EntityFieldQuery();
-    \\$pr = \\$pq->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'individual_participant')
-      ->fieldCondition('field_person', 'target_id', \\$nid)
-      ->fieldCondition('field_encounter_type', 'value', 'antenatal')
-      ->propertyOrderBy('nid', 'DESC')
-      ->range(0, 1)
-      ->execute();
-    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No pregnancy found']); return; }
-    \\$participant_id = key(\\$pr['node']);
-
-    \\$encounters = hedley_person_load_individual_participant_encounters_ids(\\$participant_id);
-    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+${participantEncountersPhp(personNameB64, 'antenatal')}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
 
     \\$lq = hedley_general_create_entity_field_query_excluding_deleted();
     \\$lr = \\$lq->entityCondition('entity_type', 'node')
@@ -382,28 +393,7 @@ export function queryPartnerHIVTestExecutionNote(personName: string): string | n
   const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
 
   const php = `
-    \\$name = base64_decode('${personNameB64}');
-    \\$q = new EntityFieldQuery();
-    \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$name)
-      ->execute();
-    if (empty(\\$r['node'])) { echo json_encode(['error' => 'Person not found']); return; }
-    \\$nid = key(\\$r['node']);
-
-    \\$pq = new EntityFieldQuery();
-    \\$pr = \\$pq->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'individual_participant')
-      ->fieldCondition('field_person', 'target_id', \\$nid)
-      ->fieldCondition('field_encounter_type', 'value', 'antenatal')
-      ->propertyOrderBy('nid', 'DESC')
-      ->range(0, 1)
-      ->execute();
-    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No pregnancy found']); return; }
-    \\$participant_id = key(\\$pr['node']);
-
-    \\$encounters = hedley_person_load_individual_participant_encounters_ids(\\$participant_id);
-    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+${participantEncountersPhp(personNameB64, 'antenatal')}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
 
     \\$tq = hedley_general_create_entity_field_query_excluding_deleted();
     \\$tr = \\$tq->entityCondition('entity_type', 'node')
@@ -440,6 +430,63 @@ export function queryPartnerHIVTestExecutionNote(personName: string): string | n
 }
 
 /**
+ * Returns the execution note and blood smear result of the malaria test on the
+ * person's most recent antenatal encounter, or null if it cannot be found.
+ *
+ * A smear the nurse ordered at the lab is stored as `pending-input`, so this
+ * retries while it still reads that way: whatever the lab technician saved
+ * replaces it, and until then their save has not reached the backend.
+ */
+export function queryMalariaTest(
+  personName: string,
+): { note: string | null; bloodSmearResult: string | null } | null {
+  const { drushCmd, cwd } = drushEnv();
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+
+  const php = `
+${participantEncountersPhp(personNameB64, 'antenatal')}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+
+    \\$tq = hedley_general_create_entity_field_query_excluding_deleted();
+    \\$tr = \\$tq->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'prenatal_malaria_test')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_prenatal_encounter', 'target_id', \\$encounters, 'IN')
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$tr['node'])) { echo json_encode(['error' => 'No malaria test found']); return; }
+
+    \\$test = node_load(key(\\$tr['node']));
+    \\$note = isset(\\$test->field_test_execution_note[LANGUAGE_NONE][0]['value'])
+      ? \\$test->field_test_execution_note[LANGUAGE_NONE][0]['value'] : null;
+    \\$smear = isset(\\$test->field_blood_smear_result[LANGUAGE_NONE][0]['value'])
+      ? \\$test->field_blood_smear_result[LANGUAGE_NONE][0]['value'] : null;
+    echo json_encode(['note' => \\$note, 'smear' => \\$smear]);
+  `;
+
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const output = execSync(`${drushCmd} eval "${php}"`, {
+        cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+      }).trim();
+      const parsed = JSON.parse(output);
+      if (!parsed.error && parsed.smear && parsed.smear !== 'pending-input') {
+        return {
+          note: parsed.note ? String(parsed.note) : null,
+          bloodSmearResult: String(parsed.smear),
+        };
+      }
+      console.log(`queryMalariaTest attempt ${attempt + 1}: ${parsed.error || 'blood smear still awaiting the lab'}`);
+    } catch (err) {
+      console.log(`queryMalariaTest attempt ${attempt + 1}: error`, err);
+    }
+    if (attempt < 9) execSync('sleep 5');
+  }
+  return null;
+}
+
+
+/**
  * Returns the diagnoses recorded on the person's most recent encounter of the
  * given type, or null if the encounter cannot be found. Mirrors
  * `queryPregnancyEdd`'s person -> participant lookup and retries to tolerate
@@ -467,28 +514,7 @@ function queryEncounterDiagnoses(
   const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
 
   const php = `
-    \\$name = base64_decode('${personNameB64}');
-    \\$q = new EntityFieldQuery();
-    \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$name)
-      ->execute();
-    if (empty(\\$r['node'])) { echo json_encode(['error' => 'Person not found']); return; }
-    \\$nid = key(\\$r['node']);
-
-    \\$pq = new EntityFieldQuery();
-    \\$pr = \\$pq->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'individual_participant')
-      ->fieldCondition('field_person', 'target_id', \\$nid)
-      ->fieldCondition('field_encounter_type', 'value', '${encounterType}')
-      ->propertyOrderBy('nid', 'DESC')
-      ->range(0, 1)
-      ->execute();
-    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No participant found']); return; }
-    \\$participant_id = key(\\$pr['node']);
-
-    \\$encounters = hedley_person_load_individual_participant_encounters_ids(\\$participant_id);
-    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+${participantEncountersPhp(personNameB64, encounterType)}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
     \\$count = count(\\$encounters);
 
     \\$encounter = node_load(max(\\$encounters));
