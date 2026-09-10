@@ -22,7 +22,7 @@ import Backend.Measurement.Model
 import Date exposing (Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -41,12 +41,15 @@ import Measurement.Utils
         , knownAsPositiveUpdatePartnerHIVTest
         , liverFunctionResultFormWithDefault
         , malariaResultFormWithDefault
+        , malariaTestFormWithDefault
         , ncdaFormWithDefault
         , ncdaMeasurementsOutOfRange
         , nextVaccinationDataForVaccine
         , outOfRangeAsEntered
         , setNCDAStep
         , showNCDAMeasurementOutOfRange
+        , toMalariaResultValueWithDefault
+        , toMalariaTestValueWithDefault
         )
 import Measurement.View exposing (viewColorAlertIndication)
 import SyncManager.Model exposing (Site(..))
@@ -696,6 +699,19 @@ orderedBloodSmear =
     , testPrerequisites = Just EverySet.empty
     , testResult = Nothing
     , bloodSmearResult = BloodSmearPendingInput
+    , bloodSmearOrdered = True
+    }
+
+
+{-| A malaria test the nurse ran as a rapid test and sent to the lab to be
+read. No smear was taken, so the lab is owed a rapid test result.
+-}
+rapidTestAtLab : MalariaTestValue
+rapidTestAtLab =
+    { orderedBloodSmear
+        | executionNote = TestNoteRunToday
+        , bloodSmearResult = BloodSmearNotTaken
+        , bloodSmearOrdered = False
     }
 
 
@@ -738,6 +754,191 @@ malariaResultFormWithDefaultTest =
         ]
 
 
+{-| Whether the form asks about the blood smear or about the rapid test.
+
+The lab declining a test leaves no result and overwrites the execution note
+with the lab technician's own reason, so after a decline a smear and a rapid
+test look the same in both. What tells them apart is whether a smear was
+ordered, which is recorded once by the nurse and kept.
+
+-}
+malariaResultFormBloodSmearTakenTest : Test
+malariaResultFormBloodSmearTakenTest =
+    let
+        resolve value =
+            malariaResultFormWithDefault emptyMalariaResultForm (Just value)
+                |> .bloodSmearTaken
+    in
+    describe "malariaResultFormWithDefault, asking about the right test"
+        [ test "a smear the lab did not run is still a smear" <|
+            \_ ->
+                resolve
+                    { orderedBloodSmear
+                        | executionNote = TestNoteBrokenEquipment
+                        , bloodSmearResult = BloodSmearNotTaken
+                    }
+                    |> Expect.equal True
+        , test "a smear the lab read is a smear" <|
+            \_ ->
+                resolve
+                    { orderedBloodSmear
+                        | executionNote = TestNoteRunConfirmedByLabTech
+                        , bloodSmearResult = BloodSmearNegative
+                    }
+                    |> Expect.equal True
+        , test "a rapid test sent to the lab is not a smear" <|
+            \_ ->
+                resolve rapidTestAtLab
+                    |> Expect.equal False
+        , test "a rapid test the lab did not run is still not a smear" <|
+            \_ ->
+                resolve { rapidTestAtLab | executionNote = TestNoteBrokenEquipment }
+                    |> Expect.equal False
+        , test "a smear ordered before the record said so is still a smear" <|
+            \_ ->
+                resolve { orderedBloodSmear | bloodSmearOrdered = False }
+                    |> Expect.equal True
+        , -- The nurse's own Laboratory form reads the same record, and has to
+          -- reach the same answer, or a save from it writes the order away.
+          test "the nurse's form agrees about a smear ordered before the record said so" <|
+            \_ ->
+                malariaTestFormWithDefault emptyMalariaTestForm
+                    (Just { orderedBloodSmear | bloodSmearOrdered = False })
+                    |> .bloodSmearTaken
+                    |> Expect.equal (Just True)
+        , test "the nurse's form agrees a rapid test sent to the lab is not a smear" <|
+            \_ ->
+                malariaTestFormWithDefault emptyMalariaTestForm (Just rapidTestAtLab)
+                    |> .bloodSmearTaken
+                    |> Expect.equal (Just False)
+        ]
+
+
+{-| What the result select starts on. Neither the pending marker nor "not
+taken" is a result the smear scale offers, so carrying either into the form
+would show its first option, "Negative", as though it had been chosen.
+-}
+malariaResultFormSmearResultTest : Test
+malariaResultFormSmearResultTest =
+    let
+        resolve value =
+            malariaResultFormWithDefault emptyMalariaResultForm (Just value)
+                |> .bloodSmearResult
+    in
+    describe "malariaResultFormWithDefault, the smear result it starts on"
+        [ test "a smear still awaited by the lab is unanswered" <|
+            \_ ->
+                resolve orderedBloodSmear
+                    |> Expect.equal Nothing
+        , test "a smear the lab did not run is unanswered" <|
+            \_ ->
+                resolve
+                    { orderedBloodSmear
+                        | executionNote = TestNoteBrokenEquipment
+                        , bloodSmearResult = BloodSmearNotTaken
+                    }
+                    |> Expect.equal Nothing
+        , test "a smear the lab read shows what they read" <|
+            \_ ->
+                resolve
+                    { orderedBloodSmear
+                        | executionNote = TestNoteRunConfirmedByLabTech
+                        , bloodSmearResult = BloodSmearPlus
+                    }
+                    |> Expect.equal (Just BloodSmearPlus)
+        ]
+
+
+{-| A rapid test result on a record that ordered a smear is one nobody entered
+for it, and it is read back as a rapid test that was run. Saving the smear
+clears it.
+-}
+toMalariaResultValueTestResultTest : Test
+toMalariaResultValueTestResultTest =
+    let
+        saveWithResult saved =
+            toMalariaResultValueWithDefault (Just saved)
+                { emptyMalariaResultForm
+                    | runConfirmedByLabTech = Just True
+                    , executionNote = Just TestNoteRunConfirmedByLabTech
+                    , executionNoteDirty = True
+                    , testResult = Just TestPositive
+                    , testResultDirty = True
+                }
+                |> Maybe.map .testResult
+    in
+    describe "toMalariaResultValue, the rapid test result it keeps"
+        [ test "saving a smear keeps no rapid test result" <|
+            \_ ->
+                saveWithResult orderedBloodSmear
+                    |> Expect.equal (Just Nothing)
+        , test "saving a rapid test sent to the lab keeps its result" <|
+            \_ ->
+                saveWithResult rapidTestAtLab
+                    |> Expect.equal (Just (Just TestPositive))
+        ]
+
+
+{-| The record keeps saying what was ordered through everything the lab does
+with it - a decline included - so that reopening it asks about the same test.
+-}
+bloodSmearOrderedTest : Test
+bloodSmearOrderedTest =
+    let
+        declined saved =
+            toMalariaResultValueWithDefault (Just saved)
+                { emptyMalariaResultForm
+                    | runConfirmedByLabTech = Just False
+                    , executionNote = Just TestNoteBrokenEquipment
+                    , executionNoteDirty = True
+                }
+                |> Maybe.map .bloodSmearOrdered
+
+        ordered bloodSmearTaken =
+            toMalariaTestValueWithDefault Nothing
+                { emptyMalariaTestForm
+                    | testPerformed = Just False
+                    , executionNote = Just TestNoteLackOfReagents
+                    , bloodSmearTaken = Just bloodSmearTaken
+                    , immediateResult = Just False
+                }
+                |> Maybe.map .bloodSmearOrdered
+    in
+    describe "bloodSmearOrdered"
+        [ test "the nurse ordering a smear records it" <|
+            \_ ->
+                ordered True
+                    |> Expect.equal (Just True)
+        , test "the nurse declining the rapid test without a smear records none" <|
+            \_ ->
+                ordered False
+                    |> Expect.equal (Just False)
+        , test "the lab declining an ordered smear keeps it ordered" <|
+            \_ ->
+                declined orderedBloodSmear
+                    |> Expect.equal (Just True)
+        , -- The lab confirming the run makes the nurse's form read the rapid
+          -- test as performed again; a save from it must not drop the order.
+          test "a nurse re-save after the lab read the smear keeps it ordered" <|
+            \_ ->
+                toMalariaTestValueWithDefault
+                    (Just
+                        { orderedBloodSmear
+                            | executionNote = TestNoteRunConfirmedByLabTech
+                            , bloodSmearResult = BloodSmearNegative
+                        }
+                    )
+                    emptyMalariaTestForm
+                    |> Maybe.map .bloodSmearOrdered
+                    |> Expect.equal (Just True)
+        , test "the lab declining a rapid test does not invent an order" <|
+            \_ ->
+                declined
+                    rapidTestAtLab
+                    |> Expect.equal (Just False)
+        ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
@@ -761,6 +962,10 @@ all =
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
         , malariaResultFormWithDefaultTest
+        , malariaResultFormBloodSmearTakenTest
+        , malariaResultFormSmearResultTest
+        , toMalariaResultValueTestResultTest
+        , bloodSmearOrderedTest
         , knownAsPositiveUpdateTest
         ]
 

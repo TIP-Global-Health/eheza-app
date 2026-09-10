@@ -432,6 +432,7 @@ encodeMalariaTestValue : MalariaTestValue -> List ( String, Value )
 encodeMalariaTestValue value =
     [ ( "test_execution_note", encodeTestExecutionNote value.executionNote )
     , ( "blood_smear_result", encodeBloodSmearResult value.bloodSmearResult )
+    , ( "blood_smear_ordered", bool value.bloodSmearOrdered )
     ]
         ++ encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
         ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite

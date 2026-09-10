@@ -185,6 +185,7 @@ measurementsWithMalariaTest executionNote bloodSmearResult =
             , testPrerequisites = Just EverySet.empty
             , testResult = Nothing
             , bloodSmearResult = bloodSmearResult
+            , bloodSmearOrdered = True
             }
     in
     { emptyPrenatalMeasurements

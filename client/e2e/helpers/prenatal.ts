@@ -1011,10 +1011,17 @@ export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
  */
 export async function completeLaboratoryNurseForLab(
   page: Page,
-  options?: { hivPointOfCareNegative?: boolean; bloodSmearAtLab?: boolean },
+  options?: {
+    hivPointOfCareNegative?: boolean;
+    bloodSmearAtLab?: boolean;
+    onlyTabs?: string[];
+  },
 ): Promise<string[]> {
   const hivPointOfCareNegative = options?.hivPointOfCareNegative ?? false;
   const bloodSmearAtLab = options?.bloodSmearAtLab ?? false;
+  // Ordering every test is most of the time this helper spends. A caller that
+  // needs only one of them can say so.
+  const onlyTabs = options?.onlyTabs;
   let hivPointOfCareDone = false;
   let bloodSmearDone = false;
   await openActivity(page, 'prenatal', 'laboratory');
@@ -1041,6 +1048,8 @@ export async function completeLaboratoryNurseForLab(
     }
 
     const tabLabel = (await tab.textContent()) || `tab-${i}`;
+
+    if (onlyTabs && !onlyTabs.includes(tabLabel.trim())) continue;
 
     // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B) → No
     const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
@@ -1166,11 +1175,13 @@ export async function completeLaboratoryNurseForLab(
     );
   }
 
-  // Wait for return to encounter page.
-  await page
-    .locator('div.page-encounter.prenatal')
-    .waitFor({ timeout: 10000 });
-
+  // Saving the last tab returns to the encounter page; a caller that ordered
+  // only some of them is still on the activity and goes back itself.
+  if (!onlyTabs) {
+    await page
+      .locator('div.page-encounter.prenatal')
+      .waitFor({ timeout: 10000 });
+  }
   return completedTests;
 }
 

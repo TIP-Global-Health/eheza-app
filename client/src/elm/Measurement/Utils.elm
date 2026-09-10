@@ -1,4 +1,4 @@
-module Measurement.Utils exposing (OutsideCareConfig, ahezaFormWithDefault, ahezaMotherFormWithDefault, allNextStepsTasks, allVaccineTypes, behindOnVaccinationsByHistory, birthWeightOutsideConstraints, bloodGlucoseOutOfRange, bloodGlucoseSaveMsgs, bloodGpRsResultFormAndTasks, bloodGpRsResultFormWithDefault, bloodGpRsTestFormWithDefault, bloodSmearResultNotSet, bloodSmearResultSet, bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, corePhysicalExamFormWithDefault, creatinineResultFormAndTasks, creatinineResultFormWithDefault, emptyContentAndTasksForPerformedLaboratoryTestConfig, emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig, emptyContentAndTasksLaboratoryResultConfig, emptyContentAndTasksLaboratoryTestInitialConfig, emptyContentAndTasksLaboratoryUniversalTestInitialConfig, expectParticipantConsent, expectUniversalTestResultTask, expectVaccineDoseForPerson, familyPlanningFormWithDefault, fbfFormToValue, followUpFormWithDefault, generateAssembledDataForChildScoreboard, generateAssembledDataForWellChild, generateFutureVaccinationsData, generateGroupNutritionAssessmentEntries, generateIndividualNutritionAssessmentEntries, generateVaccinationProgressDictByChildScoreboard, generateVaccinationProgressForVaccine, getAllDosesForVaccine, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getIntervalForVaccine, getMotherForm, getNextVaccineDose, getPreviousMeasurements, hba1cTestFormWithDefault, healthEducationFormWithDefault, heightFormWithDefault, heightOutOfRange, hemoglobinResultFormAndTasks, hemoglobinResultFormWithDefault, hemoglobinTestFormWithDefault, hepatitisBResultFormAndTasks, hepatitisBResultFormWithDefault, hepatitisBTestFormWithDefault, hivPCRResultFormAndTasks, hivPCRResultFormWithDefault, hivPCRTestFormWithDefault, hivResultFollowUpsFormAndTasks, hivResultFormAndTasks, hivResultFormWithDefault, hivSignsAnswered, hivTestFormWithDefault, hivTestUniversalFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, isTestResultValid, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, laboratoryTaskIconClass, lactationFormToSigns, latestVaccinationDataForVaccine, lipidPanelResultFormAndTasks, lipidPanelResultFormWithDefault, liverFunctionResultFormAndTasks, liverFunctionResultFormWithDefault, malariaResultFormAndTasks, malariaResultFormWithDefault, malariaTestFormWithDefault, measurementConstraints, measurementOutOfRange, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, muacMeasurementIsOff, muacOutOfRange, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nextVaccinationDataForVaccine, nonRDTFormWithDefault, nutritionCaringFormWithDefault, nutritionFeedingFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFoodSecurityFormWithDefault, nutritionFormWithDefault, nutritionHygieneFormWithDefault, ongoingTreatmentReviewFormWithDefault, outOfRange, outOfRangeAsEntered, outsideCareFormInputsAndTasks, outsideCareFormWithDefault, outsideCareMedicationOptionsAnemia, outsideCareMedicationOptionsHIV, outsideCareMedicationOptionsHypertension, outsideCareMedicationOptionsMalaria, outsideCareMedicationOptionsSyphilis, partnerHIVResultFollowUpsFormAndTasks, partnerHIVResultFormAndTasks, partnerHIVResultFormWithDefault, partnerHIVTestFormWithDefault, pregnancyTestFormWithDefault, randomBloodSugarFormWithDefault, randomBloodSugarResultFormAndTasks, randomBloodSugarResultFormWithDefault, randomBloodSugarUniversalFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveLabTestDate, resolveMedicationsNonAdministrationReasons, resolveNCDASteps, sendToHCFormWithDefault, setNCDAStep, showNCDAMeasurementOutOfRange, showNCDAQuestionsByNewbornExam, syphilisResultFollowUpsFormAndTasks, syphilisResultFormAndTasks, syphilisResultFormWithDefault, syphilisTestFormWithDefault, testNotPerformedByWhyNotAtExecutionNote, testPerformedByExecutionNote, testPerformedByValue, toAdministrationNoteWithDefault, toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toBloodGpRsResultValueWithDefault, toBloodGpRsTestValueWithDefault, toContributingFactorsValueWithDefault, toCorePhysicalExamValueWithDefault, toCreatinineResultValueWithDefault, toCreatinineTestValueWithEmptyResults, toEverySet, toFamilyPlanningValueWithDefault, toFollowUpValueWithDefault, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVResultValueWithDefault, toHIVTestValueUniversalWithDefault, toHIVTestValueWithDefault, toHbA1cTestValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toHemoglobinResultValueWithDefault, toHemoglobinTestValueWithDefault, toHepatitisBResultValueWithDefault, toHepatitisBTestValueWithDefault, toLipidPanelResultValueWithDefault, toLipidPanelTestValueWithEmptyResults, toLiverFunctionResultValueWithDefault, toLiverFunctionTestValueWithEmptyResults, toMalariaResultValueWithDefault, toMalariaTestValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNonRDTValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toOutsideCareValueWithDefault, toPartnerHIVResultValueWithDefault, toPartnerHIVTestValueWithDefault, toPregnancyTestValueWithDefault, toRandomBloodSugarResultValueWithDefault, toRandomBloodSugarTestValueUniversalWithDefault, toRandomBloodSugarTestValueWithDefault, toSendToHCValueWithDefault, toSyphilisResultValueWithDefault, toSyphilisTestValueWithDefault, toUrineDipstickResultValueWithDefault, toUrineDipstickTestValueUniversalWithDefault, toUrineDipstickTestValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, treatmentReviewCustomReasonsForNotTakingInputsAndTasks, treatmentReviewInputsAndTasks, urineDipstickFormWithDefault, urineDipstickResultFormAndTasks, urineDipstickResultFormWithDefault, urineDipstickUniversalFormWithDefault, vaccinationFormDynamicContentAndTasks, vaccinationFormWithDefault, vaccineDoseToComparable, viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion, viewBloodGpRsTestForm, viewHIVPCRTestForm, viewHIVTestForm, viewHIVTestUniversalForm, viewHbA1cTestForm, viewHemoglobinTestForm, viewHepatitisBTestForm, viewMalariaTestForm, viewNonRDTForm, viewPartnerHIVTestForm, viewPregnancyTestForm, viewRandomBloodSugarTestForm, viewRandomBloodSugarTestUniversalForm, viewReinforceAdherenceQuestion, viewSelectInput, viewSyphilisTestForm, viewUrineDipstickTestForm, viewUrineDipstickTestUniversalForm, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault, weightOutOfRange)
+module Measurement.Utils exposing (OutsideCareConfig, ahezaFormWithDefault, ahezaMotherFormWithDefault, allNextStepsTasks, allVaccineTypes, behindOnVaccinationsByHistory, birthWeightOutsideConstraints, bloodGlucoseOutOfRange, bloodGlucoseSaveMsgs, bloodGpRsResultFormAndTasks, bloodGpRsResultFormWithDefault, bloodGpRsTestFormWithDefault, bloodSmearOrderedByValue, bloodSmearResultNotSet, bloodSmearResultSet, bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, corePhysicalExamFormWithDefault, creatinineResultFormAndTasks, creatinineResultFormWithDefault, emptyContentAndTasksForPerformedLaboratoryTestConfig, emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig, emptyContentAndTasksLaboratoryResultConfig, emptyContentAndTasksLaboratoryTestInitialConfig, emptyContentAndTasksLaboratoryUniversalTestInitialConfig, expectParticipantConsent, expectUniversalTestResultTask, expectVaccineDoseForPerson, familyPlanningFormWithDefault, fbfFormToValue, followUpFormWithDefault, generateAssembledDataForChildScoreboard, generateAssembledDataForWellChild, generateFutureVaccinationsData, generateGroupNutritionAssessmentEntries, generateIndividualNutritionAssessmentEntries, generateVaccinationProgressDictByChildScoreboard, generateVaccinationProgressForVaccine, getAllDosesForVaccine, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getIntervalForVaccine, getMotherForm, getNextVaccineDose, getPreviousMeasurements, hba1cTestFormWithDefault, healthEducationFormWithDefault, heightFormWithDefault, heightOutOfRange, hemoglobinResultFormAndTasks, hemoglobinResultFormWithDefault, hemoglobinTestFormWithDefault, hepatitisBResultFormAndTasks, hepatitisBResultFormWithDefault, hepatitisBTestFormWithDefault, hivPCRResultFormAndTasks, hivPCRResultFormWithDefault, hivPCRTestFormWithDefault, hivResultFollowUpsFormAndTasks, hivResultFormAndTasks, hivResultFormWithDefault, hivSignsAnswered, hivTestFormWithDefault, hivTestUniversalFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, isTestResultValid, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, laboratoryTaskIconClass, lactationFormToSigns, latestVaccinationDataForVaccine, lipidPanelResultFormAndTasks, lipidPanelResultFormWithDefault, liverFunctionResultFormAndTasks, liverFunctionResultFormWithDefault, malariaResultFormAndTasks, malariaResultFormWithDefault, malariaTestFormWithDefault, measurementConstraints, measurementOutOfRange, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, muacMeasurementIsOff, muacOutOfRange, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nextVaccinationDataForVaccine, nonRDTFormWithDefault, nutritionCaringFormWithDefault, nutritionFeedingFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFoodSecurityFormWithDefault, nutritionFormWithDefault, nutritionHygieneFormWithDefault, ongoingTreatmentReviewFormWithDefault, outOfRange, outOfRangeAsEntered, outsideCareFormInputsAndTasks, outsideCareFormWithDefault, outsideCareMedicationOptionsAnemia, outsideCareMedicationOptionsHIV, outsideCareMedicationOptionsHypertension, outsideCareMedicationOptionsMalaria, outsideCareMedicationOptionsSyphilis, partnerHIVResultFollowUpsFormAndTasks, partnerHIVResultFormAndTasks, partnerHIVResultFormWithDefault, partnerHIVTestFormWithDefault, pregnancyTestFormWithDefault, randomBloodSugarFormWithDefault, randomBloodSugarResultFormAndTasks, randomBloodSugarResultFormWithDefault, randomBloodSugarUniversalFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveLabTestDate, resolveMedicationsNonAdministrationReasons, resolveNCDASteps, sendToHCFormWithDefault, setNCDAStep, showNCDAMeasurementOutOfRange, showNCDAQuestionsByNewbornExam, syphilisResultFollowUpsFormAndTasks, syphilisResultFormAndTasks, syphilisResultFormWithDefault, syphilisTestFormWithDefault, testNotPerformedByWhyNotAtExecutionNote, testPerformedByExecutionNote, testPerformedByValue, toAdministrationNoteWithDefault, toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toBloodGpRsResultValueWithDefault, toBloodGpRsTestValueWithDefault, toContributingFactorsValueWithDefault, toCorePhysicalExamValueWithDefault, toCreatinineResultValueWithDefault, toCreatinineTestValueWithEmptyResults, toEverySet, toFamilyPlanningValueWithDefault, toFollowUpValueWithDefault, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVResultValueWithDefault, toHIVTestValueUniversalWithDefault, toHIVTestValueWithDefault, toHbA1cTestValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toHemoglobinResultValueWithDefault, toHemoglobinTestValueWithDefault, toHepatitisBResultValueWithDefault, toHepatitisBTestValueWithDefault, toLipidPanelResultValueWithDefault, toLipidPanelTestValueWithEmptyResults, toLiverFunctionResultValueWithDefault, toLiverFunctionTestValueWithEmptyResults, toMalariaResultValueWithDefault, toMalariaTestValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNonRDTValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toOutsideCareValueWithDefault, toPartnerHIVResultValueWithDefault, toPartnerHIVTestValueWithDefault, toPregnancyTestValueWithDefault, toRandomBloodSugarResultValueWithDefault, toRandomBloodSugarTestValueUniversalWithDefault, toRandomBloodSugarTestValueWithDefault, toSendToHCValueWithDefault, toSyphilisResultValueWithDefault, toSyphilisTestValueWithDefault, toUrineDipstickResultValueWithDefault, toUrineDipstickTestValueUniversalWithDefault, toUrineDipstickTestValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, treatmentReviewCustomReasonsForNotTakingInputsAndTasks, treatmentReviewInputsAndTasks, urineDipstickFormWithDefault, urineDipstickResultFormAndTasks, urineDipstickResultFormWithDefault, urineDipstickUniversalFormWithDefault, vaccinationFormDynamicContentAndTasks, vaccinationFormWithDefault, vaccineDoseToComparable, viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion, viewBloodGpRsTestForm, viewHIVPCRTestForm, viewHIVTestForm, viewHIVTestUniversalForm, viewHbA1cTestForm, viewHemoglobinTestForm, viewHepatitisBTestForm, viewMalariaTestForm, viewNonRDTForm, viewPartnerHIVTestForm, viewPregnancyTestForm, viewRandomBloodSugarTestForm, viewRandomBloodSugarTestUniversalForm, viewReinforceAdherenceQuestion, viewSelectInput, viewSyphilisTestForm, viewUrineDipstickTestForm, viewUrineDipstickTestUniversalForm, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault, weightOutOfRange)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming(..))
@@ -2634,7 +2634,7 @@ malariaTestFormWithDefault form =
                         value.testPrerequisites
 
                 bloodSmearTakenByValue =
-                    bloodSmearResultSet value.bloodSmearResult
+                    bloodSmearOrderedByValue value
             in
             { testPerformed =
                 valueConsideringIsDirtyField form.testPerformedDirty
@@ -2678,6 +2678,19 @@ bloodSmearResultNotSet value =
     List.member value [ BloodSmearPendingInput, BloodSmearNotTaken ]
 
 
+{-| Whether a blood smear was taken in place of the rapid test, which is what
+decides which of the two the forms ask about.
+
+`bloodSmearOrdered` answers it directly. A record saved before that field
+existed answers it by holding a smear result, an order still awaiting one
+included - only "not taken" means no smear.
+
+-}
+bloodSmearOrderedByValue : { v | bloodSmearOrdered : Bool, bloodSmearResult : BloodSmearResult } -> Bool
+bloodSmearOrderedByValue value =
+    value.bloodSmearOrdered || value.bloodSmearResult /= BloodSmearNotTaken
+
+
 toMalariaTestValueWithDefault : Maybe MalariaTestValue -> MalariaTestForm -> Maybe MalariaTestValue
 toMalariaTestValueWithDefault saved form =
     malariaTestFormWithDefault form saved
@@ -2689,10 +2702,16 @@ toMalariaTestValue form =
     Maybe.map
         (\executionNote ->
             let
+                -- Not gated on the rapid test having gone unperformed: the
+                -- lab confirming the run makes that read True again, and a
+                -- save from the nurse's form would then drop the order.
+                bloodSmearOrdered =
+                    form.bloodSmearTaken == Just True
+
                 defaultBloodSmearResult =
                     if
                         (form.testPerformed == Just False)
-                            && (form.bloodSmearTaken == Just True)
+                            && bloodSmearOrdered
                             && (form.immediateResult == Just False)
                     then
                         BloodSmearPendingInput
@@ -2705,6 +2724,7 @@ toMalariaTestValue form =
             , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , testResult = form.testResult
             , bloodSmearResult = Maybe.withDefault defaultBloodSmearResult form.bloodSmearResult
+            , bloodSmearOrdered = bloodSmearOrdered
             }
         )
         form.executionNote
@@ -7593,18 +7613,13 @@ malariaResultFormWithDefault form saved =
                             resolveRunConfirmedByLabTechFromValue value
 
                     bloodSmearTakenByValue =
-                        List.member value.bloodSmearResult
-                            [ BloodSmearNegative
-                            , BloodSmearPlus
-                            , BloodSmearPlusPlus
-                            , BloodSmearPlusPlusPlus
-                            , BloodSmearPendingInput
-                            ]
+                        bloodSmearOrderedByValue value
 
-                    -- If we have an indication that Blood Smear test was
-                    -- ordered on initail phase, empty it's value.
+                    -- Neither value is a result the smear scale offers, so
+                    -- carrying one into the select would show its first option
+                    -- as the answer and count the task done.
                     bloodSmearResultByValue =
-                        if smearOrderedAtLab then
+                        if List.member value.bloodSmearResult [ BloodSmearPendingInput, BloodSmearNotTaken ] then
                             Nothing
 
                         else
@@ -7654,8 +7669,17 @@ toMalariaResultValue form =
             { executionNote = executionNoteConsideringLabTech
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
-            , testResult = form.testResult
+            , testResult =
+                if form.bloodSmearTaken then
+                    -- What was ordered is a smear, so a rapid test result on
+                    -- this record is one no one entered here. Reading it back
+                    -- as a rapid test that was run is how it diagnoses.
+                    Nothing
+
+                else
+                    form.testResult
             , bloodSmearResult = Maybe.withDefault BloodSmearNotTaken form.bloodSmearResult
+            , bloodSmearOrdered = form.bloodSmearTaken
             }
         )
         form.executionNote
