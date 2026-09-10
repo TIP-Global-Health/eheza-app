@@ -42,7 +42,7 @@ import Pages.NCD.Utils
         ( allRecommendedTreatmentSignsForHypertension
         , diabetesDiagnoses
         , generateAssembledData
-        , patientIsPregnant
+        , patientIsPregnantAtEncounter
         , recommendedTreatmentSignsForDiabetes
         , updateChronicDiagnoses
         )
@@ -512,7 +512,7 @@ viewMedicalDiagnosisPane language assembled =
                         withDiabetes =
                             List.any (\diagnosis -> List.member diagnosis diagnosesIncludingChronic) diabetesDiagnoses
                     in
-                    List.map (viewTreatmentForDiagnosis language data.startDate data.measurements withRenalComplications withDiabetes) diagnosesIncludingChronic
+                    List.map (viewTreatmentForDiagnosis language assembled data.startDate data.measurements withRenalComplications withDiabetes) diagnosesIncludingChronic
                 )
                 allEncountersData
     in
@@ -524,19 +524,20 @@ viewMedicalDiagnosisPane language assembled =
 
 viewTreatmentForDiagnosis :
     Language
+    -> AssembledData
     -> NominalDate
     -> NCDMeasurements
     -> Bool
     -> Bool
     -> NCDDiagnosis
     -> Html any
-viewTreatmentForDiagnosis language date measurements withRenalComplications withDiabetes diagnosis =
+viewTreatmentForDiagnosis language assembled date measurements withRenalComplications withDiabetes diagnosis =
     let
         diagnosisForProgressReport =
             translate language <| Translate.NCDDiagnosisForProgressReport withRenalComplications isPregnant diagnosis
 
         isPregnant =
-            patientIsPregnant measurements
+            patientIsPregnantAtEncounter date measurements assembled
 
         hypertensionMessage =
             let

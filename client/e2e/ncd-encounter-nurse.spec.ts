@@ -4,7 +4,7 @@ import { setupDevice } from './helpers/auth';
 import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { GLUCOSE_DIABETIC, queryNCDDiagnoses, syncAndWait } from './helpers/common';
+import { GLUCOSE_DIABETIC, openActivity, queryNCDDiagnoses, syncAndWait } from './helpers/common';
 import {
   createAdultAndStartNCDEncounter,
   completeDangerSigns,
@@ -145,7 +145,9 @@ test.describe('Nurse: NCD First Encounter — Male, Stage 1 Hypertension', () =>
 // Test 2: Nurse First NCD Encounter — Female, Stage 3 Hypertension + Referral
 // =========================================================================
 
-test.describe('Nurse: NCD First Encounter — Female, Stage 3 Hypertension', () => {
+test.describe('Nurse: NCD First Encounter — Female, Stage 3 Hypertension, and the pregnancy test at the next encounter', () => {
+  test.describe.configure({ timeout: 600000 });
+
   if (process.env.RECORD) {
     test.beforeEach(async ({ page }) => {
       await page.addInitScript(installCursorScript());
@@ -249,6 +251,25 @@ test.describe('Nurse: NCD First Encounter — Female, Stage 3 Hypertension', () 
     expect(nodes['ncd_hba1c_test'], 'ncd_hba1c_test should exist').toBe(true);
     // Referral created (Stage 3 hypertension).
     expect(nodes['ncd_referral'], 'ncd_referral should exist').toBe(true);
+
+    // --- The pregnancy test is offered again at the next encounter ---
+    // completeLaboratory performs the test and records a negative result. A
+    // performed test used to remove this tab for every later encounter, and
+    // the "Is this patient known to be pregnant" question lives inside it, so
+    // a pregnancy beginning after this encounter could never be recorded.
+
+    backdateNCDEncounter(fullName);
+    await syncAndWait(page);
+
+    await navigateToParticipantPage(page, fullName);
+    await startNCDEncounter(page);
+
+    await openActivity(page, 'ncd', 'laboratory');
+    await expect(
+      page.locator('.link-section:has(.icon-activity-task)', {
+        hasText: 'Pregnancy',
+      }),
+    ).toBeVisible();
   });
 });
 

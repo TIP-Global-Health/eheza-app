@@ -145,7 +145,7 @@ expectNextStepsTask assembled task =
                 && (not <| diagnosedAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled)
                 && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled.previousEncountersData)
                 && -- Pregnant women always get Methyldopa treatment, so, no health education is provided.
-                   (not <| patientIsPregnant assembled.measurements)
+                   (not <| patientIsPregnant assembled)
 
         TaskMedicationDistribution ->
             medicateForDiabetes NCDEncounterPhaseInitial assembled
@@ -896,8 +896,9 @@ expectLaboratoryTask currentDate assembled task =
             notKnownAsPositive && initialTestRequired TaskHIVTest
 
         TaskPregnancyTest ->
+            -- Pregnancy status can change between encounters, so the test
+            -- is offered at every one of them.
             isPersonAFertileWoman currentDate assembled.person
-                && initialTestRequired TaskPregnancyTest
 
         TaskCreatinineTest ->
             recurrentTestRequired 12 TaskCreatinineTest
