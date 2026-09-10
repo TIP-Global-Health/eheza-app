@@ -335,7 +335,7 @@ B-334	4	READY	LOW			29	Admin sidebar: the "Create PMTCT Participation" link poin
 B-335	4	READY	LOW			29	Family Nutrition: the "add child" tile disappears once the adult has 5 related people of ANY kind — own parents, caregiv
 B-336	1	IMPLEMENTED	MED	2213	2214	29	Prenatal recurrent Next Steps: a medication that becomes required AFTER the nurse saved that task is never offered — the
 B-337		READY				29	NCD: renal complications found at the initial phase may hit the same omission diabetes did — the Stage 1 hypertension me
-B-338	1	READY	MED-HIGH	2226		29	Prenatal labs (lab technician): a blood smear declined and then corrected is recorded as a RAPID TEST, so a positive ans
+B-338	1	IMPLEMENTED	MED-HIGH	2226	2228	29	Prenatal labs (lab technician): a blood smear declined and then corrected is recorded as a RAPID TEST, so a positive ans
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
