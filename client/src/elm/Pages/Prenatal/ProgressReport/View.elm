@@ -2075,6 +2075,13 @@ generateLabsResultsPaneData viewForConfirmation assembled =
         extractValues getMeasurementFunc =
             List.filterMap (getMeasurementFunc >> getMeasurementValueFunc)
                 allMeasurements
+
+        extractValuesWithDate getMeasurementFunc =
+            List.filterMap
+                (getMeasurementFunc
+                    >> Maybe.map (\( _, measurement ) -> ( measurement.dateMeasured, measurement.value ))
+                )
+                allMeasurements
     in
     { hiv = extractValues .hivTest
     , urineDipstick = extractValues .urineDipstickTest
@@ -2083,7 +2090,7 @@ generateLabsResultsPaneData viewForConfirmation assembled =
     , partnerHIV = extractValues .partnerHIVTest
     , syphilis = extractValues .syphilisTest
     , hepatitisB = extractValues .hepatitisBTest
-    , malaria = extractValues .malariaTest
+    , malaria = extractValuesWithDate .malariaTest
     , hemoglobin = extractValues .hemoglobinTest
     , bloodGpRs = extractValues .bloodGpRsTest
     , creatinine = []

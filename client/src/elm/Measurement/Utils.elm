@@ -4485,11 +4485,26 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
 
                     updateFunc =
                         \value form_ ->
+                            let
+                                -- The smear is taken at this encounter, whoever
+                                -- reads it and whenever they do. Answering the
+                                -- question again does not move the date.
+                                executionDate =
+                                    if value then
+                                        or form_.executionDate (Just currentDate)
+
+                                    else
+                                        -- Neither test happened, so there is no
+                                        -- date to record for either of them.
+                                        Nothing
+                            in
                             { form_
                                 | bloodSmearTaken = Just value
                                 , bloodSmearTakenDirty = True
                                 , bloodSmearResult = Nothing
                                 , bloodSmearResultDirty = True
+                                , executionDate = executionDate
+                                , executionDateDirty = True
                             }
                 in
                 ( [ viewQuestionLabel language Translate.BloodSmearQuestion
