@@ -931,6 +931,7 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     [ ( TaskRandomBloodSugarTest, generateTestDates .randomBloodSugarTest (.sugarCount >> isJust) (always True) )
     , ( TaskUrineDipstickTest, generateTestDates .urineDipstickTest (.protein >> isJust) (always True) )
     , ( TaskHIVTest, generateTestDates .hivTest (always True) isTestResultValid )
+    , ( TaskPregnancyTest, generateTestDates .pregnancyTest (.testResult >> isJust) isTestResultValid )
     , ( TaskCreatinineTest, generateTestDates .creatinineTest (.creatinineResult >> isJust) (always True) )
     , ( TaskLiverFunctionTest, generateTestDates .liverFunctionTest (.altResult >> isJust) (always True) )
     , ( TaskLipidPanelTest, generateTestDates .lipidPanelTest (.totalCholesterolResult >> isJust) (always True) )
