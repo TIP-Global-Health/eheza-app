@@ -44,3 +44,4 @@
 - [Enum variant breaks deployed clients](enum-variant-breaks-deployed-clients.md) — ⛔ a new VALUE on a client-decoded enum jams old devices' sync (strict decoder + whole-batch `list`); needs a two-release rollout — a new FIELD is safe in one; found on B-338 / PR #2228
 - [Photo upload fileId encoder wiring](photo-upload-fileid-encoder-wiring.md) — new photo-bearing content type MUST be added to the `replacePhotoWithFileId` dispatch in `SyncManager/Encoder.elm` or the photo link breaks silently
 - [Local verification vs CI](local-verification-vs-ci.md) — CI carries the full suites; locally run elm make + the check that discriminates THIS change (byte-diff for moves, fail-first test for logic)
+- [Production SQL via host terminus](production-sql-via-host-terminus.md) — ⛔ read-only prod SQL = ONE plain host `terminus remote:drush <site>.live -- sql-query "..."` call; variable prefixes / pipes miss the allow rule and get classifier-blocked
