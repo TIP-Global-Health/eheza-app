@@ -1,8 +1,8 @@
-module Backend.Scoreboard.Model exposing (ANCNewbornData, CriterionBySeverities, InfrastructureEnvironmentWashData, Msg(..), NCDAData, NutritionBehaviorData, NutritionCriterionsData, PatientData, RawVaccinationData, ScoreboardData, SyncResponse, TargetedInterventionsData, UniversalInterventionData, VaccinationProgressDict, VaccineDose(..), VaccineType(..), emptyANCNewbornData, emptyInfrastructureEnvironmentWashData, emptyNCDAData, emptyNutritionBehaviorData, emptyNutritionCriterionsData, emptyTargetedInterventionsData, emptyUniversalInterventionData)
+module Backend.Scoreboard.Model exposing (ANCNewbornData, CriterionBySeverities, InfrastructureEnvironmentWashData, Msg(..), NCDAData, NutritionBehaviorData, NutritionCriterionsData, PatientData, RawVaccinationData, ScoreboardData, TargetedInterventionsData, UniversalInterventionData, VaccinationProgressDict, VaccineDose(..), VaccineType(..), emptyANCNewbornData, emptyInfrastructureEnvironmentWashData, emptyNCDAData, emptyNutritionBehaviorData, emptyNutritionCriterionsData, emptyTargetedInterventionsData, emptyUniversalInterventionData)
 
 import App.Types exposing (Site)
 import AssocList as Dict exposing (Dict)
-import Backend.Components.Model exposing (PersonId, ReportParams, SelectedEntity)
+import Backend.Components.Model exposing (PersonId, ReportParams, SelectedEntity, SyncResponse)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
@@ -183,14 +183,7 @@ emptyInfrastructureEnvironmentWashData =
     InfrastructureEnvironmentWashData [] [] [] [] []
 
 
-type alias SyncResponse =
-    { records : List PatientData
-    , totalRemaining : Int
-    , lastIdSynced : PersonId
-    }
-
-
 type Msg
     = SetData Value
     | SendSyncRequest PersonId
-    | HandleSyncResponse (WebData SyncResponse)
+    | HandleSyncResponse (WebData (SyncResponse PatientData))

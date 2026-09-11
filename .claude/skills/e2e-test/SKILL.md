@@ -37,11 +37,12 @@ Tests must follow paths that create **all** backend content types the module def
 
 **Important:** Before assuming a content type is a test gap, check its `expectActivity`/`expectTask` condition in the Elm Utils. Some content types are **permanently disabled** (return `False` unconditionally) due to deprecated features. These cannot be tested and should be excluded from coverage analysis. Example: Prenatal `Social` history task was disabled per issue #1323.
 
-## Step 2.5: Create Feature Branch
+## Step 2.5: Create the worktree
 
-Before writing any test code, ask the user which branch to base on and create the feature branch:
+The main tree stays on `develop`. Before writing any test code, create a worktree for the branch
+(it is cut from `origin/develop`; ask the user first if the tests should be based elsewhere):
 ```bash
-git checkout -b e2e-tests-{type} {base-branch}
+.claude/scripts/new-worktree.sh e2e-tests-{type}
 ```
 
 ## Step 3: Create Helper File
@@ -103,7 +104,9 @@ Every `test(...)` block should have a comment explaining context:
 
 ## Step 6: Run Tests
 
-Run all new tests headless to verify they pass:
+The tests run against the app `ddev gulp` serves from the **main tree**, so the branch has to be
+checked out there for the run — ask before taking it, wait for gulp to finish compiling, and return
+the tree to `develop` afterwards. Then run the new tests headless to verify they pass:
 ```bash
 cd client && ./node_modules/.bin/playwright test {spec-file}
 ```
@@ -135,13 +138,14 @@ Update `.circleci/config.yml`:
 
 ## Step 8: Push and Verify CI
 
-Push changes and verify all CI jobs pass.
+Push and verify all CI jobs pass. Commits on this branch carry no `[ci skip]`: CI is how the new
+tests are verified.
 
 ---
 
-## 14 Critical Pitfalls
+## Pitfalls
 
-These are the most common mistakes when writing E-Heza E2E tests. Violating any of them WILL cause test failures.
+Each of these has caused E-Heza E2E test failures.
 
 ### 0. Add CSS Identifiers in Elm Rather Than Loosening Tests
 When you can't reliably target an element (duplicate labels, ambiguous structure, no distinguishing class), **add a CSS class in the Elm source** to serve as a test identifier. Never weaken assertions or use fragile index-based selectors as a workaround. The Elm codebase is under our control — adding a class like `class "encounter-row-ai-hc"` is cheap and makes tests robust.
@@ -257,7 +261,7 @@ Remove the wrapper once the block is stable and passing.
 ## Reference
 
 For detailed selector tables, helper signatures, account info, and CI configuration, see:
-`~/.claude/skills/e2e-test/references/e2e-knowledge-base.md`
+`.claude/skills/e2e-test/references/e2e-knowledge-base.md` (next to this skill)
 
 For canonical examples:
 - **Helper template (nurse):** `client/e2e/helpers/ncd.ts` (complete, 4 activities + sub-tasks)

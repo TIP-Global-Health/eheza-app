@@ -1,4 +1,4 @@
-module Pages.Prenatal.Encounter.Utils exposing (calculateBmi, diagnosisRequiresEmergencyReferal, emergencyReferalRequired, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, generatePostCreateDestination, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, getLastEncounterMeasurementsWithDate, getLmpValue, getPrenatalEncountersForParticipant, getSubsequentEncounterType, resolveGlobalLmpValue, secondPhaseRequired)
+module Pages.Prenatal.Encounter.Utils exposing (calculateBmi, diagnosisRequiresEmergencyReferal, emergencyReferalRequired, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, generatePostCreateDestination, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, getLastEncounterMeasurementsWithDate, getLmpValue, getPrenatalEncountersForParticipantDesc, getSubsequentEncounterType, resolveGlobalLmpValue, secondPhaseRequired)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -274,8 +274,8 @@ resolveGlobalObstetricHistory nursePreviousMeasurements measurements =
             |> Maybe.andThen getObstetricHistory
 
 
-getPrenatalEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter )
-getPrenatalEncountersForParticipant db participantId =
+getPrenatalEncountersForParticipantDesc : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter )
+getPrenatalEncountersForParticipantDesc db participantId =
     Backend.NutritionEncounter.Utils.getPrenatalEncountersForParticipant db participantId
         |> List.sortWith sortEncounterTuplesDesc
 
@@ -289,7 +289,7 @@ generatePreviousMeasurements :
         , List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements )
         )
 generatePreviousMeasurements currentEncounterId participantId db =
-    getPrenatalEncountersForParticipant db participantId
+    getPrenatalEncountersForParticipantDesc db participantId
         |> List.filter
             (\( id, _ ) ->
                 -- We do not want to get data of current encounter.

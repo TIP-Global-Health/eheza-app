@@ -155,8 +155,16 @@ laboratoryResultTaskCompleted isLabTech assembled task =
                     getMeasurementValueFunc assembled.measurements.malariaTest
                         |> Maybe.map
                             (\value ->
-                                (testPerformedByExecutionNote value.executionNote && isJust value.testResult)
-                                    || bloodSmearResultSet value.bloodSmearResult
+                                if value.bloodSmearResult == BloodSmearPendingInput then
+                                    -- A smear ordered at the lab is still owed
+                                    -- a result, whatever the note about the
+                                    -- rapid test says.
+                                    False
+
+                                else
+                                    testNotPerformedByWhyNotAtExecutionNote value.executionNote
+                                        || (testPerformedByExecutionNote value.executionNote && isJust value.testResult)
+                                        || bloodSmearResultSet value.bloodSmearResult
                             )
                         |> Maybe.withDefault False
             in
@@ -297,18 +305,21 @@ expectLaboratoryResultFollowUpsTask assembled task =
     in
     case task of
         TaskHIVTest ->
+            let
+                partnerHIVTestFollowUpExpected =
+                    expectLaboratoryResultFollowUpsTask assembled TaskPartnerHIVTest
+
+                hivTestResultPositive =
+                    getMeasurementValueFunc assembled.measurements.hivTest
+                        |> Maybe.map (.testResult >> (==) (Just TestPositive))
+                        |> Maybe.withDefault False
+            in
+            -- At TaskPartnerHIVTest task we ask same follow up questions,
+            -- as we do for TestHIV when test result is negative.
+            -- So we either do not expect TaskPartnerHIVTest follow up, or,
+            -- only when test HIV result is positive.
             wasFollowUpScheduled TestHIV
-                && (-- At TaskPartnerHIVTest task we ask same follow up questions,
-                    -- as we do for TestHIV when test result is negative.
-                    -- So we either do not expect TaskPartnerHIVTest follow up, or,
-                    -- only when test HIV result is positive.
-                    not <|
-                        expectLaboratoryResultFollowUpsTask assembled TaskPartnerHIVTest
-                            || (getMeasurementValueFunc assembled.measurements.hivTest
-                                    |> Maybe.map (.testResult >> (==) (Just TestPositive))
-                                    |> Maybe.withDefault False
-                               )
-                   )
+                && (not partnerHIVTestFollowUpExpected || hivTestResultPositive)
 
         TaskSyphilisTest ->
             wasFollowUpScheduled TestSyphilis

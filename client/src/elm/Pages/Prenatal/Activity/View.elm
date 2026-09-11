@@ -37,7 +37,6 @@ import Measurement.Model
         , LaboratoryTask(..)
         , OutsideCareStep(..)
         , VaccinationFormViewMode(..)
-        , VaccinationStatus(..)
         , VitalsForm
         )
 import Measurement.Utils
@@ -83,7 +82,7 @@ import Measurement.View
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, BirthPlanData, BreastExamForm, BreastfeedingData, DangerSignsData, ExaminationData, FamilyPlanningData, FollowUpForm, GUExamForm, HealthEducationData, HistoryData, ImmunisationData, LaboratoryData, LabsHistoryForm, MedicalHistoryForm, MedicationData, MedicationForm, MentalHealthData, MentalHealthStep(..), Model, Msg(..), NextStepsData, NutritionAssessmentForm, ObstetricFormFirstStep, ObstetricFormSecondStep, ObstetricalExamForm, PostpartumTreatmentReviewData, PregnancyDatingData, PrenatalPhotoData, PrenatalVaccinationForm, SocialHistoryForm, SpecialityCareData, SymptomReviewData, TreatmentReviewData, UltrasoundData)
 import Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), ObstetricHistoryStep(..), SymptomReviewStep(..), TreatmentReviewTask(..), WarningPopupType(..))
-import Pages.Prenatal.Activity.Utils exposing (appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generateFutureVaccinationsDataByProgress, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generateVitalsFormConfig, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, skipObstetricHistorySecondStep, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toObstetricHistoryValue, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, vaccinationFormDynamicContentAndTasks)
+import Pages.Prenatal.Activity.Utils exposing (appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generateVitalsFormConfig, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, skipObstetricHistorySecondStep, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toObstetricHistoryValue, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview)
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, generateAssembledData, generateEDDandEGA, generateGravida, generatePara, getLmpValue, secondPhaseRequired)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
@@ -2646,63 +2645,6 @@ viewVaccinationOverviewForm : Language -> NominalDate -> AssembledData -> Html a
 viewVaccinationOverviewForm language currentDate assembled =
     div [ class "ui form vaccination-overview" ] <|
         viewVaccinationOverview language currentDate assembled
-
-
-viewVaccinationOverview : Language -> NominalDate -> AssembledData -> List (Html any)
-viewVaccinationOverview language currentDate assembled =
-    let
-        entriesHeading =
-            div [ class "heading vaccination" ]
-                [ div [ class "name" ] [ text <| translate language Translate.Immunisation ]
-                , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
-                , div [ class "next-due" ] [ text <| translate language Translate.NextDue ]
-                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
-                ]
-
-        futureVaccinationsData =
-            generateFutureVaccinationsDataByProgress currentDate assembled
-                |> Dict.fromList
-
-        entries =
-            Dict.toList assembled.vaccinationProgress
-                |> List.map viewVaccinationEntry
-
-        viewVaccinationEntry ( vaccineType, doses ) =
-            let
-                nextDue =
-                    Dict.get vaccineType futureVaccinationsData
-                        |> Maybe.Extra.join
-                        |> Maybe.map Tuple.second
-
-                nextDueText =
-                    Maybe.map formatDDMMYYYY nextDue
-                        |> Maybe.withDefault ""
-
-                ( status, statusClass ) =
-                    Maybe.map
-                        (\dueDate ->
-                            if Date.compare dueDate currentDate == LT then
-                                ( StatusBehind, "behind" )
-
-                            else
-                                ( StatusUpToDate, "up-to-date" )
-                        )
-                        nextDue
-                        |> Maybe.withDefault ( StatusCompleted, "completed" )
-            in
-            div [ class "entry vaccination" ]
-                [ div [ class "cell name" ] [ text <| translate language <| Translate.PrenatalVaccineLabel vaccineType ]
-                , Dict.values doses
-                    |> List.sortWith Date.compare
-                    |> List.map (formatDDMMYYYY >> text >> List.singleton >> p [])
-                    |> div [ class "cell date" ]
-                , div [ classList [ ( "cell next-due ", True ), ( "red", status == StatusBehind ) ] ]
-                    [ text nextDueText ]
-                , div [ class <| "cell status " ++ statusClass ]
-                    [ text <| translate language <| Translate.VaccinationStatus status ]
-                ]
-    in
-    entriesHeading :: entries
 
 
 viewSpecialityCareContent : Language -> AssembledData -> SpecialityCareData -> List (Html Msg)

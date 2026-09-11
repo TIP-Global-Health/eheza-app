@@ -1,8 +1,8 @@
-module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, MotherFbfEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SyncResponse, TuberculosisEncounterData, WellChildEncounterData)
+module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, MotherFbfEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, TuberculosisEncounterData, WellChildEncounterData)
 
 import App.Types exposing (Site, SiteFeature)
 import AssocList exposing (Dict)
-import Backend.Components.Model exposing (PersonId, ReportParams, SelectedEntity)
+import Backend.Components.Model exposing (PersonId, ReportParams, SelectedEntity, SyncResponse)
 import Backend.Scoreboard.Model exposing (VaccineType)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -231,6 +231,7 @@ type alias WellChildEncounterData =
     { startDate : NominalDate
     , nutritionData : Maybe NutritionData
     , muacCm : Maybe Float
+    , hasEdema : Bool
     , immunisationData : Maybe (Dict VaccineType (EverySet NominalDate))
     }
 
@@ -299,14 +300,7 @@ type NutritionReportTableType
     | NutritionTableIncidenceYearTwoOrMore
 
 
-type alias SyncResponse =
-    { records : List PatientData
-    , totalRemaining : Int
-    , lastIdSynced : PersonId
-    }
-
-
 type Msg
     = SetData Value
     | SendSyncRequest PersonId
-    | HandleSyncResponse (WebData SyncResponse)
+    | HandleSyncResponse (WebData (SyncResponse PatientData))

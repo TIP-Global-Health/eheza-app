@@ -244,6 +244,38 @@ export function backdateEncounter(personName: string, encounterType: string, day
 }
 
 /**
+ * The PHP each query below opens with: resolve the person by name, take their
+ * most recent participant of the given encounter type, and load that
+ * participant's encounter ids into `$encounters`. Each caller adds its own
+ * query on top and echoes the JSON it asked for.
+ */
+function participantEncountersPhp(personNameB64: string, encounterType: string): string {
+  return `    \\$name = base64_decode('${personNameB64}');
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$name)
+      ->execute();
+    if (empty(\\$r['node'])) { echo json_encode(['error' => 'Person not found']); return; }
+    \\$nid = key(\\$r['node']);
+
+    \\$pq = new EntityFieldQuery();
+    \\$pr = \\$pq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'individual_participant')
+      ->fieldCondition('field_person', 'target_id', \\$nid)
+      ->fieldCondition('field_encounter_type', 'value', '${encounterType}')
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No participant found']); return; }
+    \\$participant_id = key(\\$pr['node']);
+
+    \\$encounters = hedley_person_load_individual_participant_encounters_ids(\\$participant_id);
+`;
+}
+
+
+/**
  * Returns the EDD (`field_expected_date_concluded`, as a 'YYYY-MM-DD' string)
  * set on a person's antenatal pregnancy (individual_participant), or null if it
  * is not populated. Retries up to 10 times (5s apart) so it can be used for
@@ -312,28 +344,7 @@ export function queryPrenatalLmp(personName: string): string | null {
   const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
 
   const php = `
-    \\$name = base64_decode('${personNameB64}');
-    \\$q = new EntityFieldQuery();
-    \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$name)
-      ->execute();
-    if (empty(\\$r['node'])) { echo json_encode(['error' => 'Person not found']); return; }
-    \\$nid = key(\\$r['node']);
-
-    \\$pq = new EntityFieldQuery();
-    \\$pr = \\$pq->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'individual_participant')
-      ->fieldCondition('field_person', 'target_id', \\$nid)
-      ->fieldCondition('field_encounter_type', 'value', 'antenatal')
-      ->propertyOrderBy('nid', 'DESC')
-      ->range(0, 1)
-      ->execute();
-    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No pregnancy found']); return; }
-    \\$participant_id = key(\\$pr['node']);
-
-    \\$encounters = hedley_person_load_individual_participant_encounters_ids(\\$participant_id);
-    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+${participantEncountersPhp(personNameB64, 'antenatal')}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
 
     \\$lq = hedley_general_create_entity_field_query_excluding_deleted();
     \\$lr = \\$lq->entityCondition('entity_type', 'node')
@@ -368,6 +379,224 @@ export function queryPrenatalLmp(personName: string): string | null {
     if (attempt < 9) execSync('sleep 5');
   }
   return null;
+}
+
+/**
+ * Returns the execution note of the partner HIV test on the person's most
+ * recent antenatal encounter, or null if it cannot be found. A note of
+ * `run-confirmed-by-lab-tech` is written only when a lab technician confirms
+ * the run, so it is the signal that the lab technician's own save has reached
+ * the backend. Mirrors `queryPrenatalLmp`'s person -> pregnancy lookup.
+ */
+export function queryPartnerHIVTestExecutionNote(personName: string): string | null {
+  const { drushCmd, cwd } = drushEnv();
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+
+  const php = `
+${participantEncountersPhp(personNameB64, 'antenatal')}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+
+    \\$tq = hedley_general_create_entity_field_query_excluding_deleted();
+    \\$tr = \\$tq->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'prenatal_partner_hiv_test')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_prenatal_encounter', 'target_id', \\$encounters, 'IN')
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$tr['node'])) { echo json_encode(['error' => 'No partner HIV test found']); return; }
+
+    \\$test = node_load(key(\\$tr['node']));
+    \\$note = isset(\\$test->field_test_execution_note[LANGUAGE_NONE][0]['value'])
+      ? \\$test->field_test_execution_note[LANGUAGE_NONE][0]['value'] : null;
+    echo json_encode(['note' => \\$note]);
+  `;
+
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const output = execSync(`${drushCmd} eval "${php}"`, {
+        cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+      }).trim();
+      const parsed = JSON.parse(output);
+      if (!parsed.error && parsed.note) {
+        return String(parsed.note);
+      }
+      console.log(`queryPartnerHIVTestExecutionNote attempt ${attempt + 1}: ${parsed.error || 'note not set yet'}`);
+    } catch (err) {
+      console.log(`queryPartnerHIVTestExecutionNote attempt ${attempt + 1}: error`, err);
+    }
+    if (attempt < 9) execSync('sleep 5');
+  }
+  return null;
+}
+
+/**
+ * Returns the execution note and blood smear result of the malaria test on the
+ * person's most recent antenatal encounter, or null if it cannot be found.
+ *
+ * A smear the nurse ordered at the lab is stored as `pending-input`, so this
+ * retries while it still reads that way: whatever the lab technician saved
+ * replaces it, and until then their save has not reached the backend.
+ */
+export function queryMalariaTest(
+  personName: string,
+): {
+  note: string | null;
+  bloodSmearResult: string | null;
+  testResult: string | null;
+  bloodSmearOrdered: boolean;
+} | null {
+  const { drushCmd, cwd } = drushEnv();
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+
+  const php = `
+${participantEncountersPhp(personNameB64, 'antenatal')}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+
+    \\$tq = hedley_general_create_entity_field_query_excluding_deleted();
+    \\$tr = \\$tq->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'prenatal_malaria_test')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_prenatal_encounter', 'target_id', \\$encounters, 'IN')
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$tr['node'])) { echo json_encode(['error' => 'No malaria test found']); return; }
+
+    \\$test = node_load(key(\\$tr['node']));
+    \\$note = isset(\\$test->field_test_execution_note[LANGUAGE_NONE][0]['value'])
+      ? \\$test->field_test_execution_note[LANGUAGE_NONE][0]['value'] : null;
+    \\$smear = isset(\\$test->field_blood_smear_result[LANGUAGE_NONE][0]['value'])
+      ? \\$test->field_blood_smear_result[LANGUAGE_NONE][0]['value'] : null;
+    \\$result = isset(\\$test->field_test_result[LANGUAGE_NONE][0]['value'])
+      ? \\$test->field_test_result[LANGUAGE_NONE][0]['value'] : null;
+    \\$ordered = !empty(\\$test->field_blood_smear_ordered[LANGUAGE_NONE][0]['value']);
+    echo json_encode(['note' => \\$note, 'smear' => \\$smear, 'result' => \\$result, 'ordered' => \\$ordered]);
+  `;
+
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const output = execSync(`${drushCmd} eval "${php}"`, {
+        cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+      }).trim();
+      const parsed = JSON.parse(output);
+      if (!parsed.error && parsed.smear && parsed.smear !== 'pending-input') {
+        return {
+          note: parsed.note ? String(parsed.note) : null,
+          bloodSmearResult: String(parsed.smear),
+          testResult: parsed.result ? String(parsed.result) : null,
+          bloodSmearOrdered: Boolean(parsed.ordered),
+        };
+      }
+      console.log(`queryMalariaTest attempt ${attempt + 1}: ${parsed.error || 'blood smear still awaiting the lab'}`);
+    } catch (err) {
+      console.log(`queryMalariaTest attempt ${attempt + 1}: error`, err);
+    }
+    if (attempt < 9) execSync('sleep 5');
+  }
+  return null;
+}
+
+
+/**
+ * Returns the diagnoses recorded on the person's most recent encounter of the
+ * given type, or null if the encounter cannot be found. Mirrors
+ * `queryPregnancyEdd`'s person -> participant lookup and retries to tolerate
+ * sync eventual-consistency, but resolves an empty diagnosis set to `[]` rather
+ * than retrying, so a genuinely undiagnosed encounter is a result and not a
+ * timeout.
+ *
+ * `minEncounters` guards the "most recent" part: a caller asserting on the
+ * second encounter of a flow passes 2, and a reply naming fewer is a sync that
+ * has not landed rather than an answer -- without it the older encounter's
+ * diagnoses come back as if they were the newer encounter's.
+ */
+function queryEncounterDiagnoses(
+  label: string,
+  personName: string,
+  encounterType: string,
+  diagnosesField: string,
+  options?: { allowEmpty?: boolean; minEncounters?: number },
+): string[] | null {
+  // An encounter that is expected to carry no diagnosis yet should not pay the
+  // retry loop below, which exists for a sync that has not landed.
+  const allowEmpty = options?.allowEmpty ?? false;
+  const minEncounters = options?.minEncounters ?? 1;
+  const { drushCmd, cwd } = drushEnv();
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+
+  const php = `
+${participantEncountersPhp(personNameB64, encounterType)}    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+    \\$count = count(\\$encounters);
+
+    \\$encounter = node_load(max(\\$encounters));
+    if (empty(\\$encounter)) { echo json_encode(['error' => 'Encounter not loaded']); return; }
+    \\$diagnoses = [];
+    if (!empty(\\$encounter->${diagnosesField}[LANGUAGE_NONE])) {
+      foreach (\\$encounter->${diagnosesField}[LANGUAGE_NONE] as \\$item) {
+        \\$diagnoses[] = \\$item['value'];
+      }
+    }
+    echo json_encode(['diagnoses' => \\$diagnoses, 'encounters' => \\$count]);
+  `;
+
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const output = execSync(`${drushCmd} eval "${php}"`, {
+        cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+      }).trim();
+      const parsed = JSON.parse(output);
+      const newestEncounterSynced = !parsed.error && parsed.encounters >= minEncounters;
+      // The encounter node exists from the moment the encounter starts and its
+      // diagnoses are written later, so an empty set is retried rather than
+      // returned -- otherwise a lagging sync reads as "no diagnosis". An
+      // encounter that genuinely has none returns [] once the retries run out.
+      if (newestEncounterSynced && (allowEmpty || parsed.diagnoses.length > 0)) {
+        return parsed.diagnoses as string[];
+      }
+      if (newestEncounterSynced && attempt === 9) return [];
+      const reason = parsed.error
+        ? parsed.error
+        : parsed.encounters < minEncounters
+          ? `only ${parsed.encounters} of ${minEncounters} encounters synced`
+          : 'no diagnoses yet';
+      console.log(`${label} attempt ${attempt + 1}: ${reason}`);
+    } catch (err) {
+      console.log(`${label} attempt ${attempt + 1}: error`, err);
+    }
+    if (attempt < 9) execSync('sleep 5');
+  }
+  return null;
+}
+
+/**
+ * Diagnoses on the person's most recent antenatal encounter.
+ */
+export function queryPrenatalDiagnoses(
+  personName: string,
+  options?: { allowEmpty?: boolean; minEncounters?: number },
+): string[] | null {
+  return queryEncounterDiagnoses(
+    'queryPrenatalDiagnoses',
+    personName,
+    'antenatal',
+    'field_prenatal_diagnoses',
+    options,
+  );
+}
+
+/**
+ * Diagnoses on the person's most recent NCD encounter.
+ */
+export function queryNCDDiagnoses(
+  personName: string,
+  options?: { allowEmpty?: boolean; minEncounters?: number },
+): string[] | null {
+  return queryEncounterDiagnoses(
+    'queryNCDDiagnoses',
+    personName,
+    'ncd',
+    'field_ncd_diagnoses',
+    options,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -471,6 +700,10 @@ export const GLUCOSE_IN_RANGE = '120';
 /** A blood glucose reading as a glucometer set to millimoles per litre shows
  *  it, which the field refuses because it reads as milligrams. */
 export const GLUCOSE_IN_MILLIMOLES = '12';
+
+/** A blood glucose reading that diagnoses diabetes when the patient has not
+ *  fasted (the threshold is 200 mg/dL). */
+export const GLUCOSE_DIABETIC = '250';
 
 /** Whether a numeric measurement input is the blood glucose one. */
 export async function isGlucoseInput(

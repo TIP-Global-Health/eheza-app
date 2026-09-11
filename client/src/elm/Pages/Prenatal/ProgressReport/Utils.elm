@@ -1,17 +1,17 @@
 module Pages.Prenatal.ProgressReport.Utils exposing (allCHWActions, chwActionToColor, diagnosisForProgressReportToString, thumbnailDimensions, updateChronicHypertensionDiagnoses, wrapWithLI)
 
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
-import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
-import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
+import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..))
 import Pages.Prenatal.Utils
     exposing
         ( applyHypertensionlikeDiagnosesHierarchy
         , resolvePreviousHypertensionDiagnosis
         )
+import Pages.Utils exposing (filterPreviousEncountersDataToDate)
 import Translate exposing (Language, translate)
 
 
@@ -27,7 +27,7 @@ updateChronicHypertensionDiagnoses encounterDate encounterDiagnoses assembled fi
     -- We want to be looking at encounters performed
     -- before the encounter we're processing, to be able to locate
     -- previous chronic diagnosis.
-    filterNursePreviousEncountersDataToDate encounterDate assembled.nursePreviousEncountersData
+    filterPreviousEncountersDataToDate encounterDate assembled.nursePreviousEncountersData
         |> resolvePreviousHypertensionDiagnosis
         |> Maybe.map
             (\previousHypertensionDiagnosis ->
@@ -40,18 +40,6 @@ updateChronicHypertensionDiagnoses encounterDate encounterDiagnoses assembled fi
         |> Maybe.withDefault encounterDiagnoses
         |> EverySet.toList
         |> List.filter (\diagnosis -> List.member diagnosis filterList)
-
-
-filterNursePreviousEncountersDataToDate :
-    NominalDate
-    -> List PreviousEncounterData
-    -> List PreviousEncounterData
-filterNursePreviousEncountersDataToDate limitDate nursePreviousEncountersData =
-    List.filter
-        (\data ->
-            Date.compare data.startDate limitDate == LT
-        )
-        nursePreviousEncountersData
 
 
 diagnosisForProgressReportToString : Language -> PrenatalDiagnosis -> String

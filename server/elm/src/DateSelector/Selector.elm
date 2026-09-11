@@ -5,7 +5,7 @@ module DateSelector.Selector exposing (viewPopup)
 
 import App.Types exposing (Language)
 import Date exposing (Date, Interval(..), Unit(..), day, month, numberToMonth, year)
-import Gizra.NominalDate exposing (allMonths)
+import Gizra.NominalDate exposing (allMonths, daysInMonth, isLeapYear)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -220,55 +220,6 @@ dateWithMonth date m =
             day date
     in
     Date.fromCalendarDate y m <| Basics.min d (daysInMonth y m)
-
-
-isLeapYear : Int -> Bool
-isLeapYear y =
-    modBy 4 y == 0 && modBy 100 y /= 0 || modBy 400 y == 0
-
-
-daysInMonth : Int -> Month -> Int
-daysInMonth y m =
-    case m of
-        Jan ->
-            31
-
-        Feb ->
-            if isLeapYear y then
-                29
-
-            else
-                28
-
-        Mar ->
-            31
-
-        Apr ->
-            30
-
-        May ->
-            31
-
-        Jun ->
-            30
-
-        Jul ->
-            31
-
-        Aug ->
-            31
-
-        Sep ->
-            30
-
-        Oct ->
-            31
-
-        Nov ->
-            30
-
-        Dec ->
-            31
 
 
 

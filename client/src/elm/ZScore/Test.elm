@@ -1,4 +1,4 @@
-module ZScore.Test exposing (all)
+module ZScore.Test exposing (all, testModel)
 
 import Backend.Measurement.Model exposing (Gender(..))
 import Expect exposing (Expectation, FloatingPointTolerance(..))

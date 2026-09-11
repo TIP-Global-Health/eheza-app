@@ -28,6 +28,17 @@ $memory_limit = drush_get_option('memory_limit', 800);
 $fields = field_info_fields();
 $encounter_types = hedley_general_get_encounter_types();
 
+// Every measurement bundle names its person. Grouping by it changes nothing
+// where an encounter covers one person, and keeps the records apart where it
+// covers several - a group session, or a family nutrition encounter with the
+// mother and each child.
+//
+// Two bundles would need more than the person, and do not get it because
+// their features are dead: a participant_consent is one per form signed, and
+// an acute illness trace contact is one per contact traced, whose own
+// field_person is the patient. Reviving either means keying it here first.
+$person_bundles = $fields['field_person']['bundles']['node'];
+
 $total_deleted = 0;
 
 foreach ($encounter_types as $encounter_type) {
@@ -35,16 +46,17 @@ foreach ($encounter_types as $encounter_type) {
   $deleted_for_encounter = 0;
   $bundles = $fields["field_$encounter_type"]['bundles']['node'];
   foreach ($bundles as $bundle) {
+    $group_by_person = in_array($bundle, $person_bundles);
     $query = db_select("field_data_field_$encounter_type", 'et');
     $query->addField('et', "field_{$encounter_type}_target_id");
-    if ($encounter_type == 'session') {
+    if ($group_by_person) {
       $query->leftJoin('field_data_field_person', 'fp', 'fp.entity_id = et.entity_id');
       $query->addField('fp', 'field_person_target_id');
     }
     $query->condition('et.bundle', $bundle);
     $query->addExpression("COUNT(et.field_{$encounter_type}_target_id)", 'total');
     $query->groupBy("et.field_{$encounter_type}_target_id");
-    if ($encounter_type == 'session') {
+    if ($group_by_person) {
       $query->groupBy("fp.field_person_target_id");
     }
     $query->havingCondition('total', 1, '>');
@@ -56,10 +68,11 @@ foreach ($encounter_types as $encounter_type) {
       $query = db_select("field_data_field_$encounter_type", 'et');
       $query->leftJoin('node', 'n', 'n.nid = et.entity_id');
       $query->addField('et', 'entity_id');
-      if ($encounter_type == 'session') {
+      if ($group_by_person) {
         $person_id = $data->field_person_target_id;
         if (!$person_id) {
           // Can not resolve duplicates due to failure to retrieve person ID.
+          drush_print("Skipping $bundle duplicates at $encounter_type $encounter - no person.");
           continue;
         }
         $query->leftJoin('field_data_field_person', 'fp', 'fp.entity_id = et.entity_id');

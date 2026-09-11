@@ -2,7 +2,7 @@ module Pages.FamilyNutrition.ProgressReport.Svg exposing (viewMuacChart)
 
 import Backend.Measurement.Utils exposing (muacValueForSite)
 import Html exposing (Html)
-import Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolygon, drawPolyline, heightPx, referenceHorizontalLines, referenceVerticalLines, referenceVerticalNumbers, widthPx, withinRange)
+import Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolygon, drawPolyline, frame, heightPx, referenceHorizontalLines, referenceVerticalLines, referenceVerticalNumbers, widthPx, withinRange)
 import Pages.Utils exposing (muacUnitTransIdForSite)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -182,25 +182,3 @@ referenceHorizontalAgeLabels parts anchorAge =
                 in
                 text_ [ transform <| "matrix(1 0 0 1 " ++ posX_ ++ " 520)", class "z-score-semibold st17" ] [ text label ]
             )
-
-
-frame : Svg any
-frame =
-    g
-        []
-        [ rect
-            [ class "chart-outer-frame"
-            , height "447.9"
-            , width "728.5"
-            , x "56.7"
-            , y "101.1"
-            ]
-            []
-        , rect
-            [ height "386.8"
-            , width "626.8"
-            , x "110.9"
-            , y "119.9"
-            ]
-            []
-        ]

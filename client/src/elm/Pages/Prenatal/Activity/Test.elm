@@ -10,7 +10,6 @@ import Backend.Measurement.Model
         , CorePhysicalExamValue
         , DangerSign(..)
         , DangerSignsValue
-        , Gender(..)
         , HIVPCRTestValue
         , HIVTestValue
         , HemoglobinTestValue
@@ -18,10 +17,14 @@ import Backend.Measurement.Model
         , LungsCPESign
         , MalariaTestValue
         , Measurement
+        , PartnerHIVTestValue
         , PrenatalAssesment(..)
+        , PrenatalHIVSign(..)
         , PrenatalMeasurements
         , PrenatalMentalHealthQuestion(..)
         , PrenatalMentalHealthQuestionOption(..)
+        , PrenatalSymptom(..)
+        , PrenatalSymptomQuestion(..)
         , ProteinValue(..)
         , RandomBloodSugarTestValue
         , Rhesus(..)
@@ -44,14 +47,17 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (RangedMeasurement(..))
 import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
-import Pages.Prenatal.Activity.Types exposing (PrePregnancyClassification(..), WarningPopupType(..))
+import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Utils exposing (resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
+import TestFixtures
 import Time
+import Translate
 
 
 
@@ -105,6 +111,78 @@ zscoreToPrePregnancyClassificationTest =
 
 
 
+-- HEALTHY START GESTATIONAL WEIGHT GAIN
+--
+-- Expected gain comes from the Healthy Start protocol (the independent
+-- oracle): a woman not severely undernourished at booking is expected to gain
+-- 60 g per day, one who was severely undernourished 73 g per day, and 23.5 g
+-- per day covers the part of the period before 13 weeks. Gain is adequate when
+-- it meets or exceeds the expected gain for the period.
+--
+-- Both weighings here fall after 13 weeks, so only the later rate applies:
+-- 25 days at 60 g per day is an expected gain of 1.5 kg, 30 days one of 1.8 kg.
+
+
+{-| Classify a gain from 60 kg to `currentWeight` over `days` ending on
+`currentDate`. With an LMP 28 weeks back, both weighings are well past 13 weeks
+of gestation.
+-}
+classifyHealthyStartGWG : PrePregnancyClassification -> Int -> Float -> Maybe GWGClassification
+classifyHealthyStartGWG prePregnancyClassification days currentWeight =
+    resolveGWGClassificationForHealthyStart currentDate
+        prePregnancyClassification
+        60.0
+        (Date.add Date.Days -days currentDate)
+        currentWeight
+        (testAssembled28Weeks emptyPrenatalMeasurements)
+
+
+resolveGWGClassificationForHealthyStartTest : Test
+resolveGWGClassificationForHealthyStartTest =
+    describe "resolveGWGClassificationForHealthyStart (Healthy Start expected daily gain)"
+        [ test "over 25 days, a gain of 1.0 kg is below the expected 1.5 kg -> inadequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 25 61.0
+                    |> Expect.equal (Just GWGInadequate)
+        , test "over 25 days, a gain of exactly the expected 1.5 kg -> adequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 25 61.5
+                    |> Expect.equal (Just GWGAdequate)
+        , test "over 30 days, a gain of exactly the expected 1.8 kg -> adequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 30 61.8
+                    |> Expect.equal (Just GWGAdequate)
+        , test "over 25 days, a gain of 2.5 kg is above the expected 1.5 kg -> adequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 25 62.5
+                    |> Expect.equal (Just GWGAdequate)
+        , test "1.0 kg lost over the period -> inadequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyNormal 25 59.0
+                    |> Expect.equal (Just GWGInadequate)
+        , test "severely undernourished at booking: over 25 days, 1.5 kg is short of the expected 1.825 kg -> inadequate" <|
+            \_ ->
+                classifyHealthyStartGWG PrePregnancyUnderWeight 25 61.5
+                    |> Expect.equal (Just GWGInadequate)
+        , test "a gain of exactly the expected amount is adequate at every five-day interval up to 20 weeks" <|
+            \_ ->
+                -- At 60 g per day a five-day interval expects 0.3 kg, so these
+                -- are the intervals where a woman exactly on target shows a
+                -- whole tenth of a kilogram on the scale. The list is the
+                -- intervals that came back anything other than adequate.
+                List.range 1 28
+                    |> List.filter
+                        (\fiveDayBlocks ->
+                            classifyHealthyStartGWG PrePregnancyNormal
+                                (fiveDayBlocks * 5)
+                                (60.0 + 0.3 * toFloat fiveDayBlocks)
+                                /= Just GWGAdequate
+                        )
+                    |> Expect.equal []
+        ]
+
+
+
 -- LAB-DRIVEN DIAGNOSIS FIXTURES
 --
 -- End-to-end tests for `generatePrenatalDiagnosesForNurse` on an initial-phase
@@ -137,65 +215,23 @@ dummyDate =
     currentDate
 
 
-{-| Wrap a measurement `value` into the full `Measurement` record shape that
-the `PrenatalMeasurements` fields require, paired with a dummy entity id.
-
-The signature is polymorphic in the id tag, encounter type, and value, so it
-unifies with each concrete `PrenatalMeasurements` field type.
-
+{-| Wrap a measurement `value` into the shape the `PrenatalMeasurements`
+fields require, with `dummyDate` as `dateMeasured`.
 -}
 wrapMeasurement : value -> Maybe ( EntityUuid id, Measurement encounter value )
 wrapMeasurement value =
-    Just
-        ( toEntityUuid "dummy-id"
-        , { dateMeasured = dummyDate
-          , nurse = Nothing
-          , healthCenter = Nothing
-          , participantId = toEntityUuid "dummy-person"
-          , deleted = False
-          , encounterId = Nothing
-          , value = value
-          }
-        )
+    TestFixtures.wrapMeasurement dummyDate value
 
 
-{-| An adult female person. Everything except birthDate/gender is
-defaulted/empty (mirrors `testPerson` in the acute-illness test file).
+{-| The shared adult female fixture, but born 1990: age 30 at `currentDate`.
 -}
 testPerson : Person
 testPerson =
-    { name = "Test Person"
-    , firstName = "Test"
-    , secondName = "Person"
-    , nationalIdNumber = Nothing
-    , hmisNumber = Nothing
-    , avatarUrl = Nothing
-    , birthDate = Just (Date.fromCalendarDate 1990 Time.Jan 1)
-    , isDateOfBirthEstimated = False
-    , gender = Female
-    , hivStatus = Nothing
-    , numberOfChildren = Nothing
-    , modeOfDelivery = Nothing
-    , ubudehe = Nothing
-    , educationLevel = Nothing
-    , maritalStatus = Nothing
-    , province = Nothing
-    , district = Nothing
-    , sector = Nothing
-    , cell = Nothing
-    , village = Nothing
-    , registrationLatitude = Nothing
-    , registrationLongitude = Nothing
-    , saveGPSLocation = False
-    , telephoneNumber = Nothing
-    , spouseName = Nothing
-    , spousePhoneNumber = Nothing
-    , nextOfKinName = Nothing
-    , nextOfKinPhoneNumber = Nothing
-    , healthCenterId = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
+    let
+        base =
+            TestFixtures.testPerson
+    in
+    { base | birthDate = Just (Date.fromCalendarDate 1990 Time.Jan 1) }
 
 
 {-| An initial-phase nurse encounter (`NurseEncounter`), with no prior
@@ -218,18 +254,7 @@ testEncounter =
 
 testParticipant : IndividualEncounterParticipant
 testParticipant =
-    { person = toEntityUuid "dummy-person"
-    , encounterType = AntenatalEncounter
-    , startDate = currentDate
-    , endDate = Nothing
-    , eddDate = Nothing
-    , dateConcluded = Nothing
-    , outcome = Nothing
-    , deliveryLocation = Nothing
-    , newborn = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
+    TestFixtures.testParticipant currentDate AntenatalEncounter
 
 
 {-| One reusable `AssembledData` for an initial-phase nurse encounter at
@@ -344,17 +369,35 @@ immediateResultPrerequisites =
     Just (EverySet.singleton PrerequisiteImmediateResult)
 
 
-{-| HIV test, run today with the given positive/negative result, immediate
-result. No partner/HIV signs (so this never trips discordant-partnership).
+{-| What a test sent to the lab stores: the immediate-result question was
+asked and answered No. Distinct from `Nothing`, which is what a test stores
+when the question was never asked at all - a partner known to be positive, a
+result taken from history, or a record from before the question existed.
 -}
-hivTestValueWith : TestResult -> HIVTestValue
-hivTestValueWith result =
-    { executionNote = TestNoteRunToday
+deferredResultPrerequisites : Maybe (EverySet TestPrerequisite)
+deferredResultPrerequisites =
+    Just (EverySet.singleton NoTestPrerequisites)
+
+
+{-| HIV test with the given execution note, prerequisites and result. No
+partner/HIV signs (so this never trips discordant-partnership).
+-}
+hivTestValueCustom : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> TestResult -> HIVTestValue
+hivTestValueCustom executionNote prerequisites result =
+    { executionNote = executionNote
     , executionDate = Just dummyDate
-    , testPrerequisites = immediateResultPrerequisites
+    , testPrerequisites = prerequisites
     , testResult = Just result
     , hivSigns = Nothing
     }
+
+
+{-| HIV test, run today with the given positive/negative result, immediate
+result.
+-}
+hivTestValueWith : TestResult -> HIVTestValue
+hivTestValueWith =
+    hivTestValueCustom TestNoteRunToday immediateResultPrerequisites
 
 
 syphilisTestValueWith : TestResult -> SyphilisTestValue encounterId
@@ -390,6 +433,7 @@ malariaTestValueWith result =
     , testPrerequisites = immediateResultPrerequisites
     , testResult = Just result
     , bloodSmearResult = BloodSmearNotTaken
+    , bloodSmearOrdered = False
     }
 
 
@@ -431,12 +475,7 @@ withMalariaTest result measurements =
 
 hivTestValueNonImmediate : HIVTestValue
 hivTestValueNonImmediate =
-    { executionNote = TestNoteRunToday
-    , executionDate = Just dummyDate
-    , testPrerequisites = Nothing
-    , testResult = Just TestPositive
-    , hivSigns = Nothing
-    }
+    hivTestValueCustom TestNoteRunToday Nothing TestPositive
 
 
 syphilisTestValueNonImmediate : SyphilisTestValue encounterId
@@ -467,6 +506,7 @@ malariaTestValueNonImmediate =
     , testPrerequisites = Nothing
     , testResult = Just TestPositive
     , bloodSmearResult = BloodSmearNotTaken
+    , bloodSmearOrdered = False
     }
 
 
@@ -488,6 +528,94 @@ withHepatitisBTestNonImmediate measurements =
 withMalariaTestNonImmediate : PrenatalMeasurements -> PrenatalMeasurements
 withMalariaTestNonImmediate measurements =
     { measurements | malariaTest = wrapMeasurement malariaTestValueNonImmediate }
+
+
+
+-- DISCORDANT-PARTNERSHIP BUILDERS
+--
+-- The diagnosis has two sources: the partner's own HIV test, and the partner
+-- signs recorded on the patient's own HIV test. The second question is drawn
+-- on the HIV test form while the partner's own result is unavailable, so both
+-- sources are live. The Initial/Recurrent split follows the source that
+-- matched, so these builders vary the execution note and prerequisites of each
+-- test on its own.
+
+
+{-| Partner HIV test with the given execution note and prerequisites, positive,
+partner not taking ARVs - the discordant-partnership condition. A partner known
+to be positive is not tested, so no result is recorded for that note, and the
+immediate-result question is never asked - the prerequisites stay `Nothing`.
+-}
+partnerHIVTestValuePositive : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> PartnerHIVTestValue
+partnerHIVTestValuePositive executionNote prerequisites =
+    { executionNote = executionNote
+    , executionDate = Just dummyDate
+    , testPrerequisites = prerequisites
+    , testResult =
+        if executionNote == TestNoteKnownAsPositive then
+            Nothing
+
+        else
+            Just TestPositive
+    , hivSigns = Just (EverySet.singleton NoPrenatalHIVSign)
+    }
+
+
+withPartnerHIVTestPositive : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> PrenatalMeasurements -> PrenatalMeasurements
+withPartnerHIVTestPositive executionNote prerequisites measurements =
+    { measurements | partnerHIVTest = wrapMeasurement (partnerHIVTestValuePositive executionNote prerequisites) }
+
+
+{-| Partner HIV test entered by a lab technician, with the partner signs in the
+state the given step leaves them: the lab technician's own save marks them
+pending, since only the nurse answers the follow up questions, and the nurse's
+follow ups replace that marker with the answers.
+-}
+withPartnerHIVTestByLabTech : TestResult -> EverySet PrenatalHIVSign -> PrenatalMeasurements -> PrenatalMeasurements
+withPartnerHIVTestByLabTech result hivSigns measurements =
+    { measurements
+        | partnerHIVTest =
+            wrapMeasurement
+                { executionNote = TestNoteRunConfirmedByLabTech
+                , executionDate = Just dummyDate
+                , testPrerequisites = deferredResultPrerequisites
+                , testResult = Just result
+                , hivSigns = Just hivSigns
+                }
+    }
+
+
+withHIVTestNegative : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> PrenatalMeasurements -> PrenatalMeasurements
+withHIVTestNegative executionNote prerequisites measurements =
+    { measurements | hivTest = wrapMeasurement (hivTestValueCustom executionNote prerequisites TestNegative) }
+
+
+{-| Patient's HIV test, negative, carrying the partner signs: partner positive,
+not taking ARVs.
+-}
+withHIVTestPartnerPositiveSigns : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> PrenatalMeasurements -> PrenatalMeasurements
+withHIVTestPartnerPositiveSigns executionNote prerequisites measurements =
+    let
+        value =
+            hivTestValueCustom executionNote prerequisites TestNegative
+    in
+    { measurements
+        | hivTest = wrapMeasurement { value | hivSigns = Just (EverySet.singleton PartnerHIVPositive) }
+    }
+
+
+{-| Patient's HIV test answered as known as positive, still carrying the
+negative result and the partner signs of the test that answer replaced.
+-}
+withHIVTestKnownAsPositiveCarryingSigns : PrenatalMeasurements -> PrenatalMeasurements
+withHIVTestKnownAsPositiveCarryingSigns measurements =
+    let
+        value =
+            hivTestValueCustom TestNoteKnownAsPositive immediateResultPrerequisites TestNegative
+    in
+    { measurements
+        | hivTest = wrapMeasurement { value | hivSigns = Just (EverySet.singleton PartnerHIVPositive) }
+    }
 
 
 {-| Hemoglobin test, run today with the given count, immediate result. The
@@ -529,25 +657,11 @@ withHemoglobinNonImmediate count measurements =
     { measurements | hemoglobinTest = wrapMeasurement (hemoglobinTestValueNonImmediate count) }
 
 
-{-| Vitals with the given systolic/diastolic blood pressure. Respiratory rate
-is left unset so the anemia-complication path (which keys off an elevated
-respiratory rate) stays inert.
+{-| Vitals with the given systolic/diastolic blood pressure.
 -}
-vitalsValueWith : Float -> Float -> VitalsValue
-vitalsValueWith sys dia =
-    { sys = Just sys
-    , dia = Just dia
-    , heartRate = Nothing
-    , respiratoryRate = Nothing
-    , bodyTemperature = Nothing
-    , sysRepeated = Nothing
-    , diaRepeated = Nothing
-    }
-
-
 withVitals : Float -> Float -> PrenatalMeasurements -> PrenatalMeasurements
 withVitals sys dia measurements =
-    { measurements | vitals = wrapMeasurement (vitalsValueWith sys dia) }
+    { measurements | vitals = wrapMeasurement (TestFixtures.vitalsValueWith sys dia) }
 
 
 {-| Vitals with a normal initial reading (120/80, so the _initial_ BP is not
@@ -1254,6 +1368,214 @@ generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest =
         ]
 
 
+{-| The discordant-partnership diagnosis carries an Initial and a Recurrent
+variant, and only the Recurrent one prescribes PrEP at the recurrent phase. The
+variant has to follow the test that produced the match: the partner's own test
+when the match came from there, and the patient's test when it came from the
+partner signs recorded on it. A match from the partner's test also needs the
+patient's own result, so that result must be known at the initial phase too -
+run with an immediate result, or taken from the patient's history.
+-}
+generatePrenatalDiagnosesForNurseDiscordantPartnershipTest : Test
+generatePrenatalDiagnosesForNurseDiscordantPartnershipTest =
+    let
+        discordantPartnershipPhases measurements =
+            let
+                diagnoses =
+                    diagnoseNurse measurements
+            in
+            ( EverySet.member DiagnosisDiscordantPartnershipInitialPhase diagnoses
+            , EverySet.member DiagnosisDiscordantPartnershipRecurrentPhase diagnoses
+            )
+    in
+    describe "generatePrenatalDiagnosesForNurse - discordant partnership phase"
+        [ test "partner test positive and immediate, patient HIV negative and immediate -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive TestNoteRunToday immediateResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
+        , test "partner test positive and NOT immediate, patient HIV negative and immediate -> Recurrent phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive TestNoteRunToday deferredResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, True )
+        , test "partner test positive and immediate, patient HIV negative and NOT immediate -> Recurrent phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday deferredResultPrerequisites
+                    |> withPartnerHIVTestPositive TestNoteRunToday immediateResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, True )
+        , test "partner test positive and immediate, patient HIV negative from history -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunPreviously Nothing
+                    |> withPartnerHIVTestPositive TestNoteRunToday immediateResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
+        , test "partner known to be HIV positive, patient HIV negative and immediate -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive TestNoteKnownAsPositive Nothing
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
+        , test "partner test positive from history, patient HIV negative and immediate -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive TestNoteRunPreviously Nothing
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
+        , test "partner signs on the patient's immediate HIV test, no partner test -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestPartnerPositiveSigns TestNoteRunToday immediateResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
+        , test "partner signs on the patient's HIV test taken from history -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestPartnerPositiveSigns TestNoteRunPreviously Nothing
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
+        , test "partner signs on the patient's HIV test sent to the lab -> Recurrent phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestPartnerPositiveSigns TestNoteRunToday deferredResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, True )
+        , test "partner test positive entered by a lab technician, the nurse has not answered the follow ups yet -> no diagnosis" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.singleton PrenatalHIVSignPendingInput)
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, False )
+        , test "partner test positive entered by a lab technician, nurse answers partner not on ARVs -> Recurrent phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.singleton NoPrenatalHIVSign)
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, True )
+        , test "both tests sent to the lab, partner positive and patient negative entered there -> Recurrent phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunConfirmedByLabTech deferredResultPrerequisites
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.singleton NoPrenatalHIVSign)
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, True )
+        , test "partner test positive entered by a lab technician, nurse answers partner on ARVs with a surpressed viral load -> no diagnosis" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.fromList [ PartnerTakingARV, PartnerSurpressedViralLoad ])
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, False )
+        , test "patient known as positive, partner signs of the replaced negative test still on it -> neither phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestKnownAsPositiveCarryingSigns
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, False )
+        , test "patient known as positive, partner test positive -> neither phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestKnownAsPositiveCarryingSigns
+                    |> withPartnerHIVTestPositive TestNoteRunToday immediateResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, False )
+        ]
+
+
+{-| The partner's HIV result decides whether the nurse is asked for the
+partner's status by hand: that question is drawn on the patient's own HIV test
+form only while the result resolves to `TestIndeterminate`. A result a lab
+technician entered carries its own execution note, and has to resolve like any
+other, so the question the lab already answered is not asked again.
+-}
+resolvePartnerHIVTestResultTest : Test
+resolvePartnerHIVTestResultTest =
+    let
+        partnerResult measurements =
+            resolvePartnerHIVTestResult (testAssembled measurements)
+    in
+    describe "resolvePartnerHIVTestResult"
+        [ test "positive result entered by a lab technician -> TestPositive" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.singleton PrenatalHIVSignPendingInput)
+                    |> partnerResult
+                    |> Expect.equal TestPositive
+        , test "negative result entered by a lab technician -> TestNegative" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withPartnerHIVTestByLabTech TestNegative (EverySet.singleton PrenatalHIVSignPendingInput)
+                    |> partnerResult
+                    |> Expect.equal TestNegative
+        , test "positive result the nurse ran today -> TestPositive" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withPartnerHIVTestPositive TestNoteRunToday immediateResultPrerequisites
+                    |> partnerResult
+                    |> Expect.equal TestPositive
+        , test "no partner test -> TestIndeterminate" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> partnerResult
+                    |> Expect.equal TestIndeterminate
+        ]
+
+
+{-| The line the progress report shows for a discordant couple states what the
+partner's ARV and viral load status is. A lab technician can enter the partner's
+result but not those answers, so until the nurse answers them there is no status
+to state.
+-}
+resolveDiscordantCoupleStatusTest : Test
+resolveDiscordantCoupleStatusTest =
+    describe "resolveDiscordantCoupleStatus"
+        [ test "partner positive by a lab technician, follow ups not answered yet -> no status" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.singleton PrenatalHIVSignPendingInput)
+                    |> resolveDiscordantCoupleStatus
+                    |> Expect.equal Nothing
+        , test "partner positive by a lab technician, nurse answers partner not on ARVs -> not taking ARVs" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.singleton NoPrenatalHIVSign)
+                    |> resolveDiscordantCoupleStatus
+                    |> Expect.equal (Just <| Translate.DiscordantCoupleStatus False False)
+        , test "partner positive by a lab technician, nurse answers partner on ARVs and surpressed -> taking ARVs, surpressed" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestByLabTech TestPositive (EverySet.fromList [ PartnerTakingARV, PartnerSurpressedViralLoad ])
+                    |> resolveDiscordantCoupleStatus
+                    |> Expect.equal (Just <| Translate.DiscordantCoupleStatus True True)
+        , test "partner signs on the patient's own HIV test -> status from those signs" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestPartnerPositiveSigns TestNoteRunToday immediateResultPrerequisites
+                    |> resolveDiscordantCoupleStatus
+                    |> Expect.equal (Just <| Translate.DiscordantCoupleStatus False False)
+        , test "no partner test and no partner signs -> no status" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> resolveDiscordantCoupleStatus
+                    |> Expect.equal Nothing
+        ]
+
+
 
 -- GROUP H -- EGA37+ RECURRENT PRE-ECLAMPSIA (nurse, EGA >= 37)
 --
@@ -1319,17 +1641,248 @@ suicideRiskDiagnosedBySignsTest =
         ]
 
 
+{-| Abnormal vaginal discharge splits into three diagnoses by the two follow up
+questions. Answering no to both is trichomonas or bacterial vaginosis; each
+diagnosis then has a "continued" variant, chosen by whether the patient was
+given that same diagnosis at an earlier nurse encounter. The plain variant
+prescribes medication, the continued one refers to hospital.
+-}
+vaginalDischargeContinuedTest : Test
+vaginalDischargeContinuedTest =
+    let
+        withVaginalDischarge questions measurements =
+            { measurements
+                | symptomReview =
+                    wrapMeasurement
+                        { symptoms = EverySet.singleton AbnormalVaginalDischarge
+                        , symptomQuestions = questions
+                        , flankPainSign = Nothing
+                        }
+            }
+
+        -- No vaginal itching and no partner urethral discharge.
+        bacterialVaginosis =
+            withVaginalDischarge EverySet.empty
+
+        gonorrhea =
+            withVaginalDischarge (EverySet.singleton SymptomQuestionPartnerUrethralDischarge)
+
+        previousEncounterWith diagnoses =
+            { startDate = Date.add Date.Weeks -4 currentDate
+            , diagnoses = EverySet.fromList diagnoses
+            , pastDiagnoses = EverySet.empty
+            , measurements = emptyPrenatalMeasurements
+            }
+
+        diagnoseNurseAfter previousDiagnoses measurements =
+            let
+                assembled =
+                    testAssembled measurements
+            in
+            generatePrenatalDiagnosesForNurse currentDate
+                { assembled | nursePreviousEncountersData = [ previousEncounterWith previousDiagnoses ] }
+    in
+    describe "generatePrenatalDiagnosesForNurse - abnormal vaginal discharge, continued variants"
+        [ test "first episode -> the plain diagnosis" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> bacterialVaginosis
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosis
+                    |> Expect.equal True
+        , test "diagnosed at an earlier encounter -> the continued diagnosis" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> bacterialVaginosis
+                    |> diagnoseNurseAfter [ DiagnosisTrichomonasOrBacterialVaginosis ]
+                    |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosisContinued
+                    |> Expect.equal True
+        , test "diagnosed at an earlier encounter -> the plain diagnosis is not given as well" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> bacterialVaginosis
+                    |> diagnoseNurseAfter [ DiagnosisTrichomonasOrBacterialVaginosis ]
+                    |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosis
+                    |> Expect.equal False
+        , test "an earlier gonorrhea does not make a first episode continued" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> bacterialVaginosis
+                    |> diagnoseNurseAfter [ DiagnosisGonorrhea ]
+                    |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosisContinued
+                    |> Expect.equal False
+        , test "an earlier gonorrhea leaves a first episode at the plain diagnosis" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> bacterialVaginosis
+                    |> diagnoseNurseAfter [ DiagnosisGonorrhea ]
+                    |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosis
+                    |> Expect.equal True
+        , test "an earlier bacterial vaginosis does not make a first gonorrhea continued" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> gonorrhea
+                    |> diagnoseNurseAfter [ DiagnosisTrichomonasOrBacterialVaginosis ]
+                    |> EverySet.member DiagnosisGonorrheaContinued
+                    |> Expect.equal False
+        , test "gonorrhea diagnosed at an earlier encounter -> the continued diagnosis" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> gonorrhea
+                    |> diagnoseNurseAfter [ DiagnosisGonorrhea ]
+                    |> EverySet.member DiagnosisGonorrheaContinued
+                    |> Expect.equal True
+        ]
+
+
+
+-- BLOOD SMEAR AS THE MALARIA DIAGNOSIS
+--
+-- When the rapid test cannot be run, a blood smear is taken instead and read
+-- at the lab; issue #631 introduced it as "a different way to diagnose
+-- malaria". Whoever reads the smear, the smear result is the diagnosis.
+--
+-- Two people can record that result, and they leave DIFFERENT execution notes.
+-- A nurse entering it keeps the nurse's reason for not running the RDT; a lab
+-- technician confirming the run replaces the note with
+-- `TestNoteRunConfirmedByLabTech` (`toMalariaResultValue`). Neither of them
+-- writes a `testResult`, because the form shows the smear input instead.
+
+
+{-| A malaria test the nurse did not run as an RDT, with a blood smear read in
+its place — under the execution note the given reader leaves behind.
+-}
+malariaTestValueWithBloodSmear : TestExecutionNote -> BloodSmearResult -> MalariaTestValue
+malariaTestValueWithBloodSmear executionNote bloodSmearResult =
+    { executionNote = executionNote
+    , executionDate = Just dummyDate
+    , testPrerequisites = immediateResultPrerequisites
+    , testResult = Nothing
+    , bloodSmearResult = bloodSmearResult
+    , bloodSmearOrdered = True
+    }
+
+
+{-| A blood smear that also carries a rapid test result, the way a client that
+does not know about the smear order writes one.
+-}
+withBloodSmearAndRapidTestResult : TestExecutionNote -> BloodSmearResult -> TestResult -> PrenatalMeasurements -> PrenatalMeasurements
+withBloodSmearAndRapidTestResult executionNote bloodSmearResult testResult measurements =
+    let
+        value =
+            malariaTestValueWithBloodSmear executionNote bloodSmearResult
+    in
+    { measurements | malariaTest = wrapMeasurement { value | testResult = Just testResult } }
+
+
+{-| The same record as written before `bloodSmearOrdered` existed: the smear
+result is all that says a smear was taken.
+-}
+withLegacyBloodSmearAndRapidTestResult : TestExecutionNote -> BloodSmearResult -> TestResult -> PrenatalMeasurements -> PrenatalMeasurements
+withLegacyBloodSmearAndRapidTestResult executionNote bloodSmearResult testResult measurements =
+    let
+        value =
+            malariaTestValueWithBloodSmear executionNote bloodSmearResult
+    in
+    { measurements
+        | malariaTest =
+            wrapMeasurement { value | testResult = Just testResult, bloodSmearOrdered = False }
+    }
+
+
+withBloodSmear : TestExecutionNote -> BloodSmearResult -> PrenatalMeasurements -> PrenatalMeasurements
+withBloodSmear executionNote bloodSmearResult measurements =
+    { measurements
+        | malariaTest = wrapMeasurement (malariaTestValueWithBloodSmear executionNote bloodSmearResult)
+    }
+
+
+generatePrenatalDiagnosesForNurseBloodSmearTest : Test
+generatePrenatalDiagnosesForNurseBloodSmearTest =
+    describe "generatePrenatalDiagnosesForNurse - malaria read from a blood smear"
+        [ test "smear + under the nurse's reason -> DiagnosisMalariaInitialPhase present" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withBloodSmear TestNoteLackOfReagents BloodSmearPlus
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal True
+        , test "smear + under the lab technician's confirmed-run note -> DiagnosisMalariaInitialPhase present" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withBloodSmear TestNoteRunConfirmedByLabTech BloodSmearPlus
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal True
+        , test "smear +++ under the lab technician's confirmed-run note -> DiagnosisMalariaInitialPhase present" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withBloodSmear TestNoteRunConfirmedByLabTech BloodSmearPlusPlusPlus
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal True
+        , test "smear negative under the lab technician's confirmed-run note -> DiagnosisMalariaInitialPhase absent" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withBloodSmear TestNoteRunConfirmedByLabTech BloodSmearNegative
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal False
+        , test "a smear still awaited by the lab diagnoses nothing" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withBloodSmear TestNoteLackOfReagents BloodSmearPendingInput
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal False
+        , -- A record that ordered a smear did not run the rapid test, so a
+          -- rapid test result on it is one nobody entered for it. An older
+          -- client that still writes one must not diagnose through it.
+          test "a positive rapid test result on a record that ordered a smear diagnoses nothing" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withBloodSmearAndRapidTestResult TestNoteRunConfirmedByLabTech BloodSmearNegative TestPositive
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal False
+        , -- Same record, written before the order was recorded: the smear
+          -- result is the only thing that says a smear was taken.
+          test "a positive rapid test result on a legacy smear record diagnoses nothing" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withLegacyBloodSmearAndRapidTestResult TestNoteRunConfirmedByLabTech BloodSmearNegative TestPositive
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisMalariaInitialPhase
+                    |> Expect.equal False
+        , test "smear + read by the lab technician, with Hb 9, is malaria WITH anemia - not anemia alone" <|
+            \_ ->
+                let
+                    diagnoses =
+                        emptyPrenatalMeasurements
+                            |> withBloodSmear TestNoteRunConfirmedByLabTech BloodSmearPlus
+                            |> withHemoglobin 9
+                            |> diagnoseNurse
+                in
+                ( EverySet.member DiagnosisMalariaWithAnemiaInitialPhase diagnoses
+                , EverySet.member DiagnosisModerateAnemiaInitialPhase diagnoses
+                )
+                    |> Expect.equal ( True, False )
+        ]
+
+
 all : Test
 all =
     describe "Prenatal Activity tests"
         [ measurementOutOfRangeTest
         , bmiToPrePregnancyClassificationTest
         , zscoreToPrePregnancyClassificationTest
+        , resolveGWGClassificationForHealthyStartTest
         , generatePrenatalDiagnosesForNurseLabsTest
         , generatePrenatalDiagnosesForNurseRecurrentLabsTest
         , generatePrenatalAssesmentForChwTest
         , generatePrenatalDiagnosesForNurseAnemiaTest
         , generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest
+        , generatePrenatalDiagnosesForNurseBloodSmearTest
         , generatePrenatalDiagnosesForNurseModeratePreeclampsiaTest
         , generatePrenatalDiagnosesForNurseModeratePreeclampsiaRecurrentTest
         , generatePrenatalDiagnosesForNurseAnemiaRecurrentTest
@@ -1337,8 +1890,12 @@ all =
         , generatePrenatalDiagnosesForNurseHypertensionRecheckTest
         , generatePrenatalDiagnosesForNurseSeverePreeclampsiaRecurrentTest
         , generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest
+        , generatePrenatalDiagnosesForNurseDiscordantPartnershipTest
+        , resolvePartnerHIVTestResultTest
+        , resolveDiscordantCoupleStatusTest
         , generatePrenatalDiagnosesForNurseEGA37PlusPreeclampsiaRecurrentTest
         , suicideRiskDiagnosedBySignsTest
+        , vaginalDischargeContinuedTest
         ]
 
 

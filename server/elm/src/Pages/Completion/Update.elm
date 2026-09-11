@@ -3,9 +3,9 @@ module Pages.Completion.Update exposing (update)
 import App.Model exposing (PagesReturn)
 import Backend.Completion.Utils exposing (takenByFromString)
 import Error.Utils exposing (noError)
-import Maybe.Extra
 import Pages.Completion.Model exposing (Model, Msg(..))
 import Pages.Completion.Utils exposing (reportTypeFromString)
+import Pages.Utils exposing (dateSelectorDefault)
 
 
 update : Msg -> Model -> PagesReturn Model Msg
@@ -38,12 +38,8 @@ update msg model =
                 []
 
         SetStartDateSelectorState state ->
-            let
-                defaultSelection =
-                    Maybe.Extra.or model.startDate (Maybe.andThen .dateDefault state)
-            in
             PagesReturn
-                { model | startDateSelectorPopupState = state, startDate = defaultSelection }
+                { model | startDateSelectorPopupState = state, startDate = dateSelectorDefault model.startDate state }
                 Cmd.none
                 noError
                 []
@@ -56,12 +52,8 @@ update msg model =
                 []
 
         SetLimitDateSelectorState state ->
-            let
-                defaultSelection =
-                    Maybe.Extra.or model.limitDate (Maybe.andThen .dateDefault state)
-            in
             PagesReturn
-                { model | limitDateSelectorPopupState = state, limitDate = defaultSelection }
+                { model | limitDateSelectorPopupState = state, limitDate = dateSelectorDefault model.limitDate state }
                 Cmd.none
                 noError
                 []

@@ -1,4 +1,4 @@
-module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, pregnancySummaryMeasurementsOutOfRange, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
+module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, pregnancySummaryMeasurementsOutOfRange, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNutritionAssessmentTasks, resolvePreviousMaybeValue, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -830,12 +830,9 @@ generateVitalsFormConfig isChw assembled =
     , diaBloodPressurePreviousValue = Nothing
     , heartRatePreviousValue = Nothing
     , respiratoryRatePreviousValue =
-        resolvePreviousValue assembled .vitals .respiratoryRate
-            |> Maybe.andThen identity
+        resolvePreviousMaybeValue assembled .vitals .respiratoryRate
             |> Maybe.map toFloat
-    , bodyTemperaturePreviousValue =
-        resolvePreviousValue assembled .vitals .bodyTemperature
-            |> Maybe.andThen identity
+    , bodyTemperaturePreviousValue = resolvePreviousMaybeValue assembled .vitals .bodyTemperature
     , birthDate = assembled.person.birthDate
     , formClass = "vitals"
     , mode = VitalsFormBasic
@@ -2196,14 +2193,15 @@ toNextVisitValue form =
 -- HELPER FUNCTIONS
 
 
-resolvePreviousValue : AssembledData -> (WellChildMeasurements -> Maybe ( id, WellChildMeasurement a )) -> (a -> b) -> Maybe b
-resolvePreviousValue assembled measurementFunc valueFunc =
+resolvePreviousMaybeValue : AssembledData -> (WellChildMeasurements -> Maybe ( id, WellChildMeasurement a )) -> (a -> Maybe b) -> Maybe b
+resolvePreviousMaybeValue assembled measurementFunc valueFunc =
+    -- previousMeasurementsWithDates is sorted most recent first, so the head is
+    -- the latest previous encounter where the value was recorded.
     assembled.previousMeasurementsWithDates
         |> List.filterMap
             (Tuple.second
                 >> Tuple.second
                 >> measurementFunc
-                >> Maybe.map (Tuple.second >> .value >> valueFunc)
+                >> Maybe.andThen (Tuple.second >> .value >> valueFunc)
             )
-        |> List.reverse
         |> List.head

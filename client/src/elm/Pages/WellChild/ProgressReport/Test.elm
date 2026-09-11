@@ -1,7 +1,7 @@
 module Pages.WellChild.ProgressReport.Test exposing (all)
 
 import AssocList as Dict
-import Backend.Measurement.Model exposing (Gender(..), NCDASign(..), NCDAValue, ReceiveOption(..))
+import Backend.Measurement.Model exposing (HeightInCm(..), NCDASign(..), NCDAValue, ReceiveOption(..), WeightInKg(..))
 import Backend.Person.Model exposing (Person)
 import Date
 import EverySet
@@ -9,15 +9,50 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Pages.WellChild.ProgressReport.Model exposing (NCDACellValue(..))
-import Pages.WellChild.ProgressReport.View exposing (generateUniversalInterventionsValues)
+import Pages.WellChild.ProgressReport.View exposing (generateUniversalInterventionsValues, heightCellValuesByAgeInMonths, weightCellValuesByAgeInMonths)
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (testChild)
 import Time
+import ZScore.Test
 
 
 all : Test
 all =
     describe "Pages.WellChild.ProgressReport"
-        [ universalInterventionsValuesTests ]
+        [ fillTheBlanksAgeTests
+        , universalInterventionsValuesTests
+        ]
+
+
+{-| Fill the Blanks grades a measurement against the child's age on the day it
+was taken, the way the growth charts do. Both values below are typical for a
+girl of three months, so both cells are green - and stay green as the child
+grows. Read at the child's age today (24 months), the same values would be
+far below -3SD, and both cells would come out red.
+-}
+fillTheBlanksAgeTests : Test
+fillTheBlanksAgeTests =
+    let
+        dateMeasured =
+            Date.add Date.Months 3 birthDate
+
+        birthDate =
+            Date.add Date.Months -24 currentDate
+    in
+    describe "fill the blanks cell values"
+        [ test "height typical for the age it was taken at is green" <|
+            \_ ->
+                heightCellValuesByAgeInMonths ZScore.Test.testModel child [ ( dateMeasured, { height = Just (HeightInCm 59.8) } ) ]
+                    |> Maybe.andThen (Dict.get 3)
+                    |> Maybe.map Tuple.second
+                    |> Expect.equal (Just NCDACellValueC)
+        , test "weight typical for the age it was taken at is green" <|
+            \_ ->
+                weightCellValuesByAgeInMonths ZScore.Test.testModel child [ ( dateMeasured, { weight = Just (WeightInKg 5.8) } ) ]
+                    |> Maybe.andThen (Dict.get 3)
+                    |> Maybe.map Tuple.second
+                    |> Expect.equal (Just NCDACellValueC)
+        ]
 
 
 
@@ -35,38 +70,7 @@ reached yet.
 -}
 child : Person
 child =
-    { name = "Test Child"
-    , firstName = "Test"
-    , secondName = "Child"
-    , nationalIdNumber = Nothing
-    , hmisNumber = Nothing
-    , avatarUrl = Nothing
-    , birthDate = Just (Date.add Date.Months -24 currentDate)
-    , isDateOfBirthEstimated = False
-    , gender = Female
-    , hivStatus = Nothing
-    , numberOfChildren = Nothing
-    , modeOfDelivery = Nothing
-    , ubudehe = Nothing
-    , educationLevel = Nothing
-    , maritalStatus = Nothing
-    , province = Nothing
-    , district = Nothing
-    , sector = Nothing
-    , cell = Nothing
-    , village = Nothing
-    , registrationLatitude = Nothing
-    , registrationLongitude = Nothing
-    , saveGPSLocation = False
-    , telephoneNumber = Nothing
-    , spouseName = Nothing
-    , spousePhoneNumber = Nothing
-    , nextOfKinName = Nothing
-    , nextOfKinPhoneNumber = Nothing
-    , healthCenterId = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
+    testChild (Date.add Date.Months -24 currentDate)
 
 
 emptyNCDAValue : NCDAValue

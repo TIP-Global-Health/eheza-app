@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
@@ -50,6 +51,13 @@ test.describe('CHW: Family Nutrition Encounter', () => {
 
     // 3. Mother is selected by default. Complete Aheza (distribution reason + amount).
     await completeAhezaMother(page, { amount: '3', reasonIndex: 1 });
+
+    // Progress report must show what has been recorded so far. Checked here
+    // rather than at the end, because the encounter page drops its tabs once
+    // every activity is done, and the report is reached through one of them.
+    const report = await openReport(page, 'family-nutrition');
+    await expect(report.locator('.pane.aheza')).toContainText('3 kg');
+    await closeReport(page, 'family-nutrition');
 
     // 4. Complete MUAC for mother.
     await completeMuac(page, { value: '25.0', checkRange: true });

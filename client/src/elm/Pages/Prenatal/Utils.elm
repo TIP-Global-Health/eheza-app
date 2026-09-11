@@ -1,4 +1,4 @@
-module Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, applyHypertensionlikeDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGADays, calculateEGAWeeks, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, emergencyReferralDiagnosesInitial, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, filterNonUrgentDiagnoses, generateVaccinationProgress, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, hypertensionDiagnoses, labTestWithImmediateResult, malariaPreventionFormWithDefault, marginalBloodPressureCondition, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionFormWithDefaultRecurrentPhase, medicationDistributionMeasurementTaken, medicationsInitialPhase, medicationsRecurrentPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, outsideCareDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareDiagnosesWithPossibleMedication, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, resolvePreviousHypertensionDiagnosis, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, severeAnemiaDiagnoses, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnoses, syphilisDiagnosesIncludingNeurosyphilis, syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault, undeterminedPostpartumDiagnoses, updateHypertensionTreatmentWithMedication)
+module Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, applyHypertensionlikeDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGADays, calculateEGAWeeks, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, emergencyReferralDiagnosesInitial, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, filterNonUrgentDiagnoses, generateVaccinationProgress, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, hypertensionDiagnoses, labTestWithImmediateResult, malariaPreventionFormWithDefault, marginalBloodPressureCondition, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionFormWithDefaultRecurrentPhase, medicationDistributionMeasurementTaken, medicationsInitialPhase, medicationsRecurrentPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, outsideCareDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareDiagnosesWithPossibleMedication, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, resolveARVReferralDiagnosis, resolveDiscordantCoupleStatus, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, resolvePreviousHypertensionDiagnosis, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, severeAnemiaDiagnoses, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnoses, syphilisDiagnosesIncludingNeurosyphilis, syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault, undeterminedPostpartumDiagnoses, updateHypertensionTreatmentWithMedication)
 
 import AssocList as Dict
 import Backend.Measurement.Model exposing (..)
@@ -15,6 +15,8 @@ import Maybe.Extra exposing (isJust, isNothing, or, unwrap)
 import Measurement.Utils
     exposing
         ( generateVaccinationProgressForVaccine
+        , hivSignsAnswered
+        , testPerformedByExecutionNote
         , toEverySet
         , viewAdministeredMedicationCustomLabel
         , viewAdministeredMedicationQuestion
@@ -31,6 +33,7 @@ import Pages.Utils
         , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
         , nonAdministrationReasonToSign
+        , nonReferralReasonSection
         , taskCompleted
         , viewBoolInput
         , viewCheckBoxSelectCustomInput
@@ -3102,6 +3105,22 @@ knownAsHIVPositive measurements =
         |> Maybe.withDefault False
 
 
+{-| The questions about the partner's HIV status are only asked when the
+patient's own test was performed and came back negative. Answers kept from an
+earlier save can outlive that result, so everything read from them is gated on
+the result still saying so.
+-}
+patientHIVNegative : PrenatalMeasurements -> Bool
+patientHIVNegative measurements =
+    getMeasurementValueFunc measurements.hivTest
+        |> Maybe.map
+            (\value ->
+                testPerformedByExecutionNote value.executionNote
+                    && (value.testResult == Just TestNegative)
+            )
+        |> Maybe.withDefault False
+
+
 resolveNCDReferralDiagnoses : List PreviousEncounterData -> List PrenatalDiagnosis
 resolveNCDReferralDiagnoses nursePreviousEncountersData =
     Maybe.Extra.values
@@ -3693,8 +3712,12 @@ resolveReferralToFacilityInputsAndTasks language phase assembled setReferralBool
                                 )
 
                             else
-                                ( nonReferralReasonSection language facility config.reasonToSignFunc setNonReferralReasonMsg form
-                                , [ maybeToBoolTask <| getCurrentReasonForNonReferralByForm config.reasonToSignFunc form ]
+                                let
+                                    currentValue =
+                                        getCurrentReasonForNonReferralByForm config.reasonToSignFunc form
+                                in
+                                ( nonReferralReasonSection language facility currentValue setNonReferralReasonMsg
+                                , [ maybeToBoolTask currentValue ]
                                 )
                         )
                         config.referralField
@@ -3719,44 +3742,6 @@ resolveReferralToFacilityInputsAndTasks language phase assembled setReferralBool
         )
         maybeConfig
         |> Maybe.withDefault ( [], [] )
-
-
-nonReferralReasonSection :
-    Language
-    -> ReferralFacility
-    -> (ReasonForNonReferral -> NonReferralSign)
-    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
-    -> ReferralForm
-    -> List (Html msg)
-nonReferralReasonSection language facility reasonToSignFunc setNonReferralReasonMsg form =
-    let
-        currentValue =
-            getCurrentReasonForNonReferralByForm reasonToSignFunc form
-
-        options =
-            if facility == FacilityHospital then
-                [ ClientRefused
-                , NoAmbulance
-                , ClientUnableToAffordFees
-                , ReasonForNonReferralNotIndicated
-                , ReasonForNonReferralOther
-                ]
-
-            else
-                [ ClientRefused
-                , ClientAlreadyInCare
-                , ReasonForNonReferralNotIndicated
-                , ReasonForNonReferralOther
-                ]
-    in
-    [ viewQuestionLabel language Translate.WhyNot
-    , viewCheckBoxSelectInput language
-        options
-        []
-        currentValue
-        (setNonReferralReasonMsg currentValue facility)
-        Translate.ReasonForNonReferral
-    ]
 
 
 getCurrentReasonForNonReferralByForm :
@@ -4528,32 +4513,27 @@ healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form 
 
     else
         let
-            partnerSurpressedViralLoadByHIVTest =
-                getMeasurementValueFunc assembled.measurements.hivTest
-                    |> Maybe.andThen .hivSigns
-                    |> Maybe.map
-                        (\hivSigns ->
-                            -- Partner is HIV positive.
-                            EverySet.member PartnerHIVPositive hivSigns
-                                -- Partner is taking ARVs.
-                                && EverySet.member PartnerTakingARV hivSigns
-                                -- Partner reached surpressed viral load.
-                                && EverySet.member PartnerSurpressedViralLoad hivSigns
-                        )
-                    |> Maybe.withDefault False
+            hivNegative =
+                patientHIVNegative assembled.measurements
 
-            partnerSurpressedViralLoadByPartnerHIVTest =
-                let
-                    patientHIVNegative =
-                        getMeasurementValueFunc assembled.measurements.hivTest
+            partnerSurpressedViralLoadByHIVTest =
+                hivNegative
+                    && (getMeasurementValueFunc assembled.measurements.hivTest
+                            |> Maybe.andThen .hivSigns
                             |> Maybe.map
-                                (\value ->
-                                    List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-                                        && (value.testResult == Just TestNegative)
+                                (\hivSigns ->
+                                    -- Partner is HIV positive.
+                                    EverySet.member PartnerHIVPositive hivSigns
+                                        -- Partner is taking ARVs.
+                                        && EverySet.member PartnerTakingARV hivSigns
+                                        -- Partner reached surpressed viral load.
+                                        && EverySet.member PartnerSurpressedViralLoad hivSigns
                                 )
                             |> Maybe.withDefault False
-                in
-                patientHIVNegative
+                       )
+
+            partnerSurpressedViralLoadByPartnerHIVTest =
+                hivNegative
                     && (getMeasurementValueFunc assembled.measurements.partnerHIVTest
                             |> Maybe.andThen .hivSigns
                             |> Maybe.map
@@ -4572,30 +4552,9 @@ healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form 
             )
 
         else
-            let
-                partnerSurpressedViralLoad =
-                    getMeasurementValueFunc assembled.measurements.hivTest
-                        |> Maybe.andThen .hivSigns
-                        |> Maybe.map
-                            (\hivSigns ->
-                                -- Partner is HIV positive.
-                                EverySet.member PartnerHIVPositive hivSigns
-                                    -- Partner is taking ARVs.
-                                    && EverySet.member PartnerTakingARV hivSigns
-                                    -- Partner reached surpressed viral load.
-                                    && EverySet.member PartnerSurpressedViralLoad hivSigns
-                            )
-                        |> Maybe.withDefault False
-            in
-            if partnerSurpressedViralLoad then
-                ( header :: saferSexHIVInput
-                , [ form.saferSexHIV ]
-                )
-
-            else
-                ( header :: saferSexHIVInput ++ partnerTestingInput
-                , [ form.saferSexHIV, form.partnerTesting ]
-                )
+            ( header :: saferSexHIVInput ++ partnerTestingInput
+            , [ form.saferSexHIV, form.partnerTesting ]
+            )
 
 
 healthEducationFormFamilyPlanningInput :
@@ -4704,6 +4663,71 @@ symptomRecordedPreviously assembled symptom =
         |> not
 
 
+{-| The discordant-couple line the progress report shows for an encounter: the
+partner is HIV positive, and this is what is known about their ARVs and viral
+load. The status is taken from the partner's own test where there is one, and
+otherwise from the partner signs recorded on the patient's own test.
+-}
+resolveDiscordantCoupleStatus : PrenatalMeasurements -> Maybe TranslationId
+resolveDiscordantCoupleStatus measurements =
+    let
+        statusBySigns hivSigns =
+            Translate.DiscordantCoupleStatus
+                (EverySet.member PartnerTakingARV hivSigns)
+                (EverySet.member PartnerSurpressedViralLoad hivSigns)
+
+        hivNegative =
+            patientHIVNegative measurements
+
+        byHIVTest =
+            if hivNegative then
+                getMeasurementValueFunc measurements.hivTest
+                    |> Maybe.andThen .hivSigns
+                    |> Maybe.andThen
+                        (\hivSigns ->
+                            if EverySet.member PartnerHIVPositive hivSigns then
+                                Just <| statusBySigns hivSigns
+
+                            else
+                                Nothing
+                        )
+
+            else
+                Nothing
+
+        byPartnerHIVTest =
+            if hivNegative then
+                getMeasurementValueFunc measurements.partnerHIVTest
+                    |> Maybe.andThen
+                        (\value ->
+                            if
+                                (value.executionNote == TestNoteKnownAsPositive)
+                                    || (testPerformedByExecutionNote value.executionNote
+                                            && (value.testResult == Just TestPositive)
+                                       )
+                            then
+                                Maybe.andThen
+                                    (\hivSigns ->
+                                        -- Until the nurse answers the follow up
+                                        -- questions, there is no status to show.
+                                        if hivSignsAnswered hivSigns then
+                                            Just <| statusBySigns hivSigns
+
+                                        else
+                                            Nothing
+                                    )
+                                    value.hivSigns
+
+                            else
+                                Nothing
+                        )
+
+            else
+                Nothing
+    in
+    or byPartnerHIVTest byHIVTest
+
+
 resolvePartnerHIVTestResult : AssembledData -> TestResult
 resolvePartnerHIVTestResult assembled =
     getMeasurementValueFunc assembled.measurements.partnerHIVTest
@@ -4711,14 +4735,14 @@ resolvePartnerHIVTestResult assembled =
             (\value ->
                 if
                     (value.executionNote == TestNoteKnownAsPositive)
-                        || (List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        || (testPerformedByExecutionNote value.executionNote
                                 && (value.testResult == Just TestPositive)
                            )
                 then
                     TestPositive
 
                 else if
-                    List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                    testPerformedByExecutionNote value.executionNote
                         && (value.testResult == Just TestNegative)
                 then
                     TestNegative
@@ -4728,7 +4752,7 @@ resolvePartnerHIVTestResult assembled =
                     -- HIV positive, and test resukt is not set, which means that it was sent to lab.
                     -- To indicate that follow up questions are not required, we set the result to
                     -- Negative, though it's not really determined yet.
-                    List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                    testPerformedByExecutionNote value.executionNote
                         && isNothing value.testResult
                 then
                     TestNegative

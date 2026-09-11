@@ -786,9 +786,22 @@ export async function completeMedication(
  */
 export async function completeLaboratoryNurse(
   page: Page,
-  options?: { hivPositive?: boolean },
+  options?: {
+    // HIV test performed at point of care with this result; omitted = not performed.
+    hivResult?: 'positive' | 'negative';
+    // Partner known as HIV positive and not on ARVs, saved LAST, so that
+    // save alone has to raise the discordant partnership diagnosis.
+    discordantPartnership?: boolean;
+    // Record the partner as HIV positive and not on ARVs on the patient's OWN
+    // HIV test, which is the other source of the discordant partnership. The
+    // question is only asked while the partner's own result is unknown, so it
+    // has to be answered on the HIV tab, before the partner tab is saved.
+    partnerPositiveOnHIVTab?: boolean;
+  },
 ): Promise<string[]> {
-  const hivPositive = options?.hivPositive ?? false;
+  const hivResult = options?.hivResult;
+  const discordantPartnership = options?.discordantPartnership ?? false;
+  const partnerPositiveOnHIVTab = options?.partnerPositiveOnHIVTab ?? false;
   await openActivity(page, 'prenatal', 'laboratory');
 
   const completedTests: string[] = [];
@@ -796,9 +809,15 @@ export async function completeLaboratoryNurse(
   // Iterate through all visible task tabs. We can't use icon classes because
   // Partner HIV, HIV, and HIV PCR all share the same icon-laboratory-hiv class.
   const allTabs = page.locator('.link-section');
-  const tabCount = await allTabs.count();
+  const tabLabels = await allTabs.allTextContents();
+  const tabOrder = tabLabels.map((_, i) => i);
+  if (discordantPartnership) {
+    // Partner HIV is the first tab; move it to the end so it is saved last.
+    const partnerIndex = tabLabels.findIndex(label => label.includes('Partner HIV'));
+    tabOrder.push(...tabOrder.splice(partnerIndex, 1));
+  }
 
-  for (let i = 0; i < tabCount; i++) {
+  for (const i of tabOrder) {
     const tab = allTabs.nth(i);
     if (!(await tab.isVisible())) continue;
 
@@ -817,29 +836,36 @@ export async function completeLaboratoryNurse(
       await page.waitForTimeout(WAIT.elmRerender);
     }
 
-    const tabLabel = (await tab.textContent()) || `tab-${i}`;
+    const tabLabel = tabLabels[i] || `tab-${i}`;
 
     // Answer yes/no fields by their specific CSS classes.
     // Fields appear sequentially: known-as-positive → test-performed → why-not → blood-smear.
 
     // Detect if this is the HIV tab (not Partner HIV, not HIV PCR).
-    const isHivTab = hivPositive
+    const isHivTab = hivResult !== undefined
       && /^\s*HIV\s*$/i.test(tabLabel)
       && !tabLabel.includes('Partner')
       && !tabLabel.includes('PCR');
 
-    // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B) → No
+    const isDiscordantPartnerTab = discordantPartnership && tabLabel.includes('Partner HIV');
+
+    // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B) → No,
+    //    except the discordant partner → Yes, not taking ARVs.
     const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
     if (await knownPositive.isVisible().catch(() => false)) {
-      await click(knownPositive.locator('label', { hasText: 'No' }), page);
+      await answerYesNo(page, 'known-as-positive', isDiscordantPartnerTab ? 'Yes' : 'No');
       await page.waitForTimeout(WAIT.elmRerender);
+    }
+    if (isDiscordantPartnerTab) {
+      await answerYesNo(page, 'partner-taking-arv', 'No');
+      await page.waitForTimeout(WAIT.formInteraction);
     }
 
     // 2. "Will this test be performed today?"
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
       if (isHivTab) {
-        // HIV tab: perform the test with positive result.
+        // HIV tab: perform the test at point of care.
         await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
         await page.waitForTimeout(WAIT.elmRerender);
 
@@ -850,12 +876,14 @@ export async function completeLaboratoryNurse(
           await page.waitForTimeout(WAIT.elmRerender);
         }
 
-        // Select result: "Positive"
+        // Select result.
         const resultSelect = page.locator('select.form-input').first();
         if (await resultSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
-          const posOption = resultSelect.locator('option', { hasText: 'Positive' });
-          if (await posOption.count() > 0) {
-            const val = await posOption.getAttribute('value');
+          const resultOption = resultSelect.locator('option', {
+            hasText: hivResult === 'positive' ? 'Positive' : 'Negative',
+          });
+          if (await resultOption.count() > 0) {
+            const val = await resultOption.getAttribute('value');
             if (val) await resultSelect.selectOption(val);
           }
           await page.waitForTimeout(WAIT.formInteraction);
@@ -866,6 +894,21 @@ export async function completeLaboratoryNurse(
         if (await hivProgram.isVisible({ timeout: 2000 }).catch(() => false)) {
           await click(hivProgram.locator('label', { hasText: 'Yes' }), page);
           await page.waitForTimeout(WAIT.formInteraction);
+        }
+
+        // A negative result while the partner test is still unrecorded asks
+        // "Is partner known to be HIV positive?". Answered No, the partner
+        // tab saved later is what carries the diagnosis; answered Yes, the
+        // partner signs on this test carry it on their own.
+        const partnerPositive = page.locator('.form-input.yes-no.partner-hiv-positive');
+        if (await partnerPositive.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await answerYesNo(page, 'partner-hiv-positive', partnerPositiveOnHIVTab ? 'Yes' : 'No');
+          await page.waitForTimeout(WAIT.formInteraction);
+
+          if (partnerPositiveOnHIVTab) {
+            await answerYesNo(page, 'partner-taking-arv', 'No');
+            await page.waitForTimeout(WAIT.formInteraction);
+          }
         }
       } else {
         // All other tabs: test not performed.
@@ -906,14 +949,81 @@ export async function completeLaboratoryNurse(
 }
 
 /**
+ * Correct the patient's own HIV test to "known as positive" and save it.
+ *
+ * The answer means the patient is HIV positive and no test is performed, so
+ * the result and the questions asked under it are withdrawn from the screen.
+ * What they held has to go with them: read back, the partner answers of the
+ * negative test they replaced diagnose a discordant partnership and offer
+ * PrEP to a woman who is HIV positive.
+ */
+export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
+  // The correction can follow an activity, and Laboratory is opened from the
+  // encounter page, so step back to it when an activity is still on screen.
+  const activityPage = page.locator('div.page-activity.prenatal');
+  if (await activityPage.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await click(page.locator('.icon-back').first(), page);
+    await page
+      .locator('div.page-encounter.prenatal')
+      .waitFor({ timeout: 10000 });
+  }
+
+  // Every lab test has been saved by now, so Laboratory is listed under the
+  // encounter's completed activities rather than its pending ones.
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  await openActivity(page, 'prenatal', 'laboratory');
+
+  const hivTab = page.locator('.link-section').filter({
+    hasText: /^\s*HIV\s*$/,
+  });
+  await click(hivTab.first(), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  await answerYesNo(page, 'known-as-positive', 'Yes');
+  await page.waitForTimeout(WAIT.elmRerender);
+
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await click(saveBtn, page);
+  await page
+    .locator('div.page-encounter.prenatal')
+    .waitFor({ timeout: 10000 });
+
+  // The tab the encounter page opens with, so what follows finds the
+  // activities that are still pending.
+  await click(page.locator('#pending-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
+/**
  * Complete Laboratory for Nurse, ordering tests for lab processing.
  * Unlike completeLaboratoryNurse (which declines all tests), this helper
  * answers "Yes" to performing each test and selects "Lab" (not Point of Care)
  * for the immediate-result question. This leaves results pending for a Lab
  * Technician to enter later via Case Management.
  * Creates: prenatal_hiv_test, prenatal_syphilis_test, etc. with executionNote=RunToday.
+ *
+ * `bloodSmearAtLab` orders the malaria test the other way round: the rapid
+ * test is not run, a reason is given for that, and a blood smear is taken and
+ * sent to the lab. It is the one order that reaches the lab technician
+ * carrying a reason a test was not performed.
  */
-export async function completeLaboratoryNurseForLab(page: Page): Promise<string[]> {
+export async function completeLaboratoryNurseForLab(
+  page: Page,
+  options?: {
+    hivPointOfCareNegative?: boolean;
+    bloodSmearAtLab?: boolean;
+    onlyTabs?: string[];
+  },
+): Promise<string[]> {
+  const hivPointOfCareNegative = options?.hivPointOfCareNegative ?? false;
+  const bloodSmearAtLab = options?.bloodSmearAtLab ?? false;
+  // Ordering every test is most of the time this helper spends. A caller that
+  // needs only one of them can say so.
+  const onlyTabs = options?.onlyTabs;
+  let hivPointOfCareDone = false;
+  let bloodSmearDone = false;
   await openActivity(page, 'prenatal', 'laboratory');
 
   const completedTests: string[] = [];
@@ -939,6 +1049,8 @@ export async function completeLaboratoryNurseForLab(page: Page): Promise<string[
 
     const tabLabel = (await tab.textContent()) || `tab-${i}`;
 
+    if (onlyTabs && !onlyTabs.includes(tabLabel.trim())) continue;
+
     // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B) → No
     const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
     if (await knownPositive.isVisible().catch(() => false)) {
@@ -946,18 +1058,70 @@ export async function completeLaboratoryNurseForLab(page: Page): Promise<string[
       await page.waitForTimeout(WAIT.elmRerender);
     }
 
-    // 2. "Will this test be performed today?" → Yes
+    // The patient's own HIV test can be run point of care while the rest go to
+    // the lab. That mix is what puts a partner result in the recurrent phase
+    // while the patient's own result is already known.
+    const isHivTab = hivPointOfCareNegative && /^\s*HIV\s*$/i.test(tabLabel);
+    const isBloodSmearTab = bloodSmearAtLab && /^\s*Malaria\s*$/i.test(tabLabel);
+
+    // 2. "Will this test be performed today?" → Yes, except the malaria test
+    // the caller asked for a blood smear on, which is not performed.
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
-      await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
+      await click(
+        testPerformed.locator('label', { hasText: isBloodSmearTab ? 'No' : 'Yes' }),
+        page,
+      );
       await page.waitForTimeout(WAIT.elmRerender);
     }
 
-    // 3. "Immediate result?" → Lab (the "No" side of the bool input)
+    // 2b. The reason the rapid test was not run, and the blood smear taken
+    // in its place. The reason belongs to the rapid test alone - the smear is
+    // taken, and its result is what the lab is being asked for.
+    if (isBloodSmearTab) {
+      const whyNot = page.locator('.why-not .ui.checkbox label').first();
+      await whyNot.waitFor({ timeout: 5000 });
+      await click(whyNot, page);
+      await page.waitForTimeout(WAIT.formInteraction);
+
+      const bloodSmear = page.locator('.form-input.yes-no.got-results-previously');
+      await bloodSmear.waitFor({ timeout: 5000 });
+      await click(bloodSmear.locator('label', { hasText: 'Yes' }), page);
+      await page.waitForTimeout(WAIT.elmRerender);
+    }
+
+    // 3. "Immediate result?" → Lab (the "No" side of the bool input), or
+    // Point of Care for the HIV test when asked for.
     const immediateResult = page.locator('.form-input.yes-no.immediate-result');
     if (await immediateResult.isVisible().catch(() => false)) {
-      await click(immediateResult.locator('label', { hasText: 'Lab' }), page);
-      await page.waitForTimeout(WAIT.elmRerender);
+      if (isHivTab) {
+        // First label is the "Yes" side: Point of Care.
+        await click(immediateResult.locator('label').first(), page);
+        await page.waitForTimeout(WAIT.elmRerender);
+
+        const resultSelect = page.locator('select.form-input').first();
+        await resultSelect.waitFor({ timeout: 5000 });
+        const negOption = resultSelect.locator('option', { hasText: 'Negative' });
+        const negValue = await negOption.first().getAttribute('value');
+        if (!negValue) {
+          throw new Error('HIV test: no Negative option to select');
+        }
+        await resultSelect.selectOption(negValue);
+        await page.waitForTimeout(WAIT.formInteraction);
+        hivPointOfCareDone = true;
+
+        // With the partner's own test still pending, a negative result on the
+        // patient's test asks her whether her partner is HIV positive. Answer
+        // No, so the diagnosis can only come from the partner's lab result.
+        const partnerHivPositive = page.locator('.form-input.yes-no.partner-hiv-positive');
+        if (await partnerHivPositive.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await click(partnerHivPositive.locator('label', { hasText: 'No' }), page);
+          await page.waitForTimeout(WAIT.formInteraction);
+        }
+      } else {
+        await click(immediateResult.locator('label', { hasText: 'Lab' }), page);
+        await page.waitForTimeout(WAIT.elmRerender);
+      }
     }
 
     // 4. "Urine Dipstick variant?" → Short Dip (checkbox, appears for Urine Dipstick)
@@ -974,20 +1138,50 @@ export async function completeLaboratoryNurseForLab(page: Page): Promise<string[
       await page.waitForTimeout(WAIT.formInteraction);
     }
 
-    // Save this lab test tab.
-    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+    // Save this lab test tab. An incomplete form leaves the button disabled,
+    // which Elm renders as a class and no click handler rather than the
+    // disabled attribute - so it is still visible, still clickable, and the
+    // click does nothing. Matching on the class is what tells the two apart.
+    const saveBtn = page.locator(
+      'button.ui.fluid.primary.button:not(.disabled)',
+      { hasText: 'Save' },
+    );
     if (await saveBtn.isVisible()) {
       await click(saveBtn, page);
       completedTests.push(tabLabel);
+      if (isBloodSmearTab) {
+        bloodSmearDone = true;
+      }
       await page.waitForTimeout(WAIT.elmRerender);
     }
   }
 
-  // Wait for return to encounter page.
-  await page
-    .locator('div.page-encounter.prenatal')
-    .waitFor({ timeout: 10000 });
+  // A caller asking for the point-of-care HIV test is asking for a specific
+  // mix of immediate and lab results. Falling back to sending that test to the
+  // lab as well would leave the caller's test passing while proving nothing, so
+  // say so instead.
+  if (hivPointOfCareNegative && !hivPointOfCareDone) {
+    throw new Error(
+      `HIV test was not run point of care. Tabs seen: ${completedTests.join(', ')}`,
+    );
+  }
 
+  // Same reasoning: without the smear order there is nothing pending for the
+  // lab technician to be asked about, and the caller's assertions would hold
+  // against any code at all.
+  if (bloodSmearAtLab && !bloodSmearDone) {
+    throw new Error(
+      `No blood smear was ordered on the malaria test. Tabs seen: ${completedTests.join(', ')}`,
+    );
+  }
+
+  // Saving the last tab returns to the encounter page; a caller that ordered
+  // only some of them is still on the activity and goes back itself.
+  if (!onlyTabs) {
+    await page
+      .locator('div.page-encounter.prenatal')
+      .waitFor({ timeout: 10000 });
+  }
   return completedTests;
 }
 
@@ -999,7 +1193,14 @@ export async function completeLaboratoryNurseForLab(page: Page): Promise<string[
  * 3. Save.
  * Returns the list of completed test tab labels.
  */
-export async function completeLabResultsAsLabTech(
+/**
+ * Complete the tabs of an open recurrent-phase lab activity as whoever is
+ * signed in — "Lab Results", or "Lab Results Follow Ups", which asks the
+ * questions a lab technician left for the nurse. The two activities and the
+ * two roles are shown different questions on the same tab layout, so every
+ * step below is guarded on the field being visible.
+ */
+export async function completeLabResults(
   page: Page,
   options?: { checkGlucoseRange?: boolean },
 ): Promise<string[]> {
@@ -1027,7 +1228,8 @@ export async function completeLabResultsAsLabTech(
 
     const tabLabel = (await tab.textContent()) || `tab-${i}`;
 
-    // 1. "Will this test be performed today?" → Yes (confirms run by lab tech)
+    // 1. "Will this test be performed today?" → Yes. Only a lab technician is
+    // asked this, and answering it records the run as confirmed by them.
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
       await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
@@ -1086,6 +1288,16 @@ export async function completeLabResultsAsLabTech(
       await page.waitForTimeout(WAIT.formInteraction);
     }
 
+    // "Is partner taking ARVs?" → No. Partner HIV only, and only for a nurse:
+    // a lab technician does not answer the follow up questions, they are left
+    // for the nurse in the "Lab Results Follow Ups" activity. A positive
+    // partner who is not on ARVs is the discordant-partnership condition.
+    const partnerTakingArv = page.locator('.form-input.yes-no.partner-taking-arv');
+    if (await partnerTakingArv.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await click(partnerTakingArv.locator('label', { hasText: 'No' }), page);
+      await page.waitForTimeout(WAIT.formInteraction);
+    }
+
     // Conditional symptom/sign checkboxes (e.g., Syphilis positive → symptoms).
     // Select "None of these" if visible.
     const noneCheckbox = page.locator('.ui.checkbox label', { hasText: /^None of these$/i });
@@ -1094,8 +1306,15 @@ export async function completeLabResultsAsLabTech(
       await page.waitForTimeout(WAIT.formInteraction);
     }
 
-    // Save this lab test tab.
-    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+    // Save this lab test tab. As in completeLaboratoryNurseForLab, an
+    // incomplete form leaves the button disabled as a class rather than as the
+    // disabled attribute, so it stays visible and clickable and the click does
+    // nothing - matching on the class is what keeps such a tab out of
+    // completedTests.
+    const saveBtn = page.locator(
+      'button.ui.fluid.primary.button:not(.disabled)',
+      { hasText: 'Save' },
+    );
     if (await saveBtn.isVisible()) {
       await click(saveBtn, page);
       completedTests.push(tabLabel);
@@ -1104,6 +1323,18 @@ export async function completeLabResultsAsLabTech(
   }
 
   return completedTests;
+}
+
+/**
+ * Dismiss the warning popup that may open with Next Steps
+ * (e.g., "Depression not Likely").
+ */
+export async function dismissWarningPopup(page: Page) {
+  const warningContinue = page.locator('button', { hasText: 'Continue' });
+  if (await warningContinue.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await warningContinue.click({ force: true });
+    await page.waitForTimeout(WAIT.elmRerender);
+  }
 }
 
 /**
@@ -1125,12 +1356,7 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
     return [];
   }
 
-  // Dismiss any warning popup that may appear (e.g., "Depression not Likely").
-  const warningContinue = page.locator('button', { hasText: 'Continue' });
-  if (await warningContinue.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await warningContinue.click({ force: true });
-    await page.waitForTimeout(WAIT.elmRerender);
-  }
+  await dismissWarningPopup(page);
 
   const completedSteps: string[] = [];
   const nextStepIcons = [
@@ -1455,6 +1681,42 @@ export async function navigateToCaseManagement(page: Page) {
   await page.locator('.page-case-management').waitFor({ timeout: 10000 });
   await page.waitForTimeout(WAIT.elmRerender);
 }
+
+/**
+ * Open the results a lab technician entered, from the nurse's Case Management.
+ * Once every result is in, the entry opens the progress report for review
+ * rather than the encounter, so the report is what comes back.
+ */
+export async function openLabsResultsReviewFromCaseManagement(
+  page: Page,
+  personName: string,
+): Promise<Locator> {
+  const entry = page.locator('.follow-up-entry', {
+    has: page.locator('.name', { hasText: personName }),
+  });
+  await entry.waitFor({ timeout: 10000 });
+  await click(entry.locator('.icon-forward'), page);
+  const report = page.locator('div.page-report.clinical');
+  await report.waitFor({ timeout: 15000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+  return report;
+}
+
+/**
+ * Accept the results under review, which records the review and opens the
+ * recurrent encounter, where the nurse answers the follow up questions.
+ */
+export async function acceptLabsResults(page: Page): Promise<void> {
+  await click(
+    page.locator('button.ui.primary.fluid.button', { hasText: 'Review & Accept' }),
+    page,
+  );
+  await page
+    .locator('div.page-encounter.prenatal')
+    .waitFor({ timeout: 15000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
 
 /**
  * Open a recurrent encounter from the Case Management Prenatal Labs pane.

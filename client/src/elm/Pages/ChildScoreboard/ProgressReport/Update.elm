@@ -1,13 +1,11 @@
 module Pages.ChildScoreboard.ProgressReport.Update exposing (update)
 
 import App.Model
-import Backend.ChildScoreboardEncounter.Model
-import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
-import Backend.Model
 import Components.ReportToWhatsAppDialog.Model
 import Components.ReportToWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
+import Pages.ChildScoreboard.Encounter.Update exposing (closeEncounterMsgs)
 import Pages.ChildScoreboard.ProgressReport.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 
@@ -88,15 +86,3 @@ update msg model =
 
         SetReportTab tab ->
             ( { model | reportTab = tab }, Cmd.none, [] )
-
-
-{-| Closing the encounter, without saying where to go next. The two callers
-disagree about that: ending normally returns to the PIN code page, while a
-referral carries on to the acute illness encounter.
--}
-closeEncounterMsgs : ChildScoreboardEncounterId -> List App.Model.Msg
-closeEncounterMsgs id =
-    [ Backend.ChildScoreboardEncounter.Model.CloseChildScoreboardEncounter
-        |> Backend.Model.MsgChildScoreboardEncounter id
-        |> App.Model.MsgIndexedDb
-    ]

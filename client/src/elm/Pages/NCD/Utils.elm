@@ -1,4 +1,4 @@
-module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralToFacilityCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefault, updateChronicDiagnoses)
+module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, patientIsPregnantAtEncounter, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralToFacilityCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefault, updateChronicDiagnoses)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -9,7 +9,7 @@ import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
 import Date
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
@@ -17,14 +17,15 @@ import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWit
 import Pages.NCD.Model exposing (AssembledData, MedicationDistributionForm, NCDEncounterPhase(..), PreviousEncounterData, ReferralForm)
 import Pages.Utils
     exposing
-        ( ifEverySetEmpty
+        ( filterPreviousEncountersDataToDate
+        , ifEverySetEmpty
         , ifNullableTrue
         , maybeToBoolTask
+        , nonReferralReasonSection
         , taskCompleted
         , viewBoolInput
         , viewCheckBoxMultipleSelectCustomInput
         , viewCheckBoxSelectCustomInput
-        , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewInstructionsLabel
         , viewQuestionLabel
@@ -118,7 +119,12 @@ applyHypertensionDiagnosesLogic assembled diagnoses =
                 diagnoses
 
         currentHypertensionCondition =
-            resolveCurrentHypertensionCondition assembled
+            -- The stage we are about to write is compared against the stage
+            -- reached at previous encounters. The encounter being assessed is
+            -- left out on purpose: assessment re-runs on every measurement
+            -- save, so reading the stage it already carries would let each
+            -- re-run step down again from the result of the previous one.
+            resolveHypertensionCondition assembled.previousEncountersData
     in
     -- If no hypertension criteria is met, check if we can lower hypertension stage.
     if List.isEmpty hypertension && bloodPressureSatisfiesCondition lowerHypertensionStageCondition assembled then
@@ -217,7 +223,7 @@ matchNCDDiagnosis assembled diagnosis =
             reportedAnyOfCoMorbidities assembled [ MedicalConditionDiabetes, MedicalConditionGestationalDiabetes ]
 
         DiagnosisDiabetesRecurrent ->
-            if diagnosed DiagnosisDiabetesInitial assembled then
+            if matchNCDDiagnosis assembled DiagnosisDiabetesInitial then
                 False
 
             else
@@ -397,7 +403,7 @@ recommendedTreatmentMeasurementTaken allowedSigns measurements =
 
 generateRecommendedTreatmentSignsForHypertension : AssembledData -> List RecommendedTreatmentSign
 generateRecommendedTreatmentSignsForHypertension assembled =
-    if patientIsPregnant assembled.measurements then
+    if patientIsPregnant assembled then
         [ TreatmentMethyldopa2
         , NoTreatmentForHypertension
         ]
@@ -576,7 +582,9 @@ medicateForDiabetes : NCDEncounterPhase -> AssembledData -> Bool
 medicateForDiabetes phase assembled =
     case phase of
         NCDEncounterPhaseInitial ->
-            diagnosed DiagnosisDiabetesInitial assembled
+            -- Diabetes reported as a co-morbidity, or found from a blood sugar
+            -- or urine glucose reading taken at the point of care.
+            diagnosedAnyOf diabetesDiagnoses assembled
                 || diagnosedPreviouslyWithDiabetes assembled.previousEncountersData
 
         NCDEncounterPhaseRecurrent ->
@@ -602,9 +610,9 @@ medicateForHypertension phase assembled =
                                     || -- Diabetes diagnosed at initial phase of encounter.
                                        -- Note that we do not check for Renal Complications, since
                                        -- it can only be diagnosed at recurrent phase.
-                                       diagnosed DiagnosisDiabetesInitial assembled
+                                       diagnosedAnyOf diabetesDiagnoses assembled
                                     || -- Pregnant women always get Methyldopa treatment.
-                                       patientIsPregnant assembled.measurements
+                                       patientIsPregnant assembled
 
                             _ ->
                                 True
@@ -654,7 +662,7 @@ recommendedTreatmentForHypertensionInputAndTask language setRecommendedTreatment
                 |> EverySet.toList
 
         ( header, instructions ) =
-            if patientIsPregnant assembled.measurements then
+            if patientIsPregnant assembled then
                 ( Translate.HypertensionAndPregnantHeader
                 , Translate.InstructionsChooseOneMedication
                 )
@@ -723,8 +731,8 @@ recommendedTreatmentForDiabetesInputAndTask language options setRecommendedTreat
                 form.recommendedTreatmentSigns
 
         header =
-            -- We specify values at diganosis only if diagnosis was made as a result
-            -- of lab test (which can happen only on recurrent phase of encounter).
+            -- We specify values at diganosis only if diagnosis was made as a
+            -- result of a test, rather than reported as a co-morbidity.
             if diagnosed DiagnosisDiabetesRecurrent assembled then
                 let
                     bySugarCount =
@@ -813,7 +821,7 @@ resolveReferralInputsAndTasks :
 resolveReferralInputsAndTasks language phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
     let
         facility =
-            if referForHypertension phase assembled && patientIsPregnant assembled.measurements then
+            if referForHypertension phase assembled && patientIsPregnant assembled then
                 FacilityANCServices
 
             else
@@ -902,8 +910,12 @@ resolveReferralInputsAndTasks language phase assembled setReferralBoolInputMsg s
                                 )
 
                             else
-                                ( nonReferralReasonSection language facility config.reasonToSignFunc setNonReferralReasonMsg form
-                                , [ maybeToBoolTask <| getCurrentReasonForNonReferralByForm config.reasonToSignFunc form ]
+                                let
+                                    currentValue =
+                                        getCurrentReasonForNonReferralByForm config.reasonToSignFunc form
+                                in
+                                ( nonReferralReasonSection language facility currentValue setNonReferralReasonMsg
+                                , [ maybeToBoolTask currentValue ]
                                 )
                         )
                         config.referralField
@@ -940,7 +952,7 @@ referForHypertension phase assembled =
                 |> Maybe.map
                     (\condition ->
                         (condition == DiagnosisHypertensionStage3)
-                            || patientIsPregnant assembled.measurements
+                            || patientIsPregnant assembled
                     )
                 |> Maybe.withDefault False
 
@@ -948,13 +960,66 @@ referForHypertension phase assembled =
             False
 
 
-patientIsPregnant : NCDMeasurements -> Bool
-patientIsPregnant measurements =
-    getMeasurementValueFunc measurements.pregnancyTest
+{-| Number of months during which a positive pregnancy test keeps
+counting as an ongoing pregnancy.
+-}
+pregnancyTestValidityPeriod : Int
+pregnancyTestValidityPeriod =
+    9
+
+
+patientIsPregnant : AssembledData -> Bool
+patientIsPregnant assembled =
+    patientIsPregnantAtEncounter assembled.encounter.startDate assembled.measurements assembled
+
+
+{-| The pregnancy test is offered at every encounter, but it does not always
+produce an answer, so the answer may have been given at an earlier one. We take
+the most recent answer, and a positive answer stops counting once the validity
+period has passed since it was recorded.
+-}
+patientIsPregnantAtEncounter : NominalDate -> NCDMeasurements -> AssembledData -> Bool
+patientIsPregnantAtEncounter encounterDate encounterMeasurements assembled =
+    let
+        pregnancyAnswer ( startDate, measurements ) =
+            getMeasurementValueFunc measurements.pregnancyTest
+                |> Maybe.andThen
+                    (\value ->
+                        let
+                            -- Execution date is not recorded when patient is known to be
+                            -- pregnant, so we fall back to the date of the encounter at
+                            -- which the answer was given.
+                            answerDate =
+                                Maybe.withDefault startDate value.executionDate
+                        in
+                        if (value.executionNote == TestNoteKnownAsPositive) || (value.testResult == Just TestPositive) then
+                            Just ( True, answerDate )
+
+                        else if (value.testResult == Just TestNegative) || (value.executionNote == TestNoteNotIndicated) then
+                            -- A test the nurse judged not to be indicated answers the
+                            -- question, because it is recorded only after she has answered
+                            -- that the patient is not known to be pregnant.
+                            Just ( False, answerDate )
+
+                        else
+                            -- The test could not be run, or its result is not conclusive.
+                            -- That says nothing about the patient, so an answer given at
+                            -- an earlier encounter still stands.
+                            Nothing
+                    )
+    in
+    (( encounterDate, encounterMeasurements )
+        :: List.map (\data -> ( data.startDate, data.measurements ))
+            (filterPreviousEncountersDataToDate encounterDate assembled.previousEncountersData)
+    )
+        |> List.filterMap pregnancyAnswer
+        -- An answer can be dated before the encounter that recorded it, so the
+        -- most recent answer is not always the one from the latest encounter.
+        |> List.sortWith (\( _, date1 ) ( _, date2 ) -> Date.compare date2 date1)
+        |> List.head
         |> Maybe.map
-            (\value ->
-                (value.executionNote == TestNoteKnownAsPositive)
-                    || (value.testResult == Just TestPositive)
+            (\( isPositive, answerDate ) ->
+                isPositive && (diffMonths answerDate encounterDate < pregnancyTestValidityPeriod)
             )
         |> Maybe.withDefault False
 
@@ -965,7 +1030,7 @@ referForDiabetes phase assembled =
         && (case phase of
                 NCDEncounterPhaseInitial ->
                     diagnosedPreviouslyWithDiabetes assembled.previousEncountersData
-                        || diagnosed DiagnosisDiabetesInitial assembled
+                        || diagnosedAnyOf diabetesDiagnoses assembled
 
                 NCDEncounterPhaseRecurrent ->
                     diagnosed DiagnosisDiabetesRecurrent assembled
@@ -983,44 +1048,6 @@ referForRenalComplications phase assembled =
                     (not <| diagnosedPreviously DiagnosisRenalComplications assembled.previousEncountersData)
                         && diagnosed DiagnosisRenalComplications assembled
            )
-
-
-nonReferralReasonSection :
-    Language
-    -> ReferralFacility
-    -> (ReasonForNonReferral -> NonReferralSign)
-    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
-    -> ReferralForm
-    -> List (Html msg)
-nonReferralReasonSection language facility reasonToSignFunc setNonReferralReasonMsg form =
-    let
-        currentValue =
-            getCurrentReasonForNonReferralByForm reasonToSignFunc form
-
-        options =
-            if facility == FacilityHospital then
-                [ ClientRefused
-                , NoAmbulance
-                , ClientUnableToAffordFees
-                , ReasonForNonReferralNotIndicated
-                , ReasonForNonReferralOther
-                ]
-
-            else
-                [ ClientRefused
-                , ClientAlreadyInCare
-                , ReasonForNonReferralNotIndicated
-                , ReasonForNonReferralOther
-                ]
-    in
-    [ viewQuestionLabel language Translate.WhyNot
-    , viewCheckBoxSelectInput language
-        options
-        []
-        currentValue
-        (setNonReferralReasonMsg currentValue facility)
-        Translate.ReasonForNonReferral
-    ]
 
 
 getCurrentReasonForNonReferralByForm :
@@ -1088,15 +1115,3 @@ updateChronicDiagnoses encounterDate encounterDiagnoses assembled =
     in
     Maybe.Extra.values [ chronicHypertensionDiagnosis, chronicDiabetesDiagnosis, chronicRenalComplicationsDiagnosis ]
         ++ EverySet.toList encounterDiagnoses
-
-
-filterPreviousEncountersDataToDate :
-    NominalDate
-    -> List PreviousEncounterData
-    -> List PreviousEncounterData
-filterPreviousEncountersDataToDate limitDate previousEncountersData =
-    List.filter
-        (\data ->
-            Date.compare data.startDate limitDate == LT
-        )
-        previousEncountersData

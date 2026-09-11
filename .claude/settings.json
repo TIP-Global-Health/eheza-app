@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/scripts/commit-bookkeeping.sh",
+            "timeout": 60,
+            "statusMessage": "Committing backlog bookkeeping"
+          }
+        ]
+      }
+    ]
+  }
+}

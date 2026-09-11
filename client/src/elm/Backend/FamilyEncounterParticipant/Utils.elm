@@ -1,9 +1,8 @@
-module Backend.FamilyEncounterParticipant.Utils exposing (familyEncounterTypeFromString, familyEncounterTypeToString, initiatorFromUrlFragment, initiatorToUrlFragment, isDailyEncounterActive)
+module Backend.FamilyEncounterParticipant.Utils exposing (familyEncounterTypeFromString, familyEncounterTypeToString, initiatorFromUrlFragment, initiatorToUrlFragment)
 
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..), FamilyParticipantInitiator(..))
 import Backend.PatientRecord.Utils
-import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (isNothing)
+import Maybe.Extra
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
@@ -22,11 +21,6 @@ familyEncounterTypeFromString string =
 
         _ ->
             Nothing
-
-
-isDailyEncounterActive : NominalDate -> { a | startDate : NominalDate, endDate : Maybe NominalDate } -> Bool
-isDailyEncounterActive currentDate encounter =
-    encounter.startDate == currentDate && isNothing encounter.endDate
 
 
 initiatorToUrlFragment : FamilyParticipantInitiator -> String

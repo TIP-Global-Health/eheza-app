@@ -773,6 +773,9 @@ viewLabResultFollowUpsContent language assembled model =
                                 TaskSyphilisTest ->
                                     SaveSyphilisResult personId measurements.syphilisTest nextTask |> Just
 
+                                TaskPartnerHIVTest ->
+                                    SavePartnerHIVResult personId measurements.partnerHIVTest nextTask |> Just
+
                                 -- Others do not have results follow ups section,
                                 -- or, do not participate at Prenatal.
                                 _ ->

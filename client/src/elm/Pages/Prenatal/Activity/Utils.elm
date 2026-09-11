@@ -1,4 +1,4 @@
-module Pages.Prenatal.Activity.Utils exposing (activityCompleted, appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, bmiToPrePregnancyClassification, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectActivity, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generateDangerSignsListForChw, generateFutureVaccinationsDataByProgress, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, highBloodPressureCondition, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mandatoryActivitiesForAssessmentCompleted, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, noDangerSigns, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMeasuredHeight, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, resolveWarningPopupContentForUrgentDiagnoses, respiratoryRateElevated, skipObstetricHistorySecondStep, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, weightGainStandardsByPrePregnancyClassificationHealthyStart, weightGainStandardsPerPrePregnancyClassification, zscoreToPrePregnancyClassification)
+module Pages.Prenatal.Activity.Utils exposing (activityCompleted, appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, bmiToPrePregnancyClassification, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectActivity, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generateDangerSignsListForChw, generateFutureVaccinationsDataByProgress, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, highBloodPressureCondition, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mandatoryActivitiesForAssessmentCompleted, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, noDangerSigns, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMeasuredHeight, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, resolveWarningPopupContentForUrgentDiagnoses, respiratoryRateElevated, skipObstetricHistorySecondStep, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview, weightGainStandardsByPrePregnancyClassificationHealthyStart, weightGainStandardsPerPrePregnancyClassification, zscoreToPrePregnancyClassification)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PrenatalEncounterId)
@@ -33,14 +33,19 @@ import Measurement.Model
         ( InvokationModule(..)
         , LaboratoryTask(..)
         , MedicationAdministrationFormConfig
+        , VaccinationStatus(..)
         , VitalsFormConfig
         , VitalsFormMode(..)
         )
 import Measurement.Utils
     exposing
-        ( corePhysicalExamFormWithDefault
+        ( bloodSmearOrderedByValue
+        , corePhysicalExamFormWithDefault
+        , expectUniversalTestResultTask
         , getNextVaccineDose
+        , hivSignsAnswered
         , isTestResultValid
+        , latestVaccinationDataForVaccine
         , medicationAdministrationFormInputsAndTasks
         , medicationAdministrationFormWithDefault
         , resolveLabTestDate
@@ -54,7 +59,7 @@ import Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, Birt
 import Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), SymptomReviewStep(..), TreatmentReviewTask(..))
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferalRequired, generateGravida, generatePara, getAllActivities)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
-import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, hypertensionDiagnoses, labTestWithImmediateResult, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionMeasurementTaken, medicationsInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication)
+import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, hypertensionDiagnoses, labTestWithImmediateResult, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionMeasurementTaken, medicationsInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -77,6 +82,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewTextInput
         )
+import Round
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
@@ -1799,6 +1805,8 @@ weight gain rates split at 13 weeks gestational age:
   - From 13 weeks onward, it uses a different per-day rate for later
     trimesters.
 
+Gain is adequate when it meets or exceeds the expected gain for the period.
+
 -}
 resolveGWGClassificationForHealthyStart : NominalDate -> PrePregnancyClassification -> Float -> NominalDate -> Float -> AssembledData -> Maybe GWGClassification
 resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification previousWeight previousWeightDate currentWeight assembled =
@@ -1844,8 +1852,16 @@ resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification p
 
                 actualWeightGain =
                     currentWeight - previousWeight
+
+                -- Weights are recorded to a tenth of a kilogram, while the
+                -- expected gain is a sum of daily rates, so the two carry
+                -- different rounding error. Compare them to the nearest ten
+                -- grams, far finer than a scale shows, so a gain that meets
+                -- the target exactly is not read as falling short.
+                toNearestTenGrams =
+                    Round.roundNum 2
             in
-            if actualWeightGain <= expectedWeightGain then
+            if toNearestTenGrams actualWeightGain >= toNearestTenGrams expectedWeightGain then
                 GWGAdequate
 
             else
@@ -2164,23 +2180,22 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 |> Maybe.map
                     (\value ->
                         (-- Malaria RDT was run, and positive result was recorded.
-                         testPerformedByExecutionNote value.executionNote
+                         -- A record that ordered a blood smear is excluded: the
+                         -- rapid test is the one thing it did not run, so any
+                         -- result on it is one no one entered for it.
+                         not (bloodSmearOrderedByValue value)
+                            && testPerformedByExecutionNote value.executionNote
                             && (value.testResult == Just TestPositive)
                         )
-                            || (-- Malaria RDT was not run, but blood smear test
-                                -- was taken, and it's result indicates Malaria.
-                                List.member value.executionNote
-                                    [ TestNoteLackOfReagents
-                                    , TestNoteLackOfOtherSupplies
-                                    , TestNoteNoEquipment
-                                    , TestNoteBrokenEquipment
-                                    , TestNoteNotIndicated
+                            || (-- Blood smear test was taken instead of the RDT,
+                                -- and it's result indicates Malaria. Whoever
+                                -- read the smear, and whatever the note about
+                                -- the RDT says, the smear is the diagnosis.
+                                List.member value.bloodSmearResult
+                                    [ BloodSmearPlus
+                                    , BloodSmearPlusPlus
+                                    , BloodSmearPlusPlusPlus
                                     ]
-                                    && List.member value.bloodSmearResult
-                                        [ BloodSmearPlus
-                                        , BloodSmearPlusPlus
-                                        , BloodSmearPlusPlusPlus
-                                        ]
                                )
                     )
                 |> Maybe.withDefault False
@@ -2283,68 +2298,56 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     (.hivViralLoad >> Maybe.map (\viralLoad -> viralLoad >= 20))
                 |> Maybe.withDefault False
 
-        discordantPartnershipDiagnosed =
-            let
-                byHIVTest =
-                    getMeasurementValueFunc measurements.hivTest
+        -- Partner is not taking ARVs, or is taking them without reaching
+        -- surpressed viral load.
+        partnerNotSurpressed hivSigns =
+            not
+                (EverySet.member PartnerTakingARV hivSigns
+                    && EverySet.member PartnerSurpressedViralLoad hivSigns
+                )
+
+        hivNegative =
+            patientHIVNegative measurements
+
+        discordantPartnershipByHIVTest =
+            hivNegative
+                && (getMeasurementValueFunc measurements.hivTest
                         |> Maybe.andThen .hivSigns
                         |> Maybe.map
                             (\hivSigns ->
                                 -- Partner is HIV positive.
                                 EverySet.member PartnerHIVPositive hivSigns
-                                    && (-- Partner is not taking ARVs.
-                                        (not <| EverySet.member PartnerTakingARV hivSigns)
-                                            || -- Partner is taking ARVs, but did not
-                                               -- reach surpressed viral load.
-                                               (EverySet.member PartnerTakingARV hivSigns
-                                                    && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
-                                               )
-                                       )
+                                    && partnerNotSurpressed hivSigns
                             )
                         |> Maybe.withDefault False
+                   )
 
-                byPartnerHIVTest =
-                    let
-                        patientHIVNegative =
-                            getMeasurementValueFunc measurements.hivTest
-                                |> Maybe.map
-                                    (\value ->
-                                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-                                            && (value.testResult == Just TestNegative)
-                                    )
-                                |> Maybe.withDefault False
-                    in
-                    patientHIVNegative
-                        && (getMeasurementValueFunc measurements.partnerHIVTest
-                                |> Maybe.map
-                                    (\value ->
-                                        if
-                                            (value.executionNote == TestNoteKnownAsPositive)
-                                                || (List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-                                                        && (value.testResult == Just TestPositive)
-                                                   )
-                                        then
-                                            Maybe.map
-                                                (\hivSigns ->
-                                                    (-- Partner is not taking ARVs.
-                                                     (not <| EverySet.member PartnerTakingARV hivSigns)
-                                                        || -- Partner is taking ARVs, but did not
-                                                           -- reach surpressed viral load.
-                                                           (EverySet.member PartnerTakingARV hivSigns
-                                                                && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
-                                                           )
-                                                    )
-                                                )
-                                                value.hivSigns
-                                                |> Maybe.withDefault False
+        discordantPartnershipByPartnerHIVTest =
+            hivNegative
+                && (getMeasurementValueFunc measurements.partnerHIVTest
+                        |> Maybe.map
+                            (\value ->
+                                if
+                                    (value.executionNote == TestNoteKnownAsPositive)
+                                        || (testPerformedByExecutionNote value.executionNote
+                                                && (value.testResult == Just TestPositive)
+                                           )
+                                then
+                                    Maybe.map
+                                        (\hivSigns ->
+                                            -- Until the nurse answers the follow up questions,
+                                            -- we do not know whether the partner is surpressed.
+                                            hivSignsAnswered hivSigns
+                                                && partnerNotSurpressed hivSigns
+                                        )
+                                        value.hivSigns
+                                        |> Maybe.withDefault False
 
-                                        else
-                                            False
-                                    )
-                                |> Maybe.withDefault False
-                           )
-            in
-            byPartnerHIVTest || byHIVTest
+                                else
+                                    False
+                            )
+                        |> Maybe.withDefault False
+                   )
 
         syphilisDiagnosed =
             positiveSyphilisTest
@@ -2772,10 +2775,26 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 && (not <| diagnosedAtInitalPhase DiagnosisHIVDetectableViralLoadInitialPhase)
 
         DiagnosisDiscordantPartnershipInitialPhase ->
-            discordantPartnershipDiagnosed && immediateResult .hivTest
+            let
+                -- Result of a test is known already at initial phase, unless
+                -- a result task is expected at the recurrent one. That covers
+                -- a test run with immediate result, and a test that needed no
+                -- lab at all - partner known as positive, or result taken from
+                -- history.
+                resultKnownAtInitialPhase getMeasurementFunc =
+                    getMeasurementFunc measurements
+                        |> getMeasurementValueFunc
+                        |> Maybe.map (expectUniversalTestResultTask >> not)
+                        |> Maybe.withDefault False
+            in
+            (discordantPartnershipByHIVTest && resultKnownAtInitialPhase .hivTest)
+                || (discordantPartnershipByPartnerHIVTest
+                        && resultKnownAtInitialPhase .partnerHIVTest
+                        && resultKnownAtInitialPhase .hivTest
+                   )
 
         DiagnosisDiscordantPartnershipRecurrentPhase ->
-            discordantPartnershipDiagnosed
+            (discordantPartnershipByPartnerHIVTest || discordantPartnershipByHIVTest)
                 && (not <| diagnosedAtInitalPhase DiagnosisDiscordantPartnershipInitialPhase)
 
         DiagnosisSyphilisInitialPhase ->
@@ -3099,11 +3118,11 @@ matchSymptomsPrenatalDiagnosis egaInWeeks assembled diagnosis =
 
         DiagnosisTrichomonasOrBacterialVaginosis ->
             trichomonasOrBacterialVaginosisDiagnosed
-                && (not <| diagnosedPreviously DiagnosisGonorrhea assembled)
+                && (not <| diagnosedPreviously DiagnosisTrichomonasOrBacterialVaginosis assembled)
 
         DiagnosisTrichomonasOrBacterialVaginosisContinued ->
             trichomonasOrBacterialVaginosisDiagnosed
-                && diagnosedPreviously DiagnosisGonorrhea assembled
+                && diagnosedPreviously DiagnosisTrichomonasOrBacterialVaginosis assembled
 
         Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
             symptomRecorded assembled.measurements CoughContinuous
@@ -6063,6 +6082,63 @@ generateFutureVaccinationsDataByProgress currentDate assembled =
     generateFutureVaccinationsData currentDate assembled.globalLmpDate assembled.vaccinationProgress
 
 
+viewVaccinationOverview : Language -> NominalDate -> AssembledData -> List (Html any)
+viewVaccinationOverview language currentDate assembled =
+    let
+        entriesHeading =
+            div [ class "heading vaccination" ]
+                [ div [ class "name" ] [ text <| translate language Translate.Immunisation ]
+                , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
+                , div [ class "next-due" ] [ text <| translate language Translate.NextDue ]
+                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
+                ]
+
+        futureVaccinationsData =
+            generateFutureVaccinationsDataByProgress currentDate assembled
+                |> Dict.fromList
+
+        entries =
+            Dict.toList assembled.vaccinationProgress
+                |> List.map viewVaccinationEntry
+
+        viewVaccinationEntry ( vaccineType, doses ) =
+            let
+                nextDue =
+                    Dict.get vaccineType futureVaccinationsData
+                        |> Maybe.Extra.join
+                        |> Maybe.map Tuple.second
+
+                nextDueText =
+                    Maybe.map formatDDMMYYYY nextDue
+                        |> Maybe.withDefault ""
+
+                ( status, statusClass ) =
+                    Maybe.map
+                        (\dueDate ->
+                            if Date.compare dueDate currentDate == LT then
+                                ( StatusBehind, "behind" )
+
+                            else
+                                ( StatusUpToDate, "up-to-date" )
+                        )
+                        nextDue
+                        |> Maybe.withDefault ( StatusCompleted, "completed" )
+            in
+            div [ class "entry vaccination" ]
+                [ div [ class "cell name" ] [ text <| translate language <| Translate.PrenatalVaccineLabel vaccineType ]
+                , Dict.values doses
+                    |> List.sortWith Date.compare
+                    |> List.map (formatDDMMYYYY >> text >> List.singleton >> p [])
+                    |> div [ class "cell date" ]
+                , div [ classList [ ( "cell next-due ", True ), ( "red", status == StatusBehind ) ] ]
+                    [ text nextDueText ]
+                , div [ class <| "cell status " ++ statusClass ]
+                    [ text <| translate language <| Translate.VaccinationStatus status ]
+                ]
+    in
+    entriesHeading :: entries
+
+
 {-| For each type of vaccine, we generate next dose and administration date.
 If there's no need for future vaccination, Nothing is returned.
 -}
@@ -6142,17 +6218,6 @@ generateSuggestedVaccinations currentDate egaInWeeks assembled =
 allVaccineTypes : List PrenatalVaccineType
 allVaccineTypes =
     [ VaccineTetanus ]
-
-
-latestVaccinationDataForVaccine : VaccinationProgressDict -> PrenatalVaccineType -> Maybe ( VaccineDose, NominalDate )
-latestVaccinationDataForVaccine vaccinationHistory vaccineType =
-    Dict.get vaccineType vaccinationHistory
-        |> Maybe.andThen
-            (Dict.toList
-                >> List.sortBy (Tuple.first >> vaccineDoseToComparable)
-                >> List.reverse
-                >> List.head
-            )
 
 
 nextDoseForVaccine : NominalDate -> Int -> PrenatalVaccineType -> NominalDate -> VaccineDose -> Maybe VaccineDose
