@@ -76,6 +76,7 @@
   color: #0f172a !important;
 }
 
+:where(.ehs-dashboard) a,
 :where(.ehs-dashboard) h1,
 :where(.ehs-dashboard) h2,
 :where(.ehs-dashboard) p,
@@ -91,6 +92,7 @@
   font-weight: inherit !important;
   line-height: inherit !important;
   list-style: none !important;
+  text-decoration: inherit !important;
 }
 
 :where(.ehs-dashboard) button {
@@ -153,8 +155,10 @@
     display: none !important;
   }
 
-  /* The filters pick what is printed; they are not part of it. */
-  .ehs-dashboard__filters {
+  /* The filters pick what is printed, and the actions act on the screen;
+     neither is part of what lands on paper. */
+  .ehs-dashboard__filters,
+  .ehs-dashboard__actions {
     display: none !important;
   }
 

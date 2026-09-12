@@ -11,8 +11,8 @@ import Backend.Components.Model exposing (MenuData)
 import Backend.Model exposing (ModelBackend)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
-import Html exposing (Attribute, Html, button, div, h1, h2, label, li, option, p, select, span, table, tbody, td, text, th, thead, tr, ul)
-import Html.Attributes exposing (attribute, class, classList, colspan, for, id, selected, style, tabindex, type_, value)
+import Html exposing (Attribute, Html, a, button, div, h1, h2, label, li, option, p, select, span, table, tbody, td, text, th, thead, tr, ul)
+import Html.Attributes exposing (attribute, class, classList, colspan, for, href, id, selected, style, tabindex, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode
 import Maybe.Extra
@@ -167,9 +167,11 @@ viewBanner language dashboard siteName exportMsg =
                 [ text <| translateLabel language HealthyStart ]
             , p [ class "mt-1 text-lg font-semibold" ] [ text siteName ]
             ]
-        , div [ class "flex items-center justify-start gap-6 md:justify-end" ]
+        , div [ class "ehs-dashboard__actions flex items-center justify-start gap-6 md:justify-end" ]
             [ viewBannerAction exportMsg Export language
             , viewBannerAction PrintPage Print language
+            , a [ href "/user/logout", class bannerActionClass ]
+                [ text <| translateLabel language LogOut ]
             ]
         ]
 
@@ -179,9 +181,17 @@ viewBannerAction msg labelId language =
     button
         [ type_ "button"
         , onClick msg
-        , class "text-lg font-semibold underline decoration-2 underline-offset-4 hover:text-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        , class bannerActionClass
         ]
         [ text <| translateLabel language labelId ]
+
+
+{-| The banner's actions read as one row, whether they act on the page or leave
+it.
+-}
+bannerActionClass : String
+bannerActionClass =
+    "text-lg font-semibold underline decoration-2 underline-offset-4 hover:text-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
 
 
 viewDashboardIcon : Dashboard -> Html Msg

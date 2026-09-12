@@ -4150,6 +4150,13 @@ translateDashboardLabel label =
             , somali = Nothing
             }
 
+        Dashboard.LogOut ->
+            { english = "Log out"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         Dashboard.LostToFollowUp ->
             { english = "Lost to Follow-Up (ANC–PNC–Child)"
             , kinyarwanda = Nothing

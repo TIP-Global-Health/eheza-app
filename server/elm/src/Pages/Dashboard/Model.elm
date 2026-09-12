@@ -64,6 +64,7 @@ type DashboardLabel
     | InstitutionalTarget
     | InterventionSite
     | InterventionSiteAverage
+    | LogOut
     | LostToFollowUp
     | MedianGaAtFirstAnc
     | MonthByMonthDetail

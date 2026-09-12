@@ -12836,6 +12836,8 @@ var $author$project$Translate$translateDashboardLabel = function (label) {
 			return {english: 'Intervention Site', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'InterventionSiteAverage':
 			return {english: 'Int. Site Average', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'LogOut':
+			return {english: 'Log out', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'LostToFollowUp':
 			return {english: 'Lost to Follow-Up (ANC–PNC–Child)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'MedianGaAtFirstAnc':
@@ -45652,8 +45654,10 @@ var $author$project$Pages$Dashboard$Model$DashboardThree = {$: 'DashboardThree'}
 var $author$project$Pages$Dashboard$Model$DashboardTwo = {$: 'DashboardTwo'};
 var $author$project$Pages$Dashboard$Model$Export = {$: 'Export'};
 var $author$project$Pages$Dashboard$Model$HealthyStart = {$: 'HealthyStart'};
+var $author$project$Pages$Dashboard$Model$LogOut = {$: 'LogOut'};
 var $author$project$Pages$Dashboard$Model$Print = {$: 'Print'};
 var $author$project$Pages$Dashboard$Model$PrintPage = {$: 'PrintPage'};
+var $author$project$Pages$Dashboard$View$bannerActionClass = 'text-lg font-semibold underline decoration-2 underline-offset-4 hover:text-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $author$project$Pages$Dashboard$View$viewBannerAction = F3(
@@ -45664,7 +45668,7 @@ var $author$project$Pages$Dashboard$View$viewBannerAction = F3(
 				[
 					$elm$html$Html$Attributes$type_('button'),
 					$elm$html$Html$Events$onClick(msg),
-					$elm$html$Html$Attributes$class('text-lg font-semibold underline decoration-2 underline-offset-4 hover:text-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white')
+					$elm$html$Html$Attributes$class($author$project$Pages$Dashboard$View$bannerActionClass)
 				]),
 			_List_fromArray(
 				[
@@ -45864,12 +45868,24 @@ var $author$project$Pages$Dashboard$View$viewBanner = F4(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('flex items-center justify-start gap-6 md:justify-end')
+							$elm$html$Html$Attributes$class('ehs-dashboard__actions flex items-center justify-start gap-6 md:justify-end')
 						]),
 					_List_fromArray(
 						[
 							A3($author$project$Pages$Dashboard$View$viewBannerAction, exportMsg, $author$project$Pages$Dashboard$Model$Export, language),
-							A3($author$project$Pages$Dashboard$View$viewBannerAction, $author$project$Pages$Dashboard$Model$PrintPage, $author$project$Pages$Dashboard$Model$Print, language)
+							A3($author$project$Pages$Dashboard$View$viewBannerAction, $author$project$Pages$Dashboard$Model$PrintPage, $author$project$Pages$Dashboard$Model$Print, language),
+							A2(
+							$elm$html$Html$a,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$href('/user/logout'),
+									$elm$html$Html$Attributes$class($author$project$Pages$Dashboard$View$bannerActionClass)
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$LogOut))
+								]))
 						]))
 				]));
 	});
