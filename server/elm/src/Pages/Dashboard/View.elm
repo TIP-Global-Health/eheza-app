@@ -227,7 +227,7 @@ viewFilterControl language dashboard model filter =
     in
     div [ class "flex flex-col gap-1" ]
         [ label [ for selectId, class "text-sm font-bold text-slate-800" ]
-            [ text <| translateLabel language (filterLabel filter.key) ]
+            [ text <| translate language (filterLabel filter.key) ]
         , select
             [ id selectId
             , class "rounded border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
@@ -470,7 +470,7 @@ chartDescription language dashboard kpi selection =
 viewYearSelector : Language -> List Int -> YearSel -> Html Msg
 viewYearSelector language years current =
     div [ class "mb-2 flex flex-wrap items-center gap-3" ]
-        (span [ class "font-bold text-slate-900" ] [ text (translateLabel language YearLabel ++ ":") ]
+        (span [ class "font-bold text-slate-900" ] [ text (translate language Translate.YearLabel ++ ":") ]
             :: List.map (viewYearButton language current) (AllYears :: List.map Year years)
         )
 
@@ -599,7 +599,7 @@ viewDrillTable language dashboard years kpi =
     let
         monthHeader backgroundClass =
             th [ class (backgroundClass ++ " p-2"), attribute "scope" "col" ]
-                [ span [ class "sr-only" ] [ text <| translateLabel language MonthColumn ] ]
+                [ span [ class "sr-only" ] [ text <| translate language Translate.MonthLabel ] ]
     in
     table [ class "w-full min-w-[760px] border-collapse text-sm" ]
         [ thead []
@@ -753,7 +753,7 @@ drillExportMsg : Language -> Dashboard -> List Int -> Kpi -> Msg
 drillExportMsg language dashboard years kpi =
     let
         captions =
-            translateLabel language MonthColumn
+            translate language Translate.MonthLabel
                 :: List.concatMap
                     (\year ->
                         List.map

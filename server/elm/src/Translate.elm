@@ -3968,13 +3968,6 @@ translateDashboardLabel label =
             , somali = Nothing
             }
 
-        Dashboard.AllYearsLabel ->
-            { english = "All"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
-            }
-
         Dashboard.AncMissRate ->
             { english = "ANC Miss Rate (≥1 Missed Visit)"
             , kinyarwanda = Nothing
@@ -4157,13 +4150,6 @@ translateDashboardLabel label =
             , somali = Nothing
             }
 
-        Dashboard.Location ->
-            { english = "Location"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
-            }
-
         Dashboard.LostToFollowUp ->
             { english = "Lost to Follow-Up (ANC–PNC–Child)"
             , kinyarwanda = Nothing
@@ -4180,13 +4166,6 @@ translateDashboardLabel label =
 
         Dashboard.MonthByMonthDetail ->
             { english = "month-by-month detail"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
-            }
-
-        Dashboard.MonthColumn ->
-            { english = "Month"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -4397,13 +4376,6 @@ translateDashboardLabel label =
 
         Dashboard.WomenCurrentlyInAncCare ->
             { english = "Women Currently in ANC Care"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
-            }
-
-        Dashboard.YearLabel ->
-            { english = "Year"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing

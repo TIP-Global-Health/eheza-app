@@ -38,7 +38,6 @@ type DashboardLabel
     | AlertPretermRateExceeded
     | AlertSitesWithDelayedBirthWeightRecording Int
     | AlertSitesWithPretermRate Int
-    | AllYearsLabel
     | AncMissRate
     | Aspirin
     | Average
@@ -65,11 +64,9 @@ type DashboardLabel
     | InstitutionalTarget
     | InterventionSite
     | InterventionSiteAverage
-    | Location
     | LostToFollowUp
     | MedianGaAtFirstAnc
     | MonthByMonthDetail
-    | MonthColumn
     | NoActiveAlerts
     | OpenMonthByMonthDetailFor
     | Performance
@@ -100,7 +97,6 @@ type DashboardLabel
     | Trends
     | ValueColumn
     | WomenCurrentlyInAncCare
-    | YearLabel
 
 
 {-| One of the dropdowns above the summary tiles.

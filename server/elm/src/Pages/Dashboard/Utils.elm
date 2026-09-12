@@ -23,7 +23,7 @@ import Pages.Dashboard.Model
         , YearSel(..)
         )
 import Time exposing (Month(..))
-import Translate exposing (translate)
+import Translate exposing (TranslationId, translate)
 
 
 dashboardSlug : Dashboard -> String
@@ -64,17 +64,17 @@ filterKeySlug key =
             "time"
 
 
-filterLabel : FilterKey -> DashboardLabel
+filterLabel : FilterKey -> TranslationId
 filterLabel key =
     case key of
         FilterLocation ->
-            Location
+            Translate.Location
 
         FilterSite ->
-            InterventionSite
+            Translate.DashboardLabel InterventionSite
 
         FilterTime ->
-            Time
+            Translate.DashboardLabel Time
 
 
 kpiById : List Kpi -> String -> Maybe Kpi
@@ -103,7 +103,7 @@ yearSelLabel : Language -> YearSel -> String
 yearSelLabel language selection =
     case selection of
         AllYears ->
-            translate language (Translate.DashboardLabel AllYearsLabel)
+            translate language Translate.All
 
         Year year ->
             String.fromInt year

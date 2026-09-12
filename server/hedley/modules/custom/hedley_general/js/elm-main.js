@@ -12784,8 +12784,6 @@ var $author$project$Translate$translateDashboardLabel = function (label) {
 				kirundi: $elm$core$Maybe$Nothing,
 				somali: $elm$core$Maybe$Nothing
 			};
-		case 'AllYearsLabel':
-			return {english: 'All', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'AncMissRate':
 			return {english: 'ANC Miss Rate (≥1 Missed Visit)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'Aspirin':
@@ -12838,16 +12836,12 @@ var $author$project$Translate$translateDashboardLabel = function (label) {
 			return {english: 'Intervention Site', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'InterventionSiteAverage':
 			return {english: 'Int. Site Average', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
-		case 'Location':
-			return {english: 'Location', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'LostToFollowUp':
 			return {english: 'Lost to Follow-Up (ANC–PNC–Child)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'MedianGaAtFirstAnc':
 			return {english: 'Median GA at First ANC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'MonthByMonthDetail':
 			return {english: 'month-by-month detail', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
-		case 'MonthColumn':
-			return {english: 'Month', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'NoActiveAlerts':
 			return {english: 'No active alerts.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'OpenMonthByMonthDetailFor':
@@ -12910,10 +12904,8 @@ var $author$project$Translate$translateDashboardLabel = function (label) {
 			return {english: 'Trends', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'ValueColumn':
 			return {english: 'Value', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
-		case 'WomenCurrentlyInAncCare':
-			return {english: 'Women Currently in ANC Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		default:
-			return {english: 'Year', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			return {english: 'Women Currently in ANC Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 	}
 };
 var $author$project$Translate$translateHttpError = function (transId) {
@@ -45884,7 +45876,6 @@ var $author$project$Pages$Dashboard$View$viewBanner = F4(
 var $author$project$Pages$Dashboard$Model$CloseDrill = {$: 'CloseDrill'};
 var $author$project$Pages$Dashboard$Model$MonthByMonthDetail = {$: 'MonthByMonthDetail'};
 var $author$project$Pages$Dashboard$Model$Return = {$: 'Return'};
-var $author$project$Pages$Dashboard$Model$MonthColumn = {$: 'MonthColumn'};
 var $author$project$Pages$Dashboard$Placeholder$rnd = function (n) {
 	return A2(
 		$elm$core$Basics$modBy,
@@ -46014,7 +46005,7 @@ var $author$project$Pages$Dashboard$View$drillExportMsg = F4(
 			$author$project$Pages$Dashboard$Utils$monthLabels(language));
 		var captions = A2(
 			$elm$core$List$cons,
-			A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$MonthColumn),
+			A2($author$project$Translate$translate, language, $author$project$Translate$MonthLabel),
 			A2(
 				$elm$core$List$concatMap,
 				function (year) {
@@ -46189,7 +46180,7 @@ var $author$project$Pages$Dashboard$View$viewDrillTable = F4(
 						_List_fromArray(
 							[
 								$elm$html$Html$text(
-								A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$MonthColumn))
+								A2($author$project$Translate$translate, language, $author$project$Translate$MonthLabel))
 							]))
 					]));
 		};
@@ -46316,16 +46307,15 @@ var $author$project$Pages$Dashboard$Utils$filterKeySlug = function (key) {
 	}
 };
 var $author$project$Pages$Dashboard$Model$InterventionSite = {$: 'InterventionSite'};
-var $author$project$Pages$Dashboard$Model$Location = {$: 'Location'};
 var $author$project$Pages$Dashboard$Model$Time = {$: 'Time'};
 var $author$project$Pages$Dashboard$Utils$filterLabel = function (key) {
 	switch (key.$) {
 		case 'FilterLocation':
-			return $author$project$Pages$Dashboard$Model$Location;
+			return $author$project$Translate$Location;
 		case 'FilterSite':
-			return $author$project$Pages$Dashboard$Model$InterventionSite;
+			return $author$project$Translate$DashboardLabel($author$project$Pages$Dashboard$Model$InterventionSite);
 		default:
-			return $author$project$Pages$Dashboard$Model$Time;
+			return $author$project$Translate$DashboardLabel($author$project$Pages$Dashboard$Model$Time);
 	}
 };
 var $elm$html$Html$Attributes$for = $elm$html$Html$Attributes$stringProperty('htmlFor');
@@ -46353,7 +46343,7 @@ var $author$project$Pages$Dashboard$View$viewFilterControl = F4(
 						[
 							$elm$html$Html$text(
 							A2(
-								$author$project$Pages$Dashboard$View$translateLabel,
+								$author$project$Translate$translate,
 								language,
 								$author$project$Pages$Dashboard$Utils$filterLabel(filter.key)))
 						])),
@@ -46835,14 +46825,10 @@ var $author$project$Pages$Dashboard$Model$TrendChartDescriptionProgram = F2(
 	function (a, b) {
 		return {$: 'TrendChartDescriptionProgram', a: a, b: b};
 	});
-var $author$project$Pages$Dashboard$Model$AllYearsLabel = {$: 'AllYearsLabel'};
 var $author$project$Pages$Dashboard$Utils$yearSelLabel = F2(
 	function (language, selection) {
 		if (selection.$ === 'AllYears') {
-			return A2(
-				$author$project$Translate$translate,
-				language,
-				$author$project$Translate$DashboardLabel($author$project$Pages$Dashboard$Model$AllYearsLabel));
+			return A2($author$project$Translate$translate, language, $author$project$Translate$All);
 		} else {
 			var year = selection.a;
 			return $elm$core$String$fromInt(year);
@@ -47141,7 +47127,6 @@ var $author$project$Pages$Dashboard$View$viewLegend = function (series) {
 var $author$project$Pages$Dashboard$Model$Year = function (a) {
 	return {$: 'Year', a: a};
 };
-var $author$project$Pages$Dashboard$Model$YearLabel = {$: 'YearLabel'};
 var $author$project$Pages$Dashboard$Model$SelectTrendYear = function (a) {
 	return {$: 'SelectTrendYear', a: a};
 };
@@ -47192,7 +47177,7 @@ var $author$project$Pages$Dashboard$View$viewYearSelector = F3(
 					_List_fromArray(
 						[
 							$elm$html$Html$text(
-							A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$YearLabel) + ':')
+							A2($author$project$Translate$translate, language, $author$project$Translate$YearLabel) + ':')
 						])),
 				A2(
 					$elm$core$List$map,
