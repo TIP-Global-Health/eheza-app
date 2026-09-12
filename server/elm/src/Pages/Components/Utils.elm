@@ -114,9 +114,25 @@ reportTablesDataToCSV =
 
 reportTableDataToCSV : MetricsResultsTableData -> String
 reportTableDataToCSV tableData =
-    [ tableData.heading
-    , String.join "," tableData.captions
-    , List.map (String.join ",") tableData.rows
+    let
+        line =
+            List.map csvField >> String.join ","
+    in
+    [ csvField tableData.heading
+    , line tableData.captions
+    , List.map line tableData.rows
         |> String.join "\n"
     ]
         |> String.join "\n"
+
+
+{-| One CSV field. A value holding a comma, a quote or a line break is wrapped
+in quotes, and the quotes inside it doubled, so it stays one field.
+-}
+csvField : String -> String
+csvField value =
+    if String.any (\char -> char == ',' || char == '"' || char == '\n' || char == '\u{000D}') value then
+        "\"" ++ String.replace "\"" "\"\"" value ++ "\""
+
+    else
+        value

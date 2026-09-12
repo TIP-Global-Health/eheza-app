@@ -11,9 +11,10 @@ import Backend.Components.Model exposing (MenuData)
 import Backend.Model exposing (ModelBackend)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
-import Html exposing (Html, button, div, h1, h2, label, li, option, p, select, span, table, tbody, td, text, th, thead, tr, ul)
-import Html.Attributes exposing (attribute, class, classList, colspan, for, id, selected, style, type_, value)
-import Html.Events exposing (onClick, onInput)
+import Html exposing (Attribute, Html, button, div, h1, h2, label, li, option, p, select, span, table, tbody, td, text, th, thead, tr, ul)
+import Html.Attributes exposing (attribute, class, classList, colspan, for, id, selected, style, tabindex, type_, value)
+import Html.Events exposing (on, onClick, onInput)
+import Json.Decode
 import Maybe.Extra
 import Pages.Components.TrendChart as TrendChart
 import Pages.Components.Utils exposing (reportTableDataToCSV, reportTablesDataToCSV)
@@ -36,8 +37,10 @@ import Pages.Dashboard.Placeholder as Placeholder
 import Pages.Dashboard.Utils
     exposing
         ( dashboardSlug
+        , drillDialogId
         , filterKeySlug
         , filterLabel
+        , kpiBlockId
         , kpiById
         , monthLabels
         , selectedFilterValue
@@ -64,16 +67,31 @@ viewDashboard language currentDate data dashboard model =
 
         years =
             Placeholder.drillYears currentDate
+
+        tiles =
+            Placeholder.tilesFor dashboard
+
+        kpis =
+            Placeholder.kpisFor dashboard
+
+        coverage =
+            Placeholder.coverageFor dashboard
     in
     div [ class "ehs-dashboard mx-auto w-full max-w-[1440px] px-3 py-4 md:px-6" ]
-        [ div [ class "ehs-dashboard__page overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-slate-200" ]
-            [ viewBanner language dashboard (resolveSiteName language dashboard filters model)
+        [ div
+            (class "ehs-dashboard__page overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-slate-200"
+                :: behindDrillDownAttributes model.screen
+            )
+            [ viewBanner language
+                dashboard
+                (resolveSiteName language dashboard filters model)
+                (dashboardExportMsg language dashboard tiles kpis coverage)
             , div [ class "px-4 py-4 md:px-6" ]
                 [ viewFilterRow language dashboard filters model
-                , viewTileRow language (Placeholder.tilesFor dashboard)
+                , viewTileRow language tiles
                 , div [ class "mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2" ]
-                    [ viewLeftColumn language dashboard
-                    , viewRightColumn language dashboard years model
+                    [ viewLeftColumn language kpis coverage
+                    , viewRightColumn language dashboard years kpis model
                     ]
                 ]
             ]
@@ -84,6 +102,20 @@ viewDashboard language currentDate data dashboard model =
             DrillScreen kpi ->
                 viewDrillDown language dashboard years kpi
         ]
+
+
+{-| While the drill down is open the dashboard under it is out of reach: the
+dialog says it covers the page, so nothing behind it should be reachable by tab
+or readable by a screen reader.
+-}
+behindDrillDownAttributes : Screen -> List (Attribute Msg)
+behindDrillDownAttributes screen =
+    case screen of
+        DashboardScreen ->
+            []
+
+        DrillScreen _ ->
+            [ attribute "aria-hidden" "true", attribute "inert" "" ]
 
 
 {-| The Facility dashboard is about the site the filter selects; the Program
@@ -106,8 +138,8 @@ resolveSiteName language dashboard filters model =
 -- BANNER
 
 
-viewBanner : Language -> Dashboard -> String -> Html Msg
-viewBanner language dashboard siteName =
+viewBanner : Language -> Dashboard -> String -> Msg -> Html Msg
+viewBanner language dashboard siteName exportMsg =
     let
         ( number, title ) =
             case dashboard of
@@ -136,7 +168,7 @@ viewBanner language dashboard siteName =
             , p [ class "mt-1 text-lg font-semibold" ] [ text siteName ]
             ]
         , div [ class "flex items-center justify-start gap-6 md:justify-end" ]
-            [ viewBannerAction (dashboardExportMsg language dashboard) Export language
+            [ viewBannerAction exportMsg Export language
             , viewBannerAction PrintPage Print language
             ]
         ]
@@ -235,13 +267,13 @@ viewTile language tile =
 -- INDICATOR BLOCKS AND COVERAGE BARS
 
 
-viewLeftColumn : Language -> Dashboard -> Html Msg
-viewLeftColumn language dashboard =
+viewLeftColumn : Language -> List Kpi -> List Coverage -> Html Msg
+viewLeftColumn language kpis coverage =
     div []
         [ div [ class "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3" ]
-            (List.map (viewKpiBlock language) (Placeholder.kpisFor dashboard))
+            (List.map (viewKpiBlock language) kpis)
         , div [ class "mt-6 flex flex-col gap-4" ]
-            (List.map (viewCoverageBar language) (Placeholder.coverageFor dashboard))
+            (List.map (viewCoverageBar language) coverage)
         ]
 
 
@@ -253,6 +285,7 @@ viewKpiBlock language kpi =
     in
     button
         [ type_ "button"
+        , id (kpiBlockId kpi)
         , onClick (OpenDrill kpi)
         , attribute "aria-label" (translateLabel language OpenMonthByMonthDetailFor ++ " " ++ kpiLabel)
         , class "flex w-full flex-col rounded-lg border border-slate-200 p-3 text-left transition hover:border-accent hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
@@ -337,20 +370,17 @@ viewCoverageBar language coverage =
 -- TRENDS AND CRITICAL ALERTS
 
 
-viewRightColumn : Language -> Dashboard -> List Int -> Model -> Html Msg
-viewRightColumn language dashboard years model =
+viewRightColumn : Language -> Dashboard -> List Int -> List Kpi -> Model -> Html Msg
+viewRightColumn language dashboard years kpis model =
     div []
-        [ viewTrendsPanel language dashboard years model
+        [ viewTrendsPanel language dashboard years kpis model
         , viewAlertsPanel language dashboard
         ]
 
 
-viewTrendsPanel : Language -> Dashboard -> List Int -> Model -> Html Msg
-viewTrendsPanel language dashboard years model =
+viewTrendsPanel : Language -> Dashboard -> List Int -> List Kpi -> Model -> Html Msg
+viewTrendsPanel language dashboard years kpis model =
     let
-        kpis =
-            Placeholder.kpisFor dashboard
-
         selectedId =
             Maybe.withDefault (Placeholder.defaultTrendKpi dashboard) model.trendKpi
     in
@@ -535,6 +565,9 @@ viewDrillDown language dashboard years kpi =
     in
     div
         [ class "ehs-dashboard__drill fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4"
+        , id drillDialogId
+        , tabindex -1
+        , onEscape CloseDrill
         , attribute "role" "dialog"
         , attribute "aria-modal" "true"
         , attribute "aria-label" (kpiLabel ++ " — " ++ translateLabel language MonthByMonthDetail)
@@ -669,21 +702,21 @@ drillCellValues dashboard kpi year monthIndex =
 {-| The dashboard export: the summary tiles and the coverage bars as label and
 value pairs, then the indicator blocks with the figures they compare against.
 -}
-dashboardExportMsg : Language -> Dashboard -> Msg
-dashboardExportMsg language dashboard =
+dashboardExportMsg : Language -> Dashboard -> List Tile -> List Kpi -> List Coverage -> Msg
+dashboardExportMsg language dashboard tiles kpis coverage =
     let
         labelAndValue labelId value =
             [ translateLabel language labelId, value ]
 
         summaryRows =
-            List.map (\tile -> labelAndValue tile.label tile.value) (Placeholder.tilesFor dashboard)
+            List.map (\tile -> labelAndValue tile.label tile.value) tiles
                 ++ List.map
-                    (\coverage ->
-                        [ translateLabel language coverage.emphasis ++ " " ++ translateLabel language coverage.label
-                        , String.fromInt coverage.pct ++ "%"
+                    (\bar ->
+                        [ translateLabel language bar.emphasis ++ " " ++ translateLabel language bar.label
+                        , String.fromInt bar.pct ++ "%"
                         ]
                     )
-                    (Placeholder.coverageFor dashboard)
+                    coverage
 
         kpiCaptions =
             [ IndicatorColumn, CurrentPerformance, ProgramTargetShort ]
@@ -709,7 +742,7 @@ dashboardExportMsg language dashboard =
             , MetricsResultsTableData
                 (translateLabel language Indicators)
                 (List.map (translateLabel language) kpiCaptions)
-                (List.map kpiRow (Placeholder.kpisFor dashboard))
+                (List.map kpiRow kpis)
             ]
         )
 
@@ -761,6 +794,24 @@ dashboardTitleLabel dashboard =
 
 
 -- HELPERS
+
+
+{-| Fires only on Escape; any other key decodes to nothing and no message is
+sent.
+-}
+onEscape : Msg -> Attribute Msg
+onEscape msg =
+    on "keydown"
+        (Json.Decode.field "key" Json.Decode.string
+            |> Json.Decode.andThen
+                (\key ->
+                    if key == "Escape" then
+                        Json.Decode.succeed msg
+
+                    else
+                        Json.Decode.fail "not Escape"
+                )
+        )
 
 
 translateLabel : Language -> DashboardLabel -> String

@@ -3,8 +3,11 @@ module Pages.Dashboard.Update exposing (update)
 import App.Model exposing (PagesReturn)
 import App.Ports
 import AssocList as Dict
+import Browser.Dom
 import Error.Utils exposing (noError)
 import Pages.Dashboard.Model exposing (Model, Msg(..), Screen(..))
+import Pages.Dashboard.Utils exposing (drillDialogId, kpiBlockId)
+import Task
 
 
 update : Msg -> Model -> PagesReturn Model Msg
@@ -13,7 +16,13 @@ update msg model =
         CloseDrill ->
             PagesReturn
                 { model | screen = DashboardScreen }
-                Cmd.none
+                (case model.screen of
+                    DashboardScreen ->
+                        Cmd.none
+
+                    DrillScreen kpi ->
+                        focus (kpiBlockId kpi)
+                )
                 noError
                 []
 
@@ -24,10 +33,13 @@ update msg model =
                 noError
                 []
 
+        NoOp ->
+            PagesReturn model Cmd.none noError []
+
         OpenDrill kpi ->
             PagesReturn
                 { model | screen = DrillScreen kpi }
-                Cmd.none
+                (focus drillDialogId)
                 noError
                 []
 
@@ -58,3 +70,11 @@ update msg model =
                 Cmd.none
                 noError
                 []
+
+
+{-| Move focus to an element, if it is there to take it.
+-}
+focus : String -> Cmd Msg
+focus elementId =
+    Browser.Dom.focus elementId
+        |> Task.attempt (always NoOp)

@@ -17,7 +17,8 @@ import Svg.Attributes as SA
 
 
 {-| One plotted line. `dash` is a stroke-dasharray value; an empty string draws
-a solid line. `points` holds one value per month.
+a solid line. `points` holds one value per step along the x axis, and the series
+is spread across the full plot width however many there are.
 -}
 type alias Series =
     { color : String
@@ -61,9 +62,16 @@ plotHeight =
     plotBottom - plotTop
 
 
-xAt : Int -> Float
-xAt index =
-    plotLeft + toFloat index * (plotWidth / 11)
+{-| The x of one point, given how many points the series holds. A series always
+spans the full plot width; a single point sits in the middle of it.
+-}
+xAt : Int -> Int -> Float
+xAt count index =
+    if count <= 1 then
+        plotLeft + plotWidth / 2
+
+    else
+        plotLeft + toFloat index * (plotWidth / toFloat (count - 1))
 
 
 yAt : Float -> Float
@@ -73,6 +81,10 @@ yAt value =
 
 view : { xLabels : List String, series : List Series, ariaLabel : String } -> Html msg
 view config =
+    let
+        labelCount =
+            List.length config.xLabels
+    in
     Svg.svg
         [ SA.viewBox "0 0 580 250"
         , SA.class "w-full h-auto"
@@ -81,7 +93,7 @@ view config =
         , SA.preserveAspectRatio "xMidYMid meet"
         ]
         (gridAndYAxis
-            ++ List.indexedMap xLabel config.xLabels
+            ++ List.indexedMap (xLabel labelCount) config.xLabels
             ++ List.concatMap seriesLayer config.series
         )
 
@@ -118,10 +130,10 @@ gridAndYAxis =
         [ 0, 20, 40, 60, 80, 100 ]
 
 
-xLabel : Int -> String -> Svg msg
-xLabel index label =
+xLabel : Int -> Int -> String -> Svg msg
+xLabel count index label =
     Svg.text_
-        [ SA.x (String.fromFloat (xAt index))
+        [ SA.x (String.fromFloat (xAt count index))
         , SA.y (String.fromFloat (plotBottom + 22))
         , SA.textAnchor "middle"
         , SA.fontSize "12"
@@ -135,8 +147,11 @@ xLabel index label =
 seriesLayer : Series -> List (Svg msg)
 seriesLayer series =
     let
+        pointCount =
+            List.length series.points
+
         coordinates =
-            List.indexedMap (\index value -> ( xAt index, yAt value )) series.points
+            List.indexedMap (\index value -> ( xAt pointCount index, yAt value )) series.points
 
         marker ( x, y ) =
             Svg.circle

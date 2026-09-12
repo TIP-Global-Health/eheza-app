@@ -1,7 +1,9 @@
 module Pages.Dashboard.Utils exposing
     ( dashboardSlug
+    , drillDialogId
     , filterKeySlug
     , filterLabel
+    , kpiBlockId
     , kpiById
     , monthLabels
     , selectedFilterValue
@@ -32,6 +34,21 @@ dashboardSlug dashboard =
 
         Program ->
             "program"
+
+
+{-| The drill down dialog, which takes focus while it is open.
+-}
+drillDialogId : String
+drillDialogId =
+    "dashboard-drill-down"
+
+
+{-| The block that opens an indicator's drill down, and takes focus back when
+the drill down closes.
+-}
+kpiBlockId : Kpi -> String
+kpiBlockId kpi =
+    "kpi-block-" ++ kpi.id
 
 
 filterKeySlug : FilterKey -> String

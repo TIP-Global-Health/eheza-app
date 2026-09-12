@@ -206,6 +206,7 @@ emptyModel =
 type Msg
     = CloseDrill
     | DownloadCSV String String
+    | NoOp
     | OpenDrill Kpi
     | PrintPage
     | SelectTrendKpi String
