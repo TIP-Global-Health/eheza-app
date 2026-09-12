@@ -55,76 +55,78 @@
 }
 
 /* Tailwind's own reset is left out, so the element styles the dashboards assume
-   are set here, scoped to the dashboard and outside any layer so they reach
-   past the admin theme. The utilities above are important, so they still win
-   wherever the dashboard names one. */
-.ehs-dashboard,
-.ehs-dashboard *,
-.ehs-dashboard *::before,
-.ehs-dashboard *::after {
-  box-sizing: border-box;
+   are set here, scoped to the dashboard.
+   The admin theme reaches these elements with rules of its own, some of them
+   carrying an id, so these are important. The selectors are wrapped in :where()
+   to keep them as weak as a bare element selector, which leaves the utilities
+   above - important and a class stronger - still winning wherever the dashboard
+   names one. Nothing outside .ehs-dashboard is touched. */
+:where(.ehs-dashboard),
+:where(.ehs-dashboard) *,
+:where(.ehs-dashboard) *::before,
+:where(.ehs-dashboard) *::after {
+  box-sizing: border-box !important;
 }
 
 /* The theme's body font is a serif; the dashboards are drawn in Nunito. */
-.ehs-dashboard {
-  font-family: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.4;
-  color: #1e293b;
+:where(.ehs-dashboard) {
+  font-family: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  color: #0f172a !important;
 }
 
-.ehs-dashboard h1,
-.ehs-dashboard h2,
-.ehs-dashboard p,
-.ehs-dashboard ul,
-.ehs-dashboard li,
-.ehs-dashboard label,
-.ehs-dashboard span {
-  margin: 0;
-  padding: 0;
-  color: inherit;
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
-  list-style: none;
+:where(.ehs-dashboard) h1,
+:where(.ehs-dashboard) h2,
+:where(.ehs-dashboard) p,
+:where(.ehs-dashboard) ul,
+:where(.ehs-dashboard) li,
+:where(.ehs-dashboard) label,
+:where(.ehs-dashboard) span {
+  margin: 0 !important;
+  padding: 0 !important;
+  color: inherit !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+  list-style: none !important;
 }
 
-.ehs-dashboard button {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-  text-shadow: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
+:where(.ehs-dashboard) button {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  color: inherit !important;
+  font: inherit !important;
+  cursor: pointer !important;
 }
 
-.ehs-dashboard select {
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
+:where(.ehs-dashboard) select {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
 }
 
-.ehs-dashboard table {
-  width: 100%;
-  margin: 0;
-  border: 0;
-  font-size: inherit;
+:where(.ehs-dashboard) table {
+  margin: 0 !important;
+  border: 0 !important;
+  font-size: inherit !important;
 }
 
-.ehs-dashboard th,
-.ehs-dashboard td {
-  border: 0;
-  background: none;
-  color: inherit;
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  text-align: inherit;
+:where(.ehs-dashboard) th,
+:where(.ehs-dashboard) td {
+  border: 0 !important;
+  background: none !important;
+  color: inherit !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  text-align: inherit !important;
 }
 
 @media print {
