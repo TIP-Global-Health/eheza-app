@@ -12853,8 +12853,6 @@ var $author$project$Translate$translateDashboardLabel = function (label) {
 			return {english: 'Return', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'SelectKpiToPlot':
 			return {english: 'Select indicator to plot', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
-		case 'Service':
-			return {english: 'Service', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'SitesWithDelayedBirthWeightRecording':
 			return {english: 'Sites with Delayed/Missing Birth Weight Recording (>5%)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'SitesWithElevatedPretermOrSgaBirths':
@@ -45268,7 +45266,6 @@ var $author$project$Pages$Dashboard$Model$Filter = F3(
 		return {key: key, options: options, selected: selected};
 	});
 var $author$project$Pages$Dashboard$Model$FilterLocation = {$: 'FilterLocation'};
-var $author$project$Pages$Dashboard$Model$FilterService = {$: 'FilterService'};
 var $author$project$Pages$Dashboard$Model$FilterSite = {$: 'FilterSite'};
 var $author$project$Pages$Dashboard$Model$FilterTime = {$: 'FilterTime'};
 var $author$project$Pages$Dashboard$Placeholder$filtersFor = F2(
@@ -45307,12 +45304,6 @@ var $author$project$Pages$Dashboard$Placeholder$filtersFor = F2(
 					$author$project$Pages$Dashboard$Model$FilterSite,
 					A2($elm$core$List$cons, 'All', siteNames),
 					'All'),
-					A3(
-					$author$project$Pages$Dashboard$Model$Filter,
-					$author$project$Pages$Dashboard$Model$FilterService,
-					_List_fromArray(
-						['ANC', 'PNC', 'Child Health', 'All']),
-					'ANC'),
 					timeFilter,
 					A3(
 					$author$project$Pages$Dashboard$Model$Filter,
@@ -46252,8 +46243,6 @@ var $author$project$Pages$Dashboard$Utils$filterKeySlug = function (key) {
 	switch (key.$) {
 		case 'FilterLocation':
 			return 'location';
-		case 'FilterService':
-			return 'service';
 		case 'FilterSite':
 			return 'site';
 		default:
@@ -46262,14 +46251,11 @@ var $author$project$Pages$Dashboard$Utils$filterKeySlug = function (key) {
 };
 var $author$project$Pages$Dashboard$Model$InterventionSite = {$: 'InterventionSite'};
 var $author$project$Pages$Dashboard$Model$Location = {$: 'Location'};
-var $author$project$Pages$Dashboard$Model$Service = {$: 'Service'};
 var $author$project$Pages$Dashboard$Model$Time = {$: 'Time'};
 var $author$project$Pages$Dashboard$Utils$filterLabel = function (key) {
 	switch (key.$) {
 		case 'FilterLocation':
 			return $author$project$Pages$Dashboard$Model$Location;
-		case 'FilterService':
-			return $author$project$Pages$Dashboard$Model$Service;
 		case 'FilterSite':
 			return $author$project$Pages$Dashboard$Model$InterventionSite;
 		default:

@@ -40,9 +40,6 @@ filterKeySlug key =
         FilterLocation ->
             "location"
 
-        FilterService ->
-            "service"
-
         FilterSite ->
             "site"
 
@@ -55,9 +52,6 @@ filterLabel key =
     case key of
         FilterLocation ->
             Location
-
-        FilterService ->
-            Service
 
         FilterSite ->
             InterventionSite

@@ -84,7 +84,6 @@ type DashboardLabel
     | ProphylaxisCoverage
     | Return
     | SelectKpiToPlot
-    | Service
     | SitesWithDelayedBirthWeightRecording
     | SitesWithElevatedPretermOrSgaBirths
     | SitesWithInadequateGwg
@@ -108,7 +107,6 @@ type DashboardLabel
 -}
 type FilterKey
     = FilterLocation
-    | FilterService
     | FilterSite
     | FilterTime
 

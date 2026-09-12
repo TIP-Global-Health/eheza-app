@@ -4290,13 +4290,6 @@ translateDashboardLabel label =
             , somali = Nothing
             }
 
-        Dashboard.Service ->
-            { english = "Service"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
-            }
-
         Dashboard.SitesWithDelayedBirthWeightRecording ->
             { english = "Sites with Delayed/Missing Birth Weight Recording (>5%)"
             , kinyarwanda = Nothing

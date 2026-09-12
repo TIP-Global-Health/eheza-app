@@ -119,14 +119,14 @@ function hedley_reports_menu() {
     'title' => 'Facility Performance Dashboard',
     'description' => 'View the HealthyStart facility level dashboard',
     'page callback' => 'hedley_reports_dashboard_facility_callback',
-    'access callback' => 'hedley_reports_menu_access',
+    'access callback' => 'hedley_reports_dashboards_access',
   );
 
   $items['admin/reports/dashboards/program'] = array(
     'title' => 'Program Monitoring Dashboard',
     'description' => 'View the HealthyStart program level dashboard',
     'page callback' => 'hedley_reports_dashboard_program_callback',
-    'access callback' => 'hedley_reports_menu_access',
+    'access callback' => 'hedley_reports_dashboards_access',
   );
 
   return $items;
@@ -158,6 +158,20 @@ function hedley_reports_menu_access($population = FALSE, $main_id = FALSE) {
   }
 
   return FALSE;
+}
+
+/**
+ * Access callback for the HealthyStart dashboards.
+ *
+ * The dashboards exist only where the Healthy Start feature is enabled, and are
+ * open to the same users as the other report pages.
+ *
+ * @return bool
+ *   TRUE when the current user may view the dashboards.
+ */
+function hedley_reports_dashboards_access() {
+  return variable_get('hedley_admin_feature_healthy_start_enabled', FALSE)
+    && hedley_reports_menu_access();
 }
 
 /**

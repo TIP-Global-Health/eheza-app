@@ -174,7 +174,6 @@ filtersFor dashboard healthCenters =
 
         Program ->
             [ Filter FilterSite ("All" :: siteNames) "All"
-            , Filter FilterService [ "ANC", "PNC", "Child Health", "All" ] "ANC"
             , timeFilter
             , Filter FilterLocation [ "All", "Eastern Province", "Kayonza District", "Rwamagana District" ] "All"
             ]
