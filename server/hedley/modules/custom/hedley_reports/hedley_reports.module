@@ -388,15 +388,14 @@ function hedley_reports_resolve_scope_for_reports_by_current_user() {
     return $return;
   }
 
-  if (hedley_reports_user_has_role(HEDLEY_REPORTS_ROLE_PROGRAM_DASHBOARD, $user)) {
-    // The Program Monitoring dashboard is about every site at once.
+  if (hedley_reports_user_has_role(HEDLEY_REPORTS_ROLE_FACILITY_DASHBOARD, $user)
+    || hedley_reports_user_has_role(HEDLEY_REPORTS_ROLE_PROGRAM_DASHBOARD, $user)) {
+    // Both dashboards cover every intervention site the installation holds.
     return $return;
   }
 
   $statistical_queries_manager_role = user_role_load_by_name('Statistical Queries Manager');
-  $restricted = user_has_role($statistical_queries_manager_role->rid, $user)
-    || hedley_reports_user_has_role(HEDLEY_REPORTS_ROLE_FACILITY_DASHBOARD, $user);
-  if (!$restricted) {
+  if (!user_has_role($statistical_queries_manager_role->rid, $user)) {
     // This should not happen.
     return [];
   }
