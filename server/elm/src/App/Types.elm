@@ -9,6 +9,8 @@ module App.Types exposing
 type Page
     = CompletionMenu
     | Completion
+    | DashboardFacility
+    | DashboardProgram
     | ReportsMenu
     | Reports
     | ScoreboardMenu

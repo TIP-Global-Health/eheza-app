@@ -1,0 +1,115 @@
+/* Styles for the HealthyStart dashboards.
+ *
+ * Tailwind runs over the dashboard Elm sources and emits the utilities they
+ * name. Preflight is left out on purpose: the dashboards render inside the
+ * Drupal admin theme, and its base styles have to stay as they are.
+ *
+ * Rebuild after changing the dashboard sources:
+ *   cd server/elm && npm run css
+ */
+
+@layer theme, base, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@source "../src/Pages/Dashboard";
+@source "../src/Pages/Components/TrendChart.elm";
+
+@theme {
+  /* eheza palette. `accent` is the site's blue, dark enough that white text on
+     it and it as text on white both clear WCAG 2.1 AA. */
+  --color-accent:      #0273b2;
+  --color-accent-dark: #015a86;
+  --color-accent-soft: #e0e7ff;
+  --color-brand-navy:  #00374f;
+
+  /* Trend and status colours. The chart lines set their own hex values. */
+  --color-trend-avg:   #2f7d32;
+  --color-alert:       #c21f5b;
+  --color-bar-track:   #9aa6b2;
+}
+
+/* Tailwind's own reset is left out, so the few element styles the dashboards
+   assume are set here, and only inside the dashboard. */
+@layer base {
+  .ehs-dashboard,
+  .ehs-dashboard *,
+  .ehs-dashboard *::before,
+  .ehs-dashboard *::after {
+    box-sizing: border-box;
+  }
+
+  .ehs-dashboard h1,
+  .ehs-dashboard h2,
+  .ehs-dashboard p,
+  .ehs-dashboard ul,
+  .ehs-dashboard li {
+    margin: 0;
+    padding: 0;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    list-style: none;
+  }
+
+  .ehs-dashboard button {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    text-shadow: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .ehs-dashboard table {
+    margin: 0;
+    border: 0;
+    font-size: inherit;
+  }
+
+  .ehs-dashboard th,
+  .ehs-dashboard td {
+    border: 0;
+    background: none;
+    color: inherit;
+    font-weight: inherit;
+    text-align: inherit;
+  }
+}
+
+@media print {
+  /* Drupal chrome. */
+  #admin-menu,
+  #toolbar,
+  #branding,
+  #skip-link,
+  #footer,
+  .breadcrumb,
+  .tabs,
+  .region-sidebar-first,
+  .help {
+    display: none !important;
+  }
+
+  /* The filters pick what is printed; they are not part of it. */
+  .ehs-dashboard__filters {
+    display: none !important;
+  }
+
+  /* An open drill-down is what the viewer is looking at, so print that alone. */
+  .ehs-dashboard:has(.ehs-dashboard__drill) .ehs-dashboard__page {
+    display: none !important;
+  }
+
+  .ehs-dashboard__drill {
+    position: static !important;
+    overflow: visible !important;
+    background: none !important;
+    padding: 0 !important;
+  }
+}

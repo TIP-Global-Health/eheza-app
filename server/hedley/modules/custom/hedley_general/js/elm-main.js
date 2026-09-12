@@ -5640,6 +5640,10 @@ var $author$project$App$Fetch$fetch = function (model) {
 					return $author$project$App$Model$MsgBackend(subMsg);
 				},
 				$author$project$Pages$Completion$Fetch$fetch);
+		case 'DashboardFacility':
+			return _List_Nil;
+		case 'DashboardProgram':
+			return _List_Nil;
 		default:
 			return _List_Nil;
 	}
@@ -5701,6 +5705,13 @@ var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$NotFound = {$: 'NotFound'};
 var $author$project$Pages$Completion$Model$emptyModel = {limitDate: $elm$core$Maybe$Nothing, limitDateSelectorPopupState: $elm$core$Maybe$Nothing, reportType: $elm$core$Maybe$Nothing, startDate: $elm$core$Maybe$Nothing, startDateSelectorPopupState: $elm$core$Maybe$Nothing, takenBy: $elm$core$Maybe$Nothing};
 var $author$project$Pages$CompletionMenu$Model$emptyModel = {populationSelection: $elm$core$Maybe$Nothing, selected: false, selectedHealthCenter: $elm$core$Maybe$Nothing};
+var $author$project$Pages$Dashboard$Model$AllYears = {$: 'AllYears'};
+var $author$project$Pages$Dashboard$Model$DashboardScreen = {$: 'DashboardScreen'};
+var $pzp1997$assoc_list$AssocList$D = function (a) {
+	return {$: 'D', a: a};
+};
+var $pzp1997$assoc_list$AssocList$empty = $pzp1997$assoc_list$AssocList$D(_List_Nil);
+var $author$project$Pages$Dashboard$Model$emptyModel = {screen: $author$project$Pages$Dashboard$Model$DashboardScreen, selectedFilters: $pzp1997$assoc_list$AssocList$empty, trendKpi: $elm$core$Maybe$Nothing, trendYear: $author$project$Pages$Dashboard$Model$AllYears};
 var $krisajenkins$remotedata$RemoteData$NotAsked = {$: 'NotAsked'};
 var $author$project$Pages$Reports$Model$emptyModel = {limitDate: $elm$core$Maybe$Nothing, limitDateSelectorPopupState: $elm$core$Maybe$Nothing, nutritionReportData: $krisajenkins$remotedata$RemoteData$NotAsked, reportType: $elm$core$Maybe$Nothing, startDate: $elm$core$Maybe$Nothing, startDateSelectorPopupState: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Components$Model$emptyDemographicsSelection = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
@@ -5708,7 +5719,7 @@ var $author$project$Pages$ReportsMenu$Model$emptyModel = {populationSelection: $
 var $author$project$Pages$Scoreboard$Model$ModeValues = {$: 'ModeValues'};
 var $author$project$Pages$Scoreboard$Model$emptyModel = {viewMode: $author$project$Pages$Scoreboard$Model$ModeValues, yearSelectorGap: 0};
 var $author$project$Pages$ScoreboardMenu$Model$emptyModel = {selected: false, selectedDemographics: $author$project$Pages$Components$Model$emptyDemographicsSelection};
-var $author$project$Backend$Model$emptyModelBackend = {completionData: $elm$core$Maybe$Nothing, completionMenuData: $elm$core$Maybe$Nothing, reportsData: $elm$core$Maybe$Nothing, reportsMenuData: $elm$core$Maybe$Nothing, scoreboardData: $elm$core$Maybe$Nothing, scoreboardMenuData: $elm$core$Maybe$Nothing};
+var $author$project$Backend$Model$emptyModelBackend = {completionData: $elm$core$Maybe$Nothing, completionMenuData: $elm$core$Maybe$Nothing, dashboardData: $elm$core$Maybe$Nothing, reportsData: $elm$core$Maybe$Nothing, reportsMenuData: $elm$core$Maybe$Nothing, scoreboardData: $elm$core$Maybe$Nothing, scoreboardMenuData: $elm$core$Maybe$Nothing};
 var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
 };
@@ -5721,6 +5732,7 @@ var $author$project$App$Model$emptyModel = {
 	completionPage: $author$project$Pages$Completion$Model$emptyModel,
 	csrfToken: '',
 	currentTime: $elm$time$Time$millisToPosix(0),
+	dashboardPage: $author$project$Pages$Dashboard$Model$emptyModel,
 	errors: _List_Nil,
 	language: $author$project$App$Types$English,
 	reportsMenuPage: $author$project$Pages$ReportsMenu$Model$emptyModel,
@@ -5744,6 +5756,8 @@ var $elm$time$Time$customZone = $elm$time$Time$Zone;
 var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
 var $author$project$App$Types$Completion = {$: 'Completion'};
 var $author$project$App$Types$CompletionMenu = {$: 'CompletionMenu'};
+var $author$project$App$Types$DashboardFacility = {$: 'DashboardFacility'};
+var $author$project$App$Types$DashboardProgram = {$: 'DashboardProgram'};
 var $author$project$App$Types$Reports = {$: 'Reports'};
 var $author$project$App$Types$ReportsMenu = {$: 'ReportsMenu'};
 var $author$project$App$Types$Scoreboard = {$: 'Scoreboard'};
@@ -5762,6 +5776,10 @@ var $author$project$App$Update$resolveActivePage = function (page) {
 			return $author$project$App$Types$CompletionMenu;
 		case 'completion-results':
 			return $author$project$App$Types$Completion;
+		case 'dashboard-facility':
+			return $author$project$App$Types$DashboardFacility;
+		case 'dashboard-program':
+			return $author$project$App$Types$DashboardProgram;
 		default:
 			return $author$project$App$Types$NotFound;
 	}
@@ -5771,6 +5789,9 @@ var $author$project$App$Model$MsgCompletionMenuPage = function (a) {
 };
 var $author$project$App$Model$MsgCompletionPage = function (a) {
 	return {$: 'MsgCompletionPage', a: a};
+};
+var $author$project$App$Model$MsgDashboardPage = function (a) {
+	return {$: 'MsgDashboardPage', a: a};
 };
 var $author$project$App$Model$MsgReportsMenuPage = function (a) {
 	return {$: 'MsgReportsMenuPage', a: a};
@@ -6222,7 +6243,9 @@ var $author$project$Pages$CompletionMenu$Update$update = F2(
 					_List_Nil);
 		}
 	});
-var $krisajenkins$remotedata$RemoteData$Loading = {$: 'Loading'};
+var $author$project$Pages$Dashboard$Model$DrillScreen = function (a) {
+	return {$: 'DrillScreen', a: a};
+};
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
 		return _Json_wrap(
@@ -6247,6 +6270,124 @@ var $author$project$App$Ports$downloadCsv = _Platform_outgoingPort(
 					$elm$json$Json$Encode$string(b)
 				]));
 	});
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $pzp1997$assoc_list$AssocList$remove = F2(
+	function (targetKey, _v0) {
+		var alist = _v0.a;
+		return $pzp1997$assoc_list$AssocList$D(
+			A2(
+				$elm$core$List$filter,
+				function (_v1) {
+					var key = _v1.a;
+					return !_Utils_eq(key, targetKey);
+				},
+				alist));
+	});
+var $pzp1997$assoc_list$AssocList$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A2($pzp1997$assoc_list$AssocList$remove, key, dict);
+		var alteredAlist = _v0.a;
+		return $pzp1997$assoc_list$AssocList$D(
+			A2(
+				$elm$core$List$cons,
+				_Utils_Tuple2(key, value),
+				alteredAlist));
+	});
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $author$project$App$Ports$printPage = _Platform_outgoingPort(
+	'printPage',
+	function ($) {
+		return $elm$json$Json$Encode$null;
+	});
+var $author$project$Pages$Dashboard$Update$update = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'CloseDrill':
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{screen: $author$project$Pages$Dashboard$Model$DashboardScreen}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'DownloadCSV':
+				var fileName = msg.a;
+				var content = msg.b;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					model,
+					$author$project$App$Ports$downloadCsv(
+						_Utils_Tuple2(fileName, content)),
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'OpenDrill':
+				var kpi = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							screen: $author$project$Pages$Dashboard$Model$DrillScreen(kpi)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'PrintPage':
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					model,
+					$author$project$App$Ports$printPage(_Utils_Tuple0),
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'SelectTrendKpi':
+				var kpiId = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							trendKpi: $elm$core$Maybe$Just(kpiId)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'SelectTrendYear':
+				var year = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{trendYear: year}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			default:
+				var key = msg.a;
+				var value = msg.b;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							selectedFilters: A3($pzp1997$assoc_list$AssocList$insert, key, value, model.selectedFilters)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+		}
+	});
+var $krisajenkins$remotedata$RemoteData$Loading = {$: 'Loading'};
 var $krisajenkins$remotedata$RemoteData$Failure = function (a) {
 	return {$: 'Failure', a: a};
 };
@@ -6496,10 +6637,6 @@ var $justinmimbs$date$Date$diff = F3(
 				return rd2 - rd1;
 		}
 	});
-var $pzp1997$assoc_list$AssocList$D = function (a) {
-	return {$: 'D', a: a};
-};
-var $pzp1997$assoc_list$AssocList$empty = $pzp1997$assoc_list$AssocList$D(_List_Nil);
 var $author$project$Pages$Reports$Utils$categorizeAcuteMalnutrition = F3(
 	function (personId, mMuacCm, hasEdema) {
 		if (mMuacCm.$ === 'Nothing') {
@@ -6531,17 +6668,6 @@ var $author$project$Pages$Reports$Utils$familyNutritionEncounterToMetrics = F2(
 		return _Utils_update(
 			$author$project$Pages$Reports$Model$emptyNutritionMetrics,
 			{acuteMalnutritionMam: acuteMalnutritionMam, acuteMalnutritionNormal: acuteMalnutritionNormal, acuteMalnutritionSam: acuteMalnutritionSam});
-	});
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
 	});
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
@@ -6584,28 +6710,6 @@ var $pzp1997$assoc_list$AssocList$get = F2(
 				}
 			}
 		}
-	});
-var $pzp1997$assoc_list$AssocList$remove = F2(
-	function (targetKey, _v0) {
-		var alist = _v0.a;
-		return $pzp1997$assoc_list$AssocList$D(
-			A2(
-				$elm$core$List$filter,
-				function (_v1) {
-					var key = _v1.a;
-					return !_Utils_eq(key, targetKey);
-				},
-				alist));
-	});
-var $pzp1997$assoc_list$AssocList$insert = F3(
-	function (key, value, dict) {
-		var _v0 = A2($pzp1997$assoc_list$AssocList$remove, key, dict);
-		var alteredAlist = _v0.a;
-		return $pzp1997$assoc_list$AssocList$D(
-			A2(
-				$elm$core$List$cons,
-				_Utils_Tuple2(key, value),
-				alteredAlist));
 	});
 var $justinmimbs$date$Date$month = A2(
 	$elm$core$Basics$composeR,
@@ -7168,6 +7272,9 @@ var $author$project$Pages$ScoreboardMenu$Update$update = F2(
 				_List_Nil);
 		}
 	});
+var $author$project$Backend$Model$MsgDashboard = function (a) {
+	return {$: 'MsgDashboard', a: a};
+};
 var $author$project$Backend$Completion$Model$HandleSyncResponse = function (a) {
 	return {$: 'HandleSyncResponse', a: a};
 };
@@ -10137,6 +10244,17 @@ var $author$project$Backend$CompletionMenu$Update$update = F2(
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
+var $author$project$Backend$Dashboard$Update$update = F2(
+	function (msg, model) {
+		var value = msg.a;
+		var modelUpdated = _Utils_update(
+			model,
+			{
+				dashboardData: $elm$core$Maybe$Just(
+					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Components$Decoder$decodeMenuData, value))
+			});
+		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+	});
 var $author$project$Backend$Reports$Model$HandleSyncResponse = function (a) {
 	return {$: 'HandleSyncResponse', a: a};
 };
@@ -12199,7 +12317,7 @@ var $author$project$Backend$Update$updateBackend = F4(
 						return $author$project$Backend$Model$MsgCompletionMenu(subCmds);
 					},
 					model);
-			default:
+			case 'MsgCompletion':
 				var subMsg = msg.a;
 				return A4(
 					$author$project$Backend$Utils$updateSubModel,
@@ -12210,6 +12328,19 @@ var $author$project$Backend$Update$updateBackend = F4(
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgCompletion(subCmds);
+					},
+					model);
+			default:
+				var subMsg = msg.a;
+				return A4(
+					$author$project$Backend$Utils$updateSubModel,
+					subMsg,
+					F2(
+						function (subMsg_, model_) {
+							return A2($author$project$Backend$Dashboard$Update$update, subMsg_, model_);
+						}),
+					function (subCmds) {
+						return $author$project$Backend$Model$MsgDashboard(subCmds);
 					},
 					model);
 		}
@@ -12407,6 +12538,26 @@ var $author$project$App$Update$update = F2(
 						return $author$project$App$Model$MsgCompletionPage(subCmds);
 					},
 					model);
+			case 'MsgDashboardPage':
+				var subMsg = msg.a;
+				return A6(
+					$author$project$App$Utils$updateSubModel,
+					subMsg,
+					model.dashboardPage,
+					F2(
+						function (subMsg_, subModel) {
+							return A2($author$project$Pages$Dashboard$Update$update, subMsg_, subModel);
+						}),
+					F2(
+						function (subModel, model_) {
+							return _Utils_update(
+								model_,
+								{dashboardPage: subModel});
+						}),
+					function (subCmds) {
+						return $author$project$App$Model$MsgDashboardPage(subCmds);
+					},
+					model);
 			default:
 				var date = msg.a;
 				return _Utils_Tuple2(
@@ -12415,6 +12566,18 @@ var $author$project$App$Update$update = F2(
 						{currentTime: date}),
 					$elm$core$Platform$Cmd$none);
 		}
+	});
+var $author$project$Backend$Dashboard$Model$SetData = function (a) {
+	return {$: 'SetData', a: a};
+};
+var $author$project$App$Update$updateWithDashboardData = F2(
+	function (appData, model) {
+		return A2(
+			$author$project$App$Update$update,
+			$author$project$App$Model$MsgBackend(
+				$author$project$Backend$Model$MsgDashboard(
+					$author$project$Backend$Dashboard$Model$SetData(appData))),
+			model);
 	});
 var $author$project$App$Update$init = function (flags) {
 	var activePage = $author$project$App$Update$resolveActivePage(flags.page);
@@ -12466,6 +12629,10 @@ var $author$project$App$Update$init = function (flags) {
 						$author$project$Backend$Model$MsgCompletion(
 							$author$project$Backend$Completion$Model$SetData(flags.appData))),
 					model);
+			case 'DashboardFacility':
+				return A2($author$project$App$Update$updateWithDashboardData, flags.appData, model);
+			case 'DashboardProgram':
+				return A2($author$project$App$Update$updateWithDashboardData, flags.appData, model);
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
@@ -12494,6 +12661,8 @@ var $author$project$App$Update$init = function (flags) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$Pages$Dashboard$Model$Facility = {$: 'Facility'};
+var $author$project$Pages$Dashboard$Model$Program = {$: 'Program'};
 var $author$project$Translate$WrongPage = {$: 'WrongPage'};
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
@@ -12564,6 +12733,168 @@ var $author$project$Translate$UrineDipstickTest = {$: 'UrineDipstickTest'};
 var $author$project$Translate$UrineDipstickTestResult = {$: 'UrineDipstickTestResult'};
 var $author$project$Translate$Village = {$: 'Village'};
 var $author$project$Translate$Vitals = {$: 'Vitals'};
+var $author$project$Translate$translateDashboardLabel = function (label) {
+	switch (label.$) {
+		case 'AlertBirthsMissingBirthWeight':
+			var count = label.a;
+			return {
+				english: $elm$core$String$fromInt(count) + ' births missing birth weight in last 7 days',
+				kinyarwanda: $elm$core$Maybe$Nothing,
+				kirundi: $elm$core$Maybe$Nothing,
+				somali: $elm$core$Maybe$Nothing
+			};
+		case 'AlertPretermRateExceeded':
+			return {english: 'Preterm rate exceeded 15% this month', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'AlertSitesWithDelayedBirthWeightRecording':
+			var count = label.a;
+			return {
+				english: $elm$core$String$fromInt(count) + ' sites with delayed birth weight recording',
+				kinyarwanda: $elm$core$Maybe$Nothing,
+				kirundi: $elm$core$Maybe$Nothing,
+				somali: $elm$core$Maybe$Nothing
+			};
+		case 'AlertSitesWithPretermRate':
+			var count = label.a;
+			return {
+				english: $elm$core$String$fromInt(count) + ' sites with preterm rate >15%',
+				kinyarwanda: $elm$core$Maybe$Nothing,
+				kirundi: $elm$core$Maybe$Nothing,
+				somali: $elm$core$Maybe$Nothing
+			};
+		case 'AllYearsLabel':
+			return {english: 'All', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'AncMissRate':
+			return {english: 'ANC Miss Rate (≥1 Missed Visit)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Aspirin':
+			return {english: 'Aspirin', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Average':
+			return {english: 'Avg.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Calcium':
+			return {english: 'Calcium', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'CompleteAncAttendanceRate':
+			return {english: 'Complete ANC Attendance Rate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'CriticalAlerts':
+			return {english: 'Critical Alerts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'CurrentPerformance':
+			return {english: 'Current Performance', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'DashboardThree':
+			return {english: 'Dashboard III', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'DashboardTitleFacility':
+			return {english: 'Facility Performance Dashboard', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'DashboardTitleProgram':
+			return {english: 'Program Monitoring Dashboard', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'DashboardTwo':
+			return {english: 'Dashboard II', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Delta':
+			return {english: 'Δ', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'EarlyAncBookingRate':
+			return {english: 'Early ANC Booking Rate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'EarlyAncCoverageFirstTrimester':
+			return {english: 'Early ANC Coverage >80 (1st Trimester)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'EarlyUltrasoundCoverage':
+			return {english: 'Early Ultrasound Coverage (<20 W)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Export':
+			return {english: 'Export', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'FilterLabel':
+			return {english: 'Filter', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'FromPreviousMonth':
+			return {english: 'from prev. month', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'GraduatedMotherChildPairs':
+			return {english: 'Graduated Mother–Child Pairs', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'HealthyStart':
+			return {english: 'HealthyStart', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'HighRiskPregnancyRate':
+			return {english: 'High-Risk Pregnancy Rate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'IndicatorColumn':
+			return {english: 'Indicator', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Indicators':
+			return {english: 'Indicators', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'InstitutionalTarget':
+			return {english: 'Institutional Target', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'InterventionSite':
+			return {english: 'Intervention Site', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'InterventionSiteAverage':
+			return {english: 'Int. Site Average', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Location':
+			return {english: 'Location', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'LostToFollowUp':
+			return {english: 'Lost to Follow-Up (ANC–PNC–Child)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'MedianGaAtFirstAnc':
+			return {english: 'Median GA at First ANC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'MonthByMonthDetail':
+			return {english: 'month-by-month detail', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'MonthColumn':
+			return {english: 'Month', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'NoActiveAlerts':
+			return {english: 'No active alerts.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'OpenMonthByMonthDetailFor':
+			return {english: 'Open month-by-month detail for', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Performance':
+			return {english: 'Perf.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'PostpartumHemorrhageRate':
+			return {english: 'Postpartum Hemorrhage Rate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'PregnanciesFirstTrimester':
+			return {english: 'Pregnancies 1st Trimester', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'PregnanciesSecondTrimester':
+			return {english: 'Pregnancies 2nd Trimester', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'PregnanciesThirdTrimester':
+			return {english: 'Pregnancies 3rd Trimester', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Print':
+			return {english: 'Print', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'ProgramLevel':
+			return {english: 'Program-Level', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'ProgramTarget':
+			return {english: 'Program Target', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'ProgramTargetShort':
+			return {english: 'Prog. Target', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'ProphylaxisCoverage':
+			return {english: 'Prophylaxis Coverage', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Return':
+			return {english: 'Return', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'SelectKpiToPlot':
+			return {english: 'Select indicator to plot', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Service':
+			return {english: 'Service', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'SitesWithDelayedBirthWeightRecording':
+			return {english: 'Sites with Delayed/Missing Birth Weight Recording (>5%)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'SitesWithElevatedPretermOrSgaBirths':
+			return {english: 'Sites with Elevated Preterm or SGA Births (>15%)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'SitesWithInadequateGwg':
+			return {english: 'Sites with Inadequate GWG (>10%)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'SitesWithPoorChildGrowthOutcomes':
+			return {english: 'Sites with Poor Child Growth Outcomes (>10%)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Sqlns':
+			return {english: 'SQLNS', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'SupplementCoverage':
+			return {english: 'Supplement Coverage', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Target':
+			return {english: 'Targ.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Time':
+			return {english: 'Time', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'TotalChildrenOnRoutineCare':
+			return {english: 'Total Children on Routine Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'TotalDeliveriesInstitutional':
+			return {english: 'Total Deliveries (Institutional)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'TotalDeliveriesProgram':
+			return {english: 'Total Deliveries (Program)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'TrendChartDescriptionFacility':
+			var kpi = label.a;
+			var year = label.b;
+			return {english: 'Line chart of ' + (kpi + (' by month for ' + (year + ', showing current performance, institutional target, and inter-site average.'))), kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'TrendChartDescriptionProgram':
+			var kpi = label.a;
+			var year = label.b;
+			return {english: 'Line chart of ' + (kpi + (' by month for ' + (year + ', showing current performance and program target.'))), kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'Trends':
+			return {english: 'Trends', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'ValueColumn':
+			return {english: 'Value', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		case 'WomenCurrentlyInAncCare':
+			return {english: 'Women Currently in ANC Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+		default:
+			return {english: 'Year', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+	}
+};
 var $author$project$Translate$translateHttpError = function (transId) {
 	switch (transId.$) {
 		case 'ErrorBadUrl':
@@ -13086,6 +13417,9 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Core Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'DangerSigns':
 				return {english: 'Danger Signs', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'DashboardLabel':
+				var label = transId.a;
+				return $author$project$Translate$translateDashboardLabel(label);
 			case 'DeliveryLocation':
 				var location = transId.a;
 				if (location.$ === 'FacilityDelivery') {
@@ -16053,7 +16387,6 @@ var $author$project$DateSelector$Selector$monthDates = F2(
 			start,
 			A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 42, start));
 	});
-var $elm$json$Json$Encode$null = _Json_encodeNull;
 var $elm$virtual_dom$VirtualDom$property = F2(
 	function (key, value) {
 		return A2(
@@ -18435,7 +18768,7 @@ var $elm$core$String$replace = F3(
 			after,
 			A2($elm$core$String$split, before, string));
 	});
-var $author$project$Pages$Reports$View$reportTableDataToCSV = function (tableData) {
+var $author$project$Pages$Components$Utils$reportTableDataToCSV = function (tableData) {
 	return A2(
 		$elm$core$String$join,
 		'\u000A',
@@ -18506,7 +18839,7 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F5(
 			data.rows);
 		var csvFileName = 'acute-illness-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', startDate) + ('-to-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')))));
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -19475,7 +19808,7 @@ var $author$project$Pages$Reports$View$viewFBFDistributionReport = F5(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
 		var categories = $author$project$Pages$Reports$View$visibleFbfDistributionCategories(features);
 		var data = A3($author$project$Pages$Reports$View$generateFBFDistributionReportData, language, categories, records);
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTableDataToCSV(data);
 		var dataRows = A3(
 			$elm$core$List$map2,
 			F2(
@@ -20466,9 +20799,9 @@ var $author$project$Pages$Reports$View$generareNutritionReportDataFromRawData = 
 			return _List_Nil;
 		}
 	});
-var $author$project$Pages$Reports$View$reportTablesDataToCSV = A2(
+var $author$project$Pages$Components$Utils$reportTablesDataToCSV = A2(
 	$elm$core$Basics$composeR,
-	$elm$core$List$map($author$project$Pages$Reports$View$reportTableDataToCSV),
+	$elm$core$List$map($author$project$Pages$Components$Utils$reportTableDataToCSV),
 	$elm$core$String$join('\u000A\u000A'));
 var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 	function (language, currentDate, scopeLabel, mBackendGeneratedData, reportData) {
@@ -20481,7 +20814,7 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 				mBackendGeneratedData));
 		var csvFileName = 'nutrition-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', currentDate) + '.csv')));
-		var csvContent = $author$project$Pages$Reports$View$reportTablesDataToCSV(generatedData);
+		var csvContent = $author$project$Pages$Components$Utils$reportTablesDataToCSV(generatedData);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -20581,7 +20914,7 @@ var $author$project$Pages$Reports$View$viewPeripartumReport = F4(
 		var data = A2($author$project$Pages$Reports$View$generatePeripartumReportData, language, records);
 		var csvFileName = 'peripartum-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -21158,7 +21491,7 @@ var $author$project$Pages$Reports$View$viewPostnatalCareReport = F5(
 		var data = A4($author$project$Pages$Reports$View$generatePostnatalCareReportData, language, site, limitDate, records);
 		var csvFileName = 'postnatal-care-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -21480,7 +21813,7 @@ var $author$project$Pages$Reports$View$viewPrenatalContactsReport = F4(
 		var data = A3($author$project$Pages$Reports$View$generatePrenatalContactsReportData, language, limitDate, records);
 		var csvFileName = 'anc-contacts-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -21728,7 +22061,7 @@ var $author$project$Pages$Reports$View$viewPrenatalDiagnosesReport = F4(
 			data.rows);
 		var csvFileName = 'anc-diagnoses-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -22267,7 +22600,7 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 		var data = A3($author$project$Pages$Reports$View$generatePrenatalReportData, language, limitDate, records);
 		var csvFileName = 'anc-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
-		var csvContent = $author$project$Pages$Reports$View$reportTablesDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTablesDataToCSV(data);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -44921,6 +45254,2184 @@ var $author$project$Pages$ScoreboardMenu$View$view = F3(
 				return A3($author$project$Pages$ScoreboardMenu$View$viewMenu, language, data, model);
 			});
 	});
+var $author$project$Pages$Dashboard$Placeholder$drillYears = function (currentDate) {
+	var currentYear = $justinmimbs$date$Date$year(currentDate);
+	return A2(
+		$elm$core$List$map,
+		function (offset) {
+			return currentYear - offset;
+		},
+		A2($elm$core$List$range, 0, 3));
+};
+var $author$project$Pages$Dashboard$Model$Filter = F3(
+	function (key, options, selected) {
+		return {key: key, options: options, selected: selected};
+	});
+var $author$project$Pages$Dashboard$Model$FilterLocation = {$: 'FilterLocation'};
+var $author$project$Pages$Dashboard$Model$FilterService = {$: 'FilterService'};
+var $author$project$Pages$Dashboard$Model$FilterSite = {$: 'FilterSite'};
+var $author$project$Pages$Dashboard$Model$FilterTime = {$: 'FilterTime'};
+var $author$project$Pages$Dashboard$Placeholder$filtersFor = F2(
+	function (dashboard, healthCenters) {
+		var timeFilter = A3(
+			$author$project$Pages$Dashboard$Model$Filter,
+			$author$project$Pages$Dashboard$Model$FilterTime,
+			_List_fromArray(
+				['All', 'This month', 'This quarter', 'This year']),
+			'All');
+		var siteNames = $elm$core$List$isEmpty(healthCenters) ? _List_fromArray(
+			['XY Health Center', 'Rukara HC', 'Nyamata HC', 'Gahini HC']) : A2(
+			$elm$core$List$map,
+			function ($) {
+				return $.name;
+			},
+			healthCenters);
+		if (dashboard.$ === 'Facility') {
+			return _List_fromArray(
+				[
+					A3(
+					$author$project$Pages$Dashboard$Model$Filter,
+					$author$project$Pages$Dashboard$Model$FilterSite,
+					siteNames,
+					A2(
+						$elm$core$Maybe$withDefault,
+						'',
+						$elm$core$List$head(siteNames))),
+					timeFilter
+				]);
+		} else {
+			return _List_fromArray(
+				[
+					A3(
+					$author$project$Pages$Dashboard$Model$Filter,
+					$author$project$Pages$Dashboard$Model$FilterSite,
+					A2($elm$core$List$cons, 'All', siteNames),
+					'All'),
+					A3(
+					$author$project$Pages$Dashboard$Model$Filter,
+					$author$project$Pages$Dashboard$Model$FilterService,
+					_List_fromArray(
+						['ANC', 'PNC', 'Child Health', 'All']),
+					'ANC'),
+					timeFilter,
+					A3(
+					$author$project$Pages$Dashboard$Model$Filter,
+					$author$project$Pages$Dashboard$Model$FilterLocation,
+					_List_fromArray(
+						['All', 'Eastern Province', 'Kayonza District', 'Rwamagana District']),
+					'All')
+				]);
+		}
+	});
+var $author$project$Pages$Dashboard$Model$ProgramLevel = {$: 'ProgramLevel'};
+var $author$project$Pages$Dashboard$Utils$selectedFilterValue = F2(
+	function (model, filter) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			filter.selected,
+			A2($pzp1997$assoc_list$AssocList$get, filter.key, model.selectedFilters));
+	});
+var $author$project$Translate$DashboardLabel = function (a) {
+	return {$: 'DashboardLabel', a: a};
+};
+var $author$project$Pages$Dashboard$View$translateLabel = F2(
+	function (language, labelId) {
+		return A2(
+			$author$project$Translate$translate,
+			language,
+			$author$project$Translate$DashboardLabel(labelId));
+	});
+var $author$project$Pages$Dashboard$View$resolveSiteName = F4(
+	function (language, dashboard, filters, model) {
+		if (dashboard.$ === 'Facility') {
+			return A2(
+				$elm$core$Maybe$withDefault,
+				'',
+				A2(
+					$elm$core$Maybe$map,
+					$author$project$Pages$Dashboard$Utils$selectedFilterValue(model),
+					$elm$core$List$head(
+						A2(
+							$elm$core$List$filter,
+							function (filter) {
+								return _Utils_eq(filter.key, $author$project$Pages$Dashboard$Model$FilterSite);
+							},
+							filters))));
+		} else {
+			return A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$ProgramLevel);
+		}
+	});
+var $author$project$Pages$Dashboard$Model$AncMissRate = {$: 'AncMissRate'};
+var $author$project$Pages$Dashboard$Model$GraduatedMotherChildPairs = {$: 'GraduatedMotherChildPairs'};
+var $author$project$Pages$Dashboard$Model$LostToFollowUp = {$: 'LostToFollowUp'};
+var $author$project$Pages$Dashboard$Model$PregnanciesFirstTrimester = {$: 'PregnanciesFirstTrimester'};
+var $author$project$Pages$Dashboard$Model$PregnanciesSecondTrimester = {$: 'PregnanciesSecondTrimester'};
+var $author$project$Pages$Dashboard$Model$PregnanciesThirdTrimester = {$: 'PregnanciesThirdTrimester'};
+var $author$project$Pages$Dashboard$Model$Tile = F2(
+	function (label, value) {
+		return {label: label, value: value};
+	});
+var $author$project$Pages$Dashboard$Model$TotalChildrenOnRoutineCare = {$: 'TotalChildrenOnRoutineCare'};
+var $author$project$Pages$Dashboard$Model$TotalDeliveriesInstitutional = {$: 'TotalDeliveriesInstitutional'};
+var $author$project$Pages$Dashboard$Model$TotalDeliveriesProgram = {$: 'TotalDeliveriesProgram'};
+var $author$project$Pages$Dashboard$Model$WomenCurrentlyInAncCare = {$: 'WomenCurrentlyInAncCare'};
+var $author$project$Pages$Dashboard$Placeholder$tilesFor = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return _List_fromArray(
+			[
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$WomenCurrentlyInAncCare, '142'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$PregnanciesFirstTrimester, '38'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$PregnanciesSecondTrimester, '57'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$PregnanciesThirdTrimester, '47'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$AncMissRate, '12%'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$TotalDeliveriesInstitutional, '214'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$TotalChildrenOnRoutineCare, '389'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$GraduatedMotherChildPairs, '156'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$LostToFollowUp, '23')
+			]);
+	} else {
+		return _List_fromArray(
+			[
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$WomenCurrentlyInAncCare, '2,418'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$PregnanciesFirstTrimester, '646'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$PregnanciesSecondTrimester, '921'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$PregnanciesThirdTrimester, '851'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$AncMissRate, '14%'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$TotalDeliveriesProgram, '3,772'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$TotalChildrenOnRoutineCare, '6,540'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$GraduatedMotherChildPairs, '2,689'),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$LostToFollowUp, '402')
+			]);
+	}
+};
+var $author$project$Pages$Dashboard$Model$DashboardThree = {$: 'DashboardThree'};
+var $author$project$Pages$Dashboard$Model$DashboardTitleFacility = {$: 'DashboardTitleFacility'};
+var $author$project$Pages$Dashboard$Model$DashboardTitleProgram = {$: 'DashboardTitleProgram'};
+var $author$project$Pages$Dashboard$Model$DashboardTwo = {$: 'DashboardTwo'};
+var $author$project$Pages$Dashboard$Model$Export = {$: 'Export'};
+var $author$project$Pages$Dashboard$Model$HealthyStart = {$: 'HealthyStart'};
+var $author$project$Pages$Dashboard$Model$Print = {$: 'Print'};
+var $author$project$Pages$Dashboard$Model$PrintPage = {$: 'PrintPage'};
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
+var $author$project$Pages$Dashboard$Model$CurrentPerformance = {$: 'CurrentPerformance'};
+var $author$project$Pages$Dashboard$Model$DownloadCSV = F2(
+	function (a, b) {
+		return {$: 'DownloadCSV', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$Model$IndicatorColumn = {$: 'IndicatorColumn'};
+var $author$project$Pages$Dashboard$Model$Indicators = {$: 'Indicators'};
+var $author$project$Pages$Dashboard$Model$InterventionSiteAverage = {$: 'InterventionSiteAverage'};
+var $author$project$Pages$Model$MetricsResultsTableData = F3(
+	function (heading, captions, rows) {
+		return {captions: captions, heading: heading, rows: rows};
+	});
+var $author$project$Pages$Dashboard$Model$ProgramTargetShort = {$: 'ProgramTargetShort'};
+var $author$project$Pages$Dashboard$Model$ValueColumn = {$: 'ValueColumn'};
+var $author$project$Pages$Dashboard$Model$Aspirin = {$: 'Aspirin'};
+var $author$project$Pages$Dashboard$Model$Calcium = {$: 'Calcium'};
+var $author$project$Pages$Dashboard$Model$Coverage = F3(
+	function (emphasis, label, pct) {
+		return {emphasis: emphasis, label: label, pct: pct};
+	});
+var $author$project$Pages$Dashboard$Model$ProphylaxisCoverage = {$: 'ProphylaxisCoverage'};
+var $author$project$Pages$Dashboard$Model$Sqlns = {$: 'Sqlns'};
+var $author$project$Pages$Dashboard$Model$SupplementCoverage = {$: 'SupplementCoverage'};
+var $author$project$Pages$Dashboard$Placeholder$coverageFor = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return _List_fromArray(
+			[
+				A3($author$project$Pages$Dashboard$Model$Coverage, $author$project$Pages$Dashboard$Model$Aspirin, $author$project$Pages$Dashboard$Model$ProphylaxisCoverage, 82),
+				A3($author$project$Pages$Dashboard$Model$Coverage, $author$project$Pages$Dashboard$Model$Calcium, $author$project$Pages$Dashboard$Model$ProphylaxisCoverage, 74),
+				A3($author$project$Pages$Dashboard$Model$Coverage, $author$project$Pages$Dashboard$Model$Sqlns, $author$project$Pages$Dashboard$Model$SupplementCoverage, 68)
+			]);
+	} else {
+		return _List_fromArray(
+			[
+				A3($author$project$Pages$Dashboard$Model$Coverage, $author$project$Pages$Dashboard$Model$Aspirin, $author$project$Pages$Dashboard$Model$ProphylaxisCoverage, 79),
+				A3($author$project$Pages$Dashboard$Model$Coverage, $author$project$Pages$Dashboard$Model$Calcium, $author$project$Pages$Dashboard$Model$ProphylaxisCoverage, 71),
+				A3($author$project$Pages$Dashboard$Model$Coverage, $author$project$Pages$Dashboard$Model$Sqlns, $author$project$Pages$Dashboard$Model$SupplementCoverage, 65)
+			]);
+	}
+};
+var $author$project$Pages$Dashboard$View$dashboardTitleLabel = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return $author$project$Pages$Dashboard$Model$DashboardTitleFacility;
+	} else {
+		return $author$project$Pages$Dashboard$Model$DashboardTitleProgram;
+	}
+};
+var $author$project$Pages$Dashboard$Utils$dashboardSlug = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return 'facility';
+	} else {
+		return 'program';
+	}
+};
+var $author$project$Pages$Dashboard$View$exportFileName = F2(
+	function (dashboard, suffix) {
+		return 'healthystart-' + ($author$project$Pages$Dashboard$Utils$dashboardSlug(dashboard) + ('-' + (suffix + '.csv')));
+	});
+var $author$project$Pages$Dashboard$Model$CompleteAncAttendanceRate = {$: 'CompleteAncAttendanceRate'};
+var $author$project$Pages$Dashboard$Model$Down = {$: 'Down'};
+var $author$project$Pages$Dashboard$Model$EarlyAncBookingRate = {$: 'EarlyAncBookingRate'};
+var $author$project$Pages$Dashboard$Model$EarlyAncCoverageFirstTrimester = {$: 'EarlyAncCoverageFirstTrimester'};
+var $author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverage = {$: 'EarlyUltrasoundCoverage'};
+var $author$project$Pages$Dashboard$Model$HighRiskPregnancyRate = {$: 'HighRiskPregnancyRate'};
+var $author$project$Pages$Dashboard$Model$Kpi = function (id) {
+	return function (label) {
+		return function (current) {
+			return function (target) {
+				return function (average) {
+					return function (deltaValue) {
+						return function (deltaDir) {
+							return function (seed) {
+								return function (baseCurrent) {
+									return function (baseTarget) {
+										return function (baseAvg) {
+											return {average: average, baseAvg: baseAvg, baseCurrent: baseCurrent, baseTarget: baseTarget, current: current, deltaDir: deltaDir, deltaValue: deltaValue, id: id, label: label, seed: seed, target: target};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $author$project$Pages$Dashboard$Model$MedianGaAtFirstAnc = {$: 'MedianGaAtFirstAnc'};
+var $author$project$Pages$Dashboard$Model$PostpartumHemorrhageRate = {$: 'PostpartumHemorrhageRate'};
+var $author$project$Pages$Dashboard$Model$SitesWithDelayedBirthWeightRecording = {$: 'SitesWithDelayedBirthWeightRecording'};
+var $author$project$Pages$Dashboard$Model$SitesWithElevatedPretermOrSgaBirths = {$: 'SitesWithElevatedPretermOrSgaBirths'};
+var $author$project$Pages$Dashboard$Model$SitesWithInadequateGwg = {$: 'SitesWithInadequateGwg'};
+var $author$project$Pages$Dashboard$Model$SitesWithPoorChildGrowthOutcomes = {$: 'SitesWithPoorChildGrowthOutcomes'};
+var $author$project$Pages$Dashboard$Model$Up = {$: 'Up'};
+var $author$project$Pages$Dashboard$Placeholder$kpisFor = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return _List_fromArray(
+			[
+				$author$project$Pages$Dashboard$Model$Kpi('anc-booking')($author$project$Pages$Dashboard$Model$EarlyAncBookingRate)('68%')('80%')(
+				$elm$core$Maybe$Just('64%'))('3.5%')($author$project$Pages$Dashboard$Model$Up)(11)(70)(88)(66),
+				$author$project$Pages$Dashboard$Model$Kpi('median-ga')($author$project$Pages$Dashboard$Model$MedianGaAtFirstAnc)('10.8 wk')('≤ 12 wk')(
+				$elm$core$Maybe$Just('11.6 wk'))('5%')($author$project$Pages$Dashboard$Model$Up)(23)(62)(80)(58),
+				$author$project$Pages$Dashboard$Model$Kpi('ultrasound')($author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverage)('74%')('85%')(
+				$elm$core$Maybe$Just('70%'))('1.5%')($author$project$Pages$Dashboard$Model$Up)(37)(74)(92)(78),
+				$author$project$Pages$Dashboard$Model$Kpi('high-risk')($author$project$Pages$Dashboard$Model$HighRiskPregnancyRate)('16%')('< 15%')(
+				$elm$core$Maybe$Just('18%'))('2.5%')($author$project$Pages$Dashboard$Model$Down)(41)(20)(15)(23),
+				$author$project$Pages$Dashboard$Model$Kpi('pph')($author$project$Pages$Dashboard$Model$PostpartumHemorrhageRate)('3.2%')('< 5%')(
+				$elm$core$Maybe$Just('4.1%'))('6%')($author$project$Pages$Dashboard$Model$Up)(53)(12)(8)(16),
+				$author$project$Pages$Dashboard$Model$Kpi('complete-anc')($author$project$Pages$Dashboard$Model$CompleteAncAttendanceRate)('58%')('70%')(
+				$elm$core$Maybe$Just('55%'))('5%')($author$project$Pages$Dashboard$Model$Up)(67)(60)(80)(56)
+			]);
+	} else {
+		return _List_fromArray(
+			[
+				$author$project$Pages$Dashboard$Model$Kpi('anc-cov80')($author$project$Pages$Dashboard$Model$EarlyAncCoverageFirstTrimester)('72%')('80%')($elm$core$Maybe$Nothing)('3.5%')($author$project$Pages$Dashboard$Model$Up)(71)(72)(86)(70),
+				$author$project$Pages$Dashboard$Model$Kpi('ultrasound-p')($author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverage)('66%')('80%')($elm$core$Maybe$Nothing)('1.5%')($author$project$Pages$Dashboard$Model$Down)(83)(68)(88)(66),
+				$author$project$Pages$Dashboard$Model$Kpi('inadequate-gwg')($author$project$Pages$Dashboard$Model$SitesWithInadequateGwg)('18%')('< 10%')($elm$core$Maybe$Nothing)('4.5%')($author$project$Pages$Dashboard$Model$Up)(91)(24)(12)(26),
+				$author$project$Pages$Dashboard$Model$Kpi('delayed-bw')($author$project$Pages$Dashboard$Model$SitesWithDelayedBirthWeightRecording)('14%')('< 5%')($elm$core$Maybe$Nothing)('1.5%')($author$project$Pages$Dashboard$Model$Down)(97)(16)(8)(18),
+				$author$project$Pages$Dashboard$Model$Kpi('preterm-sga')($author$project$Pages$Dashboard$Model$SitesWithElevatedPretermOrSgaBirths)('20%')('< 15%')($elm$core$Maybe$Nothing)('0.5%')($author$project$Pages$Dashboard$Model$Up)(103)(24)(16)(26),
+				$author$project$Pages$Dashboard$Model$Kpi('poor-growth')($author$project$Pages$Dashboard$Model$SitesWithPoorChildGrowthOutcomes)('15%')('< 10%')($elm$core$Maybe$Nothing)('1.2%')($author$project$Pages$Dashboard$Model$Up)(109)(18)(12)(20)
+			]);
+	}
+};
+var $elm$core$List$singleton = function (value) {
+	return _List_fromArray(
+		[value]);
+};
+var $author$project$Pages$Dashboard$View$dashboardExportMsg = F2(
+	function (language, dashboard) {
+		var labelAndValue = F2(
+			function (labelId, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Pages$Dashboard$View$translateLabel, language, labelId),
+						value
+					]);
+			});
+		var summaryRows = _Utils_ap(
+			A2(
+				$elm$core$List$map,
+				function (tile) {
+					return A2(labelAndValue, tile.label, tile.value);
+				},
+				$author$project$Pages$Dashboard$Placeholder$tilesFor(dashboard)),
+			A2(
+				$elm$core$List$map,
+				function (coverage) {
+					return _List_fromArray(
+						[
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, coverage.emphasis) + (' ' + A2($author$project$Pages$Dashboard$View$translateLabel, language, coverage.label)),
+							$elm$core$String$fromInt(coverage.pct) + '%'
+						]);
+				},
+				$author$project$Pages$Dashboard$Placeholder$coverageFor(dashboard)));
+		var kpiRow = function (kpi) {
+			return _Utils_ap(
+				_List_fromArray(
+					[
+						A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label),
+						kpi.current,
+						kpi.target
+					]),
+				A2(
+					$elm$core$Maybe$withDefault,
+					_List_Nil,
+					A2($elm$core$Maybe$map, $elm$core$List$singleton, kpi.average)));
+		};
+		var kpiCaptions = _Utils_ap(
+			_List_fromArray(
+				[$author$project$Pages$Dashboard$Model$IndicatorColumn, $author$project$Pages$Dashboard$Model$CurrentPerformance, $author$project$Pages$Dashboard$Model$ProgramTargetShort]),
+			function () {
+				if (dashboard.$ === 'Facility') {
+					return _List_fromArray(
+						[$author$project$Pages$Dashboard$Model$InterventionSiteAverage]);
+				} else {
+					return _List_Nil;
+				}
+			}());
+		return A2(
+			$author$project$Pages$Dashboard$Model$DownloadCSV,
+			A2($author$project$Pages$Dashboard$View$exportFileName, dashboard, 'dashboard'),
+			$author$project$Pages$Components$Utils$reportTablesDataToCSV(
+				_List_fromArray(
+					[
+						A3(
+						$author$project$Pages$Model$MetricsResultsTableData,
+						A2(
+							$author$project$Pages$Dashboard$View$translateLabel,
+							language,
+							$author$project$Pages$Dashboard$View$dashboardTitleLabel(dashboard)),
+						A2(
+							$elm$core$List$map,
+							$author$project$Pages$Dashboard$View$translateLabel(language),
+							_List_fromArray(
+								[$author$project$Pages$Dashboard$Model$IndicatorColumn, $author$project$Pages$Dashboard$Model$ValueColumn])),
+						summaryRows),
+						A3(
+						$author$project$Pages$Model$MetricsResultsTableData,
+						A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$Indicators),
+						A2(
+							$elm$core$List$map,
+							$author$project$Pages$Dashboard$View$translateLabel(language),
+							kpiCaptions),
+						A2(
+							$elm$core$List$map,
+							kpiRow,
+							$author$project$Pages$Dashboard$Placeholder$kpisFor(dashboard)))
+					])));
+	});
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $author$project$Pages$Dashboard$View$viewBannerAction = F3(
+	function (msg, labelId, language) {
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$type_('button'),
+					$elm$html$Html$Events$onClick(msg),
+					$elm$html$Html$Attributes$class('text-lg font-semibold underline decoration-2 underline-offset-4 hover:text-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Pages$Dashboard$View$translateLabel, language, labelId))
+				]));
+	});
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
+var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var $author$project$Pages$Dashboard$View$viewDashboardIcon = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return A2(
+			$elm$svg$Svg$svg,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$viewBox('0 0 24 24'),
+					$elm$svg$Svg$Attributes$class('h-7 w-7'),
+					$elm$svg$Svg$Attributes$fill('currentColor')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$path,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$d('M4 21V7l8-4 8 4v14h-5v-5h-6v5H4Zm7-9h2v-2h2V9h-2V7h-2v2H9v2h2v1Z')
+						]),
+					_List_Nil)
+				]));
+	} else {
+		return A2(
+			$elm$svg$Svg$svg,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$viewBox('0 0 24 24'),
+					$elm$svg$Svg$Attributes$class('h-7 w-7'),
+					$elm$svg$Svg$Attributes$fill('currentColor')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx('12'),
+							$elm$svg$Svg$Attributes$cy('5'),
+							$elm$svg$Svg$Attributes$r('2.4')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx('5'),
+							$elm$svg$Svg$Attributes$cy('12'),
+							$elm$svg$Svg$Attributes$r('2.4')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx('19'),
+							$elm$svg$Svg$Attributes$cy('12'),
+							$elm$svg$Svg$Attributes$r('2.4')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx('12'),
+							$elm$svg$Svg$Attributes$cy('19'),
+							$elm$svg$Svg$Attributes$r('2.4')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$path,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$d('M12 7v10M7 12h10'),
+							$elm$svg$Svg$Attributes$stroke('currentColor'),
+							$elm$svg$Svg$Attributes$strokeWidth('1.6')
+						]),
+					_List_Nil)
+				]));
+	}
+};
+var $author$project$Pages$Dashboard$View$viewBanner = F3(
+	function (language, dashboard, siteName) {
+		var _v0 = function () {
+			if (dashboard.$ === 'Facility') {
+				return _Utils_Tuple2($author$project$Pages$Dashboard$Model$DashboardTwo, $author$project$Pages$Dashboard$Model$DashboardTitleFacility);
+			} else {
+				return _Utils_Tuple2($author$project$Pages$Dashboard$Model$DashboardThree, $author$project$Pages$Dashboard$Model$DashboardTitleProgram);
+			}
+		}();
+		var number = _v0.a;
+		var title = _v0.b;
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('grid grid-cols-1 items-center gap-3 bg-accent px-4 py-4 text-white md:grid-cols-3 md:px-6')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('flex items-center gap-3')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('flex h-12 w-12 shrink-0 items-center justify-center rounded bg-white/90 text-accent'),
+									A2($elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
+								]),
+							_List_fromArray(
+								[
+									$author$project$Pages$Dashboard$View$viewDashboardIcon(dashboard)
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$p,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('text-xl font-extrabold underline decoration-white/60 underline-offset-4')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Pages$Dashboard$View$translateLabel, language, number))
+										])),
+									A2(
+									$elm$html$Html$p,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('text-sm text-white/90')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Pages$Dashboard$View$translateLabel, language, title))
+										]))
+								]))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('text-center')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$h1,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('border-b border-white/60 pb-1 text-2xl font-extrabold tracking-tight md:text-3xl')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$HealthyStart))
+								])),
+							A2(
+							$elm$html$Html$p,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('mt-1 text-lg font-semibold')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(siteName)
+								]))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('flex items-center justify-start gap-6 md:justify-end')
+						]),
+					_List_fromArray(
+						[
+							A3(
+							$author$project$Pages$Dashboard$View$viewBannerAction,
+							A2($author$project$Pages$Dashboard$View$dashboardExportMsg, language, dashboard),
+							$author$project$Pages$Dashboard$Model$Export,
+							language),
+							A3($author$project$Pages$Dashboard$View$viewBannerAction, $author$project$Pages$Dashboard$Model$PrintPage, $author$project$Pages$Dashboard$Model$Print, language)
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$Model$CloseDrill = {$: 'CloseDrill'};
+var $author$project$Pages$Dashboard$Model$MonthByMonthDetail = {$: 'MonthByMonthDetail'};
+var $author$project$Pages$Dashboard$Model$Return = {$: 'Return'};
+var $author$project$Pages$Dashboard$Model$MonthColumn = {$: 'MonthColumn'};
+var $author$project$Pages$Dashboard$Placeholder$rnd = function (n) {
+	return A2(
+		$elm$core$Basics$modBy,
+		233280,
+		($elm$core$Basics$abs(n) * 9301) + 49297) / 233280;
+};
+var $author$project$Pages$Dashboard$Placeholder$monthly = F3(
+	function (seed, base, yearKey) {
+		return A2(
+			$elm$core$List$map,
+			function (month) {
+				var noise = ($author$project$Pages$Dashboard$Placeholder$rnd(((seed * 131) + (yearKey * 17)) + (month * 7)) - 0.5) * 13;
+				var drift = month * 0.9;
+				return A3($elm$core$Basics$clamp, 0, 100, ((base - 5) + drift) + noise);
+			},
+			A2($elm$core$List$range, 0, 11));
+	});
+var $author$project$Pages$Dashboard$Placeholder$targetMonthly = function (base) {
+	return A2(
+		$elm$core$List$map,
+		function (month) {
+			return A3($elm$core$Basics$clamp, 0, 100, (base - 8) + ((month / 11) * 8));
+		},
+		A2($elm$core$List$range, 0, 11));
+};
+var $author$project$Pages$Dashboard$Placeholder$drillRow = F4(
+	function (dashboard, kpi, year, monthIndex) {
+		var nth = F2(
+			function (index, values) {
+				return A2(
+					$elm$core$Maybe$withDefault,
+					0,
+					$elm$core$List$head(
+						A2($elm$core$List$drop, index, values)));
+			});
+		var perf = A2(
+			nth,
+			monthIndex,
+			A3($author$project$Pages$Dashboard$Placeholder$monthly, kpi.seed, kpi.baseCurrent, year));
+		var targ = A2(
+			nth,
+			monthIndex,
+			$author$project$Pages$Dashboard$Placeholder$targetMonthly(kpi.baseTarget));
+		var third = function () {
+			if (dashboard.$ === 'Facility') {
+				return A2(
+					nth,
+					monthIndex,
+					A3($author$project$Pages$Dashboard$Placeholder$monthly, kpi.seed + 777, kpi.baseAvg, year));
+			} else {
+				return perf - targ;
+			}
+		}();
+		return _Utils_Tuple3(perf, targ, third);
+	});
+var $author$project$Pages$Dashboard$View$percentage = function (value) {
+	return $elm$core$String$fromInt(
+		$elm$core$Basics$round(value)) + '%';
+};
+var $author$project$Pages$Dashboard$View$signedValue = function (value) {
+	var rounded = $elm$core$Basics$round(value);
+	return _Utils_ap(
+		(rounded > 0) ? '+' : '',
+		$elm$core$String$fromInt(rounded));
+};
+var $author$project$Pages$Dashboard$View$drillCellValues = F4(
+	function (dashboard, kpi, year, monthIndex) {
+		var _v0 = A4($author$project$Pages$Dashboard$Placeholder$drillRow, dashboard, kpi, year, monthIndex);
+		var perf = _v0.a;
+		var targ = _v0.b;
+		var third = _v0.c;
+		var thirdValue = function () {
+			if (dashboard.$ === 'Facility') {
+				return $author$project$Pages$Dashboard$View$percentage(third);
+			} else {
+				return $author$project$Pages$Dashboard$View$signedValue(third);
+			}
+		}();
+		return _List_fromArray(
+			[
+				$author$project$Pages$Dashboard$View$percentage(perf),
+				$author$project$Pages$Dashboard$View$percentage(targ),
+				thirdValue
+			]);
+	});
+var $author$project$Pages$Dashboard$Model$Average = {$: 'Average'};
+var $author$project$Pages$Dashboard$Model$Delta = {$: 'Delta'};
+var $author$project$Pages$Dashboard$Model$Performance = {$: 'Performance'};
+var $author$project$Pages$Dashboard$Model$Target = {$: 'Target'};
+var $author$project$Pages$Dashboard$View$drillColumnLabels = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return _List_fromArray(
+			[$author$project$Pages$Dashboard$Model$Performance, $author$project$Pages$Dashboard$Model$Target, $author$project$Pages$Dashboard$Model$Average]);
+	} else {
+		return _List_fromArray(
+			[$author$project$Pages$Dashboard$Model$Performance, $author$project$Pages$Dashboard$Model$Target, $author$project$Pages$Dashboard$Model$Delta]);
+	}
+};
+var $author$project$Pages$Dashboard$Utils$monthLabels = function (language) {
+	return A2(
+		$elm$core$List$map,
+		function (month) {
+			return A2(
+				$author$project$Translate$translate,
+				language,
+				A2($author$project$Translate$ResolveMonth, true, month));
+		},
+		_List_fromArray(
+			[$elm$time$Time$Jan, $elm$time$Time$Feb, $elm$time$Time$Mar, $elm$time$Time$Apr, $elm$time$Time$May, $elm$time$Time$Jun, $elm$time$Time$Jul, $elm$time$Time$Aug, $elm$time$Time$Sep, $elm$time$Time$Oct, $elm$time$Time$Nov, $elm$time$Time$Dec]));
+};
+var $author$project$Pages$Dashboard$View$drillExportMsg = F4(
+	function (language, dashboard, years, kpi) {
+		var rows = A2(
+			$elm$core$List$indexedMap,
+			F2(
+				function (monthIndex, monthName) {
+					return A2(
+						$elm$core$List$cons,
+						monthName,
+						A2(
+							$elm$core$List$concatMap,
+							function (year) {
+								return A4($author$project$Pages$Dashboard$View$drillCellValues, dashboard, kpi, year, monthIndex);
+							},
+							years));
+				}),
+			$author$project$Pages$Dashboard$Utils$monthLabels(language));
+		var captions = A2(
+			$elm$core$List$cons,
+			A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$MonthColumn),
+			A2(
+				$elm$core$List$concatMap,
+				function (year) {
+					return A2(
+						$elm$core$List$map,
+						function (labelId) {
+							return $elm$core$String$fromInt(year) + (' ' + A2($author$project$Pages$Dashboard$View$translateLabel, language, labelId));
+						},
+						$author$project$Pages$Dashboard$View$drillColumnLabels(dashboard));
+				},
+				years));
+		return A2(
+			$author$project$Pages$Dashboard$Model$DownloadCSV,
+			A2($author$project$Pages$Dashboard$View$exportFileName, dashboard, kpi.id),
+			$author$project$Pages$Components$Utils$reportTableDataToCSV(
+				A3(
+					$author$project$Pages$Model$MetricsResultsTableData,
+					A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label),
+					captions,
+					rows)));
+	});
+var $elm$html$Html$h2 = _VirtualDom_node('h2');
+var $author$project$Pages$Dashboard$View$viewDrillAction = F3(
+	function (language, msg, labelId) {
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$type_('button'),
+					$elm$html$Html$Events$onClick(msg),
+					$elm$html$Html$Attributes$class('text-lg font-semibold text-accent underline decoration-2 underline-offset-4 hover:text-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Pages$Dashboard$View$translateLabel, language, labelId))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewDrillMonthRow = F5(
+	function (dashboard, years, kpi, monthIndex, monthName) {
+		var zebra = (!A2($elm$core$Basics$modBy, 2, monthIndex)) ? 'bg-slate-50' : 'bg-slate-100';
+		return A2(
+			$elm$html$Html$tr,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class(zebra)
+				]),
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$html$Html$th,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('bg-slate-300 px-3 py-1.5 text-left font-semibold text-slate-900'),
+							A2($elm$html$Html$Attributes$attribute, 'scope', 'row')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(monthName)
+						])),
+				A2(
+					$elm$core$List$concatMap,
+					function (year) {
+						return A2(
+							$elm$core$List$map,
+							function (cellValue) {
+								return A2(
+									$elm$html$Html$td,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('px-3 py-1.5 text-center text-slate-800')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(cellValue)
+										]));
+							},
+							A4($author$project$Pages$Dashboard$View$drillCellValues, dashboard, kpi, year, monthIndex));
+					},
+					years)));
+	});
+var $author$project$Pages$Dashboard$View$viewSubHeaderCell = F3(
+	function (language, year, labelId) {
+		return A2(
+			$elm$html$Html$th,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('bg-slate-200 px-3 py-1.5 font-semibold text-slate-800'),
+					A2($elm$html$Html$Attributes$attribute, 'scope', 'col')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('sr-only')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							$elm$core$String$fromInt(year) + ' ')
+						])),
+					$elm$html$Html$text(
+					A2($author$project$Pages$Dashboard$View$translateLabel, language, labelId))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewSubHeaders = F3(
+	function (language, dashboard, year) {
+		return A2(
+			$elm$core$List$map,
+			A2($author$project$Pages$Dashboard$View$viewSubHeaderCell, language, year),
+			$author$project$Pages$Dashboard$View$drillColumnLabels(dashboard));
+	});
+var $elm$html$Html$Attributes$colspan = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'colspan',
+		$elm$core$String$fromInt(n));
+};
+var $author$project$Pages$Dashboard$View$viewYearGroupHeader = function (year) {
+	return A2(
+		$elm$html$Html$th,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('bg-brand-navy p-2 text-lg font-bold text-white'),
+				$elm$html$Html$Attributes$colspan(3),
+				A2($elm$html$Html$Attributes$attribute, 'scope', 'colgroup')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				$elm$core$String$fromInt(year))
+			]));
+};
+var $author$project$Pages$Dashboard$View$viewDrillTable = F4(
+	function (language, dashboard, years, kpi) {
+		var monthHeader = function (backgroundClass) {
+			return A2(
+				$elm$html$Html$th,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class(backgroundClass + ' p-2'),
+						A2($elm$html$Html$Attributes$attribute, 'scope', 'col')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$span,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('sr-only')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$MonthColumn))
+							]))
+					]));
+		};
+		return A2(
+			$elm$html$Html$table,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('w-full min-w-[760px] border-collapse text-sm')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$thead,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$tr,
+							_List_Nil,
+							A2(
+								$elm$core$List$cons,
+								monthHeader('bg-brand-navy'),
+								A2($elm$core$List$map, $author$project$Pages$Dashboard$View$viewYearGroupHeader, years))),
+							A2(
+							$elm$html$Html$tr,
+							_List_Nil,
+							A2(
+								$elm$core$List$cons,
+								monthHeader('bg-slate-200'),
+								A2(
+									$elm$core$List$concatMap,
+									A2($author$project$Pages$Dashboard$View$viewSubHeaders, language, dashboard),
+									years)))
+						])),
+					A2(
+					$elm$html$Html$tbody,
+					_List_Nil,
+					A2(
+						$elm$core$List$indexedMap,
+						A3($author$project$Pages$Dashboard$View$viewDrillMonthRow, dashboard, years, kpi),
+						$author$project$Pages$Dashboard$Utils$monthLabels(language)))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewDrillDown = F4(
+	function (language, dashboard, years, kpi) {
+		var kpiLabel = A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('ehs-dashboard__drill fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4'),
+					A2($elm$html$Html$Attributes$attribute, 'role', 'dialog'),
+					A2($elm$html$Html$Attributes$attribute, 'aria-modal', 'true'),
+					A2(
+					$elm$html$Html$Attributes$attribute,
+					'aria-label',
+					kpiLabel + (' — ' + A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$MonthByMonthDetail)))
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('mt-10 w-full max-w-[1200px] rounded-lg bg-white p-5 shadow-2xl md:p-6')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$h2,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('mb-3 text-2xl font-bold text-accent')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(kpiLabel)
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('overflow-x-auto')
+								]),
+							_List_fromArray(
+								[
+									A4($author$project$Pages$Dashboard$View$viewDrillTable, language, dashboard, years, kpi)
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('mt-4 flex justify-end gap-6')
+								]),
+							_List_fromArray(
+								[
+									A3(
+									$author$project$Pages$Dashboard$View$viewDrillAction,
+									language,
+									A4($author$project$Pages$Dashboard$View$drillExportMsg, language, dashboard, years, kpi),
+									$author$project$Pages$Dashboard$Model$Export),
+									A3($author$project$Pages$Dashboard$View$viewDrillAction, language, $author$project$Pages$Dashboard$Model$PrintPage, $author$project$Pages$Dashboard$Model$Print),
+									A3($author$project$Pages$Dashboard$View$viewDrillAction, language, $author$project$Pages$Dashboard$Model$CloseDrill, $author$project$Pages$Dashboard$Model$Return)
+								]))
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$Model$FilterLabel = {$: 'FilterLabel'};
+var $author$project$Pages$Dashboard$Model$SetFilter = F2(
+	function (a, b) {
+		return {$: 'SetFilter', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$Utils$filterKeySlug = function (key) {
+	switch (key.$) {
+		case 'FilterLocation':
+			return 'location';
+		case 'FilterService':
+			return 'service';
+		case 'FilterSite':
+			return 'site';
+		default:
+			return 'time';
+	}
+};
+var $author$project$Pages$Dashboard$Model$InterventionSite = {$: 'InterventionSite'};
+var $author$project$Pages$Dashboard$Model$Location = {$: 'Location'};
+var $author$project$Pages$Dashboard$Model$Service = {$: 'Service'};
+var $author$project$Pages$Dashboard$Model$Time = {$: 'Time'};
+var $author$project$Pages$Dashboard$Utils$filterLabel = function (key) {
+	switch (key.$) {
+		case 'FilterLocation':
+			return $author$project$Pages$Dashboard$Model$Location;
+		case 'FilterService':
+			return $author$project$Pages$Dashboard$Model$Service;
+		case 'FilterSite':
+			return $author$project$Pages$Dashboard$Model$InterventionSite;
+		default:
+			return $author$project$Pages$Dashboard$Model$Time;
+	}
+};
+var $elm$html$Html$Attributes$for = $elm$html$Html$Attributes$stringProperty('htmlFor');
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $elm$html$Html$label = _VirtualDom_node('label');
+var $author$project$Pages$Dashboard$View$viewFilterControl = F4(
+	function (language, dashboard, model, filter) {
+		var selectedValue = A2($author$project$Pages$Dashboard$Utils$selectedFilterValue, model, filter);
+		var selectId = 'filter-' + ($author$project$Pages$Dashboard$Utils$dashboardSlug(dashboard) + ('-' + $author$project$Pages$Dashboard$Utils$filterKeySlug(filter.key)));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('flex flex-col gap-1')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$label,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$for(selectId),
+							$elm$html$Html$Attributes$class('text-sm font-bold text-slate-800')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2(
+								$author$project$Pages$Dashboard$View$translateLabel,
+								language,
+								$author$project$Pages$Dashboard$Utils$filterLabel(filter.key)))
+						])),
+					A2(
+					$elm$html$Html$select,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$id(selectId),
+							$elm$html$Html$Attributes$class('rounded border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'),
+							$elm$html$Html$Events$onInput(
+							$author$project$Pages$Dashboard$Model$SetFilter(filter.key))
+						]),
+					A2(
+						$elm$core$List$map,
+						function (optionValue) {
+							return A2(
+								$elm$html$Html$option,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$value(optionValue),
+										$elm$html$Html$Attributes$selected(
+										_Utils_eq(optionValue, selectedValue))
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(optionValue)
+									]));
+						},
+						filter.options))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewFilterRow = F4(
+	function (language, dashboard, filters, model) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('ehs-dashboard__filters flex flex-wrap items-end gap-x-5 gap-y-3')
+				]),
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('rounded bg-accent px-3 py-1 text-sm font-semibold text-white')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$FilterLabel))
+						])),
+				A2(
+					$elm$core$List$map,
+					A3($author$project$Pages$Dashboard$View$viewFilterControl, language, dashboard, model),
+					filters)));
+	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Pages$Dashboard$View$viewCoverageBar = F2(
+	function (language, coverage) {
+		var filled = $elm$core$String$fromInt(coverage.pct) + '%';
+		var emphasis = A2($author$project$Pages$Dashboard$View$translateLabel, language, coverage.emphasis);
+		var coverageLabel = A2($author$project$Pages$Dashboard$View$translateLabel, language, coverage.label);
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$p,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('mb-1 text-sm')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$span,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('font-bold text-accent')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(emphasis)
+								])),
+							A2(
+							$elm$html$Html$span,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('ml-1 font-semibold text-slate-800')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(coverageLabel)
+								]))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('relative h-6 w-full overflow-hidden rounded bg-bar-track'),
+							A2($elm$html$Html$Attributes$attribute, 'role', 'img'),
+							A2($elm$html$Html$Attributes$attribute, 'aria-label', emphasis + (' ' + (coverageLabel + (': ' + filled))))
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('flex h-full items-center justify-end rounded bg-accent pr-2'),
+									A2($elm$html$Html$Attributes$style, 'width', filled)
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$span,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('text-xs font-bold text-white')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(filled)
+										]))
+								]))
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$Model$OpenDrill = function (a) {
+	return {$: 'OpenDrill', a: a};
+};
+var $author$project$Pages$Dashboard$Model$OpenMonthByMonthDetailFor = {$: 'OpenMonthByMonthDetailFor'};
+var $author$project$Pages$Dashboard$View$viewKpiReference = F3(
+	function (language, reference, labelId) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('font-bold text-accent')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(reference)
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('ml-1 text-xs text-slate-600')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, labelId))
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$Model$FromPreviousMonth = {$: 'FromPreviousMonth'};
+var $author$project$Pages$Dashboard$View$viewTrendIndicator = F2(
+	function (language, kpi) {
+		var _v0 = function () {
+			var _v1 = kpi.deltaDir;
+			if (_v1.$ === 'Down') {
+				return _Utils_Tuple2('▼', 'text-alert');
+			} else {
+				return _Utils_Tuple2('▲', 'text-trend-avg');
+			}
+		}();
+		var glyph = _v0.a;
+		var colorClass = _v0.b;
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('mt-1 flex items-center gap-1')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('text-xs ' + colorClass),
+							A2($elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(glyph)
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('text-xs italic text-slate-600')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							kpi.deltaValue + (' ' + A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$FromPreviousMonth)))
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewKpiBlock = F2(
+	function (language, kpi) {
+		var kpiLabel = A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label);
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$type_('button'),
+					$elm$html$Html$Events$onClick(
+					$author$project$Pages$Dashboard$Model$OpenDrill(kpi)),
+					A2(
+					$elm$html$Html$Attributes$attribute,
+					'aria-label',
+					A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$OpenMonthByMonthDetailFor) + (' ' + kpiLabel)),
+					$elm$html$Html$Attributes$class('flex w-full flex-col rounded-lg border border-slate-200 p-3 text-left transition hover:border-accent hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$h2,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('min-h-[2.5rem] text-sm font-bold leading-tight text-slate-800')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(kpiLabel)
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('mt-2 flex items-stretch gap-3 border-t border-slate-100 pt-2')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('flex flex-col')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$span,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('text-3xl font-extrabold leading-none text-accent')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(kpi.current)
+										])),
+									A2($author$project$Pages$Dashboard$View$viewTrendIndicator, language, kpi)
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('w-px self-stretch bg-slate-200')
+								]),
+							_List_Nil),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('flex flex-col justify-center gap-1 text-sm')
+								]),
+							A2(
+								$elm$core$List$cons,
+								A3($author$project$Pages$Dashboard$View$viewKpiReference, language, kpi.target, $author$project$Pages$Dashboard$Model$ProgramTargetShort),
+								A2(
+									$elm$core$Maybe$withDefault,
+									_List_Nil,
+									A2(
+										$elm$core$Maybe$map,
+										function (average) {
+											return _List_fromArray(
+												[
+													A3($author$project$Pages$Dashboard$View$viewKpiReference, language, average, $author$project$Pages$Dashboard$Model$InterventionSiteAverage)
+												]);
+										},
+										kpi.average))))
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewLeftColumn = F2(
+	function (language, dashboard) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3')
+						]),
+					A2(
+						$elm$core$List$map,
+						$author$project$Pages$Dashboard$View$viewKpiBlock(language),
+						$author$project$Pages$Dashboard$Placeholder$kpisFor(dashboard))),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('mt-6 flex flex-col gap-4')
+						]),
+					A2(
+						$elm$core$List$map,
+						$author$project$Pages$Dashboard$View$viewCoverageBar(language),
+						$author$project$Pages$Dashboard$Placeholder$coverageFor(dashboard)))
+				]));
+	});
+var $author$project$Pages$Dashboard$Model$CriticalAlerts = {$: 'CriticalAlerts'};
+var $author$project$Pages$Dashboard$Model$NoActiveAlerts = {$: 'NoActiveAlerts'};
+var $author$project$Pages$Dashboard$Model$AlertBirthsMissingBirthWeight = function (a) {
+	return {$: 'AlertBirthsMissingBirthWeight', a: a};
+};
+var $author$project$Pages$Dashboard$Model$AlertPretermRateExceeded = {$: 'AlertPretermRateExceeded'};
+var $author$project$Pages$Dashboard$Model$AlertSitesWithDelayedBirthWeightRecording = function (a) {
+	return {$: 'AlertSitesWithDelayedBirthWeightRecording', a: a};
+};
+var $author$project$Pages$Dashboard$Model$AlertSitesWithPretermRate = function (a) {
+	return {$: 'AlertSitesWithPretermRate', a: a};
+};
+var $author$project$Pages$Dashboard$Placeholder$alertsFor = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return _List_fromArray(
+			[
+				$author$project$Pages$Dashboard$Model$AlertBirthsMissingBirthWeight(3),
+				$author$project$Pages$Dashboard$Model$AlertPretermRateExceeded
+			]);
+	} else {
+		return _List_fromArray(
+			[
+				$author$project$Pages$Dashboard$Model$AlertSitesWithDelayedBirthWeightRecording(6),
+				$author$project$Pages$Dashboard$Model$AlertSitesWithPretermRate(4)
+			]);
+	}
+};
+var $author$project$Pages$Dashboard$View$viewAlert = F2(
+	function (language, alert) {
+		return A2(
+			$elm$html$Html$li,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('flex items-center gap-2.5')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('inline-block h-3.5 w-3.5 shrink-0 rounded-full bg-alert'),
+							A2($elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
+						]),
+					_List_Nil),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('text-base text-slate-800')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, alert))
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewAlertsPanel = F2(
+	function (language, dashboard) {
+		var alerts = $author$project$Pages$Dashboard$Placeholder$alertsFor(dashboard);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('mt-6 overflow-hidden rounded-lg border border-slate-200')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$h2,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('bg-accent px-3 py-2 text-lg font-bold text-white')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$CriticalAlerts))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('bg-white p-3')
+						]),
+					_List_fromArray(
+						[
+							$elm$core$List$isEmpty(alerts) ? A2(
+							$elm$html$Html$p,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('text-sm text-slate-600')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$NoActiveAlerts))
+								])) : A2(
+							$elm$html$Html$ul,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('flex flex-col gap-2')
+								]),
+							A2(
+								$elm$core$List$map,
+								$author$project$Pages$Dashboard$View$viewAlert(language),
+								alerts))
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$Placeholder$defaultTrendKpi = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return 'ultrasound';
+	} else {
+		return 'ultrasound-p';
+	}
+};
+var $author$project$Pages$Dashboard$Utils$kpiById = F2(
+	function (kpis, id) {
+		return $elm$core$List$head(
+			A2(
+				$elm$core$List$filter,
+				function (kpi) {
+					return _Utils_eq(kpi.id, id);
+				},
+				kpis));
+	});
+var $elm_community$maybe_extra$Maybe$Extra$orElse = F2(
+	function (ma, mb) {
+		if (mb.$ === 'Nothing') {
+			return ma;
+		} else {
+			return mb;
+		}
+	});
+var $author$project$Pages$Dashboard$Model$SelectKpiToPlot = {$: 'SelectKpiToPlot'};
+var $author$project$Pages$Dashboard$Model$SelectTrendKpi = function (a) {
+	return {$: 'SelectTrendKpi', a: a};
+};
+var $author$project$Pages$Components$TrendChart$Series = F4(
+	function (color, label, dash, points) {
+		return {color: color, dash: dash, label: label, points: points};
+	});
+var $author$project$Pages$Dashboard$Model$Trends = {$: 'Trends'};
+var $author$project$Pages$Dashboard$Model$TrendChartDescriptionFacility = F2(
+	function (a, b) {
+		return {$: 'TrendChartDescriptionFacility', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$Model$TrendChartDescriptionProgram = F2(
+	function (a, b) {
+		return {$: 'TrendChartDescriptionProgram', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$Model$AllYearsLabel = {$: 'AllYearsLabel'};
+var $author$project$Pages$Dashboard$Utils$yearSelLabel = F2(
+	function (language, selection) {
+		if (selection.$ === 'AllYears') {
+			return A2(
+				$author$project$Translate$translate,
+				language,
+				$author$project$Translate$DashboardLabel($author$project$Pages$Dashboard$Model$AllYearsLabel));
+		} else {
+			var year = selection.a;
+			return $elm$core$String$fromInt(year);
+		}
+	});
+var $author$project$Pages$Dashboard$View$chartDescription = F4(
+	function (language, dashboard, kpi, selection) {
+		var yearLabel = A2($author$project$Pages$Dashboard$Utils$yearSelLabel, language, selection);
+		var kpiLabel = A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label);
+		if (dashboard.$ === 'Facility') {
+			return A2(
+				$author$project$Pages$Dashboard$View$translateLabel,
+				language,
+				A2($author$project$Pages$Dashboard$Model$TrendChartDescriptionFacility, kpiLabel, yearLabel));
+		} else {
+			return A2(
+				$author$project$Pages$Dashboard$View$translateLabel,
+				language,
+				A2($author$project$Pages$Dashboard$Model$TrendChartDescriptionProgram, kpiLabel, yearLabel));
+		}
+	});
+var $author$project$Pages$Dashboard$Model$InstitutionalTarget = {$: 'InstitutionalTarget'};
+var $author$project$Pages$Dashboard$Model$ProgramTarget = {$: 'ProgramTarget'};
+var $author$project$Pages$Dashboard$View$targetLegendLabel = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return $author$project$Pages$Dashboard$Model$InstitutionalTarget;
+	} else {
+		return $author$project$Pages$Dashboard$Model$ProgramTarget;
+	}
+};
+var $author$project$Pages$Dashboard$Placeholder$elementAvg = function (lists) {
+	return A2(
+		$elm$core$List$map,
+		function (index) {
+			var values = A2(
+				$elm$core$List$filterMap,
+				function (list) {
+					return $elm$core$List$head(
+						A2($elm$core$List$drop, index, list));
+				},
+				lists);
+			return $elm$core$List$isEmpty(values) ? 0 : ($elm$core$List$sum(values) / $elm$core$List$length(values));
+		},
+		A2($elm$core$List$range, 0, 11));
+};
+var $author$project$Pages$Dashboard$Placeholder$yearKeys = F2(
+	function (years, selection) {
+		if (selection.$ === 'AllYears') {
+			return years;
+		} else {
+			var year = selection.a;
+			return _List_fromArray(
+				[year]);
+		}
+	});
+var $author$project$Pages$Dashboard$Placeholder$trendSeries = F3(
+	function (years, kpi, selection) {
+		var keys = A2($author$project$Pages$Dashboard$Placeholder$yearKeys, years, selection);
+		return {
+			avg: $author$project$Pages$Dashboard$Placeholder$elementAvg(
+				A2(
+					$elm$core$List$map,
+					A2($author$project$Pages$Dashboard$Placeholder$monthly, kpi.seed + 777, kpi.baseAvg),
+					keys)),
+			current: $author$project$Pages$Dashboard$Placeholder$elementAvg(
+				A2(
+					$elm$core$List$map,
+					A2($author$project$Pages$Dashboard$Placeholder$monthly, kpi.seed, kpi.baseCurrent),
+					keys)),
+			target: $author$project$Pages$Dashboard$Placeholder$targetMonthly(kpi.baseTarget)
+		};
+	});
+var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
+var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
+var $author$project$Pages$Components$TrendChart$plotLeft = 46;
+var $author$project$Pages$Components$TrendChart$plotRight = 556;
+var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
+var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
+var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
+var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
+var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
+var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
+var $author$project$Pages$Components$TrendChart$plotBottom = 216;
+var $author$project$Pages$Components$TrendChart$plotTop = 14;
+var $author$project$Pages$Components$TrendChart$plotHeight = $author$project$Pages$Components$TrendChart$plotBottom - $author$project$Pages$Components$TrendChart$plotTop;
+var $author$project$Pages$Components$TrendChart$yAt = function (value) {
+	return $author$project$Pages$Components$TrendChart$plotBottom - ((value / 100) * $author$project$Pages$Components$TrendChart$plotHeight);
+};
+var $author$project$Pages$Components$TrendChart$gridAndYAxis = A2(
+	$elm$core$List$concatMap,
+	function (value) {
+		var y = $author$project$Pages$Components$TrendChart$yAt(value);
+		return _List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$line,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x1(
+						$elm$core$String$fromFloat($author$project$Pages$Components$TrendChart$plotLeft)),
+						$elm$svg$Svg$Attributes$y1(
+						$elm$core$String$fromFloat(y)),
+						$elm$svg$Svg$Attributes$x2(
+						$elm$core$String$fromFloat($author$project$Pages$Components$TrendChart$plotRight)),
+						$elm$svg$Svg$Attributes$y2(
+						$elm$core$String$fromFloat(y)),
+						$elm$svg$Svg$Attributes$stroke('#e2e8f0'),
+						$elm$svg$Svg$Attributes$strokeWidth('1')
+					]),
+				_List_Nil),
+				A2(
+				$elm$svg$Svg$text_,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x(
+						$elm$core$String$fromFloat($author$project$Pages$Components$TrendChart$plotLeft - 10)),
+						$elm$svg$Svg$Attributes$y(
+						$elm$core$String$fromFloat(y + 4)),
+						$elm$svg$Svg$Attributes$textAnchor('end'),
+						$elm$svg$Svg$Attributes$fontSize('12'),
+						$elm$svg$Svg$Attributes$fill('#475569')
+					]),
+				_List_fromArray(
+					[
+						$elm$svg$Svg$text(
+						$elm$core$String$fromInt(value))
+					]))
+			]);
+	},
+	_List_fromArray(
+		[0, 20, 40, 60, 80, 100]));
+var $elm$svg$Svg$Attributes$preserveAspectRatio = _VirtualDom_attribute('preserveAspectRatio');
+var $elm$svg$Svg$Attributes$points = _VirtualDom_attribute('points');
+var $elm$svg$Svg$polyline = $elm$svg$Svg$trustedNode('polyline');
+var $elm$svg$Svg$Attributes$strokeDasharray = _VirtualDom_attribute('stroke-dasharray');
+var $elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
+var $elm$svg$Svg$Attributes$strokeLinejoin = _VirtualDom_attribute('stroke-linejoin');
+var $author$project$Pages$Components$TrendChart$plotWidth = $author$project$Pages$Components$TrendChart$plotRight - $author$project$Pages$Components$TrendChart$plotLeft;
+var $author$project$Pages$Components$TrendChart$xAt = function (index) {
+	return $author$project$Pages$Components$TrendChart$plotLeft + (index * ($author$project$Pages$Components$TrendChart$plotWidth / 11));
+};
+var $author$project$Pages$Components$TrendChart$seriesLayer = function (series) {
+	var marker = function (_v1) {
+		var x = _v1.a;
+		var y = _v1.b;
+		return A2(
+			$elm$svg$Svg$circle,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$cx(
+					$elm$core$String$fromFloat(x)),
+					$elm$svg$Svg$Attributes$cy(
+					$elm$core$String$fromFloat(y)),
+					$elm$svg$Svg$Attributes$r('3.5'),
+					$elm$svg$Svg$Attributes$fill(series.color)
+				]),
+			_List_Nil);
+	};
+	var coordinates = A2(
+		$elm$core$List$indexedMap,
+		F2(
+			function (index, value) {
+				return _Utils_Tuple2(
+					$author$project$Pages$Components$TrendChart$xAt(index),
+					$author$project$Pages$Components$TrendChart$yAt(value));
+			}),
+		series.points);
+	return A2(
+		$elm$core$List$cons,
+		A2(
+			$elm$svg$Svg$polyline,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$points(
+					A2(
+						$elm$core$String$join,
+						' ',
+						A2(
+							$elm$core$List$map,
+							function (_v0) {
+								var x = _v0.a;
+								var y = _v0.b;
+								return $elm$core$String$fromFloat(x) + (',' + $elm$core$String$fromFloat(y));
+							},
+							coordinates))),
+					$elm$svg$Svg$Attributes$fill('none'),
+					$elm$svg$Svg$Attributes$stroke(series.color),
+					$elm$svg$Svg$Attributes$strokeWidth('2.5'),
+					$elm$svg$Svg$Attributes$strokeDasharray(series.dash),
+					$elm$svg$Svg$Attributes$strokeLinejoin('round'),
+					$elm$svg$Svg$Attributes$strokeLinecap('round')
+				]),
+			_List_Nil),
+		A2($elm$core$List$map, marker, coordinates));
+};
+var $author$project$Pages$Components$TrendChart$xLabel = F2(
+	function (index, label) {
+		return A2(
+			$elm$svg$Svg$text_,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$x(
+					$elm$core$String$fromFloat(
+						$author$project$Pages$Components$TrendChart$xAt(index))),
+					$elm$svg$Svg$Attributes$y(
+					$elm$core$String$fromFloat($author$project$Pages$Components$TrendChart$plotBottom + 22)),
+					$elm$svg$Svg$Attributes$textAnchor('middle'),
+					$elm$svg$Svg$Attributes$fontSize('12'),
+					$elm$svg$Svg$Attributes$fill('#334155')
+				]),
+			_List_fromArray(
+				[
+					$elm$svg$Svg$text(label)
+				]));
+	});
+var $author$project$Pages$Components$TrendChart$view = function (config) {
+	return A2(
+		$elm$svg$Svg$svg,
+		_List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$viewBox('0 0 580 250'),
+				$elm$svg$Svg$Attributes$class('w-full h-auto'),
+				A2($elm$html$Html$Attributes$attribute, 'role', 'img'),
+				A2($elm$html$Html$Attributes$attribute, 'aria-label', config.ariaLabel),
+				$elm$svg$Svg$Attributes$preserveAspectRatio('xMidYMid meet')
+			]),
+		_Utils_ap(
+			$author$project$Pages$Components$TrendChart$gridAndYAxis,
+			_Utils_ap(
+				A2($elm$core$List$indexedMap, $author$project$Pages$Components$TrendChart$xLabel, config.xLabels),
+				A2($elm$core$List$concatMap, $author$project$Pages$Components$TrendChart$seriesLayer, config.series))));
+};
+var $author$project$Pages$Dashboard$View$viewLegendItem = function (series) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('flex items-center gap-2')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$svg,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$viewBox('0 0 28 10'),
+						$elm$svg$Svg$Attributes$class('h-2.5 w-7'),
+						A2($elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$line,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$x1('0'),
+								$elm$svg$Svg$Attributes$y1('5'),
+								$elm$svg$Svg$Attributes$x2('28'),
+								$elm$svg$Svg$Attributes$y2('5'),
+								$elm$svg$Svg$Attributes$stroke(series.color),
+								$elm$svg$Svg$Attributes$strokeWidth('3'),
+								$elm$svg$Svg$Attributes$strokeDasharray(series.dash)
+							]),
+						_List_Nil)
+					])),
+				A2(
+				$elm$html$Html$span,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('text-sm text-slate-800')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(series.label)
+					]))
+			]));
+};
+var $author$project$Pages$Dashboard$View$viewLegend = function (series) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('mt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-1')
+			]),
+		A2($elm$core$List$map, $author$project$Pages$Dashboard$View$viewLegendItem, series));
+};
+var $author$project$Pages$Dashboard$Model$Year = function (a) {
+	return {$: 'Year', a: a};
+};
+var $author$project$Pages$Dashboard$Model$YearLabel = {$: 'YearLabel'};
+var $author$project$Pages$Dashboard$Model$SelectTrendYear = function (a) {
+	return {$: 'SelectTrendYear', a: a};
+};
+var $author$project$Pages$Dashboard$View$viewYearButton = F3(
+	function (language, current, selection) {
+		var isActive = _Utils_eq(current, selection);
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$type_('button'),
+					$elm$html$Html$Events$onClick(
+					$author$project$Pages$Dashboard$Model$SelectTrendYear(selection)),
+					A2(
+					$elm$html$Html$Attributes$attribute,
+					'aria-pressed',
+					isActive ? 'true' : 'false'),
+					$elm$html$Html$Attributes$class('rounded px-1.5 text-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'),
+					$elm$html$Html$Attributes$classList(
+					_List_fromArray(
+						[
+							_Utils_Tuple2('font-extrabold text-accent underline underline-offset-4', isActive),
+							_Utils_Tuple2('font-medium text-slate-700 hover:text-accent', !isActive)
+						]))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Pages$Dashboard$Utils$yearSelLabel, language, selection))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewYearSelector = F3(
+	function (language, years, current) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('mb-2 flex flex-wrap items-center gap-3')
+				]),
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('font-bold text-slate-900')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$YearLabel) + ':')
+						])),
+				A2(
+					$elm$core$List$map,
+					A2($author$project$Pages$Dashboard$View$viewYearButton, language, current),
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Dashboard$Model$AllYears,
+						A2($elm$core$List$map, $author$project$Pages$Dashboard$Model$Year, years)))));
+	});
+var $author$project$Pages$Dashboard$View$viewTrends = F7(
+	function (language, dashboard, years, model, kpis, selectedId, selectedKpi) {
+		var series = A3($author$project$Pages$Dashboard$Placeholder$trendSeries, years, selectedKpi, model.trendYear);
+		var selectId = 'trend-kpi-' + $author$project$Pages$Dashboard$Utils$dashboardSlug(dashboard);
+		var chartSeries = _Utils_ap(
+			_List_fromArray(
+				[
+					A4(
+					$author$project$Pages$Components$TrendChart$Series,
+					'#0273b2',
+					A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$CurrentPerformance),
+					'',
+					series.current),
+					A4(
+					$author$project$Pages$Components$TrendChart$Series,
+					'#c25e00',
+					A2(
+						$author$project$Pages$Dashboard$View$translateLabel,
+						language,
+						$author$project$Pages$Dashboard$View$targetLegendLabel(dashboard)),
+					'8 4',
+					series.target)
+				]),
+			function () {
+				if (dashboard.$ === 'Facility') {
+					return _List_fromArray(
+						[
+							A4(
+							$author$project$Pages$Components$TrendChart$Series,
+							'#2f7d32',
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$InterventionSiteAverage),
+							'2 4',
+							series.avg)
+						]);
+				} else {
+					return _List_Nil;
+				}
+			}());
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('overflow-hidden rounded-lg border border-slate-200')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('flex flex-wrap items-center gap-3 bg-accent px-3 py-2 text-white')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$h2,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('text-lg font-bold')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$Trends))
+								])),
+							A2(
+							$elm$html$Html$label,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$for(selectId),
+									$elm$html$Html$Attributes$class('sr-only')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$SelectKpiToPlot))
+								])),
+							A2(
+							$elm$html$Html$select,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$id(selectId),
+									$elm$html$Html$Attributes$class('max-w-full rounded border border-white/40 bg-white px-2 py-1 text-sm font-semibold text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'),
+									$elm$html$Html$Events$onInput($author$project$Pages$Dashboard$Model$SelectTrendKpi)
+								]),
+							A2(
+								$elm$core$List$map,
+								function (kpi) {
+									return A2(
+										$elm$html$Html$option,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$value(kpi.id),
+												$elm$html$Html$Attributes$selected(
+												_Utils_eq(kpi.id, selectedId))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text(
+												A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label))
+											]));
+								},
+								kpis))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('bg-white p-3')
+						]),
+					_List_fromArray(
+						[
+							A3($author$project$Pages$Dashboard$View$viewYearSelector, language, years, model.trendYear),
+							$author$project$Pages$Components$TrendChart$view(
+							{
+								ariaLabel: A4($author$project$Pages$Dashboard$View$chartDescription, language, dashboard, selectedKpi, model.trendYear),
+								series: chartSeries,
+								xLabels: $author$project$Pages$Dashboard$Utils$monthLabels(language)
+							}),
+							$author$project$Pages$Dashboard$View$viewLegend(chartSeries)
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewTrendsPanel = F4(
+	function (language, dashboard, years, model) {
+		var selectedId = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Pages$Dashboard$Placeholder$defaultTrendKpi(dashboard),
+			model.trendKpi);
+		var kpis = $author$project$Pages$Dashboard$Placeholder$kpisFor(dashboard);
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A2(
+				$elm$core$Maybe$map,
+				A6($author$project$Pages$Dashboard$View$viewTrends, language, dashboard, years, model, kpis, selectedId),
+				A2(
+					$elm_community$maybe_extra$Maybe$Extra$orElse,
+					$elm$core$List$head(kpis),
+					A2($author$project$Pages$Dashboard$Utils$kpiById, kpis, selectedId))));
+	});
+var $author$project$Pages$Dashboard$View$viewRightColumn = F4(
+	function (language, dashboard, years, model) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A4($author$project$Pages$Dashboard$View$viewTrendsPanel, language, dashboard, years, model),
+					A2($author$project$Pages$Dashboard$View$viewAlertsPanel, language, dashboard)
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewTile = F2(
+	function (language, tile) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('flex flex-col overflow-hidden rounded ring-1 ring-slate-200')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('flex min-h-[3.25rem] items-center justify-center bg-accent px-2 py-1.5 text-center text-[11px] font-bold leading-tight text-white')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, tile.label))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('bg-white py-1 text-center text-xl font-extrabold text-accent')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(tile.value)
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewTileRow = F2(
+	function (language, tiles) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9')
+				]),
+			A2(
+				$elm$core$List$map,
+				$author$project$Pages$Dashboard$View$viewTile(language),
+				tiles));
+	});
+var $author$project$Pages$Dashboard$View$viewDashboard = F5(
+	function (language, currentDate, data, dashboard, model) {
+		var years = $author$project$Pages$Dashboard$Placeholder$drillYears(currentDate);
+		var filters = A2($author$project$Pages$Dashboard$Placeholder$filtersFor, dashboard, data.healthCenters);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('ehs-dashboard mx-auto w-full max-w-[1440px] px-3 py-4 md:px-6')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('ehs-dashboard__page overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-slate-200')
+						]),
+					_List_fromArray(
+						[
+							A3(
+							$author$project$Pages$Dashboard$View$viewBanner,
+							language,
+							dashboard,
+							A4($author$project$Pages$Dashboard$View$resolveSiteName, language, dashboard, filters, model)),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('px-4 py-4 md:px-6')
+								]),
+							_List_fromArray(
+								[
+									A4($author$project$Pages$Dashboard$View$viewFilterRow, language, dashboard, filters, model),
+									A2(
+									$author$project$Pages$Dashboard$View$viewTileRow,
+									language,
+									$author$project$Pages$Dashboard$Placeholder$tilesFor(dashboard)),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2')
+										]),
+									_List_fromArray(
+										[
+											A2($author$project$Pages$Dashboard$View$viewLeftColumn, language, dashboard),
+											A4($author$project$Pages$Dashboard$View$viewRightColumn, language, dashboard, years, model)
+										]))
+								]))
+						])),
+					function () {
+					var _v0 = model.screen;
+					if (_v0.$ === 'DashboardScreen') {
+						return $author$project$Gizra$Html$emptyNode;
+					} else {
+						var kpi = _v0.a;
+						return A4($author$project$Pages$Dashboard$View$viewDrillDown, language, dashboard, years, kpi);
+					}
+				}()
+				]));
+	});
+var $author$project$Pages$Dashboard$View$view = F5(
+	function (language, currentDate, modelBackend, dashboard, model) {
+		return A2(
+			$author$project$Pages$Utils$viewBackendData,
+			modelBackend.dashboardData,
+			function (data) {
+				return A5($author$project$Pages$Dashboard$View$viewDashboard, language, currentDate, data, dashboard, model);
+			});
+	});
+var $author$project$App$View$viewDashboard = F2(
+	function (model, dashboard) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2($author$project$Error$View$view, model.language, model.errors),
+					A2(
+					$elm$html$Html$map,
+					$author$project$App$Model$MsgDashboardPage,
+					A5(
+						$author$project$Pages$Dashboard$View$view,
+						model.language,
+						$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
+						model.backend,
+						dashboard,
+						model.dashboardPage))
+				]));
+	});
 var $author$project$App$View$view = function (model) {
 	var _v0 = model.activePage;
 	switch (_v0.$) {
@@ -45012,6 +47523,10 @@ var $author$project$App$View$view = function (model) {
 							model.backend,
 							model.completionPage))
 					]));
+		case 'DashboardFacility':
+			return A2($author$project$App$View$viewDashboard, model, $author$project$Pages$Dashboard$Model$Facility);
+		case 'DashboardProgram':
+			return A2($author$project$App$View$viewDashboard, model, $author$project$Pages$Dashboard$Model$Program);
 		default:
 			return A2(
 				$elm$html$Html$div,

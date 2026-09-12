@@ -2,6 +2,8 @@ module Pages.Components.Utils exposing
     ( isSyncComplete
     , populationSelectionOptionFromString
     , populationSelectionOptionToString
+    , reportTableDataToCSV
+    , reportTablesDataToCSV
     , viewSyncingPlaceholder
     )
 
@@ -9,6 +11,7 @@ import App.Types exposing (Language)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
+import Pages.Model exposing (MetricsResultsTableData)
 import Translate exposing (translate)
 
 
@@ -101,3 +104,19 @@ viewSyncingPlaceholder language downloaded maybeRemaining =
         , div [ class "explanation" ] [ text <| translate language Translate.DownloadingExplanation ]
         , div [ class "progress" ] [ text progress ]
         ]
+
+
+reportTablesDataToCSV : List MetricsResultsTableData -> String
+reportTablesDataToCSV =
+    List.map reportTableDataToCSV
+        >> String.join "\n\n"
+
+
+reportTableDataToCSV : MetricsResultsTableData -> String
+reportTableDataToCSV tableData =
+    [ tableData.heading
+    , String.join "," tableData.captions
+    , List.map (String.join ",") tableData.rows
+        |> String.join "\n"
+    ]
+        |> String.join "\n"

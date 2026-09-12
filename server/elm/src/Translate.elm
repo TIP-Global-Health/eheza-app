@@ -32,6 +32,7 @@ import Backend.Reports.Model
 import Date
 import Pages.Completion.Model
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
+import Pages.Dashboard.Model as Dashboard exposing (DashboardLabel)
 import Pages.Reports.Model exposing (FbfDistributionCategory(..), PregnancyTrimester(..), PrenatalContactType(..), ReportType(..))
 import Pages.Scoreboard.Model exposing (NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..))
 import Time exposing (Month(..))
@@ -108,6 +109,7 @@ type TranslationId
     | ContactType
     | CoreExam
     | DangerSigns
+    | DashboardLabel DashboardLabel
     | DeliveryLocation DeliveryLocation
     | DeliveryLocationsTableHeading
     | DeliveryLocationsTablePercentage
@@ -777,6 +779,9 @@ translationSet transId =
             , kirundi = Nothing
             , somali = Nothing
             }
+
+        DashboardLabel label ->
+            translateDashboardLabel label
 
         DeliveryLocation location ->
             case location of
@@ -3928,3 +3933,485 @@ translateMonth month short =
                 , kirundi = Just "Kigarama"
                 , somali = Just "Diseembar"
                 }
+
+
+{-| The text the HealthyStart dashboards render.
+-}
+translateDashboardLabel : DashboardLabel -> TranslationSet
+translateDashboardLabel label =
+    case label of
+        Dashboard.AlertBirthsMissingBirthWeight count ->
+            { english = String.fromInt count ++ " births missing birth weight in last 7 days"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.AlertPretermRateExceeded ->
+            { english = "Preterm rate exceeded 15% this month"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.AlertSitesWithDelayedBirthWeightRecording count ->
+            { english = String.fromInt count ++ " sites with delayed birth weight recording"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.AlertSitesWithPretermRate count ->
+            { english = String.fromInt count ++ " sites with preterm rate >15%"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.AllYearsLabel ->
+            { english = "All"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.AncMissRate ->
+            { english = "ANC Miss Rate (≥1 Missed Visit)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Aspirin ->
+            { english = "Aspirin"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Average ->
+            { english = "Avg."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Calcium ->
+            { english = "Calcium"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.CompleteAncAttendanceRate ->
+            { english = "Complete ANC Attendance Rate"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.CriticalAlerts ->
+            { english = "Critical Alerts"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.CurrentPerformance ->
+            { english = "Current Performance"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.DashboardThree ->
+            { english = "Dashboard III"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.DashboardTitleFacility ->
+            { english = "Facility Performance Dashboard"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.DashboardTitleProgram ->
+            { english = "Program Monitoring Dashboard"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.DashboardTwo ->
+            { english = "Dashboard II"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Delta ->
+            { english = "Δ"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.EarlyAncBookingRate ->
+            { english = "Early ANC Booking Rate"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.EarlyAncCoverageFirstTrimester ->
+            { english = "Early ANC Coverage >80 (1st Trimester)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.EarlyUltrasoundCoverage ->
+            { english = "Early Ultrasound Coverage (<20 W)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Export ->
+            { english = "Export"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.FilterLabel ->
+            { english = "Filter"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.FromPreviousMonth ->
+            { english = "from prev. month"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.GraduatedMotherChildPairs ->
+            { english = "Graduated Mother–Child Pairs"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.HealthyStart ->
+            { english = "HealthyStart"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.HighRiskPregnancyRate ->
+            { english = "High-Risk Pregnancy Rate"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.IndicatorColumn ->
+            { english = "Indicator"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Indicators ->
+            { english = "Indicators"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.InstitutionalTarget ->
+            { english = "Institutional Target"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.InterventionSite ->
+            { english = "Intervention Site"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.InterventionSiteAverage ->
+            { english = "Int. Site Average"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Location ->
+            { english = "Location"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.LostToFollowUp ->
+            { english = "Lost to Follow-Up (ANC–PNC–Child)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.MedianGaAtFirstAnc ->
+            { english = "Median GA at First ANC"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.MonthByMonthDetail ->
+            { english = "month-by-month detail"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.MonthColumn ->
+            { english = "Month"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.NoActiveAlerts ->
+            { english = "No active alerts."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.OpenMonthByMonthDetailFor ->
+            { english = "Open month-by-month detail for"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Performance ->
+            { english = "Perf."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.PostpartumHemorrhageRate ->
+            { english = "Postpartum Hemorrhage Rate"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.PregnanciesFirstTrimester ->
+            { english = "Pregnancies 1st Trimester"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.PregnanciesSecondTrimester ->
+            { english = "Pregnancies 2nd Trimester"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.PregnanciesThirdTrimester ->
+            { english = "Pregnancies 3rd Trimester"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Print ->
+            { english = "Print"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.ProgramLevel ->
+            { english = "Program-Level"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.ProgramTarget ->
+            { english = "Program Target"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.ProgramTargetShort ->
+            { english = "Prog. Target"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.ProphylaxisCoverage ->
+            { english = "Prophylaxis Coverage"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Return ->
+            { english = "Return"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.SelectKpiToPlot ->
+            { english = "Select indicator to plot"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Service ->
+            { english = "Service"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.SitesWithDelayedBirthWeightRecording ->
+            { english = "Sites with Delayed/Missing Birth Weight Recording (>5%)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.SitesWithElevatedPretermOrSgaBirths ->
+            { english = "Sites with Elevated Preterm or SGA Births (>15%)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.SitesWithInadequateGwg ->
+            { english = "Sites with Inadequate GWG (>10%)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.SitesWithPoorChildGrowthOutcomes ->
+            { english = "Sites with Poor Child Growth Outcomes (>10%)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Sqlns ->
+            { english = "SQLNS"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.SupplementCoverage ->
+            { english = "Supplement Coverage"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Target ->
+            { english = "Targ."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Time ->
+            { english = "Time"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.TotalChildrenOnRoutineCare ->
+            { english = "Total Children on Routine Care"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.TotalDeliveriesInstitutional ->
+            { english = "Total Deliveries (Institutional)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.TotalDeliveriesProgram ->
+            { english = "Total Deliveries (Program)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.TrendChartDescriptionFacility kpi year ->
+            { english = "Line chart of " ++ kpi ++ " by month for " ++ year ++ ", showing current performance, institutional target, and inter-site average."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.TrendChartDescriptionProgram kpi year ->
+            { english = "Line chart of " ++ kpi ++ " by month for " ++ year ++ ", showing current performance and program target."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Trends ->
+            { english = "Trends"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.ValueColumn ->
+            { english = "Value"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.WomenCurrentlyInAncCare ->
+            { english = "Women Currently in ANC Care"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.YearLabel ->
+            { english = "Year"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
