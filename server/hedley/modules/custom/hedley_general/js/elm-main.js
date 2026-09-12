@@ -47075,7 +47075,7 @@ var $author$project$Pages$Dashboard$View$viewLegend = function (series) {
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('mt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-1')
+				$elm$html$Html$Attributes$class('mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1')
 			]),
 		A2($elm$core$List$map, $author$project$Pages$Dashboard$View$viewLegendItem, series));
 };

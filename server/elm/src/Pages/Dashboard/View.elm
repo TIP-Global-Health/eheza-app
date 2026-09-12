@@ -472,7 +472,7 @@ viewYearButton language current selection =
 
 viewLegend : List TrendChart.Series -> Html Msg
 viewLegend series =
-    div [ class "mt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-1" ]
+    div [ class "mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1" ]
         (List.map viewLegendItem series)
 
 

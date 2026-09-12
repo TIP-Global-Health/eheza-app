@@ -118,6 +118,9 @@
   font-size: inherit !important;
 }
 
+/* The theme aligns every cell left. These restore what a browser does on its
+   own - header cells centred, data cells following the text around them - so
+   the alignment utilities the tables carry read the same here as anywhere. */
 :where(.ehs-dashboard) th,
 :where(.ehs-dashboard) td {
   border: 0 !important;
@@ -126,6 +129,13 @@
   font-family: inherit !important;
   font-size: inherit !important;
   font-weight: inherit !important;
+}
+
+:where(.ehs-dashboard) th {
+  text-align: center !important;
+}
+
+:where(.ehs-dashboard) td {
   text-align: inherit !important;
 }
 
