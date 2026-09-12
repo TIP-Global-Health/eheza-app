@@ -556,7 +556,7 @@ This info is periodically reported by device.',
     'bundle' => 'user',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => 'Defines which health centers are allowed to be presented at statisticall queries reports, for user with \'Statistical Queries Manager\' role.',
+    'description' => 'Defines which health centers are allowed to be presented at statistical queries reports and at the Facility Performance dashboard, for user with \'Statistical Queries Manager\' or \'Facility Dashboard Viewer\' role.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -800,7 +800,7 @@ This info is periodically reported by device.',
   // Included for use with string extractors like potx.
   t('A code which users can provide on devices to identify themselves.');
   t('Code which this nurse can use to login on the frontend, whether online or offline. When creating a new nurse, you can leave this blank -- a PIN code will be randomly generated.');
-  t('Defines which health centers are allowed to be presented at statisticall queries reports, for user with \'Statistical Queries Manager\' role.');
+  t('Defines which health centers are allowed to be presented at statistical queries reports and at the Facility Performance dashboard, for user with \'Statistical Queries Manager\' or \'Facility Dashboard Viewer\' role.');
   t('Email');
   t('Groups');
   t('Health centers');
