@@ -8,10 +8,12 @@
  *   cd server/elm && npm run css
  */
 
-@layer theme, base, utilities;
-
+/* The Drupal admin theme's stylesheets are not in a cascade layer, so anything
+   this file puts in one loses to them. The utilities are marked important
+   instead, which is what lets them style headings, tables and buttons the
+   theme already has rules for. */
 @import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css" layer(utilities);
+@import "tailwindcss/utilities.css" important;
 
 @source "../src/Pages/Dashboard";
 @source "../src/Pages/Components/TrendChart.elm";
@@ -30,56 +32,99 @@
   --color-bar-track:   #9aa6b2;
 }
 
-/* Tailwind's own reset is left out, so the few element styles the dashboards
-   assume are set here, and only inside the dashboard. */
-@layer base {
-  .ehs-dashboard,
-  .ehs-dashboard *,
-  .ehs-dashboard *::before,
-  .ehs-dashboard *::after {
-    box-sizing: border-box;
-  }
+/* Nunito, the product typeface the dashboards are designed in. It is served
+   from this module rather than fetched from a font host, so the admin makes no
+   external request. The files are the latin and latin-ext subsets of the
+   variable font, covering weights 400 to 800. See fonts/OFL.txt. */
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("../fonts/nunito-v32-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
-  .ehs-dashboard h1,
-  .ehs-dashboard h2,
-  .ehs-dashboard p,
-  .ehs-dashboard ul,
-  .ehs-dashboard li {
-    margin: 0;
-    padding: 0;
-    font-size: inherit;
-    font-weight: inherit;
-    line-height: inherit;
-    list-style: none;
-  }
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("../fonts/nunito-v32-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
 
-  .ehs-dashboard button {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: none;
-    box-shadow: none;
-    text-shadow: none;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-  }
+/* Tailwind's own reset is left out, so the element styles the dashboards assume
+   are set here, scoped to the dashboard and outside any layer so they reach
+   past the admin theme. The utilities above are important, so they still win
+   wherever the dashboard names one. */
+.ehs-dashboard,
+.ehs-dashboard *,
+.ehs-dashboard *::before,
+.ehs-dashboard *::after {
+  box-sizing: border-box;
+}
 
-  .ehs-dashboard table {
-    margin: 0;
-    border: 0;
-    font-size: inherit;
-  }
+/* The theme's body font is a serif; the dashboards are drawn in Nunito. */
+.ehs-dashboard {
+  font-family: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #1e293b;
+}
 
-  .ehs-dashboard th,
-  .ehs-dashboard td {
-    border: 0;
-    background: none;
-    color: inherit;
-    font-weight: inherit;
-    text-align: inherit;
-  }
+.ehs-dashboard h1,
+.ehs-dashboard h2,
+.ehs-dashboard p,
+.ehs-dashboard ul,
+.ehs-dashboard li,
+.ehs-dashboard label,
+.ehs-dashboard span {
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  list-style: none;
+}
+
+.ehs-dashboard button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  text-shadow: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ehs-dashboard select {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.ehs-dashboard table {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  font-size: inherit;
+}
+
+.ehs-dashboard th,
+.ehs-dashboard td {
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-align: inherit;
 }
 
 @media print {
