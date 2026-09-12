@@ -61,4 +61,5 @@ hooks:
     - exec: drush vset hedley_admin_feature_hiv_management_enabled 1
     - exec: drush vset hedley_admin_feature_gps_coordinates_enabled 1
     - exec: drush vset hedley_admin_feature_family_nutrition_enabled 1
+    - exec: drush vset hedley_admin_feature_healthy_start_enabled 1
     - exec: drush uli

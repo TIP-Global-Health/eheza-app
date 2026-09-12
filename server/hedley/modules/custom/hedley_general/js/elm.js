@@ -31,7 +31,8 @@
           csrfToken: appSettings.csrf_token,
         }});
 
-        if (appSettings.page === 'reports-results') {
+        const csvPages = ['reports-results', 'dashboard-facility', 'dashboard-program'];
+        if (csvPages.indexOf(appSettings.page) !== -1) {
           app.ports.downloadCsv.subscribe(function (data) {
             const filename = data[0];
             const content = data[1];
@@ -42,6 +43,13 @@
             document.body.appendChild(element);
             element.click();
             document.body.removeChild(element);
+          });
+        }
+
+        const printPages = ['dashboard-facility', 'dashboard-program'];
+        if (printPages.indexOf(appSettings.page) !== -1) {
+          app.ports.printPage.subscribe(function () {
+            window.print();
           });
         }
       });

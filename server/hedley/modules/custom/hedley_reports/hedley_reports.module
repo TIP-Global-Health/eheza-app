@@ -15,6 +15,8 @@ include_once 'hedley_reports.features.inc';
 define('HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA', 'hedley_reports_calculate_reports_data');
 define('HEDLEY_REPORTS_SCOPE_FULL', 'full');
 define('HEDLEY_REPORTS_SCOPE_HEALTH_CENTERS', 'health_centers');
+define('HEDLEY_REPORTS_ROLE_FACILITY_DASHBOARD', 'Facility Dashboard Viewer');
+define('HEDLEY_REPORTS_ROLE_PROGRAM_DASHBOARD', 'Program Dashboard Viewer');
 
 const RDT_POSITIVE_VALUES = ['positive', 'positive-and-pregnant'];
 
@@ -115,6 +117,20 @@ function hedley_reports_menu() {
     'access arguments' => [3, 4],
   );
 
+  $items['admin/reports/dashboards/facility'] = array(
+    'title' => 'Facility Performance Dashboard',
+    'description' => 'View the HealthyStart facility level dashboard',
+    'page callback' => 'hedley_reports_dashboard_facility_callback',
+    'access callback' => 'hedley_reports_dashboard_facility_access',
+  );
+
+  $items['admin/reports/dashboards/program'] = array(
+    'title' => 'Program Monitoring Dashboard',
+    'description' => 'View the HealthyStart program level dashboard',
+    'page callback' => 'hedley_reports_dashboard_program_callback',
+    'access callback' => 'hedley_reports_dashboard_program_access',
+  );
+
   return $items;
 }
 
@@ -144,6 +160,68 @@ function hedley_reports_menu_access($population = FALSE, $main_id = FALSE) {
   }
 
   return FALSE;
+}
+
+/**
+ * Whether an account holds a role, when the role may not exist yet.
+ *
+ * @param string $role_name
+ *   Name of the role.
+ * @param object $account
+ *   The account to check, or NULL for the current user.
+ *
+ * @return bool
+ *   TRUE when the account holds the role.
+ */
+function hedley_reports_user_has_role($role_name, $account = NULL) {
+  $role = user_role_load_by_name($role_name);
+
+  return $role && user_has_role($role->rid, $account);
+}
+
+/**
+ * Access callback for the Facility Performance dashboard.
+ *
+ * @return bool
+ *   TRUE when the current user may view the dashboard.
+ */
+function hedley_reports_dashboard_facility_access() {
+  return hedley_reports_dashboard_access(HEDLEY_REPORTS_ROLE_FACILITY_DASHBOARD);
+}
+
+/**
+ * Access callback for the Program Monitoring dashboard.
+ *
+ * @return bool
+ *   TRUE when the current user may view the dashboard.
+ */
+function hedley_reports_dashboard_program_access() {
+  return hedley_reports_dashboard_access(HEDLEY_REPORTS_ROLE_PROGRAM_DASHBOARD);
+}
+
+/**
+ * Grants access to one HealthyStart dashboard.
+ *
+ * A dashboard exists only where the Healthy Start feature is enabled, and is
+ * open to administrators and to the role that dashboard belongs to. Holding the
+ * other dashboard's role grants nothing here.
+ *
+ * @param string $role_name
+ *   Name of the role the dashboard belongs to.
+ *
+ * @return bool
+ *   TRUE when the current user may view the dashboard.
+ */
+function hedley_reports_dashboard_access($role_name) {
+  if (!variable_get('hedley_admin_feature_healthy_start_enabled', FALSE)) {
+    return FALSE;
+  }
+
+  if (hedley_admin_administrators_access()) {
+    return TRUE;
+  }
+
+  return hedley_reports_user_has_role($role_name);
 }
 
 /**
@@ -238,6 +316,26 @@ function hedley_reports_statistical_queries_report_callback_menu() {
 }
 
 /**
+ * Callback for Elm application of the Facility Performance dashboard.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_dashboard_facility_callback() {
+  return hedley_reports_callback_menu_by_page('dashboard-facility');
+}
+
+/**
+ * Callback for Elm application of the Program Monitoring dashboard.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_dashboard_program_callback() {
+  return hedley_reports_callback_menu_by_page('dashboard-program');
+}
+
+/**
  * Generates data for a callback menu page.
  *
  * @param string $page
@@ -287,6 +385,12 @@ function hedley_reports_resolve_scope_for_reports_by_current_user() {
   $admin_role = user_role_load_by_name('administrator');
   $return = ['scope' => HEDLEY_REPORTS_SCOPE_FULL];
   if (user_has_role($admin_role->rid, $user)) {
+    return $return;
+  }
+
+  if (hedley_reports_user_has_role(HEDLEY_REPORTS_ROLE_FACILITY_DASHBOARD, $user)
+    || hedley_reports_user_has_role(HEDLEY_REPORTS_ROLE_PROGRAM_DASHBOARD, $user)) {
+    // Both dashboards cover every intervention site the installation holds.
     return $return;
   }
 

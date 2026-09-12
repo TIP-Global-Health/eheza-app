@@ -47,5 +47,11 @@ fetch model =
             Pages.Completion.Fetch.fetch
                 |> List.map (\subMsg -> MsgBackend subMsg)
 
+        DashboardFacility ->
+            []
+
+        DashboardProgram ->
+            []
+
         NotFound ->
             []

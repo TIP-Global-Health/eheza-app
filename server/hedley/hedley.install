@@ -240,6 +240,8 @@ function hedley_standard_install() {
   $statistical_queries_manager_role->name = 'Statistical Queries Manager';
   user_role_save($statistical_queries_manager_role);
 
+  hedley_create_dashboard_viewer_roles();
+
   // Creating a Nurse role and add the permissions.
   $nurse_role = new stdClass();
   $nurse_role->name = 'nurse';
@@ -766,4 +768,32 @@ function hedley_update_7048() {
 
   variable_del('logs_rollbar_enabled');
   variable_del('logs_rollbar_rollbar_access_token');
+}
+
+/**
+ * Create the roles that view the HealthyStart dashboards.
+ *
+ * Facility Dashboard Viewer sees the Facility Performance dashboard for the
+ * health centers its account lists; Program Dashboard Viewer sees the Program
+ * Monitoring dashboard across every site. Neither holds a permission: the
+ * dashboard paths name the role in their access callback, which is all the
+ * reach these accounts have.
+ */
+function hedley_create_dashboard_viewer_roles() {
+  foreach (['Facility Dashboard Viewer', 'Program Dashboard Viewer'] as $name) {
+    if (user_role_load_by_name($name)) {
+      continue;
+    }
+
+    $role = new stdClass();
+    $role->name = $name;
+    user_role_save($role);
+  }
+}
+
+/**
+ * Create the HealthyStart dashboard viewer roles.
+ */
+function hedley_update_7049() {
+  hedley_create_dashboard_viewer_roles();
 }
