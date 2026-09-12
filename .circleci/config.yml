@@ -58,6 +58,7 @@ jobs:
       - run: ci-scripts/install_elm_review.sh
       - run: ci-scripts/test_elm_review.sh
       - run: ci-scripts/test_server_elm_bundle.sh
+      - run: node ci-scripts/test_translations.js
   lint_shellcheck:
     machine:
       image: ubuntu-2204:current
