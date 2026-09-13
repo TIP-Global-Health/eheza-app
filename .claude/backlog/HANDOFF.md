@@ -1,11 +1,11 @@
 ---
 name: session-handoff
-description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, R26 added 2026-08-30 evening, R27 added 2026-09-01, R28 added 2026-09-03, R29 added 2026-09-07, open-PR section rewritten 2026-09-01 evening and extended 2026-09-02 with B-213 (five PRs open, reviewed, awaiting merge)
+description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, R26 added 2026-08-30 evening, R27 added 2026-09-01, R28 added 2026-09-03, R29 added 2026-09-07, R30 added 2026-09-14, open-PR section rewritten 2026-09-01 evening and extended 2026-09-02 with B-213 (five PRs open, reviewed, awaiting merge)
 metadata: 
   node_type: memory
   type: project
   originSessionId: d78d3330-6ce4-4b84-aa0a-57da7f422346
-  modified: 2026-09-07
+  modified: 2026-09-14
 ---
 
 # Session handoff — E-Heza improvement work
@@ -201,6 +201,16 @@ Earlier merges, for context: **#2150 (B-235)** and **#2146** (e2e progress-repor
 2026-08-26; **#2134 (B-194)** and **#2136 (B-189)** on 2026-08-25; the four red on the 2026-08-17
 GitHub incident (#2090, #2095, #2097, #2099) and the whole R22 stack (#2108…#2116). That incident is
 over and was never a real signal.
+
+## Round 30 ran 2026-09-14 — 17 new items, FIVE tier 1, and B-336 found never merged into develop
+
+B-339..B-355 (see `rounds.md` R30, `queue.md` R30 line). A 7-unit coverage sweep: the three un-deployed tier-1 merge clusters read as merged surfaces (blood smear, prenatal HIV, NCD), the release server delta, backend CRUD hooks + AQ workers (R12 rows), the client JS layer, and case management / activity / user / WhatsApp.
+
+- ⛔⛔ **B-336 is NOT on develop** (see the correction at the top of "Open right now"). Land it before the release is cut.
+- **Before release #2128 is cut, three findings bear on it:** B-336 (stranded), **B-339** and **B-342** (tier-1 defects introduced by #2216 and #2228, both un-deployed — fixing them now keeps them out of production), and **B-341** (add the photo-repair run to #2128's post-deploy steps, plus the beverages re-run reminder).
+- Tier 1 also: **B-343** (live — 3 ihangane records), **B-344**, **B-345** — all on the prenatal HIV surface; B-345 is best built with B-336.
+- WhatsApp cluster, tier 3: **B-347** (live on ihangane), **B-348** + **B-349** (vhw/uvl — B-349 is a config decision for the user: turn the flag off or configure Twilio; land B-348 first either way).
+- ⚠ A unit-6 scout's `pkill -f "terminus remote:drush ihangane.live -- sql-query"` matched a third PID on 2026-09-14 — a live query belonging to another session may have been killed.
 
 ## Round 29 ran 2026-09-06 → 09-07 — 12 new items, ONE tier 1, ONE tier 2 (deployed), the backend error trail found dead
 

@@ -347,6 +347,12 @@ B-346	4	READY	LOW			30	Prenatal HIV / partner HIV form: B-320's "re-tapping the 
 B-347	3	READY	MED			30	WhatsApp report: a phone number of zeros or too few digits is accepted and the nurse is told "Success", but the report n
 B-348	3	READY	MED-LOW			30	WhatsApp report on Burundi sites: the country-code dropdown starts at Rwanda (+250), so a Burundi number typed in become
 B-349	3	READY	MED-LOW			30	WhatsApp report on vhw and uvl: the feature is switched on but Twilio is not configured, so every report a nurse sends i
+B-350	3	READY	LOW			30	Rollbar (client): sync errors raised before Rollbar is initialised are recorded as "already sent" and never reported — a
+B-351	3	READY	LOW			30	People search (offline): a common single-word name returns an ARBITRARY 500 of the health centre's matches, and only the
+B-352	4	READY	LOW			30	People in village (offline): a person registered or edited on the device is missing from "people in village" lists until
+B-353	4	READY	LOW			30	Case management (server): an encounter uploaded late closes the patient's NEWER follow-ups — resolution picks every open
+B-354	4	READY	LOW			30	Family Nutrition (server): two person-content walks skip `family_participant` — deleting a person leaves their family pa
+B-355	4	READY	LOW			30	Dashboard statistics: some changes never clear the health centre's stats cache, so the dashboard keeps the old figures u
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
