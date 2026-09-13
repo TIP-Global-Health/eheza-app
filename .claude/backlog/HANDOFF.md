@@ -46,6 +46,8 @@ What changes because of this:
 
 ## Open right now — updated 2026-09-08
 
+⛔⛔ **CORRECTION 2026-09-14 (R30 unit 2): #2214 (B-336) is NOT on `develop`.** It merged into its stacked parent branch `B-320-known-positive-stale-result` 38 seconds after #2212 merged, before GitHub retargeted it (merge commit `cc01e631c`). The fix is stranded at `763e74bf4`; issue #2213 is open; the release PR #2128 does not contain it. B-336 is back to READY with the landing recipe in its entry (one conflict in `Pages/Prenatal/RecurrentActivity/Test.elm`). Every other PR merged since 2026-08-20 was checked and is on `develop`. The line below saying all three merged "in stack order" is wrong for #2214.
+
 ⭐ **The board cleared on 2026-09-08.** #2204 (B-221), #2206 (B-237), #2208 (B-240) merged 2026-09-07;
 **#2210 (B-323), #2212 (B-320) and #2214 (B-336) merged 2026-09-08 05:25-05:27**, in stack order. The
 open-PR table below is historical — **no backlog PR was open when this session started**. Every
