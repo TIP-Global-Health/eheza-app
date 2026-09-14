@@ -11,6 +11,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEnco
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate, isNurseEncounter, lmpToEDDDate)
 import Backend.Utils exposing (healthyStartEnabled)
+import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, orElse, unwrap)
@@ -282,18 +283,22 @@ getPrenatalEncountersForParticipantDesc db participantId =
 
 generatePreviousMeasurements :
     PrenatalEncounterId
-    -> IndividualEncounterParticipantId
+    -> PrenatalEncounter
     -> ModelIndexedDb
     ->
         ( List PreviousEncounterData
         , List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements )
         )
-generatePreviousMeasurements currentEncounterId participantId db =
-    getPrenatalEncountersForParticipantDesc db participantId
+generatePreviousMeasurements currentEncounterId currentEncounter db =
+    getPrenatalEncountersForParticipantDesc db currentEncounter.participant
         |> List.filter
-            (\( id, _ ) ->
+            (\( id, encounter ) ->
                 -- We do not want to get data of current encounter.
-                id /= currentEncounterId
+                -- A result can be entered for an encounter after a later
+                -- encounter has started, so encounters that started on a later
+                -- day are not its history. Encounters of the same day are kept.
+                (id /= currentEncounterId)
+                    && (Date.compare encounter.startDate currentEncounter.startDate /= GT)
             )
         |> List.sortWith sortEncounterTuples
         |> (\previousEncounters ->
@@ -357,10 +362,7 @@ generateAssembledData id db =
 
         ( nursePreviousEncountersData, chwPreviousMeasurementsWithDates ) =
             RemoteData.toMaybe encounter
-                |> Maybe.map
-                    (\encounter_ ->
-                        generatePreviousMeasurements id encounter_.participant db
-                    )
+                |> Maybe.map (\encounter_ -> generatePreviousMeasurements id encounter_ db)
                 |> Maybe.withDefault ( [], [] )
 
         nursePreviousMeasurements =
