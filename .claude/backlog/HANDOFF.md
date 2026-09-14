@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, R26 added 2026-08-30 evening, R27 added 2026-09-01, R28 added 2026-09-03, R29 added 2026-09-07, R30 added 2026-09-14, open-PR section rewritten 2026-09-01 evening and extended 2026-09-02 with B-213 (five PRs open, reviewed, awaiting merge)
+description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, R26 added 2026-08-30 evening, R27 added 2026-09-01, R28 added 2026-09-03, R29 added 2026-09-07, R30 + R31 added 2026-09-14, open-PR section rewritten 2026-09-01 evening and extended 2026-09-02 with B-213 (five PRs open, reviewed, awaiting merge)
 metadata: 
   node_type: memory
   type: project
@@ -201,6 +201,15 @@ Earlier merges, for context: **#2150 (B-235)** and **#2146** (e2e progress-repor
 2026-08-26; **#2134 (B-194)** and **#2136 (B-189)** on 2026-08-25; the four red on the 2026-08-17
 GitHub incident (#2090, #2095, #2097, #2099) and the whole R22 stack (#2108…#2116). That incident is
 over and was never a real signal.
+
+## Round 31 ran 2026-09-14 (after R30) — 13 new items, TWO tier 1, B-233 widened to a loop
+
+B-356..B-368 (see `rounds.md` R31, `queue.md` R31 line). A 7-unit sweep of the unread client half of release #2128: GlobalCaseManagement, Dashboard, all progress reports, `Backend/Update.elm`, Pages/Report + helpers + Translate delta, and the non-sync REST endpoints (✅ clean).
+
+- **Tier 1:** **B-364** (Prenatal twin of B-339 — build the two together, one "history before this encounter" seam) and **B-365** (six Prenatal diagnosis inputs never re-trigger assessment).
+- **B-233 widened** — the Case Management TB entry from an acute-illness follow-up loops; its old fix shape is not enough. 138 of 241 ihangane TB participants belong to 13 people.
+- Dashboard cards dead for years: **B-366** (nurse hospital referrals — needs a new payload field, one release is enough) and **B-367** (COVID).
+- **PR #2239 (B-336 re-land)** still awaits CI + the user's review before merge.
 
 ## Round 30 ran 2026-09-14 — 17 new items, FIVE tier 1, and B-336 found never merged into develop
 

@@ -361,6 +361,11 @@ B-360	4	READY	LOW			31	Acute Illness progress report, physical exam pane: earlie
 B-361	3	READY	MED-LOW			31	Antenatal progress report opened from the Patient Record: whether the viewed encounter counts as a nurse or a CHW visit 
 B-362	4	READY	LOW			31	Child progress report (Well Child / Nutrition / Child Scoreboard / group): sending via WhatsApp while "Review prior diag
 B-363	4	READY	LOW			31	Antenatal / child progress report minors ×4: continued-malaria diagnoses never listed (latent); the end-encounter dialog
+B-364	1	READY	MED-LOW			31	Prenatal diagnosis: a lab result entered for an older encounter re-scores it with LATER encounters as history — it can a
+B-365	1	READY	LOW			31	Prenatal diagnosis: saving or correcting medical history, obstetric history (both steps), obstetrical exam, nutrition (B
+B-366	3	READY	MED-LOW			31	Antenatal dashboard (nurse): "Hospital Referrals" has read 0 every month since the card was added — it counts `send_to_h
+B-367	3	READY	MED-LOW			31	Acute Illness dashboard: every COVID figure counts only the OBSOLETE "COVID suspect" diagnosis — confirmed COVID (pneumo
+B-368	4	READY	LOW			31	Dashboard minors ×3: nurse "Total High Risk Pregnancies" counts a woman twice; CHW home "Acute Illness Diagnosed" includ
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
