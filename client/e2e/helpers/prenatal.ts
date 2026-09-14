@@ -950,15 +950,14 @@ export async function completeLaboratoryNurse(
 }
 
 /**
- * Correct the patient's own HIV test to "known as positive" and save it.
- *
- * The answer means the patient is HIV positive and no test is performed, so
- * the result and the questions asked under it are withdrawn from the screen.
- * What they held has to go with them: read back, the partner answers of the
- * negative test they replaced diagnose a discordant partnership and offer
- * PrEP to a woman who is HIV positive.
+ * Open a saved lab test from the encounter page, change its answers with
+ * `answer`, and save it.
  */
-export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
+async function correctLabTest(
+  page: Page,
+  tabLabel: RegExp,
+  answer: () => Promise<void>,
+): Promise<void> {
   // The correction can follow an activity, and Laboratory is opened from the
   // encounter page, so step back to it when an activity is still on screen.
   const activityPage = page.locator('div.page-activity.prenatal');
@@ -976,14 +975,11 @@ export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
 
   await openActivity(page, 'prenatal', 'laboratory');
 
-  const hivTab = page.locator('.link-section').filter({
-    hasText: /^\s*HIV\s*$/,
-  });
-  await click(hivTab.first(), page);
+  const tab = page.locator('.link-section').filter({ hasText: tabLabel });
+  await click(tab.first(), page);
   await page.waitForTimeout(WAIT.elmRerender);
 
-  await answerYesNo(page, 'known-as-positive', 'Yes');
-  await page.waitForTimeout(WAIT.elmRerender);
+  await answer();
 
   const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
   await click(saveBtn, page);
@@ -995,6 +991,59 @@ export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
   // activities that are still pending.
   await click(page.locator('#pending-tab'), page);
   await page.waitForTimeout(WAIT.elmRerender);
+}
+
+/**
+ * Correct the patient's own HIV test to "known as positive" and save it.
+ *
+ * The answer means the patient is HIV positive and no test is performed, so
+ * the result and the questions asked under it are withdrawn from the screen.
+ * What they held has to go with them: read back, the partner answers of the
+ * negative test they replaced diagnose a discordant partnership and offer
+ * PrEP to a woman who is HIV positive.
+ */
+export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
+  await correctLabTest(page, /^\s*HIV\s*$/, async () => {
+    await answerYesNo(page, 'known-as-positive', 'Yes');
+    await page.waitForTimeout(WAIT.elmRerender);
+  });
+}
+
+/**
+ * Correct the Partner HIV test and save it: either the partner is tested today
+ * at point of care with a negative result, or the partner is known as HIV
+ * positive and not taking ARVs.
+ */
+export async function correctPartnerHIVTest(
+  page: Page,
+  partner: 'tested-negative' | 'known-positive',
+): Promise<void> {
+  await correctLabTest(page, /Partner HIV/, async () => {
+    if (partner === 'known-positive') {
+      await answerYesNo(page, 'known-as-positive', 'Yes');
+      await page.waitForTimeout(WAIT.elmRerender);
+      await answerYesNo(page, 'partner-taking-arv', 'No');
+      await page.waitForTimeout(WAIT.formInteraction);
+      return;
+    }
+
+    await answerYesNo(page, 'known-as-positive', 'No');
+    await page.waitForTimeout(WAIT.elmRerender);
+    await answerYesNo(page, 'test-performed', 'Yes');
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    // "Immediate result?" → Point of Care.
+    const immediateResult = page.locator('.form-input.yes-no.immediate-result');
+    await click(immediateResult.locator('label').first(), page);
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    const resultSelect = page.locator('select.form-input').first();
+    const negative = await resultSelect
+      .locator('option', { hasText: 'Negative' })
+      .getAttribute('value');
+    await resultSelect.selectOption(negative!);
+    await page.waitForTimeout(WAIT.formInteraction);
+  });
 }
 
 /**
