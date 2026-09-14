@@ -353,6 +353,8 @@ B-352	4	READY	LOW			30	People in village (offline): a person registered or edite
 B-353	4	READY	LOW			30	Case management (server): an encounter uploaded late closes the patient's NEWER follow-ups — resolution picks every open
 B-354	4	READY	LOW			30	Family Nutrition (server): two person-content walks skip `family_participant` — deleting a person leaves their family pa
 B-355	4	READY	LOW			30	Dashboard statistics: some changes never clear the health centre's stats cache, so the dashboard keeps the old figures u
+B-356	3	READY	MED-LOW			31	Lab results pane (Prenatal + NCD progress report): a urine dipstick or lipid panel still waiting for results shows a red
+B-357	4	READY	LOW			31	Lab results pane: a "known positive" answer is always dated TODAY and so always ranked newest, and in the history view i
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
