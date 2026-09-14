@@ -282,23 +282,20 @@ getPrenatalEncountersForParticipantDesc db participantId =
 
 
 generatePreviousMeasurements :
-    PrenatalEncounterId
-    -> PrenatalEncounter
+    PrenatalEncounter
     -> ModelIndexedDb
     ->
         ( List PreviousEncounterData
         , List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements )
         )
-generatePreviousMeasurements currentEncounterId currentEncounter db =
+generatePreviousMeasurements currentEncounter db =
     getPrenatalEncountersForParticipantDesc db currentEncounter.participant
         |> List.filter
-            (\( id, encounter ) ->
-                -- We do not want to get data of current encounter.
-                -- A result can be entered for an encounter after a later
-                -- encounter has started, so encounters that started on a later
-                -- day are not its history. Encounters of the same day are kept.
-                (id /= currentEncounterId)
-                    && (Date.compare encounter.startDate currentEncounter.startDate /= GT)
+            (\( _, encounter ) ->
+                -- Only encounters that started on an earlier day are history.
+                -- This leaves out the current encounter, and any later encounter
+                -- (a lab result can be entered after the next visit has started).
+                Date.compare encounter.startDate currentEncounter.startDate == LT
             )
         |> List.sortWith sortEncounterTuples
         |> (\previousEncounters ->
@@ -362,7 +359,7 @@ generateAssembledData id db =
 
         ( nursePreviousEncountersData, chwPreviousMeasurementsWithDates ) =
             RemoteData.toMaybe encounter
-                |> Maybe.map (\encounter_ -> generatePreviousMeasurements id encounter_ db)
+                |> Maybe.map (\encounter_ -> generatePreviousMeasurements encounter_ db)
                 |> Maybe.withDefault ( [], [] )
 
         nursePreviousMeasurements =

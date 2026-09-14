@@ -1743,8 +1743,8 @@ vaginalDischargeContinuedTest =
 --
 -- A lab result can be entered for an encounter after a later encounter of the
 -- pregnancy has started, and the older encounter is then diagnosed again. Its
--- history is what happened up to its own day: encounters started on a later
--- day are not part of it, encounters of the same day are.
+-- history is the encounters started on an earlier day. There is one encounter a
+-- day, so another encounter of the same day is not part of it either.
 
 
 {-| A prenatal encounter as stored in the database: its id, start date, type,
@@ -1892,33 +1892,33 @@ historyBeforeEncounterTest =
                     , storedNurseEncounter "current" currentDate [] pelvicPain
                     ]
                     |> Expect.equal (Just True)
-        , test "pelvic pain at another encounter of the SAME day makes the pelvic pain continued" <|
+        , test "pelvic pain at another encounter of the SAME day does not make the pelvic pain continued" <|
             \_ ->
                 hasDiagnosis DiagnosisPelvicPainContinued
                     "current"
                     [ storedNurseEncounter "same-day" currentDate [] pelvicPain
                     , storedNurseEncounter "current" currentDate [] pelvicPain
                     ]
-                    |> Expect.equal (Just True)
-        , test "a CHW encounter started on a later day is not in the older encounter's history" <|
+                    |> Expect.equal (Just False)
+        , test "only CHW encounters started on an earlier day are in the history" <|
             \_ ->
-                assembledFromDb "older"
-                    [ storedNurseEncounter "older" currentDate [] emptyPrenatalMeasurements
-                    , { id = "chw-same-day"
-                      , startDate = currentDate
-                      , encounterType = ChwFirstEncounter
-                      , diagnoses = []
-                      , measurements = emptyPrenatalMeasurements
-                      }
-                    , { id = "chw-later"
-                      , startDate = weekLater
-                      , encounterType = ChwSecondEncounter
-                      , diagnoses = []
-                      , measurements = emptyPrenatalMeasurements
-                      }
+                let
+                    storedChwEncounter id startDate encounterType =
+                        { id = id
+                        , startDate = startDate
+                        , encounterType = encounterType
+                        , diagnoses = []
+                        , measurements = emptyPrenatalMeasurements
+                        }
+                in
+                assembledFromDb "current"
+                    [ storedChwEncounter "chw-earlier" weekAgo ChwFirstEncounter
+                    , storedChwEncounter "chw-same-day" currentDate ChwSecondEncounter
+                    , storedNurseEncounter "current" currentDate [] emptyPrenatalMeasurements
+                    , storedChwEncounter "chw-later" weekLater ChwThirdPlusEncounter
                     ]
                     |> Maybe.map (.chwPreviousMeasurementsWithDates >> List.map (\( date, encounterType, _ ) -> ( date, encounterType )))
-                    |> Expect.equal (Just [ ( currentDate, ChwFirstEncounter ) ])
+                    |> Expect.equal (Just [ ( weekAgo, ChwFirstEncounter ) ])
         ]
 
 
