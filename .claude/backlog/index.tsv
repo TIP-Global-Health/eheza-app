@@ -368,6 +368,14 @@ B-367	3	READY	MED-LOW			31	Acute Illness dashboard: every COVID figure counts on
 B-368	4	READY	LOW			31	Dashboard minors ×3: nurse "Total High Risk Pregnancies" counts a woman twice; CHW home "Acute Illness Diagnosed" includ
 B-369	4	READY	LOW			32	Prenatal participant (mixed fleet, release #2128): once a new device opens a fresh pregnancy over an expired undated one
 B-370	4	READY	LOW			32	Login location selection: an assignment added to a nurse or CHW on the server never reaches the health-centre / village 
+B-371	3	READY	MED			32	Prenatal CHW visits 2 and 3 on an undated pregnancy can never be ended: Next Visit is required but its Save does nothing
+B-372	4	READY	LOW			32	Well Child next pediatric visit: on a month-end clamp day the "next" ECD / medication visit date is today, because the a
+B-373	3	READY	MED			32	Prenatal postpartum visit: recording the Pregnancy Outcome (the visit's first activity) closes the pregnancy at once, so
+B-374	4	READY	LOW			32	Case Management Antenatal pane: follow-up entries of an EXPIRED pregnancy (past EDD + 92 days, or the B-194 no-EDD rule)
+B-375	3	READY	MED			32	Patient merge: the acute-illness step looks participants up by `'acute_illness'` while the stored value is `'acute-illne
+B-376	3	READY	MED-LOW			32	Patient merge (antenatal): "ongoing pregnancy" is the newest participant with no `date_concluded`, which on live data is
+B-377	4	READY	LOW			32	Patient CSV import: the date validator accepts a two-digit year and the parser reads it literally, so "05-01-19" is stor
+B-378	4	READY	LOW			32	Person presave: the "has measurements, cannot delete" guard fires on EVERY save of an already-deleted person, so any lat
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

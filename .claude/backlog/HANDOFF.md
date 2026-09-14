@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, R26 added 2026-08-30 evening, R27 added 2026-09-01, R28 added 2026-09-03, R29 added 2026-09-07, R30 + R31 added 2026-09-14, open-PR section rewritten 2026-09-01 evening and extended 2026-09-02 with B-213 (five PRs open, reviewed, awaiting merge)
+description: Live cursor for the E-Heza improvement work — read FIRST when resuming; rewritten 2026-08-24, R25 added 2026-08-25, R26 added 2026-08-30 evening, R27 added 2026-09-01, R28 added 2026-09-03, R29 added 2026-09-07, R30 + R31 added 2026-09-14, R32 added 2026-09-15, open-PR section rewritten 2026-09-01 evening and extended 2026-09-02 with B-213 (five PRs open, reviewed, awaiting merge)
 metadata: 
   node_type: memory
   type: project
@@ -45,6 +45,8 @@ What changes because of this:
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
 ## Open right now — updated 2026-09-08
+
+🔎 **R32 discovery COMPLETE 2026-09-15** — 10 new items B-369..B-378 (4 tier-3: B-371 CHW visits 2/3 on an undated pregnancy can never be ended, 38/38 open on vhw; B-373 outcome inside a postpartum visit opens a second pregnancy the same day; B-375/B-376 patient-merge data defects, latent), amendments B-051/B-284; see `rounds.md` Round 32. ⚠ `origin/main` is tagged **v1.18.2**, not v1.18.1 as the release banner below says. For release #2128: the R22 dedup refactors are verified equivalent, and the mixed-fleet contract holds apart from B-369 (landing B-254's sort alongside #2134 shrinks it).
 
 🟡 **PR #2241 open 2026-09-14 (B-339, tier 1, issue #2240)** — NCD history cut to encounters that started before the one assembled (`generateAssembledData`), so a lab result entered after the next visit no longer restages the older encounter from the later one. Keeps the #2216-introduced stage half out of release #2128 if merged before it is cut. CI green, reviewed (1 finding — report from an older encounter shows it as of that encounter; user chose to keep that), thread resolved — **awaiting merge**. ⚠ B-364's presentation note calls #2241's same-day edge "not rare" from a raw pair count; for NCD 210 of 217 pairs are pre-guard double-tap duplicates (see B-339) — re-check the Prenatal 4,127 the same way before designing around it. ✅ Re-checked 2026-09-14: same shape (4,693 same-device ≤60 s duplicates); #2243 now uses the strict cut too. B-364 (Prenatal twin) is next, as a separate PR.
 ⚠ **CORRECTED 2026-09-14 — my "same-day is not rare" claim was wrong** (raw pair counts, dominated by the pre-guard double-tap race). Prenatal ihangane, broken down by `node.uid` + `created` gap, deleted excluded: **4,693 pairs same device ≤60 s** (56 with data on both, latest 2026-08-12, before v1.18.1's `isPostInFlight` guard deployed); **different devices: 32 nurse/nurse pairs (17 with data on both, latest 2026-05-20) and 13 CHW/nurse pairs (7 with data, latest 2026-08-09)**; ~10 other same-device pairs >60 s. User's rule (relayed by the B-339 session): *"In all other cases, there should be one encounter a day. It is possible to have this if 2 offline devices work on same patient, but it should not happen."*
