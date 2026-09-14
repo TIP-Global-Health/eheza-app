@@ -355,6 +355,9 @@ B-354	4	READY	LOW			30	Family Nutrition (server): two person-content walks skip 
 B-355	4	READY	LOW			30	Dashboard statistics: some changes never clear the health centre's stats cache, so the dashboard keeps the old figures u
 B-356	3	READY	MED-LOW			31	Lab results pane (Prenatal + NCD progress report): a urine dipstick or lipid panel still waiting for results shows a red
 B-357	4	READY	LOW			31	Lab results pane: a "known positive" answer is always dated TODAY and so always ranked newest, and in the history view i
+B-358	3	READY	MED			31	Child Scoreboard progress report: the Immunization History pane is EMPTY for a child with no Well Child record — the pan
+B-359	3	READY	MED-LOW			31	Acute Illness progress report: every "simple cold and cough" visit says "Administered lemon juice or honey", whatever wa
+B-360	4	READY	LOW			31	Acute Illness progress report, physical exam pane: earlier readings are judged against the patient's age TODAY — a respi
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
