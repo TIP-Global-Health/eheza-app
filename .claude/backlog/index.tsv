@@ -358,6 +358,9 @@ B-357	4	READY	LOW			31	Lab results pane: a "known positive" answer is always dat
 B-358	3	READY	MED			31	Child Scoreboard progress report: the Immunization History pane is EMPTY for a child with no Well Child record — the pan
 B-359	3	READY	MED-LOW			31	Acute Illness progress report: every "simple cold and cough" visit says "Administered lemon juice or honey", whatever wa
 B-360	4	READY	LOW			31	Acute Illness progress report, physical exam pane: earlier readings are judged against the patient's age TODAY — a respi
+B-361	3	READY	MED-LOW			31	Antenatal progress report opened from the Patient Record: whether the viewed encounter counts as a nurse or a CHW visit 
+B-362	4	READY	LOW			31	Child progress report (Well Child / Nutrition / Child Scoreboard / group): sending via WhatsApp while "Review prior diag
+B-363	4	READY	LOW			31	Antenatal / child progress report minors ×4: continued-malaria diagnoses never listed (latent); the end-encounter dialog
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
