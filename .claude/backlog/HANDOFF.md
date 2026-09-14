@@ -46,6 +46,8 @@ What changes because of this:
 
 ## Open right now — updated 2026-09-08
 
+🟡 **PR #2241 open 2026-09-14 (B-339, tier 1, issue #2240)** — NCD history cut to encounters that started before the one assembled (`generateAssembledData`), so a lab result entered after the next visit no longer restages the older encounter from the later one. Keeps the #2216-introduced stage half out of release #2128 if merged before it is cut. Awaits CI + `/code-review medium B-339-ncd-history-before-encounter`. B-364 (Prenatal twin) is next, as a separate PR.
+
 ✅ **RESOLVED 2026-09-14 07:39 UTC: B-336 re-landed via #2239.** (Historical:) ⛔⛔ **CORRECTION 2026-09-14 (R30 unit 2): #2214 (B-336) was NOT on `develop`.** It merged into its stacked parent branch `B-320-known-positive-stale-result` 38 seconds after #2212 merged, before GitHub retargeted it (merge commit `cc01e631c`). The fix is stranded at `763e74bf4`; issue #2213 is open; the release PR #2128 does not contain it. B-336 is back to READY with the landing recipe in its entry (one conflict in `Pages/Prenatal/RecurrentActivity/Test.elm`). Every other PR merged since 2026-08-20 was checked and is on `develop`. The line below saying all three merged "in stack order" is wrong for #2214.
 
 ⭐ **The board cleared on 2026-09-08.** #2204 (B-221), #2206 (B-237), #2208 (B-240) merged 2026-09-07;
