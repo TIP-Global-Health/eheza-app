@@ -41,7 +41,6 @@ import {
   dismissWarningPopup,
   queryPrenatalNodes,
 } from './helpers/prenatal';
-import { openActivity } from './helpers/common';
 
 /**
  * Sign the current user out and hand the device to another one. Clearing the
