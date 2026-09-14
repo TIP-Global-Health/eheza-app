@@ -1512,10 +1512,6 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
 // ---------------------------------------------------------------------------
 
 /**
- * Complete TreatmentReview: iterate through medication review tabs.
- * Creates: medication
- */
-/**
  * Complete every Next Steps task the recurrent encounter offers.
  *
  * Each task is its own tab with its own Save button, and the button only
@@ -1597,6 +1593,10 @@ export async function completeRecurrentNextSteps(page: Page): Promise<string[]> 
 }
 
 
+/**
+ * Complete TreatmentReview: iterate through medication review tabs.
+ * Creates: medication
+ */
 export async function completeTreatmentReview(page: Page) {
   await openActivity(page, 'prenatal', 'prior-treatment');
 
