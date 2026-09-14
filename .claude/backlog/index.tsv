@@ -366,6 +366,8 @@ B-365	1	READY	LOW			31	Prenatal diagnosis: saving or correcting medical history,
 B-366	3	READY	MED-LOW			31	Antenatal dashboard (nurse): "Hospital Referrals" has read 0 every month since the card was added — it counts `send_to_h
 B-367	3	READY	MED-LOW			31	Acute Illness dashboard: every COVID figure counts only the OBSOLETE "COVID suspect" diagnosis — confirmed COVID (pneumo
 B-368	4	READY	LOW			31	Dashboard minors ×3: nurse "Total High Risk Pregnancies" counts a woman twice; CHW home "Acute Illness Diagnosed" includ
+B-369	4	READY	LOW			32	Prenatal participant (mixed fleet, release #2128): once a new device opens a fresh pregnancy over an expired undated one
+B-370	4	READY	LOW			32	Login location selection: an assignment added to a nurse or CHW on the server never reaches the health-centre / village 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
