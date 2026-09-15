@@ -248,6 +248,35 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
       'PrEP should not be offered once the patient is known as HIV positive',
     ).not.toContainText('TDF + 3TC');
   });
+
+  test('preeclampsia in a previous pregnancy, recorded after Danger Signs, is diagnosed as a high risk of preeclampsia', async ({
+    page,
+  }) => {
+    test.setTimeout(300000);
+    // Preeclampsia risk diagnoses appear from EGA week 12.
+    const lmpDate = new Date();
+    lmpDate.setDate(lmpDate.getDate() - 30 * 7);
+
+    const { fullName } = await createAdultFemaleAndStartEncounter(page, {
+      isChw: false,
+      encounterType: 'first',
+    });
+
+    await completePregnancyDating(page, lmpDate);
+    // Danger Signs is what the nurse assessment waits for, so every later
+    // save of an input the diagnoses read has to assess again.
+    await completeDangerSigns(page);
+    await completeHistory(page, { preeclampsiaPrevious: true });
+
+    await syncAndWait(page);
+
+    const diagnoses = queryPrenatalDiagnoses(fullName);
+    expect(diagnoses, 'encounter diagnoses should be readable').not.toBeNull();
+    expect(
+      diagnoses,
+      'preeclampsia in a previous pregnancy should be diagnosed as a high risk of preeclampsia',
+    ).toContain('high-risk-of-preeclampsia-initial');
+  });
 });
 
 // =========================================================================
