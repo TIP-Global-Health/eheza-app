@@ -13,6 +13,7 @@ import Backend.Measurement.Model
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
         , PartnerHIVTestValue
+        , PrenatalHIVSign(..)
         , PrenatalMeasurements
         , TestExecutionNote(..)
         , TestResult(..)
@@ -21,11 +22,11 @@ import Backend.Measurement.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date
-import EverySet
+import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils
     exposing
@@ -33,10 +34,12 @@ import Pages.Prenatal.RecurrentActivity.Utils
         , nextStepsTaskCompleted
         , resolveLaboratoryResultFollowUpsTasks
         )
+import Pages.Prenatal.Utils exposing (resolveRequiredMedicationsSet)
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import TestFixtures
 import Time
+import Translate.Model exposing (Language(..))
 
 
 
@@ -110,15 +113,6 @@ measurementsWith testsWithFollowUp hivResult partnerHIVResult =
             , testsWithFollowUp = Just (EverySet.fromList testsWithFollowUp)
             }
 
-        hivTestValue : HIVTestValue
-        hivTestValue =
-            { executionNote = TestNoteRunToday
-            , executionDate = Just currentDate
-            , testPrerequisites = Nothing
-            , testResult = hivResult
-            , hivSigns = Nothing
-            }
-
         partnerHIVTestValue : PartnerHIVTestValue
         partnerHIVTestValue =
             { executionNote = TestNoteRunToday
@@ -130,9 +124,28 @@ measurementsWith testsWithFollowUp hivResult partnerHIVResult =
     in
     { emptyPrenatalMeasurements
         | labsResults = TestFixtures.wrapMeasurement currentDate labsResultsValue
-        , hivTest = TestFixtures.wrapMeasurement currentDate hivTestValue
+        , hivTest = TestFixtures.wrapMeasurement currentDate (hivTestValueWith TestNoteRunToday hivResult Nothing)
         , partnerHIVTest = TestFixtures.wrapMeasurement currentDate partnerHIVTestValue
     }
+
+
+hivTestValueWith : TestExecutionNote -> Maybe TestResult -> Maybe (EverySet PrenatalHIVSign) -> HIVTestValue
+hivTestValueWith executionNote testResult hivSigns =
+    { executionNote = executionNote
+    , executionDate = Just currentDate
+    , testPrerequisites = Nothing
+    , testResult = testResult
+    , hivSigns = hivSigns
+    }
+
+
+withDiagnoses : List PrenatalDiagnosis -> AssembledData -> AssembledData
+withDiagnoses diagnoses assembled =
+    let
+        encounter =
+            assembled.encounter
+    in
+    { assembled | encounter = { encounter | diagnoses = EverySet.fromList diagnoses } }
 
 
 {-| An encounter carrying the given diagnoses, and a Medication Distribution
@@ -140,38 +153,26 @@ measurement listing what was handed over and what was marked as not given.
 -}
 assembledWith : List PrenatalDiagnosis -> List MedicationDistributionSign -> List MedicationNonAdministrationSign -> AssembledData
 assembledWith diagnoses distributionSigns nonAdministrationSigns =
-    let
-        assembled =
-            testAssembled
-                { emptyPrenatalMeasurements
-                    | medicationDistribution =
-                        TestFixtures.wrapMeasurement currentDate
-                            { distributionSigns = EverySet.fromList distributionSigns
-                            , nonAdministrationSigns = EverySet.fromList nonAdministrationSigns
-                            , recommendedTreatmentSigns = Nothing
-                            , avoidingGuidanceReason = Nothing
-                            , reinforceTreatmentSigns = Nothing
-                            }
-                }
-
-        encounter =
-            assembled.encounter
-    in
-    { assembled | encounter = { encounter | diagnoses = EverySet.fromList diagnoses } }
+    testAssembled
+        { emptyPrenatalMeasurements
+            | medicationDistribution =
+                TestFixtures.wrapMeasurement currentDate
+                    { distributionSigns = EverySet.fromList distributionSigns
+                    , nonAdministrationSigns = EverySet.fromList nonAdministrationSigns
+                    , recommendedTreatmentSigns = Nothing
+                    , avoidingGuidanceReason = Nothing
+                    , reinforceTreatmentSigns = Nothing
+                    }
+        }
+        |> withDiagnoses diagnoses
 
 
 {-| The same encounter, but the nurse never opened Medication Distribution.
 -}
 assembledWithoutMedicationDistribution : List PrenatalDiagnosis -> AssembledData
 assembledWithoutMedicationDistribution diagnoses =
-    let
-        assembled =
-            testAssembled emptyPrenatalMeasurements
-
-        encounter =
-            assembled.encounter
-    in
-    { assembled | encounter = { encounter | diagnoses = EverySet.fromList diagnoses } }
+    testAssembled emptyPrenatalMeasurements
+        |> withDiagnoses diagnoses
 
 
 completedMedicationDistribution : AssembledData -> Bool
@@ -272,6 +273,54 @@ resolveLaboratoryResultFollowUpsTasksTest =
         ]
 
 
+{-| An encounter where HIV was diagnosed at the recurrent phase from a
+positive result, carrying the given follow up answers on the HIV test.
+-}
+assembledWithHIVDiagnosedBy : EverySet PrenatalHIVSign -> AssembledData
+assembledWithHIVDiagnosedBy hivSigns =
+    testAssembled
+        { emptyPrenatalMeasurements
+            | hivTest =
+                TestFixtures.wrapMeasurement currentDate
+                    (hivTestValueWith TestNoteRunConfirmedByLabTech (Just TestPositive) (Just hivSigns))
+        }
+        |> withDiagnoses [ DiagnosisHIVRecurrentPhase ]
+
+
+requiredMedications : AssembledData -> List (List MedicationDistributionSign)
+requiredMedications assembled =
+    resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
+        |> List.map (\( _, medications, _ ) -> medications)
+
+
+
+-- The HIV medication set. A positive result entered by the lab technician
+-- leaves the follow up questions pending for the nurse; ARVs are required
+-- only once she has answered that there is no HIV program at the health
+-- center, and a program at the health center is a referral, not medication.
+
+
+resolveRequiredMedicationsSetHIVTest : Test
+resolveRequiredMedicationsSetHIVTest =
+    describe "resolveRequiredMedicationsSet, the HIV set"
+        [ test "no medication while the follow up answers are pending" <|
+            \_ ->
+                assembledWithHIVDiagnosedBy (EverySet.singleton PrenatalHIVSignPendingInput)
+                    |> requiredMedications
+                    |> Expect.equal []
+        , test "TDF3TC and Dolutegravir once the nurse answered that there is no HIV program at the health center" <|
+            \_ ->
+                assembledWithHIVDiagnosedBy (EverySet.singleton NoPrenatalHIVSign)
+                    |> requiredMedications
+                    |> Expect.equal [ [ TDF3TC, Dolutegravir ] ]
+        , test "no medication once the nurse answered that there is an HIV program at the health center" <|
+            \_ ->
+                assembledWithHIVDiagnosedBy (EverySet.singleton HIVProgramHC)
+                    |> requiredMedications
+                    |> Expect.equal []
+        ]
+
+
 {-| Measurements of an encounter whose malaria test was sent to the lab, so a
 result is expected at the recurrent phase. The nurse did not run the rapid
 test and gave a reason; what became of the blood smear is the argument.
@@ -324,4 +373,5 @@ all =
         [ laboratoryResultTaskCompletedMalariaTest
         , nextStepsMedicationDistributionCompletedTest
         , resolveLaboratoryResultFollowUpsTasksTest
+        , resolveRequiredMedicationsSetHIVTest
         ]

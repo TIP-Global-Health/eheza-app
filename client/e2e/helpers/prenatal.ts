@@ -1832,6 +1832,23 @@ export async function acceptLabsResults(page: Page): Promise<void> {
 
 
 /**
+ * Open the lab results entry of a patient from the lab technician's Case
+ * Management. The forward icon lands directly on the Lab Results activity.
+ */
+export async function openLabResultsEntryFromCaseManagement(
+  page: Page,
+  personName: string,
+): Promise<void> {
+  const entry = page.locator('.follow-up-entry', {
+    has: page.locator('.name', { hasText: personName }),
+  });
+  await entry.waitFor({ timeout: 15000 });
+  await click(entry.locator('.icon-forward'), page);
+  await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
+/**
  * Open a recurrent encounter from the Case Management Prenatal Labs pane.
  * Finds the patient entry by name and clicks the forward icon.
  */

@@ -1024,7 +1024,7 @@ specialityCareSections =
 
 referredToHIVProgramPreviously : AssembledData -> Bool
 referredToHIVProgramPreviously assembled =
-    List.filterMap
+    (List.filterMap
         (\data ->
             if
                 List.any (\diagnosis -> EverySet.member diagnosis data.diagnoses)
@@ -1037,8 +1037,9 @@ referredToHIVProgramPreviously assembled =
         )
         assembled.nursePreviousEncountersData
         |> List.head
-        |> Maybe.map hivProgramAtHC
-        |> Maybe.withDefault False
+        |> Maybe.andThen hivProgramAtHC
+    )
+        == Just True
 
 
 latestMedicationTreatmentForHIV : AssembledData -> Maybe Translate.TranslationId
@@ -1152,7 +1153,7 @@ referToMentalHealthSpecialist assembled =
 
 referToARVProgram : AssembledData -> Bool
 referToARVProgram assembled =
-    (diagnosed DiagnosisHIVInitialPhase assembled && hivProgramAtHC assembled.measurements)
+    (diagnosed DiagnosisHIVInitialPhase assembled && (hivProgramAtHC assembled.measurements == Just True))
         || (expectSpecialityCareSignSection assembled EnrolledToARVProgram
                 && referredToSpecialityCareProgram EnrolledToARVProgram assembled
            )
