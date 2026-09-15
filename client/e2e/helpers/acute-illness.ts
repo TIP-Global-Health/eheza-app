@@ -967,8 +967,8 @@ export async function completeNextSteps(
 
 /**
  * Change one answer of the Medication Distribution task after Next Steps
- * was completed. Next Steps is then on the Completed tab, and saving the
- * task returns to the encounter page.
+ * was completed. Next Steps is then on the Completed tab. Saving the task
+ * leaves the activity for the encounter page or the progress report.
  */
 export async function editMedicationDistributionAnswer(
   page: Page,
@@ -985,7 +985,9 @@ export async function editMedicationDistributionAnswer(
   await answerYesNo(page, fieldClass, answer);
   await saveNextStepsSubTask(page);
 
-  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
+  await page
+    .locator('div.page-encounter.acute-illness, div.page-report.acute-illness')
+    .waitFor({ timeout: 10000 });
   await page.waitForTimeout(WAIT.elmRerender);
 }
 
