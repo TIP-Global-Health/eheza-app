@@ -376,6 +376,7 @@ B-375	3	READY	MED			32	Patient merge: the acute-illness step looks participants 
 B-376	3	READY	MED-LOW			32	Patient merge (antenatal): "ongoing pregnancy" is the newest participant with no `date_concluded`, which on live data is
 B-377	4	READY	LOW			32	Patient CSV import: the date validator accepts a two-digit year and the parser reads it literally, so "05-01-19" is stor
 B-378	4	READY	LOW			32	Person presave: the "has measurements, cannot delete" guard fires on EVERY save of an already-deleted person, so any lat
+B-379	4	READY	LOW		2253	32	E2E harness: `switchUser` in `lab-tech-encounter.spec.ts` flakes — `page.goto('/')` in `pairDevice` is interrupted by th
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
