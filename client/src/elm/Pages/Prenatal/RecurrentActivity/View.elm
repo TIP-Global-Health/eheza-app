@@ -216,7 +216,7 @@ viewLabResultsContent language isLabTech assembled model =
                         TaskHIVTest ->
                             let
                                 partnerHIVTestResult =
-                                    resolvePartnerHIVTestResult assembled
+                                    resolvePartnerHIVTestResult assembled.measurements
                             in
                             getMeasurementValueFunc measurements.hivTest
                                 |> hivResultFormWithDefault model.labResultsData.hivTestForm
@@ -718,7 +718,7 @@ viewLabResultFollowUpsContent language assembled model =
                         TaskHIVTest ->
                             let
                                 partnerHIVTestResult =
-                                    resolvePartnerHIVTestResult assembled
+                                    resolvePartnerHIVTestResult assembled.measurements
                             in
                             getMeasurementValueFunc measurements.hivTest
                                 |> hivResultFormWithDefault model.labResultsData.hivTestForm
@@ -914,7 +914,7 @@ viewLab language lab assembled data =
                 TestHIV ->
                     let
                         partnerHIVTestResult =
-                            resolvePartnerHIVTestResult assembled
+                            resolvePartnerHIVTestResult assembled.measurements
                     in
                     getMeasurementValueFunc measurements.hivTest
                         |> hivResultFormWithDefault data.hivTestForm
