@@ -332,9 +332,11 @@ def changed(base):
     except subprocess.CalledProcessError:
         point = base
     # Pinned, so no one's diff config changes what `added_lines` reads.
+    # Re-indenting a line or moving a file does not write its comments.
     diff = git(
         "diff", "--unified=0", "--diff-filter=ACMR", "--no-color",
-        "--no-ext-diff", "--src-prefix=a/", "--dst-prefix=b/", point,
+        "--no-ext-diff", "--ignore-all-space", "--find-renames",
+        "--src-prefix=a/", "--dst-prefix=b/", point,
     )
     touched = added_lines(diff)
     # A file git has never seen is new whole. CI has none of these; someone

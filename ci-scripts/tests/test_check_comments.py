@@ -256,6 +256,22 @@ class AgainstGit(unittest.TestCase):
         (self.repo / "sub/a.sh").write_text(self.LONG + "\n# new\nrun\n")
         self.assertEqual(self.check(), 0)
 
+    def test_indenting_an_old_long_comment_passes(self):
+        self.commit({"sub/a.sh": self.LONG + "run\n"})
+        (self.repo / "sub/a.sh").write_text("if true; then\n  " + self.LONG + "  run\nfi\n")
+        self.assertEqual(self.check(), 0)
+
+    def test_moving_a_file_with_an_old_long_comment_passes(self):
+        self.commit({"sub/a.sh": self.LONG})
+        self.git("mv", "sub/a.sh", "sub/moved.sh")
+        config = {
+            "GIT_CONFIG_COUNT": "1",
+            "GIT_CONFIG_KEY_0": "diff.renames",
+            "GIT_CONFIG_VALUE_0": "false",
+        }
+        with mock.patch.dict(os.environ, config):
+            self.assertEqual(self.check(), 0)
+
     def test_a_new_symlink_to_an_old_long_comment_passes(self):
         self.commit({"sub/a.sh": self.LONG})
         (self.repo / "sub/link.sh").symlink_to("a.sh")
