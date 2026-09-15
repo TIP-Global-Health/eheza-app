@@ -718,7 +718,7 @@ referToARVProgram : AssembledData -> Bool
 referToARVProgram assembled =
     -- No need to check Speciality care, since there is no
     -- recurrent phase for postpartum encounter.
-    diagnosed DiagnosisHIVRecurrentPhase assembled && hivProgramAtHC assembled.measurements
+    diagnosed DiagnosisHIVRecurrentPhase assembled && (hivProgramAtHC assembled.measurements == Just True)
 
 
 referralFacilities : List ReferralFacility

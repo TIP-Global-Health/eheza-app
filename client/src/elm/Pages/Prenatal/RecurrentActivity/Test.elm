@@ -13,6 +13,7 @@ import Backend.Measurement.Model
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
         , PartnerHIVTestValue
+        , PrenatalHIVSign(..)
         , PrenatalMeasurements
         , TestExecutionNote(..)
         , TestResult(..)
@@ -21,11 +22,11 @@ import Backend.Measurement.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date
-import EverySet
+import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils
     exposing
@@ -33,10 +34,12 @@ import Pages.Prenatal.RecurrentActivity.Utils
         , nextStepsTaskCompleted
         , resolveLaboratoryResultFollowUpsTasks
         )
+import Pages.Prenatal.Utils exposing (resolveRequiredMedicationsSet)
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import TestFixtures
 import Time
+import Translate.Model exposing (Language(..))
 
 
 
@@ -272,6 +275,67 @@ resolveLaboratoryResultFollowUpsTasksTest =
         ]
 
 
+{-| An encounter where HIV was diagnosed at the recurrent phase from a
+positive result, carrying the given follow up answers on the HIV test.
+-}
+assembledWithHIVDiagnosedBy : EverySet PrenatalHIVSign -> AssembledData
+assembledWithHIVDiagnosedBy hivSigns =
+    let
+        hivTestValue : HIVTestValue
+        hivTestValue =
+            { executionNote = TestNoteRunConfirmedByLabTech
+            , executionDate = Just currentDate
+            , testPrerequisites = Nothing
+            , testResult = Just TestPositive
+            , hivSigns = Just hivSigns
+            }
+
+        assembled =
+            testAssembled
+                { emptyPrenatalMeasurements
+                    | hivTest = TestFixtures.wrapMeasurement currentDate hivTestValue
+                }
+
+        encounter =
+            assembled.encounter
+    in
+    { assembled | encounter = { encounter | diagnoses = EverySet.singleton DiagnosisHIVRecurrentPhase } }
+
+
+requiredMedications : AssembledData -> List (List MedicationDistributionSign)
+requiredMedications assembled =
+    resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
+        |> List.map (\( _, medications, _ ) -> medications)
+
+
+
+-- The HIV medication set. A positive result entered by the lab technician
+-- leaves the follow up questions pending for the nurse; ARVs are required
+-- only once she has answered that there is no HIV program at the health
+-- center, and a program at the health center is a referral, not medication.
+
+
+resolveRequiredMedicationsSetHIVTest : Test
+resolveRequiredMedicationsSetHIVTest =
+    describe "resolveRequiredMedicationsSet, the HIV set"
+        [ test "no medication while the follow up answers are pending" <|
+            \_ ->
+                assembledWithHIVDiagnosedBy (EverySet.singleton PrenatalHIVSignPendingInput)
+                    |> requiredMedications
+                    |> Expect.equal []
+        , test "TDF3TC and Dolutegravir once the nurse answered that there is no HIV program at the health center" <|
+            \_ ->
+                assembledWithHIVDiagnosedBy (EverySet.singleton NoPrenatalHIVSign)
+                    |> requiredMedications
+                    |> Expect.equal [ [ TDF3TC, Dolutegravir ] ]
+        , test "no medication once the nurse answered that there is an HIV program at the health center" <|
+            \_ ->
+                assembledWithHIVDiagnosedBy (EverySet.singleton HIVProgramHC)
+                    |> requiredMedications
+                    |> Expect.equal []
+        ]
+
+
 {-| Measurements of an encounter whose malaria test was sent to the lab, so a
 result is expected at the recurrent phase. The nurse did not run the rapid
 test and gave a reason; what became of the blood smear is the argument.
@@ -324,4 +388,5 @@ all =
         [ laboratoryResultTaskCompletedMalariaTest
         , nextStepsMedicationDistributionCompletedTest
         , resolveLaboratoryResultFollowUpsTasksTest
+        , resolveRequiredMedicationsSetHIVTest
         ]

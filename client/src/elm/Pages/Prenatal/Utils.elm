@@ -1813,11 +1813,11 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                 hivDiagnosed =
                     diagnosed diagnosis assembled
 
-                hivProgramHC =
-                    hivProgramAtHC assembled.measurements
+                noHIVProgramAtHC =
+                    hivProgramAtHC assembled.measurements == Just False
             in
             if
-                (hivDiagnosed && not hivProgramHC)
+                (hivDiagnosed && noHIVProgramAtHC)
                     || patientReportedNoMedicineRecievedFromPMTCT assembled.measurements
             then
                 Just
@@ -2922,12 +2922,24 @@ resolveParacetamolDosageAndIcon =
     Just ( "500 mg", "icon-pills" )
 
 
-hivProgramAtHC : PrenatalMeasurements -> Bool
+{-| Whether the health center runs an HIV program, as answered on the HIV
+test's follow up questions. A lab technician's save leaves those questions
+for the nurse, marking the answers as pending; until she answers, there is
+no answer to read, and the result is Nothing.
+-}
+hivProgramAtHC : PrenatalMeasurements -> Maybe Bool
 hivProgramAtHC measurements =
     getMeasurementValueFunc measurements.hivTest
         |> Maybe.andThen .hivSigns
-        |> Maybe.map (EverySet.member HIVProgramHC)
-        |> Maybe.withDefault False
+        |> Maybe.map
+            (\hivSigns ->
+                if hivSignsAnswered hivSigns then
+                    Just <| EverySet.member HIVProgramHC hivSigns
+
+                else
+                    Nothing
+            )
+        |> Maybe.withDefault (Just False)
 
 
 {-| Recommended Treatment activity appears on both initial and recurrent encounters.

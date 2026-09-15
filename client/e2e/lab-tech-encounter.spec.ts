@@ -613,3 +613,133 @@ test.describe('Lab Tech and Nurse: a saved Next Steps task reopened by a later d
     ).toContainText('TDF + 3TC');
   });
 });
+
+
+// The lab technician can enter a result but not the follow up questions, so a
+// positive result they enter leaves those answers pending for the nurse. ARVs
+// are prescribed when there is no HIV program at the health center, and that
+// is one of the pending questions: until the nurse answers it, no medication
+// can be required. Once she answers that there is a program, the patient is
+// referred to it instead.
+test.describe('Lab Tech and Nurse: a positive result entered at the lab waits for the follow ups', () => {
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '1234', 'Nyange Health Center');
+  });
+
+  test('no medication is offered before the nurse answers, and a referral once she does', async ({
+    page,
+  }) => {
+    test.setTimeout(600000);
+    const lmpDate = new Date();
+    lmpDate.setDate(lmpDate.getDate() - 30 * 7);
+
+    // --- Phase 1: the nurse runs the initial encounter, every lab to the lab ---
+    const { fullName } = await createAdultFemaleAndStartEncounter(page, {
+      isChw: false,
+      encounterType: 'first',
+    });
+
+    await completePregnancyDating(page, lmpDate);
+    await completeHistory(page);
+    await completeExamination(page);
+    await completeFamilyPlanning(page);
+    await completeDangerSigns(page);
+    await completeSymptomReview(page);
+    await completeMalariaPrevention(page);
+    await completeMentalHealth(page);
+    await completeImmunisation(page);
+    await completeMedication(page);
+    // The patient's own test goes to the lab with the rest, so her result is
+    // the one the lab technician enters.
+    await completeLaboratoryNurseForLab(page);
+    const completedSteps = await completeNextSteps(page);
+    expect(completedSteps, 'completedSteps should contain wait sub-task').toContain('wait');
+    await syncAndWait(page);
+
+    // --- Phase 2: the lab technician enters the results ---
+    await switchUser(page, '3333');
+    await navigateToCaseManagement(page);
+
+    const entry = page.locator('.follow-up-entry', {
+      has: page.locator('.name', { hasText: fullName }),
+    });
+    await entry.waitFor({ timeout: 15000 });
+    await click(entry.locator('.icon-forward'), page);
+    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    // The patient's own result is the only positive one. The partner's is
+    // negative so no discordant partnership adds a medication of its own, and
+    // the haemoglobin count stays above the anemia bands.
+    const completedResults = await completeLabResults(page, {
+      negativeResultTests: ['Partner HIV', 'Malaria', 'Hepatitis B', 'Syphilis'],
+    });
+    expect(completedResults.length, 'at least one lab result should have been completed').toBeGreaterThan(0);
+    await page.waitForTimeout(WAIT.pageNavigation);
+    await syncAndWait(page);
+
+    // --- Phase 3: the nurse opens Next Steps before answering the follow ups ---
+    await switchUser(page, '1234');
+    await navigateToCaseManagement(page);
+    await openLabsResultsReviewFromCaseManagement(page, fullName);
+    await acceptLabsResults(page);
+
+    await openActivity(page, 'prenatal', 'next-steps');
+    await dismissWarningPopup(page);
+    const medicationTab = page.locator(
+      '.link-section:has(.icon-activity-task.icon-next-steps-medication-distribution)',
+    );
+    await expect(
+      medicationTab,
+      'no medication should be offered while the follow up answers are pending',
+    ).toHaveCount(0);
+
+    // Save what Next Steps does offer, so the encounter can move on to the
+    // follow ups.
+    const savedTasks = await completeRecurrentNextSteps(page);
+    expect(savedTasks.length, 'at least one Next Steps task should have been saved').toBeGreaterThan(0);
+    await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
+
+    // --- Phase 4: the nurse answers that there is an HIV program at the health center ---
+    await openEncounterTab(page, 'pending');
+    await click(page.locator('.icon-task-laboratory-follow-ups'), page);
+    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    const completedFollowUps = await completeLabResults(page);
+    expect(completedFollowUps.length, 'at least one follow up should have been completed').toBeGreaterThan(0);
+    await page.waitForTimeout(WAIT.pageNavigation);
+
+    // A program at the health center is a referral to it, which Next Steps
+    // has not offered yet, so the encounter is not over.
+    await expect(
+      page.locator('div.page-encounter.prenatal'),
+      'the encounter should not have completed while the referral was never offered',
+    ).toBeVisible({ timeout: 15000 });
+    await expectActivityInTab(
+      page,
+      'next-steps',
+      'pending',
+      'Next Steps should be pending again now that a referral is required',
+    );
+
+    await openActivity(page, 'prenatal', 'next-steps');
+    await dismissWarningPopup(page);
+    await expect(
+      medicationTab,
+      'no medication should be offered when there is an HIV program at the health center',
+    ).toHaveCount(0);
+    await clickSubTaskTab(page, 'next-steps-referral');
+    await expect(
+      page.locator('div.page-activity.prenatal'),
+      'the patient should be referred to the ARV services',
+    ).toContainText('ARV services');
+  });
+});

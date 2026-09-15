@@ -1037,7 +1037,7 @@ referredToHIVProgramPreviously assembled =
         )
         assembled.nursePreviousEncountersData
         |> List.head
-        |> Maybe.map hivProgramAtHC
+        |> Maybe.andThen hivProgramAtHC
         |> Maybe.withDefault False
 
 
@@ -1152,7 +1152,7 @@ referToMentalHealthSpecialist assembled =
 
 referToARVProgram : AssembledData -> Bool
 referToARVProgram assembled =
-    (diagnosed DiagnosisHIVInitialPhase assembled && hivProgramAtHC assembled.measurements)
+    (diagnosed DiagnosisHIVInitialPhase assembled && (hivProgramAtHC assembled.measurements == Just True))
         || (expectSpecialityCareSignSection assembled EnrolledToARVProgram
                 && referredToSpecialityCareProgram EnrolledToARVProgram assembled
            )
