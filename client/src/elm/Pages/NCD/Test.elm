@@ -1,5 +1,6 @@
 module Pages.NCD.Test exposing (all)
 
+import AssocList as Dict
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model
     exposing
@@ -15,6 +16,7 @@ import Backend.Measurement.Model
         , TestResult(..)
         , UrineDipstickTestValue
         )
+import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.NCDEncounter.Model as NCDEncounterModel
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Date
@@ -24,16 +26,19 @@ import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.NCD.Activity.Types exposing (NextStepsTask(..))
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask, resolveNextStepsTasks, resolvePreviousMaybeValue)
-import Pages.NCD.Model exposing (AssembledData, PreviousEncounterData)
+import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..), PreviousEncounterData)
 import Pages.NCD.Utils
     exposing
-        ( generateNCDDiagnoses
+        ( generateAssembledData
+        , generateNCDDiagnoses
         , lowerHypertensionStageCondition
         , patientIsPregnant
+        , referForRenalComplications
         , stage1BloodPressureCondition
         , stage2BloodPressureCondition
         , stage3BloodPressureCondition
         )
+import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import Test exposing (Test, describe, test)
 import TestFixtures exposing (testPerson)
@@ -426,6 +431,52 @@ expectDiagnosesOnReassessment encounterDiagnoses previousDiagnoses expected meas
         |> Expect.equal (EverySet.fromList expected)
 
 
+{-| An NCD encounter as stored in the database: its start date, the diagnoses
+written onto it, and the measurements taken at it.
+-}
+type alias StoredEncounter =
+    { id : String
+    , startDate : NominalDate
+    , diagnoses : List NCDDiagnosis
+    , measurements : NCDMeasurements
+    }
+
+
+{-| Assemble the encounter with the given id from a database holding the given
+encounters of one participant -- the way every NCD page and the assessment run
+after a save build their data.
+-}
+assembledFromDb : String -> List StoredEncounter -> Maybe AssembledData
+assembledFromDb encounterId storedEncounters =
+    let
+        encounters =
+            List.map
+                (\stored ->
+                    ( toEntityUuid stored.id
+                    , { dummyEncounter
+                        | startDate = stored.startDate
+                        , diagnoses = EverySet.fromList stored.diagnoses
+                      }
+                    )
+                )
+                storedEncounters
+
+        db =
+            { emptyModelIndexedDb
+                | ncdEncounters = Dict.fromList <| List.map (Tuple.mapSecond RemoteData.Success) encounters
+                , ncdEncountersByParticipant =
+                    Dict.singleton dummyEncounter.participant (RemoteData.Success <| Dict.fromList encounters)
+                , ncdMeasurements =
+                    Dict.fromList <|
+                        List.map (\stored -> ( toEntityUuid stored.id, RemoteData.Success stored.measurements )) storedEncounters
+                , individualParticipants = Dict.singleton dummyEncounter.participant (RemoteData.Success dummyParticipant)
+                , people = Dict.singleton dummyParticipant.person (RemoteData.Success testPerson)
+            }
+    in
+    generateAssembledData (toEntityUuid encounterId) db
+        |> RemoteData.toMaybe
+
+
 hypertensionHierarchyTest : Test
 hypertensionHierarchyTest =
     -- Across encounters the hypertension stage is adjusted, not just re-derived
@@ -518,6 +569,64 @@ reassessmentTest =
                         [ DiagnosisDiabetesInitial ]
                         []
                         [ DiagnosisDiabetesRecurrent ]
+        ]
+
+
+olderEncounterTest : Test
+olderEncounterTest =
+    -- A lab result can be entered for an encounter after a later encounter of
+    -- the same participant has started. The history of the older encounter is
+    -- still made of the encounters before it. Here the older encounter is held
+    -- on dummyDate, and the later one a month after it.
+    let
+        olderEncounter diagnoses measurements =
+            { id = "older-encounter"
+            , startDate = dummyDate
+            , diagnoses = diagnoses
+            , measurements = measurements
+            }
+
+        encounterAt monthsAfter diagnoses =
+            { id = "encounter-" ++ String.fromInt monthsAfter
+            , startDate = Date.add Date.Months monthsAfter dummyDate
+            , diagnoses = diagnoses
+            , measurements = emptyNCDMeasurements
+            }
+
+        diagnosesOfOlderEncounter storedEncounters =
+            assembledFromDb "older-encounter" storedEncounters
+                |> Maybe.map generateNCDDiagnoses
+    in
+    describe "generateAssembledData - an encounter assessed after a later one started"
+        [ test "Stage 1 encounter + creatinine 2.0, later encounter at Stage 3 -> stays Stage 1" <|
+            \_ ->
+                diagnosesOfOlderEncounter
+                    [ olderEncounter [ DiagnosisHypertensionStage1 ] (baseMeasurements |> withVitals 145 95 |> withCreatinine 2.0)
+                    , encounterAt 1 [ DiagnosisHypertensionStage3 ]
+                    ]
+                    |> Expect.equal (Just <| EverySet.fromList [ DiagnosisHypertensionStage1, DiagnosisRenalComplications ])
+        , test "blood sugar 250, later encounter already diabetic -> diabetes is kept" <|
+            \_ ->
+                diagnosesOfOlderEncounter
+                    [ olderEncounter [] (baseMeasurements |> withRandomBloodSugar False 250)
+                    , encounterAt 1 [ DiagnosisDiabetesRecurrent ]
+                    ]
+                    |> Expect.equal (Just <| EverySet.singleton DiagnosisDiabetesRecurrent)
+        , test "renal complications found at recurrent phase, later encounter already has them -> referral is offered" <|
+            \_ ->
+                assembledFromDb "older-encounter"
+                    [ olderEncounter [ DiagnosisHypertensionStage1, DiagnosisRenalComplications ] baseMeasurements
+                    , encounterAt 1 [ DiagnosisHypertensionStage1, DiagnosisRenalComplications ]
+                    ]
+                    |> Maybe.map (referForRenalComplications NCDEncounterPhaseRecurrent)
+                    |> Expect.equal (Just True)
+        , test "Stage-1 reading, earlier encounter at Stage 3 -> stays Stage 3 (earlier encounters are history)" <|
+            \_ ->
+                diagnosesOfOlderEncounter
+                    [ olderEncounter [] (baseMeasurements |> withVitals 145 95)
+                    , encounterAt -1 [ DiagnosisHypertensionStage3 ]
+                    ]
+                    |> Expect.equal (Just <| EverySet.singleton DiagnosisHypertensionStage3)
         ]
 
 
@@ -839,6 +948,7 @@ all =
         , generateNCDDiagnosesTest
         , hypertensionHierarchyTest
         , reassessmentTest
+        , olderEncounterTest
         , nextStepsTasksTest
         , resolvePreviousMaybeValueTest
         , pregnancyAcrossEncountersTest

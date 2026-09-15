@@ -64,7 +64,14 @@ generateAssembledData id db =
 
         previousEncountersData =
             RemoteData.toMaybe encounter
-                |> Maybe.map (\encounter_ -> generatePreviousEncountersData (Just id) encounter_.participant db)
+                |> Maybe.map
+                    (\encounter_ ->
+                        -- A result can be entered for an encounter after a later
+                        -- encounter has started. Only encounters that started
+                        -- before this one are its history.
+                        generatePreviousEncountersData (Just id) encounter_.participant db
+                            |> filterPreviousEncountersDataToDate encounter_.startDate
+                    )
                 |> Maybe.withDefault []
     in
     RemoteData.map AssembledData (Success id)
