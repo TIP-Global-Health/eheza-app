@@ -834,6 +834,8 @@ export async function completeNextSteps(
     hasHealthEducation?: boolean;
     hasContactTracing?: boolean;
     hasSymptomsRelief?: boolean;
+    /** Answer to "Administered Lemon Juice and/or Honey?" (simple cold and cough). */
+    lemonJuiceOrHoney?: 'Yes' | 'No';
   },
 ) {
   const hasMedDist = options?.hasMedicationDistribution ?? true;
@@ -875,6 +877,12 @@ export async function completeNextSteps(
       const zincField = page.locator('.form-input.yes-no.zinc-medication');
       if (await zincField.isVisible({ timeout: 1000 }).catch(() => false)) {
         await answerYesNo(page, 'zinc-medication', 'Yes');
+      }
+
+      // For simple cold and cough: Lemon Juice and/or Honey
+      const lemonJuiceField = page.locator('.form-input.yes-no.lemon-juice-or-honey-medication');
+      if (await lemonJuiceField.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await answerYesNo(page, 'lemon-juice-or-honey-medication', options?.lemonJuiceOrHoney ?? 'Yes');
       }
 
       // For respiratory: Amoxicillin
@@ -952,6 +960,30 @@ export async function completeNextSteps(
   // After completing all next steps, the app may show the progress report
   // page (with "End Encounter" button) or return to the encounter page.
   await page.waitForTimeout(WAIT.sectionTransition);
+}
+
+/**
+ * Change one answer of the Medication Distribution task after Next Steps
+ * was completed. Next Steps is then on the Completed tab, and saving the
+ * task returns to the encounter page.
+ */
+export async function editMedicationDistributionAnswer(
+  page: Page,
+  fieldClass: string,
+  answer: 'Yes' | 'No',
+) {
+  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+  await openActivity(page, 'next-steps');
+
+  await clickSubTaskTab(page, 'next-steps-medication-distribution');
+  await page.locator('.ui.form.medication-distribution').waitFor({ timeout: 5000 });
+  await answerYesNo(page, fieldClass, answer);
+  await saveNextStepsSubTask(page);
+
+  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------

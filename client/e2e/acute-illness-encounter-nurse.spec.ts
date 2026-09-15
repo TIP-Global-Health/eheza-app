@@ -19,6 +19,7 @@ import {
   startSubsequentEncounter,
   completeDangerSigns,
   completeOngoingTreatment,
+  editMedicationDistributionAnswer,
   readTuberculosisManagementFeature,
   setTuberculosisManagementFeature,
 } from './helpers/acute-illness';
@@ -309,6 +310,74 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
     // NextSteps.
     expect(nodes['send_to_hc'], 'send_to_hc should exist').toBe(true);
     expect(nodes['acute_illness_follow_up'], 'acute_illness_follow_up should exist').toBe(true);
+  });
+});
+
+test.describe('Nurse: Acute Illness Initial Encounter — Simple Cold and Cough', () => {
+  test.describe.configure({ timeout: 600000 });
+
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '1234', 'Nyange Health Center');
+  });
+
+  // Scenario: 24-month-old child with cough and nasal congestion, no fever,
+  // respiratory rate normal for the age → Simple Cold and Cough, for which
+  // the nurse is asked whether lemon juice or honey was given.
+  test('report shows lemon juice or honey only when it was given', async ({ page }) => {
+
+    await createChildAndStartEncounter(page, {
+      ageMonths: 24,
+    });
+
+    await completeSymptoms(page, {
+      general: [],
+      respiratory: ['Cough', 'Nasal Congestion'],
+      gi: [],
+    });
+
+    // Below 40 breaths per minute is normal from 12 to 59 months.
+    await completePhysicalExam(page, {
+      respiratoryRate: '30',
+      bodyTemp: '37.0',
+      muac: '14',
+      acuteFindingsGeneral: [],
+      acuteFindingsRespiratory: [],
+    });
+
+    await completePriorTreatment(page);
+
+    await completeNextSteps(page, {
+      hasMedicationDistribution: true,
+      hasFollowUp: true,
+      hasSendToHC: false,
+      hasContactTracing: false,
+      hasSymptomsRelief: false,
+      hasHealthEducation: true,
+      lemonJuiceOrHoney: 'No',
+    });
+
+    let report = await openReport(page, 'acute-illness');
+    await expect(report.locator('.pane.assessment'))
+      .toContainText('Simple Cold and Cough');
+    const actionsTaken = report.locator('.pane.actions-taken');
+    await expect(actionsTaken).toBeVisible();
+    await expect(actionsTaken).not.toContainText('Lemon Juice');
+    await closeReport(page, 'acute-illness');
+
+    // The nurse corrects the answer: now it was given.
+    await editMedicationDistributionAnswer(page, 'lemon-juice-or-honey-medication', 'Yes');
+
+    report = await openReport(page, 'acute-illness');
+    await expect(report.locator('.pane.actions-taken'))
+      .toContainText('Lemon Juice and/or Honey');
+    await closeReport(page, 'acute-illness');
   });
 });
 
