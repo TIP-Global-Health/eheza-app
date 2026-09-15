@@ -341,7 +341,7 @@ B-340	4	READY	LOW			30	NCD completion report: the server copy of the NCD next-st
 B-341	2	READY	MED	2151	2152	30	Release #2128: the person-photo repair script ships but is not in the post-deploy steps — the backend guard stops NEW wi
 B-342	1	PARKED	MED-LOW			30	Prenatal malaria (mixed fleet): once a new client flags a blood-smear order, an old client that turns the test into a ra
 B-343	1	IMPLEMENTED	MED	2244	2245	30	Prenatal HIV: a "partner is HIV positive" answer stored on the patient's own HIV test still diagnoses a discordant partn
-B-344	1	READY	MED			30	Prenatal HIV (lab tech): a positive HIV result entered by the lab tech leaves "pending" in the follow-up answers, and `h
+B-344	1	IMPLEMENTED	MED	2252	2253	30	Prenatal HIV (lab tech): a positive HIV result entered by the lab tech leaves "pending" in the follow-up answers, and `h
 B-345	1	READY	MED			30	Prenatal recurrent Next Steps: health education counts as complete once ANY phase-2 education was saved, so education a 
 B-346	4	READY	LOW			30	Prenatal HIV / partner HIV form: B-320's "re-tapping the answer already shown changes nothing" guard only works before a
 B-347	3	READY	MED			30	WhatsApp report: a phone number of zeros or too few digits is accepted and the nurse is told "Success", but the report n
