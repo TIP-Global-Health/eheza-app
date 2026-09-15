@@ -37,12 +37,16 @@ function hedley_patient_menu() {
 /**
  * Implements hook_user_login().
  *
- * Performs redirect for user with Data Manager or
- * Statistical Queries Manager role.
+ * Sends a user whose account is for one page straight to it, rather than to the
+ * front page they have no access to. An account holding several of these roles
+ * lands on the first one listed here.
  */
 function hedley_patient_user_login(&$edit, $account) {
   $data_mananger_role = user_role_load_by_name('Data Manager');
   $statistical_queries_manager_role = user_role_load_by_name('Statistical Queries Manager');
+  // The dashboard roles arrive with an update, so a site may not hold them yet.
+  $program_dashboard_role = user_role_load_by_name('Program Dashboard Viewer');
+  $facility_dashboard_role = user_role_load_by_name('Facility Dashboard Viewer');
   if (user_has_role($data_mananger_role->rid, $account)) {
     // Path of Aggregated NCDA report page.
     $path = 'admin/reports/aggregated-ncda';
@@ -50,6 +54,14 @@ function hedley_patient_user_login(&$edit, $account) {
   elseif (user_has_role($statistical_queries_manager_role->rid, $account)) {
     // Path of Statistical Queries page.
     $path = 'admin/reports/statistical-queries';
+  }
+  elseif ($program_dashboard_role && user_has_role($program_dashboard_role->rid, $account)) {
+    // Path of Program Monitoring dashboard.
+    $path = 'admin/reports/dashboards/program';
+  }
+  elseif ($facility_dashboard_role && user_has_role($facility_dashboard_role->rid, $account)) {
+    // Path of Facility Performance dashboard.
+    $path = 'admin/reports/dashboards/facility';
   }
   else {
     return;

@@ -39,7 +39,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
+import Pages.Components.Utils exposing (isSyncComplete, reportTableDataToCSV, reportTablesDataToCSV, viewSyncingPlaceholder)
 import Pages.Components.View exposing (viewMetricsResultsTable, viewReportDateInputs, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
@@ -3153,19 +3153,3 @@ viewDownloadCSVButton language csvFileName csvContent =
             ]
             [ text <| translate language Translate.DownloadCSV ]
         ]
-
-
-reportTablesDataToCSV : List MetricsResultsTableData -> String
-reportTablesDataToCSV =
-    List.map reportTableDataToCSV
-        >> String.join "\n\n"
-
-
-reportTableDataToCSV : MetricsResultsTableData -> String
-reportTableDataToCSV tableData =
-    [ tableData.heading
-    , String.join "," tableData.captions
-    , List.map (String.join ",") tableData.rows
-        |> String.join "\n"
-    ]
-        |> String.join "\n"
