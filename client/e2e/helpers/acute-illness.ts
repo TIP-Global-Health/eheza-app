@@ -852,7 +852,10 @@ export async function completeNextSteps(
     .locator('.actions.next-steps')
     .isVisible()
     .catch(() => false);
-  if (!alreadyOnNextSteps) {
+  if (alreadyOnNextSteps) {
+    // The assessment popup can open over the form as the app arrives here.
+    await dismissDiagnosisPopup(page);
+  } else {
     await openActivity(page, 'next-steps');
   }
 
