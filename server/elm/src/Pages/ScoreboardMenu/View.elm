@@ -9,21 +9,14 @@ import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust)
 import Pages.Components.View exposing (viewDemographicsSelection, viewDemographicsSelectionActionButton)
 import Pages.ScoreboardMenu.Model exposing (Model, Msg(..))
-import Pages.Utils exposing (viewCustomLabel)
+import Pages.Utils exposing (viewBackendData, viewCustomLabel)
 import Translate exposing (translate)
 
 
 view : Language -> ModelBackend -> Model -> Html Msg
 view language modelBackend model =
-    case modelBackend.scoreboardMenuData of
-        Just (Ok data) ->
-            viewMenu language data model
-
-        Just (Err err) ->
-            text <| Debug.toString err
-
-        Nothing ->
-            emptyNode
+    viewBackendData modelBackend.scoreboardMenuData
+        (\data -> viewMenu language data model)
 
 
 viewMenu : Language -> MenuData -> Model -> Html Msg

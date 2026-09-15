@@ -2,13 +2,13 @@ module Backend.Scoreboard.Decoder exposing (decodeScoreboardData, decodeSyncResp
 
 import AssocList as Dict
 import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
+import Backend.Components.Model exposing (SyncResponse)
 import Backend.Decoder exposing (decodeSite)
-import Backend.Scoreboard.Model exposing (ANCNewbornData, CriterionBySeverities, InfrastructureEnvironmentWashData, NCDAData, NutritionBehaviorData, NutritionCriterionsData, PatientData, RawVaccinationData, ScoreboardData, SyncResponse, TargetedInterventionsData, UniversalInterventionData, VaccinationProgressDict, VaccineType(..), emptyANCNewbornData, emptyInfrastructureEnvironmentWashData, emptyNCDAData, emptyNutritionBehaviorData, emptyNutritionCriterionsData, emptyTargetedInterventionsData, emptyUniversalInterventionData)
+import Backend.Scoreboard.Model exposing (ANCNewbornData, CriterionBySeverities, InfrastructureEnvironmentWashData, NCDAData, NutritionBehaviorData, NutritionCriterionsData, PatientData, RawVaccinationData, ScoreboardData, TargetedInterventionsData, UniversalInterventionData, VaccinationProgressDict, VaccineType(..), emptyANCNewbornData, emptyInfrastructureEnvironmentWashData, emptyNCDAData, emptyNutritionBehaviorData, emptyNutritionCriterionsData, emptyTargetedInterventionsData, emptyUniversalInterventionData)
 import Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine)
 import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, bool, field, list, map, maybe, string, succeed)
+import Json.Decode exposing (Decoder, bool, list, map, maybe, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Maybe.Extra exposing (isNothing)
 import Utils.NominalDate exposing (calendarMonth)
@@ -25,14 +25,9 @@ decodeScoreboardData =
         |> hardcoded Nothing
 
 
-decodeSyncResponse : Decoder SyncResponse
+decodeSyncResponse : Decoder (SyncResponse PatientData)
 decodeSyncResponse =
-    field "data"
-        (succeed SyncResponse
-            |> required "batch" (list decodePatientData)
-            |> required "total_remaining" decodeInt
-            |> required "last" decodeInt
-        )
+    Backend.Components.Decoder.decodeSyncResponse decodePatientData
 
 
 decodePatientData : Decoder PatientData

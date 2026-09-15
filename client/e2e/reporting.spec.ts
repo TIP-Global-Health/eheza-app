@@ -106,7 +106,7 @@ import {
   completeLaboratoryNurseForLab,
   navigateToCaseManagement as navigateToPrenatalCaseManagement,
   openRecurrentEncounterFromCaseManagement,
-  completeLabResultsAsLabTech,
+  completeLabResults,
   endRecurrentEncounter,
   completeLaboratoryChw as completePrenatalLaboratoryChw,
   completeHealthEducation as completePrenatalHealthEducation,
@@ -796,7 +796,7 @@ test.describe('Admin Reports', () => {
       // Open the LAB RESULTS activity on the recurrent encounter page.
       await click(page.locator('.icon-task-laboratory'), page);
       await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
-      await completeLabResultsAsLabTech(page);
+      await completeLabResults(page);
       // Return to recurrent encounter page and complete NextSteps.
       await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
       await click(page.locator('.icon-task-next-steps'), page);

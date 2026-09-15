@@ -3,14 +3,17 @@ module Measurement.Test exposing (all)
 import AssocList as Dict
 import Backend.Measurement.Model
     exposing
-        ( ColorAlertIndication(..)
+        ( BloodSmearResult(..)
+        , ColorAlertIndication(..)
         , CreatinineTestValue
         , HeightInCm(..)
         , LiverFunctionTestValue
+        , MalariaTestValue
         , MuacInCm(..)
         , SkippedForm(..)
         , StuntingLevel(..)
         , TestExecutionNote(..)
+        , TestResult(..)
         , VaccineDose(..)
         , WeightInGrm(..)
         , WeightInKg(..)
@@ -19,7 +22,7 @@ import Backend.Measurement.Model
 import Date exposing (Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyModelChild, emptyNCDAData, emptyNCDAForm)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -34,13 +37,19 @@ import Measurement.Utils
         , getIntervalForVaccine
         , heightFormWithDefault
         , initialVaccinationDateByBirthDate
+        , knownAsPositiveUpdateHIVTest
+        , knownAsPositiveUpdatePartnerHIVTest
         , liverFunctionResultFormWithDefault
+        , malariaResultFormWithDefault
+        , malariaTestFormWithDefault
         , ncdaFormWithDefault
         , ncdaMeasurementsOutOfRange
         , nextVaccinationDataForVaccine
         , outOfRangeAsEntered
         , setNCDAStep
         , showNCDAMeasurementOutOfRange
+        , toMalariaResultValueWithDefault
+        , toMalariaTestValueWithDefault
         )
 import Measurement.View exposing (viewColorAlertIndication)
 import SyncManager.Model exposing (Site(..))
@@ -679,6 +688,257 @@ liverFunctionResultFormWithDefaultTest =
         ]
 
 
+{-| A malaria test the nurse did not run as an RDT, ordering a blood smear at
+the lab instead. The execution note says why the RDT was not run; the pending
+marker says the smear is still owed a result.
+-}
+orderedBloodSmear : MalariaTestValue
+orderedBloodSmear =
+    { executionNote = TestNoteLackOfReagents
+    , executionDate = Just (Date.fromCalendarDate 2024 Time.Jan 1)
+    , testPrerequisites = Just EverySet.empty
+    , testResult = Nothing
+    , bloodSmearResult = BloodSmearPendingInput
+    , bloodSmearOrdered = True
+    }
+
+
+{-| A malaria test the nurse ran as a rapid test and sent to the lab to be
+read. No smear was taken, so the lab is owed a rapid test result.
+-}
+rapidTestAtLab : MalariaTestValue
+rapidTestAtLab =
+    { orderedBloodSmear
+        | executionNote = TestNoteRunToday
+        , bloodSmearResult = BloodSmearNotTaken
+        , bloodSmearOrdered = False
+    }
+
+
+malariaResultFormWithDefaultTest : Test
+malariaResultFormWithDefaultTest =
+    let
+        resolve value =
+            malariaResultFormWithDefault emptyMalariaResultForm (Just value)
+    in
+    describe "malariaResultFormWithDefault"
+        [ test "an ordered blood smear leaves the lab technician's confirmation unanswered" <|
+            \_ ->
+                resolve orderedBloodSmear
+                    |> .runConfirmedByLabTech
+                    |> Expect.equal Nothing
+        , test "an ordered blood smear is a smear, so the smear result is asked for" <|
+            \_ ->
+                resolve orderedBloodSmear
+                    |> .bloodSmearTaken
+                    |> Expect.equal True
+        , test "an ordered blood smear carries no result yet" <|
+            \_ ->
+                resolve orderedBloodSmear
+                    |> .bloodSmearResult
+                    |> Expect.equal Nothing
+        , test "a smear the lab technician cancelled keeps their No" <|
+            \_ ->
+                resolve { orderedBloodSmear | bloodSmearResult = BloodSmearNotTaken }
+                    |> .runConfirmedByLabTech
+                    |> Expect.equal (Just False)
+        , test "a smear the lab technician ran keeps their Yes" <|
+            \_ ->
+                resolve
+                    { orderedBloodSmear
+                        | executionNote = TestNoteRunConfirmedByLabTech
+                        , bloodSmearResult = BloodSmearNegative
+                    }
+                    |> .runConfirmedByLabTech
+                    |> Expect.equal (Just True)
+        ]
+
+
+{-| Whether the form asks about the blood smear or about the rapid test.
+
+The lab declining a test leaves no result and overwrites the execution note
+with the lab technician's own reason, so after a decline a smear and a rapid
+test look the same in both. What tells them apart is whether a smear was
+ordered, which is recorded once by the nurse and kept.
+
+-}
+malariaResultFormBloodSmearTakenTest : Test
+malariaResultFormBloodSmearTakenTest =
+    let
+        resolve value =
+            malariaResultFormWithDefault emptyMalariaResultForm (Just value)
+                |> .bloodSmearTaken
+    in
+    describe "malariaResultFormWithDefault, asking about the right test"
+        [ test "a smear the lab did not run is still a smear" <|
+            \_ ->
+                resolve
+                    { orderedBloodSmear
+                        | executionNote = TestNoteBrokenEquipment
+                        , bloodSmearResult = BloodSmearNotTaken
+                    }
+                    |> Expect.equal True
+        , test "a smear the lab read is a smear" <|
+            \_ ->
+                resolve
+                    { orderedBloodSmear
+                        | executionNote = TestNoteRunConfirmedByLabTech
+                        , bloodSmearResult = BloodSmearNegative
+                    }
+                    |> Expect.equal True
+        , test "a rapid test sent to the lab is not a smear" <|
+            \_ ->
+                resolve rapidTestAtLab
+                    |> Expect.equal False
+        , test "a rapid test the lab did not run is still not a smear" <|
+            \_ ->
+                resolve { rapidTestAtLab | executionNote = TestNoteBrokenEquipment }
+                    |> Expect.equal False
+        , test "a smear ordered before the record said so is still a smear" <|
+            \_ ->
+                resolve { orderedBloodSmear | bloodSmearOrdered = False }
+                    |> Expect.equal True
+        , -- The nurse's own Laboratory form reads the same record, and has to
+          -- reach the same answer, or a save from it writes the order away.
+          test "the nurse's form agrees about a smear ordered before the record said so" <|
+            \_ ->
+                malariaTestFormWithDefault emptyMalariaTestForm
+                    (Just { orderedBloodSmear | bloodSmearOrdered = False })
+                    |> .bloodSmearTaken
+                    |> Expect.equal (Just True)
+        , test "the nurse's form agrees a rapid test sent to the lab is not a smear" <|
+            \_ ->
+                malariaTestFormWithDefault emptyMalariaTestForm (Just rapidTestAtLab)
+                    |> .bloodSmearTaken
+                    |> Expect.equal (Just False)
+        ]
+
+
+{-| What the result select starts on. Neither the pending marker nor "not
+taken" is a result the smear scale offers, so carrying either into the form
+would show its first option, "Negative", as though it had been chosen.
+-}
+malariaResultFormSmearResultTest : Test
+malariaResultFormSmearResultTest =
+    let
+        resolve value =
+            malariaResultFormWithDefault emptyMalariaResultForm (Just value)
+                |> .bloodSmearResult
+    in
+    describe "malariaResultFormWithDefault, the smear result it starts on"
+        [ test "a smear still awaited by the lab is unanswered" <|
+            \_ ->
+                resolve orderedBloodSmear
+                    |> Expect.equal Nothing
+        , test "a smear the lab did not run is unanswered" <|
+            \_ ->
+                resolve
+                    { orderedBloodSmear
+                        | executionNote = TestNoteBrokenEquipment
+                        , bloodSmearResult = BloodSmearNotTaken
+                    }
+                    |> Expect.equal Nothing
+        , test "a smear the lab read shows what they read" <|
+            \_ ->
+                resolve
+                    { orderedBloodSmear
+                        | executionNote = TestNoteRunConfirmedByLabTech
+                        , bloodSmearResult = BloodSmearPlus
+                    }
+                    |> Expect.equal (Just BloodSmearPlus)
+        ]
+
+
+{-| A rapid test result on a record that ordered a smear is one nobody entered
+for it, and it is read back as a rapid test that was run. Saving the smear
+clears it.
+-}
+toMalariaResultValueTestResultTest : Test
+toMalariaResultValueTestResultTest =
+    let
+        saveWithResult saved =
+            toMalariaResultValueWithDefault (Just saved)
+                { emptyMalariaResultForm
+                    | runConfirmedByLabTech = Just True
+                    , executionNote = Just TestNoteRunConfirmedByLabTech
+                    , executionNoteDirty = True
+                    , testResult = Just TestPositive
+                    , testResultDirty = True
+                }
+                |> Maybe.map .testResult
+    in
+    describe "toMalariaResultValue, the rapid test result it keeps"
+        [ test "saving a smear keeps no rapid test result" <|
+            \_ ->
+                saveWithResult orderedBloodSmear
+                    |> Expect.equal (Just Nothing)
+        , test "saving a rapid test sent to the lab keeps its result" <|
+            \_ ->
+                saveWithResult rapidTestAtLab
+                    |> Expect.equal (Just (Just TestPositive))
+        ]
+
+
+{-| The record keeps saying what was ordered through everything the lab does
+with it - a decline included - so that reopening it asks about the same test.
+-}
+bloodSmearOrderedTest : Test
+bloodSmearOrderedTest =
+    let
+        declined saved =
+            toMalariaResultValueWithDefault (Just saved)
+                { emptyMalariaResultForm
+                    | runConfirmedByLabTech = Just False
+                    , executionNote = Just TestNoteBrokenEquipment
+                    , executionNoteDirty = True
+                }
+                |> Maybe.map .bloodSmearOrdered
+
+        ordered bloodSmearTaken =
+            toMalariaTestValueWithDefault Nothing
+                { emptyMalariaTestForm
+                    | testPerformed = Just False
+                    , executionNote = Just TestNoteLackOfReagents
+                    , bloodSmearTaken = Just bloodSmearTaken
+                    , immediateResult = Just False
+                }
+                |> Maybe.map .bloodSmearOrdered
+    in
+    describe "bloodSmearOrdered"
+        [ test "the nurse ordering a smear records it" <|
+            \_ ->
+                ordered True
+                    |> Expect.equal (Just True)
+        , test "the nurse declining the rapid test without a smear records none" <|
+            \_ ->
+                ordered False
+                    |> Expect.equal (Just False)
+        , test "the lab declining an ordered smear keeps it ordered" <|
+            \_ ->
+                declined orderedBloodSmear
+                    |> Expect.equal (Just True)
+        , -- The lab confirming the run makes the nurse's form read the rapid
+          -- test as performed again; a save from it must not drop the order.
+          test "a nurse re-save after the lab read the smear keeps it ordered" <|
+            \_ ->
+                toMalariaTestValueWithDefault
+                    (Just
+                        { orderedBloodSmear
+                            | executionNote = TestNoteRunConfirmedByLabTech
+                            , bloodSmearResult = BloodSmearNegative
+                        }
+                    )
+                    emptyMalariaTestForm
+                    |> Maybe.map .bloodSmearOrdered
+                    |> Expect.equal (Just True)
+        , test "the lab declining a rapid test does not invent an order" <|
+            \_ ->
+                declined
+                    rapidTestAtLab
+                    |> Expect.equal (Just False)
+        ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
@@ -701,6 +961,12 @@ all =
         , heightFormWithDefaultSkippedTest
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
+        , malariaResultFormWithDefaultTest
+        , malariaResultFormBloodSmearTakenTest
+        , malariaResultFormSmearResultTest
+        , toMalariaResultValueTestResultTest
+        , bloodSmearOrderedTest
+        , knownAsPositiveUpdateTest
         ]
 
 
@@ -907,4 +1173,124 @@ ncdaFormWithDefaultNotTakenTest =
                 hydrate { emptyForm | weight = Just (WeightInKg 13) }
                     |> .weight
                     |> Expect.equal (Just (WeightInKg 13))
+        ]
+
+
+{-| The questions that follow a test result are only asked while the answer to
+"known as positive" is No: the patient's own result and the questions under it
+on the HIV test, and the result and ARV questions on the partner's test. Saying
+Yes withdraws them, so what they hold is cleared, and cleared as dirty, rather
+than read back from the saved value as a result the patient never had.
+
+An answer that repeats what the form already shows is not a correction, and a
+bool input fires on every tap, so it has to leave the entry alone.
+
+-}
+knownAsPositiveUpdateTest : Test
+knownAsPositiveUpdateTest =
+    let
+        answeredHIVTest =
+            { emptyHIVTestUniversalForm
+                | knownAsPositive = Just False
+                , testPerformed = Just True
+                , immediateResult = Just True
+                , executionNote = Just TestNoteRunToday
+                , testResult = Just TestNegative
+                , hivProgramHC = Just False
+                , partnerHIVPositive = Just True
+                , partnerTakingARV = Just False
+                , partnerSurpressedViralLoad = Just False
+            }
+
+        knownPositiveHIVTest =
+            { emptyHIVTestUniversalForm
+                | knownAsPositive = Just True
+                , executionNote = Just TestNoteKnownAsPositive
+            }
+
+        answeredPartnerHIVTest =
+            { emptyPartnerHIVTestForm
+                | knownAsPositive = Just False
+                , testPerformed = Just True
+                , executionNote = Just TestNoteRunToday
+                , testResult = Just TestPositive
+                , partnerTakingARV = Just True
+                , partnerSurpressedViralLoad = Just True
+            }
+    in
+    describe "known as positive withdraws the answers that depend on the test"
+        [ test "HIV test: the result and every partner question are cleared" <|
+            \_ ->
+                let
+                    updated =
+                        knownAsPositiveUpdateHIVTest True answeredHIVTest
+                in
+                ( updated.testResult
+                , [ updated.hivProgramHC
+                  , updated.partnerHIVPositive
+                  , updated.partnerTakingARV
+                  , updated.partnerSurpressedViralLoad
+                  ]
+                )
+                    |> Expect.equal ( Nothing, [ Nothing, Nothing, Nothing, Nothing ] )
+        , test "HIV test: every cleared field is marked dirty, so the saved value is not read back over it" <|
+            \_ ->
+                let
+                    updated =
+                        knownAsPositiveUpdateHIVTest True answeredHIVTest
+                in
+                [ updated.testResultDirty
+                , updated.hivProgramHCDirty
+                , updated.partnerHIVPositiveDirty
+                , updated.partnerTakingARVDirty
+                , updated.partnerSurpressedViralLoadDirty
+                ]
+                    |> Expect.equal [ True, True, True, True, True ]
+        , test "HIV test: the execution note records that the patient is known as positive" <|
+            \_ ->
+                let
+                    updated =
+                        knownAsPositiveUpdateHIVTest True answeredHIVTest
+                in
+                ( updated.knownAsPositive, updated.executionNote, updated.testPerformed )
+                    |> Expect.equal ( Just True, Just TestNoteKnownAsPositive, Nothing )
+        , test "HIV test: correcting back to No leaves nothing claiming a test was run" <|
+            \_ ->
+                let
+                    updated =
+                        knownAsPositiveUpdateHIVTest False knownPositiveHIVTest
+                in
+                ( updated.knownAsPositive, updated.executionNote, updated.testPerformed )
+                    |> Expect.equal ( Just False, Nothing, Nothing )
+        , test "HIV test: re-tapping the No already chosen leaves the entry untouched" <|
+            \_ ->
+                knownAsPositiveUpdateHIVTest False answeredHIVTest
+                    |> Expect.equal answeredHIVTest
+        , test "HIV test: re-tapping the Yes already chosen leaves the entry untouched" <|
+            \_ ->
+                knownAsPositiveUpdateHIVTest True knownPositiveHIVTest
+                    |> Expect.equal knownPositiveHIVTest
+        , test "partner HIV test: the result and the ARV questions are cleared" <|
+            \_ ->
+                let
+                    updated =
+                        knownAsPositiveUpdatePartnerHIVTest True answeredPartnerHIVTest
+                in
+                ( updated.testResult, updated.partnerTakingARV, updated.partnerSurpressedViralLoad )
+                    |> Expect.equal ( Nothing, Nothing, Nothing )
+        , test "partner HIV test: every cleared field is marked dirty" <|
+            \_ ->
+                let
+                    updated =
+                        knownAsPositiveUpdatePartnerHIVTest True answeredPartnerHIVTest
+                in
+                [ updated.testResultDirty
+                , updated.partnerTakingARVDirty
+                , updated.partnerSurpressedViralLoadDirty
+                ]
+                    |> Expect.equal [ True, True, True ]
+        , test "partner HIV test: re-tapping the No already chosen leaves the entry untouched" <|
+            \_ ->
+                knownAsPositiveUpdatePartnerHIVTest False answeredPartnerHIVTest
+                    |> Expect.equal answeredPartnerHIVTest
         ]

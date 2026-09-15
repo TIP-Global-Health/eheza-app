@@ -1,5 +1,6 @@
 module SyncManager.Test exposing (all)
 
+import AssocList as Dict
 import Device.Model exposing (Device)
 import EverySet
 import Expect
@@ -7,9 +8,11 @@ import Http
 import Json.Encode
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData
+import SyncManager.Encoder
 import SyncManager.Model
     exposing
-        ( BackendGeneralEntity
+        ( BackendAuthorityEntity(..)
+        , BackendGeneralEntity
         , DownloadPhotosStatus(..)
         , DownloadSyncResponse
         , Flags
@@ -20,11 +23,13 @@ import SyncManager.Model
         , SyncCycle(..)
         , SyncInfoStatus(..)
         , SyncStatus(..)
+        , UploadMethod(..)
         , emptyModel
         )
 import SyncManager.Update
 import SyncManager.Utils exposing (determineDownloadPhotosStatus, pageAllowsBackgroundRefresh)
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (testPerson)
 import Time
 
 
@@ -74,6 +79,40 @@ emptyGeneralResponse =
     , site = SiteUnknown
     , features = EverySet.empty
     }
+
+
+{-| An edit of a person who already has a photo, waiting to be uploaded. The
+photo rows are the ones the service worker made for photos taken here.
+-}
+encodedPersonEdit : List ( Int, String ) -> String
+encodedPersonEdit uploadedPhotos =
+    { entities =
+        [ ( BackendAuthorityPerson
+                { uuid = "person-uuid"
+                , revision = 7
+                , entity = { testPerson | avatarUrl = Just "https://example.com/sites/default/files/styles/patient-photo/public/photo.jpg" }
+                }
+          , UploadMethodUpdate
+          )
+        ]
+    , remaining = 0
+    , uploadPhotos =
+        List.indexedMap
+            (\index ( localId, url ) ->
+                ( localId
+                , { uuid = "photo-uuid-" ++ String.fromInt index
+                  , photo = url
+                  , localId = localId
+                  , fileId = Just (100 + index)
+                  }
+                )
+            )
+            uploadedPhotos
+            |> Dict.fromList
+    }
+        |> SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord 1
+        |> Json.Encode.object
+        |> Json.Encode.encode 0
 
 
 all : Test
@@ -322,5 +361,18 @@ all =
         , test "background refresh is allowed on the device page" <|
             \() ->
                 pageAllowsBackgroundRefresh DevicePage
+                    |> Expect.equal True
+        , -- A photo that came down from the backend has no upload row, so
+          -- there is no file ID to send. The key is left out, which leaves
+          -- the stored photo alone; sending null would delete it.
+          test "an edit that did not re-take the photo sends no photo key" <|
+            \() ->
+                encodedPersonEdit []
+                    |> String.contains "photo"
+                    |> Expect.equal False
+        , test "an edit that did re-take the photo sends its file ID" <|
+            \() ->
+                encodedPersonEdit [ ( 7, "/cache-upload/images/photo.jpg" ) ]
+                    |> String.contains "\"photo\":100"
                     |> Expect.equal True
         ]

@@ -1,11 +1,25 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { click, setupDevice } from './helpers/auth';
 import { getClientPort } from './helpers/client-port';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { WAIT, syncAndWait } from './helpers/common';
+import {
+  WAIT,
+  clickSubTaskTab,
+  expectActivityInTab,
+  openActivity,
+  openEncounterTab,
+  syncAndWait,
+  queryPrenatalDiagnoses,
+  queryPartnerHIVTestExecutionNote,
+  queryMalariaTest,
+  answerYesNo,
+} from './helpers/common';
+import { openReport } from './helpers/progress-report';
 import {
   createAdultFemaleAndStartEncounter,
+  navigateToParticipantPage,
+  startPrenatalEncounter,
   completePregnancyDating,
   completeHistory,
   completeExamination,
@@ -20,9 +34,30 @@ import {
   completeNextSteps,
   endPrenatalEncounter,
   navigateToCaseManagement,
-  completeLabResultsAsLabTech,
+  openLabsResultsReviewFromCaseManagement,
+  acceptLabsResults,
+  completeLabResults,
+  completeRecurrentNextSteps,
+  dismissWarningPopup,
   queryPrenatalNodes,
 } from './helpers/prenatal';
+
+/**
+ * Sign the current user out and hand the device to another one. Clearing the
+ * origin's storage drops the IndexedDB the previous role built up, so nothing
+ * it created locally leaks into the next session.
+ */
+async function switchUser(page: Page, pinCode: string) {
+  const client = await page.context().newCDPSession(page);
+  await client.send('Storage.clearDataForOrigin', {
+    origin: `http://localhost:${getClientPort()}`,
+    storageTypes: 'all',
+  });
+  await client.detach();
+
+  resetDevice();
+  await setupDevice(page, pinCode, 'Nyange Health Center');
+}
 
 test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
   if (process.env.RECORD) {
@@ -31,9 +66,10 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     });
   }
 
-  test('nurse orders labs, lab tech enters results', async ({ page }) => {
-    // Multi-role test: full nurse encounter + lab tech encounter — needs extra time.
-    test.setTimeout(600000);
+  test('nurse orders labs, lab tech enters results, nurse answers the follow ups', async ({ page }) => {
+    // Multi-role test: nurse encounter, lab tech results, nurse follow ups —
+    // needs extra time.
+    test.setTimeout(900000);
     const lmpDate = new Date();
     lmpDate.setDate(lmpDate.getDate() - 30 * 7);
 
@@ -56,8 +92,18 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await completeMentalHealth(page);
     await completeImmunisation(page);
     await completeMedication(page);
-    // Order labs for lab processing (not point-of-care).
-    await completeLaboratoryNurseForLab(page);
+    // Order labs for lab processing (not point-of-care), except the patient's
+    // own HIV test, which is run point of care and is negative. That mix is
+    // what leaves the partner's result to arrive at the recurrent phase, with
+    // the patient's own result already known.
+    // The malaria test is ordered the other way round: no rapid test, a reason
+    // given for that, and a blood smear sent to the lab instead. It is the one
+    // order that reaches the lab technician carrying a reason a test was not
+    // performed - which is the nurse's reason, about a different test.
+    await completeLaboratoryNurseForLab(page, {
+      hivPointOfCareNegative: true,
+      bloodSmearAtLab: true,
+    });
     // NextSteps: the "Wait" sub-task should appear because labs were ordered for lab.
     const completedSteps = await completeNextSteps(page);
     expect(completedSteps, 'completedSteps should contain wait sub-task').toContain('wait');
@@ -66,17 +112,7 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await syncAndWait(page);
 
     // --- Phase 2: Lab Tech logs in and enters results via Case Management ---
-    // Clear all browser state (including IndexedDB) to ensure the nurse's
-    // locally-created nodes don't leak into the lab tech session.
-    const client = await page.context().newCDPSession(page);
-    await client.send('Storage.clearDataForOrigin', {
-      origin: `http://localhost:${getClientPort()}`,
-      storageTypes: 'all',
-    });
-    await client.detach();
-
-    resetDevice();
-    await setupDevice(page, '3333', 'Nyange Health Center');
+    await switchUser(page, '3333');
 
     // Verify Lab Tech sees restricted menu (Case Management + Device Status only).
     await page.locator('.icon-task-case-management').waitFor({ timeout: 10000 });
@@ -107,10 +143,92 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
     await page.waitForTimeout(WAIT.elmRerender);
 
-    // Complete lab results for all visible tests.
+    // The blood smear the nurse ordered is a test nobody has answered for yet.
+    // Read it before anything else fills the form in: the reason the nurse
+    // gave for not running the rapid test must not be showing here as the lab
+    // technician's own answer.
+    const malariaTab = page.locator('.link-section', { hasText: /^\s*Malaria\s*$/ });
+    await malariaTab.waitFor({ timeout: 10000 });
+    await click(malariaTab, page);
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    await expect(
+      page.locator('.form-input.yes-no.test-performed'),
+      'the lab technician should be asked whether the test is performed today',
+    ).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.locator('.form-input.yes-no.test-performed input.checked'),
+      'the lab technician should be asked, not answered for',
+    ).toHaveCount(0);
+    await expect(
+      page.locator('.why-not'),
+      'no reason for not performing the test should be offered before the question is answered',
+    ).toHaveCount(0);
+
+    // Decline the smear, then correct that answer. The decline leaves no
+    // result and overwrites the reason the nurse gave, so nothing but the
+    // record of what was ordered can tell this from a rapid test - and the
+    // corrected answer has to go on asking about the smear.
+    const malariaForm = page.locator('.ui.form.laboratory.prenatal-test-result');
+    // Only the enabled Save carries the class; a form the app considers
+    // incomplete leaves a button that is still visible and still clickable,
+    // and clicking it does nothing.
+    const saveMalariaTab = async () => {
+      await click(
+        page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' }),
+        page,
+      );
+      await page.waitForTimeout(WAIT.pageNavigation);
+    };
+    await answerYesNo(page, 'test-performed', 'No');
+    await page.waitForTimeout(WAIT.elmRerender);
+    await click(page.locator('.why-not .ui.checkbox label').first(), page);
+    await page.waitForTimeout(WAIT.formInteraction);
+    await saveMalariaTab();
+
+    await click(malariaTab, page);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await answerYesNo(page, 'test-performed', 'Yes');
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    // Both sides asserted. The two result fields are told apart by their
+    // label and by the scale they offer, and asking only whether the wrong
+    // one is absent would pass on a form showing neither.
+    await expect(
+      malariaForm,
+      'the corrected answer should be asked for the blood smear result',
+    ).toContainText('Malaria Blood Smear Result');
+    await expect(
+      malariaForm,
+      'the corrected answer should NOT be asked for a rapid test result',
+    ).not.toContainText('Malaria Test Result');
+
+    // The leading empty option is kept in the comparison on purpose: it is
+    // what an unanswered select renders, and its absence is what a value the
+    // scale does not list looks like - the browser then shows the first real
+    // option as though it were chosen.
+    const smearSelect = malariaForm.locator('select.form-input');
+    const smearOptions = await smearSelect.locator('option').allTextContents();
+    expect(
+      smearOptions.map(o => o.trim()),
+      'the options offered should be an unanswered blood smear scale',
+    ).toEqual(['', 'Negative', '+', '++', '+++']);
+    expect(
+      await smearSelect.inputValue(),
+      'no smear result should be chosen before the lab technician chooses one',
+    ).toBe('');
+
+    // Record the smear result the corrected answer asked for, so the encounter
+    // carries a read smear rather than one the lab never ran.
+    await smearSelect.selectOption({ label: 'Negative' });
+    await page.waitForTimeout(WAIT.formInteraction);
+    await saveMalariaTab();
+
+    // Complete lab results for all visible tests. The malaria tab is already
+    // completed by the round trip above, so the helper skips it.
     // The blood glucose field is asked for a reading in the wrong unit on
     // the way, and has to refuse it (#2123).
-    const completedResults = await completeLabResultsAsLabTech(page, {
+    const completedResults = await completeLabResults(page, {
       checkGlucoseRange: true,
     });
     expect(completedResults.length, 'at least one lab result should have been completed').toBeGreaterThan(0);
@@ -134,12 +252,364 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
       await page.waitForTimeout(WAIT.sectionTransition);
     }
 
-    // --- Phase 3: Sync and verify backend ---
+    // --- Phase 3: sync and verify the backend ---
     await syncAndWait(page);
 
     // Verify lab test measurement nodes exist in backend.
     const expectedTypes = ['prenatal_labs_results'];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
     expect(nodes['prenatal_labs_results'], 'prenatal_labs_results should exist').toBe(true);
+
+    // The confirmed-run note is written by the lab technician's own save, so
+    // it is the signal that their data arrived. The assertion below expects an
+    // absence, and without this anchor a lagging sync would satisfy it.
+    expect(
+      queryPartnerHIVTestExecutionNote(fullName),
+      'partner HIV test should carry the lab technician confirmed-run note',
+    ).toBe('run-confirmed-by-lab-tech');
+
+    // The smear was ordered at the lab, so the lab technician's answers are
+    // what closes it: the run they confirmed, and the result they read.
+    const malariaTest = queryMalariaTest(fullName);
+    expect(malariaTest, 'malaria test should be readable').not.toBeNull();
+    expect(
+      malariaTest?.bloodSmearResult,
+      'the blood smear should carry the result the lab technician read',
+    ).toBe('negative');
+    expect(
+      malariaTest?.note,
+      'the malaria test should carry the lab technician confirmed-run note',
+    ).toBe('run-confirmed-by-lab-tech');
+    expect(
+      malariaTest?.testResult,
+      'no rapid test was run, so the record should hold no rapid test result',
+    ).toBeNull();
+    expect(
+      malariaTest?.bloodSmearOrdered,
+      'the record should still say a blood smear was ordered',
+    ).toBe(true);
+
+    // A lab technician can not answer the follow up questions about the
+    // partner, so nothing is diagnosed yet - whether the partner is on ARVs
+    // with a surpressed viral load decides it, and no one has been asked.
+    const diagnosesBeforeFollowUps = queryPrenatalDiagnoses(fullName, { allowEmpty: true });
+    expect(diagnosesBeforeFollowUps, 'encounter diagnoses should be readable').not.toBeNull();
+    expect(
+      diagnosesBeforeFollowUps,
+      'discordant partnership should NOT be recorded before the follow ups are answered',
+    ).not.toContain('partner-hiv-recurrent');
+
+    // --- Phase 4: the nurse answers the follow ups the lab tech left ---
+    await switchUser(page, '1234');
+    await navigateToCaseManagement(page);
+
+    // Every result is in, so the entry opens the report for the nurse to
+    // review. The report states what the partner's ARV status is, and it has
+    // nothing to state until the nurse answers the follow ups.
+    const reportBeforeFollowUps = await openLabsResultsReviewFromCaseManagement(page, fullName);
+    await expect(
+      reportBeforeFollowUps.locator('.medical-diagnosis li', { hasText: 'Discordant Couple' }),
+      'discordant couple status should not be stated before the follow ups are answered',
+    ).toHaveCount(0);
+
+    // The smear the lab technician read belongs in the lab results, and it is
+    // the only malaria result there: no rapid test was run. The names are
+    // matched exactly, because "Malaria Blood Smear" contains "Malaria".
+    await expect(
+      reportBeforeFollowUps.locator('.entry:has(.name:text-is("Malaria Blood Smear")) .result'),
+      'the blood smear should be listed with the result the lab technician read',
+    ).toHaveText('Negative');
+    await expect(
+      reportBeforeFollowUps.locator('.entry:has(.name:text-is("Malaria"))'),
+      'a blood smear should not be listed as a rapid test',
+    ).toHaveCount(0);
+
+    // Accepting the results is what opens the encounter the follow ups are on.
+    await acceptLabsResults(page);
+
+    await click(page.locator('.icon-task-laboratory-follow-ups'), page);
+    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    // Answers "Is partner taking ARVs?" with No - a positive partner who is
+    // not on ARVs is the discordant-partnership condition.
+    const completedFollowUps = await completeLabResults(page);
+    expect(completedFollowUps.length, 'at least one follow up should have been completed').toBeGreaterThan(0);
+    await page.waitForTimeout(WAIT.pageNavigation);
+
+    // Answering the last recurrent activity opens the progress report itself,
+    // and the partner's status is stated on it now that it is known.
+    const reportAfterFollowUps = await openReport(page, 'prenatal');
+    await expect(
+      reportAfterFollowUps.locator('.medical-diagnosis li', { hasText: 'Discordant Couple' }),
+      'discordant couple status should state that the partner is not taking ARVs',
+    ).toHaveText(/Discordant Couple: Partner NOT taking ARVs/);
+
+    // --- Phase 5: sync and read the diagnoses off the encounter ---
+    await syncAndWait(page);
+
+    const diagnoses = queryPrenatalDiagnoses(fullName);
+    expect(diagnoses, 'encounter diagnoses should be readable').not.toBeNull();
+    // The partner's result arrived at the recurrent phase, so the diagnosis
+    // belongs to that phase - that is the variant the recurrent Next Steps
+    // prescribes PrEP for.
+    expect(diagnoses, 'discordant partnership should be recorded for the recurrent phase').toContain('partner-hiv-recurrent');
+    expect(diagnoses, 'discordant partnership should NOT be recorded for the initial phase').not.toContain('partner-hiv');
+  });
+
+
+  test('nurse orders a blood smear at the lab, the lab reads it positive, and malaria is diagnosed', async ({ page }) => {
+    // Two roles and a sync between each; the long pole is the nurse's
+    // registration, so only the malaria test is ordered.
+    test.setTimeout(600000);
+    const lmpDate = new Date();
+    lmpDate.setDate(lmpDate.getDate() - 30 * 7);
+
+    // --- The nurse orders a smear at the lab, and nothing else ---
+    resetDevice();
+    await setupDevice(page, '1234', 'Nyange Health Center');
+
+    const { fullName } = await createAdultFemaleAndStartEncounter(page, {
+      isChw: false,
+      encounterType: 'first',
+    });
+    await completePregnancyDating(page, lmpDate);
+    // The encounter is assessed for diagnoses only once Danger Signs is
+    // answered (`mandatoryActivitiesForAssessmentCompleted`), so a smear read
+    // at the lab diagnoses nothing without it.
+    await completeDangerSigns(page);
+
+    // No rapid test, a reason given for that, a blood smear taken instead and
+    // sent to the lab to be read.
+    const ordered = await completeLaboratoryNurseForLab(page, {
+      bloodSmearAtLab: true,
+      onlyTabs: ['Malaria'],
+    });
+    expect(ordered, 'the malaria test should have been ordered').toContain('Malaria');
+    await syncAndWait(page);
+
+    // --- The lab reads the smear, and reads it positive ---
+    await switchUser(page, '3333');
+    await navigateToCaseManagement(page);
+
+    const entry = page.locator('.follow-up-entry', {
+      has: page.locator('.name', { hasText: fullName }),
+    });
+    await entry.waitFor({ timeout: 15000 });
+    await click(entry.locator('.icon-forward'), page);
+    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    const malariaTab = page.locator('.link-section', { hasText: /^\s*Malaria\s*$/ });
+    await malariaTab.waitFor({ timeout: 10000 });
+    await click(malariaTab, page);
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    await answerYesNo(page, 'test-performed', 'Yes');
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    const malariaForm = page.locator('.ui.form.laboratory.prenatal-test-result');
+    const smearSelect = malariaForm.locator('select.form-input');
+    await smearSelect.selectOption({ label: '+' });
+    await page.waitForTimeout(WAIT.formInteraction);
+    await click(
+      page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' }),
+      page,
+    );
+    await page.waitForTimeout(WAIT.pageNavigation);
+    await syncAndWait(page);
+
+    // What the smear is worth is the whole point of ordering one: a positive
+    // reading is a malaria diagnosis, and it is the recurrent variant because
+    // a result read at the lab is never an immediate one.
+    const malariaTest = queryMalariaTest(fullName);
+    expect(malariaTest?.bloodSmearResult, 'the smear should carry the reading').toBe('+');
+    expect(
+      malariaTest?.testResult,
+      'no rapid test was run, so the record should hold no rapid test result',
+    ).toBeNull();
+
+    const diagnoses = queryPrenatalDiagnoses(fullName);
+    expect(diagnoses, 'encounter diagnoses should be readable').not.toBeNull();
+    expect(
+      diagnoses,
+      'a positive blood smear should diagnose malaria for the recurrent phase',
+    ).toContain('malaria-recurrent');
+
+    // --- The nurse reopens the order the lab has now answered ---
+    await switchUser(page, '1234');
+    await navigateToParticipantPage(page, fullName);
+    // With an encounter already open, this button returns to it rather than
+    // starting another - the Subsequent one is disabled while it is.
+    await startPrenatalEncounter(page, 'first');
+    await openActivity(page, 'prenatal', 'laboratory');
+    await page.waitForTimeout(WAIT.elmRerender);
+    await click(malariaTab, page);
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    // The lab confirming the run makes the rapid test read as performed
+    // again, so this form asks about the rapid test rather than the smear.
+    // Saving it must not take that as "no smear was ordered": what the lab
+    // read has to survive a nurse re-opening the order it came from.
+    await expect(
+      page.locator('.form-input.yes-no.test-performed input.checked'),
+      'the rapid test should read as performed, since the lab confirmed the run',
+    ).toHaveCount(1);
+    await click(
+      page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' }),
+      page,
+    );
+    await page.waitForTimeout(WAIT.pageNavigation);
+    await syncAndWait(page);
+
+    const afterNurseSave = queryMalariaTest(fullName);
+    expect(
+      afterNurseSave?.bloodSmearOrdered,
+      'a nurse re-save should leave the blood smear order standing',
+    ).toBe(true);
+    expect(
+      afterNurseSave?.bloodSmearResult,
+      'a nurse re-save should leave the reading the lab entered',
+    ).toBe('+');
+  });
+
+});
+
+
+// =========================================================================
+// A later diagnosis reopens a Next Steps task that was already saved
+// =========================================================================
+
+// Scenario: the lab technician enters the results and leaves the follow up
+// questions for the nurse. Nothing about the partner is known until the nurse
+// answers them, so the encounter carries no diagnosis that needs a medication
+// yet - but a low hemoglobin count does put Next Steps on the encounter.
+// The nurse saves Next Steps first, and answers the follow ups after.
+// Conditions: hemoglobin 9 g/dL -> moderate anemia at the recurrent phase,
+// which offers Next Steps while requiring no medication. Partner positive and
+// not on ARVs -> a discordant partnership, which requires TDF + 3TC.
+// Verifies: the saved task returns to the encounter's pending activities once
+// the medication becomes required, and offers the medication.
+
+test.describe('Lab Tech and Nurse: a saved Next Steps task reopened by a later diagnosis', () => {
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '1234', 'Nyange Health Center');
+  });
+
+  test('a medication required after the task was saved brings the task back', async ({
+    page,
+  }) => {
+    test.setTimeout(600000);
+    const lmpDate = new Date();
+    lmpDate.setDate(lmpDate.getDate() - 30 * 7);
+
+    // --- Phase 1: the nurse runs the initial encounter, labs go to the lab ---
+    const { fullName } = await createAdultFemaleAndStartEncounter(page, {
+      isChw: false,
+      encounterType: 'first',
+    });
+
+    await completePregnancyDating(page, lmpDate);
+    await completeHistory(page);
+    await completeExamination(page);
+    await completeFamilyPlanning(page);
+    await completeDangerSigns(page);
+    await completeSymptomReview(page);
+    await completeMalariaPrevention(page);
+    await completeMentalHealth(page);
+    await completeImmunisation(page);
+    await completeMedication(page);
+    // Her own test is run point of care and is negative, so the partner's
+    // result is the one that arrives at the recurrent phase.
+    await completeLaboratoryNurseForLab(page, { hivPointOfCareNegative: true });
+    const completedSteps = await completeNextSteps(page);
+    expect(completedSteps, 'completedSteps should contain wait sub-task').toContain('wait');
+    await syncAndWait(page);
+
+    // --- Phase 2: the lab technician enters the results ---
+    await switchUser(page, '3333');
+    await navigateToCaseManagement(page);
+
+    const entry = page.locator('.follow-up-entry', {
+      has: page.locator('.name', { hasText: fullName }),
+    });
+    await entry.waitFor({ timeout: 15000 });
+    await click(entry.locator('.icon-forward'), page);
+    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    // 9 g/dL is moderate anemia (7 <= count < 11). It puts Next Steps on the
+    // encounter without putting any medication on it.
+    // Only moderate anemia is left to diagnose, and it needs no medication.
+    // Malaria masks anemia, Hepatitis B adds a referral of its own, and
+    // Syphilis carries a treatment of its own that would keep Next Steps
+    // pending whatever the medication rule says.
+    const completedResults = await completeLabResults(page, {
+      hemoglobinCount: '9',
+      negativeResultTests: ['Malaria', 'Hepatitis B', 'Syphilis'],
+    });
+    expect(completedResults.length, 'at least one lab result should have been completed').toBeGreaterThan(0);
+    await page.waitForTimeout(WAIT.pageNavigation);
+    await syncAndWait(page);
+
+    // --- Phase 3: the nurse saves Next Steps before answering the follow ups ---
+    await switchUser(page, '1234');
+    await navigateToCaseManagement(page);
+    await openLabsResultsReviewFromCaseManagement(page, fullName);
+    await acceptLabsResults(page);
+
+    const savedTasks = await completeRecurrentNextSteps(page);
+    expect(savedTasks.length, 'at least one Next Steps task should have been saved').toBeGreaterThan(0);
+
+    // Saved with nothing to hand over, the task counts as done.
+    await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
+    await expectActivityInTab(
+      page,
+      'next-steps',
+      'completed',
+      'Next Steps should be listed as completed once it is saved',
+    );
+
+    // --- Phase 4: answering the follow ups makes a medication required ---
+    await openEncounterTab(page, 'pending');
+    await click(page.locator('.icon-task-laboratory-follow-ups'), page);
+    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    // Answers "Is partner taking ARVs?" with No, which is the discordant
+    // partnership condition, and TDF + 3TC is what it prescribes.
+    const completedFollowUps = await completeLabResults(page);
+    expect(completedFollowUps.length, 'at least one follow up should have been completed').toBeGreaterThan(0);
+    await page.waitForTimeout(WAIT.pageNavigation);
+
+    // Answering the last recurrent activity opens the progress report, and
+    // the encounter is over. It is not the last one while a medication the
+    // encounter requires has not been offered.
+    await expect(
+      page.locator('div.page-encounter.prenatal'),
+      'the encounter should not have completed while a required medication was never offered',
+    ).toBeVisible({ timeout: 15000 });
+
+    await expectActivityInTab(
+      page,
+      'next-steps',
+      'pending',
+      'Next Steps should be pending again now that a medication is required',
+    );
+
+    await openActivity(page, 'prenatal', 'next-steps');
+    await dismissWarningPopup(page);
+    await clickSubTaskTab(page, 'next-steps-medication-distribution');
+    await expect(
+      page.locator('div.page-activity.prenatal'),
+      'the medication the new diagnosis requires should be offered',
+    ).toContainText('TDF + 3TC');
   });
 });

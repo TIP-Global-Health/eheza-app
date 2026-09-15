@@ -1,4 +1,4 @@
-module Pages.Dashboard.Model exposing (BeneficiariesTableLabels(..), CardValueSeverity(..), DashboardFilter(..), DashboardSubFilter(..), FamilyPlanningSignsCounter, FeverCause(..), FilterGender(..), FilterPeriod(..), FilterProgramType(..), FilterType(..), MalnorishedNutritionData, ModalState(..), Model, MonthlyChartType(..), Msg(..), StatsCard, allFeverCauses, caseManagementFilters, caseManagementSubFilters, emptyModel, filterGenders, filterPeriodsForStatsPage, maxMonthGap, monthlyChartFilters)
+module Pages.Dashboard.Model exposing (BeneficiariesTableLabels(..), CardValueSeverity(..), DashboardFilter(..), DashboardSubFilter(..), ECDStatus(..), FamilyPlanningSignsCounter, FeverCause(..), FilterGender(..), FilterPeriod(..), FilterProgramType(..), FilterType(..), MalnorishedNutritionData, ModalState(..), Model, MonthlyChartType(..), Msg(..), StatsCard, allFeverCauses, caseManagementFilters, caseManagementSubFilters, emptyModel, filterGenders, filterPeriodsForStatsPage, maxMonthGap, monthlyChartFilters)
 
 import AssocList exposing (Dict)
 import Backend.Dashboard.Model exposing (EducationSessionData, ParticipantStats)
@@ -197,6 +197,18 @@ type alias MalnorishedNutritionData =
     , gender : Gender
     , nutritionStatus : Backend.Dashboard.Model.NutritionStatus
     }
+
+
+{-| A child's standing on the ECD milestones, as shown by the Child Wellness
+donut. The ECD activity is only offered while the child still has milestones
+outstanding, so many encounters carry no ECD verdict at all. Those say nothing
+about the child, and a child is `ECDNotAssessed` only when none of their
+encounters carries a verdict.
+-}
+type ECDStatus
+    = ECDBehind
+    | ECDNotAssessed
+    | ECDOnTrack
 
 
 type FilterType
