@@ -339,7 +339,7 @@ B-338	1	IMPLEMENTED	MED-HIGH	2226	2228	29	Prenatal labs (lab technician): a bloo
 B-339	1	IMPLEMENTED	MED-LOW	2240	2241	30	NCD diagnosis: re-scoring an older encounter after a later one exists reads the LATER encounter's stage (and diabetes/re
 B-340	4	READY	LOW			30	NCD completion report: the server copy of the NCD next-steps and lab rules was not updated for B-288 or B-289 — health e
 B-341	2	READY	MED	2151	2152	30	Release #2128: the person-photo repair script ships but is not in the post-deploy steps — the backend guard stops NEW wi
-B-342	1	READY	MED-LOW			30	Prenatal malaria (mixed fleet): once a new client flags a blood-smear order, an old client that turns the test into a ra
+B-342	1	PARKED	MED-LOW			30	Prenatal malaria (mixed fleet): once a new client flags a blood-smear order, an old client that turns the test into a ra
 B-343	1	IMPLEMENTED	MED	2244	2245	30	Prenatal HIV: a "partner is HIV positive" answer stored on the patient's own HIV test still diagnoses a discordant partn
 B-344	1	READY	MED			30	Prenatal HIV (lab tech): a positive HIV result entered by the lab tech leaves "pending" in the follow-up answers, and `h
 B-345	1	READY	MED			30	Prenatal recurrent Next Steps: health education counts as complete once ANY phase-2 education was saved, so education a 
