@@ -351,15 +351,11 @@ test.describe('Nurse: Acute Illness Initial Encounter — Simple Cold and Cough'
       acuteFindingsRespiratory: [],
     });
 
-    await completePriorTreatment(page);
-
+    // Symptoms and Physical Exam are enough for the diagnosis, and saving
+    // Physical Exam opens Next Steps: Medication Distribution and Follow Up.
     await completeNextSteps(page, {
       hasMedicationDistribution: true,
       hasFollowUp: true,
-      hasSendToHC: false,
-      hasContactTracing: false,
-      hasSymptomsRelief: false,
-      hasHealthEducation: true,
       lemonJuiceOrHoney: 'No',
     });
 
