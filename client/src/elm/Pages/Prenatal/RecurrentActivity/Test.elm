@@ -113,15 +113,6 @@ measurementsWith testsWithFollowUp hivResult partnerHIVResult =
             , testsWithFollowUp = Just (EverySet.fromList testsWithFollowUp)
             }
 
-        hivTestValue : HIVTestValue
-        hivTestValue =
-            { executionNote = TestNoteRunToday
-            , executionDate = Just currentDate
-            , testPrerequisites = Nothing
-            , testResult = hivResult
-            , hivSigns = Nothing
-            }
-
         partnerHIVTestValue : PartnerHIVTestValue
         partnerHIVTestValue =
             { executionNote = TestNoteRunToday
@@ -133,9 +124,28 @@ measurementsWith testsWithFollowUp hivResult partnerHIVResult =
     in
     { emptyPrenatalMeasurements
         | labsResults = TestFixtures.wrapMeasurement currentDate labsResultsValue
-        , hivTest = TestFixtures.wrapMeasurement currentDate hivTestValue
+        , hivTest = TestFixtures.wrapMeasurement currentDate (hivTestValueWith TestNoteRunToday hivResult Nothing)
         , partnerHIVTest = TestFixtures.wrapMeasurement currentDate partnerHIVTestValue
     }
+
+
+hivTestValueWith : TestExecutionNote -> Maybe TestResult -> Maybe (EverySet PrenatalHIVSign) -> HIVTestValue
+hivTestValueWith executionNote testResult hivSigns =
+    { executionNote = executionNote
+    , executionDate = Just currentDate
+    , testPrerequisites = Nothing
+    , testResult = testResult
+    , hivSigns = hivSigns
+    }
+
+
+withDiagnoses : List PrenatalDiagnosis -> AssembledData -> AssembledData
+withDiagnoses diagnoses assembled =
+    let
+        encounter =
+            assembled.encounter
+    in
+    { assembled | encounter = { encounter | diagnoses = EverySet.fromList diagnoses } }
 
 
 {-| An encounter carrying the given diagnoses, and a Medication Distribution
@@ -143,38 +153,26 @@ measurement listing what was handed over and what was marked as not given.
 -}
 assembledWith : List PrenatalDiagnosis -> List MedicationDistributionSign -> List MedicationNonAdministrationSign -> AssembledData
 assembledWith diagnoses distributionSigns nonAdministrationSigns =
-    let
-        assembled =
-            testAssembled
-                { emptyPrenatalMeasurements
-                    | medicationDistribution =
-                        TestFixtures.wrapMeasurement currentDate
-                            { distributionSigns = EverySet.fromList distributionSigns
-                            , nonAdministrationSigns = EverySet.fromList nonAdministrationSigns
-                            , recommendedTreatmentSigns = Nothing
-                            , avoidingGuidanceReason = Nothing
-                            , reinforceTreatmentSigns = Nothing
-                            }
-                }
-
-        encounter =
-            assembled.encounter
-    in
-    { assembled | encounter = { encounter | diagnoses = EverySet.fromList diagnoses } }
+    testAssembled
+        { emptyPrenatalMeasurements
+            | medicationDistribution =
+                TestFixtures.wrapMeasurement currentDate
+                    { distributionSigns = EverySet.fromList distributionSigns
+                    , nonAdministrationSigns = EverySet.fromList nonAdministrationSigns
+                    , recommendedTreatmentSigns = Nothing
+                    , avoidingGuidanceReason = Nothing
+                    , reinforceTreatmentSigns = Nothing
+                    }
+        }
+        |> withDiagnoses diagnoses
 
 
 {-| The same encounter, but the nurse never opened Medication Distribution.
 -}
 assembledWithoutMedicationDistribution : List PrenatalDiagnosis -> AssembledData
 assembledWithoutMedicationDistribution diagnoses =
-    let
-        assembled =
-            testAssembled emptyPrenatalMeasurements
-
-        encounter =
-            assembled.encounter
-    in
-    { assembled | encounter = { encounter | diagnoses = EverySet.fromList diagnoses } }
+    testAssembled emptyPrenatalMeasurements
+        |> withDiagnoses diagnoses
 
 
 completedMedicationDistribution : AssembledData -> Bool
@@ -280,26 +278,13 @@ positive result, carrying the given follow up answers on the HIV test.
 -}
 assembledWithHIVDiagnosedBy : EverySet PrenatalHIVSign -> AssembledData
 assembledWithHIVDiagnosedBy hivSigns =
-    let
-        hivTestValue : HIVTestValue
-        hivTestValue =
-            { executionNote = TestNoteRunConfirmedByLabTech
-            , executionDate = Just currentDate
-            , testPrerequisites = Nothing
-            , testResult = Just TestPositive
-            , hivSigns = Just hivSigns
-            }
-
-        assembled =
-            testAssembled
-                { emptyPrenatalMeasurements
-                    | hivTest = TestFixtures.wrapMeasurement currentDate hivTestValue
-                }
-
-        encounter =
-            assembled.encounter
-    in
-    { assembled | encounter = { encounter | diagnoses = EverySet.singleton DiagnosisHIVRecurrentPhase } }
+    testAssembled
+        { emptyPrenatalMeasurements
+            | hivTest =
+                TestFixtures.wrapMeasurement currentDate
+                    (hivTestValueWith TestNoteRunConfirmedByLabTech (Just TestPositive) (Just hivSigns))
+        }
+        |> withDiagnoses [ DiagnosisHIVRecurrentPhase ]
 
 
 requiredMedications : AssembledData -> List (List MedicationDistributionSign)

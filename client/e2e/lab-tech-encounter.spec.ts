@@ -35,6 +35,7 @@ import {
   endPrenatalEncounter,
   navigateToCaseManagement,
   openLabsResultsReviewFromCaseManagement,
+  openLabResultsEntryFromCaseManagement,
   acceptLabsResults,
   completeLabResults,
   completeRecurrentNextSteps,
@@ -133,15 +134,7 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     ).toBeVisible({ timeout: 5000 });
 
     // Find the patient in the Prenatal Labs pane.
-    const entry = page.locator('.follow-up-entry', {
-      has: page.locator('.name', { hasText: fullName }),
-    });
-    await entry.waitFor({ timeout: 15000 });
-
-    // Click forward icon → navigates directly to LabResults activity page.
-    await click(entry.locator('.icon-forward'), page);
-    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
-    await page.waitForTimeout(WAIT.elmRerender);
+    await openLabResultsEntryFromCaseManagement(page, fullName);
 
     // The blood smear the nurse ordered is a test nobody has answered for yet.
     // Read it before anything else fills the form in: the reason the nurse
@@ -392,13 +385,7 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await switchUser(page, '3333');
     await navigateToCaseManagement(page);
 
-    const entry = page.locator('.follow-up-entry', {
-      has: page.locator('.name', { hasText: fullName }),
-    });
-    await entry.waitFor({ timeout: 15000 });
-    await click(entry.locator('.icon-forward'), page);
-    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
-    await page.waitForTimeout(WAIT.elmRerender);
+    await openLabResultsEntryFromCaseManagement(page, fullName);
 
     const malariaTab = page.locator('.link-section', { hasText: /^\s*Malaria\s*$/ });
     await malariaTab.waitFor({ timeout: 10000 });
@@ -537,13 +524,7 @@ test.describe('Lab Tech and Nurse: a saved Next Steps task reopened by a later d
     await switchUser(page, '3333');
     await navigateToCaseManagement(page);
 
-    const entry = page.locator('.follow-up-entry', {
-      has: page.locator('.name', { hasText: fullName }),
-    });
-    await entry.waitFor({ timeout: 15000 });
-    await click(entry.locator('.icon-forward'), page);
-    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
-    await page.waitForTimeout(WAIT.elmRerender);
+    await openLabResultsEntryFromCaseManagement(page, fullName);
 
     // 9 g/dL is moderate anemia (7 <= count < 11). It puts Next Steps on the
     // encounter without putting any medication on it.
@@ -667,13 +648,7 @@ test.describe('Lab Tech and Nurse: a positive result entered at the lab waits fo
     await switchUser(page, '3333');
     await navigateToCaseManagement(page);
 
-    const entry = page.locator('.follow-up-entry', {
-      has: page.locator('.name', { hasText: fullName }),
-    });
-    await entry.waitFor({ timeout: 15000 });
-    await click(entry.locator('.icon-forward'), page);
-    await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
-    await page.waitForTimeout(WAIT.elmRerender);
+    await openLabResultsEntryFromCaseManagement(page, fullName);
 
     // The patient's own result is the only positive one. The partner's is
     // negative so no discordant partnership adds a medication of its own, and
@@ -702,7 +677,10 @@ test.describe('Lab Tech and Nurse: a positive result entered at the lab waits fo
     ).toHaveCount(0);
 
     // Save what Next Steps does offer, so the encounter can move on to the
-    // follow ups.
+    // follow ups. The helper opens the activity from the encounter page, so
+    // step back to it first.
+    await click(page.locator('.icon-back').first(), page);
+    await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
     const savedTasks = await completeRecurrentNextSteps(page);
     expect(savedTasks.length, 'at least one Next Steps task should have been saved').toBeGreaterThan(0);
     await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
@@ -736,7 +714,7 @@ test.describe('Lab Tech and Nurse: a positive result entered at the lab waits fo
       medicationTab,
       'no medication should be offered when there is an HIV program at the health center',
     ).toHaveCount(0);
-    await clickSubTaskTab(page, 'next-steps-referral');
+    await clickSubTaskTab(page, 'next-steps-send-to-hc');
     await expect(
       page.locator('div.page-activity.prenatal'),
       'the patient should be referred to the ARV services',

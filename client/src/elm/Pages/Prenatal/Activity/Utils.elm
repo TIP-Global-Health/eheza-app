@@ -1024,7 +1024,7 @@ specialityCareSections =
 
 referredToHIVProgramPreviously : AssembledData -> Bool
 referredToHIVProgramPreviously assembled =
-    List.filterMap
+    (List.filterMap
         (\data ->
             if
                 List.any (\diagnosis -> EverySet.member diagnosis data.diagnoses)
@@ -1038,7 +1038,8 @@ referredToHIVProgramPreviously assembled =
         assembled.nursePreviousEncountersData
         |> List.head
         |> Maybe.andThen hivProgramAtHC
-        |> Maybe.withDefault False
+    )
+        == Just True
 
 
 latestMedicationTreatmentForHIV : AssembledData -> Maybe Translate.TranslationId
