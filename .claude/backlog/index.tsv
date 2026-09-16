@@ -192,7 +192,7 @@ B-191	4	READY	LOW			20	Case management: prenatal follow-ups arriving at/after pr
 B-192	3	READY				21	Sync: hard-deleting an individual_participant silently DROPS its encounters from sync — 3 live orphans (one written POST
 B-193	4	READY				21	Data: ~50 orphan measurements referencing hard-deleted sessions/encounters — silent mangle only (tolerated nulls), casca
 B-194	3	IMPLEMENTED		2133	2134	21	Prenatal: EDD-null pregnancies are ACTIVE FOREVER, and years-old open encounters get resurrected for new pregnancies
-B-195	2	READY				21	Individual encounters: the create-button db-lag race mints DUPLICATE participants in ALL NINE flows, and the app can onl
+B-195	2	PARKED				21	Individual encounters: the create-button db-lag race mints DUPLICATE participants in ALL NINE flows, and the app can onl
 B-196	3	READY				21	Prenatal: participant EDD goes STALE when LMP is edited/re-dated — the B-140 dropped-patch mechanism has a live data tra
 B-197	4	READY				21	Prenatal/reports: 591 regular ANC encounters dated AFTER pregnancy conclusion are counted as ANC visits — partly by-desi
 B-198	3	READY				21	Group enrolments SILENTLY LOST in upload: 742 persons have group measurements on the server but NO pmtct_participant any
