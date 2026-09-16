@@ -2162,6 +2162,16 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     in
                     ( newModel, extraMsgs )
 
+                assessPrenatalOnRevision encounterId =
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 processRevisionAndAssessNCD encounterId =
                     let
                         ( newModel, _ ) =
@@ -2984,54 +2994,19 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         )
 
                     [ PrenatalSymptomReviewRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ CorePhysicalExamRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ LastMenstrualPeriodRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ PregnancyTestRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ MedicationRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ VitalsRevision _ data ] ->
                         let
@@ -3320,44 +3295,34 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         )
 
                     [ PrenatalMentalHealthRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ BreastExamRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ PrenatalBreastfeedingRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ PrenatalGUExamRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
+
+                    [ MedicalHistoryRevision _ data ] ->
+                        assessPrenatalOnRevision data.encounterId
+
+                    [ ObstetricalExamRevision _ data ] ->
+                        assessPrenatalOnRevision data.encounterId
+
+                    [ ObstetricHistoryRevision _ data ] ->
+                        assessPrenatalOnRevision data.encounterId
+
+                    [ ObstetricHistoryStep2Revision _ data ] ->
+                        assessPrenatalOnRevision data.encounterId
+
+                    [ PrenatalNutritionRevision _ data ] ->
+                        assessPrenatalOnRevision data.encounterId
+
+                    [ PrenatalUltrasoundRevision _ data ] ->
+                        assessPrenatalOnRevision data.encounterId
 
                     [ WellChildHeightRevision _ data ] ->
                         let
