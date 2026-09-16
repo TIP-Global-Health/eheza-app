@@ -1440,8 +1440,6 @@ type TranslationId
     | PrenatalSymptomQuestion PrenatalSymptomQuestion
     | PrenatalSymptomQuestionsHeader
     | RecommendedTreatmentAllergyInstructions
-    | RecommendedTreatmentBestOptionHelper
-    | RecommendedTreatmentMedicationAndDosageHelper
     | ReferralLabel
     | RememberMakeYourCoworkersYourWorkFamily
     | Resolved
@@ -3167,7 +3165,11 @@ translationSet trans =
             }
 
         ActivitityLabelAchi ->
-            translationSet AhezaActivityHelper
+            { english = "Enter the amount of Aheza distributed below."
+            , kinyarwanda = Just "Uzuza hano ingano ya Aheza utanze."
+            , kirundi = Just "Andika igitigiri c'ivya Aheza watanze aha hepfo."
+            , somali = Nothing
+            }
 
         ActivePage page ->
             translateActivePage page
@@ -4436,7 +4438,11 @@ translationSet trans =
             }
 
         CandidiasisRecommendedTreatmentHelper ->
-            translationSet RecommendedTreatmentMedicationAndDosageHelper
+            { english = "Select the medication and dosage you will administer to the patient"
+            , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
+            , kirundi = Just "Hitamo imiti n'igipimo/ibipimo (idoze) uzotanga k'umugwayi"
+            , somali = Just "Dooro dawada iyo dooska aad u qori doonto bukaanka"
+            }
 
         CannotStartEncounterLabel ->
             { english = "You cannot open a new encounter, as there's already a completed encounter today for"
@@ -4651,7 +4657,7 @@ translationSet trans =
         ChildLabel ->
             { english = "Child"
             , kinyarwanda = Just "Umwana"
-            , kirundi = Just "Child"
+            , kirundi = Nothing
             , somali = Just "Canug"
             }
 
@@ -5673,8 +5679,8 @@ translationSet trans =
         Dashboards ->
             { english = "Dashboards"
             , kinyarwanda = Just "Ikibaho cy’amakuru y’ingenzi"
-            , somali = Just "Daashboodyo"
             , kirundi = Just "Icegeranyo c'ibikorwa"
+            , somali = Just "Daashboodyo"
             }
 
         DateReceived ->
@@ -8032,7 +8038,11 @@ translationSet trans =
             }
 
         HeartburnRecommendedTreatmentHelper ->
-            translationSet RecommendedTreatmentBestOptionHelper
+            { english = "Select the best treatment option for the patient below"
+            , kinyarwanda = Just "Hitamo umuti ukwiye wo guha uyu murwayi"
+            , kirundi = Just "Hitamo uburyo bwiza bwo kuvura umurwayi hepfo"
+            , somali = Just "Dooro dawada ugu fiican ee bukaanka hoos ku xusan"
+            }
 
         HeartMurmur ->
             { english = "Heart Murmur"
@@ -8773,7 +8783,11 @@ translationSet trans =
                 }
 
         HypertensionRecommendedTreatmentHelper ->
-            translationSet RecommendedTreatmentBestOptionHelper
+            { english = "Select the best treatment option for the patient below"
+            , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
+            , kirundi = Just "Hitamo uburyo bwiza bwo kuvura umurwayi hepfo"
+            , somali = Just "Dooro dawada ugu fiican ee bukaanka hoos ku xusan"
+            }
 
         HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia ->
             if forModeratePreeclamsia then
@@ -11746,7 +11760,11 @@ translationSet trans =
             }
 
         MalariaRecommendedTreatmentHelper ->
-            translationSet RecommendedTreatmentBestOptionHelper
+            { english = "Select the best treatment option for the patient below"
+            , kinyarwanda = Just "Hitamo umuti ukwiye ku murwayi"
+            , kirundi = Just "Hitamo uburyo bwiza bwo kuvura umurwayi hepfo"
+            , somali = Just "Dooro dawada ugu fiican ee bukaanka hoos ku xusan"
+            }
 
         MalariaWithAnemia ->
             { english = "Malaria with Anemia"
@@ -12152,7 +12170,11 @@ translationSet trans =
                 }
 
         MastitisRecommendedTreatmentHelper ->
-            translationSet RecommendedTreatmentBestOptionHelper
+            { english = "Select the best treatment option for the patient below"
+            , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
+            , kirundi = Just "Hitamo uburyo bwiza bwo kuvura umurwayi hepfo"
+            , somali = Just "Dooro dawada ugu fiican ee bukaanka hoos ku xusan"
+            }
 
         MeasurementNotTaken ->
             { english = "Unable to take measurements, skip this step"
@@ -19626,20 +19648,6 @@ translationSet trans =
             , somali = Just "Hubi bukaanka inuusan xasaasiyad ku qabin dawada intaan loo qorin"
             }
 
-        RecommendedTreatmentBestOptionHelper ->
-            { english = "Select the best treatment option for the patient below"
-            , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
-            , kirundi = Just "Hitamo uburyo bwiza bwo kuvura umurwayi hepfo"
-            , somali = Just "Dooro dawada ugu fiican ee bukaanka hoos ku xusan"
-            }
-
-        RecommendedTreatmentMedicationAndDosageHelper ->
-            { english = "Select the medication and dosage you will administer to the patient"
-            , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
-            , kirundi = Just "Hitamo imiti n'igipimo/ibipimo (idoze) uzotanga k'umurwayi"
-            , somali = Just "Dooro dawada iyo dooska aad u qori doonto bukaanka"
-            }
-
         ReferralLabel ->
             { english = "Referral"
             , kinyarwanda = Just "Kohereza"
@@ -22214,7 +22222,11 @@ translationSet trans =
             }
 
         ResilienceGuideSection4Bullet2 ->
-            translationSet ResilienceGuideSection3Bullet2
+            { english = "Options include \"Read it,\" \"Favourites,\" and \"Remind me\"."
+            , kinyarwanda = Just "Urasanga harimo \"Bwasomwe,\" \"Ishimire Ubutumwa,\" na \"Unyibutse.\""
+            , kirundi = Nothing
+            , somali = Nothing
+            }
 
         ResilienceGuideSection4Bullet3 ->
             { english = "Click on \"Remind me\" for messages you cannot read immediately."
@@ -26039,7 +26051,11 @@ translationSet trans =
             }
 
         SyphilisRecommendedTreatmentHelper ->
-            translationSet RecommendedTreatmentMedicationAndDosageHelper
+            { english = "Select the medication and dosage you will administer to the patient"
+            , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
+            , kirundi = Just "Hitamo imiti n'igipimo/ibipimo (idoze) uzotanga k'umurwayi"
+            , somali = Just "Dooro dawada iyo dooska aad u qori doonto bukaanka"
+            }
 
         SyphilisRecommendedTreatmentInstructions ->
             translationSet RecommendedTreatmentAllergyInstructions
@@ -27432,7 +27448,11 @@ translationSet trans =
             }
 
         UrinaryTractInfectionRecommendedTreatmentHelper ->
-            translationSet RecommendedTreatmentMedicationAndDosageHelper
+            { english = "Select the medication and dosage you will administer to the patient"
+            , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
+            , kirundi = Just "Hitamo imiti n'igipimo/ibipimo (idoze) uzotanga k'umurwayi"
+            , somali = Just "Dooro dawada iyo dooska aad u qori doonto bukaanka"
+            }
 
         UrinaryTractInfectionRecommendedTreatmentInstructions ->
             translationSet RecommendedTreatmentAllergyInstructions

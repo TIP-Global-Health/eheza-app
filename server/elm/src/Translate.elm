@@ -1055,8 +1055,8 @@ translationSet transId =
 
         HIV ->
             { english = "HIV"
-            , kinyarwanda = Just "Virusi itera SIDA"
-            , kirundi = Just "Umugera wa SIDA"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             , somali = Nothing
             }
 
@@ -2487,7 +2487,11 @@ translationSet transId =
                     }
 
                 DiagnosisHIV ->
-                    translationSet HIV
+                    { english = "HIV"
+                    , kinyarwanda = Just "Virusi itera SIDA"
+                    , kirundi = Just "Umugera wa SIDA"
+                    , somali = Nothing
+                    }
 
                 DiagnosisHIVDetectableViralLoad ->
                     { english = "Detectable HIV Viral Load"

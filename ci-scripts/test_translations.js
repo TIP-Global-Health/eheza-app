@@ -41,53 +41,73 @@ const SHARED = [
 
 const LANGUAGES = ['kinyarwanda', 'kirundi', 'somali'];
 
+const OPEN = /^\s*\{ english = /;
 const START = /^(\s*)\{ english = "((?:[^"\\]|\\.)*)"$/;
 const CLOSE = /^\s*\}$/;
 const HEAD = /^(\s*)([A-Z][A-Za-z0-9_.]*)[^\n]* ->$/;
-const field = (language) => new RegExp(`^\\s*, ${language} = (Nothing|Just ".*")$`);
+const FIELD = /^\s*, (kinyarwanda|kirundi|somali) = (Nothing|Just "(?:[^"\\]|\\.)*")$/;
 
-// Every written-out translation, at any depth: the id whose branch it sits in,
-// and the languages it fills in. `translationSet SomeId` writes nothing out.
+// The id whose branch a record sits in, at any depth.
+function idOf(lines, i, indent) {
+  for (let j = i - 1; j >= 0; j -= 1) {
+    if (!lines[j].trim()) {
+      continue;
+    }
+    const head = HEAD.exec(lines[j]);
+    return head && head[1].length === indent - 4 ? head[2] : '?';
+  }
+  return '?';
+}
+
+// Every written-out translation and the languages it fills in, in whatever
+// order the fields are written. `translationSet SomeId` writes nothing out.
 function records(source) {
   const lines = source.split('\n');
   const found = [];
+  const unreadable = [];
+  let commented = 0;
 
   lines.forEach((line, i) => {
-    // An english with no letters is a number or a symbol, the same in every
-    // language, so it is not checked. Nor is an empty one, which shows nothing.
+    // Commented-out branches show nothing.
+    const depth = commented;
+    commented += (line.match(/\{-/g) || []).length - (line.match(/-\}/g) || []).length;
+    if (depth > 0 || commented > 0 || !OPEN.test(line)) {
+      return;
+    }
+
+    // An english built at run time from pieces cannot be compared to another.
     const start = START.exec(line);
-    if (!start || !/[A-Za-z]/.test(start[2]) || !CLOSE.test(lines[i + 4] || '')) {
+    if (!start) {
       return;
     }
 
     const filled = [];
-    for (let k = 0; k < LANGUAGES.length; k += 1) {
-      const value = field(LANGUAGES[k]).exec(lines[i + 1 + k] || '');
+    let end = i + 1;
+    while (end < lines.length && !CLOSE.test(lines[end])) {
+      const value = FIELD.exec(lines[end]);
       if (!value) {
+        unreadable.push({ line: i + 1, why: lines[end].trim() });
         return;
       }
-      if (value[1] !== 'Nothing') {
-        filled.push(LANGUAGES[k]);
+      if (value[2] !== 'Nothing') {
+        filled.push(value[1]);
       }
+      end += 1;
     }
 
-    const indent = start[1].length;
-    let id = '?';
-    for (let j = i - 1; j >= 0; j -= 1) {
-      if (!lines[j].trim()) {
-        continue;
-      }
-      const head = HEAD.exec(lines[j]);
-      if (head && head[1].length === indent - 4) {
-        id = head[2];
-      }
-      break;
+    if (end - i - 1 !== LANGUAGES.length) {
+      unreadable.push({ line: i + 1, why: 'it does not list all three languages' });
+      return;
     }
 
-    found.push({ id, line: i + 1, english: start[2], filled: filled.join(', ') });
+    // An english with no letters is a number or a symbol, the same in every
+    // language, so it is not checked.
+    if (/[A-Za-z]/.test(start[2])) {
+      found.push({ id: idOf(lines, i, start[1].length), line: i + 1, english: start[2], filled: filled.sort().join(', ') });
+    }
   });
 
-  return found;
+  return { found, unreadable };
 }
 
 const shorten = (english) => (english.length > 60 ? `${english.slice(0, 60)}…` : english);
@@ -100,8 +120,14 @@ const offenders = [];
 let written = 0;
 
 for (const file of FILES) {
+  const { found, unreadable } = records(fs.readFileSync(file, 'utf8'));
+
+  for (const { line, why } of unreadable) {
+    offenders.push({ file, english: `${file}:${line}`, ids: [], reason: `cannot be read: ${why}` });
+  }
+
   const byEnglish = new Map();
-  for (const record of records(fs.readFileSync(file, 'utf8'))) {
+  for (const record of found) {
     written += 1;
     if (!byEnglish.has(record.english)) {
       byEnglish.set(record.english, []);
@@ -163,5 +189,7 @@ for (const { file, english, ids, reason } of offenders) {
     console.log(`        ${id} (${file}:${line}) — ${filled || 'english only'}`);
   }
 }
-console.log('    Write the english once, and read it elsewhere with `translationSet TheIdThatHoldsIt`.');
+if (offenders.some((offender) => offender.ids.length)) {
+  console.log('    Write the english once, and read it elsewhere with `translationSet TheIdThatHoldsIt`.');
+}
 process.exit(1);

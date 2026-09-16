@@ -13195,12 +13195,7 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'HealthEducation':
 				return {english: 'Health Education', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'HIV':
-				return {
-					english: 'HIV',
-					kinyarwanda: $elm$core$Maybe$Just('Virusi itera SIDA'),
-					kirundi: $elm$core$Maybe$Just('Umugera wa SIDA'),
-					somali: $elm$core$Maybe$Nothing
-				};
+				return {english: 'HIV', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'HIVActivity':
 				var activity = transId.a;
 				switch (activity.$) {
@@ -14068,9 +14063,12 @@ var $author$project$Translate$translationSet = function (transId) {
 							somali: $elm$core$Maybe$Just('Ekalaamsiyo')
 						};
 					case 'DiagnosisHIV':
-						var $temp$transId = $author$project$Translate$HIV;
-						transId = $temp$transId;
-						continue translationSet;
+						return {
+							english: 'HIV',
+							kinyarwanda: $elm$core$Maybe$Just('Virusi itera SIDA'),
+							kirundi: $elm$core$Maybe$Just('Umugera wa SIDA'),
+							somali: $elm$core$Maybe$Nothing
+						};
 					case 'DiagnosisHIVDetectableViralLoad':
 						return {
 							english: 'Detectable HIV Viral Load',
