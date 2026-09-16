@@ -23,6 +23,7 @@ import {
   completeLaboratoryNurse,
   completeLaboratoryNurseForLab,
   correctHIVTestToKnownPositive,
+  correctPartnerHIVTest,
   completeLabResults,
   completeNextSteps,
   dismissWarningPopup,
@@ -180,7 +181,7 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     expect(nodes['prenatal_medication_distribution'], 'prenatal_medication_distribution should exist').toBe(true);
   });
 
-  test('partner HIV positive after a negative HIV test offers TDF + 3TC, and withdraws it once the patient is known as positive', async ({
+  test('partner HIV positive after a negative HIV test offers TDF + 3TC, and withdraws it once the partner is tested negative or the patient is known as positive', async ({
     page,
   }) => {
     test.setTimeout(600000);
@@ -213,36 +214,70 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
       partnerPositiveOnHIVTab: true,
     });
 
+    // Reading the report leaves the encounter on its Reports tab, so Next
+    // Steps is asked for again from the pending activities.
+    const openNextSteps = async () => {
+      await click(page.locator('#pending-tab'), page);
+      await page.waitForTimeout(WAIT.elmRerender);
+      await openActivity(page, 'prenatal', 'next-steps');
+      await dismissWarningPopup(page);
+    };
+
     // The discordant partnership diagnosis puts TDF + 3TC on Next Steps.
-    await openActivity(page, 'prenatal', 'next-steps');
-    await dismissWarningPopup(page);
-    const medicationTab = page.locator(
-      '.link-section:has(.icon-activity-task.icon-next-steps-treatment)',
-    );
-    await expect(medicationTab, 'Next Steps should offer medication').toBeVisible();
-    await clickSubTaskTab(page, 'next-steps-treatment');
-    await expect(page.locator('div.page-activity.prenatal')).toContainText('TDF + 3TC');
+    const expectPrEPOffered = async (message: string) => {
+      await openNextSteps();
+      const medicationTab = page.locator(
+        '.link-section:has(.icon-activity-task.icon-next-steps-treatment)',
+      );
+      await expect(medicationTab, message).toBeVisible();
+      await clickSubTaskTab(page, 'next-steps-treatment');
+      await expect(page.locator('div.page-activity.prenatal'), message).toContainText('TDF + 3TC');
+    };
+
+    const expectNoDiscordantCouple = async (message: string) => {
+      const report = await openReport(page, 'prenatal');
+      await expect(
+        report.locator('.medical-diagnosis li', { hasText: 'Discordant Couple' }),
+        message,
+      ).toHaveCount(0);
+      await closeReport(page, 'prenatal');
+    };
+
+    await expectPrEPOffered('Next Steps should offer TDF + 3TC to a discordant couple');
+
+    // The partner is then tested, and is negative. The answer on her own HIV
+    // test that the partner is positive is still stored, but that question is
+    // asked only while the partner has no result, so it no longer counts.
+    await correctPartnerHIVTest(page, 'tested-negative');
+    await expectNoDiscordantCouple('a partner tested negative is not a discordant couple');
+
+    // Without the diagnosis nothing may put Next Steps on the list at all.
+    // Where it is listed, it must not offer PrEP.
+    await click(page.locator('#pending-tab'), page);
+    await page.waitForTimeout(WAIT.elmRerender);
+    if (await page.locator('.icon-task-next-steps').isVisible()) {
+      await openNextSteps();
+      await expect(
+        page.locator('div.page-activity.prenatal'),
+        'PrEP should not be offered once the partner is tested negative',
+      ).not.toContainText('TDF + 3TC');
+    }
+
+    // Back to a partner known as positive: the discordant couple returns, so
+    // the correction below starts from it.
+    await correctPartnerHIVTest(page, 'known-positive');
+    await expectPrEPOffered('a partner known as positive again is a discordant couple again');
 
     // Corrected to known as positive, the patient is HIV positive and both
     // sources of the discordant partnership go with the negative result they
     // were recorded against: the partner signs on her own test, and her own
     // result, which the partner's test needs to see a discordant couple.
     await correctHIVTestToKnownPositive(page);
-
-    const report = await openReport(page, 'prenatal');
-    await expect(
-      report.locator('.medical-diagnosis li', { hasText: 'Discordant Couple' }),
-      'a patient who is known as HIV positive is not a discordant couple',
-    ).toHaveCount(0);
-    await closeReport(page, 'prenatal');
+    await expectNoDiscordantCouple('a patient who is known as HIV positive is not a discordant couple');
 
     // PrEP is what the diagnosis prescribes, and it is what must not be
-    // offered to a woman who is HIV positive. Reading the report leaves the
-    // encounter on its Reports tab, so the activities are asked for again.
-    await click(page.locator('#pending-tab'), page);
-    await page.waitForTimeout(WAIT.elmRerender);
-    await openActivity(page, 'prenatal', 'next-steps');
-    await dismissWarningPopup(page);
+    // offered to a woman who is HIV positive.
+    await openNextSteps();
     await expect(
       page.locator('div.page-activity.prenatal'),
       'PrEP should not be offered once the patient is known as HIV positive',

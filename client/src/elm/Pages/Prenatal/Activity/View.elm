@@ -1579,7 +1579,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskHIVTest ->
                             let
                                 partnerHIVTestResult =
-                                    resolvePartnerHIVTestResult assembled
+                                    resolvePartnerHIVTestResult assembled.measurements
                             in
                             measurements.hivTest
                                 |> getMeasurementValueFunc
