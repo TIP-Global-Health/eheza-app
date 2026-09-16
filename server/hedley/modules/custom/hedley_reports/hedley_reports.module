@@ -2126,8 +2126,8 @@ function hedley_reports_ai_diagnosis_mapping() {
  *   An associative array mapping diagnosis identifiers to their codes.
  */
 function hedley_reports_prenatal_diagnosis_mapping() {
-  // Diagnoses ending in '-continued' reconfirm an earlier one, so they get no
-  // code: the condition is already counted from the encounter that found it.
+  // Reconfirmations ('-continued', '-persistent') get no code: they repeat a
+  // diagnosis the encounter that found the condition is already counted for.
   return [
     'chronic-hypertension-immediate' => 'a',
     'chronic-hypertension-recheck' => 'a',

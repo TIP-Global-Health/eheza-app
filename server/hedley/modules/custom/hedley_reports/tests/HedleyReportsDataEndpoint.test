@@ -250,18 +250,25 @@ class HedleyReportsDataEndpoint extends HedleyWebTestBase {
    * mapping does not know is dropped, and an encounter left with nothing
    * is then counted as having no diagnosis at all.
    *
-   * Values ending in '-continued' are the exception: they reconfirm a
-   * diagnosis an earlier encounter already recorded, so they carry no code
-   * and must stay out of the mapping.
+   * Reconfirmations are the exception: a '-continued' or '-persistent'
+   * value repeats a diagnosis an earlier encounter already recorded, so it
+   * carries no code and must stay out of the mapping.
    *
    * Called from testReportsDataAccess() rather than being a test method of
    * its own, so that it shares that method's install.
    */
   protected function checkPrenatalDiagnosisMappingCoverage() {
-    $field = field_info_field('field_prenatal_diagnoses');
-    $allowed = array_keys($field['settings']['allowed_values']);
     $mapping = hedley_reports_prenatal_diagnosis_mapping();
-    $this->assertTrue(!empty($allowed), 'The prenatal diagnosis list was loaded.');
+
+    // The producer runs both fields through the same mapping.
+    $allowed = [];
+    foreach (['field_prenatal_diagnoses', 'field_past_prenatal_diagnoses'] as $field_name) {
+      $field = field_info_field($field_name);
+      $values = array_keys($field['settings']['allowed_values']);
+      $this->assertTrue(!empty($values), "The $field_name list was loaded.");
+      $allowed = array_merge($allowed, $values);
+    }
+    $allowed = array_unique($allowed);
 
     // Reconfirmations, plus 'none', which means no diagnosis was made.
     $expected_without_code = [
