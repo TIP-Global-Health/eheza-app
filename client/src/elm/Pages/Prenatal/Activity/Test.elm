@@ -27,6 +27,7 @@ import Backend.Measurement.Model
         , PrenatalSymptomQuestion(..)
         , ProteinValue(..)
         , RandomBloodSugarTestValue
+        , RecommendedTreatmentSign(..)
         , Rhesus(..)
         , SyphilisTestValue
         , TestExecutionNote(..)
@@ -50,8 +51,10 @@ import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
 import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Utils exposing (resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult)
+import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
@@ -1736,6 +1739,190 @@ vaginalDischargeContinuedTest =
 
 
 
+-- HISTORY OF AN OLDER ENCOUNTER
+--
+-- A lab result can be entered for an encounter after a later encounter of the
+-- pregnancy has started, and the older encounter is then diagnosed again. Its
+-- history is the encounters started on an earlier day. There is one encounter a
+-- day, so another encounter of the same day is not part of it either.
+
+
+{-| A prenatal encounter as stored in the database: its id, start date, type,
+diagnoses and the measurements taken at it.
+-}
+type alias StoredEncounter =
+    { id : String
+    , startDate : NominalDate
+    , encounterType : PrenatalEncounterType
+    , diagnoses : List PrenatalDiagnosis
+    , measurements : PrenatalMeasurements
+    }
+
+
+storedNurseEncounter : String -> NominalDate -> List PrenatalDiagnosis -> PrenatalMeasurements -> StoredEncounter
+storedNurseEncounter id startDate diagnoses measurements =
+    { id = id
+    , startDate = startDate
+    , encounterType = NurseEncounter
+    , diagnoses = diagnoses
+    , measurements = measurements
+    }
+
+
+{-| Assemble the encounter with the given id from a database holding the given
+encounters of one pregnancy -- the way the pages and the assessment run after
+a save build their data. EGA is fixed at ~20 weeks, as for `testAssembled`.
+-}
+assembledFromDb : String -> List StoredEncounter -> Maybe AssembledData
+assembledFromDb encounterId storedEncounters =
+    let
+        encounters =
+            List.map
+                (\stored ->
+                    ( toEntityUuid stored.id
+                    , { testEncounter
+                        | startDate = stored.startDate
+                        , encounterType = stored.encounterType
+                        , diagnoses = EverySet.fromList stored.diagnoses
+                      }
+                    )
+                )
+                storedEncounters
+
+        db =
+            { emptyModelIndexedDb
+                | prenatalEncounters = Dict.fromList <| List.map (Tuple.mapSecond RemoteData.Success) encounters
+                , prenatalEncountersByParticipant =
+                    Dict.singleton testEncounter.participant (RemoteData.Success <| Dict.fromList encounters)
+                , prenatalMeasurements =
+                    Dict.fromList <|
+                        List.map (\stored -> ( toEntityUuid stored.id, RemoteData.Success stored.measurements )) storedEncounters
+                , individualParticipants = Dict.singleton testEncounter.participant (RemoteData.Success testParticipant)
+                , people = Dict.singleton testParticipant.person (RemoteData.Success testPerson)
+            }
+    in
+    generateAssembledData (toEntityUuid encounterId) db
+        |> RemoteData.toMaybe
+        |> Maybe.map (\assembled -> { assembled | globalLmpDate = Just lmpDate })
+
+
+historyBeforeEncounterTest : Test
+historyBeforeEncounterTest =
+    let
+        withSymptom symptom measurements =
+            { measurements
+                | symptomReview =
+                    wrapMeasurement
+                        { symptoms = EverySet.singleton symptom
+                        , symptomQuestions = EverySet.empty
+                        , flankPainSign = Nothing
+                        }
+            }
+
+        withCoartem measurements =
+            { measurements
+                | medicationDistribution =
+                    wrapMeasurement
+                        { distributionSigns = EverySet.empty
+                        , nonAdministrationSigns = EverySet.empty
+                        , recommendedTreatmentSigns = Just (EverySet.singleton TreatmentCoartem)
+                        , avoidingGuidanceReason = Nothing
+                        , reinforceTreatmentSigns = Nothing
+                        }
+            }
+
+        weekAgo =
+            Date.add Date.Weeks -1 currentDate
+
+        weekLater =
+            Date.add Date.Weeks 1 currentDate
+
+        diagnosesOf encounterId storedEncounters =
+            assembledFromDb encounterId storedEncounters
+                |> Maybe.map (generatePrenatalDiagnosesForNurse currentDate >> EverySet.toList)
+
+        hasDiagnosis diagnosis encounterId storedEncounters =
+            diagnosesOf encounterId storedEncounters
+                |> Maybe.map (List.member diagnosis)
+
+        diagnosesAmong candidates encounterId storedEncounters =
+            diagnosesOf encounterId storedEncounters
+                |> Maybe.map (List.filter (\diagnosis -> List.member diagnosis candidates))
+
+        pelvicPain =
+            withSymptom PelvicPain emptyPrenatalMeasurements
+
+        nauseaAndVomiting =
+            withSymptom NauseaAndVomiting emptyPrenatalMeasurements
+    in
+    describe "generatePrenatalDiagnosesForNurse - history of an older encounter"
+        [ test "pelvic pain at a LATER encounter does not make the older encounter's pelvic pain continued" <|
+            \_ ->
+                hasDiagnosis DiagnosisPelvicPainContinued
+                    "older"
+                    [ storedNurseEncounter "older" currentDate [] pelvicPain
+                    , storedNurseEncounter "later" weekLater [] pelvicPain
+                    ]
+                    |> Expect.equal (Just False)
+        , test "nausea and vomiting at a LATER encounter does not send the older encounter to hospital" <|
+            \_ ->
+                diagnosesAmong [ DiagnosisHyperemesisGravidumBySymptoms, DiagnosisSevereVomitingBySymptoms ]
+                    "older"
+                    [ storedNurseEncounter "older" currentDate [] nauseaAndVomiting
+                    , storedNurseEncounter "later" weekLater [] nauseaAndVomiting
+                    ]
+                    |> Expect.equal (Just [])
+        , test "malaria treated at a LATER encounter does not make the older encounter's malaria medicated-continued" <|
+            \_ ->
+                diagnosesAmong
+                    [ DiagnosisMalariaInitialPhase
+                    , DiagnosisMalariaMedicatedContinuedInitialPhase
+                    , DiagnosisMalariaMedicatedContinuedRecurrentPhase
+                    ]
+                    "older"
+                    [ storedNurseEncounter "older" currentDate [] (withMalariaTest TestPositive emptyPrenatalMeasurements)
+                    , storedNurseEncounter "later" weekLater [ DiagnosisMalariaInitialPhase ] (withCoartem emptyPrenatalMeasurements)
+                    ]
+                    |> Expect.equal (Just [ DiagnosisMalariaInitialPhase ])
+        , test "pelvic pain at an EARLIER encounter makes the pelvic pain continued" <|
+            \_ ->
+                hasDiagnosis DiagnosisPelvicPainContinued
+                    "current"
+                    [ storedNurseEncounter "earlier" weekAgo [] pelvicPain
+                    , storedNurseEncounter "current" currentDate [] pelvicPain
+                    ]
+                    |> Expect.equal (Just True)
+        , test "pelvic pain at another encounter of the SAME day does not make the pelvic pain continued" <|
+            \_ ->
+                hasDiagnosis DiagnosisPelvicPainContinued
+                    "current"
+                    [ storedNurseEncounter "same-day" currentDate [] pelvicPain
+                    , storedNurseEncounter "current" currentDate [] pelvicPain
+                    ]
+                    |> Expect.equal (Just False)
+        , test "only CHW encounters started on an earlier day are in the history" <|
+            \_ ->
+                let
+                    storedChwEncounter id startDate encounterType =
+                        { id = id
+                        , startDate = startDate
+                        , encounterType = encounterType
+                        , diagnoses = []
+                        , measurements = emptyPrenatalMeasurements
+                        }
+                in
+                assembledFromDb "current"
+                    [ storedChwEncounter "chw-earlier" weekAgo ChwFirstEncounter
+                    , storedChwEncounter "chw-same-day" currentDate ChwSecondEncounter
+                    , storedNurseEncounter "current" currentDate [] emptyPrenatalMeasurements
+                    , storedChwEncounter "chw-later" weekLater ChwThirdPlusEncounter
+                    ]
+                    |> Maybe.map (.chwPreviousMeasurementsWithDates >> List.map (\( date, encounterType, _ ) -> ( date, encounterType )))
+                    |> Expect.equal (Just [ ( weekAgo, ChwFirstEncounter ) ])
+        ]
+
+
+
 -- BLOOD SMEAR AS THE MALARIA DIAGNOSIS
 --
 -- When the rapid test cannot be run, a blood smear is taken instead and read
@@ -1896,6 +2083,7 @@ all =
         , generatePrenatalDiagnosesForNurseEGA37PlusPreeclampsiaRecurrentTest
         , suicideRiskDiagnosedBySignsTest
         , vaginalDischargeContinuedTest
+        , historyBeforeEncounterTest
         ]
 
 
