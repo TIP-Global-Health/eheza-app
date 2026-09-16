@@ -2,6 +2,8 @@ module Pages.Components.Utils exposing
     ( isSyncComplete
     , populationSelectionOptionFromString
     , populationSelectionOptionToString
+    , reportTableDataToCSV
+    , reportTablesDataToCSV
     , viewSyncingPlaceholder
     )
 
@@ -9,6 +11,7 @@ import App.Types exposing (Language)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
+import Pages.Model exposing (MetricsResultsTableData)
 import Translate exposing (translate)
 
 
@@ -101,3 +104,35 @@ viewSyncingPlaceholder language downloaded maybeRemaining =
         , div [ class "explanation" ] [ text <| translate language Translate.DownloadingExplanation ]
         , div [ class "progress" ] [ text progress ]
         ]
+
+
+reportTablesDataToCSV : List MetricsResultsTableData -> String
+reportTablesDataToCSV =
+    List.map reportTableDataToCSV
+        >> String.join "\n\n"
+
+
+reportTableDataToCSV : MetricsResultsTableData -> String
+reportTableDataToCSV tableData =
+    let
+        line =
+            List.map csvField >> String.join ","
+    in
+    [ csvField tableData.heading
+    , line tableData.captions
+    , List.map line tableData.rows
+        |> String.join "\n"
+    ]
+        |> String.join "\n"
+
+
+{-| One CSV field. A value holding a comma, a quote or a line break is wrapped
+in quotes, and the quotes inside it doubled, so it stays one field.
+-}
+csvField : String -> String
+csvField value =
+    if String.any (\char -> char == ',' || char == '"' || char == '\n' || char == '\u{000D}') value then
+        "\"" ++ String.replace "\"" "\"\"" value ++ "\""
+
+    else
+        value

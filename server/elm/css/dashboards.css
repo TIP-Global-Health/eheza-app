@@ -1,0 +1,176 @@
+/* Styles for the HealthyStart dashboards.
+ *
+ * Tailwind runs over the dashboard Elm sources and emits the utilities they
+ * name. Preflight is left out on purpose: the dashboards render inside the
+ * Drupal admin theme, and its base styles have to stay as they are.
+ *
+ * Rebuild after changing the dashboard sources:
+ *   cd server/elm && npm run css
+ */
+
+/* The Drupal admin theme's stylesheets are not in a cascade layer, so anything
+   this file puts in one loses to them. The utilities are marked important
+   instead, which is what lets them style headings, tables and buttons the
+   theme already has rules for. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" important;
+
+@source "../src/Pages/Dashboard";
+@source "../src/Pages/Components/TrendChart.elm";
+
+@theme {
+  /* eheza palette. `accent` is the site's blue, dark enough that white text on
+     it and it as text on white both clear WCAG 2.1 AA. */
+  --color-accent:      #0273b2;
+  --color-accent-dark: #015a86;
+  --color-accent-soft: #e0e7ff;
+  --color-brand-navy:  #00374f;
+
+  /* Trend and status colours. The chart lines set their own hex values. */
+  --color-trend-avg:   #2f7d32;
+  --color-alert:       #c21f5b;
+  --color-bar-track:   #9aa6b2;
+}
+
+/* Nunito, the product typeface the dashboards are designed in. It is served
+   from this module rather than fetched from a font host, so the admin makes no
+   external request. The files are the latin and latin-ext subsets of the
+   variable font, covering weights 400 to 800. See fonts/OFL.txt. */
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("../fonts/nunito-v32-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("../fonts/nunito-v32-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Tailwind's own reset is left out, so the element styles the dashboards assume
+   are set here, scoped to the dashboard.
+   The admin theme reaches these elements with rules of its own, some of them
+   carrying an id, so these are important. The selectors are wrapped in :where()
+   to keep them as weak as a bare element selector, which leaves the utilities
+   above - important and a class stronger - still winning wherever the dashboard
+   names one. Nothing outside .ehs-dashboard is touched. */
+:where(.ehs-dashboard),
+:where(.ehs-dashboard) *,
+:where(.ehs-dashboard) *::before,
+:where(.ehs-dashboard) *::after {
+  box-sizing: border-box !important;
+}
+
+/* The theme's body font is a serif; the dashboards are drawn in Nunito. */
+:where(.ehs-dashboard) {
+  font-family: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  color: #0f172a !important;
+}
+
+:where(.ehs-dashboard) a,
+:where(.ehs-dashboard) h1,
+:where(.ehs-dashboard) h2,
+:where(.ehs-dashboard) p,
+:where(.ehs-dashboard) ul,
+:where(.ehs-dashboard) li,
+:where(.ehs-dashboard) label,
+:where(.ehs-dashboard) span {
+  margin: 0 !important;
+  padding: 0 !important;
+  color: inherit !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+  list-style: none !important;
+  text-decoration: inherit !important;
+}
+
+:where(.ehs-dashboard) button {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  color: inherit !important;
+  font: inherit !important;
+  cursor: pointer !important;
+}
+
+:where(.ehs-dashboard) select {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+:where(.ehs-dashboard) table {
+  margin: 0 !important;
+  border: 0 !important;
+  font-size: inherit !important;
+}
+
+/* The theme aligns every cell left. These restore what a browser does on its
+   own - header cells centred, data cells following the text around them - so
+   the alignment utilities the tables carry read the same here as anywhere. */
+:where(.ehs-dashboard) th,
+:where(.ehs-dashboard) td {
+  border: 0 !important;
+  background: none !important;
+  color: inherit !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
+
+:where(.ehs-dashboard) th {
+  text-align: center !important;
+}
+
+:where(.ehs-dashboard) td {
+  text-align: inherit !important;
+}
+
+@media print {
+  /* Drupal chrome. */
+  #admin-menu,
+  #toolbar,
+  #branding,
+  #skip-link,
+  #footer,
+  .breadcrumb,
+  .tabs,
+  .region-sidebar-first,
+  .help {
+    display: none !important;
+  }
+
+  /* The filters pick what is printed, and the actions act on the screen;
+     neither is part of what lands on paper. */
+  .ehs-dashboard__filters,
+  .ehs-dashboard__actions {
+    display: none !important;
+  }
+
+  /* An open drill-down is what the viewer is looking at, so print that alone. */
+  .ehs-dashboard:has(.ehs-dashboard__drill) .ehs-dashboard__page {
+    display: none !important;
+  }
+
+  .ehs-dashboard__drill {
+    position: static !important;
+    overflow: visible !important;
+    background: none !important;
+    padding: 0 !important;
+  }
+}
