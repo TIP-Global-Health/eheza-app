@@ -797,6 +797,7 @@ type TranslationId
     | HealthCenter
     | HealthCenterDetermined
     | HealthEducation
+    | HealthEducationAppropriateProvidedQuestion
     | HealthEducationNotProvided
     | HealthEducationProvided
     | HealthInsuranceQuestion
@@ -1410,6 +1411,9 @@ type TranslationId
     | PrenatalSymptom PrenatalSymptom
     | PrenatalSymptomQuestion PrenatalSymptomQuestion
     | PrenatalSymptomQuestionsHeader
+    | RecommendedTreatmentAllergyInstructions
+    | RecommendedTreatmentBestOptionHelper
+    | RecommendedTreatmentMedicationAndDosageHelper
     | RememberMakeYourCoworkersYourWorkFamily
     | Resolved
     | SevereCOVID19
@@ -3136,11 +3140,7 @@ translationSet trans =
             }
 
         ActivitityLabelAchi ->
-            { english = "Enter the amount of Aheza distributed below."
-            , kinyarwanda = Just "Uzuza hano ingano ya Aheza utanze."
-            , kirundi = Just "Andika igitigiri c'ivya Aheza watanze aha hepfo."
-            , somali = Nothing
-            }
+            translationSet AhezaActivityHelper
 
         ActivePage page ->
             translateActivePage page
@@ -4404,11 +4404,7 @@ translationSet trans =
             }
 
         CandidiasisRecommendedTreatmentHelper ->
-            { english = "Select the medication and dosage you will administer to the patient"
-            , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
-            , kirundi = Just "Hitamo imiti n'igipimo/ibipimo (idoze) uzotanga k'umugwayi"
-            , somali = Just "Dooro dawada iyo dooska aad u qori doonto bukaanka"
-            }
+            translationSet RecommendedTreatmentMedicationAndDosageHelper
 
         CannotStartEncounterLabel ->
             { english = "You cannot open a new encounter, as there's already a completed encounter today for"
@@ -5812,7 +5808,7 @@ translationSet trans =
             { english = "You were diagnosed with"
             , kinyarwanda = Just "Wasuzumwe"
             , kirundi = Just "Wasuzumwe"
-            , somali = Nothing
+            , somali = Just "Waxaa lagaa helay"
             }
 
         DiagnosedAtAnotherFacilitySuffix ->
@@ -7893,6 +7889,13 @@ translationSet trans =
             , somali = Just "Wacyi Gelin Caafimaad"
             }
 
+        HealthEducationAppropriateProvidedQuestion ->
+            { english = "Have you provided the appropriate health education to the patient"
+            , kinyarwanda = Just "Wahaye umubyeyi inyigisho zabugenewe ku buzima"
+            , kirundi = Just "Mbega waratanze inyigisho kuvyerekeye amagara meza k'umugwayi"
+            , somali = Just "Ma siisay bukaanka wacyi gelin caafimaad oo ku habboon"
+            }
+
         HealthEducationNotProvided ->
             { english = "No health education provided"
             , kinyarwanda = Just "Nta nyigisho ku buzima zatanzwe"
@@ -7980,11 +7983,7 @@ translationSet trans =
             }
 
         HeartburnRecommendedTreatmentHelper ->
-            { english = "Select the best treatment option for the patient below"
-            , kinyarwanda = Just "Hitamo umuti ukwiye wo guha uyu murwayi"
-            , kirundi = Just "Hitamo uburyo bwiza bwo kuvura umurwayi hepfo"
-            , somali = Just "Dooro dawada ugu fiican ee bukaanka hoos ku xusan"
-            }
+            translationSet RecommendedTreatmentBestOptionHelper
 
         HeartMurmur ->
             { english = "Heart Murmur"
@@ -8731,11 +8730,7 @@ translationSet trans =
                 }
 
         HypertensionRecommendedTreatmentHelper ->
-            { english = "Select the best treatment option for the patient below"
-            , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
-            , kirundi = Just "Hitamo uburyo bwiza bwo kuvura umurwayi hepfo"
-            , somali = Just "Dooro dawada ugu fiican ee bukaanka hoos ku xusan"
-            }
+            translationSet RecommendedTreatmentBestOptionHelper
 
         HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia ->
             if forModeratePreeclamsia then
@@ -11721,11 +11716,7 @@ translationSet trans =
             }
 
         MalariaRecommendedTreatmentHelper ->
-            { english = "Select the best treatment option for the patient below"
-            , kinyarwanda = Just "Hitamo umuti ukwiye ku murwayi"
-            , kirundi = Just "Hitamo uburyo bwiza bwo kuvura umurwayi hepfo"
-            , somali = Just "Dooro dawada ugu fiican ee bukaanka hoos ku xusan"
-            }
+            translationSet RecommendedTreatmentBestOptionHelper
 
         MalariaWithAnemia ->
             { english = "Malaria with Anemia"
@@ -12054,11 +12045,7 @@ translationSet trans =
                 }
 
         MastitisRecommendedTreatmentHelper ->
-            { english = "Select the best treatment option for the patient below"
-            , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
-            , kirundi = Just "Hitamo uburyo bwiza bwo kuvura umurwayi hepfo"
-            , somali = Just "Dooro dawada ugu fiican ee bukaanka hoos ku xusan"
-            }
+            translationSet RecommendedTreatmentBestOptionHelper
 
         MeasurementNotTaken ->
             { english = "Unable to take measurements, skip this step"
@@ -14166,11 +14153,7 @@ translationSet trans =
             }
 
         NCDHealthEducationQuestion ->
-            { english = "Have you provided the appropriate health education to the patient"
-            , kinyarwanda = Just "Wahaye umubyeyi inyigisho zabugenewe ku buzima"
-            , kirundi = Just "Mbega waratanze inyigisho kuvyerekeye amagara meza k'umugwayi"
-            , somali = Just "Ma siisay bukaanka wacyi gelin caafimaad oo ku habboon"
-            }
+            translationSet HealthEducationAppropriateProvidedQuestion
 
         NCDLabsCaseManagementEntryTypeResults ->
             { english = "NCD Lab Results"
@@ -18274,11 +18257,7 @@ translationSet trans =
                     translationSet None
 
         PrenatalHealthEducationAppropriateProvided ->
-            { english = "Have you provided the appropriate health education to the patient"
-            , kinyarwanda = Just "Wahaye umubyeyi inyigisho zabugenewe ku buzima"
-            , kirundi = Just "Mbega waratanze inyigisho kuvyerekeye amagara meza k'umugwayi"
-            , somali = Nothing
-            }
+            translationSet HealthEducationAppropriateProvidedQuestion
 
         PrenatalHealthEducationSignsDiagnosis isInitial date sign ->
             case sign of
@@ -19739,6 +19718,27 @@ translationSet trans =
             , kinyarwanda = Just "Umubyeyi yagaragaje ibimenyetso bisaba ibindi bibazo"
             , kirundi = Just "Umurwayi yerekanye ibimenyetso bisaba gukurikizako ibindi bibazo (kugira umuntu ategere)"
             , somali = Just "Bukaanka wuxuu muujiyay calaamado u baahan su`aalo ka war qab ah."
+            }
+
+        RecommendedTreatmentAllergyInstructions ->
+            { english = "Ensure the patient is not allergic to the medication before prescribing"
+            , kinyarwanda = Just "Menya neza ko umurwayi adafite aleriji ku miti mbere yo kuyimwandikira"
+            , kirundi = Just "Umenye neza ko umurwayi afashe imiti itamumerera nabi imbere yo kuyimwandikira"
+            , somali = Just "Hubi bukaanka inuusan xasaasiyad ku qabin dawada intaan loo qorin"
+            }
+
+        RecommendedTreatmentBestOptionHelper ->
+            { english = "Select the best treatment option for the patient below"
+            , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
+            , kirundi = Just "Hitamo uburyo bwiza bwo kuvura umurwayi hepfo"
+            , somali = Just "Dooro dawada ugu fiican ee bukaanka hoos ku xusan"
+            }
+
+        RecommendedTreatmentMedicationAndDosageHelper ->
+            { english = "Select the medication and dosage you will administer to the patient"
+            , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
+            , kirundi = Just "Hitamo imiti n'igipimo/ibipimo (idoze) uzotanga k'umurwayi"
+            , somali = Just "Dooro dawada iyo dooska aad u qori doonto bukaanka"
             }
 
         RememberMakeYourCoworkersYourWorkFamily ->
@@ -22384,11 +22384,7 @@ translationSet trans =
             }
 
         ResilienceGuideSection4Bullet2 ->
-            { english = "Options include \"Read it,\" \"Favourites,\" and \"Remind me\"."
-            , kinyarwanda = Just "Urasanga harimo \"Bwasomwe,\" \"Ishimire Ubutumwa,\" na \"Unyibutse.\""
-            , kirundi = Nothing
-            , somali = Nothing
-            }
+            translationSet ResilienceGuideSection3Bullet2
 
         ResilienceGuideSection4Bullet3 ->
             { english = "Click on \"Remind me\" for messages you cannot read immediately."
@@ -26213,18 +26209,10 @@ translationSet trans =
             }
 
         SyphilisRecommendedTreatmentHelper ->
-            { english = "Select the medication and dosage you will administer to the patient"
-            , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
-            , kirundi = Just "Hitamo imiti n'igipimo/ibipimo (idoze) uzotanga k'umurwayi"
-            , somali = Just "Dooro dawada iyo dooska aad u qori doonto bukaanka"
-            }
+            translationSet RecommendedTreatmentMedicationAndDosageHelper
 
         SyphilisRecommendedTreatmentInstructions ->
-            { english = "Ensure the patient is not allergic to the medication before prescribing"
-            , kinyarwanda = Just "Menya neza ko umurwayi adafite aleriji ku miti mbere yo kuyimwandikira"
-            , kirundi = Just "Umenye neza ko umurwayi afashe imiti itamumerera nabi imbere yo kuyimwandikira"
-            , somali = Just "Hubi bukaanka inuusan xasaasiyad ku qabin dawada intaan loo qorin"
-            }
+            translationSet RecommendedTreatmentAllergyInstructions
 
         SyphilisRecommendedTreatmentWarning ->
             { english = "If Erythromycin or Azithromycin used, must treat newborn immediately after delivery (does not cross into placenta)"
@@ -27572,18 +27560,10 @@ translationSet trans =
             }
 
         UrinaryTractInfectionRecommendedTreatmentHelper ->
-            { english = "Select the medication and dosage you will administer to the patient"
-            , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
-            , kirundi = Just "Hitamo imiti n'igipimo/ibipimo (idoze) uzotanga k'umurwayi"
-            , somali = Just "Dooro dawada iyo dooska aad u qori doonto bukaanka"
-            }
+            translationSet RecommendedTreatmentMedicationAndDosageHelper
 
         UrinaryTractInfectionRecommendedTreatmentInstructions ->
-            { english = "Ensure the patient is not allergic to the medication before prescribing"
-            , kinyarwanda = Just "Menya neza ko umurwayi adafite aleriji ku miti mbere yo kuyimwandikira"
-            , kirundi = Just "Umenye neza ko umurwayi afashe imiti itamumerera nabi imbere yo kuyimwandikira"
-            , somali = Nothing
-            }
+            translationSet RecommendedTreatmentAllergyInstructions
 
         VaccinationStatus status ->
             case status of
@@ -28888,11 +28868,7 @@ translateActivePage : Page -> TranslationSet String
 translateActivePage page =
     case page of
         DevicePage ->
-            { english = "Device Status"
-            , kinyarwanda = Just "Uko igikoresho cy'ikoranabuhanga gihagaze"
-            , kirundi = Just "Ingene igikoresho kimeze"
-            , somali = Just "Xaalada Aalada"
-            }
+            translationSet DeviceStatus
 
         PinCodePage ->
             { english = "PIN Code"
@@ -28949,11 +28925,7 @@ translateActivePage page =
                     translationSet Dashboards
 
                 GlobalCaseManagementPage ->
-                    { english = "Case Management"
-                    , kinyarwanda = Just "Gukurikirana Umurwayi"
-                    , kirundi = Just "Gukurikirana umurwayi"
-                    , somali = Just "Maareynta Xaalada"
-                    }
+                    translationSet CaseManagement
 
                 DemographicsReportPage _ _ ->
                     { english = "Demographics Report"
@@ -29692,11 +29664,7 @@ translateDashboard trans =
             }
 
         CaseManagementLabel ->
-            { english = "Case Management"
-            , kinyarwanda = Just "Gukurikirana Umurwayi"
-            , kirundi = Just "Gukurikirana umurwayi"
-            , somali = Just "Maareynta Xaalada"
-            }
+            translationSet CaseManagement
 
         CompletedProgramLabel ->
             { english = "Completed Program"
