@@ -100,5 +100,7 @@ allPrenatalDiagnoses =
     , DiagnosisPostpartumExcessiveBleeding
     , DiagnosisPostpartumEarlyMastitisOrEngorgment
     , DiagnosisPostpartumMastitis
+    , DiagnosisHighRiskOfPreeclampsia
+    , DiagnosisModerateRiskOfPreeclampsia
     , NoPrenatalDiagnosis
     ]

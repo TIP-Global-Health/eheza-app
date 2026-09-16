@@ -187,6 +187,8 @@ type PrenatalDiagnosis
     | DiagnosisPostpartumExcessiveBleeding
     | DiagnosisPostpartumEarlyMastitisOrEngorgment
     | DiagnosisPostpartumMastitis
+    | DiagnosisHighRiskOfPreeclampsia
+    | DiagnosisModerateRiskOfPreeclampsia
     | NoPrenatalDiagnosis
 
 

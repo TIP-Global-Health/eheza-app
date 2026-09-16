@@ -178,6 +178,7 @@ class HedleyReportsDataEndpoint extends HedleyWebTestBase {
     // Piggy-backs on this method's install, per the note above: a second
     // test method would pay another full hedley-profile install.
     $this->checkPrevalencePercentages();
+    $this->checkPrenatalDiagnosisMappingCoverage();
   }
 
   /**
@@ -240,6 +241,51 @@ class HedleyReportsDataEndpoint extends HedleyWebTestBase {
 
     // An empty bucket stays at 0%, and does not divide by zero.
     $this->assertEqual($results['wasting_moderate'], '0%', 'An empty total yields 0%.');
+  }
+
+  /**
+   * Every prenatal diagnosis a nurse can record reaches the report.
+   *
+   * The report counts each diagnosis a pregnancy received. A value the
+   * mapping does not know is dropped, and an encounter left with nothing
+   * is then counted as having no diagnosis at all.
+   *
+   * Values ending in '-continued' are the exception: they reconfirm a
+   * diagnosis an earlier encounter already recorded, so they carry no code
+   * and must stay out of the mapping.
+   *
+   * Called from testReportsDataAccess() rather than being a test method of
+   * its own, so that it shares that method's install.
+   */
+  protected function checkPrenatalDiagnosisMappingCoverage() {
+    $field = field_info_field('field_prenatal_diagnoses');
+    $allowed = array_keys($field['settings']['allowed_values']);
+    $mapping = hedley_reports_prenatal_diagnosis_mapping();
+    $this->assertTrue(!empty($allowed), 'The prenatal diagnosis list was loaded.');
+
+    // Reconfirmations, plus 'none', which means no diagnosis was made.
+    $expected_without_code = [
+      'malaria-continued',
+      'malaria-continued-recurrent',
+      'malaria-anemia-continued',
+      'malaria-anemia-continued-recurrent',
+      'heartburn-persistent',
+      'pelvic-pain-continued',
+      'urinary-tract-infection-continued',
+      'candidiasis-continued',
+      'gonorrhea-continued',
+      'trichomonas-or-bv-continued',
+      'none',
+    ];
+
+    foreach ($allowed as $value) {
+      if (in_array($value, $expected_without_code)) {
+        $this->assertFalse(isset($mapping[$value]), "Diagnosis $value is counted at the encounter that found it, so it has no report code.");
+      }
+      else {
+        $this->assertTrue(isset($mapping[$value]), "Diagnosis $value has a report code.");
+      }
+    }
   }
 
 }

@@ -2256,6 +2256,12 @@ prenatalDiagnosisCssClass diagnosis =
         DiagnosisPostpartumMastitis ->
             "diagnosis-pp-mastitis"
 
+        DiagnosisHighRiskOfPreeclampsia ->
+            "diagnosis-high-risk-preeclampsia"
+
+        DiagnosisModerateRiskOfPreeclampsia ->
+            "diagnosis-moderate-risk-preeclampsia"
+
         NoPrenatalDiagnosis ->
             "no-diagnosis"
 
