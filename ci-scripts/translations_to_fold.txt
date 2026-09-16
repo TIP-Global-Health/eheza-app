@@ -2,7 +2,6 @@
 # Fold one: pick the id that holds the words, translate it, and point the
 # others at it with `translationSet ThatId`. Then delete the line here.
 
-1 Month
 1 Week
 1 day
 4 tabs by mouth x one day
@@ -23,13 +22,12 @@ Child Scorecard Encounter
 Clear
 Coartem
 Danger Signs
-Detectable HIV Viral Load
 Discharge
 Early Childhood Development
 Edema
 Enter the amount of Aheza distributed below.
 Examination
-Family Planning
+Fever of Unknown Origin
 Green
 Growth
 HIV
@@ -49,7 +47,6 @@ Infection
 Iron
 Laboratory
 Large (+++)
-Make sure to measure at the center of the baby’s upper arm.
 Massage
 Maternal Mental Health
 May
@@ -58,13 +55,9 @@ Medium (++)
 Moderate
 Mother
 Negative
-No reason
-No, never
 None of the above
-Not at all
 Not very often
 OPV
-Options include \"Read it,\" \"Favourites,\" and \"Remind me\".
 Out of Stock
 PCV 13
 Participant Directory
@@ -82,9 +75,9 @@ Progress Report
 Protein
 Random Blood Sugar
 Read
+Receipt of other support (e.g., food items or small livestock,...)
 Refer patient to mental health specialist for further evaluation
 Referred to health center
-Respiratory
 Respiratory Distress
 Rotarix
 Select the best treatment option for the patient below
@@ -103,9 +96,6 @@ Urine Dipstick
 Vitals
 With Danger Signs
 Yes, most of the time
-Yes, quite often
-by mouth 1x a day
-by mouth 2x a day
 by mouth 3x a day
 by mouth 4x a day for 14 days
 from last month
