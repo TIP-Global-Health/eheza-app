@@ -10429,11 +10429,11 @@ var $author$project$Backend$Reports$Decoder$acuteIllnessDiagnosisFromMapping = f
 		case 'i':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated);
 		case 'j':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough);
-		case 'k':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated);
-		case 'l':
+		case 'k':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated);
+		case 'l':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough);
 		case 'm':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin);
 		case 'n':
