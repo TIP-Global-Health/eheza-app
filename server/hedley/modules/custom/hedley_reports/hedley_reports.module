@@ -9398,14 +9398,23 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
   if ($hiv_diagnosed) {
     $hiv_test_measurement = $encounter_data['measurements_by_type']['prenatal_hiv_test'];
     if (!empty($hiv_test_measurement) && !empty($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE])) {
+      // A lab technician's save leaves the follow up questions to the nurse,
+      // marking the answers as pending. Until the nurse answers whether
+      // there is an HIV program at the health center, no medication is
+      // required.
       $hiv_program_at_hc = FALSE;
+      $answers_pending = FALSE;
       foreach ($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE] as $sign) {
         if ($sign['value'] == 'hiv-program-hc') {
           $hiv_program_at_hc = TRUE;
           break;
         }
+        if ($sign['value'] == 'pending-input') {
+          $answers_pending = TRUE;
+          break;
+        }
       }
-      if (!$hiv_program_at_hc) {
+      if (!$hiv_program_at_hc && !$answers_pending) {
         return TRUE;
       }
     }
