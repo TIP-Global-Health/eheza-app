@@ -126,6 +126,20 @@ for (const file of FILES) {
     offenders.push({ file, english: `${file}:${line}`, ids: [], reason: `cannot be read: ${why}` });
   }
 
+  // Two spellings of one string are two strings, and each gets its own
+  // translations. Abbreviations are written in capitals, the rest as a sentence.
+  const byCase = new Map();
+  for (const { english } of found) {
+    const key = english.toLowerCase();
+    byCase.set(key, (byCase.get(key) || new Set()).add(english));
+  }
+  for (const spellings of byCase.values()) {
+    if (spellings.size > 1) {
+      const [first, ...rest] = [...spellings];
+      offenders.push({ file, english: first, ids: [], reason: `is also written ${rest.map((s) => `"${s}"`).join(', ')}` });
+    }
+  }
+
   const byEnglish = new Map();
   for (const record of found) {
     written += 1;

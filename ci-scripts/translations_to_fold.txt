@@ -2,9 +2,9 @@
 # Fold one: pick the id that holds the words, translate it, and point the
 # others at it with `translationSet ThatId`. Then delete the line here.
 
-1 Day
 1 Month
 1 Week
+1 day
 4 tabs by mouth x one day
 ANC Labs
 Abdomen
@@ -12,6 +12,7 @@ Active Diagnosis
 Acute Illness Encounter
 Acute Illness Outcome
 Adverse event
+Adverse events
 All
 Appointment Confirmation
 BCG
@@ -41,6 +42,7 @@ Hepatitis B
 History
 IM 1x a week for 3 weeks
 IPV
+Imminent delivery
 Immunization
 Increased Thirst
 Infection
@@ -56,9 +58,9 @@ Medium (++)
 Moderate
 Mother
 Negative
-No Treatment Administered
+No reason
 No, never
-None of the Above
+None of the above
 Not at all
 Not very often
 OPV
@@ -72,7 +74,7 @@ Patient shows signs of Moderate Risk for Preclampsia
 Patient shows signs of being a suicide risk
 Pentavalent
 Physical Exam
-Poor Suck
+Poor suck
 Positive
 Pregnancy
 Pregnancy Dating
@@ -81,13 +83,15 @@ Protein
 Random Blood Sugar
 Read
 Refer patient to mental health specialist for further evaluation
-Referred to Health Center
+Referred to health center
 Respiratory
 Respiratory Distress
 Rotarix
 Select the best treatment option for the patient below
 Select the medication and dosage you will administer to the patient
 Severe Preeclampsia
+Severe acute malnutrition
+Severe vomiting
 Simple Cold and Cough
 Single
 Small (+)

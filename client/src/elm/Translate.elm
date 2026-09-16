@@ -333,6 +333,7 @@ type TranslationId
     | Accept
     | AccompaniedByPartner
     | AccompanyToFacilityQuestion ReferralFacility
+    | AchiLabel
     | Actions
     | ActionsTaken
     | ActionsToTake
@@ -1077,6 +1078,8 @@ type TranslationId
     | Penicillin24MillionUnits
     | PerinealPainOrDischarge
     | PhotoActivityHelper
+    | PinCodeLabel
+    | PmtctLabel
     | Postpartum
     | PregnancyInducedHypertension
     | PrimarySchoolLabel
@@ -2144,6 +2147,7 @@ type TranslationId
     | TestWillBePerformedTodayQuestion
     | TetanusLabel
     | ThisGroupHasNoMothers
+    | ThisMonthLabel
     | Time
     | To
     | TooSick
@@ -2460,6 +2464,13 @@ translationSet trans =
                     , somali = Nothing
                     }
 
+        AchiLabel ->
+            { english = "ACHI"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         Actions ->
             { english = "Actions"
             , kinyarwanda = Just "Ibikorwa"
@@ -2491,7 +2502,7 @@ translationSet trans =
                     }
 
                 AcuteFindingsPoorSuck ->
-                    { english = "Poor Suck"
+                    { english = "Poor suck"
                     , kinyarwanda = Just "Yonka nta mbaraga"
                     , kirundi = Just "Ugukwega kutakwiye"
                     , somali = Just "Nuugida ku Yar"
@@ -2839,7 +2850,7 @@ translationSet trans =
                     }
 
                 Backend.IndividualEncounterParticipant.Model.OutcomeReferredToHC ->
-                    { english = "Referred to Health Center"
+                    { english = "Referred to health center"
                     , kinyarwanda = Just "Yoherejwe ku kigo nderabuzima"
                     , kirundi = Just "Yarungitswe kw'ivuriro"
                     , somali = Just "Loo gudbiyay Xarun Caafimaad"
@@ -3478,7 +3489,7 @@ translationSet trans =
                     translationSet NoneOfTheAbove
 
         AdverseEvents ->
-            { english = "Adverse Events"
+            { english = "Adverse events"
             , kinyarwanda = Nothing
             , kirundi = Just "Ibimenyetso vyuko umuti wamumereye nabi"
             , somali = Just "Waxyeellooyin"
@@ -4813,7 +4824,7 @@ translationSet trans =
                     }
 
                 ActionReferredToHealthCenter ->
-                    { english = "Referred to Health Center"
+                    { english = "Referred to health center"
                     , kinyarwanda = Just "Yoherejwe Ku Kigonderbuzima"
                     , kirundi = Just "Yarungitswe kw'ivuriro"
                     , somali = Just "Loo gudbiyay Xarun Caafimaad"
@@ -4833,7 +4844,7 @@ translationSet trans =
                     translationSet BirthPlanLabel
 
         ChwActivity ->
-            { english = "Chw Activity"
+            { english = "CHW Activity"
             , kinyarwanda = Just "Igikorwa cy'Umujyana w'Ubuzima"
             , kirundi = Just "Igikorwa c'Abaremeshakiyago"
             , somali = Just "Hawsha SHCB"
@@ -4863,28 +4874,16 @@ translationSet trans =
         ClinicType clinicType ->
             case clinicType of
                 Achi ->
-                    { english = "Achi"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet AchiLabel
 
                 Chw ->
                     translationSet CHW
 
                 Fbf ->
-                    { english = "Fbf"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet FBFLabel
 
                 Pmtct ->
-                    { english = "Pmtct"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet PmtctLabel
 
                 Sorwathe ->
                     translationSet SorwatheLabel
@@ -5706,7 +5705,7 @@ translationSet trans =
 
         DaySinglePlural value ->
             if value == 1 then
-                { english = "1 Day"
+                { english = "1 day"
                 , kinyarwanda = Just "1 Umunsi"
                 , kirundi = Just "1 Umunsi"
                 , somali = Just "1 maalin"
@@ -7410,7 +7409,7 @@ translationSet trans =
         FollowUpOption option ->
             case option of
                 OneDay ->
-                    { english = "1 Day"
+                    { english = "1 day"
                     , kinyarwanda = Just "Umunsi 1"
                     , kirundi = Just "Umunsi 1"
                     , somali = Just "1 maalin"
@@ -7489,11 +7488,7 @@ translationSet trans =
                     }
 
                 DueThisMonth ->
-                    { english = "This Month"
-                    , kinyarwanda = Just "Uku kwezi"
-                    , kirundi = Just "Uku kwezi"
-                    , somali = Just "Bishan"
-                    }
+                    translationSet ThisMonthLabel
 
                 DueNextMonth ->
                     { english = "Next Month"
@@ -7835,11 +7830,7 @@ translationSet trans =
             }
 
         HbA1c ->
-            { english = "HBA1c"
-            , kinyarwanda = Just "Ikigereranyo cy'isukari mu maraso mu mezi atatu ashize"
-            , kirundi = Just "Igipimo co kuraba ingene isukari ingana mu maraso"
-            , somali = Nothing
-            }
+            translationSet HBA1C
 
         HBA1C ->
             { english = "HBA1C"
@@ -8968,7 +8959,7 @@ translationSet trans =
             }
 
         ImminentDeliveryLabel ->
-            { english = "Imminent Delivery"
+            { english = "Imminent delivery"
             , kinyarwanda = Just "Kubyara biri hafi"
             , kirundi = Just "Gutanga bigaragara/"
             , somali = Nothing
@@ -12012,7 +12003,7 @@ translationSet trans =
             }
 
         PerinealPainOrDischarge ->
-            { english = "Perineal Pain or Discharge"
+            { english = "Perineal pain or discharge"
             , kinyarwanda = Just "Arababara perine cg aratakaza ibintu budasanzwe"
             , kirundi = Just "Ububabare bw'umugongo hepfo"
             , somali = Just "Xanuun qaska ah ama Dheecaan"
@@ -12025,6 +12016,20 @@ translationSet trans =
             , somali = Just "Canug walba ka qaad sawir mar walba oo la sameynayo qiimeyn caafimaad. Sawirada waa inay muujiyaan dhamaan jirka canug walba."
             }
 
+        PinCodeLabel ->
+            { english = "PIN code"
+            , kinyarwanda = Just "Umubare w'ibanga"
+            , kirundi = Just "Inimero kabanga"
+            , somali = Just "Koodka PIN"
+            }
+
+        PmtctLabel ->
+            { english = "PMTCT"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         Postpartum ->
             { english = "Postpartum"
             , kinyarwanda = Just "Igihe cya nyuma cyo kubyara"
@@ -12033,7 +12038,7 @@ translationSet trans =
             }
 
         PregnancyInducedHypertension ->
-            { english = "Pregnancy-Induced Hypertension"
+            { english = "Pregnancy-induced hypertension"
             , kinyarwanda = Just "Umuvuduko w'amaraso watewe no gutwita"
             , kirundi = Just "Umuvuduko w'amaraso utewe n'imbanyi"
             , somali = Nothing
@@ -12288,7 +12293,7 @@ translationSet trans =
                     }
 
                 NoMedicationCausingHypertension ->
-                    { english = "None of the Above"
+                    { english = "None of the above"
                     , kinyarwanda = Just "Nta na kimwe"
                     , kirundi = Just "Nta nimwe muri izo ziri hejuru"
                     , somali = Just "Midna kor ku xusan"
@@ -12384,7 +12389,7 @@ translationSet trans =
                     translationSet OtherLabel
 
                 NoMedicalConditions ->
-                    { english = "None of the Above"
+                    { english = "None of the above"
                     , kinyarwanda = Just "Nta na kimwe"
                     , kirundi = Just "Nta nimwe muri izo ziri hejuru"
                     , somali = Just "Midna kor ku xusan"
@@ -12428,7 +12433,7 @@ translationSet trans =
                     }
 
                 NoMedicationTreatingDiabetes ->
-                    { english = "None of the Above"
+                    { english = "None of the above"
                     , kinyarwanda = Just "Nta na kimwe"
                     , kirundi = Just "Nta nimwe muri izo ziri hejuru"
                     , somali = Just "Midna kor ku xusan"
@@ -12493,7 +12498,7 @@ translationSet trans =
                     }
 
                 NoMedicationTreatingHypertension ->
-                    { english = "None of the Above"
+                    { english = "None of the above"
                     , kinyarwanda = Just "Nta na kimwe"
                     , kirundi = Just "Nta nimwe muri izo ziri hejuru"
                     , somali = Just "Midna kor ku xusan"
@@ -14107,7 +14112,7 @@ translationSet trans =
                     }
 
                 NoNCDDangerSigns ->
-                    { english = "None of the Above"
+                    { english = "None of the above"
                     , kinyarwanda = Just "Nta na kimwe"
                     , kirundi = Just "Nta nimwe muri izo ziri hejuru"
                     , somali = Just "Midna kor ku xusan"
@@ -14364,7 +14369,7 @@ translationSet trans =
                     }
 
                 NoNCDGroup1Symptoms ->
-                    { english = "None of the Above"
+                    { english = "None of the above"
                     , kinyarwanda = Just "Nta na kimwe"
                     , kirundi = Just "Nta nimwe muri izo ziri hejuru"
                     , somali = Just "Midna kor ku xusan"
@@ -14443,7 +14448,7 @@ translationSet trans =
                     }
 
                 NoNCDGroup2Symptoms ->
-                    { english = "None of the Above"
+                    { english = "None of the above"
                     , kinyarwanda = Just "Nta na kimwe"
                     , kirundi = Just "Nta nimwe muri izo ziri hejuru"
                     , somali = Just "Midna kor ku xusan"
@@ -14483,7 +14488,7 @@ translationSet trans =
                     }
 
                 NoNCDPainSymptoms ->
-                    { english = "None of the Above"
+                    { english = "None of the above"
                     , kinyarwanda = Just "Nta na kimwe"
                     , kirundi = Just "Nta nimwe muri izo ziri hejuru"
                     , somali = Just "Midna kor ku xusan"
@@ -14858,7 +14863,7 @@ translationSet trans =
             { english = "No treatment administered"
             , kinyarwanda = Just "Nta muti watanzwe"
             , kirundi = Just "Nta muti watanzwe"
-            , somali = Nothing
+            , somali = Just "Daawo lama siinin"
             }
 
         NoTreatmentRecorded ->
@@ -14912,7 +14917,7 @@ translationSet trans =
                     translationSet OtherLabel
 
                 NoReasonForNonReferral ->
-                    { english = "No Reason"
+                    { english = "No reason"
                     , kinyarwanda = Just "Nta mpamvu"
                     , kirundi = Just "Nta citwazo"
                     , somali = Just "Sabab La`aan"
@@ -15251,7 +15256,7 @@ translationSet trans =
                     }
 
                 AssesmentAcuteMalnutritionSevere ->
-                    { english = "Severe Acute Malnutrition"
+                    { english = "Severe acute malnutrition"
                     , kinyarwanda = Just "Imirire  mibi ikabije ije vuba"
                     , kirundi = Just "Ingwara yo gufungura nabi ikaze"
                     , somali = Just "Nafaqo yari aad u daran"
@@ -15623,11 +15628,7 @@ translationSet trans =
                     }
 
                 DiagnosisPregnancyInducedHypertension ->
-                    { english = "Pregnancy-induced hypertension"
-                    , kinyarwanda = Just "Umuvuduko w'amaraso watewe no gutwita"
-                    , kirundi = Just "Umuvuduko w'amaraso utewe n'imbanyi"
-                    , somali = Nothing
-                    }
+                    translationSet PregnancyInducedHypertension
 
                 DiagnosisPreeclampsiaHighRisk ->
                     { english = "High Risk for Preeclampsia"
@@ -19517,11 +19518,7 @@ translationSet trans =
                     translationSet Fever
 
                 PostpartumPerinealPainOrDischarge ->
-                    { english = "Perineal pain or Discharge"
-                    , kinyarwanda = Just "Arababara perine cg aratakaza ibintu budasanzwe"
-                    , kirundi = Just "Ububabare bw'umugongo hepfo"
-                    , somali = Just "Xanuun qaska ah ama Dheecaan"
-                    }
+                    translationSet PerinealPainOrDischarge
 
                 NoPrenatalSymptoms ->
                     translationSet NoneOfThese
@@ -19691,7 +19688,7 @@ translationSet trans =
             }
 
         SevereVomitingLabel ->
-            { english = "Severe Vomiting"
+            { english = "Severe vomiting"
             , kinyarwanda = Just "Kuruka bikabije"
             , kirundi = Just "Ukudahwa gukaze"
             , somali = Nothing
@@ -20603,11 +20600,7 @@ translationSet trans =
                     }
 
                 NoTreatmentForMalaria ->
-                    { english = "No Treatment Administered"
-                    , kinyarwanda = Just "Nta muti watanzwe"
-                    , kirundi = Just "Nta muti watanzwe"
-                    , somali = Just "Daawo lama siinin"
-                    }
+                    translationSet NoTreatmentAdministered
 
                 TreatmentPenecilin1 ->
                     translationSet Penicillin24MillionUnits
@@ -20631,11 +20624,7 @@ translationSet trans =
                     translationSet Ceftriaxone1g
 
                 NoTreatmentForSyphilis ->
-                    { english = "No Treatment Administered"
-                    , kinyarwanda = Just "Nta muti watanzwe"
-                    , kirundi = Just "Nta muti watanzwe"
-                    , somali = Nothing
-                    }
+                    translationSet NoTreatmentAdministered
 
                 TreatmentMethyldopa2 ->
                     translationSet Methyldopa250mg
@@ -20691,11 +20680,7 @@ translationSet trans =
                     }
 
                 NoTreatmentForHypertension ->
-                    { english = "No Treatment Administered"
-                    , kinyarwanda = Just "Nta muti watanzwe"
-                    , kirundi = Just "Nta muti watanzwe"
-                    , somali = Nothing
-                    }
+                    translationSet NoTreatmentAdministered
 
                 TreatmentAluminiumHydroxide ->
                     { english = "Aluminium Hydroxide (500mg)"
@@ -20775,11 +20760,7 @@ translationSet trans =
                     }
 
                 NoTreatmentForMastitis ->
-                    { english = "No Treatment Administered"
-                    , kinyarwanda = Just "Nta muti watanzwe"
-                    , kirundi = Just "Nta muti watanzwe"
-                    , somali = Nothing
-                    }
+                    translationSet NoTreatmentAdministered
 
                 TreatmentMetformin1m1e ->
                     translationSet Metformin500mg
@@ -20814,11 +20795,7 @@ translationSet trans =
                     }
 
                 NoTreatmentForDiabetes ->
-                    { english = "No Treatment Administered"
-                    , kinyarwanda = Just "Nta muti watanzwe"
-                    , kirundi = Just "Nta muti watanzwe"
-                    , somali = Nothing
-                    }
+                    translationSet NoTreatmentAdministered
 
         RecommendedTreatmentSignLabelForProgressReport sign ->
             case sign of
@@ -21191,11 +21168,7 @@ translationSet trans =
                     translationSet ImmunizationHistory
 
                 ComponentAntenatalCHWActivity ->
-                    { english = "CHW Activity"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Igikorwa c'Abaremeshakiyago"
-                    , somali = Just "Hawsha SHCB"
-                    }
+                    translationSet ChwActivity
 
                 ComponentAntenatalPatientProgress ->
                     translationSet PatientProgress
@@ -25852,7 +25825,7 @@ translationSet trans =
                     }
 
                 PoorSuck ->
-                    { english = "Poor Suck"
+                    { english = "Poor suck"
                     , kinyarwanda = Just "Yonka nta mbaraga"
                     , kirundi = Just "Kutonka neza"
                     , somali = Just "Nuugida ku Yar"
@@ -26423,6 +26396,13 @@ translationSet trans =
             , kinyarwanda = Just "Iki cyiciro nta mubyeyi cyagenewe."
             , kirundi = Just "Uyu mugwi nta muvyeyi/umu mama bawuhaye"
             , somali = Just "Kooxdan ma lahan hooyooyin loo xilsaaray"
+            }
+
+        ThisMonthLabel ->
+            { english = "This month"
+            , kinyarwanda = Just "Uku kwezi"
+            , kirundi = Just "Uku kwezi"
+            , somali = Just "Bishan"
             }
 
         Time ->
@@ -28751,11 +28731,7 @@ translateActivePage page =
             translationSet DeviceStatus
 
         PinCodePage ->
-            { english = "PIN Code"
-            , kinyarwanda = Just "Umubare w'ibanga"
-            , kirundi = Just "Inimero kabanga"
-            , somali = Just "Koodka PIN"
-            }
+            translationSet PinCodeLabel
 
         PageNotFound _ ->
             { english = "Missing"
@@ -29613,21 +29589,13 @@ translateDashboard trans =
                     }
 
                 FilterProgramAchi ->
-                    { english = "ACHI"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet AchiLabel
 
                 FilterProgramFbf ->
                     translationSet FBFLabel
 
                 FilterProgramPmtct ->
-                    { english = "PMTCT"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet PmtctLabel
 
                 FilterProgramSorwathe ->
                     translationSet SorwatheLabel
@@ -29910,11 +29878,7 @@ translateDashboard trans =
                     }
 
                 Dashboard.ThisMonth ->
-                    { english = "This month"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Uku kwezi"
-                    , somali = Just "Bishan"
-                    }
+                    translationSet ThisMonthLabel
 
                 Dashboard.LastMonth ->
                     { english = "Last month"
@@ -30132,11 +30096,7 @@ translateLoginPhrase phrase =
             }
 
         PinCode ->
-            { english = "PIN code"
-            , kinyarwanda = Nothing
-            , kirundi = Just "Inimero kabanga"
-            , somali = Just "Koodka PIN"
-            }
+            translationSet PinCodeLabel
 
         PinCodeRejected ->
             { english = "Your PIN code was not recognized."
