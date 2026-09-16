@@ -6,6 +6,7 @@ import { resetDevice } from './helpers/device';
 import {
   WAIT,
   clickSubTaskTab,
+  expectActivityAbsent,
   expectActivityInTab,
   openActivity,
   openEncounterTab,
@@ -660,30 +661,20 @@ test.describe('Lab Tech and Nurse: a positive result entered at the lab waits fo
     await page.waitForTimeout(WAIT.pageNavigation);
     await syncAndWait(page);
 
-    // --- Phase 3: the nurse opens Next Steps before answering the follow ups ---
+    // --- Phase 3: Next Steps has nothing to offer before the follow ups ---
     await switchUser(page, '1234');
     await navigateToCaseManagement(page);
     await openLabsResultsReviewFromCaseManagement(page, fullName);
     await acceptLabsResults(page);
 
-    await openActivity(page, 'prenatal', 'next-steps');
-    await dismissWarningPopup(page);
-    const medicationTab = page.locator(
-      '.link-section:has(.icon-activity-task.icon-next-steps-medication-distribution)',
+    // No medication is required while the answers are pending, and health
+    // education asks the questions the diagnoses decide, so it waits for the
+    // answers as well. That leaves Next Steps with nothing to offer.
+    await expectActivityAbsent(
+      page,
+      'next-steps',
+      'Next Steps should not be offered while the follow up answers are pending',
     );
-    await expect(
-      medicationTab,
-      'no medication should be offered while the follow up answers are pending',
-    ).toHaveCount(0);
-
-    // Save what Next Steps does offer, so the encounter can move on to the
-    // follow ups. The helper opens the activity from the encounter page, so
-    // step back to it first.
-    await click(page.locator('.icon-back').first(), page);
-    await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
-    const savedTasks = await completeRecurrentNextSteps(page);
-    expect(savedTasks.length, 'at least one Next Steps task should have been saved').toBeGreaterThan(0);
-    await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
 
     // --- Phase 4: the nurse answers that there is an HIV program at the health center ---
     await openEncounterTab(page, 'pending');
@@ -705,13 +696,15 @@ test.describe('Lab Tech and Nurse: a positive result entered at the lab waits fo
       page,
       'next-steps',
       'pending',
-      'Next Steps should be pending again now that a referral is required',
+      'Next Steps should be pending now that a referral is required',
     );
 
     await openActivity(page, 'prenatal', 'next-steps');
     await dismissWarningPopup(page);
     await expect(
-      medicationTab,
+      page.locator(
+        '.link-section:has(.icon-activity-task.icon-next-steps-medication-distribution)',
+      ),
       'no medication should be offered when there is an HIV program at the health center',
     ).toHaveCount(0);
     await clickSubTaskTab(page, 'next-steps-send-to-hc');

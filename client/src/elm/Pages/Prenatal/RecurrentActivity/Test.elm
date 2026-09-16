@@ -19,6 +19,7 @@ import Backend.Measurement.Model
         , TestResult(..)
         , emptyPrenatalMeasurements
         )
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date
@@ -33,6 +34,7 @@ import Pages.Prenatal.RecurrentActivity.Utils
         ( laboratoryResultTaskCompleted
         , nextStepsTaskCompleted
         , resolveLaboratoryResultFollowUpsTasks
+        , resolveNextStepsTasks
         )
 import Pages.Prenatal.Utils exposing (resolveRequiredMedicationsSet)
 import Restful.Endpoint exposing (toEntityUuid)
@@ -231,6 +233,82 @@ nextStepsMedicationDistributionCompletedTest =
         ]
 
 
+{-| The nurse's answers to the Partner HIV follow up questions, which the lab
+technician leaves pending when they enter the result.
+-}
+withPartnerHIVSigns : EverySet PrenatalHIVSign -> PrenatalMeasurements -> PrenatalMeasurements
+withPartnerHIVSigns hivSigns measurements =
+    getMeasurementValueFunc measurements.partnerHIVTest
+        |> Maybe.map
+            (\value ->
+                { measurements
+                    | partnerHIVTest =
+                        TestFixtures.wrapMeasurement currentDate { value | hivSigns = Just hivSigns }
+                }
+            )
+        |> Maybe.withDefault measurements
+
+
+{-| An encounter where Diabetes was diagnosed at the recurrent phase, which is
+what the health education task is asked about here.
+-}
+assembledWithDiabetes : PrenatalMeasurements -> AssembledData
+assembledWithDiabetes measurements =
+    testAssembled measurements
+        |> withDiagnoses [ DiagnosisDiabetesRecurrentPhase ]
+
+
+{-| An encounter where the lab technician entered a positive Partner HIV
+result, which leaves its follow up questions for the nurse.
+-}
+measurementsWithPartnerHIVFollowUp : PrenatalMeasurements
+measurementsWithPartnerHIVFollowUp =
+    measurementsWith [ TestPartnerHIV ] (Just TestNegative) (Just TestPositive)
+
+
+offeredNextStepsTasks : AssembledData -> List NextStepsTask
+offeredNextStepsTasks assembled =
+    resolveNextStepsTasks currentDate False assembled
+
+
+
+-- The questions the health education task asks are decided by the diagnoses,
+-- and what was asked is not stored. So the task is offered only once the
+-- activities that make diagnoses are completed, and a diagnosis can no longer
+-- arrive after it was saved.
+--
+-- Diabetes refers the patient as well, so the Send to HC task is offered
+-- throughout.
+
+
+nextStepsHealthEducationExpectedTest : Test
+nextStepsHealthEducationExpectedTest =
+    describe "resolveNextStepsTasks NextStepsHealthEducation"
+        [ test "offered when no activity that makes diagnoses is pending" <|
+            \_ ->
+                assembledWithDiabetes emptyPrenatalMeasurements
+                    |> offeredNextStepsTasks
+                    |> Expect.equal [ NextStepsHealthEducation, NextStepsSendToHC ]
+        , test "not offered while a lab result follow up is unanswered" <|
+            \_ ->
+                assembledWithDiabetes measurementsWithPartnerHIVFollowUp
+                    |> offeredNextStepsTasks
+                    |> Expect.equal [ NextStepsSendToHC ]
+        , test "offered once the follow up is answered" <|
+            \_ ->
+                withPartnerHIVSigns (EverySet.fromList [ PartnerTakingARV, PartnerSurpressedViralLoad ]) measurementsWithPartnerHIVFollowUp
+                    |> assembledWithDiabetes
+                    |> offeredNextStepsTasks
+                    |> Expect.equal [ NextStepsHealthEducation, NextStepsSendToHC ]
+        , test "the medication task is offered while a follow up is unanswered" <|
+            \_ ->
+                testAssembled measurementsWithPartnerHIVFollowUp
+                    |> withDiagnoses [ DiagnosisDiabetesRecurrentPhase, DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ]
+                    |> offeredNextStepsTasks
+                    |> Expect.equal [ NextStepsMedicationDistribution, NextStepsSendToHC ]
+        ]
+
+
 resolveLaboratoryResultFollowUpsTasksTest : Test
 resolveLaboratoryResultFollowUpsTasksTest =
     describe "resolveLaboratoryResultFollowUpsTasks"
@@ -371,6 +449,7 @@ all : Test
 all =
     describe "Pages.Prenatal.RecurrentActivity.Utils"
         [ laboratoryResultTaskCompletedMalariaTest
+        , nextStepsHealthEducationExpectedTest
         , nextStepsMedicationDistributionCompletedTest
         , resolveLaboratoryResultFollowUpsTasksTest
         , resolveRequiredMedicationsSetHIVTest

@@ -144,7 +144,7 @@ viewActivity language currentDate isLabTech activity assembled model =
             viewLabResultsContent language isLabTech assembled model
 
         RecurrentNextSteps ->
-            viewNextStepsContent language currentDate assembled model.nextStepsData
+            viewNextStepsContent language currentDate isLabTech assembled model.nextStepsData
 
         RecurrentExamination ->
             viewExaminationContent language currentDate assembled model.examinationData
@@ -397,14 +397,14 @@ viewLabResultsContent language isLabTech assembled model =
     ]
 
 
-viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
-viewNextStepsContent language currentDate assembled data =
+viewNextStepsContent : Language -> NominalDate -> Bool -> AssembledData -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate isLabTech assembled data =
     let
         measurements =
             assembled.measurements
 
         tasks =
-            resolveNextStepsTasks currentDate assembled
+            resolveNextStepsTasks currentDate isLabTech assembled
 
         activeTask =
             resolveActiveTask tasks data.activeTask
