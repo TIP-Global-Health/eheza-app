@@ -3,6 +3,7 @@ version: 2.1
 workflows:
   build:
     jobs:
+      - lint_comments
       - lint_phpcs
       - lint_elm
       - lint_elm_review
@@ -35,6 +36,18 @@ workflows:
             - lint_shellcheck
 
 jobs:
+  lint_comments:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - checkout
+      - run:
+          name: Test the comment length checker
+          command: PYTHONPATH=ci-scripts python3 -m unittest discover -s ci-scripts/tests
+      # Only the comments this branch adds since it left develop are measured.
+      - run:
+          name: Check new comments are within 30 words
+          command: git fetch --quiet origin develop && python3 ci-scripts/check_comments.py --base origin/develop
   lint_phpcs:
     docker:
       - image: cimg/php:7.4.30
