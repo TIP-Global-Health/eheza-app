@@ -748,26 +748,6 @@ export async function openEncounterTab(
  * something: a tab that failed to switch leaves the other tab's cards on
  * screen, and a one sided check passes on them.
  */
-/**
- * Assert an activity card is offered in neither tab of the encounter page.
- */
-export async function expectActivityAbsent(
-  page: Page,
-  activityIcon: string,
-  message: string,
-): Promise<void> {
-  const card = page.locator(`.icon-task-${activityIcon}`);
-
-  for (const tab of ['pending', 'completed'] as const) {
-    await openEncounterTab(page, tab);
-    await expect(card, `${message} - and not under ${tab}`).toBeHidden({
-      timeout: 10000,
-    });
-  }
-
-  await openEncounterTab(page, 'pending');
-}
-
 export async function expectActivityInTab(
   page: Page,
   activityIcon: string,
@@ -786,6 +766,27 @@ export async function expectActivityInTab(
   });
 
   await openEncounterTab(page, tab);
+}
+
+
+/**
+ * Assert an activity card is offered in neither tab of the encounter page.
+ */
+export async function expectActivityAbsent(
+  page: Page,
+  activityIcon: string,
+  message: string,
+): Promise<void> {
+  const card = page.locator(`.icon-task-${activityIcon}`);
+
+  for (const tab of ['pending', 'completed'] as const) {
+    await openEncounterTab(page, tab);
+    await expect(card, `${message} - and not under ${tab}`).toBeHidden({
+      timeout: 10000,
+    });
+  }
+
+  await openEncounterTab(page, 'pending');
 }
 
 

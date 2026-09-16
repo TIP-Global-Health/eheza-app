@@ -383,14 +383,8 @@ expectNextStepsTask currentDate isLabTech assembled task =
                    )
 
 
-{-| The questions the health education task asks are decided by the diagnoses,
-and an answer is stored only when it's Yes. A question that was not asked is
-therefore stored exactly like a question answered with No, and once the task is
-saved, questions a later diagnosis adds can no longer be told apart from
-questions the nurse answered with No.
-So, the task is offered only when no diagnosis can be added anymore, which is
-when the activities that make diagnoses - lab results, their follow ups and the
-vitals recheck - are completed. Malaria Prevention makes no diagnosis.
+{-| A health education question that was not asked is stored exactly like one
+answered with No, so the task waits for the activities that make diagnoses.
 -}
 diagnosisSourcesCompleted : NominalDate -> Bool -> AssembledData -> Bool
 diagnosisSourcesCompleted currentDate isLabTech assembled =
