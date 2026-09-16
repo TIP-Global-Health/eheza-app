@@ -43,5 +43,6 @@
 - [Elm 0.19.2 Debug.todo off-by-one](elm-0192-debug-todo-region-offbyone.md) — 0.19.2 emits 0-based regions; `TODO ... on line N` really means line N+1 (unreported upstream bug)
 - [Enum variant breaks deployed clients](enum-variant-breaks-deployed-clients.md) — ⛔ a new VALUE on a client-decoded enum jams old devices' sync (strict decoder + whole-batch `list`); needs a two-release rollout — a new FIELD is safe in one; found on B-338 / PR #2228
 - [Photo upload fileId encoder wiring](photo-upload-fileid-encoder-wiring.md) — new photo-bearing content type MUST be added to the `replacePhotoWithFileId` dispatch in `SyncManager/Encoder.elm` or the photo link breaks silently
+- [CLAUDE.md can change mid-session](claude-md-can-change-mid-session.md) — the context copy is a START-OF-SESSION snapshot; a mid-session merge can add rules CI enforces and you never see (30-word comment budget, PR #2247)
 - [Local verification vs CI](local-verification-vs-ci.md) — CI carries the full suites; locally run elm make + the check that discriminates THIS change (byte-diff for moves, fail-first test for logic)
 - [Production SQL via host terminus](production-sql-via-host-terminus.md) — ⛔ read-only prod SQL = ONE plain host `terminus remote:drush <site>.live -- sql-query "..."` call; variable prefixes / pipes miss the allow rule and get classifier-blocked
