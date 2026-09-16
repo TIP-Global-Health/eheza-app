@@ -305,7 +305,7 @@ B-304	3	IMPLEMENTED	MED-LOW	2182	2183	27	Translate: copied-neighbor label batch 
 B-305	4	READY	LOW			26	Well Child immunisation (Burundi): pre-fix DTP-standalone records hold the DTP form's contents and keep blocking the boo
 B-306	4	READY	LOW			26	Acute Illness follow-up: a saved follow-up keeps the diagnosis it was saved with, so a later diagnosis correction leaves
 B-307	3	IMPLEMENTED	MED	2192	2193	24	Case Management follow-up entries: tapping one always creates a NEW encounter, so a second encounter can be opened the s
-B-308	2	READY	MED			28	Statistical Queries › Acute Illness: three respiratory diagnosis rows show each other's counts — the PHP code table and 
+B-308	2	IMPLEMENTED	MED	2254	2255	28	Statistical Queries › Acute Illness: three respiratory diagnosis rows show each other's counts — the PHP code table and 
 B-309	3	READY	MED-LOW			28	Statistical Queries › Postnatal Care: "Up to date with immunization" rows never see doses recorded at Child Scoreboard e
 B-310	4	READY	LOW			28	Aggregated NCDA scoreboard: the shared "children under 2" denominator uses the exact birth date while every age-gated nu
 B-311	2	READY	MED-HIGH			28	Aggregated NCDA scoreboard: the "born in the last 3 years" cutoff is evaluated at request time, so every historical colu
