@@ -2,195 +2,97 @@
 # Fold one: pick the id that holds the words, translate it, and point the
 # others at it with `translationSet ThatId`. Then delete the line here.
 
-+
-++
-+1
-+2
-+3
-+4
-0
-1
 1 Day
 1 Month
 1 Week
-1 tablet by mouth 3 times a day for 5 days
-1 tablet by mouth twice a day
-2
-2 capsules by mouth 3 times a day for 7 days
-2 tablets by mouth in the morning and 1 tablet by mouth in the evening
-2 tablets by mouth twice a day
-4
 4 tabs by mouth x one day
-<20 copies
 ANC Labs
 Abdomen
 Active Diagnosis
-Activities
-Activity
 Acute Illness Encounter
-Acute Illness History
 Acute Illness Outcome
 Adverse event
-Albendazole
 All
-Antenatal Encounter
 Appointment Confirmation
-Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight.
-Attendance
-Azithromycin (2g)
 BCG
-Birth Plan
-Blood Pressure
 Bloody Diarrhea
-Body Temperature
 Breastfeeding
 Breech
-CHW
-COVID-19
-Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on.
-Ceftriaxone (1g)
-Child
 Child Scorecard Encounter
 Clear
-Clinical
-Clinical Progress Report
 Coartem
-Contact Tracing
-Contributing Factors
-DTP - HepB - Hib
 Danger Signs
-Demographics
-Demographics Report
 Detectable HIV Viral Load
 Discharge
 Early Childhood Development
 Edema
-Erythromycin (500mg)
 Examination
-Explain to the mother how to check the malnutrition signs for their own child.
-FBF
 Family Planning
-Fefol
-Gestational Diabetes
 Green
-Groups
 Growth
-HIV
 HIV Encounter
 HIV PCR
 HPV
-Have you counseled the patient on family planning options
-Heart Rate
-Height
 Hemoglobin
 Hemoglobin Test Result
 Hepatitis B
 History
-Home Visit Encounter
 IM 1x a week for 3 weeks
 IPV
-If distributed amount is not as per guidelines, select the reason
 Immunization
 Increased Thirst
 Infection
 Iron
-Iron (60mg)
-Lab Results
 Laboratory
 Large (+++)
-MUAC
-Macrocephaly
 Make sure to measure at the center of the baby’s upper arm.
-Malaria Continued
-Malaria Prevention
 Massage
 Maternal Mental Health
 May
 Measles-Rubella
-Mebendazole
-Medical Diagnosis
 Medium (++)
-Microcephaly
 Moderate
 Mother
-NCD Encounter
-NCD Progress Report
-NCDA
-Nausea and Vomiting
 Negative
-Never
-Next Appointment
-No Schooling
 No Treatment Administered
 No, never
 None of the Above
 Not at all
-Not taken
 Not very often
-Nutrition Participants
 OPV
 Out of Stock
-Outside Care
 PCV 13
-Parent
 Participant Directory
 Participants
-Patient Progress
 Patient Record
-Patient has tested positive for Syphilis
 Patient shows signs of Moderate Risk for Preclampsia
 Patient shows signs of being a suicide risk
-Penicillin (2.4 million units)
 Pentavalent
-Person
-Photo
 Physical Exam
 Poor Suck
 Positive
 Pregnancy
 Pregnancy Dating
-Pregnancy Outcome
-Progress Photos
 Progress Report
 Protein
 Random Blood Sugar
 Read
 Refer patient to mental health specialist for further evaluation
-Referral
 Referred to Health Center
 Respiratory
 Respiratory Distress
-Respiratory Rate
 Rotarix
-Select Nutrition Visit
-Severe
 Severe Preeclampsia
 Simple Cold and Cough
 Single
 Small (+)
-Sorwathe
-Stage One Hypertension
-Standard Pediatric Visit Encounter
-Stock Management
 Suspected COVID-19 case
 Syphilis - RPR
-Take each baby’s photo at each health assessment. Photos should show the entire body of each child.
-Tetanus
-Triglycerides
-Tuberculosis
-Tuberculosis Encounter
 Uncomplicated Malaria
 Unknown
-Urinary Incontinence
 Urine Dipstick
-Varicose Veins
 Vitals
-Vitamin A
-Weight
-Well Child Visit
-Wellbeing
 With Danger Signs
-Yellow
 Yes, most of the time
 Yes, quite often
 by mouth 1x a day

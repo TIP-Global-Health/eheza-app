@@ -53,9 +53,10 @@ function records(source) {
   const found = [];
 
   lines.forEach((line, i) => {
-    // An empty english shows nothing, so it is skipped.
+    // An english with no letters is a number or a symbol, the same in every
+    // language, so it is not checked. Nor is an empty one, which shows nothing.
     const start = START.exec(line);
-    if (!start || !start[2] || !CLOSE.test(lines[i + 4] || '')) {
+    if (!start || !/[A-Za-z]/.test(start[2]) || !CLOSE.test(lines[i + 4] || '')) {
       return;
     }
 
