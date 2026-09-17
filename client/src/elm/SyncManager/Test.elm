@@ -142,7 +142,33 @@ personAtRevision revision =
 -}
 authorities : String -> List String -> Zipper SyncInfoAuthority
 authorities current others =
-    Zipper.from [] (emptySyncInfoAuthority current) (List.map emptySyncInfoAuthority others)
+    authoritiesFrom 0 current others
+
+
+{-| The same, with the current health centre's revision cursor at `cursor`.
+-}
+authoritiesFrom : Int -> String -> List String -> Zipper SyncInfoAuthority
+authoritiesFrom cursor current others =
+    let
+        current_ =
+            emptySyncInfoAuthority current
+    in
+    Zipper.from [] { current_ | lastFetchedRevisionId = cursor } (List.map emptySyncInfoAuthority others)
+
+
+{-| A model whose general download is in flight, issued at time 5000 from `cursor`.
+-}
+downloadingGeneral : Int -> Model
+downloadingGeneral cursor =
+    let
+        syncInfoGeneral =
+            testModel.syncInfoGeneral
+    in
+    { testModel
+        | syncStatus = SyncDownloadGeneral RemoteData.Loading
+        , syncInfoGeneral = { syncInfoGeneral | lastFetchedRevisionId = cursor }
+        , downloadRequestTime = Time.millisToPosix 5000
+    }
 
 
 {-| A model whose authority download is in flight, issued at `time`.
@@ -369,13 +395,34 @@ all =
                     |> .model
                     |> .syncStatus
                     |> Expect.equal (SyncDownloadAuthority RemoteData.Loading)
-        , test "an authority download response for a request that timed out is ignored" <|
+        , test "a late authority download response is applied while its authority and base revision are unchanged" <|
             \() ->
                 downloadingAuthority (authorities "hc-A" [ "hc-B" ]) 5000
                     |> runUpdate
                         (BackendAuthorityFetchHandle (authorities "hc-A" [ "hc-B" ])
                             (Time.millisToPosix 1000)
                             (RemoteData.Success (authorityResponse [ personAtRevision 900 ]))
+                        )
+                    |> runUpdate (authorityBatchSaved "5000")
+                    |> cursors
+                    |> Expect.equal [ ( "hc-A", 900 ), ( "hc-B", 0 ) ]
+        , test "an authority download response is dropped when its authority was removed and re-added since the request" <|
+            \() ->
+                downloadingAuthority (authorities "hc-A" [ "hc-B" ]) 5000
+                    |> runUpdate
+                        (BackendAuthorityFetchHandle (authoritiesFrom 5000 "hc-A" [ "hc-B" ])
+                            (Time.millisToPosix 5000)
+                            (RemoteData.Success (authorityResponse [ personAtRevision 5900 ]))
+                        )
+                    |> (\model -> ( model.syncStatus, model.downloadAuthorityResponse ))
+                    |> Expect.equal ( SyncDownloadAuthority RemoteData.NotAsked, RemoteData.NotAsked )
+        , test "a superseded authority download response whose base revision moved is ignored while a newer request is in flight" <|
+            \() ->
+                downloadingAuthority (authoritiesFrom 500 "hc-A" [ "hc-B" ]) 5000
+                    |> runUpdate
+                        (BackendAuthorityFetchHandle (authorities "hc-A" [ "hc-B" ])
+                            (Time.millisToPosix 1000)
+                            (RemoteData.Success (authorityResponse [ personAtRevision 500 ]))
                         )
                     |> (\model -> ( model.syncStatus, model.downloadAuthorityResponse ))
                     |> Expect.equal ( SyncDownloadAuthority RemoteData.Loading, RemoteData.NotAsked )
@@ -408,20 +455,23 @@ all =
                 in
                 { model
                     | downloadAuthorityResponse = RemoteData.Success (authorityResponse [ personAtRevision 900 ])
-                    , downloadAuthorityUuid = "hc-A"
+                    , downloadAuthorityAtRequest = emptySyncInfoAuthority "hc-A"
                 }
                     |> runUpdate (authorityBatchSaved "5000")
                     |> (\updated -> ( cursors updated, updated.syncStatus ))
                     |> Expect.equal ( [ ( "hc-B", 0 ), ( "hc-A", 0 ) ], SyncDownloadAuthority RemoteData.NotAsked )
-        , test "a general download response for a request that timed out is ignored" <|
+        , test "a late general download response is applied while the base revision is unchanged" <|
             \() ->
-                { testModel
-                    | syncStatus = SyncDownloadGeneral RemoteData.Loading
-                    , downloadRequestTime = Time.millisToPosix 5000
-                }
-                    |> runUpdate (BackendGeneralFetchHandle (Time.millisToPosix 1000) (RemoteData.Success emptyGeneralResponse))
+                downloadingGeneral 0
+                    |> runUpdate (BackendGeneralFetchHandle 0 (Time.millisToPosix 1000) (RemoteData.Success emptyGeneralResponse))
+                    |> .downloadGeneralResponse
+                    |> Expect.equal (RemoteData.Success emptyGeneralResponse)
+        , test "a general download response is dropped when the base revision moved since the request" <|
+            \() ->
+                downloadingGeneral 500
+                    |> runUpdate (BackendGeneralFetchHandle 0 (Time.millisToPosix 5000) (RemoteData.Success emptyGeneralResponse))
                     |> (\model -> ( model.syncStatus, model.downloadGeneralResponse ))
-                    |> Expect.equal ( SyncDownloadGeneral RemoteData.Loading, RemoteData.NotAsked )
+                    |> Expect.equal ( SyncDownloadGeneral RemoteData.NotAsked, RemoteData.NotAsked )
         , test "a statistics response for an authority that is no longer current leaves the list alone" <|
             \() ->
                 { testModel

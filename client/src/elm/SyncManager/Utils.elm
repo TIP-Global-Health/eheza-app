@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, isCurrentAuthority, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, isCurrentAuthorityRequest, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -71,12 +71,14 @@ pageAllowsBackgroundRefresh page =
             False
 
 
-{-| Whether the authority with this UUID is the one the sync cycle is on now.
-A download response is applied only while its authority is still current.
+{-| Whether a download issued for this authority entry still answers what the
+model asks: the entry is current, and its revision cursor has not moved since.
 -}
-isCurrentAuthority : String -> Model -> Bool
-isCurrentAuthority uuid model =
-    Maybe.map (Zipper.current >> .uuid) model.syncInfoAuthorities == Just uuid
+isCurrentAuthorityRequest : SyncInfoAuthority -> Model -> Bool
+isCurrentAuthorityRequest requested model =
+    Maybe.map Zipper.current model.syncInfoAuthorities
+        |> Maybe.map (\current -> current.uuid == requested.uuid && current.lastFetchedRevisionId == requested.lastFetchedRevisionId)
+        |> Maybe.withDefault False
 
 
 {-| Decide on the Sync status. Either keep the existing one, or set the next one,

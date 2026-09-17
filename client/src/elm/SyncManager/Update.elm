@@ -77,10 +77,9 @@ update currentTime activePage dbVersion device msg model =
             Time.posixToMillis model.downloadRequestTime
                 |> String.fromInt
 
-        -- The response in hand is for an authority that is no longer current,
-        -- because the list changed in flight. Drop it; the next tick fetches
-        -- the current authority.
-        refetchCurrentAuthority status =
+        -- The in-flight response no longer answers what the model asks, because
+        -- the list or the cursor changed. Drop it; the next tick issues a fresh request.
+        dropAndRefetch status =
             SubModelReturn { model | syncStatus = status RemoteData.NotAsked } Cmd.none noError []
     in
     case msg of
@@ -172,7 +171,6 @@ update currentTime activePage dbVersion device msg model =
                                                 , ( "stats_cache_hash", currentZipper.statsCacheHash )
                                                 ]
                                             |> withExpectJson decodeDownloadSyncResponseAuthority
-                                            |> HttpBuilder.withTimeout (toFloat downloadRequestTimeout)
                                             |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipperUpdated currentTime)
                                 in
                                 SubModelReturn
@@ -189,63 +187,61 @@ update currentTime activePage dbVersion device msg model =
                     determineSyncStatus
 
         BackendAuthorityFetchHandle zipper requestTime webData ->
-            if requestTime /= model.downloadRequestTime then
-                -- The request timed out and a newer one was issued. This late
-                -- response would otherwise be applied under the newer request.
-                noChange
+            let
+                requested =
+                    Zipper.current zipper
+            in
+            if SyncManager.Utils.isCurrentAuthorityRequest requested model then
+                let
+                    ( saveFetchedDataCmd, modelUpdated, extraMsgs ) =
+                        case RemoteData.toMaybe webData of
+                            Just data ->
+                                let
+                                    dataToSend =
+                                        data.entities
+                                            |> List.foldl
+                                                (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
+                                                []
+                                            |> List.reverse
+
+                                    -- When authority completes download, we mark stock management data of that
+                                    -- health center as obsolete, as there may have been Fbf/Stock update
+                                    -- or Aheza entries downloaded.
+                                    stockManagementDataMsg =
+                                        if data.revisionCount == 0 then
+                                            [ Backend.Model.MarkForRecalculationStockManagementData (toEntityUuid requested.uuid)
+                                                |> App.Model.MsgIndexedDb
+                                            , Backend.Model.MarkForRecalculationVillageStockManagementData (toEntityUuid requested.uuid)
+                                                |> App.Model.MsgIndexedDb
+                                            ]
+
+                                        else
+                                            []
+                                in
+                                ( sendSyncedDataToIndexDb { table = "Authority", data = dataToSend, shard = requested.uuid, timestamp = requestTimestamp }
+                                , { model | downloadAuthorityResponse = webData, downloadAuthorityAtRequest = requested }
+                                , stockManagementDataMsg
+                                )
+
+                            Nothing ->
+                                ( Cmd.none
+                                , SyncManager.Utils.determineSyncStatus activePage
+                                    { model | syncStatus = SyncDownloadAuthority webData }
+                                , []
+                                )
+                in
+                SubModelReturn
+                    modelUpdated
+                    saveFetchedDataCmd
+                    (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
+                    extraMsgs
+
+            else if requestTime == model.downloadRequestTime then
+                dropAndRefetch SyncDownloadAuthority
 
             else
-                let
-                    requestUuid =
-                        (Zipper.current zipper).uuid
-                in
-                if not (SyncManager.Utils.isCurrentAuthority requestUuid model) then
-                    refetchCurrentAuthority SyncDownloadAuthority
-
-                else
-                    let
-                        ( saveFetchedDataCmd, modelUpdated, extraMsgs ) =
-                            case RemoteData.toMaybe webData of
-                                Just data ->
-                                    let
-                                        dataToSend =
-                                            data.entities
-                                                |> List.foldl
-                                                    (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
-                                                    []
-                                                |> List.reverse
-
-                                        -- When authority completes download, we mark stock management data of that
-                                        -- health center as obsolete, as there may have been Fbf/Stock update
-                                        -- or Aheza entries downloaded.
-                                        stockManagementDataMsg =
-                                            if data.revisionCount == 0 then
-                                                [ Backend.Model.MarkForRecalculationStockManagementData (toEntityUuid requestUuid)
-                                                    |> App.Model.MsgIndexedDb
-                                                , Backend.Model.MarkForRecalculationVillageStockManagementData (toEntityUuid requestUuid)
-                                                    |> App.Model.MsgIndexedDb
-                                                ]
-
-                                            else
-                                                []
-                                    in
-                                    ( sendSyncedDataToIndexDb { table = "Authority", data = dataToSend, shard = requestUuid, timestamp = requestTimestamp }
-                                    , { model | downloadAuthorityResponse = webData, downloadAuthorityUuid = requestUuid }
-                                    , stockManagementDataMsg
-                                    )
-
-                                Nothing ->
-                                    ( Cmd.none
-                                    , SyncManager.Utils.determineSyncStatus activePage
-                                        { model | syncStatus = SyncDownloadAuthority webData }
-                                    , []
-                                    )
-                    in
-                    SubModelReturn
-                        modelUpdated
-                        saveFetchedDataCmd
-                        (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
-                        extraMsgs
+                -- A superseded request; the one in flight drives the lane.
+                noChange
 
         BackendAuthorityFetchedDataSavedHandle timestamp ->
             if requestTimestamp /= timestamp then
@@ -254,10 +250,10 @@ update currentTime activePage dbVersion device msg model =
                 -- Therefore, we drop this request.
                 noChange
 
-            else if not (SyncManager.Utils.isCurrentAuthority model.downloadAuthorityUuid model) then
-                -- The list changed while the batch was being saved: writing the
-                -- revision cursor now would land it on another authority.
-                refetchCurrentAuthority SyncDownloadAuthority
+            else if not (SyncManager.Utils.isCurrentAuthorityRequest model.downloadAuthorityAtRequest model) then
+                -- The list or the cursor changed while the batch was being saved:
+                -- writing the revision cursor now would land it on another authority.
+                dropAndRefetch SyncDownloadAuthority
 
             else
                 Maybe.map2
@@ -422,11 +418,11 @@ update currentTime activePage dbVersion device msg model =
         BackendAuthorityDashboardStatsFetchHandle requestZipper webData ->
             case model.syncInfoAuthorities of
                 Nothing ->
-                    refetchCurrentAuthority SyncDownloadAuthorityDashboardStats
+                    dropAndRefetch SyncDownloadAuthorityDashboardStats
 
                 Just zipper ->
                     if (Zipper.current zipper).uuid /= (Zipper.current requestZipper).uuid then
-                        refetchCurrentAuthority SyncDownloadAuthorityDashboardStats
+                        dropAndRefetch SyncDownloadAuthorityDashboardStats
 
                     else
                         let
@@ -743,8 +739,7 @@ update currentTime activePage dbVersion device msg model =
                                         , ( "base_revision", String.fromInt model.syncInfoGeneral.lastFetchedRevisionId )
                                         ]
                                     |> withExpectJson decodeDownloadSyncResponseGeneral
-                                    |> HttpBuilder.withTimeout (toFloat downloadRequestTimeout)
-                                    |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle currentTime)
+                                    |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle model.syncInfoGeneral.lastFetchedRevisionId currentTime)
                         in
                         SubModelReturn
                             { model
@@ -763,13 +758,8 @@ update currentTime activePage dbVersion device msg model =
                         noError
                         []
 
-        BackendGeneralFetchHandle requestTime webData ->
-            if requestTime /= model.downloadRequestTime then
-                -- The request timed out and a newer one was issued. This late
-                -- response would otherwise be applied under the newer request.
-                noChange
-
-            else
+        BackendGeneralFetchHandle baseRevision requestTime webData ->
+            if baseRevision == model.syncInfoGeneral.lastFetchedRevisionId then
                 let
                     ( cmd, modelUpdated ) =
                         case RemoteData.toMaybe webData of
@@ -813,6 +803,13 @@ update currentTime activePage dbVersion device msg model =
                     cmd
                     (maybeHttpError webData "Backend.SyncManager.Update" "BackendGeneralFetchHandle")
                     []
+
+            else if requestTime == model.downloadRequestTime then
+                dropAndRefetch SyncDownloadGeneral
+
+            else
+                -- A superseded request; the one in flight drives the lane.
+                noChange
 
         BackendGeneralFetchedDataSavedHandle timestamp ->
             if requestTimestamp /= timestamp then
