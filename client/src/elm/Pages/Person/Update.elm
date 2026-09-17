@@ -314,7 +314,7 @@ generateMsgsForPersonEdit personId person form db =
                 updatedChildren
                     |> List.map
                         (\( childId, child ) ->
-                            Backend.Model.PatchPerson InitiatorEditForm childId child
+                            Backend.Model.PatchPerson InitiatorChildAddressUpdate childId child
                                 |> App.Model.MsgIndexedDb
                         )
 
