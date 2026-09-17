@@ -472,6 +472,18 @@ all =
                     |> runUpdate (BackendGeneralFetchHandle 0 (Time.millisToPosix 5000) (RemoteData.Success emptyGeneralResponse))
                     |> (\model -> ( model.syncStatus, model.downloadGeneralResponse ))
                     |> Expect.equal ( SyncDownloadGeneral RemoteData.NotAsked, RemoteData.NotAsked )
+        , test "a failed authority download reply marks the lane failed and leaves the cursors alone" <|
+            \() ->
+                downloadingAuthority (authorities "hc-A" [ "hc-B" ]) 5000
+                    |> runUpdate (BackendAuthorityFetchHandle (authorities "hc-A" [ "hc-B" ]) (Time.millisToPosix 5000) (RemoteData.Failure Http.NetworkError))
+                    |> (\model -> ( cursors model, model.syncStatus ))
+                    |> Expect.equal ( [ ( "hc-A", 0 ), ( "hc-B", 0 ) ], SyncDownloadAuthority (RemoteData.Failure Http.NetworkError) )
+        , test "a failed general download reply marks the lane failed and keeps the previous response" <|
+            \() ->
+                downloadingGeneral 0
+                    |> runUpdate (BackendGeneralFetchHandle 0 (Time.millisToPosix 5000) (RemoteData.Failure Http.NetworkError))
+                    |> (\model -> ( model.syncStatus, model.downloadGeneralResponse, model.syncInfoGeneral.lastFetchedRevisionId ))
+                    |> Expect.equal ( SyncDownloadGeneral (RemoteData.Failure Http.NetworkError), RemoteData.NotAsked, 0 )
         , test "a statistics response for an authority that is no longer current leaves the list alone" <|
             \() ->
                 { testModel
