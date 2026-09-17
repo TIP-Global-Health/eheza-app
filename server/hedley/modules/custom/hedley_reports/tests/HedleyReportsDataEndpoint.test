@@ -178,6 +178,53 @@ class HedleyReportsDataEndpoint extends HedleyWebTestBase {
     // Piggy-backs on this method's install, per the note above: a second
     // test method would pay another full hedley-profile install.
     $this->checkPrevalencePercentages();
+    $this->checkScoreboardBirthDateFloor($dm);
+  }
+
+  /**
+   * The scoreboard returns every child who can appear in a displayed month.
+   *
+   * The app shows months from Nov 2023 on and counts children under two per
+   * month, so a child born in early 2022 belongs in the 2024 columns even
+   * though they are past two today. The selection is bounded by that fixed
+   * floor, not by the request date.
+   *
+   * Called from testReportsDataAccess() to share its install.
+   */
+  protected function checkScoreboardBirthDateFloor($data_manager) {
+    $province = $this->randomName();
+    $district = $this->randomName();
+    $this->createScoreboardChild($province, $district, '2022-01-15');
+    $this->createScoreboardChild($province, $district, '2021-06-01');
+
+    $request = [
+      'app_type' => 'scoreboard',
+      'base_revision' => 0,
+      'province' => $province,
+      'district' => $district,
+    ];
+    $result = $this->invokeReportsDataAsUser($data_manager, $request);
+    $returned = array_map(function ($record) {
+      return $record->birth_date;
+    }, $result['batch']);
+    $this->assertEqual($returned, ['2022-01-15'], 'A child under two in a displayed month is returned; one born before Nov 2021 is not.');
+  }
+
+  /**
+   * Create a person with a scoreboard blob in the given province and district.
+   */
+  protected function createScoreboardChild($province, $district, $birth_date) {
+    $node = $this->drupalCreateNode(['type' => 'person']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_second_name->set($this->randomName());
+    $wrapper->field_gender->set('male');
+    $wrapper->field_birth_date->set(strtotime($birth_date));
+    $wrapper->field_province->set($province);
+    $wrapper->field_district->set($district);
+    $wrapper->save();
+    hedley_ncda_calculate_aggregated_data_for_person(node_load($node->nid, NULL, TRUE));
+
+    return $node->nid;
   }
 
   /**
