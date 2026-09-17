@@ -256,7 +256,7 @@ B-255	4	READY	LOW			25	CHW progress report: the breech/transverse alert re-grade
 B-256	4	READY	MED-LOW			25	Well-child registration: a birth date exactly 13 years back is offered, and then the form demands two fields it never re
 B-257	4	READY	LOW			25	Duplicate-patient lookup is triggered by any text field over 13 characters and sized to Rwanda's ID, so the duplicate wa
 B-258	4	READY	LOW			25	Person edit page never fetches relationships, so after a page reload an address change silently skips the children
-B-259	4	READY	LOW			25	A freshly opened person form greets the nurse with "Person has been saved"
+B-259	4	IMPLEMENTED	LOW	2267	2269	25	A freshly opened person form greets the nurse with "Person has been saved"
 B-260	4	READY	LOW			25	Strict decoders on optional stats values: two dashboard enum sites lack the fallback their siblings have, and one requir
 B-261	4	READY	LOW			25	Dashboard case-management table: columns are sorted by bare month number, so they come out of order when the stats month
 B-262	4	READY	LOW			25	Person-counting cards that count participants or measurements instead of people (three siblings, one family)
