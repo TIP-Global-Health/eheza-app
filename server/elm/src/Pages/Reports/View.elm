@@ -2076,6 +2076,12 @@ prenatalDiagnosisCssClass diagnosis =
         DiagnosisGestationalHypertension ->
             "diagnosis-gestational-hypertension"
 
+        DiagnosisHighRiskOfPreeclampsia ->
+            "diagnosis-high-risk-preeclampsia"
+
+        DiagnosisModerateRiskOfPreeclampsia ->
+            "diagnosis-moderate-risk-preeclampsia"
+
         DiagnosisModeratePreeclampsia ->
             "diagnosis-moderate-preeclampsia"
 

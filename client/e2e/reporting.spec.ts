@@ -1604,8 +1604,9 @@ test.describe('Admin Reports', () => {
       expect(newDepression, 'Depression Not Likely +2').toBe(baselineDepression + 2);
       // Total: HIV +1, Gestational Hypertension +1, Depression Not Likely +2,
       // NoPrenatalDiagnosis (from CHW) +1, + additional diagnoses from
-      // lab results and preeclampsia history +3 = +8.
-      expect(newPrenatalTotal, 'Prenatal Total +8').toBe(baselinePrenatalTotal + 8);
+      // lab results and preeclampsia history +4 = +9. The history answer
+      // also diagnoses a high risk of preeclampsia, which has its own row.
+      expect(newPrenatalTotal, 'Prenatal Total +9').toBe(baselinePrenatalTotal + 9);
 
       // CSV download button.
       await expect(page.locator('button.download-csv'), 'Prenatal Diagnoses CSV download button should be visible').toBeVisible();

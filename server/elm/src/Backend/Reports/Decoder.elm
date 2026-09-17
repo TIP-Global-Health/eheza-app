@@ -492,6 +492,12 @@ prenatalDiagnosisFromMapping s =
         "l2" ->
             Just DiagnosisPostpartumMastitis
 
+        "m2" ->
+            Just DiagnosisHighRiskOfPreeclampsia
+
+        "n2" ->
+            Just DiagnosisModerateRiskOfPreeclampsia
+
         _ ->
             Nothing
 

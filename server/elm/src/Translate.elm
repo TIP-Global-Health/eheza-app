@@ -2465,6 +2465,20 @@ translationSet transId =
                     , somali = Nothing
                     }
 
+                DiagnosisHighRiskOfPreeclampsia ->
+                    { english = "High Risk of Preeclampsia"
+                    , kinyarwanda = Just "Afite ibyago byinshi byo kugira Preklampusi"
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                DiagnosisModerateRiskOfPreeclampsia ->
+                    { english = "Moderate Risk of Preeclampsia"
+                    , kinyarwanda = Just "Afite ibyago biringaniye byo kugira Preklampusi"
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 DiagnosisModeratePreeclampsia ->
                     { english = "Mild to Moderate Preeclampsia"
                     , kinyarwanda = Just "Preklampusi Yoroheje"
