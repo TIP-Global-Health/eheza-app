@@ -29,4 +29,12 @@ metadata:
    (`SchedulePageRefresh`), which clears `window` state and the network list — keep the clock in
    `localStorage`. Long `await` scripts hit the 45 s CDP timeout; poll in ≤25 s steps.
 
+7. **Live-DB import (multi-batch):** pick an HC by `field_data_field_shards` count (Mushongi 5,235 =
+   11 batches; Bumbogo 420k = too big). Create a local nurse with `field_role ['nurse']`,
+   `field_health_centers [nid]` — PINs must be unique across all nurses (`hedley_user_node_presave`).
+   The Device page lists the HC of `localStorage.healthCenterId` (a uuid), not the nurse's HCs: set it
+   and reload. **Type the PIN with real keystrokes** (`computer` click + type + Return); scripted
+   `input` events never reach Elm. Judge the visible page by screenshot — hidden forms have a
+   non-zero rect, so DOM "visibility" checks lied twice.
+
 Related: [[e2e-local-run-procedure]], [[verify-served-bundle-before-e2e]], [[verify-by-running-not-reasoning]]
