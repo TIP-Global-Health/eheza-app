@@ -308,7 +308,7 @@ B-307	3	IMPLEMENTED	MED	2192	2193	24	Case Management follow-up entries: tapping 
 B-308	2	IMPLEMENTED	MED	2254	2255	28	Statistical Queries › Acute Illness: three respiratory diagnosis rows show each other's counts — the PHP code table and 
 B-309	3	READY	MED-LOW			28	Statistical Queries › Postnatal Care: "Up to date with immunization" rows never see doses recorded at Child Scoreboard e
 B-310	4	READY	LOW			28	Aggregated NCDA scoreboard: the shared "children under 2" denominator uses the exact birth date while every age-gated nu
-B-311	2	READY	MED-HIGH			28	Aggregated NCDA scoreboard: the "born in the last 3 years" cutoff is evaluated at request time, so every historical colu
+B-311	2	IMPLEMENTED	MED-HIGH	2261	2262	28	Aggregated NCDA scoreboard: the "born in the last 3 years" cutoff is evaluated at request time, so every historical colu
 B-312	3	READY	MED-LOW			28	Aggregated NCDA scoreboard, "Iron during pregnancy" row: the nine counted months sit one month before the pregnancy — th
 B-313	4	READY	LOW			28	NCDA scoreboard (server blob): nothing re-triggers a child's recalculation when the pregnancy-side inputs change — newbo
 B-314	3	READY	MED-LOW			28	Growth charts: on three charts the y-axis gridlines and labels are spaced by tick index while the points are plotted by 

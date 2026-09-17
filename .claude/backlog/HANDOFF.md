@@ -46,6 +46,10 @@ What changes because of this:
 
 ## Open right now — updated 2026-09-08
 
+🟡 **PR #2262 open 2026-09-17 (B-311, tier 2, issue #2261)** — aggregated NCDA scoreboard: the selection floor is the fixed date 2021-11-01 (two years before the app's Nov 2023 first month) instead of three years before the request, so historical columns keep the children who were under two at the time. One PHP line plus a comment; the endpoint test gained an in-range/out-of-range child pair, CI is its first run. Worktree released. **Awaiting review.**
+
+📌 The six PRs listed below as "awaiting merge" (#2251, #2253, #2249, #2241, #2243, #2245) had all merged by 2026-09-17; the open backlog PRs that day were #2255 (B-308), #2257 (B-345), #2259 (B-245) and #2262.
+
 🔎 **R32 discovery COMPLETE 2026-09-15** — 10 new items B-369..B-378 (4 tier-3: B-371 CHW visits 2/3 on an undated pregnancy can never be ended, 38/38 open on vhw; B-373 outcome inside a postpartum visit opens a second pregnancy the same day; B-375/B-376 patient-merge data defects, latent), amendments B-051/B-284; see `rounds.md` Round 32. ⚠ `origin/main` is tagged **v1.18.2**, not v1.18.1 as the release banner below says. For release #2128: the R22 dedup refactors are verified equivalent, and the mixed-fleet contract holds apart from B-369 (landing B-254's sort alongside #2134 shrinks it).
 
 🟡 **PR #2251 open 2026-09-15 (B-359, tier 3, issue #2250)** — Acute Illness progress report: lemon juice/honey is shown in Actions Taken only when the medication distribution records it (was printed for every cold-and-cough visit); the "given?" check in that function is now one `medicinePrescribed` shared by all six medicines. New nurse e2e case (No → absent, edited to Yes → shown), in CI job 1, **not run locally**. Worktree released after push. **Reviewed 2026-09-15 (medium): no findings.** CI runs 1–2 red on the new e2e case only (test route: Next Steps opens by itself, with an assessment popup; re-saving opens the report). Fixed and **run locally 2026-09-16: fails on develop, passes on the fix, acute-illness specs 7/7** (`95bfd75a4`). ✅ **CI fully green on `95bfd75a4`** (all 10 checks). Awaiting merge.
@@ -264,7 +268,7 @@ Headlines, all live-sized from this seat (7 terminus queries):
 - **B-308** ⭐ DEPLOYED — Statistical Queries › Acute Illness: the PHP code table and the server-Elm decoder rotate `j/k/l`, so
   three respiratory rows show each other's counts (live 603 / 904 / 1,167 mis-rowed since 2024-06). ⚠ `reporting.spec.ts:1521`
   asserts the WRONG row under a comment saying the opposite — the fix must move that assertion or the e2e job goes red.
-- **B-311** ⭐ DEPLOYED — the aggregated NCDA scoreboard's "born in the last 3 years" cutoff is evaluated per request while the app
+- **B-311** ✅ IMPLEMENTED 2026-09-17 (issue #2261, PR #2262) — ⭐ DEPLOYED — the aggregated NCDA scoreboard's "born in the last 3 years" cutoff is evaluated per request while the app
   serves columns back to Nov 2023: **29,202 of 61,044** children are absent from every historical column today, more each day.
 - **B-317** ⭐ DEPLOYED — sync download: a response arriving after its 30-second timeout is applied under whichever health centre
   is current by then; a two-HC device can write HC-A's cursor onto HC-B and never download HC-B's older records. Silent.
