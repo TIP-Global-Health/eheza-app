@@ -46,7 +46,7 @@ What changes because of this:
 
 ## Open right now — updated 2026-09-08
 
-🟡 **PR #2262 open 2026-09-17 (B-311, tier 2, issue #2261)** — aggregated NCDA scoreboard: the selection floor is the fixed date 2021-11-01 (two years before the app's Nov 2023 first month) instead of three years before the request, so historical columns keep the children who were under two at the time. One PHP line plus a comment; the endpoint test gained an in-range/out-of-range child pair, CI is its first run. Worktree released. **Awaiting review.**
+🟡 **PR #2262 open 2026-09-17 (B-311, tier 2, issue #2261)** — aggregated NCDA scoreboard: the selection floor is the fixed date 2021-11-01 (two years before the app's Nov 2023 first month) instead of three years before the request, so historical columns keep the children who were under two at the time. One PHP line plus a comment; the endpoint test gained an in-range/out-of-range child pair, CI is its first run. Worktree released. ✅ **CI fully green on `18099a952` (all 11 checks incl. simpletest).** Review requested 2026-09-17.
 
 📌 The six PRs listed below as "awaiting merge" (#2251, #2253, #2249, #2241, #2243, #2245) had all merged by 2026-09-17; the open backlog PRs that day were #2255 (B-308), #2257 (B-345), #2259 (B-245) and #2262.
 
