@@ -1205,14 +1205,14 @@ update msg model =
                                 |> MsgLoggedIn
                                 |> List.singleton
 
-                        -- When starting a new person registration, clear the (singleton)
-                        -- create form, so a previous patient's abandoned entry can't
-                        -- pre-fill the next person's form.
+                        -- On entry, clear the create form and the last save result, so a
+                        -- previous entry and its "saved" banner do not carry over.
                         UserPage (CreatePersonPage _ _) ->
                             onEntry
                                 [ Pages.Person.Model.ResetCreateForm
                                     |> MsgPageCreatePerson
                                     |> MsgLoggedIn
+                                , MsgIndexedDb Backend.Model.ResetPostPersonRequest
                                 ]
 
                         -- Likewise clear the (per-person) edit form on entry, so a
@@ -1224,6 +1224,7 @@ update msg model =
                                 [ Pages.Person.Model.ResetEditForm
                                     |> MsgPageEditPerson id
                                     |> MsgLoggedIn
+                                , MsgIndexedDb Backend.Model.ResetPostPersonRequest
                                 ]
 
                         -- Clear the (singleton) stock management page on entry, so a

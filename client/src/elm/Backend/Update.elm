@@ -3852,6 +3852,12 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , []
             )
 
+        ResetPostPersonRequest ->
+            ( { model | postPerson = NotAsked }
+            , Cmd.none
+            , []
+            )
+
         MsgPrenatalEncounter encounterId subMsg ->
             let
                 encounter =
@@ -4656,7 +4662,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         InitiatorProgressReport ->
                             []
             in
-            ( { model | postPerson = Success personId }
+            ( { model | postPerson = RemoteData.map (always personId) data }
             , Cmd.none
             , rollbarOnFailure ++ appMsgs
             )
