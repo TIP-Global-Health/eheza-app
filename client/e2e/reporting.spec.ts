@@ -289,7 +289,7 @@ test.describe('Admin Reports', () => {
     let baselineImpacted: PatientsTableData;
     let baselineEncounters: EncountersTableData;
     let baselineMalaria: number;
-    let baselineResp: number;
+    let baselinePneumonia: number;
     let baselineAITotal: number;
     let baselineAllPregnancies: PrenatalVisitsRow[];
     let baselineActivePregnancies: PrenatalVisitsRow[];
@@ -382,7 +382,7 @@ test.describe('Admin Reports', () => {
       await selectReportType(page, 'acute-illness');
       await setDateRange(page, REPORT_START_DATE, reportLimitDate);
       baselineMalaria = await readAIDiagnosisRow(page, 'diagnosis-malaria-uncomplicated');
-      baselineResp = await readAIDiagnosisRow(page, 'diagnosis-respiratory-complicated');
+      baselinePneumonia = await readAIDiagnosisRow(page, 'diagnosis-respiratory-uncomplicated');
       baselineAITotal = await readAIDiagnosisRow(page, 'totals');
 
       // Record Prenatal (ANC) report baseline.
@@ -510,7 +510,7 @@ test.describe('Admin Reports', () => {
       console.log('Baseline registered total:', baselineRegistered.total);
       console.log('Baseline impacted total:', baselineImpacted.total);
       console.log('Baseline encounters rows:', baselineEncounters.rows.length);
-      console.log('Baseline AI: malaria=%d, resp=%d, total=%d', baselineMalaria, baselineResp, baselineAITotal);
+      console.log('Baseline AI: malaria=%d, pneumonia=%d, total=%d', baselineMalaria, baselinePneumonia, baselineAITotal);
       const baseAllTotal = findPrenatalRow(baselineAllPregnancies, 'Total');
       const baseActiveTotal = findPrenatalRow(baselineActivePregnancies, 'Total');
       console.log('Baseline ANC All Total: HC=%d, All=%d', baseAllTotal?.hc ?? 0, baseAllTotal?.all ?? 0);
@@ -1504,12 +1504,12 @@ test.describe('Admin Reports', () => {
 
       // Read specific rows by CSS class — deterministic, no label ambiguity.
       const newMalaria = await readAIDiagnosisRow(page, 'diagnosis-malaria-uncomplicated');
-      const newResp = await readAIDiagnosisRow(page, 'diagnosis-respiratory-complicated');
+      const newPneumonia = await readAIDiagnosisRow(page, 'diagnosis-respiratory-uncomplicated');
       const newTotal = await readAIDiagnosisRow(page, 'totals');
 
       console.log('\n=== ACUTE ILLNESS (by CSS class) ===');
       console.log(`Malaria Uncomplicated:  baseline=${baselineMalaria}, new=${newMalaria}, delta=+${newMalaria - baselineMalaria}`);
-      console.log(`Respiratory Complicated: baseline=${baselineResp}, new=${newResp}, delta=+${newResp - baselineResp}`);
+      console.log(`Uncomplicated Pneumonia: baseline=${baselinePneumonia}, new=${newPneumonia}, delta=+${newPneumonia - baselinePneumonia}`);
       console.log(`Total:                  baseline=${baselineAITotal}, new=${newTotal}, delta=+${newTotal - baselineAITotal}`);
 
       // "Uncomplicated Malaria": +2 (AINurse initial + AIChild initial;
@@ -1518,12 +1518,13 @@ test.describe('Admin Reports', () => {
         baselineMalaria + 2,
       );
 
-      // "Acute Respiratory Infection with Complications": +1 (AICHW respiratory symptoms)
-      expect(newResp, 'Respiratory Complicated should increase by 1').toBe(
-        baselineResp + 1,
+      // "Uncomplicated Pneumonia": +1 (AICHW respiratory symptoms with an elevated
+      // respiratory rate).
+      expect(newPneumonia, 'Uncomplicated Pneumonia should increase by 1').toBe(
+        baselinePneumonia + 1,
       );
 
-      // "Total": +3 (2 malaria + 1 respiratory; subsequent doesn't add a diagnosis).
+      // "Total": +3 (2 malaria + 1 pneumonia; subsequent doesn't add a diagnosis).
       // If this fails due to pre-existing demo data shifting, the root
       // cause is in the reports data generation pipeline, not in targeting.
       expect(newTotal, 'AI Total should increase by 3').toBe(
