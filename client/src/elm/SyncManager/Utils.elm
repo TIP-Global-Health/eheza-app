@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, isCurrentAuthority, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -69,6 +69,14 @@ pageAllowsBackgroundRefresh page =
 
         UserPage _ ->
             False
+
+
+{-| Whether the authority with this UUID is the one the sync cycle is on now.
+A download response is applied only while its authority is still current.
+-}
+isCurrentAuthority : String -> Model -> Bool
+isCurrentAuthority uuid model =
+    Maybe.map (Zipper.current >> .uuid) model.syncInfoAuthorities == Just uuid
 
 
 {-| Decide on the Sync status. Either keep the existing one, or set the next one,
