@@ -46,6 +46,10 @@ What changes because of this:
 
 ## Open right now — updated 2026-09-08
 
+🟡 **PR #2266 open 2026-09-17 (B-317, tier 2, issue #2265)** — sync download: a reply is applied only when it belongs to the request in flight (each authority/general GET now carries its issue time) and to the HC the cycle is on (a reply or save ack for an HC that is no longer current is dropped, and the current one refetched next tick — this also closes the R29 add/remove-HC amendment); the stats reply updates the model's list instead of writing back its request-time copy; both download GETs get a 30 s `withTimeout`. Six elm-tests, five fail with the guards stubbed. Worktree released. CI running; review not yet requested.
+
+📌 **Handoff drift noted 2026-09-17:** the six 🟡 PR lines below for B-359, B-344, B-365, B-339, B-364 and B-343 all **merged 2026-09-16**; the sixteen worktrees named in the 2026-09-08 note still exist and can be removed.
+
 🟡 **PR #2264 open 2026-09-17 (B-375, tier 3, issue #2263)** — patient merge: the acute-illness step's two participant lookups now read the mapping constant (`acute-illness`) instead of the literal `acute_illness` that never matched, so the duplicate's acute-illness participants move to the original and the delete cascade no longer soft-deletes the encounters and measurements just moved. Consolidation test gains case 19 (participant + encounter + vitals live on the original after a full merge); CI is its first simpletest run — fail-first checked locally via drush in a rolled-back transaction. Worktree released. **Reviewed 2026-09-17 (medium): no findings.**
 
 🟡 **PR #2262 open 2026-09-17 (B-311, tier 2, issue #2261)** — aggregated NCDA scoreboard: the selection floor is the fixed date 2021-11-01 (two years before the app's Nov 2023 first month) instead of three years before the request, so historical columns keep the children who were under two at the time. One PHP line plus a comment; the endpoint test gained an in-range/out-of-range child pair, CI is its first run. Worktree released. ✅ **CI fully green on `18099a952` (all 11 checks incl. simpletest).** **Reviewed 2026-09-17 (medium): no findings.** Awaiting merge.
