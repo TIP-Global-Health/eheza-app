@@ -48,7 +48,7 @@ expectActivity currentDate isLabTech assembled activity =
                 |> not
 
         RecurrentNextSteps ->
-            resolveNextStepsTasks currentDate assembled
+            resolveNextStepsTasks currentDate isLabTech assembled
                 |> List.isEmpty
                 |> not
 
@@ -77,7 +77,7 @@ activityCompleted currentDate isLabTech assembled activity =
 
         RecurrentNextSteps ->
             (not <| expectActivity currentDate isLabTech assembled RecurrentNextSteps)
-                || (resolveNextStepsTasks currentDate assembled
+                || (resolveNextStepsTasks currentDate isLabTech assembled
                         |> List.all (nextStepsTaskCompleted currentDate assembled)
                    )
 
@@ -344,15 +344,15 @@ expectLaboratoryResultFollowUpsTask assembled task =
             False
 
 
-resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
-resolveNextStepsTasks currentDate assembled =
+resolveNextStepsTasks : NominalDate -> Bool -> AssembledData -> List NextStepsTask
+resolveNextStepsTasks currentDate isLabTech assembled =
     -- The order is important. Do not change.
     [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
-        |> List.filter (expectNextStepsTask currentDate assembled)
+        |> List.filter (expectNextStepsTask currentDate isLabTech assembled)
 
 
-expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
-expectNextStepsTask currentDate assembled task =
+expectNextStepsTask : NominalDate -> Bool -> AssembledData -> NextStepsTask -> Bool
+expectNextStepsTask currentDate isLabTech assembled task =
     case task of
         NextStepsSendToHC ->
             resolveRequiredReferralFacilities assembled
@@ -377,9 +377,19 @@ expectNextStepsTask currentDate assembled task =
         NextStepsHealthEducation ->
             -- Emergency referral is not required.
             (not <| emergencyReferalRequired assembled)
+                && diagnosisSourcesCompleted currentDate isLabTech assembled
                 && (provideHIVEducation PrenatalEncounterPhaseRecurrent assembled.measurements
                         || diagnosedAnyOf (DiagnosisHIVDetectableViralLoadRecurrentPhase :: diabetesDiagnosesRecurrentPhase) assembled
                    )
+
+
+{-| A health education question that was not asked is stored exactly like one
+answered with No, so the task waits for the activities that make diagnoses.
+-}
+diagnosisSourcesCompleted : NominalDate -> Bool -> AssembledData -> Bool
+diagnosisSourcesCompleted currentDate isLabTech assembled =
+    List.all (activityCompleted currentDate isLabTech assembled)
+        [ LabResults, LabsResultsFollowUps, RecurrentExamination ]
 
 
 nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
