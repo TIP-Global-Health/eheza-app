@@ -615,14 +615,22 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
    *   The acute_illness_encounter node ID.
    */
   protected function createAcuteIllnessEncounter($participant) {
-    $node = $this->drupalCreateNode(['type' => 'acute_illness_encounter']);
-    $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_individual_participant->set($participant);
-    $wrapper->field_scheduled_date->set([
-      'value' => date('Y-m-d', REQUEST_TIME),
-      'value2' => date('Y-m-d', REQUEST_TIME),
+    // The participant is set at create, because the device shard hook reads
+    // its person on the first save.
+    $node = $this->drupalCreateNode([
+      'type' => 'acute_illness_encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [['target_id' => $participant]],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', REQUEST_TIME),
+            'value2' => date('Y-m-d', REQUEST_TIME),
+          ],
+        ],
+      ],
     ]);
-    $wrapper->save();
 
     return $node->nid;
   }
