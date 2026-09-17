@@ -18,7 +18,7 @@ and `server/RoboFile.php`.
 ## What the robo commands actually do (`server/RoboFile.php`)
 
 ### `deployPantheon($branchName = 'master')` — `ddev robo deploy:pantheon [env]`
-1. Resolves `PANTHEON_NAME` from the env var, and refuses to run without it. It used to fall back to a `PANTHEON_NAME` const of `eheza-app` — which is itself a real site, so an unset variable deployed to someone else's environment.
+1. Resolves `PANTHEON_NAME` from the env var and refuses to run without it — there is deliberately no default, because any default names a real site and an unset variable would deploy to it.
 2. **Aborts if the eheza-app working tree is dirty.**
 3. **Aborts if the Pantheon clone (`.pantheon-<name>`) is dirty.**
 4. **Aborts if `pantheon.upstream.yml` is missing or has no `php_version:`.**
@@ -40,9 +40,9 @@ and `server/RoboFile.php`.
 - If `$tag` is omitted it prompts to compare from the latest tag; pass it explicitly to avoid the prompt.
 - Detects org/repo from `git remote get-url origin` to enrich entries via the GitHub API.
 
-## `fra` runs automatically on deploy
+## `fra` runs on every deploy
 
-The robo deploy commands now run `drush fra` (features-revert-all) themselves — `deployPantheonSync` runs it after `updb`, followed by a `cc all`, on every env. So `cc all` / `updb -y` / **`fra -y`** / `uli` are all handled by `ddev robo deploy:pantheon[-sync]`; you no longer run `fra` by hand.
+`deployPantheonSync` runs `drush fra` (features-revert-all) after `updb`, followed by a `cc all`, on every env. `cc all` / `updb -y` / **`fra -y`** / `uli` are all handled by `ddev robo deploy:pantheon[-sync]`; there is no manual `fra` step.
 
 > ⚠️ **Exception — the Pantheon dashboard GUI.** If you promote to Test/Live via the dashboard (Test/Live tabs) instead of `ddev robo deploy:pantheon-sync`, the robo command never runs, so **none of `updb`/`fra`/`cc all` run** on that env — you must perform them manually:
 > ```bash
@@ -103,8 +103,8 @@ reflect the newly-selected site's data.
 - **Pushed to the wrong site** — caused by a stale `PANTHEON_NAME`. Fix `.ddev/config.local.yaml` and **`ddev restart`** (env vars only reload on restart) before re-deploying.
 - **Empty changelog** — you passed the *new* tag to `generate:release-notes` instead of the previous one.
 - **SSH auth errors (git push to Pantheon)** — re-run `ddev auth ssh`; confirm Pantheon team membership and that your SSH key is on the Pantheon account.
-- **A post-deploy step dies with exit 137** — 137 is SIGKILL, and it comes back from the *remote* drush process: the appserver container ran out of memory and the kernel killed it. It lands on the cache rebuild (usually the second `cc all`), because a `cc all` only empties the cache tables and the *next* bootstrap is what rebuilds the code registry, menu router and plugin caches from cold. A large code change makes that rebuild bigger, an orphaned module row makes it noisier, and web traffic hitting the same cold cache competes for the same memory ceiling. The steps retry themselves now, so a single kill no longer aborts the deploy. If all attempts fail, read the output before re-running: a killed `updb -y` may have left an update hook part-applied and unrecorded, so check which updates ran before running it again. Then re-run the remaining steps by hand (`ddev exec terminus remote:drush <site>.<env> -- <step>`), one at a time — and check first whether the log says a module is *"missing from the file system"*: a genuinely orphaned row (absent from both the branch and the pushed clone) should be deleted with `sql-query "DELETE FROM system WHERE name = '<module>'"`, since it adds work to every rebuild.
-- **`terminus` "You are not logged in"** — `ddev auth ssh` does **not** authenticate terminus. Set `TERMINUS_MACHINE_TOKEN` in `.ddev/config.local.yaml` (see prerequisites) and `ddev restart`, or run **`ddev terminus-auth`** (logs terminus in from the token; or `ddev terminus-auth <token>`); verify with `ddev exec terminus auth:whoami`. The `robo` deploy may already have **pushed the code** before failing here — so after authenticating, just re-run the post-deploy `remote:drush` steps (`cc all` ×2, `updb -y`, `uli`, `fra -y`) rather than the whole deploy.
+- **A post-deploy step dies with exit 137** — 137 is SIGKILL, and it comes back from the *remote* drush process: the appserver container ran out of memory and the kernel killed it. It lands on the cache rebuild (usually the second `cc all`), because a `cc all` only empties the cache tables and the *next* bootstrap is what rebuilds the code registry, menu router and plugin caches from cold. A large code change makes that rebuild bigger, an orphaned module row makes it noisier, and web traffic hitting the same cold cache competes for the same memory ceiling. Each step retries itself, so a single kill does not abort the deploy. If all attempts fail, read the output before re-running: a killed `updb -y` may have left an update hook part-applied and unrecorded, so check which updates ran before running it again. Then re-run the remaining steps by hand (`ddev exec terminus remote:drush <site>.<env> -- <step>`), one at a time — and check first whether the log says a module is *"missing from the file system"*: a genuinely orphaned row (absent from both the branch and the pushed clone) should be deleted with `sql-query "DELETE FROM system WHERE name = '<module>'"`, since it adds work to every rebuild.
+- **`terminus` "You are not logged in"** — `ddev auth ssh` does **not** authenticate terminus. Set `TERMINUS_MACHINE_TOKEN` in `.ddev/config.local.yaml` (see prerequisites) and `ddev restart`, or run **`ddev terminus-auth`** (logs terminus in from the token; or `ddev terminus-auth <token>`); verify with `ddev exec terminus auth:whoami`. The `robo` deploy may already have **pushed the code** before failing here — so after authenticating, just re-run the post-deploy `remote:drush` steps in the deploy's order (`cc all` ×2, `updb -y`, `fra -y`, `cc all`, `uli`) rather than the whole deploy.
 
 ## Branch note
 

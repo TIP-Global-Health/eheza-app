@@ -1,4 +1,4 @@
-module Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, generateIndividualChildScoreboardMeasurementsForChild, generateNutritionAssessment, getAcuteIllnessEncountersForParticipant, getChildScoreboardEncountersForParticipant, getHIVEncountersForParticipant, getHomeVisitEncountersForParticipant, getNCDEncountersForParticipant, getNewbornExamPregnancySummary, getNutritionEncountersForParticipant, getPrenatalEncountersForParticipant, getTuberculosisEncountersForParticipant, getWellChildEncountersForParticipant, nutritionAssessmentForBackend, resolveAllWeightMeasurementsForChild, resolveLatestValue, resolveNCDANeverFilled, resolveNCDANotFilledAfterAgeOfSixMonths, resolvePreviousValuesSetForChild, zScoreWeightForAgeModerate, zScoreWeightForAgeSevere)
+module Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, generateIndividualChildScoreboardMeasurementsForChild, generateNutritionAssessment, getAcuteIllnessEncountersForParticipant, getChildScoreboardEncountersForParticipant, getHIVEncountersForParticipant, getHomeVisitEncountersForParticipant, getNCDEncountersForParticipant, getNewbornExamPregnancySummary, getNutritionEncountersForParticipant, getParticipantEncountersByEncounterType, getPrenatalEncountersForParticipant, getTuberculosisEncountersForParticipant, getWellChildEncountersForParticipant, nutritionAssessmentForBackend, resolveAllWeightMeasurementsForChild, resolveLatestValue, resolveNCDANeverFilled, resolveNCDANotFilledAfterAgeOfSixMonths, resolvePreviousValuesSetForChild, zScoreWeightForAgeModerate, zScoreWeightForAgeSevere)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -348,9 +348,9 @@ getPrenatalEncountersForParticipant =
 
 
 getParticipantEncountersByEncounterType :
-    (ModelIndexedDb -> Dict IndividualEncounterParticipantId (WebData (Dict encounterId encounter)))
+    (ModelIndexedDb -> Dict participantId (WebData (Dict encounterId encounter)))
     -> ModelIndexedDb
-    -> IndividualEncounterParticipantId
+    -> participantId
     -> List ( encounterId, encounter )
 getParticipantEncountersByEncounterType dataStructureFunc db participantId =
     dataStructureFunc db
@@ -370,28 +370,28 @@ resolvePreviousMeasurementsSetForChild childId db =
             generateIndividualNutritionMeasurementsForChild childId db
 
         nutritionHeights =
-            resolveIndividualNutritionValues individualNutritionMeasurements .height getHeightValue
+            resolveIndividualValues individualNutritionMeasurements .height getHeightValue
 
         nutritionMuacs =
-            resolveIndividualNutritionValues individualNutritionMeasurements .muac muacValueFunc
+            resolveIndividualValues individualNutritionMeasurements .muac muacValueFunc
 
         nutritionWeights =
-            resolveIndividualNutritionValues individualNutritionMeasurements .weight weightValueFunc
+            resolveIndividualValues individualNutritionMeasurements .weight weightValueFunc
 
         individualWellChildMeasurements =
             generateIndividualWellChildMeasurementsForChild childId db
 
         wellChildHeights =
-            resolveIndividualWellChildValues individualWellChildMeasurements .height getHeightValue
+            resolveIndividualValues individualWellChildMeasurements .height getHeightValue
 
         wellChildMuacs =
-            resolveIndividualWellChildValues individualWellChildMeasurements .muac muacValueFunc
+            resolveIndividualValues individualWellChildMeasurements .muac muacValueFunc
 
         wellChildWeights =
-            resolveIndividualWellChildValues individualWellChildMeasurements .weight weightValueFunc
+            resolveIndividualValues individualWellChildMeasurements .weight weightValueFunc
 
         wellChildHeadCircumferences =
-            resolveIndividualWellChildValues individualWellChildMeasurements .headCircumference (.headCircumference >> headCircumferenceValueFunc)
+            resolveIndividualValues individualWellChildMeasurements .headCircumference (.headCircumference >> headCircumferenceValueFunc)
 
         groupMeasurements =
             Dict.get childId db.childMeasurements
@@ -485,19 +485,19 @@ resolveNCDAValuesForChild childId db =
             generateIndividualNutritionMeasurementsForChild childId db
 
         nutritionNCDAs =
-            resolveIndividualNutritionValues individualNutritionMeasurements .ncda identity
+            resolveIndividualValues individualNutritionMeasurements .ncda identity
 
         individualWellChildMeasurements =
             generateIndividualWellChildMeasurementsForChild childId db
 
         wellChildNCDAs =
-            resolveIndividualWellChildValues individualWellChildMeasurements .ncda identity
+            resolveIndividualValues individualWellChildMeasurements .ncda identity
 
         individualChildScoreboardMeasurements =
             generateIndividualChildScoreboardMeasurementsForChild childId db
 
         childScoreboardNCDAs =
-            resolveIndividualChildScoreboardValues individualChildScoreboardMeasurements .ncda identity
+            resolveIndividualValues individualChildScoreboardMeasurements .ncda identity
 
         groupMeasurements =
             Dict.get childId db.childMeasurements
@@ -572,7 +572,7 @@ resolveNutritionWeightMeasurementsForChild childId db =
             generateIndividualNutritionMeasurementsForChild childId db
 
         individualWeightMeasurements =
-            resolveIndividualNutritionValues individualMeasurements .weight weightValueFunc
+            resolveIndividualValues individualMeasurements .weight weightValueFunc
 
         groupWeightMeasurements =
             Dict.get childId db.childMeasurements
@@ -590,12 +590,12 @@ resolveNutritionWeightMeasurementsForChild childId db =
         |> List.sortWith sortTuplesByDateDesc
 
 
-resolveIndividualNutritionValues :
-    List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
-    -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a ))
+resolveIndividualValues :
+    List ( NominalDate, ( encounterId, measurements ) )
+    -> (measurements -> Maybe ( id, Measurement encounter a ))
     -> (a -> b)
     -> List ( NominalDate, b )
-resolveIndividualNutritionValues measurementsWithDates measurementFunc valueFunc =
+resolveIndividualValues measurementsWithDates measurementFunc valueFunc =
     measurementsWithDates
         |> List.filterMap
             (\( _, ( _, measurements ) ) ->
@@ -616,47 +616,7 @@ resolveWellChildWeightMeasurementsForChild childId db =
         individualMeasurements =
             generateIndividualWellChildMeasurementsForChild childId db
     in
-    resolveIndividualWellChildValues individualMeasurements .weight weightValueFunc
-
-
-resolveIndividualWellChildValues :
-    List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
-    -> (WellChildMeasurements -> Maybe ( id, WellChildMeasurement a ))
-    -> (a -> b)
-    -> List ( NominalDate, b )
-resolveIndividualWellChildValues measurementsWithDates measurementFunc valueFunc =
-    measurementsWithDates
-        |> List.filterMap
-            (\( _, ( _, measurements ) ) ->
-                measurementFunc measurements
-                    |> Maybe.map
-                        (\measurement ->
-                            ( Tuple.second measurement |> .dateMeasured
-                            , Tuple.second measurement |> .value |> valueFunc
-                            )
-                        )
-            )
-        |> List.reverse
-
-
-resolveIndividualChildScoreboardValues :
-    List ( NominalDate, ( ChildScoreboardEncounterId, ChildScoreboardMeasurements ) )
-    -> (ChildScoreboardMeasurements -> Maybe ( id, ChildScoreboardMeasurement a ))
-    -> (a -> b)
-    -> List ( NominalDate, b )
-resolveIndividualChildScoreboardValues measurementsWithDates measurementFunc valueFunc =
-    measurementsWithDates
-        |> List.filterMap
-            (\( _, ( _, measurements ) ) ->
-                measurementFunc measurements
-                    |> Maybe.map
-                        (\measurement ->
-                            ( Tuple.second measurement |> .dateMeasured
-                            , Tuple.second measurement |> .value |> valueFunc
-                            )
-                        )
-            )
-        |> List.reverse
+    resolveIndividualValues individualMeasurements .weight weightValueFunc
 
 
 calculateZScoreWeightForAge : NominalDate -> ZScore.Model.Model -> Person -> Maybe Float -> Maybe Float

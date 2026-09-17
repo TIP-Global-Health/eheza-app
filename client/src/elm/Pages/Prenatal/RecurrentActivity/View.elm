@@ -144,7 +144,7 @@ viewActivity language currentDate isLabTech activity assembled model =
             viewLabResultsContent language isLabTech assembled model
 
         RecurrentNextSteps ->
-            viewNextStepsContent language currentDate assembled model.nextStepsData
+            viewNextStepsContent language currentDate isLabTech assembled model.nextStepsData
 
         RecurrentExamination ->
             viewExaminationContent language currentDate assembled model.examinationData
@@ -216,7 +216,7 @@ viewLabResultsContent language isLabTech assembled model =
                         TaskHIVTest ->
                             let
                                 partnerHIVTestResult =
-                                    resolvePartnerHIVTestResult assembled
+                                    resolvePartnerHIVTestResult assembled.measurements
                             in
                             getMeasurementValueFunc measurements.hivTest
                                 |> hivResultFormWithDefault model.labResultsData.hivTestForm
@@ -397,14 +397,14 @@ viewLabResultsContent language isLabTech assembled model =
     ]
 
 
-viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
-viewNextStepsContent language currentDate assembled data =
+viewNextStepsContent : Language -> NominalDate -> Bool -> AssembledData -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate isLabTech assembled data =
     let
         measurements =
             assembled.measurements
 
         tasks =
-            resolveNextStepsTasks currentDate assembled
+            resolveNextStepsTasks currentDate isLabTech assembled
 
         activeTask =
             resolveActiveTask tasks data.activeTask
@@ -718,7 +718,7 @@ viewLabResultFollowUpsContent language assembled model =
                         TaskHIVTest ->
                             let
                                 partnerHIVTestResult =
-                                    resolvePartnerHIVTestResult assembled
+                                    resolvePartnerHIVTestResult assembled.measurements
                             in
                             getMeasurementValueFunc measurements.hivTest
                                 |> hivResultFormWithDefault model.labResultsData.hivTestForm
@@ -772,6 +772,9 @@ viewLabResultFollowUpsContent language assembled model =
 
                                 TaskSyphilisTest ->
                                     SaveSyphilisResult personId measurements.syphilisTest nextTask |> Just
+
+                                TaskPartnerHIVTest ->
+                                    SavePartnerHIVResult personId measurements.partnerHIVTest nextTask |> Just
 
                                 -- Others do not have results follow ups section,
                                 -- or, do not participate at Prenatal.
@@ -911,7 +914,7 @@ viewLab language lab assembled data =
                 TestHIV ->
                     let
                         partnerHIVTestResult =
-                            resolvePartnerHIVTestResult assembled
+                            resolvePartnerHIVTestResult assembled.measurements
                     in
                     getMeasurementValueFunc measurements.hivTest
                         |> hivResultFormWithDefault data.hivTestForm

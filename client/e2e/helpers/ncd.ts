@@ -353,10 +353,20 @@ export async function completeOutsideCare(page: Page) {
  */
 export async function completeLaboratory(
   page: Page,
-  options?: { performTests?: boolean; checkGlucoseRange?: boolean },
+  options?: {
+    performTests?: boolean;
+    checkGlucoseRange?: boolean;
+    readOnTheSpot?: boolean;
+    glucose?: string;
+  },
 ) {
   const performTests = options?.performTests ?? false;
   const checkGlucoseRange = options?.checkGlucoseRange ?? false;
+  // Checking the range needs the reading on screen, so it reads the blood sugar
+  // on the spot as well.
+  const readOnTheSpot = options?.readOnTheSpot ?? checkGlucoseRange;
+  // The reading to enter, when one is asked for.
+  const glucose = options?.glucose ?? GLUCOSE_IN_RANGE;
 
   await openActivity(page, 'ncd', 'laboratory');
 
@@ -427,10 +437,10 @@ export async function completeLaboratory(
       const immediateResult = page.locator('.form-input.yes-no.immediate-result');
       if (await immediateResult.isVisible().catch(() => false)) {
         // Answering Lab leaves the result to be entered later, so the reading
-        // is never asked for here. The blood sugar tab has to be read on the
-        // spot for its input to be drawn at all.
-        const readOnTheSpot =
-          checkGlucoseRange &&
+        // is never asked for here. Only the blood sugar is read on the spot;
+        // the other tests go to the lab either way.
+        const answerPointOfCare =
+          readOnTheSpot &&
           (await page
             .locator('div.label.header', { hasText: 'Random Blood Sugar' })
             .isVisible()
@@ -438,7 +448,7 @@ export async function completeLaboratory(
 
         await forceClick(
           immediateResult.locator('label', {
-            hasText: readOnTheSpot ? 'Point of Care' : 'Lab',
+            hasText: answerPointOfCare ? 'Point of Care' : 'Lab',
           }),
         );
         await page.waitForTimeout(WAIT.elmRerender);
@@ -499,7 +509,7 @@ export async function completeLaboratory(
               if (checkGlucoseRange) {
                 await expectGlucoseRangeRefusesMillimoles(page);
               } else {
-                await input.fill(GLUCOSE_IN_RANGE);
+                await input.fill(glucose);
               }
             } else {
               await input.fill('5');

@@ -60,13 +60,37 @@ Verify before testing — testing the wrong build is the classic wasted run:
 4. The app is reachable at `http://localhost:3000` and, after every recompile, "Version" in
    the app's top-right corner has been clicked to activate the new code.
 
-5. **The Chrome window is visible and in front.** Check it, first thing, with
-   `javascript_tool: JSON.stringify({hidden: document.hidden, focus: document.hasFocus()})`.
-   If `hidden` is true, ask the user to raise the window before going on — this is not a
-   nicety. Hidden, every click, hover and screenshot costs a flat **five seconds** instead of
-   under a fifth of one, and the same occlusion is behind the frozen DOM, the dead input and
-   the timed-out screenshots in pitfalls. One request at the start saves minutes and most of
-   the run's failure modes; see the measurements in app-map.
+5. **The tab is actually rendering.** Not `document.hidden` — the real gate is whether frames
+   are being delivered. First thing, in one call:
+
+   ```js
+   const t0=Date.now(); let frames=0;
+   await new Promise(res=>{const tick=()=>{frames++; if(frames<40 && Date.now()-t0<1500) requestAnimationFrame(tick); else res();};
+     requestAnimationFrame(tick); setTimeout(res,1600);});
+   JSON.stringify({frames, hidden:document.hidden, visibility:document.visibilityState})
+   ```
+
+   **`frames > 0` or do not proceed.** A healthy tab reads ~40 frames / 61 fps, `visible`, and
+   a hover costs ~20 ms. A dead one reads 0 frames, `hidden`, and a flat ~5000 ms per hover —
+   at which point Elm never repaints, the DOM freezes while the model advances, and everything
+   observed through it is untrustworthy. Screenshots keep working either way, so they prove
+   nothing here.
+
+   If it reads 0, **do not theorise about windows, workspaces or occlusion** — that cost a
+   whole afternoon once. Mark the tab and ask the user one question:
+
+   ```js
+   document.title='### CLAUDE IS DRIVING THIS TAB ###';
+   const b=document.createElement('div');
+   b.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#e4002b';
+   document.documentElement.appendChild(b);
+   ```
+
+   If they do not see red, the extension is driving a **phantom tab** that Chrome never
+   displays. The fix is **reinstalling the Claude in Chrome extension** — verified 2026-08-27,
+   after raising the window, `resize_window`, fresh tabs, a new tab group, side-by-side
+   arrangement, a full Chrome restart and a machine reboot had all failed. Ask the user to
+   reinstall; if they would rather not, fall back to the chrome-devtools-mcp driver (app-map).
 
 If a precondition needs the user (e.g. switching a branch out from under a parallel session,
 or raising the Chrome window), stop and ask.
@@ -218,17 +242,41 @@ First decide which of three cases you are in — they route differently:
 
 Guardrails, all cases:
 
-- **Posting is gated.** PR comments and new issues are outward-facing: draft the text, show
-  it in the run report, and post only after the user approves. Never post automatically.
+- **Posting a *bug* is gated.** A FAIL comment on the PR and a new issue are outward-facing
+  judgements: draft the text, show it in the run report, and post only after the user
+  approves. Never post one automatically. (The end-of-run QA report in Step 5 is different —
+  it is expected on every run and does not wait for approval.)
 - **QA never fixes** — even a one-liner. Report; the implementer decides.
 - A found bug is NOT a pitfall — `pitfalls.md` records only your own QA mistakes. What the
   bug does feed into memory: the route that exposed it (app-map) and the FAIL ledger row.
 
-## Step 5: Report and record
+## Step 5: Report, post, and record
 
 Report to the user: per plan row — pass/fail, what was observed, and the recording as a
 clickable link (`file:///var/www/html/ihangane/client/qa-recordings/<pr>/qa-<pr>-<scenario>.mp4`)
 so they can watch the verification. For failures, include the drafted PR comment or issue
 text from "When you find a bug" and ask for approval to post it.
+
+**Then post the QA report to the PR — every run, pass or fail.** A run that only ever reported
+into the chat leaves no trace for the reviewer who merges. The comment opens with the caption
+
+> **Manual tests executed using the QA Tester skill**
+
+followed by the build and login the run used, a table of one row per plan row with its result,
+and a short paragraph per row saying what it showed. Close with what the run did **not** cover
+— rows that were blocked, anything the tooling cannot reach (tablet viewport and touch), and
+sibling code paths a scenario stands in for but did not exercise. State a blocked row as
+blocked; never quietly drop it, and never imply coverage the run does not have.
+
+`gh pr comment` fails on this repo (see pitfalls), so post with the REST API:
+
+```bash
+gh api repos/TIP-Global-Health/eheza-app/issues/<pr>/comments --method POST \
+  -f body="$(cat <drafted-file>)" --jq '.html_url'
+```
+
+Keep it to outcomes. The repo convention against "verification sections" is about PR and issue
+*bodies*; this comment is the QA record and belongs on the PR — but it still describes what is
+now true, not which commands were run or what they printed.
 
 Then run the learning loop from the top of this file (ledger, pitfalls, app-map).

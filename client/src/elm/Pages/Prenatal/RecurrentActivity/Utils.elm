@@ -28,7 +28,7 @@ import Measurement.View exposing (vitalsFormInputsAndTasks)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (ExaminationData, Msg(..), NextStepsData)
 import Pages.Prenatal.RecurrentActivity.Types exposing (ExaminationTask(..), NextStepsTask(..))
-import Pages.Prenatal.Utils exposing (diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, marginalBloodPressureCondition, medicationDistributionFormWithDefaultRecurrentPhase, medicationDistributionMeasurementTaken, medicationsRecurrentPhase, provideHIVEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForSyphilis, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, reinforceTreatmentSignsCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet)
+import Pages.Prenatal.Utils exposing (diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, marginalBloodPressureCondition, medicationDistributionFormWithDefaultRecurrentPhase, provideHIVEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForSyphilis, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveMedicationDistributionInputsAndTasks, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -48,7 +48,7 @@ expectActivity currentDate isLabTech assembled activity =
                 |> not
 
         RecurrentNextSteps ->
-            resolveNextStepsTasks currentDate assembled
+            resolveNextStepsTasks currentDate isLabTech assembled
                 |> List.isEmpty
                 |> not
 
@@ -77,7 +77,7 @@ activityCompleted currentDate isLabTech assembled activity =
 
         RecurrentNextSteps ->
             (not <| expectActivity currentDate isLabTech assembled RecurrentNextSteps)
-                || (resolveNextStepsTasks currentDate assembled
+                || (resolveNextStepsTasks currentDate isLabTech assembled
                         |> List.all (nextStepsTaskCompleted currentDate assembled)
                    )
 
@@ -155,8 +155,16 @@ laboratoryResultTaskCompleted isLabTech assembled task =
                     getMeasurementValueFunc assembled.measurements.malariaTest
                         |> Maybe.map
                             (\value ->
-                                (testPerformedByExecutionNote value.executionNote && isJust value.testResult)
-                                    || bloodSmearResultSet value.bloodSmearResult
+                                if value.bloodSmearResult == BloodSmearPendingInput then
+                                    -- A smear ordered at the lab is still owed
+                                    -- a result, whatever the note about the
+                                    -- rapid test says.
+                                    False
+
+                                else
+                                    testNotPerformedByWhyNotAtExecutionNote value.executionNote
+                                        || (testPerformedByExecutionNote value.executionNote && isJust value.testResult)
+                                        || bloodSmearResultSet value.bloodSmearResult
                             )
                         |> Maybe.withDefault False
             in
@@ -297,18 +305,21 @@ expectLaboratoryResultFollowUpsTask assembled task =
     in
     case task of
         TaskHIVTest ->
+            let
+                partnerHIVTestFollowUpExpected =
+                    expectLaboratoryResultFollowUpsTask assembled TaskPartnerHIVTest
+
+                hivTestResultPositive =
+                    getMeasurementValueFunc assembled.measurements.hivTest
+                        |> Maybe.map (.testResult >> (==) (Just TestPositive))
+                        |> Maybe.withDefault False
+            in
+            -- At TaskPartnerHIVTest task we ask same follow up questions,
+            -- as we do for TestHIV when test result is negative.
+            -- So we either do not expect TaskPartnerHIVTest follow up, or,
+            -- only when test HIV result is positive.
             wasFollowUpScheduled TestHIV
-                && (-- At TaskPartnerHIVTest task we ask same follow up questions,
-                    -- as we do for TestHIV when test result is negative.
-                    -- So we either do not expect TaskPartnerHIVTest follow up, or,
-                    -- only when test HIV result is positive.
-                    not <|
-                        expectLaboratoryResultFollowUpsTask assembled TaskPartnerHIVTest
-                            || (getMeasurementValueFunc assembled.measurements.hivTest
-                                    |> Maybe.map (.testResult >> (==) (Just TestPositive))
-                                    |> Maybe.withDefault False
-                               )
-                   )
+                && (not partnerHIVTestFollowUpExpected || hivTestResultPositive)
 
         TaskSyphilisTest ->
             wasFollowUpScheduled TestSyphilis
@@ -333,15 +344,15 @@ expectLaboratoryResultFollowUpsTask assembled task =
             False
 
 
-resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
-resolveNextStepsTasks currentDate assembled =
+resolveNextStepsTasks : NominalDate -> Bool -> AssembledData -> List NextStepsTask
+resolveNextStepsTasks currentDate isLabTech assembled =
     -- The order is important. Do not change.
     [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
-        |> List.filter (expectNextStepsTask currentDate assembled)
+        |> List.filter (expectNextStepsTask currentDate isLabTech assembled)
 
 
-expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
-expectNextStepsTask currentDate assembled task =
+expectNextStepsTask : NominalDate -> Bool -> AssembledData -> NextStepsTask -> Bool
+expectNextStepsTask currentDate isLabTech assembled task =
     case task of
         NextStepsSendToHC ->
             resolveRequiredReferralFacilities assembled
@@ -366,9 +377,19 @@ expectNextStepsTask currentDate assembled task =
         NextStepsHealthEducation ->
             -- Emergency referral is not required.
             (not <| emergencyReferalRequired assembled)
+                && diagnosisSourcesCompleted currentDate isLabTech assembled
                 && (provideHIVEducation PrenatalEncounterPhaseRecurrent assembled.measurements
                         || diagnosedAnyOf (DiagnosisHIVDetectableViralLoadRecurrentPhase :: diabetesDiagnosesRecurrentPhase) assembled
                    )
+
+
+{-| A health education question that was not asked is stored exactly like one
+answered with No, so the task waits for the activities that make diagnoses.
+-}
+diagnosisSourcesCompleted : NominalDate -> Bool -> AssembledData -> Bool
+diagnosisSourcesCompleted currentDate isLabTech assembled =
+    List.all (activityCompleted currentDate isLabTech assembled)
+        [ LabResults, LabsResultsFollowUps, RecurrentExamination ]
 
 
 nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
@@ -381,21 +402,7 @@ nextStepsTaskCompleted currentDate assembled task =
         NextStepsMedicationDistribution ->
             let
                 medicationDistributionCompleted =
-                    let
-                        medicationDistributionRequired =
-                            resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
-                                |> List.isEmpty
-                                |> not
-                    in
-                    if medicationDistributionRequired then
-                        let
-                            allowedSigns =
-                                NoMedicationDistributionSignsRecurrentPhase :: medicationsRecurrentPhase
-                        in
-                        medicationDistributionMeasurementTaken allowedSigns assembled.measurements
-
-                    else
-                        True
+                    requiredMedicationsAddressed currentDate PrenatalEncounterPhaseRecurrent assembled
 
                 malariaTreatmentCompleted =
                     if diagnosedMalariaByPhase PrenatalEncounterPhaseRecurrent assembled then
@@ -721,7 +728,7 @@ referToARVProgram : AssembledData -> Bool
 referToARVProgram assembled =
     -- No need to check Speciality care, since there is no
     -- recurrent phase for postpartum encounter.
-    diagnosed DiagnosisHIVRecurrentPhase assembled && hivProgramAtHC assembled.measurements
+    diagnosed DiagnosisHIVRecurrentPhase assembled && (hivProgramAtHC assembled.measurements == Just True)
 
 
 referralFacilities : List ReferralFacility
