@@ -76,6 +76,11 @@ update currentTime activePage dbVersion device msg model =
         requestTimestamp =
             Time.posixToMillis model.downloadRequestTime
                 |> String.fromInt
+
+        -- The in-flight response no longer answers what the model asks, because
+        -- the list or the cursor changed. Drop it; the next tick issues a fresh request.
+        dropAndRefetch status =
+            SubModelReturn { model | syncStatus = status RemoteData.NotAsked } Cmd.none noError []
     in
     case msg of
         MsgDebouncer subMsg ->
@@ -166,7 +171,7 @@ update currentTime activePage dbVersion device msg model =
                                                 , ( "stats_cache_hash", currentZipper.statsCacheHash )
                                                 ]
                                             |> withExpectJson decodeDownloadSyncResponseAuthority
-                                            |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipperUpdated)
+                                            |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipperUpdated currentTime)
                                 in
                                 SubModelReturn
                                     { model
@@ -181,53 +186,62 @@ update currentTime activePage dbVersion device msg model =
                 _ ->
                     determineSyncStatus
 
-        BackendAuthorityFetchHandle zipper webData ->
+        BackendAuthorityFetchHandle zipper requestTime webData ->
             let
-                ( saveFetchedDataCmd, modelUpdated, extraMsgs ) =
-                    case RemoteData.toMaybe webData of
-                        Just data ->
-                            let
-                                currentZipper =
-                                    Zipper.current zipper
-
-                                dataToSend =
-                                    data.entities
-                                        |> List.foldl
-                                            (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
-                                            []
-                                        |> List.reverse
-
-                                -- When authority completes download, we mark stock management data of that
-                                -- health center as obsolete, as there may have been Fbf/Stock update
-                                -- or Aheza entries downloaded.
-                                stockManagementDataMsg =
-                                    if data.revisionCount == 0 then
-                                        [ Backend.Model.MarkForRecalculationStockManagementData (toEntityUuid currentZipper.uuid)
-                                            |> App.Model.MsgIndexedDb
-                                        , Backend.Model.MarkForRecalculationVillageStockManagementData (toEntityUuid currentZipper.uuid)
-                                            |> App.Model.MsgIndexedDb
-                                        ]
-
-                                    else
-                                        []
-                            in
-                            ( sendSyncedDataToIndexDb { table = "Authority", data = dataToSend, shard = currentZipper.uuid, timestamp = requestTimestamp }
-                            , { model | downloadAuthorityResponse = webData }
-                            , stockManagementDataMsg
-                            )
-
-                        Nothing ->
-                            ( Cmd.none
-                            , SyncManager.Utils.determineSyncStatus activePage
-                                { model | syncStatus = SyncDownloadAuthority webData }
-                            , []
-                            )
+                requested =
+                    Zipper.current zipper
             in
-            SubModelReturn
-                modelUpdated
-                saveFetchedDataCmd
-                (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
-                extraMsgs
+            if SyncManager.Utils.isCurrentAuthorityRequest requested model then
+                let
+                    ( saveFetchedDataCmd, modelUpdated, extraMsgs ) =
+                        case RemoteData.toMaybe webData of
+                            Just data ->
+                                let
+                                    dataToSend =
+                                        data.entities
+                                            |> List.foldl
+                                                (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
+                                                []
+                                            |> List.reverse
+
+                                    -- When authority completes download, we mark stock management data of that
+                                    -- health center as obsolete, as there may have been Fbf/Stock update
+                                    -- or Aheza entries downloaded.
+                                    stockManagementDataMsg =
+                                        if data.revisionCount == 0 then
+                                            [ Backend.Model.MarkForRecalculationStockManagementData (toEntityUuid requested.uuid)
+                                                |> App.Model.MsgIndexedDb
+                                            , Backend.Model.MarkForRecalculationVillageStockManagementData (toEntityUuid requested.uuid)
+                                                |> App.Model.MsgIndexedDb
+                                            ]
+
+                                        else
+                                            []
+                                in
+                                ( sendSyncedDataToIndexDb { table = "Authority", data = dataToSend, shard = requested.uuid, timestamp = requestTimestamp }
+                                , { model | downloadAuthorityResponse = webData, downloadAuthorityAtRequest = requested }
+                                , stockManagementDataMsg
+                                )
+
+                            Nothing ->
+                                ( Cmd.none
+                                , SyncManager.Utils.determineSyncStatus activePage
+                                    { model | syncStatus = SyncDownloadAuthority webData }
+                                , []
+                                )
+                in
+                SubModelReturn
+                    modelUpdated
+                    saveFetchedDataCmd
+                    (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
+                    extraMsgs
+
+            else if requestTime == model.downloadRequestTime then
+                dropAndRefetch SyncDownloadAuthority
+
+            else
+                -- A superseded request; the one in flight drives the lane.
+                noChange
 
         BackendAuthorityFetchedDataSavedHandle timestamp ->
             if requestTimestamp /= timestamp then
@@ -235,6 +249,11 @@ update currentTime activePage dbVersion device msg model =
                 -- has occured, and another request was issued instead.
                 -- Therefore, we drop this request.
                 noChange
+
+            else if not (SyncManager.Utils.isCurrentAuthorityRequest model.downloadAuthorityAtRequest model) then
+                -- The list or the cursor changed while the batch was being saved:
+                -- writing the revision cursor now would land it on another authority.
+                dropAndRefetch SyncDownloadAuthority
 
             else
                 Maybe.map2
@@ -396,108 +415,117 @@ update currentTime activePage dbVersion device msg model =
                 _ ->
                     determineSyncStatus
 
-        BackendAuthorityDashboardStatsFetchHandle zipper webData ->
-            let
-                currentZipper =
-                    Zipper.current zipper
+        BackendAuthorityDashboardStatsFetchHandle requestZipper webData ->
+            case model.syncInfoAuthorities of
+                Nothing ->
+                    dropAndRefetch SyncDownloadAuthorityDashboardStats
 
-                ( cmd, statsCacheHash, appMsgs ) =
-                    case RemoteData.toMaybe webData of
-                        Just data ->
-                            if List.isEmpty data.entities then
-                                ( Cmd.none, currentZipper.statsCacheHash, [] )
-
-                            else
-                                let
-                                    dataToSend =
-                                        data.entities
-                                            |> List.foldl
-                                                (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
-                                                []
-                                            |> List.reverse
-
-                                    -- Grab the updated cache hash.
-                                    cacheHash =
-                                        data.entities
-                                            |> List.head
-                                            |> Maybe.map
-                                                (\backendAuthorityEntity ->
-                                                    case backendAuthorityEntity of
-                                                        BackendAuthorityDashboardStats statsEntity ->
-                                                            statsEntity.entity.cacheHash
-
-                                                        _ ->
-                                                            currentZipper.statsCacheHash
-                                                )
-                                            |> Maybe.withDefault currentZipper.statsCacheHash
-                                in
-                                ( sendSyncedDataToIndexDb { table = "AuthorityStats", data = dataToSend, shard = currentZipper.uuid, timestamp = "" }
-                                , cacheHash
-                                , [ handleNewRevisionsMsg backendAuthorityEntityToRevision data.entities ]
-                                )
-
-                        Nothing ->
-                            ( Cmd.none, currentZipper.statsCacheHash, [] )
-
-                currentTimeMillis =
-                    Time.posixToMillis currentTime
-
-                syncInfoAuthorities =
-                    case RemoteData.toMaybe webData of
-                        Just data ->
-                            Zipper.mapCurrent
-                                (\old ->
-                                    { old
-                                        | lastSuccesfulContact = currentTimeMillis
-                                        , remainingToDownload = data.revisionCount
-                                        , status = Success
-                                        , statsCacheHash = statsCacheHash
-                                    }
-                                )
-                                zipper
-
-                        Nothing ->
-                            zipper
-
-                modelWithSyncStatus =
-                    SyncManager.Utils.determineSyncStatus activePage
-                        { model
-                            | syncStatus = SyncDownloadAuthorityDashboardStats webData
-                            , syncInfoAuthorities = Just syncInfoAuthorities
-                        }
-
-                -- Calculating the time it took authorities to sync.
-                -- When sync is completed (status is about to change to Idle), we need to decide on
-                -- additional actions:
-                -- If sync lasted  more than 45 seconds (initial sync, for example), we refresh the page.
-                -- Otherwise, we trigger photos download.
-                extraMsgs =
-                    if modelWithSyncStatus.syncStatus == SyncIdle then
-                        let
-                            authoritiesSyncTime =
-                                currentTimeMillis - model.syncInfoGeneral.lastSuccesfulContact
-                        in
-                        if authoritiesSyncTime > 45000 then
-                            [ SchedulePageRefresh ]
-
-                        else
-                            [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
+                Just zipper ->
+                    if (Zipper.current zipper).uuid /= (Zipper.current requestZipper).uuid then
+                        dropAndRefetch SyncDownloadAuthorityDashboardStats
 
                     else
-                        -- Sync is not completed yet - no additional actions.
-                        []
-            in
-            SubModelReturn
-                modelWithSyncStatus
-                (Cmd.batch
-                    [ cmd
-                    , -- Send to JS the updated revision ID. We send the entire list.
-                      sendSyncInfoAuthoritiesCmd syncInfoAuthorities
-                    ]
-                )
-                (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
-                appMsgs
-                |> sequenceSubModelReturn (update currentTime activePage dbVersion device) extraMsgs
+                        let
+                            currentZipper =
+                                Zipper.current zipper
+
+                            ( cmd, statsCacheHash, appMsgs ) =
+                                case RemoteData.toMaybe webData of
+                                    Just data ->
+                                        if List.isEmpty data.entities then
+                                            ( Cmd.none, currentZipper.statsCacheHash, [] )
+
+                                        else
+                                            let
+                                                dataToSend =
+                                                    data.entities
+                                                        |> List.foldl
+                                                            (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
+                                                            []
+                                                        |> List.reverse
+
+                                                -- Grab the updated cache hash.
+                                                cacheHash =
+                                                    data.entities
+                                                        |> List.head
+                                                        |> Maybe.map
+                                                            (\backendAuthorityEntity ->
+                                                                case backendAuthorityEntity of
+                                                                    BackendAuthorityDashboardStats statsEntity ->
+                                                                        statsEntity.entity.cacheHash
+
+                                                                    _ ->
+                                                                        currentZipper.statsCacheHash
+                                                            )
+                                                        |> Maybe.withDefault currentZipper.statsCacheHash
+                                            in
+                                            ( sendSyncedDataToIndexDb { table = "AuthorityStats", data = dataToSend, shard = currentZipper.uuid, timestamp = "" }
+                                            , cacheHash
+                                            , [ handleNewRevisionsMsg backendAuthorityEntityToRevision data.entities ]
+                                            )
+
+                                    Nothing ->
+                                        ( Cmd.none, currentZipper.statsCacheHash, [] )
+
+                            currentTimeMillis =
+                                Time.posixToMillis currentTime
+
+                            syncInfoAuthorities =
+                                case RemoteData.toMaybe webData of
+                                    Just data ->
+                                        Zipper.mapCurrent
+                                            (\old ->
+                                                { old
+                                                    | lastSuccesfulContact = currentTimeMillis
+                                                    , remainingToDownload = data.revisionCount
+                                                    , status = Success
+                                                    , statsCacheHash = statsCacheHash
+                                                }
+                                            )
+                                            zipper
+
+                                    Nothing ->
+                                        zipper
+
+                            modelWithSyncStatus =
+                                SyncManager.Utils.determineSyncStatus activePage
+                                    { model
+                                        | syncStatus = SyncDownloadAuthorityDashboardStats webData
+                                        , syncInfoAuthorities = Just syncInfoAuthorities
+                                    }
+
+                            -- Calculating the time it took authorities to sync.
+                            -- When sync is completed (status is about to change to Idle), we need to decide on
+                            -- additional actions:
+                            -- If sync lasted  more than 45 seconds (initial sync, for example), we refresh the page.
+                            -- Otherwise, we trigger photos download.
+                            extraMsgs =
+                                if modelWithSyncStatus.syncStatus == SyncIdle then
+                                    let
+                                        authoritiesSyncTime =
+                                            currentTimeMillis - model.syncInfoGeneral.lastSuccesfulContact
+                                    in
+                                    if authoritiesSyncTime > 45000 then
+                                        [ SchedulePageRefresh ]
+
+                                    else
+                                        [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
+
+                                else
+                                    -- Sync is not completed yet - no additional actions.
+                                    []
+                        in
+                        SubModelReturn
+                            modelWithSyncStatus
+                            (Cmd.batch
+                                [ cmd
+                                , -- Send to JS the updated revision ID. We send the entire list.
+                                  sendSyncInfoAuthoritiesCmd syncInfoAuthorities
+                                ]
+                            )
+                            (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
+                            appMsgs
+                            |> sequenceSubModelReturn (update currentTime activePage dbVersion device) extraMsgs
 
         BackendFetchMain ->
             case model.syncStatus of
@@ -711,7 +739,7 @@ update currentTime activePage dbVersion device msg model =
                                         , ( "base_revision", String.fromInt model.syncInfoGeneral.lastFetchedRevisionId )
                                         ]
                                     |> withExpectJson decodeDownloadSyncResponseGeneral
-                                    |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle)
+                                    |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle model.syncInfoGeneral.lastFetchedRevisionId currentTime)
                         in
                         SubModelReturn
                             { model
@@ -730,50 +758,58 @@ update currentTime activePage dbVersion device msg model =
                         noError
                         []
 
-        BackendGeneralFetchHandle webData ->
-            let
-                ( cmd, modelUpdated ) =
-                    case RemoteData.toMaybe webData of
-                        Just data ->
-                            let
-                                dataToSend =
-                                    data.entities
-                                        |> List.foldl (\entity accum -> SyncManager.Utils.getDataToSendGeneral entity accum) []
-                                        |> List.reverse
+        BackendGeneralFetchHandle baseRevision requestTime webData ->
+            if baseRevision == model.syncInfoGeneral.lastFetchedRevisionId then
+                let
+                    ( cmd, modelUpdated ) =
+                        case RemoteData.toMaybe webData of
+                            Just data ->
+                                let
+                                    dataToSend =
+                                        data.entities
+                                            |> List.foldl (\entity accum -> SyncManager.Utils.getDataToSendGeneral entity accum) []
+                                            |> List.reverse
 
-                                saveFetchedDataCmd =
-                                    sendSyncedDataToIndexDb { table = "General", data = dataToSend, shard = "", timestamp = requestTimestamp }
+                                    saveFetchedDataCmd =
+                                        sendSyncedDataToIndexDb { table = "General", data = dataToSend, shard = "", timestamp = requestTimestamp }
 
-                                -- On last iteration of Download general (batch size during download is 500),
-                                -- we also init Rollbar. The logic - Rollbar token is passed at General Download,
-                                -- and it may have changed. So, we need to init Rollbar with new token.
-                                -- Init also sends all unsent items from dbErrors table.
-                                initRollbarCmd =
-                                    if List.length data.entities < 500 && (not <| String.isEmpty data.rollbarToken) then
-                                        initRollbar
-                                            { device = data.deviceName
-                                            , token = data.rollbarToken
-                                            , version = Version.version.build
-                                            }
+                                    -- On last iteration of Download general (batch size during download is 500),
+                                    -- we also init Rollbar. The logic - Rollbar token is passed at General Download,
+                                    -- and it may have changed. So, we need to init Rollbar with new token.
+                                    -- Init also sends all unsent items from dbErrors table.
+                                    initRollbarCmd =
+                                        if List.length data.entities < 500 && (not <| String.isEmpty data.rollbarToken) then
+                                            initRollbar
+                                                { device = data.deviceName
+                                                , token = data.rollbarToken
+                                                , version = Version.version.build
+                                                }
 
-                                    else
-                                        Cmd.none
-                            in
-                            ( Cmd.batch [ saveFetchedDataCmd, initRollbarCmd ]
-                            , { model | downloadGeneralResponse = webData }
-                            )
+                                        else
+                                            Cmd.none
+                                in
+                                ( Cmd.batch [ saveFetchedDataCmd, initRollbarCmd ]
+                                , { model | downloadGeneralResponse = webData }
+                                )
 
-                        Nothing ->
-                            ( Cmd.none
-                            , SyncManager.Utils.determineSyncStatus activePage
-                                { model | syncStatus = SyncDownloadGeneral webData }
-                            )
-            in
-            SubModelReturn
-                modelUpdated
-                cmd
-                (maybeHttpError webData "Backend.SyncManager.Update" "BackendGeneralFetchHandle")
-                []
+                            Nothing ->
+                                ( Cmd.none
+                                , SyncManager.Utils.determineSyncStatus activePage
+                                    { model | syncStatus = SyncDownloadGeneral webData }
+                                )
+                in
+                SubModelReturn
+                    modelUpdated
+                    cmd
+                    (maybeHttpError webData "Backend.SyncManager.Update" "BackendGeneralFetchHandle")
+                    []
+
+            else if requestTime == model.downloadRequestTime then
+                dropAndRefetch SyncDownloadGeneral
+
+            else
+                -- A superseded request; the one in flight drives the lane.
+                noChange
 
         BackendGeneralFetchedDataSavedHandle timestamp ->
             if requestTimestamp /= timestamp then
