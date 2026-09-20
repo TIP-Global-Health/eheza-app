@@ -385,6 +385,11 @@ B-384	4	READY	LOW			33	Un-enrolling a nurse from the resilience programme hides 
 B-385	4	READY	LOW			33	Kinyarwanda header for the End-Of-Period resilience category reads "end of the FIRST month" above all seven of those mes
 B-386	4	READY	LOW			33	Client and server now spell five clinical labels differently, so a device screen and a generated report name the same di
 B-387	4	READY	LOW			33	The new duplicate-English check documents a guarantee it does not implement: its exemption list is unbounded, so an alre
+B-388	3	READY	MED			33	A village saved with any geo field blank makes the general sync batch undecodable, stopping ALL sync for every device on
+B-389	4	READY	LOW			33	A live uvl village carries a sector name that is not in the geo table, and nothing validates it: a CHW assigned there co
+B-390	3	READY	MED			33	A failed GPS capture sends no reply and never clears the last reading, so one household's coordinates are shown and save
+B-391	4	READY	LOW			33	Eleven views label the level-5 address "Village" regardless of site, so Burundi reads "Village" where the unit's own res
+B-392	1	READY	MED			33	The duplicate-referral guard now reads a history that cannot contain the encounter it reports to, so a rhesus-negative o
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
