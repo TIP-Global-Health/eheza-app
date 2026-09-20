@@ -378,6 +378,11 @@ B-377	4	READY	LOW			32	Patient CSV import: the date validator accepts a two-digi
 B-378	4	READY	LOW			32	Person presave: the "has measurements, cannot delete" guard fires on EVERY save of an already-deleted person, so any lat
 B-379	4	READY	LOW		2253	32	E2E harness: `switchUser` in `lab-tech-encounter.spec.ts` flakes — `page.goto('/')` in `pairDevice` is interrupted by th
 B-380	4	READY	LOW		2264	32	E2E: the Acute Illness nurse test "report shows lemon juice or honey only when it was given" flakes — after saving the p
+B-381	3	READY	MED-LOW			33	Child Scoreboard registration: the birth-date calendar offers neither today nor a date that keeps the child searchable, 
+B-382	3	READY	MED			33	National-ID patient search accepts only digits, so on Burundi and Somalia it cannot type 99.8% of the IDs that are store
+B-383	4	READY	LOW			33	Resilience survey cap counts duplicate saves, so a nurse who saved one sitting twice is permanently denied the programme
+B-384	4	READY	LOW			33	Un-enrolling a nurse from the resilience programme hides the Wellbeing card but leaves the reminder modals firing and th
+B-385	4	READY	LOW			33	Kinyarwanda header for the End-Of-Period resilience category reads "end of the FIRST month" above all seven of those mes
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
