@@ -390,6 +390,26 @@ B-389	4	READY	LOW			33	A live uvl village carries a sector name that is not in t
 B-390	3	READY	MED			33	A failed GPS capture sends no reply and never clears the last reading, so one household's coordinates are shown and save
 B-391	4	READY	LOW			33	Eleven views label the level-5 address "Village" regardless of site, so Burundi reads "Village" where the unit's own res
 B-392	1	READY	MED			33	The duplicate-referral guard now reads a history that cannot contain the encounter it reports to, so a rhesus-negative o
+B-393	3	READY	MED			34	E2E suite: the Nutrition NCDA test has run in no CI job since 2026-03-15, because the job-1 exclusion `NCD` matches insi
+B-394	3	READY	MED			34	`healthy_start` is on in Rwanda production and is the one site feature no local or CI environment ever enables, so nothi
+B-395	2	READY	HIGH		2128	34	The release gate is red: all three e2e jobs have failed on `develop` since the translations fold merged on 2026-09-16, b
+B-396	3	READY	MED			34	`e2e_playwright_1` joins its two Playwright runs with `&&`, so any failure in the first leg silently skips the other 25 
+B-397	3	READY	MED			34	`[ci skip]` on every commit plus zero required status checks means a PR can be merged with no CI having run at all
+B-398	4	READY	LOW			34	The simpletest CI log is capped at its last 400,000 bytes, and `--verbose` puts the per-class summary before the part th
+B-399	4	READY	LOW			34	`field_incident_type` allows `files-upload`, but the client sends `file-upload` and the backend stores it unvalidated — 
+B-400	4	READY	LOW			34	The Well Child "Vitals skip round-trip" e2e test passes when the vitals row is missing entirely, which is the regression
+B-401	4	READY	LOW			34	Eight e2e backend checks skip the async-write retry every sibling call site uses, so a lagging write fails the test
+B-402	4	READY	LOW			34	A test comment records a "FINDING" that is false — the Labs tab's glucose ranges are not swapped — and two test cases ar
+B-403	4	READY	LOW			34	The `HandleRevisions` re-assessment dispatch has no test and cannot get one the usual way, so dropping a revision from B
+B-404	4	SPLIT	LOW			34	⬖ SPLIT out of [[B-144]]: `minify`'s uglify error handler has no `isPublishing` guard, so `gulp publish` still cannot re
+B-405	4	READY	LOW			34	The production build runs image optimisation and then throws the result away: all 302 deployed images are byte-identical
+B-406	4	READY	LOW			34	Every precache revision in the shipped service worker is the hash of the file *before* minification, so a minifier-only 
+B-407	4	READY	LOW			34	`.ddev/config.local.yaml.example` is not in the "default state" both deploy skills tell the operator to expect, so a sta
+B-408	4	READY	LOW			34	Both deploy skills run their clean-tree and terminus preflight checks before the `ddev restart` that invalidates them
+B-409	4	READY	LOW			34	The native install/reset/upgrade scripts end with a bootstrap check that is missing its pipe, so a fully successful run 
+B-410	4	READY	LOW			34	`generateReleaseNotes` drops all GitHub enrichment when `origin` is an HTTPS remote, because it reads the org and repo f
+B-411	4	READY	LOW			34	`server/scripts/setup-dev` writes Drupal's settings files to the repository root instead of the docroot
+B-412	4	READY	LOW			34	Three exported field instances permit a shape the client decoder or the sync query cannot survive — the same poison-reco
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
