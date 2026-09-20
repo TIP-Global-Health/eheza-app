@@ -401,7 +401,7 @@ B-400	4	READY	LOW			34	The Well Child "Vitals skip round-trip" e2e test passes w
 B-401	4	READY	LOW			34	Eight e2e backend checks skip the async-write retry every sibling call site uses, so a lagging write fails the test
 B-402	4	READY	LOW			34	A test comment records a "FINDING" that is false — the Labs tab's glucose ranges are not swapped — and two test cases ar
 B-403	4	READY	LOW			34	The `HandleRevisions` re-assessment dispatch has no test and cannot get one the usual way, so dropping a revision from B
-B-404	4	SPLIT	LOW			34	⬖ SPLIT out of [[B-144]]: `minify`'s uglify error handler has no `isPublishing` guard, so `gulp publish` still cannot re
+B-404	4	READY	LOW			34	`minify`'s uglify error handler has no `isPublishing` guard, so `gulp publish` still cannot report a minification failur
 B-405	4	READY	LOW			34	The production build runs image optimisation and then throws the result away: all 302 deployed images are byte-identical
 B-406	4	READY	LOW			34	Every precache revision in the shipped service worker is the hash of the file *before* minification, so a minifier-only 
 B-407	4	READY	LOW			34	`.ddev/config.local.yaml.example` is not in the "default state" both deploy skills tell the operator to expect, so a sta
@@ -410,6 +410,11 @@ B-409	4	READY	LOW			34	The native install/reset/upgrade scripts end with a boots
 B-410	4	READY	LOW			34	`generateReleaseNotes` drops all GitHub enrichment when `origin` is an HTTPS remote, because it reads the org and repo f
 B-411	4	READY	LOW			34	`server/scripts/setup-dev` writes Drupal's settings files to the repository root instead of the docroot
 B-412	4	READY	LOW			34	Three exported field instances permit a shape the client decoder or the sync query cannot survive — the same poison-reco
+B-413	3	READY	MED			34	Every admin content list and CSV export shows soft-deleted content as live, because the views filter `node.status` and n
+B-414	4	READY	LOW			34	`admin/content` offers two bulk operations the code forbids outright, so running either throws an uncaught exception mid
+B-415	4	READY	LOW			34	The admin menu's "Create PMTCT Participation" link 404s: the exported path misspells the content type
+B-416	4	READY	LOW			34	`allowed_values` drift both ways: five values the app writes today are undeclared, and three prenatal fields still decla
+B-417	4	READY	LOW			34	Two config-as-code gaps: an unexported taxonomy component, and the two custom permissions that `drush fra` cannot restor
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
