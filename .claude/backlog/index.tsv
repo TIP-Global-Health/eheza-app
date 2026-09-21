@@ -418,6 +418,9 @@ B-417	4	READY	LOW			34	Two config-as-code gaps: an unexported taxonomy component
 B-418	3	READY	MED-LOW			35	Patient Record: the adult Family Planning pane leaves out every method recorded in an NCD encounter
 B-419	4	READY	LOW			35	Photo download: a failed IndexedDB read of deferred photos never answers Elm, so photo downloads stop until reload
 B-420	4	READY	LOW			35	Stock management (Somali): history months show in English although Somali month names exist
+B-421	1	READY	MED			35	NCD pregnancy test: changing a test to "not performed" keeps its hidden result, so pregnancy status for hypertension tre
+B-422	1	READY	LOW			35	HIV program Diagnostics: correcting a saved Positive result to "test not run" still stores Positive, and the participant
+B-423	4	READY	LOW			35	Stock management Receive Stock: an erased batch number still counts as filled
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
