@@ -416,6 +416,8 @@ B-415	4	READY	LOW			34	The admin menu's "Create PMTCT Participation" link 404s: 
 B-416	4	READY	LOW			34	`allowed_values` drift both ways: five values the app writes today are undeclared, and three prenatal fields still decla
 B-417	4	READY	LOW			34	Two config-as-code gaps: an unexported taxonomy component, and the two custom permissions that `drush fra` cannot restor
 B-418	3	READY	MED-LOW			35	Patient Record: the adult Family Planning pane leaves out every method recorded in an NCD encounter
+B-419	4	READY	LOW			35	Photo download: a failed IndexedDB read of deferred photos never answers Elm, so photo downloads stop until reload
+B-420	4	READY	LOW			35	Stock management (Somali): history months show in English although Somali month names exist
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
