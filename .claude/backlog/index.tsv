@@ -421,6 +421,15 @@ B-420	4	READY	LOW			35	Stock management (Somali): history months show in English
 B-421	1	READY	MED			35	NCD pregnancy test: changing a test to "not performed" keeps its hidden result, so pregnancy status for hypertension tre
 B-422	1	READY	LOW			35	HIV program Diagnostics: correcting a saved Positive result to "test not run" still stores Positive, and the participant
 B-423	4	READY	LOW			35	Stock management Receive Stock: an erased batch number still counts as filled
+B-424	3	READY	MED-LOW			36	Prenatal recurrent labs: entering the last outstanding result saves the labs-results record twice, and the second save i
+B-425	4	READY	LOW			36	Prenatal Completion report: the referral row expects an ARV / NCD-programme referral when the patient says she IS enroll
+B-426	4	READY	LOW			36	Prenatal Completion report: a vitals recheck is expected at postpartum (and any later nurse) encounters with borderline 
+B-427	3	READY	MED-LOW			36	Child Scoreboard NCDA scorecard: the three "6–24 months" nutrition-behaviour rows and the Breastfed row show a red X for
+B-428	3	READY	MED-LOW			36	Aggregated NCDA scoreboard (percentage mode): the Breastfed, complementary-feeding, diverse-diet, meals-a-day and both A
+B-429	3	READY	MED-LOW			36	Aggregated NCDA scoreboard immunisation row: the server rebuilds each vaccine's dose ladder from distinct administration
+B-430	3	READY	MED			36	Group sessions (nurse Clinics page): while the health centre is uploading, today's sessions are never fetched, so the gr
+B-431	4	READY	LOW			36	Group enrolment: the automatic check-in after adding a child to a running session always creates a new attendance record
+B-432	4	READY	LOW			36	Dashboard group-education drill-in: attendee names and genders are cached once per health centre and never refreshed, so
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
