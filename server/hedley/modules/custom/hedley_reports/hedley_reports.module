@@ -2126,6 +2126,8 @@ function hedley_reports_ai_diagnosis_mapping() {
  *   An associative array mapping diagnosis identifiers to their codes.
  */
 function hedley_reports_prenatal_diagnosis_mapping() {
+  // Reconfirmations ('-continued', '-persistent') get no code: they repeat a
+  // diagnosis the encounter that found the condition is already counted for.
   return [
     'chronic-hypertension-immediate' => 'a',
     'chronic-hypertension-recheck' => 'a',
@@ -2177,7 +2179,9 @@ function hedley_reports_prenatal_diagnosis_mapping() {
     'prom' => 'c1',
     'pprom' => 'd1',
     'hyperemesis-gravidum' => 'e1',
+    'hyperemesis-gravidum-by-symptoms' => 'e1',
     'severe-vomiting' => 'f1',
+    'severe-vomiting-by-symptoms' => 'f1',
     'maternal-complications' => 'g1',
     'infection' => 'h1',
     'imminent-delivery' => 'i1',
@@ -2213,6 +2217,9 @@ function hedley_reports_prenatal_diagnosis_mapping() {
     'postpartum-excessive-bleeding' => 'j2',
     'postpartum-early-mastitis-engorgment' => 'k2',
     'postpartum-mastitis' => 'l2',
+    'high-risk-of-preeclampsia-initial' => 'm2',
+    'high-risk-of-preeclampsia-recurrent' => 'm2',
+    'moderate-risk-of-preeclampsia' => 'n2',
   ];
 }
 

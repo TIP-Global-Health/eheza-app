@@ -770,6 +770,27 @@ export async function expectActivityInTab(
 
 
 /**
+ * Assert an activity card is offered in neither tab of the encounter page.
+ */
+export async function expectActivityAbsent(
+  page: Page,
+  activityIcon: string,
+  message: string,
+): Promise<void> {
+  const card = page.locator(`.icon-task-${activityIcon}`);
+
+  for (const tab of ['pending', 'completed'] as const) {
+    await openEncounterTab(page, tab);
+    await expect(card, `${message} - and not under ${tab}`).toBeHidden({
+      timeout: 10000,
+    });
+  }
+
+  await openEncounterTab(page, 'pending');
+}
+
+
+/**
  * The blood glucose field refuses a reading typed in millimoles per litre, and
  * says which unit it wants. Leaves a reading in range behind.
  *

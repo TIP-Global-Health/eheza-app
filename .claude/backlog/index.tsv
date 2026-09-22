@@ -219,7 +219,7 @@ B-218	4	READY	MED-LOW			23	Person: un-deleting a person does not un-delete what 
 B-219	4	READY	LOW			23	Patient consolidation: moved measurements/encounters/participants keep the DUPLICATE's shards, so transferred history ca
 B-220	2	IMPLEMENTED	HIGH	2143	2144	23	Acute Illness progress report: the encounter it was opened for is never rendered — a first visit's report shows no diagn
 B-221	1	IMPLEMENTED	MED	2203	2204	23	Prenatal: saving the Partner HIV test never re-runs the diagnosis assessment, so a discordant-partnership diagnosis reac
-B-222	4	READY	LOW			23	Person edit: a failed PATCH is recorded as `Success`, so the edit form shows no error — CONFIRMED (orchestrator-read han
+B-222	4	IMPLEMENTED	LOW	2268	2269	23	Person edit: a failed PATCH is recorded as `Success`, so the edit form shows no error
 B-223	4	READY	LOW			23	Backend/Update revision minors ×2: (a) `PrenatalFefolRevision`/`PrenatalAspirinRevision` ignore `deleted`; (b) removing 
 B-224	4	READY	LOW			23	NCD progress report: the pregnancy-test row is hidden on every follow-up encounter, so an earlier pregnancy result becom
 B-225	4	READY	LOW			24	Sync report-state: the "only save when changed" guard never passes, so every sync cycle rewrites the device user twice
@@ -256,7 +256,7 @@ B-255	4	READY	LOW			25	CHW progress report: the breech/transverse alert re-grade
 B-256	4	READY	MED-LOW			25	Well-child registration: a birth date exactly 13 years back is offered, and then the form demands two fields it never re
 B-257	4	READY	LOW			25	Duplicate-patient lookup is triggered by any text field over 13 characters and sized to Rwanda's ID, so the duplicate wa
 B-258	4	READY	LOW			25	Person edit page never fetches relationships, so after a page reload an address change silently skips the children
-B-259	4	READY	LOW			25	A freshly opened person form greets the nurse with "Person has been saved"
+B-259	4	IMPLEMENTED	LOW	2267	2269	25	A freshly opened person form greets the nurse with "Person has been saved"
 B-260	4	READY	LOW			25	Strict decoders on optional stats values: two dashboard enum sites lack the fallback their siblings have, and one requir
 B-261	4	READY	LOW			25	Dashboard case-management table: columns are sorted by bare month number, so they come out of order when the stats month
 B-262	4	READY	LOW			25	Person-counting cards that count participants or measurements instead of people (three siblings, one family)
@@ -308,13 +308,13 @@ B-307	3	IMPLEMENTED	MED	2192	2193	24	Case Management follow-up entries: tapping 
 B-308	2	IMPLEMENTED	MED	2254	2255	28	Statistical Queries › Acute Illness: three respiratory diagnosis rows show each other's counts — the PHP code table and 
 B-309	3	READY	MED-LOW			28	Statistical Queries › Postnatal Care: "Up to date with immunization" rows never see doses recorded at Child Scoreboard e
 B-310	4	READY	LOW			28	Aggregated NCDA scoreboard: the shared "children under 2" denominator uses the exact birth date while every age-gated nu
-B-311	2	READY	MED-HIGH			28	Aggregated NCDA scoreboard: the "born in the last 3 years" cutoff is evaluated at request time, so every historical colu
+B-311	2	IMPLEMENTED	MED-HIGH	2261	2262	28	Aggregated NCDA scoreboard: the "born in the last 3 years" cutoff is evaluated at request time, so every historical colu
 B-312	3	READY	MED-LOW			28	Aggregated NCDA scoreboard, "Iron during pregnancy" row: the nine counted months sit one month before the pregnancy — th
 B-313	4	READY	LOW			28	NCDA scoreboard (server blob): nothing re-triggers a child's recalculation when the pregnancy-side inputs change — newbo
 B-314	3	READY	MED-LOW			28	Growth charts: on three charts the y-axis gridlines and labels are spaced by tick index while the points are plotted by 
 B-315	3	READY	MED-LOW			28	Growth charts: a measurement outside the chart's x-range is pinned to the frame edge instead of dropped, so a 24–26-mont
 B-316	4	READY	LOW			28	Z-score tables: a failed table download on first load is never retried and never shown, so growth charts render without 
-B-317	2	READY	MED-HIGH			28	Sync download: a response arriving after its 30-second timeout is applied under whichever health centre is current by th
+B-317	2	IMPLEMENTED	MED-HIGH	2265	2266	28	Sync download: a response arriving after its 30-second timeout is applied under whichever health centre is current by th
 B-318	3	READY	MED			28	Sync: the dashboard-statistics download has no timeout and no elapsed-time guard, so one stalled request wedges uploads 
 B-319	1	IMPLEMENTED	MED	2223	2224	28	Prenatal labs (lab technician): a blood-smear order opens pre-answered "test will NOT be performed today" with the nurse
 B-320	1	IMPLEMENTED	MED	2211	2212	28	Prenatal HIV test: correcting to "known as positive" after a negative RDT keeps the result and the partner answers, so t
@@ -372,11 +372,55 @@ B-371	3	READY	MED			32	Prenatal CHW visits 2 and 3 on an undated pregnancy can n
 B-372	4	READY	LOW			32	Well Child next pediatric visit: on a month-end clamp day the "next" ECD / medication visit date is today, because the a
 B-373	3	READY	MED			32	Prenatal postpartum visit: recording the Pregnancy Outcome (the visit's first activity) closes the pregnancy at once, so
 B-374	4	READY	LOW			32	Case Management Antenatal pane: follow-up entries of an EXPIRED pregnancy (past EDD + 92 days, or the B-194 no-EDD rule)
-B-375	3	READY	MED			32	Patient merge: the acute-illness step looks participants up by `'acute_illness'` while the stored value is `'acute-illne
+B-375	3	IMPLEMENTED	MED	2263	2264	32	Patient merge: the acute-illness step looks participants up by `'acute_illness'` while the stored value is `'acute-illne
 B-376	3	READY	MED-LOW			32	Patient merge (antenatal): "ongoing pregnancy" is the newest participant with no `date_concluded`, which on live data is
 B-377	4	READY	LOW			32	Patient CSV import: the date validator accepts a two-digit year and the parser reads it literally, so "05-01-19" is stor
 B-378	4	READY	LOW			32	Person presave: the "has measurements, cannot delete" guard fires on EVERY save of an already-deleted person, so any lat
 B-379	4	READY	LOW		2253	32	E2E harness: `switchUser` in `lab-tech-encounter.spec.ts` flakes — `page.goto('/')` in `pairDevice` is interrupted by th
+B-380	4	READY	LOW		2264	32	E2E: the Acute Illness nurse test "report shows lemon juice or honey only when it was given" flakes — after saving the p
+B-381	3	READY	MED-LOW			33	Child Scoreboard registration: the birth-date calendar offers neither today nor a date that keeps the child searchable, 
+B-382	3	READY	MED			33	National-ID patient search accepts only digits, so on Burundi and Somalia it cannot type 99.8% of the IDs that are store
+B-383	4	READY	LOW			33	Resilience survey cap counts duplicate saves, so a nurse who saved one sitting twice is permanently denied the programme
+B-384	4	READY	LOW			33	Un-enrolling a nurse from the resilience programme hides the Wellbeing card but leaves the reminder modals firing and th
+B-385	4	READY	LOW			33	Kinyarwanda header for the End-Of-Period resilience category reads "end of the FIRST month" above all seven of those mes
+B-386	4	READY	LOW			33	Client and server now spell five clinical labels differently, so a device screen and a generated report name the same di
+B-387	4	READY	LOW			33	The new duplicate-English check documents a guarantee it does not implement: its exemption list is unbounded, so an alre
+B-388	3	READY	MED			33	A village saved with any geo field blank makes the general sync batch undecodable, stopping ALL sync for every device on
+B-389	4	READY	LOW			33	A live uvl village carries a sector name that is not in the geo table, and nothing validates it: a CHW assigned there co
+B-390	3	READY	MED			33	A failed GPS capture sends no reply and never clears the last reading, so one household's coordinates are shown and save
+B-391	4	READY	LOW			33	Eleven views label the level-5 address "Village" regardless of site, so Burundi reads "Village" where the unit's own res
+B-392	1	READY	MED			33	The duplicate-referral guard now reads a history that cannot contain the encounter it reports to, so a rhesus-negative o
+B-393	3	READY	MED			34	E2E suite: the Nutrition NCDA test has run in no CI job since 2026-03-15, because the job-1 exclusion `NCD` matches insi
+B-394	3	READY	MED			34	`healthy_start` is on in Rwanda production and is the one site feature no local or CI environment ever enables, so nothi
+B-395	2	READY	HIGH		2128	34	The release gate is red: all three e2e jobs have failed on `develop` since the translations fold merged on 2026-09-16, b
+B-396	3	READY	MED			34	`e2e_playwright_1` joins its two Playwright runs with `&&`, so any failure in the first leg silently skips the other 25 
+B-397	3	READY	MED			34	`[ci skip]` on every commit plus zero required status checks means a PR can be merged with no CI having run at all
+B-398	4	READY	LOW			34	The simpletest CI log is capped at its last 400,000 bytes, and `--verbose` puts the per-class summary before the part th
+B-399	4	READY	LOW			34	`field_incident_type` allows `files-upload`, but the client sends `file-upload` and the backend stores it unvalidated — 
+B-400	4	READY	LOW			34	The Well Child "Vitals skip round-trip" e2e test passes when the vitals row is missing entirely, which is the regression
+B-401	4	READY	LOW			34	Eight e2e backend checks skip the async-write retry every sibling call site uses, so a lagging write fails the test
+B-402	4	READY	LOW			34	A test comment records a "FINDING" that is false — the Labs tab's glucose ranges are not swapped — and two test cases ar
+B-403	4	READY	LOW			34	The `HandleRevisions` re-assessment dispatch has no test and cannot get one the usual way, so dropping a revision from B
+B-404	4	READY	LOW			34	`minify`'s uglify error handler has no `isPublishing` guard, so `gulp publish` still cannot report a minification failur
+B-405	4	READY	LOW			34	The production build runs image optimisation and then throws the result away: all 302 deployed images are byte-identical
+B-406	4	READY	LOW			34	Every precache revision in the shipped service worker is the hash of the file *before* minification, so a minifier-only 
+B-407	4	READY	LOW			34	`.ddev/config.local.yaml.example` is not in the "default state" both deploy skills tell the operator to expect, so a sta
+B-408	4	READY	LOW			34	Both deploy skills run their clean-tree and terminus preflight checks before the `ddev restart` that invalidates them
+B-409	4	READY	LOW			34	The native install/reset/upgrade scripts end with a bootstrap check that is missing its pipe, so a fully successful run 
+B-410	4	READY	LOW			34	`generateReleaseNotes` drops all GitHub enrichment when `origin` is an HTTPS remote, because it reads the org and repo f
+B-411	4	READY	LOW			34	`server/scripts/setup-dev` writes Drupal's settings files to the repository root instead of the docroot
+B-412	4	READY	LOW			34	Three exported field instances permit a shape the client decoder or the sync query cannot survive — the same poison-reco
+B-413	3	READY	MED			34	Every admin content list and CSV export shows soft-deleted content as live, because the views filter `node.status` and n
+B-414	4	READY	LOW			34	`admin/content` offers two bulk operations the code forbids outright, so running either throws an uncaught exception mid
+B-415	4	READY	LOW			34	The admin menu's "Create PMTCT Participation" link 404s: the exported path misspells the content type
+B-416	4	READY	LOW			34	`allowed_values` drift both ways: five values the app writes today are undeclared, and three prenatal fields still decla
+B-417	4	READY	LOW			34	Two config-as-code gaps: an unexported taxonomy component, and the two custom permissions that `drush fra` cannot restor
+B-418	3	READY	MED-LOW			35	Patient Record: the adult Family Planning pane leaves out every method recorded in an NCD encounter
+B-419	4	READY	LOW			35	Photo download: a failed IndexedDB read of deferred photos never answers Elm, so photo downloads stop until reload
+B-420	4	READY	LOW			35	Stock management (Somali): history months show in English although Somali month names exist
+B-421	1	READY	MED			35	NCD pregnancy test: changing a test to "not performed" keeps its hidden result, so pregnancy status for hypertension tre
+B-422	1	READY	LOW			35	HIV program Diagnostics: correcting a saved Positive result to "test not run" still stores Positive, and the participant
+B-423	4	READY	LOW			35	Stock management Receive Stock: an erased batch number still counts as filled
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

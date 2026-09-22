@@ -106,6 +106,7 @@ type TranslationId
     | Completed
     | CompletionReportType Pages.Completion.Model.ReportType
     | ContactType
+    | ContributingFactors
     | CoreExam
     | DangerSigns
     | DeliveryLocation DeliveryLocation
@@ -145,6 +146,7 @@ type TranslationId
     | HIV
     | HIVActivity HIVActivity
     | HIVTest
+    | Height
     | HomeVisit
     | HomeVisitActivity HomeVisitActivity
     | HttpError StringIdHttpError
@@ -169,7 +171,9 @@ type TranslationId
     | InfrastructureEnvironmentWash
     | LoadData
     | Location
+    | MUAC
     | Male
+    | Mebendazole
     | Medication
     | MedicationDistribution
     | Month Month
@@ -277,8 +281,10 @@ type TranslationId
     | UpToDateWithImmunization19To24MonthsLabel
     | UrineDipstickTest
     | UrineDipstickTestResult
+    | VitaminALabel
     | WastingModerate
     | WastingSevere
+    | Weight
     | WellChildActivity WellChildActivity
     | WideScopeNote
     | WrongPage
@@ -337,11 +343,7 @@ translationSet transId =
                     translationSet FollowUp
 
                 AcuteIllnessMUAC ->
-                    { english = "MUAC"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet MUAC
 
                 AcuteIllnessNutrition ->
                     translationSet Nutrition
@@ -398,11 +400,7 @@ translationSet transId =
                     translationSet MedicationDistribution
 
                 AcuteIllnessSendToHC ->
-                    { english = "Referral"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet Referral
 
                 AcuteIllnessSymptomsGeneral ->
                     { english = "Symptoms General"
@@ -632,6 +630,13 @@ translationSet transId =
 
         CollineSub ->
             { english = "Sub-Colline"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        ContributingFactors ->
+            { english = "Contributing Factors"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -1085,6 +1090,13 @@ translationSet transId =
             , somali = Nothing
             }
 
+        Height ->
+            { english = "Height"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         HomeVisit ->
             { english = "Home Visit"
             , kinyarwanda = Nothing
@@ -1256,8 +1268,22 @@ translationSet transId =
             , somali = Nothing
             }
 
+        MUAC ->
+            { english = "MUAC"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         Male ->
             { english = "Male"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Mebendazole ->
+            { english = "Mebendazole"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -1579,11 +1605,7 @@ translationSet transId =
         NCDATargetedInterventionsItemLabel item ->
             case item of
                 FBFGiven ->
-                    { english = "FBF"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet FBF
 
                 TreatmentForAcuteMalnutrition ->
                     { english = "Treatment for acute malnutrition (severe or moderate)"
@@ -1630,11 +1652,7 @@ translationSet transId =
                     }
 
                 VitaminA ->
-                    { english = "Vitamin A"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet VitaminALabel
 
                 Deworming ->
                     { english = "Deworming"
@@ -1731,11 +1749,7 @@ translationSet transId =
         NutritionChildActivity activity ->
             case activity of
                 NutritionHeight ->
-                    { english = "Height"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet Height
 
                 NutritionNutrition ->
                     translationSet Nutrition
@@ -1744,25 +1758,13 @@ translationSet transId =
                     translationSet Photo
 
                 NutritionWeight ->
-                    { english = "Weight"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet Weight
 
                 NutritionMUAC ->
-                    { english = "MUAC"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet MUAC
 
                 NutritionContributingFactors ->
-                    { english = "Contributing Factors"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet ContributingFactors
 
                 NutritionFollowUp ->
                     translationSet FollowUp
@@ -1774,11 +1776,7 @@ translationSet transId =
                     translationSet Referral
 
                 NutritionNCDA ->
-                    { english = "NCDA"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet NCDA
 
                 NutritionChildFbf ->
                     { english = "Child FBF"
@@ -2234,11 +2232,7 @@ translationSet transId =
                     }
 
                 PrenatalMebendazole ->
-                    { english = "Mebendazole"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet Mebendazole
 
                 PrenatalMedicalHistory ->
                     { english = "Medical History"
@@ -2468,6 +2462,20 @@ translationSet transId =
                     { english = "Pregnancy-Induced Hypertension"
                     , kinyarwanda = Just "Umuvuduko w'amaraso watewe no gutwita"
                     , kirundi = Just "Umuvuduko w'amaraso utewe n'imbanyi"
+                    , somali = Nothing
+                    }
+
+                DiagnosisHighRiskOfPreeclampsia ->
+                    { english = "High Risk of Preeclampsia"
+                    , kinyarwanda = Just "Afite ibyago byinshi byo kugira Preklampusi"
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                DiagnosisModerateRiskOfPreeclampsia ->
+                    { english = "Moderate Risk of Preeclampsia"
+                    , kinyarwanda = Just "Afite ibyago biringaniye byo kugira Preklampusi"
+                    , kirundi = Nothing
                     , somali = Nothing
                     }
 
@@ -2752,11 +2760,7 @@ translationSet transId =
                     }
 
                 DiagnosisTuberculosis ->
-                    { english = "Tuberculosis"
-                    , kinyarwanda = Just "Igituntu"
-                    , kirundi = Just "Igituntu"
-                    , somali = Just "Qaaxo"
-                    }
+                    translationSet Tuberculosis
 
                 DiagnosisDiabetes ->
                     { english = "Diabetes"
@@ -3093,11 +3097,7 @@ translationSet transId =
                     translationSet AcuteIllness
 
                 ReportDemographics ->
-                    { english = "Demographics"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet Demographics
 
                 ReportFBFDistribution ->
                     { english = "Stock Management"
@@ -3306,11 +3306,7 @@ translationSet transId =
                     }
 
                 TakenByCHW ->
-                    { english = "CHW"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet CHW
 
                 TakenByUnknown ->
                     { english = "Unknown"
@@ -3377,9 +3373,9 @@ translationSet transId =
 
         Tuberculosis ->
             { english = "Tuberculosis"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
+            , kinyarwanda = Just "Igituntu"
+            , kirundi = Just "Igituntu"
+            , somali = Just "Qaaxo"
             }
 
         TuberculosisActivity activity ->
@@ -3503,6 +3499,13 @@ translationSet transId =
             , somali = Nothing
             }
 
+        VitaminALabel ->
+            { english = "Vitamin A"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         WastingModerate ->
             { english = "Wasting Moderate"
             , kinyarwanda = Nothing
@@ -3512,6 +3515,13 @@ translationSet transId =
 
         WastingSevere ->
             { english = "Wasting Severe"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Weight ->
+            { english = "Weight"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -3533,11 +3543,7 @@ translationSet transId =
                     translationSet Caring
 
                 WellChildContributingFactors ->
-                    { english = "Contributing Factors"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet ContributingFactors
 
                 WellChildDTPImmunisation ->
                     translationSet ImmunisationDTP
@@ -3572,11 +3578,7 @@ translationSet transId =
                     translationSet HealthEducation
 
                 WellChildHeight ->
-                    { english = "Height"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet Height
 
                 WellChildHPVImmunisation ->
                     translationSet ImmunisationHPV
@@ -3588,21 +3590,13 @@ translationSet transId =
                     translationSet ImmunisationIPV
 
                 WellChildMebendezole ->
-                    { english = "Mebendazole"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet Mebendazole
 
                 WellChildMRImmunisation ->
                     translationSet ImmunisationMR
 
                 WellChildMUAC ->
-                    { english = "MUAC"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet MUAC
 
                 WellChildNCDA ->
                     translationSet NCDA
@@ -3646,18 +3640,10 @@ translationSet transId =
                     translationSet Vitals
 
                 WellChildVitaminA ->
-                    { english = "Vitamin A"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet VitaminALabel
 
                 WellChildWeight ->
-                    { english = "Weight"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet Weight
 
         WideScopeNote ->
             { english = "The selected scope may contain a large number of patients and report generation could take several minutes."

@@ -146,13 +146,13 @@ acuteIllnessDiagnosisFromMapping mapping =
             Just DiagnosisGastrointestinalInfectionUncomplicated
 
         "j" ->
-            Just DiagnosisSimpleColdAndCough
-
-        "k" ->
             Just DiagnosisRespiratoryInfectionComplicated
 
-        "l" ->
+        "k" ->
             Just DiagnosisRespiratoryInfectionUncomplicated
+
+        "l" ->
+            Just DiagnosisSimpleColdAndCough
 
         "m" ->
             Just DiagnosisFeverOfUnknownOrigin
@@ -491,6 +491,12 @@ prenatalDiagnosisFromMapping s =
 
         "l2" ->
             Just DiagnosisPostpartumMastitis
+
+        "m2" ->
+            Just DiagnosisHighRiskOfPreeclampsia
+
+        "n2" ->
+            Just DiagnosisModerateRiskOfPreeclampsia
 
         _ ->
             Nothing

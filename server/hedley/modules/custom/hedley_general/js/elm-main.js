@@ -10429,11 +10429,11 @@ var $author$project$Backend$Reports$Decoder$acuteIllnessDiagnosisFromMapping = f
 		case 'i':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated);
 		case 'j':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough);
-		case 'k':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated);
-		case 'l':
+		case 'k':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated);
+		case 'l':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough);
 		case 'm':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin);
 		case 'n':
@@ -10884,6 +10884,7 @@ var $author$project$Backend$Reports$Model$DiagnosisHIV = {$: 'DiagnosisHIV'};
 var $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad = {$: 'DiagnosisHIVDetectableViralLoad'};
 var $author$project$Backend$Reports$Model$DiagnosisHeartburn = {$: 'DiagnosisHeartburn'};
 var $author$project$Backend$Reports$Model$DiagnosisHepatitisB = {$: 'DiagnosisHepatitisB'};
+var $author$project$Backend$Reports$Model$DiagnosisHighRiskOfPreeclampsia = {$: 'DiagnosisHighRiskOfPreeclampsia'};
 var $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum = {$: 'DiagnosisHyperemesisGravidum'};
 var $author$project$Backend$Reports$Model$DiagnosisImminentDelivery = {$: 'DiagnosisImminentDelivery'};
 var $author$project$Backend$Reports$Model$DiagnosisInfection = {$: 'DiagnosisInfection'};
@@ -10895,6 +10896,7 @@ var $author$project$Backend$Reports$Model$DiagnosisMaternalComplications = {$: '
 var $author$project$Backend$Reports$Model$DiagnosisMiscarriage = {$: 'DiagnosisMiscarriage'};
 var $author$project$Backend$Reports$Model$DiagnosisModerateAnemia = {$: 'DiagnosisModerateAnemia'};
 var $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia = {$: 'DiagnosisModeratePreeclampsia'};
+var $author$project$Backend$Reports$Model$DiagnosisModerateRiskOfPreeclampsia = {$: 'DiagnosisModerateRiskOfPreeclampsia'};
 var $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy = {$: 'DiagnosisMolarPregnancy'};
 var $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis = {$: 'DiagnosisNeurosyphilis'};
 var $author$project$Backend$Reports$Model$DiagnosisObstructedLabor = {$: 'DiagnosisObstructedLabor'};
@@ -11054,6 +11056,10 @@ var $author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping = funct
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment);
 		case 'l2':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis);
+		case 'm2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHighRiskOfPreeclampsia);
+		case 'n2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisModerateRiskOfPreeclampsia);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -12502,14 +12508,18 @@ var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Translate$AcuteIllness = {$: 'AcuteIllness'};
 var $author$project$Translate$Antenatal = {$: 'Antenatal'};
+var $author$project$Translate$CHW = {$: 'CHW'};
 var $author$project$Translate$Caring = {$: 'Caring'};
 var $author$project$Translate$Cell = {$: 'Cell'};
 var $author$project$Translate$ChildScorecard = {$: 'ChildScorecard'};
+var $author$project$Translate$ContributingFactors = {$: 'ContributingFactors'};
 var $author$project$Translate$CoreExam = {$: 'CoreExam'};
 var $author$project$Translate$DangerSigns = {$: 'DangerSigns'};
+var $author$project$Translate$Demographics = {$: 'Demographics'};
 var $author$project$Translate$Diagnostics = {$: 'Diagnostics'};
 var $author$project$Translate$District = {$: 'District'};
 var $author$project$Translate$EmptyString = {$: 'EmptyString'};
+var $author$project$Translate$FBF = {$: 'FBF'};
 var $author$project$Translate$FamilyPlanning = {$: 'FamilyPlanning'};
 var $author$project$Translate$Feeding = {$: 'Feeding'};
 var $author$project$Translate$FollowUp = {$: 'FollowUp'};
@@ -12519,6 +12529,7 @@ var $author$project$Translate$HIV = {$: 'HIV'};
 var $author$project$Translate$HIVTest = {$: 'HIVTest'};
 var $author$project$Translate$HealthCenter = {$: 'HealthCenter'};
 var $author$project$Translate$HealthEducation = {$: 'HealthEducation'};
+var $author$project$Translate$Height = {$: 'Height'};
 var $author$project$Translate$HomeVisit = {$: 'HomeVisit'};
 var $author$project$Translate$Hygiene = {$: 'Hygiene'};
 var $author$project$Translate$ImmunisationBCG = {$: 'ImmunisationBCG'};
@@ -12536,6 +12547,8 @@ var $author$project$Translate$IncidenceByQuarterOneVisitOrMore = {$: 'IncidenceB
 var $author$project$Translate$IncidenceByQuarterTwoVisitsOrMore = {$: 'IncidenceByQuarterTwoVisitsOrMore'};
 var $author$project$Translate$IncidenceByYearOneVisitOrMore = {$: 'IncidenceByYearOneVisitOrMore'};
 var $author$project$Translate$IncidenceByYearTwoVisitsOrMore = {$: 'IncidenceByYearTwoVisitsOrMore'};
+var $author$project$Translate$MUAC = {$: 'MUAC'};
+var $author$project$Translate$Mebendazole = {$: 'Mebendazole'};
 var $author$project$Translate$Medication = {$: 'Medication'};
 var $author$project$Translate$MedicationDistribution = {$: 'MedicationDistribution'};
 var $author$project$Translate$NCD = {$: 'NCD'};
@@ -12564,6 +12577,8 @@ var $author$project$Translate$UrineDipstickTest = {$: 'UrineDipstickTest'};
 var $author$project$Translate$UrineDipstickTestResult = {$: 'UrineDipstickTestResult'};
 var $author$project$Translate$Village = {$: 'Village'};
 var $author$project$Translate$Vitals = {$: 'Vitals'};
+var $author$project$Translate$VitaminALabel = {$: 'VitaminALabel'};
+var $author$project$Translate$Weight = {$: 'Weight'};
 var $author$project$Translate$translateHttpError = function (transId) {
 	switch (transId.$) {
 		case 'ErrorBadUrl':
@@ -12789,7 +12804,9 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'AcuteIllnessMUAC':
-						return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$MUAC;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'AcuteIllnessNutrition':
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
@@ -12819,7 +12836,9 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'AcuteIllnessSendToHC':
-						return {english: 'Referral', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Referral;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'AcuteIllnessSymptomsGeneral':
 						return {english: 'Symptoms General', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessSymptomsGI':
@@ -12971,6 +12990,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Colline', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'CollineSub':
 				return {english: 'Sub-Colline', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'ContributingFactors':
+				return {english: 'Contributing Factors', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Diagnosis':
 				return {
 					english: 'Diagnosis',
@@ -13215,6 +13236,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				}
 			case 'HIVTest':
 				return {english: 'HIV Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'Height':
+				return {english: 'Height', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'HomeVisit':
 				return {english: 'Home Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'HomeVisitActivity':
@@ -13282,8 +13305,12 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Load Data', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Location':
 				return {english: 'Location', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'MUAC':
+				return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Male':
 				return {english: 'Male', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'Mebendazole':
+				return {english: 'Mebendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Medication':
 				return {english: 'Medication', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'MedicationDistribution':
@@ -13507,7 +13534,9 @@ var $author$project$Translate$translationSet = function (transId) {
 				var item = transId.a;
 				switch (item.$) {
 					case 'FBFGiven':
-						return {english: 'FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$FBF;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'TreatmentForAcuteMalnutrition':
 						return {
 							english: 'Treatment for acute malnutrition (severe or moderate)',
@@ -13555,7 +13584,9 @@ var $author$project$Translate$translationSet = function (transId) {
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'VitaminA':
-						return {english: 'Vitamin A', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$VitaminALabel;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'Deworming':
 						return {
 							english: 'Deworming',
@@ -13609,7 +13640,9 @@ var $author$project$Translate$translationSet = function (transId) {
 				var activity = transId.a;
 				switch (activity.$) {
 					case 'NutritionHeight':
-						return {english: 'Height', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Height;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'NutritionNutrition':
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
@@ -13619,11 +13652,17 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'NutritionWeight':
-						return {english: 'Weight', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Weight;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'NutritionMUAC':
-						return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$MUAC;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'NutritionContributingFactors':
-						return {english: 'Contributing Factors', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$ContributingFactors;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'NutritionFollowUp':
 						var $temp$transId = $author$project$Translate$FollowUp;
 						transId = $temp$transId;
@@ -13637,7 +13676,9 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'NutritionNCDA':
-						return {english: 'NCDA', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$NCDA;
+						transId = $temp$transId;
+						continue translationSet;
 					default:
 						return {english: 'Child FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
@@ -13873,7 +13914,9 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'PrenatalMalariaTestResult':
 						return {english: 'Malaria Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalMebendazole':
-						return {english: 'Mebendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Mebendazole;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'PrenatalMedicalHistory':
 						return {english: 'Medical History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalMedication':
@@ -14002,6 +14045,20 @@ var $author$project$Translate$translationSet = function (transId) {
 							english: 'Pregnancy-Induced Hypertension',
 							kinyarwanda: $elm$core$Maybe$Just('Umuvuduko w\u0027amaraso watewe no gutwita'),
 							kirundi: $elm$core$Maybe$Just('Umuvuduko w\u0027amaraso utewe n\u0027imbanyi'),
+							somali: $elm$core$Maybe$Nothing
+						};
+					case 'DiagnosisHighRiskOfPreeclampsia':
+						return {
+							english: 'High Risk of Preeclampsia',
+							kinyarwanda: $elm$core$Maybe$Just('Afite ibyago byinshi byo kugira Preklampusi'),
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
+						};
+					case 'DiagnosisModerateRiskOfPreeclampsia':
+						return {
+							english: 'Moderate Risk of Preeclampsia',
+							kinyarwanda: $elm$core$Maybe$Just('Afite ibyago biringaniye byo kugira Preklampusi'),
+							kirundi: $elm$core$Maybe$Nothing,
 							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisModeratePreeclampsia':
@@ -14285,12 +14342,9 @@ var $author$project$Translate$translationSet = function (transId) {
 							somali: $elm$core$Maybe$Just('Trichomonas ama Bakteeriyada Makaanka')
 						};
 					case 'DiagnosisTuberculosis':
-						return {
-							english: 'Tuberculosis',
-							kinyarwanda: $elm$core$Maybe$Just('Igituntu'),
-							kirundi: $elm$core$Maybe$Just('Igituntu'),
-							somali: $elm$core$Maybe$Just('Qaaxo')
-						};
+						var $temp$transId = $author$project$Translate$Tuberculosis;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'DiagnosisDiabetes':
 						return {
 							english: 'Diabetes',
@@ -14498,7 +14552,9 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'ReportDemographics':
-						return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Demographics;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'ReportFBFDistribution':
 						return {english: 'Stock Management', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'ReportNutrition':
@@ -14621,7 +14677,9 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'TakenByNurse':
 						return {english: 'Nurse', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'TakenByCHW':
-						return {english: 'CHW', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$CHW;
+						transId = $temp$transId;
+						continue translationSet;
 					default:
 						return {english: 'Unknown', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
@@ -14647,7 +14705,12 @@ var $author$project$Translate$translationSet = function (transId) {
 					somali: $elm$core$Maybe$Nothing
 				};
 			case 'Tuberculosis':
-				return {english: 'Tuberculosis', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+				return {
+					english: 'Tuberculosis',
+					kinyarwanda: $elm$core$Maybe$Just('Igituntu'),
+					kirundi: $elm$core$Maybe$Just('Igituntu'),
+					somali: $elm$core$Maybe$Just('Qaaxo')
+				};
 			case 'TuberculosisActivity':
 				var activity = transId.a;
 				switch (activity.$) {
@@ -14708,10 +14771,14 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Urine Dipstick Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'UrineDipstickTestResult':
 				return {english: 'Urine Dipstick Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'VitaminALabel':
+				return {english: 'Vitamin A', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'WastingModerate':
 				return {english: 'Wasting Moderate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'WastingSevere':
 				return {english: 'Wasting Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'Weight':
+				return {english: 'Weight', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'WellChildActivity':
 				var activity = transId.a;
 				switch (activity.$) {
@@ -14726,7 +14793,9 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildContributingFactors':
-						return {english: 'Contributing Factors', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$ContributingFactors;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildDTPImmunisation':
 						var $temp$transId = $author$project$Translate$ImmunisationDTP;
 						transId = $temp$transId;
@@ -14756,7 +14825,9 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildHeight':
-						return {english: 'Height', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Height;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildHPVImmunisation':
 						var $temp$transId = $author$project$Translate$ImmunisationHPV;
 						transId = $temp$transId;
@@ -14770,13 +14841,17 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildMebendezole':
-						return {english: 'Mebendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Mebendazole;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildMRImmunisation':
 						var $temp$transId = $author$project$Translate$ImmunisationMR;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildMUAC':
-						return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$MUAC;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildNCDA':
 						var $temp$transId = $author$project$Translate$NCDA;
 						transId = $temp$transId;
@@ -14818,9 +14893,13 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildVitaminA':
-						return {english: 'Vitamin A', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$VitaminALabel;
+						transId = $temp$transId;
+						continue translationSet;
 					default:
-						return {english: 'Weight', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Weight;
+						transId = $temp$transId;
+						continue translationSet;
 				}
 			case 'WideScopeNote':
 				return {english: 'The selected scope may contain a large number of patients and report generation could take several minutes.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
@@ -18592,10 +18671,8 @@ var $author$project$Translate$ANCTotal = {$: 'ANCTotal'};
 var $author$project$Translate$AcuteIllnessTotal = {$: 'AcuteIllnessTotal'};
 var $author$project$Translate$All = {$: 'All'};
 var $author$project$Translate$CBNP = {$: 'CBNP'};
-var $author$project$Translate$CHW = {$: 'CHW'};
 var $author$project$Translate$EncounterType = {$: 'EncounterType'};
 var $author$project$Translate$Encounters = {$: 'Encounters'};
-var $author$project$Translate$FBF = {$: 'FBF'};
 var $author$project$Translate$FamilyNutrition = {$: 'FamilyNutrition'};
 var $author$project$Translate$Individual = {$: 'Individual'};
 var $author$project$Translate$NutritionTotal = {$: 'NutritionTotal'};
@@ -21511,7 +21588,7 @@ var $author$project$Pages$Reports$View$viewPrenatalContactsReport = F4(
 	});
 var $author$project$Backend$Reports$Model$NoPrenatalDiagnosis = {$: 'NoPrenatalDiagnosis'};
 var $author$project$Backend$Reports$Utils$allPrenatalDiagnoses = _List_fromArray(
-	[$author$project$Backend$Reports$Model$DiagnosisChronicHypertension, $author$project$Backend$Reports$Model$DiagnosisGestationalHypertension, $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisEclampsia, $author$project$Backend$Reports$Model$DiagnosisHIV, $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad, $author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership, $author$project$Backend$Reports$Model$DiagnosisSyphilis, $author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications, $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis, $author$project$Backend$Reports$Model$DiagnosisHepatitisB, $author$project$Backend$Reports$Model$DiagnosisMalaria, $author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications, $author$project$Backend$Reports$Model$DiagnosisMiscarriage, $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy, $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia, $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption, $author$project$Backend$Reports$Model$DiagnosisUterineRupture, $author$project$Backend$Reports$Model$DiagnosisObstructedLabor, $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis, $author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy, $author$project$Backend$Reports$Model$DiagnosisPROM, $author$project$Backend$Reports$Model$DiagnosisPPROM, $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum, $author$project$Backend$Reports$Model$DiagnosisSevereVomiting, $author$project$Backend$Reports$Model$DiagnosisMaternalComplications, $author$project$Backend$Reports$Model$DiagnosisInfection, $author$project$Backend$Reports$Model$DiagnosisImminentDelivery, $author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery, $author$project$Backend$Reports$Model$DiagnosisHeartburn, $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis, $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense, $author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection, $author$project$Backend$Reports$Model$DiagnosisPyelonephritis, $author$project$Backend$Reports$Model$DiagnosisCandidiasis, $author$project$Backend$Reports$Model$DiagnosisGonorrhea, $author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis, $author$project$Backend$Reports$Model$DiagnosisTuberculosis, $author$project$Backend$Reports$Model$DiagnosisDiabetes, $author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes, $author$project$Backend$Reports$Model$DiagnosisRhesusNegative, $author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely, $author$project$Backend$Reports$Model$DiagnosisDepressionPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionProbable, $author$project$Backend$Reports$Model$DiagnosisSuicideRisk, $author$project$Backend$Reports$Model$DiagnosisOther, $author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain, $author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence, $author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache, $author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue, $author$project$Backend$Reports$Model$DiagnosisPostpartumFever, $author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge, $author$project$Backend$Reports$Model$DiagnosisPostpartumInfection, $author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding, $author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment, $author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis, $author$project$Backend$Reports$Model$NoPrenatalDiagnosis]);
+	[$author$project$Backend$Reports$Model$DiagnosisChronicHypertension, $author$project$Backend$Reports$Model$DiagnosisGestationalHypertension, $author$project$Backend$Reports$Model$DiagnosisHighRiskOfPreeclampsia, $author$project$Backend$Reports$Model$DiagnosisModerateRiskOfPreeclampsia, $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisEclampsia, $author$project$Backend$Reports$Model$DiagnosisHIV, $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad, $author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership, $author$project$Backend$Reports$Model$DiagnosisSyphilis, $author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications, $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis, $author$project$Backend$Reports$Model$DiagnosisHepatitisB, $author$project$Backend$Reports$Model$DiagnosisMalaria, $author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications, $author$project$Backend$Reports$Model$DiagnosisMiscarriage, $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy, $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia, $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption, $author$project$Backend$Reports$Model$DiagnosisUterineRupture, $author$project$Backend$Reports$Model$DiagnosisObstructedLabor, $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis, $author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy, $author$project$Backend$Reports$Model$DiagnosisPROM, $author$project$Backend$Reports$Model$DiagnosisPPROM, $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum, $author$project$Backend$Reports$Model$DiagnosisSevereVomiting, $author$project$Backend$Reports$Model$DiagnosisMaternalComplications, $author$project$Backend$Reports$Model$DiagnosisInfection, $author$project$Backend$Reports$Model$DiagnosisImminentDelivery, $author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery, $author$project$Backend$Reports$Model$DiagnosisHeartburn, $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis, $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense, $author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection, $author$project$Backend$Reports$Model$DiagnosisPyelonephritis, $author$project$Backend$Reports$Model$DiagnosisCandidiasis, $author$project$Backend$Reports$Model$DiagnosisGonorrhea, $author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis, $author$project$Backend$Reports$Model$DiagnosisTuberculosis, $author$project$Backend$Reports$Model$DiagnosisDiabetes, $author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes, $author$project$Backend$Reports$Model$DiagnosisRhesusNegative, $author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely, $author$project$Backend$Reports$Model$DiagnosisDepressionPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionProbable, $author$project$Backend$Reports$Model$DiagnosisSuicideRisk, $author$project$Backend$Reports$Model$DiagnosisOther, $author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain, $author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence, $author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache, $author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue, $author$project$Backend$Reports$Model$DiagnosisPostpartumFever, $author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge, $author$project$Backend$Reports$Model$DiagnosisPostpartumInfection, $author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding, $author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment, $author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis, $author$project$Backend$Reports$Model$NoPrenatalDiagnosis]);
 var $author$project$Translate$PrenatalDiagnosis = function (a) {
 	return {$: 'PrenatalDiagnosis', a: a};
 };
@@ -21581,6 +21658,10 @@ var $author$project$Pages$Reports$View$prenatalDiagnosisCssClass = function (dia
 			return 'diagnosis-chronic-hypertension';
 		case 'DiagnosisGestationalHypertension':
 			return 'diagnosis-gestational-hypertension';
+		case 'DiagnosisHighRiskOfPreeclampsia':
+			return 'diagnosis-high-risk-preeclampsia';
+		case 'DiagnosisModerateRiskOfPreeclampsia':
+			return 'diagnosis-moderate-risk-preeclampsia';
 		case 'DiagnosisModeratePreeclampsia':
 			return 'diagnosis-moderate-preeclampsia';
 		case 'DiagnosisSeverePreeclampsia':
@@ -43912,7 +43993,6 @@ var $author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane = F2
 				]));
 	});
 var $author$project$Pages$Scoreboard$Model$ChildrenUnder2 = {$: 'ChildrenUnder2'};
-var $author$project$Translate$Demographics = {$: 'Demographics'};
 var $author$project$Pages$Scoreboard$Model$LowBirthWeigh = {$: 'LowBirthWeigh'};
 var $author$project$Translate$NCDADemographicsItemLabel = function (a) {
 	return {$: 'NCDADemographicsItemLabel', a: a};
