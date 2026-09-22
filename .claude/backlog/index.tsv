@@ -430,7 +430,7 @@ B-429	3	READY	MED-LOW			36	Aggregated NCDA scoreboard immunisation row: the serv
 B-430	3	READY	MED			36	Group sessions (nurse Clinics page): while the health centre is uploading, today's sessions are never fetched, so the gr
 B-431	4	READY	LOW			36	Group enrolment: the automatic check-in after adding a child to a running session always creates a new attendance record
 B-432	4	READY	LOW			36	Dashboard group-education drill-in: attendee names and genders are cached once per health centre and never refreshed, so
-B-433	4	READY	LOW		2212	35	Prenatal labs: a repeated tap on "known as positive" for a test reopened from the record still clears it — the repeat-ta
+B-433	4	IMPLEMENTED	LOW	2278	2279	35	Prenatal labs: a repeated tap on "known as positive" for a test reopened from the record still clears it — the repeat-ta
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
