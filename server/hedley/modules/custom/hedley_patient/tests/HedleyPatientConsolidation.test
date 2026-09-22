@@ -273,10 +273,11 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
    * Covers the non-measurement links the merge has to move by hand:
    * relationships (cases 1-6), education-session attendance (cases 7-9), the
    * pregnancy->newborn link (cases 10-11), WhatsApp records (cases 12-13), the
-   * second person reference on a trace contact (cases 14-15) and the adult who
-   * brings a child to a group (cases 16-18). All cases
-   * operate on disjoint people, so bundling them under one test method keeps
-   * the hedley-profile install (~5 min in CI) paid once.
+   * second person reference on a trace contact (cases 14-15), the adult who
+   * brings a child to a group (cases 16-18) and an acute-illness participant
+   * with its encounter (case 19). All cases operate on disjoint people, so
+   * bundling them under one test method keeps the hedley-profile install
+   * (~5 min in CI) paid once.
    */
   public function testContentIsTransferredOnMerge() {
     // 1. A duplicate child's link to its mother moves to the original child.
@@ -576,7 +577,62 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
       'A participation naming the original on both sides is dropped.'
     );
 
+    // 19. An acute-illness participant moves to the original along with its
+    // measurements. Left on the duplicate, the delete cascade would follow it
+    // to its encounter and soft-delete the measurements just moved.
+    $original = $this->createPerson('Original19');
+    $duplicate = $this->createPerson('Duplicate19');
+    $participant = $this->createIndividualParticipant($duplicate, REQUEST_TIME, 'acute-illness')->nid;
+    $encounter = $this->createAcuteIllnessEncounter($participant);
+    $vitals = $this->createAcuteIllnessVitals($encounter, $duplicate);
+
+    _consolidate_patients_execute($original, $duplicate);
+
+    $this->assertEqual(
+      $this->personNamedBy($participant, 'field_person'),
+      $original,
+      'The acute-illness participant now belongs to the original.'
+    );
+    $this->assertTrue($this->isLive($participant), 'The acute-illness participant survives the merge.');
+    $this->assertTrue($this->isLive($encounter), 'The acute-illness encounter survives the merge.');
+    $this->assertTrue($this->isLive($vitals), 'The acute-illness measurement survives the merge.');
+    $this->assertEqual(
+      $this->personNamedBy($vitals, 'field_person'),
+      $original,
+      'The acute-illness measurement now belongs to the original.'
+    );
+
     $this->checkPersonPatchKeepsPhoto();
+  }
+
+  /**
+   * Creates an acute-illness encounter under a participant.
+   *
+   * @param int $participant
+   *   The individual_participant node ID.
+   *
+   * @return int
+   *   The acute_illness_encounter node ID.
+   */
+  protected function createAcuteIllnessEncounter($participant) {
+    // The participant is set at create, because the device shard hook reads
+    // its person on the first save.
+    $node = $this->drupalCreateNode([
+      'type' => 'acute_illness_encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [['target_id' => $participant]],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', REQUEST_TIME),
+            'value2' => date('Y-m-d', REQUEST_TIME),
+          ],
+        ],
+      ],
+    ]);
+
+    return $node->nid;
   }
 
   /**
