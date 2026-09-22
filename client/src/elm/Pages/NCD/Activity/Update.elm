@@ -1018,6 +1018,7 @@ update currentDate id db msg model =
                 updatedForm =
                     { form
                         | testResult = testResultFromString value
+                        , testResultDirty = True
                         , hivProgramHC = Nothing
                         , hivProgramHCDirty = True
                         , partnerHIVPositive = Nothing
@@ -1352,7 +1353,7 @@ update currentDate id db msg model =
                     model.laboratoryData.pregnancyTestForm
 
                 updatedForm =
-                    { form | testResult = testResultFromString value }
+                    { form | testResult = testResultFromString value, testResultDirty = True }
 
                 updatedData =
                     model.laboratoryData

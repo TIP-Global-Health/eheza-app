@@ -22,7 +22,7 @@ import Backend.Measurement.Model
 import Date exposing (Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -48,8 +48,11 @@ import Measurement.Utils
         , outOfRangeAsEntered
         , setNCDAStep
         , showNCDAMeasurementOutOfRange
+        , toHIVTestValueWithDefault
         , toMalariaResultValueWithDefault
         , toMalariaTestValueWithDefault
+        , toPregnancyTestValueWithDefault
+        , withdrawTestResult
         )
 import Measurement.View exposing (viewColorAlertIndication)
 import SyncManager.Model exposing (Site(..))
@@ -967,6 +970,7 @@ all =
         , toMalariaResultValueTestResultTest
         , bloodSmearOrderedTest
         , knownAsPositiveUpdateTest
+        , withdrawnTestResultTest
         ]
 
 
@@ -1293,4 +1297,69 @@ knownAsPositiveUpdateTest =
             \_ ->
                 knownAsPositiveUpdatePartnerHIVTest False answeredPartnerHIVTest
                     |> Expect.equal answeredPartnerHIVTest
+        ]
+
+
+{-| The NCD pregnancy and HIV tests keep the result out of sight once the
+nurse answers that the test was not performed, or that the patient is known as
+positive. A withdrawn run clears its result as dirty, so the saved result is
+not read back and saved again unseen; an untouched form still reads it, and a
+result the nurse enters wins over it.
+-}
+withdrawnTestResultTest : Test
+withdrawnTestResultTest =
+    let
+        savedNegative =
+            { executionNote = TestNoteRunToday
+            , executionDate = Nothing
+            , testResult = Just TestNegative
+            }
+
+        savedNegativeHIV =
+            { executionNote = TestNoteRunToday
+            , executionDate = Nothing
+            , testPrerequisites = Nothing
+            , testResult = Just TestNegative
+            , hivSigns = Nothing
+            }
+
+        -- The form as the nurse leaves it after answering that the test was
+        -- not performed, with the reason.
+        notPerformed form =
+            withdrawTestResult
+                { form
+                    | knownAsPositive = Just False
+                    , testPerformed = Just False
+                    , testPerformedDirty = True
+                    , executionNote = Just TestNoteLackOfReagents
+                    , executionNoteDirty = True
+                }
+    in
+    describe "a withdrawn test does not save the result it used to have"
+        [ test "pregnancy test: the saved result is not read back into the value" <|
+            \_ ->
+                toPregnancyTestValueWithDefault (Just savedNegative) (notPerformed emptyPregnancyTestForm)
+                    |> Maybe.map .testResult
+                    |> Expect.equal (Just Nothing)
+        , test "pregnancy test: an untouched form still reads the saved result" <|
+            \_ ->
+                toPregnancyTestValueWithDefault (Just savedNegative) emptyPregnancyTestForm
+                    |> Maybe.map .testResult
+                    |> Expect.equal (Just (Just TestNegative))
+        , test "pregnancy test: a result the nurse enters wins over the saved one" <|
+            \_ ->
+                toPregnancyTestValueWithDefault (Just savedNegative)
+                    { emptyPregnancyTestForm | testResult = Just TestPositive, testResultDirty = True }
+                    |> Maybe.map .testResult
+                    |> Expect.equal (Just (Just TestPositive))
+        , test "HIV test: the saved result is not read back into the value" <|
+            \_ ->
+                toHIVTestValueWithDefault (Just savedNegativeHIV) (notPerformed emptyHIVTestForm)
+                    |> Maybe.map .testResult
+                    |> Expect.equal (Just Nothing)
+        , test "HIV test: an untouched form still reads the saved result" <|
+            \_ ->
+                toHIVTestValueWithDefault (Just savedNegativeHIV) emptyHIVTestForm
+                    |> Maybe.map .testResult
+                    |> Expect.equal (Just (Just TestNegative))
         ]

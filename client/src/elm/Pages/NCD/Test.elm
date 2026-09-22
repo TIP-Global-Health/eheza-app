@@ -861,6 +861,24 @@ pregnancyAcrossEncountersTest =
                     |> isPregnantWith
                         [ previousEncounterAt 2 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
                     |> Expect.equal True
+        , -- A record can carry a result left behind when the run was withdrawn:
+          -- older builds keep it when "performed" is changed to No.
+          test "a negative left behind by a withdrawn test does not override an earlier positive" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteLackOfReagents (Just TestNegative))
+                    |> isPregnantWith
+                        [ previousEncounterAt 2 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
+                    |> Expect.equal True
+        , test "a positive left behind by a withdrawn test does not count" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteLackOfReagents (Just TestPositive))
+                    |> isPregnantWith []
+                    |> Expect.equal False
+        , test "a positive left behind on a test that was not indicated still answers No" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteNotIndicated (Just TestPositive))
+                    |> isPregnantWith []
+                    |> Expect.equal False
         , test "reported as known to be pregnant, then not known three months later" <|
             \_ ->
                 (emptyNCDMeasurements |> withPregnancyTest TestNoteNotIndicated Nothing)
