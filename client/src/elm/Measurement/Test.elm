@@ -1400,6 +1400,16 @@ withdrawnTestResultTest =
                 toHIVTestValueWithDefault (Just savedNegativeHIV) (notPerformed emptyHIVTestForm)
                     |> Maybe.map .testResult
                     |> Expect.equal (Just Nothing)
+        , test "HIV test: the follow-up answers given under the result are not saved once the run is withdrawn" <|
+            \_ ->
+                let
+                    answered =
+                        performed (Just TestPositive) emptyHIVTestForm
+                in
+                toHIVTestValueWithDefault (Just savedNegativeHIV)
+                    (notPerformed { answered | hivProgramHC = Just True, partnerHIVPositive = Just True })
+                    |> Maybe.map .hivSigns
+                    |> Expect.equal (Just Nothing)
         , test "HIV test: an untouched form still reads the saved result" <|
             \_ ->
                 toHIVTestValueWithDefault (Just savedNegativeHIV) emptyHIVTestForm

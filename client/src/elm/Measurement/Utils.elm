@@ -2443,13 +2443,19 @@ toHIVTestValue form =
         (\executionNote ->
             let
                 hivSigns =
-                    [ ifNullableTrue HIVProgramHC form.hivProgramHC
-                    , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
-                    , ifNullableTrue PartnerTakingARV form.partnerTakingARV
-                    , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
-                    ]
-                        |> Maybe.Extra.combine
-                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
+                    -- The signs are asked under the result, so none are
+                    -- saved without one: a withdrawn run leaves them behind.
+                    if isNothing form.testResult then
+                        Nothing
+
+                    else
+                        [ ifNullableTrue HIVProgramHC form.hivProgramHC
+                        , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
+                        , ifNullableTrue PartnerTakingARV form.partnerTakingARV
+                        , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
+                        ]
+                            |> Maybe.Extra.combine
+                            |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
             in
             { executionNote = executionNote
             , executionDate = form.executionDate

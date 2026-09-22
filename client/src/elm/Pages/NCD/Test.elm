@@ -24,7 +24,10 @@ import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (LaboratoryTask(..))
+import Measurement.Utils exposing (rdtKnownAsPositiveUpdate, rdtTestPerformedUpdate, toHIVTestValueWithDefault, toPregnancyTestValueWithDefault)
+import Pages.NCD.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.NCD.Activity.Types exposing (NextStepsTask(..))
+import Pages.NCD.Activity.Update
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask, resolveNextStepsTasks, resolvePreviousMaybeValue)
 import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..), PreviousEncounterData)
 import Pages.NCD.Utils
@@ -971,4 +974,78 @@ all =
         , resolvePreviousMaybeValueTest
         , pregnancyAcrossEncountersTest
         , pregnancyTestExpectedTest
+        , repeatedTapOnSavedTest
+        ]
+
+
+{-| The bool inputs of the NCD rapid tests fire on every tap, including one
+that repeats the answer shown. On a test loaded from the record the form in
+the model is still empty, so the update has to act on the form as displayed
+for a repeated tap to leave the saved run and its result alone.
+-}
+repeatedTapOnSavedTest : Test
+repeatedTapOnSavedTest =
+    let
+        encounterId =
+            toEntityUuid "dummy-encounter"
+
+        savedHIVTest =
+            { executionNote = TestNoteRunToday
+            , executionDate = Nothing
+            , testPrerequisites = Nothing
+            , testResult = Just TestNegative
+            , hivSigns = Nothing
+            }
+
+        savedPregnancyTest =
+            { executionNote = TestNoteRunToday
+            , executionDate = Nothing
+            , testResult = Just TestNegative
+            }
+
+        db =
+            { emptyModelIndexedDb
+                | ncdMeasurements =
+                    Dict.singleton encounterId
+                        (RemoteData.Success
+                            { emptyNCDMeasurements
+                                | hivTest = wrapMeasurement savedHIVTest
+                                , pregnancyTest = wrapMeasurement savedPregnancyTest
+                            }
+                        )
+            }
+
+        formAfter msg =
+            Pages.NCD.Activity.Update.update dummyDate encounterId db msg emptyModel
+                |> (\( model, _, _ ) -> model.laboratoryData)
+    in
+    describe "a repeated tap on a test loaded from the record"
+        [ test "HIV test: Yes on performed keeps the saved result" <|
+            \_ ->
+                formAfter (SetHIVTestFormBoolInput rdtTestPerformedUpdate True)
+                    |> .hivTestForm
+                    |> toHIVTestValueWithDefault (Just savedHIVTest)
+                    |> Maybe.map .testResult
+                    |> Expect.equal (Just (Just TestNegative))
+        , test "HIV test: No on known as positive keeps the saved run and result" <|
+            \_ ->
+                formAfter (SetHIVTestFormBoolInput rdtKnownAsPositiveUpdate False)
+                    |> .hivTestForm
+                    |> toHIVTestValueWithDefault (Just savedHIVTest)
+                    |> Maybe.map (\value -> ( value.executionNote, value.testResult ))
+                    |> Expect.equal (Just ( TestNoteRunToday, Just TestNegative ))
+        , test "pregnancy test: Yes on performed keeps the saved result" <|
+            \_ ->
+                formAfter (SetPregnancyTestFormBoolInput rdtTestPerformedUpdate True)
+                    |> .pregnancyTestForm
+                    |> toPregnancyTestValueWithDefault (Just savedPregnancyTest)
+                    |> Maybe.map .testResult
+                    |> Expect.equal (Just (Just TestNegative))
+        , test "pregnancy test: No on performed withdraws the saved result" <|
+            \_ ->
+                formAfter (SetPregnancyTestFormBoolInput rdtTestPerformedUpdate False)
+                    |> .pregnancyTestForm
+                    |> toPregnancyTestValueWithDefault (Just savedPregnancyTest)
+                    |> Maybe.map .testResult
+                    |> Expect.equal Nothing
         ]
