@@ -475,7 +475,7 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
 // The nurse saves Next Steps first, and answers the follow ups after.
 // Conditions: hemoglobin 9 g/dL -> moderate anemia at the recurrent phase,
 // which offers Next Steps while requiring no medication. Partner positive and
-// not on ARVs -> a discordant partnership, which requires TDF + 3TC.
+// not on ARVs -> a discordant partnership, which requires TDF+3TC.
 // Verifies: the saved task returns to the encounter's pending activities once
 // the medication becomes required, and offers the medication.
 
@@ -566,7 +566,7 @@ test.describe('Lab Tech and Nurse: a saved Next Steps task reopened by a later d
     await page.waitForTimeout(WAIT.elmRerender);
 
     // Answers "Is partner taking ARVs?" with No, which is the discordant
-    // partnership condition, and TDF + 3TC is what it prescribes.
+    // partnership condition, and TDF+3TC is what it prescribes.
     const completedFollowUps = await completeLabResults(page);
     expect(completedFollowUps.length, 'at least one follow up should have been completed').toBeGreaterThan(0);
     await page.waitForTimeout(WAIT.pageNavigation);
@@ -592,7 +592,7 @@ test.describe('Lab Tech and Nurse: a saved Next Steps task reopened by a later d
     await expect(
       page.locator('div.page-activity.prenatal'),
       'the medication the new diagnosis requires should be offered',
-    ).toContainText('TDF + 3TC');
+    ).toContainText('TDF+3TC');
   });
 });
 

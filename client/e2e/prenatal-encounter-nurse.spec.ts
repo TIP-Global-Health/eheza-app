@@ -181,7 +181,7 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     expect(nodes['prenatal_medication_distribution'], 'prenatal_medication_distribution should exist').toBe(true);
   });
 
-  test('partner HIV positive after a negative HIV test offers TDF + 3TC, and withdraws it once the partner is tested negative or the patient is known as positive', async ({
+  test('partner HIV positive after a negative HIV test offers TDF+3TC, and withdraws it once the partner is tested negative or the patient is known as positive', async ({
     page,
   }) => {
     test.setTimeout(600000);
@@ -223,7 +223,7 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
       await dismissWarningPopup(page);
     };
 
-    // The discordant partnership diagnosis puts TDF + 3TC on Next Steps.
+    // The discordant partnership diagnosis puts TDF+3TC on Next Steps.
     const expectPrEPOffered = async (message: string) => {
       await openNextSteps();
       const medicationTab = page.locator(
@@ -231,7 +231,7 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
       );
       await expect(medicationTab, message).toBeVisible();
       await clickSubTaskTab(page, 'next-steps-treatment');
-      await expect(page.locator('div.page-activity.prenatal'), message).toContainText('TDF + 3TC');
+      await expect(page.locator('div.page-activity.prenatal'), message).toContainText('TDF+3TC');
     };
 
     const expectNoDiscordantCouple = async (message: string) => {
@@ -243,7 +243,7 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
       await closeReport(page, 'prenatal');
     };
 
-    await expectPrEPOffered('Next Steps should offer TDF + 3TC to a discordant couple');
+    await expectPrEPOffered('Next Steps should offer TDF+3TC to a discordant couple');
 
     // The partner is then tested, and is negative. The answer on her own HIV
     // test that the partner is positive is still stored, but that question is
@@ -260,7 +260,7 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
       await expect(
         page.locator('div.page-activity.prenatal'),
         'PrEP should not be offered once the partner is tested negative',
-      ).not.toContainText('TDF + 3TC');
+      ).not.toContainText('TDF+3TC');
     }
 
     // Back to a partner known as positive: the discordant couple returns, so
@@ -281,7 +281,7 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     await expect(
       page.locator('div.page-activity.prenatal'),
       'PrEP should not be offered once the patient is known as HIV positive',
-    ).not.toContainText('TDF + 3TC');
+    ).not.toContainText('TDF+3TC');
   });
 
   test('preeclampsia in a previous pregnancy, recorded after Danger Signs, is diagnosed as a high risk of preeclampsia', async ({
