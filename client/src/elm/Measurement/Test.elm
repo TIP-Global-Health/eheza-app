@@ -46,13 +46,14 @@ import Measurement.Utils
         , ncdaMeasurementsOutOfRange
         , nextVaccinationDataForVaccine
         , outOfRangeAsEntered
+        , rdtKnownAsPositiveUpdate
+        , rdtTestPerformedUpdate
         , setNCDAStep
         , showNCDAMeasurementOutOfRange
         , toHIVTestValueWithDefault
         , toMalariaResultValueWithDefault
         , toMalariaTestValueWithDefault
         , toPregnancyTestValueWithDefault
-        , withdrawTestResult
         )
 import Measurement.View exposing (viewColorAlertIndication)
 import SyncManager.Model exposing (Site(..))
@@ -1323,20 +1324,62 @@ withdrawnTestResultTest =
             , hivSigns = Nothing
             }
 
-        -- The form as the nurse leaves it after answering that the test was
-        -- not performed, with the reason.
+        -- The form as the nurse leaves it after changing "performed" to No
+        -- on a test she had run, and giving the reason.
         notPerformed form =
-            withdrawTestResult
-                { form
-                    | knownAsPositive = Just False
-                    , testPerformed = Just False
-                    , testPerformedDirty = True
-                    , executionNote = Just TestNoteLackOfReagents
-                    , executionNoteDirty = True
-                }
+            let
+                withdrawn =
+                    rdtTestPerformedUpdate False (performed Nothing form)
+            in
+            { withdrawn | executionNote = Just TestNoteLackOfReagents, executionNoteDirty = True }
+
+        -- The form once the test was run and read.
+        performed result form =
+            { form
+                | knownAsPositive = Just False
+                , testPerformed = Just True
+                , testPerformedDirty = True
+                , testPerformedToday = Just True
+                , executionNote = Just TestNoteRunToday
+                , testResult = result
+            }
     in
     describe "a withdrawn test does not save the result it used to have"
-        [ test "pregnancy test: the saved result is not read back into the value" <|
+        [ test "performed changed to No withdraws the result, as dirty" <|
+            \_ ->
+                let
+                    updated =
+                        rdtTestPerformedUpdate False (performed (Just TestPositive) emptyPregnancyTestForm)
+                in
+                ( updated.testPerformed, updated.testResult, updated.testResultDirty )
+                    |> Expect.equal ( Just False, Nothing, True )
+        , test "repeating Yes on performed leaves the entered result alone" <|
+            \_ ->
+                let
+                    answered =
+                        performed (Just TestPositive) emptyPregnancyTestForm
+                in
+                rdtTestPerformedUpdate True answered
+                    |> Expect.equal answered
+        , test "known as positive withdraws the result, as dirty, with the run" <|
+            \_ ->
+                let
+                    updated =
+                        rdtKnownAsPositiveUpdate True (performed (Just TestNegative) emptyHIVTestForm)
+                in
+                ( ( updated.testResult, updated.testResultDirty )
+                , ( updated.executionNote, updated.testPerformed, updated.testPerformedToday )
+                )
+                    |> Expect.equal ( ( Nothing, True ), ( Just TestNoteKnownAsPositive, Nothing, Nothing ) )
+        , test "repeating No on known as positive leaves the entered result alone" <|
+            \_ ->
+                let
+                    answered =
+                        performed (Just TestNegative) emptyHIVTestForm
+                in
+                rdtKnownAsPositiveUpdate False answered
+                    |> Expect.equal answered
+        , test "pregnancy test: the saved result is not read back into the value" <|
             \_ ->
                 toPregnancyTestValueWithDefault (Just savedNegative) (notPerformed emptyPregnancyTestForm)
                     |> Maybe.map .testResult
