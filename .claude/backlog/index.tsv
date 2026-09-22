@@ -377,7 +377,7 @@ B-376	3	READY	MED-LOW			32	Patient merge (antenatal): "ongoing pregnancy" is the
 B-377	4	READY	LOW			32	Patient CSV import: the date validator accepts a two-digit year and the parser reads it literally, so "05-01-19" is stor
 B-378	4	READY	LOW			32	Person presave: the "has measurements, cannot delete" guard fires on EVERY save of an already-deleted person, so any lat
 B-379	4	READY	LOW		2253	32	E2E harness: `switchUser` in `lab-tech-encounter.spec.ts` flakes — `page.goto('/')` in `pairDevice` is interrupted by th
-B-380	4	READY	LOW		2264	32	E2E: the Acute Illness nurse test "report shows lemon juice or honey only when it was given" flakes — after saving the p
+B-380	4	IMPLEMENTED	LOW	2276	2277	32	E2E: the Acute Illness nurse test "report shows lemon juice or honey only when it was given" flakes — after saving the p
 B-381	3	READY	MED-LOW			33	Child Scoreboard registration: the birth-date calendar offers neither today nor a date that keeps the child searchable, 
 B-382	3	READY	MED			33	National-ID patient search accepts only digits, so on Burundi and Somalia it cannot type 99.8% of the IDs that are store
 B-383	4	READY	LOW			33	Resilience survey cap counts duplicate saves, so a nurse who saved one sitting twice is permanently denied the programme
