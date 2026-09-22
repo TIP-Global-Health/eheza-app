@@ -3853,7 +3853,16 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         ResetPostPersonRequest ->
-            ( { model | postPerson = NotAsked }
+            -- A save still on its way is kept: it blocks a second save and
+            -- navigates when it lands, so only a finished result is cleared.
+            ( { model
+                | postPerson =
+                    if RemoteData.isLoading model.postPerson then
+                        model.postPerson
+
+                    else
+                        NotAsked
+              }
             , Cmd.none
             , []
             )
