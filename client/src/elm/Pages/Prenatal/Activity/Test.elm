@@ -2374,6 +2374,10 @@ diagnosisKnownAnyOfTest =
                 assembledFromDb "older" [ older, rhesusAtMiddle, current ]
                     |> Maybe.map (diagnosedPreviouslyAnyOf rhesusNegative)
                     |> Expect.equal (Just False)
+        , test "a diagnosis reported to a visit between the older encounter and the current one is known to the current one" <|
+            \_ ->
+                known rhesusNegative "current" [ older, { rhesusAtMiddle | diagnoses = [], pastDiagnoses = [ DiagnosisRhesusNegativeRecurrentPhase ] }, current ]
+                    |> Expect.equal (Just True)
         , test "a diagnosis made at the current encounter itself is known" <|
             \_ ->
                 known rhesusNegative "current" [ older, { current | diagnoses = [ DiagnosisRhesusNegativeRecurrentPhase ] } ]

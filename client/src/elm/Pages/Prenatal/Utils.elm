@@ -97,14 +97,20 @@ diagnosedPreviouslyAnyOf diagnoses assembled =
         |> not
 
 
-{-| The encounter knows a diagnosis made at an earlier visit, made at this
-visit, or reported to it from a lab result entered for an older visit.
+{-| The encounter knows a diagnosis made at, or reported to, itself or any
+earlier visit of the pregnancy.
 -}
 diagnosisKnownAnyOf : List PrenatalDiagnosis -> AssembledData -> Bool
 diagnosisKnownAnyOf diagnoses assembled =
-    diagnosedPreviouslyAnyOf diagnoses assembled
-        || diagnosedAnyOf diagnoses assembled
-        || List.any (\diagnosis -> EverySet.member diagnosis assembled.encounter.pastDiagnoses) diagnoses
+    let
+        anyOf set =
+            List.any (\diagnosis -> EverySet.member diagnosis set) diagnoses
+
+        knownTo encounter =
+            anyOf encounter.diagnoses || anyOf encounter.pastDiagnoses
+    in
+    knownTo assembled.encounter
+        || List.any knownTo assembled.nursePreviousEncountersData
 
 
 filterNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
