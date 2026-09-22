@@ -377,6 +377,10 @@ type alias Model =
     , downloadAuthorityResponse : WebData (DownloadSyncResponse BackendAuthorityEntity)
     , downloadGeneralResponse : WebData (DownloadSyncResponse BackendGeneralEntity)
 
+    -- The authority entry, as it was when the response waiting for that
+    -- acknowledgement was requested.
+    , downloadAuthorityAtRequest : SyncInfoAuthority
+
     -- Used to determine if download request has timed out.
     , downloadRequestTime : Time.Posix
 
@@ -434,6 +438,7 @@ emptyModel flags =
     , syncInfoAuthorities = flags.syncInfoAuthorities
     , downloadAuthorityResponse = NotAsked
     , downloadGeneralResponse = NotAsked
+    , downloadAuthorityAtRequest = emptySyncInfoAuthority ""
     , downloadRequestTime = Time.millisToPosix 0
     , downloadPhotosMode = DownloadPhotosAll emptyDownloadPhotosAllRec
     , downloadPhotosBatchSize = flags.batchSize
@@ -822,7 +827,7 @@ type Msg
     | SchedulePhotosDownload
     | RefreshPage
     | BackendAuthorityFetch
-    | BackendAuthorityFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | BackendAuthorityFetchHandle (Zipper SyncInfoAuthority) Time.Posix (WebData (DownloadSyncResponse BackendAuthorityEntity))
     | BackendAuthorityFetchedDataSavedHandle String
     | BackendAuthorityDashboardStatsFetch
     | BackendAuthorityDashboardStatsFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
@@ -831,7 +836,7 @@ type Msg
     | BackendFetchMain
     | BackendFetchPhotos
     | BackendGeneralFetch
-    | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
+    | BackendGeneralFetchHandle Int Time.Posix (WebData (DownloadSyncResponse BackendGeneralEntity))
     | BackendGeneralFetchedDataSavedHandle String
       -- Fetch a deferred photo from the server.
     | BackendDeferredPhotoFetch (Maybe IndexDbQueryDeferredPhotoResultRecord)
