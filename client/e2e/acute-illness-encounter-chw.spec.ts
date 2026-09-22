@@ -269,7 +269,7 @@ test.describe('CHW: Acute Illness Initial + Subsequent Encounter', () => {
     if (await outcomePage.isVisible({ timeout: 3000 }).catch(() => false)) {
       const outcomeSelect = page.locator('select').first();
       await outcomeSelect.waitFor({ timeout: 5000 });
-      await outcomeSelect.selectOption({ label: 'Referred to Health Center' });
+      await outcomeSelect.selectOption({ label: 'Referred to health center' });
       await page.locator('button', { hasText: 'Save' }).click();
       await page.waitForTimeout(WAIT.heavyOperation);
     } else {

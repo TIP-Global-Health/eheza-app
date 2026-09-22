@@ -392,7 +392,7 @@ B-391	4	READY	LOW			33	Eleven views label the level-5 address "Village" regardle
 B-392	1	READY	MED			33	The duplicate-referral guard now reads a history that cannot contain the encounter it reports to, so a rhesus-negative o
 B-393	3	READY	MED			34	E2E suite: the Nutrition NCDA test has run in no CI job since 2026-03-15, because the job-1 exclusion `NCD` matches insi
 B-394	3	READY	MED			34	`healthy_start` is on in Rwanda production and is the one site feature no local or CI environment ever enables, so nothi
-B-395	2	READY	HIGH		2128	34	The release gate is red: all three e2e jobs have failed on `develop` since the translations fold merged on 2026-09-16, b
+B-395	2	IMPLEMENTED	HIGH	2270	2271	34	The release gate is red: all three e2e jobs have failed on `develop` since the translations fold merged on 2026-09-16, b
 B-396	3	READY	MED			34	`e2e_playwright_1` joins its two Playwright runs with `&&`, so any failure in the first leg silently skips the other 25 
 B-397	3	READY	MED			34	`[ci skip]` on every commit plus zero required status checks means a PR can be merged with no CI having run at all
 B-398	4	READY	LOW			34	The simpletest CI log is capped at its last 400,000 bytes, and `--verbose` puts the per-class summary before the part th
