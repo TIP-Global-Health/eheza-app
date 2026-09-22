@@ -344,13 +344,15 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
  *   An array of generated data.
  */
 function hedley_ncda_generate_results_data_for_restful($from_nid, $batch, $province, $district, $sector, $cell, $village) {
-  $three_years_ago = date('Y-m-d', strtotime('-3 years'));
+  // The app shows months from Nov 2023 on and counts children under two per
+  // month, so nobody born before Nov 2021 can ever appear in a column.
+  $born_from = '2021-11-01';
 
   // Direct SELECT against the field table avoids the node_load_multiple() that
   // EntityFieldQuery would force; the JSON payload is read straight from
   // field_data_field_ncda_data. The shared $build closure keeps the COUNT and
   // data queries in lockstep.
-  $build = function () use ($from_nid, $three_years_ago, $province, $district, $sector, $cell, $village) {
+  $build = function () use ($from_nid, $born_from, $province, $district, $sector, $cell, $village) {
     $q = db_select('field_data_field_ncda_data', 'fr');
     $q->innerJoin('node', 'n', 'n.nid = fr.entity_id');
     // Replicates the exclude_deleted query tag; see
@@ -364,11 +366,9 @@ function hedley_ncda_generate_results_data_for_restful($from_nid, $batch, $provi
       ->isNotNull('fr.field_ncda_data_value')
       ->condition(db_or()->isNull('fd.field_deleted_value')->condition('fd.field_deleted_value', 0));
 
-    // Since we show data starting Nov 23, it's enough to select only those
-    // born during the past 3 years.
     $bd = $q->innerJoin('field_data_field_birth_date', 'bd',
       "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");
-    $q->condition("$bd.field_birth_date_value", $three_years_ago, '>');
+    $q->condition("$bd.field_birth_date_value", $born_from, '>=');
 
     // Mandatory province/district filters.
     foreach (['field_province' => $province, 'field_district' => $district] as $field => $value) {
