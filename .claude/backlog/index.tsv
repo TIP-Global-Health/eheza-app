@@ -389,7 +389,7 @@ B-388	3	READY	MED			33	A village saved with any geo field blank makes the genera
 B-389	4	READY	LOW			33	A live uvl village carries a sector name that is not in the geo table, and nothing validates it: a CHW assigned there co
 B-390	3	READY	MED			33	A failed GPS capture sends no reply and never clears the last reading, so one household's coordinates are shown and save
 B-391	4	READY	LOW			33	Eleven views label the level-5 address "Village" regardless of site, so Burundi reads "Village" where the unit's own res
-B-392	1	READY	MED			33	The duplicate-referral guard now reads a history that cannot contain the encounter it reports to, so a rhesus-negative o
+B-392	1	IMPLEMENTED	MED	2272	2273	33	The duplicate-referral guard now reads a history that cannot contain the encounter it reports to, so a rhesus-negative o
 B-393	3	READY	MED			34	E2E suite: the Nutrition NCDA test has run in no CI job since 2026-03-15, because the job-1 exclusion `NCD` matches insi
 B-394	3	READY	MED			34	`healthy_start` is on in Rwanda production and is the one site feature no local or CI environment ever enables, so nothi
 B-395	2	IMPLEMENTED	HIGH	2270	2271	34	The release gate is red: all three e2e jobs have failed on `develop` since the translations fold merged on 2026-09-16, b
