@@ -8850,6 +8850,15 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
 
                             else
                                 let
+                                    -- The encounter reported to decides whether the diagnosis is already
+                                    -- known. The measurement's own encounter cannot see a later visit,
+                                    -- which is where the diagnosis was most likely made.
+                                    knownAtOrigin diagnoses =
+                                        Pages.Prenatal.Encounter.Utils.generateAssembledData originatingEncounterId after
+                                            |> RemoteData.toMaybe
+                                            |> Maybe.map (Pages.Prenatal.Utils.diagnosisKnownAnyOf diagnoses)
+                                            |> Maybe.withDefault False
+
                                     diabetesDiagnosed =
                                         EverySet.toList reportedDiagnoses
                                             |> List.any
@@ -8868,7 +8877,7 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                                      -- Therefore, if we know that Diabetes was already diagnosed, we will not
                                      -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
                                      diabetesDiagnosed
-                                        && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
+                                        && knownAtOrigin Pages.Prenatal.Utils.diabetesDiagnoses
                                     )
                                         || (-- Reporting back about previous diagnosis results in hospital referral
                                             -- at Next steps.
@@ -8879,11 +8888,10 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                                             -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
                                             -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
                                             rhNegativeDiagnosis
-                                                && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf
+                                                && knownAtOrigin
                                                     [ DiagnosisRhesusNegativeInitialPhase
                                                     , DiagnosisRhesusNegativeRecurrentPhase
                                                     ]
-                                                    assembledAfter
                                            )
                                 then
                                     []
