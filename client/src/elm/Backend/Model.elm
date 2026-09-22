@@ -581,6 +581,7 @@ type MsgIndexedDb
     | MsgResilienceSurvey NurseId Backend.ResilienceSurvey.Model.Msg
     | MsgStockUpdate NurseId Backend.StockUpdate.Model.Msg
     | ResetFailedToFetchAuthorities
+    | ResetPostPersonRequest
 
 
 {-| Wrapper for all the revisions we can receive.

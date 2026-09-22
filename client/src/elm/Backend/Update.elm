@@ -3852,6 +3852,21 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , []
             )
 
+        ResetPostPersonRequest ->
+            -- A save still on its way is kept: it blocks a second save and
+            -- navigates when it lands, so only a finished result is cleared.
+            ( { model
+                | postPerson =
+                    if RemoteData.isLoading model.postPerson then
+                        model.postPerson
+
+                    else
+                        NotAsked
+              }
+            , Cmd.none
+            , []
+            )
+
         MsgPrenatalEncounter encounterId subMsg ->
             let
                 encounter =
@@ -4624,7 +4639,11 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     else
                         personWithStoredCoordinates
             in
-            ( { model | postPerson = Loading }
+            ( if origin == InitiatorEditForm then
+                { model | postPerson = Loading }
+
+              else
+                model
             , sw.patchFull personEndpoint personId personWithCoordinates
                 |> toCmd (RemoteData.fromResult >> HandlePatchedPerson origin personId)
             , []
@@ -4635,12 +4654,16 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 rollbarOnFailure =
                     triggerRollbarOnFailure data
 
-                appMsgs =
+                ( updatedModel, appMsgs ) =
                     case origin of
+                        InitiatorChildAddressUpdate ->
+                            ( model, [] )
+
                         InitiatorEditForm ->
-                            -- If we succeed, we reset the form, and go to the page
-                            -- showing the new person.
-                            RemoteData.map
+                            ( { model | postPerson = RemoteData.map (always personId) data }
+                            , -- If we succeed, we reset the form, and go to the page
+                              -- showing the new person.
+                              RemoteData.map
                                 (\_ ->
                                     [ Pages.Person.Model.ResetEditForm
                                         |> App.Model.MsgPageEditPerson personId
@@ -4652,11 +4675,12 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 )
                                 data
                                 |> RemoteData.withDefault []
+                            )
 
                         InitiatorProgressReport ->
-                            []
+                            ( model, [] )
             in
-            ( { model | postPerson = Success personId }
+            ( updatedModel
             , Cmd.none
             , rollbarOnFailure ++ appMsgs
             )
