@@ -53,7 +53,7 @@ import Pages.Prenatal.Activity.Update exposing (update)
 import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), emptyHealthEducationForm)
-import Pages.Prenatal.Utils exposing (healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
+import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedPreviouslyAnyOf, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
 import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
@@ -1867,13 +1867,15 @@ vaginalDischargeContinuedTest =
 
 
 {-| A prenatal encounter as stored in the database: its id, start date, type,
-diagnoses and the measurements taken at it.
+diagnoses, the diagnoses reported to it from late lab results, and the
+measurements taken at it.
 -}
 type alias StoredEncounter =
     { id : String
     , startDate : NominalDate
     , encounterType : PrenatalEncounterType
     , diagnoses : List PrenatalDiagnosis
+    , pastDiagnoses : List PrenatalDiagnosis
     , measurements : PrenatalMeasurements
     }
 
@@ -1884,6 +1886,7 @@ storedNurseEncounter id startDate diagnoses measurements =
     , startDate = startDate
     , encounterType = NurseEncounter
     , diagnoses = diagnoses
+    , pastDiagnoses = []
     , measurements = measurements
     }
 
@@ -1903,6 +1906,7 @@ assembledFromDb encounterId storedEncounters =
                         | startDate = stored.startDate
                         , encounterType = stored.encounterType
                         , diagnoses = EverySet.fromList stored.diagnoses
+                        , pastDiagnoses = EverySet.fromList stored.pastDiagnoses
                       }
                     )
                 )
@@ -2027,6 +2031,7 @@ historyBeforeEncounterTest =
                         , startDate = startDate
                         , encounterType = encounterType
                         , diagnoses = []
+                        , pastDiagnoses = []
                         , measurements = emptyPrenatalMeasurements
                         }
                 in
@@ -2204,6 +2209,7 @@ all =
         , suicideRiskDiagnosedBySignsTest
         , vaginalDischargeContinuedTest
         , historyBeforeEncounterTest
+        , diagnosisKnownAnyOfTest
         ]
 
 
@@ -2321,4 +2327,67 @@ measurementOutOfRangeTest =
             \_ ->
                 preSaveObstetrical (Just False) (Just 120)
                     |> Expect.equal ( Nothing, True )
+        ]
+
+
+
+-- WHAT THE ENCOUNTER A LATE LAB RESULT REPORTS TO ALREADY KNOWS
+--
+-- A lab result entered for an older encounter from a later one reports the
+-- diagnosis it adds back to the later encounter, unless that encounter already
+-- knows it. The older encounter's history cannot hold a diagnosis made at a
+-- visit after it, so the question is asked of the later encounter.
+
+
+diagnosisKnownAnyOfTest : Test
+diagnosisKnownAnyOfTest =
+    let
+        weekAgo =
+            Date.add Date.Weeks -1 currentDate
+
+        weekLater =
+            Date.add Date.Weeks 1 currentDate
+
+        rhesusNegative =
+            [ DiagnosisRhesusNegativeInitialPhase, DiagnosisRhesusNegativeRecurrentPhase ]
+
+        older =
+            storedNurseEncounter "older" weekAgo [] emptyPrenatalMeasurements
+
+        rhesusAtMiddle =
+            storedNurseEncounter "middle" currentDate [ DiagnosisRhesusNegativeRecurrentPhase ] emptyPrenatalMeasurements
+
+        current =
+            storedNurseEncounter "current" weekLater [] emptyPrenatalMeasurements
+
+        known diagnoses encounterId storedEncounters =
+            assembledFromDb encounterId storedEncounters
+                |> Maybe.map (diagnosisKnownAnyOf diagnoses)
+    in
+    describe "diagnosisKnownAnyOf - what the encounter a late lab result reports to already knows"
+        [ test "a diagnosis made at a visit between the older encounter and the current one is known to the current one" <|
+            \_ ->
+                known rhesusNegative "current" [ older, rhesusAtMiddle, current ]
+                    |> Expect.equal (Just True)
+        , test "the older encounter's own history cannot see that visit, which is why the current one is asked" <|
+            \_ ->
+                assembledFromDb "older" [ older, rhesusAtMiddle, current ]
+                    |> Maybe.map (diagnosedPreviouslyAnyOf rhesusNegative)
+                    |> Expect.equal (Just False)
+        , test "a diagnosis reported to a visit between the older encounter and the current one is known to the current one" <|
+            \_ ->
+                known rhesusNegative "current" [ older, { rhesusAtMiddle | diagnoses = [], pastDiagnoses = [ DiagnosisRhesusNegativeRecurrentPhase ] }, current ]
+                    |> Expect.equal (Just True)
+        , test "a diagnosis made at the current encounter itself is known" <|
+            \_ ->
+                known rhesusNegative "current" [ older, { current | diagnoses = [ DiagnosisRhesusNegativeRecurrentPhase ] } ]
+                    |> Expect.equal (Just True)
+        , test "a diagnosis reported to the current encounter by an earlier late result is known" <|
+            \_ ->
+                known diabetesDiagnoses "current" [ older, { current | pastDiagnoses = [ DiagnosisDiabetesRecurrentPhase ] } ]
+                    |> Expect.equal (Just True)
+        , test "a diagnosis made nowhere in the pregnancy is not known" <|
+            \_ ->
+                known rhesusNegative "current" [ older, current ]
+                    |> Expect.equal (Just False)
         ]
