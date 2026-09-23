@@ -53,17 +53,21 @@ async function openActivity(page: Page, activityIcon: string) {
 }
 
 /**
- * Save the current activity form and return to the encounter page.
+ * Save the current activity form and wait for the page the app moves to.
  * @param actionsClass - CSS class on the actions wrapper (e.g., 'symptoms', 'malaria-testing', 'next-steps').
  */
 async function saveActivity(page: Page, actionsClass: string) {
+  const actions = page.locator(`.actions.${actionsClass}`);
   await click(
-    page.locator(`.actions.${actionsClass} button.ui.fluid.primary.button`, { hasText: 'Save' }),
+    actions.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
     page,
   );
-  // Wait for return to encounter page.
+  // The save leaves the form. The app returns to the encounter page, or, when
+  // this save completes the diagnosis, opens Next Steps or Laboratory itself.
+  await actions.waitFor({ state: 'hidden', timeout: 10000 });
   await page
-    .locator('div.page-encounter.acute-illness')
+    .locator('div.page-encounter.acute-illness, div.page-activity.acute-illness')
+    .first()
     .waitFor({ timeout: 10000 });
   await page.waitForTimeout(WAIT.elmRerender);
 }
