@@ -13,6 +13,7 @@ import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
+import Measurement.Utils exposing (testPerformedByExecutionNote)
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
 import Pages.NCD.Model exposing (AssembledData, MedicationDistributionForm, NCDEncounterPhase(..), PreviousEncounterData, ReferralForm)
 import Pages.Utils
@@ -998,11 +999,20 @@ patientIsPregnantAtEncounter encounterDate encounterMeasurements assembled =
                             -- which the answer was given.
                             answerDate =
                                 Maybe.withDefault startDate value.executionDate
+
+                            -- A result counts only with a run that produced it: a record
+                            -- can carry one left behind when the run was withdrawn.
+                            testResult =
+                                if testPerformedByExecutionNote value.executionNote then
+                                    value.testResult
+
+                                else
+                                    Nothing
                         in
-                        if (value.executionNote == TestNoteKnownAsPositive) || (value.testResult == Just TestPositive) then
+                        if (value.executionNote == TestNoteKnownAsPositive) || (testResult == Just TestPositive) then
                             Just ( True, answerDate )
 
-                        else if (value.testResult == Just TestNegative) || (value.executionNote == TestNoteNotIndicated) then
+                        else if (testResult == Just TestNegative) || (value.executionNote == TestNoteNotIndicated) then
                             -- A test the nurse judged not to be indicated answers the
                             -- question, because it is recorded only after she has answered
                             -- that the patient is not known to be pregnant.
