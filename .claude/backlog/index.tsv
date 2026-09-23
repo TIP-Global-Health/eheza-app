@@ -322,7 +322,7 @@ B-321	4	READY	LOW			28	NCD Laboratory (urine dipstick, creatinine, liver functio
 B-322	4	READY	LOW			28	Child progress report, Diagnosis pane: "Malnutrition signs" is listed twice for one date, because the nutrition-derived 
 B-323	1	IMPLEMENTED	MED	2209	2210	28	Prenatal: a partner HIV result entered by a LAB TECHNICIAN produces no discordant-partnership diagnosis at all, because 
 B-324	1	IMPLEMENTED	MED-LOW	2217	2218	29	Acute Illness diagnosis: on a site without Tuberculosis Management, a COVID-suspect patient with a cough of more than tw
-B-325	2	READY	MED-HIGH			29	Sync download: the revision cursor advances past an upload whose transaction has not committed yet, so a second device a
+B-325	2	PARKED	MED-HIGH			29	🅿 **PARKED (user, 2026-09-23): "park"** — said after the frequency estimate (7-day live census: roughly 1–3 lost uploads
 B-326	4	READY	LOW			29	Sync shards: a measurement is sharded by the person's health centres, not by the clinic that performed it, so an FBF dis
 B-327	4	READY	LOW			29	Device pairing: once a device is paired there is no way back to the pairing form, so when its access token expires (cont
 B-328	4	READY	LOW			29	Role gating: `viewUserPage` authorises by location only, so a lab technician or CHW reaches every nurse page through the
