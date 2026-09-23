@@ -779,7 +779,12 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                             assembled
                             form
 
-                    else if diagnosedHypertensionPrevoiusly assembled || diagnosedModeratePreeclampsiaPrevoiusly assembled then
+                    else if
+                        -- Continued care is decided once, at initial phase. Recurrent
+                        -- phase keeps that saved decision without showing it again.
+                        (phase == PrenatalEncounterPhaseInitial)
+                            && (diagnosedHypertensionPrevoiusly assembled || diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                    then
                         resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language
                             (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
                             avoidingGuidanceReasonMsg

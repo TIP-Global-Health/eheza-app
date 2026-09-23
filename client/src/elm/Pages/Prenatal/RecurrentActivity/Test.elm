@@ -15,8 +15,11 @@ import Backend.Measurement.Model
         , PartnerHIVTestValue
         , PrenatalHIVSign(..)
         , PrenatalMeasurements
+        , PrenatalMedicationDistributionValue
+        , RecommendedTreatmentSign(..)
         , TestExecutionNote(..)
         , TestResult(..)
+        , VitalsValue
         , emptyPrenatalMeasurements
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
@@ -27,7 +30,7 @@ import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..))
+import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), emptyMedicationDistributionForm)
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils
     exposing
@@ -36,7 +39,7 @@ import Pages.Prenatal.RecurrentActivity.Utils
         , resolveLaboratoryResultFollowUpsTasks
         , resolveNextStepsTasks
         )
-import Pages.Prenatal.Utils exposing (resolveRequiredMedicationsSet)
+import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, resolveMedicationDistributionInputsAndTasks, resolveRequiredMedicationsSet)
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import TestFixtures
@@ -445,6 +448,87 @@ laboratoryResultTaskCompletedMalariaTest =
         ]
 
 
+{-| Hypertension diagnosed at an earlier visit, treated with Methyldopa 2x a
+day. Today's BP is normal, so the recommendation is to keep that dose; the
+nurse chose 3x a day and gave no reason.
+-}
+assembledWithContinuedHypertensionCare : AssembledData
+assembledWithContinuedHypertensionCare =
+    let
+        medicationDistributionWith : List RecommendedTreatmentSign -> PrenatalMedicationDistributionValue
+        medicationDistributionWith treatment =
+            { distributionSigns = EverySet.empty
+            , nonAdministrationSigns = EverySet.empty
+            , recommendedTreatmentSigns = Just (EverySet.fromList treatment)
+            , avoidingGuidanceReason = Nothing
+            , reinforceTreatmentSigns = Nothing
+            }
+
+        vitals : VitalsValue
+        vitals =
+            { sys = Just 120
+            , dia = Just 80
+            , heartRate = Nothing
+            , respiratoryRate = Nothing
+            , bodyTemperature = Nothing
+            , sysRepeated = Nothing
+            , diaRepeated = Nothing
+            }
+
+        previousEncounter =
+            { startDate = Date.add Date.Weeks -4 currentDate
+            , diagnoses = EverySet.singleton DiagnosisChronicHypertensionImmediate
+            , pastDiagnoses = EverySet.empty
+            , measurements =
+                { emptyPrenatalMeasurements
+                    | medicationDistribution = TestFixtures.wrapMeasurement currentDate (medicationDistributionWith [ TreatmentMethyldopa2 ])
+                }
+            }
+
+        assembled =
+            testAssembled
+                { emptyPrenatalMeasurements
+                    | medicationDistribution = TestFixtures.wrapMeasurement currentDate (medicationDistributionWith [ TreatmentMethyldopa3 ])
+                    , vitals = TestFixtures.wrapMeasurement currentDate vitals
+                }
+    in
+    { assembled | nursePreviousEncountersData = [ previousEncounter ] }
+
+
+resolveMedicationDistributionContinuedHypertensionTest : Test
+resolveMedicationDistributionContinuedHypertensionTest =
+    let
+        tasksAtPhase phase =
+            let
+                form =
+                    getMeasurementValueFunc assembledWithContinuedHypertensionCare.measurements.medicationDistribution
+                        |> medicationDistributionFormWithDefaultRecurrentPhase emptyMedicationDistributionForm
+
+                ( _, completed, total ) =
+                    resolveMedicationDistributionInputsAndTasks English
+                        currentDate
+                        phase
+                        assembledWithContinuedHypertensionCare
+                        (\_ _ -> ())
+                        (\_ _ _ -> ())
+                        (\_ _ -> ())
+                        (\_ -> ())
+                        form
+            in
+            ( completed, total )
+    in
+    describe "resolveMedicationDistributionInputsAndTasks, hypertension diagnosed at an earlier visit"
+        [ test "initial phase asks for the treatment, and why it is not the recommended one" <|
+            \_ ->
+                tasksAtPhase PrenatalEncounterPhaseInitial
+                    |> Expect.equal ( 1, 2 )
+        , test "recurrent phase does not ask again" <|
+            \_ ->
+                tasksAtPhase PrenatalEncounterPhaseRecurrent
+                    |> Expect.equal ( 0, 0 )
+        ]
+
+
 all : Test
 all =
     describe "Pages.Prenatal.RecurrentActivity.Utils"
@@ -452,5 +536,6 @@ all =
         , nextStepsHealthEducationExpectedTest
         , nextStepsMedicationDistributionCompletedTest
         , resolveLaboratoryResultFollowUpsTasksTest
+        , resolveMedicationDistributionContinuedHypertensionTest
         , resolveRequiredMedicationsSetHIVTest
         ]
