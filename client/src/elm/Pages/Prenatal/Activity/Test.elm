@@ -2399,6 +2399,8 @@ repeatedTapOnSavedTest =
                     |> Expect.equal (Just ( TestNoteRunToday, Just TestNegative ))
         ]
 
+
+
 -- WHAT THE ENCOUNTER A LATE LAB RESULT REPORTS TO ALREADY KNOWS
 --
 -- A lab result entered for an older encounter from a later one reports the
