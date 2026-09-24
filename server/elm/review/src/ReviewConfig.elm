@@ -57,14 +57,6 @@ rules =
     , NoConfusingPrefixOperator.rule
     , NoDebug.Log.rule
     , NoDebug.TodoOrToString.rule
-        |> Rule.ignoreErrorsForFiles
-            [ "src/Pages/Completion/View.elm"
-            , "src/Pages/CompletionMenu/View.elm"
-            , "src/Pages/Reports/View.elm"
-            , "src/Pages/ReportsMenu/View.elm"
-            , "src/Pages/Scoreboard/View.elm"
-            , "src/Pages/ScoreboardMenu/View.elm"
-            ]
     , NoExposingEverything.rule
     , NoMissingTypeAnnotation.rule
         |> Rule.ignoreErrorsForFiles

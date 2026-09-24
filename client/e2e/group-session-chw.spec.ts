@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { click, setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
@@ -86,6 +87,11 @@ test.describe('CHW: Group Nutrition Session', () => {
     await completeWeight(page, '7.5');
     await completeMuac(page, '13.5');
     await completeNutritionSigns(page);
+
+    // Progress report must show what was measured for this child.
+    const report = await openReport(page, 'group-session');
+    await expect(report.locator('.pane.person-details')).toContainText(child.fullName);
+    await closeReport(page, 'group-session');
 
     // 9. Navigate back to the mother's page.
     await navigateToMother(page);

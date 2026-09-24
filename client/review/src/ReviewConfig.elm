@@ -107,6 +107,9 @@ rules =
             -- Underweight z-score classifiers exposed only for the unit tests
             -- in Backend/NutritionEncounter/Test.elm (same reason).
             , "src/elm/Backend/NutritionEncounter/Utils.elm"
+
+            -- Fixtures used only by the unit-test modules (same reason).
+            , "src/elm/TestFixtures.elm"
             ]
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule

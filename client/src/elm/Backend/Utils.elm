@@ -1,4 +1,4 @@
-module Backend.Utils exposing (editMeasurementCmd, everySetsEqual, familyNutritionEnabled, gpsCoordinatesEnabled, groupEducationEnabled, healthyStartEnabled, hivManagementEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, ncdaEnabled, reportToWhatsAppEnabled, resolveFamilyParticipantForPerson, resolveFamilyParticipantsForPerson, resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson, saveMeasurementCmd, stockManagementHCEnabled, stockManagementVillageEnabled, sw, tuberculosisManagementEnabled)
+module Backend.Utils exposing (editMeasurementCmd, everySetsEqual, familyNutritionEnabled, gpsCoordinatesEnabled, groupEducationEnabled, healthyStartEnabled, hivManagementEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, ncdaEnabled, reportToWhatsAppEnabled, resolveFamilyParticipantForPerson, resolveFamilyParticipantsForPerson, resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson, saveMeasurementCmd, stockManagementHCEnabled, stockManagementVillageEnabled, sw, tuberculosisManagementEnabled, updateVillageStockManagementCaches)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -20,6 +20,7 @@ import Backend.Measurement.Model
         , PrenatalMeasurements
         , StockManagementMeasurements
         , TuberculosisMeasurements
+        , VillageStockManagementMeasurements
         , WellChildMeasurements
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -222,6 +223,23 @@ mapStockManagementMeasurements id func model =
                         |> Maybe.withDefault model.stockManagementMeasurements
             in
             { model | stockManagementMeasurements = mapped }
+
+        Nothing ->
+            model
+
+
+{-| A revision that affects village stock management: merge it into the
+village measurements cache and mark the village data for recalculation,
+the way the health-center caches are kept current.
+-}
+updateVillageStockManagementCaches : Maybe HealthCenterId -> (VillageStockManagementMeasurements -> VillageStockManagementMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+updateVillageStockManagementCaches healthCenterId func model =
+    case healthCenterId of
+        Just id ->
+            { model
+                | villageStockManagementMeasurements = Dict.update id (Maybe.map (RemoteData.map func)) model.villageStockManagementMeasurements
+                , villageStockManagementData = Dict.insert id NotAsked model.villageStockManagementData
+            }
 
         Nothing ->
             model

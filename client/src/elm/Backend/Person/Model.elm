@@ -174,6 +174,10 @@ type ExpectedGender
     | ExpectMaleOrFemale
 
 
+{-| Only a save from the edit form records its result and navigates. A child's
+address, updated with its parent's, and a phone saved from a report do neither.
+-}
 type PatchPersonInitator
-    = InitiatorEditForm
+    = InitiatorChildAddressUpdate
+    | InitiatorEditForm
     | InitiatorProgressReport

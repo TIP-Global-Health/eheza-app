@@ -412,26 +412,6 @@ encodeSPVEncounterDataItem item =
 
             else
                 EverySet.toList warnings
-
-        zscoreStunting =
-            Maybe.map (\value -> [ ( "zscore_stunting", float value ) ])
-                item.zscoreStunting
-                |> Maybe.withDefault []
-
-        zscoreUnderweight =
-            Maybe.map (\value -> [ ( "zscore_underweight", float value ) ])
-                item.zscoreUnderweight
-                |> Maybe.withDefault []
-
-        zscoreWasting =
-            Maybe.map (\value -> [ ( "zscore_wasting", float value ) ])
-                item.zscoreWasting
-                |> Maybe.withDefault []
-
-        muac =
-            Maybe.map (\value -> [ ( "muac", float value ) ])
-                item.muac
-                |> Maybe.withDefault []
     in
     object <|
         [ ( "start_date", encodeYYYYMMDD item.startDate )
@@ -448,10 +428,25 @@ encodeSPVEncounterDataItem item =
         , ( "well_child_mr_immunisation", encodeEverySet encodeYYYYMMDD item.mrImminizationDates )
         , ( "well_child_hpv_immunisation", encodeEverySet encodeYYYYMMDD item.hpvImminizationDates )
         ]
-            ++ zscoreStunting
-            ++ zscoreUnderweight
-            ++ zscoreWasting
-            ++ muac
+            ++ encodeZScoresAndMuac item
+
+
+encodeZScoresAndMuac :
+    { a
+        | zscoreStunting : Maybe Float
+        , zscoreUnderweight : Maybe Float
+        , zscoreWasting : Maybe Float
+        , muac : Maybe Float
+    }
+    -> List ( String, Value )
+encodeZScoresAndMuac item =
+    List.filterMap
+        (\( name, maybeValue ) -> Maybe.map (\value -> ( name, float value )) maybeValue)
+        [ ( "zscore_stunting", item.zscoreStunting )
+        , ( "zscore_underweight", item.zscoreUnderweight )
+        , ( "zscore_wasting", item.zscoreWasting )
+        , ( "muac", item.muac )
+        ]
 
 
 encodeChildScoreboardData : List ChildScoreboardDataItem -> ( String, Value )
@@ -500,36 +495,12 @@ encodeNutritionIndividualDataItem item =
 
 encodeNutritionIndividualEncounterDataItem : NutritionIndividualEncounterDataItem -> Value
 encodeNutritionIndividualEncounterDataItem item =
-    let
-        zscoreStunting =
-            Maybe.map (\value -> [ ( "zscore_stunting", float value ) ])
-                item.zscoreStunting
-                |> Maybe.withDefault []
-
-        zscoreUnderweight =
-            Maybe.map (\value -> [ ( "zscore_underweight", float value ) ])
-                item.zscoreUnderweight
-                |> Maybe.withDefault []
-
-        zscoreWasting =
-            Maybe.map (\value -> [ ( "zscore_wasting", float value ) ])
-                item.zscoreWasting
-                |> Maybe.withDefault []
-
-        muac =
-            Maybe.map (\value -> [ ( "muac", float value ) ])
-                item.muac
-                |> Maybe.withDefault []
-    in
     object <|
         [ ( "start_date", encodeYYYYMMDD item.startDate )
         , ( "encounter_type", encodeNutritionEncounterType item.encounterType )
         , ( "nutrition_signs", encodeEverySet encodeNutritionSign item.nutritionSigns )
         ]
-            ++ zscoreStunting
-            ++ zscoreUnderweight
-            ++ zscoreWasting
-            ++ muac
+            ++ encodeZScoresAndMuac item
 
 
 encodeNutritionGroupData : List NutritionGroupDataItem -> ( String, Value )
@@ -546,35 +517,11 @@ encodeNutritionGroupDataItem item =
 
 encodeNutritionGroupEncounterDataItem : NutritionGroupEncounterDataItem -> Value
 encodeNutritionGroupEncounterDataItem item =
-    let
-        zscoreStunting =
-            Maybe.map (\value -> [ ( "zscore_stunting", float value ) ])
-                item.zscoreStunting
-                |> Maybe.withDefault []
-
-        zscoreUnderweight =
-            Maybe.map (\value -> [ ( "zscore_underweight", float value ) ])
-                item.zscoreUnderweight
-                |> Maybe.withDefault []
-
-        zscoreWasting =
-            Maybe.map (\value -> [ ( "zscore_wasting", float value ) ])
-                item.zscoreWasting
-                |> Maybe.withDefault []
-
-        muac =
-            Maybe.map (\value -> [ ( "muac", float value ) ])
-                item.muac
-                |> Maybe.withDefault []
-    in
     object <|
         [ ( "start_date", encodeYYYYMMDD item.startDate )
         , ( "nutrition_signs", encodeEverySet encodeNutritionSign item.nutritionSigns )
         ]
-            ++ zscoreStunting
-            ++ zscoreUnderweight
-            ++ zscoreWasting
-            ++ muac
+            ++ encodeZScoresAndMuac item
 
 
 encodePatientsDetails : Dict PersonIdentifier PatientDetails -> ( String, Value )

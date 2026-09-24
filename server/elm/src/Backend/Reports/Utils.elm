@@ -40,6 +40,8 @@ allPrenatalDiagnoses : List PrenatalDiagnosis
 allPrenatalDiagnoses =
     [ DiagnosisChronicHypertension
     , DiagnosisGestationalHypertension
+    , DiagnosisHighRiskOfPreeclampsia
+    , DiagnosisModerateRiskOfPreeclampsia
     , DiagnosisModeratePreeclampsia
     , DiagnosisSeverePreeclampsia
     , DiagnosisEclampsia

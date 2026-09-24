@@ -41,8 +41,8 @@ import Pages.AcuteIllness.Encounter.View exposing (allowEndingEncounter, partiti
 import Pages.AcuteIllness.ProgressReport.Model exposing (AcuteIllnessStatus(..), Model, Msg(..))
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterMenuForProgressReport)
-import Pages.WellChild.ProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
+import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterMenuForProgressReport, viewPaneHeading, viewPersonInfoPane)
+import Pages.WellChild.ProgressReport.View exposing (viewNutritionSigns)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (TranslationId, translate)
 import Translate.Model exposing (Language)
@@ -991,13 +991,12 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
         resolveNonAdministrationReason medicine_ =
             Dict.get medicine_ nonAdministrationReasons
 
+        medicinePrescribed medicine_ =
+            Maybe.map (EverySet.member medicine_) distributionSigns
+                |> Maybe.withDefault False
+
         uncomplicatedPneumoniaActions =
-            let
-                amoxicillinPrescribed =
-                    Maybe.map (EverySet.member Amoxicillin) distributionSigns
-                        |> Maybe.withDefault False
-            in
-            if amoxicillinPrescribed then
+            if medicinePrescribed Amoxicillin then
                 resolveAmoxicillinDosage date person
                     |> Maybe.map
                         (\( numberOfPills, pillMass, duration ) ->
@@ -1015,12 +1014,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
     in
     case diagnosis of
         DiagnosisMalariaUncomplicated ->
-            let
-                coartemPrescribed =
-                    Maybe.map (EverySet.member Coartem) distributionSigns
-                        |> Maybe.withDefault False
-            in
-            if coartemPrescribed then
+            if medicinePrescribed Coartem then
                 resolveCoartemDosage date person
                     |> Maybe.map
                         (\dosage ->
@@ -1040,12 +1034,8 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
 
         DiagnosisGastrointestinalInfectionUncomplicated ->
             let
-                orsPrescribed =
-                    Maybe.map (EverySet.member ORS) distributionSigns
-                        |> Maybe.withDefault False
-
                 orsAction =
-                    if orsPrescribed then
+                    if medicinePrescribed ORS then
                         Maybe.map
                             (\dosage ->
                                 [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign ORS) "icon-oral-solution" (Just date)
@@ -1063,12 +1053,8 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
                                 )
                             |> Maybe.withDefault []
 
-                zincPrescribed =
-                    Maybe.map (EverySet.member Zinc) distributionSigns
-                        |> Maybe.withDefault False
-
                 zincAction =
-                    if zincPrescribed then
+                    if medicinePrescribed Zinc then
                         Maybe.map
                             (\dosage ->
                                 [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign Zinc) "icon-pills" (Just date)
@@ -1089,7 +1075,11 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
             orsAction ++ zincAction
 
         DiagnosisSimpleColdAndCough ->
-            [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" (Just date) ]
+            if medicinePrescribed LemonJuiceOrHoney then
+                [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" (Just date) ]
+
+            else
+                []
 
         DiagnosisRespiratoryInfectionUncomplicated ->
             uncomplicatedPneumoniaActions
@@ -1098,12 +1088,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
             uncomplicatedPneumoniaActions
 
         DiagnosisLowRiskCovid19 ->
-            let
-                paracetamolPrescribed =
-                    Maybe.map (EverySet.member Paracetamol) distributionSigns
-                        |> Maybe.withDefault False
-            in
-            if paracetamolPrescribed then
+            if medicinePrescribed Paracetamol then
                 isPersonAnAdult date person
                     |> Maybe.map (viewParacetamolAdministrationInstructions language (Just date))
                     |> Maybe.withDefault []

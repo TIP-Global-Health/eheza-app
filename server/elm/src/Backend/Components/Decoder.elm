@@ -1,8 +1,9 @@
-module Backend.Components.Decoder exposing (decodeHealthCenterData, decodeMenuScope, decodeReportParams, decodeSelectedEntity)
+module Backend.Components.Decoder exposing (decodeMenuData, decodeReportParams, decodeSelectedEntity, decodeSyncResponse)
 
-import Backend.Components.Model exposing (HealthCenterData, MenuScope(..), ReportParams, SelectedEntity(..))
+import Backend.Components.Model exposing (HealthCenterData, MenuData, MenuScope(..), ReportParams, SelectedEntity(..), SyncResponse)
+import Backend.Decoder exposing (decodeSite)
 import Gizra.Json exposing (decodeInt)
-import Json.Decode exposing (Decoder, andThen, fail, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, fail, field, list, maybe, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
 
 
@@ -11,6 +12,14 @@ decodeHealthCenterData =
     succeed HealthCenterData
         |> required "id" decodeInt
         |> required "name" string
+
+
+decodeMenuData : Decoder MenuData
+decodeMenuData =
+    succeed MenuData
+        |> required "site" decodeSite
+        |> required "health_centers" (list decodeHealthCenterData)
+        |> optional "scope" (maybe decodeMenuScope) Nothing
 
 
 decodeMenuScope : Decoder MenuScope
@@ -71,3 +80,13 @@ decodeReportParams =
         |> optional "cell" (nullable string) Nothing
         |> optional "village" (nullable string) Nothing
         |> optional "health_center" (nullable decodeInt) Nothing
+
+
+decodeSyncResponse : Decoder record -> Decoder (SyncResponse record)
+decodeSyncResponse decodeRecord =
+    field "data"
+        (succeed SyncResponse
+            |> required "batch" (list decodeRecord)
+            |> required "total_remaining" decodeInt
+            |> required "last" decodeInt
+        )

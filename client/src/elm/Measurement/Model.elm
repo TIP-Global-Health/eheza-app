@@ -1606,6 +1606,7 @@ type alias HIVTestForm msg =
     , executionDate : Maybe NominalDate
     , executionDateDirty : Bool
     , testResult : Maybe TestResult
+    , testResultDirty : Bool
     , hivProgramHC : Maybe Bool
     , hivProgramHCDirty : Bool
     , partnerHIVPositive : Maybe Bool
@@ -1631,6 +1632,7 @@ emptyHIVTestForm =
     , executionDate = Nothing
     , executionDateDirty = False
     , testResult = Nothing
+    , testResultDirty = False
     , hivProgramHC = Nothing
     , hivProgramHCDirty = False
     , partnerHIVPositive = Nothing
@@ -1712,6 +1714,7 @@ type alias PregnancyTestForm msg =
     , executionDate : Maybe NominalDate
     , executionDateDirty : Bool
     , testResult : Maybe TestResult
+    , testResultDirty : Bool
     , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
     }
 
@@ -1728,6 +1731,7 @@ emptyPregnancyTestForm =
     , executionDate = Nothing
     , executionDateDirty = False
     , testResult = Nothing
+    , testResultDirty = False
     , dateSelectorPopupState = Nothing
     }
 
