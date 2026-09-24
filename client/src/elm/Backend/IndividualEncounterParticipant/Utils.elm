@@ -1,5 +1,6 @@
-module Backend.IndividualEncounterParticipant.Utils exposing (acuteIllnessOutcomeFromString, acuteIllnessOutcomeToString, deliveryLocationFromString, deliveryLocationToString, hivOutcomeFromString, hivOutcomeToString, individualEncounterTypeFromString, individualEncounterTypeToString, initiatorFromUrlFragment, initiatorToUrlFragment, isDailyEncounterActive, pregnancyOutcomeFromString, pregnancyOutcomeToString, tuberculosisOutcomeFromString, tuberculosisOutcomeToString)
+module Backend.IndividualEncounterParticipant.Utils exposing (acuteIllnessOutcomeFromString, acuteIllnessOutcomeToString, deliveryLocationFromString, deliveryLocationToString, hivOutcomeFromString, hivOutcomeToString, individualEncounterTypeFromString, individualEncounterTypeToString, initiatorFromUrlFragment, initiatorToUrlFragment, isDailyEncounterActive, pregnancyOutcomeFromString, pregnancyOutcomeToString, resolveOpenParticipant, tuberculosisOutcomeFromString, tuberculosisOutcomeToString)
 
+import AssocList as Dict exposing (Dict)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), DeliveryLocation(..), HIVOutcome(..), IndividualEncounterType(..), IndividualParticipantInitiator(..), PregnancyOutcome(..), TuberculosisOutcome(..))
 import Backend.PatientRecord.Utils
 import Gizra.NominalDate exposing (NominalDate)
@@ -75,6 +76,24 @@ individualEncounterTypeFromString string =
 isDailyEncounterActive : NominalDate -> { a | startDate : NominalDate, endDate : Maybe NominalDate } -> Bool
 isDailyEncounterActive currentDate encounter =
     encounter.startDate == currentDate && isNothing encounter.endDate
+
+
+{-| The participant of given type that has not ended yet. We expect at most
+one, so the first found is used.
+-}
+resolveOpenParticipant :
+    IndividualEncounterType
+    -> Dict id { a | encounterType : IndividualEncounterType, endDate : Maybe NominalDate }
+    -> Maybe id
+resolveOpenParticipant encounterType participants =
+    Dict.toList participants
+        |> List.filter
+            (\( _, participant ) ->
+                (participant.encounterType == encounterType)
+                    && isNothing participant.endDate
+            )
+        |> List.head
+        |> Maybe.map Tuple.first
 
 
 initiatorToUrlFragment : IndividualParticipantInitiator -> String

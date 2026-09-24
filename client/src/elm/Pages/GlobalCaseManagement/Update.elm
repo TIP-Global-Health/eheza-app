@@ -1,12 +1,14 @@
 module Pages.GlobalCaseManagement.Update exposing (update)
 
 import App.Model
+import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessEncounterType(..))
 import Backend.Entities exposing (..)
 import Backend.HIVEncounter.Model exposing (emptyHIVEncounter)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Utils exposing (resolveOpenParticipant)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
@@ -22,12 +24,14 @@ import Backend.TuberculosisEncounter.Model exposing (emptyTuberculosisEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..), emptyWellChildEncounter)
 import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra
 import Pages.GlobalCaseManagement.Model exposing (EncounterStartedToday(..), FollowUpAcuteIllnessData, FollowUpDialogState(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpNutritionData, FollowUpTuberculosisData, Model, Msg(..))
 import Pages.GlobalCaseManagement.Utils exposing (resolveEncounterStartedToday)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.Encounter.Utils exposing (generatePostCreateDestination)
 import Pages.Prenatal.RecurrentActivity.Model
+import RemoteData
 
 
 update : NominalDate -> Maybe HealthCenterId -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -206,7 +210,16 @@ startFollowUpEncounterWellChild currentDate selectedHealthCenter db data =
 
 startFollowUpEncounterTuberculosis : NominalDate -> HealthCenterId -> ModelIndexedDb -> FollowUpTuberculosisData -> Maybe (List App.Model.Msg)
 startFollowUpEncounterTuberculosis currentDate selectedHealthCenter db data =
-    -- If participant was provided, we create new encounter for existing participant.
+    let
+        -- An entry from Acute Illness carries no participant, so we reuse
+        -- the patient's open one, as the Tuberculosis participant page does.
+        openParticipantId =
+            Dict.get data.personId db.individualParticipantsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.andThen (resolveOpenParticipant TuberculosisEncounter)
+    in
+    -- If participant was provided, or patient has an open one, we create new
+    -- encounter for it.
     Maybe.map
         (\participantId ->
             unlessEncounterStartedToday currentDate
@@ -217,8 +230,8 @@ startFollowUpEncounterTuberculosis currentDate selectedHealthCenter db data =
                     |> App.Model.MsgIndexedDb
                 ]
         )
-        data.participantId
-        |> -- Participant was not provided, so we create new participant (which
+        (Maybe.Extra.or data.participantId openParticipantId)
+        |> -- There's no participant, so we create new participant (which
            -- also creates encounter for newly created participant).
            Maybe.withDefault
             (Just
