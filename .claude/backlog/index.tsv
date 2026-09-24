@@ -195,7 +195,7 @@ B-194	3	IMPLEMENTED		2133	2134	21	Prenatal: EDD-null pregnancies are ACTIVE FORE
 B-195	2	PARKED				21	Individual encounters: the create-button db-lag race mints DUPLICATE participants in ALL NINE flows, and the app can onl
 B-196	3	READY				21	Prenatal: participant EDD goes STALE when LMP is edited/re-dated — the B-140 dropped-patch mechanism has a live data tra
 B-197	4	READY				21	Prenatal/reports: 591 regular ANC encounters dated AFTER pregnancy conclusion are counted as ANC visits — partly by-desi
-B-198	3	READY				21	Group enrolments SILENTLY LOST in upload: 742 persons have group measurements on the server but NO pmtct_participant any
+B-198	2	READY				21	Group enrolments SILENTLY LOST in upload: 742 persons have group measurements on the server but NO pmtct_participant any
 B-199	4	READY				21	Group enrolment/relationship duplicates from unconditional posts and local-dedup races: 1,101 children double-enrolled i
 B-200	3	IMPLEMENTED		2123	2124	21	✅ IMPLEMENTED 2026-08-20 (issue #2123, PR #2124, range 20-600 per user) — Blood glucose: mg/dL field takes mmol/L-typed 
 B-201		IMPLEMENTED				22	server/elm duplication batch: 7 PR groups, ~400-500 net lines removable, ZERO drift found
@@ -213,7 +213,7 @@ B-212	3	IMPLEMENTED	MED			23	Antenatal progress report: NCD-program referral lin
 B-213	2	IMPLEMENTED	HIGH	2188	2189	23	NCDA scorecard "Fill the Blanks": every past height/weight is graded against the child's age TODAY, so earlier months tu
 B-214	3	IMPLEMENTED	MED			23	Child progress report: "the last Well Child encounter" is whichever sorts first by UUID, so the Next Appointment pane ca
 B-215	3	IMPLEMENTED	MED	2196	2197	23	Patient Record (adult): the Acute Illness pane — the DEFAULT filter — never fetches its encounters, so an adult's illnes
-B-216	3	READY	MED-HIGH			23	Person: correcting an ADULT's birth date rewrites the enrolment/graduation dates of every child they bring to a group — 
+B-216	2	READY	MED-HIGH			23	Person: correcting an ADULT's birth date rewrites the enrolment/graduation dates of every child they bring to a group — 
 B-217	3	READY	MED			23	Patient consolidation: the tool accepts original == duplicate (and unloadable / already-deleted ids) and then soft-delet
 B-218	4	READY	MED-LOW			23	Person: un-deleting a person does not un-delete what its deletion cascaded (relationships, group enrolments, pregnancies
 B-219	4	READY	LOW			23	Patient consolidation: moved measurements/encounters/participants keep the DUPLICATE's shards, so transferred history ca
@@ -230,7 +230,7 @@ B-229	4	READY	LOW			24	Trace contact: an edit issued while the contact is not in
 B-230	3	IMPLEMENTED	MED			24	Prenatal diagnoses: `gonorrhea-continued` is encoded and stored but the client decoder has no branch for it, so the diag
 B-231	3	IMPLEMENTED	MED-HIGH			24	Case Management TB pane: a patient with a TB follow-up newer than their acute-illness TB-suspect follow-up disappears fr
 B-232	2	IMPLEMENTED	HIGH	2190	2191	24	Case Management immunization pane: a child is listed only on the day the follow-up was scheduled, never afterwards — the
-B-233	3	READY	MED			24	Case Management TB/HIV entries: starting an encounter from an AI-derived TB entry or a positive-test HIV entry creates a
+B-233	2	READY	MED			24	Case Management TB/HIV entries: starting an encounter from an AI-derived TB entry or a positive-test HIV entry creates a
 B-234	4	READY	MED-LOW			24	Case Management (CHW): village scoping skips the TB and HIV follow-ups, so their encounters and participants are fetched
 B-235	2	IMPLEMENTED	HIGH			25	Prenatal nutrition (Healthy Start): the gestational weight-gain verdict is inverted, so a woman gaining too little is to
 B-236	1	IMPLEMENTED	MED-HIGH	2194	2195	25	Prenatal symptoms: whether vaginal discharge counts as "continued" is decided by the patient's **gonorrhea** history, so
@@ -315,7 +315,7 @@ B-314	3	READY	MED-LOW			28	Growth charts: on three charts the y-axis gridlines a
 B-315	3	READY	MED-LOW			28	Growth charts: a measurement outside the chart's x-range is pinned to the frame edge instead of dropped, so a 24–26-mont
 B-316	4	READY	LOW			28	Z-score tables: a failed table download on first load is never retried and never shown, so growth charts render without 
 B-317	2	IMPLEMENTED	MED-HIGH	2265	2266	28	Sync download: a response arriving after its 30-second timeout is applied under whichever health centre is current by th
-B-318	3	READY	MED			28	Sync: the dashboard-statistics download has no timeout and no elapsed-time guard, so one stalled request wedges uploads 
+B-318	2	READY	MED			28	Sync: the dashboard-statistics download has no timeout and no elapsed-time guard, so one stalled request wedges uploads 
 B-319	1	IMPLEMENTED	MED	2223	2224	28	Prenatal labs (lab technician): a blood-smear order opens pre-answered "test will NOT be performed today" with the nurse
 B-320	1	IMPLEMENTED	MED	2211	2212	28	Prenatal HIV test: correcting to "known as positive" after a negative RDT keeps the result and the partner answers, so t
 B-321	4	READY	LOW			28	NCD Laboratory (urine dipstick, creatinine, liver function, lipid panel): re-saving a test task after its results were e
@@ -370,7 +370,7 @@ B-369	4	READY	LOW			32	Prenatal participant (mixed fleet, release #2128): once a
 B-370	4	READY	LOW			32	Login location selection: an assignment added to a nurse or CHW on the server never reaches the health-centre / village 
 B-371	3	READY	MED			32	Prenatal CHW visits 2 and 3 on an undated pregnancy can never be ended: Next Visit is required but its Save does nothing
 B-372	4	READY	LOW			32	Well Child next pediatric visit: on a month-end clamp day the "next" ECD / medication visit date is today, because the a
-B-373	3	READY	MED			32	Prenatal postpartum visit: recording the Pregnancy Outcome (the visit's first activity) closes the pregnancy at once, so
+B-373	2	READY	MED			32	Prenatal postpartum visit: recording the Pregnancy Outcome (the visit's first activity) closes the pregnancy at once, so
 B-374	4	READY	LOW			32	Case Management Antenatal pane: follow-up entries of an EXPIRED pregnancy (past EDD + 92 days, or the B-194 no-EDD rule)
 B-375	3	IMPLEMENTED	MED	2263	2264	32	Patient merge: the acute-illness step looks participants up by `'acute_illness'` while the stored value is `'acute-illne
 B-376	3	READY	MED-LOW			32	Patient merge (antenatal): "ongoing pregnancy" is the newest participant with no `date_concluded`, which on live data is
@@ -427,7 +427,7 @@ B-426	4	READY	LOW			36	Prenatal Completion report: a vitals recheck is expected 
 B-427	3	READY	MED-LOW			36	Child Scoreboard NCDA scorecard: the three "6–24 months" nutrition-behaviour rows and the Breastfed row show a red X for
 B-428	3	READY	MED-LOW			36	Aggregated NCDA scoreboard (percentage mode): the Breastfed, complementary-feeding, diverse-diet, meals-a-day and both A
 B-429	3	READY	MED-LOW			36	Aggregated NCDA scoreboard immunisation row: the server rebuilds each vaccine's dose ladder from distinct administration
-B-430	3	READY	MED			36	Group sessions (nurse Clinics page): while the health centre is uploading, today's sessions are never fetched, so the gr
+B-430	2	READY	MED			36	Group sessions (nurse Clinics page): while the health centre is uploading, today's sessions are never fetched, so the gr
 B-431	4	READY	LOW			36	Group enrolment: the automatic check-in after adding a child to a running session always creates a new attendance record
 B-432	4	READY	LOW			36	Dashboard group-education drill-in: attendee names and genders are cached once per health centre and never refreshed, so
 B-433	4	IMPLEMENTED	LOW	2278	2279	35	Prenatal labs: a repeated tap on "known as positive" for a test reopened from the record still clears it — the repeat-ta
