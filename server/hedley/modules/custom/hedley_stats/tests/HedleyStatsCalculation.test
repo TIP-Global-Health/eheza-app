@@ -82,9 +82,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *   2. Case management aggregation across moderate/severe branches.
    *   3. Session attendance (smoke check that the function runs), and what
    *      counts as having attended one (B-152a).
-   *   4. Stats-blob sync with cache-hash invalidation.
-   *   5. Soft-deleted measurements are excluded from stats aggregates (B-032).
-   *   6. Soft-deleted persons are excluded from group education stats (B-033).
+   *   4. Group enrolment dates follow the child's birth date only.
+   *   5. Stats-blob sync with cache-hash invalidation.
+   *   6. Soft-deleted measurements are excluded from stats aggregates (B-032).
+   *   7. Soft-deleted persons are excluded from group education stats (B-033).
    */
   public function testStatsCalculations() {
     // 1. Total encounters.
@@ -204,7 +205,24 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       'A child marked absent does not count. The record of the absence is not evidence of presence.'
     );
 
-    // 4. Sync handler with cache-hash invalidation.
+    // 4. Group enrolment dates follow the child's birth date only.
+    //
+    // The stats read a participation's start and graduation dates. Correcting
+    // the mother's birth date must leave them alone; correcting the child's
+    // moves them to the new birth date, graduating 26 months later.
+    $this->resetHealthCenter();
+    $mother = $this->createMother($this->clinicId);
+    $child = $this->createChild($mother, $this->healthCenterId);
+    $participation = $this->createPMTCT($child, $mother, $this->clinicId);
+    $enrolled = $this->participationDates($participation);
+
+    $this->setBirthDate($mother, '1990-01-01');
+    $this->assertEqual($enrolled, $this->participationDates($participation), 'Correcting the mother\'s birth date leaves the child\'s enrolment dates unchanged.');
+
+    $this->setBirthDate($child, '2016-01-15');
+    $this->assertEqual(['2016-01-15', '2018-03-15'], $this->participationDates($participation), 'Correcting the child\'s birth date moves enrolment to it, graduating 26 months later.');
+
+    // 5. Sync handler with cache-hash invalidation.
     $this->resetHealthCenter();
     $this->createGroupNutritionData();
     $this->createIndividualNutritionEncounterData();
@@ -318,7 +336,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     // Check that we got the stats.
     $this->assertTrue(is_array($stats4));
 
-    // 5. Soft-deleted measurements are excluded from stats aggregates (B-032).
+    // 6. Soft-deleted measurements are excluded from stats aggregates (B-032).
     //
     // An admin can soft-delete an individual measurement (field_deleted = TRUE)
     // while its encounter stays live (VBO mark-as-deleted action, or the
@@ -350,7 +368,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertTrue(empty($encounter_after['muac']), 'Soft-deleted MUAC is excluded from stats after recalculation.');
     $this->assertEqual(['edema'], $encounter_after['nutrition_signs'], 'Live nutrition sign is retained.');
 
-    // 6. Soft-deleted persons are excluded from group education stats (B-033).
+    // 7. Soft-deleted persons are excluded from group education stats (B-033).
     //
     // Merging a duplicate patient soft-deletes the duplicate person, but
     // nothing re-points the education sessions that reference them. Those
@@ -380,6 +398,39 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $after = $this->extractEducationParticipants(hedley_stats_get_group_education_data($this->healthCenterId, $patients_details));
     $this->assertEqual([$live], $after, 'The soft-deleted attendee is no longer counted.');
     $this->assertTrue(empty($patients_details[$duplicate]), 'The soft-deleted attendee\'s name is not shipped to the dashboard.');
+  }
+
+  /**
+   * Save a new birth date on a person.
+   *
+   * @param int $nid
+   *   The person node ID.
+   * @param string $date
+   *   The birth date, as Y-m-d.
+   */
+  protected function setBirthDate($nid, $date) {
+    $wrapper = entity_metadata_wrapper('node', $nid);
+    $wrapper->field_birth_date->set(strtotime($date));
+    $wrapper->save();
+  }
+
+  /**
+   * Read a participation's start and graduation dates, fresh from storage.
+   *
+   * @param int $nid
+   *   The pmtct_participant node ID.
+   *
+   * @return array
+   *   The start and graduation dates, as Y-m-d.
+   */
+  protected function participationDates($nid) {
+    $node = node_load($nid, NULL, TRUE);
+    $expected = $node->field_expected[LANGUAGE_NONE][0];
+
+    return [
+      substr($expected['value'], 0, 10),
+      substr($expected['value2'], 0, 10),
+    ];
   }
 
   /**
