@@ -1210,7 +1210,9 @@ function hedley_person_process_birth_date_update($node) {
     return;
   }
 
-  $ids = hedley_person_pmtct_participants_for_person($node->nid);
+  // Enrolment dates follow the child only. Editing an adult's birth date
+  // must not touch the participations they attend as the adult.
+  $ids = hedley_person_pmtct_participants_for_person($node->nid, ['field_person']);
   if (empty($ids)) {
     return;
   }
@@ -1320,16 +1322,15 @@ function hedley_person_process_deleted_update($node) {
  * Resolves all pmtct_participant nodes IDs for person.
  *
  * @param int $person_id
- *   Child node ID.
+ *   Person node ID, child or adult.
+ * @param array $association_fields
+ *   Optional; the participant fields to match the person on. Defaults to
+ *   both the child (field_person) and the adult (field_adult).
  *
  * @return array
  *   List of pmtct_participant nodes IDs.
  */
-function hedley_person_pmtct_participants_for_person($person_id) {
-  $association_fields = [
-    'field_person',
-    'field_adult',
-  ];
+function hedley_person_pmtct_participants_for_person($person_id, array $association_fields = ['field_person', 'field_adult']) {
   $entries = hedley_general_get_person_content_associated_by_fields($person_id, $association_fields);
 
   $ids = [];
