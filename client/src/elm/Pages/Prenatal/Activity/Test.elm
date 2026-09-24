@@ -47,6 +47,7 @@ import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (RangedMeasurement(..))
+import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault)
 import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
@@ -2209,6 +2210,7 @@ all =
         , suicideRiskDiagnosedBySignsTest
         , vaginalDischargeContinuedTest
         , historyBeforeEncounterTest
+        , repeatedTapOnSavedTest
         , diagnosisKnownAnyOfTest
         ]
 
@@ -2327,6 +2329,74 @@ measurementOutOfRangeTest =
             \_ ->
                 preSaveObstetrical (Just False) (Just 120)
                     |> Expect.equal ( Nothing, True )
+        ]
+
+
+{-| "Known as positive" fires on every tap, including one that repeats the
+answer shown. On a test loaded from the record the form in the model is still
+empty, so the update acts on the form as displayed; otherwise a repeated No
+would clear a saved test.
+-}
+repeatedTapOnSavedTest : Test
+repeatedTapOnSavedTest =
+    let
+        encounterId =
+            toEntityUuid "encounter"
+
+        savedHIVTest =
+            hivTestValueWith TestNegative
+
+        savedPartnerHIVTest =
+            partnerHIVTestValuePositive TestNoteRunToday immediateResultPrerequisites
+
+        savedHepatitisBTest =
+            hepatitisBTestValueWith TestNegative
+
+        db =
+            { emptyModelIndexedDb
+                | prenatalMeasurements =
+                    Dict.singleton encounterId
+                        (RemoteData.Success
+                            { emptyPrenatalMeasurements
+                                | hivTest = wrapMeasurement savedHIVTest
+                                , partnerHIVTest = wrapMeasurement savedPartnerHIVTest
+                                , hepatitisBTest = wrapMeasurement savedHepatitisBTest
+                            }
+                        )
+            }
+
+        dataAfter msg =
+            update dummyDate SiteRwanda encounterId db msg emptyModel
+                |> (\( model, _, _ ) -> model.laboratoryData)
+
+        noteAndResult value =
+            ( value.executionNote, value.testResult )
+    in
+    describe "a repeated tap on known as positive, on a test loaded from the record"
+        [ test "HIV test: No keeps the saved run and result" <|
+            \_ ->
+                (dataAfter (SetHIVTestFormBoolInput knownAsPositiveUpdateHIVTest False)).hivTestForm
+                    |> toHIVTestValueUniversalWithDefault (Just savedHIVTest)
+                    |> Maybe.map noteAndResult
+                    |> Expect.equal (Just ( TestNoteRunToday, Just TestNegative ))
+        , test "HIV test: Yes still replaces the run" <|
+            \_ ->
+                (dataAfter (SetHIVTestFormBoolInput knownAsPositiveUpdateHIVTest True)).hivTestForm
+                    |> toHIVTestValueUniversalWithDefault (Just savedHIVTest)
+                    |> Maybe.map noteAndResult
+                    |> Expect.equal (Just ( TestNoteKnownAsPositive, Nothing ))
+        , test "partner HIV test: No keeps the saved run and result" <|
+            \_ ->
+                (dataAfter (SetPartnerHIVTestFormBoolInput knownAsPositiveUpdatePartnerHIVTest False)).partnerHIVTestForm
+                    |> toPartnerHIVTestValueWithDefault (Just savedPartnerHIVTest)
+                    |> Maybe.map noteAndResult
+                    |> Expect.equal (Just ( TestNoteRunToday, Just TestPositive ))
+        , test "hepatitis B test: No keeps the saved run and result" <|
+            \_ ->
+                (dataAfter (SetHepatitisBTestFormBoolInput knownAsPositiveUpdate False)).hepatitisBTestForm
+                    |> toHepatitisBTestValueWithDefault (Just savedHepatitisBTest)
+                    |> Maybe.map noteAndResult
+                    |> Expect.equal (Just ( TestNoteRunToday, Just TestNegative ))
         ]
 
 
