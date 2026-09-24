@@ -1,4 +1,4 @@
-module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), BackendWhatsAppEntity, DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadPhotosMode(..), DownloadPhotosStatus(..), DownloadSyncResponse, Flags, IncidentContnentIdentifier, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoBatchResultRecord, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadFileResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbQueryUploadWhatsAppResultRecord, IndexDbSaveError(..), IndexDbSaveResult, IndexDbSaveResultTable(..), IndexDbSaveStatus(..), IndexDbUploadRemoteData, Model, Msg(..), PhotoBatchResult, Site(..), SiteFeature(..), SyncCycle(..), SyncIncidentType(..), SyncInfoAuthority, SyncInfoAuthorityForPort, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoGeneralForPort, SyncInfoStatus(..), SyncSpeed, SyncStatus(..), UploadFileError(..), UploadMethod(..), UploadRec, downloadRequestTimeout, emptyModel, emptySyncInfoAuthority, emptyUploadRec, uploadRequestTimeout)
+module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), BackendWhatsAppEntity, DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadPhotosMode(..), DownloadPhotosStatus(..), DownloadSyncResponse, Flags, IncidentContnentIdentifier, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoBatchResultRecord, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadFileResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbQueryUploadWhatsAppResultRecord, IndexDbSaveError(..), IndexDbSaveResult, IndexDbSaveResultTable(..), IndexDbSaveStatus(..), IndexDbUploadRemoteData, Model, Msg(..), PhotoBatchResult, Site(..), SiteFeature(..), SyncCycle(..), SyncIncidentType(..), SyncInfoAuthority, SyncInfoAuthorityForPort, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoGeneralForPort, SyncInfoStatus(..), SyncSpeed, SyncStatus(..), UploadFileError(..), UploadMethod(..), UploadRec, downloadRequestTimeout, emptyModel, emptySyncInfoAuthority, emptyUploadRec, transferRequestTimeout)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -777,16 +777,12 @@ downloadRequestTimeout =
     (12000 + 3000) * 2
 
 
-{-| Upload requests (POST to /api/sync) carry a batch of changes and may run
-over slow rural connections, so we allow more headroom than downloads. The
-crucial point is that there is a timeout at all: without one, a stalled
-connection (e.g. a dropped mobile link that never sends a TCP RST) leaves the
-request in `Loading` indefinitely, wedging the entire upload phase until the
-app is manually reloaded. The value is in milliseconds, as expected by
-`HttpBuilder.withTimeout`.
+{-| Timeout, in milliseconds, for uploads and the dashboard statistics download.
+Without one, a dropped mobile link leaves the request loading forever, and sync
+stops until the app is reloaded.
 -}
-uploadRequestTimeout : Float
-uploadRequestTimeout =
+transferRequestTimeout : Float
+transferRequestTimeout =
     60 * 1000
 
 

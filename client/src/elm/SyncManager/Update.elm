@@ -389,6 +389,7 @@ update currentTime activePage dbVersion device msg model =
                                                 , ( "statistics", "1" )
                                                 ]
                                             |> withExpectJson decodeDownloadSyncResponseAuthorityStats
+                                            |> HttpBuilder.withTimeout transferRequestTimeout
                                             |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityDashboardStatsFetchHandle zipperUpdated)
                                 in
                                 SubModelReturn
@@ -1299,7 +1300,7 @@ update currentTime activePage dbVersion device msg model =
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord dbVersion result)
                                         -- We don't need to decode the response body; the upload only
                                         -- needs to know whether it succeeded.
-                                        |> HttpBuilder.withTimeout uploadRequestTimeout
+                                        |> HttpBuilder.withTimeout transferRequestTimeout
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadAuthorityHandle result)
                                     )
 
@@ -1492,7 +1493,7 @@ update currentTime activePage dbVersion device msg model =
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord dbVersion result)
                                         -- We don't need to decode the response body; the upload only
                                         -- needs to know whether it succeeded.
-                                        |> HttpBuilder.withTimeout uploadRequestTimeout
+                                        |> HttpBuilder.withTimeout transferRequestTimeout
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle result)
                                     )
 
@@ -1644,7 +1645,7 @@ update currentTime activePage dbVersion device msg model =
                                     , HttpBuilder.post (device.backendUrl ++ "/api/sync")
                                         |> withQueryParams [ ( "access_token", device.accessToken ) ]
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadWhatsAppResultRecord dbVersion result)
-                                        |> HttpBuilder.withTimeout uploadRequestTimeout
+                                        |> HttpBuilder.withTimeout transferRequestTimeout
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadWhatsAppHandle result)
                                     )
 
