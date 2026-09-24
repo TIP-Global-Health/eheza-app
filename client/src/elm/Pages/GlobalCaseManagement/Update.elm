@@ -8,6 +8,7 @@ import Backend.Entities exposing (..)
 import Backend.HIVEncounter.Model exposing (emptyHIVEncounter)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Utils exposing (resolveOpenParticipant)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
@@ -23,7 +24,7 @@ import Backend.TuberculosisEncounter.Model exposing (emptyTuberculosisEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..), emptyWellChildEncounter)
 import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (isNothing)
+import Maybe.Extra
 import Pages.GlobalCaseManagement.Model exposing (EncounterStartedToday(..), FollowUpAcuteIllnessData, FollowUpDialogState(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpNutritionData, FollowUpTuberculosisData, Model, Msg(..))
 import Pages.GlobalCaseManagement.Utils exposing (resolveEncounterStartedToday)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -215,16 +216,7 @@ startFollowUpEncounterTuberculosis currentDate selectedHealthCenter db data =
         openParticipantId =
             Dict.get data.personId db.individualParticipantsByPerson
                 |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.andThen
-                    (Dict.toList
-                        >> List.filter
-                            (\( _, participant ) ->
-                                (participant.encounterType == TuberculosisEncounter)
-                                    && isNothing participant.endDate
-                            )
-                        >> List.head
-                        >> Maybe.map Tuple.first
-                    )
+                |> Maybe.andThen (resolveOpenParticipant TuberculosisEncounter)
     in
     -- If participant was provided, or patient has an open one, we create new
     -- encounter for it.

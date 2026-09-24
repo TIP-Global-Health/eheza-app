@@ -2,6 +2,7 @@ module Pages.GlobalCaseManagement.Test exposing (all)
 
 import AssocList as Dict
 import Backend.IndividualEncounterParticipant.Model as IndividualEncounterParticipant exposing (emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Utils exposing (resolveOpenParticipant)
 import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue)
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
@@ -25,6 +26,7 @@ all =
         , generateImmunizationFollowUpEntriesTests
         , generateTuberculosisFollowUpsTests
         , resolveEncounterStartedTodayTests
+        , resolveOpenParticipantTests
         , tuberculosisSuspectEntryTests
         ]
 
@@ -386,4 +388,37 @@ tuberculosisSuspectEntryTests =
             \_ ->
                 entriesFor (dbWithEncounterAt limitDate)
                     |> Expect.equal []
+        ]
+
+
+{-| Starting a Tuberculosis encounter from Case Management reuses the open
+participant, the one the Tuberculosis participant page opens.
+-}
+resolveOpenParticipantTests : Test
+resolveOpenParticipantTests =
+    let
+        participant encounterType endDate =
+            { encounterType = encounterType, endDate = endDate }
+
+        ended =
+            Just (Date.fromCalendarDate 2026 Time.Jun 1)
+    in
+    describe "resolveOpenParticipant"
+        [ test "takes the open participant of given type" <|
+            \_ ->
+                Dict.fromList
+                    [ ( "ended", participant IndividualEncounterParticipant.TuberculosisEncounter ended )
+                    , ( "other-type", participant IndividualEncounterParticipant.HIVEncounter Nothing )
+                    , ( "open", participant IndividualEncounterParticipant.TuberculosisEncounter Nothing )
+                    ]
+                    |> resolveOpenParticipant IndividualEncounterParticipant.TuberculosisEncounter
+                    |> Expect.equal (Just "open")
+        , test "finds none when every participant of given type has ended" <|
+            \_ ->
+                Dict.fromList
+                    [ ( "ended", participant IndividualEncounterParticipant.TuberculosisEncounter ended )
+                    , ( "other-type", participant IndividualEncounterParticipant.HIVEncounter Nothing )
+                    ]
+                    |> resolveOpenParticipant IndividualEncounterParticipant.TuberculosisEncounter
+                    |> Expect.equal Nothing
         ]
