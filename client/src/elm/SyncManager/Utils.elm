@@ -332,25 +332,28 @@ determineSyncStatus activePage model =
                                 , syncInfoAuthorities
                                 )
 
-                            ( Just zipper, RemoteData.Success _ ) ->
-                                -- Go to the next authority if there is
-                                -- otherwise, to the next status
-                                case Zipper.next zipper of
-                                    Just nextZipper ->
-                                        ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
-                                        , Just nextZipper
-                                        )
+                            ( Just zipper, _ ) ->
+                                -- A failed download moves on too, so uploads are not held
+                                -- back; the statistics are fetched again next cycle.
+                                if RemoteData.isSuccess webData || RemoteData.isFailure webData then
+                                    -- Go to the next authority if there is
+                                    -- otherwise, to the next status
+                                    case Zipper.next zipper of
+                                        Just nextZipper ->
+                                            ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
+                                            , Just nextZipper
+                                            )
 
-                                    Nothing ->
-                                        -- We've reached the last element,
-                                        -- so reset authorities zipper to first element,
-                                        -- and rotate to the next status.
-                                        ( SyncIdle
-                                        , Just (Zipper.first zipper)
-                                        )
+                                        Nothing ->
+                                            -- We've reached the last element,
+                                            -- so reset authorities zipper to first element,
+                                            -- and rotate to the next status.
+                                            ( SyncIdle
+                                            , Just (Zipper.first zipper)
+                                            )
 
-                            _ ->
-                                noChange
+                                else
+                                    noChange
         in
         { model
             | syncStatus = syncStatusUpdated
