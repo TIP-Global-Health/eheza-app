@@ -230,7 +230,7 @@ B-229	4	READY	LOW			24	Trace contact: an edit issued while the contact is not in
 B-230	3	IMPLEMENTED	MED			24	Prenatal diagnoses: `gonorrhea-continued` is encoded and stored but the client decoder has no branch for it, so the diag
 B-231	3	IMPLEMENTED	MED-HIGH			24	Case Management TB pane: a patient with a TB follow-up newer than their acute-illness TB-suspect follow-up disappears fr
 B-232	2	IMPLEMENTED	HIGH	2190	2191	24	Case Management immunization pane: a child is listed only on the day the follow-up was scheduled, never afterwards — the
-B-233	2	READY	MED			24	Case Management TB/HIV entries: starting an encounter from an AI-derived TB entry or a positive-test HIV entry creates a
+B-233	2	IMPLEMENTED	MED	2286	2287	24	Case Management TB/HIV entries: starting an encounter from an AI-derived TB entry or a positive-test HIV entry creates a
 B-234	4	READY	MED-LOW			24	Case Management (CHW): village scoping skips the TB and HIV follow-ups, so their encounters and participants are fetched
 B-235	2	IMPLEMENTED	HIGH			25	Prenatal nutrition (Healthy Start): the gestational weight-gain verdict is inverted, so a woman gaining too little is to
 B-236	1	IMPLEMENTED	MED-HIGH	2194	2195	25	Prenatal symptoms: whether vaginal discharge counts as "continued" is decided by the patient's **gonorrhea** history, so
@@ -431,6 +431,7 @@ B-430	2	READY	MED			36	Group sessions (nurse Clinics page): while the health cen
 B-431	4	READY	LOW			36	Group enrolment: the automatic check-in after adding a child to a running session always creates a new attendance record
 B-432	4	READY	LOW			36	Dashboard group-education drill-in: attendee names and genders are cached once per health centre and never refreshed, so
 B-433	4	IMPLEMENTED	LOW	2278	2279	35	Prenatal labs: a repeated tap on "known as positive" for a test reopened from the record still clears it — the repeat-ta
+B-434	4	READY	LOW			24	Case Management HIV positive-result entry: a tap creates a second HIV participant when the patient already has an open o
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
