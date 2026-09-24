@@ -182,6 +182,16 @@ downloadingAuthority zipper time =
     }
 
 
+{-| A model whose statistics download is in flight.
+-}
+downloadingStats : Zipper SyncInfoAuthority -> Model
+downloadingStats zipper =
+    { testModel
+        | syncStatus = SyncDownloadAuthorityDashboardStats RemoteData.Loading
+        , syncInfoAuthorities = Just zipper
+    }
+
+
 {-| IndexedDB's acknowledgement that the batch stamped `timestamp` was saved.
 -}
 authorityBatchSaved : String -> Msg
@@ -206,6 +216,15 @@ cursors : Model -> List ( String, Int )
 cursors model =
     model.syncInfoAuthorities
         |> Maybe.map (Zipper.toList >> List.map (\authority -> ( authority.uuid, authority.lastFetchedRevisionId )))
+        |> Maybe.withDefault []
+
+
+{-| Each authority's sync status, in list order.
+-}
+statuses : Model -> List ( String, SyncInfoStatus )
+statuses model =
+    model.syncInfoAuthorities
+        |> Maybe.map (Zipper.toList >> List.map (\authority -> ( authority.uuid, authority.status )))
         |> Maybe.withDefault []
 
 
@@ -493,6 +512,21 @@ all =
                     |> runUpdate (BackendAuthorityDashboardStatsFetchHandle (authorities "hc-A" []) (RemoteData.Success (authorityResponse [])))
                     |> (\model -> ( model.syncInfoAuthorities, model.syncStatus ))
                     |> Expect.equal ( Just (authorities "hc-B" [ "hc-A" ]), SyncDownloadAuthorityDashboardStats RemoteData.NotAsked )
+
+        -- A failed statistics download must not hold the sync cycle, or the
+        -- next cycle's uploads never start. Statistics are retried next cycle.
+        , test "a failed statistics download marks its authority failed and moves on to the next one" <|
+            \() ->
+                downloadingStats (authorities "hc-A" [ "hc-B" ])
+                    |> runUpdate (BackendAuthorityDashboardStatsFetchHandle (authorities "hc-A" [ "hc-B" ]) (RemoteData.Failure Http.Timeout))
+                    |> (\model -> ( statuses model, Maybe.map (Zipper.current >> .uuid) model.syncInfoAuthorities, model.syncStatus ))
+                    |> Expect.equal ( [ ( "hc-A", Error ), ( "hc-B", NotAvailable ) ], Just "hc-B", SyncDownloadAuthorityDashboardStats RemoteData.NotAsked )
+        , test "a failed statistics download on the last authority ends the sync cycle" <|
+            \() ->
+                downloadingStats (authorities "hc-A" [])
+                    |> runUpdate (BackendAuthorityDashboardStatsFetchHandle (authorities "hc-A" []) (RemoteData.Failure Http.Timeout))
+                    |> .syncStatus
+                    |> Expect.equal SyncIdle
         , test "SavedAtIndexDbHandle leaves the download lane alone when another table's save fails" <|
             \() ->
                 let

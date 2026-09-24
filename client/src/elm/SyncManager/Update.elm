@@ -389,6 +389,7 @@ update currentTime activePage dbVersion device msg model =
                                                 , ( "statistics", "1" )
                                                 ]
                                             |> withExpectJson decodeDownloadSyncResponseAuthorityStats
+                                            |> HttpBuilder.withTimeout statisticsRequestTimeout
                                             |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityDashboardStatsFetchHandle zipperUpdated)
                                 in
                                 SubModelReturn
@@ -485,7 +486,7 @@ update currentTime activePage dbVersion device msg model =
                                             zipper
 
                                     Nothing ->
-                                        zipper
+                                        Zipper.mapCurrent (\old -> { old | status = Error }) zipper
 
                             modelWithSyncStatus =
                                 SyncManager.Utils.determineSyncStatus activePage
