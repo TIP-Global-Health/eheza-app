@@ -187,6 +187,22 @@ nutritionAssessmentGateTests =
 
         person =
             toEntityUuid "person"
+
+        withHeadCircumference headCircumference notTaken =
+            let
+                data =
+                    emptyModel.nutritionAssessmentData
+
+                form =
+                    data.headCircumferenceForm
+            in
+            { emptyModel
+                | nutritionAssessmentData =
+                    { data
+                        | headCircumferenceForm =
+                            { form | headCircumference = Just headCircumference, measurementNotTaken = Just notTaken }
+                    }
+            }
     in
     describe "the Nutrition Assessment save gate"
         [ test "a height outside the range names it and saves nothing" <|
@@ -213,6 +229,26 @@ nutritionAssessmentGateTests =
             \_ ->
                 preSave (modelWith Nothing (Just 12.5) Nothing)
                     (PreSaveMuac person Nothing Nothing)
+                    |> Expect.equal ( Nothing, False )
+        , test "a head circumference typed as 0 names it and saves nothing" <|
+            \_ ->
+                preSave (withHeadCircumference 0 False)
+                    (PreSaveHeadCircumference person (Just -30) Nothing Nothing)
+                    |> Expect.equal ( Just (PopupMeasurementOutOfRange [ MeasurementHeadCircumference ]), True )
+        , test "a head circumference in millimetres names it and saves nothing" <|
+            \_ ->
+                preSave (withHeadCircumference 450 False)
+                    (PreSaveHeadCircumference person (Just 200) Nothing Nothing)
+                    |> Expect.equal ( Just (PopupMeasurementOutOfRange [ MeasurementHeadCircumference ]), True )
+        , test "a head circumference not taken shows no popup and goes on to save" <|
+            \_ ->
+                preSave (withHeadCircumference 0 True)
+                    (PreSaveHeadCircumference person Nothing Nothing Nothing)
+                    |> Expect.equal ( Nothing, False )
+        , test "a head circumference within the range shows no popup and goes on to save" <|
+            \_ ->
+                preSave (withHeadCircumference 45 False)
+                    (PreSaveHeadCircumference person (Just 0.2) Nothing Nothing)
                     |> Expect.equal ( Nothing, False )
         ]
 

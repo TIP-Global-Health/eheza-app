@@ -12296,6 +12296,13 @@ translationSet trans =
                     , somali = Nothing
                     }
 
+                Measurement.Model.MeasurementHeadCircumference ->
+                    { english = "Head circumference is recorded in centimetres. If it was not measured, check that it was not taken today."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 Measurement.Model.MeasurementHeight ->
                     { english = "Height is recorded in centimetres."
                     , kinyarwanda = Nothing

@@ -3725,6 +3725,9 @@ measurementOutOfRangeClass measurement =
         MeasurementFundalHeight ->
             "fundal-height-out-of-range"
 
+        MeasurementHeadCircumference ->
+            "head-circumference-out-of-range"
+
         MeasurementHeight ->
             "height-out-of-range"
 

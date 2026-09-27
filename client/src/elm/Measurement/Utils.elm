@@ -189,6 +189,17 @@ getInputConstraintsFundalHeight =
     }
 
 
+{-| Wide enough for a very premature newborn and for a child with
+hydrocephalus; it refuses 0, a value in millimetres, or a height entered by
+mistake.
+-}
+getInputConstraintsHeadCircumference : FloatInputConstraints
+getInputConstraintsHeadCircumference =
+    { minVal = 20
+    , maxVal = 70
+    }
+
+
 getInputConstraintsHeight : FloatInputConstraints
 getInputConstraintsHeight =
     { minVal = 25
@@ -505,6 +516,9 @@ measurementConstraints site measurement =
 
         MeasurementFundalHeight ->
             getInputConstraintsFundalHeight
+
+        MeasurementHeadCircumference ->
+            getInputConstraintsHeadCircumference
 
         MeasurementHeight ->
             getInputConstraintsHeight
