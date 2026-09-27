@@ -98,14 +98,18 @@ foreach (array_keys($cleared) as $nid) {
 }
 
 // The NCDA report counts these z-scores, and is rebuilt only when a
-// measurement is saved. So the rebuild is queued for each child here.
+// measurement is saved. So it is queued here, for children with a cleared
+// height or weight.
 if (variable_get('hedley_admin_feature_ncda_enabled', FALSE)) {
   $children = [];
   foreach (array_chunk(array_keys($cleared), 1000) as $chunk) {
-    $children += db_select('field_data_field_person', 'p')
+    $query = db_select('field_data_field_person', 'p');
+    $query->join('node', 'n', 'n.nid = p.entity_id');
+    $children += $query
       ->fields('p', ['field_person_target_id'])
       ->condition('p.entity_type', 'node')
       ->condition('p.entity_id', $chunk, 'IN')
+      ->condition('n.type', hedley_ncda_get_triggering_measurement_types(), 'IN')
       ->execute()
       ->fetchAllKeyed(0, 0);
   }
