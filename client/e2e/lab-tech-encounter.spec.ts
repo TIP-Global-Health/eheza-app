@@ -50,6 +50,9 @@ import {
  * it created locally leaks into the next session.
  */
 async function switchUser(page: Page, pinCode: string) {
+  // Leave the app first. Running with its storage cleared, it changes its own
+  // URL and interrupts the login's first page load.
+  await page.goto('about:blank');
   const client = await page.context().newCDPSession(page);
   await client.send('Storage.clearDataForOrigin', {
     origin: `http://localhost:${getClientPort()}`,
