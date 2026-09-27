@@ -14,7 +14,7 @@ import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndicationForChild, nutritionAssessmentToComparable)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, headCircumferenceTakenValue, muacIndicationForChild, nutritionAssessmentToComparable)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
@@ -1437,19 +1437,14 @@ chartWeightForAge child weight =
 
 chartHeadCircumferenceForAge : Person -> { dateMeasured : NominalDate, encounterId : String, value : HeadCircumferenceValue } -> Maybe ( Days, Centimetres )
 chartHeadCircumferenceForAge child headCircumference =
-    if EverySet.member NoteNotTaken headCircumference.value.notes then
-        Nothing
-
-    else
-        Maybe.map
-            (\birthDate ->
-                ( diffDays birthDate headCircumference.dateMeasured
-                , case headCircumference.value.headCircumference of
-                    HeadCircumferenceInCm cm ->
-                        Centimetres cm
-                )
+    Maybe.map2
+        (\birthDate cm ->
+            ( diffDays birthDate headCircumference.dateMeasured
+            , Centimetres cm
             )
-            child.birthDate
+        )
+        child.birthDate
+        (headCircumferenceTakenValue headCircumference.value)
 
 
 chartWeightForLengthAndHeight :
