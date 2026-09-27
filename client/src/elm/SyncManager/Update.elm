@@ -495,18 +495,15 @@ update currentTime activePage dbVersion device msg model =
                                         , syncInfoAuthorities = Just syncInfoAuthorities
                                     }
 
-                            -- Calculating the time it took authorities to sync.
-                            -- When sync is completed (status is about to change to Idle), we need to decide on
-                            -- additional actions:
-                            -- If sync lasted  more than 45 seconds (initial sync, for example), we refresh the page.
-                            -- Otherwise, we trigger photos download.
+                            -- When the cycle ends: after a successful sync longer than 45 seconds
+                            -- (an initial sync, for example) we refresh the page; otherwise we download photos.
                             extraMsgs =
                                 if modelWithSyncStatus.syncStatus == SyncIdle then
                                     let
                                         authoritiesSyncTime =
                                             currentTimeMillis - model.syncInfoGeneral.lastSuccesfulContact
                                     in
-                                    if authoritiesSyncTime > 45000 then
+                                    if RemoteData.isSuccess webData && authoritiesSyncTime > 45000 then
                                         [ SchedulePageRefresh ]
 
                                     else
