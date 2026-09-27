@@ -97,6 +97,30 @@ foreach (array_keys($cleared) as $nid) {
   cache_clear_all("field:node:$nid", 'cache_field');
 }
 
+// The NCDA report counts these z-scores, and is rebuilt only when a
+// measurement is saved. So the rebuild is queued for each child here.
+if (variable_get('hedley_admin_feature_ncda_enabled', FALSE)) {
+  $children = [];
+  foreach (array_chunk(array_keys($cleared), 1000) as $chunk) {
+    $children += db_select('field_data_field_person', 'p')
+      ->fields('p', ['field_person_target_id'])
+      ->condition('p.entity_type', 'node')
+      ->condition('p.entity_id', $chunk, 'IN')
+      ->execute()
+      ->fetchAllKeyed(0, 0);
+  }
+
+  foreach (array_keys($children) as $person_id) {
+    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA, $person_id, [
+      'person_id' => $person_id,
+    ]);
+  }
+
+  drush_print(dt('Queued the NCDA data of @count children for recalculation.', [
+    '@count' => count($children),
+  ]));
+}
+
 // Dashboards keep counting the cleared values until statistics are
 // recalculated.
 drush_print(dt('Done! Cleared z-scores of @count measurements. Now run hedley_stats/scripts/recalculate-stats.php.', [
