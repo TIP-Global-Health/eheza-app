@@ -61,6 +61,7 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
       weight: '12',
       nutritionSigns: [],
       checkRanges: true,
+      headCircumferenceNotTakenFirst: true,
     });
 
     // 3. ECD: answer all milestone questions "Yes".
