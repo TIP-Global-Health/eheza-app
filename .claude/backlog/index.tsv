@@ -412,15 +412,15 @@ B-411	4	READY	LOW			34	`server/scripts/setup-dev` writes Drupal's settings files
 B-412	4	READY	LOW			34	Three exported field instances permit a shape the client decoder or the sync query cannot survive — the same poison-reco
 B-413	3	READY	MED			34	Every admin content list and CSV export shows soft-deleted content as live, because the views filter `node.status` and n
 B-414	4	READY	LOW			34	`admin/content` offers two bulk operations the code forbids outright, so running either throws an uncaught exception mid
-B-415	4	READY	LOW			34	The admin menu's "Create PMTCT Participation" link 404s: the exported path misspells the content type
+B-415	4	CLOSED	LOW			34	The admin menu's "Create PMTCT Participation" link 404s: the exported path misspells the content type
 B-416	4	READY	LOW			34	`allowed_values` drift both ways: five values the app writes today are undeclared, and three prenatal fields still decla
 B-417	4	READY	LOW			34	Two config-as-code gaps: an unexported taxonomy component, and the two custom permissions that `drush fra` cannot restor
 B-418	3	READY	MED-LOW			35	Patient Record: the adult Family Planning pane leaves out every method recorded in an NCD encounter
 B-419	4	READY	LOW			35	Photo download: a failed IndexedDB read of deferred photos never answers Elm, so photo downloads stop until reload
-B-420	4	READY	LOW			35	Stock management (Somali): history months show in English although Somali month names exist
+B-420	4	IMPLEMENTED	LOW	2299	2301	35	Stock management (Somali): history months show in English although Somali month names exist
 B-421	1	IMPLEMENTED	MED	2274	2275	35	NCD pregnancy test: changing a test to "not performed" keeps its hidden result, so pregnancy status for hypertension tre
 B-422	1	IMPLEMENTED	LOW	2282	2283	35	HIV program Diagnostics: correcting a saved Positive result to "test not run" still stores Positive, and the participant
-B-423	4	READY	LOW			35	Stock management Receive Stock: an erased batch number still counts as filled
+B-423	4	IMPLEMENTED	LOW	2300	2302	35	Stock management Receive Stock: an erased batch number still counts as filled
 B-424	3	READY	MED-LOW			36	Prenatal recurrent labs: entering the last outstanding result saves the labs-results record twice, and the second save i
 B-425	4	READY	LOW			36	Prenatal Completion report: the referral row expects an ARV / NCD-programme referral when the patient says she IS enroll
 B-426	4	READY	LOW			36	Prenatal Completion report: a vitals recheck is expected at postpartum (and any later nurse) encounters with borderline 
