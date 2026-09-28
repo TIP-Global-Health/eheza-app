@@ -575,21 +575,9 @@ allVaccineTypes site =
             common ++ [ VaccineHPV ]
 
 
-{-| Filter the Statistical Queries report-type list down to the entries that
-have a meaningful data domain on this deployment. Reports whose sole data
-source is feature-gated drop out when that feature is disabled.
-
-`ReportDemographics` always shows — it is multi-source and applies row-level
-filters internally.
-
-`ReportFBFDistribution` shows when at least one of its two contributing
-sources (`FeatureNutritionGroup` for FBF rows, `FeatureFamilyNutrition` for
-Aheza rows) is enabled; rows are filtered per feature inside
-`visibleFbfDistributionCategories`.
-
-`ReportNutrition` shows when at least one of its four contributing sources
-is enabled.
-
+{-| The Statistical Queries report types this site has data for. A report is
+hidden when every feature it draws on is disabled. `ReportDemographics` always
+shows.
 -}
 visibleReportTypes : EverySet SiteFeature -> List ReportType
 visibleReportTypes features =

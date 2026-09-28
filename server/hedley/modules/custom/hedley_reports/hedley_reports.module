@@ -3339,12 +3339,9 @@ function hedley_reports_generate_completion_data_for_restful($from_nid, $batch, 
   $count_q->addExpression('COUNT(*)', 'cnt');
   $count = (int) $count_q->execute()->fetchField();
 
-  // Bucket map is shared between the empty-batch and populated-batch
-  // returns so both responses emit the same JSON object shape, with all
-  // bundle keys present (each as an empty array when there's no data).
-  // Without this, an empty batch returned `[]` (a JSON list), and the
-  // Elm decoder's `requiredAt ["batch", "<bundle>"]` paths fail, leaving
-  // the admin Reports page stuck on "PENDING".
+  // Empty and populated batches both use this map, so every bundle key
+  // is present, as an empty array when there is no data. The Elm decoder
+  // requires each key.
   $type_to_bucket = [
     'acute_illness_encounter'    => 'acute_illness',
     'attendance'                 => 'nutrition_group',

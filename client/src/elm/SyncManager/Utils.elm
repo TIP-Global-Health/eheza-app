@@ -44,12 +44,9 @@ import SyncManager.Model exposing (..)
 import Utils.WebData
 
 
-{-| After a large download, a background sync may reload the page. That is only
-safe before the nurse is working: reloading a logged-in (`UserPage`) session
-would discard whatever form entries have not been saved yet, so the reload is
-skipped there, and on the wellbeing pages the nurse reaches once logged in. On
-any other page (device, PIN, service worker) there is no in-progress work to
-lose.
+{-| A background sync may reload the page after a large download. The reload
+is skipped where a nurse may have unsaved entries: a logged-in `UserPage`, and
+the wellbeing pages.
 -}
 pageAllowsBackgroundRefresh : Page -> Bool
 pageAllowsBackgroundRefresh page =
