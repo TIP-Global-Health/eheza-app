@@ -32,6 +32,9 @@ compiles and tests the main tree's sources and every pass is vacuous. Cold compi
   `./node_modules/.bin/elm-test "src/elm/**/Test.elm"` — the glob is required, and use the
   **project-local** binary (the host one is too new). `./node_modules/.bin/elm-review` if imports
   or exposing changed. Watch for top-level names colliding with let-bindings elsewhere in the file.
+  ⛔ Touched `server/elm/src/`? Its compiled bundle is committed: rebuild
+  `server/hedley/modules/custom/hedley_general/js/elm-main.js` and commit it, then run
+  `ci-scripts/test_server_elm_bundle.sh`. CI's `lint_elm_review` fails otherwise (PR #2301).
 - **JS** — `node --check`. No unit framework; build a discrimination harness in the scratchpad
   driving the real file (`global.self = global`, eval the source, stub fetch/caches/ports; get the
   pre-fix file with `git show origin/develop:path`).
