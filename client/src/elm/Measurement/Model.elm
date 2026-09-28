@@ -254,6 +254,7 @@ type RangedMeasurement
     | MeasurementBirthWeight
     | MeasurementBloodGlucose
     | MeasurementFundalHeight
+    | MeasurementHeadCircumference
     | MeasurementHeight
     | MeasurementMuac
     | MeasurementWeight

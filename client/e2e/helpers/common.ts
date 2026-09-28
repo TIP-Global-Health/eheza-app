@@ -672,8 +672,8 @@ export async function expectMeasurementsOutOfRangeRefused(
   // They are named in the order the form asks for them. Otherwise the nurse
   // reads them in a different order to the fields in front of her.
   if (measurements.length > 1 && measurements.every(m => m.saysInWarning)) {
-    const said = await popup.locator('.popup-action p').allTextContents();
-    expect(said.length, 'the warning says one line per measurement named').toBe(measurements.length);
+    const said = await popup.locator('.popup-action .out-of-range-measurement').allTextContents();
+    expect(said.length, 'the warning says one block per measurement named').toBe(measurements.length);
     measurements.forEach((m, i) => {
       expect(said[i], `line ${i + 1} of the warning is about ${m.inputId}`)
         .toContain(m.saysInWarning as string);

@@ -3684,16 +3684,23 @@ measurementOutOfRangePopup language site measurements closeMsg =
         ( div [ class "popup-action" ] <|
             List.map
                 (\measurement ->
-                    p []
-                        [ text <| translate language <| Translate.MeasurementOutOfRangeWarning site measurement
-                        , text " "
+                    let
+                        hint =
+                            case measurement of
+                                MeasurementHeadCircumference ->
+                                    [ Translate.HeadCircumferenceNotTakenHint ]
 
-                        -- Said the way the range is said elsewhere in the app,
-                        -- which is already translated.
-                        , text <|
-                            translate language <|
-                                Translate.AllowedValuesRangeHelper (measurementConstraints site measurement)
-                        ]
+                                _ ->
+                                    []
+                    in
+                    -- One sentence per line. The range is said the way it is
+                    -- said elsewhere in the app, which is already translated.
+                    div [ class "out-of-range-measurement" ] <|
+                        List.map (\sentence -> p [] [ text <| translate language sentence ])
+                            (Translate.MeasurementOutOfRangeWarning site measurement
+                                :: hint
+                                ++ [ Translate.AllowedValuesRangeHelper (measurementConstraints site measurement) ]
+                            )
                 )
                 measurements
         , emptyNode
@@ -3724,6 +3731,9 @@ measurementOutOfRangeClass measurement =
 
         MeasurementFundalHeight ->
             "fundal-height-out-of-range"
+
+        MeasurementHeadCircumference ->
+            "head-circumference-out-of-range"
 
         MeasurementHeight ->
             "height-out-of-range"

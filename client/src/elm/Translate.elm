@@ -807,6 +807,7 @@ type TranslationId
     | HCRecommendation HCRecommendation
     | HeadacheLabel
     | HeadCircumferenceHelper
+    | HeadCircumferenceNotTakenHint
     | HeadCircumferenceNotTakenLabel
     | HeadHair
     | HealthCenter
@@ -7929,6 +7930,13 @@ translationSet trans =
             , somali = Just "Adigoo adeegsanaya xariga cabirka, si fiican u jiid xariga kuna wareeji inta u dhaxeysa suniyaha isha  iyo bartamaha dhinaca dambe ee madaxa ee ka korreeya dhagaha."
             }
 
+        HeadCircumferenceNotTakenHint ->
+            { english = "If it was not measured, check that it was not taken today."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         HeadCircumferenceNotTakenLabel ->
             { english = "Please check if the head circumference was not taken today"
             , kinyarwanda = Just "Reba niba ibipimo by'umuzenguruko w'umutwe bitafashwe uyu munsi"
@@ -12291,6 +12299,13 @@ translationSet trans =
 
                 Measurement.Model.MeasurementFundalHeight ->
                     { english = "Fundal height is recorded in centimetres."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                Measurement.Model.MeasurementHeadCircumference ->
+                    { english = "Head circumference is recorded in centimetres."
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
