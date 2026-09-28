@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import {
@@ -78,6 +79,27 @@ test.describe('CHW: Acute Illness Initial Encounter — Uncomplicated Pneumonia'
     // After completing all 3 mandatory activities (Symptoms, Physical Exam,
     // Prior Treatment), the app diagnoses "Uncomplicated Pneumonia" and
     // shows the encounter as complete — no Laboratory or Next Steps needed.
+
+    // Progress report covers the whole illness, and this encounter is the
+    // only one of it, so everything the report shows comes from here.
+    const report = await openReport(page, 'acute-illness');
+    await expect(report.locator('.pane.assessment'))
+      .toContainText('Uncomplicated Pneumonia');
+
+    const symptoms = report.locator('.pane.symptoms');
+    await expect(symptoms).toContainText('Cough');
+    await expect(symptoms).toContainText('Nasal Congestion');
+    await expect(symptoms).toContainText('Sore Throat');
+
+    // One row, holding the vitals entered at the physical exam. Respiratory
+    // rate renders as "32 bpm", body temperature as "37 °C".
+    const respiratoryRate = report.locator('.pane.physical-exam td.respiratory-rate');
+    await expect(respiratoryRate).toHaveCount(1);
+    await expect(respiratoryRate).toContainText('32');
+    await expect(report.locator('.pane.physical-exam td.body-temperature'))
+      .toContainText('37');
+
+    await closeReport(page, 'acute-illness');
 
     // End encounter.
     await endEncounter(page);
@@ -225,6 +247,19 @@ test.describe('CHW: Acute Illness Initial + Subsequent Encounter', () => {
       bodyTemp: '38.0',
     });
 
+    // Both encounters of the illness belong on the report, the one being
+    // viewed included. Rows are ordered most recent first.
+    const subsequentReport = await openReport(page, 'acute-illness');
+    const rates = subsequentReport.locator('.pane.physical-exam td.respiratory-rate');
+    await expect(rates).toHaveCount(2);
+    await expect(rates.first()).toContainText('22');
+    await expect(rates.last()).toContainText('18');
+
+    // Symptoms are the ones recorded at the encounter that opened the illness.
+    await expect(subsequentReport.locator('.pane.symptoms')).toContainText('Fever');
+
+    await closeReport(page, 'acute-illness');
+
     // 3. Ongoing Treatment.
     await completeOngoingTreatment(page);
 
@@ -244,7 +279,7 @@ test.describe('CHW: Acute Illness Initial + Subsequent Encounter', () => {
     if (await outcomePage.isVisible({ timeout: 3000 }).catch(() => false)) {
       const outcomeSelect = page.locator('select').first();
       await outcomeSelect.waitFor({ timeout: 5000 });
-      await outcomeSelect.selectOption({ label: 'Referred to Health Center' });
+      await outcomeSelect.selectOption({ label: 'Referred to health center' });
       await page.locator('button', { hasText: 'Save' }).click();
       await page.waitForTimeout(WAIT.heavyOperation);
     } else {

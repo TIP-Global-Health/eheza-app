@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { click, setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
@@ -94,6 +95,11 @@ test.describe('CHW: Well Child NewbornExam Encounter', () => {
     });
 
     // End encounter.
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'well-child');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await closeReport(page, 'well-child');
+
     await endWellChildEncounter(page);
 
     // Sync to backend.
@@ -176,6 +182,11 @@ test.describe('CHW: Well Child PediatricCareChw Encounter with HomeVisit', () =>
     });
 
     // End encounter.
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'well-child');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await closeReport(page, 'well-child');
+
     await endWellChildEncounter(page);
 
     // Sync to backend.
@@ -400,6 +411,11 @@ test.describe('CHW: Well Child PediatricCareChw — Vitals skip round-trip', () 
       hasSendToHC: true,
       hasFollowUp: false,
     });
+
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'well-child');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await closeReport(page, 'well-child');
 
     await endWellChildEncounter(page);
     await syncAndWait(page);

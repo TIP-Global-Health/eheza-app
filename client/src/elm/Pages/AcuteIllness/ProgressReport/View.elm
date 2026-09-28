@@ -36,13 +36,13 @@ import Pages.AcuteIllness.Activity.Utils
         , viewTabletsPrescription
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
-import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
+import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, generateAssembledData, splitByInitialNurseEncounter)
 import Pages.AcuteIllness.Encounter.View exposing (allowEndingEncounter, partitionActivities)
 import Pages.AcuteIllness.ProgressReport.Model exposing (AcuteIllnessStatus(..), Model, Msg(..))
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterMenuForProgressReport)
-import Pages.WellChild.ProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
+import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterMenuForProgressReport, viewPaneHeading, viewPersonInfoPane)
+import Pages.WellChild.ProgressReport.View exposing (viewNutritionSigns)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (TranslationId, translate)
 import Translate.Model exposing (Language)
@@ -82,6 +82,12 @@ viewContent :
     -> Html Msg
 viewContent language currentDate site features id isChw initiator model assembled =
     let
+        -- Report covers the whole illness, therefore, encounter that is
+        -- being viewed is part of the sequences as well.
+        ( firstInitialWithSubsequent, secondInitialWithSubsequent ) =
+            generateAllEncountersData assembled
+                |> splitByInitialNurseEncounter
+
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
@@ -123,12 +129,12 @@ viewContent language currentDate site features id isChw initiator model assemble
             , Html.Attributes.id "report-content"
             ]
             [ viewPersonInfoPane language currentDate assembled.person
-            , viewAssessmentPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewSymptomsPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent
-            , viewPhysicalExamPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewNutritionSignsPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent
-            , viewTreatmentPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewActionsTakenPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
+            , viewAssessmentPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled
+            , viewSymptomsPane language firstInitialWithSubsequent secondInitialWithSubsequent
+            , viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled
+            , viewNutritionSignsPane language firstInitialWithSubsequent secondInitialWithSubsequent
+            , viewTreatmentPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled
+            , viewActionsTakenPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled
             , viewNextStepsPane language currentDate assembled
             , -- Actions are hidden when 'Share via WhatsApp' dialog is open,
               -- so they do not appear on generated screenshot.
@@ -985,13 +991,12 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
         resolveNonAdministrationReason medicine_ =
             Dict.get medicine_ nonAdministrationReasons
 
+        medicinePrescribed medicine_ =
+            Maybe.map (EverySet.member medicine_) distributionSigns
+                |> Maybe.withDefault False
+
         uncomplicatedPneumoniaActions =
-            let
-                amoxicillinPrescribed =
-                    Maybe.map (EverySet.member Amoxicillin) distributionSigns
-                        |> Maybe.withDefault False
-            in
-            if amoxicillinPrescribed then
+            if medicinePrescribed Amoxicillin then
                 resolveAmoxicillinDosage date person
                     |> Maybe.map
                         (\( numberOfPills, pillMass, duration ) ->
@@ -1009,12 +1014,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
     in
     case diagnosis of
         DiagnosisMalariaUncomplicated ->
-            let
-                coartemPrescribed =
-                    Maybe.map (EverySet.member Coartem) distributionSigns
-                        |> Maybe.withDefault False
-            in
-            if coartemPrescribed then
+            if medicinePrescribed Coartem then
                 resolveCoartemDosage date person
                     |> Maybe.map
                         (\dosage ->
@@ -1034,12 +1034,8 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
 
         DiagnosisGastrointestinalInfectionUncomplicated ->
             let
-                orsPrescribed =
-                    Maybe.map (EverySet.member ORS) distributionSigns
-                        |> Maybe.withDefault False
-
                 orsAction =
-                    if orsPrescribed then
+                    if medicinePrescribed ORS then
                         Maybe.map
                             (\dosage ->
                                 [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign ORS) "icon-oral-solution" (Just date)
@@ -1057,12 +1053,8 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
                                 )
                             |> Maybe.withDefault []
 
-                zincPrescribed =
-                    Maybe.map (EverySet.member Zinc) distributionSigns
-                        |> Maybe.withDefault False
-
                 zincAction =
-                    if zincPrescribed then
+                    if medicinePrescribed Zinc then
                         Maybe.map
                             (\dosage ->
                                 [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign Zinc) "icon-pills" (Just date)
@@ -1083,7 +1075,11 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
             orsAction ++ zincAction
 
         DiagnosisSimpleColdAndCough ->
-            [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" (Just date) ]
+            if medicinePrescribed LemonJuiceOrHoney then
+                [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" (Just date) ]
+
+            else
+                []
 
         DiagnosisRespiratoryInfectionUncomplicated ->
             uncomplicatedPneumoniaActions
@@ -1092,12 +1088,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
             uncomplicatedPneumoniaActions
 
         DiagnosisLowRiskCovid19 ->
-            let
-                paracetamolPrescribed =
-                    Maybe.map (EverySet.member Paracetamol) distributionSigns
-                        |> Maybe.withDefault False
-            in
-            if paracetamolPrescribed then
+            if medicinePrescribed Paracetamol then
                 isPersonAnAdult date person
                     |> Maybe.map (viewParacetamolAdministrationInstructions language (Just date))
                     |> Maybe.withDefault []

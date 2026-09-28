@@ -9,9 +9,9 @@ import Backend.Measurement.Model
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
         , AcuteFindingsValue
+        , AcuteIllnessDangerSign(..)
         , AcuteIllnessMeasurements
         , CovidTestingValue
-        , Gender(..)
         , HeartCPESign
         , LungsCPESign
         , Measurement
@@ -46,13 +46,16 @@ import Pages.AcuteIllness.Activity.Utils
         , respiratoryInfectionDangerSignsPresent
         , respiratoryRateElevatedByAge
         , respiratoryRateElevatedByAgeForCovid19
+        , subsequentEncounterDiagnosisUpdate
         , symptomMaxDuration
         , toCovidTestingValueWithDefault
         )
-import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
+import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
+import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, splitByInitialNurseEncounter)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (emptyAcuteIllnessMeasurements, testPerson)
 import Time
 
 
@@ -67,54 +70,12 @@ dummyDate =
     Date.fromCalendarDate 2020 Time.Jan 1
 
 
-{-| Wrap a measurement `value` into the full `Measurement` record shape that
-the `AcuteIllnessMeasurements` fields require, paired with a dummy entity id.
-
-The signature is polymorphic in the id tag, encounter type, and value, so it
-unifies with each concrete `AcuteIllnessMeasurements` field type.
-
+{-| Wrap a measurement `value` into the shape the `AcuteIllnessMeasurements`
+fields require, with `dummyDate` as `dateMeasured`.
 -}
 wrapMeasurement : value -> Maybe ( EntityUuid id, Measurement encounter value )
 wrapMeasurement value =
-    Just
-        ( toEntityUuid "dummy-id"
-        , { dateMeasured = dummyDate
-          , nurse = Nothing
-          , healthCenter = Nothing
-          , participantId = toEntityUuid "dummy-person"
-          , deleted = False
-          , encounterId = Nothing
-          , value = value
-          }
-        )
-
-
-emptyAcuteIllnessMeasurements : AcuteIllnessMeasurements
-emptyAcuteIllnessMeasurements =
-    { symptomsGeneral = Nothing
-    , symptomsRespiratory = Nothing
-    , symptomsGI = Nothing
-    , vitals = Nothing
-    , acuteFindings = Nothing
-    , malariaTesting = Nothing
-    , travelHistory = Nothing
-    , exposure = Nothing
-    , isolation = Nothing
-    , hcContact = Nothing
-    , call114 = Nothing
-    , treatmentReview = Nothing
-    , sendToHC = Nothing
-    , medicationDistribution = Nothing
-    , muac = Nothing
-    , treatmentOngoing = Nothing
-    , dangerSigns = Nothing
-    , nutrition = Nothing
-    , healthEducation = Nothing
-    , followUp = Nothing
-    , coreExam = Nothing
-    , covidTesting = Nothing
-    , contactsTracing = Nothing
-    }
+    TestFixtures.wrapMeasurement dummyDate value
 
 
 
@@ -187,44 +148,6 @@ currentDate =
     Date.fromCalendarDate 2020 Time.Jun 1
 
 
-{-| An adult person. Everything except birthDate/gender is defaulted/empty.
--}
-testPerson : Person
-testPerson =
-    { name = "Test Person"
-    , firstName = "Test"
-    , secondName = "Person"
-    , nationalIdNumber = Nothing
-    , hmisNumber = Nothing
-    , avatarUrl = Nothing
-    , birthDate = Just (Date.fromCalendarDate 1985 Time.Jan 1)
-    , isDateOfBirthEstimated = False
-    , gender = Female
-    , hivStatus = Nothing
-    , numberOfChildren = Nothing
-    , modeOfDelivery = Nothing
-    , ubudehe = Nothing
-    , educationLevel = Nothing
-    , maritalStatus = Nothing
-    , province = Nothing
-    , district = Nothing
-    , sector = Nothing
-    , cell = Nothing
-    , village = Nothing
-    , registrationLatitude = Nothing
-    , registrationLongitude = Nothing
-    , saveGPSLocation = False
-    , telephoneNumber = Nothing
-    , spouseName = Nothing
-    , spousePhoneNumber = Nothing
-    , nextOfKinName = Nothing
-    , nextOfKinPhoneNumber = Nothing
-    , healthCenterId = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
-
-
 dummyEncounter : AcuteIllnessEncounterModel.AcuteIllnessEncounter
 dummyEncounter =
     { participant = toEntityUuid "dummy-participant"
@@ -238,20 +161,20 @@ dummyEncounter =
     }
 
 
+testEncounterData : String -> AcuteIllnessEncounterType -> AcuteIllnessEncounterData
+testEncounterData id encounterType =
+    { id = toEntityUuid id
+    , encounterType = encounterType
+    , startDate = currentDate
+    , sequenceNumber = 1
+    , diagnosis = NoAcuteIllnessDiagnosis
+    , measurements = emptyAcuteIllnessMeasurements
+    }
+
+
 dummyParticipant : IndividualEncounterParticipant
 dummyParticipant =
-    { person = toEntityUuid "dummy-person"
-    , encounterType = AcuteIllnessEncounter
-    , startDate = currentDate
-    , endDate = Nothing
-    , eddDate = Nothing
-    , dateConcluded = Nothing
-    , outcome = Nothing
-    , deliveryLocation = Nothing
-    , newborn = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
+    TestFixtures.testParticipant currentDate AcuteIllnessEncounter
 
 
 {-| Build an `AssembledData` wrapping `testPerson` and the given measurements.
@@ -266,8 +189,8 @@ testAssembled initialEncounter measurements =
     , person = testPerson
     , measurements = measurements
     , previousEncountersData = []
-    , firstInitialWithSubsequent = []
-    , secondInitialWithSubsequent = []
+    , previousFirstInitialWithSubsequent = []
+    , previousSecondInitialWithSubsequent = []
     , initialEncounter = initialEncounter
     , diagnosis = Nothing
     }
@@ -742,6 +665,29 @@ resolveAcuteIllnessDiagnosisCovidTest =
                     |> withCovidTesting RapidTestPositive
                     |> resolveNurse
                     |> Expect.equal (Just DiagnosisLowRiskCovid19)
+        , test "TB feature off + respiratory Cough for more than 2 weeks + positive COVID test -> PneuminialCovid19" <|
+            \_ ->
+                gateBaseNurse
+                    |> withMalariaTesting RapidTestNegative
+                    |> withVitals (Just 38) Nothing (Just 110) (Just 70)
+                    |> withSymptomsRespiratoryDuration Cough symptomMaxDuration
+                    |> withCovidTesting RapidTestPositive
+                    |> resolveNurse
+                    |> Expect.equal (Just DiagnosisPneuminialCovid19)
+        , test "TB feature on + respiratory Cough for more than 2 weeks + positive COVID test -> TuberculosisSuspect" <|
+            \_ ->
+                gateBaseNurse
+                    |> withMalariaTesting RapidTestNegative
+                    |> withVitals (Just 38) Nothing (Just 110) (Just 70)
+                    |> withSymptomsRespiratoryDuration Cough symptomMaxDuration
+                    |> withCovidTesting RapidTestPositive
+                    |> (\measurements ->
+                            resolveAcuteIllnessDiagnosis currentDate
+                                (EverySet.singleton FeatureTuberculosisManagement)
+                                False
+                                (testAssembled True measurements)
+                       )
+                    |> Expect.equal (Just DiagnosisTuberculosisSuspect)
         ]
 
 
@@ -859,6 +805,53 @@ amoxicillinDosageTest =
         ]
 
 
+subsequentEncounterDiagnosisUpdateTest : Test
+subsequentEncounterDiagnosisUpdateTest =
+    let
+        diagnosisUpdate storedDiagnosis rdtResult dangerSigns =
+            let
+                assembled =
+                    testAssembled False
+                        { emptyAcuteIllnessMeasurements
+                            | dangerSigns = wrapMeasurement dangerSigns
+                            , malariaTesting = wrapMeasurement rdtResult
+                        }
+
+                encounter =
+                    assembled.encounter
+            in
+            subsequentEncounterDiagnosisUpdate currentDate
+                EverySet.empty
+                True
+                { assembled | encounter = { encounter | diagnosis = storedDiagnosis } }
+
+        noDangerSigns =
+            EverySet.singleton NoAcuteIllnessDangerSign
+    in
+    describe "subsequentEncounterDiagnosisUpdate"
+        [ test "a diagnosis is written once the measurements produce one" <|
+            \_ ->
+                diagnosisUpdate NoAcuteIllnessDiagnosis RapidTestPositive noDangerSigns
+                    |> Expect.equal (Just DiagnosisMalariaUncomplicated)
+        , test "a corrected danger-sign set replaces the stored diagnosis" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaComplicated RapidTestPositive noDangerSigns
+                    |> Expect.equal (Just DiagnosisMalariaUncomplicated)
+        , test "a corrected negative RDT clears the stored diagnosis" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaUncomplicated RapidTestNegative noDangerSigns
+                    |> Expect.equal (Just NoAcuteIllnessDiagnosis)
+        , test "a diagnosis matching the measurements is not rewritten" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaUncomplicated RapidTestPositive noDangerSigns
+                    |> Expect.equal Nothing
+        , test "danger signs beside a positive RDT make the diagnosis complicated" <|
+            \_ ->
+                diagnosisUpdate DiagnosisMalariaUncomplicated RapidTestPositive (EverySet.singleton DangerSignConvulsions)
+                    |> Expect.equal (Just DiagnosisMalariaComplicated)
+        ]
+
+
 all : Test
 all =
     describe "Acute Illness diagnosis and dosing tests"
@@ -867,6 +860,7 @@ all =
         , malariaDangerSignsPresentTest
         , respiratoryInfectionDangerSignsPresentTest
         , resolveAcuteIllnessDiagnosisByMalariaRDTTest
+        , subsequentEncounterDiagnosisUpdateTest
         , gastrointestinalSymptomsTest
         , resolveAcuteIllnessDiagnosisNonCovidTest
         , resolveAcuteIllnessDiagnosisTuberculosisTest
@@ -877,6 +871,8 @@ all =
         , amoxicillinDosageTest
         , preSaveMuacTest
         , covidTestingRoundTripTest
+        , generateAllEncountersDataTest
+        , splitByInitialNurseEncounterTest
         ]
 
 
@@ -954,4 +950,73 @@ preSaveMuacTest =
             \_ ->
                 preSave SiteBurundi (Just 1.25)
                     |> Expect.equal ( [ MeasurementMuac ], False )
+        ]
+
+
+{-| Progress report covers the whole illness, so the encounter that is being
+viewed must be part of the data it is generated from. When it is not, an
+illness that has got a single encounter produces no data at all, and every
+pane of the report comes out empty.
+-}
+generateAllEncountersDataTest : Test
+generateAllEncountersDataTest =
+    let
+        assembled =
+            testAssembled True emptyAcuteIllnessMeasurements
+    in
+    describe "generateAllEncountersData"
+        [ test "includes the encounter being viewed when there are no previous encounters" <|
+            \_ ->
+                generateAllEncountersData assembled
+                    |> List.map .id
+                    |> Expect.equal [ assembled.id ]
+        , test "places the encounter being viewed after the previous ones" <|
+            \_ ->
+                generateAllEncountersData
+                    { assembled
+                        | previousEncountersData =
+                            [ testEncounterData "first" AcuteIllnessEncounterCHW
+                            , testEncounterData "second" AcuteIllnessEncounterCHW
+                            ]
+                    }
+                    |> List.map .id
+                    |> Expect.equal [ toEntityUuid "first", toEntityUuid "second", assembled.id ]
+        ]
+
+
+splitByInitialNurseEncounterTest : Test
+splitByInitialNurseEncounterTest =
+    let
+        expectSplit encountersData ( expectedFirst, expectedSecond ) =
+            splitByInitialNurseEncounter encountersData
+                |> Tuple.mapBoth (List.map .id) (List.map .id)
+                |> Expect.equal ( List.map toEntityUuid expectedFirst, List.map toEntityUuid expectedSecond )
+    in
+    describe "splitByInitialNurseEncounter"
+        [ test "keeps CHW encounters in a single sequence" <|
+            \_ ->
+                expectSplit
+                    [ testEncounterData "chw1" AcuteIllnessEncounterCHW
+                    , testEncounterData "chw2" AcuteIllnessEncounterCHW
+                    ]
+                    ( [ "chw1", "chw2" ], [] )
+        , test "keeps encounters in a single sequence when nurse ran the first one" <|
+            \_ ->
+                expectSplit
+                    [ testEncounterData "nurse" AcuteIllnessEncounterNurse
+                    , testEncounterData "nurseSubsequent" AcuteIllnessEncounterNurseSubsequent
+                    ]
+                    ( [ "nurse", "nurseSubsequent" ], [] )
+        , test "starts second sequence at the encounter where nurse took over" <|
+            \_ ->
+                expectSplit
+                    [ testEncounterData "chw1" AcuteIllnessEncounterCHW
+                    , testEncounterData "chw2" AcuteIllnessEncounterCHW
+                    , testEncounterData "nurse" AcuteIllnessEncounterNurse
+                    , testEncounterData "nurseSubsequent" AcuteIllnessEncounterNurseSubsequent
+                    ]
+                    ( [ "chw1", "chw2" ], [ "nurse", "nurseSubsequent" ] )
+        , test "returns empty sequences for no encounters" <|
+            \_ ->
+                expectSplit [] ( [], [] )
         ]

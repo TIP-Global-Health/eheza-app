@@ -19,12 +19,7 @@ update backendUrl csrfToken msg model =
             , getData = .scoreboardData
             , setData = \v m -> { m | scoreboardData = v }
             , getParams = .params
-            , mergeResponse =
-                \response data ->
-                    { data
-                        | records = data.records ++ response.records
-                        , remainingForDownload = Just response.totalRemaining
-                    }
+            , mergeResponse = Sync.mergeSyncResponse
             , getRemaining = .totalRemaining
             , getLastIdSynced = .lastIdSynced
             , wrapHandleResponse = HandleSyncResponse

@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { click, setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
@@ -76,6 +77,11 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
       hasText: 'End Encounter',
     });
     await expect(endBtn, 'End Encounter button should be enabled').not.toHaveClass(/disabled/);
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'nutrition');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await closeReport(page, 'nutrition');
+
     await endEncounter(page);
 
     // Sync to backend.
@@ -202,6 +208,11 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
       .waitFor({ timeout: 10000 });
 
     // End encounter.
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'nutrition');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await closeReport(page, 'nutrition');
+
     await endEncounter(page);
 
     // Sync to backend.

@@ -1915,7 +1915,7 @@ function hedley_stats_add_zscore_age_for_bundle(SelectQuery $base_query, $encoun
       continue;
     }
 
-    $alias = ($bundle == HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE) ? 'zscore_underweight' : 'zscore_stunting';
+    $alias = in_array($bundle, HEDLEY_ACTIVITY_WEIGHT_BUNDLES) ? 'zscore_underweight' : 'zscore_stunting';
     $items[$row->field_individual_participant]['encounters'][$row->nid][$alias] = hedley_stats_extract_first_value($row->zscore_age);
   }
 

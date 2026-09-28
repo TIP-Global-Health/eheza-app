@@ -19,12 +19,7 @@ update backendUrl csrfToken msg model =
             , getData = .reportsData
             , setData = \v m -> { m | reportsData = v }
             , getParams = .params
-            , mergeResponse =
-                \response data ->
-                    { data
-                        | records = data.records ++ response.records
-                        , remainingForDownload = Just response.totalRemaining
-                    }
+            , mergeResponse = Sync.mergeSyncResponse
             , getRemaining = .totalRemaining
             , getLastIdSynced = .lastIdSynced
             , wrapHandleResponse = HandleSyncResponse

@@ -35,7 +35,9 @@ import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
         , familyPlanningFormWithDefault
+        , hivTestFormWithDefault
         , outsideCareFormWithDefault
+        , pregnancyTestFormWithDefault
         , toCorePhysicalExamValueWithDefault
         , toCreatinineTestValueWithEmptyResults
         , toFamilyPlanningValueWithDefault
@@ -61,6 +63,14 @@ import RemoteData exposing (RemoteData(..))
 update : NominalDate -> NCDEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id db msg model =
     let
+        -- The bool inputs of the two rapid tests decide whether a tap repeats
+        -- the answer shown, so they act on the form as the nurse sees it.
+        savedLabForm getMeasurement formWithDefault form =
+            Dict.get id db.ncdMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map (getMeasurement >> getMeasurementValueFunc >> formWithDefault form)
+                |> Maybe.withDefault form
+
         symptomReviewForm =
             Dict.get id db.ncdMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -961,11 +971,9 @@ update currentDate id db msg model =
 
         SetHIVTestFormBoolInput formUpdateFunc value ->
             let
-                form =
-                    model.laboratoryData.hivTestForm
-
                 updatedForm =
-                    formUpdateFunc value form
+                    savedLabForm .hivTest hivTestFormWithDefault model.laboratoryData.hivTestForm
+                        |> formUpdateFunc value
 
                 updatedData =
                     model.laboratoryData
@@ -1018,6 +1026,7 @@ update currentDate id db msg model =
                 updatedForm =
                     { form
                         | testResult = testResultFromString value
+                        , testResultDirty = True
                         , hivProgramHC = Nothing
                         , hivProgramHCDirty = True
                         , partnerHIVPositive = Nothing
@@ -1297,11 +1306,9 @@ update currentDate id db msg model =
 
         SetPregnancyTestFormBoolInput formUpdateFunc value ->
             let
-                form =
-                    model.laboratoryData.pregnancyTestForm
-
                 updatedForm =
-                    formUpdateFunc value form
+                    savedLabForm .pregnancyTest pregnancyTestFormWithDefault model.laboratoryData.pregnancyTestForm
+                        |> formUpdateFunc value
 
                 updatedData =
                     model.laboratoryData
@@ -1352,7 +1359,7 @@ update currentDate id db msg model =
                     model.laboratoryData.pregnancyTestForm
 
                 updatedForm =
-                    { form | testResult = testResultFromString value }
+                    { form | testResult = testResultFromString value, testResultDirty = True }
 
                 updatedData =
                     model.laboratoryData

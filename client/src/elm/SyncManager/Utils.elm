@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, isCurrentAuthorityRequest, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -79,6 +79,16 @@ pageAllowsBackgroundRefresh page =
 
         WellbeingPage ->
             False
+
+
+{-| Whether a download issued for this authority entry still answers what the
+model asks: the entry is current, and its revision cursor has not moved since.
+-}
+isCurrentAuthorityRequest : SyncInfoAuthority -> Model -> Bool
+isCurrentAuthorityRequest requested model =
+    Maybe.map Zipper.current model.syncInfoAuthorities
+        |> Maybe.map (\current -> current.uuid == requested.uuid && current.lastFetchedRevisionId == requested.lastFetchedRevisionId)
+        |> Maybe.withDefault False
 
 
 {-| Decide on the Sync status. Either keep the existing one, or set the next one,
@@ -332,25 +342,28 @@ determineSyncStatus activePage model =
                                 , syncInfoAuthorities
                                 )
 
-                            ( Just zipper, RemoteData.Success _ ) ->
-                                -- Go to the next authority if there is
-                                -- otherwise, to the next status
-                                case Zipper.next zipper of
-                                    Just nextZipper ->
-                                        ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
-                                        , Just nextZipper
-                                        )
+                            ( Just zipper, _ ) ->
+                                -- A failed download moves on too, so uploads are not held
+                                -- back; the statistics are fetched again next cycle.
+                                if RemoteData.isSuccess webData || RemoteData.isFailure webData then
+                                    -- Go to the next authority if there is
+                                    -- otherwise, to the next status
+                                    case Zipper.next zipper of
+                                        Just nextZipper ->
+                                            ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
+                                            , Just nextZipper
+                                            )
 
-                                    Nothing ->
-                                        -- We've reached the last element,
-                                        -- so reset authorities zipper to first element,
-                                        -- and rotate to the next status.
-                                        ( SyncIdle
-                                        , Just (Zipper.first zipper)
-                                        )
+                                        Nothing ->
+                                            -- We've reached the last element,
+                                            -- so reset authorities zipper to first element,
+                                            -- and rotate to the next status.
+                                            ( SyncIdle
+                                            , Just (Zipper.first zipper)
+                                            )
 
-                            _ ->
-                                noChange
+                                else
+                                    noChange
         in
         { model
             | syncStatus = syncStatusUpdated

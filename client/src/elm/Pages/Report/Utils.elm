@@ -1,4 +1,4 @@
-module Pages.Report.Utils exposing (altResultNormal, astResultNormal, bilirubinResultNormal, bloodSmearResultNormal, bunResultNormal, compareAcuteIllnessEncounters, compareAcuteIllnessEncountersDesc, creatinineResultNormal, diagnosisEntryStatusToString, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant, getRandomBloodSugarResultValue, glucoseResultNormal, hba1cResultNormal, hdlCholesterolResultNormal, hemoglobinResultNormal, hepatitisBResultNormal, hivPCRResultNormal, hivResultNormal, ketoneResultNormal, ldlCholesterolResultNormal, leukocytesResultNormal, malariaResultNormal, nitriteResultNormal, partnerHIVResultNormal, phResultNormal, pregnancyResultNormal, proteinResultNormal, randomBloodSugarResultFromValue, randomBloodSugarResultNormal, rhesusResultsNormal, syphilisResultNormal, totalCholesterolResultNormal, triglyceridesResultNormal, urineHaemoglobinValueResultNormal, urobilinogenResultNormal)
+module Pages.Report.Utils exposing (altResultNormal, astResultNormal, bilirubinResultNormal, bloodSmearResultNormal, bunResultNormal, compareAcuteIllnessEncounters, compareAcuteIllnessEncountersDesc, creatinineResultNormal, diagnosisEntryStatusToString, generateBloodSmearTestResults, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant, getRandomBloodSugarResultValue, glucoseResultNormal, hba1cResultNormal, hdlCholesterolResultNormal, hemoglobinResultNormal, hepatitisBResultNormal, hivPCRResultNormal, hivResultNormal, ketoneResultNormal, ldlCholesterolResultNormal, leukocytesResultNormal, malariaRapidTestValues, malariaResultNormal, nitriteResultNormal, partnerHIVResultNormal, phResultNormal, pregnancyResultNormal, proteinResultNormal, randomBloodSugarResultFromValue, randomBloodSugarResultNormal, rhesusResultsNormal, syphilisResultNormal, totalCholesterolResultNormal, triglyceridesResultNormal, urineHaemoglobinValueResultNormal, urobilinogenResultNormal)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
@@ -9,8 +9,9 @@ import Backend.NutritionEncounter.Utils
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Utils exposing (bloodSmearResultNotSet, testPerformedByExecutionNote)
+import Measurement.Utils exposing (bloodSmearResultNotSet, bloodSmearResultSet, testPerformedByExecutionNote)
 import Pages.Report.Model exposing (PaneEntryStatus(..), RandomBloodSugarResult(..), TestReport(..))
+import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
 hivResultNormal : TestReport -> Bool
@@ -47,6 +48,49 @@ bloodSmearResultNormal : BloodSmearResult -> Bool
 bloodSmearResultNormal value =
     bloodSmearResultNotSet value
         || (value == BloodSmearNegative)
+
+
+{-| Malaria tests that were run as a rapid test. A blood smear is recorded on
+the same measurement and carries the same execution note once the lab confirms
+the run, so it has to be taken out of the rapid test's history or it appears
+there as an entry with no result. A record that carries a smear result is a
+smear whatever the ordered flag says, which is how records made before that
+flag existed are recognised.
+-}
+malariaRapidTestValues : List ( NominalDate, MalariaTestValue ) -> List ( NominalDate, MalariaTestValue )
+malariaRapidTestValues =
+    List.filter
+        (\( _, value ) ->
+            not (value.bloodSmearOrdered || bloodSmearResultSet value.bloodSmearResult)
+        )
+
+
+{-| Blood smears for the lab results history, most recent first. A smear
+belongs there once it has been read, and it is listed under the date it was
+taken. A smear is only ever taken when the rapid test was not performed, so
+having a result is the whole test.
+
+A smear recorded before that date was written carries none, and there is no
+record of when it was taken. Those are listed under the date their measurement
+was last saved, which is the day someone read the smear rather than the day it
+was taken, and which two smears read on the same day share.
+
+-}
+generateBloodSmearTestResults : List ( NominalDate, MalariaTestValue ) -> List ( NominalDate, Maybe BloodSmearResult )
+generateBloodSmearTestResults values =
+    List.filterMap
+        (\( dateMeasured, value ) ->
+            if bloodSmearResultSet value.bloodSmearResult then
+                Just
+                    ( Maybe.withDefault dateMeasured value.executionDate
+                    , Just value.bloodSmearResult
+                    )
+
+            else
+                Nothing
+        )
+        values
+        |> List.sortWith sortTuplesByDateDesc
 
 
 proteinResultNormal : ProteinValue -> Bool

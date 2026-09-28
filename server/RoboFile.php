@@ -9,6 +9,19 @@ use Symfony\Component\Yaml\Yaml;
 class RoboFile extends Tasks {
 
   /**
+   * How many times each post-deploy drush step is attempted.
+   */
+  const DEPLOY_STEP_ATTEMPTS = 3;
+
+  /**
+   * Seconds to wait before retrying a post-deploy drush step.
+   *
+   * Multiplied by the number of attempts already made, so each wait is longer
+   * than the one before it.
+   */
+  const DEPLOY_STEP_RETRY_DELAY = 15;
+
+  /**
    * Deploy to Pantheon.
    *
    * @param string $branchName
@@ -157,9 +170,6 @@ class RoboFile extends Tasks {
    *   Determine if a deploy should be done by terminus. That is, for example
    *   should TEST environment be updated from DEV.
    *
-   * @return \Robo\Result
-   *   The result of the deploy steps.
-   *
    * @throws \Exception
    *   If PANTHEON_NAME is not set, or any of the deploy steps failed.
    * @throws \Robo\Exception\TaskException
@@ -175,30 +185,84 @@ class RoboFile extends Tasks {
 
     $pantheonTerminusEnvironment = $pantheonName . '.' . $env;
 
-    $task = $this->taskExecStack();
-
     if ($doDeploy) {
-      $task->exec("terminus env:deploy $pantheonTerminusEnvironment");
+      $result = $this
+        ->taskExec("terminus env:deploy $pantheonTerminusEnvironment")
+        ->run();
+
+      if (!$result->wasSuccessful()) {
+        throw new Exception("Failed to deploy the code to $pantheonTerminusEnvironment");
+      }
     }
 
-    $task
-      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- cc all")
+    $drushCommands = [
+      'cc all',
       // A second cache-clear, because Drupal...
-      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- cc all")
-      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- updb -y")
+      'cc all',
+      'updb -y',
       // Revert Features to code. This was a manual post-deploy step, which is
       // easy to forget and leaves config stale; run it here on every env, then
       // clear caches again so the reverted config takes effect.
-      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- fra -y")
-      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- cc all")
-      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- uli");
+      'fra -y',
+      'cc all',
+      'uli',
+    ];
 
-    $result = $task->run();
-    if (!$result->wasSuccessful()) {
-      throw new Exception("Deploy steps failed on $pantheonTerminusEnvironment");
+    foreach ($drushCommands as $drushCommand) {
+      $this->drushOnPantheon($pantheonTerminusEnvironment, $drushCommand);
+    }
+  }
+
+  /**
+   * Runs a drush command on a Pantheon environment, retrying if it is killed.
+   *
+   * The post-deploy cache rebuild is the memory peak of a deploy. A `cc all`
+   * only empties the cache tables; the next bootstrap is what rebuilds the code
+   * registry, menu router and plugin caches from cold, and after a large code
+   * change that rebuild can take the appserver container over its memory limit.
+   * The kernel then kills drush, which reports exit 137 with no output of its
+   * own. The pressure is transient, so the same command succeeds a moment
+   * later, once memory has been reclaimed and with whatever the killed run
+   * managed to rebuild already in place.
+   *
+   * Most of these steps can simply be run again: `cc all` and `fra -y` are
+   * idempotent, and `uli` just mints another login link. `updb -y` is the one
+   * to watch. An update hook is recorded as run only once it finishes, so a
+   * hook killed part-way is never recorded and the retry runs it from the
+   * start - and update hooks are not written to be idempotent. Read the update
+   * output before trusting a retried `updb -y`.
+   *
+   * @param string $environment
+   *   The Pantheon environment to run on, as `<site>.<env>`.
+   * @param string $drushCommand
+   *   The drush command with its arguments, for example `updb -y`.
+   *
+   * @throws \Exception
+   *   If the command still fails on the last attempt.
+   * @throws \Robo\Exception\TaskException
+   */
+  protected function drushOnPantheon(string $environment, string $drushCommand) {
+    for ($attempt = 1; $attempt <= self::DEPLOY_STEP_ATTEMPTS; $attempt++) {
+      $result = $this
+        ->taskExec("terminus remote:drush $environment -- $drushCommand")
+        ->run();
+
+      if ($result->wasSuccessful()) {
+        return;
+      }
+
+      if ($attempt == self::DEPLOY_STEP_ATTEMPTS) {
+        break;
+      }
+
+      // Wait longer after each failure, to give the appserver more room to
+      // reclaim memory before the next attempt loads it again.
+      $delay = $attempt * self::DEPLOY_STEP_RETRY_DELAY;
+      $this->say("`drush $drushCommand` failed on $environment with exit code {$result->getExitCode()}. Retrying in $delay seconds ($attempt of " . self::DEPLOY_STEP_ATTEMPTS . " attempts used).");
+      sleep($delay);
     }
 
-    return $result;
+    throw new Exception("`drush $drushCommand` failed on $environment on each of the " . self::DEPLOY_STEP_ATTEMPTS . ' attempts. The environment is on the new code, but this step and the ones after it have not run.');
   }
 
   /**

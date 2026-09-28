@@ -9,14 +9,13 @@ import Backend.IndividualEncounterParticipant.Model
         ( IndividualEncounterParticipant
         , emptyIndividualEncounterParticipant
         )
-import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
+import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive, resolveOpenParticipant)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getHIVEncountersForParticipant)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
@@ -96,14 +95,7 @@ viewHIVAction :
 viewHIVAction language currentDate selectedHealthCenter id db sessions =
     let
         maybeSessionId =
-            Dict.toList sessions
-                |> List.filter
-                    (\( _, session ) ->
-                        (session.encounterType == Backend.IndividualEncounterParticipant.Model.HIVEncounter)
-                            && isNothing session.endDate
-                    )
-                |> List.head
-                |> Maybe.map Tuple.first
+            resolveOpenParticipant Backend.IndividualEncounterParticipant.Model.HIVEncounter sessions
 
         -- Resolve active encounter for person. There should not be more than one.
         -- We also want to know if there's an encounter that was completed today,

@@ -14,9 +14,7 @@ import Backend.Person.Encoder
 import Backend.StockUpdate.Encoder
 import Components.ReportToWhatsAppDialog.Encoder exposing (encodeReportType)
 import Gizra.NominalDate
-import Json.Encode exposing (Value, int, list, null, object, string)
-import Json.Encode.Extra exposing (maybe)
-import Maybe.Extra exposing (isJust)
+import Json.Encode exposing (Value, int, list, object, string)
 import SyncManager.Model
     exposing
         ( BackendAuthorityEntity(..)
@@ -82,19 +80,25 @@ encodeBackendWhatsAppEntity entity =
 encodeIndexDbQueryUploadAuthorityResultRecord : Int -> IndexDbQueryUploadAuthorityResultRecord -> List ( String, Value )
 encodeIndexDbQueryUploadAuthorityResultRecord dbVersion record =
     let
+        -- The image key holds the local URL of a photo taken on this device,
+        -- which the backend cannot store, so it is replaced by the ID of the
+        -- file uploaded for it. A photo that came down from the backend was
+        -- never uploaded from here and has no such ID, so the key is dropped:
+        -- sending nothing leaves the stored image alone, where sending null
+        -- would empty it.
         replacePhotoWithFileId localId imageField encodedEntity =
             let
-                maybeFileId =
-                    Dict.get localId record.uploadPhotos
-                        |> Maybe.map (\row -> maybe int row.fileId)
-                        |> Maybe.withDefault null
+                encodedFields =
+                    Dict.fromList encodedEntity
             in
-            encodedEntity
-                -- Remove existing photo key.
-                |> Dict.fromList
-                -- Replace with file ID.
-                |> Dict.insert imageField maybeFileId
-                |> Dict.toList
+            case Dict.get localId record.uploadPhotos |> Maybe.andThen .fileId of
+                Just fileId ->
+                    Dict.insert imageField (int fileId) encodedFields
+                        |> Dict.toList
+
+                Nothing ->
+                    Dict.remove imageField encodedFields
+                        |> Dict.toList
 
         encodeData ( entity, method ) =
             let
@@ -110,20 +114,10 @@ encodeIndexDbQueryUploadAuthorityResultRecord dbVersion record =
                 data =
                     case entity of
                         BackendAuthorityPerson identifier_ ->
-                            let
-                                encodedEntity =
-                                    Backend.Person.Encoder.encodePerson identifier_.entity
-
-                                encodedEntityUpdated =
-                                    if isJust identifier_.entity.avatarUrl then
-                                        replacePhotoWithFileId identifier_.revision "photo" encodedEntity
-
-                                    else
-                                        encodedEntity
-                            in
-                            encodedEntityUpdated
-                                |> List.append [ ( "uuid", string identifier_.uuid ) ]
-                                |> Json.Encode.object
+                            doEncode
+                                Backend.Person.Encoder.encodePerson
+                                identifier_
+                                "photo"
 
                         BackendAuthorityPhoto identifier_ ->
                             doEncode

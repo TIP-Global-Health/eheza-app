@@ -20,7 +20,7 @@ import Measurement.Utils
         , toSendToHCValueWithDefault
         )
 import Pages.HIV.Activity.Model exposing (Model, Msg(..))
-import Pages.HIV.Activity.Utils exposing (diagnosticsFormWithDefault, prescribedMedicationFormWithDefault, symptomReviewFormWithDefault, toDiagnosticsValueWithDefault, toHealthEducationValueWithDefault, toPrescribedMedicationValueWithDefault, toSymptomReviewValueWithDefault)
+import Pages.HIV.Activity.Utils exposing (diagnosticsFormWithDefault, prescribedMedicationFormWithDefault, symptomReviewFormWithDefault, toDiagnosticsValue, toHealthEducationValueWithDefault, toPrescribedMedicationValueWithDefault, toSymptomReviewValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (saveMeasurementMsgs, setMultiSelectInputValue)
 import RemoteData
@@ -197,12 +197,8 @@ update currentDate id db msg model =
                 measurementId =
                     Maybe.map Tuple.first saved
 
-                measurement =
-                    getMeasurementValueFunc saved
-
                 appMsgs =
-                    model.diagnosticsData.form
-                        |> toDiagnosticsValueWithDefault positiveResultRecorded measurement
+                    toDiagnosticsValue positiveResultRecorded diagnosticsForm
                         |> unwrap
                             []
                             (\value ->
@@ -216,7 +212,7 @@ update currentDate id db msg model =
                                         if
                                             not positiveResultRecorded
                                                 && (diagnosticsForm.resultPositive == Just False)
-                                                && (diagnosticsForm.testResult /= Just TestPositive)
+                                                && (value.testResult /= Just TestPositive)
                                         then
                                             [ Backend.IndividualEncounterParticipant.Model.CloseHIVSession HIVOutcomeNotDiagnosed
                                                 |> Backend.Model.MsgIndividualEncounterParticipant particpantId
