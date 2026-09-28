@@ -30301,7 +30301,7 @@ translateMonthYY month year short =
                 { english = set.english ++ " " ++ String.fromInt year
                 , kinyarwanda = Maybe.map (\kinyarwanda -> kinyarwanda ++ " " ++ String.fromInt year) set.kinyarwanda
                 , kirundi = Maybe.map (\kirundi -> kirundi ++ " " ++ String.fromInt year) set.kirundi
-                , somali = Nothing
+                , somali = Maybe.map (\somali -> somali ++ " " ++ String.fromInt year) set.somali
                 }
            )
 
