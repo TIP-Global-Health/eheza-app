@@ -438,6 +438,7 @@ B-437	2	READY	MED	2292		37	Statistical Queries: the z-score cleanup leaves the c
 B-438	3	READY	MED-LOW			37	Patient merge: TB and HIV episodes of the duplicate are folded into its OLDEST participant, and the open episode is dele
 B-439	4	READY	LOW			37	Acute illness contact tracing: the "register contact" form shows a stale backend error from an earlier person save
 B-440	1	READY	MED			37	Prenatal labs: a test sent to the lab, then corrected to "known as positive", still stores "result from the lab"; a disc
+B-441	4	READY	LOW			38	Release #2128 post-deploy steps: the head-circumference "not taken" script has no "run again once devices have updated" 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
