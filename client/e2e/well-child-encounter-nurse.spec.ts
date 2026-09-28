@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
@@ -60,6 +61,7 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
       weight: '12',
       nutritionSigns: [],
       checkRanges: true,
+      headCircumferenceNotTakenFirst: true,
     });
 
     // 3. ECD: answer all milestone questions "Yes".
@@ -85,6 +87,15 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
     });
 
     // End encounter (skip Photo + NCDA).
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'well-child');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await expect(report.locator('.pane.person-details')).toContainText(/male/i);
+    await expect(report.locator('.pane.vaccination-history')).toContainText('Measles-Rubella');
+    await expect(report.locator('.pane.vaccination-history')).toContainText('BCG');
+    await expect(report.locator('.pane.ecd')).toContainText(/on track/i);
+    await closeReport(page, 'well-child');
+
     await endWellChildEncounter(page);
 
     // Sync to backend.
@@ -209,6 +220,12 @@ test.describe('Nurse: Well Child PediatricCare — Abnormal Nutrition with NextS
     });
 
     // End encounter.
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'well-child');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await expect(report.locator('.pane.vaccination-history')).toContainText(/up to date|completed/i);
+    await closeReport(page, 'well-child');
+
     await endWellChildEncounter(page);
 
     // Sync to backend.
@@ -324,6 +341,12 @@ test.describe('Nurse: Well Child PediatricCare — 7yr Female, Albendazole', () 
     });
 
     // End encounter.
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'well-child');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await expect(report.locator('.pane.vaccination-history')).toContainText(/up to date|completed/i);
+    await closeReport(page, 'well-child');
+
     await endWellChildEncounter(page);
 
     // Sync to backend.
@@ -417,6 +440,12 @@ test.describe('Nurse: Well Child PediatricCare — 12.5yr Female, HPV', () => {
     });
 
     // End encounter.
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'well-child');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await expect(report.locator('.pane.vaccination-history')).toContainText(/up to date|completed/i);
+    await closeReport(page, 'well-child');
+
     await endWellChildEncounter(page);
 
     // Sync to backend.

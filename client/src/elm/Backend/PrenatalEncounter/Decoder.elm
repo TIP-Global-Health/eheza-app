@@ -291,6 +291,9 @@ decodePrenatalDiagnosis =
                     "gonorrhea" ->
                         succeed DiagnosisGonorrhea
 
+                    "gonorrhea-continued" ->
+                        succeed DiagnosisGonorrheaContinued
+
                     "trichomonas-or-bv" ->
                         succeed DiagnosisTrichomonasOrBacterialVaginosis
 

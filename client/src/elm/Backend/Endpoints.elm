@@ -450,11 +450,11 @@ individualEncounterParticipantEndpoint : ReadWriteEndPoint Error IndividualEncou
 individualEncounterParticipantEndpoint =
     swEndpoint "nodes/individual_participant" decodeIndividualEncounterParticipant
         |> withValueEncoder (object << encodeIndividualEncounterParticipant)
-        |> withParamsEncoder encodeIndividualEncounterParticipantParams
+        |> withParamsEncoder encodePeopleParams
 
 
-encodeIndividualEncounterParticipantParams : List PersonId -> List ( String, String )
-encodeIndividualEncounterParticipantParams ids =
+encodePeopleParams : List PersonId -> List ( String, String )
+encodePeopleParams ids =
     if List.isEmpty ids then
         []
 
@@ -1560,21 +1560,7 @@ familyEncounterParticipantEndpoint : ReadWriteEndPoint Error FamilyEncounterPart
 familyEncounterParticipantEndpoint =
     swEndpoint "nodes/family_participant" decodeFamilyEncounterParticipant
         |> withValueEncoder (object << encodeFamilyEncounterParticipant)
-        |> withParamsEncoder encodeFamilyEncounterParticipantParams
-
-
-encodeFamilyEncounterParticipantParams : List PersonId -> List ( String, String )
-encodeFamilyEncounterParticipantParams ids =
-    if List.isEmpty ids then
-        []
-
-    else
-        let
-            value =
-                List.map fromEntityUuid ids
-                    |> String.join ","
-        in
-        [ ( "people", value ) ]
+        |> withParamsEncoder encodePeopleParams
 
 
 familyNutritionEncounterEndpoint : ReadWriteEndPoint Error FamilyNutritionEncounterId FamilyNutritionEncounter FamilyNutritionEncounter (List FamilyEncounterParticipantId)

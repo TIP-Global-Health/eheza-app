@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import {
@@ -53,6 +54,16 @@ test.describe('CHW: Prenatal First Encounter', () => {
     await completeNextSteps(page);
 
     // End encounter.
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'prenatal');
+    await expect(report).toContainText(fullName);
+    await expect(report).toContainText(/weeks/i);
+    await closeReport(page, 'prenatal');
+    const demographics = await openReport(page, 'prenatal-demographics');
+    await expect(demographics).toContainText(fullName.split(' ').slice(-1)[0]);
+    await expect(demographics).toContainText(/female/i);
+    await closeReport(page, 'prenatal-demographics');
+
     await endPrenatalEncounter(page);
 
     // Sync to backend.
@@ -109,6 +120,12 @@ test.describe('CHW: Prenatal Second Encounter', () => {
     await completeDangerSigns(page);
     await completeHealthEducation(page, 1);
     await completeNextSteps(page);
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'prenatal');
+    await expect(report).toContainText(fullName);
+    await expect(report).toContainText(/weeks/i);
+    await closeReport(page, 'prenatal');
+
     await endPrenatalEncounter(page);
 
     // Sync first encounter to backend, then backdate it to yesterday so the

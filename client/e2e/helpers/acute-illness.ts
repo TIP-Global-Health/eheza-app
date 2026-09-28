@@ -1,5 +1,7 @@
 import { Page, expect } from '@playwright/test';
+import { execSync } from 'child_process';
 import { click } from './auth';
+import { drushEnv } from './device';
 import {
   WAIT,
   answerYesNo,
@@ -51,17 +53,21 @@ async function openActivity(page: Page, activityIcon: string) {
 }
 
 /**
- * Save the current activity form and return to the encounter page.
+ * Save the current activity form and wait for the page the app moves to.
  * @param actionsClass - CSS class on the actions wrapper (e.g., 'symptoms', 'malaria-testing', 'next-steps').
  */
 async function saveActivity(page: Page, actionsClass: string) {
+  const actions = page.locator(`.actions.${actionsClass}`);
   await click(
-    page.locator(`.actions.${actionsClass} button.ui.fluid.primary.button`, { hasText: 'Save' }),
+    actions.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
     page,
   );
-  // Wait for return to encounter page.
+  // The save leaves the form. The app returns to the encounter page, or, when
+  // this save completes the diagnosis, opens Next Steps or Laboratory itself.
+  await actions.waitFor({ state: 'hidden', timeout: 10000 });
   await page
-    .locator('div.page-encounter.acute-illness')
+    .locator('div.page-encounter.acute-illness, div.page-activity.acute-illness')
+    .first()
     .waitFor({ timeout: 10000 });
   await page.waitForTimeout(WAIT.elmRerender);
 }
@@ -144,28 +150,6 @@ export async function startNewAcuteIllness(page: Page) {
     .locator('div.page-encounter.acute-illness')
     .waitFor({ timeout: 30000 });
   await page.waitForTimeout(WAIT.sectionTransition);
-}
-
-/**
- * Open the progress report from the encounter page.
- * The "Progress Report" tab navigates straight to the report, rather than
- * switching tabs in place.
- */
-export async function openProgressReport(page: Page) {
-  const reportsTab = page.locator('#reports-tab');
-  await reportsTab.waitFor({ timeout: 15000 });
-  await click(reportsTab, page);
-  await page.locator('div.page-report.acute-illness').waitFor({ timeout: 15000 });
-  await page.waitForTimeout(WAIT.elmRerender);
-}
-
-/**
- * Return from the progress report to the encounter it was opened from.
- */
-export async function returnToEncounterFromReport(page: Page) {
-  await click(page.locator('div.page-report.acute-illness span.link-back'), page);
-  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 15000 });
-  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -278,6 +262,52 @@ export async function startSubsequentEncounter(page: Page) {
  */
 export function backdateAcuteIllnessEncounter(personName: string) {
   backdateEncounter(personName, 'acute_illness_encounter', 7);
+}
+
+const tuberculosisFeatureFlag = 'hedley_admin_feature_tuberculosis_management_enabled';
+
+/**
+ * Read the Tuberculosis Management feature flag, or null when it is unset.
+ * With the flag on, a cough of more than two weeks is diagnosed as
+ * Tuberculosis Suspect ahead of every other diagnosis.
+ *
+ * Note: execSync with a hardcoded command — no user input involved.
+ */
+export function readTuberculosisManagementFeature(): string | null {
+  const { drushCmd, cwd } = drushEnv();
+  const output = execSync(
+    `${drushCmd} eval 'echo json_encode(variable_get("${tuberculosisFeatureFlag}", null));'`,
+    { cwd, timeout: 15000, encoding: 'utf-8', stdio: 'pipe' },
+  ).trim();
+  const value = JSON.parse(output);
+  if (value === null) {
+    return null;
+  }
+  // A flag set as a boolean reads back as true/false, and both are truthy
+  // once written back as a string, so answer in the 1/0 the flags are set with.
+  if (typeof value === 'boolean') {
+    return value ? '1' : '0';
+  }
+  return String(value);
+}
+
+/**
+ * Set the Tuberculosis Management feature flag, or unset it with null.
+ * A device reads the flag from the sync response, so pair the device
+ * after changing it.
+ *
+ * The value goes into a shell command, so only the 1/0 the feature flags
+ * are set with is accepted, and anything else is refused rather than run.
+ */
+export function setTuberculosisManagementFeature(value: string | null) {
+  if (value !== null && value !== '0' && value !== '1') {
+    throw new Error(`Refusing to set the Tuberculosis flag to ${value}`);
+  }
+  const { drushCmd, cwd } = drushEnv();
+  const command = value === null
+    ? `${drushCmd} vdel -y ${tuberculosisFeatureFlag}`
+    : `${drushCmd} vset ${tuberculosisFeatureFlag} ${value}`;
+  execSync(command, { cwd, timeout: 15000, encoding: 'utf-8', stdio: 'pipe' });
 }
 
 // ---------------------------------------------------------------------------
@@ -808,6 +838,8 @@ export async function completeNextSteps(
     hasHealthEducation?: boolean;
     hasContactTracing?: boolean;
     hasSymptomsRelief?: boolean;
+    /** Answer to "Administered Lemon Juice and/or Honey?" (simple cold and cough). */
+    lemonJuiceOrHoney?: 'Yes' | 'No';
   },
 ) {
   const hasMedDist = options?.hasMedicationDistribution ?? true;
@@ -824,7 +856,10 @@ export async function completeNextSteps(
     .locator('.actions.next-steps')
     .isVisible()
     .catch(() => false);
-  if (!alreadyOnNextSteps) {
+  if (alreadyOnNextSteps) {
+    // The assessment popup can open over the form as the app arrives here.
+    await dismissDiagnosisPopup(page);
+  } else {
     await openActivity(page, 'next-steps');
   }
 
@@ -849,6 +884,12 @@ export async function completeNextSteps(
       const zincField = page.locator('.form-input.yes-no.zinc-medication');
       if (await zincField.isVisible({ timeout: 1000 }).catch(() => false)) {
         await answerYesNo(page, 'zinc-medication', 'Yes');
+      }
+
+      // For simple cold and cough: Lemon Juice and/or Honey
+      const lemonJuiceField = page.locator('.form-input.yes-no.lemon-juice-or-honey-medication');
+      if (await lemonJuiceField.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await answerYesNo(page, 'lemon-juice-or-honey-medication', options?.lemonJuiceOrHoney ?? 'Yes');
       }
 
       // For respiratory: Amoxicillin
@@ -926,6 +967,32 @@ export async function completeNextSteps(
   // After completing all next steps, the app may show the progress report
   // page (with "End Encounter" button) or return to the encounter page.
   await page.waitForTimeout(WAIT.sectionTransition);
+}
+
+/**
+ * Change one answer of the Medication Distribution task after Next Steps
+ * was completed. Next Steps is then on the Completed tab. Saving the task
+ * leaves the activity for the encounter page or the progress report.
+ */
+export async function editMedicationDistributionAnswer(
+  page: Page,
+  fieldClass: string,
+  answer: 'Yes' | 'No',
+) {
+  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+  await openActivity(page, 'next-steps');
+
+  await clickSubTaskTab(page, 'next-steps-medication-distribution');
+  await page.locator('.ui.form.medication-distribution').waitFor({ timeout: 5000 });
+  await answerYesNo(page, fieldClass, answer);
+  await saveNextStepsSubTask(page);
+
+  await page
+    .locator('div.page-encounter.acute-illness, div.page-report.acute-illness')
+    .waitFor({ timeout: 10000 });
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------

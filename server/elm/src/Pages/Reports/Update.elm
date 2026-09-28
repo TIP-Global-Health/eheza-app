@@ -11,6 +11,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra
 import Pages.Reports.Model exposing (Model, Msg(..), NutritionReportData, ReportType(..))
 import Pages.Reports.Utils exposing (countTotalNutritionEncounters, familyNutritionEncounterToMetrics, isWideScope, nutritionEncounterDataToNutritionMetrics, reportTypeFromString, sumNutritionMetrics)
+import Pages.Utils exposing (dateSelectorDefault)
 import RemoteData exposing (RemoteData(..))
 import Task exposing (Task)
 
@@ -63,12 +64,8 @@ update currentDate modelBackend msg model =
                 []
 
         SetStartDateSelectorState state ->
-            let
-                defaultSelection =
-                    Maybe.Extra.or model.startDate (Maybe.andThen .dateDefault state)
-            in
             PagesReturn
-                { model | startDateSelectorPopupState = state, startDate = defaultSelection }
+                { model | startDateSelectorPopupState = state, startDate = dateSelectorDefault model.startDate state }
                 Cmd.none
                 noError
                 []
@@ -81,12 +78,8 @@ update currentDate modelBackend msg model =
                 []
 
         SetLimitDateSelectorState state ->
-            let
-                defaultSelection =
-                    Maybe.Extra.or model.limitDate (Maybe.andThen .dateDefault state)
-            in
             PagesReturn
-                { model | limitDateSelectorPopupState = state, limitDate = defaultSelection }
+                { model | limitDateSelectorPopupState = state, limitDate = dateSelectorDefault model.limitDate state }
                 Cmd.none
                 noError
                 []
@@ -152,14 +145,14 @@ calculateNutritionReportDataTask currentDate data =
                                 >> List.map
                                     (\item ->
                                         -- WellChildEncounterData mirrors NutritionEncounterData's
-                                        -- shape (date, nutritionData, muacCm) plus immunisationData;
-                                        -- well-child wire doesn't carry edema or FBF distribution
-                                        -- today, so default both to absent.
+                                        -- shape (date, nutritionData, muacCm, hasEdema) plus
+                                        -- immunisationData; well-child has no FBF distribution,
+                                        -- so that one is absent.
                                         ( record.id
                                         , { startDate = item.startDate
                                           , nutritionData = item.nutritionData
                                           , muacCm = item.muacCm
-                                          , hasEdema = False
+                                          , hasEdema = item.hasEdema
                                           , fbfAmount = Nothing
                                           }
                                         )

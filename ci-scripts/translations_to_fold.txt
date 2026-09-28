@@ -1,0 +1,102 @@
+# English still written out under more than one id.
+# Fold one: pick the id that holds the words, translate it, and point the
+# others at it with `translationSet ThatId`. Then delete the line here.
+
+1 Week
+1 day
+4 tabs by mouth x one day
+ANC Labs
+Abdomen
+Active Diagnosis
+Acute Illness Encounter
+Acute Illness Outcome
+Adverse event
+Adverse events
+All
+Appointment Confirmation
+BCG
+Bloody Diarrhea
+Breastfeeding
+Breech
+Child Scorecard Encounter
+Clear
+Coartem
+Danger Signs
+Discharge
+Early Childhood Development
+Edema
+Enter the amount of Aheza distributed below.
+Examination
+Fever of Unknown Origin
+Green
+Growth
+HIV
+HIV Encounter
+HIV PCR
+HPV
+Hemoglobin
+Hemoglobin Test Result
+Hepatitis B
+History
+IM 1x a week for 3 weeks
+IPV
+Imminent delivery
+Immunization
+Increased Thirst
+Infection
+Iron
+Laboratory
+Large (+++)
+Massage
+Maternal Mental Health
+May
+Measles-Rubella
+Medium (++)
+Moderate
+Mother
+Negative
+None of the above
+Not very often
+OPV
+Out of Stock
+PCV 13
+Participant Directory
+Participants
+Patient Record
+Patient shows signs of Moderate Risk for Preclampsia
+Patient shows signs of being a suicide risk
+Pentavalent
+Physical Exam
+Poor suck
+Positive
+Pregnancy
+Pregnancy Dating
+Progress Report
+Protein
+Random Blood Sugar
+Read
+Receipt of other support (e.g., food items or small livestock,...)
+Refer patient to mental health specialist for further evaluation
+Referred to health center
+Respiratory Distress
+Rotarix
+Select the best treatment option for the patient below
+Select the medication and dosage you will administer to the patient
+Severe Preeclampsia
+Severe acute malnutrition
+Severe vomiting
+Simple Cold and Cough
+Single
+Small (+)
+Suspected COVID-19 case
+Syphilis - RPR
+Uncomplicated Malaria
+Unknown
+Urine Dipstick
+Vitals
+With Danger Signs
+Yes, most of the time
+by mouth 3x a day
+by mouth 4x a day for 14 days
+from last month
+one tab by mouth 1x a day

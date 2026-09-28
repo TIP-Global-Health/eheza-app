@@ -12,10 +12,10 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils exposing (bloodSmearResultNotSet, testPerformedByExecutionNote)
+import Measurement.Utils exposing (testPerformedByExecutionNote)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), LabsResultsDisplayConfig, LabsResultsValues, PaneEntryStatus, TestReport(..))
-import Pages.Report.Utils exposing (altResultNormal, astResultNormal, bilirubinResultNormal, bloodSmearResultNormal, bunResultNormal, creatinineResultNormal, diagnosisEntryStatusToString, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant, getRandomBloodSugarResultValue, glucoseResultNormal, hba1cResultNormal, hdlCholesterolResultNormal, hemoglobinResultNormal, hepatitisBResultNormal, hivPCRResultNormal, hivResultNormal, ketoneResultNormal, ldlCholesterolResultNormal, leukocytesResultNormal, malariaResultNormal, nitriteResultNormal, partnerHIVResultNormal, phResultNormal, pregnancyResultNormal, proteinResultNormal, randomBloodSugarResultFromValue, randomBloodSugarResultNormal, rhesusResultsNormal, syphilisResultNormal, totalCholesterolResultNormal, triglyceridesResultNormal, urineHaemoglobinValueResultNormal, urobilinogenResultNormal)
+import Pages.Report.Utils exposing (altResultNormal, astResultNormal, bilirubinResultNormal, bloodSmearResultNormal, bunResultNormal, creatinineResultNormal, diagnosisEntryStatusToString, generateBloodSmearTestResults, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant, getRandomBloodSugarResultValue, glucoseResultNormal, hba1cResultNormal, hdlCholesterolResultNormal, hemoglobinResultNormal, hepatitisBResultNormal, hivPCRResultNormal, hivResultNormal, ketoneResultNormal, ldlCholesterolResultNormal, leukocytesResultNormal, malariaRapidTestValues, malariaResultNormal, nitriteResultNormal, partnerHIVResultNormal, phResultNormal, pregnancyResultNormal, proteinResultNormal, randomBloodSugarResultFromValue, randomBloodSugarResultNormal, rhesusResultsNormal, syphilisResultNormal, totalCholesterolResultNormal, triglyceridesResultNormal, urineHaemoglobinValueResultNormal, urobilinogenResultNormal)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
@@ -869,7 +869,7 @@ viewLabResultsPane language currentDate viewForConfirmation mode setLabResultsMo
                             getTestResultsKnownAsPositive .hepatitisB .testResult
 
                         malariaTestResults =
-                            getTestResults .malaria .testResult
+                            getTestResults (.malaria >> malariaRapidTestValues >> List.map Tuple.second) .testResult
 
                         randomBloodSugarResults =
                             List.filterMap randomBloodSugarResultFromValue data.randomBloodSugar
@@ -971,25 +971,13 @@ viewLabResultsPane language currentDate viewForConfirmation mode setLabResultsMo
                                 )
 
                         bloodSmearTestResults =
-                            data.malaria
-                                |> List.filterMap
-                                    (\value ->
-                                        if
-                                            (not <| testPerformedByExecutionNote value.executionNote)
-                                                && bloodSmearResultNotSet value.bloodSmearResult
-                                        then
-                                            Maybe.map (\executionDate -> ( executionDate, Just value.bloodSmearResult ))
-                                                value.executionDate
-
-                                        else
-                                            Nothing
-                                    )
-                                |> List.sortWith sortTuplesByDateDesc
+                            generateBloodSmearTestResults data.malaria
                     in
                     [ viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHIV hivTestResults)
                     , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHIVPCR hivPCRTestResults)
                         |> showIf displayConfig.hivPCR
                     , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryPartnerHIV partnerHIVTestResults)
+                        |> showIf displayConfig.partnerHIV
                     , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistorySyphilis syphilisTestResults)
                         |> showIf displayConfig.syphilis
                     , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHepatitisB hepatitisBTestResults)

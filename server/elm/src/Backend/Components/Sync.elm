@@ -3,6 +3,7 @@ module Backend.Components.Sync exposing
     , handleSendRequest
     , handleSetData
     , handleSyncResponse
+    , mergeSyncResponse
     )
 
 {-| Shared sync loop for the paginated /api/reports-data endpoint.
@@ -17,7 +18,7 @@ record. This module captures that protocol once; each caller supplies a
 -}
 
 import Backend.Components.Encoder exposing (encodeReportParams)
-import Backend.Components.Model exposing (ReportParams)
+import Backend.Components.Model exposing (ReportParams, SyncResponse)
 import Backend.Model exposing (ModelBackend)
 import Backend.Types exposing (BackendReturn)
 import Error.Utils exposing (noError)
@@ -40,6 +41,20 @@ type alias Config data syncResponse msg =
     , getRemaining : syncResponse -> Int
     , getLastIdSynced : syncResponse -> Int
     , wrapHandleResponse : WebData syncResponse -> msg
+    }
+
+
+{-| The `mergeResponse` for pages whose data collects the batches into a
+plain `records` list.
+-}
+mergeSyncResponse :
+    SyncResponse record
+    -> { data | records : List record, remainingForDownload : Maybe Int }
+    -> { data | records : List record, remainingForDownload : Maybe Int }
+mergeSyncResponse response data =
+    { data
+        | records = data.records ++ response.records
+        , remainingForDownload = Just response.totalRemaining
     }
 
 

@@ -115,6 +115,16 @@ const HEDLEY_ACTIVITY_WEIGHT_BUNDLES = [
   HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE,
 ];
 
+// WHO limits of a plausible z-score, as [lowest, highest]. Beyond them the
+// value was mistyped, like a 200 kg child, so no z-score is stored.
+const HEDLEY_ACTIVITY_ZSCORE_LIMITS = [
+  'bmi_for_age' => [-5, 5],
+  'head_circumference_for_age' => [-5, 5],
+  'length_for_age' => [-6, 6],
+  'weight_for_age' => [-6, 5],
+  'weight_for_length' => [-5, 5],
+];
+
 const HEDLEY_ACTIVITY_NCDA_BUNDLES = [
   HEDLEY_ACTIVITY_GROUP_NCDA_CONTENT_TYPE,
   HEDLEY_ACTIVITY_NUTRITION_NCDA_CONTENT_TYPE,
@@ -320,20 +330,25 @@ function hedley_activity_node_presave($node) {
   $days = ($measured - $birth) / 86400;
 
   if (in_array($node->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
-    $zscore = hedley_zscore_length_for_age($days, $gender, $wrapper->field_height->value());
-    $wrapper->field_zscore_age->set($zscore);
+    $cm = $wrapper->field_height->value();
+    $zscore = $cm > 0 ? hedley_zscore_length_for_age($days, $gender, $cm) : NULL;
+    $wrapper->field_zscore_age->set(hedley_activity_plausible_zscore($zscore, 'length_for_age'));
     return;
   }
 
   if ($node->type == HEDLEY_ACTIVITY_WELL_CHILD_HEAD_CIRCUMFERENCE_CONTENT_TYPE) {
-    $zscore = hedley_zscore_head_circumference_for_age($days, $gender, $wrapper->field_head_circumference->value());
-    $wrapper->field_zscore_age->set($zscore);
+    // "Not taken" is stored as 0 cm, with a note saying so.
+    $cm = $wrapper->field_head_circumference->value();
+    $not_taken = in_array('not-taken', $wrapper->field_measurement_notes->value());
+    $zscore = $cm > 0 && !$not_taken ? hedley_zscore_head_circumference_for_age($days, $gender, $cm) : NULL;
+    $wrapper->field_zscore_age->set(hedley_activity_plausible_zscore($zscore, 'head_circumference_for_age'));
     return;
   }
 
   // We know it's weight.
-  $zscore_for_age = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
-  $wrapper->field_zscore_age->set($zscore_for_age);
+  $kg = $wrapper->field_weight->value();
+  $zscore_for_age = $kg > 0 ? hedley_zscore_weight_for_age($days, $gender, $kg) : NULL;
+  $wrapper->field_zscore_age->set(hedley_activity_plausible_zscore($zscore_for_age, 'weight_for_age'));
 
   $child_id = $wrapper->field_person->getIdentifier();
   $height_id = hedley_activity_node_by_peer_in_session($wrapper, $child_id);
@@ -350,10 +365,9 @@ function hedley_activity_node_presave($node) {
 
   $height = entity_metadata_wrapper('node', $height_id);
   $cm = $height->field_height->value();
-  $kg = $wrapper->field_weight->value();
 
-  if ($cm == 0 || $kg == 0) {
-    // Preventing division by 0.
+  if ($cm <= 0 || $kg <= 0) {
+    // Not measured; also prevents division by 0.
     return;
   }
 
@@ -372,9 +386,30 @@ function hedley_activity_node_presave($node) {
   $zscore_bmi_for_age = hedley_zscore_bmi_for_age($days, $gender, $bmi);
 
   // Setting z-scores and BMI.
-  $wrapper->field_zscore_length->set($zscore_for_length);
-  $wrapper->field_zscore_bmi->set($zscore_bmi_for_age);
+  $wrapper->field_zscore_length->set(hedley_activity_plausible_zscore($zscore_for_length, 'weight_for_length'));
+  $wrapper->field_zscore_bmi->set(hedley_activity_plausible_zscore($zscore_bmi_for_age, 'bmi_for_age'));
   $wrapper->field_bmi->set($bmi);
+}
+
+/**
+ * Returns the z-score, or NULL when it is beyond the WHO limits.
+ *
+ * @param float|null $zscore
+ *   The z-score, or NULL when none was computed.
+ * @param string $kind
+ *   A key of HEDLEY_ACTIVITY_ZSCORE_LIMITS, like 'weight_for_age'.
+ *
+ * @return float|null
+ *   The z-score, or NULL.
+ */
+function hedley_activity_plausible_zscore($zscore, $kind) {
+  if (is_null($zscore)) {
+    return NULL;
+  }
+
+  list($lowest, $highest) = HEDLEY_ACTIVITY_ZSCORE_LIMITS[$kind];
+
+  return $zscore < $lowest || $zscore > $highest ? NULL : $zscore;
 }
 
 /**

@@ -163,3 +163,225 @@ the user who has to do it: `resize_window` changes the OS window without clearin
   on screen but the page's own listeners never fire. Treat that screen on a fresh pairing as
   a known place to lose input, and plan the recording so the scenario's evidence is captured
   before it.
+
+## The extension can drive a phantom tab the user never sees — CONFIRMED CAUSE
+
+- **Confirmed 2026-08-27**, after a long detour through window-occlusion and Wayland theories
+  that were all wrong. The claude-in-chrome tab group contained a tab that Chrome never
+  displays. The user saw a "Claude" tab group whose Google tab looked normal; the tab the
+  extension was driving was a *different* one, on the same URL.
+- **The one-call diagnostic** — do this first, before any theorising about windows:
+
+  ```js
+  document.title = '### CLAUDE IS DRIVING THIS TAB ###';
+  const b = document.createElement('div');
+  b.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#e4002b';
+  document.documentElement.appendChild(b);
+  ```
+
+  Ask the user what they see. Normal page = phantom tab, and **no amount of window arranging
+  will ever fix it**. A user who cannot find a tab you just renamed is telling you this
+  outright; treat it as proof, not as a puzzle about window ordering.
+- **The recorder that proves it without timing games:** install a `visibilitychange` listener
+  plus a free-running `requestAnimationFrame` counter, ask the user to look at the tab for a
+  few seconds, then read both back. An empty transition log and a frame count that never moved
+  means the tab was never shown at all — no argument about when the measurement landed.
+- **The fix is a reinstall of the extension — confirmed 2026-08-27.** Nothing else worked:
+  raising the window, `resize_window`, a fresh tab, a new tab group, side-by-side arrangement,
+  a full Chrome restart, and a whole machine reboot all left it at 0 fps. Removing and
+  reinstalling Claude in Chrome fixed it immediately and completely — new `deviceId`, and the
+  first new tab measured **40 frames / 61 fps, `visible`, hover 22 ms** against 0 fps and
+  5011 ms before. So: propose the reinstall early rather than treating it as a last resort,
+  and use chrome-devtools-mcp only to keep working while the user gets to it.
+
+## The unrenderable tab: symptoms and what does NOT fix it
+
+- **Symptom:** `document.hidden` true with `visibility: "hidden"` while `hasFocus()` is true, a
+  flat 5 s on every click/hover, and — the decisive measurement — **`requestAnimationFrame`
+  fires 0 frames in 2 s**.
+- **Wrong conclusion:** the previous entries' advice will get you out of it. It did not:
+  asking the user to raise the window, `resize_window`, creating a fresh tab, a whole new tab
+  group, and a full Chrome restart all left it at 0 fps. The user could not find the tab at
+  all — `Ctrl+Shift+A` tab search returned nothing for a title I had set on it, even though
+  `chrome.tabs` reported that title back to me.
+- **Also disproven on this machine:** arranging Chrome side-by-side with the terminal so it is
+  plainly visible. Still 0 fps with `focus: true`. Six attempts total — raising the window,
+  `resize_window`, a fresh tab, a new tab group, a full Chrome restart, side-by-side — none
+  moved it, so treat it as an environment-level defect on this station rather than something
+  to keep poking at. Worth trying once, as a config change the user makes: launch Chrome with
+  `--ozone-platform=x11` instead of the current `--ozone-platform=wayland`.
+- **It is not the app.** Navigating the same tab to `https://www.google.com` gives the identical
+  reading — 0 frames, `visibility: "hidden"`, 5011 ms hover. Site-independent, so never spend
+  time suspecting the E-Heza build, its service worker or the localhost origin: one navigation
+  to any public page settles it in a single call.
+- **A screenshot is not proof of rendering.** `computer screenshot` returned a correct, current
+  image in 637 ms while rAF had been dead for hours. Capture and paint are different paths;
+  only the rAF count tells you Elm will re-render.
+- **Rule:** measure rAF, not `document.hidden`, to decide whether the page is really rendering
+  — `frames > 0` is the gate before driving anything. If it is 0 and one round of raising the
+  window does not fix it, **stop trying to fix the window** and switch drivers: the
+  `chrome-devtools-mcp` server drives its own headed Chrome that renders at 62 fps
+  (`visibility: "visible"`), on a fresh profile, and can do everything this skill needs except
+  `gif_creator`. Assemble recordings from `take_screenshot filePath=…` frames with ffmpeg's
+  concat demuxer instead. Correcting the earlier entry: `resize_window` does **not** reliably
+  bring the window back.
+
+## Reading the wrong IndexedDB store and concluding sync failed
+
+- **Symptom:** after a health-centre sync reports "Status: Success, Remaining for Download: 0",
+  a scan of the `nodes` object store finds 0 persons, so sync looks broken.
+- **Wrong conclusion:** the authority sync did not download anything.
+- **Rule:** `nodes` holds only **general** entities (nurses, villages, health centers,
+  counseling topics — 36 of them on a fresh pair). Authority data (persons, relationships,
+  measurements) lands in the **`shards`** store. Count there before concluding anything about
+  an authority sync.
+
+## Clicking a menu card's label instead of its handler
+
+- **Symptom:** clicking "DEVICE STATUS" / "CLINICAL" on the main menu — by a11y uid, by
+  coordinate, or with `.click()` on `div.card` — does nothing at all, repeatedly.
+- **Wrong conclusion:** input delivery to the tab is dead (the existing pitfall), or the app
+  is frozen.
+- **Rule:** `activityCardWithCounter` (`Utils/Html.elm`) puts `onClick` on the inner
+  **`div.image`**, the grey icon square — not on `div.card` and not on the label under it.
+  Click `card.querySelector('div.image')`. Check where the handler actually sits in the Elm
+  source before blaming the environment; the label is a sibling of the clickable element.
+
+## Waiting for a sync that was never going to run
+
+- **Symptom:** a saved edit sits in `shardChanges` forever; polling for the upload finds
+  nothing, so the encoder looks like it is not producing a payload.
+- **Wrong conclusion:** the change was not queued, or the upload path is broken.
+- **Rule:** two separate gates. (1) After pairing, each health centre on Device Status starts
+  at **"START SYNCING"** — the authority downloads nothing until that is clicked. (2) The
+  upload lane otherwise waits out its idle time (default 600 s), so click **"TRY SYNCING WITH
+  BACKEND"** to make an upload happen now. Neither is a defect; budget both into any scenario
+  that ends in "and then it syncs".
+
+## Calling a slow load a pre-existing bug, and writing off a plan row
+
+- **Symptom:** a section renders "The server indicated the following error: Not Found" on every
+  person that has data, survives two reloads, a service-worker update and three different
+  persons — and it matches a defect already written up in memory
+  (`clinics-not-found-bug.md`), which even records it as a deliberate non-fix.
+- **Wrong conclusion:** it *is* that defect, the plan row that depends on it is unreachable,
+  report the row BLOCKED and move on. I did exactly this, wrote it into the ledger and the
+  report, and the user then asked me to refresh again — it loaded, and the row passed.
+- **Rule:** a matching entry in memory raises the prior, it does not close the question. Before
+  declaring any row blocked, exhaust the cheap retry first: several **full** reloads spaced
+  over a minute or more, not the three-in-twenty-seconds I did. Data that arrived in the
+  `shards` store is proof the app *can* show it, so a UI that does not yet is a timing
+  statement, not a verdict. And say "not reproducing yet" in the report rather than naming a
+  known bug — naming one makes a guess look settled and invites everyone downstream to skip
+  the retry too.
+
+## Planning a Case Management scenario without reading the pane's own clearing rule
+
+- **Symptom:** the follow-up entry used to set a scenario up vanishes from the pane the moment
+  the encounter is created, so the state the plan needed ("an encounter of that type exists
+  today, and the entry is still tappable") cannot be reached at all.
+- **Wrong conclusion:** the follow-up measurement was lost, sync ate it, or the change under
+  test removed the entry. None of that: each pane decides for itself whether an encounter
+  clears its entry, and the panes disagree.
+- **Rule:** before choosing a pane to demonstrate a Case Management state, read that pane's
+  `generate<Type>FollowUpEntryData` in `Pages/GlobalCaseManagement/View.elm` and note which
+  `limitDate` its `view<Type>Pane` passes in. The two shapes seen so far:
+  - **Nutrition** (and Acute Illness, Prenatal) pass `limitDate = currentDate + 1`, so
+    **today's** encounter is included in the comparison and clears the entry
+    (`encounter.startDate < item.dateMeasured` fails when both are today). A patient can
+    never be tapped there on a day that already has an encounter.
+  - **Immunization** passes `limitDate = currentDate`, so today's encounters are filtered out
+    of the comparison entirely and the entry survives the same-day encounter. This is the only
+    pane where "an encounter already took place today" is reachable.
+  Acute Illness additionally needs the follow-up to belong to the LAST encounter of the
+  illness, and needs a resolvable diagnosis — an encounter that ends with no diagnosis
+  produces no entry at all.
+
+## A long-running javascript_tool body loses the extension connection
+
+- **Symptom:** a `javascript_tool` call containing a multi-round loop (each round clicking,
+  saving and sleeping ~2 s) returns "Browser extension is not connected. Please ensure the
+  Claude browser extension is installed and running".
+- **Wrong conclusion:** the extension broke or the phantom-tab defect is back. It had not —
+  `tabs_context_mcp` reconnected immediately and the page had actually advanced two sub-tasks
+  before the call died.
+- **Rule:** keep a `javascript_tool` body under roughly ten seconds of wall clock. Drive long
+  form sequences as several short calls (batched in one `browser_batch` when they do not need
+  each other's results), and after any such error call `tabs_context_mcp` and re-read the page
+  state before redoing anything — part of the work is usually already done.
+
+## Selecting one of several repeated blocks by walking up from a button
+
+- **Symptom:** targeting "the START SYNCING button belonging to Nyange Health Center" by
+  walking each button's ancestors until one contains "Nyange" clicked **Muhondo's** button.
+- **Wrong conclusion:** the selector did not match. It matched too well: a few levels up, the
+  common ancestor contains every health centre's text, so the first button tested passes.
+- **Rule:** an ancestor-text test only identifies a block when the text is unique to it. Pick
+  repeated controls by their index among siblings, or by the nearest container that holds
+  exactly one of them — and after clicking, confirm which one actually changed state.
+
+## Screenshot coordinates after the window geometry changes on its own
+
+- **Symptom:** a click computed from a fresh screenshot lands at the edge of its target and
+  does nothing; the next screenshot comes back a different size (1568x733 rather than 920x1336).
+- **Wrong conclusion:** the click was mis-aimed, or input delivery died.
+- **Rule:** the emulated viewport is NOT fixed across a session — it changed here without any
+  `resize_window` call, and it differed from the 1200x1799 recorded on earlier runs. Click by
+  `ref` wherever `find` exposes the element. For E-Heza's clickable `div`s, which the a11y tree
+  does not expose, read the element's own rect and scale it in the same call that uses it:
+  `r.left + r.width/2` times `1568/innerWidth`. Never carry coordinates across a navigation.
+
+## Verifying a new UI element by its text instead of looking at it
+
+- **Symptom:** a new dialog is signed off as correct because `modal.innerText` reads exactly the
+  expected sentence and the expected button label, and the behaviour behind it is right. The
+  user then looks at the same recording and immediately sees the button is misaligned —
+  16 px right of the modal, overhanging its edge.
+- **Wrong conclusion:** "the dialog was verified". Its *content* and *behaviour* were; its
+  *appearance* never was. Having the frame on screen is not the same as examining it: the
+  frame was used only to confirm the sentence was legible.
+- **Rule:** when a PR adds a NEW piece of UI, verify it against the nearest existing sibling
+  component, not against its own spec — open both, and compare geometry, not just text. The
+  cheap mechanical check is to measure: `getBoundingClientRect()` on the new element and on its
+  container, and assert the edges line up the way the sibling's do. For E-Heza modals
+  specifically, Semantic ships `.ui.modal .actions > .button { margin-left: .75em }`, a
+  **direct-child** rule — so a `fluid` button placed straight into `div.actions` is always
+  100% wide *plus* 0.75em of left margin and always overhangs. Every correct dialog in
+  `Pages/GlobalCaseManagement/View.elm` avoids it by wrapping the button in
+  `div [ class "two ui buttons" ]`, which is also what makes a lone button render full width
+  (`ui buttons` and `one ui buttons` both collapse it to its text width instead — measured).
+
+## The loading screen is the pairing screen, and it can last 20 seconds
+
+- **Symptom:** right after a reload, the app shows "This device has not yet been authorized to
+  sync data with the backend…" with a pairing-code field, so the pairing looks lost.
+- **Wrong conclusion:** the reload or the service-worker update dropped the pairing — mint a
+  new code and pair again.
+- **Rule:** that Device Status text is what the app renders *while it hydrates* from IndexedDB.
+  On this build it persisted 15–20 s after a reload and then resolved to the restored session,
+  same device and same signed-in nurse. Wait and re-read (or take a screenshot to force the
+  frame) before concluding anything; a pairing code spent on this is wasted, and codes are
+  single-use.
+## Asserting on a marker the app never renders
+
+- **Symptom:** a check for "nothing is selected" passes, and so does a check that would have
+  had to fail — the assertion is green on the fixed build and on the broken one.
+- **Wrong conclusion:** the behaviour is verified.
+- **Rule:** confirm the marker exists in the DOM the app actually produces before believing
+  an absence. `viewCustomBoolInput` marks the chosen side on the `input`
+  (`classList [ ( "checked", isChecked ) ]`), never on the `label`, so `label.active` is
+  count-0 always. An assertion that an element is absent is worth only as much as the proof
+  that it is ever present. Same shape as the stale-warning and disabled-Save traps: read the
+  Elm view function, not the rendered screenshot, when deciding what to assert on.
+
+## Building a fixture by hand when the app can build it for you
+
+- **Symptom:** the run spends its whole budget on setup — registration, dating, eleven
+  activities — before reaching the one screen under test, and never gets there.
+- **Wrong conclusion:** manual QA is not worth it for this change.
+- **Rule:** setup and verification are separable. Drive the setup through the app's own forms
+  with a throwaway Playwright spec in the scratchpad reusing `client/e2e/helpers/*` (35s for a
+  prenatal encounter with labs ordered), then do the manual pass on the screen that matters.
+  The fixture is still made by the real UI, so nothing is faked — say in the report which half
+  was automated. Delete the throwaway spec afterwards: a stray file in `client/e2e/` joins a
+  CI job.

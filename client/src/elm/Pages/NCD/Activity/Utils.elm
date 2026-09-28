@@ -1,4 +1,4 @@
-module Pages.NCD.Activity.Utils exposing (activityCompleted, coMorbiditiesFormInputsAndTasks, coMorbiditiesFormWithDefault, dangerSignsFormWithDefault, examinationTasksCompletedFromTotal, expectActivity, expectLaboratoryTask, familyHistoryFormInputsAndTasks, familyHistoryFormWithDefault, generatePreviousLaboratoryTestsDatesDict, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryTaskCompleted, laboratoryTasks, medicalHistoryTasksCompletedFromTotal, medicationHistoryFormInputsAndTasks, medicationHistoryFormWithDefault, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, resolveNextStepsTasks, socialHistoryFormInputsAndTasks, socialHistoryFormWithDefault, symptomReviewFormWithDefault, toCoMorbiditiesValueWithDefault, toDangerSignsValueWithDefault, toFamilyHistoryValueWithDefault, toHealthEducationValueWithDefault, toMedicationHistoryValueWithDefault, toSocialHistoryValueWithDefault, toSymptomReviewValueWithDefault)
+module Pages.NCD.Activity.Utils exposing (activityCompleted, coMorbiditiesFormInputsAndTasks, coMorbiditiesFormWithDefault, dangerSignsFormWithDefault, examinationTasksCompletedFromTotal, expectActivity, expectLaboratoryTask, familyHistoryFormInputsAndTasks, familyHistoryFormWithDefault, generatePreviousLaboratoryTestsDatesDict, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryTaskCompleted, laboratoryTasks, medicalHistoryTasksCompletedFromTotal, medicationHistoryFormInputsAndTasks, medicationHistoryFormWithDefault, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, resolveNextStepsTasks, resolvePreviousMaybeValue, socialHistoryFormInputsAndTasks, socialHistoryFormWithDefault, symptomReviewFormWithDefault, toCoMorbiditiesValueWithDefault, toDangerSignsValueWithDefault, toFamilyHistoryValueWithDefault, toHealthEducationValueWithDefault, toMedicationHistoryValueWithDefault, toSocialHistoryValueWithDefault, toSymptomReviewValueWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -142,10 +142,10 @@ expectNextStepsTask assembled task =
                 -- Not diagnosed any Hypertension diagnoses at previous encounters.
                 && (not <| diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled.previousEncountersData)
                 -- Not diagnosed any Diaberes / RenalComplications diagnoses at current or previous encounters.
-                && (not <| diagnosedAnyOf [ DiagnosisRenalComplications, DiagnosisDiabetesInitial ] assembled)
+                && (not <| diagnosedAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled)
                 && (not <| diagnosedPreviouslyAnyOf (DiagnosisRenalComplications :: diabetesDiagnoses) assembled.previousEncountersData)
                 && -- Pregnant women always get Methyldopa treatment, so, no health education is provided.
-                   (not <| patientIsPregnant assembled.measurements)
+                   (not <| patientIsPregnant assembled)
 
         TaskMedicationDistribution ->
             medicateForDiabetes NCDEncounterPhaseInitial assembled
@@ -201,13 +201,14 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
 
 resolvePreviousMaybeValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> Maybe b) -> Maybe b
 resolvePreviousMaybeValue assembled measurementFunc valueFunc =
+    -- previousEncountersData is sorted most recent first, so the head is the
+    -- latest previous encounter where the value was recorded.
     assembled.previousEncountersData
         |> List.filterMap
             (.measurements
                 >> measurementFunc
                 >> Maybe.andThen (Tuple.second >> .value >> valueFunc)
             )
-        |> List.reverse
         |> List.head
 
 
@@ -895,8 +896,9 @@ expectLaboratoryTask currentDate assembled task =
             notKnownAsPositive && initialTestRequired TaskHIVTest
 
         TaskPregnancyTest ->
+            -- Pregnancy status can change between encounters, so the test
+            -- is offered at every one of them.
             isPersonAFertileWoman currentDate assembled.person
-                && initialTestRequired TaskPregnancyTest
 
         TaskCreatinineTest ->
             recurrentTestRequired 12 TaskCreatinineTest

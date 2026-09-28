@@ -299,6 +299,9 @@ export async function completeNutritionAssessment(
     // goes through, before going back and recording it. CHW only: the
     // checkbox is not drawn for a nurse.
     heightNotTakenFirst?: boolean;
+    // Save the head circumference as not taken first, and check that goes
+    // through, before going back and recording it.
+    headCircumferenceNotTakenFirst?: boolean;
   },
 ) {
   const nutritionSigns = options?.nutritionSigns ?? [];
@@ -354,7 +357,34 @@ export async function completeNutritionAssessment(
   const hcTab = page.locator('.link-section:has(.icon-activity-task.icon-head-circumference)');
   if (options?.headCircumference && await hcTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'head-circumference');
-    await fillMeasurement(page, 'head-circumference', options.headCircumference);
+
+    if (options?.headCircumferenceNotTakenFirst) {
+      const notTaken = page.locator('div.ui.checkbox.activity', {
+        hasText: 'head circumference was not taken today',
+      });
+      await click(notTaken, page);
+      await page.waitForTimeout(WAIT.formInteraction);
+
+      // Not taken is stored as 0 cm, which is not out of range: the save goes
+      // through, and no warning comes up.
+      const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+      await expect(saveBtn).toHaveClass(/active/);
+      await click(saveBtn, page);
+      await page.waitForTimeout(WAIT.sectionTransition);
+      await expect(page.locator('div.ui.active.modal.measurement-out-of-range')).toHaveCount(0);
+
+      // Back to the head circumference, this time recording one.
+      await clickSubTaskTab(page, 'head-circumference');
+      await click(notTaken, page);
+      await page.waitForTimeout(WAIT.formInteraction);
+    }
+
+    // The wrong value is a 0 typed in place of ticking "not taken".
+    await enter('head-circumference', options.headCircumference, '0', [
+      'height-out-of-range',
+      'muac-out-of-range',
+      'weight-out-of-range',
+    ]);
     await saveSubTask(page);
 
     // Handle macro/microcephaly popup.
