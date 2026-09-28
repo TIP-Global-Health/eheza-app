@@ -6,7 +6,9 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model
     exposing
         ( AdministrationNote(..)
+        , HeadCircumferenceInCm(..)
         , HeightInCm(..)
+        , MeasurementNote(..)
         , PregnancySummarySign(..)
         , PregnancySummaryValue
         , VaccinationValue
@@ -15,6 +17,7 @@ import Backend.Measurement.Model
         , WellChildMeasurements
         )
 import Backend.Model exposing (emptyModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
 import Backend.WellChildEncounter.Model
 import Date
 import EverySet
@@ -30,6 +33,7 @@ import Pages.WellChild.Activity.Utils
         , resolveNextDateForECDVisit
         , resolvePreviousMaybeValue
         )
+import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
@@ -47,6 +51,7 @@ all =
         , nutritionAssessmentGateTests
         , dtpStandaloneSaveTests
         , resolvePreviousMaybeValueTests
+        , previousHeadCircumferenceTests
         ]
 
 
@@ -85,6 +90,86 @@ emptyWellChildMeasurements =
     , foodSecurity = Nothing
     , caring = Nothing
     }
+
+
+{-| The head circumference form shows the child's last measured value. A
+visit where it was not taken stores 0 cm with a note, and is skipped.
+-}
+previousHeadCircumferenceTests : Test
+previousHeadCircumferenceTests =
+    let
+        currentDate =
+            Date.fromCalendarDate 2026 Time.Jul 27
+
+        childId =
+            toEntityUuid "child"
+
+        participantId =
+            toEntityUuid "participant"
+
+        dateMonthsAgo monthsAgo =
+            Date.add Date.Months -monthsAgo currentDate
+
+        encounterId monthsAgo =
+            toEntityUuid ("encounter-" ++ String.fromInt monthsAgo)
+
+        -- Each visit is (months ago, cm, notes).
+        previousHeadCircumference visits =
+            { emptyModelIndexedDb
+                | individualParticipantsByPerson =
+                    Dict.singleton childId
+                        (Success <|
+                            Dict.singleton participantId (testParticipant (dateMonthsAgo 12) WellChildEncounter)
+                        )
+                , wellChildEncountersByParticipant =
+                    Dict.singleton participantId
+                        (Success <|
+                            Dict.fromList <|
+                                List.map
+                                    (\( monthsAgo, _, _ ) ->
+                                        ( encounterId monthsAgo
+                                        , Backend.WellChildEncounter.Model.emptyWellChildEncounter participantId
+                                            (dateMonthsAgo monthsAgo)
+                                            Backend.WellChildEncounter.Model.PediatricCare
+                                            Nothing
+                                        )
+                                    )
+                                    visits
+                        )
+                , wellChildMeasurements =
+                    Dict.fromList <|
+                        List.map
+                            (\( monthsAgo, cm, notes ) ->
+                                ( encounterId monthsAgo
+                                , Success
+                                    { emptyWellChildMeasurements
+                                        | headCircumference =
+                                            wrapMeasurement (dateMonthsAgo monthsAgo)
+                                                { headCircumference = HeadCircumferenceInCm cm
+                                                , notes = EverySet.fromList notes
+                                                }
+                                    }
+                                )
+                            )
+                            visits
+            }
+                |> resolvePreviousValuesSetForChild currentDate SiteRwanda childId
+                |> .headCircumference
+    in
+    describe "previous head circumference"
+        [ test "is the last measured value" <|
+            \_ ->
+                previousHeadCircumference [ ( 2, 44, [ NoMeasurementNotes ] ), ( 1, 45, [ NoMeasurementNotes ] ) ]
+                    |> Expect.equal (Just 45)
+        , test "skips a later visit where it was not taken" <|
+            \_ ->
+                previousHeadCircumference [ ( 2, 44, [ NoMeasurementNotes ] ), ( 1, 0, [ NoteNotTaken ] ) ]
+                    |> Expect.equal (Just 44)
+        , test "is empty when it was never taken" <|
+            \_ ->
+                previousHeadCircumference [ ( 1, 0, [ NoteNotTaken ] ) ]
+                    |> Expect.equal Nothing
+        ]
 
 
 resolvePreviousMaybeValueTests : Test
