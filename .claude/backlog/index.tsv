@@ -441,6 +441,13 @@ B-440	1	READY	MED			37	Prenatal labs: a test sent to the lab, then corrected to 
 B-441	4	READY	LOW			38	Release #2128 post-deploy steps: the head-circumference "not taken" script has no "run again once devices have updated" 
 B-442	4	READY	LOW			38	Villages: moving a village to another health centre leaves its CHW group on the old one, so CHWs synced to the new centr
 B-443	4	READY	LOW			38	`drush recalculate-zscores` re-stamps only the group `height`/`weight` records, not the five other bundles the presave c
+B-444	1	READY	MED-LOW			38	Prenatal HIV PCR: a viral load corrected to "undetectable" keeps the number typed before, and the diagnosis reads the nu
+B-445	3	READY	MED-LOW			38	Statistical Queries › ANC Contacts: postpartum encounters count as ANC contacts when the delivery came before the EDD, u
+B-446	4	READY	LOW			38	Statistical Queries CSV download: two ANC Contacts row labels contain commas and the writer never quotes, so those rows'
+B-447	4	READY	LOW			38	Statistical Queries › Peripartum: pregnancy outcomes are not bounded by the TO date, so a delivery after the range still
+B-448	4	READY	LOW			38	Statistical Queries and Completion apps: a failed data batch is dropped without trace, so the page shows the "in process
+B-449	1	READY	LOW			38	Prenatal diagnosis: malaria with anemia after a treated malaria with SEVERE anemia is filed as BOTH a new episode (treat
+B-450	1	READY	LOW			38	Prenatal postpartum encounter: the symptom review still asks about burning with urination, abnormal discharge, heartburn
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
