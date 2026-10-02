@@ -1,7 +1,7 @@
 module Pages.MessagingCenter.Utils exposing (adoptionSurveyQuestions, generateInboxMessages, quarterlySurveyQuestions, resolveNumberOfUnreadMessages, resolveSurveyScoreDialogState, surveyAnswerToScore, surveyQuestionsAnswered)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (..)
+import Backend.Entities exposing (NurseId)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)

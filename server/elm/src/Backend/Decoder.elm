@@ -50,6 +50,12 @@ siteFeaturesFromString str =
 siteFeatureFromString : String -> Maybe SiteFeature
 siteFeatureFromString str =
     case String.toLower str of
+        "acute_illness" ->
+            Just FeatureAcuteIllness
+
+        "antenatal" ->
+            Just FeatureAntenatal
+
         "family_nutrition" ->
             Just FeatureFamilyNutrition
 
@@ -65,8 +71,17 @@ siteFeatureFromString str =
         "hiv_management" ->
             Just FeatureHIVManagement
 
+        "ncd" ->
+            Just FeatureNCD
+
         "ncda" ->
             Just FeatureNCDA
+
+        "nutrition_group" ->
+            Just FeatureNutritionGroup
+
+        "nutrition_individual" ->
+            Just FeatureNutritionIndividual
 
         "report_to_whatsapp" ->
             Just FeatureReportToWhatsApp
@@ -79,6 +94,9 @@ siteFeatureFromString str =
 
         "tuberculosis_management" ->
             Just FeatureTuberculosisManagement
+
+        "well_child" ->
+            Just FeatureWellChild
 
         _ ->
             Nothing

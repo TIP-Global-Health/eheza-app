@@ -2,8 +2,9 @@ module Pages.Clinical.View exposing (view)
 
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
-import Backend.Utils exposing (familyNutritionEnabled)
+import Backend.Utils exposing (familyNutritionEnabled, groupEncountersEnabled, individualEncountersEnabled)
 import EverySet exposing (EverySet)
+import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -38,12 +39,33 @@ viewHeader language =
 viewContent : Language -> EverySet SiteFeature -> Bool -> Html App.Model.Msg
 viewContent language features isChw =
     let
-        groupAssessmentButtonAction =
-            if isChw then
-                SetActivePage <| UserPage GroupEncounterTypesPage
+        individualEncounterButton =
+            if individualEncountersEnabled isChw features then
+                viewButton Translate.IndividualEncounter
+                    "individual-assessment"
+                    "icon-individual-encounter.svg"
+                    (SetActivePage <| UserPage IndividualEncounterTypesPage)
 
             else
-                SetActivePage <| UserPage ClinicsPage
+                emptyNode
+
+        groupEncounterButton =
+            if groupEncountersEnabled isChw features then
+                let
+                    groupAssessmentButtonAction =
+                        if isChw then
+                            SetActivePage <| UserPage GroupEncounterTypesPage
+
+                        else
+                            SetActivePage <| UserPage ClinicsPage
+                in
+                viewButton Translate.GroupAssessment
+                    "group-assessment"
+                    "icon-group-encounter.svg"
+                    groupAssessmentButtonAction
+
+            else
+                emptyNode
 
         viewButton label class_ svg action =
             button
@@ -68,13 +90,7 @@ viewContent language features isChw =
     in
     div [] <|
         [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
-        , viewButton Translate.IndividualEncounter
-            "individual-assessment"
-            "icon-individual-encounter.svg"
-            (SetActivePage <| UserPage IndividualEncounterTypesPage)
-        , viewButton Translate.GroupAssessment
-            "group-assessment"
-            "icon-group-encounter.svg"
-            groupAssessmentButtonAction
+        , individualEncounterButton
+        , groupEncounterButton
         ]
             ++ familyEncounterButton

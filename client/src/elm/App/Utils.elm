@@ -1,4 +1,4 @@
-module App.Utils exposing (focusOnCalendarMsg, getLoggedInData, sequenceSubModelReturn, triggerRollbarOnFailure, updateSubModel)
+module App.Utils exposing (focusOnCalendarMsg, getLoggedIn, getLoggedInData, sequenceSubModelReturn, triggerRollbarOnFailure, updateSubModel)
 
 import App.Model exposing (LoggedInModel, Model, Msg(..), RollbarErrorSource(..), SubModelReturn)
 import Backend.Entities exposing (HealthCenterId)
@@ -8,13 +8,21 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Task
 
 
+{-| Returns the logged in model.
+-}
+getLoggedIn : Model -> Maybe LoggedInModel
+getLoggedIn model =
+    RemoteData.toMaybe model.configuration
+        |> Maybe.andThen (.loggedIn >> RemoteData.toMaybe)
+
+
 {-| Returns the logged in model and selected health center, if we're logged in.
 -}
 getLoggedInData : Model -> Maybe ( HealthCenterId, LoggedInModel )
 getLoggedInData model =
-    RemoteData.toMaybe model.configuration
-        |> Maybe.andThen (.loggedIn >> RemoteData.toMaybe)
-        |> Maybe.map2 (\healthCenterId loggedIn -> ( healthCenterId, loggedIn )) model.healthCenterId
+    Maybe.map2 (\healthCenterId loggedIn -> ( healthCenterId, loggedIn ))
+        model.healthCenterId
+        (getLoggedIn model)
 
 
 {-| If there was an error, add it to the top of the list,

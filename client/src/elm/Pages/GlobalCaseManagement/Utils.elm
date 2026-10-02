@@ -13,7 +13,17 @@ import Backend.Measurement.Model
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getTuberculosisEncountersForParticipant)
-import Backend.Utils exposing (hivManagementEnabled, resolveIndividualParticipantsForPerson, tuberculosisManagementEnabled)
+import Backend.Utils
+    exposing
+        ( acuteIllnessEnabled
+        , antenatalEnabled
+        , hivManagementEnabled
+        , ncdEnabled
+        , nutritionEnabled
+        , resolveIndividualParticipantsForPerson
+        , tuberculosisManagementEnabled
+        , wellChildEnabled
+        )
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
@@ -26,33 +36,33 @@ import SyncManager.Model exposing (SiteFeature)
 
 chwFilters : EverySet SiteFeature -> List CaseManagementFilter
 chwFilters features =
-    [ FilterAcuteIllness
-    , FilterAntenatal
-    , FilterNutrition
-    , FilterImmunization
-    ]
-        ++ (if tuberculosisManagementEnabled features then
-                [ FilterTuberculosis ]
-
-            else
-                []
-           )
-        ++ (if hivManagementEnabled features then
-                [ FilterHIV ]
-
-            else
-                []
-           )
+    viewFilterIfFeatureEnabled features acuteIllnessEnabled FilterAcuteIllness
+        ++ viewFilterIfFeatureEnabled features antenatalEnabled FilterAntenatal
+        ++ viewFilterIfFeatureEnabled features nutritionEnabled FilterNutrition
+        ++ viewFilterIfFeatureEnabled features wellChildEnabled FilterImmunization
+        ++ viewFilterIfFeatureEnabled features tuberculosisManagementEnabled FilterTuberculosis
+        ++ viewFilterIfFeatureEnabled features hivManagementEnabled FilterHIV
 
 
-nurseFilters : List CaseManagementFilter
-nurseFilters =
-    [ FilterContactsTrace, FilterPrenatalLabs, FilterNCDLabs ]
+nurseFilters : EverySet SiteFeature -> List CaseManagementFilter
+nurseFilters features =
+    viewFilterIfFeatureEnabled features acuteIllnessEnabled FilterContactsTrace
+        ++ viewFilterIfFeatureEnabled features antenatalEnabled FilterPrenatalLabs
+        ++ viewFilterIfFeatureEnabled features ncdEnabled FilterNCDLabs
 
 
-labTechFilters : List CaseManagementFilter
-labTechFilters =
-    [ FilterPrenatalLabs ]
+labTechFilters : EverySet SiteFeature -> List CaseManagementFilter
+labTechFilters features =
+    viewFilterIfFeatureEnabled features antenatalEnabled FilterPrenatalLabs
+
+
+viewFilterIfFeatureEnabled : EverySet SiteFeature -> (EverySet SiteFeature -> Bool) -> CaseManagementFilter -> List CaseManagementFilter
+viewFilterIfFeatureEnabled features enabledFunc filter =
+    if enabledFunc features then
+        [ filter ]
+
+    else
+        []
 
 
 generateNutritionFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem

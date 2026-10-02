@@ -3,7 +3,7 @@ module Backend.Completion.Decoder exposing (decodeCompletionData, decodeSyncResp
 import Backend.Completion.Model exposing (ActivitiesCompletionData, CompletionData, EncounterData, NutritionGroupEncounterData, SyncResponse, TakenBy(..), WellChildEncounterData, WellChildEncounterType(..))
 import Backend.Completion.Utils exposing (acuteIllnessActivityFromMapping, childScoreboardActivityFromMapping, hivActivityFromMapping, homeVisitActivityFromMapping, ncdActivityFromMapping, nutritionChildActivityFromMapping, nutritionMotherActivityFromMapping, prenatalActivityFromMapping, takenByFromString, tuberculosisActivityFromMapping, wellChildActivityFromMapping)
 import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
-import Backend.Decoder exposing (decodeSite, decodeWithFallback)
+import Backend.Decoder exposing (decodeSite, decodeSiteFeatures, decodeWithFallback)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, fail, field, list, map, nullable, oneOf, string, succeed)
@@ -14,6 +14,7 @@ decodeCompletionData : Decoder CompletionData
 decodeCompletionData =
     succeed CompletionData
         |> required "site" decodeSite
+        |> required "features" decodeSiteFeatures
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
         |> required "params" decodeReportParams
