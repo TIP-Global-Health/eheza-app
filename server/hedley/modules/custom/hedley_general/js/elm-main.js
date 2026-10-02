@@ -12632,7 +12632,7 @@ var $author$project$Translate$translateMonth = F2(
 					english: 'March',
 					kinyarwanda: $elm$core$Maybe$Just('Werurwe'),
 					kirundi: $elm$core$Maybe$Just('Ntwarante'),
-					somali: $elm$core$Maybe$Nothing
+					somali: $elm$core$Maybe$Just('Maarso')
 				};
 			case 'Apr':
 				return _short ? {
@@ -12644,7 +12644,7 @@ var $author$project$Translate$translateMonth = F2(
 					english: 'April',
 					kinyarwanda: $elm$core$Maybe$Just('Mata'),
 					kirundi: $elm$core$Maybe$Just('Ndamukiza'),
-					somali: $elm$core$Maybe$Nothing
+					somali: $elm$core$Maybe$Just('Abriil')
 				};
 			case 'May':
 				return _short ? {
@@ -12656,7 +12656,7 @@ var $author$project$Translate$translateMonth = F2(
 					english: 'May',
 					kinyarwanda: $elm$core$Maybe$Just('Gicurasi'),
 					kirundi: $elm$core$Maybe$Just('Rusama'),
-					somali: $elm$core$Maybe$Nothing
+					somali: $elm$core$Maybe$Just('Maajo')
 				};
 			case 'Jun':
 				return _short ? {
