@@ -3,12 +3,12 @@ module Pages.Clinics.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import List.Extra
-import List.Zipper as Zipper
+import Maybe.Extra exposing (isNothing)
 import Pages.Clinics.Model exposing (Model)
+import Pages.Utils exposing (syncStatusWarning)
 import RemoteData
-import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
-import SyncManager.Model exposing (SyncInfoStatus(..))
+import Restful.Endpoint exposing (toEntityUuid)
+import SyncManager.Model
 import SyncManager.Utils exposing (getSyncedHealthCenters)
 
 
@@ -58,44 +58,32 @@ fetch selectedHealthCenterId db syncManager model =
             RemoteData.toMaybe db.clinics
                 |> Maybe.andThen
                     (\clinics ->
-                        let
-                            selectedHealthCenterSyncInfo =
-                                syncManager.syncInfoAuthorities
-                                    |> Maybe.andThen
-                                        (Zipper.toList >> List.Extra.find (\authorityInfo -> authorityInfo.uuid == fromEntityUuid selectedHealthCenterId))
-                        in
-                        Maybe.map2
-                            (\syncInfo clinicType ->
-                                case syncInfo.status of
-                                    NotAvailable ->
-                                        []
+                        Maybe.map
+                            (\clinicType ->
+                                -- Fetch whenever the page shows the groups, so a group
+                                -- button never reads missing sessions as "no session today".
+                                if isNothing (syncStatusWarning selectedHealthCenterId syncManager.syncInfoAuthorities) then
+                                    let
+                                        syncedHealthCenters =
+                                            getSyncedHealthCenters syncManager
+                                                |> List.map toEntityUuid
+                                    in
+                                    Dict.filter
+                                        (\_ clinic ->
+                                            -- Group belongs to seleced health center.
+                                            (clinic.healthCenterId == selectedHealthCenterId)
+                                                -- Health center is synced.
+                                                && List.member clinic.healthCenterId syncedHealthCenters
+                                                -- Group is of selected type.
+                                                && (clinic.clinicType == clinicType)
+                                        )
+                                        clinics
+                                        |> Dict.keys
+                                        |> List.map Backend.Model.FetchSessionsByClinic
 
-                                    Uploading ->
-                                        []
-
-                                    Downloading ->
-                                        []
-
-                                    _ ->
-                                        let
-                                            syncedHealthCenters =
-                                                getSyncedHealthCenters syncManager
-                                                    |> List.map toEntityUuid
-                                        in
-                                        Dict.filter
-                                            (\_ clinic ->
-                                                -- Group belongs to seleced health center.
-                                                (clinic.healthCenterId == selectedHealthCenterId)
-                                                    -- Health center is synced.
-                                                    && List.member clinic.healthCenterId syncedHealthCenters
-                                                    -- Group is of selected type.
-                                                    && (clinic.clinicType == clinicType)
-                                            )
-                                            clinics
-                                            |> Dict.keys
-                                            |> List.map Backend.Model.FetchSessionsByClinic
+                                else
+                                    []
                             )
-                            selectedHealthCenterSyncInfo
                             model.clinicType
                     )
                 |> Maybe.withDefault []

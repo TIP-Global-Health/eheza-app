@@ -3,6 +3,7 @@ module TestFixtures exposing
     , testChild
     , testParticipant
     , testPerson
+    , testSyncManagerModel
     , urineGlucoseValue
     , vitalsValueWith
     , wrapMeasurement
@@ -24,8 +25,10 @@ import Backend.Measurement.Model
         )
 import Backend.Person.Model exposing (Person)
 import Date
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
+import SyncManager.Model exposing (Site(..), SyncInfoStatus(..))
 import Time
 
 
@@ -180,3 +183,29 @@ emptyAcuteIllnessMeasurements =
     , covidTesting = Nothing
     , contactsTracing = Nothing
     }
+
+
+{-| A sync manager model with no health centers and nothing synced.
+-}
+testSyncManagerModel : SyncManager.Model.Model
+testSyncManagerModel =
+    SyncManager.Model.emptyModel
+        { syncInfoGeneral =
+            { lastFetchedRevisionId = 0
+            , lastSuccesfulContact = 0
+            , remainingToUpload = 0
+            , remainingToDownload = 0
+            , deviceName = ""
+            , status = NotAvailable
+            , rollbarToken = ""
+            , site = SiteUnknown
+            , features = EverySet.empty
+            }
+        , syncInfoAuthorities = Nothing
+        , batchSize = 100
+        , syncSpeed =
+            { idle = 3000
+            , cycle = 50
+            , offline = 10000
+            }
+        }
