@@ -1010,13 +1010,13 @@ export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
 }
 
 /**
- * Correct the Partner HIV test and save it: either the partner is tested today
- * at point of care with a negative result, or the partner is known as HIV
- * positive and not taking ARVs.
+ * Correct the Partner HIV test and save it: the partner is tested today at
+ * point of care with a negative result, or tested today with the sample sent to
+ * the lab, or known as HIV positive and not taking ARVs.
  */
 export async function correctPartnerHIVTest(
   page: Page,
-  partner: 'tested-negative' | 'known-positive',
+  partner: 'tested-negative' | 'sent-to-lab' | 'known-positive',
 ): Promise<void> {
   await correctLabTest(page, /Partner HIV/, async () => {
     if (partner === 'known-positive') {
@@ -1032,10 +1032,13 @@ export async function correctPartnerHIVTest(
     await answerYesNo(page, 'test-performed', 'Yes');
     await page.waitForTimeout(WAIT.elmRerender);
 
-    // "Immediate result?" → Point of Care.
+    // "Immediate result?" → Point of Care is the first label, Lab the second.
     const immediateResult = page.locator('.form-input.yes-no.immediate-result');
-    await click(immediateResult.locator('label').first(), page);
+    await click(immediateResult.locator('label').nth(partner === 'sent-to-lab' ? 1 : 0), page);
     await page.waitForTimeout(WAIT.elmRerender);
+    if (partner === 'sent-to-lab') {
+      return;
+    }
 
     const resultSelect = page.locator('select.form-input').first();
     const negative = await resultSelect

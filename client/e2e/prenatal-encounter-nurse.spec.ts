@@ -263,8 +263,10 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
       ).not.toContainText('TDF+3TC');
     }
 
-    // Back to a partner known as positive: the discordant couple returns, so
-    // the correction below starts from it.
+    // Back to a partner known as positive, by way of a test sent to the lab:
+    // that test owes no result once it is replaced, so the discordant couple
+    // returns at this phase, with PrEP.
+    await correctPartnerHIVTest(page, 'sent-to-lab');
     await correctPartnerHIVTest(page, 'known-positive');
     await expectPrEPOffered('a partner known as positive again is a discordant couple again');
 

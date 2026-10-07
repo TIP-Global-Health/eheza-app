@@ -1,12 +1,14 @@
 module Pages.Prenatal.RecurrentActivity.Test exposing (all)
 
 import AssocList as Dict
+import Backend.Entities exposing (PrenatalEncounterId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model
     exposing
         ( AdministrationNote(..)
         , BloodSmearResult(..)
         , HIVTestValue
+        , HepatitisBTestValue
         , LaboratoryTest(..)
         , LabsResultsValue
         , MalariaTestValue
@@ -18,6 +20,7 @@ import Backend.Measurement.Model
         , PrenatalMedicationDistributionValue
         , RecommendedTreatmentSign(..)
         , TestExecutionNote(..)
+        , TestPrerequisite(..)
         , TestResult(..)
         , VitalsValue
         , emptyPrenatalMeasurements
@@ -448,6 +451,33 @@ laboratoryResultTaskCompletedMalariaTest =
         ]
 
 
+{-| A Hepatitis B test first sent to the lab, then corrected to known as
+positive. The record keeps the lab prerequisites of the run it replaced.
+-}
+laboratoryResultTaskCompletedKnownAsPositiveTest : Test
+laboratoryResultTaskCompletedKnownAsPositiveTest =
+    let
+        hepatitisBTestValue : HepatitisBTestValue PrenatalEncounterId
+        hepatitisBTestValue =
+            { executionNote = TestNoteKnownAsPositive
+            , executionDate = Nothing
+            , testPrerequisites = Just (EverySet.singleton NoTestPrerequisites)
+            , testResult = Nothing
+            , originatingEncounter = Nothing
+            }
+    in
+    describe "laboratoryResultTaskCompleted, on a test known as positive"
+        [ test "a Hepatitis B test corrected from sent to the lab owes no result" <|
+            \_ ->
+                { emptyPrenatalMeasurements
+                    | hepatitisBTest = TestFixtures.wrapMeasurement currentDate hepatitisBTestValue
+                }
+                    |> testAssembled
+                    |> (\assembled -> laboratoryResultTaskCompleted True assembled TaskHepatitisBTest)
+                    |> Expect.equal True
+        ]
+
+
 {-| Hypertension diagnosed at an earlier visit, treated with Methyldopa 2x a
 day. Today's BP is normal, so the recommendation is to keep that dose; the
 nurse chose 3x a day and gave no reason.
@@ -532,7 +562,8 @@ resolveMedicationDistributionContinuedHypertensionTest =
 all : Test
 all =
     describe "Pages.Prenatal.RecurrentActivity.Utils"
-        [ laboratoryResultTaskCompletedMalariaTest
+        [ laboratoryResultTaskCompletedKnownAsPositiveTest
+        , laboratoryResultTaskCompletedMalariaTest
         , nextStepsHealthEducationExpectedTest
         , nextStepsMedicationDistributionCompletedTest
         , resolveLaboratoryResultFollowUpsTasksTest
