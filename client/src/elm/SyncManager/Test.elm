@@ -16,7 +16,6 @@ import SyncManager.Model
         , BackendGeneralEntity
         , DownloadPhotosStatus(..)
         , DownloadSyncResponse
-        , Flags
         , IndexDbSaveError(..)
         , Model
         , Msg(..)
@@ -26,42 +25,13 @@ import SyncManager.Model
         , SyncInfoStatus(..)
         , SyncStatus(..)
         , UploadMethod(..)
-        , emptyModel
         , emptySyncInfoAuthority
         )
 import SyncManager.Update
 import SyncManager.Utils exposing (determineDownloadPhotosStatus, pageAllowsBackgroundRefresh)
 import Test exposing (Test, describe, test)
-import TestFixtures exposing (testPerson)
+import TestFixtures exposing (testPerson, testSyncManagerModel)
 import Time
-
-
-testFlags : Flags
-testFlags =
-    { syncInfoGeneral =
-        { lastFetchedRevisionId = 0
-        , lastSuccesfulContact = 0
-        , remainingToUpload = 0
-        , remainingToDownload = 0
-        , deviceName = ""
-        , status = NotAvailable
-        , rollbarToken = ""
-        , site = SiteUnknown
-        , features = EverySet.empty
-        }
-    , syncInfoAuthorities = Nothing
-    , batchSize = 100
-    , syncSpeed =
-        { idle = 3000
-        , cycle = 50
-        , offline = 10000
-        }
-    }
-
-
-testModel : Model
-testModel =
-    emptyModel testFlags
 
 
 testDevice : Device
@@ -162,9 +132,9 @@ downloadingGeneral : Int -> Model
 downloadingGeneral cursor =
     let
         syncInfoGeneral =
-            testModel.syncInfoGeneral
+            testSyncManagerModel.syncInfoGeneral
     in
-    { testModel
+    { testSyncManagerModel
         | syncStatus = SyncDownloadGeneral RemoteData.Loading
         , syncInfoGeneral = { syncInfoGeneral | lastFetchedRevisionId = cursor }
         , downloadRequestTime = Time.millisToPosix 5000
@@ -175,7 +145,7 @@ downloadingGeneral cursor =
 -}
 downloadingAuthority : Zipper SyncInfoAuthority -> Int -> Model
 downloadingAuthority zipper time =
-    { testModel
+    { testSyncManagerModel
         | syncStatus = SyncDownloadAuthority RemoteData.Loading
         , syncInfoAuthorities = Just zipper
         , downloadRequestTime = Time.millisToPosix time
@@ -186,7 +156,7 @@ downloadingAuthority zipper time =
 -}
 downloadingStats : Zipper SyncInfoAuthority -> Model
 downloadingStats zipper =
-    { testModel
+    { testSyncManagerModel
         | syncStatus = SyncDownloadAuthorityDashboardStats RemoteData.Loading
         , syncInfoAuthorities = Just zipper
     }
@@ -234,7 +204,7 @@ all =
         [ test "determineDownloadPhotosStatus progresses the photo lane while the data lane is downloading" <|
             \() ->
                 determineDownloadPhotosStatus
-                    { testModel
+                    { testSyncManagerModel
                         | syncStatus = SyncDownloadAuthority RemoteData.NotAsked
                         , downloadPhotosStatus = DownloadPhotosIdle
                         , syncCycle = SyncCycleOn
@@ -244,7 +214,7 @@ all =
         , test "determineDownloadPhotosStatus keeps the photo lane idle when the sync cycle is paused" <|
             \() ->
                 determineDownloadPhotosStatus
-                    { testModel
+                    { testSyncManagerModel
                         | syncStatus = SyncIdle
                         , downloadPhotosStatus = DownloadPhotosIdle
                         , syncCycle = SyncCyclePause
@@ -267,7 +237,7 @@ all =
                     0
                     testDevice
                     (SavedAtIndexDbHandle saveResult)
-                    { testModel
+                    { testSyncManagerModel
                         | downloadPhotosStatus = DownloadPhotosIdle
                         , syncCycle = SyncCycleOn
                     }
@@ -291,7 +261,7 @@ all =
                     0
                     testDevice
                     (SavedAtIndexDbHandle saveResult)
-                    testModel
+                    testSyncManagerModel
                     |> .model
                     |> .lastSaveError
                     |> Expect.equal (Just IndexDbSaveErrorStorageFull)
@@ -312,7 +282,7 @@ all =
                     0
                     testDevice
                     (SavedAtIndexDbHandle saveResult)
-                    testModel
+                    testSyncManagerModel
                     |> .model
                     |> .lastSaveError
                     |> Expect.equal (Just (IndexDbSaveErrorOther "BulkError"))
@@ -332,7 +302,7 @@ all =
                     0
                     testDevice
                     (SavedAtIndexDbHandle saveResult)
-                    { testModel | lastSaveError = Just IndexDbSaveErrorStorageFull }
+                    { testSyncManagerModel | lastSaveError = Just IndexDbSaveErrorStorageFull }
                     |> .model
                     |> .lastSaveError
                     |> Expect.equal Nothing
@@ -359,7 +329,7 @@ all =
                     0
                     testDevice
                     (SavedAtIndexDbHandle saveResult)
-                    { testModel
+                    { testSyncManagerModel
                         | syncStatus = SyncDownloadAuthority RemoteData.Loading
                         , downloadRequestTime = Time.millisToPosix 0
                     }
@@ -383,7 +353,7 @@ all =
                     0
                     testDevice
                     (SavedAtIndexDbHandle saveResult)
-                    { testModel
+                    { testSyncManagerModel
                         | syncStatus = SyncDownloadGeneral RemoteData.Loading
                         , downloadRequestTime = Time.millisToPosix 0
                     }
@@ -407,7 +377,7 @@ all =
                     0
                     testDevice
                     (SavedAtIndexDbHandle saveResult)
-                    { testModel
+                    { testSyncManagerModel
                         | syncStatus = SyncDownloadAuthority RemoteData.Loading
                         , downloadRequestTime = Time.millisToPosix 0
                     }
@@ -505,7 +475,7 @@ all =
                     |> Expect.equal ( SyncDownloadGeneral (RemoteData.Failure Http.NetworkError), RemoteData.NotAsked, 0 )
         , test "a statistics response for an authority that is no longer current leaves the list alone" <|
             \() ->
-                { testModel
+                { testSyncManagerModel
                     | syncStatus = SyncDownloadAuthorityDashboardStats RemoteData.Loading
                     , syncInfoAuthorities = Just (authorities "hc-B" [ "hc-A" ])
                 }
@@ -544,7 +514,7 @@ all =
                     0
                     testDevice
                     (SavedAtIndexDbHandle saveResult)
-                    { testModel
+                    { testSyncManagerModel
                         | syncStatus = SyncDownloadAuthority RemoteData.Loading
                         , downloadRequestTime = Time.millisToPosix 0
                     }
@@ -565,7 +535,7 @@ all =
                     0
                     testDevice
                     (BackendGeneralFetchedDataSavedHandle "0")
-                    { testModel
+                    { testSyncManagerModel
                         | downloadGeneralResponse = RemoteData.Success emptyGeneralResponse
                         , downloadAuthorityResponse = RemoteData.Failure Http.NetworkError
                         , downloadRequestTime = Time.millisToPosix 0
