@@ -3392,16 +3392,16 @@ toLipidPanelTestValueWithEmptyResults note date =
     LipidPanelTestValue note date Nothing Nothing Nothing Nothing Nothing
 
 
-{-| A test known as positive was not run, so it stores no prerequisites, even
-when the form still holds the immediate result answer of a run it replaced.
+{-| A test that was not run (known as positive, or not performed) stores no
+prerequisites, even when the form still holds the answer of a run it replaced.
 -}
 testPrerequisitesByExecutionNote : TestExecutionNote -> Maybe Bool -> Maybe (EverySet TestPrerequisite)
 testPrerequisitesByExecutionNote executionNote immediateResult =
-    if executionNote == TestNoteKnownAsPositive then
-        Nothing
+    if testPerformedByExecutionNote executionNote then
+        testPrerequisitesByImmediateResult immediateResult
 
     else
-        testPrerequisitesByImmediateResult immediateResult
+        Nothing
 
 
 testPrerequisitesByImmediateResult : Maybe Bool -> Maybe (EverySet TestPrerequisite)

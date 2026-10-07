@@ -1187,9 +1187,9 @@ ncdaFormWithDefaultNotTakenTest =
         ]
 
 
-{-| A test sent to the lab, then corrected to known as positive. The form
-reads the old "immediate result" answer back from the saved run, but the
-saved record must not claim a run.
+{-| A test sent to the lab, then corrected to known as positive or to not
+performed. The form reads the old "immediate result" answer back from the saved
+run, but the saved record must not claim a run.
 -}
 knownAsPositiveSavesNoPrerequisitesTest : Test
 knownAsPositiveSavesNoPrerequisitesTest =
@@ -1205,7 +1205,7 @@ knownAsPositiveSavesNoPrerequisitesTest =
             , hivSigns = Nothing
             }
     in
-    describe "a test corrected to known as positive saves no prerequisites"
+    describe "a test corrected to one not run saves no prerequisites"
         [ test "HIV test" <|
             \_ ->
                 knownAsPositiveUpdateHIVTest True emptyHIVTestUniversalForm
@@ -1236,6 +1236,17 @@ knownAsPositiveSavesNoPrerequisitesTest =
             \_ ->
                 rdtKnownAsPositiveUpdate True emptyHIVTestForm
                     |> toHIVTestValueWithDefault (Just savedHIVTest)
+                    |> Maybe.map .testPrerequisites
+                    |> Expect.equal (Just Nothing)
+        , test "a run sent to the lab, then not performed with a reason, saves no prerequisites" <|
+            \_ ->
+                { emptyPartnerHIVTestForm
+                    | testPerformed = Just False
+                    , testPerformedDirty = True
+                    , executionNote = Just TestNoteLackOfReagents
+                    , executionNoteDirty = True
+                }
+                    |> toPartnerHIVTestValueWithDefault (Just savedHIVTest)
                     |> Maybe.map .testPrerequisites
                     |> Expect.equal (Just Nothing)
         , test "a run sent to the lab still saves its prerequisites" <|
