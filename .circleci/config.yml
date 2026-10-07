@@ -153,9 +153,11 @@ jobs:
             done
             echo "App failed to become reachable on http://localhost:3000 within timeout"
             exit 1
+      # \b matches whole words only, so "NCD" leaves "NCDA" alone. Keep this
+      # value unquoted: in YAML double quotes \b becomes a backspace.
       - run:
           name: Run E2E tests
-          command: cd client && export TZ=UTC && npx playwright test prenatal tuberculosis && npx playwright test --grep-invert "Well Child|NCD\b|HIV|Tuberculosis|Child Scoreboard|Prenatal|Family Nutrition|Group Nutrition|Group Education|Stock Management|Admin Reports|Bulk Photo Fetch"
+          command: cd client && export TZ=UTC && npx playwright test prenatal tuberculosis && npx playwright test --grep-invert "\b(Well Child|NCD|HIV|Tuberculosis|Child Scoreboard|Prenatal|Family Nutrition|Group Nutrition|Group Education|Stock Management|Admin Reports|Bulk Photo Fetch)\b"
           no_output_timeout: 15m
       - store_artifacts:
           path: client/test-results
