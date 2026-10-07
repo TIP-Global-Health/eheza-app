@@ -8876,11 +8876,12 @@ testNotPerformedByWhyNotAtExecutionNote executionNote =
 
 expectUniversalTestResultTask : { v | testPrerequisites : Maybe (EverySet TestPrerequisite), executionNote : TestExecutionNote } -> Bool
 expectUniversalTestResultTask value =
-    -- It's possible to enter the result immediatly (and not from
-    -- Case management).
-    -- If this is the case, we do not expect to see results task.
-    Maybe.map (EverySet.member PrerequisiteImmediateResult >> not) value.testPrerequisites
-        |> Maybe.withDefault False
+    -- No result is expected when it was entered right away, or when the
+    -- patient is known as positive, so no test was run.
+    (value.executionNote /= TestNoteKnownAsPositive)
+        && (Maybe.map (EverySet.member PrerequisiteImmediateResult >> not) value.testPrerequisites
+                |> Maybe.withDefault False
+           )
 
 
 viewSelectInput :
