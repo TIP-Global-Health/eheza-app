@@ -453,6 +453,8 @@ B-452	1	READY	LOW			39	Prenatal obstetric history: correcting step 1 to a first 
 B-453	1	READY	LOW			39	Prenatal postpartum mastitis: a mother who is NOT breastfeeding because of breast pain or breast redness is never diagno
 B-454	1	READY	LOW			39	NCD labs: a random blood sugar test sent to the lab, then corrected to "not performed", keeps "result from the lab" in i
 B-455	4	WONTFIX	LOW			39	Prenatal labs: a Hepatitis B test run at point of care, then corrected to "known as positive", still saves the result of
+B-456	4	READY	LOW			39	Admin reports CSV download: the file has no byte-order mark and always separates with a comma, so Excel can garble accen
+B-457	4	READY	LOW			39	Admin Elm app (`server/elm`): no unit tests can be written, because it has no elm-test setup, so pure helpers such as th
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

@@ -46,7 +46,7 @@ What changes because of this:
 
 ## Open right now — updated 2026-10-07 (R39)
 
-🟡 **PR #2312 open 2026-10-07 (B-446, tier 4, issue #2311)** — admin reports CSV: every line goes through `csvRow`, which quotes cells holding a comma, quote or line break (all three writers in `Pages/Reports/View.elm`); bundle rebuilt. Worktree released. **Awaiting review + CI.**
+🟡 **PR #2312 open 2026-10-07 (B-446, tier 4, issue #2311)** — admin reports CSV: every line goes through `csvRow`, which quotes cells holding a comma, quote or line break (all three writers in `Pages/Reports/View.elm`); bundle rebuilt. Worktree released. **Review round 1 (medium): 6 findings, 2 cleanups fixed in `1f74a328c`, 1 won't-fix, 2 no change, 1 new item B-456; B-457 (no server-Elm test setup) recorded; threads resolved.** Awaiting CI + merge.
 
 🟡 **PR #2315 open 2026-10-07 (B-334 + B-414, tier 4, issues #2313 / #2314)** — admin sidebar PMTCT link fixed, plus `hedley_admin_update_7004()` to repoint existing sites' row; content-list Delete / Unpublish bulk operations shown only in super user mode. Worktree released. **Awaiting review + CI.**
 
