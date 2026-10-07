@@ -3777,7 +3777,7 @@ translateMonth month short =
                 { english = "March"
                 , kinyarwanda = Just "Werurwe"
                 , kirundi = Just "Ntwarante"
-                , somali = Nothing
+                , somali = Just "Maarso"
                 }
 
         Apr ->
@@ -3792,7 +3792,7 @@ translateMonth month short =
                 { english = "April"
                 , kinyarwanda = Just "Mata"
                 , kirundi = Just "Ndamukiza"
-                , somali = Nothing
+                , somali = Just "Abriil"
                 }
 
         May ->
@@ -3807,7 +3807,7 @@ translateMonth month short =
                 { english = "May"
                 , kinyarwanda = Just "Gicurasi"
                 , kirundi = Just "Rusama"
-                , somali = Nothing
+                , somali = Just "Maajo"
                 }
 
         Jun ->
