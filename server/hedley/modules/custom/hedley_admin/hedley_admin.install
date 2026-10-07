@@ -47,8 +47,7 @@ function hedley_admin_update_7003() {
 /**
  * Point the "Create PMTCT Participation" link at the existing add form.
  *
- * Features finds the link by its path, so without this a revert would add a
- * second link and keep the broken one.
+ * Features finds a link by its path, so a revert alone would add a second one.
  */
 function hedley_admin_update_7004() {
   db_update('menu_links')
