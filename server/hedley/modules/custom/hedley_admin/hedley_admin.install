@@ -43,3 +43,17 @@ function hedley_admin_update_7003() {
   variable_del('hedley_admin_report_email');
   menu_rebuild();
 }
+
+/**
+ * Point the "Create PMTCT Participation" link at the existing add form.
+ *
+ * Features finds the link by its path, so without this a revert would add a
+ * second link and keep the broken one.
+ */
+function hedley_admin_update_7004() {
+  db_update('menu_links')
+    ->fields(['link_path' => 'node/add/pmtct-participant'])
+    ->condition('menu_name', 'menu-eheza-app-admin-menu')
+    ->condition('link_path', 'node/add/pmtct-paticipation')
+    ->execute();
+}
