@@ -50,7 +50,7 @@ What changes because of this:
 
 🟡 **PR #2315 open 2026-10-07 (B-334 + B-414, tier 4, issues #2313 / #2314)** — admin sidebar PMTCT link fixed, plus `hedley_admin_update_7004()` to repoint existing sites' row; content-list Delete / Unpublish bulk operations shown only in super user mode. Worktree released. **Awaiting review + CI.**
 
-🔧 **PR #2308 open 2026-10-07** (issue #2307) — B-451 + B-276 + COVID + treatment review: an edited Acute Illness record leaves a newly revealed question unanswered. Review round 1 (9 findings) answered in 97be32874: 1, 3, 5, 7, 8, 9 fixed; 4, 6 declined; 2 left by the user. Waiting on CI and the user's merge.
+🔧 **PR #2308 open 2026-10-07** (issue #2307) — B-451 + B-276 + COVID + treatment review: an edited Acute Illness record leaves a newly revealed question unanswered. Review round 1 (9 findings) answered in 97be32874: 1, 3, 5, 7, 8, 9 fixed; 4, 6 declined; 2 left by the user. Round 2 (`/code-review low` on 97be32874): no findings — it read the Elm diff only, not the e2e helpers. Waiting on CI e2e and the user's merge.
 
 🟡 **PR #2310 open 2026-10-07 (B-393, tier 3, issue #2309)** — E2E suite: job 1's title exclusion is `NCD\b`, so the Nurse Nutrition NCDA test runs in job 1; every one of the 65 e2e tests is now in exactly one job (measured). One line in `.circleci/config.yml`. ⚠ The test has not run since 2026-03-15 — CI shows whether it still passes. Worktree released. **Awaiting review + CI.**
 
