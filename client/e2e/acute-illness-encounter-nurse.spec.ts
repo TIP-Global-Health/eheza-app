@@ -239,8 +239,8 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
       gi: ['Bloody Diarrhea'],
     });
 
-    // Editing the saved GI symptoms to add Vomiting asks about intractable
-    // vomiting afresh, rather than taking No from a record that never asked.
+    // Adding Vomiting to the saved GI symptoms asks about intractable vomiting,
+    // which the saved record never asked.
     await addVomitingToSavedGISymptoms(page, true);
 
     // 2. Physical Exam: elevated temp, child vitals (no BP).

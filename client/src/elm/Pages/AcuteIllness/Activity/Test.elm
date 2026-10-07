@@ -22,6 +22,7 @@ import Backend.Measurement.Model
         , SymptomsGIValue
         , SymptomsGeneralSign(..)
         , SymptomsRespiratorySign(..)
+        , TreatmentReviewSign(..)
         , VitalsValue
         )
 import Backend.Model exposing (emptyModelIndexedDb)
@@ -50,11 +51,13 @@ import Pages.AcuteIllness.Activity.Utils
         , respiratoryInfectionDangerSignsPresent
         , respiratoryRateElevatedByAge
         , respiratoryRateElevatedByAgeForCovid19
+        , setCovidTestPositive
         , subsequentEncounterDiagnosisUpdate
         , symptomMaxDuration
         , symptomsTasksCompletedFromTotal
         , toCovidTestingValueWithDefault
         , toSymptomsGIValueWithDefault
+        , treatmentReviewFormWithDefault
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, splitByInitialNurseEncounter)
@@ -915,8 +918,8 @@ covidTestingRoundTripTest =
 
 {-| Editing a saved record can reveal a question the saved record never asked:
 "Intractable vomiting?" once Vomiting is added, "Currently pregnant?" once a test
-turns positive. The question must come up unanswered, so the worker has to answer
-it, while an answer the record did hold is still filled in.
+turns positive, "Did it help?" once a medication is marked as taken. Such a
+question comes up unanswered; an answer the record holds is filled in.
 -}
 editedRecordDerivedQuestionsTest : Test
 editedRecordDerivedQuestionsTest =
@@ -977,10 +980,18 @@ editedRecordDerivedQuestionsTest =
 
                 form =
                     (updateWith measurements
-                        (SetCovidTestingBoolInput (\value form_ -> { form_ | testPositive = Just value, isPregnant = Nothing }) True)
+                        (SetCovidTestingBoolInput setCovidTestPositive True)
                     ).laboratoryData.covidTestingForm
             in
             (covidTestingFormWithDefault form (Just saved)).isPregnant
+
+        -- The fever "Did it help?" answer shown once fever medication is marked as taken.
+        feverMedicationMarkedTaken saved =
+            let
+                form =
+                    emptyModel.priorTreatmentData.treatmentReviewForm
+            in
+            (treatmentReviewFormWithDefault { form | feverPast6Hours = Just True } (Just (EverySet.fromList saved))).feverPast6HoursHelped
     in
     describe "a question the edited record reveals"
         [ test "GI saved without vomiting: ticking Vomiting leaves intractable vomiting to be answered" <|
@@ -998,8 +1009,7 @@ editedRecordDerivedQuestionsTest =
             \_ ->
                 savedGI [ NonBloodyDiarrhea, Vomiting ] NoSymptomsGIDerived
                     |> tickGISign BloodyDiarrhea
-                    |> Tuple.first
-                    |> Expect.equal ( 2, 2 )
+                    |> Expect.equal ( ( 2, 2 ), EverySet.singleton NoSymptomsGIDerived )
         , test "malaria saved Negative: changed to Positive, pregnancy is unanswered" <|
             \_ ->
                 malariaChangedToPositive RapidTestNegative
@@ -1015,6 +1025,14 @@ editedRecordDerivedQuestionsTest =
         , test "COVID saved Positive, not pregnant: the saved No is kept" <|
             \_ ->
                 covidChangedToPositive RapidTestPositive
+                    |> Expect.equal (Just False)
+        , test "treatment review saved without fever medication: marked taken, did it help is unanswered" <|
+            \_ ->
+                feverMedicationMarkedTaken [ NoTreatmentReviewSigns ]
+                    |> Expect.equal Nothing
+        , test "treatment review saved with fever medication that did not help: the saved No is kept" <|
+            \_ ->
+                feverMedicationMarkedTaken [ FeverPast6Hours ]
                     |> Expect.equal (Just False)
         ]
 

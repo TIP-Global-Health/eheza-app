@@ -53,6 +53,16 @@ async function openActivity(page: Page, activityIcon: string) {
 }
 
 /**
+ * Open an activity from the encounter page's Completed tab.
+ */
+async function openCompletedActivity(page: Page, activityIcon: string) {
+  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+  await openActivity(page, activityIcon);
+}
+
+/**
  * Save the current activity form and wait for the page the app moves to.
  * @param actionsClass - CSS class on the actions wrapper (e.g., 'symptoms', 'malaria-testing', 'next-steps').
  */
@@ -495,10 +505,7 @@ export async function completeSymptoms(
  * must wait for an answer.
  */
 export async function addVomitingToSavedGISymptoms(page: Page, intractableVomiting: boolean) {
-  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
-  await click(page.locator('#completed-tab'), page);
-  await page.waitForTimeout(WAIT.elmRerender);
-  await openActivity(page, 'symptoms');
+  await openCompletedActivity(page, 'symptoms');
 
   await clickSubTaskTab(page, 'symptoms-gi');
   await selectCheckbox(page, 'Vomiting');
@@ -1010,10 +1017,7 @@ export async function editMedicationDistributionAnswer(
   fieldClass: string,
   answer: 'Yes' | 'No',
 ) {
-  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
-  await click(page.locator('#completed-tab'), page);
-  await page.waitForTimeout(WAIT.elmRerender);
-  await openActivity(page, 'next-steps');
+  await openCompletedActivity(page, 'next-steps');
 
   await clickSubTaskTab(page, 'next-steps-medication-distribution');
   await page.locator('.ui.form.medication-distribution').waitFor({ timeout: 5000 });
