@@ -437,7 +437,7 @@ B-436	3	READY	MED-LOW		2266	37	Sync download: a late second copy of a download r
 B-437	2	READY	MED	2292		37	Statistical Queries: the z-score cleanup leaves the cleared impossible z-scores in the nutrition reports
 B-438	3	READY	MED-LOW			37	Patient merge: TB and HIV episodes of the duplicate are folded into its OLDEST participant, and the open episode is dele
 B-439	4	READY	LOW			37	Acute illness contact tracing: the "register contact" form shows a stale backend error from an earlier person save
-B-440	1	READY	MED			37	Prenatal labs: a test sent to the lab, then corrected to "known as positive", still stores "result from the lab"; a disc
+B-440	1	IMPLEMENTED	MED	2305	2306	37	Prenatal labs: a test sent to the lab, then corrected to "known as positive", still stores "result from the lab"; a disc
 B-441	4	READY	LOW			38	Release #2128 post-deploy steps: the head-circumference "not taken" script has no "run again once devices have updated" 
 B-442	4	READY	LOW			38	Villages: moving a village to another health centre leaves its CHW group on the old one, so CHWs synced to the new centr
 B-443	4	READY	LOW			38	`drush recalculate-zscores` re-stamps only the group `height`/`weight` records, not the five other bundles the presave c

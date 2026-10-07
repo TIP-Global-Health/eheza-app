@@ -23,7 +23,8 @@ metadata:
 ## Environment facts
 
 - **`EHEZA_SITE` must be `rwanda`** (`.ddev/config.local.yaml`). The suite hard-codes Rwanda fixtures — village `Akanduga`, `Nyange Health Center`. On a Burundi install login times out on the village screen and **no e2e test in the repo can pass**.
-- ⛔ **The suite needs the fixture DB a fresh `./install` creates** (PIN `1234` nurse, village `Akanduga`). On 2026-09-27 the local DB was a Rwanda production copy (5.1M nodes): PIN `1234` logged in as a real user, the app showed an empty village list, and `login()` timed out on `Nyange Health Center`. Check first: `ddev drush sql-query "SELECT COUNT(*) FROM node WHERE type='village' AND title='Akanduga'"` must be 1.
+- ⛔ **The suite needs the fixture DB a fresh `./install` creates** (PIN `1234` nurse, village `Akanduga`). On 2026-09-27 the local DB was a Rwanda production copy (5.1M nodes): PIN `1234` logged in as a real user, the app showed an empty village list, and `login()` timed out on `Nyange Health Center`. Check first: `ddev drush sql-query "SELECT COUNT(*) FROM node WHERE type='village' AND title LIKE 'Akanduga%'"` must be 1 (the fixture is titled "Akanduga at Mbirima"; an exact-title check reads 0 on a good install).
+- **Reinstalling the fixture DB** (user, 2026-10-07): uncomment the post-start site-install hooks in `.ddev/config.local.yaml` and `ddev restart` (~10 min). ⚠ Keep the prose lines among them commented, or the YAML breaks at the first one. Only failure seen: `composer install -d sites/default/files/composer` (exit 4), harmless for e2e. gulp is not started by it — `ddev gulp` in the background, then stop it inside the container (`ddev exec "kill <pid>"`) when done.
 - Playwright 1.58.2 needs `chromium-1208`; installed 2026-07-27 alongside the pre-existing 1228.
 - Don't edit e2e helpers in the main tree by mistake — they belong to the branch's worktree.
 
