@@ -43,7 +43,7 @@ import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Components.View exposing (viewMetricsResultsTable, viewReportDateInputs, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
-import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
+import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
 import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils
     exposing
@@ -613,15 +613,15 @@ demographicsReportPatientsDataToCSV :
 demographicsReportPatientsDataToCSV data =
     let
         tableDataToCSV tableData =
-            [ String.join "," tableData.captions
-            , List.map (String.join ",")
+            [ csvRow tableData.captions
+            , List.map csvRow
                 tableData.rows
                 |> String.join "\n"
-            , Tuple.first tableData.totals ++ "," ++ Tuple.second tableData.totals
+            , csvRow [ Tuple.first tableData.totals, Tuple.second tableData.totals ]
             ]
                 |> String.join "\n"
     in
-    [ data.heading ++ "\n"
+    [ csvRow [ data.heading ] ++ "\n"
     , List.map tableDataToCSV data.tables
         |> String.join "\n\n"
     ]
@@ -1007,12 +1007,12 @@ demographicsReportEncountersDataToCSV :
     }
     -> String
 demographicsReportEncountersDataToCSV data =
-    [ data.heading ++ "\n"
-    , String.join "," data.captions
-    , List.map (Tuple.first >> String.join ",")
+    [ csvRow [ data.heading ] ++ "\n"
+    , csvRow data.captions
+    , List.map (Tuple.first >> csvRow)
         data.rows
         |> String.join "\n"
-    , String.join "," [ data.totals.label, data.totals.total, data.totals.unique ]
+    , csvRow [ data.totals.label, data.totals.total, data.totals.unique ]
     ]
         |> String.join "\n"
 
@@ -3169,9 +3169,9 @@ reportTablesDataToCSV =
 
 reportTableDataToCSV : MetricsResultsTableData -> String
 reportTableDataToCSV tableData =
-    [ tableData.heading
-    , String.join "," tableData.captions
-    , List.map (String.join ",") tableData.rows
+    [ csvRow [ tableData.heading ]
+    , csvRow tableData.captions
+    , List.map csvRow tableData.rows
         |> String.join "\n"
     ]
         |> String.join "\n"

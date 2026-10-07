@@ -18514,21 +18514,44 @@ var $elm$core$String$replace = F3(
 			after,
 			A2($elm$core$String$split, before, string));
 	});
+var $elm$core$String$any = _String_any;
+var $author$project$Pages$Reports$Utils$csvRow = function () {
+	var csvCell = function (cell) {
+		return A2(
+			$elm$core$String$any,
+			function (_char) {
+				return A2(
+					$elm$core$List$member,
+					_char,
+					_List_fromArray(
+						[
+							_Utils_chr(','),
+							_Utils_chr('"'),
+							_Utils_chr('\n'),
+							_Utils_chr('\r')
+						]));
+			},
+			cell) ? ('\u0022' + (A3($elm$core$String$replace, '\u0022', '\u0022\u0022', cell) + '\u0022')) : cell;
+	};
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$map(csvCell),
+		$elm$core$String$join(','));
+}();
 var $author$project$Pages$Reports$View$reportTableDataToCSV = function (tableData) {
 	return A2(
 		$elm$core$String$join,
 		'\u000A',
 		_List_fromArray(
 			[
-				tableData.heading,
-				A2($elm$core$String$join, ',', tableData.captions),
+				$author$project$Pages$Reports$Utils$csvRow(
+				_List_fromArray(
+					[tableData.heading])),
+				$author$project$Pages$Reports$Utils$csvRow(tableData.captions),
 				A2(
 				$elm$core$String$join,
 				'\u000A',
-				A2(
-					$elm$core$List$map,
-					$elm$core$String$join(','),
-					tableData.rows))
+				A2($elm$core$List$map, $author$project$Pages$Reports$Utils$csvRow, tableData.rows))
 			]));
 };
 var $author$project$Pages$Reports$Model$DownloadCSV = F2(
@@ -18617,21 +18640,18 @@ var $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV = f
 		'\u000A',
 		_List_fromArray(
 			[
-				data.heading + '\u000A',
-				A2($elm$core$String$join, ',', data.captions),
+				$author$project$Pages$Reports$Utils$csvRow(
+				_List_fromArray(
+					[data.heading])) + '\u000A',
+				$author$project$Pages$Reports$Utils$csvRow(data.captions),
 				A2(
 				$elm$core$String$join,
 				'\u000A',
 				A2(
 					$elm$core$List$map,
-					A2(
-						$elm$core$Basics$composeR,
-						$elm$core$Tuple$first,
-						$elm$core$String$join(',')),
+					A2($elm$core$Basics$composeR, $elm$core$Tuple$first, $author$project$Pages$Reports$Utils$csvRow),
 					data.rows)),
-				A2(
-				$elm$core$String$join,
-				',',
+				$author$project$Pages$Reports$Utils$csvRow(
 				_List_fromArray(
 					[data.totals.label, data.totals.total, data.totals.unique]))
 			]));
@@ -18643,15 +18663,14 @@ var $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV = fun
 			'\u000A',
 			_List_fromArray(
 				[
-					A2($elm$core$String$join, ',', tableData.captions),
+					$author$project$Pages$Reports$Utils$csvRow(tableData.captions),
 					A2(
 					$elm$core$String$join,
 					'\u000A',
-					A2(
-						$elm$core$List$map,
-						$elm$core$String$join(','),
-						tableData.rows)),
-					tableData.totals.a + (',' + tableData.totals.b)
+					A2($elm$core$List$map, $author$project$Pages$Reports$Utils$csvRow, tableData.rows)),
+					$author$project$Pages$Reports$Utils$csvRow(
+					_List_fromArray(
+						[tableData.totals.a, tableData.totals.b]))
 				]));
 	};
 	return A2(
@@ -18659,7 +18678,9 @@ var $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV = fun
 		'\u000A',
 		_List_fromArray(
 			[
-				data.heading + '\u000A',
+				$author$project$Pages$Reports$Utils$csvRow(
+				_List_fromArray(
+					[data.heading])) + '\u000A',
 				A2(
 				$elm$core$String$join,
 				'\u000A\u000A',
