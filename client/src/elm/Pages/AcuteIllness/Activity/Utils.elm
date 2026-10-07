@@ -1492,11 +1492,12 @@ symptomsGIFormWithDefault form saved =
                         else if isJust form.intractableVomiting then
                             form.intractableVomiting
 
-                        else if EverySet.member IntractableVomiting value.derivedSigns then
-                            Just True
+                        else if Dict.member Vomiting value.signs then
+                            Just (EverySet.member IntractableVomiting value.derivedSigns)
 
                         else
-                            Just False
+                            -- The saved record never asked the question, because it had no vomiting.
+                            Nothing
                 in
                 { signs = signs
                 , signsDirty = form.signsDirty
@@ -1566,7 +1567,13 @@ fromMalariaTestingValue saved =
 
     else
         { rapidTestResult = saved
-        , isPregnant = Just False
+        , isPregnant =
+            -- Only a positive result asks about pregnancy; other results leave it unanswered.
+            if saved == Just RapidTestPositive then
+                Just False
+
+            else
+                Nothing
         }
 
 
@@ -1895,8 +1902,13 @@ fromCovidTestingValue saved =
                         _ ->
                             Nothing
 
+                -- A negative result never asks about pregnancy, so it leaves the question unanswered.
                 isPregnant =
-                    Just (List.member value.result [ RapidTestPositiveAndPregnant, RapidTestUnableToRunAndPregnant ])
+                    if value.result == RapidTestNegative then
+                        Nothing
+
+                    else
+                        Just (List.member value.result [ RapidTestPositiveAndPregnant, RapidTestUnableToRunAndPregnant ])
             in
             { testPerformed = testPerformed
             , testPositive = testPositive

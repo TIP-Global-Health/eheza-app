@@ -8,6 +8,7 @@ import {
   createAdultAndStartEncounter,
   createChildAndStartEncounter,
   completeSymptoms,
+  addVomitingToSavedGISymptoms,
   completePhysicalExam,
   completePriorTreatment,
   completeLaboratory,
@@ -231,13 +232,16 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
     });
 
     // 1. Symptoms: Fever + dehydration signs (general);
-    //    None (respiratory); Bloody Diarrhea + Vomiting (GI).
+    //    None (respiratory); Bloody Diarrhea (GI).
     await completeSymptoms(page, {
       general: ['Fever', 'Lethargy', 'Increased Thirst', 'Dry/Sticky Mouth'],
       respiratory: [],
-      gi: ['Bloody Diarrhea', 'Vomiting'],
-      intractableVomiting: true,
+      gi: ['Bloody Diarrhea'],
     });
+
+    // Editing the saved GI symptoms to add Vomiting asks about intractable
+    // vomiting afresh, rather than taking No from a record that never asked.
+    await addVomitingToSavedGISymptoms(page, true);
 
     // 2. Physical Exam: elevated temp, child vitals (no BP).
     //    MUAC + Nutrition tabs appear for child.

@@ -489,6 +489,37 @@ export async function completeSymptoms(
   await saveActivity(page, 'symptoms');
 }
 
+/**
+ * Reopen the saved GI symptoms and tick Vomiting. The saved record never asked
+ * about intractable vomiting, so the question must come up unanswered, and Save
+ * must wait for an answer.
+ */
+export async function addVomitingToSavedGISymptoms(page: Page, intractableVomiting: boolean) {
+  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+  await openActivity(page, 'symptoms');
+
+  await clickSubTaskTab(page, 'symptoms-gi');
+  await selectCheckbox(page, 'Vomiting');
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  const question = page.locator('.form-input.yes-no.intractable-vomiting');
+  await question.waitFor({ timeout: 5000 });
+  await expect(question.locator('input:checked'), 'intractable vomiting should come up unanswered').toHaveCount(0);
+  await expect(
+    page.locator('.actions.symptoms button.ui.fluid.primary.button'),
+    'Save should wait for the intractable vomiting answer',
+  ).toHaveClass(/disabled/);
+
+  await answerYesNo(page, 'intractable-vomiting', intractableVomiting ? 'Yes' : 'No');
+  await saveActivity(page, 'symptoms');
+
+  // The encounter page stays on the Completed tab; the next activities are on To Do.
+  await click(page.locator('#pending-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
 // ---------------------------------------------------------------------------
 // Physical Exam activity
 // ---------------------------------------------------------------------------
