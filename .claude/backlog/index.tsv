@@ -273,7 +273,7 @@ B-272	3	IMPLEMENTED	MED-LOW	2179	2180	26	Well Child vitals: the "previous" respi
 B-273	4	READY	LOW			26	Newborn Exam Pregnancy Summary: re-editing a record saved as "no complications" / "no defects", switching to Yes and sav
 B-274	3	READY	MED-LOW			26	Acute Illness medication distribution: after a reload, switching a medicine from "not given (out of stock / allergy)" to
 B-275	4	READY	LOW			26	Acute Illness subsequent visit: a positive-and-pregnant malaria RDT is not treated as "malaria diagnosed at this encount
-B-276	4	READY	LOW			26	Acute Illness malaria RDT edit: changing a saved non-positive result to Positive pre-answers "Currently pregnant?" as No
+B-276	4	IMPLEMENTED	LOW	2307	2308	26	Acute Illness malaria RDT edit: changing a saved non-positive result to Positive pre-answers "Currently pregnant?" as No
 B-277	3	IMPLEMENTED	MED			26	Well Child immunisation (Burundi): the DTP-booster Save handler reads the DTP primary-series form, so what the nurse ent
 B-278	4	READY	LOW			26	Well Child head circumference: correcting a reading that triggered the macro/microcephaly popup leaves the warning on th
 B-279	4	READY	LOW			26	Well Child head circumference "not taken" checkbox toggles the raw form, so after a reload the first click on a saved no
@@ -448,7 +448,7 @@ B-447	4	READY	LOW			38	Statistical Queries › Peripartum: pregnancy outcomes ar
 B-448	4	READY	LOW			38	Statistical Queries and Completion apps: a failed data batch is dropped without trace, so the page shows the "in process
 B-449	1	READY	LOW			38	Prenatal diagnosis: malaria with anemia after a treated malaria with SEVERE anemia is filed as BOTH a new episode (treat
 B-450	1	READY	LOW			38	Prenatal postpartum encounter: the symptom review still asks about burning with urination, abnormal discharge, heartburn
-B-451	1	READY	LOW			39	Acute Illness GI symptoms: editing a saved record to add "Vomiting" pre-answers "Intractable vomiting?" as No, so non-bl
+B-451	1	IMPLEMENTED	LOW	2307	2308	39	Acute Illness GI symptoms: editing a saved record to add "Vomiting" pre-answers "Intractable vomiting?" as No, so non-bl
 B-452	1	READY	LOW			39	Prenatal obstetric history: correcting step 1 to a first pregnancy leaves the step-2 answers (previous preeclampsia, >10
 B-453	1	READY	LOW			39	Prenatal postpartum mastitis: a mother who is NOT breastfeeding because of breast pain or breast redness is never diagno
 B-454	1	READY	LOW			39	NCD labs: a random blood sugar test sent to the lab, then corrected to "not performed", keeps "result from the lab" in i
