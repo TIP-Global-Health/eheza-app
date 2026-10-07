@@ -51,7 +51,10 @@ function hedley_admin_update_7003() {
  */
 function hedley_admin_update_7004() {
   db_update('menu_links')
-    ->fields(['link_path' => 'node/add/pmtct-participant'])
+    ->fields([
+      'link_path' => 'node/add/pmtct-participant',
+      'router_path' => 'node/add/pmtct-participant',
+    ])
     ->condition('menu_name', 'menu-eheza-app-admin-menu')
     ->condition('link_path', 'node/add/pmtct-paticipation')
     ->execute();
