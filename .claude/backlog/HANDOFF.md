@@ -46,7 +46,7 @@ What changes because of this:
 
 ## Open right now — updated 2026-10-07 (R39)
 
-🟡 **PR #2306 open 2026-10-07 (B-440, tier 1, issue #2305)** — Prenatal labs: a test known as positive owes no lab result even with the stale lab prerequisites of the run it replaced, so a discordant partnership is filed initial-phase (PrEP offered) and no recurrent result task is left open. One Elm reader + 2 elm-tests (both fail pre-fix) + the PrEP e2e test extended with a sent-to-lab → known-positive correction, discrimination-run LOCALLY (fails on the test commit, passes on the fix). Worktree released. ⭐ Should merge before #2128 is cut. **Awaiting review + CI.**
+🟡 **PR #2306 open 2026-10-07 (B-440, tier 1, issue #2305)** — Prenatal labs: a test known as positive owes no lab result even with the stale lab prerequisites of the run it replaced, so a discordant partnership is filed initial-phase (PrEP offered) and no recurrent result task is left open. One Elm reader + 2 elm-tests (both fail pre-fix) + the PrEP e2e test extended with a sent-to-lab → known-positive correction, discrimination-run LOCALLY (fails on the test commit, passes on the fix). **Review round 1 (medium): 7 findings, 4 fixed in `27d70b307`** (save side now writes no prerequisites for known as positive, label-based e2e pick, 3 unit cases), 2 covered by that, 1 no-change; threads resolved. Worktree released. ⭐ Should merge before #2128 is cut. **Awaiting CI on `27d70b307`.**
 
 ⚠ **Local DB reinstalled 2026-10-07** (user's call): the Rwanda production copy, its `bak2294_*` backup tables and the queued NCDA tasks are GONE; it is the e2e fixture DB now. The site-install hooks in `.ddev/config.local.yaml` stay uncommented, so every `ddev restart` reinstalls again.
 
