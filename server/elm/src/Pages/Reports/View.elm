@@ -613,11 +613,15 @@ demographicsReportPatientsDataToCSV :
 demographicsReportPatientsDataToCSV data =
     let
         tableDataToCSV tableData =
+            let
+                ( totalsLabel, totalsValue ) =
+                    tableData.totals
+            in
             [ csvRow tableData.captions
             , List.map csvRow
                 tableData.rows
                 |> String.join "\n"
-            , csvRow [ Tuple.first tableData.totals, Tuple.second tableData.totals ]
+            , csvRow [ totalsLabel, totalsValue ]
             ]
                 |> String.join "\n"
     in

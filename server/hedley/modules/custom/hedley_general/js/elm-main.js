@@ -18520,16 +18520,15 @@ var $author$project$Pages$Reports$Utils$csvRow = function () {
 		return A2(
 			$elm$core$String$any,
 			function (_char) {
-				return A2(
-					$elm$core$List$member,
+				return _Utils_eq(
 					_char,
-					_List_fromArray(
-						[
-							_Utils_chr(','),
-							_Utils_chr('"'),
-							_Utils_chr('\n'),
-							_Utils_chr('\r')
-						]));
+					_Utils_chr(',')) || (_Utils_eq(
+					_char,
+					_Utils_chr('"')) || (_Utils_eq(
+					_char,
+					_Utils_chr('\n')) || _Utils_eq(
+					_char,
+					_Utils_chr('\r'))));
 			},
 			cell) ? ('\u0022' + (A3($elm$core$String$replace, '\u0022', '\u0022\u0022', cell) + '\u0022')) : cell;
 	};
@@ -18658,6 +18657,9 @@ var $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV = f
 };
 var $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV = function (data) {
 	var tableDataToCSV = function (tableData) {
+		var _v0 = tableData.totals;
+		var totalsLabel = _v0.a;
+		var totalsValue = _v0.b;
 		return A2(
 			$elm$core$String$join,
 			'\u000A',
@@ -18670,7 +18672,7 @@ var $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV = fun
 					A2($elm$core$List$map, $author$project$Pages$Reports$Utils$csvRow, tableData.rows)),
 					$author$project$Pages$Reports$Utils$csvRow(
 					_List_fromArray(
-						[tableData.totals.a, tableData.totals.b]))
+						[totalsLabel, totalsValue]))
 				]));
 	};
 	return A2(

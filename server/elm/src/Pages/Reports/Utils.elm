@@ -581,7 +581,7 @@ csvRow : List String -> String
 csvRow =
     let
         csvCell cell =
-            if String.any (\char -> List.member char [ ',', '"', '\n', '\u{000D}' ]) cell then
+            if String.any (\char -> char == ',' || char == '"' || char == '\n' || char == '\u{000D}') cell then
                 "\"" ++ String.replace "\"" "\"\"" cell ++ "\""
 
             else
