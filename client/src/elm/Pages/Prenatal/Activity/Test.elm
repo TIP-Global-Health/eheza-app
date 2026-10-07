@@ -1439,6 +1439,13 @@ generatePrenatalDiagnosesForNurseDiscordantPartnershipTest =
                     |> withPartnerHIVTestPositive TestNoteKnownAsPositive Nothing
                     |> discordantPartnershipPhases
                     |> Expect.equal ( True, False )
+        , test "partner known to be HIV positive after a point of care test, patient HIV negative and immediate -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive TestNoteKnownAsPositive immediateResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
         , test "partner known to be HIV positive after the test was sent to the lab, patient HIV negative and immediate -> Initial phase" <|
             \_ ->
                 emptyPrenatalMeasurements

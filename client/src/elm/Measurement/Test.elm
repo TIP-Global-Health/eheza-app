@@ -13,6 +13,7 @@ import Backend.Measurement.Model
         , SkippedForm(..)
         , StuntingLevel(..)
         , TestExecutionNote(..)
+        , TestPrerequisite(..)
         , TestResult(..)
         , VaccineDose(..)
         , WeightInGrm(..)
@@ -22,7 +23,7 @@ import Backend.Measurement.Model
 import Date exposing (Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -37,6 +38,7 @@ import Measurement.Utils
         , getIntervalForVaccine
         , heightFormWithDefault
         , initialVaccinationDateByBirthDate
+        , knownAsPositiveUpdate
         , knownAsPositiveUpdateHIVTest
         , knownAsPositiveUpdatePartnerHIVTest
         , liverFunctionResultFormWithDefault
@@ -50,9 +52,12 @@ import Measurement.Utils
         , rdtTestPerformedUpdate
         , setNCDAStep
         , showNCDAMeasurementOutOfRange
+        , toHIVTestValueUniversalWithDefault
         , toHIVTestValueWithDefault
+        , toHepatitisBTestValueWithDefault
         , toMalariaResultValueWithDefault
         , toMalariaTestValueWithDefault
+        , toPartnerHIVTestValueWithDefault
         , toPregnancyTestValueWithDefault
         )
 import Measurement.View exposing (viewColorAlertIndication)
@@ -970,6 +975,7 @@ all =
         , malariaResultFormSmearResultTest
         , toMalariaResultValueTestResultTest
         , bloodSmearOrderedTest
+        , knownAsPositiveSavesNoPrerequisitesTest
         , knownAsPositiveUpdateTest
         , withdrawnTestResultTest
         ]
@@ -1178,6 +1184,66 @@ ncdaFormWithDefaultNotTakenTest =
                 hydrate { emptyForm | weight = Just (WeightInKg 13) }
                     |> .weight
                     |> Expect.equal (Just (WeightInKg 13))
+        ]
+
+
+{-| A test sent to the lab, then corrected to known as positive. The form
+reads the old "immediate result" answer back from the saved run, but the
+saved record must not claim a run.
+-}
+knownAsPositiveSavesNoPrerequisitesTest : Test
+knownAsPositiveSavesNoPrerequisitesTest =
+    let
+        sentToLab =
+            Just (EverySet.singleton NoTestPrerequisites)
+
+        savedHIVTest =
+            { executionNote = TestNoteRunToday
+            , executionDate = Nothing
+            , testPrerequisites = sentToLab
+            , testResult = Nothing
+            , hivSigns = Nothing
+            }
+    in
+    describe "a test corrected to known as positive saves no prerequisites"
+        [ test "HIV test" <|
+            \_ ->
+                knownAsPositiveUpdateHIVTest True emptyHIVTestUniversalForm
+                    |> toHIVTestValueUniversalWithDefault (Just savedHIVTest)
+                    |> Maybe.map .testPrerequisites
+                    |> Expect.equal (Just Nothing)
+        , test "partner HIV test" <|
+            \_ ->
+                knownAsPositiveUpdatePartnerHIVTest True emptyPartnerHIVTestForm
+                    |> toPartnerHIVTestValueWithDefault (Just savedHIVTest)
+                    |> Maybe.map .testPrerequisites
+                    |> Expect.equal (Just Nothing)
+        , test "Hepatitis B test" <|
+            \_ ->
+                knownAsPositiveUpdate True emptyHepatitisBTestForm
+                    |> toHepatitisBTestValueWithDefault
+                        (Just
+                            { executionNote = TestNoteRunToday
+                            , executionDate = Nothing
+                            , testPrerequisites = sentToLab
+                            , testResult = Nothing
+                            , originatingEncounter = Nothing
+                            }
+                        )
+                    |> Maybe.map .testPrerequisites
+                    |> Expect.equal (Just Nothing)
+        , test "NCD HIV test" <|
+            \_ ->
+                rdtKnownAsPositiveUpdate True emptyHIVTestForm
+                    |> toHIVTestValueWithDefault (Just savedHIVTest)
+                    |> Maybe.map .testPrerequisites
+                    |> Expect.equal (Just Nothing)
+        , test "a run sent to the lab still saves its prerequisites" <|
+            \_ ->
+                emptyPartnerHIVTestForm
+                    |> toPartnerHIVTestValueWithDefault (Just savedHIVTest)
+                    |> Maybe.map .testPrerequisites
+                    |> Expect.equal (Just sentToLab)
         ]
 
 

@@ -451,31 +451,62 @@ laboratoryResultTaskCompletedMalariaTest =
         ]
 
 
-{-| A Hepatitis B test first sent to the lab, then corrected to known as
-positive. The record keeps the lab prerequisites of the run it replaced.
+{-| HIV, partner HIV and Hepatitis B tests first sent to the lab, then corrected
+to known as positive. Each record keeps the lab prerequisites of the run it
+replaced.
 -}
 laboratoryResultTaskCompletedKnownAsPositiveTest : Test
 laboratoryResultTaskCompletedKnownAsPositiveTest =
     let
+        sentToLab =
+            Just (EverySet.singleton NoTestPrerequisites)
+
+        hivTestValue : HIVTestValue
+        hivTestValue =
+            { executionNote = TestNoteKnownAsPositive
+            , executionDate = Nothing
+            , testPrerequisites = sentToLab
+            , testResult = Nothing
+            , hivSigns = Nothing
+            }
+
+        partnerHIVTestValue : PartnerHIVTestValue
+        partnerHIVTestValue =
+            hivTestValue
+
         hepatitisBTestValue : HepatitisBTestValue PrenatalEncounterId
         hepatitisBTestValue =
             { executionNote = TestNoteKnownAsPositive
             , executionDate = Nothing
-            , testPrerequisites = Just (EverySet.singleton NoTestPrerequisites)
+            , testPrerequisites = sentToLab
             , testResult = Nothing
             , originatingEncounter = Nothing
             }
+
+        measurements =
+            { emptyPrenatalMeasurements
+                | hivTest = TestFixtures.wrapMeasurement currentDate hivTestValue
+                , partnerHIVTest = TestFixtures.wrapMeasurement currentDate partnerHIVTestValue
+                , hepatitisBTest = TestFixtures.wrapMeasurement currentDate hepatitisBTestValue
+            }
+
+        completed isLabTech task =
+            laboratoryResultTaskCompleted isLabTech (testAssembled measurements) task
+
+        caseFor ( label, task ) =
+            [ test (label ++ " corrected from sent to the lab owes the lab technician no result") <|
+                \_ -> completed True task |> Expect.equal True
+            , test (label ++ " corrected from sent to the lab owes the nurse no result") <|
+                \_ -> completed False task |> Expect.equal True
+            ]
     in
     describe "laboratoryResultTaskCompleted, on a test known as positive"
-        [ test "a Hepatitis B test corrected from sent to the lab owes no result" <|
-            \_ ->
-                { emptyPrenatalMeasurements
-                    | hepatitisBTest = TestFixtures.wrapMeasurement currentDate hepatitisBTestValue
-                }
-                    |> testAssembled
-                    |> (\assembled -> laboratoryResultTaskCompleted True assembled TaskHepatitisBTest)
-                    |> Expect.equal True
-        ]
+        (List.concatMap caseFor
+            [ ( "an HIV test", TaskHIVTest )
+            , ( "a partner HIV test", TaskPartnerHIVTest )
+            , ( "a Hepatitis B test", TaskHepatitisBTest )
+            ]
+        )
 
 
 {-| Hypertension diagnosed at an earlier visit, treated with Methyldopa 2x a

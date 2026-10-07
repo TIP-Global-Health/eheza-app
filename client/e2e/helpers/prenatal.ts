@@ -1032,10 +1032,16 @@ export async function correctPartnerHIVTest(
     await answerYesNo(page, 'test-performed', 'Yes');
     await page.waitForTimeout(WAIT.elmRerender);
 
-    // "Immediate result?" → Point of Care is the first label, Lab the second.
+    // "Immediate result?" → Lab for a sample sent to the lab, Point of Care
+    // otherwise. The answer is checked before saving, so the correction that
+    // follows starts from the run asked for.
     const immediateResult = page.locator('.form-input.yes-no.immediate-result');
-    await click(immediateResult.locator('label').nth(partner === 'sent-to-lab' ? 1 : 0), page);
+    const option = immediateResult
+      .locator('div.column')
+      .filter({ hasText: partner === 'sent-to-lab' ? /^\s*Lab\s*$/ : /^\s*Point of Care\s*$/ });
+    await click(option.locator('label'), page);
     await page.waitForTimeout(WAIT.elmRerender);
+    await expect(option.locator('input'), 'the immediate result answer should be selected').toHaveClass(/checked/);
     if (partner === 'sent-to-lab') {
       return;
     }
