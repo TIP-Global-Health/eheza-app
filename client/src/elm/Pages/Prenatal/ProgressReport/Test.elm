@@ -3,7 +3,7 @@ module Pages.Prenatal.ProgressReport.Test exposing (all)
 import Backend.Measurement.Model exposing (OutsideCareMedication(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date
-import EverySet
+import EverySet exposing (EverySet)
 import Expect
 import Html
 import Pages.Prenatal.ProgressReport.View exposing (viewTreatmentForOutsideCareDiagnosis)
@@ -22,10 +22,15 @@ import Translate.Model exposing (Language(..))
 
 
 render : PrenatalDiagnosis -> List OutsideCareMedication -> Query.Single msg
-render diagnosis medications =
+render diagnosis =
+    EverySet.fromList >> Just >> renderStored diagnosis
+
+
+renderStored : PrenatalDiagnosis -> Maybe (EverySet OutsideCareMedication) -> Query.Single msg
+renderStored diagnosis medications =
     viewTreatmentForOutsideCareDiagnosis English
         (Date.fromCalendarDate 2026 Oct 1)
-        (Just (EverySet.fromList medications))
+        medications
         diagnosis
         |> Html.div []
         |> Query.fromHtml
@@ -44,6 +49,14 @@ treatedWith medication =
 noTreatment : String
 noTreatment =
     ", no treatment administered, added"
+
+
+withoutTreatmentPhrase : String
+withoutTreatmentPhrase =
+    " - "
+        ++ String.toLower (translate English Translate.DiagnosedByOutsideCare)
+        ++ ", "
+        ++ String.toLower (translate English Translate.AddedToPatientRecordOn)
 
 
 all : Test
@@ -86,4 +99,42 @@ all =
             \_ ->
                 render DiagnosisChronicHypertensionImmediate [ OutsideCareMedicationMethyldopa2, OutsideCareMedicationIron1 ]
                     |> Query.has [ text (treatedWith OutsideCareMedicationMethyldopa2) ]
+        , test "gestational hypertension and moderate preeclampsia list the hypertension medicine" <|
+            \_ ->
+                Expect.all
+                    (List.map
+                        (\diagnosis ->
+                            \_ ->
+                                render diagnosis [ OutsideCareMedicationMethyldopa2 ]
+                                    |> Query.has [ text (treatedWith OutsideCareMedicationMethyldopa2) ]
+                        )
+                        [ DiagnosisGestationalHypertensionImmediate, DiagnosisModeratePreeclampsiaInitialPhase ]
+                    )
+                    ()
+        , test "malaria lists its own medicine only" <|
+            \_ ->
+                render DiagnosisMalariaInitialPhase [ OutsideCareMedicationCoartem, OutsideCareMedicationIron1 ]
+                    |> Expect.all
+                        [ Query.has [ text (treatedWith OutsideCareMedicationCoartem) ]
+                        , Query.hasNot [ text (label OutsideCareMedicationIron1) ]
+                        ]
+        , test "a diagnosis with no medicine question has no treatment phrase" <|
+            \_ ->
+                render DiagnosisTuberculosis [ OutsideCareMedicationCoartem ]
+                    |> Expect.all
+                        [ Query.has [ text withoutTreatmentPhrase ]
+                        , Query.hasNot [ text (label OutsideCareMedicationCoartem) ]
+                        ]
+        , test "no medicine answer stored reads no treatment" <|
+            \_ ->
+                renderStored DiagnosisSyphilisRecurrentPhase Nothing
+                    |> Query.has [ text noTreatment ]
+        , test "a diagnosis outside care cannot record shows nothing" <|
+            \_ ->
+                viewTreatmentForOutsideCareDiagnosis English
+                    (Date.fromCalendarDate 2026 Oct 1)
+                    (Just (EverySet.fromList [ OutsideCareMedicationPenecilin1 ]))
+                    DiagnosisSyphilisInitialPhase
+                    |> List.length
+                    |> Expect.equal 0
         ]
