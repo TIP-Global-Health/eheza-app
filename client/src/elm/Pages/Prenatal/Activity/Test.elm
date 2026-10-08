@@ -462,6 +462,20 @@ withMalariaTest result measurements =
     { measurements | malariaTest = wrapMeasurement (malariaTestValueWith result) }
 
 
+withCoartem : PrenatalMeasurements -> PrenatalMeasurements
+withCoartem measurements =
+    { measurements
+        | medicationDistribution =
+            wrapMeasurement
+                { distributionSigns = EverySet.empty
+                , nonAdministrationSigns = EverySet.empty
+                , recommendedTreatmentSigns = Just (EverySet.singleton TreatmentCoartem)
+                , avoidingGuidanceReason = Nothing
+                , reinforceTreatmentSigns = Nothing
+                }
+    }
+
+
 
 -- NON-IMMEDIATE-RESULT LAB VALUE BUILDERS / SETTERS
 --
@@ -853,6 +867,26 @@ diagnoseNurse measurements =
     generatePrenatalDiagnosesForNurse currentDate (testAssembled measurements)
 
 
+{-| Like `diagnoseNurse`, after one earlier nurse encounter, four weeks back,
+holding the given diagnoses and measurements.
+-}
+diagnoseNurseAfter : List PrenatalDiagnosis -> PrenatalMeasurements -> PrenatalMeasurements -> EverySet PrenatalDiagnosis
+diagnoseNurseAfter previousDiagnoses previousMeasurements measurements =
+    let
+        assembled =
+            testAssembled measurements
+
+        previousEncounter =
+            { startDate = Date.add Date.Weeks -4 currentDate
+            , diagnoses = EverySet.fromList previousDiagnoses
+            , pastDiagnoses = EverySet.empty
+            , measurements = previousMeasurements
+            }
+    in
+    generatePrenatalDiagnosesForNurse currentDate
+        { assembled | nursePreviousEncountersData = [ previousEncounter ] }
+
+
 {-| The four lab-driven disease diagnoses under test, in their plain
 initial-phase form.
 -}
@@ -990,6 +1024,25 @@ generatePrenatalDiagnosesForNurseAnemiaTest =
 
 generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest : Test
 generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest =
+    let
+        -- RDT positive and Hb 9: malaria with mild to moderate anemia.
+        currentMalariaWithAnemia =
+            emptyPrenatalMeasurements
+                |> withMalariaTest TestPositive
+                |> withHemoglobin 9
+
+        malariaWithAnemiaVariants =
+            EverySet.toList
+                >> List.filter
+                    (\diagnosis ->
+                        List.member diagnosis
+                            [ DiagnosisMalariaWithAnemiaInitialPhase
+                            , DiagnosisMalariaWithAnemiaRecurrentPhase
+                            , DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
+                            , DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
+                            ]
+                    )
+    in
     describe "generatePrenatalDiagnosesForNurse - malaria combined with anemia"
         [ test "malaria RDT positive + Hb 9 (7..<11) -> DiagnosisMalariaWithAnemiaInitialPhase present" <|
             \_ ->
@@ -1007,6 +1060,32 @@ generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest =
                     |> diagnoseNurse
                     |> EverySet.member DiagnosisMalariaWithSevereAnemiaInitialPhase
                     |> Expect.equal True
+        , test "after a treated malaria with severe anemia, Hb 9 -> the medicated-continued diagnosis only" <|
+            \_ ->
+                currentMalariaWithAnemia
+                    |> diagnoseNurseAfter [ DiagnosisMalariaWithSevereAnemiaInitialPhase ] (withCoartem emptyPrenatalMeasurements)
+                    |> malariaWithAnemiaVariants
+                    |> Expect.equal [ DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ]
+        , test "after a treated malaria with severe anemia, Hb 9 at a recurrent phase -> the medicated-continued diagnosis only" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withMalariaTestNonImmediate
+                    |> withHemoglobinNonImmediate 9
+                    |> diagnoseNurseAfter [ DiagnosisMalariaWithSevereAnemiaRecurrentPhase ] (withCoartem emptyPrenatalMeasurements)
+                    |> malariaWithAnemiaVariants
+                    |> Expect.equal [ DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ]
+        , test "after a treated malaria with anemia, Hb 9 -> the medicated-continued diagnosis only" <|
+            \_ ->
+                currentMalariaWithAnemia
+                    |> diagnoseNurseAfter [ DiagnosisMalariaWithAnemiaInitialPhase ] (withCoartem emptyPrenatalMeasurements)
+                    |> malariaWithAnemiaVariants
+                    |> Expect.equal [ DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ]
+        , test "after an untreated malaria with severe anemia, Hb 9 -> a new episode" <|
+            \_ ->
+                currentMalariaWithAnemia
+                    |> diagnoseNurseAfter [ DiagnosisMalariaWithSevereAnemiaInitialPhase ] emptyPrenatalMeasurements
+                    |> malariaWithAnemiaVariants
+                    |> Expect.equal [ DiagnosisMalariaWithAnemiaInitialPhase ]
         ]
 
 
@@ -1790,20 +1869,8 @@ vaginalDischargeContinuedTest =
         gonorrhea =
             withVaginalDischarge (EverySet.singleton SymptomQuestionPartnerUrethralDischarge)
 
-        previousEncounterWith diagnoses =
-            { startDate = Date.add Date.Weeks -4 currentDate
-            , diagnoses = EverySet.fromList diagnoses
-            , pastDiagnoses = EverySet.empty
-            , measurements = emptyPrenatalMeasurements
-            }
-
-        diagnoseNurseAfter previousDiagnoses measurements =
-            let
-                assembled =
-                    testAssembled measurements
-            in
-            generatePrenatalDiagnosesForNurse currentDate
-                { assembled | nursePreviousEncountersData = [ previousEncounterWith previousDiagnoses ] }
+        diagnoseNurseAfterDiagnoses previousDiagnoses =
+            diagnoseNurseAfter previousDiagnoses emptyPrenatalMeasurements
     in
     describe "generatePrenatalDiagnosesForNurse - abnormal vaginal discharge, continued variants"
         [ test "first episode -> the plain diagnosis" <|
@@ -1817,42 +1884,42 @@ vaginalDischargeContinuedTest =
             \_ ->
                 emptyPrenatalMeasurements
                     |> bacterialVaginosis
-                    |> diagnoseNurseAfter [ DiagnosisTrichomonasOrBacterialVaginosis ]
+                    |> diagnoseNurseAfterDiagnoses [ DiagnosisTrichomonasOrBacterialVaginosis ]
                     |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosisContinued
                     |> Expect.equal True
         , test "diagnosed at an earlier encounter -> the plain diagnosis is not given as well" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> bacterialVaginosis
-                    |> diagnoseNurseAfter [ DiagnosisTrichomonasOrBacterialVaginosis ]
+                    |> diagnoseNurseAfterDiagnoses [ DiagnosisTrichomonasOrBacterialVaginosis ]
                     |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosis
                     |> Expect.equal False
         , test "an earlier gonorrhea does not make a first episode continued" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> bacterialVaginosis
-                    |> diagnoseNurseAfter [ DiagnosisGonorrhea ]
+                    |> diagnoseNurseAfterDiagnoses [ DiagnosisGonorrhea ]
                     |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosisContinued
                     |> Expect.equal False
         , test "an earlier gonorrhea leaves a first episode at the plain diagnosis" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> bacterialVaginosis
-                    |> diagnoseNurseAfter [ DiagnosisGonorrhea ]
+                    |> diagnoseNurseAfterDiagnoses [ DiagnosisGonorrhea ]
                     |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosis
                     |> Expect.equal True
         , test "an earlier bacterial vaginosis does not make a first gonorrhea continued" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> gonorrhea
-                    |> diagnoseNurseAfter [ DiagnosisTrichomonasOrBacterialVaginosis ]
+                    |> diagnoseNurseAfterDiagnoses [ DiagnosisTrichomonasOrBacterialVaginosis ]
                     |> EverySet.member DiagnosisGonorrheaContinued
                     |> Expect.equal False
         , test "gonorrhea diagnosed at an earlier encounter -> the continued diagnosis" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> gonorrhea
-                    |> diagnoseNurseAfter [ DiagnosisGonorrhea ]
+                    |> diagnoseNurseAfterDiagnoses [ DiagnosisGonorrhea ]
                     |> EverySet.member DiagnosisGonorrheaContinued
                     |> Expect.equal True
         ]
@@ -1940,18 +2007,6 @@ historyBeforeEncounterTest =
                         { symptoms = EverySet.singleton symptom
                         , symptomQuestions = EverySet.empty
                         , flankPainSign = Nothing
-                        }
-            }
-
-        withCoartem measurements =
-            { measurements
-                | medicationDistribution =
-                    wrapMeasurement
-                        { distributionSigns = EverySet.empty
-                        , nonAdministrationSigns = EverySet.empty
-                        , recommendedTreatmentSigns = Just (EverySet.singleton TreatmentCoartem)
-                        , avoidingGuidanceReason = Nothing
-                        , reinforceTreatmentSigns = Nothing
                         }
             }
 
