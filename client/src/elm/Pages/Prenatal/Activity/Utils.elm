@@ -2387,8 +2387,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             [ DiagnosisMalariaInitialPhase, DiagnosisMalariaRecurrentPhase ]
 
         malariaDiagnosed =
-            malariaConditionsMatch
-                && not (treatedForMalariaDiagnosedPreviously previousMalariaDiagnoses)
+            malariaConditionsMatch && not malariaMedicatedContinuedDiagnosed
 
         malariaMedicatedContinuedDiagnosed =
             malariaConditionsMatch
@@ -2402,8 +2401,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             ]
 
         malariaWithAnemiaDiagnosed =
-            malariaWithAnemiaConditionsMatch
-                && not (treatedForMalariaDiagnosedPreviously previousMalariaWithAnemiaDiagnoses)
+            malariaWithAnemiaConditionsMatch && not malariaWithAnemiaMedicatedContinuedDiagnosed
 
         malariaWithAnemiaMedicatedContinuedDiagnosed =
             malariaWithAnemiaConditionsMatch
