@@ -393,7 +393,7 @@ B-392	1	IMPLEMENTED	MED	2272	2273	33	The duplicate-referral guard now reads a hi
 B-393	3	IMPLEMENTED	MED	2309	2310	34	E2E suite: the Nutrition NCDA test has run in no CI job since 2026-03-15, because the job-1 exclusion `NCD` matches insi
 B-394	3	READY	MED			34	`healthy_start` is on in Rwanda production and is the one site feature no local or CI environment ever enables, so nothi
 B-395	2	IMPLEMENTED	HIGH	2270	2271	34	The release gate is red: all three e2e jobs have failed on `develop` since the translations fold merged on 2026-09-16, b
-B-396	3	READY	MED			34	`e2e_playwright_1` joins its two Playwright runs with `&&`, so any failure in the first leg silently skips the other 25 
+B-396	3	PARKED	MED			34	`e2e_playwright_1` joins its two Playwright runs with `&&`, so any failure in the first leg silently skips the other 25 
 B-397	3	READY	MED			34	`[ci skip]` on every commit plus zero required status checks means a PR can be merged with no CI having run at all
 B-398	4	READY	LOW			34	The simpletest CI log is capped at its last 400,000 bytes, and `--verbose` puts the per-class summary before the part th
 B-399	4	READY	LOW			34	`field_incident_type` allows `files-upload`, but the client sends `file-upload` and the backend stores it unvalidated — 
