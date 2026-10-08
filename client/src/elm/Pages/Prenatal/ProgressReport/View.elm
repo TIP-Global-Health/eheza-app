@@ -1,4 +1,4 @@
-module Pages.Prenatal.ProgressReport.View exposing (view)
+module Pages.Prenatal.ProgressReport.View exposing (view, viewTreatmentForOutsideCareDiagnosis)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -3246,7 +3246,7 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
         in
         case diagnosis of
             DiagnosisHIVInitialPhase ->
-                treatedWithPhrase outsideCareMedicationOptionsHIV NoOutsideCareMedicationForMalaria
+                treatedWithPhrase outsideCareMedicationOptionsHIV NoOutsideCareMedicationForHIV
                     |> Just
                     |> completePhrase
 

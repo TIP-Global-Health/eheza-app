@@ -3299,8 +3299,10 @@ outsideCareDiagnosesWithPossibleMedication : List PrenatalDiagnosis
 outsideCareDiagnosesWithPossibleMedication =
     [ DiagnosisHIVInitialPhase
     , DiagnosisSyphilisInitialPhase
+    , DiagnosisSyphilisRecurrentPhase
     , DiagnosisMalariaInitialPhase
     , DiagnosisModerateAnemiaInitialPhase
+    , DiagnosisModerateAnemiaRecurrentPhase
     , DiagnosisGestationalHypertensionImmediate
     , DiagnosisChronicHypertensionImmediate
     , DiagnosisModeratePreeclampsiaInitialPhase
