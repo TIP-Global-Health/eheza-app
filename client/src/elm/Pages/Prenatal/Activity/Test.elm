@@ -1031,15 +1031,22 @@ generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest =
                 |> withMalariaTest TestPositive
                 |> withHemoglobin 9
 
-        malariaWithAnemiaVariants =
+        -- Every malaria diagnosis, so a second one firing alongside shows up.
+        malariaVariants =
             EverySet.toList
                 >> List.filter
                     (\diagnosis ->
                         List.member diagnosis
-                            [ DiagnosisMalariaWithAnemiaInitialPhase
+                            [ DiagnosisMalariaInitialPhase
+                            , DiagnosisMalariaRecurrentPhase
+                            , DiagnosisMalariaMedicatedContinuedInitialPhase
+                            , DiagnosisMalariaMedicatedContinuedRecurrentPhase
+                            , DiagnosisMalariaWithAnemiaInitialPhase
                             , DiagnosisMalariaWithAnemiaRecurrentPhase
                             , DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
                             , DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
+                            , DiagnosisMalariaWithSevereAnemiaInitialPhase
+                            , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
                             ]
                     )
     in
@@ -1064,7 +1071,7 @@ generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest =
             \_ ->
                 currentMalariaWithAnemia
                     |> diagnoseNurseAfter [ DiagnosisMalariaWithSevereAnemiaInitialPhase ] (withCoartem emptyPrenatalMeasurements)
-                    |> malariaWithAnemiaVariants
+                    |> malariaVariants
                     |> Expect.equal [ DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ]
         , test "after a treated malaria with severe anemia, Hb 9 at a recurrent phase -> the medicated-continued diagnosis only" <|
             \_ ->
@@ -1072,20 +1079,28 @@ generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest =
                     |> withMalariaTestNonImmediate
                     |> withHemoglobinNonImmediate 9
                     |> diagnoseNurseAfter [ DiagnosisMalariaWithSevereAnemiaRecurrentPhase ] (withCoartem emptyPrenatalMeasurements)
-                    |> malariaWithAnemiaVariants
+                    |> malariaVariants
                     |> Expect.equal [ DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ]
         , test "after a treated malaria with anemia, Hb 9 -> the medicated-continued diagnosis only" <|
             \_ ->
                 currentMalariaWithAnemia
                     |> diagnoseNurseAfter [ DiagnosisMalariaWithAnemiaInitialPhase ] (withCoartem emptyPrenatalMeasurements)
-                    |> malariaWithAnemiaVariants
+                    |> malariaVariants
                     |> Expect.equal [ DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ]
         , test "after an untreated malaria with severe anemia, Hb 9 -> a new episode" <|
             \_ ->
                 currentMalariaWithAnemia
                     |> diagnoseNurseAfter [ DiagnosisMalariaWithSevereAnemiaInitialPhase ] emptyPrenatalMeasurements
-                    |> malariaWithAnemiaVariants
+                    |> malariaVariants
                     |> Expect.equal [ DiagnosisMalariaWithAnemiaInitialPhase ]
+        , test "after a treated malaria, Hb 12 -> the medicated-continued diagnosis only" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withMalariaTest TestPositive
+                    |> withHemoglobin 12
+                    |> diagnoseNurseAfter [ DiagnosisMalariaInitialPhase ] (withCoartem emptyPrenatalMeasurements)
+                    |> malariaVariants
+                    |> Expect.equal [ DiagnosisMalariaMedicatedContinuedInitialPhase ]
         ]
 
 
