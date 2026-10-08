@@ -46,6 +46,8 @@ What changes because of this:
 
 ## Open right now — updated 2026-10-07 (R39)
 
+🟡 **PR #2319 open 2026-10-08 (B-210 tier 3 + B-211 tier 4, issue #2318)** — Antenatal progress report: outside-care syphilis / moderate anemia now show their recorded treatment (recurrent-phase variants added to `outsideCareDiagnosesWithPossibleMedication`), and HIV "None of these" reads "no treatment administered". New `Pages/Prenatal/ProgressReport/Test.elm`. Worktree released. Awaiting review + CI. Same session: **B-396 🅿 PARKED**, **B-409 / B-080 ❌ REFUTED** by running them, B-404 left READY (user: no change).
+
 🟡 **PR #2317 open 2026-10-08 (B-449, tier 1, issue #2316)** — Prenatal diagnosis: malaria with anemia after a treated malaria with severe anemia is now medicated-continued only (hospital referral), no longer also a new episode. Both malaria gate pairs share one earlier-diagnosis list; 4 elm-tests (2 fail pre-fix). elm make, 3292 elm-tests, elm-review, comment check green locally. Worktree released. Awaiting review + CI.
 
 🟡 **PR #2312 open 2026-10-07 (B-446, tier 4, issue #2311)** — admin reports CSV: every line goes through `csvRow`, which quotes cells holding a comma, quote or line break (all three writers in `Pages/Reports/View.elm`); bundle rebuilt. Worktree released. **Review round 1 (medium): 6 findings, 2 cleanups fixed in `1f74a328c`, 1 won't-fix, 2 no change, 1 new item B-456; B-457 (no server-Elm test setup) recorded; threads resolved.** Awaiting CI + merge.
