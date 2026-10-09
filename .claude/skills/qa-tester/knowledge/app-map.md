@@ -85,6 +85,8 @@ flag simply does not appear.
   page, as is "Add Child" (`div.add-participant-icon-wrapper`).
 - Save buttons: `button.ui.fluid.primary.button` with class `disabled` or `active`; the
   `disabled` attribute is never set, so read the class.
+- Task tabs (`.link-section`): the active tab never carries `completed`, even when it is
+  done (`not isActive && isCompleted`); read the task counter for the open tab instead.
 - Yes/no inputs: the chosen side is `input.checked` inside `.form-input.yes-no.<name>`; the
   label never gets an `active` class.
 - The out-of-range warning covers the page with a dimmer; its Close button is the only
