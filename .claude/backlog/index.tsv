@@ -457,6 +457,7 @@ B-456	4	READY	LOW			39	Admin reports CSV download: the file has no byte-order ma
 B-457	4	READY	LOW			39	Admin Elm app (`server/elm`): no unit tests can be written, because it has no elm-test setup, so pure helpers such as th
 B-458	4	READY	LOW			39	Admin content: outside super user mode, three more ways to delete or unpublish a node are still offered and always fail 
 B-459	1	READY	LOW			38	Prenatal diagnosis: a treated malaria found again at a different anemia level is filed as a new episode, and "treated" m
+B-460	2	IMPLEMENTED		2320	2321		Sync incidents: the backend cannot re-create a missing entity the device sent, because a `false` boolean is written as a
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
