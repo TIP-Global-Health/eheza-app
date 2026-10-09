@@ -11,10 +11,10 @@ familiar screens fast, and slow down only on the screen the change touches, wher
 closely and try the edge cases. Verification is one-time: it covers what CI and e2e tests do
 not reach, and its outcome is recorded so it never needs repeating.
 
-**Your hands are the e2e helpers.** `client/e2e/helpers/` holds about 220 functions that
+**Your hands are the e2e helpers.** `client/e2e/helpers/` holds about 280 functions that
 drive every encounter type through the real UI — `h.prenatal.completeDangerSigns(page)`,
-`h.auth.setupDevice(page)`, `h.common.registerAdult(...)`. The QA driver (below) runs them in
-a visible browser, so a known path costs one command, not one tool call per click.
+`h.common.registerAdult(...)`, `h.common.openActivity(...)`. The QA driver (below) runs them
+in a browser it keeps open, so a known path costs one command, not one tool call per click.
 
 ## Knowledge base — read first, update last
 
@@ -57,7 +57,8 @@ covers; that needs no manual pass.
 
 1. The **main tree** (`/var/www/html/ihangane`) is on the branch under test — gulp serves
    only that tree. If switching it would disturb a parallel session, stop and ask.
-2. `ddev gulp` has **finished** compiling.
+2. `ddev gulp` is running and has finished compiling — its output is in the user's
+   terminal; if the build check in 5 fails, ask them rather than touching ddev.
 3. Feature flags the touched code sits behind are on (see app-map).
 4. Start the driver on a fresh profile and set up a fresh device in one command:
 
@@ -68,17 +69,22 @@ covers; that needs no manual pass.
    ```
 
    That pairs a new device, signs in nurse Maya at Nyange and syncs the health centre —
-   about 10 seconds. `qa.freshDevice({ pin: '2345', location: '<village>' })` does the
-   same for another account; to switch accounts later, see app-map.
-5. The build in the driver's browser is the one under test: `span.version` in the top
-   right reads `Version: <hash>`, which must equal `git rev-parse --short HEAD` in the main
-   tree. After a recompile, click it and apply the update on the page it opens.
+   about 10 seconds. It refuses a used profile, where the app would keep its old pairing.
+   To change account later: `await qa.signIn('<pin>', '<location text>')`. A driver that
+   is already running can be reused: `qa.sh state` shows who is signed in (on the main
+   menu) and the build.
+5. The build in the driver's browser is the one under test: the reply's `version` (the
+   commit gulp built) must leave nothing out of the client source —
+   `git -C /var/www/html/ihangane diff --quiet <version> -- client/src` exits 0. Comparing
+   with HEAD gives false alarms, since bookkeeping commits move HEAD. After a recompile,
+   click `div.version-env` and apply the update on the page it opens.
 
 ## Step 3: Test plan — present before executing
 
 A table, one row per behaviour from Step 1: how to reach it (the helper chain, or "by hand"
 with the route from app-map), the input or state that exercises it, and the expected
-result. Include negative cases where the diff has conditions (flag off, wrong role,
+result. Expected results come from the diff and the Elm view code that renders the screen —
+reading that code is part of planning, not a shortcut. Include negative cases where the diff has conditions (flag off, wrong role,
 boundary values). Present it and wait for approval.
 
 ## Step 4: Execute
@@ -87,31 +93,39 @@ boundary values). Present it and wait for approval.
 
 | command | does |
 |---|---|
-| `qa.sh start [--fresh]` | open the browser; it stays open between commands and reopens the last page |
+| `qa.sh start [--fresh] [--watch]` | open the browser; it stays open between commands and reopens the last page. `--watch` shows the window, which a screen shorter than 1024 px crops — videos too |
 | `qa.sh run [file] [--shot]` | run JS (file or stdin) as the body of `async (page, h, qa) => {...}` |
 | `qa.sh state [--shot]` | summary of the screen; `--shot` also saves a PNG to look at |
 | `qa.sh record start <pr> <name>` / `record stop` | real-time video to `client/qa-recordings/<pr>/qa-<pr>-<name>.mp4` |
+| `qa.sh frame <pr> <name> <seconds>` | save that video's frame at `<seconds>` as a PNG to look at |
 | `qa.sh stop` | close the browser (kills it if a command is stuck) |
 
 Every reply is JSON: the command's return value or error, its duration, and the screen it
-left — URL, headings, open dialogs, task counters, tabs, buttons with `[active]` /
-`[completed]` / `[disabled]`, choices as `(x) Yes` / `( ) No`, and field values. Read that
+left — URL, build, who is signed in (main menu only), headings, open dialogs, task
+counters, tabs, buttons with `[active]` / `[completed]` / `[disabled]`, choices as
+`(x) Yes` / `( ) No`, and field values. While recording, `recordingAt` is the second of the
+video the command ended at. Read that
 instead of taking a screenshot to find out where you are. In the command body, `page` is
 the Playwright page, `h` holds every helper module (`h.prenatal`, `h.common`, `h.ncd`, …),
-and `qa` has `state()`, `shot(name)`, `log(...)`, `click(locator | text)` and `freshDevice()`.
+and `qa` has `state()`, `shot(name, { fullPage })`, `log(...)`, `click(locator | text)`,
+`fill(locator, value)`, `signIn(pin, location)` and `freshDevice()`.
 
 ### How to drive
 
 - **Known path: one command.** Chain helpers for all the setup the scenario needs, e.g.
   register, start the encounter, complete the activities before the one under test. Read
-  a helper's signature and options before calling it.
+  a helper's signature and options before calling it. To stop on a form instead of
+  completing it: `h.common.openActivity(page, '<encounter>', '<activity icon>')` and
+  `h.common.clickSubTaskTab(page, '<tab icon>')`, with the names taken from the helpers.
 - **The screen under test: small steps, and look.** One action or a few per command, read
   the reply, and `--shot` at least once in every state that matters — content, behaviour
   *and* appearance (see pitfalls on judging a new dialog by its text).
-- **Act as a user acts.** Click with `qa.click` or helpers, which hover first like a person;
-  type with `locator.fill`; choose with `selectOption`. Reach the screen under test through
-  the UI — never `page.goto('#...')` to it. A Playwright click refuses an element a person
-  could not press (hidden, covered, disabled), so a click that goes through is honest.
+- **Act as a user acts on the screen under test.** Click with `qa.click`, type with
+  `qa.fill`, choose with `selectOption`. Both hover first, so the video shows where each
+  action lands, and a Playwright click refuses an element a person could not press (hidden,
+  covered, disabled). Many helpers click directly, some with `force: true`, which skips that
+  check — fine for setup, not for the behaviour being verified. Reach the screen under test
+  through the UI — never `page.goto('#...')` to it.
 - **A failure names its locator after 10 seconds.** Read the reply's state and the
   screenshot it carries, then decide; never retry blindly.
 - **Native dialogs are dismissed automatically** (= Cancel). To accept one, register
@@ -126,13 +140,15 @@ and `qa` has `state()`, `shot(name)`, `log(...)`, `click(locator | text)` and `f
 
 Record every scenario: `record start` before its first action, `record stop` after the
 result is on screen. The video is real time, with the e2e cursor marking the pointer; while
-recording, every helper click hovers and pauses for a second so the viewer can follow.
-Setup that is not evidence runs unrecorded at full speed. Look at a frame from the moment
-that matters (`ffmpeg -ss <t> -i <video> -frames:v 1 frame.png`) — a video that does not
-legibly show the thing demonstrated is not evidence. A scenario without one is not verified.
+recording, `qa.click`, `qa.fill` and helper clicks made through `click()` hover and pause
+for a second so the viewer can follow. Setup that is not evidence runs unrecorded at full
+speed. Look at the frame from the moment that matters (`qa.sh frame`, at the `recordingAt`
+of that command) — a video that does not legibly show the thing demonstrated is not
+evidence. A scenario without one is not verified.
 
 The driver runs the e2e device: iPad Mini viewport, mouse input. Touch-only gestures are not
-exercised; say so in the report when the change depends on them.
+exercised; say so in the report when the change depends on them. Persons and encounters a
+run creates stay in the local database, as e2e's do; nothing needs cleaning up.
 
 ## When you find a bug
 
@@ -168,7 +184,8 @@ approval.** It opens with the caption
 > **Manual tests executed using the QA Tester skill**
 
 then the build and login used, a table with one row per plan row and its result, and a
-short paragraph per row saying what it showed. Close with what the run did **not** cover:
+short paragraph per row saying what it showed — including which part was set up by helpers
+and which was checked by hand. Close with what the run did **not** cover:
 blocked rows, touch-only behaviour, and sibling code paths a scenario stands in for but did
 not exercise. State a blocked row as blocked; never imply coverage the run does not have.
 Describe what is now true, not which commands were run.

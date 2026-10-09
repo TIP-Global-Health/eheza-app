@@ -9,8 +9,10 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the change is invisible in the app although the diff clearly adds it.
 - **Wrong conclusion:** the feature is broken.
 - **Rule:** check, in order: (1) the main tree is on the PR's branch — gulp serves only that
-  tree; (2) gulp has finished compiling; (3) the `Version:` hash in the browser doing the run
-  matches `git rev-parse --short HEAD`. Each browser profile caches its own build.
+  tree; (2) gulp has finished compiling; (3) the build in the browser doing the run leaves
+  nothing out: `git diff --quiet <version> -- client/src`. Each browser profile caches its
+  own build. Comparing the version with HEAD raises false alarms — bookkeeping commits move
+  HEAD without touching the client.
 
 ## A PR's commit list can contain work a later commit undoes
 

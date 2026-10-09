@@ -38,8 +38,8 @@ flag simply does not appear.
 | CHW Jojo | 2345 | picks a village: Akanduga at Mbirima, or Busake at Busake |
 | Lab technician | 3333 | picks a health centre; the menu has only Case Management and Device Status |
 
-- Switching account keeps the device paired: SIGN OUT → `input[name=pincode]` → Sign In →
-  `p.select-location` → the location button. About a second in the driver.
+- Switching account keeps the device paired: `qa.signIn(pin, location)` goes to the main
+  menu, signs out, enters the PIN and picks the location — about a second.
 - Individual encounters offered — nurse: Acute Illness, Antenatal Care, Child Nutrition,
   Noncommunicable Diseases, Standard Pediatric Visit. CHW: Acute Illness, Antenatal Care,
   Child Nutrition, Well Child Visit, Child Scorecard, TB Management, HIV Management.
@@ -53,6 +53,9 @@ flag simply does not appear.
 
 - Pairing codes are single-use. `qa.freshDevice()` uses `88888888` and titles the device
   "QA Device …"; the e2e runs use `99999999` and delete every device titled "E2E…".
+- The pairing lives in the service worker's `config` cache, not in localStorage, so only an
+  empty profile (`qa.sh start --fresh`) can be paired anew; `qa.freshDevice()` refuses
+  any other.
 - After pairing, general data (nurses, villages, health centres) must download before a PIN
   works: "Your PIN code was not recognized" straight after pairing means not synced yet.
 - **A health centre downloads nothing until its "START SYNCING" button on Device Status is
@@ -90,7 +93,8 @@ flag simply does not appear.
   done, then `active`. Acute Illness then asks in an in-app "END ENCOUNTER?" modal; Well
   Child and Home Visit end without one. None of these are native dialogs.
 - Date of birth: open `div.date-input.field`, set YEAR (it rebuilds the MONTH list), then
-  MONTH, then click the day — the picker closes on that click. `h.common.setDate` does this.
+  MONTH, click the day, then the popup's SAVE — the day click alone does not close it.
+  `h.common.setDate` does this.
 - Photos: the widget is a Dropzone (`#dropzone`), not a camera. Give it a file with
   `setInputFiles` on its hidden input; the thumbnail turning into a `/cache-upload/images/<id>`
   URL means it took.
@@ -155,14 +159,18 @@ flag simply does not appear.
   | Immunization (Well Child) | `currentDate` | **no** — the only pane where "an encounter took place today" is reachable |
   | Prenatal | `currentDate + 1` | as Acute Illness |
 
+  In practice the Immunization entry is visible only on the day its Well Child encounter
+  happened, which is also the day a same-day guard matters.
+
 - Encounters that produce an entry:
   - **Child Nutrition (CHW) → Home Visit pane.** MUAC 11 (red), Nutrition "None of these",
     Weight, Height; Next Steps appears once all four are saved. Saving Follow Up ("1 Day")
     alone creates the entry. The nutrition participant page also offers HOME VISIT
     ENCOUNTER directly, beside NUTRITION ENCOUNTER.
   - **Well Child (CHW) → Immunization pane.** Danger Signs, Nutrition Assessment, then
-    Immunizations answering **No** to each vaccine. Leave them unadministered: a child given
-    everything gets a future date and **no entry**. "BEHIND" on the progress report means the
+    Immunizations answering **No** to each vaccine — `h.wellChild.completeImmunisation(page,
+    { isChw: true })`; without `isChw` it answers Yes and gives the vaccines. Leave them
+    unadministered: a child given everything gets a future date and **no entry**. "BEHIND" on the progress report means the
     entry will show.
   - **Acute Illness (CHW, adult) → Acute Illness pane.** Fever + Chills; temperature 38.5;
     Malaria RDT positive, not pregnant → Uncomplicated Malaria; Next Steps: Coartem Yes and
@@ -174,7 +182,11 @@ flag simply does not appear.
   profile, so pairing survives a restart), `shots/`, `last-url`, `driver.log`.
 - Viewport, device metrics and timezone match the e2e runs: iPad Mini (768×1024 CSS px),
   mouse input, UTC.
-- Commands run one at a time. A long wait inside one (`syncAndWait` allows 300 s) needs
-  `QA_TIMEOUT` and the Bash call's own timeout raised to match.
+- The browser is headless unless started with `--watch`. On a 1080 px screen a visible
+  window is only ~960 px tall inside, and the screencast — the video — keeps only that part.
+- Commands run one at a time. `qa.sh` waits up to 600 s for a reply (`QA_TIMEOUT`); a long
+  wait inside a command (`syncAndWait` allows 300 s) needs the Bash call's own timeout raised.
+- Only a caller that can read `.driver/token` (owner-only, new each start) can send commands;
+  requests from a browser page are refused.
 - Measured: empty profile → paired, signed in and synced in ~10 s; register a woman, open a
   first ANC encounter and reach the Random Blood Sugar tab, while recording, in ~17 s.

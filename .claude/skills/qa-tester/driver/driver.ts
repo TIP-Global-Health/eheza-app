@@ -5,7 +5,7 @@
  * Each command is the body of an async function `(page, h, qa) => ...`:
  *   page  the Playwright page showing the app
  *   h     every e2e helper module, e.g. h.prenatal.completeDangerSigns(page)
- *   qa    the extras below: state, shot, log, click, freshDevice
+ *   qa    the extras below: state, shot, log, click, fill, signIn, freshDevice
  * The reply is JSON: the command's return value, its error if any, how long it
  * took, and a short summary of the screen it left behind.
  *
@@ -113,7 +113,15 @@ async function screenState(page: Page) {
         return `${name} = ${JSON.stringify(input.value)}`;
       });
     const counters = unique(all('.tasks-count, .count, .progress-bar').map(text)).slice(0, 5);
-    return { url: location.hash || location.pathname, headings, dialogs, counters, tabs, buttons, choices, fields };
+    const versionEl = document.querySelector('span.version');
+    const version = versionEl ? text(versionEl).replace(/^Version: /, '') : '';
+    // Only the main menu says who is signed in, and where.
+    const signedIn = document.body.innerText.match(/Logged in as: (.+)\n+(.+)/);
+    const session = signedIn ? `${signedIn[1]} at ${signedIn[2]}` : '';
+    return {
+      url: location.hash || location.pathname, version, session, headings, dialogs, counters,
+      tabs, buttons, choices, fields,
+    };
   });
 }
 
@@ -124,8 +132,15 @@ class Recorder {
   private dir = '';
   private output = '';
 
+  private startedAt = 0;
+
   get active() {
     return this.session !== null;
+  }
+
+  /** Seconds since the recording started: the time to pull a frame from later. */
+  get elapsed() {
+    return Math.round((Date.now() - this.startedAt) / 100) / 10;
   }
 
   async start(page: Page, output: string) {
@@ -145,6 +160,7 @@ class Recorder {
     });
     await session.send('Page.startScreencast', { format: 'jpeg', quality: 85, everyNthFrame: 1 });
     this.session = session;
+    this.startedAt = Date.now();
     // The e2e click helper hovers and pauses before each click while this is set.
     process.env.RECORD = '1';
   }
@@ -158,13 +174,15 @@ class Recorder {
     await session.send('Page.stopScreencast').catch(() => {});
     await session.detach().catch(() => {});
     if (this.frames.length === 0) throw new Error('no frames were captured');
+    // The screen may have been still since the last frame: hold it until now.
+    this.frames.push({ file: this.frames[this.frames.length - 1].file, at: Date.now() / 1000 });
 
     // A frame lasts until the next one arrives; the screencast sends frames
     // only when the screen changes, so a still screen is one long frame.
     const lines: string[] = [];
     this.frames.forEach((frame, i) => {
       const next = this.frames[i + 1];
-      const seconds = next ? Math.max(next.at - frame.at, 0.001) : 1;
+      const seconds = next ? Math.max(next.at - frame.at, 0.001) : 0.04;
       lines.push(`file '${frame.file}'`, `duration ${seconds.toFixed(3)}`);
     });
     // The concat demuxer ignores the last duration unless the file repeats.
@@ -180,19 +198,25 @@ class Recorder {
       this.output,
     ]);
     fs.rmSync(this.dir, { recursive: true, force: true });
-    const total = this.frames[this.frames.length - 1].at - this.frames[0].at + 1;
-    return { video: this.output, seconds: Math.round(total), frames: this.frames.length };
+    const seconds = execFileSync('ffprobe', [
+      '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', this.output,
+    ]).toString().trim();
+    return { video: this.output, seconds: Number(seconds) };
   }
 }
 
 test('qa driver', async () => {
+  // A profile that does not exist yet is the only one a new device can be paired in.
+  let emptyProfile = !fs.existsSync(PROFILE);
   fs.mkdirSync(SHOTS, { recursive: true });
   const tokenFile = path.join(STATE, 'token');
   fs.rmSync(tokenFile, { force: true });
   fs.writeFileSync(tokenFile, TOKEN, { mode: 0o600 });
   const context: BrowserContext = await chromium.launchPersistentContext(PROFILE, {
     ...ipadMini,
-    headless: false,
+    // A visible window is cut to the screen's height, and the video with it, so it is
+    // shown only on request (qa.sh start --watch).
+    headless: !process.env.QA_WATCH,
     hasTouch: false,
     isMobile: false,
     timezoneId: 'UTC',
@@ -225,13 +249,13 @@ test('qa driver', async () => {
 
   const qa = {
     state: () => screenState(page),
-    /** Saves a screenshot of the viewport and returns its path. */
-    shot: async (name = '') => {
+    /** Saves a screenshot of the viewport, or the whole page, and returns its path. */
+    shot: async (name = '', { fullPage = false } = {}) => {
       // Named by time, so a restarted driver never overwrites an earlier run's shots.
       const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..*/, '');
       shotCount += 1;
       const file = path.join(SHOTS, `${stamp}-${shotCount}${name ? '-' + name : ''}.png`);
-      await page.screenshot({ path: file, scale: 'css' });
+      await page.screenshot({ path: file, scale: 'css', fullPage });
       return file;
     },
     log: (...parts: unknown[]) => {
@@ -244,8 +268,27 @@ test('qa driver', async () => {
     freshDevice: async (
       { pin = '1234', location = 'Nyange Health Center', healthCenter = 'Nyange Health Center' } = {},
     ) => {
+      // On a used profile the app keeps its old pairing and would quietly sign in to it.
+      if (!emptyProfile) throw new Error('freshDevice needs an empty profile: qa.sh stop, then qa.sh start --fresh');
       device.resetDevice(QA_PAIRING_CODE, 'QA Device');
       await auth.setupDevice(page, pin, location, healthCenter, QA_PAIRING_CODE);
+      emptyProfile = false;
+    },
+    /** Signs out if signed in, then signs in to this account and location on the same device. */
+    signIn: async (pin: string, location: string) => {
+      const signOut = page.locator('button.ui.button.logout');
+      const pinInput = page.locator('input[name="pincode"]');
+      // Sign Out is only on the main menu; this is setup, not the screen under test.
+      if (!(await signOut.isVisible()) && !(await pinInput.isVisible())) {
+        await page.goto('/');
+        await signOut.or(pinInput).waitFor({ timeout: 30000 });
+      }
+      if (await signOut.isVisible()) await auth.click(signOut, page);
+      await pinInput.fill(pin);
+      await auth.click(page.getByRole('button', { name: 'Sign In' }), page);
+      await page.locator('p.select-location').waitFor();
+      await auth.click(page.locator('button.ui.primary.button', { hasText: location }), page);
+      await signOut.waitFor({ timeout: 30000 });
     },
     /** Clicks the way a person does: a locator, or the first visible element with this text. */
     click: async (target: Locator | string) => {
@@ -253,6 +296,11 @@ test('qa driver', async () => {
         ? page.getByText(target, { exact: false }).filter({ visible: true }).first()
         : target;
       await auth.click(locator, page);
+    },
+    /** Clicks into a field, so the recording shows where the text goes, then types it. */
+    fill: async (target: Locator, value: string) => {
+      await auth.click(target, page);
+      await target.fill(value);
     },
   };
 
@@ -281,7 +329,7 @@ test('qa driver', async () => {
     if (consoleErrors.size) {
       out.consoleErrors = Array.from(consoleErrors, ([message, n]) => (n > 1 ? `${n}x ${message}` : message));
     }
-    if (recorder.active) out.recording = true;
+    if (recorder.active) out.recordingAt = recorder.elapsed;
     logs = [];
     consoleErrors = new Map();
     return out;
@@ -298,7 +346,9 @@ test('qa driver', async () => {
           const value = await new AsyncFunction('page', 'h', 'qa', body)(page, h, qa);
           return reply(withShot, { ok: true, ms: Date.now() - started, value: value ?? null });
         } catch (error) {
-          const message = String((error as Error)?.message ?? error).split('\n').slice(0, 12).join('\n');
+          const message = String((error as Error)?.message ?? error)
+            .replace(/\u001b\[\d+m/g, '')
+            .split('\n').slice(0, 12).join('\n');
           return reply(true, { ok: false, ms: Date.now() - started, error: message });
         }
       }
