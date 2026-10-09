@@ -200,8 +200,9 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
   $entity = ['type' => $bundle];
   foreach ($fields as $field) {
     $name = $field['field_name'];
-    if ($name == 'field_shards') {
-      // Shards are assigned automatically.
+    // Shards are assigned automatically, and a re-created entity is never
+    // deleted.
+    if (in_array($name, ['field_deleted', 'field_shards'])) {
       continue;
     }
 
@@ -216,7 +217,7 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
     }
 
     $name_at_data = preg_replace('/^field_/', '', $name);
-    $value = $data->{$name_at_data};
+    $value = isset($data->{$name_at_data}) ? $data->{$name_at_data} : NULL;
     $is_required = $field['required'];
     if (!isset($value)) {
       if ($is_required) {
@@ -260,6 +261,11 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
         else {
           $entity[$name][LANGUAGE_NONE][0]['value'] = "$value 00:00:00";
         }
+        break;
+
+      case 'list_boolean':
+        // Stored as 0 or 1. Writing FALSE as is fails the insert.
+        $entity[$name][LANGUAGE_NONE][0]['value'] = (int) $value;
         break;
 
       case 'list_integer':
