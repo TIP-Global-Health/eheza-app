@@ -1,387 +1,180 @@
 # QA App Map — E-Heza
 
-Stable facts about navigating and preparing the app for manual QA. Correct this file whenever
-reality disagrees with it; add facts you had to discover the hard way.
+What a tester who knows the app carries in their head and the e2e helpers do not: accounts,
+which screen shows what, sync gates, and the parts of routes no helper drives. Correct this
+file whenever reality disagrees with it, merging each fact into the section it belongs to.
 
-For test accounts, page/activity selectors, and per-encounter-type mechanics, use
-`../../e2e-test/references/e2e-knowledge-base.md` — that file is the source of truth for those.
+How to fill a form and press on is in `client/e2e/helpers/`; selectors and per-encounter
+mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is repeated here.
 
 ## Environment
 
-- App URL: `http://localhost:3000` (served by `ddev gulp` from the **main tree**
-  `/var/www/html/ihangane` — it serves whatever branch that tree is on).
-- After every Elm recompile: click **"Version"** in the app's top-right corner to activate the
-  new code (service-worker update). Skipping this means testing the previous build.
-- `EHEZA_SITE` env var selects rwanda/burundi (set in `.ddev/config.local.yaml`).
-- Backend admin: Drupal at the ddev URL, `admin`/`admin`.
-- A **server reinstall wipes every device, person and pairing** and puts the migration
-  devices back: Tablet 1 code `12345678`, Tablet 2 code `87654321` (both single-use again).
-  It also leaves the browser holding credentials for a database that no longer exists — wipe
-  the app's local state before the next run or the upload lane jams (see pitfalls).
-  Confirmed after the reinstall on 2026-08-21: two devices, no QA persons, feature flags
-  back on. Mint a fresh device rather than spending a migration code — see SKILL.md Step 2.
-  Re-pairing an already-paired device needs super user mode:
-  `ddev drush vset hedley_super_user_mode 1` (set back to 0 after).
-- Default nurse PIN: `1234`. Other accounts: see the e2e knowledge base accounts table.
+- App URL `http://localhost:3000`, served by `ddev gulp` from the **main tree** — whatever
+  branch that tree is on.
+- `span.version` (top right) reads `Version: <short hash>`. Clicking it (`div.version-env`)
+  opens the service-worker page, where a new build is applied. Each browser profile keeps
+  its own service-worker cache, so two browsers can show two builds at the same time —
+  always read the version in the browser doing the run.
+- `EHEZA_SITE` (rwanda / burundi) is set in `.ddev/config.local.yaml`.
+- Drupal admin: `admin` / `admin`.
+- A **server reinstall** (`server/install`) wipes every device, person and pairing, restores
+  the migration devices (Tablet 1 `12345678`, Tablet 2 `87654321`) and turns the feature
+  flags back on. A browser profile from before it holds credentials for a database that no
+  longer exists: start the driver with `--fresh`.
+- Re-pairing an already-paired device needs super user mode
+  (`ddev drush vset hedley_super_user_mode 1`, back to 0 after).
 
 ## Feature flags
 
-`ddev drush vset hedley_admin_feature_<name>_enabled 1|0` — flags: `ncda`, `stock_management`,
-`tuberculosis_management`, `group_education`, `report_to_whatsapp`, `hiv_management`,
-`gps_coordinates`, `family_nutrition`. A screen behind a disabled flag simply does not appear —
-check the flag before concluding a screen is unreachable.
+`ddev drush vset hedley_admin_feature_<name>_enabled 1|0`. The canonical list is
+`hedley_admin_get_available_features()` in `hedley_admin.module`. A screen behind a disabled
+flag simply does not appear.
 
-## Sync
+## Accounts and roles
 
-Offline-first: the client writes to browser storage and syncs in the background. Backend
-effects (nodes created, reports updated) are visible only after the upload lane drains. Verify
-backend state with `ddev drush sqlq ...` / `ddev drush` queries.
+| account | PIN | after sign-in |
+|---|---|---|
+| Nurse Maya | 1234 | picks a health centre: Muhondo or **Nyange** (QA uses Nyange) |
+| CHW Jojo | 2345 | picks a village: Akanduga at Mbirima, or Busake at Busake |
+| Lab technician | 3333 | picks a health centre; the menu has only Case Management and Device Status |
 
-## Navigation facts
+- Switching account keeps the device paired: SIGN OUT → `input[name=pincode]` → Sign In →
+  `p.select-location` → the location button. About a second in the driver.
+- Individual encounters offered — nurse: Acute Illness, Antenatal Care, Child Nutrition,
+  Noncommunicable Diseases, Standard Pediatric Visit. CHW: Acute Illness, Antenatal Care,
+  Child Nutrition, Well Child Visit, Child Scorecard, TB Management, HIV Management.
+- **The newborn exam (Birth History) is CHW-only.** A nurse always starts a `PediatricCare`
+  encounter, which never offers it (`Pages/WellChild/Participant/View.elm` picks
+  `NewbornExam` only for a CHW and a child under two months).
+- Group sessions: a CHW opens straight onto Attendance; a nurse goes Clinical → Group
+  Encounter → programme → group.
 
-(Append route recipes here as runs discover them: screen → click path from login.)
+## Device, sync and local data
 
-- **Every run pairs a fresh device** — see the drush recipe in SKILL.md Step 2. Codes are
-  single-use, so pick a new one each time (77777777 and 88888888 are spent). A pairing does
-  not survive reliably between runs: on 2026-08-21 the app came up on the pairing screen on
-  its own after a rebuild, with the device node still intact in the backend, so never plan a
-  run around a pairing that is already there.
-- e2e person titles are `E2ETest <firstName>` (registerAdult hardcodes the second name and
-  Drupal stores "secondName firstName").
+- Pairing codes are single-use. `qa.freshDevice()` uses `88888888` and titles the device
+  "QA Device …"; the e2e runs use `99999999` and delete every device titled "E2E…".
+- After pairing, general data (nurses, villages, health centres) must download before a PIN
+  works: "Your PIN code was not recognized" straight after pairing means not synced yet.
+- **A health centre downloads nothing until its "START SYNCING" button on Device Status is
+  pressed**; choosing it at sign-in does not start it. Until then Clinical shows "Data is not
+  synced". `qa.freshDevice()` does this for Nyange.
+- The upload lane then idles (Sync Settings → Idle time, default 600 s; after an error it
+  sleeps that long). "TRY SYNCING WITH BACKEND" on Device Status forces a round;
+  `h.common.syncAndWait(page)` presses the sync icon and waits for Success.
+- Device Status has "Error log" and "Sync Manager" debug panels behind its top-left links.
+- IndexedDB `sync` stores: `nodes` (general data only, ~36 rows), `shards` (authority data:
+  persons, relationships, measurements), `nodeChanges` / `shardChanges` (queued uploads),
+  `authorityPhotoUploadChanges` (`{localId, photo, fileId}`, `fileId` null until the file
+  uploads), `deferredPhotos`, `syncMetadata`, `statistics`.
+- The upload is a main-thread XHR to `/api/sync`, so `page.on('request')` in the driver sees
+  its body (`request.postData()`). That is the only way to tell a dropped key from a null
+  one, since the backend treats both alike. Downloads go through the service worker.
+- **Relationships load slowly after a fresh pairing.** A person page can show "Family
+  Members: … Not Found" through several reloads before it starts working. It is a loading
+  delay, not `clinics-not-found-bug.md`.
 
-## Sync (facts discovered 2026-08-20)
+## Controls
 
-- Sync network requests go through the service worker and do not show in the tab's request
-  log; judge sync by Device Status timestamps and the local `sync` IndexedDB instead.
-- Sync Manager debug panels live behind the top-left "Error log" / "Sync Manager" links on
-  the Device Status page; Sync Settings exposes Idle time (default 600000 ms — after an
-  error the lane sleeps 10 minutes; lower it to retry quickly).
-- After a wiped device pairs, general data (nurses) must download before any PIN works —
-  "Your PIN code was not recognized" right after pairing just means sync hasn't finished.
-
-## Navigation facts
-
-- Register + first encounter (nurse): Clinical → Individual Encounter → <type> → search →
-  Register a new participant → form (names, DOB via calendar popup, gender, education,
-  marital status, NCD also Mode of delivery, address cascade Province→…→Village, Health
-  Center) → Save → encounter-type select page → First/Subsequent encounter.
-- Prenatal Laboratory point-of-care blood sugar: Laboratory activity → "Random Blood Sugar"
-  tab (right end of the tab strip) → performed today Yes → Point of Care → before meal → the
-  mg/dL input appears.
-- NCD Laboratory opens directly on Random Blood Sugar; extra question "Did you perform this
-  test today?" before the input appears.
-- Labs history: subsequent prenatal encounter → Laboratory shows ONLY the History task while
-  labs from previous encounters are pending → each row's UPDATE opens
-  `#prenatal-labs-history/...` with that test's result form.
-- Same-day second encounter is impossible; backdate the first via drush
-  (`field_scheduled_date` value+value2, see e2e `backdateEncounter`) — no client resync
-  needed when the client re-downloads afterwards (fresh device) or syncs before starting.
-- Case Management (nurse): All / Contact Tracing / ANC Labs / NCD Labs panes; the forward
-  icon on an ANC/NCD Labs entry opens the recurrent Lab Results page directly. Lab tech
-  (PIN 3333) sees only Case Management + Device Status, ANC Labs pane only.
-
-## Navigation facts (discovered 2026-08-21)
-
-- Nurse **Maya**, PIN 1234, is offered two health centres after sign-in (Muhondo /
-  Nyange); the QA device is set up for **Nyange**. Signing out returns to the PIN page
-  without unpairing the device.
-- Demo children are all born in 2022 (~4 years old): fine for height/weight/MUAC, but
-  too old for head circumference or the newborn exam (pregnancy summary). Those need a
-  child registered for the purpose.
-- Well Child Nutrition Assessment task strip: Height / MUAC / Nutrition / Weight, each
-  its own Save. Rwanda ranges shown above the inputs: height 25–250 cm, MUAC 5–99 cm,
-  weight 0.5–200 kg.
-- ANC Examination task strip: Vitals / Nutrition Assessment / Core Physical Exam /
-  Obstetrical Exam / Breast Exam. Height, weight, BMI and MUAC sit on **one** task
-  (so one Save covers all three ranged measurements); fundal height is on Obstetrical
-  Exam behind "Is fundal palpable? → Yes". Neither form prints its range above the
-  input — only the warning states it.
-- The out-of-range warning draws a full-page dimmer: the task strip, the back arrow and
-  everything else in the app are unclickable while it is up. Its Close button is the
-  only in-app way out; the browser's Back button goes around it.
-- **Group sessions start empty on this device**: every group reached from Clinical →
-  Group Encounter reports "This Group has no mothers assigned to it", although the
-  backend has `pmtct_participant` rows for those clinics (Nyagne II nid 93 has 26).
-  Build the group instead: Attendance → **Add New Participant** → register the mother →
-  on her Person page **Add Child** → register the child → pick "is the parent of" →
-  Save. That creates the participant in *this session's* group and checks the mother in;
-  the child's activities are then reached from the PARTICIPANTS icon in the header →
-  the mother's card → the baby icon beside her photo.
-
-## Roles (discovered 2026-08-21)
-
-- Nurse PIN **1234** ("Maya") → pick a health centre. CHW PIN **2345** ("Jojo") → pick a
-  village (Akanduga at Mbirima / Busake at Busake). Lab tech PIN 3333.
-- The CHW's individual encounter list is larger than the nurse's: Acute Illness,
-  Antenatal Care, Child Nutrition, **Well Child Visit**, **Child Scorecard**,
-  TB Management, HIV Management. The nurse gets Acute Illness, Antenatal Care, Child
-  Nutrition, Noncommunicable Diseases, Standard Pediatric Visit.
-- **The newborn exam (Birth History / pregnancy summary) is CHW-only.** A nurse always
-  starts a `PediatricCare` encounter, and that encounter type never offers the activity
-  (`Pages/WellChild/Participant/View.elm` — `NewbornExam` is chosen only when `isChw`
-  and the child is under two months). Register the newborn under the CHW login.
-- A CHW's group session opens straight onto Attendance (one group, no programme or
-  group choice); the nurse goes Clinical → Group Encounter → programme → group.
-
-## Registration forms (2026-08-21)
-
-- The CHW registration form has **no address section** — only names, DOB, gender, mode
-  of delivery (children), and for adults education and marital status. The nurse's form
-  adds the Province→District→Sector→Cell→Village cascade and Registering Health Center.
-- Fields appear and disappear as the DOB is set: "Mode of delivery" is asked only once
-  the date makes the person a child, "Level of Education" / "Marital Status" only once
-  it makes them an adult. Set the DOB before filling the rest.
-- The DOB picker is two selects plus a day grid and its own SAVE button. Changing YEAR
-  rebuilds the MONTH list.
-
-## Browser environment the tools give us (measured 2026-08-21)
-
-- Tabs driven through the Chrome tools run under a fixed emulated viewport:
-  `innerWidth/innerHeight` = **1200 x 1799**, `devicePixelRatio` 1, `outerWidth/outerHeight`
-  0 (the signature of a device-metrics override), `ontouchstart` false. `resize_window`
-  resizes the OS window but does not change the viewport, so device emulation — iPad Mini or
-  anything else — is not reachable, and neither are touch-only interactions.
-- Screenshots come back scaled (~900 px wide) from that 1200 px viewport, and the scale
-  shifts when the window is resized. Coordinates are only valid for the screenshot they were
-  read from: re-screenshot after anything that changes the layout, or click by `ref`.
-- The app's own `<meta name="viewport" content="width=800">` has no effect at this width.
-
-## What each browser tool costs — and why the window must be visible (measured 2026-08-21)
-
-Timed from inside the page (`Date.now()` either side of each action, all in one batch so no
-model latency is included), the same actions with the Chrome window hidden and then visible:
-
-| action | tab hidden | window visible | ratio |
-|---|---|---|---|
-| `computer left_click` | ~5000 ms | **54–63 ms** | ~80x |
-| `computer hover` | 5007 / 5007 / 5004 ms | **206 / 216 / 218 ms** | ~24x |
-| `computer screenshot` | 5199 ms | **143 / 211 ms** | ~30x |
-| `find` | 1128 ms | 1221 ms | unchanged |
-| `javascript_tool` | 1 ms | 1 ms | unchanged |
-| `computer wait(n)` | exactly n s | exactly n s | unchanged |
-
-**So: raise the Chrome window before the run and keep it in front.** Hidden, every click,
-hover and screenshot costs a flat five seconds — a wait for a paint that never comes, because
-a hidden tab stops requestAnimationFrame. The pairing scenario spent ~95 s on 19 such actions
-that would have cost about 4 s with the window up. Check it at the start of a run and say so
-if it is wrong:
-
-```
-javascript_tool: JSON.stringify({hidden: document.hidden, focus: document.hasFocus()})
-```
-
-Even with the window visible, the costs that remain shape how a run should be written:
-
-- `find` is ~1.2 s and `javascript_tool` is ~1 ms. **Read state with JS, not with `find` or a
-  screenshot.** Screenshot when the frame is wanted as evidence, not to see what happened.
-- Each separate tool call also costs the model's own turn — around 9 s in this session — so
-  put as many actions as possible in one `browser_batch`.
-- Deliberate `wait`s for sync are honest waits and cannot be optimised away; they were ~45 s
-  of the pairing run and will dominate once the 5 s tax is gone.
-
-## Driving the app when the extension's tab will not render (2026-08-27)
-
-The `chrome-devtools-mcp` server is a working fallback driver when the claude-in-chrome tab
-sits at 0 fps (see pitfalls). It runs its **own headed Chrome on a fresh profile** —
-`visibility: "visible"`, 62 fps, viewport **1200 x 1777**, screenshots ~1862 px wide. Its
-`navigate_page` takes an `initScript` that runs before page scripts on every navigation, which
-is the reliable way to keep an instrumentation hook installed across reloads. What it cannot do
-is `gif_creator`; build recordings from `take_screenshot filePath=…` plus ffmpeg concat.
-
-Its a11y snapshot only exposes real controls (`button`, `textbox`, `select`). E-Heza's
-clickable `div`s are invisible to it, so most navigation is done by dispatching
-`mousemove/mousedown/mouseup/click` MouseEvents at the element's own rect from
-`evaluate_script`. Elm's `onClick` responds to those.
-
-## Capturing what the client actually uploads (2026-08-27)
-
-The sync upload is a **main-thread `elm/http` XHR** (`SyncManager/Update.elm` →
-`HttpBuilder.post (backendUrl ++ "/api/sync")`), not a service-worker fetch, so a page-level
-`XMLHttpRequest.prototype.send` hook sees the request body. This is the only way to tell a
-dropped key from a null one, because the backend ignores both identically — indispensable
-whenever a client-side encoder change has a backend guard shipping alongside it.
-
-## Sync gates on a freshly paired device (2026-08-27)
-
-- General sync runs on its own and fills the **`nodes`** store (~36 entities: nurses, villages,
-  health centers, counseling topics, participant forms).
-- Each health centre on Device Status starts at **"START SYNCING"** and downloads nothing until
-  clicked. Authority data then lands in the **`shards`** store (408 rows here; 78 persons).
-- The upload lane idles (default 600 s). **"TRY SYNCING WITH BACKEND"** forces a cycle.
-- IndexedDB `sync` stores: `nodes`, `shards`, `nodeChanges`, `shardChanges` (queued uploads),
-  `authorityPhotoUploadChanges` (photo rows, `{localId, photo, fileId}` — `fileId` is null
-  until the file itself is uploaded), `deferredPhotos`, `syncMetadata`, `statistics`.
-
-## Photos and the Dropzone (2026-08-27)
-
-The photo widget on the person form and on every photo activity is a **Dropzone** (`#dropzone`,
-`app.js attachDropzone`), not a camera — `acceptedFiles "jpg,jpeg,png,gif,image/*"`, posting to
-`cache-upload/images`. Clicking it opens a native file dialog, which freezes automation, so
-supply the file by dispatching `dragenter`/`dragover`/`drop` with a `DataTransfer` holding a
-`File` built from a canvas. The thumbnail turning into a `/cache-upload/images/<id>` URL is the
-signal it took, and that URL is what makes the service worker create the upload row.
-
-All 86 demo persons already carry a migration photo, so any of them is ready-made for a
-"photo that came down from the backend" scenario.
-
-## Navigation facts (2026-08-27)
-
-- Main-menu cards: `onClick` sits on `div.card > div.image` (`Utils/Html.elm`), not the card
-  or its label.
+- Main-menu cards: the click handler is on `div.card > div.image`, not the card or label.
 - Clinical: `button.individual-assessment` / `button.group-assessment`.
-- Participant Directory row: `span.action-icon.forward` opens the person page. The **edit
-  pencil (`span.action-icon.edit`) is on the person page**, not on the directory row.
-- Person page → "Add Child" is `div.add-participant-icon-wrapper`.
-- Editing a demo person **requires Level of Education and Marital Status** — they are empty in
-  the migration data and the form refuses to save without them ("Validation Errors:
-  education_level is a required field"). Budget two extra selects into any person-edit run.
-- Registration DOB: click `div.date-input.field`; set YEAR (this rebuilds the MONTH list), set
-  MONTH, then click the day cell — the picker closes on the day click, so its own SAVE is gone
-  by then. Address cascade values: Amajyaruguru 2755 → Gakenke 2756 → Coko 2803 → Mbirima 2809
-  → Akanduga 2810; Nyange HC `5f89c5f3-34a2-5760-afc5-731db5c8cff9`.
-- **Relationships load slowly, they do not fail.** A person page can show "Family Members:
-  The server indicated the following error: Not Found" for a long while after a fresh pairing
-  — through several reloads and a service-worker update — and then simply start working. It is
-  a data-loading delay, not the `clinics-not-found-bug.md` defect. Keep reloading and waiting;
-  on this run it came good on a later reload and stayed good, including CREATE RELATIONSHIP.
-- The child-address propagation in `Pages/Person/Update.elm` needs **two** things loaded, not
-  one: `db.relationshipsByPerson` for the parent (the person page fetches it) **and** each
-  child as `Success` in `db.people`. Visiting the parent's page alone queues only the parent
-  PATCH. Open the child's own person page first (`#person/<child-uuid>/directory`), go back to
-  the parent, then edit — then the save queues a PATCH per child as well.
+- Search results and Participant Directory rows open through their `span.action-icon.forward`;
+  the row itself is not clickable. The edit pencil (`span.action-icon.edit`) is on the person
+  page, as is "Add Child" (`div.add-participant-icon-wrapper`).
+- Save buttons: `button.ui.fluid.primary.button` with class `disabled` or `active`; the
+  `disabled` attribute is never set, so read the class.
+- Yes/no inputs: the chosen side is `input.checked` inside `.form-input.yes-no.<name>`; the
+  label never gets an `active` class.
+- The out-of-range warning covers the page with a dimmer; its Close button is the only
+  in-app way out, while browser Back goes around it and leaves the warning standing.
+- End Encounter is `ui fluid primary button` + `disabled` until the mandatory activities are
+  done, then `active`. Acute Illness then asks in an in-app "END ENCOUNTER?" modal; Well
+  Child and Home Visit end without one. None of these are native dialogs.
+- Date of birth: open `div.date-input.field`, set YEAR (it rebuilds the MONTH list), then
+  MONTH, then click the day — the picker closes on that click. `h.common.setDate` does this.
+- Photos: the widget is a Dropzone (`#dropzone`), not a camera. Give it a file with
+  `setInputFiles` on its hidden input; the thumbnail turning into a `/cache-upload/images/<id>`
+  URL means it took.
 
-## A measurement photo also becomes the person's photo (2026-08-27)
+## Registration
 
-Saving a photo measurement updates the **person's** `field_photo` too, server-side:
-`$person_wrapper->field_photo->set($wrapper->field_photo->value())` in
-`HedleyRestfulNutritionPhotos`, `HedleyRestfulPhotos`, `HedleyRestfulWellChildPhoto` and
-`HedleyRestfulPrenatalPhotos` (all around line 104-111). Intended behaviour, not a defect — but
-it means a person's photo fid changes as a side effect of an unrelated activity, so re-read the
-baseline before asserting anything about a person's photo after a photo activity has run.
+- The nurse's form has the address cascade (Province → District → Sector → Cell → Village)
+  and Registering Health Center; the CHW's form has no address section.
+- Fields depend on the date of birth: "Mode of delivery" appears for a child, "Level of
+  Education" / "Marital Status" for an adult. Set the date first.
+- Address values: Amajyaruguru 2755 → Gakenke 2756 → Coko 2803 → Mbirima 2809 → Akanduga
+  2810. Nyange HC uuid `5f89c5f3-34a2-5760-afc5-731db5c8cff9`.
+- `registerAdult` names everyone `E2ETest <firstName>` (Drupal title "secondName firstName").
+- Demo data: 86 persons, all with a migration photo; demo children are born in 2022, too old
+  for head circumference or the newborn exam — register a newborn for those.
+- **Editing a demo person needs Level of Education and Marital Status**, which the migration
+  left empty; the form refuses to save without them.
+- An address edit propagates to children only if each child is loaded: open the child's own
+  person page first, then go back and edit the parent.
+- Saving a photo measurement also sets the **person's** photo, server-side
+  (`HedleyRestful*Photos`, around line 104). Re-read a person's photo fid after any photo
+  activity before asserting on it.
 
-## Two browsers can serve two different builds (2026-08-27)
+## Encounters: what the helpers do not tell you
 
-The claude-in-chrome tab and the chrome-devtools-mcp Chrome are separate profiles with separate
-service-worker caches, so they can sit on **different builds of the app at the same time** —
-measured here as `a15a92e6b` in one and `05e8b9c9b` (branch HEAD) in the other, concurrently.
-Read the `Version:` string in the top-right of whichever browser is actually driving and match
-it against `git rev-parse --short HEAD` before trusting any result. Switching drivers mid-run
-does not carry the build over, and neither does it carry the pairing.
+- Prenatal Laboratory: Random Blood Sugar is the last tab; performed today Yes → Point of
+  Care → before meal → the mg/dL input appears. NCD Laboratory opens on Random Blood Sugar
+  and first asks "Did you perform this test today?".
+- Labs history: on a subsequent prenatal encounter, Laboratory shows only the History task
+  while earlier labs are pending; each row's UPDATE opens `#prenatal-labs-history/...`.
+- A second encounter on the same day is impossible: backdate the first with
+  `h.common.backdateEncounter(name, type, days)`, then sync before starting the next.
+- Well Child Nutrition Assessment: Height / MUAC / Nutrition / Weight tabs, each with its own
+  Save; the Rwanda ranges are printed above the inputs (height 25–250 cm, MUAC 5–99 cm,
+  weight 0.5–200 kg).
+- ANC Examination: Vitals / Nutrition Assessment / Core Physical Exam / Obstetrical Exam /
+  Breast Exam. Height, weight, BMI and MUAC share one task and one Save; fundal height is on
+  Obstetrical Exam behind "Is fundal palpable? → Yes". Neither form prints its ranges.
+- **Group sessions start empty on a fresh device** ("This Group has no mothers assigned to
+  it") even though the backend has participants. Build one: Attendance → Add New Participant
+  → register the mother → her person page → Add Child → "is the parent of" → Save. The
+  child's activities are then under PARTICIPANTS in the header → the mother's card → the
+  baby icon.
 
-## Driver preference, and the healthy-tab numbers (2026-08-27, after the extension reinstall)
+## Case Management
 
-**claude-in-chrome is the preferred driver.** Its `browser_batch` runs many actions per round
-trip, and the model's own turn (~9 s) is the dominant cost once the tab is healthy — the
-chrome-devtools-mcp fallback has no batching, so a run there costs one round trip per single
-step. Reach for chrome-devtools-mcp only while a broken extension is being reinstalled.
+- Nurse panes: All / Contact Tracing / ANC Labs / NCD Labs; the forward icon on an ANC or NCD
+  Labs entry opens the recurrent Lab Results page. The lab technician sees ANC Labs only,
+  one row per order (`<person> | ORDERED | ANC Lab Results | →`), opening
+  `#prenatal-recurrent-activity/<uuid>/laboratory`: Partner HIV / HIV / Syphilis - RPR /
+  Hepatitis B / Malaria / Blood Group / Urine Dipstick / Hemoglobin / Random Blood Sugar.
+- Pane filter buttons are `div.ui.segment.filters button`; an entry's tap target is
+  `div.icon-forward`.
+- **Each pane decides for itself whether an encounter clears its entry** — read its
+  `generate<Type>FollowUpEntryData` and the `limitDate` its view passes
+  (`Pages/GlobalCaseManagement/View.elm`) before choosing a pane for a scenario:
 
-Healthy-tab baseline, measured right after the reinstall:
+  | pane | `limitDate` | a same-day encounter clears the entry? |
+  |---|---|---|
+  | Child Nutrition (Home Visit) | `currentDate + 1` | **yes**, at once |
+  | Acute Illness | `currentDate + 1` | no; the follow-up must belong to the illness's LAST encounter, with a diagnosis |
+  | Immunization (Well Child) | `currentDate` | **no** — the only pane where "an encounter took place today" is reachable |
+  | Prenatal | `currentDate + 1` | as Acute Illness |
 
-| reading | healthy | broken (phantom tab) |
-|---|---|---|
-| rAF frames in 1.5 s | 40 (61 fps) | 0 |
-| `document.visibilityState` | `visible` | `hidden` |
-| `computer hover` | **22 ms** | 5011 ms |
-| `computer screenshot` | ~450 ms | ~450 ms (works either way — proves nothing) |
+- Encounters that produce an entry:
+  - **Child Nutrition (CHW) → Home Visit pane.** MUAC 11 (red), Nutrition "None of these",
+    Weight, Height; Next Steps appears once all four are saved. Saving Follow Up ("1 Day")
+    alone creates the entry. The nutrition participant page also offers HOME VISIT
+    ENCOUNTER directly, beside NUTRITION ENCOUNTER.
+  - **Well Child (CHW) → Immunization pane.** Danger Signs, Nutrition Assessment, then
+    Immunizations answering **No** to each vaccine. Leave them unadministered: a child given
+    everything gets a future date and **no entry**. "BEHIND" on the progress report means the
+    entry will show.
+  - **Acute Illness (CHW, adult) → Acute Illness pane.** Fever + Chills; temperature 38.5;
+    Malaria RDT positive, not pregnant → Uncomplicated Malaria; Next Steps: Coartem Yes and
+    Follow Up "1 Day".
 
-Take these as the pass/fail line at the start of a run. The older "5 s per action when the
-window is hidden" table further up describes the same broken state; the cause was never window
-occlusion, it was the extension driving a tab Chrome never displayed.
+## The QA driver
 
-## Case Management panes: which one can show each state (2026-09-02)
-
-Each pane in `Pages/GlobalCaseManagement/View.elm` decides for itself whether an encounter
-clears its entry, and they disagree. This decides which pane a scenario can use:
-
-| pane | `limitDate` its view passes | same-day encounter clears the entry? |
-|---|---|---|
-| Child Nutrition (Home Visit) | `currentDate + 1` | **yes** — entry gone the moment today's home visit exists |
-| Acute Illness | `currentDate + 1` | no, but the follow-up must belong to the LAST encounter of the illness, and a diagnosis must resolve |
-| Immunization (Well Child) | `currentDate` | **no** — today's encounters are filtered out of the comparison, so the entry stays |
-| Prenatal | `currentDate + 1` | same shape as Acute Illness |
-
-So a scenario needing "an entry that is still tappable on a day the patient already has an
-encounter of that type" must use the **Immunization** pane. The immunization entry is in
-practice only visible on the day its Well Child encounter happened, which is also why that day
-is the one where the guard matters.
-
-## CHW route recipes (2026-09-02)
-
-- Individual encounter: main menu `div.card` whose text matches → its **`div.image`** →
-  `button.individual-assessment` ("Individual Encounter") → `button.encounter-type` (ACUTE
-  ILLNESS / ANTENATAL CARE / CHILD NUTRITION / WELL CHILD VISIT / CHILD SCORECARD / TB
-  MANAGEMENT / HIV MANAGEMENT) → type the name into the search field with `form_input` →
-  the result row's **`span.action-icon.forward`** (the row itself is not clickable) →
-  participant page.
-- The **nutrition participant page offers both** `NUTRITION ENCOUNTER` and `HOME VISIT
-  ENCOUNTER` as `div.ui.primary.button`, so a home visit is reachable there as well as from
-  the Case Management entry.
-- Case Management: `div.ui.segment.filters button` for the pane filter; each entry's tap
-  target is `div.icon-forward`, which the a11y tree does not expose — click it by its own
-  rect, scaled by `1568/innerWidth`.
-- Ending an encounter: the button carries `ui fluid primary button disabled` until the
-  mandatory activities are done, then `... active`. Acute Illness then shows an in-app
-  "END ENCOUNTER?" modal with CANCEL / CONTINUE; Well Child and Home Visit end with no modal.
-  All are in-app modals, never native dialogs.
-
-## Encounter recipes that produce a Case Management entry (2026-09-02)
-
-- **Child Nutrition (CHW) → Home Visit pane entry.** Save MUAC (11 reads RED), Nutrition
-  ("None of these"), Weight, Height — Next Steps appears only once all four are saved, and
-  arrives with an assessment popup (CONTINUE). Its tasks are Contributing Factors / Health
-  Education / Send to Health Center / **Follow Up**; saving Follow Up ("1 Day") alone is
-  enough to create the entry.
-- **Well Child (CHW) → Immunization pane entry.** Danger Signs (symptoms "None of these";
-  Vitals has two "Unable to take measurement" checkboxes for a CHW, which complete the task
-  without numbers) → Nutrition Assessment (Height / MUAC / Nutrition / Weight tabs) →
-  Immunizations (7 vaccine tabs; answer **No** to "received prior to today", save, and the
-  save advances to the next vaccine; the Overview tab's save returns to the encounter) →
-  **NEXT STEPS** then appears, with Health Education / Send to Health Center / **Next Visit**.
-  ⚠ Leave the vaccines **unadministered** — `generateASAPImmunisationDate` takes the earliest
-  future vaccination date, so a child who has just been given everything gets a future date
-  and **no entry appears**. An unvaccinated four-year-old reads "BEHIND" on the progress
-  report, which is the signal the entry will show.
-- **Acute Illness (CHW, adult) → Acute Illness pane entry.** Symptoms (General: Fever +
-  Chills; Respiratory and GI: "None of the above") → Physical Exam (Vitals RR 18 / temp 38.5;
-  Acute Findings: "None of the above" in **both** groups) → Prior Treatment (three yes/no, all
-  No) → **LABORATORY** then appears: Malaria RDT is a `<select.form-input.rapid-test-result>`
-  (never click it — set `value` and dispatch bubbling `input`+`change`), option value
-  `positive`, then "currently pregnant?" No → diagnosis **Uncomplicated Malaria** and Next
-  Steps with Medication Distribution (Coartem Yes) and **Follow Up** ("1 Day").
-  An adult keeps the Physical Exam to two tabs; a child adds MUAC and Nutrition.
-
-## The emulated viewport is not fixed across sessions (2026-09-02)
-
-Measured this run: `innerWidth/innerHeight` **1862 x 871**, screenshots returned 1568 px wide
-(scale 0.842) — and the geometry changed once mid-run without any `resize_window` call. The
-1200 x 1799 recorded on 2026-08-21 is therefore a reading, not a constant. Always measure
-`innerWidth` in the same call that computes a click coordinate, and prefer `ref` clicks.
-## Navigation facts (discovered 2026-09-09)
-
-- ⛔ **A freshly paired device does not sync a health centre by itself.** Clinical shows
-  "Data is not synced — Please sync data for selected Health Center", and in the `sync`
-  IndexedDB both `shards` and `syncMetadata` read `[]` while `nodes` (general data) is
-  populated. The switch is a **"START SYNCING" button per health centre on the Device Status
-  page** — click it once for the centre under test, then Clinical works. Picking the health
-  centre at sign-in does NOT start it. Budget a minute; "TRY SYNCING WITH BACKEND" at the top
-  of the same page forces a round now.
-- The lab technician (PIN 3333) picks a health centre at sign-in like the nurse, and the main
-  menu then shows only CASE MANAGEMENT and DEVICE STATUS.
-- Lab tech → Case Management opens with the ANC Labs pane already showing; an ordered
-  encounter is one row, `<person> | ORDERED | ANC Lab Results | →`. The forward arrow opens
-  `#prenatal-recurrent-activity/<uuid>/laboratory` — the Lab Results tab strip (Partner HIV /
-  HIV / Syphilis - RPR / Hepatitis B / Malaria / Blood Group / Urine Dipstick / Hemoglobin /
-  Random Blood Sugar), each tab its own task count and Save.
-- **Menu tiles are `div.card` with click handlers, not links** — `read_page filter:interactive`
-  does not list them and a `find` ref usually lands on the inner label, which has no handler.
-  Read their centres with
-  `document.querySelectorAll('div.card')` + `getBoundingClientRect()` and click by coordinate.
-- ⚠ **Screenshot scale is not fixed at 0.755.** The window was resized mid-run and the ratio
-  became 1512/1860 = 0.813. Compute it per screenshot (`k = <screenshot width> / innerWidth`)
-  rather than reusing a number from earlier in the run.
-- A disabled Save is `button.ui.fluid.primary.button.disabled`; an enabled one carries
-  `.active` instead (`customButton`, `Pages/Utils.elm`). Neither sets the `disabled`
-  attribute, so read the class to tell them apart.
-- The selected side of a yes/no input is `input.checked` inside
-  `.form-input.yes-no.<name>` — **the label carries no `active` class**, so `label.active`
-  matches nothing on either code path.
+- State lives in `client/qa-recordings/.driver/` (gitignored): `profile/` (the browser
+  profile, so pairing survives a restart), `shots/`, `last-url`, `driver.log`.
+- Viewport, device metrics and timezone match the e2e runs: iPad Mini (768×1024 CSS px),
+  mouse input, UTC.
+- Commands run one at a time. A long wait inside one (`syncAndWait` allows 300 s) needs
+  `QA_TIMEOUT` and the Bash call's own timeout raised to match.
+- Measured: empty profile → paired, signed in and synced in ~10 s; register a woman, open a
+  first ANC encounter and reach the Random Blood Sugar tab, while recording, in ~17 s.
