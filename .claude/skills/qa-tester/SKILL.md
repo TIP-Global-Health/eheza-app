@@ -146,7 +146,7 @@ speed. Look at the frame from the moment that matters (`qa.sh frame`, at the `re
 of that command) — a video that does not legibly show the thing demonstrated is not
 evidence. A scenario without one is not verified.
 
-The driver runs the e2e device: iPad Mini viewport, mouse input. Touch-only gestures are not
+The driver runs the device the e2e recordings use: an 820×1024 tablet viewport, mouse input. Touch-only gestures are not
 exercised; say so in the report when the change depends on them. Persons and encounters a
 run creates stay in the local database, as e2e's do; nothing needs cleaning up.
 

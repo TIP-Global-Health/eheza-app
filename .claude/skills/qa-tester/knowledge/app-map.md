@@ -180,8 +180,10 @@ flag simply does not appear.
 
 - State lives in `client/qa-recordings/.driver/` (gitignored): `profile/` (the browser
   profile, so pairing survives a restart), `shots/`, `last-url`, `driver.log`.
-- Viewport, device metrics and timezone match the e2e runs: iPad Mini (768×1024 CSS px),
-  mouse input, UTC.
+- Viewport, device metrics and timezone match the e2e recordings: iPad Mini user agent,
+  820×1024 at scale 1, mouse input, UTC. The app lays pages out 800 px wide
+  (`<meta name="viewport" content="width=800">`), so at iPad Mini's own 768 px the right
+  32 px fall outside the view.
 - The browser is headless unless started with `--watch`. On a 1080 px screen a visible
   window is only ~960 px tall inside, and the screencast — the video — keeps only that part.
 - Commands run one at a time. `qa.sh` waits up to 600 s for a reply (`QA_TIMEOUT`); a long

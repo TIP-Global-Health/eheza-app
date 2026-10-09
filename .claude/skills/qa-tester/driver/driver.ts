@@ -61,7 +61,8 @@ const TOKEN = randomBytes(32).toString('hex');
 const QA_PAIRING_CODE = '88888888';
 const BASE_URL = `http://localhost:${getClientPort()}`;
 
-// The same device the e2e runs use: iPad Mini metrics, mouse rather than touch, UTC.
+// The device the e2e recordings use: iPad Mini, but 820 px wide at scale 1, because the
+// app lays its pages out 800 px wide (meta viewport) and 768 px would cut the right edge.
 const { defaultBrowserType: _ignored, ...ipadMini } = devices['iPad Mini'];
 
 // AsyncFunction is not a global; take it from any async function.
@@ -214,6 +215,8 @@ test('qa driver', async () => {
   fs.writeFileSync(tokenFile, TOKEN, { mode: 0o600 });
   const context: BrowserContext = await chromium.launchPersistentContext(PROFILE, {
     ...ipadMini,
+    viewport: { width: 820, height: 1024 },
+    deviceScaleFactor: 1,
     // A visible window is cut to the screen's height, and the video with it, so it is
     // shown only on request (qa.sh start --watch).
     headless: !process.env.QA_WATCH,
