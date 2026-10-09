@@ -165,8 +165,11 @@ when unanswered), select values, the task counter, and whether Save is on.
 
 Record every scenario **from the moment the encounter starts** — or, outside encounters,
 from the first screen of the flow under test — through to the result. Everything inside
-that span is on the video, helper-driven activities included; device setup, sync and
-registering the patient stay off it. So a fixture stops on the participant page, and the
+that span is on the video, helper-driven activities included. Encounters that create the
+data a test then looks at — an earlier visit, an illness the record should list — are part
+of that story: record them too, from their start, so the viewer sees where the data came
+from. Only device setup, registering the patient, sync and database steps such as
+backdating stay off the video. So a fixture stops on the participant page, and the
 recorded command starts the encounter. The video is real time, with the e2e cursor marking the pointer; while
 recording, `qa.click`, `qa.fill` and helper clicks made through `click()` hover and pause
 for a second so the viewer can follow. Setup that is not evidence runs unrecorded at full

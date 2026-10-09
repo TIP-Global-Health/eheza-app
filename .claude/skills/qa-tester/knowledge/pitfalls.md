@@ -170,6 +170,23 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Rule:** registration helpers start from the main menu. Between fixtures,
   `page.goto('/')` and wait for `.wrap-cards` first.
 
+## Testing a "page loads its data" fix with the data already loaded
+
+- **Symptom:** a fix for a page that never fetched something passes — but the data had
+  just been entered on the same tablet, so it was in the app's memory anyway.
+- **Wrong conclusion:** the fix is verified.
+- **Rule:** when a PR adds a fetch, reload the app (`page.goto('/')`) between creating the
+  data and opening the page under test, so the page has to load it itself. The recording
+  carries on through a reload.
+
+## A `sed` or `head` without a file waits for input
+
+- **Symptom:** a Bash call that ran the driver fine never returns and is moved to the
+  background.
+- **Wrong conclusion:** the driver hung.
+- **Rule:** every filter in a chain needs its input — a file or a pipe. A stray
+  `sed -n '…'` with neither reads the terminal forever.
+
 ## Guessing node type names in a backend query
 
 - **Symptom:** after a successful sync, `h.common.queryMeasurementNodes(name, ['height', …])`

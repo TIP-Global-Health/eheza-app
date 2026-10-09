@@ -168,6 +168,13 @@ flag simply does not appear.
   child's activities are then under PARTICIPANTS in the header → the mother's card → the
   baby icon.
 
+## Patient Record
+
+- Opened from Participant Directory: search, then the row's `span.patient-record` icon (beside
+  the forward arrow). An adult's record opens on the Acute Illness pane (`.pane.acute-illness`):
+  one `.entry` per illness with a diagnosis — "<diagnosis> / ONGOING|RESOLVED / DD/MM/YYYY" — or
+  "No matches found". An illness without a diagnosis is not listed.
+
 ## Case Management
 
 - Nurse panes: All / Contact Tracing / ANC Labs / NCD Labs; the forward icon on an ANC or NCD
