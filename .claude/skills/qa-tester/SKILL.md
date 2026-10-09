@@ -223,7 +223,17 @@ bash .claude/skills/qa-tester/scripts/post-qa-report.sh <pr> <drafted-file>
 ```
 
 It posts through the REST API (`gh pr comment` fails on this repo) and refuses a file
-that does not open with the caption. Then stop the driver and run the learning loop.
+that does not open with the caption. The report names no video files.
+
+**Then post the recordings as a separate comment**, one embedded player per test:
+`**Recording — test <n>:** <one line on what it shows>`, then the video's link on a line of
+its own. GitHub embeds only videos uploaded through its web page, so upload with Claude in
+Chrome, in the user's signed-in Chrome: open the PR, find the new-comment box's file input,
+`file_upload` the `.mp4` (10 MB per upload), and read the
+`https://github.com/user-attachments/assets/…` link the box then holds. Clear the box, post
+the comment through `gh api` as the report is, and check that it holds a `<video>`.
+
+Then stop the driver and run the learning loop.
 
 ## Fallback: Claude in Chrome
 
