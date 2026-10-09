@@ -5,7 +5,7 @@
  * Each command is the body of an async function `(page, h, qa) => ...`:
  *   page  the Playwright page showing the app
  *   h     every e2e helper module, e.g. h.prenatal.completeDangerSigns(page)
- *   qa    the extras below: state, shot, log, click, fill, signIn, freshDevice
+ *   qa    the extras below: state, shot, log, click, fill, form, check, signIn, freshDevice
  * The reply is JSON: the command's return value, its error if any, how long it
  * took, and a short summary of the screen it left behind.
  *
@@ -249,6 +249,7 @@ test('qa driver', async () => {
   const recorder = new Recorder();
   let shotCount = 0;
   let logs: string[] = [];
+  let checks: { label: string; ok: boolean; actual: unknown; expected: unknown }[] = [];
 
   const qa = {
     state: () => screenState(page),
@@ -305,6 +306,46 @@ test('qa driver', async () => {
       await auth.click(target, page);
       await target.fill(value);
     },
+    /**
+     * The open form as a tester reads it: each yes/no question's answer (null when
+     * unanswered), each select's value, the task counter, and whether Save is on.
+     */
+    form: async () => {
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+      return page.evaluate(() => {
+        const name = (el: Element, prefix: string) =>
+          el.className.toString().replace(prefix, '').replace(/\bderived\b/, '').trim();
+        const questions: Record<string, string | null> = {};
+        document.querySelectorAll('.form-input.yes-no').forEach((el) => {
+          const chosen = el.querySelector('input:checked')?.parentElement as HTMLElement | undefined;
+          questions[name(el, 'form-input yes-no')] = chosen ? chosen.innerText.trim() : null;
+        });
+        const selects: Record<string, string> = {};
+        document.querySelectorAll('select.form-input').forEach((el) => {
+          selects[name(el, 'form-input')] = (el as HTMLSelectElement).value;
+        });
+        const save = Array.from(document.querySelectorAll('button.ui.fluid.primary.button'))
+          .find((b) => /save/i.test((b as HTMLElement).innerText));
+        return {
+          questions,
+          selects,
+          counter: (document.querySelector('.tasks-count') as HTMLElement | null)?.innerText.trim() ?? null,
+          save: save ? (save.classList.contains('active') ? 'enabled' : 'disabled') : null,
+        };
+      });
+    },
+    /**
+     * Records an expectation the plan set from the code. A mismatch takes a screenshot
+     * and stops the scenario, so the run pauses only where reality disagrees.
+     */
+    check: async (label: string, actual: unknown, expected: unknown) => {
+      const ok = JSON.stringify(actual) === JSON.stringify(expected);
+      checks.push({ label, ok, actual, expected });
+      if (!ok) {
+        await qa.shot(`check-failed`);
+        throw new Error(`check failed: ${label}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+      }
+    },
   };
 
   let stopped: () => void = () => {};
@@ -329,11 +370,13 @@ test('qa driver', async () => {
     const out: Record<string, unknown> = { ...extra, state };
     if (withShot) out.shot = await qa.shot().catch((e) => `failed: ${e}`);
     if (logs.length) out.log = logs;
+    if (checks.length) out.checks = checks.map((c) => `${c.ok ? 'PASS' : 'FAIL'} ${c.label}`);
     if (consoleErrors.size) {
       out.consoleErrors = Array.from(consoleErrors, ([message, n]) => (n > 1 ? `${n}x ${message}` : message));
     }
     if (recorder.active) out.recordingAt = recorder.elapsed;
     logs = [];
+    checks = [];
     consoleErrors = new Map();
     return out;
   };

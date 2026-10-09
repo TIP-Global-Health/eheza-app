@@ -120,7 +120,9 @@ video the command ended at. Read that
 instead of taking a screenshot to find out where you are. In the command body, `page` is
 the Playwright page, `h` holds every helper module (`h.prenatal`, `h.common`, `h.ncd`, …),
 and `qa` has `state()`, `shot(name, { fullPage })`, `log(...)`, `click(locator | text)`,
-`fill(locator, value)`, `signIn(pin, location)` and `freshDevice()`.
+`fill(locator, value)`, `form()`, `check(label, actual, expected)`, `signIn(pin, location)`
+and `freshDevice()`. `qa.form()` reads the open form: each yes/no question's answer (`null`
+when unanswered), select values, the task counter, and whether Save is on.
 
 ### How to drive
 
@@ -129,9 +131,16 @@ and `qa` has `state()`, `shot(name, { fullPage })`, `log(...)`, `click(locator |
   a helper's signature and options before calling it. To stop on a form instead of
   completing it: `h.common.openActivity(page, '<encounter>', '<activity icon>')` and
   `h.common.clickSubTaskTab(page, '<tab icon>')`, with the names taken from the helpers.
-- **The screen under test: small steps, and look.** One action or a few per command, read
-  the reply, and `--shot` at least once in every state that matters — content, behaviour
-  *and* appearance (see pitfalls on judging a new dialog by its text).
+- **The screen under test: one scripted command per scenario.** The code says which
+  questions appear and when, so write the whole scenario before running it: each action,
+  then `qa.check` on what the screen must show next (`qa.form()` and `qa.state()` give the
+  values), and `qa.shot` in every state that matters. A mismatch stops the scenario with a
+  screenshot — the only time to pause and look. Start and stop the recording in the same
+  shell call as the run, so the video holds no thinking time (about 8 s instead of 53 s
+  for the same malaria scenario).
+- **Then review like a tester.** After the run, look at every screenshot it took —
+  content, behaviour *and* appearance (see pitfalls on judging a new dialog by its text).
+  Checks prove what the code promised; only looking catches what nobody wrote down.
 - **Act as a user acts on the screen under test.** Click with `qa.click`, type with
   `qa.fill`, choose with `selectOption`. Both hover first, so the video shows where each
   action lands, and a Playwright click refuses an element a person could not press (hidden,
