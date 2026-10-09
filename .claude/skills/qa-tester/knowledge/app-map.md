@@ -125,6 +125,16 @@ flag simply does not appear.
 - Prenatal Laboratory: Random Blood Sugar is the last tab; performed today Yes → Point of
   Care → before meal → the mg/dL input appears. NCD Laboratory opens on Random Blood Sugar
   and first asks "Did you perform this test today?".
+- Acute Illness laboratory (nurse, initial encounter): the COVID rapid test is offered only
+  while there is fever with respiratory symptoms (or two or more general ones) **and the
+  malaria RDT is not positive** (`covid19SuspectDiagnosed`). Turning malaria Positive takes
+  the COVID tab away. "Currently pregnant?" follows a positive result, only for a woman of
+  child-bearing age. Saving either test re-diagnoses, with an assessment dialog (CONTINUE).
+- Acute Illness Prior Treatment: yes/no inputs `fever-past-6-hours`, `malaria-today`,
+  `malaria-within-past-month`. A Yes reveals "Do you feel better after taking this?" as
+  `<question>-helped`.
+- A saved activity is reopened from the encounter's Completed tab (`#completed-tab`), then
+  its `.icon-task-<activity>` card.
 - Labs history: on a subsequent prenatal encounter, Laboratory shows only the History task
   while earlier labs are pending; each row's UPDATE opens `#prenatal-labs-history/...`.
 - A second encounter on the same day is impossible: backdate the first with

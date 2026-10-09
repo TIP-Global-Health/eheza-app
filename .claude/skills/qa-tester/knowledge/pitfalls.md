@@ -125,6 +125,32 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Rule:** a restart reloads the page; only what was saved survives. Read the state before
   carrying on, and restart only between steps that end in a Save.
 
+## Cutting the top off a reply hides a failed command
+
+- **Symptom:** a command's reply, piped through `sed -n '/"state"/,$p'` or `head` to keep it
+  short, showed a plausible screen; the next step then found the page was not where it was
+  meant to be.
+- **Wrong conclusion:** the click ran and the app did something else.
+- **Rule:** `"ok"` and `"error"` are the first lines of every reply. Never filter them out;
+  trim only the end.
+
+## Planning several rows on one fixture without checking how they interact
+
+- **Symptom:** the plan reused one acute illness encounter for a malaria row and a COVID
+  row. After the malaria result was changed to Positive, the COVID test was gone.
+- **Wrong conclusion:** the PR removed the COVID test.
+- **Rule:** a row changes the record the next row starts from. While planning, read the
+  conditions that show each row's screen (`expect…Task` in the module's `Utils.elm`)
+  against the state the earlier rows leave, and order the rows, or split fixtures, to suit.
+
+## Staged files ride along with the hook's bookkeeping commit
+
+- **Symptom:** `git checkout <ref> -- <files>` put a PR's files in the main tree — and in
+  the index.
+- **Wrong conclusion:** working-tree changes stay local until someone commits them.
+- **Rule:** the `Stop` hook runs `git commit`, which takes everything staged. After any
+  checkout of paths, `git reset -q -- <files>` before the turn ends.
+
 ## Guessing node type names in a backend query
 
 - **Symptom:** after a successful sync, `h.common.queryMeasurementNodes(name, ['height', …])`

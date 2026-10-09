@@ -55,8 +55,19 @@ covers; that needs no manual pass.
 
 ## Step 2: Environment
 
-1. The **main tree** (`/var/www/html/ihangane`) is on the branch under test — gulp serves
-   only that tree. If switching it would disturb a parallel session, stop and ask.
+1. The PR's client code is in the **main tree** (`/var/www/html/ihangane`) — gulp serves
+   only that tree, and other sessions share it, so ask the user before taking it. Do not
+   check the PR branch out: a branch older than this skill swaps the skill's own files.
+   Overlay only the files the PR changes, and unstage them, because the `Stop` hook commits
+   whatever is staged:
+
+   ```bash
+   b=origin/<branch>; git fetch -q origin "${b#origin/}"
+   files=$(git diff --name-only "$(git merge-base develop $b)" $b -- client)
+   git checkout $b -- $files && git reset -q -- $files
+   ```
+
+   When the run is over, `git checkout HEAD -- $files` gives `develop` back.
 2. `ddev gulp` is running and has finished compiling — its output is in the user's
    terminal; if the build check in 5 fails, ask them rather than touching ddev.
 3. Feature flags the touched code sits behind are on (see app-map).
@@ -73,11 +84,12 @@ covers; that needs no manual pass.
    To change account later: `await qa.signIn('<pin>', '<location text>')`. A driver that
    is already running can be reused: `qa.sh state` shows who is signed in (on the main
    menu) and the build.
-5. The build in the driver's browser is the one under test: the reply's `version` (the
-   commit gulp built) must leave nothing out of the client source —
-   `git -C /var/www/html/ihangane diff --quiet <version> -- client/src` exits 0. Comparing
-   with HEAD gives false alarms, since bookkeeping commits move HEAD. After a recompile,
-   click `div.version-env` and apply the update on the page it opens.
+5. The build in the driver's browser is the one under test. With a PR overlaid, the
+   `version` label still names `develop`'s commit, so check by content: a name the PR adds
+   appears in `client/serve/Main.js` once gulp has rebuilt (its modified time changes), and
+   in the bundle the browser loaded. Without an overlay, `git diff --quiet <version> --
+   client/src` must exit 0; comparing with HEAD gives false alarms. A fresh profile loads
+   the new build; a used one needs `div.version-env` clicked and the update applied.
 
 ## Step 3: Test plan — present before executing
 
