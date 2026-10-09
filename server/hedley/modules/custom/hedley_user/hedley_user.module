@@ -198,6 +198,7 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
   $bundle = $data->type;
   $fields = field_info_instances('node', $bundle);
   $entity = ['type' => $bundle];
+  $missing_field = NULL;
   foreach ($fields as $field) {
     $name = $field['field_name'];
     // Shards are assigned automatically, and a re-created entity is never
@@ -222,7 +223,8 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
     if (!isset($value)) {
       if ($is_required) {
         // We're missing a value for a required field.
-        return;
+        $missing_field = $name;
+        break;
       }
       else {
         // Skip, since the field is optional.
@@ -236,7 +238,8 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
         if (!$nid) {
           if ($is_required) {
             // We're missing a value for a required field.
-            return;
+            $missing_field = $name;
+            break 2;
           }
           else {
             // Skip, since the field is optional.
@@ -284,6 +287,16 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
       default:
         $entity[$name][LANGUAGE_NONE][0]['value'] = $value;
     }
+  }
+
+  if (!empty($missing_field)) {
+    // For example, a participant whose person could not be re-created.
+    watchdog('hedley_user', 'Sync incident: @bundle @uuid was not re-created, required @field is missing or references an unknown UUID.', [
+      '@bundle' => $bundle,
+      '@uuid' => $data->uuid,
+      '@field' => $missing_field,
+    ], WATCHDOG_WARNING);
+    return;
   }
 
   try {
