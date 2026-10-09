@@ -43,9 +43,9 @@ Do not write to the knowledge files mid-run; unvetted guesses never enter memory
 ## Step 1: Understand the change
 
 ```bash
-gh issue view <n> --json title,body,comments    # intent: what should now be true
-gh pr view <n> --json title,body,commits,files  # plain `gh issue/pr view` fails here
-gh pr diff <n>                                  # reality: what actually changed
+gh issue view <n> --comments    # intent: what should now be true
+gh pr view <n>                  # needs gh 2.99 or later, as does --attach below
+gh pr diff <n>                  # reality: what actually changed
 ```
 
 List every user-observable behaviour the diff touches: each new or changed screen, branch,
@@ -222,16 +222,19 @@ Describe what is now true, not which commands were run.
 bash .claude/skills/qa-tester/scripts/post-qa-report.sh <pr> <drafted-file>
 ```
 
-It posts through the REST API (`gh pr comment` fails on this repo) and refuses a file
-that does not open with the caption. The report names no video files.
+It refuses a file that does not open with the caption; `--update <comment-id>` replaces
+an earlier report instead of adding one. The report names no video files.
 
-**Then post the recordings as a separate comment**, one embedded player per test:
-`**Recording — test <n>:** <one line on what it shows>`, then the video's link on a line of
-its own. GitHub embeds only videos uploaded through its web page, so upload with Claude in
-Chrome, in the user's signed-in Chrome: open the PR, find the new-comment box's file input,
-`file_upload` the `.mp4` (10 MB per upload), and read the
-`https://github.com/user-attachments/assets/…` link the box then holds. Clear the box, post
-the comment through `gh api` as the report is, and check that it holds a `<video>`.
+**Then post the recordings as a separate comment**, one player per test. Write each as
+`**Recording — test <n>:** <one line on what it shows>` with the video referenced below it,
+and attach the files; `gh` uploads them and puts each player where its reference is:
+
+```bash
+# recordings.md:  **Recording — test 1:** …  then a line  ![](client/qa-recordings/<pr>/qa-<pr>-<name>.mp4)
+gh pr comment <pr> --body-file recordings.md --attach client/qa-recordings/<pr>/qa-<pr>-<name>.mp4
+```
+
+A video may be at most 10 MB on a Free plan. Check the posted comment renders a `<video>`.
 
 Then stop the driver and run the learning loop.
 

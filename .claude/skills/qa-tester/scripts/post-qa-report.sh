@@ -4,8 +4,7 @@
 #   bash .claude/skills/qa-tester/scripts/post-qa-report.sh <pr> <report.md> [--update <comment-id>]
 #
 # With --update, the run's earlier report comment is replaced instead of a new one added.
-# Uses the REST API because `gh pr comment` fails on this repo. Refuses a report
-# that does not open with the QA caption, so a stray file is never posted.
+# Refuses a report that does not open with the QA caption, so a stray file is never posted.
 
 set -eu
 
@@ -26,6 +25,5 @@ if [ -n "$update" ]; then
   gh api "repos/TIP-Global-Health/eheza-app/issues/comments/$update" --method PATCH \
     -f body="$(cat "$file")" --jq '.html_url'
 else
-  gh api "repos/TIP-Global-Health/eheza-app/issues/$pr/comments" --method POST \
-    -f body="$(cat "$file")" --jq '.html_url'
+  gh pr comment "$pr" --body-file "$file"
 fi

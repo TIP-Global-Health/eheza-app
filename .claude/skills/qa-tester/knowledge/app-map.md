@@ -17,6 +17,8 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   always read the version in the browser doing the run.
 - `EHEZA_SITE` (rwanda / burundi) is set in `.ddev/config.local.yaml`.
 - Drupal admin: `admin` / `admin`.
+- GitHub CLI 2.99 or later is required: it is the first with `--attach` for videos, and
+  older ones fail on this repo's `gh issue view` / `gh pr view` (Projects classic).
 - Hedley scripts run as `ddev drush scr profiles/hedley/modules/custom/<module>/scripts/<file>.php`.
   Most take `--dry_run` and `--nid` (only records after that nid), so a run can be limited
   to the records it created.
