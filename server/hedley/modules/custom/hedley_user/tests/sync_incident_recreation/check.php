@@ -22,24 +22,21 @@ $known_keys = [
   'photo' => 'A device sends the URL of a photo, not the file, and image fields are not re-created.',
 ];
 
-// Content types known to be lost, which cannot be reported missing in practice.
-$known = [
+// Content types known to be lost, which cannot be reported missing in
+// practice. They are not checked, so their failure does not fill the log.
+$not_checked = [
   'acute_illness_contacts_tracing' => 'No content of this type exists. Its multi-value text field is written as one value, so the insert fails.',
   'counseling_session' => 'Nothing references a counseling session, so it is never reported missing. Only the first of its topics is kept.',
 ];
 
 $failures = [];
-$seen_known = [];
 foreach ([FALSE, TRUE] as $bool) {
   $label = $bool ? 'TRUE' : 'FALSE';
-  $results = sync_incident_check_run($bool, $known_keys);
+  $results = sync_incident_check_run($bool, $known_keys, array_keys($not_checked));
   $passed = 0;
   foreach ($results as $bundle => $problems) {
     if (empty($problems)) {
       $passed++;
-    }
-    elseif (isset($known[$bundle])) {
-      $seen_known[$bundle] = TRUE;
     }
     else {
       $failures["$bundle (booleans $label)"] = $problems;
@@ -55,8 +52,8 @@ foreach ([FALSE, TRUE] as $bool) {
 foreach ($known_keys as $key => $reason) {
   drush_print("Not compared: $key. $reason");
 }
-foreach ($known as $bundle => $reason) {
-  drush_print(empty($seen_known[$bundle]) ? "Known loss no longer seen, remove it from the list: $bundle" : "Known loss: $bundle. $reason");
+foreach ($not_checked as $bundle => $reason) {
+  drush_print("Not checked: $bundle. $reason");
 }
 
 foreach ($failures as $name => $problems) {
@@ -77,18 +74,20 @@ if ($failures) {
  *   The value of every boolean field.
  * @param array $known_keys
  *   Record keys not compared, as their loss is known.
+ * @param array $not_checked
+ *   Bundles left out.
  *
  * @return array
  *   Problems found, keyed by bundle. An empty list means the bundle passed.
  */
-function sync_incident_check_run($bool, array $known_keys) {
+function sync_incident_check_run($bool, array $known_keys, array $not_checked) {
   $dir = __DIR__;
   $account = user_load(1);
   $GLOBALS['user'] = $account;
   // Lets node_delete() run. Set for this request only.
   $GLOBALS['conf']['hedley_super_user_mode'] = TRUE;
 
-  $bundles = array_merge(
+  $bundles = array_diff(array_merge(
     [
       'person',
       'individual_participant',
@@ -97,7 +96,7 @@ function sync_incident_check_run($bool, array $known_keys) {
     ],
     hedley_general_get_encounter_types(),
     hedley_general_get_measurement_types()
-  );
+  ), $not_checked);
   $handlers = HEDLEY_RESTFUL_ALL_DEVICES + HEDLEY_RESTFUL_SHARDED;
   $problems = array_fill_keys($bundles, []);
 
@@ -336,10 +335,13 @@ function sync_incident_check_render($handler_name, $nid, $account) {
  */
 function sync_incident_check_device_records($dir, array $items) {
   $input = "$dir/input.json";
+  // Kept apart from the output, as the Elm runtime warns there that it is
+  // compiled in development mode.
+  $errors = "$dir/errors.txt";
   file_put_contents($input, json_encode($items));
-  $output = json_decode(shell_exec('node ' . escapeshellarg("$dir/run.js") . ' < ' . escapeshellarg($input)), TRUE);
+  $output = json_decode(shell_exec('node ' . escapeshellarg("$dir/run.js") . ' < ' . escapeshellarg($input) . ' 2> ' . escapeshellarg($errors)), TRUE);
   if (!is_array($output) || isset($output['fatal'])) {
-    throw new Exception('run.js failed: ' . json_encode($output));
+    throw new Exception('run.js failed: ' . json_encode($output) . ' ' . file_get_contents($errors));
   }
   return $output;
 }
