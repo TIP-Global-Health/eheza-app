@@ -124,3 +124,12 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Wrong conclusion:** the app dropped the input.
 - **Rule:** a restart reloads the page; only what was saved survives. Read the state before
   carrying on, and restart only between steps that end in a Save.
+
+## Guessing node type names in a backend query
+
+- **Symptom:** after a successful sync, `h.common.queryMeasurementNodes(name, ['height', …])`
+  reports every measurement missing.
+- **Wrong conclusion:** the upload failed.
+- **Rule:** measurement node types carry the module's prefix (`nutrition_height`, not
+  `height`), so guessed names match nothing. Use the module's own query helper (`h.nutrition.queryBackendNodes(name)`) or
+  read the types from the e2e spec for that encounter.
