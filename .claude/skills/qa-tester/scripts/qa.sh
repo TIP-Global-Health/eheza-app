@@ -24,7 +24,9 @@ alive() { curl -s -m 2 -o /dev/null "$url/state"; }
 call() { # method path [curl args...]
   local method=$1 route=$2
   shift 2
-  curl -s -m "${QA_TIMEOUT:-600}" -X "$method" "$url$route" "$@"
+  local auth=()
+  [ -f "$state/token" ] && auth=(-H "Authorization: Bearer $(cat "$state/token")")
+  curl -s -m "${QA_TIMEOUT:-600}" "${auth[@]}" -X "$method" "$url$route" "$@"
   echo
 }
 

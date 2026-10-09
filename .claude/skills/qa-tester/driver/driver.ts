@@ -16,6 +16,7 @@
  */
 import { test, chromium, devices, BrowserContext, CDPSession, Locator, Page } from '@playwright/test';
 import { execFileSync } from 'child_process';
+import { randomBytes } from 'crypto';
 import * as fs from 'fs';
 import * as http from 'http';
 import * as path from 'path';
@@ -53,6 +54,9 @@ const STATE = path.join(CLIENT, 'qa-recordings/.driver');
 const PROFILE = path.join(STATE, 'profile');
 const SHOTS = path.join(STATE, 'shots');
 const PORT = Number(process.env.QA_PORT || 9323);
+const RECORDINGS = path.join(CLIENT, 'qa-recordings');
+// Commands run code, so only a caller that can read this owner-only file may send them.
+const TOKEN = randomBytes(32).toString('hex');
 // Not the e2e code, so an e2e run re-keying its own device never touches this one.
 const QA_PAIRING_CODE = '88888888';
 const BASE_URL = `http://localhost:${getClientPort()}`;
@@ -183,6 +187,9 @@ class Recorder {
 
 test('qa driver', async () => {
   fs.mkdirSync(SHOTS, { recursive: true });
+  const tokenFile = path.join(STATE, 'token');
+  fs.rmSync(tokenFile, { force: true });
+  fs.writeFileSync(tokenFile, TOKEN, { mode: 0o600 });
   const context: BrowserContext = await chromium.launchPersistentContext(PROFILE, {
     ...ipadMini,
     headless: false,
@@ -298,8 +305,10 @@ test('qa driver', async () => {
       case 'GET /state':
         return reply(withShot, { ok: true });
       case 'POST /record/start': {
-        const output = url.searchParams.get('output');
-        if (!output) throw new Error('output is required');
+        const output = path.resolve(url.searchParams.get('output') ?? '');
+        if (!output.startsWith(RECORDINGS + path.sep) || !output.endsWith('.mp4')) {
+          throw new Error(`output must be an .mp4 under ${RECORDINGS}`);
+        }
         await recorder.start(page, output);
         return { ok: true, recording: output };
       }
@@ -314,7 +323,20 @@ test('qa driver', async () => {
     }
   };
 
+  // A web page can reach a localhost port too: refuse anything sent by a browser
+  // (it carries Origin, or a rebound Host) or without the token.
+  const trusted = (req: http.IncomingMessage) =>
+    !req.headers.origin &&
+    [`127.0.0.1:${PORT}`, `localhost:${PORT}`].includes(req.headers.host ?? '') &&
+    req.headers.authorization === `Bearer ${TOKEN}`;
+
   const server = http.createServer((req, res) => {
+    if (!trusted(req)) {
+      res.statusCode = 403;
+      res.end(JSON.stringify({ ok: false, error: 'forbidden' }));
+      req.resume();
+      return;
+    }
     let body = '';
     req.on('data', (chunk) => (body += chunk));
     req.on('end', () => {
