@@ -151,6 +151,25 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Rule:** the `Stop` hook runs `git commit`, which takes everything staged. After any
   checkout of paths, `git reset -q -- <files>` before the turn ends.
 
+## Backdating a visit leaves its measurements dated today
+
+- **Symptom:** after `h.common.backdateEncounter` and a sync, a form at the next visit says
+  "No previous measurement on record", although the earlier visit holds a value.
+- **Wrong conclusion:** the PR broke the previous-value lookup.
+- **Rule:** the helper moves only the encounter's `field_scheduled_date`. Each measurement
+  keeps its own `field_date_measured`, and "previous" lookups read that — so the value
+  still counts as today's. Move the encounter's measurements to its date too (drush:
+  set `field_date_measured`, `node_save`), sync, and confirm the date on the device
+  before trusting any "previous" or "no previous" result.
+
+## Chaining registration helpers from the wrong screen
+
+- **Symptom:** a second `create…AndStart…Encounter` in one command fails waiting for
+  `.icon-task-clinical`.
+- **Wrong conclusion:** the app or the helper is broken.
+- **Rule:** registration helpers start from the main menu. Between fixtures,
+  `page.goto('/')` and wait for `.wrap-cards` first.
+
 ## Guessing node type names in a backend query
 
 - **Symptom:** after a successful sync, `h.common.queryMeasurementNodes(name, ['height', …])`

@@ -149,6 +149,13 @@ flag simply does not appear.
   while earlier labs are pending; each row's UPDATE opens `#prenatal-labs-history/...`.
 - A second encounter on the same day is impossible: backdate the first with
   `h.common.backdateEncounter(name, type, days)`, then sync before starting the next.
+- Well Child Head Circumference: its tab shows only for children under 36 months. Under the
+  input, "Previous measurement: <cm>" or "No previous measurement on record". "Not taken" is
+  stored as 0 cm with a `not-taken` note. A nurse's existing child is reopened through Clinical →
+  Individual Encounter → Standard Pediatric Visit → search → forward icon, and a new visit
+  starts with "Standard Pediatric Visit Encounter".
+- On the device, IndexedDB `sync` → `shards` holds each measurement with `type`, `person` (uuid),
+  `date_measured` and `measurement_notes`: the way to confirm what the tablet itself has.
 - Well Child Nutrition Assessment: Height / MUAC / Nutrition / Weight tabs, each with its own
   Save; the Rwanda ranges are printed above the inputs (height 25–250 cm, MUAC 5–99 cm,
   weight 0.5–200 kg).
