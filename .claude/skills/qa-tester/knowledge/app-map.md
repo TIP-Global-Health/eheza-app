@@ -17,6 +17,11 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   always read the version in the browser doing the run.
 - `EHEZA_SITE` (rwanda / burundi) is set in `.ddev/config.local.yaml`.
 - Drupal admin: `admin` / `admin`.
+- Hedley scripts run as `ddev drush scr profiles/hedley/modules/custom/<module>/scripts/<file>.php`.
+  Most take `--dry_run` and `--nid` (only records after that nid), so a run can be limited
+  to the records it created.
+- A measurement node is found by its patient: join `field_data_field_person` to the person
+  node and match its title (`E2ETest <firstName>`).
 - A **server reinstall** (`server/install`) wipes every device, person and pairing, restores
   the migration devices (Tablet 1 `12345678`, Tablet 2 `87654321`) and turns the feature
   flags back on. A browser profile from before it holds credentials for a database that no
@@ -135,6 +140,9 @@ flag simply does not appear.
   `<question>-helped`.
 - A saved activity is reopened from the encounter's Completed tab (`#completed-tab`), then
   its `.icon-task-<activity>` card.
+- NCD Medical History has five tabs: Co-Morbidities, Medication History, Social History
+  (`icon-social`), Family History, Outside Care. In Social History, alcohol Yes reveals
+  `.form-input.number.beverages`, smoking Yes reveals `.form-input.number.cigarettes`.
 - Labs history: on a subsequent prenatal encounter, Laboratory shows only the History task
   while earlier labs are pending; each row's UPDATE opens `#prenatal-labs-history/...`.
 - A second encounter on the same day is impossible: backdate the first with

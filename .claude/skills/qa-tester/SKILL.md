@@ -159,8 +159,11 @@ when unanswered), select values, the task counter, and whether Save is on.
 
 ### Recording
 
-Record every scenario: `record start` before its first action, `record stop` after the
-result is on screen. The video is real time, with the e2e cursor marking the pointer; while
+Record every scenario **from the moment the encounter starts** — or, outside encounters,
+from the first screen of the flow under test — through to the result. Everything inside
+that span is on the video, helper-driven activities included; device setup, sync and
+registering the patient stay off it. So a fixture stops on the participant page, and the
+recorded command starts the encounter. The video is real time, with the e2e cursor marking the pointer; while
 recording, `qa.click`, `qa.fill` and helper clicks made through `click()` hover and pause
 for a second so the viewer can follow. Setup that is not evidence runs unrecorded at full
 speed. Look at the frame from the moment that matters (`qa.sh frame`, at the `recordingAt`
