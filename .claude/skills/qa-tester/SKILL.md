@@ -51,7 +51,9 @@ gh pr diff <n>                                  # reality: what actually changed
 List every user-observable behaviour the diff touches: each new or changed screen, branch,
 message, or condition. The diff — not the issue text, not the commit subjects — defines
 what must be reached (see pitfalls on reverted commits). Note what `client/e2e/` already
-covers; that needs no manual pass.
+covers; that needs no manual pass. Scope is what a tester does in the app — the tablet and
+the admin UI. One-off data scripts (`server/**/scripts/*.php`), migrations and update hooks
+are not tested here: leave them out of the plan and the report.
 
 ## Step 2: Environment
 
@@ -93,9 +95,11 @@ covers; that needs no manual pass.
 
 ## Step 3: Test plan — present before executing
 
-A table, one row per behaviour from Step 1: how to reach it (the helper chain, or "by hand"
-with the route from app-map), the input or state that exercises it, and the expected
-result. Expected results come from the diff and the Elm view code that renders the screen —
+A table, one row per behaviour from Step 1, each written as a tester's instruction in plain
+words: where, what to do, and what to verify — "At an NCD encounter, in the Social History
+form, answer that the patient drinks and smokes, enter both counts, save, and verify that
+the drinks and cigarettes counts are stored as entered." Beside it, for your own use, how to
+reach it (the helper chain, or by hand with the route from app-map). Expected results come from the diff and the Elm view code that renders the screen —
 reading that code is part of planning, not a shortcut. Include negative cases where the diff has conditions (flag off, wrong role,
 boundary values). Present it and wait for approval.
 
@@ -207,8 +211,8 @@ approval.** It opens with the caption
 
 > **Manual tests executed using the QA Tester skill**
 
-then the build and login used, a table with one row per plan row and its result, and a
-short paragraph per row saying what it showed — including which part was set up by helpers
+then a table with one row per plan row — the plain-words test from Step 3 and its result —
+and a short paragraph per row saying what it showed — including which part was set up by helpers
 and which was checked by hand. Close with what the run did **not** cover:
 blocked rows, touch-only behaviour, and sibling code paths a scenario stands in for but did
 not exercise. State a blocked row as blocked; never imply coverage the run does not have.
