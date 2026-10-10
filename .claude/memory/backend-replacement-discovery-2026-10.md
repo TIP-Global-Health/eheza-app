@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: cea3b84a-2b0d-4b02-b4fa-f45be4798fb9
-  modified: 2026-10-10T13:11:18.744Z
+  modified: 2026-10-10T13:22:13.651Z
 ---
 
 Discovery run 2026-10-10 on replacing the Drupal 7 backend (D7 EOL 2025-01-05, PHP 7.4;
@@ -46,7 +46,7 @@ a commercial licence and Postgres ship. Related: [[elm-version-must-match-compil
 **User flagged (2026-10-10) that the job layer was under-weighted:** Advanced Queue (4 queues,
 dedup-by-title, Jenkins `H/10` drain, serialized) plus Jenkins → `terminus remote:drush … scr`
 scheduled scripts are a first-class area of the replacement; treat them as such in any follow-up.
-Jenkins job list is behind nginx basic auth (401 for curl and the browser) — ask the user for it.
+Full Jenkins inventory now recorded in [[jenkins-scheduled-jobs-inventory]] (needs the user's Chrome session).
 
 **How to apply:** when the user returns to this topic, start from the decision they made, not
 from re-surveying; the inventory above is the baseline.
