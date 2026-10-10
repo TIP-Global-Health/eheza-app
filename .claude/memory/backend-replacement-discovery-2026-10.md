@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: cea3b84a-2b0d-4b02-b4fa-f45be4798fb9
-  modified: 2026-10-10T12:45:37.526Z
+  modified: 2026-10-10T13:03:46.832Z
 ---
 
 Discovery run 2026-10-10 on replacing the Drupal 7 backend (D7 EOL 2025-01-05, PHP 7.4;
@@ -33,6 +33,15 @@ types as data, lets the cut-over keep `vid` values so devices need no re-pairing
 Drupal output the oracle for differential tests. Finalists presented: Django (admin covers the
 staff UI nearly free, lowest bus-factor risk) vs IHP restarted on the envelope (type safety,
 Gizra's Haskell investment). Phoenix = best runtime fit, worst team fit. See [[design-brief-backend-per-record-commit]].
+
+**Acadia (acadia.engineering) assessed 2026-10-10 at the user's request:** Evan Czaplicki's
+Elm-like database language + endpoint server (`acadia serve`, POST `/_endpoints`, generated Elm
+client code). Public alpha 0.3.1 (2026-08-18), closed-source binary, Acadia Engineering ApS
+(Denmark). Licences: Unregistered = evaluation/non-commercial, Personal = non-commercial
+subscription (data-access-on-lapse clause); a Teams/commercial licence does NOT exist yet. SQLite
+shipped, Postgres documented but not public; no List/array, Bytes, Date or JSON column types; no
+jobs, no admin UI; Elm 0.19.3. Verdict given: not usable for E-Heza production today; revisit when
+a commercial licence and Postgres ship. Related: [[elm-version-must-match-compiler-exactly]].
 
 **How to apply:** when the user returns to this topic, start from the decision they made, not
 from re-surveying; the inventory above is the baseline.
