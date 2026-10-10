@@ -2473,7 +2473,7 @@ toHIVTestValue form =
             in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
+            , testPrerequisites = testPrerequisitesByExecutionNote executionNote form.immediateResult
             , testResult = form.testResult
             , hivSigns = hivSigns
             }
@@ -2545,7 +2545,7 @@ toPartnerHIVTestValue form =
             in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
+            , testPrerequisites = testPrerequisitesByExecutionNote executionNote form.immediateResult
             , testResult = form.testResult
             , hivSigns = hivSigns
             }
@@ -2633,7 +2633,7 @@ toHIVTestValueUniversal form =
             in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
+            , testPrerequisites = testPrerequisitesByExecutionNote executionNote form.immediateResult
             , testResult = form.testResult
             , hivSigns = hivSigns
             }
@@ -3173,7 +3173,7 @@ toHepatitisBTestValue form =
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
+            , testPrerequisites = testPrerequisitesByExecutionNote executionNote form.immediateResult
             , testResult = form.testResult
             , originatingEncounter = Nothing
             }
@@ -3390,6 +3390,18 @@ toLiverFunctionTestValueWithEmptyResults note date =
 toLipidPanelTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> LipidPanelTestValue
 toLipidPanelTestValueWithEmptyResults note date =
     LipidPanelTestValue note date Nothing Nothing Nothing Nothing Nothing
+
+
+{-| A test that was not run (known as positive, or not performed) stores no
+prerequisites, even when the form still holds the answer of a run it replaced.
+-}
+testPrerequisitesByExecutionNote : TestExecutionNote -> Maybe Bool -> Maybe (EverySet TestPrerequisite)
+testPrerequisitesByExecutionNote executionNote immediateResult =
+    if testPerformedByExecutionNote executionNote then
+        testPrerequisitesByImmediateResult immediateResult
+
+    else
+        Nothing
 
 
 testPrerequisitesByImmediateResult : Maybe Bool -> Maybe (EverySet TestPrerequisite)
@@ -8876,11 +8888,12 @@ testNotPerformedByWhyNotAtExecutionNote executionNote =
 
 expectUniversalTestResultTask : { v | testPrerequisites : Maybe (EverySet TestPrerequisite), executionNote : TestExecutionNote } -> Bool
 expectUniversalTestResultTask value =
-    -- It's possible to enter the result immediatly (and not from
-    -- Case management).
-    -- If this is the case, we do not expect to see results task.
-    Maybe.map (EverySet.member PrerequisiteImmediateResult >> not) value.testPrerequisites
-        |> Maybe.withDefault False
+    -- No result is expected when it was entered right away, or when the
+    -- patient is known as positive, so no test was run.
+    (value.executionNote /= TestNoteKnownAsPositive)
+        && (Maybe.map (EverySet.member PrerequisiteImmediateResult >> not) value.testPrerequisites
+                |> Maybe.withDefault False
+           )
 
 
 viewSelectInput :
