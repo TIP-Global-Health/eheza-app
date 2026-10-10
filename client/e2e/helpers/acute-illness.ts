@@ -53,6 +53,16 @@ async function openActivity(page: Page, activityIcon: string) {
 }
 
 /**
+ * Open an activity from the encounter page's Completed tab.
+ */
+async function openCompletedActivity(page: Page, activityIcon: string) {
+  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+  await openActivity(page, activityIcon);
+}
+
+/**
  * Save the current activity form and wait for the page the app moves to.
  * @param actionsClass - CSS class on the actions wrapper (e.g., 'symptoms', 'malaria-testing', 'next-steps').
  */
@@ -487,6 +497,34 @@ export async function completeSymptoms(
   }
   // Save GI — all tasks complete, returns to encounter page.
   await saveActivity(page, 'symptoms');
+}
+
+/**
+ * Reopen the saved GI symptoms and tick Vomiting. The saved record never asked
+ * about intractable vomiting, so the question must come up unanswered, and Save
+ * must wait for an answer.
+ */
+export async function addVomitingToSavedGISymptoms(page: Page, intractableVomiting: boolean) {
+  await openCompletedActivity(page, 'symptoms');
+
+  await clickSubTaskTab(page, 'symptoms-gi');
+  await selectCheckbox(page, 'Vomiting');
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  const question = page.locator('.form-input.yes-no.intractable-vomiting');
+  await question.waitFor({ timeout: 5000 });
+  await expect(question.locator('input:checked'), 'intractable vomiting should come up unanswered').toHaveCount(0);
+  await expect(
+    page.locator('.actions.symptoms button.ui.fluid.primary.button'),
+    'Save should wait for the intractable vomiting answer',
+  ).toHaveClass(/disabled/);
+
+  await answerYesNo(page, 'intractable-vomiting', intractableVomiting ? 'Yes' : 'No');
+  await saveActivity(page, 'symptoms');
+
+  // The encounter page stays on the Completed tab; the next activities are on To Do.
+  await click(page.locator('#pending-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -979,10 +1017,7 @@ export async function editMedicationDistributionAnswer(
   fieldClass: string,
   answer: 'Yes' | 'No',
 ) {
-  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
-  await click(page.locator('#completed-tab'), page);
-  await page.waitForTimeout(WAIT.elmRerender);
-  await openActivity(page, 'next-steps');
+  await openCompletedActivity(page, 'next-steps');
 
   await clickSubTaskTab(page, 'next-steps-medication-distribution');
   await page.locator('.ui.form.medication-distribution').waitFor({ timeout: 5000 });

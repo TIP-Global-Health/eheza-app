@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model as AcuteIllnessEncounterModel
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
+import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model
     exposing
         ( AcuteFindingsGeneralSign(..)
@@ -16,11 +17,12 @@ import Backend.Measurement.Model
         , LungsCPESign
         , Measurement
         , RapidTestResult(..)
-        , SymptomsGIDerivedSign
+        , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGIValue
         , SymptomsGeneralSign(..)
         , SymptomsRespiratorySign(..)
+        , TreatmentReviewSign(..)
         , VitalsValue
         )
 import Backend.Model exposing (emptyModelIndexedDb)
@@ -31,10 +33,13 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (RangedMeasurement(..), emptyMuacForm)
 import Pages.AcuteIllness.Activity.Model exposing (Msg(..), emptyCovidTestingForm, emptyModel)
+import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
 import Pages.AcuteIllness.Activity.Update exposing (update)
 import Pages.AcuteIllness.Activity.Utils
     exposing
-        ( malariaDangerSignsPresent
+        ( covidTestingFormWithDefault
+        , malariaDangerSignsPresent
+        , malariaTestingFormWithDefault
         , mildGastrointestinalInfectionSymptomsPresent
         , nonBloodyDiarrheaAtSymptoms
         , resolveAcuteIllnessDiagnosis
@@ -46,12 +51,17 @@ import Pages.AcuteIllness.Activity.Utils
         , respiratoryInfectionDangerSignsPresent
         , respiratoryRateElevatedByAge
         , respiratoryRateElevatedByAgeForCovid19
+        , setCovidTestPositive
         , subsequentEncounterDiagnosisUpdate
         , symptomMaxDuration
+        , symptomsTasksCompletedFromTotal
         , toCovidTestingValueWithDefault
+        , toSymptomsGIValueWithDefault
+        , treatmentReviewFormWithDefault
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, splitByInitialNurseEncounter)
+import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
@@ -871,6 +881,7 @@ all =
         , amoxicillinDosageTest
         , preSaveMuacTest
         , covidTestingRoundTripTest
+        , editedRecordDerivedQuestionsTest
         , generateAllEncountersDataTest
         , splitByInitialNurseEncounterTest
         ]
@@ -902,6 +913,127 @@ covidTestingRoundTripTest =
             \_ -> roundTrip RapidTestNegative
         , test "unable to run" <|
             \_ -> roundTrip RapidTestUnableToRun
+        ]
+
+
+{-| Editing a saved record can reveal a question the saved record never asked:
+"Intractable vomiting?" once Vomiting is added, "Currently pregnant?" once a test
+turns positive, "Did it help?" once a medication is marked as taken. Such a
+question comes up unanswered; an answer the record holds is filled in.
+-}
+editedRecordDerivedQuestionsTest : Test
+editedRecordDerivedQuestionsTest =
+    let
+        encounterId =
+            toEntityUuid "encounter"
+
+        -- Runs one message on a fresh page whose encounter holds `measurements`.
+        updateWith measurements msg =
+            let
+                db =
+                    { emptyModelIndexedDb
+                        | acuteIllnessMeasurements = Dict.singleton encounterId (Success measurements)
+                    }
+
+                ( updatedModel, _, _ ) =
+                    update SiteRwanda Nothing encounterId db msg emptyModel
+            in
+            updatedModel
+
+        savedGI signs derivedSigns =
+            { signs = Dict.fromList (List.map (\sign -> ( sign, 1 )) signs)
+            , derivedSigns = EverySet.singleton derivedSigns
+            }
+
+        -- What the GI tab shows after `sign` is ticked: the task count, and the derived signs Save would store.
+        tickGISign sign saved =
+            let
+                measurements =
+                    { emptyAcuteIllnessMeasurements | symptomsGI = wrapMeasurement saved }
+
+                data =
+                    (updateWith measurements (ToggleSymptomsGISign sign)).symptomsData
+            in
+            ( symptomsTasksCompletedFromTotal measurements data SymptomsGI
+            , (toSymptomsGIValueWithDefault (Just saved) data.symptomsGIForm).derivedSigns
+            )
+
+        -- The pregnancy answer shown after a saved malaria result is changed to Positive.
+        malariaChangedToPositive saved =
+            let
+                measurements =
+                    { emptyAcuteIllnessMeasurements | malariaTesting = wrapMeasurement saved }
+
+                form =
+                    (updateWith measurements (SetRapidTestResult (malariaRapidTestResultAsString RapidTestPositive))).laboratoryData.malariaTestingForm
+            in
+            (malariaTestingFormWithDefault form (Just saved)).isPregnant
+
+        -- The pregnancy answer shown after a saved COVID result is changed to Positive.
+        covidChangedToPositive result =
+            let
+                saved =
+                    CovidTestingValue result Nothing
+
+                measurements =
+                    { emptyAcuteIllnessMeasurements | covidTesting = wrapMeasurement saved }
+
+                form =
+                    (updateWith measurements
+                        (SetCovidTestingBoolInput setCovidTestPositive True)
+                    ).laboratoryData.covidTestingForm
+            in
+            (covidTestingFormWithDefault form (Just saved)).isPregnant
+
+        -- The fever "Did it help?" answer shown once fever medication is marked as taken.
+        feverMedicationMarkedTaken saved =
+            let
+                form =
+                    emptyModel.priorTreatmentData.treatmentReviewForm
+            in
+            (treatmentReviewFormWithDefault { form | feverPast6Hours = Just True } (Just (EverySet.fromList saved))).feverPast6HoursHelped
+    in
+    describe "a question the edited record reveals"
+        [ test "GI saved without vomiting: ticking Vomiting leaves intractable vomiting to be answered" <|
+            \_ ->
+                savedGI [ NonBloodyDiarrhea ] NoSymptomsGIDerived
+                    |> tickGISign Vomiting
+                    |> Tuple.first
+                    |> Expect.equal ( 1, 2 )
+        , test "GI saved with intractable vomiting: ticking another sign keeps the saved Yes" <|
+            \_ ->
+                savedGI [ NonBloodyDiarrhea, Vomiting ] IntractableVomiting
+                    |> tickGISign BloodyDiarrhea
+                    |> Expect.equal ( ( 2, 2 ), EverySet.singleton IntractableVomiting )
+        , test "GI saved with vomiting, not intractable: ticking another sign keeps the saved No" <|
+            \_ ->
+                savedGI [ NonBloodyDiarrhea, Vomiting ] NoSymptomsGIDerived
+                    |> tickGISign BloodyDiarrhea
+                    |> Expect.equal ( ( 2, 2 ), EverySet.singleton NoSymptomsGIDerived )
+        , test "malaria saved Negative: changed to Positive, pregnancy is unanswered" <|
+            \_ ->
+                malariaChangedToPositive RapidTestNegative
+                    |> Expect.equal Nothing
+        , test "malaria saved Positive, not pregnant: the saved No is kept" <|
+            \_ ->
+                malariaChangedToPositive RapidTestPositive
+                    |> Expect.equal (Just False)
+        , test "COVID saved Negative: changed to Positive, pregnancy is unanswered" <|
+            \_ ->
+                covidChangedToPositive RapidTestNegative
+                    |> Expect.equal Nothing
+        , test "COVID saved Positive, not pregnant: the saved No is kept" <|
+            \_ ->
+                covidChangedToPositive RapidTestPositive
+                    |> Expect.equal (Just False)
+        , test "treatment review saved without fever medication: marked taken, did it help is unanswered" <|
+            \_ ->
+                feverMedicationMarkedTaken [ NoTreatmentReviewSigns ]
+                    |> Expect.equal Nothing
+        , test "treatment review saved with fever medication that did not help: the saved No is kept" <|
+            \_ ->
+                feverMedicationMarkedTaken [ FeverPast6Hours ]
+                    |> Expect.equal (Just False)
         ]
 
 
