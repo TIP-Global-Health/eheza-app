@@ -18,6 +18,8 @@ Elm **0.19.2** emits **0-based** source regions where 0.19.1 emitted 1-based one
 
 **Fix** (build-verified; needs GHC >= 9.8 for `ExtendedLiterals`, so build it in a `haskell:9.8.4` container rather than on the host, which has 9.6.7): add a `toEditorRowCol` helper (`toRow`/`toCol` + 1) to `Reporting/Annotation.hs`, export it, and route both emit sites through it. After that change `toRowCol` has zero remaining callers, so redefining `toRowCol` itself to be 1-based is the minimal patch. A uniform +1 on row and column reproduces 0.19.1 byte-for-byte. **Reported and fixed upstream: elm/compiler#2358 (issue), elm/compiler#2359 (PR from anvmn/compiler:fix-0-based-source-regions).** The patch was build-verified with GHC 9.8.4 in a `haskell:9.8.4` container (`cabal build exe:elm`, so under the package's `-Wall -Werror`) and the resulting compiler reproduces 0.19.1 exactly on both symptoms; the human-readable report stays correct (not double-incremented).
 
+**Fixed in Elm 0.19.3** (#2359 merged 2026-07-13, shipped 2026-10-02; regions confirmed 1-based in our bundle, see [[elm-0193-upgrade-assessment]]). The N+1 rule below applies only to 0.19.2 builds.
+
 **How to apply:** when chasing a `TODO in module ... on line N` crash from a 0.19.2 build, look at line **N+1**. Same for any editor squiggle driven by `--report=json`. Relevant here because the client ships in dev mode (see [[client-cannot-use-elm-optimize]]) with 7 `Debug.todo` calls in `Utils/AllDict.elm`.
 
 Other 0.19.2 codegen deltas, all semantically inert (checked by diffing emitted `Main.js`, identical line count):
