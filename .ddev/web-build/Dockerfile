@@ -42,7 +42,7 @@ RUN set -eux; \
     else \
       ELM_ARCH=x64; \
     fi; \
-    wget -q "https://github.com/elm/compiler/releases/download/0.19.2/elm-0.19.2-linux-${ELM_ARCH}.gz" -O /tmp/elm.gz; \
+    wget -q "https://github.com/elm/compiler/releases/download/0.19.3/elm-0.19.3-linux-${ELM_ARCH}.gz" -O /tmp/elm.gz; \
     gunzip -c /tmp/elm.gz > /usr/bin/elm; \
     rm /tmp/elm.gz; \
     chmod +x /usr/bin/elm; \
@@ -51,7 +51,7 @@ RUN set -eux; \
 RUN npm install -g gulp-cli
 # For Elm Unit tests
 ENV NPM_CONFIG_UNSAFE_PERM=true
-RUN npm install -g elm-test@0.19.2-0
+RUN npm install -g elm-test@0.19.3-0
 # Install svg2elm.
 RUN npm install -g svg2elm
 # Downgrade terminus.
