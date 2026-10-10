@@ -35,6 +35,12 @@ Area names in use (match the product/codebase vocabulary, not the file path): `D
 pass 2026-08-16: #2080/#2081/#2082, #2078/#2079, #2085/#2086, #2087/#2088, #2089/#2090,
 #2092/#2093, #2091.
 
+## Exception: toolchain and build changes are titled by the change
+
+**User, 2026-10-10 (verbatim):** *"I don't like the title of the issue and the PR. We're about Elm upgrade and Main.js mangle"*
+
+Said about #2322/#2323, which I had titled by their side effects ("crash line numbers off by one, and app bundle shipped with full-length names"). Upgrades, dependency bumps and build-pipeline changes are titled by WHAT the change is, keeping the area prefix: `Toolchain: upgrade Elm to 0.19.3 and mangle Main.js`. The defect-first rule is for product behaviour.
+
 The test to apply before typing it: *someone scanning the merge log or a release note, who was not
 in this conversation, learns what was broken.* If the title only tells them what the code now does,
 it is wrong — it reads as a preference change, and the fix looks optional.
