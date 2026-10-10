@@ -30,6 +30,8 @@ nurseWith healthCenterIds villageIds roles =
     , resilienceMaritalStatus = Nothing
     , resilienceNextReminder = Nothing
     , resilienceMessages = Dict.empty
+    , resilienceConsentGiven = False
+    , resilienceConsentReason = Nothing
     }
 
 

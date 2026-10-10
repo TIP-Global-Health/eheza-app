@@ -31,7 +31,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust)
 import Pages.Completion.Model exposing (Model, Msg(..), ReportType(..))
-import Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, newbornExamActivities, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities)
+import Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, newbornExamActivities, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities, visibleReportTypes)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Components.View exposing (viewMetricsResultsTable, viewReportDateInputs)
 import Pages.Model exposing (MetricsResultsTableData)
@@ -193,18 +193,7 @@ viewCompletionData language currentDate data model =
                 div [ class "inputs" ] <|
                     [ viewSelectListInput language
                         model.reportType
-                        [ ReportAcuteIllness
-                        , ReportPrenatal
-                        , ReportChildScoreboard
-                        , ReportHIV
-                        , ReportHomeVisit
-                        , ReportNCD
-                        , ReportNewbornExam
-                        , ReportNutritionGroup
-                        , ReportNutritionIndividual
-                        , ReportWellChild
-                        , ReportTuberculosis
-                        ]
+                        (visibleReportTypes data.features)
                         reportTypeToString
                         SetReportType
                         Translate.CompletionReportType
