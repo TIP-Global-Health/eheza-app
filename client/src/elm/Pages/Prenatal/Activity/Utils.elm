@@ -2376,39 +2376,36 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                         |> Maybe.withDefault False
                    )
 
+        -- A malaria treatment and one of the given diagnoses were both recorded at
+        -- earlier encounters. Each pair below gives its new-episode or its continued
+        -- diagnosis, never both.
+        treatedForMalariaDiagnosedPreviously previousDiagnoses =
+            (isJust <| latestMedicationTreatmentForMalaria assembled)
+                && diagnosedPreviouslyAnyOf previousDiagnoses assembled
+
+        previousMalariaDiagnoses =
+            [ DiagnosisMalariaInitialPhase, DiagnosisMalariaRecurrentPhase ]
+
         malariaDiagnosed =
-            malariaConditionsMatch
-                && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
-                        || (not <| diagnosedPreviouslyAnyOf [ DiagnosisMalariaInitialPhase, DiagnosisMalariaRecurrentPhase ] assembled)
-                   )
+            malariaConditionsMatch && not malariaMedicatedContinuedDiagnosed
 
         malariaMedicatedContinuedDiagnosed =
             malariaConditionsMatch
-                && (isJust <| latestMedicationTreatmentForMalaria assembled)
-                && diagnosedPreviouslyAnyOf [ DiagnosisMalariaInitialPhase, DiagnosisMalariaRecurrentPhase ] assembled
+                && treatedForMalariaDiagnosedPreviously previousMalariaDiagnoses
+
+        previousMalariaWithAnemiaDiagnoses =
+            [ DiagnosisMalariaWithAnemiaInitialPhase
+            , DiagnosisMalariaWithAnemiaRecurrentPhase
+            , DiagnosisMalariaWithSevereAnemiaInitialPhase
+            , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+            ]
 
         malariaWithAnemiaDiagnosed =
-            malariaWithAnemiaConditionsMatch
-                && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
-                        || (not <|
-                                diagnosedPreviouslyAnyOf
-                                    [ DiagnosisMalariaWithAnemiaInitialPhase
-                                    , DiagnosisMalariaWithAnemiaRecurrentPhase
-                                    ]
-                                    assembled
-                           )
-                   )
+            malariaWithAnemiaConditionsMatch && not malariaWithAnemiaMedicatedContinuedDiagnosed
 
         malariaWithAnemiaMedicatedContinuedDiagnosed =
             malariaWithAnemiaConditionsMatch
-                && (isJust <| latestMedicationTreatmentForMalaria assembled)
-                && diagnosedPreviouslyAnyOf
-                    [ DiagnosisMalariaWithAnemiaInitialPhase
-                    , DiagnosisMalariaWithAnemiaRecurrentPhase
-                    , DiagnosisMalariaWithSevereAnemiaInitialPhase
-                    , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
-                    ]
-                    assembled
+                && treatedForMalariaDiagnosedPreviously previousMalariaWithAnemiaDiagnoses
 
         malariaWithSevereAnemiaDiagnosed =
             positiveMalariaTest
