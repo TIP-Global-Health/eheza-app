@@ -9,8 +9,8 @@
  *   after the click, so that flash would always be over. Here the mark of the last click
  *   STAYS until the next click replaces it, and the two before it stay in a dimmer trail.
  * - Nothing is driven by a timer or requestAnimationFrame. A hidden tab throttles timers
- *   and stops rAF entirely (see pitfalls), which would leave animated marks frozen or
- *   never drawn. Everything here is set inline the moment the event arrives.
+ *   and stops rAF entirely (see knowledge/chrome-extension.md), which would leave
+ *   animated marks frozen or never drawn. Everything here is set inline the moment the event arrives.
  *
  * Elm rewrites the DOM as it renders, so every element is re-attached if it goes missing.
  * Re-inject after each navigation — a page load wipes it.

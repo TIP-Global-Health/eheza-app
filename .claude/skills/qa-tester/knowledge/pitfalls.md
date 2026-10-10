@@ -1,165 +1,197 @@
 # QA Pitfalls — E-Heza
 
-Mistakes made (or nearly made) during QA runs. Each entry: symptom → wrong conclusion → rule.
-Read all entries before every run; append new ones only at the end of a run.
-
-## Native dialogs freeze the browser extension
-
-- **Symptom:** after clicking a Delete-style button, every browser tool call hangs.
-- **Wrong conclusion:** the extension or the app crashed.
-- **Rule:** native `confirm()`/`alert()` dialogs block the Chrome extension entirely. Never
-  click elements that trigger them; find another route or ask the user to click through
-  manually (they must also dismiss the dialog if one already opened).
+Mistakes made (or nearly made) during QA runs: symptom → wrong conclusion → rule. Read all
+of them before every run; add new ones only at the end of a run. Pitfalls that belong only
+to driving through the Chrome extension are in `chrome-extension.md`.
 
 ## Testing a stale build
 
 - **Symptom:** the change is invisible in the app although the diff clearly adds it.
 - **Wrong conclusion:** the feature is broken.
-- **Rule:** three staleness sources, check in order: (1) the main tree is on a different
-  branch than the PR — gulp serves only the main tree; (2) gulp has not finished compiling;
-  (3) "Version" was not clicked after the recompile, so the service worker still runs the
-  previous build.
+- **Rule:** check, in order: (1) the main tree is on the PR's branch — gulp serves only that
+  tree; (2) gulp has finished compiling; (3) the build in the browser doing the run leaves
+  nothing out: `git diff --quiet <version> -- client/src`. Each browser profile caches its
+  own build. Comparing the version with HEAD raises false alarms — bookkeeping commits move
+  HEAD without touching the client.
 
-## Concluding from the backend too early
+## A PR's commit list can contain work a later commit undoes
 
-- **Symptom:** an expected node/report row is missing in Drupal right after acting in the UI.
-- **Wrong conclusion:** sync or the backend handler is broken.
-- **Rule:** the app is offline-first; backend effects land only after the sync upload lane
-  drains. Wait for the sync indicator to go idle before querying the backend.
+- **Symptom:** the plan is built from commit messages, and the behaviour is not in the app.
+- **Wrong conclusion:** the feature is broken, or the build is stale.
+- **Rule:** commit subjects describe intent at the time, not the merged result. Check the
+  merged tree for the identifier a commit introduced (`git grep <symbol> <commit> -- client/src`).
+  A late "Leave X where it is" or "Take out …" is usually a revert. Plan against the code.
 
 ## Screen unreachable
 
 - **Symptom:** a menu item or activity the diff touches does not appear anywhere.
 - **Wrong conclusion:** navigation is broken.
-- **Rule:** check first whether the screen is behind a feature flag (see app-map) or
-  restricted to a role (nurse vs CHW vs lab tech — some encounter types are role-exclusive;
-  see the e2e knowledge base) before reporting it unreachable.
+- **Rule:** check whether it is behind a feature flag or limited to a role (nurse, CHW, lab
+  technician — see app-map) before calling it unreachable.
 
-## Occluded Chrome window: the one root cause behind four symptoms
+## Concluding from the backend too early
 
-Before treating any of the four as its own problem, check `document.hidden`. A hidden window
-gives: a frozen DOM (below), screenshots that time out after 30 s, clicks that never reach
-the page, and a flat 5 s cost on every click, hover and screenshot instead of ~0.2 s
-(measured both ways — see app-map). Raising the window is the fix for all of them, and it is
-the user who has to do it: `resize_window` changes the OS window without clearing `hidden`.
+- **Symptom:** a node the UI should have created is missing in Drupal, or a saved edit sits
+  in `shardChanges` forever.
+- **Wrong conclusion:** sync, the encoder or the backend handler is broken.
+- **Rule:** backend effects land only after an upload round, and two gates stand before it:
+  the health centre's START SYNCING, and the upload lane's idle time (app-map). Run
+  `h.common.syncAndWait(page)`, then query.
 
-## Occluded Chrome window freezes the app under test
+## Reading the wrong IndexedDB store
 
-- **Symptom:** clicks change the URL hash but the page never re-renders; `form_input` on a
-  select "succeeds" but the dependent dropdown stays empty; sync makes no network requests.
-- **Wrong conclusion:** the Elm app crashed, or the form wiring is broken.
-- **Rule:** when the Chrome window is covered by the terminal, `document.hidden` is true:
-  Chrome suspends requestAnimationFrame (Elm renders through it — the DOM freezes while the
-  model advances) and intensively throttles timers (the SyncManager stops ticking). Two
-  standing workarounds: (1) take a screenshot after every interaction — the CDP capture
-  forces a compositor frame and flushes Elm's pending render; (2) run
-  `navigator.locks.request('qa-keepalive', () => new Promise(() => {}))` once per page load —
-  a held Web Lock exempts the page from intensive timer throttling so sync keeps running.
-  Verify state via JS/DOM queries after the screenshot, not before.
-
-## Never click a native select with the mouse
-
-- **Symptom:** after clicking a `<select>`, every browser tool fails with "Cannot access a
-  chrome-extension:// URL of different extension"; even screenshots and JS are blocked.
-- **Wrong conclusion:** the extension crashed.
-- **Rule:** the OS-native dropdown popup traps the automation focus like a native dialog and
-  nothing can dismiss it programmatically (new tabs don't help; Wayland has no key injector).
-  The only recovery is closing the tab (login and IndexedDB state survive). Always set
-  selects with `form_input` on a freshly-found ref instead of mouse clicks.
-
-## form_input skips the event when the value already matches
-
-- **Symptom:** `form_input` reports `Selected option "X" (previous: "X")` and the app never
-  reacts, even though the app state clearly does not reflect X.
-- **Wrong conclusion:** the app ignores the field.
-- **Rule:** if a previous (lost) attempt already set the DOM value, `form_input` sees no
-  change and fires no event. Toggle through a different value first, or reset the value to
-  `''` via JS, then set the intended one.
+- **Symptom:** after a successful health-centre sync, `nodes` holds no persons.
+- **Wrong conclusion:** the authority sync downloaded nothing.
+- **Rule:** `nodes` holds general data only. Persons, relationships and measurements are in
+  `shards`; count there.
 
 ## Stale device with a poisoned upload queue
 
-- **Symptom:** sync errors repeating `Could not find UUID: <uuid>` in the app's Error log;
-  last successful contact weeks old; nothing uploads or downloads.
-- **Wrong conclusion:** the backend or the PR under test broke sync.
-- **Rule:** after a server DB reinstall — which also happens whenever someone runs
-  `server/install` — a browser device's queued uploads reference UUIDs that no longer exist,
-  and the FIFO upload lane jams permanently. Treat "the server was reinstalled" as an order
-  to wipe the browser before the next run, not as something to discover through sync errors. Recover by wiping the
-  app's local state completely and re-pairing a fresh device node: unregister the service
-  worker, delete the caches **including the `config` cache** (it holds the pairing/robot
-  credentials and the sync baseline — deleting only the `sync` IndexedDB leaves the app
-  thinking it is already synced), delete IndexedDB, clear storage, reload. Create the device
-  node with a known pairing code via drush (see e2e `helpers/device.ts` for the PHP).
+- **Symptom:** the Error log repeats `Could not find UUID: <uuid>`; nothing uploads or
+  downloads; the last successful contact is old.
+- **Wrong conclusion:** the backend or the PR broke sync.
+- **Rule:** after a server reinstall, a device's queued uploads point at UUIDs that no longer
+  exist and the upload lane jams for good. Treat "the server was reinstalled" as an order to
+  start the driver with `--fresh`, not as something to discover through sync errors.
 
-## gh issue/pr view fails on this repo
+## The loading screen is the pairing screen, and it can last 20 seconds
 
-- **Symptom:** `gh issue view` / `gh pr view` exit with a Projects-classic GraphQL error.
-- **Wrong conclusion:** the issue does not exist or gh is misconfigured.
-- **Rule:** use the REST API instead: `gh api repos/TIP-Global-Health/eheza-app/issues/<n>`
-  (and `.../pulls/<n>`, `.../issues/<n>/comments`).
+- **Symptom:** after a reload the app shows "This device has not yet been authorized…" with
+  a pairing-code field.
+- **Wrong conclusion:** the pairing was lost; mint a new code and pair again.
+- **Rule:** that is what the app renders while it restores itself from IndexedDB, for up to
+  15–20 s. Wait and read the state again. A code spent on this is wasted.
 
-## A PR's commit list can contain work a later commit in the same PR undoes
+## Calling a slow load a known bug, and writing off a plan row
 
-- **Symptom:** the test plan is built from the PR's commit messages, and the behaviour
-  the plan is about is simply not there in the app.
-- **Wrong conclusion:** the feature is broken, or the build is stale.
-- **Rule:** on a long PR, commit subjects describe intent at the time, not the merged
-  result. Before planning, check the **merged tree** for the identifier the commit
-  introduced (`git grep <newSymbol> <mergeCommit> -- client/src`). A subject like
-  "Leave X where it is" or "Take out ..." late in the list is usually a revert of an
-  earlier one. Plan against the code that merged, not against the story of getting there.
+- **Symptom:** a section shows "The server indicated the following error: Not Found" through
+  several reloads, and it matches a defect already in memory.
+- **Wrong conclusion:** it is that defect; report the row BLOCKED. It loaded on a later
+  reload and the row passed.
+- **Rule:** a matching memory raises the prior; it does not close the question. Before
+  calling a row blocked, reload several times over a minute or more. Data present in
+  `shards` proves the app can show it. Report "not reproducing yet", not a bug's name.
 
-## Clicking a text field the browser can autofill locks the extension out of the tab
+## Planning a Case Management scenario without reading the pane's clearing rule
 
-- **Symptom:** after clicking a field and typing, every browser tool fails with
-  "Cannot access a chrome-extension:// URL of different extension" — screenshots too.
-- **Wrong conclusion:** the extension crashed, or the app hung.
-- **Rule:** an autofill popup traps automation focus the same way a native select does.
-  It happens on the PIN field and on ordinary text fields the browser has saved values
-  for — the registration form's First Name did it after a few registrations. Set such
-  fields with `find` + `form_input` on the field's ref rather than clicking and typing.
-  Recovery is the same as for selects: close the tab (pairing and IndexedDB survive),
-  reopen the URL you were on — the app restores the page from the hash.
+- **Symptom:** the follow-up entry the scenario needs vanishes the moment the encounter is
+  created.
+- **Wrong conclusion:** the follow-up was lost, sync ate it, or the PR removed the entry.
+- **Rule:** each pane decides for itself whether an encounter clears its entry. Read the
+  pane's rule and the table in app-map before choosing a pane.
 
-## Screenshot timing out is the occlusion pitfall, not a frozen app
+## Picking one of several repeated blocks by walking up from a button
 
-- **Symptom:** `Page.captureScreenshot` times out after 30s, while `javascript_tool`
-  still answers and reports `document.hidden: true`; clicks appear to do nothing.
-- **Wrong conclusion:** the renderer is frozen.
-- **Rule:** the tab is fully hidden (window covered or not the active tab), so there is
-  no compositor to capture from and Elm's requestAnimationFrame render never runs.
-  `resize_window` brings the window back and screenshots start working again; the Web
-  Lock keepalive does not help with this one.
+- **Symptom:** "the START SYNCING button of Nyange" picked by an ancestor containing "Nyange"
+  clicked Muhondo's button.
+- **Wrong conclusion:** the selector did not match. It matched too well: a common ancestor
+  holds every block's text.
+- **Rule:** scope to the container holding exactly one block —
+  `page.locator('.health-center', { has: page.locator('h2', { hasText: 'Nyange' }) })` — and
+  confirm afterwards which one changed.
 
-## Reading a dependent dropdown before the DOM has caught up
+## Judging a new UI element by its text instead of looking at it
 
-- **Symptom:** a cascading select (District after Province, MONTH after YEAR) reads as
-  empty in JS right after the parent was set, so the run concludes the cascade is broken.
-- **Wrong conclusion:** Elm ignored the change event.
-- **Rule:** this is the occluded-window freeze again — Elm's model advanced, the DOM had
-  not. Setting selects from JS works (`value` then `input` **and** `change` events, both
-  bubbling); what is missing is the render. Take a screenshot to force the frame, then
-  read the dependent options. Also note that changing YEAR rebuilds the MONTH list, so
-  set the year first and re-read the month options before choosing one.
+- **Symptom:** a new dialog was signed off because its text and behaviour were right; the
+  user then saw its button sticking 16 px out of the modal.
+- **Wrong conclusion:** "the dialog was verified". Its content and behaviour were; its
+  appearance never was.
+- **Rule:** when a PR adds new UI, open the nearest existing sibling and compare geometry,
+  not just text — `getBoundingClientRect()` on the element and its container. In E-Heza
+  modals, a `fluid` button placed directly in `div.actions` always overhangs (Semantic's
+  `.ui.modal .actions > .button` margin); correct dialogs wrap it in `div.two.ui.buttons`.
 
-## Clicks stop reaching the page while the tool still reports success
+## Asserting on a marker the app never renders
 
-- **Symptom:** `computer left_click` returns "Clicked at (x, y)" — by coordinate or by ref —
-  and nothing happens. The app does not advance, and the injected cursor does not move
-  either, which is the giveaway: even a plain mousemove is not arriving.
-- **Wrong conclusion:** the coordinates are wrong, the click is landing on an overlay, or
-  the app is busy. Re-clicking, re-finding the ref and resizing the window all fail the
-  same way, which burns a lot of the run.
-- **Rule:** prove it in one call before theorising. Install counters —
-  `window.__ev={move:0,down:0}; document.addEventListener('mousemove',()=>__ev.move++,true);
-  document.addEventListener('mousedown',()=>__ev.down++,true)` — then click and read
-  `window.__ev`. Both still 0 means input delivery to that tab is dead, not a targeting
-  problem. `document.elementFromPoint` on the target's real rect will happily confirm the
-  button is on top and clickable, which is a red herring. Recovery is the usual one: close
-  the tab and reopen the URL (pairing and IndexedDB survive). Export whatever the recording
-  already holds first — the frames captured up to that point are still good evidence.
-  Seen twice, both times at the **health-centre choice right after a nurse signs in on a
-  freshly paired device**, while the first sync is still running: the OS pointer still moves
-  on screen but the page's own listeners never fire. Treat that screen on a fresh pairing as
-  a known place to lose input, and plan the recording so the scenario's evidence is captured
-  before it.
+- **Symptom:** a "nothing is selected" check passes on the fixed build and on the broken one.
+- **Wrong conclusion:** the behaviour is verified.
+- **Rule:** before trusting an absence, prove the marker ever appears. Yes/no inputs mark the
+  chosen side on the `input` (`checked`), never on the `label`, so `label.active` is always
+  absent. Read the Elm view to decide what to assert on.
+
+## Building a fixture by hand when a helper can build it
+
+- **Symptom:** the run spends its budget on registration and a dozen activities before it
+  reaches the one screen under test.
+- **Wrong conclusion:** manual QA is not worth it for this change.
+- **Rule:** setup is a chain of e2e helpers in one driver command; the fixture is still made
+  through the real UI. Spend the care on the screen under test. Never leave files in
+  `client/e2e/` — anything there joins a CI job.
+
+## Restarting the driver loses what was typed
+
+- **Symptom:** after `qa.sh stop` / `start`, a form that had answers shows them empty.
+- **Wrong conclusion:** the app dropped the input.
+- **Rule:** a restart reloads the page; only what was saved survives. Read the state before
+  carrying on, and restart only between steps that end in a Save.
+
+## Cutting the top off a reply hides a failed command
+
+- **Symptom:** a command's reply, piped through `sed -n '/"state"/,$p'` or `head` to keep it
+  short, showed a plausible screen; the next step then found the page was not where it was
+  meant to be.
+- **Wrong conclusion:** the click ran and the app did something else.
+- **Rule:** `"ok"` and `"error"` are the first lines of every reply. Never filter them out;
+  trim only the end.
+
+## Planning several rows on one fixture without checking how they interact
+
+- **Symptom:** the plan reused one acute illness encounter for a malaria row and a COVID
+  row. After the malaria result was changed to Positive, the COVID test was gone.
+- **Wrong conclusion:** the PR removed the COVID test.
+- **Rule:** a row changes the record the next row starts from. While planning, read the
+  conditions that show each row's screen (`expect…Task` in the module's `Utils.elm`)
+  against the state the earlier rows leave, and order the rows, or split fixtures, to suit.
+
+## Staged files ride along with the hook's bookkeeping commit
+
+- **Symptom:** `git checkout <ref> -- <files>` put a PR's files in the main tree — and in
+  the index.
+- **Wrong conclusion:** working-tree changes stay local until someone commits them.
+- **Rule:** the `Stop` hook runs `git commit`, which takes everything staged. After any
+  checkout of paths, `git reset -q -- <files>` before the turn ends.
+
+## Backdating a visit leaves its measurements dated today
+
+- **Symptom:** after `h.common.backdateEncounter` and a sync, a form at the next visit says
+  "No previous measurement on record", although the earlier visit holds a value.
+- **Wrong conclusion:** the PR broke the previous-value lookup.
+- **Rule:** the helper moves only the encounter's `field_scheduled_date`. Each measurement
+  keeps its own `field_date_measured`, and "previous" lookups read that — so the value
+  still counts as today's. Move the encounter's measurements to its date too (drush:
+  set `field_date_measured`, `node_save`), sync, and confirm the date on the device
+  before trusting any "previous" or "no previous" result.
+
+## Chaining registration helpers from the wrong screen
+
+- **Symptom:** a second `create…AndStart…Encounter` in one command fails waiting for
+  `.icon-task-clinical`.
+- **Wrong conclusion:** the app or the helper is broken.
+- **Rule:** registration helpers start from the main menu. Between fixtures,
+  `page.goto('/')` and wait for `.wrap-cards` first.
+
+## Testing a "page loads its data" fix with the data already loaded
+
+- **Symptom:** a fix for a page that never fetched something passes — but the data had
+  just been entered on the same tablet, so it was in the app's memory anyway.
+- **Wrong conclusion:** the fix is verified.
+- **Rule:** when a PR adds a fetch, reload the app (`page.goto('/')`) between creating the
+  data and opening the page under test, so the page has to load it itself. The recording
+  carries on through a reload.
+
+## A `sed` or `head` without a file waits for input
+
+- **Symptom:** a Bash call that ran the driver fine never returns and is moved to the
+  background.
+- **Wrong conclusion:** the driver hung.
+- **Rule:** every filter in a chain needs its input — a file or a pipe. A stray
+  `sed -n '…'` with neither reads the terminal forever.
+
+## Guessing node type names in a backend query
+
+- **Symptom:** after a successful sync, `h.common.queryMeasurementNodes(name, ['height', …])`
+  reports every measurement missing.
+- **Wrong conclusion:** the upload failed.
+- **Rule:** measurement node types carry the module's prefix (`nutrition_height`, not
+  `height`), so guessed names match nothing. Use the module's own query helper (`h.nutrition.queryBackendNodes(name)`) or
+  read the types from the e2e spec for that encounter.

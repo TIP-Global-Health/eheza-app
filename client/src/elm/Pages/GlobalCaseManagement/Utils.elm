@@ -1,7 +1,9 @@
-module Pages.GlobalCaseManagement.Utils exposing (calculateDueDate, chwFilters, fillPersonName, filterFollowUpsOfResidents, filterResolvedFollowUps, followUpDueOptionByDate, generateAcuteIllnessEncounters, generateAcuteIllnessFollowUps, generateAcuteIllnessParticipants, generateHIVFollowUps, generateHIVParticipants, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalEncounters, generatePrenatalFollowUps, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, labTechFilters, labsResultsTestData, nurseFilters, resolveUniquePatientsFromFollowUps)
+module Pages.GlobalCaseManagement.Utils exposing (calculateDueDate, chwFilters, fillPersonName, filterFollowUpsOfResidents, filterResolvedFollowUps, followUpDueOptionByDate, generateAcuteIllnessEncounters, generateAcuteIllnessFollowUps, generateAcuteIllnessParticipants, generateHIVFollowUps, generateHIVParticipants, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalEncounters, generatePrenatalFollowUps, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, labTechFilters, labsResultsTestData, nurseFilters, resolveEncounterStartedToday, resolveUniquePatientsFromFollowUps)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Measurement.Model
     exposing
         ( FollowUpMeasurements
@@ -10,11 +12,12 @@ import Backend.Measurement.Model
         , LaboratoryTest(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Utils exposing (hivManagementEnabled, tuberculosisManagementEnabled)
+import Backend.NutritionEncounter.Utils exposing (getTuberculosisEncountersForParticipant)
+import Backend.Utils exposing (hivManagementEnabled, resolveIndividualParticipantsForPerson, tuberculosisManagementEnabled)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
-import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpItem, CaseManagementFilter(..), FollowUpDueOption(..), FollowUpPatients, HIVFollowUpItem, ImmunizationFollowUpItem, NutritionFollowUpItem, PrenatalFollowUpItem, TuberculosisFollowUpItem)
+import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpItem, CaseManagementFilter(..), EncounterStartedToday(..), FollowUpDueOption(..), FollowUpPatients, HIVFollowUpItem, ImmunizationFollowUpItem, NutritionFollowUpItem, PrenatalFollowUpItem, TuberculosisFollowUpItem)
 import Pages.Utils
 import RemoteData exposing (WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -366,7 +369,8 @@ generateTuberculosisFollowUps limitDate db followUps followUpsFromAcuteIllness =
                 |> Maybe.map
                     (\itemFromAcuteIllness ->
                         ( -- In case acute illness item is more recent that the one we have
-                          -- from Tuberculosis encounter, replace it.
+                          -- from Tuberculosis encounter, replace it. Otherwise, we keep
+                          -- the one from Tuberculosis encounter.
                           if Date.compare item.dateMeasured itemFromAcuteIllness.dateMeasured == LT then
                             Dict.insert ( participantId, personId )
                                 -- When replacing, we assign encounter ID, as acute illness
@@ -375,7 +379,7 @@ generateTuberculosisFollowUps limitDate db followUps followUpsFromAcuteIllness =
                                 accum
 
                           else
-                            accum
+                            Dict.insert ( participantId, personId ) item accum
                         , -- Item for person was found in 'generic' Tuberculosis dict,
                           -- No matter if it's used or dropped, we remove it from Acute Illness dict,
                           Dict.remove personId acuteIllnessDict
@@ -389,6 +393,17 @@ generateTuberculosisFollowUps limitDate db followUps followUpsFromAcuteIllness =
         ( Dict.empty, acuteIllnessItemsByPerson )
         itemsFromTuberculosis
         |> Tuple.mapBoth filterDictFollowUpsSetToNotNeeded filterDictFollowUpsSetToNotNeeded
+        |> -- A Tuberculosis encounter started on or after the AI follow up date
+           -- answers it, as it does on the server.
+           Tuple.mapSecond
+            (Dict.filter
+                (\personId item ->
+                    resolveIndividualParticipantsForPerson personId TuberculosisEncounter db
+                        |> List.concatMap (getTuberculosisEncountersForParticipant db)
+                        |> List.any (\( _, encounter ) -> Date.compare encounter.startDate item.dateMeasured /= LT)
+                        |> not
+                )
+            )
 
 
 generateHIVFollowUps :
@@ -716,3 +731,27 @@ filterListFollowUpsSetToNotNeeded =
         (\item ->
             not <| EverySet.member FollowUpNotNeeded item.value.options
         )
+
+
+{-| A follow up entry must never open a second encounter on a day the patient
+already had one of that type, which is the rule the participant pages apply.
+When today's encounter is still open we go to it; when it was already
+completed there is nothing to do.
+-}
+resolveEncounterStartedToday :
+    NominalDate
+    -> List ( encounterId, { a | startDate : NominalDate, endDate : Maybe NominalDate } )
+    -> EncounterStartedToday encounterId
+resolveEncounterStartedToday currentDate encounters =
+    let
+        encountersToday =
+            List.filter (Tuple.second >> .startDate >> (==) currentDate) encounters
+    in
+    if List.isEmpty encountersToday then
+        NoEncounterStartedToday
+
+    else
+        List.filter (Tuple.second >> isDailyEncounterActive currentDate) encountersToday
+            |> List.head
+            |> Maybe.map (Tuple.first >> EncounterActiveToday)
+            |> Maybe.withDefault EncounterCompletedToday

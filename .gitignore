@@ -58,3 +58,6 @@ travis-cache
 #Elm
 server/elm/elm-stuff
 server/elm/node_modules
+
+# Python
+__pycache__/

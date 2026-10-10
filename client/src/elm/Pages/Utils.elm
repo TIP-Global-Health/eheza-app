@@ -1,4 +1,4 @@
-module Pages.Utils exposing (calculatePercentage, concatInputsAndTasksSections, customButton, customPopup, dropLeadingMinus, emptySelectOption, filterDependentNoResultsMessage, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isAboveAgeOf2Years, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, muacUnitTransIdForSite, nonAdministrationReasonToSign, normalizeFilter, percentageOfTotal, resolveActiveTask, resolveNextTask, resolveSelectedDateForMonthSelector, resolveTasksCompletedFromTotal, saveButton, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBoolInputReverted, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxMultipleSelectSectionsInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewConfirmationDialog, viewCustomAction, viewCustomBoolInput, viewCustomLabel, viewCustomNameFilter, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPersonDetails, viewPersonDetailsExtended, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewPreviousMeasurementCustom, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewStartEncounterButton, viewTasksCount, viewTextInput, viewYellowAlertForSelect)
+module Pages.Utils exposing (calculatePercentage, concatInputsAndTasksSections, customButton, customPopup, dropLeadingMinus, emptySelectOption, filterDependentNoResultsMessage, filterPreviousEncountersDataToDate, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isAboveAgeOf2Years, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, muacUnitTransIdForSite, nonAdministrationReasonToSign, nonReferralReasonSection, normalizeFilter, percentageOfTotal, resolveActiveTask, resolveNextTask, resolveSelectedDateForMonthSelector, resolveTasksCompletedFromTotal, saveButton, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, syncStatusWarning, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBoolInputReverted, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxMultipleSelectSectionsInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewConfirmationDialog, viewCustomAction, viewCustomBoolInput, viewCustomLabel, viewCustomNameFilter, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPaneHeading, viewPersonDetails, viewPersonDetailsExtended, viewPersonInfoPane, viewPhotoThumb, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewPreviousMeasurementCustom, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewStartEncounterButton, viewTasksCount, viewTextInput, viewYellowAlertForSelect)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (HealthCenterId, PersonId)
@@ -8,6 +8,8 @@ import Backend.Measurement.Model
         , ImageUrl(..)
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
+        , ReasonForNonReferral(..)
+        , ReferralFacility(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Person.Model exposing (Person)
@@ -260,6 +262,18 @@ filterDependentNoResultsMessage language filter message =
         translate language Translate.NoMatchesFound
 
 
+filterPreviousEncountersDataToDate :
+    NominalDate
+    -> List { a | startDate : NominalDate }
+    -> List { a | startDate : NominalDate }
+filterPreviousEncountersDataToDate limitDate previousEncountersData =
+    List.filter
+        (\data ->
+            Date.compare data.startDate limitDate == LT
+        )
+        previousEncountersData
+
+
 matchFilter : String -> String -> Bool
 matchFilter filter filteredValue =
     if String.isEmpty filter then
@@ -436,6 +450,40 @@ nonAdministrationReasonToSign sign reason =
 
         NoMedicationDistributionSignsRecurrentPhase ->
             NoMedicationNonAdministrationSigns
+
+
+nonReferralReasonSection :
+    Language
+    -> ReferralFacility
+    -> Maybe ReasonForNonReferral
+    -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
+    -> List (Html msg)
+nonReferralReasonSection language facility currentValue setNonReferralReasonMsg =
+    let
+        options =
+            if facility == FacilityHospital then
+                [ ClientRefused
+                , NoAmbulance
+                , ClientUnableToAffordFees
+                , ReasonForNonReferralNotIndicated
+                , ReasonForNonReferralOther
+                ]
+
+            else
+                [ ClientRefused
+                , ClientAlreadyInCare
+                , ReasonForNonReferralNotIndicated
+                , ReasonForNonReferralOther
+                ]
+    in
+    [ viewQuestionLabel language Translate.WhyNot
+    , viewCheckBoxSelectInput language
+        options
+        []
+        currentValue
+        (setNonReferralReasonMsg currentValue facility)
+        Translate.ReasonForNonReferral
+    ]
 
 
 viewMonthSelector : Language -> NominalDate -> Int -> Int -> (Int -> msg) -> Html msg
@@ -1293,6 +1341,21 @@ viewPhotoThumbFromImageUrl (ImageUrl url) =
     viewPhotoThumb url
 
 
+viewPaneHeading : Language -> TranslationId -> Html any
+viewPaneHeading language label =
+    div [ class "pane-heading" ]
+        [ text <| translate language label ]
+
+
+viewPersonInfoPane : Language -> NominalDate -> Person -> Html any
+viewPersonInfoPane language currentDate person =
+    div [ class "pane person-details" ]
+        [ viewPaneHeading language Translate.PatientInformation
+        , div [ class "patient-info" ] <|
+            viewPersonDetailsExtended language currentDate person
+        ]
+
+
 isTaskCompleted : Dict t ( Int, Int ) -> t -> Bool
 isTaskCompleted dict task =
     Dict.get task dict
@@ -1414,24 +1477,30 @@ unique =
 
 viewBySyncStatus : Language -> HealthCenterId -> SyncManager.Model.SyncInfoAuthorityZipper -> Html msg -> Html msg
 viewBySyncStatus language healthCenterId syncInfoAuthorities contentForView =
-    let
-        selectedHealthCenterSyncInfo =
-            syncInfoAuthorities
-                |> Maybe.andThen
-                    (Zipper.toList >> List.Extra.find (\authorityInfo -> authorityInfo.uuid == fromEntityUuid healthCenterId))
+    syncStatusWarning healthCenterId syncInfoAuthorities
+        |> Maybe.map
+            (\( header, message ) ->
+                div [ class "ui message warning" ]
+                    [ div [ class "header" ] [ text <| translate language header ]
+                    , text <| translate language message
+                    ]
+            )
+        |> Maybe.withDefault contentForView
 
-        showWarningMessage header message =
-            div [ class "ui message warning" ]
-                [ div [ class "header" ] [ text <| translate language header ]
-                , text <| translate language message
-                ]
-    in
-    selectedHealthCenterSyncInfo
+
+{-| The warning (header and message) shown instead of a page's content, per
+the health center sync status. Nothing means the content is shown.
+-}
+syncStatusWarning : HealthCenterId -> SyncManager.Model.SyncInfoAuthorityZipper -> Maybe ( TranslationId, TranslationId )
+syncStatusWarning healthCenterId syncInfoAuthorities =
+    syncInfoAuthorities
+        |> Maybe.andThen
+            (Zipper.toList >> List.Extra.find (\authorityInfo -> authorityInfo.uuid == fromEntityUuid healthCenterId))
         |> Maybe.map
             (\syncInfo ->
                 case syncInfo.status of
                     SyncManager.Model.NotAvailable ->
-                        showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync
+                        Just ( Translate.SelectedHCNotSynced, Translate.PleaseSync )
 
                     SyncManager.Model.Downloading ->
                         -- Our goal is to limit disturance to operation during
@@ -1444,16 +1513,15 @@ viewBySyncStatus language healthCenterId syncInfoAuthorities contentForView =
                         -- 3 batches to complete download, a matter or few seconds, so,
                         -- we should not get to operations with incomplete data situation.
                         if syncInfo.remainingToDownload > 1500 then
-                            showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCDownloading
+                            Just ( Translate.SelectedHCSyncing, Translate.SelectedHCDownloading )
 
                         else
-                            contentForView
+                            Nothing
 
                     _ ->
-                        contentForView
+                        Nothing
             )
-        |> Maybe.withDefault
-            (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
+        |> Maybe.withDefault (Just ( Translate.SelectedHCNotSynced, Translate.PleaseSync ))
 
 
 {-| The unit a MUAC is entered and read in, which is mm at the Burundi site and

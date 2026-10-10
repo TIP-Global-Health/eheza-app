@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.Activity.Utils exposing (activityCompleted, acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectActivity, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, gastrointestinalInfectionDangerSignsPresent, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaDangerSignsPresent, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, mandatoryActivitiesCompletedSubsequentVisit, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, mildGastrointestinalInfectionSymptomsPresent, muacRedOnSubsequentVisit, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nonBloodyDiarrheaAtSymptoms, nutritionFormInutsAndTasks, nutritionFormWithDefault, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByMalariaRDT, resolveAmoxicillinDosage, resolveCoartemDosage, resolveMedicationsNonAdministrationReasons, resolveNextStepFirstEncounter, resolveNextStepSubsequentEncounter, resolveNextStepsTasks, resolveORSDosage, resolvePreviousValue, resolveZincDosage, respiratoryInfectionDangerSignsPresent, respiratoryRateAbnormalForAge, respiratoryRateElevated, respiratoryRateElevatedByAge, respiratoryRateElevatedByAgeForCovid19, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, sendToHCOnSubsequentVisitByNutrition, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, toAcuteFindingsValueWithDefault, toContactsTracingValueWithDefault, toCoreExamValueWithDefault, toCovidTestingValueWithDefault, toFollowUpValueWithDefault, toMalariaTestingValueWithDefault, toMedicationDistributionValueWithDefault, toNutritionValueWithDefault, toReviewDangerSignsValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTreatmentReviewValueWithDefault, toggleSymptomsSign, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, viewAdministeredMedicationLabel, viewAmoxicillinAdministrationInstructions, viewHCRecommendation, viewOralSolutionPrescription, viewParacetamolAdministrationInstructions, viewTabletsPrescription, vomitingAtSymptoms)
+module Pages.AcuteIllness.Activity.Utils exposing (activityCompleted, acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectActivity, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, gastrointestinalInfectionDangerSignsPresent, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaDangerSignsPresent, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, mandatoryActivitiesCompletedSubsequentVisit, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, mildGastrointestinalInfectionSymptomsPresent, muacRedOnSubsequentVisit, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nonBloodyDiarrheaAtSymptoms, nutritionFormInutsAndTasks, nutritionFormWithDefault, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByMalariaRDT, resolveAmoxicillinDosage, resolveCoartemDosage, resolveMedicationsNonAdministrationReasons, resolveNextStep, resolveNextStepsTasks, resolveORSDosage, resolvePreviousValue, resolveZincDosage, respiratoryInfectionDangerSignsPresent, respiratoryRateAbnormalForAge, respiratoryRateElevated, respiratoryRateElevatedByAge, respiratoryRateElevatedByAgeForCovid19, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, sendToHCOnSubsequentVisitByNutrition, setCovidTestPositive, subsequentEncounterDiagnosisUpdate, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, toAcuteFindingsValueWithDefault, toContactsTracingValueWithDefault, toCoreExamValueWithDefault, toCovidTestingValueWithDefault, toFollowUpValueWithDefault, toMalariaTestingValueWithDefault, toMedicationDistributionValueWithDefault, toNutritionValueWithDefault, toReviewDangerSignsValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTreatmentReviewValueWithDefault, toggleSymptomsSign, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, viewAdministeredMedicationLabel, viewAmoxicillinAdministrationInstructions, viewHCRecommendation, viewOralSolutionPrescription, viewParacetamolAdministrationInstructions, viewTabletsPrescription, vomitingAtSymptoms)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
@@ -530,6 +530,13 @@ isPregnantInputsAndTasks language setMsg currentValue =
     )
 
 
+{-| Answering the test result asks about pregnancy afresh, so a changed result never keeps the earlier answer.
+-}
+setCovidTestPositive : Bool -> CovidTestingForm -> CovidTestingForm
+setCovidTestPositive value form =
+    { form | testPositive = Just value, isPregnant = Nothing }
+
+
 covidTestingFormInputsAndTasks : Language -> NominalDate -> Person -> CovidTestingForm -> ( List (Html Msg), List (Maybe Bool) )
 covidTestingFormInputsAndTasks language currentDate person form =
     let
@@ -560,7 +567,7 @@ covidTestingFormInputsAndTasks language currentDate person form =
                                 , viewBoolInput
                                     language
                                     form.testPositive
-                                    (SetCovidTestingBoolInput (\value form_ -> { form_ | testPositive = Just value, isPregnant = Nothing }))
+                                    (SetCovidTestingBoolInput setCovidTestPositive)
                                     "test-result"
                                     (Just ( Translate.RapidTestResult RapidTestPositive, Translate.RapidTestResult RapidTestNegative ))
                                 ]
@@ -1492,11 +1499,12 @@ symptomsGIFormWithDefault form saved =
                         else if isJust form.intractableVomiting then
                             form.intractableVomiting
 
-                        else if EverySet.member IntractableVomiting value.derivedSigns then
-                            Just True
+                        else if Dict.member Vomiting value.signs then
+                            Just (EverySet.member IntractableVomiting value.derivedSigns)
 
                         else
-                            Just False
+                            -- The saved record never asked the question, because it had no vomiting.
+                            Nothing
                 in
                 { signs = signs
                 , signsDirty = form.signsDirty
@@ -1566,7 +1574,13 @@ fromMalariaTestingValue saved =
 
     else
         { rapidTestResult = saved
-        , isPregnant = Just False
+        , isPregnant =
+            -- Only a positive result asks about pregnancy; other results leave it unanswered.
+            if saved == Just RapidTestPositive then
+                Just False
+
+            else
+                Nothing
         }
 
 
@@ -1610,12 +1624,21 @@ treatmentReviewFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
+                let
+                    -- "Did it help?" is asked only when the medication was taken, so other records leave it unanswered.
+                    helpedAnswer taken helped =
+                        if EverySet.member taken value then
+                            Just (EverySet.member helped value)
+
+                        else
+                            Nothing
+                in
                 { feverPast6Hours = or form.feverPast6Hours (EverySet.member FeverPast6Hours value |> Just)
-                , feverPast6HoursHelped = or form.feverPast6HoursHelped (EverySet.member FeverPast6HoursHelped value |> Just)
+                , feverPast6HoursHelped = or form.feverPast6HoursHelped (helpedAnswer FeverPast6Hours FeverPast6HoursHelped)
                 , malariaToday = or form.malariaToday (EverySet.member MalariaToday value |> Just)
-                , malariaTodayHelped = or form.malariaTodayHelped (EverySet.member MalariaTodayHelped value |> Just)
+                , malariaTodayHelped = or form.malariaTodayHelped (helpedAnswer MalariaToday MalariaTodayHelped)
                 , malariaWithinPastMonth = or form.malariaWithinPastMonth (EverySet.member MalariaWithinPastMonth value |> Just)
-                , malariaWithinPastMonthHelped = or form.malariaWithinPastMonthHelped (EverySet.member MalariaWithinPastMonthHelped value |> Just)
+                , malariaWithinPastMonthHelped = or form.malariaWithinPastMonthHelped (helpedAnswer MalariaWithinPastMonth MalariaWithinPastMonthHelped)
                 }
             )
 
@@ -1895,8 +1918,23 @@ fromCovidTestingValue saved =
                         _ ->
                             Nothing
 
+                -- Only these results ask about pregnancy; any other result leaves it unanswered.
                 isPregnant =
-                    Just (List.member value.result [ RapidTestPositiveAndPregnant, RapidTestUnableToRunAndPregnant ])
+                    case value.result of
+                        RapidTestPositive ->
+                            Just False
+
+                        RapidTestPositiveAndPregnant ->
+                            Just True
+
+                        RapidTestUnableToRun ->
+                            Just False
+
+                        RapidTestUnableToRunAndPregnant ->
+                            Just True
+
+                        _ ->
+                            Nothing
             in
             { testPerformed = testPerformed
             , testPositive = testPositive
@@ -2050,14 +2088,8 @@ laboratoryTasks =
     [ LaboratoryCovidTesting, LaboratoryMalariaTesting ]
 
 
-resolveNextStepFirstEncounter : NominalDate -> Bool -> AssembledData -> Maybe NextStepsTask
-resolveNextStepFirstEncounter currentDate isChw assembled =
-    resolveNextStepsTasks currentDate isChw assembled
-        |> List.head
-
-
-resolveNextStepSubsequentEncounter : NominalDate -> Bool -> AssembledData -> Maybe NextStepsTask
-resolveNextStepSubsequentEncounter currentDate isChw assembled =
+resolveNextStep : NominalDate -> Bool -> AssembledData -> Maybe NextStepsTask
+resolveNextStep currentDate isChw assembled =
     resolveNextStepsTasks currentDate isChw assembled
         |> List.head
 
@@ -2417,13 +2449,33 @@ mandatoryActivityCompletedSubsequentVisit currentDate isChw data activity =
             False
 
 
+{-| The diagnosis a subsequent encounter should store, when the one derived
+from current measurements differs from the stored one - so correcting a
+measurement corrects the diagnosis, including clearing it (via
+`NoAcuteIllnessDiagnosis`) when the measurements no longer support any.
+`Nothing` means the stored diagnosis already matches.
+-}
+subsequentEncounterDiagnosisUpdate : NominalDate -> EverySet SiteFeature -> Bool -> AssembledData -> Maybe AcuteIllnessDiagnosis
+subsequentEncounterDiagnosisUpdate currentDate features isChw assembled =
+    let
+        diagnosisByCurrentEncounterMeasurements =
+            resolveAcuteIllnessDiagnosis currentDate features isChw assembled
+                |> Maybe.withDefault NoAcuteIllnessDiagnosis
+    in
+    if assembled.encounter.diagnosis /= diagnosisByCurrentEncounterMeasurements then
+        Just diagnosisByCurrentEncounterMeasurements
+
+    else
+        Nothing
+
+
 resolveAcuteIllnessDiagnosis : NominalDate -> EverySet SiteFeature -> Bool -> AssembledData -> Maybe AcuteIllnessDiagnosis
 resolveAcuteIllnessDiagnosis currentDate features isChw assembled =
     if assembled.initialEncounter then
         -- First we check for Covid19.
         let
             covid19AcuteIllnessDiagnosis =
-                covid19DiagnosisPath currentDate assembled.person isChw assembled.measurements
+                covid19DiagnosisPath currentDate features assembled.person isChw assembled.measurements
         in
         if isJust covid19AcuteIllnessDiagnosis then
             covid19AcuteIllnessDiagnosis
@@ -2483,19 +2535,26 @@ covid19SuspectDiagnosed measurements =
     feverAndRdtNotPositive && (respiratorySymptomsCount > 0 || generalSymptomsCount > 1)
 
 
+{-| A cough that lasts more than 2 weeks makes the patient a Tuberculosis
+suspect, on sites where Tuberculosis Management is enabled.
+-}
+tuberculosisSuspectDiagnosed : EverySet SiteFeature -> AcuteIllnessMeasurements -> Bool
+tuberculosisSuspectDiagnosed features measurements =
+    tuberculosisManagementEnabled features && coughForMoreThan2Weeks measurements
+
+
 {-| This may result in Covid diagnosis, or Malaria diagnosis,
 if Covid RDT could not be perfrmed.
 -}
-covid19DiagnosisPath : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-covid19DiagnosisPath currentDate person isChw measurements =
+covid19DiagnosisPath : NominalDate -> EverySet SiteFeature -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+covid19DiagnosisPath currentDate features person isChw measurements =
     if
         -- CHW may not diagnose COVID anymore.
         isChw
             || (not <| covid19SuspectDiagnosed measurements)
-            || -- In case we have cough symptom for more than 2 weeks,
-               -- we must diagnose Tuberculosis suspect.
-               -- Therefore, we need to exit COVID19 path.
-               coughForMoreThan2Weeks measurements
+            || -- Tuberculosis suspect is diagnosed instead of COVID19,
+               -- so we need to exit COVID19 path.
+               tuberculosisSuspectDiagnosed features measurements
     then
         Nothing
 
@@ -2603,7 +2662,7 @@ nonCovid19DiagnosisPath : NominalDate -> EverySet SiteFeature -> Person -> Bool 
 nonCovid19DiagnosisPath currentDate features person isChw measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
     if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
-        if tuberculosisManagementEnabled features && coughForMoreThan2Weeks measurements then
+        if tuberculosisSuspectDiagnosed features measurements then
             Just DiagnosisTuberculosisSuspect
 
         else if feverRecorded measurements then

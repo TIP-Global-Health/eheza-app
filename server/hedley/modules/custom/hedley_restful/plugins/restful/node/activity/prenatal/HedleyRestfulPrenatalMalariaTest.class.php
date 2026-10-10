@@ -17,6 +17,7 @@ class HedleyRestfulPrenatalMalariaTest extends HedleyRestfulPrenatalActivityBase
     'field_test_execution_note',
     'field_execution_date',
     'field_test_result',
+    'field_blood_smear_ordered',
     'field_blood_smear_result',
   ];
 
@@ -33,5 +34,18 @@ class HedleyRestfulPrenatalMalariaTest extends HedleyRestfulPrenatalActivityBase
   protected $dateFields = [
     'field_execution_date',
   ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
+    foreach ($items as &$item) {
+      $item->blood_smear_ordered = (bool) $item->blood_smear_ordered;
+    }
+
+    return $items;
+  }
 
 }

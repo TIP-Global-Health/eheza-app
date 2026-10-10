@@ -10,9 +10,9 @@ import Backend.FamilyEncounterParticipant.Model
         , FamilyParticipantInitiator(..)
         , emptyFamilyEncounterParticipant
         )
-import Backend.FamilyEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.FamilyNutritionEncounter.Model
 import Backend.FamilyNutritionEncounter.Utils exposing (getFamilyNutritionEncountersForParticipant)
+import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Initiator(..))
 import Gizra.NominalDate exposing (NominalDate)

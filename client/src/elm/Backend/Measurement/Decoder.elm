@@ -736,6 +736,7 @@ decodeMalariaTestValue =
             (Just prerequisitesDefaultRDT)
         |> optional "test_result" (nullable decodeTestResult) Nothing
         |> optional "blood_smear_result" decodeBloodSmearResult BloodSmearNotTaken
+        |> optional "blood_smear_ordered" bool False
 
 
 decodeBloodSmearResult : Decoder BloodSmearResult
