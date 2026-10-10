@@ -103,9 +103,16 @@ jobs:
       image: ubuntu-2204:current
     steps:
       - checkout
+      # Elm compiles before DDEV starts, so it has the machine's memory.
+      - run:
+          name: Build the sync incident check
+          command: npm install -g elm@latest-0.19.2 && ci-scripts/test_sync_incident_recreation.sh build
       - run: ci-scripts/install_ddev.sh
       - run: ci-scripts/install_drupal.sh
       - run: ci-scripts/circleci_wait.sh ddev simpletest
+      - run:
+          name: Check sync incident re-creation
+          command: ci-scripts/test_sync_incident_recreation.sh run
   e2e_playwright_1:
     machine:
       image: ubuntu-2204:current
