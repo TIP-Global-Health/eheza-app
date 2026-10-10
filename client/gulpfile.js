@@ -284,9 +284,14 @@ gulp.task("minify", gulp.series(
       // Concatenate JavaScript files and preserve important comments.
       // DropZone had a problem if we mangle
       // ... see <https://github.com/rowanwins/vue-dropzone/issues/119>
-      .pipe($.if(["*.js", "!service-worker.js", "!workbox-*.js", "!app.js", "!bulkPhotos.js", "!nodes.js", "!photos.js", "!statistics.js"], uglify({
+      .pipe($.if(["*.js", "!Main.js", "!service-worker.js", "!workbox-*.js", "!app.js", "!bulkPhotos.js", "!nodes.js", "!photos.js", "!statistics.js"], uglify({
         mangle: false
       }))).on('error', function(err) {
+        console.error(err);
+      })
+      // The Elm bundle keeps all its names inside one function, so mangling
+      // them is safe, and it shrinks the file by about two thirds.
+      .pipe($.if("Main.js", uglify())).on('error', function(err) {
         console.error(err);
       })
 
