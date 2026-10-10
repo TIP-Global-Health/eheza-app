@@ -1,4 +1,4 @@
-module Pages.Prenatal.ProgressReport.View exposing (view)
+module Pages.Prenatal.ProgressReport.View exposing (view, viewTreatmentForOutsideCareDiagnosis)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -67,7 +67,7 @@ import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra exposing (greedyGroupsOf)
+import List.Extra exposing (find, greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils
     exposing
@@ -104,8 +104,12 @@ import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
     exposing
-        ( outsideCareDiagnoses
-        , outsideCareDiagnosesWithPossibleMedication
+        ( outsideCareAnemiaDiagnoses
+        , outsideCareDiagnoses
+        , outsideCareHIVDiagnoses
+        , outsideCareHypertensionDiagnoses
+        , outsideCareMalariaDiagnoses
+        , outsideCareSyphilisDiagnoses
         , recommendedTreatmentSignsForHypertension
         , recommendedTreatmentSignsForMalaria
         , recommendedTreatmentSignsForMastitis
@@ -3209,93 +3213,52 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
                 ++ " "
                 ++ formatDDMMYYYY date
                 |> wrapWithLI
+
+        treatedWithPhrase treatmentOptions noTreatmentOption =
+            Maybe.map
+                (EverySet.toList
+                    >> List.filter (\treatment -> List.member treatment treatmentOptions)
+                    >> (\treatments ->
+                            if List.isEmpty treatments || List.member noTreatmentOption treatments then
+                                noTreatmentAdministeredPhrase
+
+                            else
+                                (String.toLower <| translate language Translate.TreatedWith)
+                                    ++ " "
+                                    ++ (List.map
+                                            (Translate.OutsideCareMedicationLabel >> translate language)
+                                            treatments
+                                            |> String.join ", "
+                                       )
+                       )
+                )
+                medications
+                |> Maybe.withDefault noTreatmentAdministeredPhrase
+
+        noTreatmentAdministeredPhrase =
+            String.toLower <| translate language Translate.NoTreatmentAdministered
     in
-    if List.member diagnosis outsideCareDiagnosesWithPossibleMedication then
-        let
-            treatmentForHypertensionMessage =
-                treatedWithPhrase outsideCareMedicationOptionsHypertension NoOutsideCareMedicationForHypertension
-                    |> Just
-                    |> completePhrase
+    case
+        find (\( diagnoses, _, _ ) -> List.member diagnosis diagnoses)
+            [ ( outsideCareMalariaDiagnoses, outsideCareMedicationOptionsMalaria, NoOutsideCareMedicationForMalaria )
+            , ( outsideCareHypertensionDiagnoses, outsideCareMedicationOptionsHypertension, NoOutsideCareMedicationForHypertension )
+            , ( outsideCareSyphilisDiagnoses, outsideCareMedicationOptionsSyphilis, NoOutsideCareMedicationForSyphilis )
+            , ( outsideCareAnemiaDiagnoses, outsideCareMedicationOptionsAnemia, NoOutsideCareMedicationForAnemia )
+            , ( outsideCareHIVDiagnoses, outsideCareMedicationOptionsHIV, NoOutsideCareMedicationForHIV )
+            ]
+    of
+        Just ( _, treatmentOptions, noTreatmentOption ) ->
+            treatedWithPhrase treatmentOptions noTreatmentOption
+                |> Just
+                |> completePhrase
 
-            treatedWithPhrase treartmentOptions noTreatmentOption =
-                Maybe.map
-                    (EverySet.toList
-                        >> List.filter (\treatment -> List.member treatment treartmentOptions)
-                        >> (\treatments ->
-                                if List.isEmpty treatments || List.member noTreatmentOption treatments then
-                                    noTreatmentAdministeredPhrase
+        Nothing ->
+            if List.member diagnosis outsideCareDiagnoses then
+                completePhrase Nothing
 
-                                else
-                                    " "
-                                        ++ (String.toLower <| translate language Translate.TreatedWith)
-                                        ++ " "
-                                        ++ (List.map
-                                                (Translate.OutsideCareMedicationLabel >> translate language)
-                                                treatments
-                                                |> String.join ", "
-                                           )
-                           )
-                    )
-                    medications
-                    |> Maybe.withDefault noTreatmentAdministeredPhrase
-
-            noTreatmentAdministeredPhrase =
-                " "
-                    ++ (String.toLower <| translate language Translate.NoTreatmentAdministered)
-                    ++ " "
-        in
-        case diagnosis of
-            DiagnosisHIVInitialPhase ->
-                treatedWithPhrase outsideCareMedicationOptionsHIV NoOutsideCareMedicationForMalaria
-                    |> Just
-                    |> completePhrase
-
-            DiagnosisHIVRecurrentPhase ->
-                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisHIVInitialPhase
-
-            DiagnosisSyphilisInitialPhase ->
-                treatedWithPhrase outsideCareMedicationOptionsSyphilis NoOutsideCareMedicationForSyphilis
-                    |> Just
-                    |> completePhrase
-
-            DiagnosisSyphilisRecurrentPhase ->
-                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisSyphilisInitialPhase
-
-            DiagnosisMalariaInitialPhase ->
-                treatedWithPhrase outsideCareMedicationOptionsMalaria NoOutsideCareMedicationForMalaria
-                    |> Just
-                    |> completePhrase
-
-            DiagnosisMalariaRecurrentPhase ->
-                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisMalariaInitialPhase
-
-            DiagnosisModerateAnemiaInitialPhase ->
-                treatedWithPhrase outsideCareMedicationOptionsAnemia NoOutsideCareMedicationForAnemia
-                    |> Just
-                    |> completePhrase
-
-            DiagnosisModerateAnemiaRecurrentPhase ->
-                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisModerateAnemiaInitialPhase
-
-            DiagnosisGestationalHypertensionImmediate ->
-                treatmentForHypertensionMessage
-
-            DiagnosisChronicHypertensionImmediate ->
-                treatmentForHypertensionMessage
-
-            DiagnosisModeratePreeclampsiaInitialPhase ->
-                treatmentForHypertensionMessage
-
-            -- Will never get here.
-            _ ->
+            else
+                -- Not an outside care diagnosis.
                 []
-
-    else if List.member diagnosis outsideCareDiagnoses then
-        completePhrase Nothing
-
-    else
-        -- Not an outside care diagnosis.
-        []
 
 
 viewTreatmentForPastDiagnosis : Language -> NominalDate -> PrenatalDiagnosis -> List (Html any)

@@ -86,7 +86,7 @@ import Pages.Prenatal.Activity.Utils exposing (appointmentConfirmationFormInutsA
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, generateAssembledData, generateEDDandEGA, generateGravida, generatePara, getLmpValue, secondPhaseRequired)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
-import Pages.Prenatal.Utils exposing (calculateEGAWeeks, diagnosedAnyOf, diagnosedModeratePreeclampsiaPrevoiusly, filterNonUrgentDiagnoses, medicationDistributionFormWithDefaultInitialPhase, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, referralFormWithDefault, resolveARVReferralDiagnosis, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, undeterminedPostpartumDiagnoses)
+import Pages.Prenatal.Utils exposing (calculateEGAWeeks, diagnosedAnyOf, diagnosedModeratePreeclampsiaPrevoiusly, filterNonUrgentDiagnoses, medicationDistributionFormWithDefaultInitialPhase, outsideCareAnemiaDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, referralFormWithDefault, resolveARVReferralDiagnosis, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View
     exposing
         ( customWarningPopup
@@ -702,15 +702,11 @@ viewHistoryContent language assembled data =
             , setSyphilisMedicationMsg = SetOutsideCareSyphilisMedication
             , setAnemiaMedicationMsg = SetOutsideCareAnemiaMedication
             , setHIVMedicationMsg = SetOutsideCareHIVMedication
-            , malariaDiagnoses = [ DiagnosisMalariaInitialPhase ]
-            , hypertensionDiagnoses =
-                [ DiagnosisGestationalHypertensionImmediate
-                , DiagnosisChronicHypertensionImmediate
-                , DiagnosisModeratePreeclampsiaInitialPhase
-                ]
-            , syphilisDiagnoses = [ DiagnosisSyphilisRecurrentPhase ]
-            , anemiaDiagnoses = [ DiagnosisModerateAnemiaRecurrentPhase ]
-            , hivDiagnoses = [ DiagnosisHIVInitialPhase ]
+            , malariaDiagnoses = outsideCareMalariaDiagnoses
+            , hypertensionDiagnoses = outsideCareHypertensionDiagnoses
+            , syphilisDiagnoses = outsideCareSyphilisDiagnoses
+            , anemiaDiagnoses = outsideCareAnemiaDiagnoses
+            , hivDiagnoses = outsideCareHIVDiagnoses
             , malariaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisMalariaInitialPhase
             , resolveHypertensionHeaderTransId =
                 \diagnoses ->
