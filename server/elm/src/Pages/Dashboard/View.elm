@@ -1,9 +1,8 @@
 module Pages.Dashboard.View exposing (view)
 
-{-| The HealthyStart dashboards: a banner, the filter row, the summary tiles,
-the indicator blocks and coverage bars, the trends panel and the critical
-alerts, plus the month by month drill down that opens over the dimmed
-dashboard.
+{-| The HealthyStart dashboards: banner, filters, summary tiles, indicator
+blocks, coverage bars, trends, critical alerts, and the monthly drill down that
+opens over the dimmed dashboard.
 -}
 
 import App.Types exposing (Language)
@@ -104,9 +103,8 @@ viewDashboard language currentDate data dashboard model =
         ]
 
 
-{-| While the drill down is open the dashboard under it is out of reach: the
-dialog says it covers the page, so nothing behind it should be reachable by tab
-or readable by a screen reader.
+{-| While the drill down is open, the dashboard behind it is out of reach: the
+dialog covers the page, so tab and screen readers skip what is under it.
 -}
 behindDrillDownAttributes : Screen -> List (Attribute Msg)
 behindDrillDownAttributes screen =

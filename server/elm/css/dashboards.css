@@ -1,17 +1,10 @@
-/* Styles for the HealthyStart dashboards.
- *
- * Tailwind runs over the dashboard Elm sources and emits the utilities they
- * name. Preflight is left out on purpose: the dashboards render inside the
- * Drupal admin theme, and its base styles have to stay as they are.
- *
- * Rebuild after changing the dashboard sources:
- *   cd server/elm && npm run css
+/* HealthyStart dashboard styles, built by Tailwind from the Elm sources
+ * (`cd server/elm && npm run css`). Preflight is off, so the admin theme keeps
+ * its base styles.
  */
 
-/* The Drupal admin theme's stylesheets are not in a cascade layer, so anything
-   this file puts in one loses to them. The utilities are marked important
-   instead, which is what lets them style headings, tables and buttons the
-   theme already has rules for. */
+/* The admin theme's stylesheets sit outside any cascade layer and would beat
+   layered rules, so the utilities are marked important instead. */
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" important;
 
@@ -32,10 +25,9 @@
   --color-bar-track:   #9aa6b2;
 }
 
-/* Nunito, the product typeface the dashboards are designed in. It is served
-   from this module rather than fetched from a font host, so the admin makes no
-   external request. The files are the latin and latin-ext subsets of the
-   variable font, covering weights 400 to 800. See fonts/OFL.txt. */
+/* Nunito, the dashboards' typeface: the latin and latin-ext subsets of the
+   variable font (weights 400-800), served locally so the admin makes no
+   external request. See fonts/OFL.txt. */
 @font-face {
   font-family: "Nunito";
   font-style: normal;
@@ -54,13 +46,9 @@
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
-/* Tailwind's own reset is left out, so the element styles the dashboards assume
-   are set here, scoped to the dashboard.
-   The admin theme reaches these elements with rules of its own, some of them
-   carrying an id, so these are important. The selectors are wrapped in :where()
-   to keep them as weak as a bare element selector, which leaves the utilities
-   above - important and a class stronger - still winning wherever the dashboard
-   names one. Nothing outside .ehs-dashboard is touched. */
+/* Element styles Tailwind's reset would set, scoped to .ehs-dashboard.
+   Important, since some admin theme rules carry an id; wrapped in :where() so
+   a utility class still wins. */
 :where(.ehs-dashboard),
 :where(.ehs-dashboard) *,
 :where(.ehs-dashboard) *::before,
@@ -120,9 +108,9 @@
   font-size: inherit !important;
 }
 
-/* The theme aligns every cell left. These restore what a browser does on its
-   own - header cells centred, data cells following the text around them - so
-   the alignment utilities the tables carry read the same here as anywhere. */
+/* The theme aligns every cell left. Restore the browser default (header cells
+   centred, data cells following the text) so the tables' alignment utilities
+   behave as usual. */
 :where(.ehs-dashboard) th,
 :where(.ehs-dashboard) td {
   border: 0 !important;

@@ -37,9 +37,8 @@ function hedley_patient_menu() {
 /**
  * Implements hook_user_login().
  *
- * Sends a user whose account is for one page straight to it, rather than to the
- * front page they have no access to. An account holding several of these roles
- * lands on the first one listed here.
+ * Sends a single-page account straight to its page, not the front page it
+ * cannot open. With several such roles, the first listed here wins.
  */
 function hedley_patient_user_login(&$edit, $account) {
   $data_mananger_role = user_role_load_by_name('Data Manager');

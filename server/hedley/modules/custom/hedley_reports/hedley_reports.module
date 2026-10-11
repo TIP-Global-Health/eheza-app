@@ -202,9 +202,8 @@ function hedley_reports_dashboard_program_access() {
 /**
  * Grants access to one HealthyStart dashboard.
  *
- * A dashboard exists only where the Healthy Start feature is enabled, and is
- * open to administrators and to the role that dashboard belongs to. Holding the
- * other dashboard's role grants nothing here.
+ * Only where Healthy Start is enabled, and only for administrators and the
+ * dashboard's own role.
  *
  * @param string $role_name
  *   Name of the role the dashboard belongs to.

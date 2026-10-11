@@ -771,13 +771,11 @@ function hedley_update_7048() {
 }
 
 /**
- * Create the roles that view the HealthyStart dashboards.
+ * Create the HealthyStart dashboard roles.
  *
- * Facility Dashboard Viewer sees the Facility Performance dashboard for the
- * health centers its account lists; Program Dashboard Viewer sees the Program
- * Monitoring dashboard across every site. Neither holds a permission: the
- * dashboard paths name the role in their access callback, which is all the
- * reach these accounts have.
+ * Facility Dashboard Viewer sees its health centers' Facility dashboard;
+ * Program Dashboard Viewer sees the Program dashboard, across sites. No
+ * permissions; access callbacks check the role.
  */
 function hedley_create_dashboard_viewer_roles() {
   foreach (['Facility Dashboard Viewer', 'Program Dashboard Viewer'] as $name) {

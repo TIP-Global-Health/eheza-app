@@ -1,13 +1,8 @@
 module Pages.Components.TrendChart exposing (Series, view)
 
-{-| A multi-series monthly trend chart drawn as inline SVG. It is parameterised
-by an arbitrary set of series holding values between 0 and 100, so it plots any
-indicator without knowing what the indicator is.
-
-Series are told apart by colour and by line style (solid / dashed / dotted), so
-they stay readable without relying on colour alone. The whole chart is exposed
-to assistive tech as a single labelled image.
-
+{-| A monthly trend chart as inline SVG, for any series of values from 0
+to 100. Lines differ by colour and dash style; screen readers get one labelled
+image.
 -}
 
 import Html exposing (Html)
@@ -16,9 +11,8 @@ import Svg exposing (Svg)
 import Svg.Attributes as SA
 
 
-{-| One plotted line. `dash` is a stroke-dasharray value; an empty string draws
-a solid line. `points` holds one value per step along the x axis, and the series
-is spread across the full plot width however many there are.
+{-| One plotted line. An empty `dash` (a stroke-dasharray) draws it solid.
+`points` holds one value per x step, spread across the full plot width.
 -}
 type alias Series =
     { color : String

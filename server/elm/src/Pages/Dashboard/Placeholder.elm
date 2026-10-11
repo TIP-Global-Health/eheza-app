@@ -10,14 +10,9 @@ module Pages.Dashboard.Placeholder exposing
     , trendSeries
     )
 
-{-| The figures the HealthyStart dashboards render, and the generator that
-turns them into monthly series. They are representative maternal and child
-health numbers, not data read from this installation: this module stands in
-until the computed data arrives, and goes away with it.
-
-The generator is deterministic, so an indicator and a year always draw the same
-curve.
-
+{-| Placeholder figures for the HealthyStart dashboards, representative but not
+this installation's data, and a deterministic generator of monthly series from
+them. Goes once computed data arrives.
 -}
 
 import Backend.Components.Model exposing (HealthCenterData)

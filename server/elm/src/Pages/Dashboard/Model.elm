@@ -15,8 +15,8 @@ module Pages.Dashboard.Model exposing
     )
 
 {-| The HealthyStart dashboards: Facility Performance (Dashboard II) and
-Program Monitoring (Dashboard III). Each is served on its own path, so the
-model holds the state of the one dashboard on screen.
+Program Monitoring (Dashboard III). Each has its own path, so the model holds
+the one on screen.
 -}
 
 import AssocList as Dict exposing (Dict)
@@ -118,13 +118,9 @@ type alias Filter =
     }
 
 
-{-| An indicator block. On the Facility dashboard a block shows current value,
-programme target and inter site average; on the Program dashboard there is no
-average, so `average` is Nothing.
-
-`base*` are the centre lines the placeholder series wander around, so every
-indicator plots a distinct curve.
-
+{-| An indicator block: current value, programme target and, on the Facility
+dashboard only, the inter site `average`. `base*` centre each placeholder
+series, so every indicator draws its own curve.
 -}
 type alias Kpi =
     { id : String
@@ -159,9 +155,8 @@ type alias Coverage =
     }
 
 
-{-| Direction of the "x% from prev. month" indicator. Up renders a green
-triangle, Down a red one, following the mockups, which colour by direction and
-not by whether the movement is clinically good.
+{-| Direction of the "x% from prev. month" indicator: Up is a green triangle,
+Down a red one. As in the mockups, colour shows direction, not clinical merit.
 -}
 type Trend
     = Down
