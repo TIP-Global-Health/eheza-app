@@ -44,7 +44,14 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — updated 2026-10-10
+## Open right now — updated 2026-10-11
+
+🟡 **PR #2325 open 2026-10-11 (B-437, tier 2, issue #2324)** — Statistical Queries: the z-score cleanup script now queues the reports recalculation (all sites) alongside NCDA for children with a cleared height or weight; the head-circumference script says to run `recalculate-stats.php`. Verified old-vs-new on the local DB. ⚠ #2128's post-deploy notes still need two edits (see the B-437 entry) — the user's call. Worktree released.
+
+✅ **PR #2321 (B-460) MERGED** by 2026-10-11 (`43f70081a`).
+
+⚠ **2026-10-11: the main tree was on `elm-0.19.3-upgrade` (PR #2323), not `develop`.** Bookkeeping was committed from a detached `origin/develop` worktree.
+
 
 🟡 **PR #2321 open 2026-10-09 (B-460, tier 2, issue #2320)** — Sync incidents: the backend now re-creates the entities a device sends after `Could not find UUID`. `list_boolean` written as 0/1, `field_deleted` skipped, absent JSON keys read without a notice. User-reported from vhw dblog 241296/241297. Verified by a local old-vs-new run; phpcs + comment check green. ⚠ Stuck users (vhw uid 234) need one account re-save after deploy, since the same details never re-trigger. **Review round 1 (medium): 8 findings, 1 fixed in `5f6bc3409`** (watchdog for an entity skipped on a missing required field), 3 refuted, 4 declined; threads resolved. Worktree released. ✅ CI fully green (all 11 checks). Awaiting merge.
 
