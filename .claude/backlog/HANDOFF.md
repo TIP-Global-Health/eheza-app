@@ -46,7 +46,7 @@ What changes because of this:
 
 ## Open right now — updated 2026-10-11
 
-🟡 **PR #2325 open 2026-10-11 (B-437, tier 2, issue #2324)** — Statistical Queries: the z-score cleanup script now queues the reports recalculation (all sites) alongside NCDA for children with a cleared height or weight; the head-circumference script says to run `recalculate-stats.php`. Verified old-vs-new on the local DB. ⚠ #2128's post-deploy notes still need two edits (see the B-437 entry) — the user's call. Worktree released.
+🟡 **PR #2325 open 2026-10-11 (B-437, tier 2, issue #2324)** — Statistical Queries: the z-score cleanup script now queues the reports recalculation (all sites) alongside NCDA for children with a cleared height or weight; the head-circumference script says to run `recalculate-stats.php`. Verified old-vs-new on the local DB. #2128's post-deploy notes edited (device downloads; `recalculate-stats.php` moved after #2298). Review round 1: 8 findings posted, fixes awaiting the user's go-ahead. Worktree released.
 
 ✅ **PR #2321 (B-460) MERGED** by 2026-10-11 (`43f70081a`).
 
