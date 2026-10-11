@@ -1764,6 +1764,9 @@ elmApp.ports.initRollbar.subscribe(function(data) {
               // The build the report came from, so a stack trace can be read
               // against the bundle that produced it.
               code_version: data.version,
+              // Rollbar fetches Main.js.map, so frames in the mangled bundle
+              // show Elm function names.
+              source_map_enabled: true,
             }
           },
           person: {
