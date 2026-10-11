@@ -46,6 +46,8 @@ What changes because of this:
 
 ## Open right now — updated 2026-10-11
 
+🟡 **PR #2327 open 2026-10-11 (B-444, tier 1, issue #2326)** — Prenatal HIV PCR: answering "undetectable" clears the viral load (shared `setHIVViralLoadUndetectable`, three handlers), and the detectable-viral-load diagnosis skips a record answered undetectable. 4 new tests, 3 fail on pre-fix code. Worktree released. Awaiting review.
+
 ✅ **PR #2325 MERGED 2026-10-11 as `9f0845ad3` (B-437, tier 2, issue #2324 — stays open, `develop` target; close in the release sweep)** — Statistical Queries: the z-score cleanup script now queues the reports recalculation (all sites) alongside NCDA for children with a cleared height or weight; the head-circumference script says to run `recalculate-stats.php`. Verified old-vs-new on the local DB. #2128's post-deploy notes edited (device downloads; `recalculate-stats.php` moved after #2298). Review round 1: 8 findings, 6 fixed in `9cd8f082c`, 2 declined; threads resolved. ✅ #2128's #2294 block now also names the Statistical Queries queueing (edited 2026-10-11, user asked). Worktree released.
 
 ✅ **PR #2321 (B-460) MERGED** by 2026-10-11 (`43f70081a`).
