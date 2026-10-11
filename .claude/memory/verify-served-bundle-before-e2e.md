@@ -21,3 +21,7 @@ only signal for a logic-only change that adds no new strings. Poll until the bod
 `touch` the source file if the watcher has not noticed.
 
 Related: [[e2e-local-run-procedure]], [[verify-by-running-not-reasoning]], [[local-verification-vs-ci]]
+
+## The browser can run an older bundle than port 3000 serves (2026-10-10)
+
+`curl localhost:3000/Main.js` showed the new 0.19.3 bundle, yet Chrome's console logged `elm-lang.org/0.19.2/optimize`: the service worker had served its cached copy. Before trusting any browser check, read the version badge (top right, it shows the commit) or the console's `Compiled in DEV mode ... 0.19.x` line. If either is old, click Version to activate the new one.

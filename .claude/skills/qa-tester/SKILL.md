@@ -163,14 +163,16 @@ when unanswered), select values, the task counter, and whether Save is on.
 
 ### Recording
 
-Record every scenario **from the moment the encounter starts** — or, outside encounters,
-from the first screen of the flow under test — through to the result. Everything inside
-that span is on the video, helper-driven activities included. Encounters that create the
-data a test then looks at — an earlier visit, an illness the record should list — are part
-of that story: record them too, from their start, so the viewer sees where the data came
-from. Only device setup, registering the patient, sync and database steps such as
-backdating stay off the video. So a fixture stops on the participant page, and the
-recorded command starts the encounter. The video is real time, with the e2e cursor marking the pointer; while
+Record every test **from the moment its encounter starts** — or, outside encounters, from
+the first screen of the flow under test — through to the result, helper-driven activities
+included: `qa-<pr>-test<n>-<name>.mp4`.
+
+**Preparation is recorded too, in separate videos.** Each encounter a test needs beforehand
+— the initial encounter before a recurrent one, an earlier visit, an illness the record
+should list — gets its own video from its start to its end, `qa-<pr>-prep<k>-<name>.mp4`,
+so no video runs long. Two preparation encounters make two videos. Only device setup,
+registering the patient, sync and database steps such as backdating stay off video. So
+each fixture stops on the participant page, and its recorded command starts the encounter. The video is real time, with the e2e cursor marking the pointer; while
 recording, `qa.click`, `qa.fill` and helper clicks made through `click()` hover and pause
 for a second so the viewer can follow. Setup that is not evidence runs unrecorded at full
 speed. Look at the frame from the moment that matters (`qa.sh frame`, at the `recordingAt`
@@ -228,9 +230,10 @@ bash .claude/skills/qa-tester/scripts/post-qa-report.sh <pr> <drafted-file>
 It refuses a file that does not open with the caption; `--update <comment-id>` replaces
 an earlier report instead of adding one. The report names no video files.
 
-**Then post the recordings as a separate comment**, one player per test. Write each as
-`**Recording — test <n>:** <one line on what it shows>` with the video referenced below it,
-and attach the files; `gh` uploads them and puts each player where its reference is:
+**Then post the recordings as a separate comment**, one player per video. Preparation comes
+first, each as `**Preparation <k>:** <what is prepared, and which test needs it>`, then each
+test as `**Recording — test <n>:** <one line on what it shows>`, with its video referenced
+below it. Attach the files; `gh` uploads them and puts each player where its reference is:
 
 ```bash
 # recordings.md:  **Recording — test 1:** …  then a line  ![](client/qa-recordings/<pr>/qa-<pr>-<name>.mp4)
