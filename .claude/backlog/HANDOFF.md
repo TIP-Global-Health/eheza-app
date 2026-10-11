@@ -663,8 +663,8 @@ for exactly this).
   therefore does not distinguish SELECT from a write; treat that as a rule of conduct, not a guard.
 - **Live sites:** `ihangane` (rwanda), `vhw` (burundi), `tip-somalia`, `uvl`. ⚠ `eheza-site` is
   **Drupal 11.4.4 / drush 13** — D7 idioms (`vget`, `sqlq`) fail there.
-- **Elm: ⛔ ALWAYS 0.19.2.** Host global `elm` is 0.19.2; use project-local
-  `client/node_modules/.bin/elm-test` (global is 0.19.1 and silently rewrites `elm.json`).
+- **Elm: ⛔ ALWAYS 0.19.3** (PR #2323, 2026-10-11). Host global `elm` and `elm-test`, DDEV and the
+  project-local `client/node_modules/.bin/elm-test` are all 0.19.3; see [[elm-version-must-match-compiler-exactly]].
 - **Client worktree recipe** (two failed runs before getting this right): copy `client/src/generated`
   (gitignored — else `elm make` dies with MISSING SOURCE DIRECTORY) and `client/src/elm/LocalConfig.elm`;
   symlink `node_modules` (fine); give the worktree its OWN real `elm-stuff` — a symlinked one makes
