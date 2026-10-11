@@ -31,7 +31,7 @@ $targets = [
   ['field_zscore_bmi', HEDLEY_ACTIVITY_WEIGHT_BUNDLES, 'bmi_for_age'],
 ];
 
-$cleared = [];
+$found = $children = [];
 foreach ($targets as $target) {
   list($field, $bundles, $kind) = $target;
   list($lowest, $highest) = HEDLEY_ACTIVITY_ZSCORE_LIMITS[$kind];
@@ -66,7 +66,26 @@ foreach ($targets as $target) {
     '@count' => count($rows),
   ]));
 
-  if ($dry_run || empty($rows)) {
+  if (empty($rows)) {
+    continue;
+  }
+
+  // Statistical Queries and the NCDA report copy height and weight z-scores.
+  // This script saves no node, so their children are queued for a rebuild.
+  if ($kind != 'head_circumference_for_age') {
+    foreach (array_chunk(array_keys($rows), 1000) as $chunk) {
+      $children += db_select('field_data_field_person', 'p')
+        ->fields('p', ['field_person_target_id'])
+        ->condition('p.entity_type', 'node')
+        ->condition('p.entity_id', $chunk, 'IN')
+        ->execute()
+        ->fetchAllKeyed(0, 0);
+    }
+  }
+
+  $found += $rows;
+
+  if ($dry_run) {
     continue;
   }
 
@@ -84,32 +103,22 @@ foreach ($targets as $target) {
       ->condition('revision_id', array_values($chunk), 'IN')
       ->execute();
   }
-
-  $cleared += $rows;
 }
 
-if ($dry_run) {
-  drush_print('Dry run. Nothing was cleared.');
+if (empty($found)) {
+  drush_print('Nothing to clear.');
   return;
 }
 
-foreach (array_keys($cleared) as $nid) {
-  cache_clear_all("field:node:$nid", 'cache_field');
+if ($dry_run) {
+  drush_print(dt('Dry run. Nothing was cleared. A real run queues the data of @count children for recalculation.', [
+    '@count' => count($children),
+  ]));
+  return;
 }
 
-// Statistical Queries and the NCDA report keep copies of height and weight
-// z-scores, rebuilt only when a measurement is saved. So both are queued here.
-$children = [];
-foreach (array_chunk(array_keys($cleared), 1000) as $chunk) {
-  $query = db_select('field_data_field_person', 'p');
-  $query->join('node', 'n', 'n.nid = p.entity_id');
-  $children += $query
-    ->fields('p', ['field_person_target_id'])
-    ->condition('p.entity_type', 'node')
-    ->condition('p.entity_id', $chunk, 'IN')
-    ->condition('n.type', array_merge(HEDLEY_ACTIVITY_HEIGHT_BUNDLES, HEDLEY_ACTIVITY_WEIGHT_BUNDLES), 'IN')
-    ->execute()
-    ->fetchAllKeyed(0, 0);
+foreach (array_keys($found) as $nid) {
+  cache_clear_all("field:node:$nid", 'cache_field');
 }
 
 $queues = [HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA => 'Statistical Queries'];
@@ -118,20 +127,26 @@ if (variable_get('hedley_admin_feature_ncda_enabled', FALSE)) {
 }
 
 foreach ($queues as $queue => $label) {
+  $queued = 0;
   foreach (array_keys($children) as $person_id) {
-    hedley_general_add_task_to_advanced_queue_by_id($queue, $person_id, [
+    $added = hedley_general_add_task_to_advanced_queue_by_id($queue, $person_id, [
       'person_id' => $person_id,
     ]);
+
+    if ($added) {
+      $queued++;
+    }
   }
 
-  drush_print(dt('Queued the @label data of @count children for recalculation.', [
+  drush_print(dt('@label data: queued @queued children for recalculation, @skipped already queued.', [
     '@label' => $label,
-    '@count' => count($children),
+    '@queued' => $queued,
+    '@skipped' => count($children) - $queued,
   ]));
 }
 
 // Dashboards keep counting the cleared values until statistics are
 // recalculated.
-drush_print(dt('Done! Cleared z-scores of @count measurements. Now run hedley_stats/scripts/recalculate-stats.php.', [
-  '@count' => count($cleared),
+drush_print(dt('Done! Cleared z-scores of @count measurements. Now run profiles/hedley/modules/custom/hedley_stats/scripts/recalculate-stats.php.', [
+  '@count' => count($found),
 ]));
