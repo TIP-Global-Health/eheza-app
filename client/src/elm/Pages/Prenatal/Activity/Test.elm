@@ -47,7 +47,7 @@ import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (RangedMeasurement(..), emptyHIVPCRResultForm)
-import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, setHIVViralLoadUndetectable, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault)
+import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault)
 import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
@@ -1477,29 +1477,26 @@ generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest =
         ]
 
 
-{-| A viral load answered "undetectable" is under 20 copies. The answer clears
-a number typed or saved before, and a record that still holds one is not
-diagnosed with a detectable viral load.
+{-| A viral load answered "undetectable" is under 20 copies, so it is saved
+without a number. A number typed before stays on the form, so a mistaken Yes can
+be undone, and a record that still holds one is not diagnosed from it.
 -}
 hivViralLoadUndetectableTest : Test
 hivViralLoadUndetectableTest =
     let
-        encounterId =
-            toEntityUuid "encounter"
-
         savedDetectable =
             hivPCRValueNonImmediate 5000
 
-        db =
-            { emptyModelIndexedDb
-                | prenatalMeasurements =
-                    Dict.singleton encounterId
-                        (RemoteData.Success { emptyPrenatalMeasurements | hivPCRTest = wrapMeasurement savedDetectable })
-            }
-
-        valueAfterTap undetectable =
-            update dummyDate SiteRwanda encounterId db (SetHIVViralLoadUndetectable undetectable) emptyModel
-                |> (\( model, _, _ ) -> model.laboratoryData.hivPCRTestForm)
+        valueAfter msgs =
+            msgs
+                |> List.foldl
+                    (\msg model ->
+                        update dummyDate SiteRwanda (toEntityUuid "encounter") emptyModelIndexedDb msg model
+                            |> (\( updated, _, _ ) -> updated)
+                    )
+                    emptyModel
+                |> .laboratoryData
+                |> .hivPCRTestForm
                 |> toHIVPCRTestValueWithDefault (Just savedDetectable)
 
         statusAndLoad value =
@@ -1511,19 +1508,24 @@ hivViralLoadUndetectableTest =
                 |> EverySet.member DiagnosisHIVDetectableViralLoadRecurrentPhase
     in
     describe "HIV PCR viral load answered undetectable"
-        [ test "first visit: Yes on a saved detectable result clears its number" <|
+        [ test "first visit: Yes on a saved detectable result saves no number" <|
             \_ ->
-                valueAfterTap True
+                valueAfter [ SetHIVViralLoadUndetectable True ]
                     |> Maybe.map statusAndLoad
                     |> Expect.equal (Just ( Just ViralLoadUndetectable, Nothing ))
-        , test "first visit: No on a saved detectable result keeps its number" <|
+        , test "first visit: Yes then No on a saved detectable result keeps its number" <|
             \_ ->
-                valueAfterTap False
+                valueAfter [ SetHIVViralLoadUndetectable True, SetHIVViralLoadUndetectable False ]
                     |> Maybe.map statusAndLoad
                     |> Expect.equal (Just ( Just ViralLoadDetectable, Just 5000 ))
-        , test "lab results: Yes on a saved detectable result clears its number" <|
+        , test "first visit: a typed number survives a mistaken Yes" <|
             \_ ->
-                setHIVViralLoadUndetectable True emptyHIVPCRResultForm
+                valueAfter [ SetHIVViralLoad "300", SetHIVViralLoadUndetectable True, SetHIVViralLoadUndetectable False ]
+                    |> Maybe.map statusAndLoad
+                    |> Expect.equal (Just ( Just ViralLoadDetectable, Just 300 ))
+        , test "lab results: a saved detectable result answered undetectable saves no number" <|
+            \_ ->
+                { emptyHIVPCRResultForm | hivViralLoadStatus = Just ViralLoadUndetectable }
                     |> toHIVPCRResultValueWithDefault (Just savedDetectable)
                     |> Maybe.map statusAndLoad
                     |> Expect.equal (Just ( Just ViralLoadUndetectable, Nothing ))

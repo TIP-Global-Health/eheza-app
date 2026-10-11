@@ -3224,7 +3224,7 @@ toHIVPCRTestValue form =
             , executionDate = form.executionDate
             , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , hivViralLoadStatus = form.hivViralLoadStatus
-            , hivViralLoad = form.hivViralLoad
+            , hivViralLoad = hivViralLoadByStatus form.hivViralLoadStatus form.hivViralLoad
             }
         )
         form.executionNote
@@ -6132,24 +6132,35 @@ hivPCRResultInputsAndTasks language setHIVViralLoadMsg setHIVViralLoadUndetectab
     )
 
 
-{-| Answers the "is the viral load undetectable" question. An undetectable load
-has no number, so any number typed or saved before is cleared.
+{-| Answers the "is the viral load undetectable" question. A number typed
+before stays on the form, so a mistaken Yes can be undone; it is not saved.
 -}
 setHIVViralLoadUndetectable :
     Bool
-    -> { a | hivViralLoadStatus : Maybe ViralLoadStatus, hivViralLoadStatusDirty : Bool, hivViralLoad : Maybe Float, hivViralLoadDirty : Bool }
-    -> { a | hivViralLoadStatus : Maybe ViralLoadStatus, hivViralLoadStatusDirty : Bool, hivViralLoad : Maybe Float, hivViralLoadDirty : Bool }
+    -> { a | hivViralLoadStatus : Maybe ViralLoadStatus, hivViralLoadStatusDirty : Bool }
+    -> { a | hivViralLoadStatus : Maybe ViralLoadStatus, hivViralLoadStatusDirty : Bool }
 setHIVViralLoadUndetectable undetectable form =
-    if undetectable then
-        { form
-            | hivViralLoadStatus = Just ViralLoadUndetectable
-            , hivViralLoadStatusDirty = True
-            , hivViralLoad = Nothing
-            , hivViralLoadDirty = True
-        }
+    let
+        status =
+            if undetectable then
+                ViralLoadUndetectable
+
+            else
+                ViralLoadDetectable
+    in
+    { form | hivViralLoadStatus = Just status, hivViralLoadStatusDirty = True }
+
+
+{-| An undetectable viral load is under 20 copies, so it is saved without a
+number, even when one was typed before the answer changed.
+-}
+hivViralLoadByStatus : Maybe ViralLoadStatus -> Maybe Float -> Maybe Float
+hivViralLoadByStatus status viralLoad =
+    if status == Just ViralLoadUndetectable then
+        Nothing
 
     else
-        { form | hivViralLoadStatus = Just ViralLoadDetectable, hivViralLoadStatusDirty = True }
+        viralLoad
 
 
 viewSyphilisTestForm :
@@ -8266,7 +8277,7 @@ toHIVPCRResultValue form =
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
             , hivViralLoadStatus = form.hivViralLoadStatus
-            , hivViralLoad = form.hivViralLoad
+            , hivViralLoad = hivViralLoadByStatus form.hivViralLoadStatus form.hivViralLoad
             }
         )
         form.executionNote

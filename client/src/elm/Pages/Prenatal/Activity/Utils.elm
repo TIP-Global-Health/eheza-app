@@ -2283,13 +2283,12 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
         -- is stored with it.
         hivDetectableViralLoadDiagnosed =
             getMeasurementValueFunc measurements.hivPCRTest
-                |> Maybe.andThen
+                |> Maybe.map
                     (\value ->
-                        if value.hivViralLoadStatus == Just ViralLoadUndetectable then
-                            Nothing
-
-                        else
-                            Maybe.map (\viralLoad -> viralLoad >= 20) value.hivViralLoad
+                        (value.hivViralLoadStatus /= Just ViralLoadUndetectable)
+                            && (Maybe.map (\viralLoad -> viralLoad >= 20) value.hivViralLoad
+                                    |> Maybe.withDefault False
+                               )
                     )
                 |> Maybe.withDefault False
 
