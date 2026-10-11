@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: b09d0018-ac85-4b01-9197-55bb1331d51d
-  modified: 2026-10-10T12:48:48.185Z
+  modified: 2026-10-11T09:15:35.494Z
 ---
 
 Elm 0.19.3 was released 2026-10-02. It has no language changes; the work is compiler internals (precise name types, Graph/MinimalCycle import-cycle errors, Bytes-based caches, ThreadSafe.Fork). Measured on `client/` on 2026-10-10. **PR #2323** (issue #2322) carries the upgrade plus mangling of `Main.js`:
@@ -17,6 +17,6 @@ Elm 0.19.3 was released 2026-10-02. It has no language changes; the work is comp
 
 **How to apply:** the bump is a lockstep cut, per [[elm-version-must-match-compiler-exactly]]. That means 4 `elm.json` files, `ci-scripts/install_client.sh`, `test_elm.sh`, `install_elm_review.sh`, `.ddev/web-build/Dockerfile`, `.gitpod.yml`, `client/package.json` and the host-global elm. 0.19.3 still blocks `--optimize` on `Debug.todo` ([[client-cannot-use-elm-optimize]]).
 
-**CI does not exercise the mangled bundle.** `install_client.sh` runs `gulp build` (unminified) unless `DEPLOY` is set, so e2e tests the dev bundle. The mangled `dist/` was checked by hand: it boots to Device Status with no console errors. Until #2323 merges, verify with a scratchpad 0.19.3 `elm` and `elm-test@0.19.3-0`; the host-global stays 0.19.2 for develop.
+**CI does not exercise the mangled bundle.** `install_client.sh` runs `gulp build` (unminified) unless `DEPLOY` is set, so e2e tests the dev bundle. The mangled `dist/` was checked by hand. On 2026-10-11 the full local Playwright suite ran against it, 65/65 passing. To do that, copy `Config.elm` over `Config.Deploy.elm` (or the build targets the prod backend), run `gulp publish`, and serve `dist/` with `python3 -m http.server 3000` in the container. Review round 1 added `Main.js.map` (5.1 MB, gulp-sourcemaps, `includeContent: false`) plus Rollbar `source_map_enabled`, so mangled traces still name Elm functions. At merge time, update [[elm-version-must-match-compiler-exactly]] (it still says ALWAYS 0.19.2). Until #2323 merges, verify with a scratchpad 0.19.3 `elm` and `elm-test@0.19.3-0`; the host-global stays 0.19.2 for develop.
 
 **DDEV verified 2026-10-10** by borrowing the main tree: the image rebuilds to 0.19.3 with `ddev stop && ddev start --skip-hooks` (DB kept), `ddev gulp` serves and runs the 0.19.3 bundle, and `gulp publish` in the container emits the mangled `dist/Main.js` (3.46 MB / 789 KB gz), which boots. The `ddev gulp publish` wrapper first `git pull`s `eheza-infra` over SSH, so it needs `ddev auth ssh` first.
