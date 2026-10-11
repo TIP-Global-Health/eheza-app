@@ -3976,11 +3976,7 @@ translateDashboardLabel label =
             }
 
         Dashboard.Calcium ->
-            { english = "Calcium"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
-            }
+            translationSet (PrenatalActivity PrenatalCalcium)
 
         Dashboard.CompleteAncAttendanceRate ->
             { english = "Complete ANC Attendance Rate"

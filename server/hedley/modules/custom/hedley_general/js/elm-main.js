@@ -12875,6 +12875,9 @@ var $author$project$Translate$ImmunisationHPV = {$: 'ImmunisationHPV'};
 var $author$project$Translate$ImmunisationIPV = {$: 'ImmunisationIPV'};
 var $author$project$Translate$ImmunisationOPV = {$: 'ImmunisationOPV'};
 var $author$project$Translate$TreatmentReview = {$: 'TreatmentReview'};
+var $author$project$Translate$PrenatalActivity = function (a) {
+	return {$: 'PrenatalActivity', a: a};
+};
 var $author$project$Translate$translateMonthYY = F3(
 	function (month, year, _short) {
 		return function (set) {
@@ -12932,160 +12935,6 @@ var $author$project$Translate$PregnancyOutcomeLabel = {$: 'PregnancyOutcomeLabel
 var $author$project$Translate$MedicationDistribution = {$: 'MedicationDistribution'};
 var $author$project$Translate$StandardPediatricVisit = {$: 'StandardPediatricVisit'};
 var $author$project$Translate$UrineDipstickTestResult = {$: 'UrineDipstickTestResult'};
-var $author$project$Translate$translateDashboardLabel = function (label) {
-	switch (label.$) {
-		case 'AlertBirthsMissingBirthWeight':
-			var count = label.a;
-			return {
-				somali: $elm$core$Maybe$Nothing,
-				english: $elm$core$String$fromInt(count) + ' births missing birth weight in last 7 days',
-				kirundi: $elm$core$Maybe$Nothing,
-				kinyarwanda: $elm$core$Maybe$Nothing
-			};
-		case 'AlertPretermRateExceeded':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Preterm rate exceeded 15% this month', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'AlertSitesWithDelayedBirthWeightRecording':
-			var count = label.a;
-			return {
-				somali: $elm$core$Maybe$Nothing,
-				english: $elm$core$String$fromInt(count) + ' sites with delayed birth weight recording',
-				kirundi: $elm$core$Maybe$Nothing,
-				kinyarwanda: $elm$core$Maybe$Nothing
-			};
-		case 'AlertSitesWithPretermRate':
-			var count = label.a;
-			return {
-				somali: $elm$core$Maybe$Nothing,
-				english: $elm$core$String$fromInt(count) + ' sites with preterm rate >15%',
-				kirundi: $elm$core$Maybe$Nothing,
-				kinyarwanda: $elm$core$Maybe$Nothing
-			};
-		case 'AncMissRate':
-			return {somali: $elm$core$Maybe$Nothing, english: 'ANC Miss Rate (≥1 Missed Visit)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'Aspirin':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Aspirin', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'Average':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Avg.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'Calcium':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Calcium', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'CompleteAncAttendanceRate':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Complete ANC Attendance Rate', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'CriticalAlerts':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Critical Alerts', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'CurrentPerformance':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Current Performance', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'DashboardThree':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Dashboard III', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'DashboardTitleFacility':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Facility Performance Dashboard', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'DashboardTitleProgram':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Program Monitoring Dashboard', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'DashboardTwo':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Dashboard II', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'Delta':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Δ', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'EarlyAncBookingRate':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Early ANC Booking Rate', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'EarlyAncCoverageFirstTrimester':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Early ANC Coverage >80 (1st Trimester)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'EarlyUltrasoundCoverage':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Early Ultrasound Coverage (<20 W)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'Export':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Export', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'FilterLabel':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Filter', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'FromPreviousMonth':
-			return {somali: $elm$core$Maybe$Nothing, english: 'from prev. month', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'GraduatedMotherChildPairs':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Graduated Mother–Child Pairs', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'HealthyStart':
-			return {somali: $elm$core$Maybe$Nothing, english: 'HealthyStart', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'HighRiskPregnancyRate':
-			return {somali: $elm$core$Maybe$Nothing, english: 'High-Risk Pregnancy Rate', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'IndicatorColumn':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Indicator', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'Indicators':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Indicators', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'InstitutionalTarget':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Institutional Target', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'InterventionSite':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Intervention Site', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'InterventionSiteAverage':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Int. Site Average', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'LogOut':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Log out', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'LostToFollowUp':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Lost to Follow-Up (ANC–PNC–Child)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'MedianGaAtFirstAnc':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Median GA at First ANC', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'MonthByMonthDetail':
-			return {somali: $elm$core$Maybe$Nothing, english: 'month-by-month detail', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'NoActiveAlerts':
-			return {somali: $elm$core$Maybe$Nothing, english: 'No active alerts.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'OpenMonthByMonthDetailFor':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Open month-by-month detail for', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'Performance':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Perf.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'PostpartumHemorrhageRate':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Postpartum Hemorrhage Rate', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'PregnanciesFirstTrimester':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Pregnancies 1st Trimester', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'PregnanciesSecondTrimester':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Pregnancies 2nd Trimester', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'PregnanciesThirdTrimester':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Pregnancies 3rd Trimester', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'Print':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Print', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'ProgramLevel':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Program-Level', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'ProgramTarget':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Program Target', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'ProgramTargetShort':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Prog. Target', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'ProphylaxisCoverage':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Prophylaxis Coverage', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'Return':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Return', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'SelectKpiToPlot':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Select indicator to plot', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'SitesWithDelayedBirthWeightRecording':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Sites with Delayed/Missing Birth Weight Recording (>5%)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'SitesWithElevatedPretermOrSgaBirths':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Sites with Elevated Preterm or SGA Births (>15%)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'SitesWithInadequateGwg':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Sites with Inadequate GWG (>10%)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'SitesWithPoorChildGrowthOutcomes':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Sites with Poor Child Growth Outcomes (>10%)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'Sqlns':
-			return {somali: $elm$core$Maybe$Nothing, english: 'SQLNS', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'SupplementCoverage':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Supplement Coverage', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'Target':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Targ.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'Time':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Time', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'TotalChildrenOnRoutineCare':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Total Children on Routine Care', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'TotalDeliveriesInstitutional':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Total Deliveries (Institutional)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'TotalDeliveriesProgram':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Total Deliveries (Program)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'TrendChartDescriptionFacility':
-			var kpi = label.a;
-			var year = label.b;
-			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month for ' + (year + ', showing current performance, institutional target, and inter-site average.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'TrendChartDescriptionProgram':
-			var kpi = label.a;
-			var year = label.b;
-			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month for ' + (year + ', showing current performance and program target.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'Trends':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Trends', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		case 'ValueColumn':
-			return {somali: $elm$core$Maybe$Nothing, english: 'Value', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-		default:
-			return {somali: $elm$core$Maybe$Nothing, english: 'Women Currently in ANC Care', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-	}
-};
 var $author$project$Translate$RandomBloodSugarTestResult = {$: 'RandomBloodSugarTestResult'};
 var $author$project$Translate$IncidenceByYearOneVisitOrMore = {$: 'IncidenceByYearOneVisitOrMore'};
 var $author$project$Translate$IncidenceByMonthOneVisitOrMore = {$: 'IncidenceByMonthOneVisitOrMore'};
@@ -15252,6 +15101,161 @@ var $author$project$Translate$translationSet = function (transId) {
 			default:
 				return {somali: $elm$core$Maybe$Nothing, english: 'Zone', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		}
+	}
+};
+var $author$project$Translate$translateDashboardLabel = function (label) {
+	switch (label.$) {
+		case 'AlertBirthsMissingBirthWeight':
+			var count = label.a;
+			return {
+				somali: $elm$core$Maybe$Nothing,
+				english: $elm$core$String$fromInt(count) + ' births missing birth weight in last 7 days',
+				kirundi: $elm$core$Maybe$Nothing,
+				kinyarwanda: $elm$core$Maybe$Nothing
+			};
+		case 'AlertPretermRateExceeded':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Preterm rate exceeded 15% this month', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'AlertSitesWithDelayedBirthWeightRecording':
+			var count = label.a;
+			return {
+				somali: $elm$core$Maybe$Nothing,
+				english: $elm$core$String$fromInt(count) + ' sites with delayed birth weight recording',
+				kirundi: $elm$core$Maybe$Nothing,
+				kinyarwanda: $elm$core$Maybe$Nothing
+			};
+		case 'AlertSitesWithPretermRate':
+			var count = label.a;
+			return {
+				somali: $elm$core$Maybe$Nothing,
+				english: $elm$core$String$fromInt(count) + ' sites with preterm rate >15%',
+				kirundi: $elm$core$Maybe$Nothing,
+				kinyarwanda: $elm$core$Maybe$Nothing
+			};
+		case 'AncMissRate':
+			return {somali: $elm$core$Maybe$Nothing, english: 'ANC Miss Rate (≥1 Missed Visit)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Aspirin':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Aspirin', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Average':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Avg.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Calcium':
+			return $author$project$Translate$translationSet(
+				$author$project$Translate$PrenatalActivity($author$project$Backend$Completion$Model$PrenatalCalcium));
+		case 'CompleteAncAttendanceRate':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Complete ANC Attendance Rate', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'CriticalAlerts':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Critical Alerts', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'CurrentPerformance':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Current Performance', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'DashboardThree':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Dashboard III', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'DashboardTitleFacility':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Facility Performance Dashboard', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'DashboardTitleProgram':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Program Monitoring Dashboard', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'DashboardTwo':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Dashboard II', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Delta':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Δ', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'EarlyAncBookingRate':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Early ANC Booking Rate', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'EarlyAncCoverageFirstTrimester':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Early ANC Coverage >80 (1st Trimester)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'EarlyUltrasoundCoverage':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Early Ultrasound Coverage (<20 W)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Export':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Export', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'FilterLabel':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Filter', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'FromPreviousMonth':
+			return {somali: $elm$core$Maybe$Nothing, english: 'from prev. month', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'GraduatedMotherChildPairs':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Graduated Mother–Child Pairs', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'HealthyStart':
+			return {somali: $elm$core$Maybe$Nothing, english: 'HealthyStart', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'HighRiskPregnancyRate':
+			return {somali: $elm$core$Maybe$Nothing, english: 'High-Risk Pregnancy Rate', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'IndicatorColumn':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Indicator', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Indicators':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Indicators', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'InstitutionalTarget':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Institutional Target', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'InterventionSite':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Intervention Site', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'InterventionSiteAverage':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Int. Site Average', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'LogOut':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Log out', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'LostToFollowUp':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Lost to Follow-Up (ANC–PNC–Child)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'MedianGaAtFirstAnc':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Median GA at First ANC', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'MonthByMonthDetail':
+			return {somali: $elm$core$Maybe$Nothing, english: 'month-by-month detail', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'NoActiveAlerts':
+			return {somali: $elm$core$Maybe$Nothing, english: 'No active alerts.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'OpenMonthByMonthDetailFor':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Open month-by-month detail for', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Performance':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Perf.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'PostpartumHemorrhageRate':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Postpartum Hemorrhage Rate', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'PregnanciesFirstTrimester':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Pregnancies 1st Trimester', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'PregnanciesSecondTrimester':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Pregnancies 2nd Trimester', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'PregnanciesThirdTrimester':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Pregnancies 3rd Trimester', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Print':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Print', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'ProgramLevel':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Program-Level', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'ProgramTarget':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Program Target', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'ProgramTargetShort':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Prog. Target', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'ProphylaxisCoverage':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Prophylaxis Coverage', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Return':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Return', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'SelectKpiToPlot':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Select indicator to plot', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'SitesWithDelayedBirthWeightRecording':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Sites with Delayed/Missing Birth Weight Recording (>5%)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'SitesWithElevatedPretermOrSgaBirths':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Sites with Elevated Preterm or SGA Births (>15%)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'SitesWithInadequateGwg':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Sites with Inadequate GWG (>10%)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'SitesWithPoorChildGrowthOutcomes':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Sites with Poor Child Growth Outcomes (>10%)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Sqlns':
+			return {somali: $elm$core$Maybe$Nothing, english: 'SQLNS', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'SupplementCoverage':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Supplement Coverage', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Target':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Targ.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Time':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Time', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TotalChildrenOnRoutineCare':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Total Children on Routine Care', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TotalDeliveriesInstitutional':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Total Deliveries (Institutional)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TotalDeliveriesProgram':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Total Deliveries (Program)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TrendChartDescriptionFacility':
+			var kpi = label.a;
+			var year = label.b;
+			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month for ' + (year + ', showing current performance, institutional target, and inter-site average.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TrendChartDescriptionProgram':
+			var kpi = label.a;
+			var year = label.b;
+			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month for ' + (year + ', showing current performance and program target.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Trends':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Trends', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'ValueColumn':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Value', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		default:
+			return {somali: $elm$core$Maybe$Nothing, english: 'Women Currently in ANC Care', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 	}
 };
 var $author$project$Translate$translate = F2(
@@ -22368,9 +22372,6 @@ var $author$project$Pages$Completion$Utils$reportTypeToString = function (report
 		default:
 			return 'well-child';
 	}
-};
-var $author$project$Translate$PrenatalActivity = function (a) {
-	return {$: 'PrenatalActivity', a: a};
 };
 var $author$project$Pages$Completion$Utils$allPrenatalActivities = _List_fromArray(
 	[$author$project$Backend$Completion$Model$PrenatalAppointmentConfirmation, $author$project$Backend$Completion$Model$PrenatalBirthPlan, $author$project$Backend$Completion$Model$PrenatalBloodGprsTest, $author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult, $author$project$Backend$Completion$Model$PrenatalBreastExam, $author$project$Backend$Completion$Model$PrenatalBreastfeeding, $author$project$Backend$Completion$Model$PrenatalCalcium, $author$project$Backend$Completion$Model$PrenatalCorePhysicalExam, $author$project$Backend$Completion$Model$PrenatalDangerSigns, $author$project$Backend$Completion$Model$PrenatalFamilyPlanning, $author$project$Backend$Completion$Model$PrenatalFefol, $author$project$Backend$Completion$Model$PrenatalFolate, $author$project$Backend$Completion$Model$PrenatalFollowUp, $author$project$Backend$Completion$Model$PrenatalGuExam, $author$project$Backend$Completion$Model$PrenatalHealthEducation, $author$project$Backend$Completion$Model$PrenatalHemoglobinTest, $author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult, $author$project$Backend$Completion$Model$PrenatalHepatitisBTest, $author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult, $author$project$Backend$Completion$Model$PrenatalHIVPCRTest, $author$project$Backend$Completion$Model$PrenatalHIVPCRTestResult, $author$project$Backend$Completion$Model$PrenatalHIVTest, $author$project$Backend$Completion$Model$PrenatalHIVTestResult, $author$project$Backend$Completion$Model$PrenatalIron, $author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod, $author$project$Backend$Completion$Model$PrenatalMalariaTest, $author$project$Backend$Completion$Model$PrenatalMalariaTestResult, $author$project$Backend$Completion$Model$PrenatalMebendazole, $author$project$Backend$Completion$Model$PrenatalMedicalHistory, $author$project$Backend$Completion$Model$PrenatalMedication, $author$project$Backend$Completion$Model$PrenatalMedicationDistribution, $author$project$Backend$Completion$Model$PrenatalMentalHealth, $author$project$Backend$Completion$Model$PrenatalMMS, $author$project$Backend$Completion$Model$PrenatalNutrition, $author$project$Backend$Completion$Model$PrenatalObstetricalExam, $author$project$Backend$Completion$Model$PrenatalObstetricHistory, $author$project$Backend$Completion$Model$PrenatalObstetricHistoryStep2, $author$project$Backend$Completion$Model$PrenatalOutsideCare, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTest, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTestResult, $author$project$Backend$Completion$Model$PrenatalPhoto, $author$project$Backend$Completion$Model$PrenatalPostpartumTreatmentReview, $author$project$Backend$Completion$Model$PrenatalPregnancyOutcome, $author$project$Backend$Completion$Model$PrenatalPregnancyTesting, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTest, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTestResult, $author$project$Backend$Completion$Model$PrenatalResource, $author$project$Backend$Completion$Model$PrenatalSendToHC, $author$project$Backend$Completion$Model$PrenatalSocialHistory, $author$project$Backend$Completion$Model$PrenatalSpecialityCare, $author$project$Backend$Completion$Model$PrenatalSymptomReview, $author$project$Backend$Completion$Model$PrenatalSyphilisTest, $author$project$Backend$Completion$Model$PrenatalSyphilisTestResult, $author$project$Backend$Completion$Model$PrenatalTetanusImmunisation, $author$project$Backend$Completion$Model$PrenatalTreatmentReview, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTest, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult, $author$project$Backend$Completion$Model$PrenatalVitals, $author$project$Backend$Completion$Model$PrenatalVitalsRecheck]);
