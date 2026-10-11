@@ -74,4 +74,6 @@ if ($dry_run) {
   return;
 }
 
-drush_print("Done! Marked $count as not taken, and replaced $warnings_replaced microcephaly warnings.");
+// Dashboards keep counting the replaced warnings until statistics are
+// recalculated.
+drush_print("Done! Marked $count as not taken, and replaced $warnings_replaced microcephaly warnings. Now run profiles/hedley/modules/custom/hedley_stats/scripts/recalculate-stats.php.");
