@@ -52,7 +52,7 @@ the directory.
 
 **5. Ship.** `gh issue create` (mechanism / impact / fix) → commit `Fixes #N` with the
 `Co-Authored-By` trailer and **no `[ci skip]`** → `git push -u` → `gh pr create --base develop`.
-Then hand the user `/code-review medium <branch>` — always. Watch CI in the background:
+Then run the medium review yourself — `Skill({skill: "code-review", args: "medium <branch>"})` — always. Watch CI in the background:
 `--watch` exits after the lint/unit tier, before the gated e2e and simpletest jobs spawn, so
 re-check afterwards.
 
