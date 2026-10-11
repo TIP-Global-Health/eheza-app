@@ -195,3 +195,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Rule:** measurement node types carry the module's prefix (`nutrition_height`, not
   `height`), so guessed names match nothing. Use the module's own query helper (`h.nutrition.queryBackendNodes(name)`) or
   read the types from the e2e spec for that encounter.
+
+## Overlaying from a merge base with a stale local develop
+
+- **Symptom:** the overlay copied `package.json`, `package-lock.json`, `gulpfile.js` and `elm.json` along with the PR's five Elm files, and overwrote a lock file the user had modified locally.
+- **Wrong conclusion:** `git diff $(git merge-base develop $b) $b` lists the PR's files.
+- **Rule:** local develop can be behind origin, so the merge base drags in commits already on origin/develop. Take the file list from `gh pr diff <n> --name-only`, and check `git status --short -- $files` is empty before checking out over them.
+
+## A scripted step after a helper that already finished the flow
+
+- **Symptom:** prenatal Next Steps ended on the main menu, and the script's own "Pause Encounter" click then waited 10 s and failed, leaving a dead tail on the video.
+- **Wrong conclusion:** the pause did not happen.
+- **Rule:** read what a helper does at its end before adding a step after it. `completeNextSteps` presses Pause Encounter on the Wait task itself.

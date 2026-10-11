@@ -65,7 +65,8 @@ are not tested here: leave them out of the plan and the report.
 
    ```bash
    b=origin/<branch>; git fetch -q origin "${b#origin/}"
-   files=$(git diff --name-only "$(git merge-base develop $b)" $b -- client)
+   files=$(gh pr diff <n> --name-only | grep '^client/')
+   git status --short -- $files    # must print nothing: never overwrite local changes
    git checkout $b -- $files && git reset -q -- $files
    ```
 

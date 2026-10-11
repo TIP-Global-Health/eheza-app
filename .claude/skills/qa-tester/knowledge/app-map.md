@@ -147,6 +147,12 @@ flag simply does not appear.
   `.form-input.number.beverages`, smoking Yes reveals `.form-input.number.cigarettes`.
 - Labs history: on a subsequent prenatal encounter, Laboratory shows only the History task
   while earlier labs are pending; each row's UPDATE opens `#prenatal-labs-history/...`.
+- Prenatal HIV PCR is offered only at a visit after one where HIV was found positive (or known
+  positive). Its question "Are there less than 20 copies/mm3?" is `.form-input.yes-no.hiv-level-undetectable`;
+  No shows the input `.form-input.measurement.hiv-viral-load`. Partner HIV, HIV and HIV PCR tabs share
+  one icon, so pick tabs by text. A sample sent to the Lab makes Next Steps end with Wait → Pause
+  Encounter, back on the main menu.
+- Labs history rows are `.history-entry` (name, date, and an `.action` reading UPDATE).
 - A second encounter on the same day is impossible: backdate the first with
   `h.common.backdateEncounter(name, type, days)`, then sync before starting the next.
 - Well Child Head Circumference: its tab shows only for children under 36 months. Under the
@@ -177,8 +183,9 @@ flag simply does not appear.
 
 ## Case Management
 
-- Nurse panes: All / Contact Tracing / ANC Labs / NCD Labs; the forward icon on an ANC or NCD
-  Labs entry opens the recurrent Lab Results page. The lab technician sees ANC Labs only,
+- Nurse panes: All / Contact Tracing / ANC Labs / NCD Labs; the forward icon on an ANC Labs entry
+  opens the recurrent encounter page, whose Lab Results card is `div.card div.image` holding
+  `.icon-task-laboratory`. The lab technician sees ANC Labs only,
   one row per order (`<person> | ORDERED | ANC Lab Results | →`), opening
   `#prenatal-recurrent-activity/<uuid>/laboratory`: Partner HIV / HIV / Syphilis - RPR /
   Hepatitis B / Malaria / Blood Group / Urine Dipstick / Hemoglobin / Random Blood Sugar.
