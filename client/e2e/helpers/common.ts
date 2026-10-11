@@ -672,8 +672,8 @@ export async function expectMeasurementsOutOfRangeRefused(
   // They are named in the order the form asks for them. Otherwise the nurse
   // reads them in a different order to the fields in front of her.
   if (measurements.length > 1 && measurements.every(m => m.saysInWarning)) {
-    const said = await popup.locator('.popup-action p').allTextContents();
-    expect(said.length, 'the warning says one line per measurement named').toBe(measurements.length);
+    const said = await popup.locator('.popup-action .out-of-range-measurement').allTextContents();
+    expect(said.length, 'the warning says one block per measurement named').toBe(measurements.length);
     measurements.forEach((m, i) => {
       expect(said[i], `line ${i + 1} of the warning is about ${m.inputId}`)
         .toContain(m.saysInWarning as string);
@@ -712,6 +712,81 @@ export async function isGlucoseInput(
   return input.evaluate(
     el => el.parentElement?.classList.contains('sugar-count') ?? false,
   );
+}
+
+
+/**
+ * The hemoglobin count field, told apart from the other numeric result inputs
+ * by the class its wrapper carries.
+ */
+export async function isHemoglobinInput(
+  input: import('@playwright/test').Locator,
+): Promise<boolean> {
+  return input.evaluate(
+    el => el.parentElement?.classList.contains('hemoglobin-count') ?? false,
+  );
+}
+
+
+/**
+ * Open one of the encounter page's activity tabs. Activities move from
+ * "pending" to "completed" as they are saved, and each tab lists only its own,
+ * so a card can only be found under the tab it currently belongs to.
+ */
+export async function openEncounterTab(
+  page: Page,
+  tab: 'pending' | 'completed',
+): Promise<void> {
+  await click(page.locator(`#${tab}-tab`), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
+
+/**
+ * Assert an activity is listed under one of the encounter page's tabs, and
+ * not under the other. Checking both sides is what makes the assertion mean
+ * something: a tab that failed to switch leaves the other tab's cards on
+ * screen, and a one sided check passes on them.
+ */
+export async function expectActivityInTab(
+  page: Page,
+  activityIcon: string,
+  tab: 'pending' | 'completed',
+  message: string,
+): Promise<void> {
+  const other = tab === 'pending' ? 'completed' : 'pending';
+  const card = page.locator(`.icon-task-${activityIcon}`);
+
+  await openEncounterTab(page, tab);
+  await expect(card, message).toBeVisible({ timeout: 10000 });
+
+  await openEncounterTab(page, other);
+  await expect(card, `${message} - and not under ${other}`).toBeHidden({
+    timeout: 10000,
+  });
+
+  await openEncounterTab(page, tab);
+}
+
+
+/**
+ * Assert an activity card is offered in neither tab of the encounter page.
+ */
+export async function expectActivityAbsent(
+  page: Page,
+  activityIcon: string,
+  message: string,
+): Promise<void> {
+  const card = page.locator(`.icon-task-${activityIcon}`);
+
+  for (const tab of ['pending', 'completed'] as const) {
+    await openEncounterTab(page, tab);
+    await expect(card, `${message} - and not under ${tab}`).toBeHidden({
+      timeout: 10000,
+    });
+  }
+
+  await openEncounterTab(page, 'pending');
 }
 
 

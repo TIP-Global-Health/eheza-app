@@ -40,6 +40,9 @@ elm-format client/src/                   # Auto-format
 elm-test                                 # Run Elm unit tests (from client/)
 elm-review                               # Elm linting (from client/)
 
+# Comments: new ones within 30 words, tests exempt
+python3 ci-scripts/check_comments.py --base origin/develop
+
 # PHP
 REVIEW_STANDARD="Drupal" ci-scripts/test_coder.sh
 REVIEW_STANDARD="DrupalPractice" ci-scripts/test_coder.sh
@@ -178,7 +181,7 @@ A helper that exists only to be called twice in one function belongs in that fun
 
 - Comments describe current behavior only — no change history, no issue numbers, no references to how the code used to work.
 - Plain language, in terms already used in the codebase. No invented jargon or pattern names.
-- Keep comments short. When more explanation is needed, use simple English and a small example.
+- Keep comments, and paragraphs in `.md` files, to 30 words; CI rejects longer ones a PR adds, except in tests. Use simple English, with a small example where it helps.
 
 ### Issues and Pull Requests
 

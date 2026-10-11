@@ -27,6 +27,7 @@ import Backend.Measurement.Model
         , PrenatalSymptomQuestion(..)
         , ProteinValue(..)
         , RandomBloodSugarTestValue
+        , RecommendedTreatmentSign(..)
         , Rhesus(..)
         , SyphilisTestValue
         , TestExecutionNote(..)
@@ -46,18 +47,22 @@ import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (RangedMeasurement(..))
+import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault)
 import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
 import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
-import Pages.Prenatal.Model exposing (AssembledData)
-import Pages.Prenatal.Utils exposing (resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult)
+import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
+import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), emptyHealthEducationForm)
+import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedPreviouslyAnyOf, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
+import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import TestFixtures
 import Time
 import Translate
+import Translate.Model exposing (Language(..))
 
 
 
@@ -457,6 +462,20 @@ withMalariaTest result measurements =
     { measurements | malariaTest = wrapMeasurement (malariaTestValueWith result) }
 
 
+withCoartem : PrenatalMeasurements -> PrenatalMeasurements
+withCoartem measurements =
+    { measurements
+        | medicationDistribution =
+            wrapMeasurement
+                { distributionSigns = EverySet.empty
+                , nonAdministrationSigns = EverySet.empty
+                , recommendedTreatmentSigns = Just (EverySet.singleton TreatmentCoartem)
+                , avoidingGuidanceReason = Nothing
+                , reinforceTreatmentSigns = Nothing
+                }
+    }
+
+
 
 -- NON-IMMEDIATE-RESULT LAB VALUE BUILDERS / SETTERS
 --
@@ -572,17 +591,39 @@ pending, since only the nurse answers the follow up questions, and the nurse's
 follow ups replace that marker with the answers.
 -}
 withPartnerHIVTestByLabTech : TestResult -> EverySet PrenatalHIVSign -> PrenatalMeasurements -> PrenatalMeasurements
-withPartnerHIVTestByLabTech result hivSigns measurements =
+withPartnerHIVTestByLabTech result hivSigns =
+    withPartnerHIVTest TestNoteRunConfirmedByLabTech deferredResultPrerequisites (Just result) (Just hivSigns)
+
+
+withPartnerHIVTest :
+    TestExecutionNote
+    -> Maybe (EverySet TestPrerequisite)
+    -> Maybe TestResult
+    -> Maybe (EverySet PrenatalHIVSign)
+    -> PrenatalMeasurements
+    -> PrenatalMeasurements
+withPartnerHIVTest executionNote prerequisites result hivSigns measurements =
     { measurements
         | partnerHIVTest =
             wrapMeasurement
-                { executionNote = TestNoteRunConfirmedByLabTech
+                { executionNote = executionNote
                 , executionDate = Just dummyDate
-                , testPrerequisites = deferredResultPrerequisites
-                , testResult = Just result
-                , hivSigns = Just hivSigns
+                , testPrerequisites = prerequisites
+                , testResult = result
+                , hivSigns = hivSigns
                 }
     }
+
+
+{-| Patient's HIV test, negative, carrying the given partner signs.
+-}
+withHIVTestNegativeWithSigns : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> EverySet PrenatalHIVSign -> PrenatalMeasurements -> PrenatalMeasurements
+withHIVTestNegativeWithSigns executionNote prerequisites hivSigns measurements =
+    let
+        value =
+            hivTestValueCustom executionNote prerequisites TestNegative
+    in
+    { measurements | hivTest = wrapMeasurement { value | hivSigns = Just hivSigns } }
 
 
 withHIVTestNegative : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> PrenatalMeasurements -> PrenatalMeasurements
@@ -594,28 +635,16 @@ withHIVTestNegative executionNote prerequisites measurements =
 not taking ARVs.
 -}
 withHIVTestPartnerPositiveSigns : TestExecutionNote -> Maybe (EverySet TestPrerequisite) -> PrenatalMeasurements -> PrenatalMeasurements
-withHIVTestPartnerPositiveSigns executionNote prerequisites measurements =
-    let
-        value =
-            hivTestValueCustom executionNote prerequisites TestNegative
-    in
-    { measurements
-        | hivTest = wrapMeasurement { value | hivSigns = Just (EverySet.singleton PartnerHIVPositive) }
-    }
+withHIVTestPartnerPositiveSigns executionNote prerequisites =
+    withHIVTestNegativeWithSigns executionNote prerequisites (EverySet.singleton PartnerHIVPositive)
 
 
 {-| Patient's HIV test answered as known as positive, still carrying the
 negative result and the partner signs of the test that answer replaced.
 -}
 withHIVTestKnownAsPositiveCarryingSigns : PrenatalMeasurements -> PrenatalMeasurements
-withHIVTestKnownAsPositiveCarryingSigns measurements =
-    let
-        value =
-            hivTestValueCustom TestNoteKnownAsPositive immediateResultPrerequisites TestNegative
-    in
-    { measurements
-        | hivTest = wrapMeasurement { value | hivSigns = Just (EverySet.singleton PartnerHIVPositive) }
-    }
+withHIVTestKnownAsPositiveCarryingSigns =
+    withHIVTestNegativeWithSigns TestNoteKnownAsPositive immediateResultPrerequisites (EverySet.singleton PartnerHIVPositive)
 
 
 {-| Hemoglobin test, run today with the given count, immediate result. The
@@ -838,6 +867,26 @@ diagnoseNurse measurements =
     generatePrenatalDiagnosesForNurse currentDate (testAssembled measurements)
 
 
+{-| Like `diagnoseNurse`, after one earlier nurse encounter, four weeks back,
+holding the given diagnoses and measurements.
+-}
+diagnoseNurseAfter : List PrenatalDiagnosis -> PrenatalMeasurements -> PrenatalMeasurements -> EverySet PrenatalDiagnosis
+diagnoseNurseAfter previousDiagnoses previousMeasurements measurements =
+    let
+        assembled =
+            testAssembled measurements
+
+        previousEncounter =
+            { startDate = Date.add Date.Weeks -4 currentDate
+            , diagnoses = EverySet.fromList previousDiagnoses
+            , pastDiagnoses = EverySet.empty
+            , measurements = previousMeasurements
+            }
+    in
+    generatePrenatalDiagnosesForNurse currentDate
+        { assembled | nursePreviousEncountersData = [ previousEncounter ] }
+
+
 {-| The four lab-driven disease diagnoses under test, in their plain
 initial-phase form.
 -}
@@ -975,6 +1024,32 @@ generatePrenatalDiagnosesForNurseAnemiaTest =
 
 generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest : Test
 generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest =
+    let
+        -- RDT positive and Hb 9: malaria with mild to moderate anemia.
+        currentMalariaWithAnemia =
+            emptyPrenatalMeasurements
+                |> withMalariaTest TestPositive
+                |> withHemoglobin 9
+
+        -- Every malaria diagnosis, so a second one firing alongside shows up.
+        malariaVariants =
+            EverySet.toList
+                >> List.filter
+                    (\diagnosis ->
+                        List.member diagnosis
+                            [ DiagnosisMalariaInitialPhase
+                            , DiagnosisMalariaRecurrentPhase
+                            , DiagnosisMalariaMedicatedContinuedInitialPhase
+                            , DiagnosisMalariaMedicatedContinuedRecurrentPhase
+                            , DiagnosisMalariaWithAnemiaInitialPhase
+                            , DiagnosisMalariaWithAnemiaRecurrentPhase
+                            , DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
+                            , DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
+                            , DiagnosisMalariaWithSevereAnemiaInitialPhase
+                            , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+                            ]
+                    )
+    in
     describe "generatePrenatalDiagnosesForNurse - malaria combined with anemia"
         [ test "malaria RDT positive + Hb 9 (7..<11) -> DiagnosisMalariaWithAnemiaInitialPhase present" <|
             \_ ->
@@ -992,6 +1067,40 @@ generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest =
                     |> diagnoseNurse
                     |> EverySet.member DiagnosisMalariaWithSevereAnemiaInitialPhase
                     |> Expect.equal True
+        , test "after a treated malaria with severe anemia, Hb 9 -> the medicated-continued diagnosis only" <|
+            \_ ->
+                currentMalariaWithAnemia
+                    |> diagnoseNurseAfter [ DiagnosisMalariaWithSevereAnemiaInitialPhase ] (withCoartem emptyPrenatalMeasurements)
+                    |> malariaVariants
+                    |> Expect.equal [ DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ]
+        , test "after a treated malaria with severe anemia, Hb 9 at a recurrent phase -> the medicated-continued diagnosis only" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withMalariaTestNonImmediate
+                    |> withHemoglobinNonImmediate 9
+                    |> diagnoseNurseAfter [ DiagnosisMalariaWithSevereAnemiaRecurrentPhase ] (withCoartem emptyPrenatalMeasurements)
+                    |> malariaVariants
+                    |> Expect.equal [ DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ]
+        , test "after a treated malaria with anemia, Hb 9 -> the medicated-continued diagnosis only" <|
+            \_ ->
+                currentMalariaWithAnemia
+                    |> diagnoseNurseAfter [ DiagnosisMalariaWithAnemiaInitialPhase ] (withCoartem emptyPrenatalMeasurements)
+                    |> malariaVariants
+                    |> Expect.equal [ DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ]
+        , test "after an untreated malaria with severe anemia, Hb 9 -> a new episode" <|
+            \_ ->
+                currentMalariaWithAnemia
+                    |> diagnoseNurseAfter [ DiagnosisMalariaWithSevereAnemiaInitialPhase ] emptyPrenatalMeasurements
+                    |> malariaVariants
+                    |> Expect.equal [ DiagnosisMalariaWithAnemiaInitialPhase ]
+        , test "after a treated malaria, Hb 12 -> the medicated-continued diagnosis only" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withMalariaTest TestPositive
+                    |> withHemoglobin 12
+                    |> diagnoseNurseAfter [ DiagnosisMalariaInitialPhase ] (withCoartem emptyPrenatalMeasurements)
+                    |> malariaVariants
+                    |> Expect.equal [ DiagnosisMalariaMedicatedContinuedInitialPhase ]
         ]
 
 
@@ -1424,6 +1533,20 @@ generatePrenatalDiagnosesForNurseDiscordantPartnershipTest =
                     |> withPartnerHIVTestPositive TestNoteKnownAsPositive Nothing
                     |> discordantPartnershipPhases
                     |> Expect.equal ( True, False )
+        , test "partner known to be HIV positive after a point of care test, patient HIV negative and immediate -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive TestNoteKnownAsPositive immediateResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
+        , test "partner known to be HIV positive after the test was sent to the lab, patient HIV negative and immediate -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTestPositive TestNoteKnownAsPositive deferredResultPrerequisites
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
         , test "partner test positive from history, patient HIV negative and immediate -> Initial phase" <|
             \_ ->
                 emptyPrenatalMeasurements
@@ -1490,6 +1613,37 @@ generatePrenatalDiagnosesForNurseDiscordantPartnershipTest =
                     |> withPartnerHIVTestPositive TestNoteRunToday immediateResultPrerequisites
                     |> discordantPartnershipPhases
                     |> Expect.equal ( False, False )
+        , test "partner signs on the patient's HIV test, partner then tested negative -> neither phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestPartnerPositiveSigns TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTest TestNoteRunToday immediateResultPrerequisites (Just TestNegative) Nothing
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, False )
+        , test "partner signs on the patient's HIV test, partner test then sent to the lab -> neither phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestPartnerPositiveSigns TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTest TestNoteRunToday deferredResultPrerequisites Nothing Nothing
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, False )
+        , test "partner signs not on ARVs on the patient's HIV test, partner tested positive, on ARVs with a surpressed viral load -> neither phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestPartnerPositiveSigns TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTest TestNoteRunToday
+                        immediateResultPrerequisites
+                        (Just TestPositive)
+                        (Just <| EverySet.fromList [ PartnerTakingARV, PartnerSurpressedViralLoad ])
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( False, False )
+        , test "partner signs on the patient's HIV test, partner test not run for lack of reagents -> Initial phase" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestPartnerPositiveSigns TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTest TestNoteLackOfReagents Nothing Nothing Nothing
+                    |> discordantPartnershipPhases
+                    |> Expect.equal ( True, False )
         ]
 
 
@@ -1501,33 +1655,29 @@ other, so the question the lab already answered is not asked again.
 -}
 resolvePartnerHIVTestResultTest : Test
 resolvePartnerHIVTestResultTest =
-    let
-        partnerResult measurements =
-            resolvePartnerHIVTestResult (testAssembled measurements)
-    in
     describe "resolvePartnerHIVTestResult"
         [ test "positive result entered by a lab technician -> TestPositive" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> withPartnerHIVTestByLabTech TestPositive (EverySet.singleton PrenatalHIVSignPendingInput)
-                    |> partnerResult
+                    |> resolvePartnerHIVTestResult
                     |> Expect.equal TestPositive
         , test "negative result entered by a lab technician -> TestNegative" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> withPartnerHIVTestByLabTech TestNegative (EverySet.singleton PrenatalHIVSignPendingInput)
-                    |> partnerResult
+                    |> resolvePartnerHIVTestResult
                     |> Expect.equal TestNegative
         , test "positive result the nurse ran today -> TestPositive" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> withPartnerHIVTestPositive TestNoteRunToday immediateResultPrerequisites
-                    |> partnerResult
+                    |> resolvePartnerHIVTestResult
                     |> Expect.equal TestPositive
         , test "no partner test -> TestIndeterminate" <|
             \_ ->
                 emptyPrenatalMeasurements
-                    |> partnerResult
+                    |> resolvePartnerHIVTestResult
                     |> Expect.equal TestIndeterminate
         ]
 
@@ -1567,12 +1717,93 @@ resolveDiscordantCoupleStatusTest =
                     |> withHIVTestPartnerPositiveSigns TestNoteRunToday immediateResultPrerequisites
                     |> resolveDiscordantCoupleStatus
                     |> Expect.equal (Just <| Translate.DiscordantCoupleStatus False False)
+        , test "partner signs on the patient's own HIV test, partner then tested negative -> no status" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestPartnerPositiveSigns TestNoteRunToday immediateResultPrerequisites
+                    |> withPartnerHIVTest TestNoteRunToday immediateResultPrerequisites (Just TestNegative) Nothing
+                    |> resolveDiscordantCoupleStatus
+                    |> Expect.equal Nothing
         , test "no partner test and no partner signs -> no status" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
                     |> resolveDiscordantCoupleStatus
                     |> Expect.equal Nothing
+        ]
+
+
+{-| The partner signs on the patient's own HIV test are asked only while the
+partner has no test result. Once the partner is tested, the partner's test is
+what the medication helper text and the HIV health education follow.
+-}
+partnerSignsAfterPartnerTestedTest : Test
+partnerSignsAfterPartnerTestedTest =
+    let
+        medicationHelpers measurements =
+            let
+                assembled =
+                    testAssembled measurements
+            in
+            resolveRequiredMedicationsSet English
+                currentDate
+                PrenatalEncounterPhaseInitial
+                { assembled
+                    | encounter =
+                        { testEncounter | diagnoses = EverySet.singleton DiagnosisDiscordantPartnershipInitialPhase }
+                }
+                |> List.map (\( helper, _, _ ) -> helper)
+
+        hivEducationTasks measurements =
+            healthEducationFormInputsAndTasksForNurse English
+                PrenatalEncounterPhaseInitial
+                (\_ _ -> ())
+                (testAssembled measurements)
+                emptyHealthEducationForm
+                |> Tuple.second
+                |> List.length
+
+        partnerOnARVsSurpressed =
+            EverySet.fromList [ PartnerHIVPositive, PartnerTakingARV, PartnerSurpressedViralLoad ]
+    in
+    describe "partner signs on the patient's HIV test once the partner is tested"
+        [ test "partner signs on ARVs, partner tested positive and not on ARVs -> helper for a partner not on ARVs" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegativeWithSigns TestNoteRunToday immediateResultPrerequisites partnerOnARVsSurpressed
+                    |> withPartnerHIVTestPositive TestNoteRunToday immediateResultPrerequisites
+                    |> medicationHelpers
+                    |> Expect.equal [ Translate.MedicationDistributionHelperDiscordantPartnershipNoARVs ]
+        , test "partner signs on ARVs, no partner test -> helper for a partner on ARVs" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegativeWithSigns TestNoteRunToday immediateResultPrerequisites partnerOnARVsSurpressed
+                    |> medicationHelpers
+                    |> Expect.equal [ Translate.MedicationDistributionHelperDiscordantPartnership ]
+        , test "partner signs on ARVs and surpressed, partner tested negative -> partner testing education asked" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withHIVTestNegativeWithSigns TestNoteRunToday immediateResultPrerequisites partnerOnARVsSurpressed
+                    |> withPartnerHIVTest TestNoteRunToday immediateResultPrerequisites (Just TestNegative) Nothing
+                    |> hivEducationTasks
+                    |> Expect.equal
+                        (emptyPrenatalMeasurements
+                            |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                            |> hivEducationTasks
+                        )
+        , test "partner signs on ARVs and surpressed, no partner test -> partner testing education not asked" <|
+            \_ ->
+                (emptyPrenatalMeasurements
+                    |> withHIVTestNegativeWithSigns TestNoteRunToday immediateResultPrerequisites partnerOnARVsSurpressed
+                    |> hivEducationTasks
+                )
+                    |> Expect.equal
+                        ((emptyPrenatalMeasurements
+                            |> withHIVTestNegative TestNoteRunToday immediateResultPrerequisites
+                            |> hivEducationTasks
+                         )
+                            - 1
+                        )
         ]
 
 
@@ -1667,20 +1898,8 @@ vaginalDischargeContinuedTest =
         gonorrhea =
             withVaginalDischarge (EverySet.singleton SymptomQuestionPartnerUrethralDischarge)
 
-        previousEncounterWith diagnoses =
-            { startDate = Date.add Date.Weeks -4 currentDate
-            , diagnoses = EverySet.fromList diagnoses
-            , pastDiagnoses = EverySet.empty
-            , measurements = emptyPrenatalMeasurements
-            }
-
-        diagnoseNurseAfter previousDiagnoses measurements =
-            let
-                assembled =
-                    testAssembled measurements
-            in
-            generatePrenatalDiagnosesForNurse currentDate
-                { assembled | nursePreviousEncountersData = [ previousEncounterWith previousDiagnoses ] }
+        diagnoseNurseAfterDiagnoses previousDiagnoses =
+            diagnoseNurseAfter previousDiagnoses emptyPrenatalMeasurements
     in
     describe "generatePrenatalDiagnosesForNurse - abnormal vaginal discharge, continued variants"
         [ test "first episode -> the plain diagnosis" <|
@@ -1694,44 +1913,221 @@ vaginalDischargeContinuedTest =
             \_ ->
                 emptyPrenatalMeasurements
                     |> bacterialVaginosis
-                    |> diagnoseNurseAfter [ DiagnosisTrichomonasOrBacterialVaginosis ]
+                    |> diagnoseNurseAfterDiagnoses [ DiagnosisTrichomonasOrBacterialVaginosis ]
                     |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosisContinued
                     |> Expect.equal True
         , test "diagnosed at an earlier encounter -> the plain diagnosis is not given as well" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> bacterialVaginosis
-                    |> diagnoseNurseAfter [ DiagnosisTrichomonasOrBacterialVaginosis ]
+                    |> diagnoseNurseAfterDiagnoses [ DiagnosisTrichomonasOrBacterialVaginosis ]
                     |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosis
                     |> Expect.equal False
         , test "an earlier gonorrhea does not make a first episode continued" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> bacterialVaginosis
-                    |> diagnoseNurseAfter [ DiagnosisGonorrhea ]
+                    |> diagnoseNurseAfterDiagnoses [ DiagnosisGonorrhea ]
                     |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosisContinued
                     |> Expect.equal False
         , test "an earlier gonorrhea leaves a first episode at the plain diagnosis" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> bacterialVaginosis
-                    |> diagnoseNurseAfter [ DiagnosisGonorrhea ]
+                    |> diagnoseNurseAfterDiagnoses [ DiagnosisGonorrhea ]
                     |> EverySet.member DiagnosisTrichomonasOrBacterialVaginosis
                     |> Expect.equal True
         , test "an earlier bacterial vaginosis does not make a first gonorrhea continued" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> gonorrhea
-                    |> diagnoseNurseAfter [ DiagnosisTrichomonasOrBacterialVaginosis ]
+                    |> diagnoseNurseAfterDiagnoses [ DiagnosisTrichomonasOrBacterialVaginosis ]
                     |> EverySet.member DiagnosisGonorrheaContinued
                     |> Expect.equal False
         , test "gonorrhea diagnosed at an earlier encounter -> the continued diagnosis" <|
             \_ ->
                 emptyPrenatalMeasurements
                     |> gonorrhea
-                    |> diagnoseNurseAfter [ DiagnosisGonorrhea ]
+                    |> diagnoseNurseAfterDiagnoses [ DiagnosisGonorrhea ]
                     |> EverySet.member DiagnosisGonorrheaContinued
                     |> Expect.equal True
+        ]
+
+
+
+-- HISTORY OF AN OLDER ENCOUNTER
+--
+-- A lab result can be entered for an encounter after a later encounter of the
+-- pregnancy has started, and the older encounter is then diagnosed again. Its
+-- history is the encounters started on an earlier day. There is one encounter a
+-- day, so another encounter of the same day is not part of it either.
+
+
+{-| A prenatal encounter as stored in the database: its id, start date, type,
+diagnoses, the diagnoses reported to it from late lab results, and the
+measurements taken at it.
+-}
+type alias StoredEncounter =
+    { id : String
+    , startDate : NominalDate
+    , encounterType : PrenatalEncounterType
+    , diagnoses : List PrenatalDiagnosis
+    , pastDiagnoses : List PrenatalDiagnosis
+    , measurements : PrenatalMeasurements
+    }
+
+
+storedNurseEncounter : String -> NominalDate -> List PrenatalDiagnosis -> PrenatalMeasurements -> StoredEncounter
+storedNurseEncounter id startDate diagnoses measurements =
+    { id = id
+    , startDate = startDate
+    , encounterType = NurseEncounter
+    , diagnoses = diagnoses
+    , pastDiagnoses = []
+    , measurements = measurements
+    }
+
+
+{-| Assemble the encounter with the given id from a database holding the given
+encounters of one pregnancy -- the way the pages and the assessment run after
+a save build their data. EGA is fixed at ~20 weeks, as for `testAssembled`.
+-}
+assembledFromDb : String -> List StoredEncounter -> Maybe AssembledData
+assembledFromDb encounterId storedEncounters =
+    let
+        encounters =
+            List.map
+                (\stored ->
+                    ( toEntityUuid stored.id
+                    , { testEncounter
+                        | startDate = stored.startDate
+                        , encounterType = stored.encounterType
+                        , diagnoses = EverySet.fromList stored.diagnoses
+                        , pastDiagnoses = EverySet.fromList stored.pastDiagnoses
+                      }
+                    )
+                )
+                storedEncounters
+
+        db =
+            { emptyModelIndexedDb
+                | prenatalEncounters = Dict.fromList <| List.map (Tuple.mapSecond RemoteData.Success) encounters
+                , prenatalEncountersByParticipant =
+                    Dict.singleton testEncounter.participant (RemoteData.Success <| Dict.fromList encounters)
+                , prenatalMeasurements =
+                    Dict.fromList <|
+                        List.map (\stored -> ( toEntityUuid stored.id, RemoteData.Success stored.measurements )) storedEncounters
+                , individualParticipants = Dict.singleton testEncounter.participant (RemoteData.Success testParticipant)
+                , people = Dict.singleton testParticipant.person (RemoteData.Success testPerson)
+            }
+    in
+    generateAssembledData (toEntityUuid encounterId) db
+        |> RemoteData.toMaybe
+        |> Maybe.map (\assembled -> { assembled | globalLmpDate = Just lmpDate })
+
+
+historyBeforeEncounterTest : Test
+historyBeforeEncounterTest =
+    let
+        withSymptom symptom measurements =
+            { measurements
+                | symptomReview =
+                    wrapMeasurement
+                        { symptoms = EverySet.singleton symptom
+                        , symptomQuestions = EverySet.empty
+                        , flankPainSign = Nothing
+                        }
+            }
+
+        weekAgo =
+            Date.add Date.Weeks -1 currentDate
+
+        weekLater =
+            Date.add Date.Weeks 1 currentDate
+
+        diagnosesOf encounterId storedEncounters =
+            assembledFromDb encounterId storedEncounters
+                |> Maybe.map (generatePrenatalDiagnosesForNurse currentDate >> EverySet.toList)
+
+        hasDiagnosis diagnosis encounterId storedEncounters =
+            diagnosesOf encounterId storedEncounters
+                |> Maybe.map (List.member diagnosis)
+
+        diagnosesAmong candidates encounterId storedEncounters =
+            diagnosesOf encounterId storedEncounters
+                |> Maybe.map (List.filter (\diagnosis -> List.member diagnosis candidates))
+
+        pelvicPain =
+            withSymptom PelvicPain emptyPrenatalMeasurements
+
+        nauseaAndVomiting =
+            withSymptom NauseaAndVomiting emptyPrenatalMeasurements
+    in
+    describe "generatePrenatalDiagnosesForNurse - history of an older encounter"
+        [ test "pelvic pain at a LATER encounter does not make the older encounter's pelvic pain continued" <|
+            \_ ->
+                hasDiagnosis DiagnosisPelvicPainContinued
+                    "older"
+                    [ storedNurseEncounter "older" currentDate [] pelvicPain
+                    , storedNurseEncounter "later" weekLater [] pelvicPain
+                    ]
+                    |> Expect.equal (Just False)
+        , test "nausea and vomiting at a LATER encounter does not send the older encounter to hospital" <|
+            \_ ->
+                diagnosesAmong [ DiagnosisHyperemesisGravidumBySymptoms, DiagnosisSevereVomitingBySymptoms ]
+                    "older"
+                    [ storedNurseEncounter "older" currentDate [] nauseaAndVomiting
+                    , storedNurseEncounter "later" weekLater [] nauseaAndVomiting
+                    ]
+                    |> Expect.equal (Just [])
+        , test "malaria treated at a LATER encounter does not make the older encounter's malaria medicated-continued" <|
+            \_ ->
+                diagnosesAmong
+                    [ DiagnosisMalariaInitialPhase
+                    , DiagnosisMalariaMedicatedContinuedInitialPhase
+                    , DiagnosisMalariaMedicatedContinuedRecurrentPhase
+                    ]
+                    "older"
+                    [ storedNurseEncounter "older" currentDate [] (withMalariaTest TestPositive emptyPrenatalMeasurements)
+                    , storedNurseEncounter "later" weekLater [ DiagnosisMalariaInitialPhase ] (withCoartem emptyPrenatalMeasurements)
+                    ]
+                    |> Expect.equal (Just [ DiagnosisMalariaInitialPhase ])
+        , test "pelvic pain at an EARLIER encounter makes the pelvic pain continued" <|
+            \_ ->
+                hasDiagnosis DiagnosisPelvicPainContinued
+                    "current"
+                    [ storedNurseEncounter "earlier" weekAgo [] pelvicPain
+                    , storedNurseEncounter "current" currentDate [] pelvicPain
+                    ]
+                    |> Expect.equal (Just True)
+        , test "pelvic pain at another encounter of the SAME day does not make the pelvic pain continued" <|
+            \_ ->
+                hasDiagnosis DiagnosisPelvicPainContinued
+                    "current"
+                    [ storedNurseEncounter "same-day" currentDate [] pelvicPain
+                    , storedNurseEncounter "current" currentDate [] pelvicPain
+                    ]
+                    |> Expect.equal (Just False)
+        , test "only CHW encounters started on an earlier day are in the history" <|
+            \_ ->
+                let
+                    storedChwEncounter id startDate encounterType =
+                        { id = id
+                        , startDate = startDate
+                        , encounterType = encounterType
+                        , diagnoses = []
+                        , pastDiagnoses = []
+                        , measurements = emptyPrenatalMeasurements
+                        }
+                in
+                assembledFromDb "current"
+                    [ storedChwEncounter "chw-earlier" weekAgo ChwFirstEncounter
+                    , storedChwEncounter "chw-same-day" currentDate ChwSecondEncounter
+                    , storedNurseEncounter "current" currentDate [] emptyPrenatalMeasurements
+                    , storedChwEncounter "chw-later" weekLater ChwThirdPlusEncounter
+                    ]
+                    |> Maybe.map (.chwPreviousMeasurementsWithDates >> List.map (\( date, encounterType, _ ) -> ( date, encounterType )))
+                    |> Expect.equal (Just [ ( weekAgo, ChwFirstEncounter ) ])
         ]
 
 
@@ -1893,9 +2289,13 @@ all =
         , generatePrenatalDiagnosesForNurseDiscordantPartnershipTest
         , resolvePartnerHIVTestResultTest
         , resolveDiscordantCoupleStatusTest
+        , partnerSignsAfterPartnerTestedTest
         , generatePrenatalDiagnosesForNurseEGA37PlusPreeclampsiaRecurrentTest
         , suicideRiskDiagnosedBySignsTest
         , vaginalDischargeContinuedTest
+        , historyBeforeEncounterTest
+        , repeatedTapOnSavedTest
+        , diagnosisKnownAnyOfTest
         ]
 
 
@@ -2013,4 +2413,135 @@ measurementOutOfRangeTest =
             \_ ->
                 preSaveObstetrical (Just False) (Just 120)
                     |> Expect.equal ( Nothing, True )
+        ]
+
+
+{-| "Known as positive" fires on every tap, including one that repeats the
+answer shown. On a test loaded from the record the form in the model is still
+empty, so the update acts on the form as displayed; otherwise a repeated No
+would clear a saved test.
+-}
+repeatedTapOnSavedTest : Test
+repeatedTapOnSavedTest =
+    let
+        encounterId =
+            toEntityUuid "encounter"
+
+        savedHIVTest =
+            hivTestValueWith TestNegative
+
+        savedPartnerHIVTest =
+            partnerHIVTestValuePositive TestNoteRunToday immediateResultPrerequisites
+
+        savedHepatitisBTest =
+            hepatitisBTestValueWith TestNegative
+
+        db =
+            { emptyModelIndexedDb
+                | prenatalMeasurements =
+                    Dict.singleton encounterId
+                        (RemoteData.Success
+                            { emptyPrenatalMeasurements
+                                | hivTest = wrapMeasurement savedHIVTest
+                                , partnerHIVTest = wrapMeasurement savedPartnerHIVTest
+                                , hepatitisBTest = wrapMeasurement savedHepatitisBTest
+                            }
+                        )
+            }
+
+        dataAfter msg =
+            update dummyDate SiteRwanda encounterId db msg emptyModel
+                |> (\( model, _, _ ) -> model.laboratoryData)
+
+        noteAndResult value =
+            ( value.executionNote, value.testResult )
+    in
+    describe "a repeated tap on known as positive, on a test loaded from the record"
+        [ test "HIV test: No keeps the saved run and result" <|
+            \_ ->
+                (dataAfter (SetHIVTestFormBoolInput knownAsPositiveUpdateHIVTest False)).hivTestForm
+                    |> toHIVTestValueUniversalWithDefault (Just savedHIVTest)
+                    |> Maybe.map noteAndResult
+                    |> Expect.equal (Just ( TestNoteRunToday, Just TestNegative ))
+        , test "HIV test: Yes still replaces the run" <|
+            \_ ->
+                (dataAfter (SetHIVTestFormBoolInput knownAsPositiveUpdateHIVTest True)).hivTestForm
+                    |> toHIVTestValueUniversalWithDefault (Just savedHIVTest)
+                    |> Maybe.map noteAndResult
+                    |> Expect.equal (Just ( TestNoteKnownAsPositive, Nothing ))
+        , test "partner HIV test: No keeps the saved run and result" <|
+            \_ ->
+                (dataAfter (SetPartnerHIVTestFormBoolInput knownAsPositiveUpdatePartnerHIVTest False)).partnerHIVTestForm
+                    |> toPartnerHIVTestValueWithDefault (Just savedPartnerHIVTest)
+                    |> Maybe.map noteAndResult
+                    |> Expect.equal (Just ( TestNoteRunToday, Just TestPositive ))
+        , test "hepatitis B test: No keeps the saved run and result" <|
+            \_ ->
+                (dataAfter (SetHepatitisBTestFormBoolInput knownAsPositiveUpdate False)).hepatitisBTestForm
+                    |> toHepatitisBTestValueWithDefault (Just savedHepatitisBTest)
+                    |> Maybe.map noteAndResult
+                    |> Expect.equal (Just ( TestNoteRunToday, Just TestNegative ))
+        ]
+
+
+
+-- WHAT THE ENCOUNTER A LATE LAB RESULT REPORTS TO ALREADY KNOWS
+--
+-- A lab result entered for an older encounter from a later one reports the
+-- diagnosis it adds back to the later encounter, unless that encounter already
+-- knows it. The older encounter's history cannot hold a diagnosis made at a
+-- visit after it, so the question is asked of the later encounter.
+
+
+diagnosisKnownAnyOfTest : Test
+diagnosisKnownAnyOfTest =
+    let
+        weekAgo =
+            Date.add Date.Weeks -1 currentDate
+
+        weekLater =
+            Date.add Date.Weeks 1 currentDate
+
+        rhesusNegative =
+            [ DiagnosisRhesusNegativeInitialPhase, DiagnosisRhesusNegativeRecurrentPhase ]
+
+        older =
+            storedNurseEncounter "older" weekAgo [] emptyPrenatalMeasurements
+
+        rhesusAtMiddle =
+            storedNurseEncounter "middle" currentDate [ DiagnosisRhesusNegativeRecurrentPhase ] emptyPrenatalMeasurements
+
+        current =
+            storedNurseEncounter "current" weekLater [] emptyPrenatalMeasurements
+
+        known diagnoses encounterId storedEncounters =
+            assembledFromDb encounterId storedEncounters
+                |> Maybe.map (diagnosisKnownAnyOf diagnoses)
+    in
+    describe "diagnosisKnownAnyOf - what the encounter a late lab result reports to already knows"
+        [ test "a diagnosis made at a visit between the older encounter and the current one is known to the current one" <|
+            \_ ->
+                known rhesusNegative "current" [ older, rhesusAtMiddle, current ]
+                    |> Expect.equal (Just True)
+        , test "the older encounter's own history cannot see that visit, which is why the current one is asked" <|
+            \_ ->
+                assembledFromDb "older" [ older, rhesusAtMiddle, current ]
+                    |> Maybe.map (diagnosedPreviouslyAnyOf rhesusNegative)
+                    |> Expect.equal (Just False)
+        , test "a diagnosis reported to a visit between the older encounter and the current one is known to the current one" <|
+            \_ ->
+                known rhesusNegative "current" [ older, { rhesusAtMiddle | diagnoses = [], pastDiagnoses = [ DiagnosisRhesusNegativeRecurrentPhase ] }, current ]
+                    |> Expect.equal (Just True)
+        , test "a diagnosis made at the current encounter itself is known" <|
+            \_ ->
+                known rhesusNegative "current" [ older, { current | diagnoses = [ DiagnosisRhesusNegativeRecurrentPhase ] } ]
+                    |> Expect.equal (Just True)
+        , test "a diagnosis reported to the current encounter by an earlier late result is known" <|
+            \_ ->
+                known diabetesDiagnoses "current" [ older, { current | pastDiagnoses = [ DiagnosisDiabetesRecurrentPhase ] } ]
+                    |> Expect.equal (Just True)
+        , test "a diagnosis made nowhere in the pregnancy is not known" <|
+            \_ ->
+                known rhesusNegative "current" [ older, current ]
+                    |> Expect.equal (Just False)
         ]

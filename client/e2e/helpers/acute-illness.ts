@@ -53,17 +53,31 @@ async function openActivity(page: Page, activityIcon: string) {
 }
 
 /**
- * Save the current activity form and return to the encounter page.
+ * Open an activity from the encounter page's Completed tab.
+ */
+async function openCompletedActivity(page: Page, activityIcon: string) {
+  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
+  await click(page.locator('#completed-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+  await openActivity(page, activityIcon);
+}
+
+/**
+ * Save the current activity form and wait for the page the app moves to.
  * @param actionsClass - CSS class on the actions wrapper (e.g., 'symptoms', 'malaria-testing', 'next-steps').
  */
 async function saveActivity(page: Page, actionsClass: string) {
+  const actions = page.locator(`.actions.${actionsClass}`);
   await click(
-    page.locator(`.actions.${actionsClass} button.ui.fluid.primary.button`, { hasText: 'Save' }),
+    actions.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
     page,
   );
-  // Wait for return to encounter page.
+  // The save leaves the form. The app returns to the encounter page, or, when
+  // this save completes the diagnosis, opens Next Steps or Laboratory itself.
+  await actions.waitFor({ state: 'hidden', timeout: 10000 });
   await page
-    .locator('div.page-encounter.acute-illness')
+    .locator('div.page-encounter.acute-illness, div.page-activity.acute-illness')
+    .first()
     .waitFor({ timeout: 10000 });
   await page.waitForTimeout(WAIT.elmRerender);
 }
@@ -485,6 +499,34 @@ export async function completeSymptoms(
   await saveActivity(page, 'symptoms');
 }
 
+/**
+ * Reopen the saved GI symptoms and tick Vomiting. The saved record never asked
+ * about intractable vomiting, so the question must come up unanswered, and Save
+ * must wait for an answer.
+ */
+export async function addVomitingToSavedGISymptoms(page: Page, intractableVomiting: boolean) {
+  await openCompletedActivity(page, 'symptoms');
+
+  await clickSubTaskTab(page, 'symptoms-gi');
+  await selectCheckbox(page, 'Vomiting');
+  await page.waitForTimeout(WAIT.formInteraction);
+
+  const question = page.locator('.form-input.yes-no.intractable-vomiting');
+  await question.waitFor({ timeout: 5000 });
+  await expect(question.locator('input:checked'), 'intractable vomiting should come up unanswered').toHaveCount(0);
+  await expect(
+    page.locator('.actions.symptoms button.ui.fluid.primary.button'),
+    'Save should wait for the intractable vomiting answer',
+  ).toHaveClass(/disabled/);
+
+  await answerYesNo(page, 'intractable-vomiting', intractableVomiting ? 'Yes' : 'No');
+  await saveActivity(page, 'symptoms');
+
+  // The encounter page stays on the Completed tab; the next activities are on To Do.
+  await click(page.locator('#pending-tab'), page);
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
 // ---------------------------------------------------------------------------
 // Physical Exam activity
 // ---------------------------------------------------------------------------
@@ -834,6 +876,8 @@ export async function completeNextSteps(
     hasHealthEducation?: boolean;
     hasContactTracing?: boolean;
     hasSymptomsRelief?: boolean;
+    /** Answer to "Administered Lemon Juice and/or Honey?" (simple cold and cough). */
+    lemonJuiceOrHoney?: 'Yes' | 'No';
   },
 ) {
   const hasMedDist = options?.hasMedicationDistribution ?? true;
@@ -850,7 +894,10 @@ export async function completeNextSteps(
     .locator('.actions.next-steps')
     .isVisible()
     .catch(() => false);
-  if (!alreadyOnNextSteps) {
+  if (alreadyOnNextSteps) {
+    // The assessment popup can open over the form as the app arrives here.
+    await dismissDiagnosisPopup(page);
+  } else {
     await openActivity(page, 'next-steps');
   }
 
@@ -875,6 +922,12 @@ export async function completeNextSteps(
       const zincField = page.locator('.form-input.yes-no.zinc-medication');
       if (await zincField.isVisible({ timeout: 1000 }).catch(() => false)) {
         await answerYesNo(page, 'zinc-medication', 'Yes');
+      }
+
+      // For simple cold and cough: Lemon Juice and/or Honey
+      const lemonJuiceField = page.locator('.form-input.yes-no.lemon-juice-or-honey-medication');
+      if (await lemonJuiceField.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await answerYesNo(page, 'lemon-juice-or-honey-medication', options?.lemonJuiceOrHoney ?? 'Yes');
       }
 
       // For respiratory: Amoxicillin
@@ -952,6 +1005,29 @@ export async function completeNextSteps(
   // After completing all next steps, the app may show the progress report
   // page (with "End Encounter" button) or return to the encounter page.
   await page.waitForTimeout(WAIT.sectionTransition);
+}
+
+/**
+ * Change one answer of the Medication Distribution task after Next Steps
+ * was completed. Next Steps is then on the Completed tab. Saving the task
+ * leaves the activity for the encounter page or the progress report.
+ */
+export async function editMedicationDistributionAnswer(
+  page: Page,
+  fieldClass: string,
+  answer: 'Yes' | 'No',
+) {
+  await openCompletedActivity(page, 'next-steps');
+
+  await clickSubTaskTab(page, 'next-steps-medication-distribution');
+  await page.locator('.ui.form.medication-distribution').waitFor({ timeout: 5000 });
+  await answerYesNo(page, fieldClass, answer);
+  await saveNextStepsSubTask(page);
+
+  await page
+    .locator('div.page-encounter.acute-illness, div.page-report.acute-illness')
+    .waitFor({ timeout: 10000 });
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------

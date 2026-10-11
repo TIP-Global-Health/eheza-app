@@ -12,7 +12,7 @@ import Backend.Measurement.Utils
     exposing
         ( getHeightValue
         , getMeasurementValueFunc
-        , headCircumferenceValueFunc
+        , headCircumferenceTakenValue
         , muacIndicationForChild
         , muacValueForSite
         , muacValueFunc
@@ -391,7 +391,8 @@ resolvePreviousMeasurementsSetForChild childId db =
             resolveIndividualValues individualWellChildMeasurements .weight weightValueFunc
 
         wellChildHeadCircumferences =
-            resolveIndividualValues individualWellChildMeasurements .headCircumference (.headCircumference >> headCircumferenceValueFunc)
+            resolveIndividualValues individualWellChildMeasurements .headCircumference headCircumferenceTakenValue
+                |> List.filterMap (\( dateMeasured, cm ) -> Maybe.map (Tuple.pair dateMeasured) cm)
 
         groupMeasurements =
             Dict.get childId db.childMeasurements

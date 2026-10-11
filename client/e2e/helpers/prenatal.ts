@@ -9,6 +9,7 @@ import {
   formInput,
   GLUCOSE_IN_RANGE,
   isGlucoseInput,
+  isHemoglobinInput,
   openActivity,
   queryMeasurementNodes,
   registerAdult,
@@ -949,15 +950,14 @@ export async function completeLaboratoryNurse(
 }
 
 /**
- * Correct the patient's own HIV test to "known as positive" and save it.
- *
- * The answer means the patient is HIV positive and no test is performed, so
- * the result and the questions asked under it are withdrawn from the screen.
- * What they held has to go with them: read back, the partner answers of the
- * negative test they replaced diagnose a discordant partnership and offer
- * PrEP to a woman who is HIV positive.
+ * Open a saved lab test from the encounter page, change its answers with
+ * `answer`, and save it.
  */
-export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
+async function correctLabTest(
+  page: Page,
+  tabLabel: RegExp,
+  answer: () => Promise<void>,
+): Promise<void> {
   // The correction can follow an activity, and Laboratory is opened from the
   // encounter page, so step back to it when an activity is still on screen.
   const activityPage = page.locator('div.page-activity.prenatal');
@@ -975,14 +975,11 @@ export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
 
   await openActivity(page, 'prenatal', 'laboratory');
 
-  const hivTab = page.locator('.link-section').filter({
-    hasText: /^\s*HIV\s*$/,
-  });
-  await click(hivTab.first(), page);
+  const tab = page.locator('.link-section').filter({ hasText: tabLabel });
+  await click(tab.first(), page);
   await page.waitForTimeout(WAIT.elmRerender);
 
-  await answerYesNo(page, 'known-as-positive', 'Yes');
-  await page.waitForTimeout(WAIT.elmRerender);
+  await answer();
 
   const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
   await click(saveBtn, page);
@@ -994,6 +991,68 @@ export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
   // activities that are still pending.
   await click(page.locator('#pending-tab'), page);
   await page.waitForTimeout(WAIT.elmRerender);
+}
+
+/**
+ * Correct the patient's own HIV test to "known as positive" and save it.
+ *
+ * The answer means the patient is HIV positive and no test is performed, so
+ * the result and the questions asked under it are withdrawn from the screen.
+ * What they held has to go with them: read back, the partner answers of the
+ * negative test they replaced diagnose a discordant partnership and offer
+ * PrEP to a woman who is HIV positive.
+ */
+export async function correctHIVTestToKnownPositive(page: Page): Promise<void> {
+  await correctLabTest(page, /^\s*HIV\s*$/, async () => {
+    await answerYesNo(page, 'known-as-positive', 'Yes');
+    await page.waitForTimeout(WAIT.elmRerender);
+  });
+}
+
+/**
+ * Correct the Partner HIV test and save it: the partner is tested today at
+ * point of care with a negative result, or tested today with the sample sent to
+ * the lab, or known as HIV positive and not taking ARVs.
+ */
+export async function correctPartnerHIVTest(
+  page: Page,
+  partner: 'tested-negative' | 'sent-to-lab' | 'known-positive',
+): Promise<void> {
+  await correctLabTest(page, /Partner HIV/, async () => {
+    if (partner === 'known-positive') {
+      await answerYesNo(page, 'known-as-positive', 'Yes');
+      await page.waitForTimeout(WAIT.elmRerender);
+      await answerYesNo(page, 'partner-taking-arv', 'No');
+      await page.waitForTimeout(WAIT.formInteraction);
+      return;
+    }
+
+    await answerYesNo(page, 'known-as-positive', 'No');
+    await page.waitForTimeout(WAIT.elmRerender);
+    await answerYesNo(page, 'test-performed', 'Yes');
+    await page.waitForTimeout(WAIT.elmRerender);
+
+    // "Immediate result?" → Lab for a sample sent to the lab, Point of Care
+    // otherwise. The answer is checked before saving, so the correction that
+    // follows starts from the run asked for.
+    const immediateResult = page.locator('.form-input.yes-no.immediate-result');
+    const option = immediateResult
+      .locator('div.column')
+      .filter({ hasText: partner === 'sent-to-lab' ? /^\s*Lab\s*$/ : /^\s*Point of Care\s*$/ });
+    await click(option.locator('label'), page);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await expect(option.locator('input'), 'the immediate result answer should be selected').toHaveClass(/checked/);
+    if (partner === 'sent-to-lab') {
+      return;
+    }
+
+    const resultSelect = page.locator('select.form-input').first();
+    const negative = await resultSelect
+      .locator('option', { hasText: 'Negative' })
+      .getAttribute('value');
+    await resultSelect.selectOption(negative!);
+    await page.waitForTimeout(WAIT.formInteraction);
+  });
 }
 
 /**
@@ -1202,9 +1261,19 @@ export async function completeLaboratoryNurseForLab(
  */
 export async function completeLabResults(
   page: Page,
-  options?: { checkGlucoseRange?: boolean },
+  options?: {
+    checkGlucoseRange?: boolean;
+    hemoglobinCount?: string;
+    negativeResultTests?: string[];
+  },
 ): Promise<string[]> {
   const checkGlucoseRange = options?.checkGlucoseRange ?? false;
+  // Above 11 g/dL, so no anemia is diagnosed unless a caller asks for it.
+  const hemoglobinCount = options?.hemoglobinCount ?? '12';
+  // Tabs, by their label, whose result should be Negative. The generic pass
+  // below takes the first real option of a dropdown, which is Positive for a
+  // test result, so a test that must not be diagnosed has to be named here.
+  const negativeResultTests = options?.negativeResultTests ?? [];
   const completedTests: string[] = [];
   const allTabs = page.locator('.link-section');
   const tabCount = await allTabs.count();
@@ -1234,6 +1303,24 @@ export async function completeLabResults(
     if (await testPerformed.isVisible().catch(() => false)) {
       await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
       await page.waitForTimeout(WAIT.elmRerender);
+    }
+
+    // Matched loosely: a tab is labelled by its test, and some carry the
+    // method too - the syphilis tab reads "Syphilis - RPR".
+    const wantsNegative = negativeResultTests.some(name =>
+      tabLabel.trim().toLowerCase().includes(name.trim().toLowerCase()),
+    );
+    if (wantsNegative) {
+      const resultSelect = page.locator('select.form-input').first();
+      if (await resultSelect.isVisible().catch(() => false)) {
+        const negOption = resultSelect.locator('option', { hasText: 'Negative' });
+        const negValue = await negOption.first().getAttribute('value');
+        if (!negValue) {
+          throw new Error(`${tabLabel.trim()} test: no Negative option to select`);
+        }
+        await resultSelect.selectOption(negValue);
+        await page.waitForTimeout(WAIT.formInteraction);
+      }
     }
 
     // 2. Enter result — fill all visible select dropdowns and numeric inputs.
@@ -1273,6 +1360,8 @@ export async function completeLabResults(
             } else {
               await numInput.fill(GLUCOSE_IN_RANGE);
             }
+          } else if (await isHemoglobinInput(numInput)) {
+            await numInput.fill(hemoglobinCount);
           } else {
             await numInput.fill('12');
           }
@@ -1479,6 +1568,88 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
 // ---------------------------------------------------------------------------
 // Subsequent/Postpartum activity helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Complete every Next Steps task the recurrent encounter offers.
+ *
+ * Each task is its own tab with its own Save button, and the button only
+ * carries an onClick once every question the task asks is answered. Answering
+ * "Yes" everywhere keeps the encounter on the path where a medication is
+ * handed over and nothing is refused.
+ *
+ * Returns the labels of the tasks that were saved.
+ */
+export async function completeRecurrentNextSteps(page: Page): Promise<string[]> {
+  await openActivity(page, 'prenatal', 'next-steps');
+  await dismissWarningPopup(page);
+
+  const completedTasks: string[] = [];
+  const allTabs = page.locator('.link-section');
+  const tabCount = await allTabs.count();
+
+  for (let i = 0; i < tabCount; i++) {
+    const tab = allTabs.nth(i);
+    if (!(await tab.isVisible())) continue;
+
+    const isCompleted = await tab.evaluate(el =>
+      el.classList.contains('completed'),
+    ).catch(() => false);
+    if (isCompleted) continue;
+
+    const isActive = await tab.evaluate(el =>
+      el.classList.contains('active'),
+    ).catch(() => false);
+    if (!isActive) {
+      await click(tab, page);
+      await page.waitForTimeout(WAIT.elmRerender);
+    }
+
+    const tabLabel = (await tab.textContent()) || `tab-${i}`;
+
+    // Answering one question can reveal another, so keep going until a pass
+    // leaves nothing unanswered.
+    for (let pass = 0; pass < 5; pass++) {
+      const boolInputs = page.locator('.form-input.yes-no');
+      const boolCount = await boolInputs.count();
+      let answeredOne = false;
+
+      for (let b = 0; b < boolCount; b++) {
+        const boolInput = boolInputs.nth(b);
+        if (!(await boolInput.isVisible().catch(() => false))) continue;
+        // A chosen option carries the "checked" class on its radio.
+        const alreadyAnswered = await boolInput.locator('input.checked').count();
+        if (alreadyAnswered > 0) continue;
+
+        await click(boolInput.locator('label', { hasText: 'Yes' }).first(), page);
+        await page.waitForTimeout(WAIT.formInteraction);
+        answeredOne = true;
+      }
+
+      if (!answeredOne) break;
+    }
+
+    // Elm renders a disabled Save without an onClick, so clicking one does
+    // nothing and the test would hang on the next step. Say which task was
+    // left incomplete instead.
+    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+    await saveBtn.waitFor({ timeout: 10000 });
+    const saveActive = await saveBtn.evaluate(el => el.classList.contains('active'));
+    if (!saveActive) {
+      const counter = await page.locator('.tasks-count').textContent().catch(() => null);
+      throw new Error(
+        `Next Steps task "${tabLabel.trim()}" still has unanswered questions` +
+          (counter ? ` (${counter.trim()})` : '') +
+          ', so its Save button is inactive',
+      );
+    }
+
+    await saveSubTask(page);
+    completedTasks.push(tabLabel.trim());
+  }
+
+  return completedTasks;
+}
+
 
 /**
  * Complete TreatmentReview: iterate through medication review tabs.
@@ -1717,6 +1888,23 @@ export async function acceptLabsResults(page: Page): Promise<void> {
   await page.waitForTimeout(WAIT.elmRerender);
 }
 
+
+/**
+ * Open the lab results entry of a patient from the lab technician's Case
+ * Management. The forward icon lands directly on the Lab Results activity.
+ */
+export async function openLabResultsEntryFromCaseManagement(
+  page: Page,
+  personName: string,
+): Promise<void> {
+  const entry = page.locator('.follow-up-entry', {
+    has: page.locator('.name', { hasText: personName }),
+  });
+  await entry.waitFor({ timeout: 15000 });
+  await click(entry.locator('.icon-forward'), page);
+  await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+}
 
 /**
  * Open a recurrent encounter from the Case Management Prenatal Labs pane.

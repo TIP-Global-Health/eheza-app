@@ -1,6 +1,6 @@
 ---
 name: stacked-pr-base-is-parent-branch
-description: ⛔ A stacked PR's GitHub base must be the PARENT BRANCH, not develop — basing on develop inflates the diff with the parents' commits and lets an out-of-order merge drag them in
+description: ⛔ A stacked PR's GitHub base must be the PARENT BRANCH, not develop — AND merge the child only after GitHub has retargeted it to develop (#2214 merged into its already-merged parent 38 s too early and never reached develop)
 metadata:
   type: feedback
 ---
@@ -23,3 +23,11 @@ one already opened against `develop`: `gh api repos/TIP-Global-Health/eheza-app/
 Checks are attached to the commit sha, so retargeting does not re-run CI. The runbook's default
 `gh pr create --base develop` is for unstacked work only — see [[pr-first-review-workflow]] and
 [[worktree-per-item-for-parallel-sessions]].
+
+⛔ **Merge-time clause (2026-09-14, B-336 / PR #2214).** The auto-retarget is NOT instant. #2212 merged
+into `develop` at 05:26:11 and #2214 was merged 38 seconds later while its base still read
+`B-320-known-positive-stale-result` — so it merged into a dead branch, GitHub showed it "Merged", issue
+#2213 stayed open, and the backlog recorded it IMPLEMENTED for six days. **Before merging a stacked child,
+check `gh pr view <N> --json baseRefName` says `develop`** (retarget by hand with the PATCH above if not),
+and after merging a stack confirm each head is on develop:
+`git merge-base --is-ancestor <headRefOid> origin/develop`.

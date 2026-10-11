@@ -59,7 +59,7 @@ import Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, Birt
 import Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), SymptomReviewStep(..), TreatmentReviewTask(..))
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferalRequired, generateGravida, generatePara, getAllActivities)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
-import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, hypertensionDiagnoses, labTestWithImmediateResult, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionMeasurementTaken, medicationsInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication)
+import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, hypertensionDiagnoses, labTestWithImmediateResult, medicationDistributionFormWithDefaultInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -592,21 +592,7 @@ nextStepsTaskCompleted currentDate assembled task =
         NextStepsMedicationDistribution ->
             let
                 medicationDistributionCompleted =
-                    let
-                        medicationDistributionRequired =
-                            resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
-                                |> List.isEmpty
-                                |> not
-                    in
-                    if medicationDistributionRequired then
-                        let
-                            allowedSigns =
-                                NoMedicationDistributionSignsInitialPhase :: medicationsInitialPhase
-                        in
-                        medicationDistributionMeasurementTaken allowedSigns assembled.measurements
-
-                    else
-                        True
+                    requiredMedicationsAddressed currentDate PrenatalEncounterPhaseInitial assembled
 
                 malariaTreatmentCompleted =
                     if diagnosedMalariaByPhase PrenatalEncounterPhaseInitial assembled then
@@ -1038,7 +1024,7 @@ specialityCareSections =
 
 referredToHIVProgramPreviously : AssembledData -> Bool
 referredToHIVProgramPreviously assembled =
-    List.filterMap
+    (List.filterMap
         (\data ->
             if
                 List.any (\diagnosis -> EverySet.member diagnosis data.diagnoses)
@@ -1051,8 +1037,9 @@ referredToHIVProgramPreviously assembled =
         )
         assembled.nursePreviousEncountersData
         |> List.head
-        |> Maybe.map hivProgramAtHC
-        |> Maybe.withDefault False
+        |> Maybe.andThen hivProgramAtHC
+    )
+        == Just True
 
 
 latestMedicationTreatmentForHIV : AssembledData -> Maybe Translate.TranslationId
@@ -1166,7 +1153,7 @@ referToMentalHealthSpecialist assembled =
 
 referToARVProgram : AssembledData -> Bool
 referToARVProgram assembled =
-    (diagnosed DiagnosisHIVInitialPhase assembled && hivProgramAtHC assembled.measurements)
+    (diagnosed DiagnosisHIVInitialPhase assembled && (hivProgramAtHC assembled.measurements == Just True))
         || (expectSpecialityCareSignSection assembled EnrolledToARVProgram
                 && referredToSpecialityCareProgram EnrolledToARVProgram assembled
            )
@@ -2311,8 +2298,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         discordantPartnershipByHIVTest =
             hivNegative
-                && (getMeasurementValueFunc measurements.hivTest
-                        |> Maybe.andThen .hivSigns
+                && (partnerSignsByHIVTest measurements
                         |> Maybe.map
                             (\hivSigns ->
                                 -- Partner is HIV positive.
@@ -2390,39 +2376,36 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                         |> Maybe.withDefault False
                    )
 
+        -- A malaria treatment and one of the given diagnoses were both recorded at
+        -- earlier encounters. Each pair below gives its new-episode or its continued
+        -- diagnosis, never both.
+        treatedForMalariaDiagnosedPreviously previousDiagnoses =
+            (isJust <| latestMedicationTreatmentForMalaria assembled)
+                && diagnosedPreviouslyAnyOf previousDiagnoses assembled
+
+        previousMalariaDiagnoses =
+            [ DiagnosisMalariaInitialPhase, DiagnosisMalariaRecurrentPhase ]
+
         malariaDiagnosed =
-            malariaConditionsMatch
-                && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
-                        || (not <| diagnosedPreviouslyAnyOf [ DiagnosisMalariaInitialPhase, DiagnosisMalariaRecurrentPhase ] assembled)
-                   )
+            malariaConditionsMatch && not malariaMedicatedContinuedDiagnosed
 
         malariaMedicatedContinuedDiagnosed =
             malariaConditionsMatch
-                && (isJust <| latestMedicationTreatmentForMalaria assembled)
-                && diagnosedPreviouslyAnyOf [ DiagnosisMalariaInitialPhase, DiagnosisMalariaRecurrentPhase ] assembled
+                && treatedForMalariaDiagnosedPreviously previousMalariaDiagnoses
+
+        previousMalariaWithAnemiaDiagnoses =
+            [ DiagnosisMalariaWithAnemiaInitialPhase
+            , DiagnosisMalariaWithAnemiaRecurrentPhase
+            , DiagnosisMalariaWithSevereAnemiaInitialPhase
+            , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+            ]
 
         malariaWithAnemiaDiagnosed =
-            malariaWithAnemiaConditionsMatch
-                && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
-                        || (not <|
-                                diagnosedPreviouslyAnyOf
-                                    [ DiagnosisMalariaWithAnemiaInitialPhase
-                                    , DiagnosisMalariaWithAnemiaRecurrentPhase
-                                    ]
-                                    assembled
-                           )
-                   )
+            malariaWithAnemiaConditionsMatch && not malariaWithAnemiaMedicatedContinuedDiagnosed
 
         malariaWithAnemiaMedicatedContinuedDiagnosed =
             malariaWithAnemiaConditionsMatch
-                && (isJust <| latestMedicationTreatmentForMalaria assembled)
-                && diagnosedPreviouslyAnyOf
-                    [ DiagnosisMalariaWithAnemiaInitialPhase
-                    , DiagnosisMalariaWithAnemiaRecurrentPhase
-                    , DiagnosisMalariaWithSevereAnemiaInitialPhase
-                    , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
-                    ]
-                    assembled
+                && treatedForMalariaDiagnosedPreviously previousMalariaWithAnemiaDiagnoses
 
         malariaWithSevereAnemiaDiagnosed =
             positiveMalariaTest

@@ -1,4 +1,4 @@
-module Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, countTotalNutritionEncounters, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
+module Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, countTotalNutritionEncounters, csvRow, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
 
 import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
@@ -572,3 +572,19 @@ allVaccineTypes site =
 
         _ ->
             common ++ [ VaccineHPV ]
+
+
+{-| One CSV line. A cell holding a comma, quote or line break is quoted,
+so `a, b` becomes `"a, b"` and stays in one column.
+-}
+csvRow : List String -> String
+csvRow =
+    let
+        csvCell cell =
+            if String.any (\char -> char == ',' || char == '"' || char == '\n' || char == '\u{000D}') cell then
+                "\"" ++ String.replace "\"" "\"\"" cell ++ "\""
+
+            else
+                cell
+    in
+    List.map csvCell >> String.join ","

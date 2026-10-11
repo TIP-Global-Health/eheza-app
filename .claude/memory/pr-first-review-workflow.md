@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: c7019686-e437-4d8b-9f2d-a2a4c507d45d
-  modified: 2026-08-10T09:43:28.738Z
+  modified: 2026-10-11T12:00:00.000Z
 ---
 
 Development process (set 2026-07-27, user's words: *"when starting
@@ -15,7 +15,12 @@ present your analysis, what needs fixing and don't execute before I approve."*):
 
 1. **Develop, commit, push, open the PR** — before any review. The user wants to read the code on
    GitHub. Issue link is the FIRST body line ([[pr-description-issue-link-first-line]]).
-2. **Ask the user to run `/code-review <level>`** — announce the level and why. I do not run it.
+2. **Run the medium review myself, right after the PR is up** — CHANGED 2026-10-11, user: *"From
+   now on, run medium reviews yourself"*. Invoke `Skill({skill: "code-review", args: "medium
+   <branch>"})` in the same turn that opens the PR, and say in the announcement that it is running.
+   `high` and above are still NEVER self-run (section below). The 100% rule that follows now means
+   *a medium review runs on every PR*, not that the user is asked to run it.
+   (Historical, superseded:) Ask the user to run `/code-review <level>`.
    ⛔⛔ **MANDATORY, 100% OF CASES, NO EXCEPTIONS — escalated by the user 2026-08-10:** *"I want you
    to make sure that review is part of development cycle. It should be asked for at 100% of the
    cases!"* The ask is part of finishing a PR, exactly like pushing it. It is not conditional on my
@@ -186,10 +191,8 @@ the user be the one to skip it.
 
 - `Skill({skill: "code-review", args: "medium <branch>"})` works and launches the review as a
   background fork; it appears in the session's available-skills listing.
-  ⛔ **This does NOT loosen the ask-the-user rule.** The user's process is that THEY run the review
-  (they said so: *"after I run a review, I want the review comments to be made on that PR"*), and
-  `high` is still never to be auto-run. Invoke it yourself only when the user plainly meant to and
-  the command did not register — e.g. it arrived as message text because of a leading space.
+  ✅ **Since 2026-10-11 this is how every medium review starts** — the user: *"From now on, run
+  medium reviews yourself"*. `high` and above are still never self-run without the user.
 - `Workflow({name: "code-review", args: "<level> <target>"})` also exists but accepts
   `high` / `xhigh` / `max` only.
 - **`args` MUST be a string.** The script does `typeof args === "string" ? args : ""`, so an object

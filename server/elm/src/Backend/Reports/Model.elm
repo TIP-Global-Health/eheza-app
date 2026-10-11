@@ -126,6 +126,8 @@ type PrenatalEncounterType
 type PrenatalDiagnosis
     = DiagnosisChronicHypertension
     | DiagnosisGestationalHypertension
+    | DiagnosisHighRiskOfPreeclampsia
+    | DiagnosisModerateRiskOfPreeclampsia
     | DiagnosisModeratePreeclampsia
     | DiagnosisSeverePreeclampsia
     | DiagnosisEclampsia

@@ -12,6 +12,7 @@ import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
 import Pages.Model exposing (MetricsResultsTableData)
+import Pages.Reports.Utils exposing (csvRow)
 import Translate exposing (translate)
 
 
@@ -114,25 +115,9 @@ reportTablesDataToCSV =
 
 reportTableDataToCSV : MetricsResultsTableData -> String
 reportTableDataToCSV tableData =
-    let
-        line =
-            List.map csvField >> String.join ","
-    in
-    [ csvField tableData.heading
-    , line tableData.captions
-    , List.map line tableData.rows
+    [ csvRow [ tableData.heading ]
+    , csvRow tableData.captions
+    , List.map csvRow tableData.rows
         |> String.join "\n"
     ]
         |> String.join "\n"
-
-
-{-| One CSV field. A value holding a comma, a quote or a line break is wrapped
-in quotes, and the quotes inside it doubled, so it stays one field.
--}
-csvField : String -> String
-csvField value =
-    if String.any (\char -> char == ',' || char == '"' || char == '\n' || char == '\u{000D}') value then
-        "\"" ++ String.replace "\"" "\"\"" value ++ "\""
-
-    else
-        value

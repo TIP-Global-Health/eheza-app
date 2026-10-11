@@ -111,9 +111,9 @@ number, tier line, and any side-findings noticed while building appended as new 
   sessions already hold; check it before starting an item, and never work in another session's
   worktree. ⚠ The running app (ddev, `gulp`, local e2e, `ddev simpletest`) is a **single instance**
   rooted in the main tree — ask the user before taking it.
-- ⛔ **Ask for the review, every time.** The message announcing a PR must carry the copy-pasteable
-  `/code-review medium <branch>`. A PR announcement without it is an unfinished turn, and a vague
-  "want a review?" does not count. Mechanics in `pr-first-review-workflow` in memory.
+- ⛔ **Run the medium review yourself, every time.** Right after opening a PR, invoke
+  `Skill({skill: "code-review", args: "medium <branch>"})` and say in the announcement that it is
+  running. Never self-run `high` or above. Mechanics in `pr-first-review-workflow` in memory.
 - ⛔ **Post every review finding to the PR, inline, BEFORE reporting anything about the review in
   chat.** The review agent reports back into the transcript — that arrival is the cue to post, not
   delivery. A review is not finished until its findings are on the PR, anchored to the lines they

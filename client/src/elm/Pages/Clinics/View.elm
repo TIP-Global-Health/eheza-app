@@ -153,48 +153,49 @@ viewLoadedClinicList language currentDate user selectedHealthCenterId syncManage
 viewClinicButton : NominalDate -> Nurse -> ModelIndexedDb -> ( ClinicId, Clinic ) -> Html Msg
 viewClinicButton currentDate nurse db ( clinicId, clinic ) =
     let
+        disabledAttributes =
+            [ class "ui fluid primary dark disabled button" ]
+
         attributes =
             if isAuthorizedNurse clinic nurse then
-                let
-                    sessions =
-                        Dict.get clinicId db.sessionsByClinic
-                            |> Maybe.andThen RemoteData.toMaybe
-
-                    sessionStartedToday =
-                        Maybe.andThen
-                            (Dict.filter (\_ session -> session.startDate == currentDate)
-                                >> Dict.toList
-                                >> List.sortWith (sortByDate (Tuple.second >> .startDate))
-                                >> List.head
-                            )
-                            sessions
-
-                    action =
-                        Maybe.map
-                            (\( sessionId, _ ) ->
-                                [ SessionPage sessionId AttendancePage
-                                    |> UserPage
-                                    |> SetActivePage
-                                    |> onClick
-                                ]
-                            )
-                            sessionStartedToday
-                            |> Maybe.withDefault
-                                [ { startDate = currentDate
-                                  , endDate = Nothing
-                                  , clinicId = clinicId
-                                  , clinicType = clinic.clinicType
-                                  , deleted = False
-                                  }
-                                    |> PostSession
-                                    |> MsgIndexedDb
-                                    |> onClick
-                                ]
-                in
-                class "ui fluid primary button" :: action
+                -- Until the group's sessions are loaded, we can't tell whether
+                -- one started today, so the button stays disabled.
+                Dict.get clinicId db.sessionsByClinic
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.map
+                        (\sessions ->
+                            let
+                                action =
+                                    Dict.filter (\_ session -> session.startDate == currentDate) sessions
+                                        |> Dict.toList
+                                        |> List.sortWith (sortByDate (Tuple.second >> .startDate))
+                                        |> List.head
+                                        |> Maybe.map
+                                            (\( sessionId, _ ) ->
+                                                [ SessionPage sessionId AttendancePage
+                                                    |> UserPage
+                                                    |> SetActivePage
+                                                    |> onClick
+                                                ]
+                                            )
+                                        |> Maybe.withDefault
+                                            [ { startDate = currentDate
+                                              , endDate = Nothing
+                                              , clinicId = clinicId
+                                              , clinicType = clinic.clinicType
+                                              , deleted = False
+                                              }
+                                                |> PostSession
+                                                |> MsgIndexedDb
+                                                |> onClick
+                                            ]
+                            in
+                            class "ui fluid primary button" :: action
+                        )
+                    |> Maybe.withDefault disabledAttributes
 
             else
-                [ class "ui fluid primary dark disabled button" ]
+                disabledAttributes
     in
     button attributes
         [ text clinic.name ]

@@ -2162,6 +2162,16 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     in
                     ( newModel, extraMsgs )
 
+                assessPrenatalOnRevision encounterId =
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 processRevisionAndAssessNCD encounterId =
                     let
                         ( newModel, _ ) =
@@ -2984,54 +2994,19 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         )
 
                     [ PrenatalSymptomReviewRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ CorePhysicalExamRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ LastMenstrualPeriodRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ PregnancyTestRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ MedicationRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ VitalsRevision _ data ] ->
                         let
@@ -3320,44 +3295,34 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         )
 
                     [ PrenatalMentalHealthRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ BreastExamRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ PrenatalBreastfeedingRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
 
                     [ PrenatalGUExamRevision _ data ] ->
-                        let
-                            ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.encounterId False
-                        in
-                        ( newModel
-                        , Cmd.none
-                        , extraMsgs
-                        )
+                        assessPrenatalOnRevision data.encounterId
+
+                    [ MedicalHistoryRevision _ data ] ->
+                        assessPrenatalOnRevision data.encounterId
+
+                    [ ObstetricalExamRevision _ data ] ->
+                        assessPrenatalOnRevision data.encounterId
+
+                    [ ObstetricHistoryRevision _ data ] ->
+                        assessPrenatalOnRevision data.encounterId
+
+                    [ ObstetricHistoryStep2Revision _ data ] ->
+                        assessPrenatalOnRevision data.encounterId
+
+                    [ PrenatalNutritionRevision _ data ] ->
+                        assessPrenatalOnRevision data.encounterId
+
+                    [ PrenatalUltrasoundRevision _ data ] ->
+                        assessPrenatalOnRevision data.encounterId
 
                     [ WellChildHeightRevision _ data ] ->
                         let
@@ -3883,6 +3848,21 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             webData
             in
             ( { model | healthCenters = failureToNotAsked model.healthCenters, villages = failureToNotAsked model.villages }
+            , Cmd.none
+            , []
+            )
+
+        ResetPostPersonRequest ->
+            -- A save still on its way is kept: it blocks a second save and
+            -- navigates when it lands, so only a finished result is cleared.
+            ( { model
+                | postPerson =
+                    if RemoteData.isLoading model.postPerson then
+                        model.postPerson
+
+                    else
+                        NotAsked
+              }
             , Cmd.none
             , []
             )
@@ -4659,7 +4639,11 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     else
                         personWithStoredCoordinates
             in
-            ( { model | postPerson = Loading }
+            ( if origin == InitiatorEditForm then
+                { model | postPerson = Loading }
+
+              else
+                model
             , sw.patchFull personEndpoint personId personWithCoordinates
                 |> toCmd (RemoteData.fromResult >> HandlePatchedPerson origin personId)
             , []
@@ -4670,12 +4654,16 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 rollbarOnFailure =
                     triggerRollbarOnFailure data
 
-                appMsgs =
+                ( updatedModel, appMsgs ) =
                     case origin of
+                        InitiatorChildAddressUpdate ->
+                            ( model, [] )
+
                         InitiatorEditForm ->
-                            -- If we succeed, we reset the form, and go to the page
-                            -- showing the new person.
-                            RemoteData.map
+                            ( { model | postPerson = RemoteData.map (always personId) data }
+                            , -- If we succeed, we reset the form, and go to the page
+                              -- showing the new person.
+                              RemoteData.map
                                 (\_ ->
                                     [ Pages.Person.Model.ResetEditForm
                                         |> App.Model.MsgPageEditPerson personId
@@ -4687,11 +4675,12 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 )
                                 data
                                 |> RemoteData.withDefault []
+                            )
 
                         InitiatorProgressReport ->
-                            []
+                            ( model, [] )
             in
-            ( { model | postPerson = Success personId }
+            ( updatedModel
             , Cmd.none
             , rollbarOnFailure ++ appMsgs
             )
@@ -8885,6 +8874,15 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
 
                             else
                                 let
+                                    -- The encounter reported to decides whether the diagnosis is already
+                                    -- known. The measurement's own encounter cannot see a later visit,
+                                    -- which is where the diagnosis was most likely made.
+                                    knownAtOrigin diagnoses =
+                                        Pages.Prenatal.Encounter.Utils.generateAssembledData originatingEncounterId after
+                                            |> RemoteData.toMaybe
+                                            |> Maybe.map (Pages.Prenatal.Utils.diagnosisKnownAnyOf diagnoses)
+                                            |> Maybe.withDefault False
+
                                     diabetesDiagnosed =
                                         EverySet.toList reportedDiagnoses
                                             |> List.any
@@ -8903,7 +8901,7 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                                      -- Therefore, if we know that Diabetes was already diagnosed, we will not
                                      -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
                                      diabetesDiagnosed
-                                        && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
+                                        && knownAtOrigin Pages.Prenatal.Utils.diabetesDiagnoses
                                     )
                                         || (-- Reporting back about previous diagnosis results in hospital referral
                                             -- at Next steps.
@@ -8914,11 +8912,10 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                                             -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
                                             -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
                                             rhNegativeDiagnosis
-                                                && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf
+                                                && knownAtOrigin
                                                     [ DiagnosisRhesusNegativeInitialPhase
                                                     , DiagnosisRhesusNegativeRecurrentPhase
                                                     ]
-                                                    assembledAfter
                                            )
                                 then
                                     []

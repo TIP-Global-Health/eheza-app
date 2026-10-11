@@ -24,7 +24,7 @@ import Measurement.Utils exposing (contributingFactorsFormWithDefault, heightFor
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (insertIntoSet, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue)
 import Pages.WellChild.Activity.Model exposing (Model, Msg(..), WarningPopupType(..))
-import Pages.WellChild.Activity.Utils exposing (getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, pregnancySummaryFormWithDefault, pregnancySummaryMeasurementsOutOfRange, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType)
+import Pages.WellChild.Activity.Utils exposing (getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormWithDefault, headCircumferenceOutOfRange, pregnancySummaryFormWithDefault, pregnancySummaryMeasurementsOutOfRange, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 
@@ -548,6 +548,13 @@ update currentDate site id db msg model =
                 |> sequenceExtra (update currentDate site id db) extraMsgs
 
         PreSaveHeadCircumference personId maybeZscore saved nextTask ->
+            (getMeasurementValueFunc saved
+                |> headCircumferenceFormWithDefault model.nutritionAssessmentData.headCircumferenceForm
+                |> headCircumferenceOutOfRange site
+            )
+                |> preSaveNutritionAssessment currentDate site id db model (PreSaveHeadCircumferenceWarning personId maybeZscore saved nextTask)
+
+        PreSaveHeadCircumferenceWarning personId maybeZscore saved nextTask ->
             let
                 ( warning, warningMessage ) =
                     let

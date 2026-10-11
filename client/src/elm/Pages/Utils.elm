@@ -1,4 +1,4 @@
-module Pages.Utils exposing (calculatePercentage, concatInputsAndTasksSections, customButton, customPopup, dropLeadingMinus, emptySelectOption, filterDependentNoResultsMessage, filterPreviousEncountersDataToDate, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isAboveAgeOf2Years, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, muacUnitTransIdForSite, nonAdministrationReasonToSign, nonReferralReasonSection, normalizeFilter, percentageOfTotal, resolveActiveTask, resolveNextTask, resolveSelectedDateForMonthSelector, resolveTasksCompletedFromTotal, saveButton, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBoolInputReverted, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxMultipleSelectSectionsInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewConfirmationDialog, viewCustomAction, viewCustomBoolInput, viewCustomLabel, viewCustomNameFilter, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPaneHeading, viewPersonDetails, viewPersonDetailsExtended, viewPersonInfoPane, viewPhotoThumb, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewPreviousMeasurementCustom, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewStartEncounterButton, viewTasksCount, viewTextInput, viewYellowAlertForSelect)
+module Pages.Utils exposing (calculatePercentage, concatInputsAndTasksSections, customButton, customPopup, dropLeadingMinus, emptySelectOption, filterDependentNoResultsMessage, filterPreviousEncountersDataToDate, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isAboveAgeOf2Years, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, muacUnitTransIdForSite, nonAdministrationReasonToSign, nonReferralReasonSection, normalizeFilter, percentageOfTotal, resolveActiveTask, resolveNextTask, resolveSelectedDateForMonthSelector, resolveTasksCompletedFromTotal, saveButton, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, syncStatusWarning, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBoolInputReverted, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxMultipleSelectSectionsInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewConfirmationDialog, viewCustomAction, viewCustomBoolInput, viewCustomLabel, viewCustomNameFilter, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPaneHeading, viewPersonDetails, viewPersonDetailsExtended, viewPersonInfoPane, viewPhotoThumb, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewPreviousMeasurementCustom, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewStartEncounterButton, viewTasksCount, viewTextInput, viewYellowAlertForSelect)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (HealthCenterId, PersonId)
@@ -1477,24 +1477,30 @@ unique =
 
 viewBySyncStatus : Language -> HealthCenterId -> SyncManager.Model.SyncInfoAuthorityZipper -> Html msg -> Html msg
 viewBySyncStatus language healthCenterId syncInfoAuthorities contentForView =
-    let
-        selectedHealthCenterSyncInfo =
-            syncInfoAuthorities
-                |> Maybe.andThen
-                    (Zipper.toList >> List.Extra.find (\authorityInfo -> authorityInfo.uuid == fromEntityUuid healthCenterId))
+    syncStatusWarning healthCenterId syncInfoAuthorities
+        |> Maybe.map
+            (\( header, message ) ->
+                div [ class "ui message warning" ]
+                    [ div [ class "header" ] [ text <| translate language header ]
+                    , text <| translate language message
+                    ]
+            )
+        |> Maybe.withDefault contentForView
 
-        showWarningMessage header message =
-            div [ class "ui message warning" ]
-                [ div [ class "header" ] [ text <| translate language header ]
-                , text <| translate language message
-                ]
-    in
-    selectedHealthCenterSyncInfo
+
+{-| The warning (header and message) shown instead of a page's content, per
+the health center sync status. Nothing means the content is shown.
+-}
+syncStatusWarning : HealthCenterId -> SyncManager.Model.SyncInfoAuthorityZipper -> Maybe ( TranslationId, TranslationId )
+syncStatusWarning healthCenterId syncInfoAuthorities =
+    syncInfoAuthorities
+        |> Maybe.andThen
+            (Zipper.toList >> List.Extra.find (\authorityInfo -> authorityInfo.uuid == fromEntityUuid healthCenterId))
         |> Maybe.map
             (\syncInfo ->
                 case syncInfo.status of
                     SyncManager.Model.NotAvailable ->
-                        showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync
+                        Just ( Translate.SelectedHCNotSynced, Translate.PleaseSync )
 
                     SyncManager.Model.Downloading ->
                         -- Our goal is to limit disturance to operation during
@@ -1507,16 +1513,15 @@ viewBySyncStatus language healthCenterId syncInfoAuthorities contentForView =
                         -- 3 batches to complete download, a matter or few seconds, so,
                         -- we should not get to operations with incomplete data situation.
                         if syncInfo.remainingToDownload > 1500 then
-                            showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCDownloading
+                            Just ( Translate.SelectedHCSyncing, Translate.SelectedHCDownloading )
 
                         else
-                            contentForView
+                            Nothing
 
                     _ ->
-                        contentForView
+                        Nothing
             )
-        |> Maybe.withDefault
-            (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
+        |> Maybe.withDefault (Just ( Translate.SelectedHCNotSynced, Translate.PleaseSync ))
 
 
 {-| The unit a MUAC is entered and read in, which is mm at the Burundi site and

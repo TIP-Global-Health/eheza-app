@@ -198,10 +198,12 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
   $bundle = $data->type;
   $fields = field_info_instances('node', $bundle);
   $entity = ['type' => $bundle];
+  $missing_field = NULL;
   foreach ($fields as $field) {
     $name = $field['field_name'];
-    if ($name == 'field_shards') {
-      // Shards are assigned automatically.
+    // Shards are assigned automatically, and a re-created entity is never
+    // deleted.
+    if (in_array($name, ['field_deleted', 'field_shards'])) {
       continue;
     }
 
@@ -216,12 +218,13 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
     }
 
     $name_at_data = preg_replace('/^field_/', '', $name);
-    $value = $data->{$name_at_data};
+    $value = isset($data->{$name_at_data}) ? $data->{$name_at_data} : NULL;
     $is_required = $field['required'];
     if (!isset($value)) {
       if ($is_required) {
         // We're missing a value for a required field.
-        return;
+        $missing_field = $name;
+        break;
       }
       else {
         // Skip, since the field is optional.
@@ -235,7 +238,8 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
         if (!$nid) {
           if ($is_required) {
             // We're missing a value for a required field.
-            return;
+            $missing_field = $name;
+            break 2;
           }
           else {
             // Skip, since the field is optional.
@@ -262,6 +266,11 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
         }
         break;
 
+      case 'list_boolean':
+        // Stored as 0 or 1. Writing FALSE as is fails the insert.
+        $entity[$name][LANGUAGE_NONE][0]['value'] = (int) $value;
+        break;
+
       case 'list_integer':
       case 'list_float':
       case 'list_text':
@@ -278,6 +287,16 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
       default:
         $entity[$name][LANGUAGE_NONE][0]['value'] = $value;
     }
+  }
+
+  if (!empty($missing_field)) {
+    // For example, a participant whose person could not be re-created.
+    watchdog('hedley_user', 'Sync incident: @bundle @uuid was not re-created, required @field is missing or references an unknown UUID.', [
+      '@bundle' => $bundle,
+      '@uuid' => $data->uuid,
+      '@field' => $missing_field,
+    ], WATCHDOG_WARNING);
+    return;
   }
 
   try {

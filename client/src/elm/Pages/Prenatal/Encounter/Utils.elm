@@ -11,6 +11,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEnco
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate, isNurseEncounter, lmpToEDDDate)
 import Backend.Utils exposing (healthyStartEnabled)
+import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, orElse, unwrap)
@@ -281,19 +282,20 @@ getPrenatalEncountersForParticipantDesc db participantId =
 
 
 generatePreviousMeasurements :
-    PrenatalEncounterId
-    -> IndividualEncounterParticipantId
+    PrenatalEncounter
     -> ModelIndexedDb
     ->
         ( List PreviousEncounterData
         , List ( NominalDate, PrenatalEncounterType, PrenatalMeasurements )
         )
-generatePreviousMeasurements currentEncounterId participantId db =
-    getPrenatalEncountersForParticipantDesc db participantId
+generatePreviousMeasurements currentEncounter db =
+    getPrenatalEncountersForParticipantDesc db currentEncounter.participant
         |> List.filter
-            (\( id, _ ) ->
-                -- We do not want to get data of current encounter.
-                id /= currentEncounterId
+            (\( _, encounter ) ->
+                -- Only encounters that started on an earlier day are history.
+                -- This leaves out the current encounter, and any later encounter
+                -- (a lab result can be entered after the next visit has started).
+                Date.compare encounter.startDate currentEncounter.startDate == LT
             )
         |> List.sortWith sortEncounterTuples
         |> (\previousEncounters ->
@@ -357,10 +359,7 @@ generateAssembledData id db =
 
         ( nursePreviousEncountersData, chwPreviousMeasurementsWithDates ) =
             RemoteData.toMaybe encounter
-                |> Maybe.map
-                    (\encounter_ ->
-                        generatePreviousMeasurements id encounter_.participant db
-                    )
+                |> Maybe.map (\encounter_ -> generatePreviousMeasurements encounter_ db)
                 |> Maybe.withDefault ( [], [] )
 
         nursePreviousMeasurements =

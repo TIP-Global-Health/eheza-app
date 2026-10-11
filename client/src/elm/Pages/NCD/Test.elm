@@ -1,5 +1,6 @@
 module Pages.NCD.Test exposing (all)
 
+import AssocList as Dict
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model
     exposing
@@ -15,6 +16,7 @@ import Backend.Measurement.Model
         , TestResult(..)
         , UrineDipstickTestValue
         )
+import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.NCDEncounter.Model as NCDEncounterModel
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Date
@@ -22,18 +24,24 @@ import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (LaboratoryTask(..))
+import Measurement.Utils exposing (rdtKnownAsPositiveUpdate, rdtTestPerformedUpdate, toHIVTestValueWithDefault, toPregnancyTestValueWithDefault)
+import Pages.NCD.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.NCD.Activity.Types exposing (NextStepsTask(..))
+import Pages.NCD.Activity.Update
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask, resolveNextStepsTasks, resolvePreviousMaybeValue)
-import Pages.NCD.Model exposing (AssembledData, PreviousEncounterData)
+import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..), PreviousEncounterData)
 import Pages.NCD.Utils
     exposing
-        ( generateNCDDiagnoses
+        ( generateAssembledData
+        , generateNCDDiagnoses
         , lowerHypertensionStageCondition
         , patientIsPregnant
+        , referForRenalComplications
         , stage1BloodPressureCondition
         , stage2BloodPressureCondition
         , stage3BloodPressureCondition
         )
+import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import Test exposing (Test, describe, test)
 import TestFixtures exposing (testPerson)
@@ -426,6 +434,52 @@ expectDiagnosesOnReassessment encounterDiagnoses previousDiagnoses expected meas
         |> Expect.equal (EverySet.fromList expected)
 
 
+{-| An NCD encounter as stored in the database: its start date, the diagnoses
+written onto it, and the measurements taken at it.
+-}
+type alias StoredEncounter =
+    { id : String
+    , startDate : NominalDate
+    , diagnoses : List NCDDiagnosis
+    , measurements : NCDMeasurements
+    }
+
+
+{-| Assemble the encounter with the given id from a database holding the given
+encounters of one participant -- the way every NCD page and the assessment run
+after a save build their data.
+-}
+assembledFromDb : String -> List StoredEncounter -> Maybe AssembledData
+assembledFromDb encounterId storedEncounters =
+    let
+        encounters =
+            List.map
+                (\stored ->
+                    ( toEntityUuid stored.id
+                    , { dummyEncounter
+                        | startDate = stored.startDate
+                        , diagnoses = EverySet.fromList stored.diagnoses
+                      }
+                    )
+                )
+                storedEncounters
+
+        db =
+            { emptyModelIndexedDb
+                | ncdEncounters = Dict.fromList <| List.map (Tuple.mapSecond RemoteData.Success) encounters
+                , ncdEncountersByParticipant =
+                    Dict.singleton dummyEncounter.participant (RemoteData.Success <| Dict.fromList encounters)
+                , ncdMeasurements =
+                    Dict.fromList <|
+                        List.map (\stored -> ( toEntityUuid stored.id, RemoteData.Success stored.measurements )) storedEncounters
+                , individualParticipants = Dict.singleton dummyEncounter.participant (RemoteData.Success dummyParticipant)
+                , people = Dict.singleton dummyParticipant.person (RemoteData.Success testPerson)
+            }
+    in
+    generateAssembledData (toEntityUuid encounterId) db
+        |> RemoteData.toMaybe
+
+
 hypertensionHierarchyTest : Test
 hypertensionHierarchyTest =
     -- Across encounters the hypertension stage is adjusted, not just re-derived
@@ -518,6 +572,64 @@ reassessmentTest =
                         [ DiagnosisDiabetesInitial ]
                         []
                         [ DiagnosisDiabetesRecurrent ]
+        ]
+
+
+olderEncounterTest : Test
+olderEncounterTest =
+    -- A lab result can be entered for an encounter after a later encounter of
+    -- the same participant has started. The history of the older encounter is
+    -- still made of the encounters before it. Here the older encounter is held
+    -- on dummyDate, and the later one a month after it.
+    let
+        olderEncounter diagnoses measurements =
+            { id = "older-encounter"
+            , startDate = dummyDate
+            , diagnoses = diagnoses
+            , measurements = measurements
+            }
+
+        encounterAt monthsAfter diagnoses =
+            { id = "encounter-" ++ String.fromInt monthsAfter
+            , startDate = Date.add Date.Months monthsAfter dummyDate
+            , diagnoses = diagnoses
+            , measurements = emptyNCDMeasurements
+            }
+
+        diagnosesOfOlderEncounter storedEncounters =
+            assembledFromDb "older-encounter" storedEncounters
+                |> Maybe.map generateNCDDiagnoses
+    in
+    describe "generateAssembledData - an encounter assessed after a later one started"
+        [ test "Stage 1 encounter + creatinine 2.0, later encounter at Stage 3 -> stays Stage 1" <|
+            \_ ->
+                diagnosesOfOlderEncounter
+                    [ olderEncounter [ DiagnosisHypertensionStage1 ] (baseMeasurements |> withVitals 145 95 |> withCreatinine 2.0)
+                    , encounterAt 1 [ DiagnosisHypertensionStage3 ]
+                    ]
+                    |> Expect.equal (Just <| EverySet.fromList [ DiagnosisHypertensionStage1, DiagnosisRenalComplications ])
+        , test "blood sugar 250, later encounter already diabetic -> diabetes is kept" <|
+            \_ ->
+                diagnosesOfOlderEncounter
+                    [ olderEncounter [] (baseMeasurements |> withRandomBloodSugar False 250)
+                    , encounterAt 1 [ DiagnosisDiabetesRecurrent ]
+                    ]
+                    |> Expect.equal (Just <| EverySet.singleton DiagnosisDiabetesRecurrent)
+        , test "renal complications found at recurrent phase, later encounter already has them -> referral is offered" <|
+            \_ ->
+                assembledFromDb "older-encounter"
+                    [ olderEncounter [ DiagnosisHypertensionStage1, DiagnosisRenalComplications ] baseMeasurements
+                    , encounterAt 1 [ DiagnosisHypertensionStage1, DiagnosisRenalComplications ]
+                    ]
+                    |> Maybe.map (referForRenalComplications NCDEncounterPhaseRecurrent)
+                    |> Expect.equal (Just True)
+        , test "Stage-1 reading, earlier encounter at Stage 3 -> stays Stage 3 (earlier encounters are history)" <|
+            \_ ->
+                diagnosesOfOlderEncounter
+                    [ olderEncounter [] (baseMeasurements |> withVitals 145 95)
+                    , encounterAt -1 [ DiagnosisHypertensionStage3 ]
+                    ]
+                    |> Expect.equal (Just <| EverySet.singleton DiagnosisHypertensionStage3)
         ]
 
 
@@ -752,6 +864,24 @@ pregnancyAcrossEncountersTest =
                     |> isPregnantWith
                         [ previousEncounterAt 2 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
                     |> Expect.equal True
+        , -- A record can carry a result left behind when the run was withdrawn:
+          -- older builds keep it when "performed" is changed to No.
+          test "a negative left behind by a withdrawn test does not override an earlier positive" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteLackOfReagents (Just TestNegative))
+                    |> isPregnantWith
+                        [ previousEncounterAt 2 (emptyNCDMeasurements |> withPregnancyTest TestNoteRunToday (Just TestPositive)) ]
+                    |> Expect.equal True
+        , test "a positive left behind by a withdrawn test does not count" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteLackOfReagents (Just TestPositive))
+                    |> isPregnantWith []
+                    |> Expect.equal False
+        , test "a positive left behind on a test that was not indicated still answers No" <|
+            \_ ->
+                (emptyNCDMeasurements |> withPregnancyTest TestNoteNotIndicated (Just TestPositive))
+                    |> isPregnantWith []
+                    |> Expect.equal False
         , test "reported as known to be pregnant, then not known three months later" <|
             \_ ->
                 (emptyNCDMeasurements |> withPregnancyTest TestNoteNotIndicated Nothing)
@@ -839,8 +969,83 @@ all =
         , generateNCDDiagnosesTest
         , hypertensionHierarchyTest
         , reassessmentTest
+        , olderEncounterTest
         , nextStepsTasksTest
         , resolvePreviousMaybeValueTest
         , pregnancyAcrossEncountersTest
         , pregnancyTestExpectedTest
+        , repeatedTapOnSavedTest
+        ]
+
+
+{-| The bool inputs of the NCD rapid tests fire on every tap, including one
+that repeats the answer shown. On a test loaded from the record the form in
+the model is still empty, so the update has to act on the form as displayed
+for a repeated tap to leave the saved run and its result alone.
+-}
+repeatedTapOnSavedTest : Test
+repeatedTapOnSavedTest =
+    let
+        encounterId =
+            toEntityUuid "dummy-encounter"
+
+        savedHIVTest =
+            { executionNote = TestNoteRunToday
+            , executionDate = Nothing
+            , testPrerequisites = Nothing
+            , testResult = Just TestNegative
+            , hivSigns = Nothing
+            }
+
+        savedPregnancyTest =
+            { executionNote = TestNoteRunToday
+            , executionDate = Nothing
+            , testResult = Just TestNegative
+            }
+
+        db =
+            { emptyModelIndexedDb
+                | ncdMeasurements =
+                    Dict.singleton encounterId
+                        (RemoteData.Success
+                            { emptyNCDMeasurements
+                                | hivTest = wrapMeasurement savedHIVTest
+                                , pregnancyTest = wrapMeasurement savedPregnancyTest
+                            }
+                        )
+            }
+
+        formAfter msg =
+            Pages.NCD.Activity.Update.update dummyDate encounterId db msg emptyModel
+                |> (\( model, _, _ ) -> model.laboratoryData)
+    in
+    describe "a repeated tap on a test loaded from the record"
+        [ test "HIV test: Yes on performed keeps the saved result" <|
+            \_ ->
+                formAfter (SetHIVTestFormBoolInput rdtTestPerformedUpdate True)
+                    |> .hivTestForm
+                    |> toHIVTestValueWithDefault (Just savedHIVTest)
+                    |> Maybe.map .testResult
+                    |> Expect.equal (Just (Just TestNegative))
+        , test "HIV test: No on known as positive keeps the saved run and result" <|
+            \_ ->
+                formAfter (SetHIVTestFormBoolInput rdtKnownAsPositiveUpdate False)
+                    |> .hivTestForm
+                    |> toHIVTestValueWithDefault (Just savedHIVTest)
+                    |> Maybe.map (\value -> ( value.executionNote, value.testResult ))
+                    |> Expect.equal (Just ( TestNoteRunToday, Just TestNegative ))
+        , test "pregnancy test: Yes on performed keeps the saved result" <|
+            \_ ->
+                formAfter (SetPregnancyTestFormBoolInput rdtTestPerformedUpdate True)
+                    |> .pregnancyTestForm
+                    |> toPregnancyTestValueWithDefault (Just savedPregnancyTest)
+                    |> Maybe.map .testResult
+                    |> Expect.equal (Just (Just TestNegative))
+        , test "pregnancy test: No on performed withdraws the saved result" <|
+            \_ ->
+                formAfter (SetPregnancyTestFormBoolInput rdtTestPerformedUpdate False)
+                    |> .pregnancyTestForm
+                    |> toPregnancyTestValueWithDefault (Just savedPregnancyTest)
+                    |> Maybe.map .testResult
+                    |> Expect.equal Nothing
         ]
