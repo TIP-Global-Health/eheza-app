@@ -29,7 +29,6 @@ import Backend.Measurement.Model
         , PostpartumMotherDangerSign(..)
         , PrenatalSymptom(..)
         , VaginalExamSign(..)
-        , ViralLoadStatus(..)
         )
 import Backend.Measurement.Utils exposing (bilirubinValueFromString, bloodGroupFromString, bloodSmearResultFromString, getMeasurementValueFunc, glucoseValueFromString, haemoglobinValueFromString, ketoneValueFromString, leukocytesValueFromString, nitriteValueFromString, nonReferralReasonToSign, phValueFromString, pregnancyTestResultFromString, proteinValueFromString, rhesusFromString, testResultFromString, urobilinogenValueFromString)
 import Backend.Model exposing (ModelIndexedDb)
@@ -3091,15 +3090,8 @@ update currentDate site id db msg model =
                 form =
                     model.laboratoryData.hivPCRTestForm
 
-                status =
-                    if undetectable then
-                        ViralLoadUndetectable
-
-                    else
-                        ViralLoadDetectable
-
                 updatedForm =
-                    { form | hivViralLoadStatus = Just status, hivViralLoadStatusDirty = True }
+                    Measurement.Utils.setHIVViralLoadUndetectable undetectable form
 
                 updatedData =
                     model.laboratoryData

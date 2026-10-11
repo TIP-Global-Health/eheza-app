@@ -46,8 +46,8 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (RangedMeasurement(..))
-import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault)
+import Measurement.Model exposing (RangedMeasurement(..), emptyHIVPCRResultForm)
+import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, setHIVViralLoadUndetectable, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault)
 import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
@@ -1477,6 +1477,65 @@ generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest =
         ]
 
 
+{-| A viral load answered "undetectable" is under 20 copies. The answer clears
+a number typed or saved before, and a record that still holds one is not
+diagnosed with a detectable viral load.
+-}
+hivViralLoadUndetectableTest : Test
+hivViralLoadUndetectableTest =
+    let
+        encounterId =
+            toEntityUuid "encounter"
+
+        savedDetectable =
+            hivPCRValueNonImmediate 5000
+
+        db =
+            { emptyModelIndexedDb
+                | prenatalMeasurements =
+                    Dict.singleton encounterId
+                        (RemoteData.Success { emptyPrenatalMeasurements | hivPCRTest = wrapMeasurement savedDetectable })
+            }
+
+        valueAfterTap undetectable =
+            update dummyDate SiteRwanda encounterId db (SetHIVViralLoadUndetectable undetectable) emptyModel
+                |> (\( model, _, _ ) -> model.laboratoryData.hivPCRTestForm)
+                |> toHIVPCRTestValueWithDefault (Just savedDetectable)
+
+        statusAndLoad value =
+            ( value.hivViralLoadStatus, value.hivViralLoad )
+
+        detectableDiagnosed value =
+            { emptyPrenatalMeasurements | hivPCRTest = wrapMeasurement value }
+                |> diagnoseNurse
+                |> EverySet.member DiagnosisHIVDetectableViralLoadRecurrentPhase
+    in
+    describe "HIV PCR viral load answered undetectable"
+        [ test "first visit: Yes on a saved detectable result clears its number" <|
+            \_ ->
+                valueAfterTap True
+                    |> Maybe.map statusAndLoad
+                    |> Expect.equal (Just ( Just ViralLoadUndetectable, Nothing ))
+        , test "first visit: No on a saved detectable result keeps its number" <|
+            \_ ->
+                valueAfterTap False
+                    |> Maybe.map statusAndLoad
+                    |> Expect.equal (Just ( Just ViralLoadDetectable, Just 5000 ))
+        , test "lab results: Yes on a saved detectable result clears its number" <|
+            \_ ->
+                setHIVViralLoadUndetectable True emptyHIVPCRResultForm
+                    |> toHIVPCRResultValueWithDefault (Just savedDetectable)
+                    |> Maybe.map statusAndLoad
+                    |> Expect.equal (Just ( Just ViralLoadUndetectable, Nothing ))
+        , test "a record answered undetectable is not diagnosed from the number it holds" <|
+            \_ ->
+                ( detectableDiagnosed { savedDetectable | hivViralLoadStatus = Just ViralLoadUndetectable }
+                , detectableDiagnosed savedDetectable
+                )
+                    |> Expect.equal ( False, True )
+        ]
+
+
 {-| The discordant-partnership diagnosis carries an Initial and a Recurrent
 variant, and only the Recurrent one prescribes PrEP at the recurrent phase. The
 variant has to follow the test that produced the match: the partner's own test
@@ -2286,6 +2345,7 @@ all =
         , generatePrenatalDiagnosesForNurseHypertensionRecheckTest
         , generatePrenatalDiagnosesForNurseSeverePreeclampsiaRecurrentTest
         , generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest
+        , hivViralLoadUndetectableTest
         , generatePrenatalDiagnosesForNurseDiscordantPartnershipTest
         , resolvePartnerHIVTestResultTest
         , resolveDiscordantCoupleStatusTest

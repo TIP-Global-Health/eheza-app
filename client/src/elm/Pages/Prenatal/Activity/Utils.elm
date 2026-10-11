@@ -2279,10 +2279,18 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     )
                 |> Maybe.withDefault False
 
+        -- A load recorded as undetectable is under 20 copies, whatever number
+        -- is stored with it.
         hivDetectableViralLoadDiagnosed =
             getMeasurementValueFunc measurements.hivPCRTest
                 |> Maybe.andThen
-                    (.hivViralLoad >> Maybe.map (\viralLoad -> viralLoad >= 20))
+                    (\value ->
+                        if value.hivViralLoadStatus == Just ViralLoadUndetectable then
+                            Nothing
+
+                        else
+                            Maybe.map (\viralLoad -> viralLoad >= 20) value.hivViralLoad
+                    )
                 |> Maybe.withDefault False
 
         -- Partner is not taking ARVs, or is taking them without reaching

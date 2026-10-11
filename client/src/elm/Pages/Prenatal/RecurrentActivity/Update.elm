@@ -3,7 +3,7 @@ module Pages.Prenatal.RecurrentActivity.Update exposing (update, updateLabsHisto
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (IllnessSymptom(..), PhaseRecorded(..), ViralLoadStatus(..))
+import Backend.Measurement.Model exposing (IllnessSymptom(..), PhaseRecorded(..))
 import Backend.Measurement.Utils exposing (bilirubinValueFromString, bloodGroupFromString, bloodSmearResultFromString, getMeasurementValueFunc, glucoseValueFromString, haemoglobinValueFromString, ketoneValueFromString, leukocytesValueFromString, nitriteValueFromString, nonReferralReasonToSign, phValueFromString, proteinValueFromString, rhesusFromString, testResultFromString, urobilinogenValueFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalActivity.Model
@@ -758,15 +758,8 @@ update id isLabTech db msg model =
                 form =
                     model.labResultsData.hivPCRTestForm
 
-                status =
-                    if undetectable then
-                        ViralLoadUndetectable
-
-                    else
-                        ViralLoadDetectable
-
                 updatedForm =
-                    { form | hivViralLoadStatus = Just status }
+                    Measurement.Utils.setHIVViralLoadUndetectable undetectable form
 
                 updatedData =
                     model.labResultsData
@@ -1671,15 +1664,8 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
                 form =
                     data.hivPCRTestForm
 
-                status =
-                    if undetectable then
-                        ViralLoadUndetectable
-
-                    else
-                        ViralLoadDetectable
-
                 updatedForm =
-                    { form | hivViralLoadStatus = Just status }
+                    Measurement.Utils.setHIVViralLoadUndetectable undetectable form
             in
             ( { data | hivPCRTestForm = updatedForm }
             , Cmd.none
