@@ -97,30 +97,35 @@ foreach (array_keys($cleared) as $nid) {
   cache_clear_all("field:node:$nid", 'cache_field');
 }
 
-// The NCDA report counts these z-scores, and is rebuilt only when a
-// measurement is saved. So it is queued here, for children with a cleared
-// height or weight.
-if (variable_get('hedley_admin_feature_ncda_enabled', FALSE)) {
-  $children = [];
-  foreach (array_chunk(array_keys($cleared), 1000) as $chunk) {
-    $query = db_select('field_data_field_person', 'p');
-    $query->join('node', 'n', 'n.nid = p.entity_id');
-    $children += $query
-      ->fields('p', ['field_person_target_id'])
-      ->condition('p.entity_type', 'node')
-      ->condition('p.entity_id', $chunk, 'IN')
-      ->condition('n.type', hedley_ncda_get_triggering_measurement_types(), 'IN')
-      ->execute()
-      ->fetchAllKeyed(0, 0);
-  }
+// Statistical Queries and the NCDA report keep copies of height and weight
+// z-scores, rebuilt only when a measurement is saved. So both are queued here.
+$children = [];
+foreach (array_chunk(array_keys($cleared), 1000) as $chunk) {
+  $query = db_select('field_data_field_person', 'p');
+  $query->join('node', 'n', 'n.nid = p.entity_id');
+  $children += $query
+    ->fields('p', ['field_person_target_id'])
+    ->condition('p.entity_type', 'node')
+    ->condition('p.entity_id', $chunk, 'IN')
+    ->condition('n.type', array_merge(HEDLEY_ACTIVITY_HEIGHT_BUNDLES, HEDLEY_ACTIVITY_WEIGHT_BUNDLES), 'IN')
+    ->execute()
+    ->fetchAllKeyed(0, 0);
+}
 
+$queues = [HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA => 'Statistical Queries'];
+if (variable_get('hedley_admin_feature_ncda_enabled', FALSE)) {
+  $queues[HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA] = 'NCDA';
+}
+
+foreach ($queues as $queue => $label) {
   foreach (array_keys($children) as $person_id) {
-    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA, $person_id, [
+    hedley_general_add_task_to_advanced_queue_by_id($queue, $person_id, [
       'person_id' => $person_id,
     ]);
   }
 
-  drush_print(dt('Queued the NCDA data of @count children for recalculation.', [
+  drush_print(dt('Queued the @label data of @count children for recalculation.', [
+    '@label' => $label,
     '@count' => count($children),
   ]));
 }
