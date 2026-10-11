@@ -48,5 +48,5 @@ dedup-by-title, Jenkins `H/10` drain, serialized) plus Jenkins → `terminus rem
 scheduled scripts are a first-class area of the replacement; treat them as such in any follow-up.
 Full Jenkins inventory now recorded in [[jenkins-scheduled-jobs-inventory]] (needs the user's Chrome session).
 
-**How to apply:** when the user returns to this topic, start from the decision they made, not
-from re-surveying; the inventory above is the baseline.
+**How to apply:** start from the consolidated [[backend-replacement-decision-dossier]] and the
+decision the user made, not from re-surveying; this file is the narrative behind it.

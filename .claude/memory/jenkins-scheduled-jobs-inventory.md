@@ -31,4 +31,4 @@ Also seen: WhatsApp jobs for som/uvl live are **disabled** (and misnamed `*.ive`
 **D7ES 7.106 (2026-08-19)**, i.e. the Drupal 7 Extended Support stream, PHP 8.4-capable since 7.105.
 
 **How to apply:** this is the authoritative list of scheduled work a backend replacement must
-re-home (see [[backend-replacement-discovery-2026-10]]). Ask the user where `export-delta.php` lives.
+re-home (see [[backend-replacement-decision-dossier]]). Ask the user where `export-delta.php` lives.
