@@ -46,7 +46,14 @@ Do not write to the knowledge files mid-run; unvetted guesses never enter memory
 gh issue view <n> --comments    # intent: what should now be true
 gh pr view <n>                  # needs gh 2.99 or later, as does --attach below
 gh pr diff <n>                  # reality: what actually changed
+grep -lw "#<n>" .claude/backlog/items/*.md   # backlog item, if the work came from one
 ```
+
+A matching backlog item adds context: the code paths, how the defect happens, related items,
+and what was verified before merge. Read it when it exists; many PRs have none.
+
+When the backlog item disagrees with the issue or the PR, the issue and the PR win. The item
+records what was believed when it was written; they record what was asked and shipped.
 
 List every user-observable behaviour the diff touches: each new or changed screen, branch,
 message, or condition. The diff — not the issue text, not the commit subjects — defines
