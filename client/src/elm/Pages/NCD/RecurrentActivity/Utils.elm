@@ -192,7 +192,11 @@ expectLaboratoryResultTask assembled task =
 
         TaskRandomBloodSugarTest ->
             getMeasurementValueFunc assembled.measurements.randomBloodSugarTest
-                |> Maybe.map expectUniversalTestResultTask
+                |> Maybe.map
+                    (\value ->
+                        testPerformedByExecutionNote value.executionNote
+                            && expectUniversalTestResultTask value
+                    )
                 |> Maybe.withDefault False
 
         TaskUrineDipstickTest ->

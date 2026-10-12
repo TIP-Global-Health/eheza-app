@@ -2932,29 +2932,9 @@ toRandomBloodSugarTestValue : RandomBloodSugarTestForm msg -> Maybe (RandomBlood
 toRandomBloodSugarTestValue form =
     Maybe.map
         (\executionNote ->
-            let
-                testPrerequisites =
-                    Maybe.map2
-                        (\patientFasted immediateResult ->
-                            case ( patientFasted, immediateResult ) of
-                                ( True, True ) ->
-                                    EverySet.fromList [ PrerequisiteFastFor12h, PrerequisiteImmediateResult ]
-
-                                ( True, False ) ->
-                                    EverySet.singleton PrerequisiteFastFor12h
-
-                                ( False, True ) ->
-                                    EverySet.singleton PrerequisiteImmediateResult
-
-                                ( False, False ) ->
-                                    EverySet.singleton NoTestPrerequisites
-                        )
-                        form.patientFasted
-                        form.immediateResult
-            in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
+            , testPrerequisites = randomBloodSugarPrerequisites executionNote form.patientFasted form.immediateResult
             , sugarCount = form.sugarCount
             , originatingEncounter = Nothing
             }
@@ -3004,29 +2984,9 @@ toRandomBloodSugarTestValueUniversal : RandomBloodSugarTestUniversalForm -> Mayb
 toRandomBloodSugarTestValueUniversal form =
     Maybe.map
         (\executionNote ->
-            let
-                testPrerequisites =
-                    Maybe.map2
-                        (\patientFasted immediateResult ->
-                            case ( patientFasted, immediateResult ) of
-                                ( True, True ) ->
-                                    EverySet.fromList [ PrerequisiteFastFor12h, PrerequisiteImmediateResult ]
-
-                                ( True, False ) ->
-                                    EverySet.singleton PrerequisiteFastFor12h
-
-                                ( False, True ) ->
-                                    EverySet.singleton PrerequisiteImmediateResult
-
-                                ( False, False ) ->
-                                    EverySet.singleton NoTestPrerequisites
-                        )
-                        form.patientFasted
-                        form.immediateResult
-            in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
+            , testPrerequisites = randomBloodSugarPrerequisites executionNote form.patientFasted form.immediateResult
             , sugarCount = form.sugarCount
             , originatingEncounter = Nothing
             }
@@ -3399,6 +3359,34 @@ testPrerequisitesByExecutionNote : TestExecutionNote -> Maybe Bool -> Maybe (Eve
 testPrerequisitesByExecutionNote executionNote immediateResult =
     if testPerformedByExecutionNote executionNote then
         testPrerequisitesByImmediateResult immediateResult
+
+    else
+        Nothing
+
+
+{-| A random blood sugar test that was not run stores no prerequisites, even
+when the form still holds the answers of a run it replaced.
+-}
+randomBloodSugarPrerequisites : TestExecutionNote -> Maybe Bool -> Maybe Bool -> Maybe (EverySet TestPrerequisite)
+randomBloodSugarPrerequisites executionNote patientFasted immediateResult =
+    if testPerformedByExecutionNote executionNote then
+        Maybe.map2
+            (\fasted immediate ->
+                case ( fasted, immediate ) of
+                    ( True, True ) ->
+                        EverySet.fromList [ PrerequisiteFastFor12h, PrerequisiteImmediateResult ]
+
+                    ( True, False ) ->
+                        EverySet.singleton PrerequisiteFastFor12h
+
+                    ( False, True ) ->
+                        EverySet.singleton PrerequisiteImmediateResult
+
+                    ( False, False ) ->
+                        EverySet.singleton NoTestPrerequisites
+            )
+            patientFasted
+            immediateResult
 
     else
         Nothing
