@@ -2,8 +2,8 @@ module Components.ReportToWhatsAppDialog.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
-import Components.ReportToWhatsAppDialog.Model exposing (DialogState(..), Model, Msg(..), PhoneData, ReportComponentAntenatal(..), ReportComponentNCD(..), ReportComponentWellChild(..), ReportComponentsConfig, ReportComponentsList(..), ReportType(..), emptyPhoneData)
-import Components.ReportToWhatsAppDialog.Utils exposing (allCountryCodes, countryCodeToString, minimalNumberLength, siteToCountryCode, trimLeadingZeros)
+import Components.ReportToWhatsAppDialog.Model exposing (DialogState(..), Model, Msg(..), PhoneData, ReportComponentAntenatal(..), ReportComponentNCD(..), ReportComponentWellChild(..), ReportComponentsConfig, ReportComponentsList(..), ReportType(..))
+import Components.ReportToWhatsAppDialog.Utils exposing (allCountryCodes, countryCodeToString, emptyPhoneData, minimalNumberLength, siteToCountryCode, toLocalPhoneNumber, trimLeadingZeros)
 import EverySet
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
@@ -29,10 +29,10 @@ viewDialog language site ( personId, person ) reportType componentsConfig state 
         content =
             case state of
                 Consent ->
-                    viewConsent language phoneInput person
+                    viewConsent language newPhoneData person
 
                 PhoneVerification phoneNumber ->
-                    viewPhoneVerification language allowComponentsSelection phoneInput phoneNumber
+                    viewPhoneVerification language allowComponentsSelection newPhoneData phoneNumber
 
                 PhoneInput data ->
                     viewPhoneInput language site data
@@ -67,17 +67,19 @@ viewDialog language site ( personId, person ) reportType componentsConfig state 
         allowComponentsSelection =
             isJust componentsConfig
 
-        -- A new number starts with the country code of the site.
-        phoneInput =
-            PhoneInput (emptyPhoneData (siteToCountryCode site))
+        newPhoneData =
+            emptyPhoneData site
     in
     div [ class "ui tiny active modal send-via-whatsapp" ]
         content
 
 
-viewConsent : Language -> DialogState -> Person -> List (Html (Msg msg))
-viewConsent language phoneInput person =
+viewConsent : Language -> PhoneData -> Person -> List (Html (Msg msg))
+viewConsent language newPhoneData person =
     let
+        phoneInput =
+            PhoneInput newPhoneData
+
         nextState =
             Maybe.map
                 (\number ->
@@ -115,8 +117,8 @@ viewConsent language phoneInput person =
     ]
 
 
-viewPhoneVerification : Language -> Bool -> DialogState -> String -> List (Html (Msg msg))
-viewPhoneVerification language allowComponentsSelection phoneInput phoneNumber =
+viewPhoneVerification : Language -> Bool -> PhoneData -> String -> List (Html (Msg msg))
+viewPhoneVerification language allowComponentsSelection newPhoneData phoneNumber =
     let
         nextStateForYes =
             if allowComponentsSelection then
@@ -134,7 +136,7 @@ viewPhoneVerification language allowComponentsSelection phoneInput phoneNumber =
         [ div [ class "two ui buttons" ]
             [ button
                 [ class "ui velvet fluid button"
-                , onClick <| SetState <| Just phoneInput
+                , onClick <| SetState <| Just (PhoneInput newPhoneData)
                 ]
                 [ text <| translate language Translate.No ]
             , button
@@ -166,7 +168,7 @@ viewPhoneInput language site data =
                 let
                     curerntPhoneNumber =
                         if siteToCountryCode site == data.countryCode then
-                            "0" ++ trimLeadingZeros data.phone
+                            toLocalPhoneNumber site data.phone
 
                         else
                             "+" ++ countryCodeToString data.countryCode ++ trimLeadingZeros data.phone
