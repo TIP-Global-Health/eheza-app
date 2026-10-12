@@ -136,6 +136,14 @@ diabetesBySugarCountTest =
             \_ -> diabetesBySugarCount (rbsValue True 150) |> Expect.equal True
         , test "non-fasting 150 -> not diabetes [Labs tab's >126 non-fasting would wrongly flag this]" <|
             \_ -> diabetesBySugarCount (rbsValue False 150) |> Expect.equal False
+        , test "a reading left on a test that was not performed -> not diabetes" <|
+            \_ ->
+                let
+                    reading =
+                        rbsValue False 210
+                in
+                diabetesBySugarCount { reading | executionNote = TestNoteNotIndicated }
+                    |> Expect.equal False
         ]
 
 

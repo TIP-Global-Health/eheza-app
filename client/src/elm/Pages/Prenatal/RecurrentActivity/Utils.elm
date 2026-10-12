@@ -1,7 +1,7 @@
 module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault)
 
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
 import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet
@@ -21,7 +21,6 @@ import Measurement.Utils
         ( bloodSmearResultSet
         , expectUniversalTestResultTask
         , testNotPerformedByWhyNotAtExecutionNote
-        , testPerformedByExecutionNote
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (vitalsFormInputsAndTasks)

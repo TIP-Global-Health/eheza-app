@@ -23,7 +23,7 @@ import Backend.Measurement.Model
 import Date exposing (Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -59,6 +59,7 @@ import Measurement.Utils
         , toMalariaTestValueWithDefault
         , toPartnerHIVTestValueWithDefault
         , toPregnancyTestValueWithDefault
+        , toRandomBloodSugarTestValueUniversalWithDefault
         )
 import Measurement.View exposing (viewColorAlertIndication)
 import SyncManager.Model exposing (Site(..))
@@ -1255,6 +1256,25 @@ knownAsPositiveSavesNoPrerequisitesTest =
                     |> toPartnerHIVTestValueWithDefault (Just savedHIVTest)
                     |> Maybe.map .testPrerequisites
                     |> Expect.equal (Just sentToLab)
+        , test "Prenatal random blood sugar test, not performed with a reason" <|
+            \_ ->
+                { emptyRandomBloodSugarTestUniversalForm
+                    | testPerformed = Just False
+                    , testPerformedDirty = True
+                    , executionNote = Just TestNoteNotIndicated
+                    , executionNoteDirty = True
+                }
+                    |> toRandomBloodSugarTestValueUniversalWithDefault
+                        (Just
+                            { executionNote = TestNoteRunToday
+                            , executionDate = Nothing
+                            , testPrerequisites = sentToLab
+                            , sugarCount = Nothing
+                            , originatingEncounter = Nothing
+                            }
+                        )
+                    |> Maybe.map .testPrerequisites
+                    |> Expect.equal (Just Nothing)
         ]
 
 

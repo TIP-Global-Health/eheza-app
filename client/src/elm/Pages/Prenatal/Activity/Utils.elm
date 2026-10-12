@@ -11,6 +11,7 @@ import Backend.Measurement.Utils
         , getHeightValue
         , getMeasurementValueFunc
         , muacValueFunc
+        , testPerformedByExecutionNote
         , weightValueFunc
         )
 import Backend.Person.Model exposing (Person)
@@ -49,7 +50,6 @@ import Measurement.Utils
         , medicationAdministrationFormInputsAndTasks
         , medicationAdministrationFormWithDefault
         , resolveLabTestDate
-        , testPerformedByExecutionNote
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         , vitalsFormWithDefault
