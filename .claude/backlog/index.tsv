@@ -459,6 +459,7 @@ B-458	4	READY	LOW			39	Admin content: outside super user mode, three more ways t
 B-459	1	READY	LOW			38	Prenatal diagnosis: a treated malaria found again at a different anemia level is filed as a new episode, and "treated" m
 B-460	2	IMPLEMENTED		2320	2321		Sync incidents: the backend cannot re-create a missing entity the device sent, because a `false` boolean is written as a
 B-461	4	READY					Client build: `client/yarn.lock` is a second lockfile nothing reads, and it has drifted from `package.json` · CONFIRMED 
+B-462	4	READY	LOW			40	Shared Yes/No-with-reason forms: editing a saved "Yes" to "No" shows the "Why not?" / "How many doses?" question with no
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
