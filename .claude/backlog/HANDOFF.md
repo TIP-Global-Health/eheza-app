@@ -44,7 +44,9 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — updated 2026-10-12
+## Open right now — updated 2026-10-12 (evening, after R40)
+
+🔭 **Round 40 ran 2026-10-12** (`rounds.md`): the 14 PRs merged since R39 read as merged — ALL CLEAN, three ✅ rows (Prenatal fix cluster, server fix cluster, Elm 0.19.3 + mangled bundle: real build + headless init on both bundles, every spec in exactly one CI job) — plus the first follow-up WRITER ↔ Case Management READER reconciliation → **B-462..B-465**, 0 tier 1/2: ⭐ **B-463** (tier 3, DEPLOYED — the server's AI resolver closes a TB-suspect follow-up on the illness's second AI encounter, so the TB pane entry vanishes before any TB encounter; ihangane 6 live), **B-465** (tier 3, DEPLOYED — CHW Dashboard past-month Home Visit count unbounded by date), B-462 (tier 4, Yes→No edit saves reason `none`, B-281's family — one fix for both), B-464 (tier 4, nutrition pane same-day home visit). B-267(a) marked fixed by #2321 (latent: zero NCD `review_state` rows on ihangane/vhw). B-440 records the R40 re-find of its seven untouched writers as declined on #2306 — do not re-pitch. Tier 1 READY now: B-450 (ask first), B-453 (ask first), B-459; B-452 and B-454 shipped by a parallel session (#2329, #2331). Dry-stop counter: 0.
 
 🟡 **PR #2331 open 2026-10-12 (B-454, tier 1, issue #2330)** — NCD labs: a random blood sugar test corrected to not performed owes no lab result. Shared `randomBloodSugarPrerequisites` (writer, NCD + Prenatal) + NCD result reader gated on performed. Medium review running. Worktree `ihangane-wt/B-454-rbs-not-performed-owes-result`.
 

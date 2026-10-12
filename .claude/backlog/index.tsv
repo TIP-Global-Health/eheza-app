@@ -460,6 +460,9 @@ B-459	1	READY	LOW			38	Prenatal diagnosis: a treated malaria found again at a di
 B-460	2	IMPLEMENTED		2320	2321		Sync incidents: the backend cannot re-create a missing entity the device sent, because a `false` boolean is written as a
 B-461	4	READY					Client build: `client/yarn.lock` is a second lockfile nothing reads, and it has drifted from `package.json` · CONFIRMED 
 B-462	4	READY	LOW			40	Shared Yes/No-with-reason forms: editing a saved "Yes" to "No" shows the "Why not?" / "How many doses?" question with no
+B-463	3	READY	MED-LOW			40	Case Management TB pane (server): a second Acute Illness encounter of the same illness closes the TB-suspect follow-up, 
+B-464	4	READY	LOW			40	Case Management Nutrition pane: a follow-up written on the same day as an earlier home visit is hidden, and the server n
+B-465	3	READY	MED-LOW			40	CHW Dashboard: the "Home Visit" case-management figure for a PAST month counts nutrition follow-ups created in later mon
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
