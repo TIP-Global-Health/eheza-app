@@ -29,10 +29,10 @@ viewDialog language site ( personId, person ) reportType componentsConfig state 
         content =
             case state of
                 Consent ->
-                    viewConsent language person
+                    viewConsent language phoneInput person
 
                 PhoneVerification phoneNumber ->
-                    viewPhoneVerification language allowComponentsSelection phoneNumber
+                    viewPhoneVerification language allowComponentsSelection phoneInput phoneNumber
 
                 PhoneInput data ->
                     viewPhoneInput language site data
@@ -66,13 +66,17 @@ viewDialog language site ( personId, person ) reportType componentsConfig state 
 
         allowComponentsSelection =
             isJust componentsConfig
+
+        -- A new number starts with the country code of the site.
+        phoneInput =
+            PhoneInput (emptyPhoneData (siteToCountryCode site))
     in
     div [ class "ui tiny active modal send-via-whatsapp" ]
         content
 
 
-viewConsent : Language -> Person -> List (Html (Msg msg))
-viewConsent language person =
+viewConsent : Language -> DialogState -> Person -> List (Html (Msg msg))
+viewConsent language phoneInput person =
     let
         nextState =
             Maybe.map
@@ -85,10 +89,10 @@ viewConsent language person =
                         PhoneVerification trimmed
 
                     else
-                        PhoneInput emptyPhoneData
+                        phoneInput
                 )
                 person.telephoneNumber
-                |> Maybe.withDefault (PhoneInput emptyPhoneData)
+                |> Maybe.withDefault phoneInput
     in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.ReportToWhatsAppConsentQuestion ]
@@ -111,8 +115,8 @@ viewConsent language person =
     ]
 
 
-viewPhoneVerification : Language -> Bool -> String -> List (Html (Msg msg))
-viewPhoneVerification language allowComponentsSelection phoneNumber =
+viewPhoneVerification : Language -> Bool -> DialogState -> String -> List (Html (Msg msg))
+viewPhoneVerification language allowComponentsSelection phoneInput phoneNumber =
     let
         nextStateForYes =
             if allowComponentsSelection then
@@ -130,7 +134,7 @@ viewPhoneVerification language allowComponentsSelection phoneNumber =
         [ div [ class "two ui buttons" ]
             [ button
                 [ class "ui velvet fluid button"
-                , onClick <| SetState <| Just (PhoneInput emptyPhoneData)
+                , onClick <| SetState <| Just phoneInput
                 ]
                 [ text <| translate language Translate.No ]
             , button

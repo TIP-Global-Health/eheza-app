@@ -32,9 +32,9 @@ type alias PhoneData =
     }
 
 
-emptyPhoneData : PhoneData
-emptyPhoneData =
-    { countryCode = CountryCodeRwanda
+emptyPhoneData : CountryCode -> PhoneData
+emptyPhoneData countryCode =
+    { countryCode = countryCode
     , phone = ""
     }
 
