@@ -207,3 +207,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** prenatal Next Steps ended on the main menu, and the script's own "Pause Encounter" click then waited 10 s and failed, leaving a dead tail on the video.
 - **Wrong conclusion:** the pause did not happen.
 - **Rule:** read what a helper does at its end before adding a step after it. `completeNextSteps` presses Pause Encounter on the Wait task itself.
+
+## Trusting the form straight after Save
+
+- **Symptom:** after Save, the reopened form showed the entered values, and the run called them saved.
+- **Wrong conclusion:** the data is stored, uploaded and readable by other devices.
+- **Rule:** the form after Save shows the clicks. Prove the upload (Remaining for Upload: 0), reload and reopen it, then re-pair and open it again (SKILL.md, Proving the data was saved).

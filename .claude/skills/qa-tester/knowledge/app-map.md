@@ -71,6 +71,10 @@ flag simply does not appear.
 - The upload lane then idles (Sync Settings → Idle time, default 600 s; after an error it
   sleeps that long). "TRY SYNCING WITH BACKEND" on Device Status forces a round;
   `h.common.syncAndWait(page)` presses the sync icon and waits for Success.
+- Device Status shows each health centre in a `.health-center` block, with Last Successful
+  Contact, Remaining for Upload, Remaining for Download and Status in `.sync-status`.
+- "Status: Success" alone does not prove the upload: check "Remaining for Upload: 0" too.
+  Queued changes are the IndexedDB `nodeChanges` and `shardChanges` rows.
 - Device Status has "Error log" and "Sync Manager" debug panels behind its top-left links.
 - IndexedDB `sync` stores: `nodes` (general data only, ~36 rows), `shards` (authority data:
   persons, relationships, measurements), `nodeChanges` / `shardChanges` (queued uploads),

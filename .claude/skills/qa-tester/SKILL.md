@@ -157,10 +157,31 @@ when unanswered), select values, the task counter, and whether Save is on.
 - **Native dialogs are dismissed automatically** (= Cancel). To accept one, register
   `page.once('dialog', d => d.accept())` in the same command, before the click.
 - **Photos**: `setInputFiles` on the Dropzone's hidden file input (as the photo helpers do).
-- Backend effects land only after sync. `h.common.syncAndWait(page)` waits for it; then
-  check with drush or the helpers' `query*` functions.
 - On an unexpected failure, check pitfalls and Step 2 before concluding the code is broken,
   and say explicitly whether it is an app bug or your own mistake.
+
+### Proving the data was saved
+
+Straight after Save, a form shows the clicks, not what was stored. So every test that
+saves data proves it three ways, each named in its plan row:
+
+1. **Uploaded.** Sync, then Device Status must show nothing left to upload. Only then
+   query the backend, with drush or the helpers' `query*` functions:
+
+   ```js
+   await h.common.syncAndWait(page);
+   await qa.click(page.locator('span.sync-icon'));
+   const hc = page.locator('.health-center', { hasText: 'Nyange' }).locator('.sync-status');
+   qa.check('all uploaded', /Remaining for Upload: 0\b/.test(await hc.innerText()), true);
+   ```
+2. **Loaded from the device.** Reload (`page.reload()`, signing in again if asked), reach
+   the form through the UI, and check every saved value. Now the screen shows stored data.
+3. **Downloaded.** Re-pair: `qa.sh stop`, `qa.sh start --fresh`, then `qa.freshDevice()`.
+   The new device starts empty, so saved values on the form prove they went up and came down.
+
+Re-pairing ends the browser session, so do it once, after the last test, and open every
+test's saved form in one recording, `qa-<pr>-after-repair.mp4`. For an ended encounter,
+open the screen that shows its data, such as the progress report.
 
 ### Recording
 
@@ -233,8 +254,9 @@ an earlier report instead of adding one. The report names no video files.
 
 **Then post the recordings as a separate comment**, one player per video. Preparation comes
 first, each as `**Preparation <k>:** <what is prepared, and which test needs it>`, then each
-test as `**Recording — test <n>:** <one line on what it shows>`, with its video referenced
-below it. Attach the files; `gh` uploads them and puts each player where its reference is:
+test as `**Recording — test <n>:** <one line on what it shows>`, and last
+`**After re-pairing:** <the saved values each test's form shows>`, each with its video below.
+Attach the files; `gh` uploads them and puts each player where its reference is:
 
 ```bash
 # recordings.md:  **Recording — test 1:** …  then a line  ![](client/qa-recordings/<pr>/qa-<pr>-<name>.mp4)
