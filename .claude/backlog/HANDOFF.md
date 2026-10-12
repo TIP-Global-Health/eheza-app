@@ -46,6 +46,8 @@ What changes because of this:
 
 ## Open right now — updated 2026-10-12
 
+🟡 **PR #2331 open 2026-10-12 (B-454, tier 1, issue #2330)** — NCD labs: a random blood sugar test corrected to not performed owes no lab result. Shared `randomBloodSugarPrerequisites` (writer, NCD + Prenatal) + NCD result reader gated on performed. Medium review running. Worktree `ihangane-wt/B-454-rbs-not-performed-owes-result`.
+
 🟡 **PR #2329 open 2026-10-12 (B-452, tier 1, issue #2328)** — Prenatal obstetric history: step 2 is ignored while step 1 of the same encounter records a first pregnancy. One helper `getObstetricHistoryStep2` (`Pages.Prenatal.Encounter.Utils`, skip rule moved beside it) gates both preeclampsia-risk diagnoses, the convulsions high-risk alerts and the report pane; Statistical Queries drops intra-uterine death on first-pregnancy encounters. User chose readers over overwriting step 2 (old devices keep writing; overwriting loses answers). 0 live instances on all sites. 7 elm-tests (4 fail pre-fix); elm make, 3340 elm-tests, elm-review, phpcs, comment check green locally. Review pending.
 
 🧹 **All worktrees removed 2026-10-12 (user asked).** 20 were left behind by B-213 … B-343 (PRs #2180–#2245, all merged); each was clean and fully merged, and its local branch was deleted too. `<repo>-wt/` is empty, and `git worktree list` shows only the main tree. Remote branches `B-320-known-positive-stale-result` and `B-343-partner-signs-on-hiv-test` are still on origin.
