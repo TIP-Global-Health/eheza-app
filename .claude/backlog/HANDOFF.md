@@ -48,6 +48,10 @@ What changes because of this:
 
 📌 **No backlog PR open as of 2026-10-12.**
 
+🧹 **All worktrees removed 2026-10-12 (user asked).** 20 were left behind by B-213 … B-343 (PRs #2180–#2245, all merged); each was clean and fully merged, and its local branch was deleted too. `<repo>-wt/` is empty, and `git worktree list` shows only the main tree. Remote branches `B-320-known-positive-stale-result` and `B-343-partner-signs-on-hiv-test` are still on origin.
+
+🔭 **B-168 still waits on the user's Rollbar check** (window closed 2026-09-06). Tier 1 READY: B-450, B-452, B-454 (no gate); B-453 (ask: possibly intended), B-459 (clinician).
+
 ✅ **PR #2327 MERGED 2026-10-12 as `b158fa590` (opened 2026-10-11) (B-444, tier 1, issue #2326)** — Prenatal HIV PCR: answering "undetectable" clears the viral load (shared `setHIVViralLoadUndetectable`, three handlers), and the detectable-viral-load diagnosis skips a record answered undetectable. Review round 1 (self-run medium): 10 findings; redesign in `879dc36e4` — the number is dropped on save, not on the tap (a mistaken Yes→No kept it); 4 declined with live counts. Threads resolved. Issue #2326 stays open — close in the release sweep.
 
 ✅ **PR #2325 MERGED 2026-10-11 as `9f0845ad3` (B-437, tier 2, issue #2324 — stays open, `develop` target; close in the release sweep)** — Statistical Queries: the z-score cleanup script now queues the reports recalculation (all sites) alongside NCDA for children with a cleared height or weight; the head-circumference script says to run `recalculate-stats.php`. Verified old-vs-new on the local DB. #2128's post-deploy notes edited (device downloads; `recalculate-stats.php` moved after #2298). Review round 1: 8 findings, 6 fixed in `9cd8f082c`, 2 declined; threads resolved. ✅ #2128's #2294 block now also names the Statistical Queries queueing (edited 2026-10-11, user asked). Worktree released.
