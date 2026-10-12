@@ -32,7 +32,7 @@ B-031	3	IMPLEMENTED		1959	1960	10	NCD creatinine/BUN/ALT/AST results: clear-goes
 B-032	2	IMPLEMENTED		1908	1909	10	hedley_stats dashboard queries join measurement values with NO deleted filter (module has zero `field_data_field_deleted
 B-033	2	IMPLEMENTED		1935	1936	10	Group-education stats count soft-deleted persons and ship their names to the dashboard
 B-034	4	WONTFIX				10	GWG backfill script computes/writes indicators from soft-deleted prenatal content
-B-035	4	READY				10	SW `RegistrationFailed` reports `"{}"`
+B-035	4	IMPLEMENTED		2332	2333	10	SW `RegistrationFailed` reports `"{}"`
 B-036	4	READY				10	NutritionFeeding `sachetsPerDay` deliberately cleared on supplement-type change, silently resurrected at save
 B-037	1	IMPLEMENTED		1890	1891	10	Prenatal Medical History: `preeclampsiaInFamily` required by the payload but NOT counted → Save at "4/4" silently discar
 B-038	3	PARKED				11	No handling for Dexie open/upgrade failure (VersionError on bundle rollback, quota-aborted upgrade) → device silently st
