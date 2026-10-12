@@ -78,7 +78,7 @@ B-077	4	READY				16	Locality enumeration for large-dataset reports lacks bundle/
 B-078	4	READY				16	NCDA scorecard: `continue` on empty Vitamin A skips the MUAC/stunting block in the same loop
 B-079		CLOSED				16	Demographics report 50-year age-band gap (person exactly 50.0y dropped from totals)
 B-080	4	REFUTED				16	`hedley_device_assign_shards` education_session edit branch leaves `$shards` undefined (PHP notice)
-B-081	4	READY				16	CLAUDE.md doc drift (one doc PR): feature-flag names + missing flag + stale CI-job count
+B-081	4	CLOSED				16	CLAUDE.md doc drift (one doc PR): feature-flag names + missing flag + stale CI-job count
 B-082	4	READY				16	`SaveMotherFbf` inserts into a copy of the WRONG tracker dict
 B-083		READY				16	HC-level stock view counts village-tagged stock updates as receipts
 B-084	3	IMPLEMENTED			1979	16	Shared `viewNumberInput` accepts hand-typed negatives (HTML min="0" only)
