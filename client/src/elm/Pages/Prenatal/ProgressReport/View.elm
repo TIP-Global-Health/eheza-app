@@ -88,7 +88,7 @@ import Pages.Prenatal.Activity.Utils
         , weightGainStandardsByPrePregnancyClassificationHealthyStart
         , weightGainStandardsPerPrePregnancyClassification
         )
-import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, getAllActivities, getFirstNurseEncounterMeasurements, resolveGlobalLmpValue)
+import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, getAllActivities, getFirstNurseEncounterMeasurements, getObstetricHistoryStep2, resolveGlobalLmpValue)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
 import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..), Model, Msg(..), medicalDiagnoses, obstetricalDiagnoses)
@@ -722,7 +722,7 @@ viewObstetricHistoryPane language measurements =
                 |> Maybe.withDefault []
 
         obstetricHistoryStep2 =
-            getMeasurementValueFunc measurements.obstetricHistoryStep2
+            getObstetricHistoryStep2 measurements
                 |> Maybe.map
                     (\value ->
                         let

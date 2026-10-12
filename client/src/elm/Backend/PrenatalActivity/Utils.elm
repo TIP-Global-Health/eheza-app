@@ -19,7 +19,7 @@ import Backend.PrenatalActivity.Model exposing (HighRiskFactor(..), HighSeverity
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isJust)
-import Pages.Prenatal.Encounter.Utils exposing (getLastEncounterMeasurementsWithDate)
+import Pages.Prenatal.Encounter.Utils exposing (getLastEncounterMeasurementsWithDate, getObstetricHistoryStep2)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Translate exposing (Language, translate)
 
@@ -223,39 +223,23 @@ getRecurrentActivityIcon activity =
 generateHighRiskAlertData : Language -> PrenatalMeasurements -> HighRiskFactor -> Maybe String
 generateHighRiskAlertData language measurements factor =
     let
-        transAlert factor_ =
-            translate language (Translate.HighRiskFactor factor_)
+        alertBySign sign =
+            getObstetricHistoryStep2 measurements
+                |> Maybe.andThen
+                    (\value ->
+                        if EverySet.member sign value.signs then
+                            Just (translate language (Translate.HighRiskFactor factor))
+
+                        else
+                            Nothing
+                    )
     in
     case factor of
         HighRiskConvulsionsAndUnconsciousPreviousDelivery ->
-            measurements.obstetricHistoryStep2
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            signs =
-                                Tuple.second measurement |> .value |> .signs
-                        in
-                        if EverySet.member Backend.Measurement.Model.ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery signs then
-                            Just (transAlert factor)
-
-                        else
-                            Nothing
-                    )
+            alertBySign Backend.Measurement.Model.ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
 
         HighRiskConvulsionsPreviousDelivery ->
-            measurements.obstetricHistoryStep2
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            signs =
-                                Tuple.second measurement |> .value |> .signs
-                        in
-                        if EverySet.member Backend.Measurement.Model.ObstetricHistoryConvulsionsPreviousDelivery signs then
-                            Just (transAlert factor)
-
-                        else
-                            Nothing
-                    )
+            alertBySign Backend.Measurement.Model.ObstetricHistoryConvulsionsPreviousDelivery
 
 
 generateHighSeverityAlertData : Language -> NominalDate -> Bool -> AssembledData -> HighSeverityAlert -> Maybe ( String, String )

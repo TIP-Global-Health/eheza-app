@@ -1,4 +1,4 @@
-module Pages.Prenatal.Encounter.Utils exposing (calculateBmi, diagnosisRequiresEmergencyReferal, emergencyReferalRequired, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, generatePostCreateDestination, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, getLastEncounterMeasurementsWithDate, getLmpValue, getPrenatalEncountersForParticipantDesc, getSubsequentEncounterType, resolveGlobalLmpValue, secondPhaseRequired)
+module Pages.Prenatal.Encounter.Utils exposing (calculateBmi, diagnosisRequiresEmergencyReferal, emergencyReferalRequired, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, generatePostCreateDestination, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, getLastEncounterMeasurementsWithDate, getLmpValue, getObstetricHistoryStep2, getPrenatalEncountersForParticipantDesc, getSubsequentEncounterType, resolveGlobalLmpValue, secondPhaseRequired, skipObstetricHistorySecondStep)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -218,6 +218,32 @@ getObstetricHistory : PrenatalMeasurements -> Maybe ObstetricHistoryValue
 getObstetricHistory measurements =
     measurements.obstetricHistory
         |> getMeasurementValueFunc
+
+
+skipObstetricHistorySecondStep : Maybe ObstetricHistoryValue -> Bool
+skipObstetricHistorySecondStep obstetricHistoryValue =
+    let
+        gravida =
+            Maybe.map generateGravida obstetricHistoryValue
+                |> Maybe.withDefault ""
+
+        para =
+            Maybe.map generatePara obstetricHistoryValue
+                |> Maybe.withDefault ""
+    in
+    gravida == "01" && para == "0000"
+
+
+{-| Step 2 asks about previous deliveries. Its answers count only while step 1
+of the same encounter records an earlier pregnancy.
+-}
+getObstetricHistoryStep2 : PrenatalMeasurements -> Maybe ObstetricHistoryStep2Value
+getObstetricHistoryStep2 measurements =
+    if skipObstetricHistorySecondStep (getObstetricHistory measurements) then
+        Nothing
+
+    else
+        getMeasurementValueFunc measurements.obstetricHistoryStep2
 
 
 resolveGlobalLmpValue : List PrenatalMeasurements -> List PrenatalMeasurements -> PrenatalMeasurements -> Maybe LastMenstrualPeriodValue
