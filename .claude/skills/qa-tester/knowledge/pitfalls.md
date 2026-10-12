@@ -219,3 +219,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** straight after closing the progress report, a script found no History card in To Do, switched to Completed, and then failed there.
 - **Wrong conclusion:** the activity moved to Completed, or the app lost it.
 - **Rule:** `isVisible()` does not wait. Click `#pending-tab`, then `waitFor` the card a few seconds before falling back to `#completed-tab`.
+
+## A check over an empty collection passes
+
+- **Symptom:** "no Next Steps card" passed, but the `.card` list it searched was empty — the encounter page draws no `.card` at all.
+- **Wrong conclusion:** the activity is absent.
+- **Rule:** before asserting that something is absent from a list, assert the list is not empty, or read a counter the page prints ("To Do (0)"). An absence proven by a selector that matches nothing proves nothing.
+
+## A server-side edit of a measurement skips what the app does after a save
+
+- **Symptom:** a test record changed with drush looked right, but the Case Management results record still named the test.
+- **Wrong conclusion:** the PR leaves the entry open.
+- **Rule:** saving a lab test in the app also rewrites the encounter's results record (`generate…LabsTestAddedMsgs`); a drush edit does not. A server-built fixture stands only for the record edited — say which follow-on records it leaves stale, and do not judge them.

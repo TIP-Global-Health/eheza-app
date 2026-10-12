@@ -136,8 +136,15 @@ flag simply does not appear.
 ## Encounters: what the helpers do not tell you
 
 - Prenatal Laboratory: Random Blood Sugar is the last tab; performed today Yes → Point of
-  Care → before meal → the mg/dL input appears. NCD Laboratory opens on Random Blood Sugar
-  and first asks "Did you perform this test today?".
+  Care → before meal → the mg/dL input appears. NCD Laboratory tabs: Random Blood Sugar,
+  Creatinine, Urine Dipstick, HIV, Liver Function, Lipid Panel, HBA1C. Its Random Blood Sugar
+  asks performed (`test-performed`) → `immediate-result` (Point of Care / Lab) →
+  `patient-fasted` → `test-performed-today`; Lab ends on "update test results via case
+  management". Creatinine: performed → performed today. No reveals five why-not reasons.
+- NCD Next Steps appears only after Danger Signs, Symptom Review, Examination and Medical
+  History are saved, even when a lab result already diagnoses (the four helpers do it). Its
+  Medication Distribution names the diagnosis: "This patient has Diabetes with glucose … of
+  250 mg/dL". The encounter's diagnoses are `field_ncd_diagnoses` (`diabetes-recurrent`).
 - Acute Illness laboratory (nurse, initial encounter): the COVID rapid test is offered only
   while there is fever with respiratory symptoms (or two or more general ones) **and the
   malaria RDT is not positive** (`covid19SuspectDiagnosed`). Turning malaria Positive takes
@@ -181,7 +188,11 @@ flag simply does not appear.
   Individual Encounter → Standard Pediatric Visit → search → forward icon, and a new visit
   starts with "Standard Pediatric Visit Encounter".
 - On the device, IndexedDB `sync` → `shards` holds each measurement with `type`, `person` (uuid),
-  `date_measured` and `measurement_notes`: the way to confirm what the tablet itself has.
+  `date_measured`, `uuid`, `vid` and its own fields under the server names (`test_execution_note`,
+  `test_prerequisites`, `sugar_count`) — no `nid`: the way to confirm what the tablet itself has.
+- Server fields of a lab test: `field_test_execution_note`, `field_test_prerequisites` (multi-value),
+  `field_sugar_count`. A drush edit through `entity_metadata_wrapper(...)->save()` reaches the
+  tablet on the next sync.
 - Well Child Nutrition Assessment: Height / MUAC / Nutrition / Weight tabs, each with its own
   Save; the Rwanda ranges are printed above the inputs (height 25–250 cm, MUAC 5–99 cm,
   weight 0.5–200 kg).
@@ -211,6 +222,11 @@ flag simply does not appear.
   Hepatitis B / Malaria / Blood Group / Urine Dipstick / Hemoglobin / Random Blood Sugar.
 - Pane filter buttons are `div.ui.segment.filters button`; an entry's tap target is
   `div.icon-forward`.
+- **NCD Labs** lists an encounter while today is before its results record's resolution date
+  (`ncd_labs_results`: `field_performed_tests`, `field_date_concluded`). Sending a test to
+  the lab sets it 35 days out. The entry opens the recurrent encounter; its Lab Results card is
+  `.icon-task-laboratory`, one tab per test still owed. When nothing is left, the page reads
+  "To Do (0)" — it draws no `.card` elements to count.
 - **Each pane decides for itself whether an encounter clears its entry** — read its
   `generate<Type>FollowUpEntryData` and the `limitDate` its view passes
   (`Pages/GlobalCaseManagement/View.elm`) before choosing a pane for a scenario:
