@@ -54,3 +54,14 @@
 - [CLAUDE.md can change mid-session](claude-md-can-change-mid-session.md) — the context copy is a START-OF-SESSION snapshot; a mid-session merge can add rules CI enforces and you never see (30-word comment budget, PR #2247)
 - [Local verification vs CI](local-verification-vs-ci.md) — CI carries the full suites; locally run elm make + the check that discriminates THIS change (byte-diff for moves, fail-first test for logic)
 - [Production SQL via host terminus](production-sql-via-host-terminus.md) — ⛔ read-only prod SQL = ONE plain host `terminus remote:drush <site>.live -- sql-query "..."` call; variable prefixes / pipes miss the allow rule and get classifier-blocked
+- [Dev compile/watch loops](dev-compile-watch-loops.md) — the user runs `ddev elm:watch` (server Elm) and `ddev gulp` (client); don't one-shot `elm make` "to confirm" while a watcher is live
+- [Don't kill gulp publish](dont-kill-gulp-publish.md) — ⛔ "kill shell" never means the user's `ddev gulp publish` build; identify a process before killing it, kill by PID, never a self-matching `pkill -f`
+- [Background process cleanup](background-process-cleanup.md) — clean up MY background processes (elm make, elm-review, dev servers) once done; never the user's builds/watchers or harness MCP servers
+- [Verify tool capabilities](verify-tool-capabilities.md) — before saying a tool/API can't do X, check current docs + the installed version's `--help` (`gh pr comment --attach` lesson)
+- [Server Elm bundle must be committed](server-elm-bundle-must-be-committed.md) — ⛔ any `server/elm/src/` edit ships the regenerated `hedley_general/js/elm-main.js` in the SAME PR; Pantheon never runs `elm make`
+- [elm-review: no --fix-all on merges](elm-review-no-fix-all-on-merges.md) — ⛔ `--fix-all` after merging develop into a stale branch deletes wildcard imports the compiler needs; fix file-by-file; `NoMissingSubscriptionsCall` ignore list for update-level tests
+- [E2E Acute Illness lessons](e2e-acute-illness-lessons.md) — popups appear mid-activity; the diagnosis decides the activity set; adult/CHW tab differences; reload on "Not Found"; checkbox labels and icon classes
+- [ClinicsPage "Not Found" race](clinics-not-found-race.md) — declined: SW IndexedDB read races the sync write and `FetchClinics` never retries on `Failure`; e2e uses a reload loop
+- [Feature: Healthy Start](feature-healthy-start.md) — a flag that tweaks Prenatal (Ultrasound activity, MUAC-based pre-pregnancy class, GWG curves, progress-report chart); check both `isHealthyStart` branches
+- [OCL/PIH concept mappings](ocl-pih-mappings.md) — `docs/ocl-pih-mappings` branch, `docs/ocl/README.md` entry point; upload only via `delta_upload.py`, and cutting a released source version is mandatory
+- [OpenMRS integration](openmrs-integration.md) — E-Heza→OpenFN→OpenMRS PoC: patient create (#1763) + prenatal encounter (#1766), REST not FHIR, Lightning credential gotchas
