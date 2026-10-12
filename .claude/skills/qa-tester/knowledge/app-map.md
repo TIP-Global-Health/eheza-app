@@ -121,6 +121,8 @@ flag simply does not appear.
 - Address values: Amajyaruguru 2755 → Gakenke 2756 → Coko 2803 → Mbirima 2809 → Akanduga
   2810. Nyange HC uuid `5f89c5f3-34a2-5760-afc5-731db5c8cff9`.
 - `registerAdult` names everyone `E2ETest <firstName>` (Drupal title "secondName firstName").
+  A nurse's registration takes the first option at each address level: Amajyaruguru →
+  Gakenke → Busengo → Birambo → Birambo.
 - Demo data: 86 persons, all with a migration photo; demo children are born in 2022, too old
   for head circumference or the newborn exam — register a newborn for those.
 - **Editing a demo person needs Level of Education and Marital Status**, which the migration
@@ -157,6 +159,20 @@ flag simply does not appear.
   one icon, so pick tabs by text. A sample sent to the Lab makes Next Steps end with Wait → Pause
   Encounter, back on the main menu.
 - Labs history rows are `.history-entry` (name, date, and an `.action` reading UPDATE).
+- Prenatal History → Obstetric is in two steps. Step 1 holds the counts
+  (`.form-input.number.<term-pregnancy|preterm-pregnancy|stillbirths-at-term|stillbirths-pre-term|abortions|live-children>`).
+  If every count is 0 and the patient is currently pregnant, the button reads Save and step 2
+  (`.form.history.obstetric.second`) is skipped; otherwise it reads Save and Next. `completeHistory`
+  only enters fixed counts, so other answers are filled by hand. History stays in To Do until
+  Medical is saved, and stays editable until the encounter ends.
+- A nurse's prenatal diagnoses are recomputed on every save once Danger Signs is done. The
+  preeclampsia-risk diagnoses also need EGA ≥ 12 weeks; age under 18 or 35+ on a first pregnancy
+  gives Moderate Risk on its own, so use age 25. These diagnoses raise no popup: read them on the
+  progress report.
+- Prenatal progress report: Reports tab → Clinical Progress Report (`h.progressReport.openReport(page,
+  'prenatal')`). The Obstetric History pane is the first `.risk-factors`; diagnoses are under
+  OBSTETRIC DIAGNOSIS. The encounter page's red `div.alerts` icon opens `.alerts-dialog` (High Risk
+  Factors, such as convulsions at a previous delivery). The icon is absent when there is no alert.
 - A second encounter on the same day is impossible: backdate the first with
   `h.common.backdateEncounter(name, type, days)`, then sync before starting the next.
 - Well Child Head Circumference: its tab shows only for children under 36 months. Under the
@@ -222,6 +238,20 @@ flag simply does not appear.
   - **Acute Illness (CHW, adult) → Acute Illness pane.** Fever + Chills; temperature 38.5;
     Malaria RDT positive, not pregnant → Uncomplicated Malaria; Next Steps: Coartem Yes and
     Follow Up "1 Day".
+
+## Statistical Queries (admin)
+
+- Village scope: `/admin/reports/statistical-queries/demographics/<province>/<district>/<sector>/<cell>/<village>`.
+  It reads each person's `field_reports_data` as the page loads, so a recomputed person shows on reload.
+  Global, province, district and health-centre scopes use precomputed data.
+- Sign in with `h.reports.drupalLogin(page)`. Pick the report with the first `select.select-input`
+  (`prenatal-contacts` is ANC Contact), then `h.reports.setDateRange`. Read rows with
+  `h.reports.readPrenatalContactsTable` and `findSimpleRow`.
+- Recompute one person: `hedley_reports_calculate_aggregated_data_for_person(node_load($nid, NULL, TRUE))`
+  in a script run by `ddev drush scr`. The script must sit under `server/www/` (container path
+  `/var/www/html/server/www/…`); delete it afterwards.
+- Prenatal data sits under `individual.antenatal`. Each encounter is `date|nurse|<diagnosis codes>|<indicator codes>`;
+  the codes are in `hedley_reports_prenatal_*_mapping()` (for example `h` is intra-uterine death).
 
 ## The QA driver
 

@@ -213,3 +213,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after Save, the reopened form showed the entered values, and the run called them saved.
 - **Wrong conclusion:** the data is stored, uploaded and readable by other devices.
 - **Rule:** the form after Save shows the clicks. Prove the upload (Remaining for Upload: 0), reload and reopen it, then re-pair and open it again (SKILL.md, Proving the data was saved).
+
+## Checking for an activity card before the encounter page has drawn it
+
+- **Symptom:** straight after closing the progress report, a script found no History card in To Do, switched to Completed, and then failed there.
+- **Wrong conclusion:** the activity moved to Completed, or the app lost it.
+- **Rule:** `isVisible()` does not wait. Click `#pending-tab`, then `waitFor` the card a few seconds before falling back to `#completed-tab`.
