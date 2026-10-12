@@ -777,7 +777,8 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         if (!empty($abortions) && $abortions > 0) {
           $prenatal_indicators_by_encounter['abortion'][] = $encounter_id;
         }
-        // Gravida 01, para 0000: no earlier pregnancy and none of its outcomes.
+        // First pregnancy, as skipObstetricHistorySecondStep decides it in the
+        // client: currently pregnant, and every pregnancy and child count is 0.
         $previous_pregnancies = (int) $preterm + (int) $stillbirths_at_term + (int) $stillbirths_preterm + (int) $abortions
           + (int) $measurement->field_term_pregnancy[LANGUAGE_NONE][0]['value']
           + (int) $measurement->field_live_children[LANGUAGE_NONE][0]['value'];

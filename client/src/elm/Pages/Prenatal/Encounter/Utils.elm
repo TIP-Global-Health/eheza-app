@@ -220,22 +220,28 @@ getObstetricHistory measurements =
         |> getMeasurementValueFunc
 
 
+{-| A first pregnancy: gravida 01, para 0000. Step 2 asks about previous
+deliveries, so it is not asked then.
+-}
 skipObstetricHistorySecondStep : Maybe ObstetricHistoryValue -> Bool
-skipObstetricHistorySecondStep obstetricHistoryValue =
-    let
-        gravida =
-            Maybe.map generateGravida obstetricHistoryValue
-                |> Maybe.withDefault ""
+skipObstetricHistorySecondStep =
+    Maybe.map
+        (\value ->
+            value.currentlyPregnant
+                && (value.termPregnancy
+                        + value.preTermPregnancy
+                        + value.stillbirthsAtTerm
+                        + value.stillbirthsPreTerm
+                        + value.abortions
+                        + value.liveChildren
+                        == 0
+                   )
+        )
+        >> Maybe.withDefault False
 
-        para =
-            Maybe.map generatePara obstetricHistoryValue
-                |> Maybe.withDefault ""
-    in
-    gravida == "01" && para == "0000"
 
-
-{-| Step 2 asks about previous deliveries. Its answers count only while step 1
-of the same encounter records an earlier pregnancy.
+{-| Step 2 answers count only while step 1 of the same encounter records an
+earlier pregnancy.
 -}
 getObstetricHistoryStep2 : PrenatalMeasurements -> Maybe ObstetricHistoryStep2Value
 getObstetricHistoryStep2 measurements =

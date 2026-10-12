@@ -57,7 +57,7 @@ import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
 import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
-import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
+import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), emptyHealthEducationForm)
 import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedPreviouslyAnyOf, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
 import RemoteData
@@ -2677,6 +2677,13 @@ obstetricHistoryFirstPregnancyTest =
                 diagnoseNurse (withHistory firstPregnancy previousPreeclampsia)
                     |> highRisk
                     |> Expect.equal False
+        , test "the latest step 1 decides: a first pregnancy at the current visit drops step 2 saved at an earlier one" <|
+            \_ ->
+                diagnoseNurseAfter []
+                    (withHistory secondPregnancy previousPreeclampsia)
+                    { emptyPrenatalMeasurements | obstetricHistory = wrapMeasurement firstPregnancy }
+                    |> highRisk
+                    |> Expect.equal False
         , test "a first pregnancy recorded at an earlier visit is read the same way at a later one" <|
             \_ ->
                 diagnoseNurseAfter [] (withHistory firstPregnancy previousPreeclampsia) emptyPrenatalMeasurements
@@ -2700,4 +2707,55 @@ obstetricHistoryFirstPregnancyTest =
             \_ ->
                 convulsionsAlert (withHistory firstPregnancy convulsions)
                     |> Expect.equal Nothing
+        , test "the skip rule is gravida 01 and para 0000 for every combination of counts" <|
+            \_ ->
+                let
+                    counts =
+                        [ 0, 1, 2, 10 ]
+
+                    values =
+                        List.concatMap
+                            (\currentlyPregnant ->
+                                List.concatMap
+                                    (\term ->
+                                        List.concatMap
+                                            (\preTerm ->
+                                                List.concatMap
+                                                    (\atTerm ->
+                                                        List.concatMap
+                                                            (\stillPreTerm ->
+                                                                List.concatMap
+                                                                    (\abortions ->
+                                                                        List.map
+                                                                            (\liveChildren ->
+                                                                                { currentlyPregnant = currentlyPregnant
+                                                                                , termPregnancy = term
+                                                                                , preTermPregnancy = preTerm
+                                                                                , stillbirthsAtTerm = atTerm
+                                                                                , stillbirthsPreTerm = stillPreTerm
+                                                                                , abortions = abortions
+                                                                                , liveChildren = liveChildren
+                                                                                }
+                                                                            )
+                                                                            counts
+                                                                    )
+                                                                    counts
+                                                            )
+                                                            counts
+                                                    )
+                                                    counts
+                                            )
+                                            counts
+                                    )
+                                    counts
+                            )
+                            [ True, False ]
+                in
+                values
+                    |> List.filter
+                        (\value ->
+                            skipObstetricHistorySecondStep (Just value)
+                                /= (generateGravida value == "01" && generatePara value == "0000")
+                        )
+                    |> Expect.equal []
         ]
