@@ -273,7 +273,12 @@ flag simply does not appear.
   - **Child Nutrition (CHW) → Home Visit pane.** MUAC 11 (red), Nutrition "None of these",
     Weight, Height; Next Steps appears once all four are saved. Saving Follow Up ("1 Day")
     alone creates the entry. The nutrition participant page also offers HOME VISIT
-    ENCOUNTER directly, beside NUTRITION ENCOUNTER.
+    ENCOUNTER directly, beside NUTRITION ENCOUNTER. Follow Up options: 1 day, 3 Days, 1 Week,
+    2 Weeks, No follow up; the helper always picks 1 day.
+  - **Antenatal (CHW) → Antenatal Care pane.** Every CHW antenatal visit except postpartum has
+    Follow Up in Next Steps. A danger sign makes Danger Signs' Save open Next Steps with a
+    "refer to health center" warning: Send to Health Center, CHW Follow Up, Next ANC Visit, and
+    no Health Education.
   - **Well Child (CHW) → Immunization pane.** Danger Signs, Nutrition Assessment, then
     Immunizations answering **No** to each vaccine — `h.wellChild.completeImmunisation(page,
     { isChw: true })`; without `isChw` it answers Yes and gives the vaccines. Leave them
@@ -282,6 +287,20 @@ flag simply does not appear.
   - **Acute Illness (CHW, adult) → Acute Illness pane.** Fever + Chills; temperature 38.5;
     Malaria RDT positive, not pregnant → Uncomplicated Malaria; Next Steps: Coartem Yes and
     Follow Up "1 Day".
+
+## CHW Dashboard
+
+- Main menu → DASHBOARDS opens "CHW SNAPSHOT" for the CHW's village. It shows a spinner until the
+  server's statistics for the health centre exist. A fresh local server has none: run
+  `ddev drush eval "hedley_stats_calculate_stats_for_health_center(4);"` (Nyange), then sync.
+- The Case Management cards (Acute Illness, Home Visit, Antenatal Care) and Malaria/Covid/GI
+  "Currently in Care" come from follow-ups on the tablet. They change as soon as a visit saves.
+- Every other card, including the Antenatal Care page's With Danger Signs, comes from those
+  server statistics. A new visit shows only after upload, the drush recalculation and a sync.
+- Cards are `.dashboard-card.chw` (`.header`, `.value`). The month label is
+  `.month-selector .label`; previous month is `span.icon-back:not(.rotate-180)`, next is `.rotate-180`.
+- Sub-pages: Antenatal Care / Child Nutrition / Acute Illness / Group Education buttons; Acute
+  Illness has Overview / COVID-19 / Malaria / Gastro in `.page-filters`.
 
 ## Statistical Queries (admin)
 
@@ -312,6 +331,11 @@ flag simply does not appear.
 - A driver started from a worktree loads that worktree's helpers, which is how to try a new
   helper before it merges. Start it with `E2E_DDEV_PROJECT=/var/www/html/ihangane`, or the
   drush-backed helpers (`qa.freshDevice`, backdating) run `ddev` inside the worktree and fail.
+- **Running the app on another date.** Once per driver session, `page.addInitScript` a function
+  that replaces `window.Date` with a subclass adding `localStorage.qaDateOffset` ms to `now()` and
+  to `new Date()`. Set the offset, then `page.goto('/')` plus `page.reload()`, since a hash-only
+  goto does not reload. Measurements and visits then carry that date, and the backend stores
+  it. The service worker keeps the real date (see pitfalls); `page.clock` must not be used.
 - Only a caller that can read `.driver/token` (owner-only, new each start) can send commands;
   requests from a browser page are refused.
 - Measured: empty profile → paired, signed in and synced in ~10 s; register a woman, open a

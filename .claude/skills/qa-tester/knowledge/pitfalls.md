@@ -249,3 +249,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after `page.goto('/')` as CHW, waiting for `.wrap-cards` times out on a "VILLAGE" screen.
 - **Wrong conclusion:** the sign-in was lost or the app hung.
 - **Rule:** a full load makes a CHW pick the village again. Click "Akanduga at Mbirima" if it shows, or move by in-app navigation. The nurse's health centre choice survives a load.
+
+## Playwright's `page.clock` stalls the app
+
+- **Symptom:** with `page.clock.setSystemTime(...)`, a new nutrition visit's page showed a spinner for over a minute.
+- **Wrong conclusion:** the app cannot load a visit created on that date.
+- **Rule:** `page.clock` fakes the page's timers too, and once installed it stays until the driver restarts. To change the date, shift only `Date` (recipe in app-map, The QA driver).
+
+## A shifted page date leaves the service worker on the real date
+
+- **Symptom:** on 1 October (shifted), a new antenatal and an acute illness follow-up were missing from the dashboard and from Case Management until the page was reloaded.
+- **Wrong conclusion:** the app does not show new follow-ups straight away. At the real date it does.
+- **Rule:** with a shifted date, reload before reading any count, and say so in the report. Recheck anything odd at the real date before calling it a bug.
+
+## The participant page's back arrow goes to the search page
+
+- **Symptom:** a script waiting for the main menu after one back click timed out on "SEARCH EXISTING PARTICIPANTS".
+- **Wrong conclusion:** navigation broke.
+- **Rule:** from a participant page, press back until `.wrap-cards` shows, or reload to `/`.
