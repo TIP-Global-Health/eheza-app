@@ -2,8 +2,8 @@ module Components.ReportToWhatsAppDialog.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
-import Components.ReportToWhatsAppDialog.Model exposing (DialogState(..), Model, Msg(..), PhoneData, ReportComponentAntenatal(..), ReportComponentNCD(..), ReportComponentWellChild(..), ReportComponentsConfig, ReportComponentsList(..), ReportType(..), emptyPhoneData)
-import Components.ReportToWhatsAppDialog.Utils exposing (allCountryCodes, countryCodeToString, minimalNumberLength, siteToCountryCode, trimLeadingZeros)
+import Components.ReportToWhatsAppDialog.Model exposing (DialogState(..), Model, Msg(..), PhoneData, ReportComponentAntenatal(..), ReportComponentNCD(..), ReportComponentWellChild(..), ReportComponentsConfig, ReportComponentsList(..), ReportType(..))
+import Components.ReportToWhatsAppDialog.Utils exposing (allCountryCodes, countryCodeToString, emptyPhoneData, minimalNumberLength, siteToCountryCode, toLocalPhoneNumber, trimLeadingZeros)
 import EverySet
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
@@ -29,10 +29,10 @@ viewDialog language site ( personId, person ) reportType componentsConfig state 
         content =
             case state of
                 Consent ->
-                    viewConsent language person
+                    viewConsent language newPhoneData person
 
                 PhoneVerification phoneNumber ->
-                    viewPhoneVerification language allowComponentsSelection phoneNumber
+                    viewPhoneVerification language allowComponentsSelection newPhoneData phoneNumber
 
                 PhoneInput data ->
                     viewPhoneInput language site data
@@ -66,14 +66,20 @@ viewDialog language site ( personId, person ) reportType componentsConfig state 
 
         allowComponentsSelection =
             isJust componentsConfig
+
+        newPhoneData =
+            emptyPhoneData site
     in
     div [ class "ui tiny active modal send-via-whatsapp" ]
         content
 
 
-viewConsent : Language -> Person -> List (Html (Msg msg))
-viewConsent language person =
+viewConsent : Language -> PhoneData -> Person -> List (Html (Msg msg))
+viewConsent language newPhoneData person =
     let
+        phoneInput =
+            PhoneInput newPhoneData
+
         nextState =
             Maybe.map
                 (\number ->
@@ -85,10 +91,10 @@ viewConsent language person =
                         PhoneVerification trimmed
 
                     else
-                        PhoneInput emptyPhoneData
+                        phoneInput
                 )
                 person.telephoneNumber
-                |> Maybe.withDefault (PhoneInput emptyPhoneData)
+                |> Maybe.withDefault phoneInput
     in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.ReportToWhatsAppConsentQuestion ]
@@ -111,8 +117,8 @@ viewConsent language person =
     ]
 
 
-viewPhoneVerification : Language -> Bool -> String -> List (Html (Msg msg))
-viewPhoneVerification language allowComponentsSelection phoneNumber =
+viewPhoneVerification : Language -> Bool -> PhoneData -> String -> List (Html (Msg msg))
+viewPhoneVerification language allowComponentsSelection newPhoneData phoneNumber =
     let
         nextStateForYes =
             if allowComponentsSelection then
@@ -130,7 +136,7 @@ viewPhoneVerification language allowComponentsSelection phoneNumber =
         [ div [ class "two ui buttons" ]
             [ button
                 [ class "ui velvet fluid button"
-                , onClick <| SetState <| Just (PhoneInput emptyPhoneData)
+                , onClick <| SetState <| Just (PhoneInput newPhoneData)
                 ]
                 [ text <| translate language Translate.No ]
             , button
@@ -162,7 +168,7 @@ viewPhoneInput language site data =
                 let
                     curerntPhoneNumber =
                         if siteToCountryCode site == data.countryCode then
-                            "0" ++ trimLeadingZeros data.phone
+                            toLocalPhoneNumber site data.phone
 
                         else
                             "+" ++ countryCodeToString data.countryCode ++ trimLeadingZeros data.phone

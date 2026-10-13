@@ -1,6 +1,6 @@
-module Components.ReportToWhatsAppDialog.Utils exposing (allCountryCodes, countryCodeFromString, countryCodeToString, minimalNumberLength, reportTypeFromString, reportTypeToString, showComponent, siteToCountryCode, trimLeadingZeros)
+module Components.ReportToWhatsAppDialog.Utils exposing (allCountryCodes, countryCodeFromString, countryCodeToString, emptyPhoneData, minimalNumberLength, reportTypeFromString, reportTypeToString, showComponent, siteToCountryCode, toLocalPhoneNumber, trimLeadingZeros)
 
-import Components.ReportToWhatsAppDialog.Model exposing (CountryCode(..), ReportType(..))
+import Components.ReportToWhatsAppDialog.Model exposing (CountryCode(..), PhoneData, ReportType(..))
 import EverySet exposing (EverySet)
 import SyncManager.Model exposing (Site(..))
 
@@ -127,6 +127,35 @@ siteToCountryCode site =
         -- be info of the site at which device operate.
         SiteUnknown ->
             CountryCodeRwanda
+
+
+{-| A new number starts with the country code of the site.
+-}
+emptyPhoneData : Site -> PhoneData
+emptyPhoneData site =
+    { countryCode = siteToCountryCode site
+    , phone = ""
+    }
+
+
+{-| A number of the site's own country, written the way that site's profiles
+store it: Rwanda with a leading 0 (0788123456), Burundi and Somalia without.
+-}
+toLocalPhoneNumber : Site -> String -> String
+toLocalPhoneNumber site phone =
+    case site of
+        SiteBurundi ->
+            trimLeadingZeros phone
+
+        SiteRwanda ->
+            "0" ++ trimLeadingZeros phone
+
+        SiteSomalia ->
+            trimLeadingZeros phone
+
+        -- An unknown site uses the Rwanda country code.
+        SiteUnknown ->
+            "0" ++ trimLeadingZeros phone
 
 
 trimLeadingZeros : String -> String
