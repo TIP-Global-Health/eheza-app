@@ -1796,9 +1796,8 @@ elmApp.ports.initRollbar.subscribe(function(data) {
       // Send all items.
       let localIds = [];
       result.forEach(function(row) {
-          // The report carries the build that sends it, which is not the build
-          // that recorded it when the app updated in between. Rows from the
-          // service worker, or written before this was kept, have no build.
+          // The report carries the sending build, not the recording one if the
+          // app updated in between. Service worker rows, and older rows, have no build.
           if (row.version) {
               rollbar.log(row.error, { recordedOnVersion: row.version });
           }
