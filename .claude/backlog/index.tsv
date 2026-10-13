@@ -465,6 +465,16 @@ B-464	4	READY	LOW			40	Case Management Nutrition pane: a follow-up written on th
 B-465	3	IMPLEMENTED	MED-LOW	2340	2341	40	CHW Dashboard: the "Home Visit" case-management figure for a PAST month counts nutrition follow-ups created in later mon
 B-466	4	READY	LOW			40	Reporting e2e: the postpartum fixture records the outcome on the participant page first, so its postpartum visit lands i
 B-467	4	READY	LOW		2341	40	CHW Dashboard: a follow-up resolved on the first day after the selected month is left out of that month's Case Managemen
+B-468	3	READY	MED-LOW			41	NCDA scorecard › Targeted Interventions: the "Treatment for acute malnutrition" row paints a red X for every CHW questio
+B-469	3	READY	MED-LOW			41	Child Scoreboard progress report › Active Diagnosis: a child's standing malnutrition assessment never appears as active 
+B-470	3	READY	MED			41	Antenatal progress report › Medical Diagnosis: a moderate-anemia line reads "no treatment recorded" although the nurse a
+B-471	3	READY	MED-LOW			41	Antenatal progress report › Medical Diagnosis: the postpartum "referred to ARV services / NCD program" lines assert a re
+B-472	4	READY	LOW			41	Antenatal progress report › Patient Progress: a nurse postpartum encounter counts as a third-trimester ANC visit and its
+B-473	4	READY	LOW			41	Acute Illness progress report › Actions Taken: a low-risk COVID encounter shows an empty pane, although the nurse record
+B-474	4	READY	LOW			41	NCD progress report: an HbA1c result entered with a test date six or more months old is plotted on the HbA1c chart but m
+B-475	4	READY	LOW			41	Tuberculosis progress report › Adverse Events: every visit without side effects adds a row reading "None of the above"
+B-476	4	READY	LOW			41	Completion report (Nutrition individual + Well Child, CHW): a height or weight the CHW marked "unable to take" is charge
+B-477	4	READY	LOW			41	Prenatal completion (CHW visit 1): the mandatory-activities gate has the danger-signs condition inverted relative to vis
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
