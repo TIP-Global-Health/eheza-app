@@ -152,7 +152,7 @@ B-151	3	IMPLEMENTED		2094	2095	18	Duplicate "Murambi" sector under Rulindo (ids 
 B-152		IMPLEMENTED	LOW			18	Small-backend audit batch (case_management / activity / user / whatsapp) — mixed CONFIRMED-minor + PLAUSIBLE · LOW-MED ·
 B-153	3	CLOSED			2036	18	✅ **CLOSED 2026-08-10 — NO CODE ISSUE REMAINS.** Mechanism solved (below), already fixed on develop by PR #2036, and con
 B-154	3	IMPLEMENTED		2096	2097	18	A child with more doses recorded than the schedule expects can never read as up to date
-B-155	3	READY	MED			18	Retire the phpcs advisory workaround: upgrade the sniffer, and move its configuration into the repo
+B-155	4	READY	MED			18	Retire the phpcs advisory workaround: upgrade the sniffer, and move its configuration into the repo
 B-156	4	READY	LOW			19	Fallback fileId 5002 (cache-evicted photo/screenshot unstick) is environment-coupled: the file exists ONLY on ihangane
 B-157	4	READY	MED-LOW		2067	19	CI gating cluster: the only server-side test job can pass with ZERO tests run, + 6 smaller gate defects
 B-158	2	PARKED	MED			19	🅿 **PARKED (user, 2026-08-11)** — presented as the next Tier 2 item and declined without a stated reason; ⛔ do NOT re-pi
@@ -245,7 +245,7 @@ B-244	2	IMPLEMENTED		2151	2152	25	✅ IMPLEMENTED 2026-08-26 (issue #2151, PR #2
 B-245	3	IMPLEMENTED	MED-HIGH	2258	2259	25	Statistical Queries: 15 prenatal diagnoses are missing from the report mapping, so encounters carrying only those are co
 B-246	3	READY	MED			25	Completion report: its query filters on publication status instead of the soft-delete flag, so encounters an administrat
 B-247	3	IMPLEMENTED	MED-HIGH			25	Nutrition report: the Elm half throws away edema on well-child encounters, so the same child is SAM at district scope an
-B-248	3	READY	MED			25	Stats simpletest: three scenarios — including the B-032 and B-033 soft-delete regression tests — have exited early witho
+B-248	4	READY	MED			25	Stats simpletest: three scenarios — including the B-032 and B-033 soft-delete regression tests — have exited early witho
 B-249	3	READY	MED			25	Dashboard family planning: the donut buckets each record by the date it was uploaded, not the date it was measured
 B-250	3	READY	MED			25	Dashboard stats: soft-deleted people still appear in case management, beneficiaries and attendance, so a merged-away dup
 B-251	3	READY	MED			25	Progress-report lab pane: urine-dipstick rows are built from an unfiltered list, so a long-only test also renders a phan
@@ -266,7 +266,7 @@ B-265	4	READY	LOW			25	Reports recalculation ignores session and clinic edits, s
 B-266	3	READY	MED			25	WhatsApp uploads carry no UUID, so the sync POST's duplicate guard cannot fire and a retried batch sends the patient the
 B-267	4	READY	LOW			25	Three latent traps in the RESTful writable contract, all unreachable today
 B-268	3	READY	MED			25	Prenatal progress report (Healthy Start): the weight-gain chart classifies from the self-reported pre-pregnancy weight i
-B-269	3	READY	MED			25	`HedleyRestfulBulkPhotosTest` has never run: it declares the group `Hedley restful` while the test job runs the group `H
+B-269	4	READY	MED			25	`HedleyRestfulBulkPhotosTest` has never run: it declares the group `Hedley restful` while the test job runs the group `H
 B-270	4	READY	LOW			25	Child progress report ECD pane: when two Well Child encounters fall in the same pediatric-care milestone window, the one
 B-271	4	READY	LOW			25	Vaccination progress: when two encounters record the same dose with different dates, which date wins depends on an arbit
 B-272	3	IMPLEMENTED	MED-LOW	2179	2180	26	Well Child vitals: the "previous" respiratory rate and temperature shown beside the inputs are the child's OLDEST readin
@@ -289,7 +289,7 @@ B-288	1	IMPLEMENTED	MED	2219	2220	26	NCD: diabetes found from a point-of-care bl
 B-289	1	IMPLEMENTED	MED	2221	2222	26	NCD: a pregnancy found by test at the first encounter is forgotten at every later encounter — the full antihypertensive 
 B-290	3	IMPLEMENTED	MED			26	NCD Social History: the drinks-per-week answer is never saved — the encoder writes the cigarettes count into the `bevera
 B-291	3	READY	MED-LOW			27	NCDA Antenatal Care step (all four hosts): tapping an already-recorded ANC month silently stores a phantom ANC visit dat
-B-292	3	READY	MED			27	Immunisation (Well Child + Child Scoreboard): for a child followed by BOTH programs, the form derives the interval gate 
+B-292	2	READY	MED			27	Immunisation (Well Child + Child Scoreboard): for a child followed by BOTH programs, the form derives the interval gate 
 B-293	4	IMPLEMENTED	LOW	2199	2201	27	Dashboard immunization donut + NCDA scorecard row: a dose administered ON the reference day is read as not given, so the
 B-294	3	READY	MED			27	Nutrition (individual): the assessment stored on the `nutrition_nutrition` measurement goes stale when signs are saved b
 B-295	4	READY	MED-LOW			27	Nutrition (individual, CHW): saving Height/Weight as "unable to take" leaves the previously saved measurement alive and 
@@ -344,10 +344,10 @@ B-343	1	IMPLEMENTED	MED	2244	2245	30	Prenatal HIV: a "partner is HIV positive" a
 B-344	1	IMPLEMENTED	MED	2252	2253	30	Prenatal HIV (lab tech): a positive HIV result entered by the lab tech leaves "pending" in the follow-up answers, and `h
 B-345	1	IMPLEMENTED	MED	2256	2257	30	Prenatal recurrent Next Steps: health education counts as complete once ANY phase-2 education was saved, so education a 
 B-346	4	READY	LOW			30	Prenatal HIV / partner HIV form: B-320's "re-tapping the answer already shown changes nothing" guard only works before a
-B-347	3	READY	MED			30	WhatsApp report: a phone number of zeros or too few digits is accepted and the nurse is told "Success", but the report n
+B-347	2	READY	MED			30	WhatsApp report: a phone number of zeros or too few digits is accepted and the nurse is told "Success", but the report n
 B-348	3	IMPLEMENTED	MED-LOW	2334	2335	30	WhatsApp report on Burundi sites: the country-code dropdown starts at Rwanda (+250), so a Burundi number typed in become
 B-349	3	READY	MED-LOW			30	WhatsApp report on vhw and uvl: the feature is switched on but Twilio is not configured, so every report a nurse sends i
-B-350	3	READY	LOW			30	Rollbar (client): sync errors raised before Rollbar is initialised are recorded as "already sent" and never reported — a
+B-350	4	READY	LOW			30	Rollbar (client): sync errors raised before Rollbar is initialised are recorded as "already sent" and never reported — a
 B-351	3	READY	LOW			30	People search (offline): a common single-word name returns an ARBITRARY 500 of the health centre's matches, and only the
 B-352	3	READY	LOW			30	People in village (offline): a person registered or edited on the device is missing from "people in village" lists until
 B-353	4	READY	LOW			30	Case management (server): an encounter uploaded late closes the patient's NEWER follow-ups — resolution picks every open
@@ -368,7 +368,7 @@ B-367	3	READY	MED-LOW			31	Acute Illness dashboard: every COVID figure counts on
 B-368	4	READY	LOW			31	Dashboard minors ×3: nurse "Total High Risk Pregnancies" counts a woman twice; CHW home "Acute Illness Diagnosed" includ
 B-369	4	READY	LOW			32	Prenatal participant (mixed fleet, release #2128): once a new device opens a fresh pregnancy over an expired undated one
 B-370	4	READY	LOW			32	Login location selection: an assignment added to a nurse or CHW on the server never reaches the health-centre / village 
-B-371	3	READY	MED			32	Prenatal CHW visits 2 and 3 on an undated pregnancy can never be ended: Next Visit is required but its Save does nothing
+B-371	2	READY	MED			32	Prenatal CHW visits 2 and 3 on an undated pregnancy can never be ended: Next Visit is required but its Save does nothing
 B-372	4	READY	LOW			32	Well Child next pediatric visit: on a month-end clamp day the "next" ECD / medication visit date is today, because the a
 B-373	2	IMPLEMENTED	MED	2336	2337	32	Prenatal postpartum visit: recording the Pregnancy Outcome (the visit's first activity) closes the pregnancy at once, so
 B-374	3	READY	LOW			32	Case Management Antenatal pane: follow-up entries of an EXPIRED pregnancy (past EDD + 92 days, or the B-194 no-EDD rule)
@@ -387,14 +387,14 @@ B-386	4	READY	LOW			33	Client and server now spell five clinical labels differen
 B-387	4	READY	LOW			33	The new duplicate-English check documents a guarantee it does not implement: its exemption list is unbounded, so an alre
 B-388	3	READY	MED			33	A village saved with any geo field blank makes the general sync batch undecodable, stopping ALL sync for every device on
 B-389	4	READY	LOW			33	A live uvl village carries a sector name that is not in the geo table, and nothing validates it: a CHW assigned there co
-B-390	3	READY	MED			33	A failed GPS capture sends no reply and never clears the last reading, so one household's coordinates are shown and save
+B-390	2	READY	MED			33	A failed GPS capture sends no reply and never clears the last reading, so one household's coordinates are shown and save
 B-391	4	READY	LOW			33	Eleven views label the level-5 address "Village" regardless of site, so Burundi reads "Village" where the unit's own res
 B-392	1	IMPLEMENTED	MED	2272	2273	33	The duplicate-referral guard now reads a history that cannot contain the encounter it reports to, so a rhesus-negative o
 B-393	3	IMPLEMENTED	MED	2309	2310	34	E2E suite: the Nutrition NCDA test has run in no CI job since 2026-03-15, because the job-1 exclusion `NCD` matches insi
-B-394	3	READY	MED			34	`healthy_start` is on in Rwanda production and is the one site feature no local or CI environment ever enables, so nothi
+B-394	4	READY	MED			34	`healthy_start` is on in Rwanda production and is the one site feature no local or CI environment ever enables, so nothi
 B-395	2	IMPLEMENTED	HIGH	2270	2271	34	The release gate is red: all three e2e jobs have failed on `develop` since the translations fold merged on 2026-09-16, b
 B-396	3	PARKED	MED			34	`e2e_playwright_1` joins its two Playwright runs with `&&`, so any failure in the first leg silently skips the other 25 
-B-397	3	READY	MED			34	`[ci skip]` on every commit plus zero required status checks means a PR can be merged with no CI having run at all
+B-397	4	READY	MED			34	`[ci skip]` on every commit plus zero required status checks means a PR can be merged with no CI having run at all
 B-398	4	READY	LOW			34	The simpletest CI log is capped at its last 400,000 bytes, and `--verbose` puts the per-class summary before the part th
 B-399	4	READY	LOW			34	`field_incident_type` allows `files-upload`, but the client sends `file-upload` and the backend stores it unvalidated — 
 B-400	4	READY	LOW			34	The Well Child "Vitals skip round-trip" e2e test passes when the vitals row is missing entirely, which is the regression
