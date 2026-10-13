@@ -1285,7 +1285,7 @@
     }
 
     function jsonError (err) {
-        var response = new Response(JSON.stringify(err), {
+        var response = new Response(String(err), {
             status: 400,
             statusText: 'Bad JSON'
         });
