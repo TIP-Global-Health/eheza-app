@@ -216,6 +216,13 @@ flag simply does not appear.
   one `.entry` per illness with a diagnosis — "<diagnosis> / ONGOING|RESOLVED / DD/MM/YYYY" — or
   "No matches found". An illness without a diagnosis is not listed.
 
+## Dashboard (CHW)
+
+- Main-menu card "Dashboards" opens CHW SNAPSHOT for the signed-in village. It shows a spinner until the device holds the health centre's statistics.
+- After a server reinstall no statistics exist: run `ddev drush advancedqueue-process-queue hedley_stats_calculate_stats --timeout=300` before pairing, and check the `cache` row `sync_stats_general_<hc nid>` exists.
+- Month selector: `.month-selector span.icon-back:not(.rotate-180)` goes back a month, `.label` reads "September 2026". Cards are `.dashboard-card.chw`, value in `.value`.
+- Akanduga belongs to Nyange (nid 4).
+
 ## Case Management
 
 - Nurse panes: All / Contact Tracing / ANC Labs / NCD Labs; the forward icon on an ANC Labs entry

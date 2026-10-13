@@ -231,3 +231,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a test record changed with drush looked right, but the Case Management results record still named the test.
 - **Wrong conclusion:** the PR leaves the entry open.
 - **Rule:** saving a lab test in the app also rewrites the encounter's results record (`generate…LabsTestAddedMsgs`); a drush edit does not. A server-built fixture stands only for the record edited — say which follow-on records it leaves stale, and do not judge them.
+
+## Reading a Dashboard figure before its data loads
+
+- **Symptom:** straight after opening the CHW Dashboard, Case Management "Home Visit" read 0; a minute earlier it read 3.
+- **Wrong conclusion:** the figure changed, or the baseline is 0.
+- **Rule:** `page.goto('/')` reloads the app, and the cards read 0 until follow-ups load. Poll the value until it holds for a few seconds before recording it.
