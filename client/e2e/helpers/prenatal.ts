@@ -5,6 +5,7 @@ import {
   backdateEncounter,
   clickSubTaskTab,
   expectGlucoseRangeRefusesMillimoles,
+  fillChildRegistrationFields,
   fillMeasurement,
   formInput,
   GLUCOSE_IN_RANGE,
@@ -1755,18 +1756,15 @@ export async function completePostpartumTreatmentReview(page: Page) {
 }
 
 /**
- * Pregnancy outcomes, in the order of the outcome form's dropdown
- * (allPregnancyOutcome in Backend/IndividualEncounterParticipant/Model.elm).
+ * A pregnancy outcome, as the outcome form's dropdown values name it
+ * (pregnancyOutcomeToString in Backend/IndividualEncounterParticipant/Utils.elm).
  */
-const PREGNANCY_OUTCOMES = [
-  'live-at-term',
-  'live-pre-term',
-  'still-at-term',
-  'still-pre-term',
-  'abortions',
-] as const;
-
-export type PregnancyOutcome = (typeof PREGNANCY_OUTCOMES)[number];
+export type PregnancyOutcome =
+  | 'live-at-term'
+  | 'live-pre-term'
+  | 'still-at-term'
+  | 'still-pre-term'
+  | 'abortions';
 
 /**
  * Fill the open Pregnancy Outcome form — concluded today, delivered at a
@@ -1779,9 +1777,8 @@ async function fillPregnancyOutcomeForm(page: Page, outcome: PregnancyOutcome) {
   // 1. Date Pregnancy Concluded — calendar popup via .form-input.date.
   await setDate(page, new Date(), '.form-input.date');
 
-  // 2. Pregnancy Outcome — dropdown; index 0 is the blank option.
-  const outcomeSelect = page.locator('select').first();
-  await outcomeSelect.selectOption({ index: PREGNANCY_OUTCOMES.indexOf(outcome) + 1 });
+  // 2. Pregnancy Outcome — dropdown.
+  await page.locator('select').first().selectOption(outcome);
   await page.waitForTimeout(WAIT.formInteraction);
 
   // 3. Delivery Location — bool input (Facility/Home).
@@ -1884,26 +1881,21 @@ export async function completeChwPostpartumVisit(
     // date of birth already set; saving it returns to Next Steps.
     await click(page.locator('button', { hasText: 'Enroll Newborn' }), page);
     await formInput(page, 'First Name:').waitFor({ timeout: 10000 });
-    const newbornFirstName = options?.newbornFirstName ?? `Newborn${Date.now()}`;
-    await formInput(page, 'First Name:').fill(newbornFirstName);
-    await formInput(page, 'Second Name:').fill('E2ETest');
-    await page
-      .locator('.ui.grid')
-      .filter({ hasText: 'Gender:' })
-      .locator('input[type="radio"]')
-      .first()
-      .check();
-    await selectByLabel(page, 'Mode of delivery:', 1);
+    const newborn = await fillChildRegistrationFields(
+      page,
+      options?.newbornFirstName ?? `Newborn${Date.now()}`,
+      false,
+    );
     await click(page.locator('button[type="submit"]'), page);
     await page
       .locator('div.page-activity.prenatal', { hasText: 'Newborn is already enrolled' })
       .waitFor({ timeout: 15000 });
-    newbornName = `E2ETest ${newbornFirstName}`;
+    newbornName = newborn.fullName;
   }
 
   // Saving the last task opens the progress report.
   await click(
-    page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
+    page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' }),
     page,
   );
   await page
