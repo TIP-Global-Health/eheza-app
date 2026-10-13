@@ -15,7 +15,7 @@ B-013	4	READY					Pairing-code consume wipes code before token mint, no transact
 B-014	4	READY					Remaining UTC residuals (R2-4 class, grouped)
 B-015	4	READY					/api/file-upload: no extension/size limits
 B-016	4	READY					No server-side range validation on clinical numerics
-B-018	4	READY					MUAC unit-LABEL selection still inline per site
+B-018	4	CLOSED					MUAC unit-LABEL selection still inline per site
 B-019	3	PARKED					hedley_view_export requeue path missing switchUserBack
 B-020	1	PARKED					Stats recalc non-atomic → dashboard blanks/stale for an HC
 B-021	4	READY	LOW				Unbatched soft-delete cascade can time out (CORRECTED: availability only, atomic rollback)
