@@ -17,6 +17,7 @@ import Backend.Measurement.Model
         , LungsCPESign
         , MalariaTestValue
         , Measurement
+        , ObstetricHistoryStep2Sign(..)
         , PartnerHIVTestValue
         , PrenatalAssesment(..)
         , PrenatalHIVSign(..)
@@ -25,6 +26,8 @@ import Backend.Measurement.Model
         , PrenatalMentalHealthQuestionOption(..)
         , PrenatalSymptom(..)
         , PrenatalSymptomQuestion(..)
+        , PreviousDeliveryPeriod(..)
+        , PreviousDeliverySign(..)
         , ProteinValue(..)
         , RandomBloodSugarTestValue
         , RecommendedTreatmentSign(..)
@@ -40,6 +43,8 @@ import Backend.Measurement.Model
         )
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.Person.Model exposing (Person)
+import Backend.PrenatalActivity.Model exposing (HighRiskFactor(..))
+import Backend.PrenatalActivity.Utils exposing (generateHighRiskAlertData)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date
@@ -52,7 +57,7 @@ import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
 import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
-import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
+import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), emptyHealthEducationForm)
 import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedPreviouslyAnyOf, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
 import RemoteData
@@ -2358,6 +2363,7 @@ all =
         , historyBeforeEncounterTest
         , repeatedTapOnSavedTest
         , diagnosisKnownAnyOfTest
+        , obstetricHistoryFirstPregnancyTest
         ]
 
 
@@ -2606,4 +2612,150 @@ diagnosisKnownAnyOfTest =
             \_ ->
                 known rhesusNegative "current" [ older, current ]
                     |> Expect.equal (Just False)
+        ]
+
+
+{-| Step 1 corrected to a first pregnancy leaves the step 2 answers on the
+encounter. They describe deliveries that never happened, so no reader counts them.
+-}
+obstetricHistoryFirstPregnancyTest : Test
+obstetricHistoryFirstPregnancyTest =
+    let
+        firstPregnancy =
+            { currentlyPregnant = True
+            , termPregnancy = 0
+            , preTermPregnancy = 0
+            , stillbirthsAtTerm = 0
+            , stillbirthsPreTerm = 0
+            , abortions = 0
+            , liveChildren = 0
+            }
+
+        secondPregnancy =
+            { firstPregnancy | termPregnancy = 1, liveChildren = 1 }
+
+        step2With signs period =
+            { cSections = 0
+            , cSectionReason = Nothing
+            , previousDelivery = EverySet.singleton NoPreviousDeliverySign
+            , previousDeliveryPeriod = EverySet.singleton period
+            , signs = EverySet.fromList signs
+            }
+
+        withHistory step1 step2 =
+            { emptyPrenatalMeasurements
+                | obstetricHistory = wrapMeasurement step1
+                , obstetricHistoryStep2 = wrapMeasurement step2
+            }
+
+        previousPreeclampsia =
+            step2With [ ObstetricHistoryPreeclampsiaPreviousPregnancy ] Neither
+
+        moreThan10Years =
+            step2With [ NoObstetricHistoryStep2Sign ] MoreThan10Years
+
+        convulsions =
+            step2With [ ObstetricHistoryConvulsionsPreviousDelivery ] Neither
+
+        highRisk =
+            EverySet.member DiagnosisHighRiskOfPreeclampsiaInitialPhase
+
+        moderateRisk =
+            EverySet.member DiagnosisModerateRiskOfPreeclampsia
+
+        convulsionsAlert measurements =
+            generateHighRiskAlertData English measurements HighRiskConvulsionsPreviousDelivery
+    in
+    describe "obstetric history step 2 on a first pregnancy"
+        [ test "previous preeclampsia gives high risk when step 1 records an earlier pregnancy" <|
+            \_ ->
+                diagnoseNurse (withHistory secondPregnancy previousPreeclampsia)
+                    |> highRisk
+                    |> Expect.equal True
+        , test "previous preeclampsia gives no high risk when step 1 says first pregnancy" <|
+            \_ ->
+                diagnoseNurse (withHistory firstPregnancy previousPreeclampsia)
+                    |> highRisk
+                    |> Expect.equal False
+        , test "the latest step 1 decides: a first pregnancy at the current visit drops step 2 saved at an earlier one" <|
+            \_ ->
+                diagnoseNurseAfter []
+                    (withHistory secondPregnancy previousPreeclampsia)
+                    { emptyPrenatalMeasurements | obstetricHistory = wrapMeasurement firstPregnancy }
+                    |> highRisk
+                    |> Expect.equal False
+        , test "a first pregnancy recorded at an earlier visit is read the same way at a later one" <|
+            \_ ->
+                diagnoseNurseAfter [] (withHistory firstPregnancy previousPreeclampsia) emptyPrenatalMeasurements
+                    |> highRisk
+                    |> Expect.equal False
+        , test "more than 10 years since delivery gives moderate risk when step 1 records an earlier pregnancy" <|
+            \_ ->
+                diagnoseNurse (withHistory secondPregnancy moreThan10Years)
+                    |> moderateRisk
+                    |> Expect.equal True
+        , test "more than 10 years since delivery gives no moderate risk when step 1 says first pregnancy" <|
+            \_ ->
+                diagnoseNurse (withHistory firstPregnancy moreThan10Years)
+                    |> moderateRisk
+                    |> Expect.equal False
+        , test "convulsions at a previous delivery raise the high-risk alert when step 1 records an earlier pregnancy" <|
+            \_ ->
+                convulsionsAlert (withHistory secondPregnancy convulsions)
+                    |> Expect.notEqual Nothing
+        , test "convulsions at a previous delivery raise no high-risk alert when step 1 says first pregnancy" <|
+            \_ ->
+                convulsionsAlert (withHistory firstPregnancy convulsions)
+                    |> Expect.equal Nothing
+        , test "the skip rule is gravida 01 and para 0000 for every combination of counts" <|
+            \_ ->
+                let
+                    counts =
+                        [ 0, 1, 2, 10 ]
+
+                    values =
+                        List.concatMap
+                            (\currentlyPregnant ->
+                                List.concatMap
+                                    (\term ->
+                                        List.concatMap
+                                            (\preTerm ->
+                                                List.concatMap
+                                                    (\atTerm ->
+                                                        List.concatMap
+                                                            (\stillPreTerm ->
+                                                                List.concatMap
+                                                                    (\abortions ->
+                                                                        List.map
+                                                                            (\liveChildren ->
+                                                                                { currentlyPregnant = currentlyPregnant
+                                                                                , termPregnancy = term
+                                                                                , preTermPregnancy = preTerm
+                                                                                , stillbirthsAtTerm = atTerm
+                                                                                , stillbirthsPreTerm = stillPreTerm
+                                                                                , abortions = abortions
+                                                                                , liveChildren = liveChildren
+                                                                                }
+                                                                            )
+                                                                            counts
+                                                                    )
+                                                                    counts
+                                                            )
+                                                            counts
+                                                    )
+                                                    counts
+                                            )
+                                            counts
+                                    )
+                                    counts
+                            )
+                            [ True, False ]
+                in
+                values
+                    |> List.filter
+                        (\value ->
+                            skipObstetricHistorySecondStep (Just value)
+                                /= (generateGravida value == "01" && generatePara value == "0000")
+                        )
+                    |> Expect.equal []
         ]
