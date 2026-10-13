@@ -29,9 +29,9 @@ isPregnancyActive currentDate session =
         diffDays eddDate currentDate < 92
 
 
-{-| Outcome recorded today, with a postpartum visit of the viewer's role started
-today. The participant page keeps this pregnancy, so that visit reopens instead
-of starting a second pregnancy.
+{-| Outcome recorded today, with this role's postpartum visit still open or ended
+today. The page keeps the pregnancy, so that visit reopens instead of a second
+pregnancy starting.
 -}
 pregnancyConcludedInTodaysPostpartumVisit : NominalDate -> Bool -> IndividualEncounterParticipant -> List PrenatalEncounter -> Bool
 pregnancyConcludedInTodaysPostpartumVisit currentDate isChw session encounters =
@@ -48,6 +48,6 @@ pregnancyConcludedInTodaysPostpartumVisit currentDate isChw session encounters =
         && List.any
             (\encounter ->
                 (encounter.encounterType == postpartumEncounterType)
-                    && (encounter.startDate == currentDate)
+                    && List.member encounter.endDate [ Nothing, Just currentDate ]
             )
             encounters

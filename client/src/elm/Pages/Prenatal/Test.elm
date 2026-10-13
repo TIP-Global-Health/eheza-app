@@ -156,9 +156,20 @@ visitStartedDaysAgo days encounterType =
     emptyPrenatalEncounter (toEntityUuid "pregnancy") (Date.add Date.Days -days currentDate) encounterType Nothing
 
 
+{-| A visit started and ended `days` before `currentDate`.
+-}
+visitEndedDaysAgo : Int -> PrenatalEncounterType -> PrenatalEncounter
+visitEndedDaysAgo days encounterType =
+    let
+        visit =
+            visitStartedDaysAgo days encounterType
+    in
+    { visit | endDate = Just visit.startDate }
+
+
 
 -- The participant page keeps a pregnancy concluded today only for the role
--- whose postpartum visit started today; otherwise it is left out as before.
+-- whose postpartum visit is still open or ended today; otherwise as before.
 
 
 pregnancyConcludedInTodaysPostpartumVisitTest : Test
@@ -194,9 +205,17 @@ pregnancyConcludedInTodaysPostpartumVisitTest =
             \_ ->
                 pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 0 ChwPostpartumEncounter ]
                     |> Expect.equal False
-        , test "outcome today, postpartum visit started yesterday -> False" <|
+        , test "outcome today in a visit opened yesterday and still open -> True" <|
             \_ ->
                 pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 1 NursePostpartumEncounter ]
+                    |> Expect.equal True
+        , test "outcome today, postpartum visit ended today -> True" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isChw (pregnancyConcludedDaysAgo 0) [ visitEndedDaysAgo 0 ChwPostpartumEncounter ]
+                    |> Expect.equal True
+        , test "outcome today, postpartum visit ended yesterday -> False" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 0) [ visitEndedDaysAgo 1 NursePostpartumEncounter ]
                     |> Expect.equal False
         , test "outcome today after an antenatal visit only -> False" <|
             \_ ->
