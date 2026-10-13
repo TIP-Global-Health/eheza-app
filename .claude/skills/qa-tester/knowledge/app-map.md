@@ -53,6 +53,9 @@ flag simply does not appear.
 - **The newborn exam (Birth History) is CHW-only.** A nurse always starts a `PediatricCare`
   encounter, which never offers it (`Pages/WellChild/Participant/View.elm` picks
   `NewbornExam` only for a CHW and a child under two months).
+- A CHW's participant search lists only people living in the chosen village. A nurse's registration
+  puts a woman in Birambo, so a woman both roles must open is registered by the CHW: Akanduga
+  belongs to Nyange, where the nurse finds her.
 - Group sessions: a CHW opens straight onto Attendance; a nurse goes Clinical → Group
   Encounter → programme → group.
 
@@ -180,10 +183,24 @@ flag simply does not appear.
   'prenatal')`). The Obstetric History pane is the first `.risk-factors`; diagnoses are under
   OBSTETRIC DIAGNOSIS. The encounter page's red `div.alerts` icon opens `.alerts-dialog` (High Risk
   Factors, such as convulsions at a previous delivery). The icon is absent when there is no alert.
-- Prenatal participant page: Postpartum is enabled for a woman with no visits, so no backdating is needed to reach a postpartum visit. The first button reads "First Antenatal Encounter" (nurse) or "First Antenatal Visit" (CHW).
-- Pregnancy Outcome inside a postpartum visit closes the pregnancy on Save and returns to the still-open visit. The participant page then ignores that pregnancy (B-373).
-- Postpartum Danger Signs has two "None of these" lists, so `completeDangerSigns` fails there; tick each by hand. A live-birth outcome adds Newborn Enrollment to Next Steps; a stillbirth avoids it.
-- To make a visit "started yesterday, still open", set only its `field_scheduled_date` value by drush and leave `value2` empty; `backdateEncounter` sets both, which ends the visit.
+- An encounter's `field_scheduled_date` holds the start in `value` and the end in `value2` (null =
+  still open); the tablet's `scheduled_date` mirrors it. Editing either with drush and syncing
+  moves the visit on the device. For a visit started yesterday and still open, set only `value`:
+  `backdateEncounter` sets both, which ends the visit.
+- Prenatal participant page buttons: nurse — FIRST ANTENATAL ENCOUNTER / SUBSEQUENT ANTENATAL
+  ENCOUNTER / POSTPARTUM / RECORD PREGNANCY OUTCOME; a CHW's first reads FIRST ANTENATAL VISIT.
+  `qa.state()` marks the off ones `[disabled]`. Postpartum is on for a woman with no visits, so
+  no backdating is needed to reach one. A CHW viewing a pregnancy with only nurse visits
+  gets the `.open-pregnancy-popup` warning; its "No - document pregnancy outcome" works only once
+  a visit has ended.
+- Pregnancy Outcome inside a postpartum visit closes the pregnancy on Save and returns to the
+  still-open visit. The participant page then ignores that pregnancy (B-373).
+- CHW postpartum visit: Pregnancy Outcome, Danger Signs (tick "None of these" for mother and child),
+  Next Steps. Postpartum Danger Signs has two "None of these" lists, so `completeDangerSigns` fails
+  there. With no danger signs Next Steps is Health Education, plus Newborn Enrolment after a
+  live birth — record a stillbirth (outcome option 3) to skip it. Saving Next Steps opens the
+  progress report, which carries End Encounter. Ending either role's postpartum visit lands on the
+  main menu.
 - A second encounter on the same day is impossible: backdate the first with
   `h.common.backdateEncounter(name, type, days)`, then sync before starting the next.
 - Well Child Head Circumference: its tab shows only for children under 36 months. Under the

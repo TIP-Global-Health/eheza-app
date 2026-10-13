@@ -237,3 +237,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** straight after opening the CHW Dashboard, Case Management "Home Visit" read 0; a minute earlier it read 3.
 - **Wrong conclusion:** the figure changed, or the baseline is 0.
 - **Rule:** `page.goto('/')` reloads the app, and the cards read 0 until follow-ups load. Poll the value until it holds for a few seconds before recording it.
+
+## `backdateEncounter` also ends the visit
+
+- **Symptom:** a scenario needs a visit started yesterday and still open; the helper's backdate would have left it ended.
+- **Wrong conclusion:** the helper moves only the start date.
+- **Rule:** `h.common.backdateEncounter` sets both `value` and `value2` of `field_scheduled_date`, and `value2` is the end date (null = open). To keep a visit open, set only `value` in your own drush script.
+
+## Reloading as a CHW asks for the village again
+
+- **Symptom:** after `page.goto('/')` as CHW, waiting for `.wrap-cards` times out on a "VILLAGE" screen.
+- **Wrong conclusion:** the sign-in was lost or the app hung.
+- **Rule:** a full load makes a CHW pick the village again. Click "Akanduga at Mbirima" if it shows, or move by in-app navigation. The nurse's health centre choice survives a load.
