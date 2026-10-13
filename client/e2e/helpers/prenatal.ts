@@ -229,21 +229,30 @@ export async function completePregnancyDating(page: Page, lmpDate: Date) {
  * additional prenatal diagnoses (verified against
  * client/src/elm/Pages/Prenatal/Activity/Utils.elm), so existing
  * downstream assertions remain valid.
+ * With { signs: [...] }: select each listed sign by its label.
+ * A CHW's save with a danger sign opens Next Steps behind a referral
+ * warning; completeNextSteps carries on from there.
  * Creates: danger_signs
  */
 export async function completeDangerSigns(
   page: Page,
-  options?: { premature?: boolean },
+  options?: { premature?: boolean; signs?: string[] },
 ) {
   await openActivity(page, 'prenatal', 'danger-signs');
 
-  if (options?.premature) {
-    await selectCheckbox(page, 'Premature Onset of Contractions');
-  } else {
-    await selectCheckbox(page, 'None of These');
+  const signs = options?.signs
+    ?? [options?.premature ? 'Premature Onset of Contractions' : 'None of These'];
+  for (const sign of signs) {
+    await selectCheckbox(page, sign);
   }
 
-  await saveActivity(page, 'prenatal');
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await click(saveBtn, page);
+  await Promise.race([
+    page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 }),
+    page.waitForURL(/\/next-steps$/, { timeout: 10000 }),
+  ]);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -1436,7 +1445,9 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
   // For subsequent encounters with no diagnoses, NextSteps may not appear at all.
   const nextStepsIcon = page.locator('.icon-task-next-steps');
   const appointmentIcon = page.locator('.icon-task-appointment-confirmation');
-  if (await nextStepsIcon.isVisible({ timeout: 1000 }).catch(() => false)) {
+  if (/\/next-steps$/.test(page.url())) {
+    // Already open: a CHW's danger sign leads straight here.
+  } else if (await nextStepsIcon.isVisible({ timeout: 1000 }).catch(() => false)) {
     await openActivity(page, 'prenatal', 'next-steps');
   } else if (await appointmentIcon.isVisible({ timeout: 1000 }).catch(() => false)) {
     await openActivity(page, 'prenatal', 'appointment-confirmation');

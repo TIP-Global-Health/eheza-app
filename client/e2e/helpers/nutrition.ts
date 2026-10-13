@@ -505,21 +505,22 @@ export async function completeContributingFactors(page: Page) {
   await click(page.locator('button.ui.fluid.primary.button.active'), page);
 }
 
+export type NutritionFollowUpOption = '1 Day' | '3 Days' | '1 Week' | '2 Weeks' | 'No follow up';
+
 /**
- * Complete the FollowUp next-step: select "1 Day".
+ * Complete the FollowUp next-step with the given option (default "1 Day").
  * Saves the sub-task.
  */
-export async function completeFollowUp(page: Page) {
+export async function completeFollowUp(page: Page, option: NutritionFollowUpOption = '1 Day') {
   await click(
     page.locator('#tasks-bar .icon-next-steps-follow-up').first(),
     page,
   );
   await page.locator('.ui.form.follow-up').waitFor({ timeout: 5000 });
 
-  // Select "1 Day".
   await click(
     page.locator('.ui.form.follow-up .ui.checkbox.activity', {
-      hasText: '1 Day',
+      hasText: option,
     }),
     page,
   );
