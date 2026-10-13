@@ -246,83 +246,22 @@
         return dbSync.open().catch(databaseError).then(function () {
             return getTableForType(type).then(function (table) {
                 return request.json().catch(jsonError).then(function (json) {
-                    return table.update(uuid, json).catch(databaseError).then(function () {
-                        return sendRevisedNode(table, uuid).then(function () {
-                            // For hooks to be able to work, we need to declare the
-                            // tables that may be altered due to a change. In this case
-                            // We want to allow adding pending upload photos.
-                            // See for example dbSync.nodeChanges.hook().
-                            var tableName = table.name;
-                            return db.transaction('rw', tableName, dbSync.nodeChanges, dbSync.shardChanges,  dbSync.authorityPhotoUploadChanges, function() {
-                                return table.get(uuid).catch(databaseError).then(function (node) {
-                                    if (node) {
-                                        var body = JSON.stringify({
-                                            data: [node]
-                                        });
+                    var change = {
+                        type: type,
+                        uuid: uuid,
+                        method: 'PATCH',
+                        data: json,
+                        timestamp: Date.now(),
+                        // Mark entity as not synced.
+                        isSynced: 0
+                    };
 
-                                        var response = new Response(body, {
-                                            status: 200,
-                                            statusText: 'OK',
-                                            headers: {
-                                                'Content-Type': 'application/json'
-                                            }
-                                        });
-
-                                        var change = {
-                                            type: type,
-                                            uuid: uuid,
-                                            method: 'PATCH',
-                                            data: json,
-                                            timestamp: Date.now(),
-                                            // Mark entity as not synced.
-                                            isSynced: 0
-                                        };
-
-                                        var changeTable = dbSync.nodeChanges;
-                                        var addShard = Promise.resolve();
-
-                                        if (tableName === 'shards') {
-                                            changeTable = dbSync.shardChanges;
-
-                                            addShard = table.get(uuid).catch(databaseError).then(function (item) {
-                                                if (item) {
-                                                    change.shard = item.shard;
-                                                }
-                                                else {
-                                                    return Promise.reject('Unexpectedly could not find: ' + uuid);
-                                                }
-                                            });
-                                        }
-
-                                        return addShard.then(function () {
-                                            return addChange(changeTable, change, response);
-                                        });
-                                    }
-                                    else {
-                                        return Promise.reject("UUID unexpectedly not found.");
-                                    }
-                              });
-                            });
-                        });
+                    return saveChange(table, change, function () {
+                        return table.update(uuid, json);
                     });
                 });
             });
         }).catch(sendErrorResponses);
-    }
-
-    // Adds the row that uploads a change, trying twice. The page gets
-    // `response` only once the row is stored; otherwise a 400 with the reason.
-    function addChange (changeTable, change, response) {
-        return changeTable.add(change).catch(function () {
-            return changeTable.add(change);
-        }).then(function () {
-            return response;
-        }, function (err) {
-            return new Response(String(err), {
-                status: 400,
-                statusText: 'Failure: ' + change.method + ' at changes table'
-            });
-        });
     }
 
     function postNode (request, type) {
@@ -347,52 +286,70 @@
                         }
 
                         return addShard.then(function (json) {
-                            return table.put(json).catch(databaseError).then(function () {
-                                return sendRevisedNode(table, uuid).then(function () {
-                                    var tableName = table.name;
-                                    // For hooks to be able to work, we need to declare the
-                                    // tables that may be altered due to a change. In this case
-                                    // We want to allow adding pending upload photos.
-                                    // See for example dbSync.nodeChanges.hook().
-                                    return db.transaction('rw', tableName, dbSync.nodeChanges, dbSync.shardChanges, dbSync.authorityPhotoUploadChanges, function() {
-                                          var body = JSON.stringify({
-                                              data: [json]
-                                          });
+                            var change = {
+                                type: type,
+                                uuid: uuid,
+                                method: 'POST',
+                                data: json,
+                                timestamp: Date.now(),
+                                // Mark entity as not synced.
+                                isSynced: 0
+                            };
 
-                                          var response = new Response(body, {
-                                              status: 200,
-                                              statusText: 'OK',
-                                              headers: {
-                                                  'Content-Type': 'application/json'
-                                              }
-                                          });
-
-                                          var change = {
-                                              type: type,
-                                              uuid: uuid,
-                                              method: 'POST',
-                                              data: json,
-                                              timestamp: Date.now(),
-                                              // Mark entity as not synced.
-                                              isSynced: 0
-                                          };
-
-                                          var changeTable = dbSync.nodeChanges;
-
-                                          if (tableName === 'shards') {
-                                              changeTable = dbSync.shardChanges;
-                                              change.shard = json.shard;
-                                          }
-
-                                          return addChange(changeTable, change, response);
-                                    });
-                                });
+                            return saveChange(table, change, function () {
+                                return table.put(json);
                             });
                         });
                     });
                 });
             });
         }).catch(sendErrorResponses);
+    }
+
+    // Saves the node and the row that uploads it together, then sends the node
+    // to the page. If either fails, neither is kept, and the page gets a 400.
+    function saveChange (table, change, writeNode) {
+        var tableName = table.name;
+        var changeTable = tableName === 'shards' ? dbSync.shardChanges : dbSync.nodeChanges;
+
+        // The transaction names every table a hook may write to, such as
+        // pending photo uploads (see the shardChanges 'creating' hook).
+        return db.transaction('rw', tableName, dbSync.nodeChanges, dbSync.shardChanges, dbSync.authorityPhotoUploadChanges, function () {
+            return writeNode().then(function () {
+                return table.get(change.uuid);
+            }).then(function (node) {
+                if (!node) {
+                    return Promise.reject('UUID ' + change.uuid + ' not found.');
+                }
+
+                if (tableName === 'shards') {
+                    change.shard = node.shard;
+                }
+
+                return changeTable.add(change).then(function () {
+                    return node;
+                });
+            });
+        }).then(function (node) {
+            return sendRevisions([node]).then(function () {
+                var body = JSON.stringify({
+                    data: [node]
+                });
+
+                return new Response(body, {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            });
+        }, function (err) {
+            return new Response(String(err), {
+                status: 400,
+                statusText: 'Failure: ' + change.method + ' not saved'
+            });
+        });
     }
 
     function view (type, uuid) {
@@ -1255,16 +1212,6 @@
               return Promise.reject('Could not find clinic: ' + clinicId);
           }
       });
-    }
-
-    function sendRevisedNode (table, uuid) {
-        return table.get(uuid).catch(databaseError).then(function (item) {
-            if (item) {
-                return sendRevisions([item]);
-            } else {
-                return Promise.reject("UUID unexpectedly not found.");
-            }
-        });
     }
 
     function jsonError (err) {

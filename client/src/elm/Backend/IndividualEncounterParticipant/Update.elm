@@ -112,11 +112,8 @@ updateIndividualEncounterParticipant individualEncounterParticipantId participan
     participantState
         |> Maybe.andThen RemoteData.toMaybe
         |> unwrap
-            -- The participant is not loaded, so there is nothing to apply the
-            -- update to, and it is discarded. Discarding used to be silent,
-            -- which made field occurrences (pregnancies left without EDD)
-            -- undiagnosable - so report it, with the cache state that explains
-            -- why the participant was not available.
+            -- The participant is not loaded, so the update is discarded and
+            -- reported, with the cache state that explains why.
             ( model
             , Cmd.none
             , [ reportDroppedUpdate action
