@@ -1,6 +1,6 @@
 module Pages.Tuberculosis.ProgressReport.Test exposing (all)
 
-import Backend.Measurement.Model exposing (AdverseEvent(..), ReasonForNotTaking(..), TreatmentOngoingSign(..), TuberculosisMeasurements)
+import Backend.Measurement.Model exposing (AdverseEvent(..), ReasonForNotTaking(..), TreatmentOngoingSign(..))
 import Date
 import EverySet
 import Expect
@@ -11,7 +11,7 @@ import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (class, text)
-import TestFixtures exposing (wrapMeasurement)
+import TestFixtures exposing (emptyTuberculosisMeasurements, wrapMeasurement)
 import Time
 import Translate.Model exposing (Language(..))
 
@@ -46,6 +46,18 @@ adverseEventsPaneTests =
                         [ Query.count (Expect.equal 1)
                         , Query.first >> Query.has [ text "Fever" ]
                         ]
+        , test "a visit without a treatment review adds no entry" <|
+            \_ ->
+                entries [ { encounterWithSideEffects | measurements = emptyTuberculosisMeasurements } ]
+                    |> Query.count (Expect.equal 0)
+        , test "a treatment review with no events stored adds no entry" <|
+            \_ ->
+                entries [ encounterWithTreatmentReview [ TakenAsPrescribed ] [] ]
+                    |> Query.count (Expect.equal 0)
+        , test "side effects answered Yes with no event picked adds no entry" <|
+            \_ ->
+                entries [ encounterWithTreatmentReview [ TakenAsPrescribed, SideEffects ] [ NoAdverseEvent ] ]
+                    |> Query.count (Expect.equal 0)
         , test "only visits with side effects are listed" <|
             \_ ->
                 entries [ encounterWithoutSideEffects, encounterWithSideEffects, encounterWithoutSideEffects ]
@@ -77,7 +89,7 @@ encounterWithTreatmentReview signs adverseEvents =
     { id = toEntityUuid "encounter"
     , startDate = currentDate
     , measurements =
-        { emptyMeasurements
+        { emptyTuberculosisMeasurements
             | treatmentReview =
                 wrapMeasurement currentDate
                     { signs = EverySet.fromList signs
@@ -86,17 +98,4 @@ encounterWithTreatmentReview signs adverseEvents =
                     , adverseEvents = EverySet.fromList adverseEvents
                     }
         }
-    }
-
-
-emptyMeasurements : TuberculosisMeasurements
-emptyMeasurements =
-    { diagnostics = Nothing
-    , dot = Nothing
-    , followUp = Nothing
-    , healthEducation = Nothing
-    , medication = Nothing
-    , referral = Nothing
-    , symptomReview = Nothing
-    , treatmentReview = Nothing
     }

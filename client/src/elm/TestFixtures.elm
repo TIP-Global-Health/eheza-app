@@ -1,5 +1,6 @@
 module TestFixtures exposing
     ( emptyAcuteIllnessMeasurements
+    , emptyTuberculosisMeasurements
     , testChild
     , testParticipant
     , testPerson
@@ -20,6 +21,7 @@ import Backend.Measurement.Model
         , GlucoseValue
         , Measurement
         , TestExecutionNote(..)
+        , TuberculosisMeasurements
         , UrineDipstickTestValue
         , VitalsValue
         )
@@ -182,6 +184,19 @@ emptyAcuteIllnessMeasurements =
     , coreExam = Nothing
     , covidTesting = Nothing
     , contactsTracing = Nothing
+    }
+
+
+emptyTuberculosisMeasurements : TuberculosisMeasurements
+emptyTuberculosisMeasurements =
+    { diagnostics = Nothing
+    , dot = Nothing
+    , followUp = Nothing
+    , healthEducation = Nothing
+    , medication = Nothing
+    , referral = Nothing
+    , symptomReview = Nothing
+    , treatmentReview = Nothing
     }
 
 

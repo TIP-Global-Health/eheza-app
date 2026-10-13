@@ -1,7 +1,7 @@
-module Pages.Tuberculosis.Activity.Utils exposing (activityCompleted, adverseEventReported, diagnosticsFormWithDefault, dotFormWithDefault, dotInputsAndTasks, expectActivity, expectMedicationTask, expectNextStepsTask, generateAllEncountersData, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, medicationTaskCompleted, medicationTasks, medicationTasksCompletedFromTotal, nextStepsTaskCompleted, nextStepsTasks, nextStepsTasksCompletedFromTotal, prescribedMedicationFormWithDefault, prescribedMedicationsInputsAndTasks, resolvePrescribedMedicationSets, symptomReviewFormWithDefault, toDOTValueWithDefault, toDiagnosticsValueWithDefault, toHealthEducationValueWithDefault, toPrescribedMedicationValueWithDefault, toSymptomReviewValueWithDefault)
+module Pages.Tuberculosis.Activity.Utils exposing (activityCompleted, diagnosticsFormWithDefault, dotFormWithDefault, dotInputsAndTasks, expectActivity, expectMedicationTask, expectNextStepsTask, generateAllEncountersData, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, medicationTaskCompleted, medicationTasks, medicationTasksCompletedFromTotal, nextStepsTaskCompleted, nextStepsTasks, nextStepsTasksCompletedFromTotal, prescribedMedicationFormWithDefault, prescribedMedicationsInputsAndTasks, resolvePrescribedMedicationSets, symptomReviewFormWithDefault, toDOTValueWithDefault, toDiagnosticsValueWithDefault, toHealthEducationValueWithDefault, toPrescribedMedicationValueWithDefault, toSymptomReviewValueWithDefault)
 
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (adverseEventsReported, getMeasurementValueFunc)
 import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -196,18 +196,7 @@ expectNextStepsTask assembled task =
 adverseEventReported : TuberculosisMeasurements -> Bool
 adverseEventReported measurements =
     getMeasurementValueFunc measurements.treatmentReview
-        |> Maybe.map
-            (\value ->
-                case EverySet.toList value.adverseEvents of
-                    [] ->
-                        False
-
-                    [ NoAdverseEvent ] ->
-                        False
-
-                    _ ->
-                        True
-            )
+        |> Maybe.map (.adverseEvents >> adverseEventsReported)
         |> Maybe.withDefault False
 
 

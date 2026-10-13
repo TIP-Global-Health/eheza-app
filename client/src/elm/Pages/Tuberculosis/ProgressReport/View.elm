@@ -11,7 +11,7 @@ import Backend.Measurement.Model
         , TuberculosisHealthEducationSign(..)
         , TuberculosisPrescribedMedication(..)
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (adverseEventsReported, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Components.ReportToWhatsAppDialog.Model
 import Components.ReportToWhatsAppDialog.View
@@ -24,7 +24,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Tuberculosis.Activity.Utils exposing (adverseEventReported, generateAllEncountersData, resolvePrescribedMedicationSets)
+import Pages.Tuberculosis.Activity.Utils exposing (generateAllEncountersData, resolvePrescribedMedicationSets)
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, EncounterData)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, partitionActivities)
 import Pages.Tuberculosis.Encounter.View exposing (allowEndingEncounter)
@@ -289,15 +289,15 @@ viewAdverseEventsPane language allEncountersData =
         adverseEventsWithDates =
             List.filterMap
                 (\data ->
-                    if adverseEventReported data.measurements then
-                        getMeasurementValueFunc data.measurements.treatmentReview
-                            |> Maybe.map
-                                (\value ->
-                                    ( data.startDate, value.adverseEvents )
-                                )
+                    getMeasurementValueFunc data.measurements.treatmentReview
+                        |> Maybe.andThen
+                            (\value ->
+                                if adverseEventsReported value.adverseEvents then
+                                    Just ( data.startDate, value.adverseEvents )
 
-                    else
-                        Nothing
+                                else
+                                    Nothing
+                            )
                 )
                 allEncountersData
 

@@ -2,7 +2,7 @@ module Pages.HIV.Activity.Utils exposing (activityCompleted, diagnosticsFormWith
 
 import Backend.HIVActivity.Model exposing (HIVActivity(..))
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (adverseEventsReported, getMeasurementValueFunc)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -177,18 +177,7 @@ expectNextStepsTask assembled task =
 adverseEventReported : HIVMeasurements -> Bool
 adverseEventReported measurements =
     getMeasurementValueFunc measurements.treatmentReview
-        |> Maybe.map
-            (\value ->
-                case EverySet.toList value.adverseEvents of
-                    [] ->
-                        False
-
-                    [ NoAdverseEvent ] ->
-                        False
-
-                    _ ->
-                        True
-            )
+        |> Maybe.map (.adverseEvents >> adverseEventsReported)
         |> Maybe.withDefault False
 
 
