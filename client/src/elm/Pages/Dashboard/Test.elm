@@ -4,7 +4,9 @@ import AssocList as Dict
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
 import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStatsRaw, NutritionStatus(..), NutritionValue, PersonIdentifier, PrenatalDataItem, PrenatalEncounterDataItem, SPVDataItem, SPVEncounterDataItem)
-import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Entities exposing (NutritionFollowUpId)
+import Backend.Measurement.Model exposing (FollowUpOption(..), Gender(..), NutritionFollowUp)
+import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Date
@@ -14,8 +16,11 @@ import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode
 import Json.Encode
 import Pages.Dashboard.Model exposing (ECDStatus(..))
-import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, countCurrentlyPregnantForSelectedMonth, dataItemMergeDuplicates, resolveECDStatus)
+import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, countCurrentlyPregnantForSelectedMonth, dataItemMergeDuplicates, getFollowUpsTotals, resolveCaseManagementLimitDate, resolveECDStatus)
+import RemoteData
+import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (testPerson)
 import Time
 
 
@@ -427,6 +432,94 @@ dataItemMergeDuplicatesTest =
         ]
 
 
+{-| The Home Visit card counts the nutrition follow ups that were open on the
+selected month's last day, or today for the current month.
+-}
+homeVisitFollowUpsTotalTest : Test
+homeVisitFollowUpsTotalTest =
+    let
+        date =
+            Date.fromCalendarDate 2026
+
+        villageId =
+            toEntityUuid "village"
+
+        childId =
+            toEntityUuid "child"
+
+        db =
+            { emptyModelIndexedDb
+                | people = Dict.singleton childId (RemoteData.Success testPerson)
+                , peopleInVillage =
+                    Dict.singleton villageId
+                        (RemoteData.Success (Dict.singleton childId testPerson))
+            }
+
+        followUp : String -> NominalDate -> FollowUpOption -> ( NutritionFollowUpId, NutritionFollowUp )
+        followUp id dateMeasured option =
+            ( toEntityUuid id
+            , { dateMeasured = dateMeasured
+              , nurse = Nothing
+              , healthCenter = Nothing
+              , participantId = childId
+              , deleted = False
+              , encounterId = Nothing
+              , value =
+                    { options = EverySet.singleton option
+                    , resolutionDate = Nothing
+                    , assesment = EverySet.empty
+                    }
+              }
+            )
+
+        homeVisits selectedDate followUps =
+            let
+                ( nutrition, _, _ ) =
+                    getFollowUpsTotals selectedDate
+                        (resolveCaseManagementLimitDate selectedDate)
+                        db
+                        villageId
+                        { nutritionGroup = Dict.empty
+                        , nutritionIndividual = Dict.fromList followUps
+                        , acuteIllness = Dict.empty
+                        , prenatal = Dict.empty
+                        , wellChild = Dict.empty
+                        , tuberculosis = Dict.empty
+                        , hiv = Dict.empty
+                        , traceContacts = Dict.empty
+                        , prenatalLabs = Dict.empty
+                        , ncdLabs = Dict.empty
+                        , nextVisit = Dict.empty
+                        }
+            in
+            nutrition
+
+        lastDayOfAugust =
+            date Time.Aug 31
+    in
+    describe "getFollowUpsTotals, Home Visit"
+        [ test "counts a follow up written during the selected past month" <|
+            \_ ->
+                homeVisits lastDayOfAugust [ followUp "august" (date Time.Aug 20) OneMonth ]
+                    |> Expect.equal 1
+        , test "does not count a follow up written after the selected past month" <|
+            \_ ->
+                homeVisits lastDayOfAugust [ followUp "september" (date Time.Sep 10) OneDay ]
+                    |> Expect.equal 0
+        , test "counts the child when a later follow up falls due before the past month's own" <|
+            \_ ->
+                homeVisits lastDayOfAugust
+                    [ followUp "august" (date Time.Aug 20) OneMonth
+                    , followUp "september" (date Time.Sep 10) OneDay
+                    ]
+                    |> Expect.equal 1
+        , test "counts a follow up written today on the first day of the month" <|
+            \_ ->
+                homeVisits (date Time.Oct 1) [ followUp "today" (date Time.Oct 1) OneDay ]
+                    |> Expect.equal 1
+        ]
+
+
 all : Test
 all =
     describe "Pages.Dashboard.Utils"
@@ -435,5 +528,6 @@ all =
         , countCurrentlyPregnantForSelectedMonthTest
         , resolveECDStatusTest
         , dataItemMergeDuplicatesTest
+        , homeVisitFollowUpsTotalTest
         , statsStorageRoundTripTest
         ]
