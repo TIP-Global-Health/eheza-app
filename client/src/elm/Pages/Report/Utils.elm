@@ -4,12 +4,13 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (testPerformedByExecutionNote)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Utils exposing (bloodSmearResultNotSet, bloodSmearResultSet, testPerformedByExecutionNote)
+import Measurement.Utils exposing (bloodSmearResultNotSet, bloodSmearResultSet)
 import Pages.Report.Model exposing (PaneEntryStatus(..), RandomBloodSugarResult(..), TestReport(..))
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 

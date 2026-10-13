@@ -6,6 +6,7 @@ import Backend.Measurement.Model
     exposing
         ( CreatinineTestValue
         , GlucoseValue(..)
+        , LaboratoryTest(..)
         , Measurement
         , MedicalCondition(..)
         , NCDMeasurements
@@ -23,17 +24,19 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils exposing (rdtKnownAsPositiveUpdate, rdtTestPerformedUpdate, toHIVTestValueWithDefault, toPregnancyTestValueWithDefault)
+import Measurement.Model exposing (LaboratoryTask(..), emptyRandomBloodSugarTestForm)
+import Measurement.Utils exposing (rdtKnownAsPositiveUpdate, rdtTestPerformedUpdate, toHIVTestValueWithDefault, toPregnancyTestValueWithDefault, toRandomBloodSugarTestValueWithDefault)
 import Pages.NCD.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.NCD.Activity.Types exposing (NextStepsTask(..))
 import Pages.NCD.Activity.Update
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask, resolveNextStepsTasks, resolvePreviousMaybeValue)
 import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..), PreviousEncounterData)
+import Pages.NCD.RecurrentActivity.Utils exposing (resolveLaboratoryResultTasks)
 import Pages.NCD.Utils
     exposing
         ( generateAssembledData
         , generateNCDDiagnoses
+        , labsResultsWithTestAdded
         , lowerHypertensionStageCondition
         , patientIsPregnant
         , referForRenalComplications
@@ -975,6 +978,8 @@ all =
         , pregnancyAcrossEncountersTest
         , pregnancyTestExpectedTest
         , repeatedTapOnSavedTest
+        , randomBloodSugarNotPerformedTest
+        , labsResultsWithTestAddedTest
         ]
 
 
@@ -1048,4 +1053,108 @@ repeatedTapOnSavedTest =
                     |> toPregnancyTestValueWithDefault (Just savedPregnancyTest)
                     |> Maybe.map .testResult
                     |> Expect.equal Nothing
+        ]
+
+
+{-| A random blood sugar test sent to the lab can be corrected to "not
+performed" while the encounter is open. The correction owes no lab result.
+-}
+randomBloodSugarNotPerformedTest : Test
+randomBloodSugarNotPerformedTest =
+    let
+        encounterId =
+            toEntityUuid "dummy-encounter"
+
+        rbsValue executionNote =
+            { executionNote = executionNote
+            , executionDate = Nothing
+            , testPrerequisites = Just (EverySet.singleton NoTestPrerequisites)
+            , sugarCount = Nothing
+            , originatingEncounter = Nothing
+            }
+
+        sentToLab =
+            rbsValue TestNoteRunToday
+
+        db =
+            { emptyModelIndexedDb
+                | ncdMeasurements =
+                    Dict.singleton encounterId
+                        (RemoteData.Success { emptyNCDMeasurements | randomBloodSugarTest = wrapMeasurement sentToLab })
+            }
+
+        -- The form as the "No" answer to "performed?" leaves it.
+        answeredNo =
+            { emptyRandomBloodSugarTestForm
+                | testPerformed = Just False
+                , testPerformedDirty = True
+                , testPerformedTodayDirty = True
+                , executionNoteDirty = True
+                , executionDateDirty = True
+                , sugarCountDirty = True
+            }
+
+        laboratoryData =
+            emptyModel.laboratoryData
+
+        savedAfterCorrection =
+            Pages.NCD.Activity.Update.update dummyDate
+                encounterId
+                db
+                (SetRandomBloodSugarTestExecutionNote TestNoteNotIndicated)
+                { emptyModel | laboratoryData = { laboratoryData | randomBloodSugarTestForm = answeredNo } }
+                |> (\( model, _, _ ) -> model.laboratoryData.randomBloodSugarTestForm)
+                |> toRandomBloodSugarTestValueWithDefault (Just sentToLab)
+
+        resultTasksWith executionNote =
+            { emptyNCDMeasurements | randomBloodSugarTest = wrapMeasurement (rbsValue executionNote) }
+                |> ncdAssembled
+                |> resolveLaboratoryResultTasks
+    in
+    describe "a random blood sugar test corrected to not performed"
+        [ test "the correction saves no prerequisites" <|
+            \_ ->
+                savedAfterCorrection
+                    |> Maybe.map (\value -> ( value.executionNote, value.testPrerequisites ))
+                    |> Expect.equal (Just ( TestNoteNotIndicated, Nothing ))
+        , test "a test that was not performed owes no lab result" <|
+            \_ ->
+                resultTasksWith TestNoteNotIndicated
+                    |> Expect.equal []
+        , test "a test sent to the lab owes a lab result" <|
+            \_ ->
+                resultTasksWith TestNoteRunToday
+                    |> Expect.equal [ TaskRandomBloodSugarTest ]
+        ]
+
+
+labsResultsWithTestAddedTest : Test
+labsResultsWithTestAddedTest =
+    let
+        entrySentToLab tests =
+            { performedTests = EverySet.fromList tests
+            , completedTests = EverySet.empty
+            , resolutionDate = Date.add Date.Days 10 dummyDate
+            , patientNotified = False
+            , reviewState = Nothing
+            , testsWithFollowUp = Nothing
+            }
+
+        resolutionDateAfter testExecuted tests =
+            labsResultsWithTestAdded dummyDate TestRandomBloodSugar testExecuted (entrySentToLab tests)
+                |> .resolutionDate
+    in
+    describe "the NCD labs Case Management entry, when a test is sent to the lab or withdrawn"
+        [ test "withdrawing the only test sent to the lab closes the entry today" <|
+            \_ ->
+                resolutionDateAfter False [ TestRandomBloodSugar ]
+                    |> Expect.equal dummyDate
+        , test "withdrawing one of two tests keeps the entry open for the other" <|
+            \_ ->
+                resolutionDateAfter False [ TestRandomBloodSugar, TestCreatinine ]
+                    |> Expect.equal (Date.add Date.Days 35 dummyDate)
+        , test "a test sent to the lab keeps the entry open" <|
+            \_ ->
+                resolutionDateAfter True []
+                    |> Expect.equal (Date.add Date.Days 35 dummyDate)
         ]

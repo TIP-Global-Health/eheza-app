@@ -48,6 +48,7 @@ import Backend.Measurement.Utils
         , mapMeasurementData
         , splitChildMeasurements
         , splitMotherMeasurements
+        , testPerformedByExecutionNote
         )
 import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..))
 import Backend.NCDActivity.Model
@@ -98,7 +99,7 @@ import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Model
-import Measurement.Utils exposing (bloodSmearResultSet, testPerformedByExecutionNote)
+import Measurement.Utils exposing (bloodSmearResultSet)
 import Pages.AcuteIllness.Activity.Model
 import Pages.AcuteIllness.Activity.Types
 import Pages.AcuteIllness.Activity.Utils
@@ -9372,28 +9373,11 @@ generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
                 in
                 Maybe.map
                     (\( resultsId, measurement ) ->
-                        let
-                            updatedValue =
-                                measurement.value
-                                    |> (\value ->
-                                            { value
-                                                | performedTests =
-                                                    if testExecuted then
-                                                        EverySet.insert test value.performedTests
-
-                                                    else
-                                                        EverySet.remove test value.performedTests
-
-                                                -- When we have universal form, it's possible to change if test is performed
-                                                -- at lab, or at point of care.
-                                                -- Therefore, we need to make sure that test does not appear as completed,
-                                                -- which can happen, when nurse switches from point of care to lab.
-                                                , completedTests = EverySet.remove test value.completedTests
-                                                , resolutionDate = Date.add Days labExpirationPeriod currentDate
-                                            }
-                                       )
-                        in
-                        [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                        [ saveNCDLabsResultsMsg id
+                            assembled.participant.person
+                            (Just resultsId)
+                            (Pages.NCD.Utils.labsResultsWithTestAdded currentDate test testExecuted measurement.value)
+                        ]
                     )
                     assembled.measurements.labsResults
                     |> Maybe.withDefault
