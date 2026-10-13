@@ -1,6 +1,7 @@
-module Pages.Prenatal.Participant.Utils exposing (isPregnancyActive)
+module Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
 
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isJust)
@@ -26,3 +27,27 @@ isPregnancyActive currentDate session =
                 Maybe.withDefault (lmpToEDDDate session.startDate) session.eddDate
         in
         diffDays eddDate currentDate < 92
+
+
+{-| Outcome recorded today, with a postpartum visit of the viewer's role started
+today. The participant page keeps this pregnancy, so that visit reopens instead
+of starting a second pregnancy.
+-}
+pregnancyConcludedInTodaysPostpartumVisit : NominalDate -> Bool -> IndividualEncounterParticipant -> List PrenatalEncounter -> Bool
+pregnancyConcludedInTodaysPostpartumVisit currentDate isChw session encounters =
+    let
+        postpartumEncounterType =
+            if isChw then
+                ChwPostpartumEncounter
+
+            else
+                NursePostpartumEncounter
+    in
+    (session.endDate == Just currentDate)
+        && isJust session.outcome
+        && List.any
+            (\encounter ->
+                (encounter.encounterType == postpartumEncounterType)
+                    && (encounter.startDate == currentDate)
+            )
+            encounters
