@@ -414,8 +414,8 @@
         }).catch(sendErrorResponses);
     }
 
-    // Records a change whose upload row could not be stored in `dbErrors`, which
-    // the app sends to Rollbar at the next sync. Written outside the failed transaction.
+    // Records, in `dbErrors`, a change whose upload row could not be stored. The app
+    // sends `dbErrors` to Rollbar after a General download, once it has a token.
     function reportUnqueuedChange (change, firstError, secondError) {
         var error = 'Dropped ' + change.method + ' ' + change.type + ' ' + change.uuid
             + ': upload row not stored (' + String(firstError) + '; retry: ' + String(secondError) + ')';
