@@ -66,7 +66,7 @@ What changes because of this:
 
 📌 **Merged 2026-10-13 with `--delete-branch`:** #2329, #2331, #2333, #2335 (threads on #2331/#2333 resolved first). Issues #2328, #2330, #2332, #2334 stay open — `develop` target; close them in the release sweep.
 
-🟡 **PR #2345 open 2026-10-13 (B-168, tier 3, issue #2344)** — Pregnancy EDD: second diagnostic. The service worker answers 400 (not 200) when the upload row cannot be added (PATCH + POST, shared `addChange`); a failed participant update is reported with its action, NetworkError included. Worktree released. Medium review running.
+🟡 **PR #2345 open 2026-10-13 (B-168, tier 3, issue #2344)** — Pregnancy EDD: second diagnostic. The service worker answers 400 (not 200) when the upload row cannot be added (PATCH + POST, shared `addChange`); a failed participant update is reported with its action, NetworkError included. **Review round 1 (medium): 8 findings, 6 fixed in `9210e8361`** (node + upload row in one transaction via `saveChange`, 400 on any failure, retry removed, history comment), 2 declined (4, 5); threads answered and resolved. Worktree released. Awaiting CI + merge.
 
 🔎 **B-168 Rollbar check done 2026-10-13 — MONITORING ended:** zero `Dropped` events in 7 weeks on build `7ece1b2d0` while 14 of 53 new pregnancies lost their EDD (incl. a device created Sept 15) ⇒ the no-op branch is not the drop site; the PATCH is lost silently after `sw.patchFull` (two candidate silent sites in the entry). Next step is the user's call. Tier 1 READY: B-459 only (clinician). B-450 and B-453 🅿 PARKED by user 2026-10-13 ("Park B-450 and B-453") — do NOT re-pitch.
 
