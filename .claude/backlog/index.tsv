@@ -165,7 +165,7 @@ B-164	3	IMPLEMENTED	MED	2074	2075	19	Vaccination "administered previously" flow 
 B-165	4	IMPLEMENTED	LOW		2081	19	PatientsSearchForm minors ×2 (shared search widget: People / IndividualEncounterParticipants / FamilyEncounterParticipan
 B-166	3	IMPLEMENTED	MED-LOW	2078	2079	19	Wellbeing notification "Ignore" reschedules from the STALE timestamp → instant-reappear modal loop
 B-167	4	READY	LOW			19	Wellbeing/MessagingCenter minors batch — mixed CONFIRMED / PLAUSIBLE · LOW · R19 Unit 1 · READY
-B-168	3	READY			2086	19	EDD trickle (user investigation 2026-08-13) — ⚠ **CONCLUSION REVERSED same day: the deployed FIXED build still drops EDD
+B-168	3	IMPLEMENTED		2344	2345	19	EDD trickle (user investigation 2026-08-13) — ⚠ **CONCLUSION REVERSED same day: the deployed FIXED build still drops EDD
 B-169	2	IMPLEMENTED	HIGH	2083	2084	19	CircleCI config declares `version: 2`, which stops compiling at the end-of-life date — ALL CI dies, and the date lands o
 B-170	3	CLOSED	HIGH			19	Download-lane POISON RECORD: `obstetric_history_step2` missing `obstetric_history` fails the client decoder
 B-171	3	CLOSED				19	Dashboard's "Last updated" always reads as just now, whatever the age of the figures beside it
