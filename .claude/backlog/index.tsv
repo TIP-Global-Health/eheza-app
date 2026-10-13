@@ -464,6 +464,7 @@ B-463	3	READY	MED-LOW			40	Case Management TB pane (server): a second Acute Illn
 B-464	4	READY	LOW			40	Case Management Nutrition pane: a follow-up written on the same day as an earlier home visit is hidden, and the server n
 B-465	3	IMPLEMENTED	MED-LOW	2340	2341	40	CHW Dashboard: the "Home Visit" case-management figure for a PAST month counts nutrition follow-ups created in later mon
 B-466	4	READY	LOW			40	Reporting e2e: the postpartum fixture records the outcome on the participant page first, so its postpartum visit lands i
+B-467	4	READY	LOW		2341	40	CHW Dashboard: a follow-up resolved on the first day after the selected month is left out of that month's Case Managemen
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
