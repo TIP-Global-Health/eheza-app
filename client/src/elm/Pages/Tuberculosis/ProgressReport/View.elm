@@ -1,4 +1,4 @@
-module Pages.Tuberculosis.ProgressReport.View exposing (view)
+module Pages.Tuberculosis.ProgressReport.View exposing (view, viewAdverseEventsPane)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model
@@ -24,7 +24,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Tuberculosis.Activity.Utils exposing (generateAllEncountersData, resolvePrescribedMedicationSets)
+import Pages.Tuberculosis.Activity.Utils exposing (adverseEventReported, generateAllEncountersData, resolvePrescribedMedicationSets)
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, EncounterData)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, partitionActivities)
 import Pages.Tuberculosis.Encounter.View exposing (allowEndingEncounter)
@@ -289,11 +289,15 @@ viewAdverseEventsPane language allEncountersData =
         adverseEventsWithDates =
             List.filterMap
                 (\data ->
-                    getMeasurementValueFunc data.measurements.treatmentReview
-                        |> Maybe.map
-                            (\value ->
-                                ( data.startDate, value.adverseEvents )
-                            )
+                    if adverseEventReported data.measurements then
+                        getMeasurementValueFunc data.measurements.treatmentReview
+                            |> Maybe.map
+                                (\value ->
+                                    ( data.startDate, value.adverseEvents )
+                                )
+
+                    else
+                        Nothing
                 )
                 allEncountersData
 
