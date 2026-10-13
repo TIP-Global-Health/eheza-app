@@ -21,6 +21,9 @@ import {
   WAIT,
 } from './common';
 
+// The Next Steps page of an initial antenatal visit.
+const NEXT_STEPS_URL = /#prenatal-activity\/[^/]+\/next-steps$/;
+
 // ---------------------------------------------------------------------------
 // Private form helpers
 // ---------------------------------------------------------------------------
@@ -230,8 +233,8 @@ export async function completePregnancyDating(page: Page, lmpDate: Date) {
  * client/src/elm/Pages/Prenatal/Activity/Utils.elm), so existing
  * downstream assertions remain valid.
  * With { signs: [...] }: select each listed sign by its label.
- * A CHW's save with a danger sign opens Next Steps behind a referral
- * warning; completeNextSteps carries on from there.
+ * For a CHW whose mandatory activities are done, a danger sign opens Next
+ * Steps behind a referral warning; completeNextSteps carries on from there.
  * Creates: danger_signs
  */
 export async function completeDangerSigns(
@@ -247,11 +250,17 @@ export async function completeDangerSigns(
   }
 
   const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await saveBtn.waitFor({ timeout: 5000 });
   await click(saveBtn, page);
-  await Promise.race([
-    page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 }),
-    page.waitForURL(/\/next-steps$/, { timeout: 10000 }),
-  ]);
+  // Stored once the visit page no longer lists Danger Signs as pending, or
+  // once a CHW's danger sign has opened Next Steps.
+  await page.waitForFunction(
+    (nextStepsUrl) => new RegExp(nextStepsUrl).test(location.href)
+      || (!!document.querySelector('div.page-encounter.prenatal')
+        && !document.querySelector('.icon-task-danger-signs')),
+    NEXT_STEPS_URL.source,
+    { timeout: 10000 },
+  );
   await page.waitForTimeout(WAIT.elmRerender);
 }
 
@@ -1445,7 +1454,7 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
   // For subsequent encounters with no diagnoses, NextSteps may not appear at all.
   const nextStepsIcon = page.locator('.icon-task-next-steps');
   const appointmentIcon = page.locator('.icon-task-appointment-confirmation');
-  if (/\/next-steps$/.test(page.url())) {
+  if (NEXT_STEPS_URL.test(page.url())) {
     // Already open: a CHW's danger sign leads straight here.
   } else if (await nextStepsIcon.isVisible({ timeout: 1000 }).catch(() => false)) {
     await openActivity(page, 'prenatal', 'next-steps');

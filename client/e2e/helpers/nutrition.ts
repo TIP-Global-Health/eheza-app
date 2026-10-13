@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import { execSync } from 'child_process';
 import { click } from './auth';
 import { drushEnv } from './device';
-import { WAIT, registerChild } from './common';
+import { WAIT, registerChild, selectCheckboxInForm } from './common';
 
 /**
  * Navigate from the dashboard to the nutrition encounter page
@@ -518,12 +518,7 @@ export async function completeFollowUp(page: Page, option: NutritionFollowUpOpti
   );
   await page.locator('.ui.form.follow-up').waitFor({ timeout: 5000 });
 
-  await click(
-    page.locator('.ui.form.follow-up .ui.checkbox.activity', {
-      hasText: option,
-    }),
-    page,
-  );
+  await selectCheckboxInForm(page, '.ui.form.follow-up', option);
 
   // Save this sub-task.
   await click(page.locator('button.ui.fluid.primary.button.active'), page);
