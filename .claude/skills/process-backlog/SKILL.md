@@ -80,6 +80,31 @@ Re-locate the anchors first. Line numbers drift; snippets and function names are
 And if anything about the *intended* behaviour is open, read the issue behind the code before
 presenting — see the hard rule below.
 
+### 2a. Reproduce in the app (optional)
+Offer it when the defect shows on screen or in stored data. The user decides; a recording is
+evidence for the decision and the control the fix is later measured against.
+
+It is a `qa-tester` run with the verdict reversed. Read that skill and its knowledge base,
+then follow its method, with these differences:
+
+- **No overlay.** The main tree's `develop` already holds the defect. Confirm the driver's
+  build matches `develop`'s last `client/src` commit.
+- **Plan first.** Present the scenario table and wait. That approval also covers taking
+  the running app, which stays single-instance.
+- **Checks assert the defect.** A scenario reproduces when every `qa.check` sees the wrong
+  behaviour; a check that sees the right one stops it.
+- **Prove it in the data** when the defect is a stored shape: sync to "Remaining for
+  Upload: 0", then query the backend.
+- **Look before claiming.** Read every screenshot and one video frame at the key moment.
+- **Store locally.** Videos go to `client/qa-recordings/<id>/qa-<id>-<name>.mp4`
+  (gitignored), with the scenario script beside them as `repro-<id>.js`. Nothing is posted.
+
+Record it in the entry: a `🎬 Reproduced <date>` line naming the scenarios, the backend
+rows, and the file paths. Add a `REPRODUCED` row to `qa-tester/knowledge/verified.md`.
+
+When the fix is built, run `repro-<id>.js` against it with each check flipped to expect the
+right behaviour. The two runs together show the defect before and its absence after.
+
 ### 3. Wait for the decision
 Stop. The answer is "implement", "park", or "skip". Do not start building because the item looks
 obvious or small.

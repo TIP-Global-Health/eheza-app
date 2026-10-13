@@ -180,6 +180,8 @@ flag simply does not appear.
   'prenatal')`). The Obstetric History pane is the first `.risk-factors`; diagnoses are under
   OBSTETRIC DIAGNOSIS. The encounter page's red `div.alerts` icon opens `.alerts-dialog` (High Risk
   Factors, such as convulsions at a previous delivery). The icon is absent when there is no alert.
+- Prenatal participant page: Postpartum is enabled for a woman with no visits, so no backdating is needed to reach a postpartum visit. The first button reads "First Antenatal Encounter" (nurse) or "First Antenatal Visit" (CHW).
+- Pregnancy Outcome inside a postpartum visit closes the pregnancy on Save and returns to the still-open visit. The participant page then ignores that pregnancy (B-373).
 - A second encounter on the same day is impossible: backdate the first with
   `h.common.backdateEncounter(name, type, days)`, then sync before starting the next.
 - Well Child Head Circumference: its tab shows only for children under 36 months. Under the
