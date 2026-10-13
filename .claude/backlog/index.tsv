@@ -194,9 +194,9 @@ B-193	4	READY				21	Data: ~50 orphan measurements referencing hard-deleted sessi
 B-194	3	IMPLEMENTED		2133	2134	21	Prenatal: EDD-null pregnancies are ACTIVE FOREVER, and years-old open encounters get resurrected for new pregnancies
 B-195	2	PARKED				21	Individual encounters: the create-button db-lag race mints DUPLICATE participants in ALL NINE flows, and the app can onl
 B-196	3	READY				21	Prenatal: participant EDD goes STALE when LMP is edited/re-dated — the B-140 dropped-patch mechanism has a live data tra
-B-197	4	READY				21	Prenatal/reports: 591 regular ANC encounters dated AFTER pregnancy conclusion are counted as ANC visits — partly by-desi
+B-197	3	READY				21	Prenatal/reports: 591 regular ANC encounters dated AFTER pregnancy conclusion are counted as ANC visits — partly by-desi
 B-198	2	READY				21	Group enrolments SILENTLY LOST in upload: 742 persons have group measurements on the server but NO pmtct_participant any
-B-199	4	READY				21	Group enrolment/relationship duplicates from unconditional posts and local-dedup races: 1,101 children double-enrolled i
+B-199	3	READY				21	Group enrolment/relationship duplicates from unconditional posts and local-dedup races: 1,101 children double-enrolled i
 B-200	3	IMPLEMENTED		2123	2124	21	✅ IMPLEMENTED 2026-08-20 (issue #2123, PR #2124, range 20-600 per user) — Blood glucose: mg/dL field takes mmol/L-typed 
 B-201		IMPLEMENTED				22	server/elm duplication batch: 7 PR groups, ~400-500 net lines removable, ZERO drift found
 B-202		IMPLEMENTED				22	client duplication batch: 16 merge items in 5 area PRs, ~320 app lines (+~200 tests/minors), ZERO missed-fix drift
@@ -261,7 +261,7 @@ B-260	4	READY	LOW			25	Strict decoders on optional stats values: two dashboard e
 B-261	4	READY	LOW			25	Dashboard case-management table: columns are sorted by bare month number, so they come out of order when the stats month
 B-262	4	READY	LOW			25	Person-counting cards that count participants or measurements instead of people (three siblings, one family)
 B-263	4	READY	LOW			25	Dashboard's copy of the vaccination-progress builder drops DTP-standalone after a fourth dose date, so the Burundi immun
-B-264	4	READY	MED-LOW			25	Dashboard monthly charts divide a case-management numerator by a beneficiaries denominator from a different population
+B-264	3	READY	MED-LOW			25	Dashboard monthly charts divide a case-management numerator by a beneficiaries denominator from a different population
 B-265	4	READY	LOW			25	Reports recalculation ignores session and clinic edits, so a corrected session date or a re-categorised group leaves eve
 B-266	3	READY	MED			25	WhatsApp uploads carry no UUID, so the sync POST's duplicate guard cannot fire and a retried batch sends the patient the
 B-267	4	READY	LOW			25	Three latent traps in the RESTful writable contract, all unreachable today
@@ -288,7 +288,7 @@ B-287	3	READY	MED-LOW			26	NCD labs Case Management entry is closed by the final
 B-288	1	IMPLEMENTED	MED	2219	2220	26	NCD: diabetes found from a point-of-care blood-sugar reading at the initial phase gets no medication or referral task, b
 B-289	1	IMPLEMENTED	MED	2221	2222	26	NCD: a pregnancy found by test at the first encounter is forgotten at every later encounter — the full antihypertensive 
 B-290	3	IMPLEMENTED	MED			26	NCD Social History: the drinks-per-week answer is never saved — the encoder writes the cigarettes count into the `bevera
-B-291	4	READY	MED-LOW			27	NCDA Antenatal Care step (all four hosts): tapping an already-recorded ANC month silently stores a phantom ANC visit dat
+B-291	3	READY	MED-LOW			27	NCDA Antenatal Care step (all four hosts): tapping an already-recorded ANC month silently stores a phantom ANC visit dat
 B-292	3	READY	MED			27	Immunisation (Well Child + Child Scoreboard): for a child followed by BOTH programs, the form derives the interval gate 
 B-293	4	IMPLEMENTED	LOW	2199	2201	27	Dashboard immunization donut + NCDA scorecard row: a dose administered ON the reference day is read as not given, so the
 B-294	3	READY	MED			27	Nutrition (individual): the assessment stored on the `nutrition_nutrition` measurement goes stale when signs are saved b
@@ -332,7 +332,7 @@ B-331	3	READY	MED			29	Backend error reporting: the Sentry SDK that `logs_glitch
 B-332	4	READY	LOW			29	Backend error reporting: the GlitchTip event buffer is a `drupal_static`, and the stats/report/village builders call bar
 B-333	3	READY	MED-LOW			29	Admin lists: the "E-ledger viewer" role, which the ledger scopes to the user's own health centres, can open every health
 B-334	4	IMPLEMENTED	LOW	2313	2315	29	Admin sidebar: the "Create PMTCT Participation" link points at `node/add/pmtct-paticipation`, a path that does not exist
-B-335	4	READY	LOW			29	Family Nutrition: the "add child" tile disappears once the adult has 5 related people of ANY kind — own parents, caregiv
+B-335	3	READY	LOW			29	Family Nutrition: the "add child" tile disappears once the adult has 5 related people of ANY kind — own parents, caregiv
 B-336	1	IMPLEMENTED	MED	2213	2239	29	Prenatal recurrent Next Steps: a medication that becomes required AFTER the nurse saved that task is never offered — the
 B-337		REFUTED				29	NCD: renal complications found at the initial phase may hit the same omission diabetes did — the Stage 1 hypertension me
 B-338	1	IMPLEMENTED	MED-HIGH	2226	2228	29	Prenatal labs (lab technician): a blood smear declined and then corrected is recorded as a RAPID TEST, so a positive ans
@@ -349,7 +349,7 @@ B-348	3	IMPLEMENTED	MED-LOW	2334	2335	30	WhatsApp report on Burundi sites: the c
 B-349	3	READY	MED-LOW			30	WhatsApp report on vhw and uvl: the feature is switched on but Twilio is not configured, so every report a nurse sends i
 B-350	3	READY	LOW			30	Rollbar (client): sync errors raised before Rollbar is initialised are recorded as "already sent" and never reported — a
 B-351	3	READY	LOW			30	People search (offline): a common single-word name returns an ARBITRARY 500 of the health centre's matches, and only the
-B-352	4	READY	LOW			30	People in village (offline): a person registered or edited on the device is missing from "people in village" lists until
+B-352	3	READY	LOW			30	People in village (offline): a person registered or edited on the device is missing from "people in village" lists until
 B-353	4	READY	LOW			30	Case management (server): an encounter uploaded late closes the patient's NEWER follow-ups — resolution picks every open
 B-354	4	READY	LOW			30	Family Nutrition (server): two person-content walks skip `family_participant` — deleting a person leaves their family pa
 B-355	4	READY	LOW			30	Dashboard statistics: some changes never clear the health centre's stats cache, so the dashboard keeps the old figures u
@@ -371,10 +371,10 @@ B-370	4	READY	LOW			32	Login location selection: an assignment added to a nurse 
 B-371	3	READY	MED			32	Prenatal CHW visits 2 and 3 on an undated pregnancy can never be ended: Next Visit is required but its Save does nothing
 B-372	4	READY	LOW			32	Well Child next pediatric visit: on a month-end clamp day the "next" ECD / medication visit date is today, because the a
 B-373	2	IMPLEMENTED	MED	2336	2337	32	Prenatal postpartum visit: recording the Pregnancy Outcome (the visit's first activity) closes the pregnancy at once, so
-B-374	4	READY	LOW			32	Case Management Antenatal pane: follow-up entries of an EXPIRED pregnancy (past EDD + 92 days, or the B-194 no-EDD rule)
+B-374	3	READY	LOW			32	Case Management Antenatal pane: follow-up entries of an EXPIRED pregnancy (past EDD + 92 days, or the B-194 no-EDD rule)
 B-375	3	IMPLEMENTED	MED	2263	2264	32	Patient merge: the acute-illness step looks participants up by `'acute_illness'` while the stored value is `'acute-illne
 B-376	3	READY	MED-LOW			32	Patient merge (antenatal): "ongoing pregnancy" is the newest participant with no `date_concluded`, which on live data is
-B-377	4	READY	LOW			32	Patient CSV import: the date validator accepts a two-digit year and the parser reads it literally, so "05-01-19" is stor
+B-377	3	READY	LOW			32	Patient CSV import: the date validator accepts a two-digit year and the parser reads it literally, so "05-01-19" is stor
 B-378	4	READY	LOW			32	Person presave: the "has measurements, cannot delete" guard fires on EVERY save of an already-deleted person, so any lat
 B-379	4	IMPLEMENTED	LOW	2280	2281	32	E2E harness: `switchUser` in `lab-tech-encounter.spec.ts` flakes — `page.goto('/')` in `pairDevice` is interrupted by th
 B-380	4	IMPLEMENTED	LOW	2276	2277	32	E2E: the Acute Illness nurse test "report shows lemon juice or honey only when it was given" flakes — after saving the p
@@ -469,11 +469,11 @@ B-468	3	READY	MED-LOW			41	NCDA scorecard › Targeted Interventions: the "Treat
 B-469	3	READY	MED-LOW			41	Child Scoreboard progress report › Active Diagnosis: a child's standing malnutrition assessment never appears as active 
 B-470	3	READY	MED			41	Antenatal progress report › Medical Diagnosis: a moderate-anemia line reads "no treatment recorded" although the nurse a
 B-471	3	READY	MED-LOW			41	Antenatal progress report › Medical Diagnosis: the postpartum "referred to ARV services / NCD program" lines assert a re
-B-472	4	READY	LOW			41	Antenatal progress report › Patient Progress: a nurse postpartum encounter counts as a third-trimester ANC visit and its
+B-472	3	READY	LOW			41	Antenatal progress report › Patient Progress: a nurse postpartum encounter counts as a third-trimester ANC visit and its
 B-473	4	READY	LOW			41	Acute Illness progress report › Actions Taken: a low-risk COVID encounter shows an empty pane, although the nurse record
 B-474	4	READY	LOW			41	NCD progress report: an HbA1c result entered with a test date six or more months old is plotted on the HbA1c chart but m
 B-475	4	READY	LOW			41	Tuberculosis progress report › Adverse Events: every visit without side effects adds a row reading "None of the above"
-B-476	4	READY	LOW			41	Completion report (Nutrition individual + Well Child, CHW): a height or weight the CHW marked "unable to take" is charge
+B-476	3	READY	LOW			41	Completion report (Nutrition individual + Well Child, CHW): a height or weight the CHW marked "unable to take" is charge
 B-477	4	READY	LOW			41	Prenatal completion (CHW visit 1): the mandatory-activities gate has the danger-signs condition inverted relative to vis
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
