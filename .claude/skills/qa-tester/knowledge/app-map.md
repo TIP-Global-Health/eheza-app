@@ -309,6 +309,9 @@ flag simply does not appear.
   window is only ~960 px tall inside, and the screencast — the video — keeps only that part.
 - Commands run one at a time. `qa.sh` waits up to 600 s for a reply (`QA_TIMEOUT`); a long
   wait inside a command (`syncAndWait` allows 300 s) needs the Bash call's own timeout raised.
+- A driver started from a worktree loads that worktree's helpers, which is how to try a new
+  helper before it merges. Start it with `E2E_DDEV_PROJECT=/var/www/html/ihangane`, or the
+  drush-backed helpers (`qa.freshDevice`, backdating) run `ddev` inside the worktree and fail.
 - Only a caller that can read `.driver/token` (owner-only, new each start) can send commands;
   requests from a browser page are refused.
 - Measured: empty profile → paired, signed in and synced in ~10 s; register a woman, open a
