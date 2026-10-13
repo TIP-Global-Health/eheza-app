@@ -58,6 +58,8 @@ What changes because of this:
 
 🧹 **All worktrees removed 2026-10-12 (user asked).** 20 were left behind by B-213 … B-343 (PRs #2180–#2245, all merged); each was clean and fully merged, and its local branch was deleted too. `<repo>-wt/` is empty, and `git worktree list` shows only the main tree. Remote branches `B-320-known-positive-stale-result` and `B-343-partner-signs-on-hiv-test` are still on origin.
 
+🟡 **PR #2341 open 2026-10-13 (B-465, tier 3, issue #2340)** — CHW Dashboard: a past month's Home Visit count no longer includes follow-ups written after that month; the Case Management limit date is the day after the selected date (fixes the 1st-of-month gap for all three cards). Reproduced on develop before building (three videos on the issue). Three Elm files, 4 discriminating elm-tests. Worktree released. Medium review running.
+
 🟡 **PR #2337 open 2026-10-13 (B-373, tier 2, issue #2336)** — Prenatal postpartum visit: the participant page keeps a pregnancy concluded today in a postpartum visit of the viewer's role started today, so Postpartum reopens that visit instead of opening a second pregnancy. First item through the new optional reproduction step (videos on the issue). Review round 1: 7 findings, 5 fixed in `6ddf5c045` (cross-day open visit, active first, kept flag, single read, record), 1 declined (any-open-visit rule), 1 no change (intended lock-out); threads answered. Awaiting CI + merge. Worktree released.
 
 📌 **Merged 2026-10-13 with `--delete-branch`:** #2329, #2331, #2333, #2335 (threads on #2331/#2333 resolved first). Issues #2328, #2330, #2332, #2334 stay open — `develop` target; close them in the release sweep.
