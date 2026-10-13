@@ -295,23 +295,7 @@
                                         }
 
                                         return addShard.then(function () {
-                                            return changeTable.add(change).catch(function (err) {
-                                                // If there was a failure, we try again, assuming it
-                                                // may have been a glitch. If operation fails again,
-                                                // we log error with Rollbar.
-                                                return changeTable.add(change).catch(function (err) {
-                                                    var reject = new Response(body, {
-                                                        status: 400,
-                                                        statusText: 'Failure: PATCH at changes table'
-                                                    });
-
-                                                    return Promise.resolve(reject);
-                                                }).then(function (localId) {
-                                                    return Promise.resolve(response);
-                                                });
-                                            }).then(function (localId) {
-                                                return Promise.resolve(response);
-                                            });
+                                            return addChange(changeTable, change, response);
                                         });
                                     }
                                     else {
@@ -324,6 +308,21 @@
                 });
             });
         }).catch(sendErrorResponses);
+    }
+
+    // Adds the row that uploads a change, trying twice. The page gets
+    // `response` only once the row is stored; otherwise a 400 with the reason.
+    function addChange (changeTable, change, response) {
+        return changeTable.add(change).catch(function () {
+            return changeTable.add(change);
+        }).then(function () {
+            return response;
+        }, function (err) {
+            return new Response(String(err), {
+                status: 400,
+                statusText: 'Failure: ' + change.method + ' at changes table'
+            });
+        });
     }
 
     function postNode (request, type) {
@@ -385,23 +384,7 @@
                                               change.shard = json.shard;
                                           }
 
-                                          return changeTable.add(change).catch(function (err) {
-                                              // If there was a failure, we try again, assuming it
-                                              // may have been a glitch. If operation fails again,
-                                              // we log error with Rollbar.
-                                              return changeTable.add(change).catch(function (err) {
-                                                  var reject = new Response(body, {
-                                                      status: 400,
-                                                      statusText: 'Failure: POST at changes table'
-                                                  });
-
-                                                  return Promise.resolve(reject);
-                                              }).then(function (localId) {
-                                                  return Promise.resolve(response);
-                                              });
-                                          }).then(function (localId) {
-                                              return Promise.resolve(response);
-                                          });
+                                          return addChange(changeTable, change, response);
                                     });
                                 });
                             });
