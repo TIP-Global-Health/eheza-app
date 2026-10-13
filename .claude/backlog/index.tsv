@@ -472,7 +472,7 @@ B-471	3	READY	MED-LOW			41	Antenatal progress report › Medical Diagnosis: the 
 B-472	3	READY	LOW			41	Antenatal progress report › Patient Progress: a nurse postpartum encounter counts as a third-trimester ANC visit and its
 B-473	4	READY	LOW			41	Acute Illness progress report › Actions Taken: a low-risk COVID encounter shows an empty pane, although the nurse record
 B-474	4	READY	LOW			41	NCD progress report: an HbA1c result entered with a test date six or more months old is plotted on the HbA1c chart but m
-B-475	4	READY	LOW			41	Tuberculosis progress report › Adverse Events: every visit without side effects adds a row reading "None of the above"
+B-475	4	IMPLEMENTED	LOW	2346	2347	41	Tuberculosis progress report › Adverse Events: every visit without side effects adds a row reading "None of the above"
 B-476	3	READY	LOW			41	Completion report (Nutrition individual + Well Child, CHW): a height or weight the CHW marked "unable to take" is charge
 B-477	4	READY	LOW			41	Prenatal completion (CHW visit 1): the mandatory-activities gate has the danger-signs condition inverted relative to vis
 B-478	3	READY			2345	19	Service worker: a change is stored on the device before its upload row, so when the row fails the device keeps a change 
