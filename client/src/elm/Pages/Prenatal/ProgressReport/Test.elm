@@ -1,15 +1,22 @@
 module Pages.Prenatal.ProgressReport.Test exposing (all)
 
-import Backend.Measurement.Model exposing (OutsideCareMedication(..))
+import Backend.Measurement.Model
+    exposing
+        ( MedicationDistributionSign(..)
+        , OutsideCareMedication(..)
+        , ReinforceTreatmentSign(..)
+        , emptyPrenatalMeasurements
+        )
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date
 import EverySet exposing (EverySet)
 import Expect
 import Html
-import Pages.Prenatal.ProgressReport.View exposing (viewTreatmentForOutsideCareDiagnosis)
+import Pages.Prenatal.ProgressReport.View exposing (viewTreatmentForDiagnosis, viewTreatmentForOutsideCareDiagnosis)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (text)
+import TestFixtures
 import Time exposing (Month(..))
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
@@ -61,6 +68,14 @@ withoutTreatmentPhrase =
 
 all : Test
 all =
+    describe "Pages.Prenatal.ProgressReport"
+        [ outsideCareDiagnosisTest
+        , moderateAnemiaTreatmentTest
+        ]
+
+
+outsideCareDiagnosisTest : Test
+outsideCareDiagnosisTest =
     describe "viewTreatmentForOutsideCareDiagnosis"
         [ test "syphilis lists its own medicine only" <|
             \_ ->
@@ -137,4 +152,99 @@ all =
                     DiagnosisSyphilisInitialPhase
                     |> List.length
                     |> Expect.equal 0
+        ]
+
+
+
+-- The moderate-anemia line of the Medical Diagnosis pane. Newer records hold
+-- the answers to the reinforce adherence questions; older ones list Iron and
+-- Folic acid.
+
+
+renderAnemia : PrenatalDiagnosis -> List MedicationDistributionSign -> Maybe (List ReinforceTreatmentSign) -> Query.Single msg
+renderAnemia diagnosis distributionSigns reinforceSigns =
+    let
+        measurements =
+            { emptyPrenatalMeasurements
+                | medicationDistribution =
+                    TestFixtures.wrapMeasurement (Date.fromCalendarDate 2026 Oct 1)
+                        { distributionSigns = EverySet.fromList distributionSigns
+                        , nonAdministrationSigns = EverySet.empty
+                        , recommendedTreatmentSigns = Nothing
+                        , avoidingGuidanceReason = Nothing
+                        , reinforceTreatmentSigns = Maybe.map EverySet.fromList reinforceSigns
+                        }
+            }
+    in
+    viewTreatmentForDiagnosis English
+        (Date.fromCalendarDate 2026 Oct 1)
+        measurements
+        (EverySet.singleton diagnosis)
+        diagnosis
+        |> Html.div []
+        |> Query.fromHtml
+
+
+adherenceAnswer : MedicationDistributionSign -> String -> String
+adherenceAnswer medication answer =
+    translate English Translate.ReinforceAdherenceQuestion
+        ++ " "
+        ++ translate English (Translate.MedicationDistributionSign medication)
+        ++ ": "
+        ++ answer
+
+
+repeatTestAnswer : String -> String
+repeatTestAnswer answer =
+    translate English Translate.RepeatHemoglobinTestQuestion ++ ": " ++ answer
+
+
+noTreatmentRecorded : String
+noTreatmentRecorded =
+    String.toLower (translate English Translate.NoTreatmentRecorded)
+
+
+moderateAnemiaTreatmentTest : Test
+moderateAnemiaTreatmentTest =
+    describe "moderate anemia treatment"
+        [ test "all reinforce answers Yes are listed" <|
+            \_ ->
+                renderAnemia DiagnosisModerateAnemiaInitialPhase
+                    []
+                    (Just [ ReinforceSignFefol, ReinforceSignMMS, ReinforceSignRepeatHemoglobinTest ])
+                    |> Expect.all
+                        [ Query.has [ text (adherenceAnswer Fefol "Yes") ]
+                        , Query.has [ text (adherenceAnswer MMS "Yes") ]
+                        , Query.has [ text (repeatTestAnswer "Yes") ]
+                        , Query.hasNot [ text noTreatmentRecorded ]
+                        ]
+        , test "a question left out of the set reads No" <|
+            \_ ->
+                renderAnemia DiagnosisModerateAnemiaInitialPhase [] (Just [ ReinforceSignMMS ])
+                    |> Expect.all
+                        [ Query.has [ text (adherenceAnswer Fefol "No") ]
+                        , Query.has [ text (adherenceAnswer MMS "Yes") ]
+                        , Query.has [ text (repeatTestAnswer "No") ]
+                        ]
+        , test "all answers No are listed, not no treatment recorded" <|
+            \_ ->
+                renderAnemia DiagnosisModerateAnemiaInitialPhase [] (Just [ NoReinforceTreatmentSigns ])
+                    |> Expect.all
+                        [ Query.has [ text (adherenceAnswer Fefol "No") ]
+                        , Query.has [ text (adherenceAnswer MMS "No") ]
+                        , Query.has [ text (repeatTestAnswer "No") ]
+                        , Query.hasNot [ text noTreatmentRecorded ]
+                        ]
+        , test "the recurrent phase lists the same answers" <|
+            \_ ->
+                renderAnemia DiagnosisModerateAnemiaRecurrentPhase [] (Just [ ReinforceSignFefol ])
+                    |> Query.has [ text (adherenceAnswer Fefol "Yes") ]
+        , test "an older record lists Iron and Folic acid" <|
+            \_ ->
+                renderAnemia DiagnosisModerateAnemiaInitialPhase [ Iron, FolicAcid ] Nothing
+                    |> Expect.all
+                        [ Query.has [ text (translate English Translate.TreatedWith ++ " " ++ translate English (Translate.MedicationDistributionSign Iron)) ]
+                        , Query.has [ text (translate English Translate.TreatedWith ++ " " ++ translate English (Translate.MedicationDistributionSign FolicAcid)) ]
+                        , Query.hasNot [ text (translate English Translate.ReinforceAdherenceQuestion) ]
+                        ]
         ]

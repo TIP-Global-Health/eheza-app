@@ -1,4 +1,4 @@
-module Pages.Prenatal.ProgressReport.View exposing (view, viewTreatmentForOutsideCareDiagnosis)
+module Pages.Prenatal.ProgressReport.View exposing (view, viewTreatmentForDiagnosis, viewTreatmentForOutsideCareDiagnosis)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -28,6 +28,7 @@ import Backend.Measurement.Model
         , RecommendedTreatmentSign(..)
         , ReferToFacilitySign(..)
         , ReferralFacility(..)
+        , ReinforceTreatmentSign(..)
         , SendToHCSign(..)
         , SpecialityCareSign(..)
         , TestExecutionNote(..)
@@ -2786,28 +2787,59 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.andThen
                     (\value ->
                         let
-                            nonAdministrationReasons =
-                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
-                        in
-                        Maybe.map2
-                            (\ironTreatmentMessage folicAcidTreatmentMessage ->
-                                let
-                                    diagnosisMessage =
-                                        diagnosisForProgressReport
-                                            ++ " "
-                                            ++ (String.toLower <| translate language Translate.On)
-                                            ++ " "
-                                            ++ formatDDMMYYYY date
-                                in
-                                [ li []
-                                    [ p [] [ text diagnosisMessage ]
-                                    , p [] [ text ironTreatmentMessage ]
-                                    , p [] [ text folicAcidTreatmentMessage ]
-                                    ]
+                            diagnosisMessage =
+                                diagnosisForProgressReport
+                                    ++ " "
+                                    ++ (String.toLower <| translate language Translate.On)
+                                    ++ " "
+                                    ++ formatDDMMYYYY date
+
+                            withDiagnosisMessage treatmentMessages =
+                                [ li [] <|
+                                    p [] [ text diagnosisMessage ]
+                                        :: List.map (\message -> p [] [ text message ]) treatmentMessages
                                 ]
-                            )
-                            (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Iron)
-                            (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons FolicAcid)
+                        in
+                        case value.reinforceTreatmentSigns of
+                            -- The nurse answered the reinforce adherence questions.
+                            -- A sign missing from the set was answered No.
+                            Just reinforceSigns ->
+                                let
+                                    answerMessage question sign =
+                                        let
+                                            answer =
+                                                if EverySet.member sign reinforceSigns then
+                                                    Translate.Yes
+
+                                                else
+                                                    Translate.No
+                                        in
+                                        question ++ ": " ++ translate language answer
+
+                                    adherenceQuestion medication =
+                                        translate language Translate.ReinforceAdherenceQuestion
+                                            ++ " "
+                                            ++ (translate language <| Translate.MedicationDistributionSign medication)
+                                in
+                                withDiagnosisMessage
+                                    [ answerMessage (adherenceQuestion Fefol) ReinforceSignFefol
+                                    , answerMessage (adherenceQuestion MMS) ReinforceSignMMS
+                                    , answerMessage (translate language Translate.RepeatHemoglobinTestQuestion) ReinforceSignRepeatHemoglobinTest
+                                    ]
+                                    |> Just
+
+                            -- Records made before the reinforce questions list Iron and Folic acid.
+                            Nothing ->
+                                let
+                                    nonAdministrationReasons =
+                                        Measurement.Utils.resolveMedicationsNonAdministrationReasons value
+                                in
+                                Maybe.map2
+                                    (\ironTreatmentMessage folicAcidTreatmentMessage ->
+                                        withDiagnosisMessage [ ironTreatmentMessage, folicAcidTreatmentMessage ]
+                                    )
+                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Iron)
+                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons FolicAcid)
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
