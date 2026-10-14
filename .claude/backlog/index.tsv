@@ -478,6 +478,7 @@ B-477	4	READY	LOW			41	Prenatal completion (CHW visit 1): the mandatory-activiti
 B-478	3	READY			2345	19	Service worker: a change is stored on the device before its upload row, so when the row fails the device keeps a change 
 B-479	4	READY			2349	27	Immunisation (Burundi, child in Well Child AND Child Scoreboard): the DTP standalone dose is dropped when the three DTP 
 B-480	4	READY			2355	38	Statistical Queries › Prenatal (ANC): the outcomes and delivery-location tables count a delivery from before the FROM da
+B-481	4	READY			2357	26	Well Child progress report: a normal head circumference never ends an earlier cephaly warning, so a child whose head is 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
