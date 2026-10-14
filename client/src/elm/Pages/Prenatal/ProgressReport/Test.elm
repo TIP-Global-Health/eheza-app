@@ -156,9 +156,9 @@ outsideCareDiagnosisTest =
 
 
 
--- The moderate-anemia line of the Medical Diagnosis pane. Newer records hold
--- the answers to the reinforce adherence questions; older ones list Iron and
--- Folic acid.
+-- The moderate-anemia line of the Medical Diagnosis pane. It lists the
+-- reinforce adherence answers when the record holds them, and Iron and Folic
+-- acid otherwise.
 
 
 renderAnemia : PrenatalDiagnosis -> List MedicationDistributionSign -> Maybe (List ReinforceTreatmentSign) -> Query.Single msg
@@ -226,19 +226,22 @@ moderateAnemiaTreatmentTest =
                         , Query.has [ text (adherenceAnswer MMS "Yes") ]
                         , Query.has [ text (repeatTestAnswer "No") ]
                         ]
-        , test "all answers No are listed, not no treatment recorded" <|
+        , test "all answers No read no treatment administered" <|
             \_ ->
                 renderAnemia DiagnosisModerateAnemiaInitialPhase [] (Just [ NoReinforceTreatmentSigns ])
                     |> Expect.all
-                        [ Query.has [ text (adherenceAnswer Fefol "No") ]
-                        , Query.has [ text (adherenceAnswer MMS "No") ]
-                        , Query.has [ text (repeatTestAnswer "No") ]
+                        [ Query.has [ text (String.toLower (translate English Translate.NoTreatmentAdministered)) ]
+                        , Query.hasNot [ text (translate English Translate.ReinforceAdherenceQuestion) ]
                         , Query.hasNot [ text noTreatmentRecorded ]
                         ]
         , test "the recurrent phase lists the same answers" <|
             \_ ->
-                renderAnemia DiagnosisModerateAnemiaRecurrentPhase [] (Just [ ReinforceSignFefol ])
-                    |> Query.has [ text (adherenceAnswer Fefol "Yes") ]
+                renderAnemia DiagnosisModerateAnemiaRecurrentPhase [] (Just [ ReinforceSignFefol, ReinforceSignRepeatHemoglobinTest ])
+                    |> Expect.all
+                        [ Query.has [ text (adherenceAnswer Fefol "Yes") ]
+                        , Query.has [ text (adherenceAnswer MMS "No") ]
+                        , Query.has [ text (repeatTestAnswer "Yes") ]
+                        ]
         , test "an older record lists Iron and Folic acid" <|
             \_ ->
                 renderAnemia DiagnosisModerateAnemiaInitialPhase [ Iron, FolicAcid ] Nothing

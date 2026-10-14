@@ -2801,34 +2801,37 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                 ]
                         in
                         case value.reinforceTreatmentSigns of
-                            -- The nurse answered the reinforce adherence questions.
-                            -- A sign missing from the set was answered No.
                             Just reinforceSigns ->
-                                let
-                                    answerMessage question sign =
-                                        let
-                                            answer =
-                                                if EverySet.member sign reinforceSigns then
-                                                    Translate.Yes
+                                if EverySet.member NoReinforceTreatmentSigns reinforceSigns then
+                                    Just noTreatmentAdministeredMessage
 
-                                                else
-                                                    Translate.No
-                                        in
-                                        question ++ ": " ++ translate language answer
+                                else
+                                    -- Each reinforce question with the nurse's answer.
+                                    -- A sign missing from the set was answered No.
+                                    let
+                                        answerMessage question sign =
+                                            let
+                                                answer =
+                                                    if EverySet.member sign reinforceSigns then
+                                                        Translate.Yes
 
-                                    adherenceQuestion medication =
-                                        translate language Translate.ReinforceAdherenceQuestion
-                                            ++ " "
-                                            ++ (translate language <| Translate.MedicationDistributionSign medication)
-                                in
-                                withDiagnosisMessage
-                                    [ answerMessage (adherenceQuestion Fefol) ReinforceSignFefol
-                                    , answerMessage (adherenceQuestion MMS) ReinforceSignMMS
-                                    , answerMessage (translate language Translate.RepeatHemoglobinTestQuestion) ReinforceSignRepeatHemoglobinTest
-                                    ]
-                                    |> Just
+                                                    else
+                                                        Translate.No
+                                            in
+                                            question ++ ": " ++ translate language answer
 
-                            -- Records made before the reinforce questions list Iron and Folic acid.
+                                        adherenceQuestion =
+                                            Translate.MedicationDistributionSign
+                                                >> Measurement.Utils.reinforceAdherenceQuestion language
+                                    in
+                                    withDiagnosisMessage
+                                        [ answerMessage (adherenceQuestion Fefol) ReinforceSignFefol
+                                        , answerMessage (adherenceQuestion MMS) ReinforceSignMMS
+                                        , answerMessage (translate language Translate.RepeatHemoglobinTestQuestion) ReinforceSignRepeatHemoglobinTest
+                                        ]
+                                        |> Just
+
+                            -- Without reinforce answers, the line lists Iron and Folic acid.
                             Nothing ->
                                 let
                                     nonAdministrationReasons =
