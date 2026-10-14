@@ -12,7 +12,8 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
 - App URL `http://localhost:3000`, served by `ddev gulp` from the **main tree** — whatever
   branch that tree is on.
 - `span.version` (top right) reads `Version: <short hash>`. Clicking it (`div.version-env`)
-  opens the service-worker page, where a new build is applied. Each browser profile keeps
+  opens the service-worker page, where a new build is applied: after gulp rebuilds, CHECK FOR
+  UPDATES, then ACTIVATE NEW VERSION OF THE APP, then reload. Each browser profile keeps
   its own service-worker cache, so two browsers can show two builds at the same time —
   always read the version in the browser doing the run.
 - `EHEZA_SITE` (rwanda / burundi) is set in `.ddev/config.local.yaml`.
@@ -94,6 +95,7 @@ flag simply does not appear.
 
 - Main-menu cards: the click handler is on `div.card > div.image`, not the card or label.
 - Clinical: `button.individual-assessment` / `button.group-assessment`.
+- Participant search: type in `input.search-input`; each result is `.item.participant-view`.
 - Search results and Participant Directory rows open through their `span.action-icon.forward`;
   the row itself is not clickable. The edit pencil (`span.action-icon.edit`) is on the person
   page, as is "Add Child" (`div.add-participant-icon-wrapper`).
@@ -214,6 +216,21 @@ flag simply does not appear.
 - Server fields of a lab test: `field_test_execution_note`, `field_test_prerequisites` (multi-value),
   `field_sugar_count`. A drush edit through `entity_metadata_wrapper(...)->save()` reaches the
   tablet on the next sync.
+- **Immunisation forms** (Well Child Immunisations, Child Scorecard Vaccination History) have one
+  tab per vaccine. The tab list hides a vaccine until its next dose is due, judged from the latest
+  dose by number. "Received prior to today? Yes" opens Select Date: a picker whose year and month
+  lists hold only the allowed range, from one interval after the latest dose to yesterday. Days
+  outside it are `td.date-selector--disabled`. Each saved date returns to the form, which asks
+  again while another dose is due. Answer No to stop. A CHW Well Child visit asks only about earlier
+  doses; the nurse's also asks about today. OPV dose 1 within 14 days of birth makes OPV four doses,
+  so record a first dose later than that for three.
+- **A child followed by both Well Child and Child Scorecard**: the CHW registers the child under
+  Child Scorecard, at Akanduga, and the nurse finds the child at Nyange. A nurse's Standard Pediatric
+  Visit creates the Well Child participant. Both forms read one combined history of the two
+  programs. Its order on develop depended on which program held which dose, so try both arrangements.
+- Child Scorecard offers Vaccination History only after NCDA is saved
+  (`h.childScoreboard.completeNCDA`), and only while the history shows the child behind.
+- An activity with several tabs stays under To Do until every tab is saved.
 - Well Child Nutrition Assessment: Height / MUAC / Nutrition / Weight tabs, each with its own
   Save; the Rwanda ranges are printed above the inputs (height 25–250 cm, MUAC 5–99 cm,
   weight 0.5–200 kg).

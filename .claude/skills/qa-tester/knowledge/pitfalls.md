@@ -267,3 +267,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a script waiting for the main menu after one back click timed out on "SEARCH EXISTING PARTICIPANTS".
 - **Wrong conclusion:** navigation broke.
 - **Rule:** from a participant page, press back until `.wrap-cards` shows, or reload to `/`.
+
+## A fixture that never reaches the defect passes on both builds
+
+- **Symptom:** the nurse's OPV form for a child followed by both programs showed doses 1, 2 in order and the right date range, with the PR.
+- **Wrong conclusion:** the fix is verified. The same screen on develop showed the same: with dose 1 at Child Scorecard and dose 2 at Well Child, develop's merge happened to come out in order.
+- **Rule:** for an ordering or merge fix, open the screen under test on develop first, with the same data. Swap the overlaid files back, wait for gulp, then apply the update in the driver. Only a fixture where develop shows the defect is evidence; keep the others as regression rows.
+
+## A scripted form flow that forgets a follow-up question
+
+- **Symptom:** after recording dose 2 "given previously", the script pressed Save, and the click failed on a disabled button.
+- **Wrong conclusion:** the save broke.
+- **Rule:** an Immunisation form asks again after each recorded dose while another is due. Work out from the dates which questions follow, and script each answer.
