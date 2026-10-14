@@ -143,6 +143,7 @@ number, tier line, and any side-findings noticed while building appended as new 
   above. Mechanics in `pr-first-review-workflow` in memory.
 - **After round 2 is addressed, suggest whether a `qa-tester` run is worth it** — one line with the
   reason (visible on screen or in stored data, not covered by e2e). Suggest only; never start it.
+  In the same message, ask whether to move the PR to QA; only on approval add the `Ready for QA` label.
 - ⛔ **Post every round-2 finding to the PR, inline, BEFORE reporting anything about the review in
   chat.** The review agent reports back into the transcript — that arrival is the cue to post, not
   delivery. A review is not finished until its findings are on the PR, anchored to the lines they

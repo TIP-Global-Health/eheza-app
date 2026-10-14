@@ -24,6 +24,9 @@ another review (medium), and post the comments on the PR for me to see."*):
 - **Then suggest QA** (user, 2026-10-14: *"after second round of review is addressed, suggest if
   it's worth testing the develoment with qa-tester skill"*). Say whether a `qa-tester` run is worth
   it and why; suggest only, the user decides.
+- **In the same message, ask whether to move the PR to QA** (user, 2026-10-14: *"ask if you want
+  to move the PR to QA. If I approve, assign Ready for QA label to the PR"*). On approval:
+  `gh api repos/TIP-Global-Health/eheza-app/issues/<N>/labels -f 'labels[]=Ready for QA'`.
 
 Steps 2–5 below describe round 2 unless they say otherwise.
 
