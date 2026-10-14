@@ -89,8 +89,8 @@ type
       -- Head Circumference related warnings.
     | WarningHeadCircumferenceMicrocephaly
     | WarningHeadCircumferenceMacrocephaly
-      -- We use this option when Head Circumference activity was
-      -- completed, and no warnings were generated.
+      -- We use this option when Head Circumference was not taken.
+      -- A reading within range records no head circumference warning.
     | NoHeadCircumferenceWarning
       -- This option is set when neither ECD nor
       -- Head Circumference activity were completed.
@@ -192,6 +192,7 @@ type Msg
     | HandleUpdatedWellChildEncounter (WebData ())
     | SetWellChildEncounterNote EncounterNote
     | SetWellChildEncounterWarning EncounterWarning
+    | ClearHeadCircumferenceWarnings
     | SavePregnancySummary PersonId (Maybe WellChildPregnancySummaryId) PregnancySummaryValue
     | HandleSavedPregnancySummary (WebData ())
     | SaveSymptomsReview PersonId (Maybe WellChildSymptomsReviewId) (EverySet WellChildSymptom)

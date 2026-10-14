@@ -1,4 +1,4 @@
-module Backend.WellChildEncounter.Update exposing (update)
+module Backend.WellChildEncounter.Update exposing (replaceWarnings, update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
@@ -6,7 +6,7 @@ import Backend.Endpoints exposing (wellChildAlbendazoleEndpoint, wellChildBCGImm
 import Backend.Entities exposing (..)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), Model, Msg(..), WellChildEncounter, ecdMilestoneWarnings, headCircumferenceWarnings)
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
 import RemoteData exposing (RemoteData(..))
@@ -46,27 +46,39 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
         SetWellChildEncounterNote note ->
             updateEncounter encounterId maybeEncounter (\encounter -> { encounter | encounterNote = note }) model
 
+        ClearHeadCircumferenceWarnings ->
+            let
+                -- Saves only when there is a head circumference warning to remove.
+                encounterWithWarning =
+                    Maybe.Extra.filter
+                        (\encounter ->
+                            List.any (\warning -> EverySet.member warning encounter.encounterWarnings) headCircumferenceWarnings
+                        )
+                        maybeEncounter
+            in
+            updateEncounter encounterId
+                encounterWithWarning
+                (\encounter ->
+                    { encounter | encounterWarnings = replaceWarnings headCircumferenceWarnings [] encounter.encounterWarnings }
+                )
+                model
+
         SetWellChildEncounterWarning warning ->
             let
                 updateFunc =
                     \encounter ->
                         let
-                            warnings =
-                                EverySet.toList encounter.encounterWarnings
-
                             updatedWarnings =
                                 if List.member warning ecdMilestoneWarnings then
-                                    List.filter (\item -> not (List.member item (NoEncounterWarnings :: ecdMilestoneWarnings))) warnings
-                                        |> List.append [ warning ]
+                                    replaceWarnings ecdMilestoneWarnings [ warning ] encounter.encounterWarnings
 
                                 else if List.member warning headCircumferenceWarnings then
-                                    List.filter (\item -> not (List.member item (NoEncounterWarnings :: headCircumferenceWarnings))) warnings
-                                        |> List.append [ warning ]
+                                    replaceWarnings headCircumferenceWarnings [ warning ] encounter.encounterWarnings
 
                                 else
-                                    [ NoEncounterWarnings ]
+                                    EverySet.singleton NoEncounterWarnings
                         in
-                        { encounter | encounterWarnings = EverySet.fromList updatedWarnings }
+                        { encounter | encounterWarnings = updatedWarnings }
             in
             updateEncounter encounterId maybeEncounter updateFunc model
 
@@ -459,6 +471,25 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , Cmd.none
             , triggerRollbarOnFailure data
             )
+
+
+{-| Replaces one group of warnings (ECD or head circumference) with the given
+ones, keeping the other group. An encounter left with no warnings holds
+`NoEncounterWarnings`.
+-}
+replaceWarnings : List EncounterWarning -> List EncounterWarning -> EverySet EncounterWarning -> EverySet EncounterWarning
+replaceWarnings group replacement warnings =
+    let
+        kept =
+            EverySet.toList warnings
+                |> List.filter (\item -> not (List.member item (NoEncounterWarnings :: group)))
+    in
+    case replacement ++ kept of
+        [] ->
+            EverySet.singleton NoEncounterWarnings
+
+        updated ->
+            EverySet.fromList updated
 
 
 updateEncounter :
