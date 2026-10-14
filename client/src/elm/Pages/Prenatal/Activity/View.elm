@@ -82,11 +82,11 @@ import Measurement.View
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, BirthPlanData, BreastExamForm, BreastfeedingData, DangerSignsData, ExaminationData, FamilyPlanningData, FollowUpForm, GUExamForm, HealthEducationData, HistoryData, ImmunisationData, LaboratoryData, LabsHistoryForm, MedicalHistoryForm, MedicationData, MedicationForm, MentalHealthData, MentalHealthStep(..), Model, Msg(..), NextStepsData, NutritionAssessmentForm, ObstetricFormFirstStep, ObstetricFormSecondStep, ObstetricalExamForm, PostpartumTreatmentReviewData, PregnancyDatingData, PrenatalPhotoData, PrenatalVaccinationForm, SocialHistoryForm, SpecialityCareData, SymptomReviewData, TreatmentReviewData, UltrasoundData)
 import Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), ObstetricHistoryStep(..), SymptomReviewStep(..), TreatmentReviewTask(..), WarningPopupType(..))
-import Pages.Prenatal.Activity.Utils exposing (appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generateVitalsFormConfig, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toObstetricHistoryValue, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview)
+import Pages.Prenatal.Activity.Utils exposing (appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generateVitalsFormConfig, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolveNextVisitDate, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toObstetricHistoryValue, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview)
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, generateAssembledData, generateEDDandEGA, generateGravida, generatePara, getLmpValue, secondPhaseRequired, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
-import Pages.Prenatal.Utils exposing (calculateEGAWeeks, diagnosedAnyOf, diagnosedModeratePreeclampsiaPrevoiusly, filterNonUrgentDiagnoses, medicationDistributionFormWithDefaultInitialPhase, outsideCareAnemiaDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, referralFormWithDefault, resolveARVReferralDiagnosis, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, undeterminedPostpartumDiagnoses)
+import Pages.Prenatal.Utils exposing (calculateEGAWeeks, diagnosedModeratePreeclampsiaPrevoiusly, filterNonUrgentDiagnoses, medicationDistributionFormWithDefaultInitialPhase, outsideCareAnemiaDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, referralFormWithDefault, resolveARVReferralDiagnosis, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View
     exposing
         ( customWarningPopup
@@ -4188,81 +4188,6 @@ viewNextVisitForm language nextVisitDate =
         nextVisitDate
         |> Maybe.withDefault []
         |> div [ class "ui form next-visit" ]
-
-
-resolveNextVisitDate : AssembledData -> Maybe NominalDate
-resolveNextVisitDate assembled =
-    Maybe.map (calculateEGAWeeks assembled.encounter.startDate) assembled.globalLmpDate
-        |> Maybe.map
-            (\egaWeekCurrent ->
-                let
-                    -- If moderate Anemia was diagnosed, next visit is supposed
-                    -- to take place within 4 weeks.
-                    moderateAnemiaDiagnosed =
-                        diagnosedAnyOf [ DiagnosisModerateAnemiaInitialPhase, DiagnosisModerateAnemiaRecurrentPhase ] assembled
-
-                    gap =
-                        if egaWeekCurrent < 20 then
-                            if moderateAnemiaDiagnosed then
-                                4
-
-                            else
-                                8
-
-                        else if egaWeekCurrent < 26 then
-                            if moderateAnemiaDiagnosed then
-                                4
-
-                            else
-                                6
-
-                        else if egaWeekCurrent < 30 then
-                            4
-
-                        else
-                            let
-                                egaWeekOnFirstVisit =
-                                    Maybe.map2 calculateEGAWeeks
-                                        (assembled.encounter.startDate
-                                            :: List.map (\( date, _, _ ) -> date) assembled.chwPreviousMeasurementsWithDates
-                                            ++ List.map .startDate assembled.nursePreviousEncountersData
-                                            |> List.sortWith Date.compare
-                                            |> List.head
-                                        )
-                                        assembled.globalLmpDate
-                            in
-                            if egaWeekCurrent < 32 then
-                                let
-                                    firstVisitAt22To27 =
-                                        Maybe.map (\date -> (date >= 22) && (date < 28)) egaWeekOnFirstVisit
-                                            |> Maybe.withDefault False
-                                in
-                                if firstVisitAt22To27 then
-                                    2
-
-                                else
-                                    4
-
-                            else if egaWeekCurrent < 34 then
-                                let
-                                    firstVisitAt28Plus =
-                                        Maybe.map (\date -> date >= 28) egaWeekOnFirstVisit
-                                            |> Maybe.withDefault False
-                                in
-                                if firstVisitAt28Plus then
-                                    2
-
-                                else
-                                    4
-
-                            else if egaWeekCurrent < 40 then
-                                2
-
-                            else
-                                1
-                in
-                Date.add Weeks gap assembled.encounter.startDate
-            )
 
 
 viewUltrasoundContent : Language -> NominalDate -> AssembledData -> UltrasoundData -> List (Html Msg)
