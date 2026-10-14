@@ -279,3 +279,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after recording dose 2 "given previously", the script pressed Save, and the click failed on a disabled button.
 - **Wrong conclusion:** the save broke.
 - **Rule:** an Immunisation form asks again after each recorded dose while another is due. Work out from the dates which questions follow, and script each answer.
+
+## `qa.form()` calls a Save button disabled when it has neither class
+
+- **Symptom:** on prenatal Next Steps › Next ANC Visit, `qa.form()` reported `save: "disabled"`, while the screenshot showed a bright, pressable SAVE.
+- **Wrong conclusion:** the button is off, so its Save "doing nothing" is expected.
+- **Rule:** `qa.form()` reads `active` as enabled and anything else as disabled. `viewEncounterActionButton` sets neither class when allowed. Check for the `disabled` class, and look at the screenshot.

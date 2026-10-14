@@ -100,7 +100,8 @@ flag simply does not appear.
   the row itself is not clickable. The edit pencil (`span.action-icon.edit`) is on the person
   page, as is "Add Child" (`div.add-participant-icon-wrapper`).
 - Save buttons: `button.ui.fluid.primary.button` with class `disabled` or `active`; the
-  `disabled` attribute is never set, so read the class.
+  `disabled` attribute is never set, so read the class. Buttons from `viewEncounterActionButton`
+  (prenatal Next Steps › Next ANC Visit) carry neither class when pressable — only `disabled` means off.
 - Task tabs (`.link-section`): the active tab never carries `completed`, even when it is
   done (`not isActive && isCompleted`); read the task counter for the open tab instead.
 - Yes/no inputs: the chosen side is `input.checked` inside `.form-input.yes-no.<name>`; the
@@ -197,6 +198,9 @@ flag simply does not appear.
   a visit has ended.
 - Pregnancy Outcome inside a postpartum visit closes the pregnancy on Save and returns to the
   still-open visit. The participant page then ignores that pregnancy (B-373).
+- CHW visit 2 with no danger signs: Danger Signs, Birth Plan, Health Education, Next Steps; Next Steps
+  is Appointment Confirmation, CHW Follow Up, Next ANC Visit. Next ANC Visit shows a date computed
+  from the LMP; saving it as the last task opens the progress report, which carries End Encounter.
 - CHW postpartum visit: Pregnancy Outcome, Danger Signs (tick "None of these" for mother and child),
   Next Steps. Postpartum Danger Signs has two "None of these" lists, so `completeDangerSigns` fails
   there. With no danger signs Next Steps is Health Education, plus Newborn Enrolment after a
