@@ -476,6 +476,7 @@ B-475	4	IMPLEMENTED	LOW	2346	2347	41	Tuberculosis progress report › Adverse Ev
 B-476	3	READY	LOW			41	Completion report (Nutrition individual + Well Child, CHW): a height or weight the CHW marked "unable to take" is charge
 B-477	4	READY	LOW			41	Prenatal completion (CHW visit 1): the mandatory-activities gate has the danger-signs condition inverted relative to vis
 B-478	3	READY			2345	19	Service worker: a change is stored on the device before its upload row, so when the row fails the device keeps a change 
+B-479	4	READY			2349	27	Immunisation (Burundi, child in Well Child AND Child Scoreboard): the DTP standalone dose is dropped when the three DTP 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
