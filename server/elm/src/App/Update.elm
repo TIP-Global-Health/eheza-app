@@ -9,6 +9,7 @@ import App.Types exposing (Page(..))
 import App.Utils exposing (updateSubModel)
 import Backend.Completion.Model
 import Backend.CompletionMenu.Model
+import Backend.Dashboard.Model
 import Backend.Model
 import Backend.Reports.Model
 import Backend.ReportsMenu.Model
@@ -16,8 +17,10 @@ import Backend.Scoreboard.Model
 import Backend.ScoreboardMenu.Model
 import Backend.Update
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Json.Decode exposing (Value)
 import Pages.Completion.Update
 import Pages.CompletionMenu.Update
+import Pages.Dashboard.Update
 import Pages.Reports.Update
 import Pages.ReportsMenu.Update
 import Pages.Scoreboard.Update
@@ -85,6 +88,12 @@ init flags =
                         )
                         model
 
+                DashboardFacility ->
+                    updateWithDashboardData flags.appData model
+
+                DashboardProgram ->
+                    updateWithDashboardData flags.appData model
+
                 NotFound ->
                     ( model, Cmd.none )
 
@@ -98,6 +107,18 @@ init flags =
       -- Let the Fetcher act upon the active page.
     , Cmd.batch [ cmd, fetchCmds ]
     )
+
+
+{-| Both dashboards are handed the same menu data as the report menu pages.
+-}
+updateWithDashboardData : Value -> Model -> ( Model, Cmd Msg )
+updateWithDashboardData appData model =
+    update
+        (Backend.Dashboard.Model.SetData appData
+            |> Backend.Model.MsgDashboard
+            |> MsgBackend
+        )
+        model
 
 
 resolveActivePage : String -> Page
@@ -120,6 +141,12 @@ resolveActivePage page =
 
         "completion-results" ->
             Completion
+
+        "dashboard-facility" ->
+            DashboardFacility
+
+        "dashboard-program" ->
+            DashboardProgram
 
         _ ->
             NotFound
@@ -209,6 +236,15 @@ update msg model =
                 )
                 (\subModel model_ -> { model_ | completionPage = subModel })
                 (\subCmds -> MsgCompletionPage subCmds)
+                model
+
+        MsgDashboardPage subMsg ->
+            updateSubModel
+                subMsg
+                model.dashboardPage
+                (\subMsg_ subModel -> Pages.Dashboard.Update.update subMsg_ subModel)
+                (\subModel model_ -> { model_ | dashboardPage = subModel })
+                (\subCmds -> MsgDashboardPage subCmds)
                 model
 
         SetCurrentTime date ->

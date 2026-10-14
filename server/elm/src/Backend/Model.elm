@@ -8,6 +8,7 @@ things on the backend.
 import Backend.Completion.Model exposing (CompletionData)
 import Backend.CompletionMenu.Model
 import Backend.Components.Model exposing (MenuData)
+import Backend.Dashboard.Model
 import Backend.Reports.Model exposing (ReportsData)
 import Backend.ReportsMenu.Model
 import Backend.Scoreboard.Model exposing (ScoreboardData)
@@ -22,6 +23,7 @@ type alias ModelBackend =
     , reportsData : Maybe (Result Json.Decode.Error ReportsData)
     , completionMenuData : Maybe (Result Json.Decode.Error MenuData)
     , completionData : Maybe (Result Json.Decode.Error CompletionData)
+    , dashboardData : Maybe (Result Json.Decode.Error MenuData)
     }
 
 
@@ -33,6 +35,7 @@ emptyModelBackend =
     , reportsData = Nothing
     , completionMenuData = Nothing
     , completionData = Nothing
+    , dashboardData = Nothing
     }
 
 
@@ -46,3 +49,4 @@ type Msg
     | MsgReportsMenu Backend.ReportsMenu.Model.Msg
     | MsgCompletion Backend.Completion.Model.Msg
     | MsgCompletionMenu Backend.CompletionMenu.Model.Msg
+    | MsgDashboard Backend.Dashboard.Model.Msg

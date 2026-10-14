@@ -2,6 +2,7 @@ module Backend.Update exposing (updateBackend)
 
 import Backend.Completion.Update
 import Backend.CompletionMenu.Update
+import Backend.Dashboard.Update
 import Backend.Model exposing (ModelBackend, Msg(..))
 import Backend.Reports.Update
 import Backend.ReportsMenu.Update
@@ -54,4 +55,11 @@ updateBackend backendUrl csrfToken msg model =
                 subMsg
                 (\subMsg_ model_ -> Backend.Completion.Update.update backendUrl csrfToken subMsg_ model_)
                 (\subCmds -> MsgCompletion subCmds)
+                model
+
+        MsgDashboard subMsg ->
+            updateSubModel
+                subMsg
+                (\subMsg_ model_ -> Backend.Dashboard.Update.update subMsg_ model_)
+                (\subCmds -> MsgDashboard subCmds)
                 model
