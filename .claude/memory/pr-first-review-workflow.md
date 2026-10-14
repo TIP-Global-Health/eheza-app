@@ -73,6 +73,12 @@ present your analysis, what needs fixing and don't execute before I approve."*):
    Fall back to a PR-level comment (`gh api repos/O/R/issues/N/comments -f body=...`) ONLY when the line
    is not in the diff — which includes lines a later force-push REMOVED. To revise a posted comment:
    PATCH `pulls/comments/<id>` (inline) or `issues/comments/<id>` (PR-level).
+
+   **Once a finding is fixed or declined, reply on its thread, then resolve it** (user, 2026-10-14:
+   threads were left answered but open on four PRs). `gh` has no command; use GraphQL:
+   `gh api graphql -f query='mutation($id:ID!){resolveReviewThread(input:{threadId:$id}){thread{isResolved}}}' -f id=<thread id>`.
+   Thread ids come from `pullRequest(number:N){reviewThreads(first:100){nodes{id isResolved}}}`.
+   A PR-level comment has no thread to resolve; the reply is enough.
 4. **Present my analysis** — which findings are real, which are not worth acting on, and why.
    ⛔ **Every finding carries the link to its own PR comment** (user, 2026-09-09: *"when review is
    analysed, findings are treated as finding 1, 2, 3 ... But it's hard to match which is which on

@@ -60,7 +60,8 @@ re-check afterwards.
 `gh api repos/TIP-Global-Health/eheza-app/pulls/N -X PATCH -f title="…"`.
 
 **6. Reviews.** Verify every claim against the code before acting — review bots are sometimes
-exactly right and sometimes overstated. Reply per thread with the fixing commit.
+exactly right and sometimes overstated. Reply per thread with the fixing commit or the reason it
+was declined, then resolve the thread (mutation in step 7).
 
 **7. Bookkeep immediately** (compaction-safe): entry status → `✅ IMPLEMENTED (issue #, PR #,
 branch, base sha, what was verified)`, update the tier line, append side-findings as new minors,
@@ -71,6 +72,9 @@ record that exists only in the working tree is not a record.
 finding's thread says so.** Not "eventually" — in the same step that pushes the fix. A thread left
 at *awaiting decision* after the work shipped contradicts the code, and is the same failure as
 never posting it.
+⛔ **Saying so means a reply AND a resolved thread.** A reply alone leaves the thread open on GitHub.
+`gh` has no command for it; use the GraphQL mutation, with the id from `reviewThreads { nodes { id } }`:
+`gh api graphql -f query='mutation($id:ID!){resolveReviewThread(input:{threadId:$id}){thread{isResolved}}}' -f id=<thread id>`
 📌 A `Stop` hook (`.claude/hooks/commit-bookkeeping.sh`) commits and pushes these paths as a net,
 and warns instead when the tree is not on `develop`. It is a backstop for a miss, not the plan —
 its generated message says far less than one written here.

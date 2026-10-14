@@ -152,7 +152,8 @@ number, tier line, and any side-findings noticed while building appended as new 
   `gh api repos/O/R/pulls/<N>/comments --jq '.[] | "\(.path):\(.line)  \(.html_url)"'` after
   posting, and put the link on the finding's own heading. Applies to every finding, in every round,
   including ones you decline; the point is that the user can open the thread you are talking about.
-- ⛔ **Close the loop on every review thread when the fix lands**, and **commit + push the backlog
+- ⛔ **Close the loop on every review thread when the fix lands** — reply with the commit or the
+  reason it was declined, then resolve the thread (mutation in the runbook, step 7) — and **commit + push the backlog
   files on `develop`** in the same step that records them. Three separate misses in one day traced
   to the same shape — work lands, record lags — so treat "the record disagrees with the repository"
   as a defect in its own right. A `Stop` hook commits the files as a backstop; it does not excuse
