@@ -253,10 +253,13 @@ singleton key value =
 {-| Combine two dictionaries. If there is a collision, preference is given
 to the first dictionary.
 
-If you are using this module as an ordered dictionary, the ordering of the
-output dictionary will be all the entries of the first dictionary (from most
-recently inserted to least recently inserted) followed by all the entries of
-the second dictionary (from most recently inserted to least recently inserted).
+If you are using this module as an ordered dictionary, the output keeps the
+second dictionary's order, then adds the first dictionary's other entries from
+most recently to least recently inserted.
+
+    union (fromList [ ( 1, "a" ), ( 2, "b" ) ]) (fromList [ ( 3, "c" ) ])
+        |> toList
+    --> [ ( 3, "c" ), ( 2, "b" ), ( 1, "a" ) ]
 
 -}
 union : Dict k v -> Dict k v -> Dict k v
@@ -294,11 +297,14 @@ accumulators for when a given key appears:
 You then traverse all the keys in the following order, building up whatever
 you want:
 
-1.  All the keys that appear only in the right dictionary from least
-    recently inserted to most recently inserted.
-2.  All the keys in the left dictionary from least recently inserted to most
+1.  All the keys that appear only in the right dictionary from most
+    recently inserted to least recently inserted.
+2.  All the keys in the left dictionary from most recently inserted to least
     recently inserted (without regard to whether they appear only in the left
     dictionary or in both dictionaries).
+
+Since `insert` adds a new key at the end, building a dictionary with `insert`
+in these steps gives the keys in reverse order.
 
 -}
 merge :
@@ -350,8 +356,8 @@ map alter (D alist) =
     D (List.map (\( key, value ) -> ( key, alter key value )) alist)
 
 
-{-| Fold over the key-value pairs in a dictionary from most recently inserted
-to least recently inserted.
+{-| Fold over the key-value pairs in a dictionary from least recently inserted
+to most recently inserted.
 
     users : Dict String Int
     users =
@@ -361,7 +367,7 @@ to least recently inserted.
             |> insert "Chuck" 33
 
     foldl (\name age result -> age :: result) [] users
-    --> [28,19,33]
+    --> [33,19,28]
 
 -}
 foldl : (k -> v -> b -> b) -> b -> Dict k v -> b
@@ -374,8 +380,8 @@ foldl func initialResult (D alist) =
         alist
 
 
-{-| Fold over the key-value pairs in a dictionary from least recently inserted
-to most recently insered.
+{-| Fold over the key-value pairs in a dictionary from most recently inserted
+to least recently inserted.
 
     users : Dict String Int
     users =
@@ -385,7 +391,7 @@ to most recently insered.
             |> insert "Chuck" 33
 
     foldr (\name age result -> age :: result) [] users
-    --> [33,19,28]
+    --> [28,19,33]
 
 -}
 foldr : (k -> v -> b -> b) -> b -> Dict k v -> b
@@ -423,10 +429,10 @@ partition isGood (D alist) =
 
 
 {-| Get all of the keys in a dictionary, in the order that they were inserted
-with the most recently inserted key at the head of the list.
+with the least recently inserted key at the head of the list.
 
     keys (fromList [ ( 0, "Alice" ), ( 1, "Bob" ) ])
-    --> [ 1, 0 ]
+    --> [ 0, 1 ]
 
 -}
 keys : Dict k v -> List k
@@ -435,10 +441,10 @@ keys (D alist) =
 
 
 {-| Get all of the values in a dictionary, in the order that they were inserted
-with the most recently inserted value at the head of the list.
+with the least recently inserted value at the head of the list.
 
     values (fromList [ ( 0, "Alice" ), ( 1, "Bob" ) ])
-    --> [ "Bob", "Alice" ]
+    --> [ "Alice", "Bob" ]
 
 -}
 values : Dict k v -> List v
@@ -447,7 +453,7 @@ values (D alist) =
 
 
 {-| Convert a dictionary into an association list of key-value pairs, in the
-order that they were inserted with the most recently inserted entry at the
+order that they were inserted with the least recently inserted entry at the
 head of the list.
 -}
 toList : Dict k v -> List ( k, v )
