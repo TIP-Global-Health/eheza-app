@@ -7,11 +7,13 @@ import Backend.IndividualEncounterParticipant.Model
         , IndividualEncounterType(..)
         , PregnancyOutcome(..)
         )
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..), emptyPrenatalEncounter)
 import Date
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive)
+import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
 import Pages.Prenatal.Utils exposing (marginalBloodPressureCondition)
+import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import TestFixtures
 import Time
@@ -135,9 +137,109 @@ isPregnancyActiveTest =
         ]
 
 
+{-| A pregnancy whose outcome was recorded `days` before `currentDate`.
+-}
+pregnancyConcludedDaysAgo : Int -> IndividualEncounterParticipant
+pregnancyConcludedDaysAgo days =
+    let
+        participant =
+            pregnancyRegisteredDaysAgo 200
+    in
+    { participant
+        | endDate = Just (Date.add Date.Days -days currentDate)
+        , outcome = Just (Pregnancy OutcomeLiveAtTerm)
+    }
+
+
+visitStartedDaysAgo : Int -> PrenatalEncounterType -> PrenatalEncounter
+visitStartedDaysAgo days encounterType =
+    emptyPrenatalEncounter (toEntityUuid "pregnancy") (Date.add Date.Days -days currentDate) encounterType Nothing
+
+
+{-| A visit started and ended `days` before `currentDate`.
+-}
+visitEndedDaysAgo : Int -> PrenatalEncounterType -> PrenatalEncounter
+visitEndedDaysAgo days encounterType =
+    let
+        visit =
+            visitStartedDaysAgo days encounterType
+    in
+    { visit | endDate = Just visit.startDate }
+
+
+
+-- The participant page keeps a pregnancy concluded today only for the role
+-- whose postpartum visit is still open or ended today; otherwise as before.
+
+
+pregnancyConcludedInTodaysPostpartumVisitTest : Test
+pregnancyConcludedInTodaysPostpartumVisitTest =
+    let
+        isNurse =
+            False
+
+        isChw =
+            True
+    in
+    describe "pregnancyConcludedInTodaysPostpartumVisit"
+        [ test "nurse, outcome today inside today's nurse postpartum visit -> True" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 0 NursePostpartumEncounter ]
+                    |> Expect.equal True
+        , test "CHW, outcome today inside today's CHW postpartum visit -> True" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isChw (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 0 ChwPostpartumEncounter ]
+                    |> Expect.equal True
+        , test "earlier visits do not get in the way -> True" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate
+                    isNurse
+                    (pregnancyConcludedDaysAgo 0)
+                    [ visitStartedDaysAgo 0 NursePostpartumEncounter, visitStartedDaysAgo 30 NurseEncounter ]
+                    |> Expect.equal True
+        , test "CHW viewing a nurse postpartum visit -> False (other role)" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isChw (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 0 NursePostpartumEncounter ]
+                    |> Expect.equal False
+        , test "nurse viewing a CHW postpartum visit -> False (other role)" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 0 ChwPostpartumEncounter ]
+                    |> Expect.equal False
+        , test "outcome today in a visit opened yesterday and still open -> True" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 1 NursePostpartumEncounter ]
+                    |> Expect.equal True
+        , test "outcome today, postpartum visit ended today -> True" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isChw (pregnancyConcludedDaysAgo 0) [ visitEndedDaysAgo 0 ChwPostpartumEncounter ]
+                    |> Expect.equal True
+        , test "outcome today, postpartum visit ended yesterday -> False" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 0) [ visitEndedDaysAgo 1 NursePostpartumEncounter ]
+                    |> Expect.equal False
+        , test "outcome today after an antenatal visit only -> False" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 0 NurseEncounter ]
+                    |> Expect.equal False
+        , test "outcome today with no visit today (CHW warning popup) -> False" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isChw (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 40 ChwFirstEncounter ]
+                    |> Expect.equal False
+        , test "outcome recorded yesterday -> False" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 1) [ visitStartedDaysAgo 0 NursePostpartumEncounter ]
+                    |> Expect.equal False
+        , test "no outcome recorded -> False" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyRegisteredDaysAgo 200) [ visitStartedDaysAgo 0 NursePostpartumEncounter ]
+                    |> Expect.equal False
+        ]
+
+
 all : Test
 all =
     describe "Prenatal tests"
         [ marginalBloodPressureConditionTest
         , isPregnancyActiveTest
+        , pregnancyConcludedInTodaysPostpartumVisitTest
         ]
