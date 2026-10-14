@@ -52,14 +52,17 @@ the directory.
 
 **5. Ship.** `gh issue create` (mechanism / impact / fix) → commit `Fixes #N` with the
 `Co-Authored-By` trailer and **no `[ci skip]`** → `git push -u` → `gh pr create --base develop`.
-Then run the medium review yourself — `Skill({skill: "code-review", args: "medium <branch>"})` — always. Watch CI in the background:
+Then run the medium review yourself — `Skill({skill: "code-review", args: "medium <branch>"})` — always,
+in two rounds (step 6). Watch CI in the background:
 `--watch` exits after the lint/unit tier, before the gated e2e and simpletest jobs spawn, so
 re-check afterwards.
 
 ⚠ `gh pr edit` is broken on this repo (Projects-classic GraphQL). Use
 `gh api repos/TIP-Global-Health/eheza-app/pulls/N -X PATCH -f title="…"`.
 
-**6. Reviews.** Verify every claim against the code before acting — review bots are sometimes
+**6. Reviews.** Two medium rounds. Round 1: fix or decline as you judge, push; nothing on the PR.
+Round 2, on the pushed head: post inline, present, wait for approval, then fix.
+Verify every claim against the code before acting — review bots are sometimes
 exactly right and sometimes overstated. Reply per thread with the fixing commit or the reason it
 was declined, then resolve the thread (mutation in step 7).
 
