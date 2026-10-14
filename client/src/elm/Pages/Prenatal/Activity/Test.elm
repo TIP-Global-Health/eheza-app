@@ -54,9 +54,9 @@ import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (RangedMeasurement(..), emptyHIVPCRResultForm)
 import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault)
 import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
-import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnancyClassification(..), WarningPopupType(..))
+import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, resolveNextStepsTasks, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), emptyHealthEducationForm)
 import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedPreviouslyAnyOf, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
@@ -2364,6 +2364,67 @@ all =
         , repeatedTapOnSavedTest
         , diagnosisKnownAnyOfTest
         , obstetricHistoryFirstPregnancyTest
+        , nextVisitTaskTest
+        ]
+
+
+{-| Next ANC Visit shows a date computed from the pregnancy's EGA, and only
+saves that date. A pregnancy with no LMP has none, so the task must not be
+asked: it could never be completed, and the visit could never be ended.
+
+CHW visits 2 and 3 have no Pregnancy Dating activity, so an undated
+pregnancy stays undated there.
+
+-}
+nextVisitTaskTest : Test
+nextVisitTaskTest =
+    let
+        withEncounterType encounterType assembled =
+            let
+                encounter =
+                    assembled.encounter
+            in
+            { assembled | encounter = { encounter | encounterType = encounterType } }
+
+        undated assembled =
+            { assembled | globalLmpDate = Nothing }
+
+        asksNextVisit assembled =
+            resolveNextStepsTasks currentDate assembled
+                |> List.member NextStepsNextVisit
+    in
+    describe "Next Steps › Next ANC Visit"
+        [ test "CHW visit 2 on an undated pregnancy does not ask for it" <|
+            \_ ->
+                testAssembled emptyPrenatalMeasurements
+                    |> withEncounterType ChwSecondEncounter
+                    |> undated
+                    |> asksNextVisit
+                    |> Expect.equal False
+        , test "CHW visit 3 on an undated pregnancy does not ask for it" <|
+            \_ ->
+                testAssembled emptyPrenatalMeasurements
+                    |> withEncounterType ChwThirdPlusEncounter
+                    |> undated
+                    |> asksNextVisit
+                    |> Expect.equal False
+        , test "a nurse visit on an undated pregnancy does not ask for it" <|
+            \_ ->
+                testAssembled emptyPrenatalMeasurements
+                    |> undated
+                    |> asksNextVisit
+                    |> Expect.equal False
+        , test "CHW visit 2 on a dated pregnancy asks for it" <|
+            \_ ->
+                testAssembled emptyPrenatalMeasurements
+                    |> withEncounterType ChwSecondEncounter
+                    |> asksNextVisit
+                    |> Expect.equal True
+        , test "a nurse visit on a dated pregnancy asks for it" <|
+            \_ ->
+                testAssembled emptyPrenatalMeasurements
+                    |> asksNextVisit
+                    |> Expect.equal True
         ]
 
 
