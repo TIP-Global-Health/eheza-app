@@ -568,8 +568,8 @@ expectNextStepsTask currentDate assembled task =
                 , ChwSecondEncounter
                 , ChwThirdPlusEncounter
                 ]
-                -- The date comes from the pregnancy's EGA. Without an LMP
-                -- there is no date to show or save.
+                -- Asked only when a next visit date can be computed. It comes
+                -- from the pregnancy's EGA, so a pregnancy with no LMP has none.
                 && isJust (resolveNextVisitDate assembled)
 
 
