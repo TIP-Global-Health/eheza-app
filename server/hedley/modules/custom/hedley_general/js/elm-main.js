@@ -18712,7 +18712,7 @@ var $author$project$Translate$PrenatalIndicatorLabel = function (a) {
 };
 var $author$project$Translate$TotalLivePreTermBirths = {$: 'TotalLivePreTermBirths'};
 var $author$project$Pages$Reports$View$generatePeripartumReportData = F5(
-	function (language, startDate, limitDate, allRecords, records) {
+	function (language, startDate, limitDate, scopeRecords, recordsTillLimitDate) {
 		var pregnanciesWithIndicator = function (indicator) {
 			return $elm$core$List$filter(
 				A2(
@@ -18747,7 +18747,7 @@ var $author$project$Pages$Reports$View$generatePeripartumReportData = F5(
 					$elm$core$Maybe$map(
 						A2($justinmimbs$date$Date$isBetween, startDate, limitDate)),
 					$elm$core$Maybe$withDefault(false))),
-			pregnanciesOf(allRecords));
+			pregnanciesOf(scopeRecords));
 		var countPregnanciesByOutcome = function (outcome) {
 			return $elm$core$List$length(
 				A2(
@@ -18786,7 +18786,7 @@ var $author$project$Pages$Reports$View$generatePeripartumReportData = F5(
 						A2(
 							pregnanciesWithIndicator,
 							$author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions,
-							pregnanciesOf(records)))),
+							pregnanciesOf(recordsTillLimitDate)))),
 					A2(
 					generateRow,
 					$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour),
@@ -18802,10 +18802,10 @@ var $author$project$Pages$Reports$View$generatePeripartumReportData = F5(
 		};
 	});
 var $author$project$Pages$Reports$View$viewPeripartumReport = F6(
-	function (language, startDate, limitDate, scopeLabel, allRecords, records) {
+	function (language, startDate, limitDate, scopeLabel, scopeRecords, recordsTillLimitDate) {
 		var csvFileName = 'peripartum-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
-		var data = A5($author$project$Pages$Reports$View$generatePeripartumReportData, language, startDate, limitDate, allRecords, records);
+		var data = A5($author$project$Pages$Reports$View$generatePeripartumReportData, language, startDate, limitDate, scopeRecords, recordsTillLimitDate);
 		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,

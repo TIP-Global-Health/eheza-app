@@ -2677,10 +2677,10 @@ generatePrenatalDiagnosesReportData language records =
 
 
 viewPeripartumReport : Language -> NominalDate -> NominalDate -> String -> List PatientData -> List PatientData -> Html Msg
-viewPeripartumReport language startDate limitDate scopeLabel allRecords records =
+viewPeripartumReport language startDate limitDate scopeLabel scopeRecords recordsTillLimitDate =
     let
         data =
-            generatePeripartumReportData language startDate limitDate allRecords records
+            generatePeripartumReportData language startDate limitDate scopeRecords recordsTillLimitDate
 
         captionsRow =
             viewStandardCells data.captions
@@ -2711,7 +2711,7 @@ generatePeripartumReportData :
     -> List PatientData
     -> List PatientData
     -> MetricsResultsTableData
-generatePeripartumReportData language startDate limitDate allRecords records =
+generatePeripartumReportData language startDate limitDate scopeRecords recordsTillLimitDate =
     let
         pregnanciesOf =
             List.map .prenatalData
@@ -2722,7 +2722,7 @@ generatePeripartumReportData language startDate limitDate allRecords records =
         -- visit in the range. Breastfeeding in the first hour is counted
         -- among these deliveries.
         pregnanciesDeliveredInRange =
-            pregnanciesOf allRecords
+            pregnanciesOf scopeRecords
                 |> List.filter
                     (.dateConcluded
                         >> Maybe.map (Date.isBetween startDate limitDate)
@@ -2766,7 +2766,7 @@ generatePeripartumReportData language startDate limitDate allRecords records =
         , generateRow Translate.TotalLiveBirths (totalLiveAtTerm + totalLivePreTerm)
         , generateRow Translate.TotalLivePreTermBirths totalLivePreTerm
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorPrematureOnsetContractions)
-            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions (pregnanciesOf records))
+            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions (pregnanciesOf recordsTillLimitDate))
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorBreastfedFirstHour)
             (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnanciesDeliveredInRange)
         ]
