@@ -253,9 +253,9 @@ singleton key value =
 {-| Combine two dictionaries. If there is a collision, preference is given
 to the first dictionary.
 
-If you are using this module as an ordered dictionary, the output keeps the
-second dictionary's order, then adds the first dictionary's other entries from
-most recently to least recently inserted.
+As an ordered dictionary, the output keeps the second dictionary's order, then
+adds the first dictionary's other entries from most recently to least recently
+inserted.
 
     union (fromList [ ( 1, "a" ), ( 2, "b" ) ]) (fromList [ ( 3, "c" ) ])
         |> toList

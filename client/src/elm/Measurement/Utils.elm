@@ -1394,7 +1394,8 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
         lastDoseData =
             List.filter (\( _, date ) -> date /= currentDate)
                 allDosesGivenData
-                |> List.Extra.maximumBy (Tuple.first >> vaccineDoseToComparable)
+                |> List.reverse
+                |> List.head
 
         historySection =
             case form.viewMode of
