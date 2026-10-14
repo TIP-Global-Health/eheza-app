@@ -132,7 +132,8 @@ to driving through the Chrome extension are in `chrome-extension.md`.
   meant to be.
 - **Wrong conclusion:** the click ran and the app did something else.
 - **Rule:** `"ok"` and `"error"` are the first lines of every reply. Never filter them out;
-  trim only the end.
+  trim only the end. A range such as `/"log"/,$p` prints nothing when the run logged nothing,
+  and the checks go with it: save the reply to a file and print `ok`, `error`, `value` and `checks`.
 
 ## Planning several rows on one fixture without checking how they interact
 

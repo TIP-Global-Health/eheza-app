@@ -228,7 +228,18 @@ flag simply does not appear.
   input, "Previous measurement: <cm>" or "No previous measurement on record". "Not taken" is
   stored as 0 cm with a `not-taken` note. A nurse's existing child is reopened through Clinical →
   Individual Encounter → Standard Pediatric Visit → search → forward icon, and a new visit
-  starts with "Standard Pediatric Visit Encounter".
+  starts with "Standard Pediatric Visit Encounter". A CHW takes it only at the newborn exam.
+- Head circumference for a boy aged 24 months: 38 cm is z −7.53 (microcephaly), 55 cm z 4.96
+  (macrocephaly), 48 cm normal. Beyond ±3 a `div.ui.active.modal.danger-signs-popup` warns, and the
+  reading saves only on its CONTINUE. The warning is kept on the visit (`field_encounter_warnings`;
+  on the device the `well_child_encounter` row's `encounter_warnings`), not on the measurement.
+- Nurse ECD at 24 months: 31 yes/no questions. All No gives an encounter-page popup ("Child is behind
+  on ECD milestones…", CONTINUE) and the warning `warning-ecd-milestone-refer-to-specialist`.
+- Well Child progress report (`#reports-tab`): Active Diagnosis lists the visit warnings as
+  `.entry.diagnosis` — "Microcephaly ONGOING 14/10/2026", "Missed ECD Milestone - 24 Mo …" — or
+  "No matches found". REVIEW PRIOR DIAGNOSIS swaps in the Prior Diagnosis pane.
+- `h.wellChild.createChildAndStartWellChildEncounter` always starts the visit. To stop on the
+  participant page, register by its steps up to `div.page-participant.individual.well-child`.
 - On the device, IndexedDB `sync` → `shards` holds each measurement with `type`, `person` (uuid),
   `date_measured`, `uuid`, `vid` and its own fields under the server names (`test_execution_note`,
   `test_prerequisites`, `sugar_count`) — no `nid`: the way to confirm what the tablet itself has.
@@ -268,13 +279,6 @@ flag simply does not appear.
   the forward arrow). An adult's record opens on the Acute Illness pane (`.pane.acute-illness`):
   one `.entry` per illness with a diagnosis — "<diagnosis> / ONGOING|RESOLVED / DD/MM/YYYY" — or
   "No matches found". An illness without a diagnosis is not listed.
-
-## Dashboard (CHW)
-
-- Main-menu card "Dashboards" opens CHW SNAPSHOT for the signed-in village. It shows a spinner until the device holds the health centre's statistics.
-- After a server reinstall no statistics exist: run `ddev drush advancedqueue-process-queue hedley_stats_calculate_stats --timeout=300` before pairing, and check the `cache` row `sync_stats_general_<hc nid>` exists.
-- Month selector: `.month-selector span.icon-back:not(.rotate-180)` goes back a month, `.label` reads "September 2026". Cards are `.dashboard-card.chw`, value in `.value`.
-- Akanduga belongs to Nyange (nid 4).
 
 ## Case Management
 
@@ -324,11 +328,17 @@ flag simply does not appear.
     Malaria RDT positive, not pregnant → Uncomplicated Malaria; Next Steps: Coartem Yes and
     Follow Up "1 Day".
 
-## CHW Dashboard
+## Dashboards
 
-- Main menu → DASHBOARDS opens "CHW SNAPSHOT" for the CHW's village. It shows a spinner until the
-  server's statistics for the health centre exist. A fresh local server has none: run
-  `ddev drush eval "hedley_stats_calculate_stats_for_health_center(4);"` (Nyange), then sync.
+- Main menu → DASHBOARDS (click handler on the card's `div.image`) opens "CHW SNAPSHOT" for the CHW's
+  village. It shows a spinner until the server's statistics for the health centre exist. A fresh
+  local server has none: run `ddev drush eval "hedley_stats_calculate_stats_for_health_center(4);"`
+  (Nyange, ~1 s, synchronous; the `cache` row `sync_stats_general_4` gets a new `created`), then sync.
+  Akanduga belongs to Nyange (nid 4).
+- **Nurse dashboard**: the same card opens a menu of `.page-filters` buttons — Antenatal Care, Child
+  Nutrition, Acute Illness, NCDs, Child Wellness, Group Education. Child Wellness → Nutrition
+  ("PEDIATRICS") holds "# of Micro/Macrocephaly" and "Total Encounters Completed", all from server
+  statistics, open visits included. A change shows only after upload, the recalculation and a sync.
 - The Case Management cards (Acute Illness, Home Visit, Antenatal Care) and Malaria/Covid/GI
   "Currently in Care" come from follow-ups on the tablet. They change as soon as a visit saves.
 - Every other card, including the Antenatal Care page's With Danger Signs, comes from those
