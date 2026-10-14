@@ -66,6 +66,8 @@ What changes because of this:
 
 🟡 **PR #2349 open 2026-10-14 (B-292, tier 2, issue #2348)** — Immunisation: for a child followed by Well Child AND Child Scoreboard, `mergeVaccinationProgressDicts` returned doses newest first, so the form's interval gate and "given previously" calendar read the FIRST dose (3,802 ihangane children). Merged doses now sorted with shared `sortByDose`; AssocList order docs corrected. Tests in `Measurement/Test.elm` (order tests fail pre-fix); elm make, 3392 elm-tests, elm-review, comment check green locally. Round 1 (mine): 3 fixed in `10bb0a190`, 4 declined. Round 2 (posted): 8 findings, approved fixes in `c7c581e10` (`maximumBy` undone, union doc trimmed), finding 7 → [[B-479]] tier 4; all threads replied and resolved. Worktree released. Awaiting CI + merge.
 
+🟡 **PR #2351 open 2026-10-14 (B-470, tier 3, issue #2350)** — Antenatal progress report: a moderate-anemia record holding the reinforce adherence answers now lists the three questions with Yes/No instead of "no treatment recorded"; Iron/Folic acid records unchanged. Re-measured first: 9 live encounters, ihangane only (the entry's 226 counted from the merge, not the deploy). 5 tests, 4 fail pre-fix. Review round 1 running.
+
 📌 **Merged 2026-10-14 with `--delete-branch`, all review threads resolved first:** #2337, #2339, #2341, #2343, #2345, #2347 (#2339 and #2343 are e2e-helper PRs, no backlog item). Issues #2336, #2338, #2340, #2342, #2344, #2346 stay open — `develop` target; close them in the release sweep.
 
 📌 **Merged 2026-10-13 with `--delete-branch`:** #2329, #2331, #2333, #2335 (threads on #2331/#2333 resolved first). Issues #2328, #2330, #2332, #2334 stay open — `develop` target; close them in the release sweep.
