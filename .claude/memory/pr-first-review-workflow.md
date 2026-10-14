@@ -21,6 +21,9 @@ another review (medium), and post the comments on the PR for me to see."*):
   Nothing posted to the PR, no approval wait; a short chat list of what was fixed or declined.
 - **Round 2 — the user's.** Medium review on the pushed head. Steps 3–5 below apply to it:
   post inline, analysis with links, wait for approval, then reply and resolve.
+- **Then suggest QA** (user, 2026-10-14: *"after second round of review is addressed, suggest if
+  it's worth testing the develoment with qa-tester skill"*). Say whether a `qa-tester` run is worth
+  it and why; suggest only, the user decides.
 
 Steps 2–5 below describe round 2 unless they say otherwise.
 
