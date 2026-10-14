@@ -5,6 +5,7 @@ import {
   backdateEncounter,
   clickSubTaskTab,
   expectGlucoseRangeRefusesMillimoles,
+  fillChildRegistrationFields,
   fillMeasurement,
   formInput,
   GLUCOSE_IN_RANGE,
@@ -1755,22 +1756,29 @@ export async function completePostpartumTreatmentReview(page: Page) {
 }
 
 /**
- * Complete PregnancyOutcome: fill delivery information.
- * This activity redirects to the outcome page.
+ * A pregnancy outcome, as the outcome form's dropdown values name it
+ * (pregnancyOutcomeToString in Backend/IndividualEncounterParticipant/Utils.elm).
  */
-export async function completePregnancyOutcome(page: Page) {
-  // Pregnancy Outcome uses a special page (div.page-outcome.pregnancy),
-  // not the standard activity page.
-  await click(page.locator('.icon-task-pregnancy-outcome'), page);
+export type PregnancyOutcome =
+  | 'live-at-term'
+  | 'live-pre-term'
+  | 'still-at-term'
+  | 'still-pre-term'
+  | 'abortions';
+
+/**
+ * Fill the open Pregnancy Outcome form — concluded today, delivered at a
+ * facility — and press Save.
+ */
+async function fillPregnancyOutcomeForm(page: Page, outcome: PregnancyOutcome) {
   await page.locator('div.page-outcome.pregnancy').waitFor({ timeout: 10000 });
   await page.waitForTimeout(WAIT.elmRerender);
 
   // 1. Date Pregnancy Concluded — calendar popup via .form-input.date.
   await setDate(page, new Date(), '.form-input.date');
 
-  // 2. Pregnancy Outcome — dropdown, select "Live Birth at Term".
-  const outcomeSelect = page.locator('select').first();
-  await outcomeSelect.selectOption({ index: 1 });
+  // 2. Pregnancy Outcome — dropdown.
+  await page.locator('select').first().selectOption(outcome);
   await page.waitForTimeout(WAIT.formInteraction);
 
   // 3. Delivery Location — bool input (Facility/Home).
@@ -1779,11 +1787,25 @@ export async function completePregnancyOutcome(page: Page) {
     page,
   );
 
-  // Save.
   await click(
     page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
     page,
   );
+}
+
+/**
+ * Complete PregnancyOutcome: fill delivery information.
+ * This activity redirects to the outcome page.
+ * Default outcome: live birth at term.
+ */
+export async function completePregnancyOutcome(
+  page: Page,
+  options?: { outcome?: PregnancyOutcome },
+) {
+  // Pregnancy Outcome uses a special page (div.page-outcome.pregnancy),
+  // not the standard activity page.
+  await click(page.locator('.icon-task-pregnancy-outcome'), page);
+  await fillPregnancyOutcomeForm(page, options?.outcome ?? 'live-at-term');
 
   // Wait for return to encounter page.
   await page
@@ -1797,14 +1819,10 @@ export async function completePregnancyOutcome(page: Page) {
  * Clicks "Record Pregnancy Outcome", fills the form, and saves.
  * After saving, the app navigates to PinCodePage.
  *
- * Default outcome: "Live Birth at Term" (dropdown index 1).
- * With { preTerm: true }: "Live Birth Pre-Term" (dropdown index 2) —
- * used to exercise the Peripartum report's "Preterm birth newborns"
- * row. The dropdown order is fixed by allPregnancyOutcome in
- * client/src/elm/Backend/IndividualEncounterParticipant/Model.elm
- * (LiveAtTerm, LivePreTerm, StillAtTerm, StillPreTerm, Abortions).
- * `liveChildBorn` treats both LiveAtTerm and LivePreTerm identically,
- * so postpartum-encounter activity expectations are unchanged.
+ * Default outcome: live birth at term. With { preTerm: true }: live
+ * birth pre-term — used to exercise the Peripartum report's "Preterm
+ * birth newborns" row. `liveChildBorn` treats both identically, so
+ * postpartum-encounter activity expectations are unchanged.
  */
 export async function recordPregnancyOutcome(
   page: Page,
@@ -1814,29 +1832,78 @@ export async function recordPregnancyOutcome(
     page.locator('div.ui.primary.button', { hasText: 'Record Pregnancy Outcome' }),
     page,
   );
-  await page.locator('div.page-outcome.pregnancy').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(WAIT.elmRerender);
+  await fillPregnancyOutcomeForm(page, options?.preTerm ? 'live-pre-term' : 'live-at-term');
 
-  // 1. Date Pregnancy Concluded — calendar popup via .form-input.date.
-  await setDate(page, new Date(), '.form-input.date');
-
-  // 2. Pregnancy Outcome — dropdown.
-  const outcomeSelect = page.locator('select').first();
-  await outcomeSelect.selectOption({ index: options?.preTerm ? 2 : 1 });
-  await page.waitForTimeout(WAIT.formInteraction);
-
-  // 3. Delivery Location — bool input (Facility/Home).
-  await click(
-    page.locator('.form-input.yes-no.delivery-location label', { hasText: 'Facility' }),
-    page,
-  );
-
-  // Save — navigates to PinCodePage.
-  await click(
-    page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
-    page,
-  );
+  // Save navigates to PinCodePage.
   await page.waitForTimeout(WAIT.heavyOperation);
+}
+
+/**
+ * Complete a CHW postpartum visit, starting on its encounter page:
+ * Pregnancy Outcome, Danger Signs with none for mother and child, and
+ * Next Steps, whose Health Education questions are all answered Yes.
+ *
+ * After a live birth, Next Steps also enrols the newborn: the baby is
+ * registered as `E2ETest <newbornFirstName>`, born on the conclusion date.
+ *
+ * Ends on the progress report that carries End Encounter; follow with
+ * endPrenatalEncounter. Returns the newborn's full name, or null.
+ */
+export async function completeChwPostpartumVisit(
+  page: Page,
+  options?: { outcome?: PregnancyOutcome; newbornFirstName?: string },
+): Promise<string | null> {
+  const outcome = options?.outcome ?? 'live-at-term';
+  await completePregnancyOutcome(page, { outcome });
+
+  // Danger Signs: one "None of these" for the mother, one for the child.
+  await openActivity(page, 'prenatal', 'danger-signs');
+  const noSigns = page.locator('.ui.checkbox label', { hasText: 'None of these' });
+  await noSigns.first().waitFor({ timeout: 10000 });
+  for (const label of await noSigns.all()) {
+    await click(label, page);
+  }
+  await saveActivity(page, 'prenatal');
+
+  // Next Steps → Health Education.
+  await openActivity(page, 'prenatal', 'next-steps');
+  const yesLabels = page.locator('.form-input.yes-no label', { hasText: /^Yes$/ });
+  await yesLabels.first().waitFor({ timeout: 10000 });
+  for (const label of await yesLabels.all()) {
+    await click(label, page);
+  }
+
+  let newbornName: string | null = null;
+  if (outcome === 'live-at-term' || outcome === 'live-pre-term') {
+    await saveSubTask(page);
+
+    // Next Steps → Newborn Enrollment opens the registration form, with the
+    // date of birth already set; saving it returns to Next Steps.
+    await click(page.locator('button', { hasText: 'Enroll Newborn' }), page);
+    await formInput(page, 'First Name:').waitFor({ timeout: 10000 });
+    const newborn = await fillChildRegistrationFields(
+      page,
+      options?.newbornFirstName ?? `Newborn${Date.now()}`,
+      false,
+    );
+    await click(page.locator('button[type="submit"]'), page);
+    await page
+      .locator('div.page-activity.prenatal', { hasText: 'Newborn is already enrolled' })
+      .waitFor({ timeout: 15000 });
+    newbornName = newborn.fullName;
+  }
+
+  // Saving the last task opens the progress report.
+  await click(
+    page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' }),
+    page,
+  );
+  await page
+    .locator('button', { hasText: 'End Encounter' })
+    .first()
+    .waitFor({ timeout: 15000 });
+
+  return newbornName;
 }
 
 // ---------------------------------------------------------------------------
