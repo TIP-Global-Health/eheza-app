@@ -18711,8 +18711,8 @@ var $author$project$Translate$PrenatalIndicatorLabel = function (a) {
 	return {$: 'PrenatalIndicatorLabel', a: a};
 };
 var $author$project$Translate$TotalLivePreTermBirths = {$: 'TotalLivePreTermBirths'};
-var $author$project$Pages$Reports$View$generatePeripartumReportData = F2(
-	function (language, records) {
+var $author$project$Pages$Reports$View$generatePeripartumReportData = F5(
+	function (language, startDate, limitDate, allRecords, records) {
 		var pregnanciesWithIndicator = function (indicator) {
 			return $elm$core$List$filter(
 				A2(
@@ -18728,14 +18728,26 @@ var $author$project$Pages$Reports$View$generatePeripartumReportData = F2(
 							},
 							$elm$core$List$member(indicator)))));
 		};
-		var pregnancies = $elm$core$List$concat(
-			$elm_community$maybe_extra$Maybe$Extra$values(
+		var pregnanciesOf = A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$map(
+				function ($) {
+					return $.prenatalData;
+				}),
+			A2($elm$core$Basics$composeR, $elm_community$maybe_extra$Maybe$Extra$values, $elm$core$List$concat));
+		var pregnanciesDeliveredInRange = A2(
+			$elm$core$List$filter,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.dateConcluded;
+				},
 				A2(
-					$elm$core$List$map,
-					function ($) {
-						return $.prenatalData;
-					},
-					records)));
+					$elm$core$Basics$composeR,
+					$elm$core$Maybe$map(
+						A2($justinmimbs$date$Date$isBetween, startDate, limitDate)),
+					$elm$core$Maybe$withDefault(false))),
+			pregnanciesOf(allRecords));
 		var countPregnanciesByOutcome = function (outcome) {
 			return $elm$core$List$length(
 				A2(
@@ -18747,12 +18759,13 @@ var $author$project$Pages$Reports$View$generatePeripartumReportData = F2(
 						},
 						$elm$core$Basics$eq(
 							$elm$core$Maybe$Just(outcome))),
-					pregnancies));
+					pregnanciesDeliveredInRange));
 		};
 		var totalLiveAtTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeLiveAtTerm);
 		var totalLivePreTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeLivePreTerm);
 		var totalStillAtTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeStillAtTerm);
 		var totalStillPreTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeStillPreTerm);
+		var pregnancies = pregnanciesOf(records);
 		var generateRow = F2(
 			function (label, value) {
 				return _List_fromArray(
@@ -18786,11 +18799,11 @@ var $author$project$Pages$Reports$View$generatePeripartumReportData = F2(
 				])
 		};
 	});
-var $author$project$Pages$Reports$View$viewPeripartumReport = F4(
-	function (language, limitDate, scopeLabel, records) {
+var $author$project$Pages$Reports$View$viewPeripartumReport = F6(
+	function (language, startDate, limitDate, scopeLabel, allRecords, records) {
 		var csvFileName = 'peripartum-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
-		var data = A2($author$project$Pages$Reports$View$generatePeripartumReportData, language, records);
+		var data = A5($author$project$Pages$Reports$View$generatePeripartumReportData, language, startDate, limitDate, allRecords, records);
 		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
@@ -21491,7 +21504,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 											case 'ReportNutrition':
 												return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
 											case 'ReportPeripartum':
-												return A4($author$project$Pages$Reports$View$viewPeripartumReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+												return A6($author$project$Pages$Reports$View$viewPeripartumReport, language, startDate, limitDate, scopeLabel, data.records, recordsTillLimitDate);
 											case 'ReportPostnatalCare':
 												return A5($author$project$Pages$Reports$View$viewPostnatalCareReport, language, data.site, limitDate, scopeLabel, recordsTillLimitDate);
 											case 'ReportPrenatal':
