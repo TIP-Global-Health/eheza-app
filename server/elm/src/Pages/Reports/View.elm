@@ -2718,11 +2718,9 @@ generatePeripartumReportData language startDate limitDate allRecords records =
                 >> Maybe.Extra.values
                 >> List.concat
 
-        pregnancies =
-            pregnanciesOf records
-
-        -- A delivery counts when its date is in the range, whether or not
-        -- the pregnancy had a visit in the range.
+        -- A delivery counts when its date is in the range, even with no
+        -- visit in the range. Breastfeeding in the first hour is counted
+        -- among these deliveries.
         pregnanciesDeliveredInRange =
             pregnanciesOf allRecords
                 |> List.filter
@@ -2768,9 +2766,9 @@ generatePeripartumReportData language startDate limitDate allRecords records =
         , generateRow Translate.TotalLiveBirths (totalLiveAtTerm + totalLivePreTerm)
         , generateRow Translate.TotalLivePreTermBirths totalLivePreTerm
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorPrematureOnsetContractions)
-            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnancies)
+            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions (pregnanciesOf records))
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorBreastfedFirstHour)
-            (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnancies)
+            (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnanciesDeliveredInRange)
         ]
     }
 

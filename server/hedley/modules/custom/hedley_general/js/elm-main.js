@@ -18765,7 +18765,6 @@ var $author$project$Pages$Reports$View$generatePeripartumReportData = F5(
 		var totalLivePreTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeLivePreTerm);
 		var totalStillAtTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeStillAtTerm);
 		var totalStillPreTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeStillPreTerm);
-		var pregnancies = pregnanciesOf(records);
 		var generateRow = F2(
 			function (label, value) {
 				return _List_fromArray(
@@ -18784,12 +18783,15 @@ var $author$project$Pages$Reports$View$generatePeripartumReportData = F5(
 					generateRow,
 					$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions),
 					$elm$core$List$length(
-						A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions, pregnancies))),
+						A2(
+							pregnanciesWithIndicator,
+							$author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions,
+							pregnanciesOf(records)))),
 					A2(
 					generateRow,
 					$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour),
 					$elm$core$List$length(
-						A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour, pregnancies)))
+						A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour, pregnanciesDeliveredInRange)))
 				]),
 			heading: '',
 			captions: _List_fromArray(
