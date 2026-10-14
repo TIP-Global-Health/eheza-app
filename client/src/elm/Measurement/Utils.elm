@@ -1394,8 +1394,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
         lastDoseData =
             List.filter (\( _, date ) -> date /= currentDate)
                 allDosesGivenData
-                |> List.reverse
-                |> List.head
+                |> List.Extra.maximumBy (Tuple.first >> vaccineDoseToComparable)
 
         historySection =
             case form.viewMode of
@@ -10268,8 +10267,8 @@ mergeVaccinationProgressDicts dict1 dict2 =
                 dosesDict1
                 dosesDict2
                 Dict.empty
-                -- Dict.merge returns the doses in reverse order. Readers
-                -- expect dose order, as for a child followed by one program.
+                -- The steps above add each dose at the end in the order merge
+                -- visits them, which is not dose order. Put them back in dose order.
                 |> Dict.toList
                 |> sortByDose
                 |> Dict.fromList

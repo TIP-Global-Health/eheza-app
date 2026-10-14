@@ -274,22 +274,31 @@ mergeVaccinationProgressDictsTest =
         date day month year =
             Date.fromCalendarDate year month day
 
+        wellChildProgress doses =
+            Dict.fromList [ ( VaccineOPV, Dict.fromList doses ), ( VaccineBCG, Dict.empty ) ]
+
         -- The OPV doses of a child followed by both Well Child and Child Scoreboard.
         mergedOPVDoses wellChildDoses childScoreboardDoses =
             mergeVaccinationProgressDicts
-                (Dict.fromList [ ( VaccineOPV, Dict.fromList wellChildDoses ), ( VaccineBCG, Dict.empty ) ])
+                (wellChildProgress wellChildDoses)
                 (Dict.fromList [ ( VaccineOPV, Dict.fromList childScoreboardDoses ), ( VaccineBCG, Dict.empty ) ])
                 |> Dict.get VaccineOPV
                 |> Maybe.map Dict.toList
+
+        firstTwoDoses =
+            [ ( VaccineDoseFirst, date 1 Oct 2025 ), ( VaccineDoseSecond, date 15 Aug 2026 ) ]
     in
     describe "mergeVaccinationProgressDicts"
-        [ test "keeps the doses of one program in dose order" <|
+        [ test "keeps the doses in dose order for a child followed by one program" <|
             \_ ->
-                mergedOPVDoses
-                    [ ( VaccineDoseFirst, date 1 Oct 2025 ), ( VaccineDoseSecond, date 15 Aug 2026 ) ]
-                    []
-                    |> Expect.equal
-                        (Just [ ( VaccineDoseFirst, date 1 Oct 2025 ), ( VaccineDoseSecond, date 15 Aug 2026 ) ])
+                mergeVaccinationProgressDicts (wellChildProgress firstTwoDoses) Dict.empty
+                    |> Dict.get VaccineOPV
+                    |> Maybe.map Dict.toList
+                    |> Expect.equal (Just firstTwoDoses)
+        , test "keeps the doses in dose order when the other program has none" <|
+            \_ ->
+                mergedOPVDoses firstTwoDoses []
+                    |> Expect.equal (Just firstTwoDoses)
         , test "puts doses recorded by both programs in dose order" <|
             \_ ->
                 mergedOPVDoses
