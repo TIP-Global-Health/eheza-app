@@ -1,11 +1,14 @@
 module Pages.Dashboard.Test exposing (all)
 
 import AssocList as Dict
+import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
 import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStatsRaw, NutritionStatus(..), NutritionValue, PersonIdentifier, PrenatalDataItem, PrenatalEncounterDataItem, SPVDataItem, SPVEncounterDataItem)
-import Backend.Measurement.Model exposing (Gender(..))
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Backend.Measurement.Model exposing (DangerSign(..), FollowUpOption(..), Gender(..), PrenatalAssesment(..))
+import Backend.Model exposing (emptyModelIndexedDb)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), emptyPrenatalEncounter)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Date
 import EverySet
@@ -14,8 +17,11 @@ import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode
 import Json.Encode
 import Pages.Dashboard.Model exposing (ECDStatus(..))
-import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, countCurrentlyPregnantForSelectedMonth, dataItemMergeDuplicates, resolveECDStatus)
+import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, dataItemMergeDuplicates, getFollowUpsTotals, resolveDayAfterSelectedDate, resolveECDStatus)
+import RemoteData
+import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (testPerson)
 import Time
 
 
@@ -427,6 +433,218 @@ dataItemMergeDuplicatesTest =
         ]
 
 
+{-| The Case Management cards count the follow ups that were open on the
+selected date: a past month's last day, or today for the current month.
+-}
+followUpsTotalsTest : Test
+followUpsTotalsTest =
+    let
+        date =
+            Date.fromCalendarDate 2026
+
+        villageId =
+            toEntityUuid "village"
+
+        personId =
+            toEntityUuid "person"
+
+        illnessId =
+            toEntityUuid "illness"
+
+        pregnancyId =
+            toEntityUuid "pregnancy"
+
+        augustVisit =
+            toEntityUuid "august-visit"
+
+        septemberVisit =
+            toEntityUuid "september-visit"
+
+        acuteIllnessEncounters =
+            Dict.fromList
+                [ ( augustVisit, emptyAcuteIllnessEncounter illnessId (date Time.Aug 20) 1 AcuteIllnessEncounterCHW Nothing )
+                , ( septemberVisit, emptyAcuteIllnessEncounter illnessId (date Time.Sep 10) 2 AcuteIllnessEncounterCHW Nothing )
+                ]
+
+        prenatalEncounters =
+            Dict.fromList
+                [ ( augustVisit, emptyPrenatalEncounter pregnancyId (date Time.Aug 20) ChwFirstEncounter Nothing )
+                , ( septemberVisit, emptyPrenatalEncounter pregnancyId (date Time.Sep 10) ChwSecondEncounter Nothing )
+                ]
+
+        db =
+            { emptyModelIndexedDb
+                | people = Dict.singleton personId (RemoteData.Success testPerson)
+                , peopleInVillage =
+                    Dict.singleton villageId
+                        (RemoteData.Success (Dict.singleton personId testPerson))
+                , acuteIllnessEncounters = Dict.map (\_ encounter -> RemoteData.Success encounter) acuteIllnessEncounters
+                , acuteIllnessEncountersByParticipant = Dict.singleton illnessId (RemoteData.Success acuteIllnessEncounters)
+                , prenatalEncounters = Dict.map (\_ encounter -> RemoteData.Success encounter) prenatalEncounters
+                , prenatalEncountersByParticipant = Dict.singleton pregnancyId (RemoteData.Success prenatalEncounters)
+            }
+
+        measurement id dateMeasured encounterId value =
+            ( toEntityUuid id
+            , { dateMeasured = dateMeasured
+              , nurse = Nothing
+              , healthCenter = Nothing
+              , participantId = personId
+              , deleted = False
+              , encounterId = encounterId
+              , value = value
+              }
+            )
+
+        nutritionFollowUp id dateMeasured option =
+            measurement id
+                dateMeasured
+                Nothing
+                { options = EverySet.singleton option
+                , resolutionDate = Nothing
+                , assesment = EverySet.empty
+                }
+
+        acuteIllnessFollowUp id dateMeasured encounterId =
+            measurement id
+                dateMeasured
+                (Just encounterId)
+                { options = EverySet.singleton OneWeek
+                , resolutionDate = Nothing
+                , diagnosis = Just DiagnosisMalariaUncomplicated
+                }
+
+        prenatalFollowUp id dateMeasured encounterId =
+            measurement id
+                dateMeasured
+                (Just encounterId)
+                { options = EverySet.singleton OneWeek
+                , resolutionDate = Nothing
+                , assesment = AssesmentNormalPregnancy
+                }
+
+        noFollowUps =
+            { nutritionGroup = Dict.empty
+            , nutritionIndividual = Dict.empty
+            , acuteIllness = Dict.empty
+            , prenatal = Dict.empty
+            , wellChild = Dict.empty
+            , tuberculosis = Dict.empty
+            , hiv = Dict.empty
+            , traceContacts = Dict.empty
+            , prenatalLabs = Dict.empty
+            , ncdLabs = Dict.empty
+            , nextVisit = Dict.empty
+            }
+
+        totals selectedDate followUps =
+            getFollowUpsTotals selectedDate
+                (resolveDayAfterSelectedDate selectedDate)
+                db
+                villageId
+                followUps
+
+        homeVisits selectedDate nutritionFollowUps =
+            let
+                ( nutrition, _, _ ) =
+                    totals selectedDate { noFollowUps | nutritionIndividual = Dict.fromList nutritionFollowUps }
+            in
+            nutrition
+
+        lastDayOfAugust =
+            date Time.Aug 31
+    in
+    describe "getFollowUpsTotals"
+        [ test "Home Visit counts a follow up written during the selected past month" <|
+            \_ ->
+                homeVisits lastDayOfAugust [ nutritionFollowUp "august" (date Time.Aug 20) OneMonth ]
+                    |> Expect.equal 1
+        , test "Home Visit does not count a follow up written after the selected past month" <|
+            \_ ->
+                homeVisits lastDayOfAugust [ nutritionFollowUp "september" (date Time.Sep 10) OneDay ]
+                    |> Expect.equal 0
+        , test "Home Visit counts the child when a later follow up falls due before the past month's own" <|
+            \_ ->
+                homeVisits lastDayOfAugust
+                    [ nutritionFollowUp "august" (date Time.Aug 20) OneMonth
+                    , nutritionFollowUp "september" (date Time.Sep 10) OneDay
+                    ]
+                    |> Expect.equal 1
+        , test "Home Visit counts a follow up written today on the first day of the month" <|
+            \_ ->
+                homeVisits (date Time.Oct 1) [ nutritionFollowUp "today" (date Time.Oct 1) OneDay ]
+                    |> Expect.equal 1
+        , test "Acute Illness counts an illness followed up in the past month, although a later visit followed it up again" <|
+            \_ ->
+                totals lastDayOfAugust
+                    { noFollowUps
+                        | acuteIllness =
+                            Dict.fromList
+                                [ acuteIllnessFollowUp "august" (date Time.Aug 20) augustVisit
+                                , acuteIllnessFollowUp "september" (date Time.Sep 10) septemberVisit
+                                ]
+                    }
+                    |> Expect.equal ( 0, 1, 0 )
+        , test "Antenatal Care counts a pregnancy followed up in the past month, although a later visit followed it up again" <|
+            \_ ->
+                totals lastDayOfAugust
+                    { noFollowUps
+                        | prenatal =
+                            Dict.fromList
+                                [ prenatalFollowUp "august" (date Time.Aug 20) augustVisit
+                                , prenatalFollowUp "september" (date Time.Sep 10) septemberVisit
+                                ]
+                    }
+                    |> Expect.equal ( 0, 0, 1 )
+        ]
+
+
+resolveDayAfterSelectedDateTest : Test
+resolveDayAfterSelectedDateTest =
+    describe "resolveDayAfterSelectedDate"
+        [ test "a past month's last day gives the first day of the next month" <|
+            \_ ->
+                resolveDayAfterSelectedDate (Date.fromCalendarDate 2026 Time.Aug 31)
+                    |> Expect.equal (Date.fromCalendarDate 2026 Time.Sep 1)
+        , test "the first day of the current month gives the day after it" <|
+            \_ ->
+                resolveDayAfterSelectedDate (Date.fromCalendarDate 2026 Time.Oct 1)
+                    |> Expect.equal (Date.fromCalendarDate 2026 Time.Oct 2)
+        ]
+
+
+countCurrentlyPregnantWithDangerSignsForSelectedMonthTest : Test
+countCurrentlyPregnantWithDangerSignsForSelectedMonthTest =
+    let
+        firstOfOctober =
+            Date.fromCalendarDate 2026 Time.Oct 1
+
+        pregnancy =
+            openPregnancyRegisteredOn (Date.fromCalendarDate 2026 Time.Mar 10)
+
+        encounterWith dangerSign startDate =
+            let
+                encounter =
+                    prenatalEncounterOn startDate
+            in
+            { encounter | dangerSigns = EverySet.singleton dangerSign }
+    in
+    describe "countCurrentlyPregnantWithDangerSignsForSelectedMonth"
+        [ test "an encounter today without danger signs clears last month's, on the first day of the month" <|
+            \_ ->
+                countCurrentlyPregnantWithDangerSignsForSelectedMonth firstOfOctober
+                    False
+                    [ { pregnancy
+                        | encounters =
+                            [ encounterWith VaginalBleeding (Date.fromCalendarDate 2026 Time.Sep 15)
+                            , encounterWith NoDangerSign firstOfOctober
+                            ]
+                      }
+                    ]
+                    |> Expect.equal 0
+        ]
+
+
 all : Test
 all =
     describe "Pages.Dashboard.Utils"
@@ -434,6 +652,9 @@ all =
         , countChildrenSeenForSelectedMonthTest
         , countCurrentlyPregnantForSelectedMonthTest
         , resolveECDStatusTest
+        , countCurrentlyPregnantWithDangerSignsForSelectedMonthTest
         , dataItemMergeDuplicatesTest
+        , followUpsTotalsTest
+        , resolveDayAfterSelectedDateTest
         , statsStorageRoundTripTest
         ]
