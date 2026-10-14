@@ -10,6 +10,7 @@ import Backend.Measurement.Model
         , CorePhysicalExamValue
         , DangerSign(..)
         , DangerSignsValue
+        , FollowUpOption(..)
         , HIVPCRTestValue
         , HIVTestValue
         , HemoglobinTestValue
@@ -56,7 +57,7 @@ import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateH
 import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, resolveNextStepsTasks, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, resolveNextStepsTasks, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), emptyHealthEducationForm)
 import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedPreviouslyAnyOf, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
@@ -2392,6 +2393,21 @@ nextVisitTaskTest =
         asksNextVisit assembled =
             resolveNextStepsTasks currentDate assembled
                 |> List.member NextStepsNextVisit
+
+        -- The CHW's other Next Steps tasks on a visit without danger signs.
+        withAppointmentAndFollowUp measurements =
+            { measurements
+                | appointmentConfirmation = wrapMeasurement { date = Date.add Date.Weeks 4 currentDate }
+                , followUp =
+                    wrapMeasurement
+                        { options = EverySet.singleton OneDay
+                        , resolutionDate = Nothing
+                        , assesment = AssesmentNormalPregnancy
+                        }
+            }
+
+        nextStepsCompleted assembled =
+            activityCompleted currentDate SiteRwanda EverySet.empty assembled Backend.PrenatalActivity.Model.NextSteps
     in
     describe "Next Steps › Next ANC Visit"
         [ test "CHW visit 2 on an undated pregnancy does not ask for it" <|
@@ -2413,6 +2429,19 @@ nextVisitTaskTest =
                 testAssembled emptyPrenatalMeasurements
                     |> undated
                     |> asksNextVisit
+                    |> Expect.equal False
+        , test "CHW visit 2 on an undated pregnancy completes Next Steps once its other tasks are saved" <|
+            \_ ->
+                testAssembled (withAppointmentAndFollowUp emptyPrenatalMeasurements)
+                    |> withEncounterType ChwSecondEncounter
+                    |> undated
+                    |> nextStepsCompleted
+                    |> Expect.equal True
+        , test "CHW visit 2 on a dated pregnancy still needs Next ANC Visit to complete Next Steps" <|
+            \_ ->
+                testAssembled (withAppointmentAndFollowUp emptyPrenatalMeasurements)
+                    |> withEncounterType ChwSecondEncounter
+                    |> nextStepsCompleted
                     |> Expect.equal False
         , test "CHW visit 2 on a dated pregnancy asks for it" <|
             \_ ->
