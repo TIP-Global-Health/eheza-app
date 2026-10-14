@@ -35,6 +35,7 @@ import Backend.WellChildEncounter.Model
         , PediatricCareMilestone(..)
         , WellChildEncounter
         , ecdMilestoneWarnings
+        , hasWarningFrom
         , headCircumferenceWarnings
         , pediatricCareMilestones
         )
@@ -928,7 +929,7 @@ generatePartitionedWarningEntries db maybeAssembled =
                 dateOfLastEncounterWithWarningFrom warningsSet =
                     List.filterMap
                         (\( _, encounter ) ->
-                            if List.any (\warning -> EverySet.member warning encounter.encounterWarnings) warningsSet then
+                            if hasWarningFrom warningsSet encounter.encounterWarnings then
                                 Just encounter.startDate
 
                             else
