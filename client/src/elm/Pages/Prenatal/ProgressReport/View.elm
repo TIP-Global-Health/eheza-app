@@ -2186,6 +2186,13 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         diagnosisForProgressReport =
             diagnosisForProgressReportToString language diagnosis
 
+        diagnosisOnDateMessage =
+            diagnosisForProgressReport
+                ++ " "
+                ++ (String.toLower <| translate language Translate.On)
+                ++ " "
+                ++ formatDDMMYYYY date
+
         hypertensionTreatmentMessage =
             getMeasurementValueFunc measurements.medicationDistribution
                 |> Maybe.andThen .recommendedTreatmentSigns
@@ -2493,16 +2500,8 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Aspirin
                             |> Maybe.map
                                 (\treatmentMessage ->
-                                    let
-                                        diagnosisMessage =
-                                            diagnosisForProgressReport
-                                                ++ " "
-                                                ++ (String.toLower <| translate language Translate.On)
-                                                ++ " "
-                                                ++ formatDDMMYYYY date
-                                    in
                                     [ li []
-                                        [ p [] [ text diagnosisMessage ]
+                                        [ p [] [ text diagnosisOnDateMessage ]
                                         , p [] [ text treatmentMessage ]
                                         ]
                                     ]
@@ -2535,11 +2534,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> wrapWithLI
 
         noTreatmentAdministeredMessage =
-            diagnosisForProgressReport
-                ++ " "
-                ++ (String.toLower <| translate language Translate.On)
-                ++ " "
-                ++ formatDDMMYYYY date
+            diagnosisOnDateMessage
                 ++ " - "
                 ++ (String.toLower <| translate language Translate.NoTreatmentAdministered)
                 |> wrapWithLI
@@ -2604,16 +2599,8 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                         in
                                         Maybe.map2
                                             (\tdf3TCTreatmentMessage dolutegravirTreatmentmessage ->
-                                                let
-                                                    diagnosisMessage =
-                                                        diagnosisForProgressReport
-                                                            ++ " "
-                                                            ++ (String.toLower <| translate language Translate.On)
-                                                            ++ " "
-                                                            ++ formatDDMMYYYY date
-                                                in
                                                 [ li []
-                                                    [ p [] [ text diagnosisMessage ]
+                                                    [ p [] [ text diagnosisOnDateMessage ]
                                                     , p [] [ text tdf3TCTreatmentMessage ]
                                                     , p [] [ text dolutegravirTreatmentmessage ]
                                                     ]
@@ -2659,16 +2646,8 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         treatmentMessageForMedication value.distributionSigns nonAdministrationReasons TDF3TC
                             |> Maybe.map
                                 (\tdf3TCTreatmentMessage ->
-                                    let
-                                        diagnosisMessage =
-                                            diagnosisForProgressReport
-                                                ++ " "
-                                                ++ (String.toLower <| translate language Translate.On)
-                                                ++ " "
-                                                ++ formatDDMMYYYY date
-                                    in
                                     [ li []
-                                        [ p [] [ text diagnosisMessage ]
+                                        [ p [] [ text diagnosisOnDateMessage ]
                                         , p [] [ text tdf3TCTreatmentMessage ]
                                         ]
                                     ]
@@ -2787,49 +2766,38 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.andThen
                     (\value ->
                         let
-                            diagnosisMessage =
-                                diagnosisForProgressReport
-                                    ++ " "
-                                    ++ (String.toLower <| translate language Translate.On)
-                                    ++ " "
-                                    ++ formatDDMMYYYY date
-
                             withDiagnosisMessage treatmentMessages =
                                 [ li [] <|
-                                    p [] [ text diagnosisMessage ]
+                                    p [] [ text diagnosisOnDateMessage ]
                                         :: List.map (\message -> p [] [ text message ]) treatmentMessages
                                 ]
                         in
                         case value.reinforceTreatmentSigns of
                             Just reinforceSigns ->
-                                if EverySet.member NoReinforceTreatmentSigns reinforceSigns then
-                                    Just noTreatmentAdministeredMessage
+                                -- Each reinforce question with the nurse's answer.
+                                -- A sign missing from the set was answered No.
+                                let
+                                    answerMessage question sign =
+                                        let
+                                            answer =
+                                                if EverySet.member sign reinforceSigns then
+                                                    Translate.Yes
 
-                                else
-                                    -- Each reinforce question with the nurse's answer.
-                                    -- A sign missing from the set was answered No.
-                                    let
-                                        answerMessage question sign =
-                                            let
-                                                answer =
-                                                    if EverySet.member sign reinforceSigns then
-                                                        Translate.Yes
+                                                else
+                                                    Translate.No
+                                        in
+                                        question ++ ": " ++ translate language answer
 
-                                                    else
-                                                        Translate.No
-                                            in
-                                            question ++ ": " ++ translate language answer
-
-                                        adherenceQuestion =
-                                            Translate.MedicationDistributionSign
-                                                >> Measurement.Utils.reinforceAdherenceQuestion language
-                                    in
-                                    withDiagnosisMessage
-                                        [ answerMessage (adherenceQuestion Fefol) ReinforceSignFefol
-                                        , answerMessage (adherenceQuestion MMS) ReinforceSignMMS
-                                        , answerMessage (translate language Translate.RepeatHemoglobinTestQuestion) ReinforceSignRepeatHemoglobinTest
-                                        ]
-                                        |> Just
+                                    adherenceQuestion =
+                                        Translate.MedicationDistributionSign
+                                            >> Measurement.Utils.reinforceAdherenceQuestion language
+                                in
+                                withDiagnosisMessage
+                                    [ answerMessage (adherenceQuestion Fefol) ReinforceSignFefol
+                                    , answerMessage (adherenceQuestion MMS) ReinforceSignMMS
+                                    , answerMessage (translate language Translate.RepeatHemoglobinTestQuestion) ReinforceSignRepeatHemoglobinTest
+                                    ]
+                                    |> Just
 
                             -- Without reinforce answers, the line lists Iron and Folic acid.
                             Nothing ->
@@ -3079,16 +3047,8 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         in
                         Maybe.map2
                             (\ceftriaxoneMessage azithromycinMessage ->
-                                let
-                                    diagnosisMessage =
-                                        diagnosisForProgressReport
-                                            ++ " "
-                                            ++ (String.toLower <| translate language Translate.On)
-                                            ++ " "
-                                            ++ formatDDMMYYYY date
-                                in
                                 [ li []
-                                    [ p [] [ text diagnosisMessage ]
+                                    [ p [] [ text diagnosisOnDateMessage ]
                                     , p [] [ text ceftriaxoneMessage ]
                                     , p [] [ text azithromycinMessage ]
                                     ]

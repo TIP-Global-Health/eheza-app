@@ -12,6 +12,7 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Html
+import Measurement.Utils exposing (reinforceAdherenceQuestion)
 import Pages.Prenatal.ProgressReport.View exposing (viewTreatmentForDiagnosis, viewTreatmentForOutsideCareDiagnosis)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
@@ -187,11 +188,7 @@ renderAnemia diagnosis distributionSigns reinforceSigns =
 
 adherenceAnswer : MedicationDistributionSign -> String -> String
 adherenceAnswer medication answer =
-    translate English Translate.ReinforceAdherenceQuestion
-        ++ " "
-        ++ translate English (Translate.MedicationDistributionSign medication)
-        ++ ": "
-        ++ answer
+    reinforceAdherenceQuestion English (Translate.MedicationDistributionSign medication) ++ ": " ++ answer
 
 
 repeatTestAnswer : String -> String
@@ -226,12 +223,13 @@ moderateAnemiaTreatmentTest =
                         , Query.has [ text (adherenceAnswer MMS "Yes") ]
                         , Query.has [ text (repeatTestAnswer "No") ]
                         ]
-        , test "all answers No read no treatment administered" <|
+        , test "all answers No are listed, not no treatment recorded" <|
             \_ ->
                 renderAnemia DiagnosisModerateAnemiaInitialPhase [] (Just [ NoReinforceTreatmentSigns ])
                     |> Expect.all
-                        [ Query.has [ text (String.toLower (translate English Translate.NoTreatmentAdministered)) ]
-                        , Query.hasNot [ text (translate English Translate.ReinforceAdherenceQuestion) ]
+                        [ Query.has [ text (adherenceAnswer Fefol "No") ]
+                        , Query.has [ text (adherenceAnswer MMS "No") ]
+                        , Query.has [ text (repeatTestAnswer "No") ]
                         , Query.hasNot [ text noTreatmentRecorded ]
                         ]
         , test "the recurrent phase lists the same answers" <|
