@@ -1,4 +1,4 @@
-module Backend.WellChildEncounter.Model exposing (EncounterNote(..), EncounterWarning(..), Model, Msg(..), PediatricCareMilestone(..), WellChildEncounter, WellChildEncounterType(..), ecdMilestoneWarnings, emptyModel, emptyWellChildEncounter, headCircumferenceWarnings, pediatricCareMilestones)
+module Backend.WellChildEncounter.Model exposing (EncounterNote(..), EncounterWarning(..), Model, Msg(..), PediatricCareMilestone(..), WellChildEncounter, WellChildEncounterType(..), ecdMilestoneWarnings, emptyModel, emptyWellChildEncounter, hasWarningFrom, headCircumferenceWarnings, pediatricCareMilestones)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -105,6 +105,14 @@ ecdMilestoneWarnings =
 headCircumferenceWarnings : List EncounterWarning
 headCircumferenceWarnings =
     [ WarningHeadCircumferenceMicrocephaly, WarningHeadCircumferenceMacrocephaly, NoHeadCircumferenceWarning ]
+
+
+{-| Whether the warnings hold any of the given ones, for example
+`hasWarningFrom ecdMilestoneWarnings warnings`.
+-}
+hasWarningFrom : List EncounterWarning -> EverySet EncounterWarning -> Bool
+hasWarningFrom group warnings =
+    List.any (\warning -> EverySet.member warning warnings) group
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress

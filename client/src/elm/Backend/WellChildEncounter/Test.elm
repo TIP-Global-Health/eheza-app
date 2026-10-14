@@ -1,6 +1,6 @@
 module Backend.WellChildEncounter.Test exposing (all)
 
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), Msg(..), WellChildEncounterType(..), ecdMilestoneWarnings, emptyModel, emptyWellChildEncounter, headCircumferenceWarnings)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), Msg(..), WellChildEncounterType(..), ecdMilestoneWarnings, emptyModel, emptyWellChildEncounter, hasWarningFrom, headCircumferenceWarnings)
 import Backend.WellChildEncounter.Update exposing (replaceWarnings, update)
 import Date
 import EverySet
@@ -83,9 +83,28 @@ clearHeadCircumferenceWarningsTest =
         ]
 
 
+hasWarningFromTest : Test
+hasWarningFromTest =
+    let
+        warnings =
+            EverySet.fromList [ WarningECDMilestoneBehind, NoEncounterWarnings ]
+    in
+    describe "hasWarningFrom"
+        [ test "finds a warning of the group" <|
+            \_ ->
+                hasWarningFrom ecdMilestoneWarnings warnings
+                    |> Expect.equal True
+        , test "finds none from the other group" <|
+            \_ ->
+                hasWarningFrom headCircumferenceWarnings warnings
+                    |> Expect.equal False
+        ]
+
+
 all : Test
 all =
     describe "Backend.WellChildEncounter"
         [ clearHeadCircumferenceWarningsTest
+        , hasWarningFromTest
         , replaceWarningsTest
         ]

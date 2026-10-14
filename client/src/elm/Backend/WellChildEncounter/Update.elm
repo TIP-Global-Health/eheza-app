@@ -5,7 +5,7 @@ import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (wellChildAlbendazoleEndpoint, wellChildBCGImmunisationEndpoint, wellChildCaringEndpoint, wellChildContributingFactorsEndpoint, wellChildDTPImmunisationEndpoint, wellChildDTPStandaloneImmunisationEndpoint, wellChildECDEndpoint, wellChildEncounterEndpoint, wellChildFeedingEndpoint, wellChildFollowUpEndpoint, wellChildFoodSecurityEndpoint, wellChildHPVImmunisationEndpoint, wellChildHeadCircumferenceEndpoint, wellChildHealthEducationEndpoint, wellChildHeightEndpoint, wellChildHygieneEndpoint, wellChildIPVImmunisationEndpoint, wellChildMRImmunisationEndpoint, wellChildMebendezoleEndpoint, wellChildMuacEndpoint, wellChildNCDAEndpoint, wellChildNextVisitEndpoint, wellChildNutritionEndpoint, wellChildOPVImmunisationEndpoint, wellChildPCV13ImmunisationEndpoint, wellChildPhotoEndpoint, wellChildPregnancySummaryEndpoint, wellChildRotarixImmunisationEndpoint, wellChildSendToHCEndpoint, wellChildSymptomsReviewEndpoint, wellChildVitalsEndpoint, wellChildVitaminAEndpoint, wellChildWeightEndpoint)
 import Backend.Entities exposing (..)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), Model, Msg(..), WellChildEncounter, ecdMilestoneWarnings, headCircumferenceWarnings)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), Model, Msg(..), WellChildEncounter, ecdMilestoneWarnings, hasWarningFrom, headCircumferenceWarnings)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
@@ -50,11 +50,7 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             let
                 -- Saves only when there is a head circumference warning to remove.
                 encounterWithWarning =
-                    Maybe.Extra.filter
-                        (\encounter ->
-                            List.any (\warning -> EverySet.member warning encounter.encounterWarnings) headCircumferenceWarnings
-                        )
-                        maybeEncounter
+                    Maybe.Extra.filter (.encounterWarnings >> hasWarningFrom headCircumferenceWarnings) maybeEncounter
             in
             updateEncounter encounterId
                 encounterWithWarning

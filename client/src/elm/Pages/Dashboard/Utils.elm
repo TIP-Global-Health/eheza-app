@@ -56,7 +56,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Village.Utils exposing (resolveVillageResidents)
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..), ecdMilestoneWarnings)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..), ecdMilestoneWarnings, hasWarningFrom)
 import Date exposing (Unit(..), isBetween)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, toLastDayOfMonth)
@@ -2030,9 +2030,7 @@ resolveECDStatus dateLastDayOfSelectedMonth item =
 
     else
         List.filter
-            (\encounter ->
-                List.any (\warning -> EverySet.member warning encounter.warnings) ecdMilestoneWarnings
-            )
+            (.warnings >> hasWarningFrom ecdMilestoneWarnings)
             nurseEncounters
             |> List.sortWith (sortByDateDesc .startDate)
             |> List.head
