@@ -1,6 +1,6 @@
 ---
 name: qa-tester
-description: Act as a manual QA tester for an E-Heza issue/PR — verify in the running app that the change behaves as intended, the way an experienced human tester would, and record the evidence. Trigger when the user asks to QA, manually verify, hand-test, or smoke-test an issue or PR (e.g. "/qa-tester 2124", "QA this PR", "verify #2124 in the app"). NOT for writing automated Playwright tests — use the e2e-test skill for that.
+description: Act as a manual QA tester for an E-Heza issue/PR — verify in the running app that the change behaves as intended, the way an experienced human tester would, and record the evidence. Trigger when the user asks to QA, manually verify, hand-test, or smoke-test an issue or PR (e.g. "/qa-tester 2124", "QA this PR", "verify #2124 in the app"), or to watch for PRs labelled Ready for QA ("/loop /qa-tester watch"). NOT for writing automated Playwright tests — use the e2e-test skill for that.
 ---
 
 # QA Tester Skill for E-Heza
@@ -17,7 +17,56 @@ drive every encounter type through the real UI — `h.prenatal.completeDangerSig
 in a browser it keeps open, so a known path costs one command, not one tool call per click.
 
 **A run does not stop to ask.** Given a PR number, carry on until the report and recordings
-are posted. Stop only when blocked, or before posting a FAIL comment or an issue.
+are posted. Stop only when blocked, or before posting a FAIL comment or an issue. A watch run
+stops for neither (see Watch mode).
+
+## Watch mode — `/loop /qa-tester watch`
+
+The user starts the watch in a session kept open for QA, and again after a reboot. Each PR
+moves through labels: `Ready for QA` (set by the developer) → `QA Running` → one result.
+The loop session only dispatches. Each PR is run by a fresh subagent, so the loop's context
+stays small and no PR's run carries over into the next.
+
+The loop paces itself, and each tick does this:
+
+1. If a QA subagent this session started is still running (`ListAgents`), the tick ends:
+   wake again in 1800 s, `noop: true`. Its completion notice wakes the loop sooner.
+2. `bash .claude/skills/qa-tester/scripts/qa-watch.sh next`. If it prints nothing, the tick
+   ends: `ScheduleWakeup` in 1200 s, `noop: true`, the same prompt.
+3. `qa-watch.sh ready`. Anything but `ready` is a station problem, not the PR's: tell the
+   user what is missing, change no label, and wake again in 1200 s with `noop: false`.
+   Never start or restart ddev or gulp yourself.
+4. `qa-watch.sh label <pr> running`, which also removes `Ready for QA`. Then start one
+   `general-purpose` subagent with this prompt, and wake again in 1800 s:
+
+   > Run the qa-tester skill (Skill tool, `qa-tester`, args `<pr>`) in watch mode, from
+   > Step 1 to the learning loop, without stopping to ask. Do not change the PR's labels.
+   > Start your reply with one line, `RESULT: approved|followup|blocked|ready — <why>`,
+   > then give the report and recordings links, any drafted issue, and any helper proposal.
+
+5. When the subagent finishes, set the label from its `RESULT` line with
+   `qa-watch.sh label <pr> <state>`, and relay its links, drafted issue and helper proposal
+   to the user. With no `RESULT` line, leave `QA Running`, so the next tick runs it again.
+   Then wake again in 60 s, so a second labelled PR does not wait.
+
+The subagent picks the result:
+
+- `approved` — every row passed.
+- `followup` — a row failed because the PR is wrong (case 1 under "When you find a bug").
+  The FAIL comment is posted without waiting for approval.
+- `blocked` — the PR could not be tested: it does not build, a screen cannot be reached, or
+  its data cannot be set up. The report says what blocked it. Any blocked row makes the
+  run blocked, unless another row failed, which makes it `followup`.
+- `ready` — the run stopped on a station problem, such as local changes to the PR's files
+  in Step 2. Nothing is posted; the PR goes back in the queue.
+
+`next` lists a PR labelled `QA Running` first. When no subagent of this session is running
+it, its run was cut short, for example when a session closed. Run it again from the start;
+if that run already posted a report, the new run replaces it with `--update`.
+
+A watch run never posts a new issue for a pre-existing bug, and nobody is there to answer a
+helper proposal: both go in the subagent's reply, for the loop to relay. Removing
+`Approved by QA` after new commits land is the user's manual step.
 
 ## Knowledge base — read first, update last
 
@@ -236,14 +285,16 @@ First decide which case you are in:
    environment ruled out gets reported.
 
 In all cases: a FAIL comment or a new issue is posted only after the user approves the
-drafted text. QA never fixes — even a one-liner. A found bug is not a pitfall; it feeds
+drafted text. In watch mode the FAIL comment is posted without approval; a new issue still
+waits, drafted in the run's reply. QA never fixes — even a one-liner. A found bug is not a pitfall; it feeds
 memory only as the route that exposed it (app-map) and the FAIL ledger row.
 
 ## Step 5: Report, post, and record
 
 Report to the user per plan row — pass/fail, what was observed, and the recording as a
 link (`file:///var/www/html/ihangane/client/qa-recordings/<pr>/qa-<pr>-<scenario>.mp4`).
-For failures, include the drafted comment or issue and ask for approval to post it.
+For failures, include the drafted comment or issue and ask for approval to post it — in
+watch mode, the posted FAIL comment's link and any drafted issue.
 
 **Then post the QA report to the PR — every run, pass or fail, without waiting for
 approval.** It opens with the caption
@@ -277,7 +328,8 @@ gh pr comment <pr> --body-file recordings.md --attach client/qa-recordings/<pr>/
 
 A video may be at most 10 MB on a Free plan. Check the posted comment renders a `<video>`.
 
-Then stop the driver and run the learning loop.
+Then stop the driver and run the learning loop. In watch mode, the reply opens with the `RESULT`
+line, and the loop sets the label.
 
 ## Fallback: Claude in Chrome
 

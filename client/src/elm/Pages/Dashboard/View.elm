@@ -38,7 +38,7 @@ import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Utils exposing (groupEducationEnabled)
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), hasWarningFrom)
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
 import EverySet exposing (EverySet)
@@ -3108,13 +3108,7 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
                     else
                         Just encounter.warnings
                 )
-                (\warnings ->
-                    List.any
-                        (\warning ->
-                            EverySet.member warning warnings
-                        )
-                        [ WarningHeadCircumferenceMicrocephaly, WarningHeadCircumferenceMacrocephaly ]
-                )
+                (hasWarningFrom [ WarningHeadCircumferenceMicrocephaly, WarningHeadCircumferenceMacrocephaly ])
 
         -- Number children who had malnutrition diagnosed at encounter during
         -- selected month or previously, and did not have an encounter

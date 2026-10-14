@@ -275,7 +275,7 @@ B-274	3	READY	MED-LOW			26	Acute Illness medication distribution: after a reload
 B-275	4	READY	LOW			26	Acute Illness subsequent visit: a positive-and-pregnant malaria RDT is not treated as "malaria diagnosed at this encount
 B-276	4	IMPLEMENTED	LOW	2307	2308	26	Acute Illness malaria RDT edit: changing a saved non-positive result to Positive pre-answers "Currently pregnant?" as No
 B-277	3	IMPLEMENTED	MED			26	Well Child immunisation (Burundi): the DTP-booster Save handler reads the DTP primary-series form, so what the nurse ent
-B-278	4	READY	LOW			26	Well Child head circumference: correcting a reading that triggered the macro/microcephaly popup leaves the warning on th
+B-278	4	IMPLEMENTED	LOW	2356	2357	26	Well Child head circumference: correcting a reading that triggered the macro/microcephaly popup leaves the warning on th
 B-279	4	READY	LOW			26	Well Child head circumference "not taken" checkbox toggles the raw form, so after a reload the first click on a saved no
 B-280	3	IMPLEMENTED	MED-LOW	2184	2185	26	Acute Illness subsequent visit: a diagnosis once written to the encounter is never corrected, even when the RDT or dange
 B-281	4	READY	LOW			26	Shared Yes/No-with-reason forms: flipping the answer back to Yes persists the stale "why not" reason alongside it, in th
@@ -368,7 +368,7 @@ B-367	3	READY	MED-LOW			31	Acute Illness dashboard: every COVID figure counts on
 B-368	4	READY	LOW			31	Dashboard minors ×3: nurse "Total High Risk Pregnancies" counts a woman twice; CHW home "Acute Illness Diagnosed" includ
 B-369	4	READY	LOW			32	Prenatal participant (mixed fleet, release #2128): once a new device opens a fresh pregnancy over an expired undated one
 B-370	4	READY	LOW			32	Login location selection: an assignment added to a nurse or CHW on the server never reaches the health-centre / village 
-B-371	2	READY	MED			32	Prenatal CHW visits 2 and 3 on an undated pregnancy can never be ended: Next Visit is required but its Save does nothing
+B-371	2	IMPLEMENTED	MED	2352	2353	32	Prenatal CHW visits 2 and 3 on an undated pregnancy can never be ended: Next Visit is required but its Save does nothing
 B-372	4	READY	LOW			32	Well Child next pediatric visit: on a month-end clamp day the "next" ECD / medication visit date is today, because the a
 B-373	2	IMPLEMENTED	MED	2336	2337	32	Prenatal postpartum visit: recording the Pregnancy Outcome (the visit's first activity) closes the pregnancy at once, so
 B-374	3	READY	LOW			32	Case Management Antenatal pane: follow-up entries of an EXPIRED pregnancy (past EDD + 92 days, or the B-194 no-EDD rule)
@@ -444,7 +444,7 @@ B-443	4	READY	LOW			38	`drush recalculate-zscores` re-stamps only the group `hei
 B-444	1	IMPLEMENTED	MED-LOW	2326	2327	38	Prenatal HIV PCR: a viral load corrected to "undetectable" keeps the number typed before, and the diagnosis reads the nu
 B-445	3	READY	MED-LOW			38	Statistical Queries › ANC Contacts: postpartum encounters count as ANC contacts when the delivery came before the EDD, u
 B-446	4	IMPLEMENTED	LOW	2311	2312	38	Statistical Queries CSV download: two ANC Contacts row labels contain commas and the writer never quotes, so those rows'
-B-447	4	READY	LOW			38	Statistical Queries › Peripartum: pregnancy outcomes are not bounded by the TO date, so a delivery after the range still
+B-447	4	IMPLEMENTED	LOW	2354	2355	38	Statistical Queries › Peripartum: pregnancy outcomes are not bounded by the TO date, so a delivery after the range still
 B-448	4	READY	LOW			38	Statistical Queries and Completion apps: a failed data batch is dropped without trace, so the page shows the "in process
 B-449	1	IMPLEMENTED	LOW	2316	2317	38	Prenatal diagnosis: malaria with anemia after a treated malaria with SEVERE anemia is filed as BOTH a new episode (treat
 B-450	1	PARKED	LOW			38	Prenatal postpartum encounter: the symptom review still asks about burning with urination, abnormal discharge, heartburn
@@ -467,7 +467,7 @@ B-466	4	READY	LOW			40	Reporting e2e: the postpartum fixture records the outcome
 B-467	4	READY	LOW		2341	40	CHW Dashboard: a follow-up resolved on the first day after the selected month is left out of that month's Case Managemen
 B-468	3	READY	MED-LOW			41	NCDA scorecard › Targeted Interventions: the "Treatment for acute malnutrition" row paints a red X for every CHW questio
 B-469	3	READY	MED-LOW			41	Child Scoreboard progress report › Active Diagnosis: a child's standing malnutrition assessment never appears as active 
-B-470	3	READY	MED			41	Antenatal progress report › Medical Diagnosis: a moderate-anemia line reads "no treatment recorded" although the nurse a
+B-470	3	IMPLEMENTED	MED	2350	2351	41	Antenatal progress report › Medical Diagnosis: a moderate-anemia line reads "no treatment recorded" although the nurse a
 B-471	3	READY	MED-LOW			41	Antenatal progress report › Medical Diagnosis: the postpartum "referred to ARV services / NCD program" lines assert a re
 B-472	3	READY	LOW			41	Antenatal progress report › Patient Progress: a nurse postpartum encounter counts as a third-trimester ANC visit and its
 B-473	4	READY	LOW			41	Acute Illness progress report › Actions Taken: a low-risk COVID encounter shows an empty pane, although the nurse record
@@ -477,6 +477,8 @@ B-476	3	READY	LOW			41	Completion report (Nutrition individual + Well Child, CHW
 B-477	4	READY	LOW			41	Prenatal completion (CHW visit 1): the mandatory-activities gate has the danger-signs condition inverted relative to vis
 B-478	3	READY			2345	19	Service worker: a change is stored on the device before its upload row, so when the row fails the device keeps a change 
 B-479	4	READY			2349	27	Immunisation (Burundi, child in Well Child AND Child Scoreboard): the DTP standalone dose is dropped when the three DTP 
+B-480	4	READY			2355	38	Statistical Queries › Prenatal (ANC): the outcomes and delivery-location tables count a delivery from before the FROM da
+B-481	4	READY			2357	26	Well Child progress report: a normal head circumference never ends an earlier cephaly warning, so a child whose head is 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

@@ -66,6 +66,13 @@ Verify every claim against the code before acting — review bots are sometimes
 exactly right and sometimes overstated. Reply per thread with the fixing commit or the reason it
 was declined, then resolve the thread (mutation in step 7).
 
+**6a. Suggest QA.** Once round 2 is addressed, say whether a `qa-tester` run is worth it, and why:
+does the change show on screen or in stored data, and would the e2e suite catch it? Suggest only;
+the user decides, and the running app is shared.
+
+In the same message, ask whether to move the PR to QA. Only when the user approves, add the label:
+`gh api repos/TIP-Global-Health/eheza-app/issues/<N>/labels -f 'labels[]=Ready for QA'`
+
 **7. Bookkeep immediately** (compaction-safe): entry status → `✅ IMPLEMENTED (issue #, PR #,
 branch, base sha, what was verified)`, update the tier line, append side-findings as new minors,
 run `reindex.py`, **then commit and push those files on `develop`** with `[ci skip]` — staging the
