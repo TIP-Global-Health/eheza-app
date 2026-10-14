@@ -16,6 +16,9 @@ drive every encounter type through the real UI — `h.prenatal.completeDangerSig
 `h.common.registerAdult(...)`, `h.common.openActivity(...)`. The QA driver (below) runs them
 in a browser it keeps open, so a known path costs one command, not one tool call per click.
 
+**A run does not stop to ask.** Given a PR number, carry on until the report and recordings
+are posted. Stop only when blocked, or before posting a FAIL comment or an issue.
+
 ## Knowledge base — read first, update last
 
 Read ALL of these before planning:
@@ -65,7 +68,8 @@ are not tested here: leave them out of the plan and the report.
 ## Step 2: Environment
 
 1. The PR's client code is in the **main tree** (`/var/www/html/ihangane`) — gulp serves
-   only that tree, and other sessions share it, so ask the user before taking it. Do not
+   only that tree, and other sessions share it. Starting a run is the go-ahead to take it;
+   stop only if the `git status` below shows changes you did not make. Do not
    check the PR branch out: a branch older than this skill swaps the skill's own files.
    Overlay only the files the PR changes, and unstage them, because the `Stop` hook commits
    whatever is staged:
@@ -101,7 +105,7 @@ are not tested here: leave them out of the plan and the report.
    client/src` must exit 0; comparing with HEAD gives false alarms. A fresh profile loads
    the new build; a used one needs `div.version-env` clicked and the update applied.
 
-## Step 3: Test plan — present before executing
+## Step 3: Test plan — present, then execute
 
 A table, one row per behaviour from Step 1, each written as a tester's instruction in plain
 words: where, what to do, and what to verify — "At an NCD encounter, in the Social History
@@ -109,7 +113,8 @@ form, answer that the patient drinks and smokes, enter both counts, save, and ve
 the drinks and cigarettes counts are stored as entered." Beside it, for your own use, how to
 reach it (the helper chain, or by hand with the route from app-map). Expected results come from the diff and the Elm view code that renders the screen —
 reading that code is part of planning, not a shortcut. Include negative cases where the diff has conditions (flag off, wrong role,
-boundary values). Present it and wait for approval.
+boundary values). Present it, then go straight on to Step 4 without waiting for approval.
+The user can interrupt to change it.
 
 ## Step 4: Execute
 
