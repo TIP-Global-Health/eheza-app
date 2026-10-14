@@ -2718,9 +2718,13 @@ generatePeripartumReportData language startDate limitDate scopeRecords recordsTi
                 >> Maybe.Extra.values
                 >> List.concat
 
+        -- Pregnancies with a visit in the range, used for the rows recorded
+        -- at visits.
+        pregnanciesVisitedInRange =
+            pregnanciesOf recordsTillLimitDate
+
         -- A delivery counts when its date is in the range, even with no
-        -- visit in the range. Breastfeeding in the first hour is counted
-        -- among these deliveries.
+        -- visit in the range.
         pregnanciesDeliveredInRange =
             pregnanciesOf scopeRecords
                 |> List.filter
@@ -2766,9 +2770,9 @@ generatePeripartumReportData language startDate limitDate scopeRecords recordsTi
         , generateRow Translate.TotalLiveBirths (totalLiveAtTerm + totalLivePreTerm)
         , generateRow Translate.TotalLivePreTermBirths totalLivePreTerm
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorPrematureOnsetContractions)
-            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions (pregnanciesOf recordsTillLimitDate))
+            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnanciesVisitedInRange)
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorBreastfedFirstHour)
-            (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnanciesDeliveredInRange)
+            (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnanciesVisitedInRange)
         ]
     }
 

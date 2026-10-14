@@ -18735,6 +18735,7 @@ var $author$project$Pages$Reports$View$generatePeripartumReportData = F5(
 					return $.prenatalData;
 				}),
 			A2($elm$core$Basics$composeR, $elm_community$maybe_extra$Maybe$Extra$values, $elm$core$List$concat));
+		var pregnanciesVisitedInRange = pregnanciesOf(recordsTillLimitDate);
 		var pregnanciesDeliveredInRange = A2(
 			$elm$core$List$filter,
 			A2(
@@ -18783,15 +18784,12 @@ var $author$project$Pages$Reports$View$generatePeripartumReportData = F5(
 					generateRow,
 					$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions),
 					$elm$core$List$length(
-						A2(
-							pregnanciesWithIndicator,
-							$author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions,
-							pregnanciesOf(recordsTillLimitDate)))),
+						A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions, pregnanciesVisitedInRange))),
 					A2(
 					generateRow,
 					$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour),
 					$elm$core$List$length(
-						A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour, pregnanciesDeliveredInRange)))
+						A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour, pregnanciesVisitedInRange)))
 				]),
 			heading: '',
 			captions: _List_fromArray(
