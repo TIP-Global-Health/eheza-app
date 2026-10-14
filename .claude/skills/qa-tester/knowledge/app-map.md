@@ -109,8 +109,11 @@ flag simply does not appear.
 - The out-of-range warning covers the page with a dimmer; its Close button is the only
   in-app way out, while browser Back goes around it and leaves the warning standing.
 - End Encounter is `ui fluid primary button` + `disabled` until the mandatory activities are
-  done, then `active`. Acute Illness then asks in an in-app "END ENCOUNTER?" modal; Well
-  Child and Home Visit end without one. None of these are native dialogs.
+  done, then `active`. Acute Illness and Antenatal then ask in an in-app "END ENCOUNTER?" modal
+  (CANCEL / CONTINUE); Well Child and Home Visit end without one. None of these are native
+  dialogs. Ending an antenatal visit lands on the main menu.
+- A disabled button inside `div.actions` cannot be hovered (`.actions` takes the pointer), so
+  `qa.click` on it times out: hover with `{ force: true }` to show it on video, and read its class.
 - Date of birth: open `div.date-input.field`, set YEAR (it rebuilds the MONTH list), then
   MONTH, click the day, then the popup's SAVE — the day click alone does not close it.
   `h.common.setDate` does this.
@@ -192,10 +195,22 @@ flag simply does not appear.
   `backdateEncounter` sets both, which ends the visit.
 - Prenatal participant page buttons: nurse — FIRST ANTENATAL ENCOUNTER / SUBSEQUENT ANTENATAL
   ENCOUNTER / POSTPARTUM / RECORD PREGNANCY OUTCOME; a CHW's first reads FIRST ANTENATAL VISIT.
-  `qa.state()` marks the off ones `[disabled]`. Postpartum is on for a woman with no visits, so
+  `qa.state()` marks the off ones `[disabled]`, but read straight after navigating it can show
+  stale marks and list the hidden "YES / NO - DOCUMENT PREGNANCY OUTCOME" popup buttons; check the
+  screenshot when it matters. Postpartum is on for a woman with no visits, so
   no backdating is needed to reach one. A CHW viewing a pregnancy with only nurse visits
   gets the `.open-pregnancy-popup` warning; its "No - document pregnancy outcome" works only once
   a visit has ended.
+- CHW visits 2 and 3: the day after a visit 1 left open, Subsequent Antenatal is offered. Visit 2
+  is Danger Signs, Birth Plan, Health Education, Next Steps; visit 3 has no Birth Plan. Visit 3's
+  Health Education also asks `family-planning`, which `completeHealthEducation(page, 3)` leaves
+  unanswered. Without danger signs, Next Steps is the card "Appointment Confirmation" with tasks
+  Appointment Confirmation, CHW Follow Up and, once the pregnancy is dated, Next ANC Visit.
+- Next ANC Visit shows a date computed from the EGA at the visit's start (`.ui.form.next-visit .date`;
+  EGA 20–25 weeks gives six weeks on) and saves it to the encounter's `field_next_visit_date`.
+  Saving the last Next Steps task opens the progress report.
+- Nurse Danger Signs "Convulsions" diagnoses Eclampsia, an emergency referral: Next Steps opens at once
+  behind a warning (CONTINUE), and End Encounter then needs only Next Steps, not the other activities.
 - Pregnancy Outcome inside a postpartum visit closes the pregnancy on Save and returns to the
   still-open visit. The participant page then ignores that pregnancy (B-373).
 - CHW visit 2 with no danger signs: Danger Signs, Birth Plan, Health Education, Next Steps; Next Steps

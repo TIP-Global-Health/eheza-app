@@ -218,7 +218,7 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 
 - **Symptom:** straight after closing the progress report, a script found no History card in To Do, switched to Completed, and then failed there.
 - **Wrong conclusion:** the activity moved to Completed, or the app lost it.
-- **Rule:** `isVisible()` does not wait. Click `#pending-tab`, then `waitFor` the card a few seconds before falling back to `#completed-tab`.
+- **Rule:** `isVisible()` does not wait. Click `#pending-tab`, then `waitFor` the card a few seconds before falling back to `#completed-tab`. The same holds for a dialog: an `isVisible({ timeout })` check missed the END ENCOUNTER? modal, leaving the visit open. `waitFor` the button you must press.
 
 ## A check over an empty collection passes
 
@@ -285,3 +285,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** on prenatal Next Steps › Next ANC Visit, `qa.form()` reported `save: "disabled"`, while the screenshot showed a bright, pressable SAVE.
 - **Wrong conclusion:** the button is off, so its Save "doing nothing" is expected.
 - **Rule:** `qa.form()` reads `active` as enabled and anything else as disabled. `viewEncounterActionButton` sets neither class when allowed. Check for the `disabled` class, and look at the screenshot.
+
+## Opening a To Do activity after coming back from the Completed tab
+
+- **Symptom:** `completePregnancyDating` failed waiting for `.icon-task-pregnancy-dating`, though Pregnancy Dating was still to do.
+- **Wrong conclusion:** the PR removed the activity, or dating was already saved.
+- **Rule:** the encounter page keeps the tab it last showed. After opening an activity from Completed and pressing back, it is still on Completed. Click `#pending-tab` before a helper opens a To Do card.
