@@ -69,14 +69,10 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
                     \encounter ->
                         let
                             updatedWarnings =
-                                if List.member warning ecdMilestoneWarnings then
-                                    replaceWarnings ecdMilestoneWarnings [ warning ] encounter.encounterWarnings
-
-                                else if List.member warning headCircumferenceWarnings then
-                                    replaceWarnings headCircumferenceWarnings [ warning ] encounter.encounterWarnings
-
-                                else
-                                    EverySet.singleton NoEncounterWarnings
+                                List.filter (List.member warning) [ ecdMilestoneWarnings, headCircumferenceWarnings ]
+                                    |> List.head
+                                    |> unwrap (EverySet.singleton NoEncounterWarnings)
+                                        (\group -> replaceWarnings group [ warning ] encounter.encounterWarnings)
                         in
                         { encounter | encounterWarnings = updatedWarnings }
             in
