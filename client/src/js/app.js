@@ -538,7 +538,7 @@ elmApp.ports.getCoordinates.subscribe(function() {
   const options = {
       enableHighAccuracy: true,  // Use GPS if available for better accuracy.
       timeout: 15000,            // Time to wait for position (15 * 1000 ms).
-      maximumAge: 600000         // Accept cached positions up to 10 minutes old (10 * 60 * 1000 ms).
+      maximumAge: 60000          // Accept cached positions up to 1 minute old (60 * 1000 ms).
   };
 
   navigator.geolocation.getCurrentPosition(

@@ -1497,6 +1497,19 @@ update msg model =
                 activePage =
                     activePageByUrl url
 
+                -- Every URL change drops the GPS reading, and the person pages
+                -- ask for a new one, so a failed request shows no reading rather
+                -- than the last person's.
+                personPageCmd =
+                    Cmd.batch
+                        [ App.Ports.bindDropZone ()
+                        , if gpsCoordinatesEnabled features then
+                            App.Ports.getCoordinates ()
+
+                          else
+                            Cmd.none
+                        ]
+
                 cmd =
                     case activePage of
                         UserPage (SessionPage _ (ChildPage _)) ->
@@ -1506,26 +1519,10 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (CreatePersonPage _ _) ->
-                            Cmd.batch
-                                [ App.Ports.bindDropZone ()
-                                , if gpsCoordinatesEnabled features then
-                                    -- Query for GPS coordinates.
-                                    App.Ports.getCoordinates ()
-
-                                  else
-                                    Cmd.none
-                                ]
+                            personPageCmd
 
                         UserPage (EditPersonPage _) ->
-                            Cmd.batch
-                                [ App.Ports.bindDropZone ()
-                                , if gpsCoordinatesEnabled features then
-                                    -- Query for GPS coordinates.
-                                    App.Ports.getCoordinates ()
-
-                                  else
-                                    Cmd.none
-                                ]
+                            personPageCmd
 
                         UserPage (PrenatalActivityPage _ PrenatalPhoto) ->
                             App.Ports.bindDropZone ()
@@ -1542,7 +1539,7 @@ update msg model =
                         _ ->
                             Cmd.none
             in
-            ( { model | url = url, activePage = activePage }
+            ( { model | url = url, activePage = activePage, coordinates = Nothing }
             , cmd
             )
 

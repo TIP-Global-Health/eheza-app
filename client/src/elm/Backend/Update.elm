@@ -4629,12 +4629,11 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             )
                         |> Maybe.withDefault person
 
-                -- Adding GPS coordinates. Laid over the stored ones, rather
-                -- than offered instead of them, because a reading that was
-                -- asked for is not always a reading that arrived: without a
-                -- fix this leaves what is stored alone.
+                -- Of the patches, only the edit form's shows a GPS reading, so
+                -- only it adds one. It is laid over the stored coordinates, so
+                -- with no reading they stay.
                 personWithCoordinates =
-                    if gpsCoordinatesEnabled features && person.saveGPSLocation then
+                    if origin == InitiatorEditForm && gpsCoordinatesEnabled features && person.saveGPSLocation then
                         updatePersonWithCoordinates personWithStoredCoordinates coordinates
 
                     else
