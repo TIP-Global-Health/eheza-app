@@ -1310,9 +1310,7 @@ matchCHWActivityAtEncounter encounterType measurements activity =
             isJust measurements.pregnancyTest
 
         ActionDangerSignsPresent ->
-            getMeasurementValueFunc measurements.dangerSigns
-                |> Maybe.map (Pages.Prenatal.Activity.Utils.noDangerSignsInValue encounterType >> not)
-                |> Maybe.withDefault False
+            Pages.Prenatal.Activity.Utils.dangerSignsPresentAtEncounter encounterType measurements
 
         ActionReferredToHealthCenter ->
             getMeasurementValueFunc measurements.sendToHC
