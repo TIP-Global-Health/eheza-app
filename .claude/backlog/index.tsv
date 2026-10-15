@@ -483,7 +483,7 @@ B-482	4	READY	LOW			42	Case Management Prenatal Labs: an entry whose last lab te
 B-483	3	READY	MED			42	Statistical Queries › Nutrition report: the under-six gate is evaluated at generation time, so every historical column l
 B-484	4	READY	LOW			42	Dashboard › Beneficiaries table, "Last month": the 0–5 / 6–8 / 9–11 / 12+ month bands are cut at the child's age TODAY w
 B-485	4	READY	LOW			42	Antenatal clinical progress report of a CONCLUDED pregnancy (opened from the Patient Record): the header EGA keeps count
-B-486	3	READY	MED-LOW			42	Antenatal progress report › CHW Activity pane: a CHW postpartum visit never gets the "Danger Signs Present" chip, becaus
+B-486	3	IMPLEMENTED	MED-LOW	2362	2363	42	Antenatal progress report › CHW Activity pane: a CHW postpartum visit never gets the "Danger Signs Present" chip, becaus
 B-487	4	READY	LOW			42	Acute Illness progress report: the treatment review's "feeling better after taking the medication?" answer is asked and 
 B-488	4	READY	LOW			42	Person registration GPS: a create or edit person page reached by reload or app start never asks for a GPS reading, so th
 B-489	4	READY	LOW			42	WhatsApp send script: a record with no phone number, screenshot or template is skipped on every run and never retired
