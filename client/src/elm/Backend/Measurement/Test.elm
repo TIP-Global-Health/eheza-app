@@ -2,7 +2,7 @@ module Backend.Measurement.Test exposing (all)
 
 import Backend.Measurement.Encoder exposing (encodeMedicalHistoryValue, encodeNCDSocialHistoryValue)
 import Backend.Measurement.Model exposing (ColorAlertIndication(..), FoodGroup(..), GlucoseValue(..), HeadCircumferenceInCm(..), LaboratoryTest(..), MuacInCm(..), NCDSocialHistorySign(..), OccursInFamilySign(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..))
-import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, headCircumferenceIndication, labsResultsWithTestAdded, muacIndicationForAdult, muacIndicationForChild, muacValueFuncForSite)
+import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, headCircumferenceIndication, labsResultsTestAddedMsgs, muacIndicationForAdult, muacIndicationForChild, muacValueFuncForSite)
 import Date
 import EverySet
 import Expect
@@ -248,51 +248,67 @@ all =
         , preeclampsiaInFamilyEncodeTest
         , ncdSocialHistoryEncodeTest
         , muacValueFuncForSiteTest
-        , labsResultsWithTestAddedTest
+        , labsResultsTestAddedMsgsTest
         ]
 
 
 {-| NCD and Prenatal labs Case Management entries share this update, so the
 cases cover a test from each.
 -}
-labsResultsWithTestAddedTest : Test
-labsResultsWithTestAddedTest =
+labsResultsTestAddedMsgsTest : Test
+labsResultsTestAddedMsgsTest =
     let
         today =
             Date.fromCalendarDate 2020 Time.Jun 1
 
-        entrySentToLab tests =
-            { performedTests = EverySet.fromList tests
-            , completedTests = EverySet.empty
-            , resolutionDate = Date.add Date.Days 10 today
-            , patientNotified = False
-            , reviewState = Nothing
-            , testsWithFollowUp = Nothing
-            }
+        entryWith tests =
+            Just
+                ( "entry"
+                , { value =
+                        { performedTests = EverySet.fromList tests
+                        , completedTests = EverySet.fromList tests
+                        , resolutionDate = Date.add Date.Days 10 today
+                        , patientNotified = False
+                        , reviewState = Nothing
+                        , testsWithFollowUp = Nothing
+                        }
+                  }
+                )
 
-        resolutionDateAfter test_ testExecuted tests =
-            labsResultsWithTestAdded today test_ testExecuted (entrySentToLab tests)
-                |> .resolutionDate
+        savesAfter test_ testExecuted entry =
+            labsResultsTestAddedMsgs today test_ testExecuted entry Tuple.pair
+                |> List.map (\( resultsId, value ) -> ( resultsId, value.resolutionDate, EverySet.toList value.completedTests ))
+
+        open35Days =
+            Date.add Date.Days 35 today
     in
-    describe "labs Case Management entry, when a test is sent to the lab or withdrawn"
-        [ test "withdrawing the only NCD test sent to the lab closes the entry today" <|
+    describe "labs Case Management entry, when a test is marked performed or not performed"
+        [ test "marking the only NCD test not performed closes the entry today" <|
             \_ ->
-                resolutionDateAfter TestRandomBloodSugar False [ TestRandomBloodSugar ]
-                    |> Expect.equal today
-        , test "withdrawing the only Prenatal test sent to the lab closes the entry today" <|
+                savesAfter TestRandomBloodSugar False (entryWith [ TestRandomBloodSugar ])
+                    |> Expect.equal [ ( Just "entry", today, [] ) ]
+        , test "marking the only Prenatal test not performed closes the entry today" <|
             \_ ->
-                resolutionDateAfter TestHIV False [ TestHIV ]
-                    |> Expect.equal today
+                savesAfter TestHIV False (entryWith [ TestHIV ])
+                    |> Expect.equal [ ( Just "entry", today, [] ) ]
         , test "a vitals recheck no longer needed closes an entry holding only it" <|
             \_ ->
-                resolutionDateAfter TestVitalsRecheck False [ TestVitalsRecheck ]
-                    |> Expect.equal today
-        , test "withdrawing one of two tests keeps the entry open for the other" <|
+                savesAfter TestVitalsRecheck False (entryWith [ TestVitalsRecheck ])
+                    |> Expect.equal [ ( Just "entry", today, [] ) ]
+        , test "marking one of two tests not performed keeps the entry open for the other" <|
             \_ ->
-                resolutionDateAfter TestRandomBloodSugar False [ TestRandomBloodSugar, TestCreatinine ]
-                    |> Expect.equal (Date.add Date.Days 35 today)
-        , test "a test sent to the lab keeps the entry open" <|
+                savesAfter TestRandomBloodSugar False (entryWith [ TestRandomBloodSugar, TestCreatinine ])
+                    |> Expect.equal [ ( Just "entry", open35Days, [ TestCreatinine ] ) ]
+        , test "a performed test keeps the entry open, and is no longer completed" <|
             \_ ->
-                resolutionDateAfter TestHIV True []
-                    |> Expect.equal (Date.add Date.Days 35 today)
+                savesAfter TestHIV True (entryWith [ TestHIV ])
+                    |> Expect.equal [ ( Just "entry", open35Days, [] ) ]
+        , test "a first performed test creates an entry open for 35 days" <|
+            \_ ->
+                savesAfter TestHIV True Nothing
+                    |> Expect.equal [ ( Nothing, open35Days, [] ) ]
+        , test "a test marked not performed creates no entry" <|
+            \_ ->
+                savesAfter TestHIV False Nothing
+                    |> Expect.equal []
         ]

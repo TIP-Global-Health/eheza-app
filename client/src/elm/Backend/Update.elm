@@ -43,8 +43,7 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils
     exposing
         ( getMeasurementValueFunc
-        , labExpirationPeriod
-        , labsResultsWithTestAdded
+        , labsResultsTestAddedMsgs
         , mapChildMeasurementsAtOfflineSession
         , mapMeasurementData
         , splitChildMeasurements
@@ -9047,36 +9046,11 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                     []
 
                 else
-                    let
-                        testExecuted =
-                            testPerformedByExecutionNote executionNote
-                    in
-                    Maybe.map
-                        (\( resultsId, measurement ) ->
-                            [ savePrenatalLabsResultsMsg id
-                                assembled.participant.person
-                                (Just resultsId)
-                                (labsResultsWithTestAdded currentDate test testExecuted measurement.value)
-                            ]
-                        )
+                    labsResultsTestAddedMsgs currentDate
+                        test
+                        (testPerformedByExecutionNote executionNote)
                         assembled.measurements.labsResults
-                        |> Maybe.withDefault
-                            (if testExecuted then
-                                let
-                                    resultsValue =
-                                        Backend.Measurement.Model.LabsResultsValue
-                                            (EverySet.singleton test)
-                                            EverySet.empty
-                                            (Date.add Days labExpirationPeriod currentDate)
-                                            False
-                                            Nothing
-                                            Nothing
-                                in
-                                [ savePrenatalLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
-
-                             else
-                                []
-                            )
+                        (savePrenatalLabsResultsMsg id assembled.participant.person)
             )
         |> Maybe.withDefault []
 
@@ -9351,36 +9325,11 @@ generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
-                let
-                    testExecuted =
-                        testPerformedByExecutionNote executionNote
-                in
-                Maybe.map
-                    (\( resultsId, measurement ) ->
-                        [ saveNCDLabsResultsMsg id
-                            assembled.participant.person
-                            (Just resultsId)
-                            (labsResultsWithTestAdded currentDate test testExecuted measurement.value)
-                        ]
-                    )
+                labsResultsTestAddedMsgs currentDate
+                    test
+                    (testPerformedByExecutionNote executionNote)
                     assembled.measurements.labsResults
-                    |> Maybe.withDefault
-                        (if testExecuted then
-                            let
-                                resultsValue =
-                                    Backend.Measurement.Model.LabsResultsValue
-                                        (EverySet.singleton test)
-                                        EverySet.empty
-                                        (Date.add Days labExpirationPeriod currentDate)
-                                        False
-                                        Nothing
-                                        Nothing
-                            in
-                            [ saveNCDLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
-
-                         else
-                            []
-                        )
+                    (saveNCDLabsResultsMsg id assembled.participant.person)
             )
         |> Maybe.withDefault []
 
