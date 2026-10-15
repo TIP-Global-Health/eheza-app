@@ -1611,15 +1611,18 @@ handleRevision : Model -> Backend.Model.Revision -> Maybe Msg
 handleRevision model revision =
     case revision of
         Backend.Model.NurseRevision uuid data ->
-            Maybe.andThen
-                (\( _, loggedIn ) ->
-                    if Tuple.first loggedIn.nurse == uuid then
-                        Just (UpdateNurseData ( uuid, data ))
+            -- No selected health centre is needed, so a location assigned
+            -- while the user is on the location picker shows up there.
+            RemoteData.toMaybe model.configuration
+                |> Maybe.andThen (.loggedIn >> RemoteData.toMaybe)
+                |> Maybe.andThen
+                    (\loggedIn ->
+                        if Tuple.first loggedIn.nurse == uuid then
+                            Just (UpdateNurseData ( uuid, data ))
 
-                    else
-                        Nothing
-                )
-                (getLoggedInData model)
+                        else
+                            Nothing
+                    )
 
         _ ->
             Nothing
