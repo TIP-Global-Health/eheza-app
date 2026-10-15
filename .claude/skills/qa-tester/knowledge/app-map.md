@@ -141,6 +141,18 @@ flag simply does not appear.
 - Saving a photo measurement also sets the **person's** photo, server-side
   (`HedleyRestful*Photos`, around line 104). Re-read a person's photo fid after any photo
   activity before asserting on it.
+- **GPS** (flag `gps_coordinates`, on locally): create and edit forms show a "GPS Info:" section.
+  With a fix it reads "GPS Location: <lat> , <lng>" plus a Save GPS Location checkbox
+  (`fieldset.gps-info input[type=checkbox]`); without one, only the heading. The registration
+  helpers never tick it.
+- No screen shows a person's stored coordinates: read `latitude` / `longitude` on the person's
+  `shards` row, or `field_latitude` / `field_longitude` on the server. The server ignores
+  `save_gps_location`, so a downloaded person always has it false.
+- A nurse's Add Child: the child form takes the parent's address. On the relationship page,
+  Save stays disabled until "Add to Group..." has a value.
+- WhatsApp report (flag `report_to_whatsapp`): "Send via WhatsApp" on a progress report → consent
+  Yes → "Is this the correct number?" (only when a phone is on file; No) → number → Continue →
+  "update the patient profile?" Yes patches the person's phone.
 
 ## Encounters: what the helpers do not tell you
 
@@ -372,6 +384,9 @@ flag simply does not appear.
   32 px fall outside the view.
 - The browser is headless unless started with `--watch`. On a 1080 px screen a visible
   window is only ~960 px tall inside, and the screencast — the video — keeps only that part.
+- Location: `page.context().grantPermissions(['geolocation'], { origin: 'http://localhost:3000' })`
+  plus `setGeolocation({ latitude, longitude })` gives a fix; `clearPermissions()` makes the request
+  fail as denied. Chromium caches fixes (see pitfalls).
 - Commands run one at a time. `qa.sh` waits up to 600 s for a reply (`QA_TIMEOUT`); a long
   wait inside a command (`syncAndWait` allows 300 s) needs the Bash call's own timeout raised.
 - A driver started from a worktree loads that worktree's helpers, which is how to try a new

@@ -292,3 +292,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** `completePregnancyDating` failed waiting for `.icon-task-pregnancy-dating`, though Pregnancy Dating was still to do.
 - **Wrong conclusion:** the PR removed the activity, or dating was already saved.
 - **Rule:** the encounter page keeps the tab it last showed. After opening an activity from Completed and pressing back, it is still on Completed. Click `#pending-tab` before a helper opens a To Do card.
+
+## Chromium hands back a cached location fix
+
+- **Symptom:** after `setGeolocation` to a new position, the registration form still showed the previous one.
+- **Wrong conclusion:** the app kept a stale reading in memory.
+- **Rule:** Chromium returns its last fix while it is younger than the request's `maximumAge` (60 s on the PR, 10 min before). Wait past that age, or restart the driver, between positions. Your own `getCurrentPosition` probe also refreshes the cache.
+
+## `context.setOffline(true)` does not stop the app's sync
+
+- **Symptom:** persons registered "offline" were on the server minutes later, and their downloaded copies replaced the tablet's.
+- **Wrong conclusion:** the tablet stayed offline, so local-only state would last.
+- **Rule:** the sync still ran. Do not plan a scenario on keeping a record local; treat any record as downloaded within about a minute of upload.
