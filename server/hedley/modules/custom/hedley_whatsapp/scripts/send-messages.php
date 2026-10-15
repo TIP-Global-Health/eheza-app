@@ -30,7 +30,7 @@ if (empty($twilio_token)) {
 }
 
 $twilio_messaging_service_sid = variable_get('hedley_whatsapp_twilio_messaging_service_sid', '');
-if (empty($twilio_token)) {
+if (empty($twilio_messaging_service_sid)) {
   drush_print("Twilio messaging service SID not set. Aborting.");
   return;
 }
@@ -160,8 +160,10 @@ while ($processed < $total) {
       $wrapper->save();
     }
     catch (TwilioException $e) {
-      $attempts = $wrapper->field_delivery_attempts->value();
-      $wrapper->field_delivery_attempts->set($attempts + 1);
+      $attempts = $wrapper->field_delivery_attempts->value() + 1;
+      $code = $e->getCode();
+      drush_print("Failed to deliver node ID $node->nid, attempt $attempts of $delivery_attempts. Twilio error code: $code.");
+      $wrapper->field_delivery_attempts->set($attempts);
       $wrapper->save();
     }
   }

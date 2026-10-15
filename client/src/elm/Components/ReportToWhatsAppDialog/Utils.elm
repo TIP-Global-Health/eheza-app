@@ -1,4 +1,4 @@
-module Components.ReportToWhatsAppDialog.Utils exposing (allCountryCodes, countryCodeFromString, countryCodeToString, emptyPhoneData, minimalNumberLength, reportTypeFromString, reportTypeToString, showComponent, siteToCountryCode, toLocalPhoneNumber, trimLeadingZeros)
+module Components.ReportToWhatsAppDialog.Utils exposing (allCountryCodes, countryCodeFromString, countryCodeToString, emptyPhoneData, reportTypeFromString, reportTypeToString, showComponent, siteToCountryCode, toInternationalNumber, toLocalPhoneNumber, toWhatsAppNumber)
 
 import Components.ReportToWhatsAppDialog.Model exposing (CountryCode(..), PhoneData, ReportType(..))
 import EverySet exposing (EverySet)
@@ -158,6 +158,98 @@ toLocalPhoneNumber site phone =
             "0" ++ trimLeadingZeros phone
 
 
+{-| A number as WhatsApp needs it, or Nothing when it is not valid. A number
+without "+" belongs to the site's country: at Rwanda, 0788123456 gives +250788123456.
+-}
+toWhatsAppNumber : Site -> String -> Maybe String
+toWhatsAppNumber site number =
+    if String.startsWith "+" number then
+        let
+            digits =
+                String.dropLeft 1 number
+
+            knownCountry =
+                List.range 1 3
+                    |> List.filterMap
+                        (\prefixLength ->
+                            countryCodeFromString (String.left prefixLength digits)
+                                |> Maybe.map (\code -> ( code, String.dropLeft prefixLength digits ))
+                        )
+                    |> List.head
+        in
+        case knownCountry of
+            Just ( code, national ) ->
+                toInternationalNumber code national
+
+            Nothing ->
+                -- A country with no known number length needs 6 to 15 digits, and no
+                -- country code starts with 0.
+                if
+                    String.all Char.isDigit digits
+                        && not (String.startsWith "0" digits)
+                        && String.length digits
+                        >= minimalNumberLength
+                        && String.length digits
+                        <= maximalNumberLength
+                then
+                    Just number
+
+                else
+                    Nothing
+
+    else
+        toInternationalNumber (siteToCountryCode site) number
+
+
+{-| The number with its country code, or Nothing when it does not have that
+country's number of digits once leading zeros are dropped.
+-}
+toInternationalNumber : CountryCode -> String -> Maybe String
+toInternationalNumber code number =
+    let
+        national =
+            trimLeadingZeros number
+    in
+    if String.all Char.isDigit national && String.length national == nationalNumberLength code then
+        Just <| "+" ++ countryCodeToString code ++ national
+
+    else
+        Nothing
+
+
+{-| Digits in a mobile number after the country code: Rwanda 788123456.
+-}
+nationalNumberLength : CountryCode -> Int
+nationalNumberLength code =
+    case code of
+        CountryCodeBurundi ->
+            8
+
+        CountryCodeCongo ->
+            9
+
+        CountryCodeIsrael ->
+            9
+
+        CountryCodeKenya ->
+            9
+
+        CountryCodeRwanda ->
+            9
+
+        CountryCodeSomalia ->
+            9
+
+        CountryCodeTanzania ->
+            9
+
+        CountryCodeUganda ->
+            9
+
+        CountryCodeUSACanada ->
+            10
+
+
 trimLeadingZeros : String -> String
 trimLeadingZeros number =
     if String.startsWith "0" number then
@@ -192,3 +284,8 @@ allCountryCodes =
 minimalNumberLength : Int
 minimalNumberLength =
     6
+
+
+maximalNumberLength : Int
+maximalNumberLength =
+    15
