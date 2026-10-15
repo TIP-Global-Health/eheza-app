@@ -2,18 +2,23 @@ module Pages.Prenatal.ProgressReport.Test exposing (all)
 
 import Backend.Measurement.Model
     exposing
-        ( MedicationDistributionSign(..)
+        ( DangerSign(..)
+        , MedicationDistributionSign(..)
         , OutsideCareMedication(..)
+        , PostpartumChildDangerSign(..)
+        , PostpartumMotherDangerSign(..)
         , ReinforceTreatmentSign(..)
         , emptyPrenatalMeasurements
         )
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date
 import EverySet exposing (EverySet)
 import Expect
 import Html
 import Measurement.Utils exposing (reinforceAdherenceQuestion)
-import Pages.Prenatal.ProgressReport.View exposing (viewTreatmentForDiagnosis, viewTreatmentForOutsideCareDiagnosis)
+import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..))
+import Pages.Prenatal.ProgressReport.View exposing (matchCHWActivityAtEncounter, viewTreatmentForDiagnosis, viewTreatmentForOutsideCareDiagnosis)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (text)
@@ -72,6 +77,45 @@ all =
     describe "Pages.Prenatal.ProgressReport"
         [ outsideCareDiagnosisTest
         , moderateAnemiaTreatmentTest
+        , chwDangerSignsActionTest
+        ]
+
+
+chwDangerSignsActionTest : Test
+chwDangerSignsActionTest =
+    let
+        dangerSignsPresent encounterType signs mother child =
+            { emptyPrenatalMeasurements
+                | dangerSigns =
+                    TestFixtures.wrapMeasurement (Date.fromCalendarDate 2026 Oct 1)
+                        { signs = EverySet.fromList signs
+                        , postpartumMother = EverySet.fromList mother
+                        , postpartumChild = EverySet.fromList child
+                        }
+            }
+                |> (\measurements -> matchCHWActivityAtEncounter encounterType measurements ActionDangerSignsPresent)
+    in
+    describe "CHW Activity pane: Danger Signs Present"
+        [ test "an antenatal danger sign" <|
+            \_ ->
+                dangerSignsPresent ChwFirstEncounter [ Fever ] [] []
+                    |> Expect.equal True
+        , test "no antenatal danger sign" <|
+            \_ ->
+                dangerSignsPresent ChwFirstEncounter [ NoDangerSign ] [] []
+                    |> Expect.equal False
+        , test "a mother's danger sign at a postpartum visit" <|
+            \_ ->
+                dangerSignsPresent ChwPostpartumEncounter [ NoDangerSign ] [ PostpartumMotherFever ] [ NoPostpartumChildDangerSigns ]
+                    |> Expect.equal True
+        , test "a child's danger sign at a postpartum visit" <|
+            \_ ->
+                dangerSignsPresent ChwPostpartumEncounter [ NoDangerSign ] [ NoPostpartumMotherDangerSigns ] [ PostpartumChildAbnormalTemperature ]
+                    |> Expect.equal True
+        , test "no danger sign at a postpartum visit" <|
+            \_ ->
+                dangerSignsPresent ChwPostpartumEncounter [ NoDangerSign ] [ NoPostpartumMotherDangerSigns ] [ NoPostpartumChildDangerSigns ]
+                    |> Expect.equal False
         ]
 
 

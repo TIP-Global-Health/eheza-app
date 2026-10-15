@@ -1,4 +1,4 @@
-module Pages.Prenatal.ProgressReport.View exposing (view, viewTreatmentForDiagnosis, viewTreatmentForOutsideCareDiagnosis)
+module Pages.Prenatal.ProgressReport.View exposing (matchCHWActivityAtEncounter, view, viewTreatmentForDiagnosis, viewTreatmentForOutsideCareDiagnosis)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -54,7 +54,7 @@ import Backend.PrenatalActivity.Model
         , allTrimesters
         )
 import Backend.PrenatalActivity.Utils exposing (getEncounterTrimesterData)
-import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType, PrenatalProgressReportInitiator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Backend.Utils exposing (healthyStartEnabled, reportToWhatsAppEnabled)
@@ -1261,8 +1261,8 @@ viewChwActivityPane language currentDate isChw assembled =
 
         activitiesWithDate =
             List.map
-                (\( date, _, measurements ) ->
-                    ( date, List.filter (matchCHWActivityAtEncounter measurements) allCHWActions )
+                (\( date, encounterType, measurements ) ->
+                    ( date, List.filter (matchCHWActivityAtEncounter encounterType measurements) allCHWActions )
                 )
                 allMeasurementsWithDates
 
@@ -1300,8 +1300,8 @@ viewChwActivityPane language currentDate isChw assembled =
         ]
 
 
-matchCHWActivityAtEncounter : PrenatalMeasurements -> CHWAction -> Bool
-matchCHWActivityAtEncounter measurements activity =
+matchCHWActivityAtEncounter : PrenatalEncounterType -> PrenatalMeasurements -> CHWAction -> Bool
+matchCHWActivityAtEncounter encounterType measurements activity =
     case activity of
         ActionPregnancyDating ->
             isJust measurements.lastMenstrualPeriod
@@ -1310,20 +1310,7 @@ matchCHWActivityAtEncounter measurements activity =
             isJust measurements.pregnancyTest
 
         ActionDangerSignsPresent ->
-            getMeasurementValueFunc measurements.dangerSigns
-                |> Maybe.map
-                    (\value ->
-                        case EverySet.toList value.signs of
-                            [] ->
-                                False
-
-                            [ NoDangerSign ] ->
-                                False
-
-                            _ ->
-                                True
-                    )
-                |> Maybe.withDefault False
+            Pages.Prenatal.Activity.Utils.dangerSignsPresentAtEncounter encounterType measurements
 
         ActionReferredToHealthCenter ->
             getMeasurementValueFunc measurements.sendToHC
