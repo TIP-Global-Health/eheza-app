@@ -1611,8 +1611,8 @@ handleRevision : Model -> Backend.Model.Revision -> Maybe Msg
 handleRevision model revision =
     case revision of
         Backend.Model.NurseRevision uuid data ->
-            -- No selected health centre is needed, so a location assigned
-            -- while the user is on the location picker shows up there.
+            -- Applies while the location picker is shown too, so a newly
+            -- assigned location appears there.
             getLoggedInModel model
                 |> Maybe.andThen
                     (\loggedIn ->

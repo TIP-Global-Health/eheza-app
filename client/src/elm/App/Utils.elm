@@ -13,7 +13,7 @@ import Task
 getLoggedInData : Model -> Maybe ( HealthCenterId, LoggedInModel )
 getLoggedInData model =
     getLoggedInModel model
-        |> Maybe.map2 (\healthCenterId loggedIn -> ( healthCenterId, loggedIn )) model.healthCenterId
+        |> Maybe.map2 Tuple.pair model.healthCenterId
 
 
 {-| Returns the logged in model, if we're logged in, whether or not a health
