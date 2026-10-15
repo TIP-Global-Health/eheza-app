@@ -1500,12 +1500,15 @@ update msg model =
                 -- Every URL change drops the GPS reading, and the person pages
                 -- ask for a new one, so a failed request shows no reading rather
                 -- than the last person's.
-                coordinatesCmd =
-                    if gpsCoordinatesEnabled features then
-                        App.Ports.getCoordinates ()
+                personPageCmd =
+                    Cmd.batch
+                        [ App.Ports.bindDropZone ()
+                        , if gpsCoordinatesEnabled features then
+                            App.Ports.getCoordinates ()
 
-                    else
-                        Cmd.none
+                          else
+                            Cmd.none
+                        ]
 
                 cmd =
                     case activePage of
@@ -1516,10 +1519,10 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (CreatePersonPage _ _) ->
-                            Cmd.batch [ App.Ports.bindDropZone (), coordinatesCmd ]
+                            personPageCmd
 
                         UserPage (EditPersonPage _) ->
-                            Cmd.batch [ App.Ports.bindDropZone (), coordinatesCmd ]
+                            personPageCmd
 
                         UserPage (PrenatalActivityPage _ PrenatalPhoto) ->
                             App.Ports.bindDropZone ()
