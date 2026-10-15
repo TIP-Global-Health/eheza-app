@@ -277,7 +277,14 @@ labsResultsTestAddedMsgsTest =
 
         savesAfter test_ testExecuted entry =
             labsResultsTestAddedMsgs today test_ testExecuted entry Tuple.pair
-                |> List.map (\( resultsId, value ) -> ( resultsId, value.resolutionDate, EverySet.toList value.completedTests ))
+                |> List.map
+                    (\( resultsId, value ) ->
+                        { resultsId = resultsId
+                        , performedTests = EverySet.toList value.performedTests
+                        , completedTests = EverySet.toList value.completedTests
+                        , resolutionDate = value.resolutionDate
+                        }
+                    )
 
         open35Days =
             Date.add Date.Days 35 today
@@ -286,27 +293,31 @@ labsResultsTestAddedMsgsTest =
         [ test "marking the only NCD test not performed closes the entry today" <|
             \_ ->
                 savesAfter TestRandomBloodSugar False (entryWith [ TestRandomBloodSugar ])
-                    |> Expect.equal [ ( Just "entry", today, [] ) ]
+                    |> Expect.equal [ { resultsId = Just "entry", performedTests = [], completedTests = [], resolutionDate = today } ]
         , test "marking the only Prenatal test not performed closes the entry today" <|
             \_ ->
                 savesAfter TestHIV False (entryWith [ TestHIV ])
-                    |> Expect.equal [ ( Just "entry", today, [] ) ]
+                    |> Expect.equal [ { resultsId = Just "entry", performedTests = [], completedTests = [], resolutionDate = today } ]
         , test "a vitals recheck no longer needed closes an entry holding only it" <|
             \_ ->
                 savesAfter TestVitalsRecheck False (entryWith [ TestVitalsRecheck ])
-                    |> Expect.equal [ ( Just "entry", today, [] ) ]
+                    |> Expect.equal [ { resultsId = Just "entry", performedTests = [], completedTests = [], resolutionDate = today } ]
+        , test "a vitals recheck not needed leaves an entry without one unsaved" <|
+            \_ ->
+                savesAfter TestVitalsRecheck False (entryWith [ TestHIV ])
+                    |> Expect.equal []
         , test "marking one of two tests not performed keeps the entry open for the other" <|
             \_ ->
                 savesAfter TestRandomBloodSugar False (entryWith [ TestRandomBloodSugar, TestCreatinine ])
-                    |> Expect.equal [ ( Just "entry", open35Days, [ TestCreatinine ] ) ]
+                    |> Expect.equal [ { resultsId = Just "entry", performedTests = [ TestCreatinine ], completedTests = [ TestCreatinine ], resolutionDate = open35Days } ]
         , test "a performed test keeps the entry open, and is no longer completed" <|
             \_ ->
                 savesAfter TestHIV True (entryWith [ TestHIV ])
-                    |> Expect.equal [ ( Just "entry", open35Days, [] ) ]
-        , test "a first performed test creates an entry open for 35 days" <|
+                    |> Expect.equal [ { resultsId = Just "entry", performedTests = [ TestHIV ], completedTests = [], resolutionDate = open35Days } ]
+        , test "a first performed test creates an entry holding it, open for 35 days" <|
             \_ ->
                 savesAfter TestHIV True Nothing
-                    |> Expect.equal [ ( Nothing, open35Days, [] ) ]
+                    |> Expect.equal [ { resultsId = Nothing, performedTests = [ TestHIV ], completedTests = [], resolutionDate = open35Days } ]
         , test "a test marked not performed creates no entry" <|
             \_ ->
                 savesAfter TestHIV False Nothing

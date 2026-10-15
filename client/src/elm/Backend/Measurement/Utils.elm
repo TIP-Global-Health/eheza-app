@@ -1490,42 +1490,51 @@ labsResultsTestAddedMsgs :
 labsResultsTestAddedMsgs currentDate test testExecuted entry saveMsg =
     let
         save resultsId value =
-            let
-                performedTests =
-                    if testExecuted then
-                        EverySet.insert test value.performedTests
+            if not testExecuted && not (EverySet.member test value.performedTests) then
+                -- Marking a test not performed changes nothing when the entry
+                -- does not hold it, for example a vitals recheck never scheduled.
+                []
 
-                    else
-                        EverySet.remove test value.performedTests
+            else
+                let
+                    performedTests =
+                        if testExecuted then
+                            EverySet.insert test value.performedTests
 
-                resolutionDate =
-                    if EverySet.isEmpty performedTests then
-                        currentDate
+                        else
+                            EverySet.remove test value.performedTests
 
-                    else
-                        Date.add Date.Days labExpirationPeriod currentDate
-            in
-            [ saveMsg resultsId
-                { value
-                    | performedTests = performedTests
+                    resolutionDate =
+                        if EverySet.isEmpty performedTests then
+                            currentDate
 
-                    -- A universal form can move a test from point of care to the lab, so
-                    -- the test must not stay completed.
-                    , completedTests = EverySet.remove test value.completedTests
-                    , resolutionDate = resolutionDate
-                }
-            ]
+                        else
+                            Date.add Date.Days labExpirationPeriod currentDate
+                in
+                [ saveMsg resultsId
+                    { value
+                        | performedTests = performedTests
+
+                        -- A universal form can move a test from point of care to the lab, so
+                        -- the test must not stay completed.
+                        , completedTests = EverySet.remove test value.completedTests
+                        , resolutionDate = resolutionDate
+                    }
+                ]
     in
     case entry of
         Just ( resultsId, measurement ) ->
             save (Just resultsId) measurement.value
 
         Nothing ->
-            if testExecuted then
-                save Nothing (LabsResultsValue EverySet.empty EverySet.empty currentDate False Nothing Nothing)
-
-            else
-                []
+            save Nothing
+                { performedTests = EverySet.empty
+                , completedTests = EverySet.empty
+                , resolutionDate = currentDate
+                , patientNotified = False
+                , reviewState = Nothing
+                , testsWithFollowUp = Nothing
+                }
 
 
 prenatalHIVSignToString : PrenatalHIVSign -> String
