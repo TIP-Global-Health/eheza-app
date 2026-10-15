@@ -486,6 +486,7 @@ B-485	4	READY	LOW			42	Antenatal clinical progress report of a CONCLUDED pregnan
 B-486	3	READY	MED-LOW			42	Antenatal progress report › CHW Activity pane: a CHW postpartum visit never gets the "Danger Signs Present" chip, becaus
 B-487	4	READY	LOW			42	Acute Illness progress report: the treatment review's "feeling better after taking the medication?" answer is asked and 
 B-488	4	READY	LOW			42	Person registration GPS: a create or edit person page reached by reload or app start never asks for a GPS reading, so th
+B-489	4	READY	LOW			42	WhatsApp send script: a record with no phone number, screenshot or template is skipped on every run and never retired
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
