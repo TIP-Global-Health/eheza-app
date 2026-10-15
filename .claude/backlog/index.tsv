@@ -456,7 +456,7 @@ B-455	4	WONTFIX	LOW			39	Prenatal labs: a Hepatitis B test run at point of care,
 B-456	4	READY	LOW			39	Admin reports CSV download: the file has no byte-order mark and always separates with a comma, so Excel can garble accen
 B-457	4	READY	LOW			39	Admin Elm app (`server/elm`): no unit tests can be written, because it has no elm-test setup, so pure helpers such as th
 B-458	4	READY	LOW			39	Admin content: outside super user mode, three more ways to delete or unpublish a node are still offered and always fail 
-B-459	1	READY	LOW			38	Prenatal diagnosis: a treated malaria found again at a different anemia level is filed as a new episode, and "treated" m
+B-459	1	PARKED	LOW			38	Prenatal diagnosis: a treated malaria found again at a different anemia level is filed as a new episode, and "treated" m
 B-460	2	IMPLEMENTED		2320	2321		Sync incidents: the backend cannot re-create a missing entity the device sent, because a `false` boolean is written as a
 B-461	4	READY					Client build: `client/yarn.lock` is a second lockfile nothing reads, and it has drifted from `package.json` · CONFIRMED 
 B-462	4	READY	LOW			40	Shared Yes/No-with-reason forms: editing a saved "Yes" to "No" shows the "Why not?" / "How many doses?" question with no
