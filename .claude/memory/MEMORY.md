@@ -4,7 +4,7 @@
 
 - [Diagnosis defects are tier 1](diagnosis-defects-are-tier-1.md) — ⛔ standing rule (user 2026-09-03): a defect in how a diagnosis or its care pathway is DETERMINED is tier 1 regardless of population; report rows / listings / refills / panes that mention a diagnosis are not covered
 - [Rollbar post-deploy triage 2026-07](rollbar-postdeploy-triage-2026-07.md) — Jul-7 deploy verified; obstetric_history_step2 REST drop JAMS old-app devices' sync (device list inside); reg.update() no-catch = new top noise; str.trim crash site found
-- [Rollbar quiet since 2026-09-18](rollbar-quiet-since-2026-09-18.md) — Rwanda Rollbar silent from Sep 18; looks like a gradual tail-off, not a break (not end-to-end tested); Site-Burundi project no longer visible
+- [Rollbar quiet since 2026-09-18](rollbar-quiet-since-2026-09-18.md) — Rwanda Rollbar silent from Sep 18; looks like a gradual tail-off, not a break (not end-to-end tested); Burundi (prj 662688) quiet since Sep 14 too
 - [Jenkins scheduled jobs inventory](jenkins-scheduled-jobs-inventory.md) — the real ci.gizra.com job list per site (2026-10-10): H/10 queue drains, H 23 overnight dedup/EDD/completion/large-datasets, H/5 WhatsApp, weekly report email, disabled Postgres "Data Pipeline"; needs the user's Chrome session to read
 - [Prod AdvancedQueue is Jenkins-serialized](prod-advancedqueue-jenkins-serialized.md) — concurrent builds OFF → no two AQ workers per site DB; closed B-058pt2/B-059 as won't-fix (single-worker bugs still real)
 - [Show code snippets when citing](show-code-snippets-when-citing.md) — ⛔ **100% rule** (user, 2026-09-01): mentioning code in a file means SHOWING the snippet (`-- path:lines` header + today's real code, `...`-elided), never a bare file:line reference
