@@ -304,3 +304,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** persons registered "offline" were on the server minutes later, and their downloaded copies replaced the tablet's.
 - **Wrong conclusion:** the tablet stayed offline, so local-only state would last.
 - **Rule:** the sync still ran. Do not plan a scenario on keeping a record local; treat any record as downloaded within about a minute of upload.
+
+## `page.reload()` keeps the page you were on
+
+- **Symptom:** after a sync check on Device Status, `page.reload()` then waiting for `.wrap-cards` timed out after 60 s, and the dead minute landed on the recording.
+- **Wrong conclusion:** the app failed to load after the reload.
+- **Rule:** a reload keeps the hash route. To reload onto the main menu, `page.goto('/')` first, then `page.reload()`.

@@ -151,8 +151,15 @@ flag simply does not appear.
 - A nurse's Add Child: the child form takes the parent's address. On the relationship page,
   Save stays disabled until "Add to Group..." has a value.
 - WhatsApp report (flag `report_to_whatsapp`): "Send via WhatsApp" on a progress report → consent
-  Yes → "Is this the correct number?" (only when a phone is on file; No) → number → Continue →
-  "update the patient profile?" Yes patches the person's phone.
+  Yes → "Is this the correct number?" (only when the profile phone can receive a report; No) → number → Continue →
+  "update the patient profile?" Yes patches the person's phone → sections → confirmation → Send →
+  "Success…" → CLOSE. The NCD report has the button as soon as a visit starts (Reports tab → Progress Report).
+- The dialog is `.modal.send-via-whatsapp`; the number field `input.phone-number` beside a country `select`.
+  Section checkboxes: click the `input` inside `.ui.checkbox`; it covers the label.
+- Send queues the report in IndexedDB `whatsAppUploads` (`phone_number` as sent, with country code);
+  after upload it is a server `whatsapp_record` node (`field_phone_number`, `field_person`).
+- A person's phone is `field_phone_number`; set with drush (`entity_metadata_wrapper`), it reached the
+  tablet on the next `syncAndWait`.
 
 ## Encounters: what the helpers do not tell you
 
