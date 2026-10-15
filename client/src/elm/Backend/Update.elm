@@ -4634,7 +4634,9 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 -- asked for is not always a reading that arrived: without a
                 -- fix this leaves what is stored alone.
                 personWithCoordinates =
-                    if gpsCoordinatesEnabled features && person.saveGPSLocation then
+                    -- Only the edit form shows a reading, so the WhatsApp and
+                    -- child address patches never add one.
+                    if origin == InitiatorEditForm && gpsCoordinatesEnabled features && person.saveGPSLocation then
                         updatePersonWithCoordinates personWithStoredCoordinates coordinates
 
                     else

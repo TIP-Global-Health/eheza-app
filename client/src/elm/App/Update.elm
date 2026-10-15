@@ -1497,28 +1497,33 @@ update msg model =
                 activePage =
                     activePageByUrl url
 
-                -- The person pages ask for a new GPS reading and drop the
-                -- previous one, so a failed request shows no reading rather
-                -- than the last person's.
-                requestCoordinates =
-                    gpsCoordinatesEnabled features
-                        && (case activePage of
-                                UserPage (CreatePersonPage _ _) ->
-                                    True
+                pageChanged =
+                    activePage /= model.activePage
 
-                                UserPage (EditPersonPage _) ->
-                                    True
-
-                                _ ->
-                                    False
-                           )
-
-                ( gpsCoordinates, coordinatesCmd ) =
-                    if requestCoordinates then
-                        ( Nothing, App.Ports.getCoordinates () )
+                -- A GPS reading belongs to the page that asked for it. A page
+                -- change drops it, so a failed request shows no reading, not
+                -- the last person's.
+                gpsCoordinates =
+                    if pageChanged then
+                        Nothing
 
                     else
-                        ( model.coordinates, Cmd.none )
+                        model.coordinates
+
+                coordinatesCmd =
+                    if pageChanged && gpsCoordinatesEnabled features then
+                        case activePage of
+                            UserPage (CreatePersonPage _ _) ->
+                                App.Ports.getCoordinates ()
+
+                            UserPage (EditPersonPage _) ->
+                                App.Ports.getCoordinates ()
+
+                            _ ->
+                                Cmd.none
+
+                    else
+                        Cmd.none
 
                 pageCmd =
                     case activePage of
