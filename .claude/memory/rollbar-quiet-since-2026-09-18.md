@@ -1,6 +1,6 @@
 ---
 name: rollbar-quiet-since-2026-09-18
-description: "Rollbar Site-Rwanda went silent after 2026-09-18; the evidence points to a natural tail-off, not a broken pipe, but an end-to-end test was never run; Site-Burundi project no longer visible"
+description: "Rollbar Site-Rwanda went silent after 2026-09-18; looks like a natural tail-off, not a break; the live client token is valid (probed 2026-10-15); Site-Burundi project no longer visible"
 metadata:
   node_type: memory
   type: project
@@ -12,7 +12,8 @@ Checked 2026-10-15. Account usage was 1–6 per day in Aug 2026, about 1 every 3
 
 - Last live deploy was v1.18.2 on 2026-08-25. Occurrences kept arriving until Sep 18, so that build reports, and the `hedley_general_rollbar_token` it reads survived the deploy. PR #2031 deleted only `logs_rollbar_*` vars.
 - The account is not over quota. The plan changed to Essentials (25k a month) on 2026-10-08.
-- Not proven: no test occurrence has been sent with the live token. Reading that token on prod was blocked by the auto-mode classifier, so the user must run `terminus ... vget` themselves.
+- Live `hedley_general_rollbar_token` is set and Rollbar accepts it. An empty browser-platform POST gets 422 "data.body is required", which means it passed the token check. A bogus token gets 403 "not found". The token has `post_client_item` scope only.
+- Not proven: no real test occurrence has been sent, so it is unconfirmed which project the token feeds. Reading prod vars is classifier-blocked, so the user runs `terminus ... vget` themselves.
 - Site-Burundi (prj 662688) no longer shows in the tipglobalhealth account. Only Site-Rwanda is listed.
 
 Related: [[rollbar-postdeploy-triage-2026-07]]
