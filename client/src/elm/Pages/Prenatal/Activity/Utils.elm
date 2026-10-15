@@ -1444,11 +1444,7 @@ noDangerSignsAtEncounter : PrenatalEncounterType -> PrenatalMeasurements -> Bool
 noDangerSignsAtEncounter encounterType measurements =
     let
         dangerSignsEmpty emptySign signs =
-            let
-                signsList =
-                    EverySet.toList signs
-            in
-            List.isEmpty signsList || signsList == [ emptySign ]
+            EverySet.isEmpty signs || signs == EverySet.singleton emptySign
     in
     getMeasurementValueFunc measurements.dangerSigns
         |> Maybe.map
@@ -1471,7 +1467,7 @@ dangerSignsPresent assembled =
 
 dangerSignsPresentAtEncounter : PrenatalEncounterType -> PrenatalMeasurements -> Bool
 dangerSignsPresentAtEncounter encounterType measurements =
-    isJust measurements.dangerSigns && not (noDangerSignsAtEncounter encounterType measurements)
+    not (noDangerSignsAtEncounter encounterType measurements)
 
 
 generateDangerSignsListForNurse : AssembledData -> List DangerSign
