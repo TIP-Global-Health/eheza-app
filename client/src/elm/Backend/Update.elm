@@ -4629,13 +4629,10 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             )
                         |> Maybe.withDefault person
 
-                -- Adding GPS coordinates. Laid over the stored ones, rather
-                -- than offered instead of them, because a reading that was
-                -- asked for is not always a reading that arrived: without a
-                -- fix this leaves what is stored alone.
+                -- Only the edit form shows a GPS reading, so only its patch
+                -- adds one. It is laid over the stored coordinates, so with
+                -- no reading they stay.
                 personWithCoordinates =
-                    -- Only the edit form shows a reading, so the WhatsApp and
-                    -- child address patches never add one.
                     if origin == InitiatorEditForm && gpsCoordinatesEnabled features && person.saveGPSLocation then
                         updatePersonWithCoordinates personWithStoredCoordinates coordinates
 
