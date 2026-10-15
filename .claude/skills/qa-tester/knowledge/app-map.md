@@ -46,6 +46,12 @@ flag simply does not appear.
 | CHW Jojo | 2345 | picks a village: Akanduga at Mbirima, or Busake at Busake |
 | Lab technician | 3333 | picks a health centre; the menu has only Case Management and Device Status |
 
+- Server side, nurse nodes are Maya 190, Jojo 191, PhePhe 192 (nurse), YumYum 193 (CHW), LabTech 194.
+  Every one holds both centres (`field_health_centers` 4 Nyange, 5 Muhondo); the CHWs hold
+  `field_villages` 140 Akanduga and 165 Busake; 163 Buhara and 188 Gahama are unassigned.
+  An `entity_metadata_wrapper` save makes a new vid, which the device downloads.
+- On the device a nurse is a `nodes` row with `type: 'nurse'`, `label`, `vid`,
+  `health_centers` and `villages` (uuids). The location picker lists `p.select-location ~ button.ui.primary.button`.
 - Switching account keeps the device paired: `qa.signIn(pin, location)` goes to the main
   menu, signs out, enters the PIN and picks the location — about a second.
 - Individual encounters offered — nurse: Acute Illness, Antenatal Care, Child Nutrition,
@@ -75,6 +81,9 @@ flag simply does not appear.
 - The upload lane then idles (Sync Settings → Idle time, default 600 s; after an error it
   sleeps that long). "TRY SYNCING WITH BACKEND" on Device Status forces a round;
   `h.common.syncAndWait(page)` presses the sync icon and waits for Success.
+- Sync Settings sits behind Device Status's top-left "Sync Manager" link (`summary` "Sync
+  Settings"). Idle time 5000 ms, saved there, goes to localStorage `syncSpeed` and makes general
+  downloads land within seconds — the way to sync on the PIN and location screens, which have no sync icon.
 - Device Status shows each health centre in a `.health-center` block, with Last Successful
   Contact, Remaining for Upload, Remaining for Download and Status in `.sync-status`.
 - "Status: Success" alone does not prove the upload: check "Remaining for Upload: 0" too.

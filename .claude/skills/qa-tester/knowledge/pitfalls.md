@@ -310,3 +310,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after a sync check on Device Status, `page.reload()` then waiting for `.wrap-cards` timed out after 60 s, and the dead minute landed on the recording.
 - **Wrong conclusion:** the app failed to load after the reload.
 - **Rule:** a reload keeps the hash route. To reload onto the main menu, `page.goto('/')` first, then `page.reload()`.
+
+## Reading button text with `innerText`
+
+- **Symptom:** a check on the location picker's buttons expected "Nyange Health Center" and got "NYANGE HEALTH CENTER".
+- **Wrong conclusion:** the picker shows a different name.
+- **Rule:** `innerText` returns text as CSS draws it, and the app's buttons are uppercased by CSS. Read labels with `textContent` (`allTextContents()`) to compare with the data.
