@@ -163,33 +163,34 @@ without "+" belongs to the site's country: at Rwanda, 0788123456 gives +25078812
 -}
 toWhatsAppNumber : Site -> String -> Maybe String
 toWhatsAppNumber site number =
-    let
-        trimmed =
-            String.trim number
-    in
-    if String.startsWith "+" trimmed then
+    if String.startsWith "+" number then
         let
             digits =
-                String.dropLeft 1 trimmed
-        in
-        List.range 1 3
-            |> List.filterMap
-                (\prefixLength ->
-                    countryCodeFromString (String.left prefixLength digits)
-                        |> Maybe.map (\code -> toInternationalNumber code (String.dropLeft prefixLength digits))
-                )
-            |> List.head
-            |> Maybe.withDefault
-                -- A country with no known number length needs at least 6 digits.
-                (if String.all Char.isDigit digits && String.length (trimLeadingZeros digits) >= minimalNumberLength then
-                    Just trimmed
+                String.dropLeft 1 number
 
-                 else
+            knownCountry =
+                List.range 1 3
+                    |> List.filterMap
+                        (\prefixLength ->
+                            countryCodeFromString (String.left prefixLength digits)
+                                |> Maybe.map (\code -> ( code, String.dropLeft prefixLength digits ))
+                        )
+                    |> List.head
+        in
+        case knownCountry of
+            Just ( code, national ) ->
+                toInternationalNumber code national
+
+            Nothing ->
+                -- A country with no known number length needs at least 6 digits.
+                if String.all Char.isDigit digits && String.length (trimLeadingZeros digits) >= minimalNumberLength then
+                    Just number
+
+                else
                     Nothing
-                )
 
     else
-        toInternationalNumber (siteToCountryCode site) trimmed
+        toInternationalNumber (siteToCountryCode site) number
 
 
 {-| The number with its country code, or Nothing when it does not have that

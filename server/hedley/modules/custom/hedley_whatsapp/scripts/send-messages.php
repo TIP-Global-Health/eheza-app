@@ -30,7 +30,7 @@ if (empty($twilio_token)) {
 }
 
 $twilio_messaging_service_sid = variable_get('hedley_whatsapp_twilio_messaging_service_sid', '');
-if (empty($twilio_token)) {
+if (empty($twilio_messaging_service_sid)) {
   drush_print("Twilio messaging service SID not set. Aborting.");
   return;
 }
