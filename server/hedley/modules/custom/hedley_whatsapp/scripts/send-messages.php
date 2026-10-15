@@ -160,8 +160,10 @@ while ($processed < $total) {
       $wrapper->save();
     }
     catch (TwilioException $e) {
-      $attempts = $wrapper->field_delivery_attempts->value();
-      $wrapper->field_delivery_attempts->set($attempts + 1);
+      $attempts = $wrapper->field_delivery_attempts->value() + 1;
+      $code = $e->getCode();
+      drush_print("Failed to deliver node ID $node->nid, attempt $attempts of $delivery_attempts. Twilio error code: $code.");
+      $wrapper->field_delivery_attempts->set($attempts);
       $wrapper->save();
     }
   }
