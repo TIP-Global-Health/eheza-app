@@ -46,7 +46,7 @@ What changes because of this:
 
 ## Open right now — updated 2026-10-14 (#2337, #2341, #2345, #2347, #2349, #2353, #2355, #2357, #2351 merged)
 
-🟡 **PR #2359 OPEN 2026-10-15 (B-390, tier 2, issue #2358)** — Person registration GPS: a failed capture no longer shows and saves the previous person's coordinates. Every `UrlChanged` clears the reading, person pages re-request; only the edit form's patch adds it; `maximumAge` 60 s (user). Three medium rounds (user asked for a third); all 16 threads resolved. Head `73dedc714`. Worktree released. Awaiting CI + merge. Side-finding B-488 (tier 4, premise in doubt).
+🟡 **PR #2359 OPEN 2026-10-15 (B-390, tier 2, issue #2358)** — Person registration GPS: a failed capture no longer shows and saves the previous person's coordinates. Every `UrlChanged` clears the reading, person pages re-request; only the edit form's patch adds it; `maximumAge` 60 s (user). Three medium rounds (user asked for a third); all 16 threads resolved. Head `73dedc714`. Worktree released. 🏷 `Ready for QA` label added 2026-10-15 (user approved). Awaiting CI + QA + merge. Side-finding B-488 (tier 4, premise in doubt).
 
 🅿 **B-459 PARKED by user 2026-10-15** (verbatim: "park B-459") — do NOT re-pitch. Tier 1 READY is now EMPTY. Counts: 276 READY — T1 0 · T2 3 · T3 66 · T4 173 · untiered 34.
 
