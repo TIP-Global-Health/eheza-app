@@ -4,7 +4,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..))
 import App.Fetch
 import App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), RollbarErrorSource(..), emptyLoggedInModel, emptyModel)
 import App.Ports exposing (cacheHealthCenter, cachePinCode, cacheVillage, coordinates, logByRollbar, memoryQuota, persistentStorage, scrollToElement, setLanguage, storageQuota)
-import App.Utils exposing (getLoggedInData, updateSubModel)
+import App.Utils exposing (getLoggedInData, getLoggedInModel, updateSubModel)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
@@ -1613,8 +1613,7 @@ handleRevision model revision =
         Backend.Model.NurseRevision uuid data ->
             -- No selected health centre is needed, so a location assigned
             -- while the user is on the location picker shows up there.
-            RemoteData.toMaybe model.configuration
-                |> Maybe.andThen (.loggedIn >> RemoteData.toMaybe)
+            getLoggedInModel model
                 |> Maybe.andThen
                     (\loggedIn ->
                         if Tuple.first loggedIn.nurse == uuid then
