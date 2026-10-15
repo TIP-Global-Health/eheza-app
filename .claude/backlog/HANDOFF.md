@@ -46,7 +46,7 @@ What changes because of this:
 
 ## Open right now — updated 2026-10-14 (#2337, #2341, #2345, #2347, #2349, #2353, #2355, #2357, #2351 merged)
 
-🟡 **PR #2361 OPEN 2026-10-15 (B-347, tier 2, issue #2360)** — WhatsApp report: a number of zeros or one digit short is no longer accepted. `toWhatsAppNumber` checks the digit count per country (Rwanda/Somalia 9, Burundi 8) at consent and Send; Continue uses `toInternationalNumber`; number field digits-only; send script prints nid + Twilio error code. Review round 1 (medium) running.
+🟡 **PR #2361 OPEN 2026-10-15 (B-347, tier 2, issue #2360)** — WhatsApp report: a number of zeros or one digit short is no longer accepted. `toWhatsAppNumber` checks the digit count per country (Rwanda/Somalia 9, Burundi 8) at consent and Send; Continue uses `toInternationalNumber`; number field digits-only; send script prints nid + Twilio error code, and its messaging-SID guard is fixed. Two medium rounds done: round 2 posted 10 inline, 1 fixed (`19ce3b8c4`, unknown-country `+` numbers), 9 declined; all threads resolved. Head `19ce3b8c4`. Worktree released. Awaiting CI, QA decision, merge.
 
 🟡 **PR #2359 OPEN 2026-10-15 (B-390, tier 2, issue #2358)** — Person registration GPS: a failed capture no longer shows and saves the previous person's coordinates. Every `UrlChanged` clears the reading, person pages re-request; only the edit form's patch adds it; `maximumAge` 60 s (user). Three medium rounds (user asked for a third); all 16 threads resolved. Head `73dedc714`. Worktree released. 🏷 `Ready for QA` label added 2026-10-15 (user approved). Awaiting CI + QA + merge. Side-finding B-488 (tier 4, premise in doubt).
 
