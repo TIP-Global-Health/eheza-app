@@ -1497,7 +1497,30 @@ update msg model =
                 activePage =
                     activePageByUrl url
 
-                cmd =
+                -- The person pages ask for a new GPS reading and drop the
+                -- previous one, so a failed request shows no reading rather
+                -- than the last person's.
+                requestCoordinates =
+                    gpsCoordinatesEnabled features
+                        && (case activePage of
+                                UserPage (CreatePersonPage _ _) ->
+                                    True
+
+                                UserPage (EditPersonPage _) ->
+                                    True
+
+                                _ ->
+                                    False
+                           )
+
+                ( gpsCoordinates, coordinatesCmd ) =
+                    if requestCoordinates then
+                        ( Nothing, App.Ports.getCoordinates () )
+
+                    else
+                        ( model.coordinates, Cmd.none )
+
+                pageCmd =
                     case activePage of
                         UserPage (SessionPage _ (ChildPage _)) ->
                             App.Ports.bindDropZone ()
@@ -1506,26 +1529,10 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (CreatePersonPage _ _) ->
-                            Cmd.batch
-                                [ App.Ports.bindDropZone ()
-                                , if gpsCoordinatesEnabled features then
-                                    -- Query for GPS coordinates.
-                                    App.Ports.getCoordinates ()
-
-                                  else
-                                    Cmd.none
-                                ]
+                            App.Ports.bindDropZone ()
 
                         UserPage (EditPersonPage _) ->
-                            Cmd.batch
-                                [ App.Ports.bindDropZone ()
-                                , if gpsCoordinatesEnabled features then
-                                    -- Query for GPS coordinates.
-                                    App.Ports.getCoordinates ()
-
-                                  else
-                                    Cmd.none
-                                ]
+                            App.Ports.bindDropZone ()
 
                         UserPage (PrenatalActivityPage _ PrenatalPhoto) ->
                             App.Ports.bindDropZone ()
@@ -1542,8 +1549,8 @@ update msg model =
                         _ ->
                             Cmd.none
             in
-            ( { model | url = url, activePage = activePage }
-            , cmd
+            ( { model | url = url, activePage = activePage, coordinates = gpsCoordinates }
+            , Cmd.batch [ pageCmd, coordinatesCmd ]
             )
 
         TriggerRollbar source errorType ->
