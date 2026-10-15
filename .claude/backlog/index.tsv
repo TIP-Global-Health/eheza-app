@@ -344,7 +344,7 @@ B-343	1	IMPLEMENTED	MED	2244	2245	30	Prenatal HIV: a "partner is HIV positive" a
 B-344	1	IMPLEMENTED	MED	2252	2253	30	Prenatal HIV (lab tech): a positive HIV result entered by the lab tech leaves "pending" in the follow-up answers, and `h
 B-345	1	IMPLEMENTED	MED	2256	2257	30	Prenatal recurrent Next Steps: health education counts as complete once ANY phase-2 education was saved, so education a 
 B-346	4	READY	LOW			30	Prenatal HIV / partner HIV form: B-320's "re-tapping the answer already shown changes nothing" guard only works before a
-B-347	2	READY	MED			30	WhatsApp report: a phone number of zeros or too few digits is accepted and the nurse is told "Success", but the report n
+B-347	2	IMPLEMENTED	MED	2360	2361	30	WhatsApp report: a phone number of zeros or too few digits is accepted and the nurse is told "Success", but the report n
 B-348	3	IMPLEMENTED	MED-LOW	2334	2335	30	WhatsApp report on Burundi sites: the country-code dropdown starts at Rwanda (+250), so a Burundi number typed in become
 B-349	3	READY	MED-LOW			30	WhatsApp report on vhw and uvl: the feature is switched on but Twilio is not configured, so every report a nurse sends i
 B-350	4	READY	LOW			30	Rollbar (client): sync errors raised before Rollbar is initialised are recorded as "already sent" and never reported — a
