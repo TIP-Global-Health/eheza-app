@@ -148,6 +148,12 @@ all =
                 \_ -> whatsAppNumber SiteRwanda "+44207946" (Just "+44207946")
             , test "international: an unknown country with too few digits" <|
                 \_ -> whatsAppNumber SiteRwanda "+44207" Nothing
+            , test "international: an unknown country with too many digits" <|
+                \_ -> whatsAppNumber SiteRwanda "+4420794600000000" Nothing
+            , test "international: an unknown country with 15 digits" <|
+                \_ -> whatsAppNumber SiteRwanda "+442079460000000" (Just "+442079460000000")
+            , test "international: a 0 after the +" <|
+                \_ -> whatsAppNumber SiteRwanda "+0044207946" Nothing
             ]
         , describe "an invalid number on the profile is not offered"
             [ test "Rwanda: a valid number is offered" <|

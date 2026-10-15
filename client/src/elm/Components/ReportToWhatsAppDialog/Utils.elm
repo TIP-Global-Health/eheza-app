@@ -182,8 +182,16 @@ toWhatsAppNumber site number =
                 toInternationalNumber code national
 
             Nothing ->
-                -- A country with no known number length needs at least 6 digits.
-                if String.all Char.isDigit digits && String.length (trimLeadingZeros digits) >= minimalNumberLength then
+                -- A country with no known number length needs 6 to 15 digits, and no
+                -- country code starts with 0.
+                if
+                    String.all Char.isDigit digits
+                        && not (String.startsWith "0" digits)
+                        && String.length digits
+                        >= minimalNumberLength
+                        && String.length digits
+                        <= maximalNumberLength
+                then
                     Just number
 
                 else
@@ -276,3 +284,8 @@ allCountryCodes =
 minimalNumberLength : Int
 minimalNumberLength =
     6
+
+
+maximalNumberLength : Int
+maximalNumberLength =
+    15
