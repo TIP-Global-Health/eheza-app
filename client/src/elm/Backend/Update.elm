@@ -43,7 +43,7 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils
     exposing
         ( getMeasurementValueFunc
-        , labExpirationPeriod
+        , labsResultsTestAddedMsgs
         , mapChildMeasurementsAtOfflineSession
         , mapMeasurementData
         , splitChildMeasurements
@@ -9045,53 +9045,11 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                     []
 
                 else
-                    let
-                        testExecuted =
-                            testPerformedByExecutionNote executionNote
-                    in
-                    Maybe.map
-                        (\( resultsId, measurement ) ->
-                            let
-                                updatedValue =
-                                    (\value ->
-                                        { value
-                                            | performedTests =
-                                                if testExecuted then
-                                                    EverySet.insert test value.performedTests
-
-                                                else
-                                                    EverySet.remove test value.performedTests
-
-                                            -- When we have universal form, it's possible to change if test is performed
-                                            -- at lab, or at point of care.
-                                            -- Therefore, we need to make sure that test does not appear as completed,
-                                            -- which can happen, when nurse switches from point of care to lab.
-                                            , completedTests = EverySet.remove test value.completedTests
-                                            , resolutionDate = Date.add Days labExpirationPeriod currentDate
-                                        }
-                                    )
-                                        measurement.value
-                            in
-                            [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
-                        )
+                    labsResultsTestAddedMsgs currentDate
+                        test
+                        (testPerformedByExecutionNote executionNote)
                         assembled.measurements.labsResults
-                        |> Maybe.withDefault
-                            (if testExecuted then
-                                let
-                                    resultsValue =
-                                        Backend.Measurement.Model.LabsResultsValue
-                                            (EverySet.singleton test)
-                                            EverySet.empty
-                                            (Date.add Days labExpirationPeriod currentDate)
-                                            False
-                                            Nothing
-                                            Nothing
-                                in
-                                [ savePrenatalLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
-
-                             else
-                                []
-                            )
+                        (savePrenatalLabsResultsMsg id assembled.participant.person)
             )
         |> Maybe.withDefault []
 
@@ -9366,36 +9324,11 @@ generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
-                let
-                    testExecuted =
-                        testPerformedByExecutionNote executionNote
-                in
-                Maybe.map
-                    (\( resultsId, measurement ) ->
-                        [ saveNCDLabsResultsMsg id
-                            assembled.participant.person
-                            (Just resultsId)
-                            (Pages.NCD.Utils.labsResultsWithTestAdded currentDate test testExecuted measurement.value)
-                        ]
-                    )
+                labsResultsTestAddedMsgs currentDate
+                    test
+                    (testPerformedByExecutionNote executionNote)
                     assembled.measurements.labsResults
-                    |> Maybe.withDefault
-                        (if testExecuted then
-                            let
-                                resultsValue =
-                                    Backend.Measurement.Model.LabsResultsValue
-                                        (EverySet.singleton test)
-                                        EverySet.empty
-                                        (Date.add Days labExpirationPeriod currentDate)
-                                        False
-                                        Nothing
-                                        Nothing
-                            in
-                            [ saveNCDLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
-
-                         else
-                            []
-                        )
+                    (saveNCDLabsResultsMsg id assembled.participant.person)
             )
         |> Maybe.withDefault []
 
