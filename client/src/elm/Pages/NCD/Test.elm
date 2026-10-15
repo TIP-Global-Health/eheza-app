@@ -6,7 +6,6 @@ import Backend.Measurement.Model
     exposing
         ( CreatinineTestValue
         , GlucoseValue(..)
-        , LaboratoryTest(..)
         , Measurement
         , MedicalCondition(..)
         , NCDMeasurements
@@ -36,7 +35,6 @@ import Pages.NCD.Utils
     exposing
         ( generateAssembledData
         , generateNCDDiagnoses
-        , labsResultsWithTestAdded
         , lowerHypertensionStageCondition
         , patientIsPregnant
         , referForRenalComplications
@@ -979,7 +977,6 @@ all =
         , pregnancyTestExpectedTest
         , repeatedTapOnSavedTest
         , randomBloodSugarNotPerformedTest
-        , labsResultsWithTestAddedTest
         ]
 
 
@@ -1125,36 +1122,4 @@ randomBloodSugarNotPerformedTest =
             \_ ->
                 resultTasksWith TestNoteRunToday
                     |> Expect.equal [ TaskRandomBloodSugarTest ]
-        ]
-
-
-labsResultsWithTestAddedTest : Test
-labsResultsWithTestAddedTest =
-    let
-        entrySentToLab tests =
-            { performedTests = EverySet.fromList tests
-            , completedTests = EverySet.empty
-            , resolutionDate = Date.add Date.Days 10 dummyDate
-            , patientNotified = False
-            , reviewState = Nothing
-            , testsWithFollowUp = Nothing
-            }
-
-        resolutionDateAfter testExecuted tests =
-            labsResultsWithTestAdded dummyDate TestRandomBloodSugar testExecuted (entrySentToLab tests)
-                |> .resolutionDate
-    in
-    describe "the NCD labs Case Management entry, when a test is sent to the lab or withdrawn"
-        [ test "withdrawing the only test sent to the lab closes the entry today" <|
-            \_ ->
-                resolutionDateAfter False [ TestRandomBloodSugar ]
-                    |> Expect.equal dummyDate
-        , test "withdrawing one of two tests keeps the entry open for the other" <|
-            \_ ->
-                resolutionDateAfter False [ TestRandomBloodSugar, TestCreatinine ]
-                    |> Expect.equal (Date.add Date.Days 35 dummyDate)
-        , test "a test sent to the lab keeps the entry open" <|
-            \_ ->
-                resolutionDateAfter True []
-                    |> Expect.equal (Date.add Date.Days 35 dummyDate)
         ]

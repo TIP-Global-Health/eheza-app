@@ -44,6 +44,7 @@ import Backend.Measurement.Utils
     exposing
         ( getMeasurementValueFunc
         , labExpirationPeriod
+        , labsResultsWithTestAdded
         , mapChildMeasurementsAtOfflineSession
         , mapMeasurementData
         , splitChildMeasurements
@@ -9052,28 +9053,11 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                     in
                     Maybe.map
                         (\( resultsId, measurement ) ->
-                            let
-                                updatedValue =
-                                    (\value ->
-                                        { value
-                                            | performedTests =
-                                                if testExecuted then
-                                                    EverySet.insert test value.performedTests
-
-                                                else
-                                                    EverySet.remove test value.performedTests
-
-                                            -- When we have universal form, it's possible to change if test is performed
-                                            -- at lab, or at point of care.
-                                            -- Therefore, we need to make sure that test does not appear as completed,
-                                            -- which can happen, when nurse switches from point of care to lab.
-                                            , completedTests = EverySet.remove test value.completedTests
-                                            , resolutionDate = Date.add Days labExpirationPeriod currentDate
-                                        }
-                                    )
-                                        measurement.value
-                            in
-                            [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                            [ savePrenatalLabsResultsMsg id
+                                assembled.participant.person
+                                (Just resultsId)
+                                (labsResultsWithTestAdded currentDate test testExecuted measurement.value)
+                            ]
                         )
                         assembled.measurements.labsResults
                         |> Maybe.withDefault
@@ -9376,7 +9360,7 @@ generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
                         [ saveNCDLabsResultsMsg id
                             assembled.participant.person
                             (Just resultsId)
-                            (Pages.NCD.Utils.labsResultsWithTestAdded currentDate test testExecuted measurement.value)
+                            (labsResultsWithTestAdded currentDate test testExecuted measurement.value)
                         ]
                     )
                     assembled.measurements.labsResults

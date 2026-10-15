@@ -1,8 +1,9 @@
 module Backend.Measurement.Test exposing (all)
 
 import Backend.Measurement.Encoder exposing (encodeMedicalHistoryValue, encodeNCDSocialHistoryValue)
-import Backend.Measurement.Model exposing (ColorAlertIndication(..), FoodGroup(..), GlucoseValue(..), HeadCircumferenceInCm(..), MuacInCm(..), NCDSocialHistorySign(..), OccursInFamilySign(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..))
-import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, headCircumferenceIndication, muacIndicationForAdult, muacIndicationForChild, muacValueFuncForSite)
+import Backend.Measurement.Model exposing (ColorAlertIndication(..), FoodGroup(..), GlucoseValue(..), HeadCircumferenceInCm(..), LaboratoryTest(..), MuacInCm(..), NCDSocialHistorySign(..), OccursInFamilySign(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..))
+import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, headCircumferenceIndication, labsResultsWithTestAdded, muacIndicationForAdult, muacIndicationForChild, muacValueFuncForSite)
+import Date
 import EverySet
 import Expect
 import Json.Decode
@@ -10,6 +11,7 @@ import Json.Encode
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import TestFixtures exposing (urineGlucoseValue)
+import Time
 
 
 muacIndicationTest : Test
@@ -246,4 +248,51 @@ all =
         , preeclampsiaInFamilyEncodeTest
         , ncdSocialHistoryEncodeTest
         , muacValueFuncForSiteTest
+        , labsResultsWithTestAddedTest
+        ]
+
+
+{-| NCD and Prenatal labs Case Management entries share this update, so the
+cases cover a test from each.
+-}
+labsResultsWithTestAddedTest : Test
+labsResultsWithTestAddedTest =
+    let
+        today =
+            Date.fromCalendarDate 2020 Time.Jun 1
+
+        entrySentToLab tests =
+            { performedTests = EverySet.fromList tests
+            , completedTests = EverySet.empty
+            , resolutionDate = Date.add Date.Days 10 today
+            , patientNotified = False
+            , reviewState = Nothing
+            , testsWithFollowUp = Nothing
+            }
+
+        resolutionDateAfter test_ testExecuted tests =
+            labsResultsWithTestAdded today test_ testExecuted (entrySentToLab tests)
+                |> .resolutionDate
+    in
+    describe "labs Case Management entry, when a test is sent to the lab or withdrawn"
+        [ test "withdrawing the only NCD test sent to the lab closes the entry today" <|
+            \_ ->
+                resolutionDateAfter TestRandomBloodSugar False [ TestRandomBloodSugar ]
+                    |> Expect.equal today
+        , test "withdrawing the only Prenatal test sent to the lab closes the entry today" <|
+            \_ ->
+                resolutionDateAfter TestHIV False [ TestHIV ]
+                    |> Expect.equal today
+        , test "a vitals recheck no longer needed closes an entry holding only it" <|
+            \_ ->
+                resolutionDateAfter TestVitalsRecheck False [ TestVitalsRecheck ]
+                    |> Expect.equal today
+        , test "withdrawing one of two tests keeps the entry open for the other" <|
+            \_ ->
+                resolutionDateAfter TestRandomBloodSugar False [ TestRandomBloodSugar, TestCreatinine ]
+                    |> Expect.equal (Date.add Date.Days 35 today)
+        , test "a test sent to the lab keeps the entry open" <|
+            \_ ->
+                resolutionDateAfter TestHIV True []
+                    |> Expect.equal (Date.add Date.Days 35 today)
         ]

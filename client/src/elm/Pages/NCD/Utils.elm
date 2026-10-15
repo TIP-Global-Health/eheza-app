@@ -1,9 +1,9 @@
-module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, labsResultsWithTestAdded, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, patientIsPregnantAtEncounter, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralToFacilityCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefault, updateChronicDiagnoses)
+module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, lowerHypertensionStageCondition, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, patientIsPregnantAtEncounter, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralToFacilityCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValueWithDefault, toReferralValueWithDefault, updateChronicDiagnoses)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, getCurrentReasonForNonReferral, getMeasurementValueFunc, labExpirationPeriod, testPerformedByExecutionNote)
+import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, getCurrentReasonForNonReferral, getMeasurementValueFunc, testPerformedByExecutionNote)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
@@ -1131,33 +1131,3 @@ updateChronicDiagnoses encounterDate encounterDiagnoses assembled =
     in
     Maybe.Extra.values [ chronicHypertensionDiagnosis, chronicDiabetesDiagnosis, chronicRenalComplicationsDiagnosis ]
         ++ EverySet.toList encounterDiagnoses
-
-
-{-| Records on the Case Management entry whether a test was sent to the lab.
-When no test is left sent to the lab, the entry closes today.
--}
-labsResultsWithTestAdded : NominalDate -> LaboratoryTest -> Bool -> LabsResultsValue -> LabsResultsValue
-labsResultsWithTestAdded currentDate test testExecuted value =
-    let
-        performedTests =
-            if testExecuted then
-                EverySet.insert test value.performedTests
-
-            else
-                EverySet.remove test value.performedTests
-
-        resolutionDate =
-            if EverySet.isEmpty performedTests then
-                currentDate
-
-            else
-                Date.add Date.Days labExpirationPeriod currentDate
-    in
-    { value
-        | performedTests = performedTests
-
-        -- A universal form can move a test from point of care to the lab, so
-        -- the test must not stay completed.
-        , completedTests = EverySet.remove test value.completedTests
-        , resolutionDate = resolutionDate
-    }
