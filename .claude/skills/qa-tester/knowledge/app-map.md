@@ -318,6 +318,15 @@ flag simply does not appear.
   Hepatitis B / Malaria / Blood Group / Urine Dipstick / Hemoglobin / Random Blood Sugar.
 - Pane filter buttons are `div.ui.segment.filters button`; an entry's tap target is
   `div.icon-forward`.
+- **ANC Labs** (nurse) lists an encounter while today is before its `prenatal_labs_results` resolution
+  date, labelled "ANC Lab Results", or "Vitals Recheck" while the recheck is owed. First-visit
+  Vitals with systolic 140–159 or diastolic 90–109 schedules the recheck; 145/95 does it.
+- On the device, `shards` rows `prenatal_labs_results` / `ncd_labs_results` carry `performed_tests`,
+  `completed_tests` and `date_concluded`; the server fields are `field_performed_tests` and
+  `field_date_concluded`.
+- Withdrawing a test: reopen Laboratory, its tab, "performed today?" No, tick a `.why-not` reason,
+  Save. `completeLaboratoryNurseForLab(page, { onlyTabs: ['HIV', 'Syphilis - RPR'] })` orders
+  only those tabs, by their label text.
 - **NCD Labs** lists an encounter while today is before its results record's resolution date
   (`ncd_labs_results`: `field_performed_tests`, `field_date_concluded`). Sending a test to
   the lab sets it 35 days out. The entry opens the recurrent encounter; its Lab Results card is
@@ -413,6 +422,8 @@ flag simply does not appear.
   to `new Date()`. Set the offset, then `page.goto('/')` plus `page.reload()`, since a hash-only
   goto does not reload. Measurements and visits then carry that date, and the backend stores
   it. The service worker keeps the real date (see pitfalls); `page.clock` must not be used.
+- The main tree starts a run on `develop`, so a develop control is cheapest before the overlay:
+  record it on the served build, then overlay and wait for gulp once.
 - Only a caller that can read `.driver/token` (owner-only, new each start) can send commands;
   requests from a browser page are refused.
 - Measured: empty profile → paired, signed in and synced in ~10 s; register a woman, open a

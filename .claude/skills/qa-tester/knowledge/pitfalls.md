@@ -316,3 +316,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a check on the location picker's buttons expected "Nyange Health Center" and got "NYANGE HEALTH CENTER".
 - **Wrong conclusion:** the picker shows a different name.
 - **Rule:** `innerText` returns text as CSS draws it, and the app's buttons are uppercased by CSS. Read labels with `textContent` (`allTextContents()`) to compare with the data.
+
+## `$` in a grep pattern for an Elm name is an anchor
+
+- **Symptom:** `grep -c "Pages\$NCD\$Utils\$labsResultsWithTestAdded" Main.js` printed 0, although develop's bundle holds that function.
+- **Wrong conclusion:** the bundle is mangled, or gulp serves a different build.
+- **Rule:** Elm's compiled names contain `$`, which grep reads as end of line. Search them with `grep -F` (fixed string).
