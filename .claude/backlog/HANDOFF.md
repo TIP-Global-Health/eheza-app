@@ -48,7 +48,7 @@ What changes because of this:
 
 🟡 **PR #2361 OPEN 2026-10-15 (B-347, tier 2, issue #2360)** — WhatsApp report: a number of zeros or one digit short is no longer accepted. `toWhatsAppNumber` checks the digit count per country (Rwanda/Somalia 9, Burundi 8) at consent and Send; Continue uses `toInternationalNumber`; number field digits-only; send script prints nid + Twilio error code, and its messaging-SID guard is fixed. Two medium rounds done: round 2 posted 10 inline, 1 fixed (`19ce3b8c4`, unknown-country `+` numbers), 9 declined; all threads resolved. Head `19ce3b8c4`. Worktree released. Moved to QA 2026-10-15 (`Ready for QA` label, user approved). Awaiting CI, QA, merge.
 
-🟡 **PR #2365 OPEN 2026-10-15 (B-370, tier 4, issue #2364)** — Login location picker: a health centre or village assigned on the server appears without Sign Out (`handleRevision` no longer needs a selected health centre). Two medium rounds; all threads resolved. Head `28ca86414`. Worktree released. Awaiting CI + merge.
+🟡 **PR #2365 OPEN 2026-10-15 (B-370, tier 4, issue #2364)** — Login location picker: a health centre or village assigned on the server appears without Sign Out (`handleRevision` no longer needs a selected health centre). Two medium rounds; all threads resolved. Head `28ca86414`. Worktree released. 🏷 `Ready for QA` label added 2026-10-15 (user approved). Awaiting CI + QA + merge.
 
 🟡 **PR #2363 OPEN 2026-10-15 (B-486, tier 3, issue #2362)** — Antenatal progress report, CHW Activity: a CHW postpartum visit with danger signs shows "Danger Signs Present". One measurement-level check shared with the referral. Two medium rounds; all threads resolved. Head `41e398ef1`. Worktree released. Awaiting CI + merge.
 
