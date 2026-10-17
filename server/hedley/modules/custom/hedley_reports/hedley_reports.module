@@ -525,7 +525,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     : '',
   ];
 
-  $sessions_ids = $zscores_by_encounter = $vaccinations_by_encounter = $muac_edema_by_encounter = [];
+  $sessions_ids = $zscores_by_encounter = $vaccinations_by_encounter = $muac_edema_by_encounter = $first_pregnancy_encounters = [];
   $prenatal_indicators_by_encounter = [
     'mms' => [],
     'us' => [],
@@ -777,6 +777,14 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         if (!empty($abortions) && $abortions > 0) {
           $prenatal_indicators_by_encounter['abortion'][] = $encounter_id;
         }
+        // First pregnancy, as skipObstetricHistorySecondStep decides it in the
+        // client: currently pregnant, and every pregnancy and child count is 0.
+        $previous_pregnancies = (int) $preterm + (int) $stillbirths_at_term + (int) $stillbirths_preterm + (int) $abortions
+          + (int) $measurement->field_term_pregnancy[LANGUAGE_NONE][0]['value']
+          + (int) $measurement->field_live_children[LANGUAGE_NONE][0]['value'];
+        if ($previous_pregnancies == 0 && !empty($measurement->field_currently_pregnant[LANGUAGE_NONE][0]['value'])) {
+          $first_pregnancy_encounters[] = $encounter_id;
+        }
         break;
 
       case HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_STEP2_CONTENT_TYPE:
@@ -926,6 +934,13 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         $sessions_ids[] = $encounter_id;
     }
   }
+
+  // The app skips obstetric history step 2 on a first pregnancy, so step 2
+  // answers left on that encounter do not count.
+  $prenatal_indicators_by_encounter['intrauterine-death'] = array_diff(
+    $prenatal_indicators_by_encounter['intrauterine-death'],
+    $first_pregnancy_encounters
+  );
 
   $encounters_data = [];
   $ai_diagnosis_mapping = hedley_reports_ai_diagnosis_mapping();
@@ -2126,6 +2141,8 @@ function hedley_reports_ai_diagnosis_mapping() {
  *   An associative array mapping diagnosis identifiers to their codes.
  */
 function hedley_reports_prenatal_diagnosis_mapping() {
+  // Reconfirmations ('-continued', '-persistent') get no code: they repeat a
+  // diagnosis the encounter that found the condition is already counted for.
   return [
     'chronic-hypertension-immediate' => 'a',
     'chronic-hypertension-recheck' => 'a',
@@ -2177,7 +2194,9 @@ function hedley_reports_prenatal_diagnosis_mapping() {
     'prom' => 'c1',
     'pprom' => 'd1',
     'hyperemesis-gravidum' => 'e1',
+    'hyperemesis-gravidum-by-symptoms' => 'e1',
     'severe-vomiting' => 'f1',
+    'severe-vomiting-by-symptoms' => 'f1',
     'maternal-complications' => 'g1',
     'infection' => 'h1',
     'imminent-delivery' => 'i1',
@@ -2213,6 +2232,9 @@ function hedley_reports_prenatal_diagnosis_mapping() {
     'postpartum-excessive-bleeding' => 'j2',
     'postpartum-early-mastitis-engorgment' => 'k2',
     'postpartum-mastitis' => 'l2',
+    'high-risk-of-preeclampsia-initial' => 'm2',
+    'high-risk-of-preeclampsia-recurrent' => 'm2',
+    'moderate-risk-of-preeclampsia' => 'n2',
   ];
 }
 
@@ -9398,14 +9420,23 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
   if ($hiv_diagnosed) {
     $hiv_test_measurement = $encounter_data['measurements_by_type']['prenatal_hiv_test'];
     if (!empty($hiv_test_measurement) && !empty($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE])) {
+      // A lab technician's save leaves the follow up questions to the nurse,
+      // marking the answers as pending. Until the nurse answers whether
+      // there is an HIV program at the health center, no medication is
+      // required.
       $hiv_program_at_hc = FALSE;
+      $answers_pending = FALSE;
       foreach ($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE] as $sign) {
         if ($sign['value'] == 'hiv-program-hc') {
           $hiv_program_at_hc = TRUE;
           break;
         }
+        if ($sign['value'] == 'pending-input') {
+          $answers_pending = TRUE;
+          break;
+        }
       }
-      if (!$hiv_program_at_hc) {
+      if (!$hiv_program_at_hc && !$answers_pending) {
         return TRUE;
       }
     }

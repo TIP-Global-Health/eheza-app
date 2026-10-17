@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import { execSync } from 'child_process';
 import { click } from './auth';
 import { drushEnv } from './device';
-import { WAIT, registerChild } from './common';
+import { WAIT, registerChild, selectCheckboxInForm } from './common';
 
 /**
  * Navigate from the dashboard to the nutrition encounter page
@@ -505,24 +505,20 @@ export async function completeContributingFactors(page: Page) {
   await click(page.locator('button.ui.fluid.primary.button.active'), page);
 }
 
+export type NutritionFollowUpOption = '1 Day' | '3 Days' | '1 Week' | '2 Weeks' | 'No follow up';
+
 /**
- * Complete the FollowUp next-step: select "1 Day".
+ * Complete the FollowUp next-step with the given option (default "1 Day").
  * Saves the sub-task.
  */
-export async function completeFollowUp(page: Page) {
+export async function completeFollowUp(page: Page, option: NutritionFollowUpOption = '1 Day') {
   await click(
     page.locator('#tasks-bar .icon-next-steps-follow-up').first(),
     page,
   );
   await page.locator('.ui.form.follow-up').waitFor({ timeout: 5000 });
 
-  // Select "1 Day".
-  await click(
-    page.locator('.ui.form.follow-up .ui.checkbox.activity', {
-      hasText: '1 Day',
-    }),
-    page,
-  );
+  await selectCheckboxInForm(page, '.ui.form.follow-up', option);
 
   // Save this sub-task.
   await click(page.locator('button.ui.fluid.primary.button.active'), page);

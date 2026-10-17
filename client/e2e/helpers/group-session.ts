@@ -927,8 +927,8 @@ export async function completeSendToHC(page: Page) {
  */
 export async function completeFollowUp(page: Page) {
   await openActivity(page, 'Follow Up');
-  // Select "1 Day" follow-up option.
-  const option = page.getByText('1 Day', { exact: true });
+  // Select "1 day" follow-up option.
+  const option = page.getByText('1 day', { exact: true });
   await option.scrollIntoViewIfNeeded();
   await option.click({ force: true });
   await page.waitForTimeout(WAIT.formInteraction);

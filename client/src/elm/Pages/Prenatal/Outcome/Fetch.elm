@@ -3,8 +3,8 @@ module Pages.Prenatal.Outcome.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Backend.NutritionEncounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Maybe.Extra
+import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipantDesc)
 import RemoteData
 
 
@@ -17,12 +17,11 @@ fetch participantId db =
                 |> Maybe.map .person
 
         encountersIds =
-            getPrenatalEncountersForParticipant db participantId
+            getPrenatalEncountersForParticipantDesc db participantId
                 |> List.map Tuple.first
 
         lastEncounterId =
-            List.reverse encountersIds
-                |> List.head
+            List.head encountersIds
 
         -- We fetch measurements for all encounters, to be
         -- able to resolve EGA, EDD, Gravida and Para.

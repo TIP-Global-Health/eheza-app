@@ -1,4 +1,4 @@
-module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), BackendWhatsAppEntity, DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadPhotosMode(..), DownloadPhotosStatus(..), DownloadSyncResponse, Flags, IncidentContnentIdentifier, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoBatchResultRecord, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadFileResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbQueryUploadWhatsAppResultRecord, IndexDbSaveError(..), IndexDbSaveResult, IndexDbSaveResultTable(..), IndexDbSaveStatus(..), IndexDbUploadRemoteData, Model, Msg(..), PhotoBatchResult, Site(..), SiteFeature(..), SyncCycle(..), SyncIncidentType(..), SyncInfoAuthority, SyncInfoAuthorityForPort, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoGeneralForPort, SyncInfoStatus(..), SyncSpeed, SyncStatus(..), UploadFileError(..), UploadMethod(..), UploadRec, downloadRequestTimeout, emptyModel, emptySyncInfoAuthority, emptyUploadRec, uploadRequestTimeout)
+module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), BackendWhatsAppEntity, DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadPhotosMode(..), DownloadPhotosStatus(..), DownloadSyncResponse, Flags, IncidentContnentIdentifier, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoBatchResultRecord, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadFileResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbQueryUploadWhatsAppResultRecord, IndexDbSaveError(..), IndexDbSaveResult, IndexDbSaveResultTable(..), IndexDbSaveStatus(..), IndexDbUploadRemoteData, Model, Msg(..), PhotoBatchResult, Site(..), SiteFeature(..), SyncCycle(..), SyncIncidentType(..), SyncInfoAuthority, SyncInfoAuthorityForPort, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoGeneralForPort, SyncInfoStatus(..), SyncSpeed, SyncStatus(..), UploadFileError(..), UploadMethod(..), UploadRec, downloadRequestTimeout, emptyModel, emptySyncInfoAuthority, emptyUploadRec, statisticsRequestTimeout, uploadRequestTimeout)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -377,6 +377,10 @@ type alias Model =
     , downloadAuthorityResponse : WebData (DownloadSyncResponse BackendAuthorityEntity)
     , downloadGeneralResponse : WebData (DownloadSyncResponse BackendGeneralEntity)
 
+    -- The authority entry, as it was when the response waiting for that
+    -- acknowledgement was requested.
+    , downloadAuthorityAtRequest : SyncInfoAuthority
+
     -- Used to determine if download request has timed out.
     , downloadRequestTime : Time.Posix
 
@@ -434,6 +438,7 @@ emptyModel flags =
     , syncInfoAuthorities = flags.syncInfoAuthorities
     , downloadAuthorityResponse = NotAsked
     , downloadGeneralResponse = NotAsked
+    , downloadAuthorityAtRequest = emptySyncInfoAuthority ""
     , downloadRequestTime = Time.millisToPosix 0
     , downloadPhotosMode = DownloadPhotosAll emptyDownloadPhotosAllRec
     , downloadPhotosBatchSize = flags.batchSize
@@ -772,6 +777,14 @@ downloadRequestTimeout =
     (12000 + 3000) * 2
 
 
+{-| The dashboard statistics download can be several MB, so it gets far longer
+than uploads. A timeout still ends a dead connection; the value is in milliseconds.
+-}
+statisticsRequestTimeout : Float
+statisticsRequestTimeout =
+    5 * 60 * 1000
+
+
 {-| Upload requests (POST to /api/sync) carry a batch of changes and may run
 over slow rural connections, so we allow more headroom than downloads. The
 crucial point is that there is a timeout at all: without one, a stalled
@@ -822,7 +835,7 @@ type Msg
     | SchedulePhotosDownload
     | RefreshPage
     | BackendAuthorityFetch
-    | BackendAuthorityFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | BackendAuthorityFetchHandle (Zipper SyncInfoAuthority) Time.Posix (WebData (DownloadSyncResponse BackendAuthorityEntity))
     | BackendAuthorityFetchedDataSavedHandle String
     | BackendAuthorityDashboardStatsFetch
     | BackendAuthorityDashboardStatsFetchHandle (Zipper SyncInfoAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
@@ -831,7 +844,7 @@ type Msg
     | BackendFetchMain
     | BackendFetchPhotos
     | BackendGeneralFetch
-    | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
+    | BackendGeneralFetchHandle Int Time.Posix (WebData (DownloadSyncResponse BackendGeneralEntity))
     | BackendGeneralFetchedDataSavedHandle String
       -- Fetch a deferred photo from the server.
     | BackendDeferredPhotoFetch (Maybe IndexDbQueryDeferredPhotoResultRecord)

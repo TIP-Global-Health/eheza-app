@@ -7,6 +7,7 @@ things on the backend.
 
 import Backend.Completion.Model exposing (CompletionData)
 import Backend.CompletionMenu.Model
+import Backend.Components.Model exposing (MenuData)
 import Backend.Reports.Model exposing (ReportsData)
 import Backend.ReportsMenu.Model
 import Backend.Scoreboard.Model exposing (ScoreboardData)
@@ -17,9 +18,9 @@ import Json.Decode
 type alias ModelBackend =
     { scoreboardMenuData : Maybe (Result Json.Decode.Error Backend.ScoreboardMenu.Model.MenuData)
     , scoreboardData : Maybe (Result Json.Decode.Error ScoreboardData)
-    , reportsMenuData : Maybe (Result Json.Decode.Error Backend.ReportsMenu.Model.MenuData)
+    , reportsMenuData : Maybe (Result Json.Decode.Error MenuData)
     , reportsData : Maybe (Result Json.Decode.Error ReportsData)
-    , completionMenuData : Maybe (Result Json.Decode.Error Backend.CompletionMenu.Model.MenuData)
+    , completionMenuData : Maybe (Result Json.Decode.Error MenuData)
     , completionData : Maybe (Result Json.Decode.Error CompletionData)
     }
 

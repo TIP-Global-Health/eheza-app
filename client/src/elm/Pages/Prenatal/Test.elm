@@ -1,8 +1,22 @@
 module Pages.Prenatal.Test exposing (all)
 
+import Backend.IndividualEncounterParticipant.Model
+    exposing
+        ( IndividualEncounterParticipant
+        , IndividualEncounterParticipantOutcome(..)
+        , IndividualEncounterType(..)
+        , PregnancyOutcome(..)
+        )
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..), emptyPrenatalEncounter)
+import Date
 import Expect
+import Gizra.NominalDate exposing (NominalDate)
+import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
 import Pages.Prenatal.Utils exposing (marginalBloodPressureCondition)
+import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
+import TestFixtures
+import Time
 
 
 
@@ -56,7 +70,176 @@ marginalBloodPressureConditionTest =
         ]
 
 
+currentDate : NominalDate
+currentDate =
+    Date.fromCalendarDate 2026 Time.Jun 1
+
+
+{-| An antenatal participant registered `days` before `currentDate`, with no
+EDD, no end date and no outcome -- the shape of an undated pregnancy.
+-}
+pregnancyRegisteredDaysAgo : Int -> IndividualEncounterParticipant
+pregnancyRegisteredDaysAgo days =
+    TestFixtures.testParticipant (Date.add Date.Days -days currentDate) AntenatalEncounter
+
+
+
+-- A pregnancy stays active until 92 days past its EDD. When EDD was never
+-- recorded, it is estimated as registration date + 280 days (pregnancy
+-- duration), so an undated pregnancy expires 372 days after registration.
+
+
+isPregnancyActiveTest : Test
+isPregnancyActiveTest =
+    describe "isPregnancyActive"
+        [ test "concluded (end date + outcome) -> False" <|
+            \_ ->
+                let
+                    participant =
+                        pregnancyRegisteredDaysAgo 100
+                in
+                isPregnancyActive currentDate
+                    { participant
+                        | endDate = Just currentDate
+                        , outcome = Just (Pregnancy OutcomeLiveAtTerm)
+                    }
+                    |> Expect.equal False
+
+        -- EDD recorded: the 92 day grace period, unchanged.
+        , test "EDD 91 days overdue -> True (within grace period)" <|
+            \_ ->
+                let
+                    participant =
+                        pregnancyRegisteredDaysAgo 300
+                in
+                isPregnancyActive currentDate
+                    { participant | eddDate = Just (Date.add Date.Days -91 currentDate) }
+                    |> Expect.equal True
+        , test "EDD 92 days overdue -> False (grace period elapsed)" <|
+            \_ ->
+                let
+                    participant =
+                        pregnancyRegisteredDaysAgo 300
+                in
+                isPregnancyActive currentDate
+                    { participant | eddDate = Just (Date.add Date.Days -92 currentDate) }
+                    |> Expect.equal False
+
+        -- No EDD: expiry is estimated from the registration date.
+        , test "no EDD, registered today -> True" <|
+            \_ -> isPregnancyActive currentDate (pregnancyRegisteredDaysAgo 0) |> Expect.equal True
+        , test "no EDD, registered 371 days ago -> True (last active day)" <|
+            \_ -> isPregnancyActive currentDate (pregnancyRegisteredDaysAgo 371) |> Expect.equal True
+        , test "no EDD, registered 372 days ago -> False (280 + 92)" <|
+            \_ -> isPregnancyActive currentDate (pregnancyRegisteredDaysAgo 372) |> Expect.equal False
+        , test "no EDD, registered 5 years ago -> False" <|
+            \_ -> isPregnancyActive currentDate (pregnancyRegisteredDaysAgo 1825) |> Expect.equal False
+        ]
+
+
+{-| A pregnancy whose outcome was recorded `days` before `currentDate`.
+-}
+pregnancyConcludedDaysAgo : Int -> IndividualEncounterParticipant
+pregnancyConcludedDaysAgo days =
+    let
+        participant =
+            pregnancyRegisteredDaysAgo 200
+    in
+    { participant
+        | endDate = Just (Date.add Date.Days -days currentDate)
+        , outcome = Just (Pregnancy OutcomeLiveAtTerm)
+    }
+
+
+visitStartedDaysAgo : Int -> PrenatalEncounterType -> PrenatalEncounter
+visitStartedDaysAgo days encounterType =
+    emptyPrenatalEncounter (toEntityUuid "pregnancy") (Date.add Date.Days -days currentDate) encounterType Nothing
+
+
+{-| A visit started and ended `days` before `currentDate`.
+-}
+visitEndedDaysAgo : Int -> PrenatalEncounterType -> PrenatalEncounter
+visitEndedDaysAgo days encounterType =
+    let
+        visit =
+            visitStartedDaysAgo days encounterType
+    in
+    { visit | endDate = Just visit.startDate }
+
+
+
+-- The participant page keeps a pregnancy concluded today only for the role
+-- whose postpartum visit is still open or ended today; otherwise as before.
+
+
+pregnancyConcludedInTodaysPostpartumVisitTest : Test
+pregnancyConcludedInTodaysPostpartumVisitTest =
+    let
+        isNurse =
+            False
+
+        isChw =
+            True
+    in
+    describe "pregnancyConcludedInTodaysPostpartumVisit"
+        [ test "nurse, outcome today inside today's nurse postpartum visit -> True" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 0 NursePostpartumEncounter ]
+                    |> Expect.equal True
+        , test "CHW, outcome today inside today's CHW postpartum visit -> True" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isChw (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 0 ChwPostpartumEncounter ]
+                    |> Expect.equal True
+        , test "earlier visits do not get in the way -> True" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate
+                    isNurse
+                    (pregnancyConcludedDaysAgo 0)
+                    [ visitStartedDaysAgo 0 NursePostpartumEncounter, visitStartedDaysAgo 30 NurseEncounter ]
+                    |> Expect.equal True
+        , test "CHW viewing a nurse postpartum visit -> False (other role)" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isChw (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 0 NursePostpartumEncounter ]
+                    |> Expect.equal False
+        , test "nurse viewing a CHW postpartum visit -> False (other role)" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 0 ChwPostpartumEncounter ]
+                    |> Expect.equal False
+        , test "outcome today in a visit opened yesterday and still open -> True" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 1 NursePostpartumEncounter ]
+                    |> Expect.equal True
+        , test "outcome today, postpartum visit ended today -> True" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isChw (pregnancyConcludedDaysAgo 0) [ visitEndedDaysAgo 0 ChwPostpartumEncounter ]
+                    |> Expect.equal True
+        , test "outcome today, postpartum visit ended yesterday -> False" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 0) [ visitEndedDaysAgo 1 NursePostpartumEncounter ]
+                    |> Expect.equal False
+        , test "outcome today after an antenatal visit only -> False" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 0 NurseEncounter ]
+                    |> Expect.equal False
+        , test "outcome today with no visit today (CHW warning popup) -> False" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isChw (pregnancyConcludedDaysAgo 0) [ visitStartedDaysAgo 40 ChwFirstEncounter ]
+                    |> Expect.equal False
+        , test "outcome recorded yesterday -> False" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyConcludedDaysAgo 1) [ visitStartedDaysAgo 0 NursePostpartumEncounter ]
+                    |> Expect.equal False
+        , test "no outcome recorded -> False" <|
+            \_ ->
+                pregnancyConcludedInTodaysPostpartumVisit currentDate isNurse (pregnancyRegisteredDaysAgo 200) [ visitStartedDaysAgo 0 NursePostpartumEncounter ]
+                    |> Expect.equal False
+        ]
+
+
 all : Test
 all =
-    describe "Prenatal blood-pressure condition tests"
-        [ marginalBloodPressureConditionTest ]
+    describe "Prenatal tests"
+        [ marginalBloodPressureConditionTest
+        , isPregnancyActiveTest
+        , pregnancyConcludedInTodaysPostpartumVisitTest
+        ]

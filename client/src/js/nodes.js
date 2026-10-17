@@ -295,11 +295,12 @@
                                         }
 
                                         return addShard.then(function () {
-                                            return changeTable.add(change).catch(function (err) {
+                                            return changeTable.add(change).catch(function (firstError) {
                                                 // If there was a failure, we try again, assuming it
                                                 // may have been a glitch. If operation fails again,
                                                 // we log error with Rollbar.
-                                                return changeTable.add(change).catch(function (err) {
+                                                return changeTable.add(change).catch(function (secondError) {
+                                                    reportUnqueuedChange(change, firstError, secondError);
                                                     var reject = new Response(body, {
                                                         status: 400,
                                                         statusText: 'Failure: PATCH at changes table'
@@ -385,11 +386,12 @@
                                               change.shard = json.shard;
                                           }
 
-                                          return changeTable.add(change).catch(function (err) {
+                                          return changeTable.add(change).catch(function (firstError) {
                                               // If there was a failure, we try again, assuming it
                                               // may have been a glitch. If operation fails again,
                                               // we log error with Rollbar.
-                                              return changeTable.add(change).catch(function (err) {
+                                              return changeTable.add(change).catch(function (secondError) {
+                                                  reportUnqueuedChange(change, firstError, secondError);
                                                   var reject = new Response(body, {
                                                       status: 400,
                                                       statusText: 'Failure: POST at changes table'
@@ -410,6 +412,21 @@
                 });
             });
         }).catch(sendErrorResponses);
+    }
+
+    // Records, in `dbErrors`, a change whose upload row could not be stored. The app
+    // sends `dbErrors` to Rollbar after a General download, once it has a token.
+    function reportUnqueuedChange (change, firstError, secondError) {
+        var error = 'Dropped ' + change.method + ' ' + change.type + ' ' + change.uuid
+            + ': upload row not stored (' + String(firstError) + '; retry: ' + String(secondError) + ')';
+
+        // A report that cannot be stored is given up, so the save is not affected.
+        try {
+            Dexie.ignoreTransaction(function () {
+                return dbSync.dbErrors.add({ error: error, isSynced: 0 });
+            }).catch(function () {});
+        }
+        catch (e) {}
     }
 
     function view (type, uuid) {
@@ -1285,7 +1302,7 @@
     }
 
     function jsonError (err) {
-        var response = new Response(JSON.stringify(err), {
+        var response = new Response(String(err), {
             status: 400,
             statusText: 'Bad JSON'
         });

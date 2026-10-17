@@ -267,17 +267,17 @@ function hedley_admin_menu_default_menu_links() {
     'weight' => -48,
     'customized' => 1,
   );
-  // Exported menu link: menu-eheza-app-admin-menu_create-pmtct-participation:node/add/pmtct-paticipation.
-  $menu_links['menu-eheza-app-admin-menu_create-pmtct-participation:node/add/pmtct-paticipation'] = array(
+  // Exported menu link: menu-eheza-app-admin-menu_create-pmtct-participation:node/add/pmtct-participant.
+  $menu_links['menu-eheza-app-admin-menu_create-pmtct-participation:node/add/pmtct-participant'] = array(
     'menu_name' => 'menu-eheza-app-admin-menu',
-    'link_path' => 'node/add/pmtct-paticipation',
-    'router_path' => 'node/add',
+    'link_path' => 'node/add/pmtct-participant',
+    'router_path' => 'node/add/pmtct-participant',
     'link_title' => 'Create PMTCT Participation',
     'options' => array(
       'attributes' => array(
         'title' => '',
       ),
-      'identifier' => 'menu-eheza-app-admin-menu_create-pmtct-participation:node/add/pmtct-paticipation',
+      'identifier' => 'menu-eheza-app-admin-menu_create-pmtct-participation:node/add/pmtct-participant',
     ),
     'module' => 'menu',
     'hidden' => 0,

@@ -1,4 +1,4 @@
-module Backend.Measurement.Utils exposing (administrationNoteFromString, administrationNoteToString, ahezaDistributionReasonFromString, ahezaDistributionReasonToString, avoidingGuidanceReasonFromString, avoidingGuidanceReasonToString, bilirubinValueFromString, bilirubinValueToString, bloodGroupFromString, bloodGroupToString, bloodSmearResultFromString, bloodSmearResultToString, breastfeedingSignFromString, breastfeedingSignToString, covidIsolationPeriod, currentValue, currentValues, diabetesBySugarCount, diabetesByUrineGlucose, expectNCDAActivity, foodGroupFromString, foodGroupToString, generatePreviousMeasurements, getCurrentReasonForNonReferral, getHeightValue, getMeasurementDateMeasuredFunc, getMeasurementValueFunc, glucoseValueFromString, glucoseValueToString, guExamSignFromString, guExamSignToString, haemoglobinValueFromString, haemoglobinValueToString, headCircumferenceIndication, headCircumferenceValueFunc, hivDiagnosisSignFromString, hivDiagnosisSignToString, hivHealthEducationSignFromString, hivHealthEducationSignToString, hivPrescribedMedicationFromString, hivPrescribedMedicationToString, hivSymptomFromString, hivSymptomToString, illnessSymptomFromString, illnessSymptomToString, ketoneValueFromString, ketoneValueToString, labExpirationPeriod, laboratoryTestFromString, laboratoryTestToString, lateFirstANCVisitReasonFromString, lateFirstANCVisitReasonToString, leukocytesValueFromString, leukocytesValueToString, lmpDateNotConfidentReasonFromString, lmpDateNotConfidentReasonToString, mapChildMeasurementsAtOfflineSession, mapMeasurementData, medicalConditionFromString, medicalConditionToString, medicalHistoryInfectiousDiseaseFromString, medicalHistoryInfectiousDiseaseToString, medicalHistoryMentalHealthIssueFromString, medicalHistoryMentalHealthIssueToString, medicalHistoryPhysicalConditionFromString, medicalHistoryPhysicalConditionToString, medicalHistorySignFromString, medicalHistorySignToString, medicationCausingHypertensionFromString, medicationCausingHypertensionToString, medicationTreatingDiabetesFromString, medicationTreatingDiabetesToString, medicationTreatingHypertensionFromString, medicationTreatingHypertensionToString, muacIndicationForAdult, muacIndicationForChild, muacIndicationForPerson, muacValueForSite, muacValueFunc, muacValueFuncForSite, ncdDangerSignFromString, ncdDangerSignToString, ncdFamilyHistorySignFromString, ncdFamilyHistorySignToString, ncdGroup1SymptomFromString, ncdGroup1SymptomToString, ncdGroup2SymptomFromString, ncdGroup2SymptomToString, ncdPainSymptomFromString, ncdPainSymptomToString, ncdSocialHistorySignFromString, ncdSocialHistorySignToString, ncdaSignFromString, ncdaSignToString, nitriteValueFromString, nitriteValueToString, nonReferralReasonToSign, nutritionAssessmentFromString, nutritionAssessmentToComparable, nutritionAssessmentToString, nutritionSignToString, obstetricHistoryStep2SignFromString, obstetricHistoryStep2SignToString, occursInFamilySignFromString, occursInFamilySignToString, outsideCareMedicationFromString, outsideCareMedicationToString, outsideCareSignFromString, outsideCareSignToString, phValueFromString, phValueToString, postpartumChildDangerSignFromString, postpartumChildDangerSignToString, postpartumHealingProblemFromString, postpartumHealingProblemToString, postpartumMotherDangerSignFromString, postpartumMotherDangerSignToString, predecessorFromString, predecessorToString, pregnancyTestResultFromString, pregnancyTestResultToString, prenatalFlankPainSignFromString, prenatalFlankPainSignToString, prenatalHIVSignFromString, prenatalHIVSignToString, prenatalMentalHealthQuestionFromString, prenatalMentalHealthQuestionOptionFromString, prenatalMentalHealthQuestionOptionToString, prenatalMentalHealthQuestionToString, prenatalSymptomFromString, prenatalSymptomQuestionFromString, prenatalSymptomQuestionToString, prenatalSymptomToString, proteinValueFromString, proteinValueToString, reasonForNonReferralFromString, reasonForNonReferralToString, receiveOptionFromString, receiveOptionToString, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignFromString, recommendedTreatmentSignToString, referralToFacilityCompleted, reinforceTreatmentSignFromString, reinforceTreatmentSignToString, reviewStateFromString, reviewStateToString, rhesusFromString, rhesusToString, skippedFormFromString, skippedFormToString, splitChildMeasurements, splitMotherMeasurements, stuntingLevelFromString, stuntingLevelToString, symptomsGISignFromString, symptomsGISignToString, symptomsGeneralSignFromString, symptomsGeneralSignToString, symptomsRespiratorySignFromString, symptomsRespiratorySignToString, testResultFromString, testResultToString, tuberculosisDOTSignFromString, tuberculosisDOTSignToString, tuberculosisDiagnosisFromString, tuberculosisDiagnosisToString, tuberculosisHealthEducationSignFromString, tuberculosisHealthEducationSignToString, tuberculosisPrescribedMedicationFromString, tuberculosisPrescribedMedicationToString, tuberculosisSymptomFromString, tuberculosisSymptomToString, unitOfMeasurementFromString, unitOfMeasurementToString, urobilinogenValueFromString, urobilinogenValueToString, vaccineDoseFromString, vaccineDoseToString, vaginalExamSignFromString, vaginalExamSignToString, weightValueFunc)
+module Backend.Measurement.Utils exposing (administrationNoteFromString, administrationNoteToString, adverseEventsReported, ahezaDistributionReasonFromString, ahezaDistributionReasonToString, avoidingGuidanceReasonFromString, avoidingGuidanceReasonToString, bilirubinValueFromString, bilirubinValueToString, bloodGroupFromString, bloodGroupToString, bloodSmearResultFromString, bloodSmearResultToString, breastfeedingSignFromString, breastfeedingSignToString, covidIsolationPeriod, currentValue, currentValues, diabetesBySugarCount, diabetesByUrineGlucose, expectNCDAActivity, foodGroupFromString, foodGroupToString, generatePreviousMeasurements, getCurrentReasonForNonReferral, getHeightValue, getMeasurementDateMeasuredFunc, getMeasurementValueFunc, glucoseValueFromString, glucoseValueToString, guExamSignFromString, guExamSignToString, haemoglobinValueFromString, haemoglobinValueToString, headCircumferenceIndication, headCircumferenceTakenValue, headCircumferenceValueFunc, hivDiagnosisSignFromString, hivDiagnosisSignToString, hivHealthEducationSignFromString, hivHealthEducationSignToString, hivPrescribedMedicationFromString, hivPrescribedMedicationToString, hivSymptomFromString, hivSymptomToString, illnessSymptomFromString, illnessSymptomToString, ketoneValueFromString, ketoneValueToString, labExpirationPeriod, laboratoryTestFromString, laboratoryTestToString, labsResultsTestAddedMsgs, lateFirstANCVisitReasonFromString, lateFirstANCVisitReasonToString, leukocytesValueFromString, leukocytesValueToString, lmpDateNotConfidentReasonFromString, lmpDateNotConfidentReasonToString, mapChildMeasurementsAtOfflineSession, mapMeasurementData, medicalConditionFromString, medicalConditionToString, medicalHistoryInfectiousDiseaseFromString, medicalHistoryInfectiousDiseaseToString, medicalHistoryMentalHealthIssueFromString, medicalHistoryMentalHealthIssueToString, medicalHistoryPhysicalConditionFromString, medicalHistoryPhysicalConditionToString, medicalHistorySignFromString, medicalHistorySignToString, medicationCausingHypertensionFromString, medicationCausingHypertensionToString, medicationTreatingDiabetesFromString, medicationTreatingDiabetesToString, medicationTreatingHypertensionFromString, medicationTreatingHypertensionToString, muacIndicationForAdult, muacIndicationForChild, muacIndicationForPerson, muacValueForSite, muacValueFunc, muacValueFuncForSite, ncdDangerSignFromString, ncdDangerSignToString, ncdFamilyHistorySignFromString, ncdFamilyHistorySignToString, ncdGroup1SymptomFromString, ncdGroup1SymptomToString, ncdGroup2SymptomFromString, ncdGroup2SymptomToString, ncdPainSymptomFromString, ncdPainSymptomToString, ncdSocialHistorySignFromString, ncdSocialHistorySignToString, ncdaSignFromString, ncdaSignToString, nitriteValueFromString, nitriteValueToString, nonReferralReasonToSign, nutritionAssessmentFromString, nutritionAssessmentToComparable, nutritionAssessmentToString, nutritionSignToString, obstetricHistoryStep2SignFromString, obstetricHistoryStep2SignToString, occursInFamilySignFromString, occursInFamilySignToString, outsideCareMedicationFromString, outsideCareMedicationToString, outsideCareSignFromString, outsideCareSignToString, phValueFromString, phValueToString, postpartumChildDangerSignFromString, postpartumChildDangerSignToString, postpartumHealingProblemFromString, postpartumHealingProblemToString, postpartumMotherDangerSignFromString, postpartumMotherDangerSignToString, predecessorFromString, predecessorToString, pregnancyTestResultFromString, pregnancyTestResultToString, prenatalFlankPainSignFromString, prenatalFlankPainSignToString, prenatalHIVSignFromString, prenatalHIVSignToString, prenatalMentalHealthQuestionFromString, prenatalMentalHealthQuestionOptionFromString, prenatalMentalHealthQuestionOptionToString, prenatalMentalHealthQuestionToString, prenatalSymptomFromString, prenatalSymptomQuestionFromString, prenatalSymptomQuestionToString, prenatalSymptomToString, proteinValueFromString, proteinValueToString, reasonForNonReferralFromString, reasonForNonReferralToString, receiveOptionFromString, receiveOptionToString, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignFromString, recommendedTreatmentSignToString, referralToFacilityCompleted, reinforceTreatmentSignFromString, reinforceTreatmentSignToString, reviewStateFromString, reviewStateToString, rhesusFromString, rhesusToString, skippedFormFromString, skippedFormToString, splitChildMeasurements, splitMotherMeasurements, stuntingLevelFromString, stuntingLevelToString, symptomsGISignFromString, symptomsGISignToString, symptomsGeneralSignFromString, symptomsGeneralSignToString, symptomsRespiratorySignFromString, symptomsRespiratorySignToString, testPerformedByExecutionNote, testResultFromString, testResultToString, tuberculosisDOTSignFromString, tuberculosisDOTSignToString, tuberculosisDiagnosisFromString, tuberculosisDiagnosisToString, tuberculosisHealthEducationSignFromString, tuberculosisHealthEducationSignToString, tuberculosisPrescribedMedicationFromString, tuberculosisPrescribedMedicationToString, tuberculosisSymptomFromString, tuberculosisSymptomToString, unitOfMeasurementFromString, unitOfMeasurementToString, urobilinogenValueFromString, urobilinogenValueToString, vaccineDoseFromString, vaccineDoseToString, vaginalExamSignFromString, vaginalExamSignToString, weightValueFunc)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -659,6 +659,18 @@ headCircumferenceValueFunc =
     \(HeadCircumferenceInCm cm) -> cm
 
 
+{-| The head circumference in cm, or Nothing when it was not taken. A head
+circumference that was not taken is stored as 0 cm, with a note saying so.
+-}
+headCircumferenceTakenValue : HeadCircumferenceValue -> Maybe Float
+headCircumferenceTakenValue value =
+    if EverySet.member NoteNotTaken value.notes then
+        Nothing
+
+    else
+        Just (headCircumferenceValueFunc value.headCircumference)
+
+
 vaccineDoseFromString : String -> Maybe VaccineDose
 vaccineDoseFromString dose =
     case dose of
@@ -703,6 +715,22 @@ vaccineDoseToString dose =
 getMeasurementValueFunc : Maybe ( id, { measurement | value : v } ) -> Maybe v
 getMeasurementValueFunc =
     Maybe.map (Tuple.second >> .value)
+
+
+{-| A treatment review stores `NoAdverseEvent` when no side effects were
+reported, so only a real event counts.
+-}
+adverseEventsReported : EverySet AdverseEvent -> Bool
+adverseEventsReported events =
+    case EverySet.toList events of
+        [] ->
+            False
+
+        [ NoAdverseEvent ] ->
+            False
+
+        _ ->
+            True
 
 
 getMeasurementDateMeasuredFunc : Maybe ( id, { measurement | dateMeasured : NominalDate } ) -> Maybe NominalDate
@@ -1446,6 +1474,67 @@ Note: HIV PCR can take up to one month to get a result.
 labExpirationPeriod : Int
 labExpirationPeriod =
     35
+
+
+{-| Saves the Case Management entry after a test is marked performed or not.
+Only a performed test creates an entry, and an entry left with no performed
+test closes today.
+-}
+labsResultsTestAddedMsgs :
+    NominalDate
+    -> LaboratoryTest
+    -> Bool
+    -> Maybe ( id, { m | value : LabsResultsValue } )
+    -> (Maybe id -> LabsResultsValue -> msg)
+    -> List msg
+labsResultsTestAddedMsgs currentDate test testExecuted entry saveMsg =
+    let
+        save resultsId value =
+            if not testExecuted && not (EverySet.member test value.performedTests) then
+                -- Marking a test not performed changes nothing when the entry
+                -- does not hold it, for example a vitals recheck never scheduled.
+                []
+
+            else
+                let
+                    performedTests =
+                        if testExecuted then
+                            EverySet.insert test value.performedTests
+
+                        else
+                            EverySet.remove test value.performedTests
+
+                    resolutionDate =
+                        if EverySet.isEmpty performedTests then
+                            currentDate
+
+                        else
+                            Date.add Date.Days labExpirationPeriod currentDate
+                in
+                [ saveMsg resultsId
+                    { value
+                        | performedTests = performedTests
+
+                        -- A universal form can move a test from point of care to the lab, so
+                        -- the test must not stay completed.
+                        , completedTests = EverySet.remove test value.completedTests
+                        , resolutionDate = resolutionDate
+                    }
+                ]
+    in
+    case entry of
+        Just ( resultsId, measurement ) ->
+            save (Just resultsId) measurement.value
+
+        Nothing ->
+            save Nothing
+                { performedTests = EverySet.empty
+                , completedTests = EverySet.empty
+                , resolutionDate = currentDate
+                , patientNotified = False
+                , reviewState = Nothing
+                , testsWithFollowUp = Nothing
+                }
 
 
 prenatalHIVSignToString : PrenatalHIVSign -> String
@@ -3651,19 +3740,27 @@ recommendedTreatmentMeasurementTaken allowedSigns signs =
     List.any (\sign -> EverySet.member sign signs) allowedSigns
 
 
+testPerformedByExecutionNote : TestExecutionNote -> Bool
+testPerformedByExecutionNote executionNote =
+    List.member executionNote [ TestNoteRunToday, TestNoteRunPreviously, TestNoteRunConfirmedByLabTech ]
+
+
 diabetesBySugarCount : RandomBloodSugarTestValue encounterId -> Bool
 diabetesBySugarCount value =
-    Maybe.map2
-        (\testPrerequisites sugarCount ->
-            if EverySet.member PrerequisiteFastFor12h testPrerequisites then
-                sugarCount > 126
+    -- A reading left on a test that was not performed says nothing.
+    testPerformedByExecutionNote value.executionNote
+        && (Maybe.map2
+                (\testPrerequisites sugarCount ->
+                    if EverySet.member PrerequisiteFastFor12h testPrerequisites then
+                        sugarCount > 126
 
-            else
-                sugarCount >= 200
-        )
-        value.testPrerequisites
-        value.sugarCount
-        |> Maybe.withDefault False
+                    else
+                        sugarCount >= 200
+                )
+                value.testPrerequisites
+                value.sugarCount
+                |> Maybe.withDefault False
+           )
 
 
 diabetesByUrineGlucose : UrineDipstickTestValue -> Bool
