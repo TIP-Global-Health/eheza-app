@@ -488,6 +488,10 @@ B-487	4	READY	LOW			42	Acute Illness progress report: the treatment review's "fe
 B-488	4	READY	LOW			42	Person registration GPS: a create or edit person page reached by reload or app start never asks for a GPS reading, so th
 B-489	4	READY	LOW			42	WhatsApp send script: a record with no phone number, screenshot or template is skipped on every run and never retired
 B-490	4	READY	LOW		2367	42	Prenatal labs Case Management: a test sent to the lab after the nurse has completed every other result never reaches the
+B-491	4	READY	LOW			43	NCDA scorecard "4+ ANC visits": an opened-but-empty antenatal encounter counts as a visit, so 17 of the 67 pregnancies t
+B-492	3	READY	MED-LOW			43	Case Management Acute Illness pane: entries of illnesses the CHW never closed stay listed for years (6,141 site-wide, >9
+B-493	3	READY	MED-LOW			43	Prenatal labs entry: "End encounter" and the last-result save write the device's whole local copy of the entry back, so 
+B-494	3	READY	MED-LOW			43	Case Management Immunization pane (B-232's fix, merged, UNRELEASED): on release it lists every child with an immunisatio
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
