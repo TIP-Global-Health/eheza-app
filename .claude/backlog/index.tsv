@@ -495,6 +495,7 @@ B-494	3	IMPLEMENTED	MED-LOW	2374	2375	43	Case Management Immunization pane (B-23
 B-495	4	IMPLEMENTED	LOW	2370	2371	41	Child Scoreboard NCDA form: a "treated for acute malnutrition" answer survives a MUAC corrected to green or marked not t
 B-496	2	READY	MED			44	Acute illness + Prenatal: the diagnosis the device computed and acted on is never written to the encounter — 5 % of acut
 B-497	4	READY	LOW			44	Prenatal: an encounter with no diagnoses is re-patched with "none" on every trigger save, because the stored `["none"]` 
+B-498	4	READY	LOW		2377	44	Service worker: a save on the device is reported to every open tab, so each tab runs the assessments and may write its o
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
