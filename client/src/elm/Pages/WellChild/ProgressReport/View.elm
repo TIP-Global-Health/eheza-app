@@ -114,6 +114,7 @@ import Utils.NominalDate
         ( sortByDateDesc
         , sortDatesDesc
         , sortEncounterTuplesDesc
+        , sortTuplesByDate
         , sortTuplesByDateDesc
         )
 import Utils.WebData exposing (viewWebData)
@@ -2150,17 +2151,47 @@ viewTargetedInterventionsPane language currentDate child db allQuestionnairesByA
             distributeByAgeInMonths child chwNCDAQuestionnaires
 
         -- Treatment data from Nutrition encounters that diagnosed acute
-        -- malnutrition, by age of child in months.
-        malnutritionTreatmentsByAgeInMonthsWithDate =
+        -- malnutrition, oldest first.
+        malnutritionTreatmentData =
             groupMalnutritionTreatmentData
                 ++ individualMalnutritionTreatmentData
-                |> distributeByAgeInMonthsWithDate child
+                |> List.sortWith sortTuplesByDate
+
+        -- Distribute data by age of child, in months.
+        malnutritionTreatmentsByAgeInMonthsWithDate =
+            distributeByAgeInMonthsWithDate child malnutritionTreatmentData
+
+        -- Treatment data from the CHW questionnaires that asked about it.
+        malnutritionTreatmentsByAgeInMonthsWithDateFromQuestionnaire =
+            malnutritionTreatmentsByAgeInMonthsFromQuestionnaires child chwNCDAQuestionnaires
+
+        -- Resolve date of first malnutrition diagnosis.
+        firstMalnutritionDiagnosisDate =
+            List.head malnutritionTreatmentData
+                |> Maybe.map Tuple.first
+
+        malnutritionTreatmentsByAgeInMonthsWithDateBeforeFirstDiagnosis =
+            case firstMalnutritionDiagnosisDate of
+                Just firstDiagnosisDate ->
+                    -- Since first malnutrition diagnosis exists filter out all
+                    -- malnutrition data from questionnaires, that was generated
+                    -- after first diagnosis was made.
+                    Maybe.map
+                        (Dict.filter
+                            (\_ ( date, _ ) ->
+                                Date.compare date firstDiagnosisDate == LT
+                            )
+                        )
+                        malnutritionTreatmentsByAgeInMonthsWithDateFromQuestionnaire
+
+                Nothing ->
+                    malnutritionTreatmentsByAgeInMonthsWithDateFromQuestionnaire
 
         -- Generate final malnutrition data.
         malnutritionTreatmentsByAgeInMonths =
             mergeValuesByAgeInMonthsWithDateDicts
                 malnutritionTreatmentsByAgeInMonthsWithDate
-                (malnutritionTreatmentsByAgeInMonthsFromQuestionnaires child chwNCDAQuestionnaires)
+                malnutritionTreatmentsByAgeInMonthsWithDateBeforeFirstDiagnosis
 
         groupMalnutritionTreatmentData =
             let
