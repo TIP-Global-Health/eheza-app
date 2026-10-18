@@ -2,6 +2,7 @@ module Pages.WellChild.ProgressReport.View exposing
     ( distributeByListIndex
     , generateUniversalInterventionsValues
     , heightCellValuesByAgeInMonths
+    , malnutritionTreatmentsByAgeInMonthsFromQuestionnaires
     , resolveLastDayForMonthX
     , view
     , viewNutritionSigns
@@ -2150,17 +2151,8 @@ viewTargetedInterventionsPane language currentDate child db allQuestionnairesByA
             Maybe.map (Dict.map (\_ value -> Tuple.second value))
                 chwQuestionnairesByAgeInMonthsWithDate
 
-        -- Malnutrition treatment mapping logic:
-        -- Per requirements, treatment question appears only at Child Scorecard
-        -- encounter, and only in case Malnutrition was not diagnosed previously
-        -- (at any of different types of Nutrition encounters).
-        -- Therefore, we need to analyze only those questionnaires that
-        -- were filled before the first diagnosis of Malnutrition.
-        -- This way we solve possibility 'false negative' at questionnaires
-        -- that don't show Malnutrition question (and don't have Malnutrition
-        -- sign set, which is interpretred as 'No' answer).
-        --
-        -- So, as first step, generate malnutrition data from Nutrition encounters.
+        -- Treatment data from Nutrition encounters that diagnosed acute
+        -- malnutrition, oldest first.
         malnutritionTreatmentData =
             groupMalnutritionTreatmentData
                 ++ individualMalnutritionTreatmentData
@@ -2170,19 +2162,9 @@ viewTargetedInterventionsPane language currentDate child db allQuestionnairesByA
         malnutritionTreatmentsByAgeInMonthsWithDate =
             distributeByAgeInMonthsWithDate child malnutritionTreatmentData
 
-        -- Generate malnutrition data from questionnaires.
+        -- Treatment data from the CHW questionnaires that asked about it.
         malnutritionTreatmentsByAgeInMonthsWithDateFromQuestionnaire =
-            Maybe.map
-                (Dict.map
-                    (\_ ( date, value ) ->
-                        if EverySet.member TreatedForAcuteMalnutrition value.signs then
-                            ( date, NCDACellValueV )
-
-                        else
-                            ( date, NCDACellValueX )
-                    )
-                )
-                chwQuestionnairesByAgeInMonthsWithDate
+            malnutritionTreatmentsByAgeInMonthsFromQuestionnaires chwQuestionnairesByAgeInMonthsWithDate
 
         -- Resolve date of first malnutrition diagnosis.
         firstMalnutritionDiagnosisDate =
@@ -3136,6 +3118,31 @@ generateValues currentDate child valuesByAgeInMonths resolutionFunc =
 emptyNCDAValuesForChild : List NCDACellValue
 emptyNCDAValuesForChild =
     List.repeat 25 NCDACellValueEmpty
+
+
+{-| The treatment row cell of each CHW questionnaire. The question is asked
+only when the MUAC is off; an unasked questionnaire is left out, so its month
+shows a dash.
+-}
+malnutritionTreatmentsByAgeInMonthsFromQuestionnaires :
+    Maybe (Dict Int ( NominalDate, NCDAValue ))
+    -> Maybe (Dict Int ( NominalDate, NCDACellValue ))
+malnutritionTreatmentsByAgeInMonthsFromQuestionnaires =
+    Maybe.map
+        (Dict.toList
+            >> List.filterMap
+                (\( month, ( date, value ) ) ->
+                    if EverySet.member TreatedForAcuteMalnutrition value.signs then
+                        Just ( month, ( date, NCDACellValueV ) )
+
+                    else if Measurement.Utils.muacMeasurementIsOff value.muac then
+                        Just ( month, ( date, NCDACellValueX ) )
+
+                    else
+                        Nothing
+                )
+            >> Dict.fromList
+        )
 
 
 mergeValuesByAgeInMonthsWithDateDicts : Maybe (Dict Int ( NominalDate, a )) -> Maybe (Dict Int ( NominalDate, a )) -> Maybe (Dict Int a)

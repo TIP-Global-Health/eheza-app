@@ -1,7 +1,7 @@
 module Pages.WellChild.ProgressReport.Test exposing (all)
 
 import AssocList as Dict
-import Backend.Measurement.Model exposing (HeightInCm(..), NCDASign(..), NCDAValue, ReceiveOption(..), WeightInKg(..))
+import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), NCDASign(..), NCDAValue, ReceiveOption(..), WeightInKg(..))
 import Backend.Person.Model exposing (Person)
 import Date
 import EverySet
@@ -9,7 +9,7 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Pages.WellChild.ProgressReport.Model exposing (NCDACellValue(..))
-import Pages.WellChild.ProgressReport.View exposing (generateUniversalInterventionsValues, heightCellValuesByAgeInMonths, weightCellValuesByAgeInMonths)
+import Pages.WellChild.ProgressReport.View exposing (generateUniversalInterventionsValues, heightCellValuesByAgeInMonths, malnutritionTreatmentsByAgeInMonthsFromQuestionnaires, weightCellValuesByAgeInMonths)
 import Test exposing (Test, describe, test)
 import TestFixtures exposing (testChild)
 import Time
@@ -20,6 +20,7 @@ all : Test
 all =
     describe "Pages.WellChild.ProgressReport"
         [ fillTheBlanksAgeTests
+        , malnutritionTreatmentValuesTests
         , universalInterventionsValuesTests
         ]
 
@@ -218,4 +219,46 @@ universalInterventionsValuesTests =
                         [ Just NCDACellValueDash
                         , Just NCDACellValueDash
                         ]
+        ]
+
+
+{-| The CHW is asked whether the child is treated for acute malnutrition only
+when the MUAC typed on the same questionnaire is off. A questionnaire that
+never asked holds no answer, and is no data rather than "not treated".
+-}
+malnutritionTreatmentValuesTests : Test
+malnutritionTreatmentValuesTests =
+    let
+        cellFor questionnaire =
+            malnutritionTreatmentsByAgeInMonthsFromQuestionnaires (Just (Dict.singleton 10 ( currentDate, questionnaire )))
+                |> Maybe.andThen (Dict.get 10)
+                |> Maybe.map Tuple.second
+
+        greenMuac =
+            Just (MuacInCm 14)
+
+        offMuac =
+            Just (MuacInCm 11)
+    in
+    describe "malnutritionTreatmentsByAgeInMonthsFromQuestionnaires"
+        [ test "a green MUAC never asked the question, so the month has no data" <|
+            \_ ->
+                cellFor { emptyNCDAValue | muac = greenMuac }
+                    |> Expect.equal Nothing
+        , test "a questionnaire without a MUAC never asked the question, so the month has no data" <|
+            \_ ->
+                cellFor emptyNCDAValue
+                    |> Expect.equal Nothing
+        , test "an off MUAC with no treatment recorded reads as not treated" <|
+            \_ ->
+                cellFor { emptyNCDAValue | muac = offMuac }
+                    |> Expect.equal (Just NCDACellValueX)
+        , test "a recorded treatment reads as treated" <|
+            \_ ->
+                cellFor { emptyNCDAValue | muac = offMuac, signs = EverySet.singleton TreatedForAcuteMalnutrition }
+                    |> Expect.equal (Just NCDACellValueV)
+        , test "a recorded treatment is kept when the MUAC was corrected to green afterwards" <|
+            \_ ->
+                cellFor { emptyNCDAValue | muac = greenMuac, signs = EverySet.singleton TreatedForAcuteMalnutrition }
+                    |> Expect.equal (Just NCDACellValueV)
         ]
