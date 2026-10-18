@@ -44,7 +44,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Maybe.Extra exposing (isNothing)
 import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, AcuteIllnessFollowUpItem, CaseManagementFilter(..), ContactsTracingEntryData, FollowUpAcuteIllnessData, FollowUpDialogState(..), FollowUpDueOption(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpImmunizationData, FollowUpNutritionData, FollowUpPrenatalData, FollowUpTuberculosisData, HIVFollowUpEntry, HIVFollowUpItem, ImmunizationFollowUpEntry, ImmunizationFollowUpItem, LabsEntryState(..), Model, Msg(..), NCDLabsEntryData, NutritionFollowUpEntry, NutritionFollowUpItem, PrenatalFollowUpEntry, PrenatalFollowUpItem, PrenatalLabsEntryData, TuberculosisFollowUpEntry, TuberculosisFollowUpItem)
-import Pages.GlobalCaseManagement.Utils exposing (chwFilters, fillPersonName, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessFollowUps, generateHIVFollowUps, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps, generateTuberculosisFollowUps, labTechFilters, labsResultsTestData, nurseFilters)
+import Pages.GlobalCaseManagement.Utils exposing (chwFilters, expectImmunizationFollowUp, fillPersonName, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessFollowUps, generateHIVFollowUps, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps, generateTuberculosisFollowUps, labTechFilters, labsResultsTestData, nurseFilters)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Utils
 import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipantDesc)
@@ -52,7 +52,7 @@ import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Report.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Pages.Utils exposing (viewBySyncStatus)
 import RemoteData exposing (RemoteData(..))
-import SyncManager.Model exposing (SiteFeature)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewModal)
 import Utils.NominalDate exposing (sortDatesDesc, sortEncounterTuplesDesc)
@@ -91,7 +91,7 @@ view language currentDate features healthCenterId mVillageId isLabTech syncManag
         content =
             Maybe.map
                 (\villageId ->
-                    viewWebData language (viewContentForChw language currentDate features villageId model db) identity followUps
+                    viewWebData language (viewContentForChw language currentDate syncManager.syncInfoGeneral.site features villageId model db) identity followUps
                 )
                 mVillageId
                 |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate isLabTech model db) identity followUps)
@@ -107,8 +107,8 @@ view language currentDate features healthCenterId mVillageId isLabTech syncManag
         ]
 
 
-viewContentForChw : Language -> NominalDate -> EverySet SiteFeature -> VillageId -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
-viewContentForChw language currentDate features villageId model db allFollowUps =
+viewContentForChw : Language -> NominalDate -> Site -> EverySet SiteFeature -> VillageId -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContentForChw language currentDate site features villageId model db allFollowUps =
     let
         villageResidents =
             resolveVillageResidents villageId db
@@ -149,7 +149,7 @@ viewContentForChw language currentDate features villageId model db allFollowUps 
                 |> fillPersonName identity db
 
         immunizationFollowUpsPane =
-            viewImmunizationPane language currentDate immunizationFollowUps db
+            viewImmunizationPane language currentDate site immunizationFollowUps db
 
         tuberculosisPane =
             if tuberculosisManagementEnabled features then
@@ -1567,16 +1567,11 @@ viewNCDLabsEntry language data =
         (SetActivePage <| UserPage (NCDRecurrentEncounterPage data.encounterId))
 
 
-viewImmunizationPane : Language -> NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> Html Msg
-viewImmunizationPane language currentDate itemsDict db =
+viewImmunizationPane : Language -> NominalDate -> Site -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> Html Msg
+viewImmunizationPane language currentDate site itemsDict db =
     let
-        limitDate =
-            -- Set limit date for tomorrow, so that we
-            -- load all available follow ups.
-            Date.add Days 1 currentDate
-
         entries =
-            generateImmunizationFollowUpEntries limitDate itemsDict db
+            generateImmunizationFollowUpEntries currentDate site itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -1591,48 +1586,66 @@ viewImmunizationPane language currentDate itemsDict db =
         ]
 
 
-generateImmunizationFollowUpEntries : NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> List ImmunizationFollowUpEntry
-generateImmunizationFollowUpEntries limitDate itemsDict db =
-    Dict.map (generateImmunizationFollowUpEntryData limitDate db) itemsDict
+generateImmunizationFollowUpEntries : NominalDate -> Site -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> List ImmunizationFollowUpEntry
+generateImmunizationFollowUpEntries currentDate site itemsDict db =
+    Dict.map (generateImmunizationFollowUpEntryData currentDate site db) itemsDict
         |> Dict.values
         |> Maybe.Extra.values
 
 
-generateImmunizationFollowUpEntryData : NominalDate -> ModelIndexedDb -> PersonId -> ImmunizationFollowUpItem -> Maybe ImmunizationFollowUpEntry
-generateImmunizationFollowUpEntryData limitDate db personId item =
+generateImmunizationFollowUpEntryData : NominalDate -> Site -> ModelIndexedDb -> PersonId -> ImmunizationFollowUpItem -> Maybe ImmunizationFollowUpEntry
+generateImmunizationFollowUpEntryData currentDate site db personId item =
     let
-        lastWellChildEncounter =
-            resolveIndividualParticipantForPerson personId WellChildEncounter db
-                |> Maybe.map
-                    (getWellChildEncountersForParticipant db
-                        >> List.map Tuple.second
-                        >> List.filter
-                            (\encounter ->
-                                (encounter.encounterType /= NewbornExam)
-                                    && (Date.compare encounter.startDate limitDate == LT)
-                            )
-                    )
-                |> Maybe.withDefault []
-                -- Sort DESC
-                |> List.sortWith (\e1 e2 -> Date.compare e2.startDate e1.startDate)
-                |> List.head
+        -- A child the schedule has nothing ahead for is not chased. A child
+        -- not loaded yet is kept, as the encounters below are.
+        stillOnSchedule =
+            Dict.get personId db.people
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map (expectImmunizationFollowUp currentDate site)
+                |> Maybe.withDefault True
     in
-    Maybe.map
-        (\encounter ->
-            -- A Well Child encounter that started after the follow up was
-            -- scheduled is where the immunisation would have been given, so
-            -- the follow up is done. The encounter that scheduled it starts
-            -- on the same day it was measured, and does not count.
-            if Date.compare encounter.startDate item.dateMeasured == GT then
-                Nothing
+    if stillOnSchedule then
+        let
+            -- Set limit date for tomorrow, so that we
+            -- load all available follow ups.
+            limitDate =
+                Date.add Days 1 currentDate
 
-            else
-                Just <| ImmunizationFollowUpEntry personId item
-        )
-        lastWellChildEncounter
-        |> -- No Well Child encounter found.
-           Maybe.withDefault
-            (Just <| ImmunizationFollowUpEntry personId item)
+            lastWellChildEncounter =
+                resolveIndividualParticipantForPerson personId WellChildEncounter db
+                    |> Maybe.map
+                        (getWellChildEncountersForParticipant db
+                            >> List.map Tuple.second
+                            >> List.filter
+                                (\encounter ->
+                                    (encounter.encounterType /= NewbornExam)
+                                        && (Date.compare encounter.startDate limitDate == LT)
+                                )
+                        )
+                    |> Maybe.withDefault []
+                    -- Sort DESC
+                    |> List.sortWith (\e1 e2 -> Date.compare e2.startDate e1.startDate)
+                    |> List.head
+        in
+        Maybe.map
+            (\encounter ->
+                -- A Well Child encounter that started after the follow up was
+                -- scheduled is where the immunisation would have been given, so
+                -- the follow up is done. The encounter that scheduled it starts
+                -- on the same day it was measured, and does not count.
+                if Date.compare encounter.startDate item.dateMeasured == GT then
+                    Nothing
+
+                else
+                    Just <| ImmunizationFollowUpEntry personId item
+            )
+            lastWellChildEncounter
+            |> -- No Well Child encounter found.
+               Maybe.withDefault
+                (Just <| ImmunizationFollowUpEntry personId item)
+
+    else
+        Nothing
 
 
 viewImmunizationFollowUpEntry : Language -> NominalDate -> ImmunizationFollowUpEntry -> Html Msg

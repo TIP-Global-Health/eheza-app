@@ -3,7 +3,7 @@ module Pages.GlobalCaseManagement.Test exposing (all)
 import AssocList as Dict
 import Backend.IndividualEncounterParticipant.Model as IndividualEncounterParticipant exposing (emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (resolveOpenParticipant)
-import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue)
+import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, Gender(..))
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..), emptyWellChildEncounter)
@@ -15,7 +15,9 @@ import Pages.GlobalCaseManagement.Utils exposing (filterResolvedFollowUps, gener
 import Pages.GlobalCaseManagement.View exposing (generateImmunizationFollowUpEntries)
 import RemoteData
 import Restful.Endpoint exposing (toEntityUuid)
+import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (testChild)
 import Time
 
 
@@ -114,10 +116,26 @@ generateImmunizationFollowUpEntriesTests =
             }
 
         run currentDate startDates =
-            generateImmunizationFollowUpEntries
-                (Date.add Date.Days 1 currentDate)
+            generateImmunizationFollowUpEntries currentDate
+                SiteRwanda
                 (Dict.singleton personId item)
                 (dbWithEncountersOn startDates)
+                |> List.length
+
+        -- A child of the given age on 2026-06-20, with no Well Child
+        -- encounter, on the given site.
+        runForChild site years gender =
+            let
+                child =
+                    testChild (date (2026 - years) Time.Jan 1)
+
+                db =
+                    dbWithEncountersOn []
+            in
+            generateImmunizationFollowUpEntries (date 2026 Time.Jun 20)
+                site
+                (Dict.singleton personId item)
+                { db | people = Dict.singleton personId (RemoteData.Success { child | gender = gender }) }
                 |> List.length
     in
     describe "generateImmunizationFollowUpEntries"
@@ -140,6 +158,26 @@ generateImmunizationFollowUpEntriesTests =
         , test "drops the child once a Well Child encounter takes place after the follow up" <|
             \_ ->
                 run (date 2026 Time.Jun 20) [ scheduledOn, date 2026 Time.Jun 15 ]
+                    |> Expect.equal 0
+        , test "lists a child under two" <|
+            \_ ->
+                runForChild SiteRwanda 1 Male
+                    |> Expect.equal 1
+        , test "drops a child of two, who has only infant doses ahead" <|
+            \_ ->
+                runForChild SiteRwanda 2 Male
+                    |> Expect.equal 0
+        , test "lists a girl of twelve, who is due HPV" <|
+            \_ ->
+                runForChild SiteRwanda 12 Female
+                    |> Expect.equal 1
+        , test "drops a boy of twelve" <|
+            \_ ->
+                runForChild SiteRwanda 12 Male
+                    |> Expect.equal 0
+        , test "drops a girl of twelve on Burundi, where HPV is not given" <|
+            \_ ->
+                runForChild SiteBurundi 12 Female
                     |> Expect.equal 0
         ]
 

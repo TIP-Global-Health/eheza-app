@@ -1,4 +1,4 @@
-module Pages.GlobalCaseManagement.Utils exposing (calculateDueDate, chwFilters, fillPersonName, filterFollowUpsOfResidents, filterResolvedFollowUps, followUpDueOptionByDate, generateAcuteIllnessEncounters, generateAcuteIllnessFollowUps, generateAcuteIllnessParticipants, generateHIVFollowUps, generateHIVParticipants, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalEncounters, generatePrenatalFollowUps, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, labTechFilters, labsResultsTestData, nurseFilters, resolveEncounterStartedToday, resolveUniquePatientsFromFollowUps)
+module Pages.GlobalCaseManagement.Utils exposing (calculateDueDate, chwFilters, expectImmunizationFollowUp, fillPersonName, filterFollowUpsOfResidents, filterResolvedFollowUps, followUpDueOptionByDate, generateAcuteIllnessEncounters, generateAcuteIllnessFollowUps, generateAcuteIllnessParticipants, generateHIVFollowUps, generateHIVParticipants, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalEncounters, generatePrenatalFollowUps, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, labTechFilters, labsResultsTestData, nurseFilters, resolveEncounterStartedToday, resolveUniquePatientsFromFollowUps)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -9,19 +9,24 @@ import Backend.Measurement.Model
         ( FollowUpMeasurements
         , FollowUpOption(..)
         , FollowUpValue
+        , Gender(..)
         , LaboratoryTest(..)
+        , WellChildVaccineType(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getTuberculosisEncountersForParticipant)
+import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInYears, isChildUnderAgeOf2)
 import Backend.Utils exposing (hivManagementEnabled, resolveIndividualParticipantsForPerson, tuberculosisManagementEnabled)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
+import Measurement.Utils exposing (allVaccineTypes)
 import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpItem, CaseManagementFilter(..), EncounterStartedToday(..), FollowUpDueOption(..), FollowUpPatients, HIVFollowUpItem, ImmunizationFollowUpItem, NutritionFollowUpItem, PrenatalFollowUpItem, TuberculosisFollowUpItem)
 import Pages.Utils
 import RemoteData exposing (WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Model exposing (SiteFeature)
+import SyncManager.Model exposing (Site, SiteFeature)
 
 
 chwFilters : EverySet SiteFeature -> List CaseManagementFilter
@@ -252,6 +257,19 @@ generateImmunizationFollowUps limitDate followUps =
                     |> Maybe.withDefault (Dict.insert participantId candidateItem accum)
             )
             Dict.empty
+
+
+{-| Whether the schedule still has a dose ahead for the child: a child under
+two, or a girl of twelve where HPV is given at that age.
+-}
+expectImmunizationFollowUp : NominalDate -> Site -> Person -> Bool
+expectImmunizationFollowUp currentDate site person =
+    isChildUnderAgeOf2 currentDate person
+        || (person.gender
+                == Female
+                && (ageInYears currentDate person == Just 12)
+                && List.member VaccineHPV (allVaccineTypes site)
+           )
 
 
 {-| We have 2 sources for case management entries of Tuberculosis pane.
