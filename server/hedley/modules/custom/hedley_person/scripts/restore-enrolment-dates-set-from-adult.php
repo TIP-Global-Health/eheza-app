@@ -27,11 +27,16 @@ $query->join('field_data_field_adult', 'adult', 'adult.entity_id = n.nid');
 $query->join('field_data_field_expected', 'ex', 'ex.entity_id = n.nid');
 $query->join('field_data_field_birth_date', 'cb', 'cb.entity_id = child.field_person_target_id');
 // Revisions too: the adult's birth date may have been edited again since.
-$query->join('field_revision_field_birth_date', 'ab', "ab.entity_id = adult.field_adult_target_id AND ab.entity_type = 'node'");
+$query->join('field_revision_field_birth_date', 'ab', "ab.entity_id = adult.field_adult_target_id AND ab.entity_type = 'node' AND ab.deleted = 0");
 hedley_general_apply_exclude_deleted($query, 'n');
+// The shared helper takes one alias, so the child and adult are filtered here.
+$query->leftJoin('field_data_field_deleted', 'cd', 'cd.entity_id = child.field_person_target_id');
+$query->leftJoin('field_data_field_deleted', 'ad', 'ad.entity_id = adult.field_adult_target_id');
 $query
   ->fields('n', ['nid'])
   ->condition('n.type', 'pmtct_participant')
+  ->condition(db_or()->isNull('cd.field_deleted_value')->condition('cd.field_deleted_value', 0))
+  ->condition(db_or()->isNull('ad.field_deleted_value')->condition('ad.field_deleted_value', 0))
   // Dates are compared by day; stored values may carry a time.
   ->where('LEFT(ex.field_expected_value, 10) = LEFT(ab.field_birth_date_value, 10)')
   ->where('ex.field_expected_value < cb.field_birth_date_value')

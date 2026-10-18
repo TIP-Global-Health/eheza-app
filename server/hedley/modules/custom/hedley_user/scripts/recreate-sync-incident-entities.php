@@ -81,18 +81,19 @@ foreach ($uids as $uid) {
 
   // The presave hook reads the details from $edit only, so they are passed
   // in. Saving the account as it is would re-create nothing.
-  $details = $account->field_incident_details;
+  try {
+    user_save($account, [
+      'field_incident_details' => $account->field_incident_details,
+    ]);
+  }
+  catch (Exception $e) {
+    drush_print("User $uid: the save failed, nothing re-created: " . $e->getMessage());
+    continue;
+  }
 
-  // A save fails an entity naming one it creates later. Saves repeat while
-  // any succeeds; one creating nothing keeps the details stored.
-  do {
-    $remaining = count($uuids);
-    user_save($account, ['field_incident_details' => $details]);
-    $uuids = array_values(array_filter($uuids, function ($uuid) {
-      return hedley_restful_resolve_nid_for_uuid($uuid) === FALSE;
-    }));
-  } while (!empty($uuids) && count($uuids) < $remaining);
-
+  $uuids = array_values(array_filter($uuids, function ($uuid) {
+    return hedley_restful_resolve_nid_for_uuid($uuid) === FALSE;
+  }));
   $after = count($uuids);
   $recreated = $before - $after;
   drush_print("User $uid: re-created $recreated of $before, still missing $after.");

@@ -93,20 +93,47 @@ function hedley_user_user_presave(&$edit, $account, $category) {
   }
 
   $decoded = json_decode($edit['field_incident_details'][LANGUAGE_NONE][0]['value']);
-  $entities_data = array_reverse($decoded);
-  $allowed_entities = hedley_user_sync_incident_bundles();
-  foreach ($entities_data as $data) {
-    $nid = hedley_restful_resolve_nid_for_uuid($data->uuid);
-    if ($nid !== FALSE) {
-      // Node with provided UUID is found, which indicates that
-      // content exists already on back-end, and can be skipped.
-      continue;
-    }
-
-    if (in_array($data->type, $allowed_entities)) {
-      hedley_user_create_entity_by_sync_incident_data($edit, $data);
-    }
+  if (!is_array($decoded)) {
+    return;
   }
+
+  $allowed_entities = hedley_user_sync_incident_bundles();
+  $pending = array_reverse($decoded);
+  $created_any = FALSE;
+
+  // An entity naming one created later in a pass fails, so passes repeat
+  // while any entity is created.
+  do {
+    $created = FALSE;
+    $failed = [];
+    foreach ($pending as $data) {
+      if (hedley_restful_resolve_nid_for_uuid($data->uuid) !== FALSE) {
+        // The entity exists on the backend already.
+        continue;
+      }
+
+      if (!in_array($data->type, $allowed_entities)) {
+        continue;
+      }
+
+      if (hedley_user_create_entity_by_sync_incident_data($data)) {
+        $created = $created_any = TRUE;
+      }
+      else {
+        $failed[] = $data;
+      }
+    }
+    $pending = $failed;
+  } while ($created && !empty($pending));
+
+  if (!$created_any) {
+    return;
+  }
+
+  // Only entities that still failed stay in the details, for a later save.
+  $edit['field_incident_details'][LANGUAGE_NONE] = empty($pending)
+    ? []
+    : [['value' => json_encode(array_reverse($pending))]];
 }
 
 /**
@@ -194,14 +221,14 @@ function hedley_user_node_form_access_callback($op, $node) {
 /**
  * Creates a node entity based on sync incident data.
  *
- * @param array $edit
- *   An array that can be modified to erase details about the incident,
- *   after handling it.
  * @param object $data
  *   The data object from the sync incident, containing the necessary
  *   information to create the entity.
+ *
+ * @return bool
+ *   Whether the entity was created.
  */
-function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
+function hedley_user_create_entity_by_sync_incident_data($data) {
   $bundle = $data->type;
   $fields = field_info_instances('node', $bundle);
   $entity = ['type' => $bundle];
@@ -303,7 +330,7 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
       '@uuid' => $data->uuid,
       '@field' => $missing_field,
     ], WATCHDOG_WARNING);
-    return;
+    return FALSE;
   }
 
   try {
@@ -311,12 +338,12 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
     node_save($node);
   }
   catch (Exception $e) {
-    watchdog_exception('hedley_user', $e, 'Sync incident: @bundle @uuid was not re-created: %message', [
+    watchdog_exception('hedley_user', $e, 'Sync incident: @bundle @uuid was not re-created: !message', [
       '@bundle' => $bundle,
       '@uuid' => $data->uuid,
     ]);
-    return;
+    return FALSE;
   }
 
-  $edit['field_incident_details'][LANGUAGE_NONE] = [];
+  return TRUE;
 }
