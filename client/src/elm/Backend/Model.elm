@@ -559,9 +559,9 @@ type MsgIndexedDb
     | HandlePostedFamilyNutritionEncounter FamilyEncounterParticipantId (WebData ( FamilyNutritionEncounterId, FamilyNutritionEncounter ))
       -- Operations we may want to perform when logout is clicked.
     | HandleLogout
-      -- Process some revisions we've received from the backend. In some cases,
-      -- we can update our in-memory structures appropriately. In other cases, we
-      -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
+      -- Process revisions from the sync download or from a save on this device.
+      -- Each updates our in-memory structures, or sets them to `NotAsked` for
+      -- the "fetch" mechanism to re-fetch them.
     | HandleRevisions RevisionsOrigin (List Revision)
       -- Handling edits to session data or encounter data
     | MsgSession SessionId Backend.Session.Model.Msg

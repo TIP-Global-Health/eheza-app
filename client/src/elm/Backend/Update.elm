@@ -2048,6 +2048,14 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
         HandleRevisions origin revisions ->
             let
+                downloadedContent =
+                    case origin of
+                        RevisionsFromLocalSave ->
+                            False
+
+                        RevisionsFromSyncDownload ->
+                            True
+
                 processRevisionAndDiagnoseAcuteIllness participantId encounterId =
                     let
                         person =
@@ -2531,7 +2539,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     , []
                     )
             in
-            if origin == RevisionsFromSyncDownload then
+            if downloadedContent then
                 processRevisions
 
             else
