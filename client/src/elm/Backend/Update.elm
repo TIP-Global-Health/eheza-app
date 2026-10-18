@@ -50,7 +50,7 @@ import Backend.Measurement.Utils
         , splitMotherMeasurements
         , testPerformedByExecutionNote
         )
-import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..))
+import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..), RevisionsOrigin(..))
 import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model
 import Backend.NCDEncounter.Update
@@ -165,11 +165,10 @@ updateIndexedDb :
     -> Bool
     -> Bool
     -> Page
-    -> SyncManager.Model.Model
     -> MsgIndexedDb
     -> ModelIndexedDb
     -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb language currentDate currentTime coordinates zscores site features nurseId healthCenterId villageId isChw isLabTech activePage syncManager msg model =
+updateIndexedDb language currentDate currentTime coordinates zscores site features nurseId healthCenterId villageId isChw isLabTech activePage msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -341,7 +340,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         isChw
                         isLabTech
                         activePage
-                        syncManager
                     )
                     extraMsgs
 
@@ -1678,7 +1676,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         isChw
                         isLabTech
                         activePage
-                        syncManager
                     )
                     [ HandleFetchedPeople data ]
 
@@ -2049,19 +2046,8 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , []
             )
 
-        HandleRevisions revisions ->
+        HandleRevisions origin revisions ->
             let
-                downloadingContent =
-                    case syncManager.syncStatus of
-                        SyncManager.Model.SyncDownloadGeneral _ ->
-                            True
-
-                        SyncManager.Model.SyncDownloadAuthority _ ->
-                            True
-
-                        _ ->
-                            False
-
                 processRevisionAndDiagnoseAcuteIllness participantId encounterId =
                     let
                         person =
@@ -2545,7 +2531,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     , []
                     )
             in
-            if downloadingContent then
+            if origin == RevisionsFromSyncDownload then
                 processRevisions
 
             else
@@ -4369,7 +4355,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             isChw
                             isLabTech
                             activePage
-                            syncManager
                         )
                         extraMsgs
 
@@ -4608,7 +4593,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         isChw
                         isLabTech
                         activePage
-                        syncManager
                     )
                     extraMsgs
 
