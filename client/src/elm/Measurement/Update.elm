@@ -18,7 +18,7 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet
 import Measurement.Model exposing (ModelChild, ModelMother, MsgChild(..), MsgMother(..), OutMsgChild(..), OutMsgMother(..), emptyParticipantFormProgress)
-import Measurement.Utils exposing (setNCDAMuac, setNCDAStep, showNCDAMeasurementOutOfRange)
+import Measurement.Utils exposing (setNCDAStep, showNCDAMeasurementOutOfRange)
 import Pages.Utils exposing (setMuacValueForSite, setMultiSelectInputValue)
 import SyncManager.Model exposing (Site)
 
@@ -406,7 +406,12 @@ updateChild site msg model =
         SetMuac string ->
             let
                 updatedForm =
-                    setNCDAMuac (setMuacValueForSite site string |> Maybe.map MuacInCm) model.ncdaData.form
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | muac = setMuacValueForSite site string |> Maybe.map MuacInCm
+                                }
+                           )
 
                 updatedData =
                     model.ncdaData

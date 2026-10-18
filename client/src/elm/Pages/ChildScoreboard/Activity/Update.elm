@@ -212,7 +212,12 @@ update currentDate site id db msg model =
         SetMuac string ->
             let
                 updatedForm =
-                    Measurement.Utils.setNCDAMuac (setMuacValueForSite site string |> Maybe.map MuacInCm) model.ncdaData.form
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | muac = setMuacValueForSite site string |> Maybe.map MuacInCm
+                                }
+                           )
 
                 updatedData =
                     model.ncdaData

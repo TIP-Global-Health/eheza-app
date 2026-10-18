@@ -52,11 +52,11 @@ import Measurement.Utils
         , outOfRangeAsEntered
         , rdtKnownAsPositiveUpdate
         , rdtTestPerformedUpdate
-        , setNCDAMuac
         , setNCDAStep
         , showNCDAMeasurementOutOfRange
         , toHIVTestValueUniversalWithDefault
         , toHIVTestValueWithDefault
+        , toNCDAValueWithDefault
         , toHepatitisBTestValueWithDefault
         , toMalariaResultValueWithDefault
         , toMalariaTestValueWithDefault
@@ -401,6 +401,51 @@ updateChildSetMuacTest =
         ]
 
 
+{-| The treatment question is asked only while the MUAC is off. An answer the
+form kept from before the MUAC changed would be saved behind a hidden question,
+for a child the form no longer calls malnourished.
+-}
+ncdaTreatmentAnswerSavedTest : Test
+ncdaTreatmentAnswerSavedTest =
+    let
+        treatedSaved saved form =
+            toNCDAValueWithDefault saved form
+                |> Maybe.map (.signs >> EverySet.member TreatedForAcuteMalnutrition)
+
+        answeredYes =
+            { emptyNCDAForm | treatedForAcuteMalnutrition = Just True }
+    in
+    describe "the treatment answer and the MUAC it was asked for"
+        [ test "an answer is saved while the MUAC is off" <|
+            \_ ->
+                treatedSaved Nothing { answeredYes | muac = Just (MuacInCm 11) }
+                    |> Expect.equal (Just True)
+        , test "an answer kept from before the MUAC was corrected to green is not saved" <|
+            \_ ->
+                treatedSaved Nothing { answeredYes | muac = Just (MuacInCm 14) }
+                    |> Expect.equal (Just False)
+        , test "an answer kept from before the MUAC was marked not taken is not saved" <|
+            \_ ->
+                treatedSaved Nothing { answeredYes | muacNotTaken = Just True }
+                    |> Expect.equal (Just False)
+        , test "a saved answer is not saved again once the MUAC on the form is green" <|
+            \_ ->
+                treatedSaved
+                    (Just
+                        { signs = EverySet.singleton TreatedForAcuteMalnutrition
+                        , birthWeight = Nothing
+                        , ancVisitsDates = EverySet.empty
+                        , receivesVitaminA = Nothing
+                        , stuntingLevel = Nothing
+                        , weight = Nothing
+                        , muac = Just (MuacInCm 11)
+                        }
+                    )
+                    { emptyNCDAForm | muac = Just (MuacInCm 14) }
+                    |> Expect.equal (Just False)
+        ]
+
+
 ncdaMeasurementsOutOfRangeTest : Test
 ncdaMeasurementsOutOfRangeTest =
     -- The form may only be stopped over a measurement the nurse can actually
@@ -519,56 +564,6 @@ ncdaMeasurementsOutOfRangeTest =
                         )
                         |> ncdaMeasurementsOutOfRange SiteRwanda allSteps newbornExamWithoutBirthWeight True
                         |> Expect.equal []
-            ]
-        , describe "correcting the MUAC after answering the treatment question"
-            [ test "a MUAC corrected to green drops the answer" <|
-                -- The question is asked only while the MUAC is off, so an answer
-                -- kept behind a hidden question would be saved for a child the
-                -- form no longer calls malnourished.
-                \_ ->
-                    { emptyNCDAForm | muac = Just (MuacInCm 11), treatedForAcuteMalnutrition = Just True }
-                        |> setNCDAMuac (Just (MuacInCm 14))
-                        |> .treatedForAcuteMalnutrition
-                        |> Expect.equal Nothing
-            , test "a MUAC still off keeps the answer" <|
-                \_ ->
-                    { emptyNCDAForm | muac = Just (MuacInCm 11), treatedForAcuteMalnutrition = Just True }
-                        |> setNCDAMuac (Just (MuacInCm 12))
-                        |> .treatedForAcuteMalnutrition
-                        |> Expect.equal (Just True)
-            , test "a MUAC marked not taken drops the answer" <|
-                \_ ->
-                    { emptyNCDAForm | muac = Just (MuacInCm 11), treatedForAcuteMalnutrition = Just True }
-                        |> setNCDAMuac Nothing
-                        |> .treatedForAcuteMalnutrition
-                        |> Expect.equal Nothing
-            , test "the group form's MUAC input goes through the same rule" <|
-                \_ ->
-                    let
-                        withAnswer =
-                            { emptyNCDAData | form = { emptyNCDAForm | muac = Just (MuacInCm 11), treatedForAcuteMalnutrition = Just True } }
-
-                        ( updated, _, _ ) =
-                            updateChild SiteRwanda (SetMuac "14") { emptyModelChild | ncdaData = withAnswer }
-                    in
-                    updated.ncdaData.form.treatedForAcuteMalnutrition
-                        |> Expect.equal Nothing
-            , test "a saved answer does not come back once the MUAC on the form is green" <|
-                \_ ->
-                    ncdaFormWithDefault
-                        { emptyNCDAForm | muac = Just (MuacInCm 14) }
-                        (Just
-                            { signs = EverySet.singleton TreatedForAcuteMalnutrition
-                            , birthWeight = Nothing
-                            , ancVisitsDates = EverySet.empty
-                            , receivesVitaminA = Nothing
-                            , stuntingLevel = Nothing
-                            , weight = Nothing
-                            , muac = Just (MuacInCm 11)
-                            }
-                        )
-                        |> .treatedForAcuteMalnutrition
-                        |> Expect.equal Nothing
             ]
         , describe "several at once"
             [ test "all are named, in the order the form asks them" <|
@@ -1071,6 +1066,7 @@ all =
         , outOfRangeAsEnteredTest
         , updateChildOutOfRangePopupTest
         , ncdaMeasurementsOutOfRangeTest
+        , ncdaTreatmentAnswerSavedTest
         , showNCDAMeasurementOutOfRangeTest
         , birthWeightOutsideConstraintsTest
         , bornUnderweightByBirthWeightTest
