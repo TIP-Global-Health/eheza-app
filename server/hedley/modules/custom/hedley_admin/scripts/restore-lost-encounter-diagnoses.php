@@ -30,17 +30,30 @@ $fields = [
   'prenatal_encounter' => 'field_prenatal_diagnoses',
 ];
 
+// The codes each field allows.
+$allowed = array_map(function ($field_name) {
+  return array_keys(list_allowed_values(field_info_field($field_name)));
+}, $fields);
+
 $restored = $skipped = 0;
 // Each line holds a nid, a tab and the codes to restore, for example
-// "5436892<TAB>anemia,moderate-risk-of-preeclampsia". A header is skipped.
-foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
-  $columns = explode("\t", $line);
-  if (!ctype_digit($columns[0]) || empty($columns[1])) {
+// "5436892<TAB>anemia,moderate-risk-of-preeclampsia". A first line that does
+// not start with a nid is a header.
+foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $index => $line) {
+  $columns = explode("\t", trim($line));
+  if ($index == 0 && !ctype_digit($columns[0])) {
+    continue;
+  }
+
+  // The codes to restore, each once; none is not a diagnosis to restore.
+  $codes = empty($columns[1]) ? [] : array_values(array_diff(array_unique(array_map('trim', explode(',', $columns[1]))), ['', 'none']));
+  if (!ctype_digit($columns[0]) || empty($codes)) {
+    drush_print("Line " . ($index + 1) . ": \"$line\" is not a nid and codes, skipped.");
+    $skipped++;
     continue;
   }
 
   $nid = $columns[0];
-  $codes = array_map('trim', explode(',', $columns[1]));
   $codes_text = implode(', ', $codes);
 
   $node = node_load($nid);
@@ -58,7 +71,7 @@ foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
   }
 
   $field_name = $fields[$node->type];
-  $unknown = array_diff($codes, array_keys(list_allowed_values(field_info_field($field_name))));
+  $unknown = array_diff($codes, $allowed[$node->type]);
   if (!empty($unknown)) {
     drush_print("Encounter $nid: unknown diagnosis " . implode(', ', $unknown) . ', skipped.');
     $skipped++;
@@ -92,6 +105,7 @@ foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
   drush_print("Encounter $nid: $stored_text becomes " . implode(', ', (array) $value) . '.');
 
   if ($dry_run) {
+    $restored++;
     continue;
   }
 
@@ -105,7 +119,7 @@ foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
 }
 
 if ($dry_run) {
-  drush_print("Dry run: nothing was restored. Skipped $skipped.");
+  drush_print("Dry run: nothing was restored. Would restore $restored, skip $skipped.");
   return;
 }
 
