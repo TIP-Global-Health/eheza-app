@@ -8,6 +8,8 @@ metadata:
   modified: 2026-09-14
 ---
 
+**B-496 root cause CONFIRMED (2026-10-18).** The `HandleRevisions` download gate (`Backend/Update.elm` ≈2052-2062, 2548) swallows the device's own save revision when it lands during a sync download; reproduced ×2 on the demo site (control ×2 stored the diagnosis). Details, blast radius (nutrition assessments share the gate — unmeasured) and fix shape in the item. ⚠ **Environment changed for it:** local DDEV `db` is now the fresh DEMO site again (reinstalled via `ddev restart`); the ihangane live copy survives as DDEV snapshot `ihangane-copy-post-2128-trial` (8.3 GB, post-#2128-trial state) next to `pre-2128-trial`; `vhw_live` database untouched. The reinstall's `composer install` step failed (`sentry/sdk` missing from the lock file) — `sites/all/vendor` from before still has ramsey/twilio, only `logs_glitchtip` would miss sentry. Local `sites/default/settings.php` and `client/e2e/` were restored to clean after the run.
+
 # Session handoff — E-Heza improvement work
 
 Rewritten **2026-08-24**, replacing the 2026-08-17 version, whose central banner ("NONE OF THIS IS
