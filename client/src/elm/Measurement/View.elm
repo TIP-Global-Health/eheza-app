@@ -47,7 +47,7 @@ import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, FamilyPlanningForm, FbfForm, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, RangedMeasurement(..), SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
-import Measurement.Utils exposing (bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, measurementConstraints, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nutritionFollowUpFormWithDefault, outOfRangeAsEntered, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault)
+import Measurement.Utils exposing (bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, measurementConstraints, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nutritionFollowUpFormWithDefault, outOfRangeAsEntered, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, setNCDAMuac, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault)
 import Pages.Utils
     exposing
         ( concatInputsAndTasksSections
@@ -3354,7 +3354,7 @@ ncdaFormInputsAndTasks language currentDate site personId person config form cur
                                 form.muacNotTaken == Just True
 
                             measurementNotTakenUpdateFunc value form_ =
-                                { form_ | muacNotTaken = Just value, muac = Nothing }
+                                setNCDAMuac Nothing { form_ | muacNotTaken = Just value }
 
                             measurementNotTakenValueWhenChecked =
                                 Maybe.map not form.muacNotTaken

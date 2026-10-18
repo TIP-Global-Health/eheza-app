@@ -10,6 +10,7 @@ import Backend.Measurement.Model
         , LiverFunctionTestValue
         , MalariaTestValue
         , MuacInCm(..)
+        , NCDASign(..)
         , SkippedForm(..)
         , StuntingLevel(..)
         , TestExecutionNote(..)
@@ -51,6 +52,7 @@ import Measurement.Utils
         , outOfRangeAsEntered
         , rdtKnownAsPositiveUpdate
         , rdtTestPerformedUpdate
+        , setNCDAMuac
         , setNCDAStep
         , showNCDAMeasurementOutOfRange
         , toHIVTestValueUniversalWithDefault
@@ -517,6 +519,56 @@ ncdaMeasurementsOutOfRangeTest =
                         )
                         |> ncdaMeasurementsOutOfRange SiteRwanda allSteps newbornExamWithoutBirthWeight True
                         |> Expect.equal []
+            ]
+        , describe "correcting the MUAC after answering the treatment question"
+            [ test "a MUAC corrected to green drops the answer" <|
+                -- The question is asked only while the MUAC is off, so an answer
+                -- kept behind a hidden question would be saved for a child the
+                -- form no longer calls malnourished.
+                \_ ->
+                    { emptyNCDAForm | muac = Just (MuacInCm 11), treatedForAcuteMalnutrition = Just True }
+                        |> setNCDAMuac (Just (MuacInCm 14))
+                        |> .treatedForAcuteMalnutrition
+                        |> Expect.equal Nothing
+            , test "a MUAC still off keeps the answer" <|
+                \_ ->
+                    { emptyNCDAForm | muac = Just (MuacInCm 11), treatedForAcuteMalnutrition = Just True }
+                        |> setNCDAMuac (Just (MuacInCm 12))
+                        |> .treatedForAcuteMalnutrition
+                        |> Expect.equal (Just True)
+            , test "a MUAC marked not taken drops the answer" <|
+                \_ ->
+                    { emptyNCDAForm | muac = Just (MuacInCm 11), treatedForAcuteMalnutrition = Just True }
+                        |> setNCDAMuac Nothing
+                        |> .treatedForAcuteMalnutrition
+                        |> Expect.equal Nothing
+            , test "the group form's MUAC input goes through the same rule" <|
+                \_ ->
+                    let
+                        withAnswer =
+                            { emptyNCDAData | form = { emptyNCDAForm | muac = Just (MuacInCm 11), treatedForAcuteMalnutrition = Just True } }
+
+                        ( updated, _, _ ) =
+                            updateChild SiteRwanda (SetMuac "14") { emptyModelChild | ncdaData = withAnswer }
+                    in
+                    updated.ncdaData.form.treatedForAcuteMalnutrition
+                        |> Expect.equal Nothing
+            , test "a saved answer does not come back once the MUAC on the form is green" <|
+                \_ ->
+                    ncdaFormWithDefault
+                        { emptyNCDAForm | muac = Just (MuacInCm 14) }
+                        (Just
+                            { signs = EverySet.singleton TreatedForAcuteMalnutrition
+                            , birthWeight = Nothing
+                            , ancVisitsDates = EverySet.empty
+                            , receivesVitaminA = Nothing
+                            , stuntingLevel = Nothing
+                            , weight = Nothing
+                            , muac = Just (MuacInCm 11)
+                            }
+                        )
+                        |> .treatedForAcuteMalnutrition
+                        |> Expect.equal Nothing
             ]
         , describe "several at once"
             [ test "all are named, in the order the form asks them" <|
