@@ -44,7 +44,9 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — updated 2026-10-15 (#2359, #2361, #2363, #2365, #2367 merged)
+## Open right now — updated 2026-10-18 (PR #2369 open)
+
+🔧 **PR #2369 OPEN 2026-10-18 (B-468, tier 3, issue #2368)** — NCDA scorecard › Targeted Interventions: the "Treatment for acute malnutrition" row shows a dash, not a red X, for a CHW questionnaire whose green or missing MUAC never asked the question. New exported `malnutritionTreatmentsByAgeInMonthsFromQuestionnaires` reusing `muacMeasurementIsOff`; 5 tests (2 fail pre-fix). Head `c7b0df66d`. Review round 1 running; round 2, QA suggestion and the worktree release still to come. Counts: 277 READY — T1 0 · T2 1 · T3 67 · T4 175 · untiered 34.
 
 🔭 **Round 43 ran 2026-10-17** (`rounds.md`): LIVE-DATA ANOMALY mode on fresh LOCAL copies of the ihangane + vhw live DBs (no production query) → **B-491..B-494**, 0 tier 1/2, THREE tier 3: ⭐ **B-492** (Acute Illness Case Management pane: 6,141 entries of never-closed illnesses, 60 CHW resurrections in 2026 through the pane), ⭐ **B-493** (prenatal labs entry wiped whole by a device with a stale copy, 15 entries / 91 tests, PLAUSIBLE — pair with B-424), ⭐ **B-494** (release risk: the unreleased B-232 immunization pane will list 15,216 children). 17 items sized; vhw + stored reports + device fleet ✅ CLEAN. Fleet verdict: Rwanda's upload decline (323 → 15 robots/month) is attrition + HC drop-out, jam ≈ 1,030 records on 17 devices. Operational flags for the user: vhw WhatsApp never processed; Ruli HC implausible heights. **Local DDEV `db` now holds the ihangane live copy (demo site gone — `./install` would destroy it) and `vhw_live` the Burundi copy.** Counts: 278 READY — T1 0 · T2 1 · T3 68 · T4 175 · untiered 34.
 
