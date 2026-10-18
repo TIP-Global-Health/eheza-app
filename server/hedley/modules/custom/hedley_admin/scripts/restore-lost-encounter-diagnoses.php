@@ -109,4 +109,9 @@ if ($dry_run) {
   return;
 }
 
-drush_print("Done! Restored $restored encounters, skipped $skipped. Now run profiles/hedley/modules/custom/hedley_stats/scripts/recalculate-stats.php.");
+drush_print("Done! Restored $restored encounters, skipped $skipped.");
+
+// Statistics are not recalculated for saves made from drush.
+if ($restored > 0) {
+  drush_print('Now run profiles/hedley/modules/custom/hedley_stats/scripts/recalculate-stats.php.');
+}
