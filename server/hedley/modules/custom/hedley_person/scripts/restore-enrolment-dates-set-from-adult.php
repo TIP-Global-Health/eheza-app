@@ -17,34 +17,36 @@ if (!drupal_is_cli()) {
 $dry_run = (bool) drush_get_option('dry_run', FALSE);
 
 // Get the number of nodes to be processed at once.
-$batch = drush_get_option('batch', 50);
+$batch = max(1, (int) drush_get_option('batch', 50));
 
-// An adult's birth-date edit used to reset the participations they attend to
-// start on that date. Restored ones no longer match, so re-running resumes.
+// Participations starting on a birth date their adult has ever had, before
+// the child was born. Restored ones no longer match, so re-running resumes.
 $query = db_select('node', 'n');
 $query->join('field_data_field_person', 'child', 'child.entity_id = n.nid');
 $query->join('field_data_field_adult', 'adult', 'adult.entity_id = n.nid');
 $query->join('field_data_field_expected', 'ex', 'ex.entity_id = n.nid');
 $query->join('field_data_field_birth_date', 'cb', 'cb.entity_id = child.field_person_target_id');
-$query->join('field_data_field_birth_date', 'ab', 'ab.entity_id = adult.field_adult_target_id');
+// Revisions too: the adult's birth date may have been edited again since.
+$query->join('field_revision_field_birth_date', 'ab', "ab.entity_id = adult.field_adult_target_id AND ab.entity_type = 'node'");
 hedley_general_apply_exclude_deleted($query, 'n');
 $query
   ->fields('n', ['nid'])
   ->condition('n.type', 'pmtct_participant')
   // Dates are compared by day; stored values may carry a time.
   ->where('LEFT(ex.field_expected_value, 10) = LEFT(ab.field_birth_date_value, 10)')
-  ->where('ab.field_birth_date_value < cb.field_birth_date_value')
+  ->where('ex.field_expected_value < cb.field_birth_date_value')
+  ->distinct()
   ->orderBy('n.nid');
 
 $nids = $query->execute()->fetchCol();
 
 if (empty($nids)) {
-  drush_print('No participation starts on its adult\'s birth date.');
+  drush_print('No participation starts on a birth date of its adult.');
   return;
 }
 
 $count = count($nids);
-drush_print("$count participations start on their adult's birth date.");
+drush_print("$count participations start on a birth date of their adult.");
 
 // Formats a field_expected value by day, for example "2024-01-24 - none".
 $format = function (array $dates) {

@@ -311,6 +311,10 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
     node_save($node);
   }
   catch (Exception $e) {
+    watchdog_exception('hedley_user', $e, 'Sync incident: @bundle @uuid was not re-created: %message', [
+      '@bundle' => $bundle,
+      '@uuid' => $data->uuid,
+    ]);
     return;
   }
 

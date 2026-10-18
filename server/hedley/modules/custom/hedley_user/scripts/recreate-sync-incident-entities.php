@@ -16,8 +16,7 @@ if (!drupal_is_cli()) {
 // Report what is missing, without saving anyone.
 $dry_run = (bool) drush_get_option('dry_run', FALSE);
 
-// A device reports the same details once, so details stored before
-// re-creation worked are only retried by saving the user again.
+// Saving a user re-creates the missing entities its details name.
 $uids = db_select('field_data_field_incident_details', 'd')
   ->fields('d', ['entity_id'])
   ->condition('d.entity_type', 'user')
@@ -61,7 +60,9 @@ $missing_uuids = function ($account) use ($bundles) {
   return array_values($missing);
 };
 
-$users = $before_total = $after_total = 0;
+// Each missing UUID once, though several users may hold it.
+$missing_before = [];
+$users = 0;
 foreach ($uids as $uid) {
   $account = user_load($uid, TRUE);
   $uuids = $missing_uuids($account);
@@ -71,7 +72,7 @@ foreach ($uids as $uid) {
 
   $before = count($uuids);
   $users++;
-  $before_total += $before;
+  $missing_before += array_fill_keys($uuids, TRUE);
 
   if ($dry_run) {
     drush_print("User $uid: $before missing.");
@@ -80,20 +81,19 @@ foreach ($uids as $uid) {
 
   // The presave hook reads the details from $edit only, so they are passed
   // in. Saving the account as it is would re-create nothing.
-  user_save($account, [
-    'field_incident_details' => $account->field_incident_details,
-  ]);
+  $details = $account->field_incident_details;
 
-  // One re-created entity clears the details, so the UUIDs are checked
-  // again rather than the saved details counted.
-  $after = 0;
-  foreach ($uuids as $uuid) {
-    if (hedley_restful_resolve_nid_for_uuid($uuid) === FALSE) {
-      $after++;
-    }
-  }
+  // A save fails an entity naming one it creates later. Saves repeat while
+  // any succeeds; one creating nothing keeps the details stored.
+  do {
+    $remaining = count($uuids);
+    user_save($account, ['field_incident_details' => $details]);
+    $uuids = array_values(array_filter($uuids, function ($uuid) {
+      return hedley_restful_resolve_nid_for_uuid($uuid) === FALSE;
+    }));
+  } while (!empty($uuids) && count($uuids) < $remaining);
 
-  $after_total += $after;
+  $after = count($uuids);
   $recreated = $before - $after;
   drush_print("User $uid: re-created $recreated of $before, still missing $after.");
 }
@@ -103,13 +103,21 @@ if ($users == 0) {
   return;
 }
 
+$before_total = count($missing_before);
 if ($dry_run) {
   drush_print("Dry run: $users users hold $before_total missing entities. Nobody was saved.");
   return;
 }
 
+$after_total = 0;
+foreach (array_keys($missing_before) as $uuid) {
+  if (hedley_restful_resolve_nid_for_uuid($uuid) === FALSE) {
+    $after_total++;
+  }
+}
+
 $recreated_total = $before_total - $after_total;
 drush_print("Done! Re-created $recreated_total of $before_total, on $users users.");
 if ($after_total > 0) {
-  drush_print("$after_total could not be re-created; see watchdog type hedley_user for the reason.");
+  drush_print("$after_total could not be re-created and stay in the details; see watchdog type hedley_user for the reason.");
 }
