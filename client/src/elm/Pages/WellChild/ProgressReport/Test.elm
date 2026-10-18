@@ -36,9 +36,6 @@ fillTheBlanksAgeTests =
     let
         dateMeasured =
             Date.add Date.Months 3 birthDate
-
-        birthDate =
-            Date.add Date.Months -24 currentDate
     in
     describe "fill the blanks cell values"
         [ test "height typical for the age it was taken at is green" <|
@@ -71,7 +68,12 @@ reached yet.
 -}
 child : Person
 child =
-    testChild (Date.add Date.Months -24 currentDate)
+    testChild birthDate
+
+
+birthDate : NominalDate
+birthDate =
+    Date.add Date.Months -24 currentDate
 
 
 emptyNCDAValue : NCDAValue
@@ -229,8 +231,11 @@ never asked holds no answer, and is no data rather than "not treated".
 malnutritionTreatmentValuesTests : Test
 malnutritionTreatmentValuesTests =
     let
-        cellFor questionnaire =
-            malnutritionTreatmentsByAgeInMonthsFromQuestionnaires (Just (Dict.singleton 10 ( currentDate, questionnaire )))
+        monthTen =
+            Date.add Date.Months 10 birthDate
+
+        cellFor questionnaires =
+            malnutritionTreatmentsByAgeInMonthsFromQuestionnaires child questionnaires
                 |> Maybe.andThen (Dict.get 10)
                 |> Maybe.map Tuple.second
 
@@ -239,26 +244,36 @@ malnutritionTreatmentValuesTests =
 
         offMuac =
             Just (MuacInCm 11)
+
+        treated =
+            EverySet.singleton TreatedForAcuteMalnutrition
     in
     describe "malnutritionTreatmentsByAgeInMonthsFromQuestionnaires"
         [ test "a green MUAC never asked the question, so the month has no data" <|
             \_ ->
-                cellFor { emptyNCDAValue | muac = greenMuac }
+                cellFor [ ( monthTen, { emptyNCDAValue | muac = greenMuac } ) ]
                     |> Expect.equal Nothing
         , test "a questionnaire without a MUAC never asked the question, so the month has no data" <|
             \_ ->
-                cellFor emptyNCDAValue
+                cellFor [ ( monthTen, emptyNCDAValue ) ]
                     |> Expect.equal Nothing
         , test "an off MUAC with no treatment recorded reads as not treated" <|
             \_ ->
-                cellFor { emptyNCDAValue | muac = offMuac }
+                cellFor [ ( monthTen, { emptyNCDAValue | muac = offMuac } ) ]
                     |> Expect.equal (Just NCDACellValueX)
         , test "a recorded treatment reads as treated" <|
             \_ ->
-                cellFor { emptyNCDAValue | muac = offMuac, signs = EverySet.singleton TreatedForAcuteMalnutrition }
+                cellFor [ ( monthTen, { emptyNCDAValue | muac = offMuac, signs = treated } ) ]
                     |> Expect.equal (Just NCDACellValueV)
-        , test "a recorded treatment is kept when the MUAC was corrected to green afterwards" <|
+        , test "a treatment recorded before the MUAC was corrected to green reads as not asked" <|
             \_ ->
-                cellFor { emptyNCDAValue | muac = greenMuac, signs = EverySet.singleton TreatedForAcuteMalnutrition }
-                    |> Expect.equal (Just NCDACellValueV)
+                cellFor [ ( monthTen, { emptyNCDAValue | muac = greenMuac, signs = treated } ) ]
+                    |> Expect.equal Nothing
+        , test "a month's answer is kept when a later questionnaire that month did not ask" <|
+            \_ ->
+                cellFor
+                    [ ( Date.add Date.Days 2 monthTen, { emptyNCDAValue | muac = offMuac } )
+                    , ( Date.add Date.Days 19 monthTen, { emptyNCDAValue | muac = greenMuac } )
+                    ]
+                    |> Expect.equal (Just NCDACellValueX)
         ]
