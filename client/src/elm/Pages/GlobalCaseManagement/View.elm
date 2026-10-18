@@ -44,7 +44,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Maybe.Extra exposing (isNothing)
 import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, AcuteIllnessFollowUpItem, CaseManagementFilter(..), ContactsTracingEntryData, FollowUpAcuteIllnessData, FollowUpDialogState(..), FollowUpDueOption(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpImmunizationData, FollowUpNutritionData, FollowUpPrenatalData, FollowUpTuberculosisData, HIVFollowUpEntry, HIVFollowUpItem, ImmunizationFollowUpEntry, ImmunizationFollowUpItem, LabsEntryState(..), Model, Msg(..), NCDLabsEntryData, NutritionFollowUpEntry, NutritionFollowUpItem, PrenatalFollowUpEntry, PrenatalFollowUpItem, PrenatalLabsEntryData, TuberculosisFollowUpEntry, TuberculosisFollowUpItem)
-import Pages.GlobalCaseManagement.Utils exposing (chwFilters, expectImmunizationFollowUp, fillPersonName, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessFollowUps, generateHIVFollowUps, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps, generateTuberculosisFollowUps, labTechFilters, labsResultsTestData, nurseFilters)
+import Pages.GlobalCaseManagement.Utils exposing (chwFilters, fillPersonName, filterFollowUpsOfChasedChildren, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessFollowUps, generateHIVFollowUps, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps, generateTuberculosisFollowUps, labTechFilters, labsResultsTestData, nurseFilters)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Utils
 import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipantDesc)
@@ -146,10 +146,11 @@ viewContentForChw language currentDate site features villageId model db allFollo
 
         immunizationFollowUps =
             generateImmunizationFollowUps currentDate followUps
+                |> filterFollowUpsOfChasedChildren currentDate site db
                 |> fillPersonName identity db
 
         immunizationFollowUpsPane =
-            viewImmunizationPane language currentDate site immunizationFollowUps db
+            viewImmunizationPane language currentDate immunizationFollowUps db
 
         tuberculosisPane =
             if tuberculosisManagementEnabled features then
@@ -1567,11 +1568,16 @@ viewNCDLabsEntry language data =
         (SetActivePage <| UserPage (NCDRecurrentEncounterPage data.encounterId))
 
 
-viewImmunizationPane : Language -> NominalDate -> Site -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> Html Msg
-viewImmunizationPane language currentDate site itemsDict db =
+viewImmunizationPane : Language -> NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> Html Msg
+viewImmunizationPane language currentDate itemsDict db =
     let
+        limitDate =
+            -- Set limit date for tomorrow, so that we
+            -- load all available follow ups.
+            Date.add Days 1 currentDate
+
         entries =
-            generateImmunizationFollowUpEntries currentDate site itemsDict db
+            generateImmunizationFollowUpEntries limitDate itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -1586,24 +1592,9 @@ viewImmunizationPane language currentDate site itemsDict db =
         ]
 
 
-generateImmunizationFollowUpEntries : NominalDate -> Site -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> List ImmunizationFollowUpEntry
-generateImmunizationFollowUpEntries currentDate site itemsDict db =
-    let
-        -- Set limit date for tomorrow, so that we
-        -- load all available follow ups.
-        limitDate =
-            Date.add Days 1 currentDate
-
-        -- A child no longer chased for immunisations is left out. A child
-        -- not loaded yet is kept, as the encounters are.
-        stillChased personId =
-            Dict.get personId db.people
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map (expectImmunizationFollowUp currentDate site)
-                |> Maybe.withDefault True
-    in
-    Dict.filter (\personId _ -> stillChased personId) itemsDict
-        |> Dict.map (generateImmunizationFollowUpEntryData limitDate db)
+generateImmunizationFollowUpEntries : NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> List ImmunizationFollowUpEntry
+generateImmunizationFollowUpEntries limitDate itemsDict db =
+    Dict.map (generateImmunizationFollowUpEntryData limitDate db) itemsDict
         |> Dict.values
         |> Maybe.Extra.values
 
