@@ -491,7 +491,7 @@ B-490	4	READY	LOW		2367	42	Prenatal labs Case Management: a test sent to the lab
 B-491	4	READY	LOW			43	NCDA scorecard "4+ ANC visits": an opened-but-empty antenatal encounter counts as a visit, so 17 of the 67 pregnancies t
 B-492	3	READY	MED-LOW			43	Case Management Acute Illness pane: entries of illnesses the CHW never closed stay listed for years (6,141 site-wide, >9
 B-493	3	READY	MED-LOW			43	Prenatal labs entry: "End encounter" and the last-result save write the device's whole local copy of the entry back, so 
-B-494	3	READY	MED-LOW			43	Case Management Immunization pane (B-232's fix, merged, UNRELEASED): on release it lists every child with an immunisatio
+B-494	3	IMPLEMENTED	MED-LOW	2374	2375	43	Case Management Immunization pane (B-232's fix, merged, UNRELEASED): on release it lists every child with an immunisatio
 B-495	4	IMPLEMENTED	LOW	2370	2371	41	Child Scoreboard NCDA form: a "treated for acute malnutrition" answer survives a MUAC corrected to green or marked not t
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
