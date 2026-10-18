@@ -9097,8 +9097,9 @@ toNCDAValueWithDefault saved form =
 toNCDAValue : NCDAForm -> Maybe NCDAValue
 toNCDAValue form =
     let
-        -- The treatment question is asked only while the MUAC is off, so an
-        -- answer kept from before the MUAC changed is not saved.
+        -- The treatment question is asked only while the MUAC is off. An earlier
+        -- answer stays on the form, as the MUAC input fires per keystroke, but
+        -- is not saved.
         treatedForAcuteMalnutrition =
             if muacMeasurementIsOff form.muac then
                 form.treatedForAcuteMalnutrition

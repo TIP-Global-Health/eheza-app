@@ -56,10 +56,10 @@ import Measurement.Utils
         , showNCDAMeasurementOutOfRange
         , toHIVTestValueUniversalWithDefault
         , toHIVTestValueWithDefault
-        , toNCDAValueWithDefault
         , toHepatitisBTestValueWithDefault
         , toMalariaResultValueWithDefault
         , toMalariaTestValueWithDefault
+        , toNCDAValueWithDefault
         , toPartnerHIVTestValueWithDefault
         , toPregnancyTestValueWithDefault
         , toRandomBloodSugarTestValueUniversalWithDefault
@@ -414,6 +414,17 @@ ncdaTreatmentAnswerSavedTest =
 
         answeredYes =
             { emptyNCDAForm | treatedForAcuteMalnutrition = Just True }
+
+        savedWithOffMuac =
+            Just
+                { signs = EverySet.singleton TreatedForAcuteMalnutrition
+                , birthWeight = Nothing
+                , ancVisitsDates = EverySet.empty
+                , receivesVitaminA = Nothing
+                , stuntingLevel = Nothing
+                , weight = Nothing
+                , muac = Just (MuacInCm 11)
+                }
     in
     describe "the treatment answer and the MUAC it was asked for"
         [ test "an answer is saved while the MUAC is off" <|
@@ -424,24 +435,13 @@ ncdaTreatmentAnswerSavedTest =
             \_ ->
                 treatedSaved Nothing { answeredYes | muac = Just (MuacInCm 14) }
                     |> Expect.equal (Just False)
-        , test "an answer kept from before the MUAC was marked not taken is not saved" <|
+        , test "an answer kept from before the saved MUAC was marked not taken is not saved" <|
             \_ ->
-                treatedSaved Nothing { answeredYes | muacNotTaken = Just True }
+                treatedSaved savedWithOffMuac { answeredYes | muacNotTaken = Just True }
                     |> Expect.equal (Just False)
         , test "a saved answer is not saved again once the MUAC on the form is green" <|
             \_ ->
-                treatedSaved
-                    (Just
-                        { signs = EverySet.singleton TreatedForAcuteMalnutrition
-                        , birthWeight = Nothing
-                        , ancVisitsDates = EverySet.empty
-                        , receivesVitaminA = Nothing
-                        , stuntingLevel = Nothing
-                        , weight = Nothing
-                        , muac = Just (MuacInCm 11)
-                        }
-                    )
-                    { emptyNCDAForm | muac = Just (MuacInCm 14) }
+                treatedSaved savedWithOffMuac { emptyNCDAForm | muac = Just (MuacInCm 14) }
                     |> Expect.equal (Just False)
         ]
 
