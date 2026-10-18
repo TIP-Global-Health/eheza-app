@@ -96,6 +96,14 @@ flag simply does not appear.
 - The upload is a main-thread XHR to `/api/sync`, so `page.on('request')` in the driver sees
   its body (`request.postData()`). That is the only way to tell a dropped key from a null
   one, since the backend treats both alike. Downloads go through the service worker.
+- **Holding a sync download in flight** (to land a save during it): `page.context().route(/\/api\/sync/, …)`
+  sees the download GETs, though `page.route` does not. Downloads are `GET /api/sync` (general) and
+  `GET /api/sync/<hc uuid>` (authority). The same URL with `statistics=1` is the dashboard-stats
+  phase, which is not a download: let it through. The request times out at 30 s, so hold under 25 s.
+  localStorage `syncSpeed` `{"idle":3000,"cycle":50,"offline":30000}`, then a reload, runs a cycle
+  every ~3 s, so a GET is held within a few seconds.
+- A server edit of a measurement (`entity_metadata_wrapper` save) reached an open encounter page
+  about 7 s later with that sync speed.
 - **Relationships load slowly after a fresh pairing.** A person page can show "Family
   Members: … Not Found" through several reloads before it starts working. It is a loading
   delay, not `clinics-not-found-bug.md`.
@@ -187,6 +195,12 @@ flag simply does not appear.
   malaria RDT is not positive** (`covid19SuspectDiagnosed`). Turning malaria Positive takes
   the COVID tab away. "Currently pregnant?" follows a positive result, only for a woman of
   child-bearing age. Saving either test re-diagnoses, with an assessment dialog (CONTINUE).
+- CHW adult acute illness, Headache + Cough / Nasal Congestion / Sore Throat, RR 32, 37.0 °C: the
+  **Acute Findings** save (last Physical Exam tab) diagnoses, not Vitals. It shows "Assessment:
+  Suspected Uncomplicated Pneumonia" over the encounter page; Prior Treatment is still To Do. The
+  device row (`acute_illness_encounter`) holds it as `acute_illness_diagnosis: ri-uncomplicated`.
+  The progress report's Assessment section and the Patient Record read this stored value; the
+  encounter header computes it from the measurements.
 - Acute Illness Prior Treatment: yes/no inputs `fever-past-6-hours`, `malaria-today`,
   `malaria-within-past-month`. A Yes reveals "Do you feel better after taking this?" as
   `<question>-helped`.
@@ -239,6 +253,12 @@ flag simply does not appear.
   Saving the last Next Steps task opens the progress report.
 - Nurse Danger Signs "Convulsions" diagnoses Eclampsia, an emergency referral: Next Steps opens at once
   behind a warning (CONTINUE), and End Encounter then needs only Next Steps, not the other activities.
+  The device row `prenatal_encounter` holds `prenatal_diagnoses: ["eclampsia"]`; the progress report
+  lists it under Obstetric Diagnosis. On a re-paired tablet, FIRST ANTENATAL ENCOUNTER reopens the open visit.
+- CHW Child Nutrition, 2 years, height skipped, 8 kg, MUAC 11, Edema: the Nutrition save shows the
+  "Severe acute malnutrition, severely underweight with danger signs" popup and opens Next Steps. The page
+  stores an assessment itself; the follow-up re-save adds `danger-signs-present` (`nutrition_nutrition` row,
+  `nutrition_assesment`). Without it the stored value reads `danger-signs-not-present`.
 - Pregnancy Outcome inside a postpartum visit closes the pregnancy on Save and returns to the
   still-open visit. The participant page then ignores that pregnancy (B-373).
 - CHW visit 2 with no danger signs: Danger Signs, Birth Plan, Health Education, Next Steps; Next Steps

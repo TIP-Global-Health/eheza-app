@@ -322,3 +322,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** `grep -c "Pages\$NCD\$Utils\$labsResultsWithTestAdded" Main.js` printed 0, although develop's bundle holds that function.
 - **Wrong conclusion:** the bundle is mangled, or gulp serves a different build.
 - **Rule:** Elm's compiled names contain `$`, which grep reads as end of line. Search them with `grep -F` (fixed string).
+
+## Holding the download across a save that does not diagnose
+
+- **Symptom:** a develop control held the download across the CHW Vitals save and showed "no popup, stored none" — but without a hold the diagnosis only arrives at the Acute Findings save.
+- **Wrong conclusion:** develop reproduces the defect.
+- **Rule:** before timing anything around a save, run the flow once and note which save brings the popup. Hold across that one; e2e comments name the activity, not the tab.
+
+## A main tree whose develop is far behind origin
+
+- **Symptom:** local `develop` was 110 commits behind `origin/develop`, and the PR touched files that origin had also changed.
+- **Wrong conclusion:** overlaying only the PR's files gives the PR's build.
+- **Rule:** compare `git diff --name-only HEAD origin/develop -- client/`. If it is not empty, overlay those files from `origin/develop` first (also the develop control), then the PR's. Restore all of them after.
+
+## Dismissing a modal, then a helper that checks for it
+
+- **Symptom:** after my own Continue click, `completePriorTreatment` failed hovering the same modal's Continue.
+- **Wrong conclusion:** a second popup appeared.
+- **Rule:** the modal fades out while `isVisible` still says yes. After dismissing, `waitFor({ state: 'hidden' })` before calling a helper that dismisses popups itself.
