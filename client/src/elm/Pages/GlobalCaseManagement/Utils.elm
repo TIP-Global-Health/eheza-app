@@ -9,19 +9,18 @@ import Backend.Measurement.Model
         ( FollowUpMeasurements
         , FollowUpOption(..)
         , FollowUpValue
-        , Gender(..)
         , LaboratoryTest(..)
         , WellChildVaccineType(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getTuberculosisEncountersForParticipant)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears, isChildUnderAgeOf2)
+import Backend.Person.Utils exposing (ageInYears)
 import Backend.Utils exposing (hivManagementEnabled, resolveIndividualParticipantsForPerson, tuberculosisManagementEnabled)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
-import Measurement.Utils exposing (allVaccineTypes)
+import Measurement.Utils exposing (allVaccineTypesByGender)
 import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpItem, CaseManagementFilter(..), EncounterStartedToday(..), FollowUpDueOption(..), FollowUpPatients, HIVFollowUpItem, ImmunizationFollowUpItem, NutritionFollowUpItem, PrenatalFollowUpItem, TuberculosisFollowUpItem)
 import Pages.Utils
 import RemoteData exposing (WebData)
@@ -259,17 +258,17 @@ generateImmunizationFollowUps limitDate followUps =
             Dict.empty
 
 
-{-| Whether the schedule still has a dose ahead for the child: a child under
-two, or a girl of twelve where HPV is given at that age.
+{-| Whether the child is still chased: under two for the infant doses, or a
+girl of twelve where HPV is given. A product rule; an unknown age is kept.
 -}
 expectImmunizationFollowUp : NominalDate -> Site -> Person -> Bool
 expectImmunizationFollowUp currentDate site person =
-    isChildUnderAgeOf2 currentDate person
-        || (person.gender
-                == Female
-                && (ageInYears currentDate person == Just 12)
-                && List.member VaccineHPV (allVaccineTypes site)
-           )
+    case ageInYears currentDate person of
+        Just age ->
+            age < 2 || (age == 12 && List.member VaccineHPV (allVaccineTypesByGender site person.gender))
+
+        Nothing ->
+            True
 
 
 {-| We have 2 sources for case management entries of Tuberculosis pane.

@@ -1588,64 +1588,61 @@ viewImmunizationPane language currentDate site itemsDict db =
 
 generateImmunizationFollowUpEntries : NominalDate -> Site -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> List ImmunizationFollowUpEntry
 generateImmunizationFollowUpEntries currentDate site itemsDict db =
-    Dict.map (generateImmunizationFollowUpEntryData currentDate site db) itemsDict
-        |> Dict.values
-        |> Maybe.Extra.values
-
-
-generateImmunizationFollowUpEntryData : NominalDate -> Site -> ModelIndexedDb -> PersonId -> ImmunizationFollowUpItem -> Maybe ImmunizationFollowUpEntry
-generateImmunizationFollowUpEntryData currentDate site db personId item =
     let
-        -- A child the schedule has nothing ahead for is not chased. A child
-        -- not loaded yet is kept, as the encounters below are.
-        stillOnSchedule =
+        -- Set limit date for tomorrow, so that we
+        -- load all available follow ups.
+        limitDate =
+            Date.add Days 1 currentDate
+
+        -- A child no longer chased for immunisations is left out. A child
+        -- not loaded yet is kept, as the encounters are.
+        stillChased personId =
             Dict.get personId db.people
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map (expectImmunizationFollowUp currentDate site)
                 |> Maybe.withDefault True
     in
-    if stillOnSchedule then
-        let
-            -- Set limit date for tomorrow, so that we
-            -- load all available follow ups.
-            limitDate =
-                Date.add Days 1 currentDate
+    Dict.filter (\personId _ -> stillChased personId) itemsDict
+        |> Dict.map (generateImmunizationFollowUpEntryData limitDate db)
+        |> Dict.values
+        |> Maybe.Extra.values
 
-            lastWellChildEncounter =
-                resolveIndividualParticipantForPerson personId WellChildEncounter db
-                    |> Maybe.map
-                        (getWellChildEncountersForParticipant db
-                            >> List.map Tuple.second
-                            >> List.filter
-                                (\encounter ->
-                                    (encounter.encounterType /= NewbornExam)
-                                        && (Date.compare encounter.startDate limitDate == LT)
-                                )
-                        )
-                    |> Maybe.withDefault []
-                    -- Sort DESC
-                    |> List.sortWith (\e1 e2 -> Date.compare e2.startDate e1.startDate)
-                    |> List.head
-        in
-        Maybe.map
-            (\encounter ->
-                -- A Well Child encounter that started after the follow up was
-                -- scheduled is where the immunisation would have been given, so
-                -- the follow up is done. The encounter that scheduled it starts
-                -- on the same day it was measured, and does not count.
-                if Date.compare encounter.startDate item.dateMeasured == GT then
-                    Nothing
 
-                else
-                    Just <| ImmunizationFollowUpEntry personId item
-            )
-            lastWellChildEncounter
-            |> -- No Well Child encounter found.
-               Maybe.withDefault
-                (Just <| ImmunizationFollowUpEntry personId item)
+generateImmunizationFollowUpEntryData : NominalDate -> ModelIndexedDb -> PersonId -> ImmunizationFollowUpItem -> Maybe ImmunizationFollowUpEntry
+generateImmunizationFollowUpEntryData limitDate db personId item =
+    let
+        lastWellChildEncounter =
+            resolveIndividualParticipantForPerson personId WellChildEncounter db
+                |> Maybe.map
+                    (getWellChildEncountersForParticipant db
+                        >> List.map Tuple.second
+                        >> List.filter
+                            (\encounter ->
+                                (encounter.encounterType /= NewbornExam)
+                                    && (Date.compare encounter.startDate limitDate == LT)
+                            )
+                    )
+                |> Maybe.withDefault []
+                -- Sort DESC
+                |> List.sortWith (\e1 e2 -> Date.compare e2.startDate e1.startDate)
+                |> List.head
+    in
+    Maybe.map
+        (\encounter ->
+            -- A Well Child encounter that started after the follow up was
+            -- scheduled is where the immunisation would have been given, so
+            -- the follow up is done. The encounter that scheduled it starts
+            -- on the same day it was measured, and does not count.
+            if Date.compare encounter.startDate item.dateMeasured == GT then
+                Nothing
 
-    else
-        Nothing
+            else
+                Just <| ImmunizationFollowUpEntry personId item
+        )
+        lastWellChildEncounter
+        |> -- No Well Child encounter found.
+           Maybe.withDefault
+            (Just <| ImmunizationFollowUpEntry personId item)
 
 
 viewImmunizationFollowUpEntry : Language -> NominalDate -> ImmunizationFollowUpEntry -> Html Msg

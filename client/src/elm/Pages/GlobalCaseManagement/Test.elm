@@ -122,12 +122,12 @@ generateImmunizationFollowUpEntriesTests =
                 (dbWithEncountersOn startDates)
                 |> List.length
 
-        -- A child of the given age on 2026-06-20, with no Well Child
-        -- encounter, on the given site.
-        runForChild site years gender =
+        -- A child with the given birth date, on 2026-06-20, with no Well
+        -- Child encounter, on the given site.
+        runForBirthDate site birthDate gender =
             let
                 child =
-                    testChild (date (2026 - years) Time.Jan 1)
+                    testChild (date 2020 Time.Jan 1)
 
                 db =
                     dbWithEncountersOn []
@@ -135,8 +135,12 @@ generateImmunizationFollowUpEntriesTests =
             generateImmunizationFollowUpEntries (date 2026 Time.Jun 20)
                 site
                 (Dict.singleton personId item)
-                { db | people = Dict.singleton personId (RemoteData.Success { child | gender = gender }) }
+                { db | people = Dict.singleton personId (RemoteData.Success { child | birthDate = birthDate, gender = gender }) }
                 |> List.length
+
+        -- A child of the given age in years, a few months past the birthday.
+        runForChild site years gender =
+            runForBirthDate site (Just <| date (2026 - years) Time.Jan 1) gender
     in
     describe "generateImmunizationFollowUpEntries"
         [ test "lists the child on the day the follow up was scheduled" <|
@@ -167,6 +171,14 @@ generateImmunizationFollowUpEntriesTests =
             \_ ->
                 runForChild SiteRwanda 2 Male
                     |> Expect.equal 0
+        , test "drops a child on the second birthday" <|
+            \_ ->
+                runForBirthDate SiteRwanda (Just <| date 2024 Time.Jun 20) Male
+                    |> Expect.equal 0
+        , test "keeps a child whose birth date is not known" <|
+            \_ ->
+                runForBirthDate SiteRwanda Nothing Male
+                    |> Expect.equal 1
         , test "lists a girl of twelve, who is due HPV" <|
             \_ ->
                 runForChild SiteRwanda 12 Female
@@ -174,6 +186,10 @@ generateImmunizationFollowUpEntriesTests =
         , test "drops a boy of twelve" <|
             \_ ->
                 runForChild SiteRwanda 12 Male
+                    |> Expect.equal 0
+        , test "drops a girl of thirteen, who can no longer have a Well Child visit" <|
+            \_ ->
+                runForChild SiteRwanda 13 Female
                     |> Expect.equal 0
         , test "drops a girl of twelve on Burundi, where HPV is not given" <|
             \_ ->
