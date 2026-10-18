@@ -586,7 +586,7 @@ type MsgIndexedDb
 
 
 {-| Where revisions come from. The device's own save runs the assessments
-(diagnoses, follow-ups); a sync download only stores what other devices saved.
+(diagnoses, follow-ups); a sync download only stores what the backend sends.
 -}
 type RevisionsOrigin
     = RevisionsFromLocalSave
