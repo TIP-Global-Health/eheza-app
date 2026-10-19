@@ -4069,8 +4069,20 @@ translateDashboardLabel label =
             , somali = Nothing
             }
 
-        Dashboard.FromPreviousMonth ->
-            { english = "from prev. month"
+        Dashboard.FromPreviousPeriod period ->
+            { english =
+                case period of
+                    Dashboard.PeriodMonth ->
+                        "from prev. month"
+
+                    Dashboard.PeriodQuarter ->
+                        "from prev. quarter"
+
+                    Dashboard.PeriodWeek ->
+                        "from prev. week"
+
+                    Dashboard.PeriodYear ->
+                        "from prev. year"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -4379,6 +4391,13 @@ translateDashboardLabel label =
 
         Dashboard.ValueColumn ->
             { english = "Value"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.ValueInWeeks value ->
+            { english = value ++ " wk"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing

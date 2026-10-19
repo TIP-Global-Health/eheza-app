@@ -121,6 +121,37 @@ posted on #2231.
 Each block also shows the program target and the inter-site average. The inter-site average is
 the mean over the other sites' records. Targets have no source yet; placeholders meanwhile.
 
+## How the Facility dashboard counts
+
+`Pages/Dashboard/Facility.elm` works the figures out from the selected site's records. The Program
+dashboard still shows placeholder figures, and so do the Facility critical alerts.
+
+The Time filter picks the period holding today, up to today. Weeks count from the first cohort
+date. Each block compares with the whole previous period of the same kind.
+
+Gestational age counts from the LMP, 280 days before the EDD; figures that need it skip pregnancies
+without one. Antenatal visits are every visit type but postpartum.
+
+| Figure | Pregnancies counted | Of which |
+| --- | --- | --- |
+| Women Currently in ANC Care | Not concluded, under 42 weeks today | |
+| Pregnancies by trimester | The same, by gestational age today | |
+| Total Deliveries (Institutional) | Concluded in the period, delivered at a facility | |
+| Total Children on Routine Care | Newborn has a routine care visit in the period | |
+| Early ANC Booking Rate | First antenatal visit in the period | First visit under 13 weeks |
+| Median GA at First ANC | First antenatal visit in the period | Median weeks at that visit |
+| Early Ultrasound Coverage | Reached 20 weeks in the period, seen by then | Scanned before 20 weeks |
+| High-Risk Pregnancy Rate | An antenatal visit in the period | Any `risks` code |
+| Complete ANC Attendance Rate | Concluded in the period | 8 or more antenatal visits |
+| Aspirin coverage | An antenatal visit in the period, `pe` risk | Aspirin at any visit |
+| Calcium coverage | An antenatal visit in the period | Calcium at any visit |
+
+A dash shows a rate with no pregnancy to count, and the figures not defined or captured yet: ANC
+Miss Rate, Graduated Pairs, Lost to Follow-Up, PPH, SQLNS.
+
+The trend chart and the drill down count each calendar month the same way. Months still to come
+stay empty. Targets are placeholders.
+
 ## Not in the record yet
 
 Needed by the threshold tiles and alerts. Each is added to the record, with a trigger for its
@@ -140,7 +171,7 @@ content type, when its figure is built.
    `hedley_reports_dashboard_pregnancies_for_node()`. A prenatal measurement already resolves
    through its encounter; add its bundle to `hedley_reports_dashboard_measurement_bundles()`.
 3. Bump `HEDLEY_REPORTS_DASHBOARD_DATA_VERSION`.
-4. Decode the field in the Elm app, treating records of an older version as missing it.
+4. Decode the field in `Backend/Dashboard/Decoder.elm`, treating records of an older version as missing it.
 5. Rerun the script below on every HealthyStart site, without `--exclude_set`.
 6. Update the tables in this file.
 
