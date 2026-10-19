@@ -16,7 +16,7 @@ define('HEDLEY_REPORTS_CALCULATE_DASHBOARD_DATA', 'hedley_reports_calculate_dash
 /**
  * Format version carried by every record, so a decoder can skip old shapes.
  */
-define('HEDLEY_REPORTS_DASHBOARD_DATA_VERSION', 2);
+define('HEDLEY_REPORTS_DASHBOARD_DATA_VERSION', 3);
 
 /**
  * Checks whether dashboard records are maintained on this installation.
@@ -179,6 +179,12 @@ function hedley_reports_dashboard_pregnancies_for_node($node) {
     $child_nid = $wrapper->field_person->value(['identifier' => TRUE]);
 
     return empty($child_nid) ? [] : hedley_reports_dashboard_pregnancies_by_newborn($child_nid);
+  }
+
+  if ($node->type == HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE) {
+    $child_nid = hedley_reports_dashboard_field_value($node, 'field_person', 'target_id');
+
+    return $child_nid ? hedley_reports_dashboard_pregnancies_by_newborn($child_nid) : [];
   }
 
   if ($node->type == HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE) {
@@ -476,8 +482,12 @@ function hedley_reports_dashboard_encounter_indicators($encounter, array $measur
   };
 
   $indicators = [];
-  if (in_array('adequate-gwg', hedley_reports_dashboard_field_values($encounter, 'field_prenatal_indicators'))) {
+  $encounter_indicators = hedley_reports_dashboard_field_values($encounter, 'field_prenatal_indicators');
+  if (in_array('adequate-gwg', $encounter_indicators)) {
     $indicators[] = 'gwg';
+  }
+  elseif (in_array('inadequate-gwg', $encounter_indicators)) {
+    $indicators[] = 'gwg-inadequate';
   }
 
   foreach ($measurements as $measurement) {
@@ -645,8 +655,8 @@ function hedley_reports_dashboard_risks(array $record, array $diagnoses, array $
  *   The newborn's person node ID.
  *
  * @return array|null
- *   Birth date, gender and routine care visits, or NULL when the child is
- *   gone.
+ *   Birth date, gender, birth weight and routine care visits, or NULL when
+ *   the child is gone.
  */
 function hedley_reports_dashboard_child_record($child_nid) {
   $child = node_load($child_nid);
@@ -659,8 +669,24 @@ function hedley_reports_dashboard_child_record($child_nid) {
     'id' => (int) $child->nid,
     'bd' => hedley_reports_dashboard_field_date($child, 'field_birth_date'),
     'g' => $gender ? substr($gender, 0, 1) : NULL,
+    'bw' => NULL,
+    'bwd' => NULL,
     'visits' => [],
   ];
+
+  // Birth weight in grams, from the earliest pregnancy summary that has one.
+  $summaries_ids = hedley_general_get_person_measurements($child->nid, [HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE]);
+  foreach (node_load_multiple($summaries_ids) as $summary) {
+    $weight = hedley_reports_dashboard_field_value($summary, 'field_weight');
+    $date = hedley_reports_dashboard_field_date($summary, 'field_date_measured');
+    if ($summary->status != NODE_PUBLISHED || !$weight || !$date) {
+      continue;
+    }
+    if (empty($record['bwd']) || $date < $record['bwd']) {
+      $record['bw'] = (int) round($weight);
+      $record['bwd'] = $date;
+    }
+  }
 
   $visit_bundles = hedley_reports_dashboard_child_visit_bundles();
   $participants_ids = hedley_person_individual_participants_for_person($child->nid, array_column($visit_bundles, 'encounter_type'));

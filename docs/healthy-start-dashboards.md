@@ -53,10 +53,10 @@ Each entry of `visits`:
 | `t` | Encounter type: `nurse`, `nurse-postpartum`, `chw-1`, `chw-2`, `chw-3`, `chw-postpartum`. |
 | `n` | Next visit date the encounter set, if any. |
 | `dx` | Codes of the diagnoses made at that visit, as `hedley_reports_prenatal_diagnosis_mapping()` assigns them. Diagnoses entered through Outside Care count for `risks` only. |
-| `ind` | Indicator codes as `hedley_reports_prenatal_indicator_mapping()` assigns them: `a` adequate GWG, `b` MMS, `c` ultrasound referral, `d` aspirin, `e` calcium. |
+| `ind` | Indicator codes as `hedley_reports_prenatal_indicator_mapping()` assigns them: `a` adequate GWG, `n` inadequate GWG, `b` MMS, `c` ultrasound referral, `d` aspirin, `e` calcium. |
 
 Aspirin, calcium and MMS count when the measurement says "administered today". Aspirin also counts
-when the medication distribution prescribed it.
+when the medication distribution prescribed it. A visit without `a` or `n` did not assess GWG.
 
 The `risks` codes, HealthyStart's list of 18 October 2026, and what raises each:
 
@@ -81,6 +81,8 @@ The `child` object:
 | `id` | Child person node id. |
 | `bd` | Birth date. |
 | `g` | Gender: `m` or `f`. |
+| `bw` | Birth weight in grams, from the earliest pregnancy summary that recorded one. |
+| `bwd` | Date that weight was recorded. |
 | `visits` | Routine care visits, earliest first: `d` date, `t` is `well-child`, `nutrition` or `group-nutrition` (a group session attended). |
 
 ## What each headline tile needs
@@ -121,15 +123,30 @@ posted on #2231.
 Each block also shows the program target and the inter-site average. The inter-site average is
 the mean over the other sites' records. Targets have no source yet; placeholders meanwhile.
 
+## What the Program dashboard's threshold tiles need
+
+Each tile counts the sites whose rate crosses the threshold. The rate per site uses the records
+grouped by `hc`.
+
+| Tile | Record fields | Status |
+| --- | --- | --- |
+| Early ANC Coverage ≥80% | `visits.d`, `edd` | Data present. Same rate as Early ANC Booking. |
+| Early Ultrasound Coverage <20 weeks | `us`, `edd` | Data present. Same rate as the Facility block. |
+| Sites with Inadequate GWG >10% | `ind` codes `a`, `n` | Data present. Pregnancies with `n` at any visit ÷ pregnancies assessed. To confirm. |
+| Delayed or Missing Birth Weight >5% | `child.bd`, `child.bw`, `child.bwd` | Data present. Delayed means recorded more than a day after birth, as the alert says. |
+| Elevated Preterm or SGA Births >15% | `o`, `edd`, `child.bd`, `child.bw` | Preterm present. SGA needs the growth standard and percentile HealthyStart wants. |
+| Poor Child Growth Outcomes >10% | none | Later, with the nutrition figures. |
+
+The alerts "births missing birth weight in the last 7 days" and "preterm rate exceeded 15%" read
+the same fields.
+
 ## Not in the record yet
 
-Needed by the threshold tiles and alerts. Each is added to the record, with a trigger for its
-content type, when its figure is built.
+Each is added to the record, with a trigger for its content type, when its figure is built.
 
 | Figure | Source content |
 | --- | --- |
 | SQLNS coverage | `well_child_feeding`, `nutrition_feeding` supplement type. |
-| Birth weight recording, SGA | `well_child_pregnancy_summary` weight and its measurement date. |
 | Child growth outcomes | Z-scores on `well_child_weight` and `well_child_height`. |
 
 ## How to extend the record
