@@ -1,5 +1,6 @@
 module Pages.Components.Utils exposing
-    ( isSyncComplete
+    ( healthCentersByName
+    , isSyncComplete
     , populationSelectionOptionFromString
     , populationSelectionOptionToString
     , reportTableDataToCSV
@@ -8,12 +9,20 @@ module Pages.Components.Utils exposing
     )
 
 import App.Types exposing (Language)
+import Backend.Components.Model exposing (HealthCenterData)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Utils exposing (csvRow)
 import Translate exposing (translate)
+
+
+{-| Health centers in the order every health center list shows them.
+-}
+healthCentersByName : List HealthCenterData -> List HealthCenterData
+healthCentersByName =
+    List.sortBy .name
 
 
 populationSelectionOptionToString : PopulationSelectionOption -> String

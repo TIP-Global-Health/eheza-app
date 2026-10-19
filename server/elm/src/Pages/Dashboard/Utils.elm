@@ -16,6 +16,7 @@ module Pages.Dashboard.Utils exposing
 import App.Types exposing (Language, Site)
 import AssocList as Dict
 import Backend.Components.Model exposing (HealthCenterData)
+import Pages.Components.Utils exposing (healthCentersByName)
 import Pages.Dashboard.Model
     exposing
         ( Dashboard(..)
@@ -150,7 +151,7 @@ filtersFor : Dashboard -> Site -> List HealthCenterData -> List Filter
 filtersFor dashboard site healthCenters =
     let
         siteOptions =
-            List.sortBy (.name >> String.toLower) healthCenters
+            healthCentersByName healthCenters
                 |> List.map OptionHealthCenter
 
         timeFilter =

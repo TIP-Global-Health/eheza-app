@@ -10317,10 +10317,37 @@ var $author$project$Backend$Reports$Update$update = F4(
 				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
 		}
 	});
-var $author$project$Backend$Dashboard$Model$DashboardData = F3(
-	function (firstCohortDate, healthCenters, site) {
-		return {site: site, healthCenters: healthCenters, firstCohortDate: firstCohortDate};
+var $author$project$Backend$Dashboard$Model$DashboardData = F2(
+	function (firstCohortDate, menu) {
+		return {menu: menu, firstCohortDate: firstCohortDate};
 	});
+var $elm$json$Json$Decode$maybe = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
+				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
+			]));
+};
+var $author$project$Backend$Components$Model$MenuData = F3(
+	function (site, healthCenters, scope) {
+		return {site: site, scope: scope, healthCenters: healthCenters};
+	});
+var $author$project$Backend$Components$Model$ScopeFull = {$: 'ScopeFull'};
+var $author$project$Backend$Components$Model$ScopeHealthCenters = {$: 'ScopeHealthCenters'};
+var $author$project$Backend$Components$Decoder$decodeMenuScope = A2(
+	$elm$json$Json$Decode$andThen,
+	function (scope) {
+		switch (scope) {
+			case 'full':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeFull);
+			case 'health_centers':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeHealthCenters);
+			default:
+				return $elm$json$Json$Decode$fail(scope + ' is unknown MenuScope type');
+		}
+	},
+	$elm$json$Json$Decode$string);
 var $author$project$Backend$Components$Model$HealthCenterData = F2(
 	function (id, name) {
 		return {id: id, name: name};
@@ -10334,20 +10361,29 @@ var $author$project$Backend$Components$Decoder$decodeHealthCenterData = A3(
 		'id',
 		$author$project$Gizra$Json$decodeInt,
 		$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$HealthCenterData)));
-var $author$project$Backend$Dashboard$Decoder$decodeDashboardData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'site',
-	$author$project$Backend$Decoder$decodeSite,
+var $author$project$Backend$Components$Decoder$decodeMenuData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'scope',
+	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
+	$elm$core$Maybe$Nothing,
 	A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 		'health_centers',
 		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
-		A4(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'first_cohort_date',
-			$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-			$elm$core$Maybe$Nothing,
-			$elm$json$Json$Decode$succeed($author$project$Backend$Dashboard$Model$DashboardData))));
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'site',
+			$author$project$Backend$Decoder$decodeSite,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$MenuData))));
+var $author$project$Backend$Dashboard$Decoder$decodeDashboardData = A2(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+	$author$project$Backend$Components$Decoder$decodeMenuData,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'first_cohort_date',
+		$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+		$elm$core$Maybe$Nothing,
+		$elm$json$Json$Decode$succeed($author$project$Backend$Dashboard$Model$DashboardData)));
 var $author$project$Backend$Dashboard$Update$update = F2(
 	function (msg, model) {
 		var value = msg.a;
@@ -11383,14 +11419,6 @@ var $author$project$Backend$Scoreboard$Model$HandleSyncResponse = function (a) {
 	return {$: 'HandleSyncResponse', a: a};
 };
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $elm$json$Json$Decode$maybe = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
-				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
-			]));
-};
 var $author$project$Backend$Scoreboard$Model$PatientData = F6(
 	function (created, birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
 		return {ncda: ncda, created: created, eddDate: eddDate, birthDate: birthDate, nutrition: nutrition, lowBirthWeight: lowBirthWeight};
@@ -11933,39 +11961,6 @@ var $author$project$Backend$Scoreboard$Update$update = F4(
 				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
 		}
 	});
-var $author$project$Backend$Components$Model$MenuData = F3(
-	function (site, healthCenters, scope) {
-		return {site: site, scope: scope, healthCenters: healthCenters};
-	});
-var $author$project$Backend$Components$Model$ScopeFull = {$: 'ScopeFull'};
-var $author$project$Backend$Components$Model$ScopeHealthCenters = {$: 'ScopeHealthCenters'};
-var $author$project$Backend$Components$Decoder$decodeMenuScope = A2(
-	$elm$json$Json$Decode$andThen,
-	function (scope) {
-		switch (scope) {
-			case 'full':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeFull);
-			case 'health_centers':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeHealthCenters);
-			default:
-				return $elm$json$Json$Decode$fail(scope + ' is unknown MenuScope type');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$Backend$Components$Decoder$decodeMenuData = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'scope',
-	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
-	$elm$core$Maybe$Nothing,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'health_centers',
-		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'site',
-			$author$project$Backend$Decoder$decodeSite,
-			$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$MenuData))));
 var $author$project$Backend$ReportsMenu$Update$update = F2(
 	function (msg, model) {
 		var value = msg.a;
@@ -45024,6 +45019,10 @@ var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
 		return _List_fromArray(
 			[provinceInput, districtInput, sectorInput, cellInput, villageInput]);
 	});
+var $author$project$Pages$Components$Utils$healthCentersByName = $elm$core$List$sortBy(
+	function ($) {
+		return $.name;
+	});
 var $author$project$Pages$Components$View$viewHealthCenterSelection = F6(
 	function (language, data, urlPrefix, selectedHealthCenter, setHealthCenterMsg, selectionMadeMsg) {
 		var options = A2(
@@ -45031,12 +45030,7 @@ var $author$project$Pages$Components$View$viewHealthCenterSelection = F6(
 			function (healthCenter) {
 				return _Utils_Tuple2(healthCenter.name, healthCenter.id);
 			},
-			A2(
-				$elm$core$List$sortBy,
-				function ($) {
-					return $.name;
-				},
-				data.healthCenters));
+			$author$project$Pages$Components$Utils$healthCentersByName(data.healthCenters));
 		return _Utils_Tuple2(
 			_List_fromArray(
 				[
@@ -45533,15 +45527,7 @@ var $author$project$Pages$Dashboard$Utils$filtersFor = F3(
 		var siteOptions = A2(
 			$elm$core$List$map,
 			$author$project$Pages$Dashboard$Model$OptionHealthCenter,
-			A2(
-				$elm$core$List$sortBy,
-				A2(
-					$elm$core$Basics$composeR,
-					function ($) {
-						return $.name;
-					},
-					$elm$core$String$toLower),
-				healthCenters));
+			$author$project$Pages$Components$Utils$healthCentersByName(healthCenters));
 		var timeFilter = A3(
 			$author$project$Pages$Dashboard$Model$Filter,
 			$author$project$Pages$Dashboard$Model$FilterTime,
@@ -47645,7 +47631,7 @@ var $author$project$Pages$Dashboard$View$behindDrillDownAttributes = function (s
 var $author$project$Pages$Dashboard$View$viewDashboard = F5(
 	function (language, currentDate, data, dashboard, model) {
 		var coverage = $author$project$Pages$Dashboard$Placeholder$coverageFor(dashboard);
-		var filters = A3($author$project$Pages$Dashboard$Utils$filtersFor, dashboard, data.site, data.healthCenters);
+		var filters = A3($author$project$Pages$Dashboard$Utils$filtersFor, dashboard, data.menu.site, data.menu.healthCenters);
 		var years = A2($author$project$Pages$Dashboard$Placeholder$drillYears, currentDate, data.firstCohortDate);
 		var tiles = $author$project$Pages$Dashboard$Placeholder$tilesFor(dashboard);
 		var kpis = $author$project$Pages$Dashboard$Placeholder$kpisFor(dashboard);
