@@ -10317,9 +10317,9 @@ var $author$project$Backend$Reports$Update$update = F4(
 				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
 		}
 	});
-var $author$project$Backend$Dashboard$Model$DashboardData = F2(
-	function (firstCohortDate, healthCenters) {
-		return {healthCenters: healthCenters, firstCohortDate: firstCohortDate};
+var $author$project$Backend$Dashboard$Model$DashboardData = F3(
+	function (firstCohortDate, healthCenters, site) {
+		return {site: site, healthCenters: healthCenters, firstCohortDate: firstCohortDate};
 	});
 var $author$project$Backend$Components$Model$HealthCenterData = F2(
 	function (id, name) {
@@ -10336,14 +10336,18 @@ var $author$project$Backend$Components$Decoder$decodeHealthCenterData = A3(
 		$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$HealthCenterData)));
 var $author$project$Backend$Dashboard$Decoder$decodeDashboardData = A3(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'health_centers',
-	$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
-	A4(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'first_cohort_date',
-		$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-		$elm$core$Maybe$Nothing,
-		$elm$json$Json$Decode$succeed($author$project$Backend$Dashboard$Model$DashboardData)));
+	'site',
+	$author$project$Backend$Decoder$decodeSite,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'health_centers',
+		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'first_cohort_date',
+			$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+			$elm$core$Maybe$Nothing,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Dashboard$Model$DashboardData))));
 var $author$project$Backend$Dashboard$Update$update = F2(
 	function (msg, model) {
 		var value = msg.a;
@@ -45500,6 +45504,9 @@ var $author$project$Pages$Dashboard$Placeholder$drillYears = F2(
 		return $elm$core$List$reverse(
 			A2($elm$core$List$range, firstYear, currentYear));
 	});
+var $elm$core$List$sort = function (xs) {
+	return A2($elm$core$List$sortBy, $elm$core$Basics$identity, xs);
+};
 var $author$project$Pages$Dashboard$Model$Filter = F3(
 	function (key, options, selected) {
 		return {key: key, options: options, selected: selected};
@@ -45518,8 +45525,8 @@ var $author$project$Pages$Dashboard$Model$OptionPeriod = function (a) {
 };
 var $author$project$Pages$Dashboard$Model$PeriodQuarter = {$: 'PeriodQuarter'};
 var $author$project$Pages$Dashboard$Model$FilterLocation = {$: 'FilterLocation'};
-var $author$project$Pages$Dashboard$Placeholder$filtersFor = F2(
-	function (dashboard, healthCenters) {
+var $author$project$Pages$Dashboard$Placeholder$filtersFor = F3(
+	function (dashboard, site, healthCenters) {
 		var siteOptions = A2(
 			$elm$core$List$map,
 			$author$project$Pages$Dashboard$Model$OptionName,
@@ -45553,6 +45560,17 @@ var $author$project$Pages$Dashboard$Placeholder$filtersFor = F2(
 					timeFilter
 				]);
 		} else {
+			var districtOptions = A2(
+				$elm$core$List$map,
+				$author$project$Pages$Dashboard$Model$OptionName,
+				$elm$core$List$sort(
+					A2(
+						$elm$core$List$map,
+						function ($) {
+							return $.name;
+						},
+						$pzp1997$assoc_list$AssocList$values(
+							$author$project$Utils$GeoLocation$getGeoDistricts(site)))));
 			return _List_fromArray(
 				[
 					A3(
@@ -45564,14 +45582,7 @@ var $author$project$Pages$Dashboard$Placeholder$filtersFor = F2(
 					A3(
 					$author$project$Pages$Dashboard$Model$Filter,
 					$author$project$Pages$Dashboard$Model$FilterLocation,
-					A2(
-						$elm$core$List$cons,
-						$author$project$Pages$Dashboard$Model$OptionAll,
-						A2(
-							$elm$core$List$map,
-							$author$project$Pages$Dashboard$Model$OptionName,
-							_List_fromArray(
-								['Eastern Province', 'Kayonza District', 'Rwamagana District']))),
+					A2($elm$core$List$cons, $author$project$Pages$Dashboard$Model$OptionAll, districtOptions),
 					$author$project$Pages$Dashboard$Model$OptionAll)
 				]);
 		}
@@ -47623,7 +47634,7 @@ var $author$project$Pages$Dashboard$View$behindDrillDownAttributes = function (s
 var $author$project$Pages$Dashboard$View$viewDashboard = F5(
 	function (language, currentDate, data, dashboard, model) {
 		var coverage = $author$project$Pages$Dashboard$Placeholder$coverageFor(dashboard);
-		var filters = A2($author$project$Pages$Dashboard$Placeholder$filtersFor, dashboard, data.healthCenters);
+		var filters = A3($author$project$Pages$Dashboard$Placeholder$filtersFor, dashboard, data.site, data.healthCenters);
 		var years = A2($author$project$Pages$Dashboard$Placeholder$drillYears, currentDate, data.firstCohortDate);
 		var tiles = $author$project$Pages$Dashboard$Placeholder$tilesFor(dashboard);
 		var kpis = $author$project$Pages$Dashboard$Placeholder$kpisFor(dashboard);

@@ -17,6 +17,8 @@ dashboards. The Time filter scopes only the summary tiles and indicator blocks;
 the trend chart follows its own Year selector.
 -}
 
+import App.Types exposing (Site)
+import AssocList as Dict
 import Backend.Components.Model exposing (HealthCenterData)
 import Date
 import Gizra.NominalDate exposing (NominalDate)
@@ -33,6 +35,7 @@ import Pages.Dashboard.Model
         , TimePeriod(..)
         , Trend(..)
         )
+import Utils.GeoLocation exposing (getGeoDistricts)
 
 
 
@@ -147,12 +150,12 @@ alertsFor dashboard =
 -- FILTERS
 
 
-{-| The filter dropdowns. The Intervention Site options are the health centers
-this installation holds; the rest are placeholder options, and none of them
-change the figures yet.
+{-| The filter dropdowns. Intervention Site lists the health centers this
+installation holds and Location the site's districts, independently of each
+other. None of them change the figures yet.
 -}
-filtersFor : Dashboard -> List HealthCenterData -> List Filter
-filtersFor dashboard healthCenters =
+filtersFor : Dashboard -> Site -> List HealthCenterData -> List Filter
+filtersFor dashboard site healthCenters =
     let
         siteOptions =
             List.map OptionName <|
@@ -174,11 +177,16 @@ filtersFor dashboard healthCenters =
             ]
 
         Program ->
+            let
+                districtOptions =
+                    Dict.values (getGeoDistricts site)
+                        |> List.map .name
+                        |> List.sort
+                        |> List.map OptionName
+            in
             [ Filter FilterSite (OptionAll :: siteOptions) OptionAll
             , timeFilter
-            , Filter FilterLocation
-                (OptionAll :: List.map OptionName [ "Eastern Province", "Kayonza District", "Rwamagana District" ])
-                OptionAll
+            , Filter FilterLocation (OptionAll :: districtOptions) OptionAll
             ]
 
 

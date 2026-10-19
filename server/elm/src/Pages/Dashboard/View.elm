@@ -64,7 +64,7 @@ viewDashboard : Language -> NominalDate -> DashboardData -> Dashboard -> Model -
 viewDashboard language currentDate data dashboard model =
     let
         filters =
-            Placeholder.filtersFor dashboard data.healthCenters
+            Placeholder.filtersFor dashboard data.site data.healthCenters
 
         years =
             Placeholder.drillYears currentDate data.firstCohortDate
