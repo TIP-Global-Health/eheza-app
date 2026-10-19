@@ -3,7 +3,7 @@ module Pages.GlobalCaseManagement.Test exposing (all)
 import AssocList as Dict
 import Backend.IndividualEncounterParticipant.Model as IndividualEncounterParticipant exposing (emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (resolveOpenParticipant)
-import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue)
+import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, Gender(..))
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..), emptyWellChildEncounter)
@@ -11,18 +11,21 @@ import Date
 import EverySet
 import Expect
 import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpItem, EncounterStartedToday(..), ImmunizationFollowUpItem)
-import Pages.GlobalCaseManagement.Utils exposing (filterResolvedFollowUps, generateTuberculosisFollowUps, resolveEncounterStartedToday)
+import Pages.GlobalCaseManagement.Utils exposing (filterFollowUpsOfChasedChildren, filterResolvedFollowUps, generateTuberculosisFollowUps, resolveEncounterStartedToday)
 import Pages.GlobalCaseManagement.View exposing (generateImmunizationFollowUpEntries)
 import RemoteData
 import Restful.Endpoint exposing (toEntityUuid)
+import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (testPerson)
 import Time
 
 
 all : Test
 all =
     describe "Pages.GlobalCaseManagement"
-        [ filterResolvedFollowUpsTests
+        [ filterFollowUpsOfChasedChildrenTests
+        , filterResolvedFollowUpsTests
         , generateImmunizationFollowUpEntriesTests
         , generateTuberculosisFollowUpsTests
         , resolveEncounterStartedTodayTests
@@ -141,6 +144,77 @@ generateImmunizationFollowUpEntriesTests =
             \_ ->
                 run (date 2026 Time.Jun 20) [ scheduledOn, date 2026 Time.Jun 15 ]
                     |> Expect.equal 0
+        ]
+
+
+{-| The Immunization pane chases a child only while the schedule has a dose
+ahead: under two for the infant doses, or a girl of twelve where HPV is given.
+An older child, or one without a birth date, could not have the Well Child
+visit that would close the entry.
+-}
+filterFollowUpsOfChasedChildrenTests : Test
+filterFollowUpsOfChasedChildrenTests =
+    let
+        personId =
+            toEntityUuid "person"
+
+        currentDate =
+            Date.fromCalendarDate 2026 Time.Jun 20
+
+        -- Whether a follow up of a person with the given birth date and
+        -- gender is kept on the given site.
+        kept site birthDate gender =
+            { emptyModelIndexedDb
+                | people = Dict.singleton personId (RemoteData.Success { testPerson | birthDate = birthDate, gender = gender })
+            }
+                |> keptIn site
+
+        keptIn site db =
+            filterFollowUpsOfChasedChildren currentDate site db (Dict.singleton personId ())
+                |> Dict.isEmpty
+                |> not
+
+        -- A child of the given age in years, a few months past the birthday.
+        bornYearsAgo years =
+            Just <| Date.fromCalendarDate (2026 - years) Time.Jan 1
+    in
+    describe "filterFollowUpsOfChasedChildren"
+        [ test "keeps a child under two" <|
+            \_ ->
+                kept SiteRwanda (bornYearsAgo 1) Male
+                    |> Expect.equal True
+        , test "drops a child of two, who has only infant doses ahead" <|
+            \_ ->
+                kept SiteRwanda (bornYearsAgo 2) Male
+                    |> Expect.equal False
+        , test "drops a child on the second birthday" <|
+            \_ ->
+                kept SiteRwanda (Just <| Date.fromCalendarDate 2024 Time.Jun 20) Male
+                    |> Expect.equal False
+        , test "drops a child without a birth date, who cannot have a Well Child visit" <|
+            \_ ->
+                kept SiteRwanda Nothing Male
+                    |> Expect.equal False
+        , test "keeps a girl of twelve, who is due HPV" <|
+            \_ ->
+                kept SiteRwanda (bornYearsAgo 12) Female
+                    |> Expect.equal True
+        , test "drops a boy of twelve" <|
+            \_ ->
+                kept SiteRwanda (bornYearsAgo 12) Male
+                    |> Expect.equal False
+        , test "drops a girl of thirteen, who can no longer have a Well Child visit" <|
+            \_ ->
+                kept SiteRwanda (bornYearsAgo 13) Female
+                    |> Expect.equal False
+        , test "drops a girl of twelve on Burundi, where HPV is not given" <|
+            \_ ->
+                kept SiteBurundi (bornYearsAgo 12) Female
+                    |> Expect.equal False
+        , test "keeps a child whose record has not loaded yet" <|
+            \_ ->
+                keptIn SiteRwanda emptyModelIndexedDb
+                    |> Expect.equal True
         ]
 
 
