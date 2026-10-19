@@ -78,8 +78,8 @@ function hedley_reports_dashboard_measurement_bundles() {
 /**
  * Checks whether a pregnancy belongs to the HealthyStart cohort.
  *
- * Antenatal, and registered on or after the first cohort date. Without that
- * setting, every antenatal pregnancy counts.
+ * Live, antenatal, and registered on or after the first cohort date. Without
+ * that setting, every such pregnancy counts.
  *
  * @param object $participant
  *   The individual participant node.
@@ -88,7 +88,9 @@ function hedley_reports_dashboard_measurement_bundles() {
  *   TRUE when the pregnancy gets a dashboard record.
  */
 function hedley_reports_dashboard_pregnancy_in_cohort($participant) {
-  if ($participant->type != HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE) {
+  if ($participant->type != HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE
+    || $participant->status != NODE_PUBLISHED
+    || hedley_reports_dashboard_field_value($participant, 'field_deleted')) {
     return FALSE;
   }
 
@@ -188,7 +190,7 @@ function hedley_reports_trigger_dashboard_data_recalculation($node) {
   }
 
   foreach (hedley_reports_dashboard_pregnancies_for_node($node) as $participant_id) {
-    $participant = node_load($participant_id);
+    $participant = $participant_id == $node->nid ? $node : node_load($participant_id);
     if (!$participant || !hedley_reports_dashboard_pregnancy_in_cohort($participant)) {
       continue;
     }
@@ -217,9 +219,17 @@ function hedley_reports_calculate_dashboard_data_worker($queue_item) {
   }
 
   $participant_id = $queue_item->data['participant_id'];
+  $params = ['@nid' => $participant_id];
+  $participant = node_load($participant_id);
+  if (!$participant) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+      'result' => t('Participant node ID: @nid does not exist.', $params),
+    ];
+  }
+
   try {
-    $participant = node_load($participant_id);
-    $written = $participant && hedley_reports_generate_dashboard_data_for_pregnancy($participant);
+    $written = hedley_reports_generate_dashboard_data_for_pregnancy($participant);
   }
   catch (Exception $e) {
     return [
@@ -228,7 +238,6 @@ function hedley_reports_calculate_dashboard_data_worker($queue_item) {
     ];
   }
 
-  $params = ['@nid' => $participant_id];
   $result = $written
     ? t('Dashboard data has been calculated for pregnancy ID: @nid', $params)
     : t('Pregnancy ID: @nid is outside the HealthyStart cohort.', $params);
@@ -307,9 +316,7 @@ function hedley_reports_dashboard_pregnancy_record($participant) {
   $encounters = array_filter(node_load_multiple($encounters_ids), function ($encounter) {
     return $encounter->type == HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE && $encounter->status == NODE_PUBLISHED;
   });
-  $measurements = $mother
-    ? hedley_reports_dashboard_measurements_by_encounter($mother->nid, array_keys($encounters))
-    : [];
+  $measurements = hedley_reports_dashboard_measurements_by_encounter(array_keys($encounters));
   $diagnosis_mapping = hedley_reports_prenatal_diagnosis_mapping();
   $risk_sources = [
     'csection' => FALSE,
@@ -353,33 +360,42 @@ function hedley_reports_dashboard_pregnancy_record($participant) {
 /**
  * Loads the measurements the record reads, grouped by prenatal encounter.
  *
- * @param int $mother_id
- *   The mother's person node ID.
  * @param array $encounters_ids
  *   The pregnancy's prenatal encounter IDs.
  *
  * @return array
  *   Measurement nodes keyed by encounter ID.
  */
-function hedley_reports_dashboard_measurements_by_encounter($mother_id, array $encounters_ids) {
+function hedley_reports_dashboard_measurements_by_encounter(array $encounters_ids) {
   $grouped = [];
   if (empty($encounters_ids)) {
     return $grouped;
   }
 
-  $ids = hedley_general_get_person_measurements($mother_id, hedley_reports_dashboard_measurement_bundles());
-  foreach (node_load_multiple($ids) as $measurement) {
-    $encounter_id = hedley_reports_dashboard_field_value($measurement, 'field_prenatal_encounter', 'target_id');
-    if ($encounter_id && in_array($encounter_id, $encounters_ids)) {
-      $grouped[$encounter_id][] = $measurement;
-    }
+  $query = hedley_general_create_db_select_query_excluding_deleted();
+  $query->join('field_data_field_prenatal_encounter', 'pe', 'pe.entity_id = n.nid');
+  $query->condition('n.type', hedley_reports_dashboard_measurement_bundles(), 'IN');
+  $query->condition('n.status', NODE_PUBLISHED);
+  $query->condition('pe.field_prenatal_encounter_target_id', $encounters_ids, 'IN');
+  $query->addField('n', 'nid');
+  $query->addField('pe', 'field_prenatal_encounter_target_id', 'encounter_id');
+
+  $ids_by_encounter = [];
+  foreach ($query->execute() as $row) {
+    $ids_by_encounter[$row->nid] = $row->encounter_id;
+  }
+  foreach (node_load_multiple(array_keys($ids_by_encounter)) as $nid => $measurement) {
+    $grouped[$ids_by_encounter[$nid]][] = $measurement;
   }
 
   return $grouped;
 }
 
 /**
- * Codes of the diagnoses an encounter recorded, current and past.
+ * Codes of the diagnoses made at an encounter.
+ *
+ * Diagnoses carried over from earlier visits are left out; those visits
+ * carry them themselves.
  *
  * @param object $encounter
  *   The prenatal encounter node.
@@ -391,11 +407,9 @@ function hedley_reports_dashboard_measurements_by_encounter($mother_id, array $e
  */
 function hedley_reports_dashboard_encounter_diagnoses($encounter, array $mapping) {
   $codes = [];
-  foreach (['field_prenatal_diagnoses', 'field_past_prenatal_diagnoses'] as $field_name) {
-    foreach (hedley_reports_dashboard_field_values($encounter, $field_name) as $diagnosis) {
-      if (isset($mapping[$diagnosis])) {
-        $codes[] = $mapping[$diagnosis];
-      }
+  foreach (hedley_reports_dashboard_field_values($encounter, 'field_prenatal_diagnoses') as $diagnosis) {
+    if (isset($mapping[$diagnosis])) {
+      $codes[] = $mapping[$diagnosis];
     }
   }
 
@@ -556,7 +570,13 @@ function hedley_reports_dashboard_risks(array $record, array $diagnoses, array $
 
   $age = NULL;
   if ($record['mbd']) {
-    $first_visit = empty($record['visits']) ? $record['created'] : $record['visits'][0]['d'];
+    $first_visit = $record['created'];
+    foreach ($record['visits'] as $visit) {
+      if ($visit['d']) {
+        $first_visit = $visit['d'];
+        break;
+      }
+    }
     $age = (int) ((strtotime($first_visit) - strtotime($record['mbd'])) / (365.25 * 86400));
   }
 
@@ -711,54 +731,18 @@ function hedley_reports_dashboard_compare_visits(array $a, array $b) {
  *   An array with "batch", "total_remaining" and "last" keys.
  */
 function hedley_reports_generate_dashboard_data_for_restful($from_nid, $batch, $health_center) {
-  $build = function () use ($from_nid, $health_center) {
-    $q = db_select('field_data_field_reports_data', 'fr');
-    $q->innerJoin('node', 'n', 'n.nid = fr.entity_id');
-    $q->leftJoin('field_data_field_deleted', 'fd', 'fd.entity_id = n.nid');
-    $q->condition('fr.entity_type', 'node')
-      ->condition('fr.bundle', HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE)
-      ->condition('fr.deleted', 0)
-      ->condition('n.status', NODE_PUBLISHED)
-      ->condition('n.nid', $from_nid, '>')
-      ->isNotNull('fr.field_reports_data_value')
-      ->condition(db_or()->isNull('fd.field_deleted_value')->condition('fd.field_deleted_value', 0));
-    if (!empty($health_center)) {
-      $alias = $q->innerJoin('field_data_field_shards', 'fs',
-        "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");
-      $q->condition("$alias.field_shards_target_id", $health_center);
-    }
-    return $q;
-  };
-
-  $count_q = $build();
-  $count_q->addExpression('COUNT(*)', 'cnt');
-  $count = (int) $count_q->execute()->fetchField();
-
-  if ($count === 0) {
-    return [
-      'batch' => [],
-      'total_remaining' => 0,
-      'last' => 0,
-    ];
-  }
-
-  $data_q = $build();
-  $data_q->fields('n', ['nid'])
-    ->fields('fr', ['field_reports_data_value'])
-    ->orderBy('n.nid')
-    ->range(0, $batch);
-  $rows = $data_q->execute()->fetchAll();
+  $loaded = hedley_reports_load_reports_data_batch($from_nid, $batch, [HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE], $health_center);
 
   $output = [];
   $last = 0;
-  foreach ($rows as $r) {
-    $output[] = json_decode($r->field_reports_data_value);
-    $last = (int) $r->nid;
+  foreach ($loaded['rows'] as $row) {
+    $output[] = json_decode($row->field_reports_data_value);
+    $last = (int) $row->nid;
   }
 
   return [
     'batch' => $output,
-    'total_remaining' => $count - count($rows),
+    'total_remaining' => $loaded['count'] - count($loaded['rows']),
     'last' => $last,
   ];
 }

@@ -39,7 +39,7 @@ if ($first_cohort) {
 }
 
 if ($exclude_set) {
-  $base_query->leftJoin('field_data_field_reports_data', 'rd', 'rd.entity_id = n.nid');
+  $base_query->leftJoin('field_data_field_reports_data', 'rd', "rd.entity_id = n.nid AND rd.entity_type = 'node' AND rd.deleted = 0");
   $base_query->isNull('rd.field_reports_data_value');
 }
 

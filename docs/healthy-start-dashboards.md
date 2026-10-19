@@ -20,7 +20,7 @@ The code is in `server/hedley/modules/custom/hedley_reports/hedley_reports.dashb
 
 ## Which pregnancies get a record
 
-- Antenatal participants only.
+- Antenatal participants only, published and not marked deleted.
 - On sites where the Healthy Start feature is enabled.
 - Registered on or after the first cohort date, set at `admin/config/system/healthy-start`. While
   the date is empty, every antenatal pregnancy counts.
@@ -52,7 +52,7 @@ Each entry of `visits`:
 | `d` | Encounter date. |
 | `t` | Encounter type: `nurse`, `nurse-postpartum`, `chw-1`, `chw-2`, `chw-3`, `chw-postpartum`. |
 | `n` | Next visit date the encounter set, if any. |
-| `dx` | Diagnosis codes, current and past, as `hedley_reports_prenatal_diagnosis_mapping()` assigns them. |
+| `dx` | Codes of the diagnoses made at that visit, as `hedley_reports_prenatal_diagnosis_mapping()` assigns them. |
 | `ind` | Indicator codes as `hedley_reports_prenatal_indicator_mapping()` assigns them: `a` adequate GWG, `b` MMS, `c` ultrasound referral, `d` aspirin, `e` calcium. |
 
 Aspirin, calcium and MMS count when the measurement says "administered today". Aspirin also counts
