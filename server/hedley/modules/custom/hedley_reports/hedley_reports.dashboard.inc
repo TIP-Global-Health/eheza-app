@@ -181,64 +181,60 @@ function hedley_reports_dashboard_pregnancies_for_node($node) {
     return empty($child_nid) ? [] : hedley_reports_dashboard_pregnancies_by_newborn($child_nid);
   }
 
-  // Content on the child itself; a save that keeps the fields read costs
-  // nothing. Attendance is the most numerous synced content.
-  $child_fields = [
-    HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE => ['field_attended'],
-    HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE => ['field_weight'],
-  ];
-  if (isset($child_fields[$node->type])) {
-    $shared_fields = [
-      'field_date_measured',
-      'field_deleted',
-      'field_person',
-    ];
-    $field_names = array_merge($child_fields[$node->type], $shared_fields);
-    if (hedley_reports_dashboard_fields_unchanged($node, $field_names)) {
-      return [];
-    }
-    $children_ids = [
-      hedley_reports_dashboard_field_value($node, 'field_person', 'target_id'),
-    ];
-    if (!empty($node->original)) {
-      // A re-pointed node also leaves a child.
-      $children_ids[] = hedley_reports_dashboard_field_value($node->original, 'field_person', 'target_id');
-    }
+  if (isset(hedley_reports_dashboard_child_content_fields()[$node->type])) {
+    $child_nid = hedley_reports_dashboard_field_value($node, 'field_person', 'target_id');
 
-    $pregnancies = [];
-    foreach (array_unique(array_filter($children_ids)) as $child_nid) {
-      $pregnancies = array_merge($pregnancies, hedley_reports_dashboard_pregnancies_by_newborn($child_nid));
-    }
-
-    return $pregnancies;
+    return $child_nid ? hedley_reports_dashboard_pregnancies_by_newborn($child_nid) : [];
   }
 
   return [];
 }
 
 /**
- * Checks whether a save kept the status and the first value of each field.
+ * Content on the child the record reads, and the fields it reads from it.
+ *
+ * @return array
+ *   Keyed by content type: field name => column read.
+ */
+function hedley_reports_dashboard_child_content_fields() {
+  $shared = [
+    'field_date_measured' => 'value',
+    'field_deleted' => 'value',
+    'field_person' => 'target_id',
+  ];
+
+  return [
+    HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE => ['field_attended' => 'value'] + $shared,
+    HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE => ['field_weight' => 'value'] + $shared,
+  ];
+}
+
+/**
+ * Checks whether a save of content on the child left the record as it is.
+ *
+ * Attendance is the most numerous synced content; an unchanged or unpublished
+ * save costs nothing.
  *
  * @param object $node
  *   The saved node, with its "original" when it is an update.
- * @param array $field_names
- *   The fields to compare; the reference column for entity references.
  *
  * @return bool
- *   TRUE on an update that changed none of them.
+ *   TRUE when no record needs rewriting.
  */
-function hedley_reports_dashboard_fields_unchanged($node, array $field_names) {
-  if (empty($node->original) || $node->status != $node->original->status) {
+function hedley_reports_dashboard_save_changes_nothing($node) {
+  $fields = hedley_reports_dashboard_child_content_fields();
+  if (!isset($fields[$node->type]) || empty($node->original)) {
     return FALSE;
   }
-  foreach ($field_names as $field_name) {
-    if ($field_name == 'field_person') {
-      if (hedley_reports_dashboard_field_value($node, $field_name, 'target_id') != hedley_reports_dashboard_field_value($node->original, $field_name, 'target_id')) {
-        return FALSE;
-      }
-      continue;
-    }
-    if (hedley_reports_dashboard_field_value($node, $field_name) != hedley_reports_dashboard_field_value($node->original, $field_name)) {
+  $original = $node->original;
+  if ($node->status != NODE_PUBLISHED && $original->status != NODE_PUBLISHED) {
+    return TRUE;
+  }
+  if ($node->status != $original->status) {
+    return FALSE;
+  }
+  foreach ($fields[$node->type] as $field_name => $column) {
+    if (hedley_reports_dashboard_field_value($node, $field_name, $column) != hedley_reports_dashboard_field_value($original, $field_name, $column)) {
       return FALSE;
     }
   }
@@ -253,11 +249,17 @@ function hedley_reports_dashboard_fields_unchanged($node, array $field_names) {
  *   The node that was saved.
  */
 function hedley_reports_trigger_dashboard_data_recalculation($node) {
-  if (!hedley_reports_dashboard_data_enabled()) {
+  if (!hedley_reports_dashboard_data_enabled() || hedley_reports_dashboard_save_changes_nothing($node)) {
     return;
   }
 
-  foreach (hedley_reports_dashboard_pregnancies_for_node($node) as $participant_id) {
+  $participants_ids = hedley_reports_dashboard_pregnancies_for_node($node);
+  if (!empty($node->original)) {
+    // A node moved to another pregnancy or child also leaves one.
+    $participants_ids = array_merge($participants_ids, hedley_reports_dashboard_pregnancies_for_node($node->original));
+  }
+
+  foreach (array_unique($participants_ids) as $participant_id) {
     $participant = $participant_id == $node->nid ? $node : node_load($participant_id);
     if (!$participant || !hedley_reports_dashboard_pregnancy_in_cohort($participant)) {
       continue;
@@ -348,7 +350,7 @@ function hedley_reports_generate_dashboard_data_for_pregnancy($participant, $exc
   if (!$fresh) {
     return FALSE;
   }
-  $fresh->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($record);
+  $fresh->field_reports_data[LANGUAGE_NONE][0]['value'] = hedley_reports_dashboard_encode_record($record);
   field_attach_update('node', $fresh);
   entity_get_controller('node')->resetCache([$fresh->nid]);
 
@@ -371,7 +373,20 @@ function hedley_reports_dashboard_record_is_current($participant) {
 }
 
 /**
- * The opening of a record of the current version; `v` is its first key.
+ * Encodes a record; the version is its first key, as the prefix test expects.
+ *
+ * @param array $record
+ *   The record built for a pregnancy.
+ *
+ * @return string
+ *   JSON, starting with hedley_reports_dashboard_record_version_prefix().
+ */
+function hedley_reports_dashboard_encode_record(array $record) {
+  return json_encode(['v' => HEDLEY_REPORTS_DASHBOARD_DATA_VERSION] + $record);
+}
+
+/**
+ * The opening of a record of the current version.
  *
  * @return string
  *   For example `{"v":3,`.
@@ -398,7 +413,6 @@ function hedley_reports_dashboard_pregnancy_record($participant) {
   $shard = hedley_reports_dashboard_field_value($participant, 'field_shards', 'target_id');
 
   $record = [
-    'v' => HEDLEY_REPORTS_DASHBOARD_DATA_VERSION,
     'id' => (int) $participant->nid,
     'hc' => $shard ? (int) $shard : NULL,
     'created' => date('Y-m-d', $participant->created),
@@ -739,7 +753,8 @@ function hedley_reports_dashboard_child_record($child_nid) {
   ];
 
   // Birth weight in grams, from the earliest newborn exam that has one; on
-  // one date, the oldest exam.
+  // one date, the lowest node id.
+  $bw_nid = NULL;
   $summaries_ids = hedley_general_get_person_measurements($child->nid, [HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE]);
   foreach (node_load_multiple($summaries_ids) as $summary) {
     $weight = hedley_reports_dashboard_field_value($summary, 'field_weight');
@@ -747,13 +762,12 @@ function hedley_reports_dashboard_child_record($child_nid) {
     if ($summary->status != NODE_PUBLISHED || !$weight || !$date) {
       continue;
     }
-    if (empty($record['bwd']) || $date < $record['bwd'] || ($date == $record['bwd'] && $summary->nid < $record['bw_nid'])) {
-      $record['bw_nid'] = (int) $summary->nid;
+    if (empty($record['bwd']) || $date < $record['bwd'] || ($date == $record['bwd'] && $summary->nid < $bw_nid)) {
+      $bw_nid = (int) $summary->nid;
       $record['bw'] = (int) round($weight);
       $record['bwd'] = $date;
     }
   }
-  unset($record['bw_nid']);
 
   $visit_bundles = hedley_reports_dashboard_child_visit_bundles();
   $participants_ids = hedley_person_individual_participants_for_person($child->nid, array_column($visit_bundles, 'encounter_type'));

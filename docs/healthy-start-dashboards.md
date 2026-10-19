@@ -53,7 +53,7 @@ Each entry of `visits`:
 | `t` | Encounter type: `nurse`, `nurse-postpartum`, `chw-1`, `chw-2`, `chw-3`, `chw-postpartum`. |
 | `n` | Next visit date the encounter set, if any. |
 | `dx` | Codes of the diagnoses made at that visit, as `hedley_reports_prenatal_diagnosis_mapping()` assigns them. Diagnoses entered through Outside Care count for `risks` only. |
-| `ind` | Indicator codes as `hedley_reports_prenatal_indicator_mapping()` assigns them: `a` adequate GWG, `n` inadequate GWG, `b` MMS, `c` ultrasound referral, `d` aspirin, `e` calcium. |
+| `ind` | Indicator codes as `hedley_reports_prenatal_indicator_mapping()` assigns them: `a` adequate GWG, `n` inadequate GWG, `b` MMS, `c` ultrasound referral, `d` aspirin, `e` calcium. An encounter carrying both GWG values gives both codes. |
 
 Aspirin, calcium and MMS count when the measurement says "administered today". Aspirin also counts
 when the medication distribution prescribed it. A visit without `a` or `n` did not assess GWG.
@@ -81,7 +81,7 @@ The `child` object:
 | `id` | Child person node id. |
 | `bd` | Birth date. |
 | `g` | Gender: `m` or `f`. |
-| `bw` | Birth weight in grams, from the earliest newborn exam (`well_child_pregnancy_summary`) that holds one; on one date, the oldest exam. |
+| `bw` | Birth weight in grams, from the earliest newborn exam (`well_child_pregnancy_summary`) that holds one; on one date, the first that reached the server. |
 | `bwd` | The exam's visit date. |
 | `visits` | Routine care visits, earliest first: `d` date, `t` is `well-child`, `nutrition` or `group-nutrition` (a group session attended). |
 
