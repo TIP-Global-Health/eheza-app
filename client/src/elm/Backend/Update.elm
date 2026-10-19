@@ -53,7 +53,7 @@ import Backend.Measurement.Utils
 import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..), RevisionsOrigin(..))
 import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model
-import Backend.NCDEncounter.Types
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NCDEncounter.Update
 import Backend.Nurse.Model
 import Backend.Nurse.Update
@@ -88,7 +88,7 @@ import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
-import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, sw, updateVillageStockManagementCaches)
+import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, storedDiagnosesEqual, sw, updateVillageStockManagementCaches)
 import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
@@ -8847,14 +8847,14 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
             then
                 let
                     diagnosesBefore =
-                        -- New diagnoses are not set yet, so the stored ones are used. An encounter
-                        -- without diagnoses stores "none", which the engine never returns, so it is dropped.
-                        EverySet.remove NoPrenatalDiagnosis assembledAfter.encounter.diagnoses
+                        -- At this stage new diagnoses were not updated yet, therefore,
+                        -- we can use the diganoses set for the encounter.
+                        assembledAfter.encounter.diagnoses
 
                     diagnosesAfter =
                         Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
                 in
-                if everySetsEqual diagnosesBefore diagnosesAfter then
+                if storedDiagnosesEqual NoPrenatalDiagnosis diagnosesBefore diagnosesAfter then
                     []
 
                 else
@@ -9295,14 +9295,14 @@ generateNCDAssessmentMsgs after id =
         (\assembledAfter ->
             let
                 diagnosesBefore =
-                    -- New diagnoses are not set yet, so the stored ones are used. An encounter
-                    -- without diagnoses stores "none", which the engine never returns, so it is dropped.
-                    EverySet.remove Backend.NCDEncounter.Types.NoNCDDiagnosis assembledAfter.encounter.diagnoses
+                    -- At this stage new diagnoses were not updated yet, therefore,
+                    -- we can use the diganoses set for the encounter.
+                    assembledAfter.encounter.diagnoses
 
                 diagnosesAfter =
                     Pages.NCD.Utils.generateNCDDiagnoses assembledAfter
             in
-            if everySetsEqual diagnosesBefore diagnosesAfter then
+            if storedDiagnosesEqual NoNCDDiagnosis diagnosesBefore diagnosesAfter then
                 []
 
             else

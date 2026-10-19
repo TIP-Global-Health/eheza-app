@@ -1,11 +1,25 @@
 module Backend.Utils.Test exposing (all)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Utils exposing (isPostInFlight)
+import Backend.NCDEncounter.Decoder exposing (decodeNCDEncounter)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
+import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.Utils exposing (isPostInFlight, storedDiagnosesEqual)
+import EverySet
 import Expect
 import Http
+import Json.Decode exposing (decodeString)
 import RemoteData exposing (RemoteData(..), WebData)
 import Test exposing (Test, describe, test)
+
+
+all : Test
+all =
+    describe "Backend.Utils"
+        [ isPostInFlightTests
+        , storedDiagnosesEqualTests
+        ]
 
 
 {-| Entities are created optimistically: the slot goes `Loading`, we POST, and
@@ -18,8 +32,8 @@ posts. These pin the answers that matter: block while Loading, allow otherwise,
 and never let one key's create block another's.
 
 -}
-all : Test
-all =
+isPostInFlightTests : Test
+isPostInFlightTests =
     describe "isPostInFlight"
         [ test "a create already in flight for this key blocks the duplicate" <|
             \_ ->
@@ -56,4 +70,46 @@ all =
                 in
                 ( isPostInFlight "sibling" dict, isPostInFlight "child" dict )
                     |> Expect.equal ( True, False )
+        ]
+
+
+{-| Diagnoses are re-generated on every measurement save, and the encounter is
+saved only when they changed. An encounter stored with no diagnoses must not
+count as changed.
+-}
+storedDiagnosesEqualTests : Test
+storedDiagnosesEqualTests =
+    let
+        encounterJson diagnosesField diagnoses =
+            """{"individual_participant":"p1","scheduled_date":{"value":"2026-10-01"},"prenatal_encounter_type":"nurse","deleted":false,\"""" ++ diagnosesField ++ "\":" ++ diagnoses ++ "}"
+
+        storedPrenatal diagnoses =
+            decodeString decodePrenatalEncounter (encounterJson "prenatal_diagnoses" diagnoses)
+                |> Result.map .diagnoses
+
+        storedNCD diagnoses =
+            decodeString decodeNCDEncounter (encounterJson "ncd_diagnoses" diagnoses)
+                |> Result.map .diagnoses
+    in
+    describe "storedDiagnosesEqual"
+        [ test "prenatal: stored none equals no generated diagnoses" <|
+            \_ ->
+                storedPrenatal "[\"none\"]"
+                    |> Result.map (\stored -> storedDiagnosesEqual NoPrenatalDiagnosis stored EverySet.empty)
+                    |> Expect.equal (Ok True)
+        , test "prenatal: stored none differs from a generated diagnosis" <|
+            \_ ->
+                storedPrenatal "[\"none\"]"
+                    |> Result.map (\stored -> storedDiagnosesEqual NoPrenatalDiagnosis stored (EverySet.singleton DiagnosisChronicHypertensionImmediate))
+                    |> Expect.equal (Ok False)
+        , test "prenatal: a stored diagnosis differs from no generated diagnoses" <|
+            \_ ->
+                storedPrenatal "[\"chronic-hypertension-immediate\"]"
+                    |> Result.map (\stored -> storedDiagnosesEqual NoPrenatalDiagnosis stored EverySet.empty)
+                    |> Expect.equal (Ok False)
+        , test "NCD: stored none equals no generated diagnoses" <|
+            \_ ->
+                storedNCD "[\"none\"]"
+                    |> Result.map (\stored -> storedDiagnosesEqual NoNCDDiagnosis stored EverySet.empty)
+                    |> Expect.equal (Ok True)
         ]
