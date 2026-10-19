@@ -53,10 +53,10 @@ Each entry of `visits`:
 | `t` | Encounter type: `nurse`, `nurse-postpartum`, `chw-1`, `chw-2`, `chw-3`, `chw-postpartum`. |
 | `n` | Next visit date the encounter set, if any. |
 | `dx` | Codes of the diagnoses made at that visit, as `hedley_reports_prenatal_diagnosis_mapping()` assigns them. Diagnoses entered through Outside Care count for `risks` only. |
-| `ind` | Indicator codes as `hedley_reports_prenatal_indicator_mapping()` assigns them: `a` adequate GWG, `b` MMS, `c` ultrasound referral, `d` aspirin, `e` calcium. |
+| `ind` | Indicator codes as `hedley_reports_prenatal_indicator_mapping()` assigns them: `a` adequate GWG, `n` inadequate GWG, `b` MMS, `c` ultrasound referral, `d` aspirin, `e` calcium. An encounter carrying both GWG values gives both codes. |
 
 Aspirin, calcium and MMS count when the measurement says "administered today". Aspirin also counts
-when the medication distribution prescribed it.
+when the medication distribution prescribed it. A visit without `a` or `n` did not assess GWG.
 
 The `risks` codes, HealthyStart's list of 18 October 2026, and what raises each:
 
@@ -81,6 +81,8 @@ The `child` object:
 | `id` | Child person node id. |
 | `bd` | Birth date. |
 | `g` | Gender: `m` or `f`. |
+| `bw` | Birth weight in grams, from the earliest newborn exam (`well_child_pregnancy_summary`) that holds one; on one date, the first that reached the server. |
+| `bwd` | The exam's visit date. |
 | `visits` | Routine care visits, earliest first: `d` date, `t` is `well-child`, `nutrition` or `group-nutrition` (a group session attended). |
 
 ## What each headline tile needs
@@ -121,6 +123,23 @@ posted on #2231.
 Each block also shows the program target and the inter-site average. The inter-site average is
 the mean over the other sites' records. Targets have no source yet; placeholders meanwhile.
 
+## What the Program dashboard's threshold tiles need
+
+Each tile counts the sites whose rate crosses the threshold. The rate per site uses the records
+grouped by `hc`.
+
+| Tile | Record fields | Status |
+| --- | --- | --- |
+| Early ANC Coverage ≥80% | `visits.d`, `edd` | Data present. Same rate as Early ANC Booking. |
+| Early Ultrasound Coverage <20 weeks | `us`, `edd` | Data present. Same rate as the Facility block. |
+| Sites with Inadequate GWG >10% | `ind` codes `a`, `n` | Data present. Pregnancies with `n` at any visit ÷ pregnancies assessed. To confirm. |
+| Delayed or Missing Birth Weight >5% | `child.bd`, `child.bw`, `child.bwd` | Data present. Delayed means the exam came more than a day after birth, as the alert says. To confirm; the NCDA forms also carry a birth weight, copied from the health card, and are not read. |
+| Elevated Preterm or SGA Births >15% | `o`, `edd`, `child.bd`, `child.bw` | Preterm present. SGA needs the growth standard and percentile HealthyStart wants. |
+| Poor Child Growth Outcomes >10% | none | Later, with the nutrition figures. |
+
+The alerts "births missing birth weight in the last 7 days" and "preterm rate exceeded 15%" read
+the same fields.
+
 ## How the Facility dashboard counts
 
 `Pages/Dashboard/Facility.elm` works the figures out from the selected site's records. The Program
@@ -154,13 +173,11 @@ stay empty. Targets are placeholders.
 
 ## Not in the record yet
 
-Needed by the threshold tiles and alerts. Each is added to the record, with a trigger for its
-content type, when its figure is built.
+Each is added to the record, with a trigger for its content type, when its figure is built.
 
 | Figure | Source content |
 | --- | --- |
 | SQLNS coverage | `well_child_feeding`, `nutrition_feeding` supplement type. |
-| Birth weight recording, SGA | `well_child_pregnancy_summary` weight and its measurement date. |
 | Child growth outcomes | Z-scores on `well_child_weight` and `well_child_height`. |
 
 ## How to extend the record
@@ -170,20 +187,20 @@ content type, when its figure is built.
 2. If a new content type feeds it, resolve that type to its pregnancy in
    `hedley_reports_dashboard_pregnancies_for_node()`. A prenatal measurement already resolves
    through its encounter; add its bundle to `hedley_reports_dashboard_measurement_bundles()`.
-3. Bump `HEDLEY_REPORTS_DASHBOARD_DATA_VERSION`.
+3. Bump `HEDLEY_REPORTS_DASHBOARD_DATA_VERSION`. The nightly `--exclude_set=1` run then rewrites
+   every older record; a run by hand brings them forward sooner.
 4. Decode the field in `Backend/Dashboard/Decoder.elm`, treating records of an older version as missing it.
-5. Rerun the script below on every HealthyStart site, without `--exclude_set`.
-6. Update the tables in this file.
+5. Update the tables in this file.
 
 ## Scripts and operations
 
 `dashboard-generate-pregnancy-data.php` in `hedley_reports/scripts` writes records in batches.
-Options: `--nid`, `--batch`, `--exclude_set=1` for pregnancies without a record, `--open=1` for
-unconcluded pregnancies, `--memory_limit`.
+Options: `--nid`, `--batch`, `--exclude_set=1` for pregnancies without a record of the current
+version, `--open=1` for unconcluded pregnancies, `--memory_limit`.
 
-- At rollout, and after a format change: a full run.
+- At rollout: a full run.
 - Nightly, in the Jenkins Overnight job: `--exclude_set=1`, then `--open=1`, to cover queue
-  items that failed their three attempts.
+  items that failed their three attempts and records of an older version.
 
 The record is written with `field_attach_update()`, so no node revision is created and devices
 do not resync the pregnancy.
