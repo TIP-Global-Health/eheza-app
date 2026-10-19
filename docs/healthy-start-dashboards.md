@@ -52,7 +52,7 @@ Each entry of `visits`:
 | `d` | Encounter date. |
 | `t` | Encounter type: `nurse`, `nurse-postpartum`, `chw-1`, `chw-2`, `chw-3`, `chw-postpartum`. |
 | `n` | Next visit date the encounter set, if any. |
-| `dx` | Codes of the diagnoses made at that visit, including ones entered through Outside Care, as `hedley_reports_prenatal_diagnosis_mapping()` assigns them. |
+| `dx` | Codes of the diagnoses made at that visit, as `hedley_reports_prenatal_diagnosis_mapping()` assigns them. Diagnoses entered through Outside Care count for `risks` only. |
 | `ind` | Indicator codes as `hedley_reports_prenatal_indicator_mapping()` assigns them: `a` adequate GWG, `b` MMS, `c` ultrasound referral, `d` aspirin, `e` calcium. |
 
 Aspirin, calcium and MMS count when the measurement says "administered today". Aspirin also counts

@@ -64,7 +64,7 @@ function hedley_reports_dashboard_child_visit_bundles() {
 }
 
 /**
- * Measurement bundles the record reads, keyed by their prenatal encounter.
+ * Measurement bundles the record reads; each points at a prenatal encounter.
  *
  * @return array
  *   Content type names.
@@ -182,6 +182,18 @@ function hedley_reports_dashboard_pregnancies_for_node($node) {
   }
 
   if ($node->type == HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE) {
+    // Attendance is the most numerous synced content; a save that keeps the
+    // attended flag and date costs nothing.
+    if (!empty($node->original)) {
+      $unchanged = TRUE;
+      foreach (['field_attended', 'field_date_measured', 'field_deleted'] as $field_name) {
+        $unchanged = $unchanged
+          && hedley_reports_dashboard_field_value($node, $field_name) == hedley_reports_dashboard_field_value($node->original, $field_name);
+      }
+      if ($unchanged) {
+        return [];
+      }
+    }
     $child_nid = hedley_reports_dashboard_field_value($node, 'field_person', 'target_id');
 
     return $child_nid ? hedley_reports_dashboard_pregnancies_by_newborn($child_nid) : [];
@@ -286,7 +298,8 @@ function hedley_reports_generate_dashboard_data_for_pregnancy($participant, $exc
   }
 
   $record = hedley_reports_dashboard_pregnancy_record($participant);
-  $fresh = node_load($participant->nid, NULL, TRUE);
+  entity_get_controller('node')->resetCache([$participant->nid]);
+  $fresh = node_load($participant->nid);
   if (!$fresh) {
     return FALSE;
   }
@@ -346,7 +359,10 @@ function hedley_reports_dashboard_pregnancy_record($participant) {
 
   foreach ($encounters as $encounter) {
     $encounter_measurements = isset($measurements[$encounter->nid]) ? $measurements[$encounter->nid] : [];
-    $diagnoses = hedley_reports_dashboard_encounter_diagnoses($encounter, $encounter_measurements, $diagnosis_mapping);
+    $diagnoses = hedley_reports_dashboard_diagnosis_codes(
+      hedley_reports_dashboard_field_values($encounter, 'field_prenatal_diagnoses'),
+      $diagnosis_mapping
+    );
     $all_diagnoses = array_merge($all_diagnoses, $diagnoses);
     $indicators = hedley_reports_dashboard_encounter_indicators($encounter, $encounter_measurements);
 
@@ -360,6 +376,14 @@ function hedley_reports_dashboard_pregnancy_record($participant) {
 
     foreach ($encounter_measurements as $measurement) {
       hedley_reports_dashboard_collect_measurement($measurement, $record['us'], $risk_sources);
+      // Conditions another facility diagnosed count as risks, but are not
+      // this visit's own diagnoses.
+      if ($measurement->type == 'prenatal_outside_care') {
+        $all_diagnoses = array_merge($all_diagnoses, hedley_reports_dashboard_diagnosis_codes(
+          hedley_reports_dashboard_field_values($measurement, 'field_prenatal_diagnoses'),
+          $diagnosis_mapping
+        ));
+      }
     }
   }
   usort($record['visits'], 'hedley_reports_dashboard_compare_visits');
@@ -410,31 +434,19 @@ function hedley_reports_dashboard_measurements_by_encounter(array $encounters_id
 }
 
 /**
- * Codes of the diagnoses made at an encounter, including outside care ones.
+ * Maps diagnosis values to their Statistical Queries codes.
  *
- * Diagnoses carried over from earlier visits are left out; those visits
- * carry them themselves.
- *
- * @param object $encounter
- *   The prenatal encounter node.
- * @param array $measurements
- *   The encounter's measurement nodes.
+ * @param array $diagnoses
+ *   Diagnosis values.
  * @param array $mapping
- *   Diagnosis values to their Statistical Queries codes.
+ *   Diagnosis values to codes; values without a code are dropped.
  *
  * @return array
  *   Distinct diagnosis codes.
  */
-function hedley_reports_dashboard_encounter_diagnoses($encounter, array $measurements, array $mapping) {
-  $values = hedley_reports_dashboard_field_values($encounter, 'field_prenatal_diagnoses');
-  foreach ($measurements as $measurement) {
-    if ($measurement->type == 'prenatal_outside_care') {
-      $values = array_merge($values, hedley_reports_dashboard_field_values($measurement, 'field_prenatal_diagnoses'));
-    }
-  }
-
+function hedley_reports_dashboard_diagnosis_codes(array $diagnoses, array $mapping) {
   $codes = [];
-  foreach ($values as $diagnosis) {
+  foreach ($diagnoses as $diagnosis) {
     if (isset($mapping[$diagnosis])) {
       $codes[] = $mapping[$diagnosis];
     }
@@ -653,7 +665,7 @@ function hedley_reports_dashboard_child_record($child_nid) {
   $visit_bundles = hedley_reports_dashboard_child_visit_bundles();
   $participants_ids = hedley_person_individual_participants_for_person($child->nid, array_column($visit_bundles, 'encounter_type'));
   $encounters_ids = hedley_person_load_individual_participants_encounters_ids($participants_ids);
-  $encounters_ids = $encounters_ids ? call_user_func_array('array_merge', array_values($encounters_ids)) : [];
+  $encounters_ids = $encounters_ids ? array_merge(...array_values($encounters_ids)) : [];
   foreach (node_load_multiple($encounters_ids) as $encounter) {
     if (!isset($visit_bundles[$encounter->type]) || $encounter->status != NODE_PUBLISHED) {
       continue;
