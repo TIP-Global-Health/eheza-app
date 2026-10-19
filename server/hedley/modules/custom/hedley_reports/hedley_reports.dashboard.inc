@@ -184,45 +184,60 @@ function hedley_reports_dashboard_pregnancies_for_node($node) {
   // Content on the child itself; a save that keeps the fields read costs
   // nothing. Attendance is the most numerous synced content.
   $child_fields = [
-    HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE => [
-      'field_attended',
-      'field_date_measured',
-      'field_deleted',
-    ],
-    HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE => [
-      'field_weight',
-      'field_date_measured',
-      'field_deleted',
-    ],
+    HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE => ['field_attended'],
+    HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE => ['field_weight'],
   ];
   if (isset($child_fields[$node->type])) {
-    if (hedley_reports_dashboard_fields_unchanged($node, $child_fields[$node->type])) {
+    $shared_fields = [
+      'field_date_measured',
+      'field_deleted',
+      'field_person',
+    ];
+    $field_names = array_merge($child_fields[$node->type], $shared_fields);
+    if (hedley_reports_dashboard_fields_unchanged($node, $field_names)) {
       return [];
     }
-    $child_nid = hedley_reports_dashboard_field_value($node, 'field_person', 'target_id');
+    $children_ids = [
+      hedley_reports_dashboard_field_value($node, 'field_person', 'target_id'),
+    ];
+    if (!empty($node->original)) {
+      // A re-pointed node also leaves a child.
+      $children_ids[] = hedley_reports_dashboard_field_value($node->original, 'field_person', 'target_id');
+    }
 
-    return $child_nid ? hedley_reports_dashboard_pregnancies_by_newborn($child_nid) : [];
+    $pregnancies = [];
+    foreach (array_unique(array_filter($children_ids)) as $child_nid) {
+      $pregnancies = array_merge($pregnancies, hedley_reports_dashboard_pregnancies_by_newborn($child_nid));
+    }
+
+    return $pregnancies;
   }
 
   return [];
 }
 
 /**
- * Checks whether a save kept the first value of each listed field.
+ * Checks whether a save kept the status and the first value of each field.
  *
  * @param object $node
  *   The saved node, with its "original" when it is an update.
  * @param array $field_names
- *   The fields to compare.
+ *   The fields to compare; the reference column for entity references.
  *
  * @return bool
  *   TRUE on an update that changed none of them.
  */
 function hedley_reports_dashboard_fields_unchanged($node, array $field_names) {
-  if (empty($node->original)) {
+  if (empty($node->original) || $node->status != $node->original->status) {
     return FALSE;
   }
   foreach ($field_names as $field_name) {
+    if ($field_name == 'field_person') {
+      if (hedley_reports_dashboard_field_value($node, $field_name, 'target_id') != hedley_reports_dashboard_field_value($node->original, $field_name, 'target_id')) {
+        return FALSE;
+      }
+      continue;
+    }
     if (hedley_reports_dashboard_field_value($node, $field_name) != hedley_reports_dashboard_field_value($node->original, $field_name)) {
       return FALSE;
     }
@@ -351,9 +366,18 @@ function hedley_reports_generate_dashboard_data_for_pregnancy($participant, $exc
  */
 function hedley_reports_dashboard_record_is_current($participant) {
   $existing = hedley_reports_dashboard_field_value($participant, 'field_reports_data');
-  $decoded = $existing ? json_decode($existing, TRUE) : NULL;
 
-  return !empty($decoded['v']) && $decoded['v'] == HEDLEY_REPORTS_DASHBOARD_DATA_VERSION;
+  return $existing && strpos($existing, hedley_reports_dashboard_record_version_prefix()) === 0;
+}
+
+/**
+ * The opening of a record of the current version; `v` is its first key.
+ *
+ * @return string
+ *   For example `{"v":3,`.
+ */
+function hedley_reports_dashboard_record_version_prefix() {
+  return rtrim(json_encode(['v' => HEDLEY_REPORTS_DASHBOARD_DATA_VERSION]), '}') . ',';
 }
 
 /**
@@ -714,7 +738,8 @@ function hedley_reports_dashboard_child_record($child_nid) {
     'visits' => [],
   ];
 
-  // Birth weight in grams, from the earliest newborn exam that has one.
+  // Birth weight in grams, from the earliest newborn exam that has one; on
+  // one date, the oldest exam.
   $summaries_ids = hedley_general_get_person_measurements($child->nid, [HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE]);
   foreach (node_load_multiple($summaries_ids) as $summary) {
     $weight = hedley_reports_dashboard_field_value($summary, 'field_weight');
@@ -722,11 +747,13 @@ function hedley_reports_dashboard_child_record($child_nid) {
     if ($summary->status != NODE_PUBLISHED || !$weight || !$date) {
       continue;
     }
-    if (empty($record['bwd']) || $date < $record['bwd']) {
+    if (empty($record['bwd']) || $date < $record['bwd'] || ($date == $record['bwd'] && $summary->nid < $record['bw_nid'])) {
+      $record['bw_nid'] = (int) $summary->nid;
       $record['bw'] = (int) round($weight);
       $record['bwd'] = $date;
     }
   }
+  unset($record['bw_nid']);
 
   $visit_bundles = hedley_reports_dashboard_child_visit_bundles();
   $participants_ids = hedley_person_individual_participants_for_person($child->nid, array_column($visit_bundles, 'encounter_type'));

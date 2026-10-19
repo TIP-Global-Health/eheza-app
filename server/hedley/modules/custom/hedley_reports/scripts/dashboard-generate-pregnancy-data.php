@@ -43,7 +43,7 @@ if ($exclude_set) {
   // A record starts with its version, so older ones are told by prefix.
   $current = db_or()
     ->isNull('rd.field_reports_data_value')
-    ->condition('rd.field_reports_data_value', db_like('{"v":' . HEDLEY_REPORTS_DASHBOARD_DATA_VERSION . ',') . '%', 'NOT LIKE');
+    ->condition('rd.field_reports_data_value', db_like(hedley_reports_dashboard_record_version_prefix()) . '%', 'NOT LIKE');
   $base_query->condition($current);
 }
 
