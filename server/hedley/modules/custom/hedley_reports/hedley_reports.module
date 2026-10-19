@@ -2400,6 +2400,7 @@ function hedley_reports_prenatal_indicator_mapping() {
     'anemia-test' => 'k',
     'breastfed-first-hour' => 'l',
     'premature-onset-contractions' => 'm',
+    'gwg-inadequate' => 'n',
   ];
 }
 
