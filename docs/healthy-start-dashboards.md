@@ -10,9 +10,9 @@ what is still undefined.
 
 1. Every antenatal pregnancy (`individual_participant` node) holds one JSON record in
    `field_reports_data`, described below.
-2. An AdvancedQueue item rewrites the record when the pregnancy, a prenatal encounter or
-   measurement, the mother, or the newborn and its routine care change. Jenkins drains it every
-   ten minutes.
+2. An AdvancedQueue item rewrites the record when the pregnancy, a prenatal encounter or a
+   measurement it reads, the mother, or the newborn's data change. Jenkins drains it every ten
+   minutes.
 3. The Elm app loads all records in batches from `/api/reports-data` with `app_type = dashboard`,
    then filters by site, location and period on the client. Nothing is precomputed per filter.
 
@@ -52,7 +52,7 @@ Each entry of `visits`:
 | `d` | Encounter date. |
 | `t` | Encounter type: `nurse`, `nurse-postpartum`, `chw-1`, `chw-2`, `chw-3`, `chw-postpartum`. |
 | `n` | Next visit date the encounter set, if any. |
-| `dx` | Codes of the diagnoses made at that visit, as `hedley_reports_prenatal_diagnosis_mapping()` assigns them. |
+| `dx` | Codes of the diagnoses made at that visit, including ones entered through Outside Care, as `hedley_reports_prenatal_diagnosis_mapping()` assigns them. |
 | `ind` | Indicator codes as `hedley_reports_prenatal_indicator_mapping()` assigns them: `a` adequate GWG, `b` MMS, `c` ultrasound referral, `d` aspirin, `e` calcium. |
 
 Aspirin, calcium and MMS count when the measurement says "administered today". Aspirin also counts
@@ -81,7 +81,7 @@ The `child` object:
 | `id` | Child person node id. |
 | `bd` | Birth date. |
 | `g` | Gender: `m` or `f`. |
-| `visits` | Routine care encounters, earliest first: `d` date, `t` is `well-child` or `nutrition`. |
+| `visits` | Routine care visits, earliest first: `d` date, `t` is `well-child`, `nutrition` or `group-nutrition` (a group session attended). |
 
 ## What each headline tile needs
 

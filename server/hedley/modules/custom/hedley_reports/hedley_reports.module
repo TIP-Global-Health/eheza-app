@@ -3532,14 +3532,13 @@ function hedley_reports_load_reports_data_batch($from_nid, $batch, array $bundle
   $build = function () use ($from_nid, $bundles, $health_center) {
     $q = db_select('field_data_field_reports_data', 'fr');
     $q->innerJoin('node', 'n', 'n.nid = fr.entity_id');
-    $q->leftJoin('field_data_field_deleted', 'fd', 'fd.entity_id = n.nid');
+    hedley_general_apply_exclude_deleted($q, 'n');
     $q->condition('fr.entity_type', 'node')
       ->condition('fr.bundle', $bundles, 'IN')
       ->condition('fr.deleted', 0)
       ->condition('n.status', NODE_PUBLISHED)
       ->condition('n.nid', $from_nid, '>')
-      ->isNotNull('fr.field_reports_data_value')
-      ->condition(db_or()->isNull('fd.field_deleted_value')->condition('fd.field_deleted_value', 0));
+      ->isNotNull('fr.field_reports_data_value');
     if (!empty($health_center)) {
       $alias = $q->innerJoin('field_data_field_shards', 'fs',
         "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");

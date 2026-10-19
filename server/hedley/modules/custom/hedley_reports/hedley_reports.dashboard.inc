@@ -41,15 +41,25 @@ function hedley_reports_dashboard_first_cohort_timestamp() {
 }
 
 /**
- * Encounter types of a newborn's routine care visits.
+ * The individual encounters that are a newborn's routine care visits.
+ *
+ * Group nutrition attendance is the third kind of visit; it has no
+ * participant, so it is read on its own.
  *
  * @return array
- *   Participant encounter types, keyed by the code the record uses.
+ *   Keyed by encounter bundle: the code the record uses and the
+ *   participant encounter type.
  */
-function hedley_reports_dashboard_child_visit_types() {
+function hedley_reports_dashboard_child_visit_bundles() {
   return [
-    'nutrition' => HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE,
-    'well-child' => HEDLEY_STATS_SPV_ENCOUNTER_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE => [
+      'code' => 'nutrition',
+      'encounter_type' => HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE,
+    ],
+    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE => [
+      'code' => 'well-child',
+      'encounter_type' => HEDLEY_STATS_SPV_ENCOUNTER_TYPE,
+    ],
   ];
 }
 
@@ -64,6 +74,7 @@ function hedley_reports_dashboard_measurement_bundles() {
     'medical_history',
     'obstetrical_exam',
     'prenatal_hiv_test',
+    'prenatal_outside_care',
     'prenatal_ultrasound',
     HEDLEY_ACTIVITY_PRENATAL_ASPIRIN_CONTENT_TYPE,
     HEDLEY_ACTIVITY_PRENATAL_CALCIUM_CONTENT_TYPE,
@@ -125,8 +136,8 @@ function hedley_reports_dashboard_pregnancies_by_newborn($child_nid) {
 /**
  * Resolves which pregnancies a saved node changes the record of.
  *
- * A person may be a mother or a newborn. A node pointing at a prenatal
- * encounter is a measurement.
+ * A person may be a mother or a newborn. Content the record does not read
+ * resolves to nothing.
  *
  * @param object $node
  *   The node that was saved.
@@ -135,11 +146,6 @@ function hedley_reports_dashboard_pregnancies_by_newborn($child_nid) {
  *   IDs of antenatal participants, possibly empty.
  */
 function hedley_reports_dashboard_pregnancies_for_node($node) {
-  $child_visit_bundles = [
-    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
-  ];
-
   if ($node->type == HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE) {
     return [$node->nid];
   }
@@ -157,14 +163,14 @@ function hedley_reports_dashboard_pregnancies_for_node($node) {
     return $participant_id ? [$participant_id] : [];
   }
 
-  $encounter_id = hedley_reports_dashboard_field_value($node, 'field_prenatal_encounter', 'target_id');
-  if ($encounter_id) {
-    $encounter = node_load($encounter_id);
+  if (in_array($node->type, hedley_reports_dashboard_measurement_bundles())) {
+    $encounter_id = hedley_reports_dashboard_field_value($node, 'field_prenatal_encounter', 'target_id');
+    $encounter = $encounter_id ? node_load($encounter_id) : NULL;
 
     return $encounter ? hedley_reports_dashboard_pregnancies_for_node($encounter) : [];
   }
 
-  if (in_array($node->type, $child_visit_bundles)) {
+  if (isset(hedley_reports_dashboard_child_visit_bundles()[$node->type])) {
     $participant_id = hedley_reports_dashboard_field_value($node, 'field_individual_participant', 'target_id');
     if (!$participant_id) {
       return [];
@@ -173,6 +179,12 @@ function hedley_reports_dashboard_pregnancies_for_node($node) {
     $child_nid = $wrapper->field_person->value(['identifier' => TRUE]);
 
     return empty($child_nid) ? [] : hedley_reports_dashboard_pregnancies_by_newborn($child_nid);
+  }
+
+  if ($node->type == HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE) {
+    $child_nid = hedley_reports_dashboard_field_value($node, 'field_person', 'target_id');
+
+    return $child_nid ? hedley_reports_dashboard_pregnancies_by_newborn($child_nid) : [];
   }
 
   return [];
@@ -195,9 +207,11 @@ function hedley_reports_trigger_dashboard_data_recalculation($node) {
       continue;
     }
 
+    // Only a queued item absorbs the save; a running one gets a successor,
+    // so a change made during the build is not lost.
     hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_DASHBOARD_DATA, $participant_id, [
       'participant_id' => $participant_id,
-    ]);
+    ], [ADVANCEDQUEUE_STATUS_QUEUED]);
   }
 }
 
@@ -251,8 +265,8 @@ function hedley_reports_calculate_dashboard_data_worker($queue_item) {
 /**
  * Builds and stores the dashboard record of a pregnancy.
  *
- * Written with field_attach_update(), so no node hooks fire and devices do
- * not resync the pregnancy.
+ * Reloaded right before the write, so a sync landing during the build is
+ * kept. field_attach_update() fires no node hooks.
  *
  * @param object $participant
  *   The antenatal individual participant node.
@@ -272,9 +286,13 @@ function hedley_reports_generate_dashboard_data_for_pregnancy($participant, $exc
   }
 
   $record = hedley_reports_dashboard_pregnancy_record($participant);
-  $participant->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($record);
-  field_attach_update('node', $participant);
-  entity_get_controller('node')->resetCache([$participant->nid]);
+  $fresh = node_load($participant->nid, NULL, TRUE);
+  if (!$fresh) {
+    return FALSE;
+  }
+  $fresh->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($record);
+  field_attach_update('node', $fresh);
+  entity_get_controller('node')->resetCache([$fresh->nid]);
 
   return TRUE;
 }
@@ -327,9 +345,9 @@ function hedley_reports_dashboard_pregnancy_record($participant) {
   $all_diagnoses = [];
 
   foreach ($encounters as $encounter) {
-    $diagnoses = hedley_reports_dashboard_encounter_diagnoses($encounter, $diagnosis_mapping);
-    $all_diagnoses = array_merge($all_diagnoses, $diagnoses);
     $encounter_measurements = isset($measurements[$encounter->nid]) ? $measurements[$encounter->nid] : [];
+    $diagnoses = hedley_reports_dashboard_encounter_diagnoses($encounter, $encounter_measurements, $diagnosis_mapping);
+    $all_diagnoses = array_merge($all_diagnoses, $diagnoses);
     $indicators = hedley_reports_dashboard_encounter_indicators($encounter, $encounter_measurements);
 
     $record['visits'][] = [
@@ -392,22 +410,31 @@ function hedley_reports_dashboard_measurements_by_encounter(array $encounters_id
 }
 
 /**
- * Codes of the diagnoses made at an encounter.
+ * Codes of the diagnoses made at an encounter, including outside care ones.
  *
  * Diagnoses carried over from earlier visits are left out; those visits
  * carry them themselves.
  *
  * @param object $encounter
  *   The prenatal encounter node.
+ * @param array $measurements
+ *   The encounter's measurement nodes.
  * @param array $mapping
  *   Diagnosis values to their Statistical Queries codes.
  *
  * @return array
  *   Distinct diagnosis codes.
  */
-function hedley_reports_dashboard_encounter_diagnoses($encounter, array $mapping) {
+function hedley_reports_dashboard_encounter_diagnoses($encounter, array $measurements, array $mapping) {
+  $values = hedley_reports_dashboard_field_values($encounter, 'field_prenatal_diagnoses');
+  foreach ($measurements as $measurement) {
+    if ($measurement->type == 'prenatal_outside_care') {
+      $values = array_merge($values, hedley_reports_dashboard_field_values($measurement, 'field_prenatal_diagnoses'));
+    }
+  }
+
   $codes = [];
-  foreach (hedley_reports_dashboard_field_values($encounter, 'field_prenatal_diagnoses') as $diagnosis) {
+  foreach ($values as $diagnosis) {
     if (isset($mapping[$diagnosis])) {
       $codes[] = $mapping[$diagnosis];
     }
@@ -623,23 +650,30 @@ function hedley_reports_dashboard_child_record($child_nid) {
     'visits' => [],
   ];
 
-  $visit_types = hedley_reports_dashboard_child_visit_types();
-  $participants_ids = hedley_person_individual_participants_for_person($child->nid, array_values($visit_types));
-  $encounters_by_participant = hedley_person_load_individual_participants_encounters_ids($participants_ids);
-  $codes_by_bundle = [
-    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE => 'nutrition',
-    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE => 'well-child',
-  ];
-  foreach ($encounters_by_participant as $encounters_ids) {
-    foreach (node_load_multiple($encounters_ids) as $encounter) {
-      if (!isset($codes_by_bundle[$encounter->type]) || $encounter->status != NODE_PUBLISHED) {
-        continue;
-      }
-      $record['visits'][] = [
-        'd' => hedley_reports_dashboard_field_date($encounter, 'field_scheduled_date'),
-        't' => $codes_by_bundle[$encounter->type],
-      ];
+  $visit_bundles = hedley_reports_dashboard_child_visit_bundles();
+  $participants_ids = hedley_person_individual_participants_for_person($child->nid, array_column($visit_bundles, 'encounter_type'));
+  $encounters_ids = hedley_person_load_individual_participants_encounters_ids($participants_ids);
+  $encounters_ids = $encounters_ids ? call_user_func_array('array_merge', array_values($encounters_ids)) : [];
+  foreach (node_load_multiple($encounters_ids) as $encounter) {
+    if (!isset($visit_bundles[$encounter->type]) || $encounter->status != NODE_PUBLISHED) {
+      continue;
     }
+    $record['visits'][] = [
+      'd' => hedley_reports_dashboard_field_date($encounter, 'field_scheduled_date'),
+      't' => $visit_bundles[$encounter->type]['code'],
+    ];
+  }
+
+  // Group nutrition sessions the child attended.
+  $attendances_ids = hedley_general_get_person_measurements($child->nid, [HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE]);
+  foreach (node_load_multiple($attendances_ids) as $attendance) {
+    if ($attendance->status != NODE_PUBLISHED || !hedley_reports_dashboard_field_value($attendance, 'field_attended')) {
+      continue;
+    }
+    $record['visits'][] = [
+      'd' => hedley_reports_dashboard_field_date($attendance, 'field_date_measured'),
+      't' => 'group-nutrition',
+    ];
   }
   usort($record['visits'], 'hedley_reports_dashboard_compare_visits');
 
