@@ -2094,6 +2094,46 @@ Used to track location where pregnancies were completed.',
     ),
   );
 
+  // Exported field_instance: 'node-individual_participant-field_reports_data'.
+  $field_instances['node-individual_participant-field_reports_data'] = array(
+    'bundle' => 'individual_participant',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reports_data',
+    'label' => 'Dashboard Data',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 5,
+      ),
+      'type' => 'text_textarea',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'node-individual_participant-field_shards'.
   $field_instances['node-individual_participant-field_shards'] = array(
     'bundle' => 'individual_participant',
@@ -3762,6 +3802,7 @@ Used to track location where pregnancies were completed.',
   t('Child');
   t('Closed (DEPRECATED)');
   t('Completion Data');
+  t('Dashboard Data');
   t('Date Measured');
   t('Date concluded');
   t('Deleted');

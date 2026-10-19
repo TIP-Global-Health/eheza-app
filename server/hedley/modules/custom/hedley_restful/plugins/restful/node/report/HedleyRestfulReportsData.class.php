@@ -88,6 +88,14 @@ class HedleyRestfulReportsData extends \RestfulBase implements \RestfulDataProvi
         throw new RestfulForbiddenException('Access denied.');
       }
     }
+    elseif ($app_type === 'dashboard') {
+      // Either HealthyStart dashboard may load the records; the Elm app
+      // filters them by site.
+      if (!hedley_reports_dashboard_access(HEDLEY_REPORTS_ROLE_FACILITY_DASHBOARD)
+        && !hedley_reports_dashboard_access(HEDLEY_REPORTS_ROLE_PROGRAM_DASHBOARD)) {
+        throw new RestfulForbiddenException('Access denied.');
+      }
+    }
 
     switch ($app_type) {
       case 'reports':
@@ -98,6 +106,9 @@ class HedleyRestfulReportsData extends \RestfulBase implements \RestfulDataProvi
 
       case 'completion':
         return hedley_reports_generate_completion_data_for_restful($base, self::HEDLEY_RESTFUL_QUERY_BATCH, $health_center);
+
+      case 'dashboard':
+        return hedley_reports_generate_dashboard_data_for_restful($base, self::HEDLEY_RESTFUL_QUERY_BATCH, $health_center);
 
       default:
         return [];

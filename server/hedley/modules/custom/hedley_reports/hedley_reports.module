@@ -6,6 +6,7 @@
  */
 
 include_once 'hedley_reports.features.inc';
+include_once 'hedley_reports.dashboard.inc';
 
 /**
  * @file
@@ -227,6 +228,8 @@ function hedley_reports_dashboard_access($role_name) {
  * Implements hook_node_insert().
  */
 function hedley_reports_node_insert($node) {
+  hedley_reports_trigger_dashboard_data_recalculation($node);
+
   // Generate initial Reports data for newly created person.
   if ($node->type == 'person') {
     hedley_reports_trigger_recalculation_for_created_person($node);
@@ -240,6 +243,8 @@ function hedley_reports_node_insert($node) {
  * Implements hook_node_update().
  */
 function hedley_reports_node_update($node) {
+  hedley_reports_trigger_dashboard_data_recalculation($node);
+
   if ($node->type == 'person') {
     hedley_reports_trigger_recalculation_for_edited_person($node);
   }
@@ -260,6 +265,16 @@ function hedley_reports_advanced_queue_info() {
     // The number of seconds to retry after.
     'retry after' => 120,
     // The maximum number of attempts after a failure.
+    'max attempts' => 3,
+  ];
+
+  $items[HEDLEY_REPORTS_CALCULATE_DASHBOARD_DATA] = [
+    'label' => t('Calculate HealthyStart dashboard data'),
+    'worker callback' => 'hedley_reports_calculate_dashboard_data_worker',
+    'groups' => [
+      'hedley',
+    ],
+    'retry after' => 120,
     'max attempts' => 3,
   ];
 

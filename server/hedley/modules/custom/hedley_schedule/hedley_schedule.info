@@ -92,6 +92,7 @@ features[field_instance][] = node-individual_participant-field_newborn
 features[field_instance][] = node-individual_participant-field_outcome
 features[field_instance][] = node-individual_participant-field_outcome_location
 features[field_instance][] = node-individual_participant-field_person
+features[field_instance][] = node-individual_participant-field_reports_data
 features[field_instance][] = node-individual_participant-field_shards
 features[field_instance][] = node-individual_participant-field_uuid
 features[field_instance][] = node-ncd_encounter-field_deleted
