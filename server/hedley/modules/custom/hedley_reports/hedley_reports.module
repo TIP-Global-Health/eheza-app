@@ -321,7 +321,7 @@ function hedley_reports_statistical_queries_report_callback_menu() {
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_dashboard_facility_callback() {
-  return hedley_reports_callback_menu_by_page('dashboard-facility');
+  return hedley_reports_dashboard_callback('dashboard-facility');
 }
 
 /**
@@ -331,11 +331,11 @@ function hedley_reports_dashboard_facility_callback() {
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_dashboard_program_callback() {
-  return hedley_reports_callback_menu_by_page('dashboard-program');
+  return hedley_reports_dashboard_callback('dashboard-program');
 }
 
 /**
- * Generates data for a callback menu page.
+ * Builds the Elm application of a HealthyStart dashboard.
  *
  * @param string $page
  *   The page identifier used to build the Elm app.
@@ -343,10 +343,30 @@ function hedley_reports_dashboard_program_callback() {
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_reports_callback_menu_by_page($page) {
+function hedley_reports_dashboard_callback($page) {
+  // A YYYY-MM-DD date, or NULL while the setting is empty.
+  $first_cohort_date = variable_get('hedley_admin_healthy_start_first_cohort_date', '');
+
+  return hedley_reports_callback_menu_by_page($page, [
+    'first_cohort_date' => empty($first_cohort_date) ? NULL : $first_cohort_date,
+  ]);
+}
+
+/**
+ * Generates data for a callback menu page.
+ *
+ * @param string $page
+ *   The page identifier used to build the Elm app.
+ * @param array $extra_data
+ *   Further values the page needs, keyed by name.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_callback_menu_by_page($page, array $extra_data = []) {
   $data = [
     'site' => variable_get('hedley_general_site_name', ''),
-  ];
+  ] + $extra_data;
   $health_center_ids = hedley_health_center_get_all_health_centers_ids();
 
   // At reports, users with 'Statistical Queries Manager' role, may be

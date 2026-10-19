@@ -1,4 +1,4 @@
-module Backend.Components.Decoder exposing (decodeMenuData, decodeReportParams, decodeSelectedEntity, decodeSyncResponse)
+module Backend.Components.Decoder exposing (decodeHealthCenterData, decodeMenuData, decodeReportParams, decodeSelectedEntity, decodeSyncResponse)
 
 import Backend.Components.Model exposing (HealthCenterData, MenuData, MenuScope(..), ReportParams, SelectedEntity(..), SyncResponse)
 import Backend.Decoder exposing (decodeSite)

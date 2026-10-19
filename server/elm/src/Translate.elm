@@ -4244,6 +4244,13 @@ translateDashboardLabel label =
             , somali = Nothing
             }
 
+        Dashboard.Quarter ->
+            { english = "Quarter"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         Dashboard.Return ->
             { english = "Return"
             , kinyarwanda = Nothing
@@ -4335,6 +4342,20 @@ translateDashboardLabel label =
             , somali = Nothing
             }
 
+        Dashboard.TrendChartDescriptionAllYearsFacility kpi years ->
+            { english = "Line chart of " ++ kpi ++ " by month, with one line per year (" ++ years ++ ") and the institutional target."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.TrendChartDescriptionAllYearsProgram kpi years ->
+            { english = "Line chart of " ++ kpi ++ " by month, with one line per year (" ++ years ++ ") and the program target."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         Dashboard.TrendChartDescriptionFacility kpi year ->
             { english = "Line chart of " ++ kpi ++ " by month for " ++ year ++ ", showing current performance, institutional target, and inter-site average."
             , kinyarwanda = Nothing
@@ -4358,6 +4379,13 @@ translateDashboardLabel label =
 
         Dashboard.ValueColumn ->
             { english = "Value"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.Week ->
+            { english = "Week"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing

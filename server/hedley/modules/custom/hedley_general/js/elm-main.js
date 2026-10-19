@@ -10317,33 +10317,10 @@ var $author$project$Backend$Reports$Update$update = F4(
 				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
 		}
 	});
-var $elm$json$Json$Decode$maybe = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
-				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
-			]));
-};
-var $author$project$Backend$Components$Model$MenuData = F3(
-	function (site, healthCenters, scope) {
-		return {site: site, scope: scope, healthCenters: healthCenters};
+var $author$project$Backend$Dashboard$Model$DashboardData = F2(
+	function (firstCohortDate, healthCenters) {
+		return {healthCenters: healthCenters, firstCohortDate: firstCohortDate};
 	});
-var $author$project$Backend$Components$Model$ScopeFull = {$: 'ScopeFull'};
-var $author$project$Backend$Components$Model$ScopeHealthCenters = {$: 'ScopeHealthCenters'};
-var $author$project$Backend$Components$Decoder$decodeMenuScope = A2(
-	$elm$json$Json$Decode$andThen,
-	function (scope) {
-		switch (scope) {
-			case 'full':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeFull);
-			case 'health_centers':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeHealthCenters);
-			default:
-				return $elm$json$Json$Decode$fail(scope + ' is unknown MenuScope type');
-		}
-	},
-	$elm$json$Json$Decode$string);
 var $author$project$Backend$Components$Model$HealthCenterData = F2(
 	function (id, name) {
 		return {id: id, name: name};
@@ -10357,20 +10334,16 @@ var $author$project$Backend$Components$Decoder$decodeHealthCenterData = A3(
 		'id',
 		$author$project$Gizra$Json$decodeInt,
 		$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$HealthCenterData)));
-var $author$project$Backend$Components$Decoder$decodeMenuData = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'scope',
-	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
-	$elm$core$Maybe$Nothing,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'health_centers',
-		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'site',
-			$author$project$Backend$Decoder$decodeSite,
-			$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$MenuData))));
+var $author$project$Backend$Dashboard$Decoder$decodeDashboardData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'health_centers',
+	$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'first_cohort_date',
+		$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+		$elm$core$Maybe$Nothing,
+		$elm$json$Json$Decode$succeed($author$project$Backend$Dashboard$Model$DashboardData)));
 var $author$project$Backend$Dashboard$Update$update = F2(
 	function (msg, model) {
 		var value = msg.a;
@@ -10378,7 +10351,7 @@ var $author$project$Backend$Dashboard$Update$update = F2(
 			model,
 			{
 				dashboardData: $elm$core$Maybe$Just(
-					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Components$Decoder$decodeMenuData, value))
+					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Dashboard$Decoder$decodeDashboardData, value))
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
@@ -11406,6 +11379,14 @@ var $author$project$Backend$Scoreboard$Model$HandleSyncResponse = function (a) {
 	return {$: 'HandleSyncResponse', a: a};
 };
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $elm$json$Json$Decode$maybe = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
+				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
+			]));
+};
 var $author$project$Backend$Scoreboard$Model$PatientData = F6(
 	function (created, birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
 		return {ncda: ncda, created: created, eddDate: eddDate, birthDate: birthDate, nutrition: nutrition, lowBirthWeight: lowBirthWeight};
@@ -11948,6 +11929,39 @@ var $author$project$Backend$Scoreboard$Update$update = F4(
 				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
 		}
 	});
+var $author$project$Backend$Components$Model$MenuData = F3(
+	function (site, healthCenters, scope) {
+		return {site: site, scope: scope, healthCenters: healthCenters};
+	});
+var $author$project$Backend$Components$Model$ScopeFull = {$: 'ScopeFull'};
+var $author$project$Backend$Components$Model$ScopeHealthCenters = {$: 'ScopeHealthCenters'};
+var $author$project$Backend$Components$Decoder$decodeMenuScope = A2(
+	$elm$json$Json$Decode$andThen,
+	function (scope) {
+		switch (scope) {
+			case 'full':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeFull);
+			case 'health_centers':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeHealthCenters);
+			default:
+				return $elm$json$Json$Decode$fail(scope + ' is unknown MenuScope type');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Components$Decoder$decodeMenuData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'scope',
+	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
+	$elm$core$Maybe$Nothing,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'health_centers',
+		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'site',
+			$author$project$Backend$Decoder$decodeSite,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$MenuData))));
 var $author$project$Backend$ReportsMenu$Update$update = F2(
 	function (msg, model) {
 		var value = msg.a;
@@ -15216,6 +15230,8 @@ var $author$project$Translate$translateDashboardLabel = function (label) {
 			return {somali: $elm$core$Maybe$Nothing, english: 'Prog. Target', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'ProphylaxisCoverage':
 			return {somali: $elm$core$Maybe$Nothing, english: 'Prophylaxis Coverage', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Quarter':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Quarter', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'Return':
 			return {somali: $elm$core$Maybe$Nothing, english: 'Return', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'SelectKpiToPlot':
@@ -15242,6 +15258,14 @@ var $author$project$Translate$translateDashboardLabel = function (label) {
 			return {somali: $elm$core$Maybe$Nothing, english: 'Total Deliveries (Institutional)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'TotalDeliveriesProgram':
 			return {somali: $elm$core$Maybe$Nothing, english: 'Total Deliveries (Program)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TrendChartDescriptionAllYearsFacility':
+			var kpi = label.a;
+			var years = label.b;
+			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month, with one line per year (' + (years + ') and the institutional target.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TrendChartDescriptionAllYearsProgram':
+			var kpi = label.a;
+			var years = label.b;
+			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month, with one line per year (' + (years + ') and the program target.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'TrendChartDescriptionFacility':
 			var kpi = label.a;
 			var year = label.b;
@@ -15254,6 +15278,8 @@ var $author$project$Translate$translateDashboardLabel = function (label) {
 			return {somali: $elm$core$Maybe$Nothing, english: 'Trends', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'ValueColumn':
 			return {somali: $elm$core$Maybe$Nothing, english: 'Value', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Week':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Week', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		default:
 			return {somali: $elm$core$Maybe$Nothing, english: 'Women Currently in ANC Care', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 	}
@@ -45458,48 +45484,72 @@ var $author$project$Pages$Dashboard$Placeholder$tilesFor = function (dashboard) 
 			]);
 	}
 };
-var $author$project$Pages$Dashboard$Placeholder$drillYears = function (currentDate) {
-	var currentYear = $justinmimbs$date$Date$year(currentDate);
-	return A2(
-		$elm$core$List$map,
-		function (offset) {
-			return currentYear - offset;
-		},
-		A2($elm$core$List$range, 0, 3));
-};
+var $author$project$Pages$Dashboard$Placeholder$drillYears = F2(
+	function (currentDate, firstCohortDate) {
+		var currentYear = $justinmimbs$date$Date$year(currentDate);
+		var firstYear = A2(
+			$elm$core$Maybe$withDefault,
+			currentYear,
+			A2(
+				$elm$core$Maybe$map,
+				A2(
+					$elm$core$Basics$composeR,
+					$justinmimbs$date$Date$year,
+					$elm$core$Basics$min(currentYear)),
+				firstCohortDate));
+		return $elm$core$List$reverse(
+			A2($elm$core$List$range, firstYear, currentYear));
+	});
 var $author$project$Pages$Dashboard$Model$Filter = F3(
 	function (key, options, selected) {
 		return {key: key, options: options, selected: selected};
 	});
+var $author$project$Pages$Dashboard$Model$OptionAll = {$: 'OptionAll'};
 var $author$project$Pages$Dashboard$Model$FilterSite = {$: 'FilterSite'};
 var $author$project$Pages$Dashboard$Model$FilterTime = {$: 'FilterTime'};
+var $author$project$Pages$Dashboard$Model$OptionName = function (a) {
+	return {$: 'OptionName', a: a};
+};
+var $author$project$Pages$Dashboard$Model$PeriodWeek = {$: 'PeriodWeek'};
+var $author$project$Pages$Dashboard$Model$PeriodYear = {$: 'PeriodYear'};
+var $author$project$Pages$Dashboard$Model$PeriodMonth = {$: 'PeriodMonth'};
+var $author$project$Pages$Dashboard$Model$OptionPeriod = function (a) {
+	return {$: 'OptionPeriod', a: a};
+};
+var $author$project$Pages$Dashboard$Model$PeriodQuarter = {$: 'PeriodQuarter'};
 var $author$project$Pages$Dashboard$Model$FilterLocation = {$: 'FilterLocation'};
 var $author$project$Pages$Dashboard$Placeholder$filtersFor = F2(
 	function (dashboard, healthCenters) {
+		var siteOptions = A2(
+			$elm$core$List$map,
+			$author$project$Pages$Dashboard$Model$OptionName,
+			$elm$core$List$isEmpty(healthCenters) ? _List_fromArray(
+				['XY Health Center', 'Rukara HC', 'Nyamata HC', 'Gahini HC']) : A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.name;
+				},
+				healthCenters));
 		var timeFilter = A3(
 			$author$project$Pages$Dashboard$Model$Filter,
 			$author$project$Pages$Dashboard$Model$FilterTime,
-			_List_fromArray(
-				['All', 'This month', 'This quarter', 'This year']),
-			'All');
-		var siteNames = $elm$core$List$isEmpty(healthCenters) ? _List_fromArray(
-			['XY Health Center', 'Rukara HC', 'Nyamata HC', 'Gahini HC']) : A2(
-			$elm$core$List$map,
-			function ($) {
-				return $.name;
-			},
-			healthCenters);
+			A2(
+				$elm$core$List$map,
+				$author$project$Pages$Dashboard$Model$OptionPeriod,
+				_List_fromArray(
+					[$author$project$Pages$Dashboard$Model$PeriodWeek, $author$project$Pages$Dashboard$Model$PeriodMonth, $author$project$Pages$Dashboard$Model$PeriodQuarter, $author$project$Pages$Dashboard$Model$PeriodYear])),
+			$author$project$Pages$Dashboard$Model$OptionPeriod($author$project$Pages$Dashboard$Model$PeriodMonth));
 		if (dashboard.$ === 'Facility') {
 			return _List_fromArray(
 				[
 					A3(
 					$author$project$Pages$Dashboard$Model$Filter,
 					$author$project$Pages$Dashboard$Model$FilterSite,
-					siteNames,
+					siteOptions,
 					A2(
 						$elm$core$Maybe$withDefault,
-						'',
-						$elm$core$List$head(siteNames))),
+						$author$project$Pages$Dashboard$Model$OptionAll,
+						$elm$core$List$head(siteOptions))),
 					timeFilter
 				]);
 		} else {
@@ -45508,15 +45558,21 @@ var $author$project$Pages$Dashboard$Placeholder$filtersFor = F2(
 					A3(
 					$author$project$Pages$Dashboard$Model$Filter,
 					$author$project$Pages$Dashboard$Model$FilterSite,
-					A2($elm$core$List$cons, 'All', siteNames),
-					'All'),
+					A2($elm$core$List$cons, $author$project$Pages$Dashboard$Model$OptionAll, siteOptions),
+					$author$project$Pages$Dashboard$Model$OptionAll),
 					timeFilter,
 					A3(
 					$author$project$Pages$Dashboard$Model$Filter,
 					$author$project$Pages$Dashboard$Model$FilterLocation,
-					_List_fromArray(
-						['All', 'Eastern Province', 'Kayonza District', 'Rwamagana District']),
-					'All')
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Dashboard$Model$OptionAll,
+						A2(
+							$elm$core$List$map,
+							$author$project$Pages$Dashboard$Model$OptionName,
+							_List_fromArray(
+								['Eastern Province', 'Kayonza District', 'Rwamagana District']))),
+					$author$project$Pages$Dashboard$Model$OptionAll)
 				]);
 		}
 	});
@@ -45892,6 +45948,14 @@ var $author$project$Pages$Dashboard$View$exportFileName = F2(
 	function (dashboard, suffix) {
 		return 'healthystart-' + ($author$project$Pages$Dashboard$Utils$dashboardSlug(dashboard) + ('-' + (suffix + '.csv')));
 	});
+var $author$project$Pages$Dashboard$Placeholder$targetSeries = function (kpi) {
+	return A2(
+		$elm$core$List$map,
+		function (month) {
+			return A3($elm$core$Basics$clamp, 0, 100, (kpi.baseTarget - 8) + ((month / 11) * 8));
+		},
+		A2($elm$core$List$range, 0, 11));
+};
 var $author$project$Pages$Dashboard$Placeholder$rnd = function (n) {
 	return A2(
 		$elm$core$Basics$modBy,
@@ -45909,13 +45973,11 @@ var $author$project$Pages$Dashboard$Placeholder$monthly = F3(
 			},
 			A2($elm$core$List$range, 0, 11));
 	});
-var $author$project$Pages$Dashboard$Placeholder$targetMonthly = function (base) {
-	return A2(
-		$elm$core$List$map,
-		function (month) {
-			return A3($elm$core$Basics$clamp, 0, 100, (base - 8) + ((month / 11) * 8));
-		},
-		A2($elm$core$List$range, 0, 11));
+var $author$project$Pages$Dashboard$Placeholder$averageSeries = function (kpi) {
+	return A2($author$project$Pages$Dashboard$Placeholder$monthly, kpi.seed + 777, kpi.baseAvg);
+};
+var $author$project$Pages$Dashboard$Placeholder$performanceSeries = function (kpi) {
+	return A2($author$project$Pages$Dashboard$Placeholder$monthly, kpi.seed, kpi.baseCurrent);
 };
 var $author$project$Pages$Dashboard$Placeholder$drillRow = F4(
 	function (dashboard, kpi, year, monthIndex) {
@@ -45930,17 +45992,17 @@ var $author$project$Pages$Dashboard$Placeholder$drillRow = F4(
 		var perf = A2(
 			nth,
 			monthIndex,
-			A3($author$project$Pages$Dashboard$Placeholder$monthly, kpi.seed, kpi.baseCurrent, year));
+			A2($author$project$Pages$Dashboard$Placeholder$performanceSeries, kpi, year));
 		var targ = A2(
 			nth,
 			monthIndex,
-			$author$project$Pages$Dashboard$Placeholder$targetMonthly(kpi.baseTarget));
+			$author$project$Pages$Dashboard$Placeholder$targetSeries(kpi));
 		var third = function () {
 			if (dashboard.$ === 'Facility') {
 				return A2(
 					nth,
 					monthIndex,
-					A3($author$project$Pages$Dashboard$Placeholder$monthly, kpi.seed + 777, kpi.baseAvg, year));
+					A2($author$project$Pages$Dashboard$Placeholder$averageSeries, kpi, year));
 			} else {
 				return perf - targ;
 			}
@@ -46310,6 +46372,56 @@ var $author$project$Pages$Dashboard$Utils$filterKeySlug = function (key) {
 			return 'time';
 	}
 };
+var $author$project$Pages$Dashboard$Model$Week = {$: 'Week'};
+var $author$project$Pages$Dashboard$Model$Quarter = {$: 'Quarter'};
+var $author$project$Pages$Dashboard$Utils$filterOptionLabel = F2(
+	function (language, option) {
+		switch (option.$) {
+			case 'OptionAll':
+				return A2($author$project$Translate$translate, language, $author$project$Translate$All);
+			case 'OptionName':
+				var name = option.a;
+				return name;
+			default:
+				var period = option.a;
+				return A2(
+					$author$project$Translate$translate,
+					language,
+					function () {
+						switch (period.$) {
+							case 'PeriodMonth':
+								return $author$project$Translate$MonthLabel;
+							case 'PeriodQuarter':
+								return $author$project$Translate$DashboardLabel($author$project$Pages$Dashboard$Model$Quarter);
+							case 'PeriodWeek':
+								return $author$project$Translate$DashboardLabel($author$project$Pages$Dashboard$Model$Week);
+							default:
+								return $author$project$Translate$YearLabel;
+						}
+					}());
+		}
+	});
+var $author$project$Pages$Dashboard$Utils$filterOptionValue = function (option) {
+	switch (option.$) {
+		case 'OptionAll':
+			return 'all';
+		case 'OptionName':
+			var name = option.a;
+			return 'name-' + name;
+		default:
+			var period = option.a;
+			switch (period.$) {
+				case 'PeriodMonth':
+					return 'month';
+				case 'PeriodQuarter':
+					return 'quarter';
+				case 'PeriodWeek':
+					return 'week';
+				default:
+					return 'year';
+			}
+	}
+};
 var $author$project$Pages$Dashboard$Utils$selectedFilterValue = F2(
 	function (model, filter) {
 		return A2(
@@ -46319,7 +46431,24 @@ var $author$project$Pages$Dashboard$Utils$selectedFilterValue = F2(
 	});
 var $author$project$Pages$Dashboard$View$viewFilterControl = F4(
 	function (language, dashboard, model, filter) {
-		var selectedValue = A2($author$project$Pages$Dashboard$Utils$selectedFilterValue, model, filter);
+		var selectedOption = A2($author$project$Pages$Dashboard$Utils$selectedFilterValue, model, filter);
+		var setFilter = function (optionValue) {
+			return A2(
+				$elm$core$Maybe$withDefault,
+				$author$project$Pages$Dashboard$Model$NoOp,
+				A2(
+					$elm$core$Maybe$map,
+					$author$project$Pages$Dashboard$Model$SetFilter(filter.key),
+					$elm$core$List$head(
+						A2(
+							$elm$core$List$filter,
+							function (option) {
+								return _Utils_eq(
+									$author$project$Pages$Dashboard$Utils$filterOptionValue(option),
+									optionValue);
+							},
+							filter.options))));
+		};
 		var selectId = 'filter-' + ($author$project$Pages$Dashboard$Utils$dashboardSlug(dashboard) + ('-' + $author$project$Pages$Dashboard$Utils$filterKeySlug(filter.key)));
 		return A2(
 			$elm$html$Html$div,
@@ -46350,23 +46479,24 @@ var $author$project$Pages$Dashboard$View$viewFilterControl = F4(
 						[
 							$elm$html$Html$Attributes$id(selectId),
 							$elm$html$Html$Attributes$class('rounded border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'),
-							$elm$html$Html$Events$onInput(
-							$author$project$Pages$Dashboard$Model$SetFilter(filter.key))
+							$elm$html$Html$Events$onInput(setFilter)
 						]),
 					A2(
 						$elm$core$List$map,
-						function (optionValue) {
+						function (filterOption) {
 							return A2(
 								$elm$html$Html$option,
 								_List_fromArray(
 									[
-										$elm$html$Html$Attributes$value(optionValue),
+										$elm$html$Html$Attributes$value(
+										$author$project$Pages$Dashboard$Utils$filterOptionValue(filterOption)),
 										$elm$html$Html$Attributes$selected(
-										_Utils_eq(optionValue, selectedValue))
+										_Utils_eq(filterOption, selectedOption))
 									]),
 								_List_fromArray(
 									[
-										$elm$html$Html$text(optionValue)
+										$elm$html$Html$text(
+										A2($author$project$Pages$Dashboard$Utils$filterOptionLabel, language, filterOption))
 									]));
 						},
 						filter.options))
@@ -46680,7 +46810,10 @@ var $author$project$Pages$Dashboard$View$resolveSiteName = F4(
 				'',
 				A2(
 					$elm$core$Maybe$map,
-					$author$project$Pages$Dashboard$Utils$selectedFilterValue(model),
+					A2(
+						$elm$core$Basics$composeR,
+						$author$project$Pages$Dashboard$Utils$selectedFilterValue(model),
+						$author$project$Pages$Dashboard$Utils$filterOptionLabel(language)),
 					$elm$core$List$head(
 						A2(
 							$elm$core$List$filter,
@@ -47049,52 +47182,70 @@ var $author$project$Pages$Dashboard$View$viewLegend = function (series) {
 			]),
 		A2($elm$core$List$map, $author$project$Pages$Dashboard$View$viewLegendItem, series));
 };
-var $author$project$Pages$Dashboard$Placeholder$yearKeys = F2(
-	function (years, selection) {
-		if (selection.$ === 'AllYears') {
-			return years;
-		} else {
-			var year = selection.a;
-			return _List_fromArray(
-				[year]);
-		}
-	});
-var $author$project$Pages$Dashboard$Placeholder$elementAvg = function (lists) {
-	return A2(
-		$elm$core$List$map,
-		function (index) {
-			var values = A2(
-				$elm$core$List$filterMap,
-				function (list) {
-					return $elm$core$List$head(
-						A2($elm$core$List$drop, index, list));
-				},
-				lists);
-			return $elm$core$List$isEmpty(values) ? 0 : ($elm$core$List$sum(values) / $elm$core$List$length(values));
-		},
-		A2($elm$core$List$range, 0, 11));
-};
-var $author$project$Pages$Dashboard$Placeholder$trendSeries = F3(
-	function (years, kpi, selection) {
-		var keys = A2($author$project$Pages$Dashboard$Placeholder$yearKeys, years, selection);
-		return {
-			avg: $author$project$Pages$Dashboard$Placeholder$elementAvg(
-				A2(
-					$elm$core$List$map,
-					A2($author$project$Pages$Dashboard$Placeholder$monthly, kpi.seed + 777, kpi.baseAvg),
-					keys)),
-			target: $author$project$Pages$Dashboard$Placeholder$targetMonthly(kpi.baseTarget),
-			current: $author$project$Pages$Dashboard$Placeholder$elementAvg(
-				A2(
-					$elm$core$List$map,
-					A2($author$project$Pages$Dashboard$Placeholder$monthly, kpi.seed, kpi.baseCurrent),
-					keys))
-		};
-	});
 var $author$project$Pages$Dashboard$Model$SelectTrendKpi = function (a) {
 	return {$: 'SelectTrendKpi', a: a};
 };
 var $author$project$Pages$Dashboard$Model$SelectKpiToPlot = {$: 'SelectKpiToPlot'};
+var $author$project$Pages$Dashboard$Model$TrendChartDescriptionProgram = F2(
+	function (a, b) {
+		return {$: 'TrendChartDescriptionProgram', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$Model$TrendChartDescriptionFacility = F2(
+	function (a, b) {
+		return {$: 'TrendChartDescriptionFacility', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$Model$TrendChartDescriptionAllYearsProgram = F2(
+	function (a, b) {
+		return {$: 'TrendChartDescriptionAllYearsProgram', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$Model$TrendChartDescriptionAllYearsFacility = F2(
+	function (a, b) {
+		return {$: 'TrendChartDescriptionAllYearsFacility', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$View$chartDescription = F5(
+	function (language, dashboard, years, kpi, selection) {
+		var yearList = A2(
+			$elm$core$String$join,
+			', ',
+			A2($elm$core$List$map, $elm$core$String$fromInt, years));
+		var kpiLabel = A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label);
+		return A2(
+			$author$project$Pages$Dashboard$View$translateLabel,
+			language,
+			function () {
+				var _v0 = _Utils_Tuple2(selection, dashboard);
+				if (_v0.a.$ === 'AllYears') {
+					if (_v0.b.$ === 'Facility') {
+						var _v1 = _v0.a;
+						var _v2 = _v0.b;
+						return A2($author$project$Pages$Dashboard$Model$TrendChartDescriptionAllYearsFacility, kpiLabel, yearList);
+					} else {
+						var _v3 = _v0.a;
+						var _v4 = _v0.b;
+						return A2($author$project$Pages$Dashboard$Model$TrendChartDescriptionAllYearsProgram, kpiLabel, yearList);
+					}
+				} else {
+					if (_v0.b.$ === 'Facility') {
+						var year = _v0.a.a;
+						var _v5 = _v0.b;
+						return A2(
+							$author$project$Pages$Dashboard$Model$TrendChartDescriptionFacility,
+							kpiLabel,
+							$elm$core$String$fromInt(year));
+					} else {
+						var year = _v0.a.a;
+						var _v6 = _v0.b;
+						return A2(
+							$author$project$Pages$Dashboard$Model$TrendChartDescriptionProgram,
+							kpiLabel,
+							$elm$core$String$fromInt(year));
+					}
+				}
+			}());
+	});
+var $author$project$Pages$Dashboard$Model$Year = function (a) {
+	return {$: 'Year', a: a};
+};
 var $author$project$Pages$Dashboard$Utils$yearSelLabel = F2(
 	function (language, selection) {
 		if (selection.$ === 'AllYears') {
@@ -47104,33 +47255,6 @@ var $author$project$Pages$Dashboard$Utils$yearSelLabel = F2(
 			return $elm$core$String$fromInt(year);
 		}
 	});
-var $author$project$Pages$Dashboard$Model$TrendChartDescriptionProgram = F2(
-	function (a, b) {
-		return {$: 'TrendChartDescriptionProgram', a: a, b: b};
-	});
-var $author$project$Pages$Dashboard$Model$TrendChartDescriptionFacility = F2(
-	function (a, b) {
-		return {$: 'TrendChartDescriptionFacility', a: a, b: b};
-	});
-var $author$project$Pages$Dashboard$View$chartDescription = F4(
-	function (language, dashboard, kpi, selection) {
-		var yearLabel = A2($author$project$Pages$Dashboard$Utils$yearSelLabel, language, selection);
-		var kpiLabel = A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label);
-		if (dashboard.$ === 'Facility') {
-			return A2(
-				$author$project$Pages$Dashboard$View$translateLabel,
-				language,
-				A2($author$project$Pages$Dashboard$Model$TrendChartDescriptionFacility, kpiLabel, yearLabel));
-		} else {
-			return A2(
-				$author$project$Pages$Dashboard$View$translateLabel,
-				language,
-				A2($author$project$Pages$Dashboard$Model$TrendChartDescriptionProgram, kpiLabel, yearLabel));
-		}
-	});
-var $author$project$Pages$Dashboard$Model$Year = function (a) {
-	return {$: 'Year', a: a};
-};
 var $author$project$Pages$Dashboard$Model$SelectTrendYear = function (a) {
 	return {$: 'SelectTrendYear', a: a};
 };
@@ -47203,42 +47327,75 @@ var $author$project$Pages$Dashboard$View$targetLegendLabel = function (dashboard
 var $author$project$Pages$Dashboard$Model$CurrentPerformance = {$: 'CurrentPerformance'};
 var $author$project$Pages$Dashboard$View$viewTrends = F7(
 	function (language, dashboard, years, model, kpis, selectedId, selectedKpi) {
-		var selectId = 'trend-kpi-' + $author$project$Pages$Dashboard$Utils$dashboardSlug(dashboard);
-		var series = A3($author$project$Pages$Dashboard$Placeholder$trendSeries, years, selectedKpi, model.trendYear);
-		var chartSeries = _Utils_ap(
-			_List_fromArray(
-				[
-					A4(
+		var performanceColor = '#0273b2';
+		var yearColors = _List_fromArray(
+			[performanceColor, '#7b3294', '#00838f', '#ad1457', '#475569', '#2f7d32']);
+		var targetLine = A4(
+			$author$project$Pages$Components$TrendChart$Series,
+			'#c25e00',
+			A2(
+				$author$project$Pages$Dashboard$View$translateLabel,
+				language,
+				$author$project$Pages$Dashboard$View$targetLegendLabel(dashboard)),
+			'8 4',
+			$author$project$Pages$Dashboard$Placeholder$targetSeries(selectedKpi));
+		var yearLine = F2(
+			function (index, year) {
+				return A4(
 					$author$project$Pages$Components$TrendChart$Series,
-					'#0273b2',
-					A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$CurrentPerformance),
-					'',
-					series.current),
-					A4(
-					$author$project$Pages$Components$TrendChart$Series,
-					'#c25e00',
 					A2(
-						$author$project$Pages$Dashboard$View$translateLabel,
-						language,
-						$author$project$Pages$Dashboard$View$targetLegendLabel(dashboard)),
-					'8 4',
-					series.target)
-				]),
-			function () {
-				if (dashboard.$ === 'Facility') {
-					return _List_fromArray(
+						$elm$core$Maybe$withDefault,
+						performanceColor,
+						$elm$core$List$head(
+							A2(
+								$elm$core$List$drop,
+								A2(
+									$elm$core$Basics$modBy,
+									$elm$core$List$length(yearColors),
+									index),
+								yearColors))),
+					$elm$core$String$fromInt(year),
+					'',
+					A2($author$project$Pages$Dashboard$Placeholder$performanceSeries, selectedKpi, year));
+			});
+		var chartSeries = function () {
+			var _v0 = model.trendYear;
+			if (_v0.$ === 'AllYears') {
+				return _Utils_ap(
+					A2($elm$core$List$indexedMap, yearLine, years),
+					_List_fromArray(
+						[targetLine]));
+			} else {
+				var year = _v0.a;
+				return _Utils_ap(
+					_List_fromArray(
 						[
 							A4(
 							$author$project$Pages$Components$TrendChart$Series,
-							'#2f7d32',
-							A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$InterventionSiteAverage),
-							'2 4',
-							series.avg)
-						]);
-				} else {
-					return _List_Nil;
-				}
-			}());
+							performanceColor,
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$CurrentPerformance),
+							'',
+							A2($author$project$Pages$Dashboard$Placeholder$performanceSeries, selectedKpi, year)),
+							targetLine
+						]),
+					function () {
+						if (dashboard.$ === 'Facility') {
+							return _List_fromArray(
+								[
+									A4(
+									$author$project$Pages$Components$TrendChart$Series,
+									'#2f7d32',
+									A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$InterventionSiteAverage),
+									'2 4',
+									A2($author$project$Pages$Dashboard$Placeholder$averageSeries, selectedKpi, year))
+								]);
+						} else {
+							return _List_Nil;
+						}
+					}());
+			}
+		}();
+		var selectId = 'trend-kpi-' + $author$project$Pages$Dashboard$Utils$dashboardSlug(dashboard);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -47318,7 +47475,7 @@ var $author$project$Pages$Dashboard$View$viewTrends = F7(
 							{
 								series: chartSeries,
 								xLabels: $author$project$Pages$Dashboard$Utils$monthLabels(language),
-								ariaLabel: A4($author$project$Pages$Dashboard$View$chartDescription, language, dashboard, selectedKpi, model.trendYear)
+								ariaLabel: A5($author$project$Pages$Dashboard$View$chartDescription, language, dashboard, years, selectedKpi, model.trendYear)
 							}),
 							$author$project$Pages$Dashboard$View$viewLegend(chartSeries)
 						]))
@@ -47467,7 +47624,7 @@ var $author$project$Pages$Dashboard$View$viewDashboard = F5(
 	function (language, currentDate, data, dashboard, model) {
 		var coverage = $author$project$Pages$Dashboard$Placeholder$coverageFor(dashboard);
 		var filters = A2($author$project$Pages$Dashboard$Placeholder$filtersFor, dashboard, data.healthCenters);
-		var years = $author$project$Pages$Dashboard$Placeholder$drillYears(currentDate);
+		var years = A2($author$project$Pages$Dashboard$Placeholder$drillYears, currentDate, data.firstCohortDate);
 		var tiles = $author$project$Pages$Dashboard$Placeholder$tilesFor(dashboard);
 		var kpis = $author$project$Pages$Dashboard$Placeholder$kpisFor(dashboard);
 		return A2(

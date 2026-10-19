@@ -1,18 +1,20 @@
 module Pages.Dashboard.Placeholder exposing
     ( alertsFor
+    , averageSeries
     , coverageFor
     , defaultTrendKpi
     , drillRow
     , drillYears
     , filtersFor
     , kpisFor
+    , performanceSeries
+    , targetSeries
     , tilesFor
-    , trendSeries
     )
 
-{-| Placeholder figures for the HealthyStart dashboards, representative but not
-this installation's data, and a deterministic generator of monthly series from
-them. Goes once computed data arrives.
+{-| Placeholder figures, not this installation's data, for the HealthyStart
+dashboards. The Time filter scopes only the summary tiles and indicator blocks;
+the trend chart follows its own Year selector.
 -}
 
 import Backend.Components.Model exposing (HealthCenterData)
@@ -25,10 +27,11 @@ import Pages.Dashboard.Model
         , DashboardLabel(..)
         , Filter
         , FilterKey(..)
+        , FilterOption(..)
         , Kpi
         , Tile
+        , TimePeriod(..)
         , Trend(..)
-        , YearSel(..)
         )
 
 
@@ -151,26 +154,31 @@ change the figures yet.
 filtersFor : Dashboard -> List HealthCenterData -> List Filter
 filtersFor dashboard healthCenters =
     let
-        siteNames =
-            if List.isEmpty healthCenters then
-                [ "XY Health Center", "Rukara HC", "Nyamata HC", "Gahini HC" ]
+        siteOptions =
+            List.map OptionName <|
+                if List.isEmpty healthCenters then
+                    [ "XY Health Center", "Rukara HC", "Nyamata HC", "Gahini HC" ]
 
-            else
-                List.map .name healthCenters
+                else
+                    List.map .name healthCenters
 
         timeFilter =
-            Filter FilterTime [ "All", "This month", "This quarter", "This year" ] "All"
+            Filter FilterTime
+                (List.map OptionPeriod [ PeriodWeek, PeriodMonth, PeriodQuarter, PeriodYear ])
+                (OptionPeriod PeriodMonth)
     in
     case dashboard of
         Facility ->
-            [ Filter FilterSite siteNames (List.head siteNames |> Maybe.withDefault "")
+            [ Filter FilterSite siteOptions (List.head siteOptions |> Maybe.withDefault OptionAll)
             , timeFilter
             ]
 
         Program ->
-            [ Filter FilterSite ("All" :: siteNames) "All"
+            [ Filter FilterSite (OptionAll :: siteOptions) OptionAll
             , timeFilter
-            , Filter FilterLocation [ "All", "Eastern Province", "Kayonza District", "Rwamagana District" ] "All"
+            , Filter FilterLocation
+                (OptionAll :: List.map OptionName [ "Eastern Province", "Kayonza District", "Rwamagana District" ])
+                OptionAll
             ]
 
 
@@ -178,16 +186,22 @@ filtersFor dashboard healthCenters =
 -- YEARS
 
 
-{-| The years the drill down table and the year selector offer: this year and
-the three before it, most recent first.
+{-| The years the drill down table and the year selector offer: from the
+first cohort's enrolment year to this year, most recent first. Without that
+date, only this year.
 -}
-drillYears : NominalDate -> List Int
-drillYears currentDate =
+drillYears : NominalDate -> Maybe NominalDate -> List Int
+drillYears currentDate firstCohortDate =
     let
         currentYear =
             Date.year currentDate
+
+        firstYear =
+            Maybe.map (Date.year >> min currentYear) firstCohortDate
+                |> Maybe.withDefault currentYear
     in
-    List.map (\offset -> currentYear - offset) (List.range 0 3)
+    List.range firstYear currentYear
+        |> List.reverse
 
 
 
@@ -202,8 +216,8 @@ rnd n =
     toFloat (modBy 233280 (abs n * 9301 + 49297)) / 233280
 
 
-{-| Monthly performance or average line: wanders around `base` with a gentle
-upward drift across the year plus stable noise.
+{-| Monthly line: wanders around `base` with a gentle upward drift across the
+year plus stable noise.
 -}
 monthly : Int -> Float -> Int -> List Float
 monthly seed base yearKey =
@@ -221,58 +235,27 @@ monthly seed base yearKey =
         (List.range 0 11)
 
 
-{-| Target line: rises from a little below `base` early in the year and
-flattens near `base`.
+{-| An indicator's monthly performance in one year.
 -}
-targetMonthly : Float -> List Float
-targetMonthly base =
-    List.map (\month -> clamp 0 100 (base - 8 + toFloat month / 11 * 8))
+performanceSeries : Kpi -> Int -> List Float
+performanceSeries kpi =
+    monthly kpi.seed kpi.baseCurrent
+
+
+{-| The monthly inter site average of an indicator in one year.
+-}
+averageSeries : Kpi -> Int -> List Float
+averageSeries kpi =
+    monthly (kpi.seed + 777) kpi.baseAvg
+
+
+{-| An indicator's monthly target: rises from a little below its base early in
+the year and flattens near it. The same every year.
+-}
+targetSeries : Kpi -> List Float
+targetSeries kpi =
+    List.map (\month -> clamp 0 100 (kpi.baseTarget - 8 + toFloat month / 11 * 8))
         (List.range 0 11)
-
-
-{-| Element wise average of equal length lists, used to collapse the years into
-a single series.
--}
-elementAvg : List (List Float) -> List Float
-elementAvg lists =
-    List.map
-        (\index ->
-            let
-                values =
-                    List.filterMap (\list -> List.drop index list |> List.head) lists
-            in
-            if List.isEmpty values then
-                0
-
-            else
-                List.sum values / toFloat (List.length values)
-        )
-        (List.range 0 11)
-
-
-yearKeys : List Int -> YearSel -> List Int
-yearKeys years selection =
-    case selection of
-        AllYears ->
-            years
-
-        Year year ->
-            [ year ]
-
-
-{-| The three plotted series for an indicator and the selected year, or the
-mean across all years.
--}
-trendSeries : List Int -> Kpi -> YearSel -> { current : List Float, target : List Float, avg : List Float }
-trendSeries years kpi selection =
-    let
-        keys =
-            yearKeys years selection
-    in
-    { current = elementAvg (List.map (monthly kpi.seed kpi.baseCurrent) keys)
-    , target = targetMonthly kpi.baseTarget
-    , avg = elementAvg (List.map (monthly (kpi.seed + 777) kpi.baseAvg) keys)
-    }
 
 
 {-| One (performance, target, third) triple for a drill down cell. `third` is
@@ -286,15 +269,15 @@ drillRow dashboard kpi year monthIndex =
             List.drop index values |> List.head |> Maybe.withDefault 0
 
         perf =
-            nth monthIndex (monthly kpi.seed kpi.baseCurrent year)
+            nth monthIndex (performanceSeries kpi year)
 
         targ =
-            nth monthIndex (targetMonthly kpi.baseTarget)
+            nth monthIndex (targetSeries kpi)
 
         third =
             case dashboard of
                 Facility ->
-                    nth monthIndex (monthly (kpi.seed + 777) kpi.baseAvg year)
+                    nth monthIndex (averageSeries kpi year)
 
                 Program ->
                     perf - targ

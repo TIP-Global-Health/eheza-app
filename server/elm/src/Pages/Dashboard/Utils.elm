@@ -3,6 +3,8 @@ module Pages.Dashboard.Utils exposing
     , drillDialogId
     , filterKeySlug
     , filterLabel
+    , filterOptionLabel
+    , filterOptionValue
     , kpiBlockId
     , kpiById
     , monthLabels
@@ -18,8 +20,10 @@ import Pages.Dashboard.Model
         , DashboardLabel(..)
         , Filter
         , FilterKey(..)
+        , FilterOption(..)
         , Kpi
         , Model
+        , TimePeriod(..)
         , YearSel(..)
         )
 import Time exposing (Month(..))
@@ -77,6 +81,58 @@ filterLabel key =
             Translate.DashboardLabel Time
 
 
+filterOptionLabel : Language -> FilterOption -> String
+filterOptionLabel language option =
+    case option of
+        OptionAll ->
+            translate language Translate.All
+
+        OptionName name ->
+            name
+
+        OptionPeriod period ->
+            translate language <|
+                case period of
+                    PeriodMonth ->
+                        Translate.MonthLabel
+
+                    PeriodQuarter ->
+                        Translate.DashboardLabel Quarter
+
+                    PeriodWeek ->
+                        Translate.DashboardLabel Week
+
+                    PeriodYear ->
+                        Translate.YearLabel
+
+
+{-| The `value` of a dropdown option, unique within its filter, so the viewer's
+pick maps back to the option.
+-}
+filterOptionValue : FilterOption -> String
+filterOptionValue option =
+    case option of
+        OptionAll ->
+            "all"
+
+        OptionName name ->
+            "name-" ++ name
+
+        OptionPeriod period ->
+            case period of
+                PeriodMonth ->
+                    "month"
+
+                PeriodQuarter ->
+                    "quarter"
+
+                PeriodWeek ->
+                    "week"
+
+                PeriodYear ->
+                    "year"
+
+
 kpiById : List Kpi -> String -> Maybe Kpi
 kpiById kpis id =
     List.filter (\kpi -> kpi.id == id) kpis
@@ -93,7 +149,7 @@ monthLabels language =
 
 {-| The option a filter shows: what the viewer picked, or its default.
 -}
-selectedFilterValue : Model -> Filter -> String
+selectedFilterValue : Model -> Filter -> FilterOption
 selectedFilterValue model filter =
     Dict.get filter.key model.selectedFilters
         |> Maybe.withDefault filter.selected

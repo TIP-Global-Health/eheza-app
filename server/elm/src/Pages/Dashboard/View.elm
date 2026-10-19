@@ -6,7 +6,7 @@ opens over the dimmed dashboard.
 -}
 
 import App.Types exposing (Language)
-import Backend.Components.Model exposing (MenuData)
+import Backend.Dashboard.Model exposing (DashboardData)
 import Backend.Model exposing (ModelBackend)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -39,6 +39,8 @@ import Pages.Dashboard.Utils
         , drillDialogId
         , filterKeySlug
         , filterLabel
+        , filterOptionLabel
+        , filterOptionValue
         , kpiBlockId
         , kpiById
         , monthLabels
@@ -58,14 +60,14 @@ view language currentDate modelBackend dashboard model =
         (\data -> viewDashboard language currentDate data dashboard model)
 
 
-viewDashboard : Language -> NominalDate -> MenuData -> Dashboard -> Model -> Html Msg
+viewDashboard : Language -> NominalDate -> DashboardData -> Dashboard -> Model -> Html Msg
 viewDashboard language currentDate data dashboard model =
     let
         filters =
             Placeholder.filtersFor dashboard data.healthCenters
 
         years =
-            Placeholder.drillYears currentDate
+            Placeholder.drillYears currentDate data.firstCohortDate
 
         tiles =
             Placeholder.tilesFor dashboard
@@ -125,7 +127,7 @@ resolveSiteName language dashboard filters model =
         Facility ->
             List.filter (\filter -> filter.key == FilterSite) filters
                 |> List.head
-                |> Maybe.map (selectedFilterValue model)
+                |> Maybe.map (selectedFilterValue model >> filterOptionLabel language)
                 |> Maybe.withDefault ""
 
         Program ->
@@ -230,8 +232,14 @@ viewFilterControl language dashboard model filter =
         selectId =
             "filter-" ++ dashboardSlug dashboard ++ "-" ++ filterKeySlug filter.key
 
-        selectedValue =
+        selectedOption =
             selectedFilterValue model filter
+
+        setFilter optionValue =
+            List.filter (\option -> filterOptionValue option == optionValue) filter.options
+                |> List.head
+                |> Maybe.map (SetFilter filter.key)
+                |> Maybe.withDefault NoOp
     in
     div [ class "flex flex-col gap-1" ]
         [ label [ for selectId, class "text-sm font-bold text-slate-800" ]
@@ -239,12 +247,15 @@ viewFilterControl language dashboard model filter =
         , select
             [ id selectId
             , class "rounded border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            , onInput (SetFilter filter.key)
+            , onInput setFilter
             ]
             (List.map
-                (\optionValue ->
-                    option [ value optionValue, selected (optionValue == selectedValue) ]
-                        [ text optionValue ]
+                (\filterOption ->
+                    option
+                        [ value (filterOptionValue filterOption)
+                        , selected (filterOption == selectedOption)
+                        ]
+                        [ text <| filterOptionLabel language filterOption ]
                 )
                 filter.options
             )
@@ -401,20 +412,53 @@ viewTrendsPanel language dashboard years kpis model =
 viewTrends : Language -> Dashboard -> List Int -> Model -> List Kpi -> String -> Kpi -> Html Msg
 viewTrends language dashboard years model kpis selectedId selectedKpi =
     let
-        series =
-            Placeholder.trendSeries years selectedKpi model.trendYear
+        performanceColor =
+            "#0273b2"
+
+        targetLine =
+            TrendChart.Series "#c25e00"
+                (translateLabel language (targetLegendLabel dashboard))
+                "8 4"
+                (Placeholder.targetSeries selectedKpi)
+
+        -- Solid lines, none of them close to the target's orange. Repeats
+        -- after six years.
+        yearColors =
+            [ performanceColor, "#7b3294", "#00838f", "#ad1457", "#475569", "#2f7d32" ]
+
+        yearLine index year =
+            TrendChart.Series
+                (List.drop (modBy (List.length yearColors) index) yearColors
+                    |> List.head
+                    |> Maybe.withDefault performanceColor
+                )
+                (String.fromInt year)
+                ""
+                (Placeholder.performanceSeries selectedKpi year)
 
         chartSeries =
-            [ TrendChart.Series "#0273b2" (translateLabel language CurrentPerformance) "" series.current
-            , TrendChart.Series "#c25e00" (translateLabel language (targetLegendLabel dashboard)) "8 4" series.target
-            ]
-                ++ (case dashboard of
-                        Facility ->
-                            [ TrendChart.Series "#2f7d32" (translateLabel language InterventionSiteAverage) "2 4" series.avg ]
+            case model.trendYear of
+                AllYears ->
+                    List.indexedMap yearLine years ++ [ targetLine ]
 
-                        Program ->
-                            []
-                   )
+                Year year ->
+                    [ TrendChart.Series performanceColor
+                        (translateLabel language CurrentPerformance)
+                        ""
+                        (Placeholder.performanceSeries selectedKpi year)
+                    , targetLine
+                    ]
+                        ++ (case dashboard of
+                                Facility ->
+                                    [ TrendChart.Series "#2f7d32"
+                                        (translateLabel language InterventionSiteAverage)
+                                        "2 4"
+                                        (Placeholder.averageSeries selectedKpi year)
+                                    ]
+
+                                Program ->
+                                    []
+                           )
 
         selectId =
             "trend-kpi-" ++ dashboardSlug dashboard
@@ -441,7 +485,7 @@ viewTrends language dashboard years model kpis selectedId selectedKpi =
             , TrendChart.view
                 { xLabels = monthLabels language
                 , series = chartSeries
-                , ariaLabel = chartDescription language dashboard selectedKpi model.trendYear
+                , ariaLabel = chartDescription language dashboard years selectedKpi model.trendYear
                 }
             , viewLegend chartSeries
             ]
@@ -458,21 +502,28 @@ targetLegendLabel dashboard =
             ProgramTarget
 
 
-chartDescription : Language -> Dashboard -> Kpi -> YearSel -> String
-chartDescription language dashboard kpi selection =
+chartDescription : Language -> Dashboard -> List Int -> Kpi -> YearSel -> String
+chartDescription language dashboard years kpi selection =
     let
         kpiLabel =
             translateLabel language kpi.label
 
-        yearLabel =
-            yearSelLabel language selection
+        yearList =
+            String.join ", " (List.map String.fromInt years)
     in
-    case dashboard of
-        Facility ->
-            translateLabel language (TrendChartDescriptionFacility kpiLabel yearLabel)
+    translateLabel language <|
+        case ( selection, dashboard ) of
+            ( AllYears, Facility ) ->
+                TrendChartDescriptionAllYearsFacility kpiLabel yearList
 
-        Program ->
-            translateLabel language (TrendChartDescriptionProgram kpiLabel yearLabel)
+            ( AllYears, Program ) ->
+                TrendChartDescriptionAllYearsProgram kpiLabel yearList
+
+            ( Year year, Facility ) ->
+                TrendChartDescriptionFacility kpiLabel (String.fromInt year)
+
+            ( Year year, Program ) ->
+                TrendChartDescriptionProgram kpiLabel (String.fromInt year)
 
 
 viewYearSelector : Language -> List Int -> YearSel -> Html Msg

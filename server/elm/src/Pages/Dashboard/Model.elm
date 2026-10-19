@@ -4,11 +4,13 @@ module Pages.Dashboard.Model exposing
     , DashboardLabel(..)
     , Filter
     , FilterKey(..)
+    , FilterOption(..)
     , Kpi
     , Model
     , Msg(..)
     , Screen(..)
     , Tile
+    , TimePeriod(..)
     , Trend(..)
     , YearSel(..)
     , emptyModel
@@ -80,6 +82,7 @@ type DashboardLabel
     | ProgramTarget
     | ProgramTargetShort
     | ProphylaxisCoverage
+    | Quarter
     | Return
     | SelectKpiToPlot
     | SitesWithDelayedBirthWeightRecording
@@ -93,10 +96,13 @@ type DashboardLabel
     | TotalChildrenOnRoutineCare
     | TotalDeliveriesInstitutional
     | TotalDeliveriesProgram
+    | TrendChartDescriptionAllYearsFacility String String
+    | TrendChartDescriptionAllYearsProgram String String
     | TrendChartDescriptionFacility String String
     | TrendChartDescriptionProgram String String
     | Trends
     | ValueColumn
+    | Week
     | WomenCurrentlyInAncCare
 
 
@@ -113,9 +119,28 @@ the viewer picks another one.
 -}
 type alias Filter =
     { key : FilterKey
-    , options : List String
-    , selected : String
+    , options : List FilterOption
+    , selected : FilterOption
     }
+
+
+{-| One entry of a filter dropdown: "All", a place or site name, or a span of
+time.
+-}
+type FilterOption
+    = OptionAll
+    | OptionName String
+    | OptionPeriod TimePeriod
+
+
+{-| The spans the Time filter offers. Weeks count from the first cohort's
+enrolment date.
+-}
+type TimePeriod
+    = PeriodMonth
+    | PeriodQuarter
+    | PeriodWeek
+    | PeriodYear
 
 
 {-| An indicator block: current value, programme target and, on the Facility
@@ -163,7 +188,7 @@ type Trend
     | Up
 
 
-{-| The year the trend chart plots: one year, or the mean of all of them.
+{-| The year the trend chart plots: one year, or all of them, one line each.
 -}
 type YearSel
     = AllYears
@@ -180,7 +205,7 @@ type Screen
 
 type alias Model =
     { screen : Screen
-    , selectedFilters : Dict FilterKey String
+    , selectedFilters : Dict FilterKey FilterOption
     , trendKpi : Maybe String
     , trendYear : YearSel
     }
@@ -203,4 +228,4 @@ type Msg
     | PrintPage
     | SelectTrendKpi String
     | SelectTrendYear YearSel
-    | SetFilter FilterKey String
+    | SetFilter FilterKey FilterOption
