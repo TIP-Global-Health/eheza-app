@@ -46,7 +46,9 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — updated 2026-10-19 (#2369, #2371, #2375, #2377, #2378 merged; no backlog PR open)
+## Open right now — updated 2026-10-19 (#2369, #2371, #2375, #2377, #2378 merged; #2381 open)
+
+🔧 **PR #2381 OPEN 2026-10-19 (B-497, tier 4, issue #2380)** — Prenatal and NCD: a stored "none" diagnosis no longer reads as changed, so an undiagnosed encounter is not re-uploaded on every assessment re-run. NCD twin folded in. Review round 1 running. Worktree `/var/www/html/ihangane-wt/B-497-prenatal-none-diagnosis-resave`. ⚠ Main tree was on `2230-dashboard-data` with uncommitted work; untouched — bookkeeping via a detached `origin/develop` worktree. Counts: 277 READY — T1 0 · T2 1 · T3 66 · T4 176 · untiered 34.
 
 📌 **Merged 2026-10-19 with `--delete-branch` (user: "merge all"; no QA):** #2369 `5d82e46d6` (B-468), #2371 `944dd6530` (B-495), #2375 `c085a92e4` (B-494), #2377 `64d4554dc` + #2378 `bc92e1e83` (B-496). Issues #2368, #2370, #2374, #2376 stay open — `develop` target; close them in the release sweep. **#2128's post-deploy notes updated**: a "#2377 and #2378" block (list from a post-deploy backup, dry run, run) and #2378 folded into the closing `recalculate-stats.php` step, plus a line to make a new list and run again a few weeks later. ⏳ **B-499 MONITORING until 2026-11-24** — that second pass (needs #2128 deployed; ⚠ the replay harness that builds the list lives in session 50b2c76a's `/tmp` scratchpad and dies on reboot). ↻ 2026-10-19 (user): the FIRST list is made BEFORE the deploy from a recent live backup, ihangane only; #2128's block says so.
 
