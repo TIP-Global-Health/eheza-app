@@ -184,9 +184,9 @@ filtersFor dashboard site healthCenters =
                         |> List.sort
                         |> List.map OptionName
             in
-            [ Filter FilterSite (OptionAll :: siteOptions) OptionAll
+            [ Filter FilterLocation (OptionAll :: districtOptions) OptionAll
+            , Filter FilterSite (OptionAll :: siteOptions) OptionAll
             , timeFilter
-            , Filter FilterLocation (OptionAll :: districtOptions) OptionAll
             ]
 
 

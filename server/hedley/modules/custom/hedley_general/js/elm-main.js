@@ -45575,15 +45575,15 @@ var $author$project$Pages$Dashboard$Placeholder$filtersFor = F3(
 				[
 					A3(
 					$author$project$Pages$Dashboard$Model$Filter,
+					$author$project$Pages$Dashboard$Model$FilterLocation,
+					A2($elm$core$List$cons, $author$project$Pages$Dashboard$Model$OptionAll, districtOptions),
+					$author$project$Pages$Dashboard$Model$OptionAll),
+					A3(
+					$author$project$Pages$Dashboard$Model$Filter,
 					$author$project$Pages$Dashboard$Model$FilterSite,
 					A2($elm$core$List$cons, $author$project$Pages$Dashboard$Model$OptionAll, siteOptions),
 					$author$project$Pages$Dashboard$Model$OptionAll),
-					timeFilter,
-					A3(
-					$author$project$Pages$Dashboard$Model$Filter,
-					$author$project$Pages$Dashboard$Model$FilterLocation,
-					A2($elm$core$List$cons, $author$project$Pages$Dashboard$Model$OptionAll, districtOptions),
-					$author$project$Pages$Dashboard$Model$OptionAll)
+					timeFilter
 				]);
 		}
 	});
