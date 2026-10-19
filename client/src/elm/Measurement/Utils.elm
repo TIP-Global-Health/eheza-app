@@ -9097,6 +9097,16 @@ toNCDAValueWithDefault saved form =
 toNCDAValue : NCDAForm -> Maybe NCDAValue
 toNCDAValue form =
     let
+        -- The treatment question is asked only while the MUAC is off. An earlier
+        -- answer stays on the form, as the MUAC input fires per keystroke, but
+        -- is not saved.
+        treatedForAcuteMalnutrition =
+            if muacMeasurementIsOff form.muac then
+                form.treatedForAcuteMalnutrition
+
+            else
+                Nothing
+
         signs =
             [ ifNullableTrue AppropriateComplementaryFeeding form.appropriateComplementaryFeeding
             , ifNullableTrue BornWithBirthDefect form.bornWithBirthDefect
@@ -9123,7 +9133,7 @@ toNCDAValue form =
             , ifNullableTrue ReceivingSupport form.receivingSupport
             , ifNullableTrue SupplementsDuringPregnancy form.supplementsDuringPregnancy
             , ifNullableTrue TakenSupplementsPerGuidance form.takenSupplementsPerGuidance
-            , ifNullableTrue TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition
+            , ifNullableTrue TreatedForAcuteMalnutrition treatedForAcuteMalnutrition
             , ifNullableTrue TakingOngeraMNP form.takingOngeraMNP
             , ifNullableTrue MealsAtRecommendedTimes form.mealsAtRecommendedTimes
             , ifNullableTrue ShowsEdemaSigns form.showsEdemaSigns
