@@ -131,7 +131,7 @@ grouped by `hc`.
 | Tile | Record fields | Status |
 | --- | --- | --- |
 | Early ANC Coverage ≥80% | `visits.d`, `edd` | Data present. Same rate as Early ANC Booking. |
-| Early Ultrasound Coverage <20 weeks | `us`, `edd` | Data present. Same rate as the Facility block. |
+| Early Ultrasound Coverage <20 weeks | `us`, `edd` | Data present. Same rate as the Facility block. The spec names no threshold; the Facility target, 85%, stands in. |
 | Sites with Inadequate GWG >10% | `ind` codes `a`, `n` | Data present. Pregnancies with `n` at any visit ÷ pregnancies assessed. To confirm. |
 | Delayed or Missing Birth Weight >5% | `child.bd`, `child.bw`, `child.bwd` | Data present. Delayed means the exam came more than a day after birth, as the alert says. To confirm; the NCDA forms also carry a birth weight, copied from the health card, and are not read. |
 | Elevated Preterm or SGA Births >15% | `o`, `edd`, `child.bd`, `child.bw` | Preterm present. SGA needs the growth standard and percentile HealthyStart wants. |
@@ -142,8 +142,8 @@ the same fields.
 
 ## How the Facility dashboard counts
 
-`Pages/Dashboard/Facility.elm` works the figures out from the selected site's records. The Program
-dashboard still shows placeholder figures, and so do the Facility critical alerts.
+`Pages/Dashboard/Figures.elm` works the figures out from the selected site's records. The Facility
+critical alerts are still placeholders.
 
 The Time filter picks the period holding today, up to today. Weeks count from the first cohort
 date. Each block compares with the whole previous period of the same kind.
@@ -170,6 +170,29 @@ Miss Rate, Graduated Pairs, Lost to Follow-Up, PPH, SQLNS.
 
 The trend chart and the drill down count each calendar month the same way. Months still to come
 stay empty. Targets are placeholders.
+
+## How the Program dashboard counts
+
+The same file works the Program figures out from every site's records. The Location and
+Intervention Site filters do not apply yet; health centres carry no district.
+
+The summary tiles, coverage bars and Time filter count as on the Facility dashboard, over all sites.
+Total Deliveries (Program) counts births, live or stillborn, wherever they happened.
+
+Each block is the percentage of sites over its threshold. Only sites with a rate in the period
+count: with 3 such sites and 1 over, the block reads 33%.
+
+| Block | Rate per site | Counted when |
+| --- | --- | --- |
+| Early ANC Coverage | Early ANC Booking Rate | 80% or more |
+| Early Ultrasound Coverage | Early Ultrasound Coverage | 85% or more |
+| Inadequate GWG | Seen in the period and GWG ever assessed; `n` at any visit | Over 10% |
+| Delayed or Missing Birth Weight | Newborns born in the period; no weight, or the exam over a day after birth | Over 5% |
+| Elevated Preterm or SGA Births | Births concluded in the period; outcome preterm. SGA is not counted yet | Over 15% |
+| Poor Child Growth Outcomes | Not built; shows a dash | |
+
+The alerts name how many sites are over the delayed birth weight and the preterm thresholds in
+the period. Targets are placeholders, and the inter-site average is not shown.
 
 ## Not in the record yet
 

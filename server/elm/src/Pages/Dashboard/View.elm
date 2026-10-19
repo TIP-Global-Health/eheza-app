@@ -18,7 +18,7 @@ import List.Extra
 import Maybe.Extra
 import Pages.Components.TrendChart as TrendChart
 import Pages.Components.Utils exposing (isSyncComplete, reportTableDataToCSV, reportTablesDataToCSV, viewSyncingPlaceholder)
-import Pages.Dashboard.Facility exposing (facilityFigures)
+import Pages.Dashboard.Figures exposing (facilityFigures, programFigures)
 import Pages.Dashboard.Model
     exposing
         ( Coverage
@@ -37,7 +37,6 @@ import Pages.Dashboard.Model
         , TimePeriod(..)
         , YearSel(..)
         )
-import Pages.Dashboard.Placeholder exposing (programFigures)
 import Pages.Dashboard.Utils
     exposing
         ( dashboardSlug
@@ -115,7 +114,7 @@ viewFigures language currentDate data dashboard model =
                     facilityFigures currentDate data.firstCohortDate data.records site period
 
                 Program ->
-                    programFigures
+                    programFigures currentDate data.firstCohortDate data.records period
     in
     div [ class "ehs-dashboard mx-auto w-full max-w-[1440px] px-3 py-4 md:px-6" ]
         [ div

@@ -7,13 +7,14 @@ import Backend.Dashboard.Model
         ( ChildRecord
         , DashboardData
         , DeliveryLocation(..)
+        , PregnancyOutcome(..)
         , PregnancyRecord
         , PrenatalIndicator(..)
         , PrenatalVisit
         )
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, field, list, map, nullable, string, succeed)
+import Json.Decode exposing (Decoder, field, int, list, map, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (custom, hardcoded, optional, required)
 
 
@@ -41,6 +42,7 @@ decodePregnancyRecord =
         |> required "hc" decodeInt
         |> required "edd" (nullable decodeYYYYMMDD)
         |> required "dc" (nullable decodeYYYYMMDD)
+        |> required "o" (map (Maybe.andThen pregnancyOutcomeFromCode) (nullable string))
         |> required "ol" (map (Maybe.andThen deliveryLocationFromCode) (nullable string))
         |> required "visits" (list decodePrenatalVisit)
         |> required "us" (list decodeYYYYMMDD)
@@ -62,6 +64,28 @@ deliveryLocationFromCode code =
             Nothing
 
 
+pregnancyOutcomeFromCode : String -> Maybe PregnancyOutcome
+pregnancyOutcomeFromCode code =
+    case code of
+        "a" ->
+            Just OutcomeLiveAtTerm
+
+        "b" ->
+            Just OutcomeLivePreterm
+
+        "c" ->
+            Just OutcomeStillbirthAtTerm
+
+        "d" ->
+            Just OutcomeStillbirthPreterm
+
+        "e" ->
+            Just OutcomeAbortion
+
+        _ ->
+            Nothing
+
+
 decodePrenatalVisit : Decoder PrenatalVisit
 decodePrenatalVisit =
     succeed PrenatalVisit
@@ -73,11 +97,17 @@ decodePrenatalVisit =
 prenatalIndicatorFromCode : String -> Maybe PrenatalIndicator
 prenatalIndicatorFromCode code =
     case code of
+        "a" ->
+            Just IndicatorGwgAdequate
+
         "d" ->
             Just IndicatorAspirin
 
         "e" ->
             Just IndicatorCalcium
+
+        "n" ->
+            Just IndicatorGwgInadequate
 
         _ ->
             Nothing
@@ -86,4 +116,7 @@ prenatalIndicatorFromCode code =
 decodeChildRecord : Decoder ChildRecord
 decodeChildRecord =
     succeed ChildRecord
+        |> required "bd" (nullable decodeYYYYMMDD)
+        |> optional "bw" (nullable int) Nothing
+        |> optional "bwd" (nullable decodeYYYYMMDD) Nothing
         |> required "visits" (list (field "d" decodeYYYYMMDD))

@@ -1,6 +1,6 @@
-module Pages.Dashboard.Facility exposing (facilityFigures)
+module Pages.Dashboard.Figures exposing (facilityFigures, programFigures)
 
-{-| The Facility dashboard's figures, worked out from the pregnancy records.
+{-| The dashboards' figures, worked out from the pregnancy records.
 `docs/healthy-start-dashboards.md` says which figures HealthyStart has defined;
 the others show a dash.
 -}
@@ -9,12 +9,13 @@ import Backend.Components.Model exposing (HealthCenterId)
 import Backend.Dashboard.Model
     exposing
         ( DeliveryLocation(..)
+        , PregnancyOutcome(..)
         , PregnancyRecord
         , PrenatalIndicator(..)
         , PrenatalVisit
         )
 import Date
-import Dict
+import Dict exposing (Dict)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra
 import Maybe.Extra
@@ -23,11 +24,12 @@ import Pages.Dashboard.Model
         ( Coverage
         , DashboardLabel(..)
         , Figures
+        , Kpi
+        , KpiSeries
         , KpiUnit(..)
         , Tile
         , TimePeriod(..)
         )
-import Pages.Dashboard.Placeholder exposing (facilityAlerts)
 import Time exposing (Month(..))
 
 
@@ -39,8 +41,8 @@ type alias Span =
     }
 
 
-{-| An indicator block. `value` works it out for one site's records over a
-span, or gives Nothing when no pregnancy counts towards it.
+{-| An indicator block. `value` works it out for the records over a span, or
+gives Nothing when no pregnancy counts towards it.
 -}
 type alias Indicator =
     { id : String
@@ -52,14 +54,20 @@ type alias Indicator =
     }
 
 
+{-| A rate worked out for one site's records, and whether a value of it
+crosses the threshold the Program dashboard counts sites by.
+-}
+type alias SiteThreshold =
+    { rate : Span -> List PregnancyRecord -> Maybe Float
+    , crosses : Float -> Bool
+    }
+
+
 facilityFigures : NominalDate -> Maybe NominalDate -> List PregnancyRecord -> Maybe HealthCenterId -> TimePeriod -> Figures
 facilityFigures currentDate firstCohortDate records site period =
     let
         bySite =
-            List.foldl
-                (\record -> Dict.update record.healthCenter (Maybe.withDefault [] >> (::) record >> Just))
-                Dict.empty
-                records
+            groupBySite records
 
         siteRecords =
             Maybe.andThen (\id -> Dict.get id bySite) site
@@ -77,13 +85,69 @@ facilityFigures currentDate firstCohortDate records site period =
         span =
             currentSpan currentDate firstCohortDate period
 
-        previous =
-            previousSpan period span
+        blocks =
+            indicatorFigures currentDate span (previousSpan period span) siteRecords averageOf facilityIndicators
+    in
+    { tiles = tiles currentDate span (Tile TotalDeliveriesInstitutional) (.deliveryLocation >> (==) (Just FacilityDelivery)) siteRecords
+    , kpis = blocks.kpis
+    , coverage = coverage span siteRecords
+    , alerts = facilityAlerts
+    , series = blocks.series
+    }
 
+
+{-| The Program dashboard covers every site's records. Its alerts count the
+sites over a threshold in the Time filter's span.
+-}
+programFigures : NominalDate -> Maybe NominalDate -> List PregnancyRecord -> TimePeriod -> Figures
+programFigures currentDate firstCohortDate records period =
+    let
+        span =
+            currentSpan currentDate firstCohortDate period
+
+        blocks =
+            indicatorFigures currentDate span (previousSpan period span) records (\_ _ -> Nothing) programIndicators
+
+        alert toLabel threshold =
+            let
+                sites =
+                    List.Extra.count threshold.crosses (siteRates threshold span records)
+            in
+            if sites > 0 then
+                Just (toLabel sites)
+
+            else
+                Nothing
+    in
+    { tiles = tiles currentDate span (Tile TotalDeliveriesProgram) isBirth records
+    , kpis = blocks.kpis
+    , coverage = coverage span records
+    , alerts =
+        List.filterMap identity
+            [ alert AlertSitesWithDelayedBirthWeightRecording delayedBirthWeightThreshold
+            , alert AlertSitesWithPretermRate pretermThreshold
+            ]
+    , series = blocks.series
+    }
+
+
+{-| The indicator blocks over a span, with the change from the previous one,
+and their monthly trend lines. `averageOf` gives the inter site average.
+-}
+indicatorFigures :
+    NominalDate
+    -> Span
+    -> Span
+    -> List PregnancyRecord
+    -> (Indicator -> Span -> Maybe Float)
+    -> List Indicator
+    -> { kpis : List Kpi, series : Kpi -> KpiSeries }
+indicatorFigures currentDate span previous records averageOf indicators =
+    let
         kpiFor indicator =
             let
                 current =
-                    indicator.value span siteRecords
+                    indicator.value span records
             in
             { id = indicator.id
             , label = indicator.label
@@ -91,7 +155,7 @@ facilityFigures currentDate firstCohortDate records site period =
             , current = current
             , target = indicator.target
             , average = averageOf indicator span
-            , delta = Maybe.map2 (-) current (indicator.value previous siteRecords)
+            , delta = Maybe.map2 (-) current (indicator.value previous records)
             }
 
         series kpi =
@@ -107,17 +171,21 @@ facilityFigures currentDate firstCohortDate records site period =
                         )
                         months
             in
-            { performance = monthly (\found monthOfYear -> found.value monthOfYear siteRecords)
+            { performance = monthly (\found monthOfYear -> found.value monthOfYear records)
             , target = List.repeat 12 (Maybe.andThen .targetValue indicator)
             , average = monthly averageOf
             }
     in
-    { tiles = tiles currentDate span siteRecords
-    , kpis = List.map kpiFor indicators
-    , coverage = coverage span siteRecords
-    , alerts = facilityAlerts
+    { kpis = List.map kpiFor indicators
     , series = series
     }
+
+
+groupBySite : List PregnancyRecord -> Dict HealthCenterId (List PregnancyRecord)
+groupBySite =
+    List.foldl
+        (\record -> Dict.update record.healthCenter (Maybe.withDefault [] >> (::) record >> Just))
+        Dict.empty
 
 
 
@@ -201,8 +269,11 @@ inSpan span =
 -- SUMMARY TILES
 
 
-tiles : NominalDate -> Span -> List PregnancyRecord -> List Tile
-tiles currentDate span records =
+{-| The summary tiles. `isDelivery` picks the pregnancies concluded in the
+span that the deliveries tile counts.
+-}
+tiles : NominalDate -> Span -> (String -> Tile) -> (PregnancyRecord -> Bool) -> List PregnancyRecord -> List Tile
+tiles currentDate span deliveriesTile isDelivery records =
     let
         -- Gestational age today of the pregnancies still in care: not
         -- concluded, and under 42 weeks.
@@ -222,13 +293,7 @@ tiles currentDate span records =
             List.Extra.count isInTrimester inCare
 
         deliveries =
-            List.Extra.count
-                (\record ->
-                    record.deliveryLocation
-                        == Just FacilityDelivery
-                        && Maybe.Extra.unwrap False (inSpan span) record.dateConcluded
-                )
-                records
+            List.Extra.count (\record -> concludedIn span record && isDelivery record) records
 
         childrenOnRoutineCare =
             List.Extra.count
@@ -243,7 +308,7 @@ tiles currentDate span records =
     , Tile PregnanciesSecondTrimester (count (countInCare (\days -> days >= firstTrimesterEndDays && days < secondTrimesterEndDays)))
     , Tile PregnanciesThirdTrimester (count (countInCare (\days -> days >= secondTrimesterEndDays)))
     , Tile AncMissRate notDefined
-    , Tile TotalDeliveriesInstitutional (count deliveries)
+    , deliveriesTile (count deliveries)
     , Tile TotalChildrenOnRoutineCare (count childrenOnRoutineCare)
     , Tile GraduatedMotherChildPairs notDefined
     , Tile LostToFollowUp notDefined
@@ -261,17 +326,14 @@ notDefined =
 -- INDICATOR BLOCKS
 
 
-indicators : List Indicator
-indicators =
+facilityIndicators : List Indicator
+facilityIndicators =
     [ { id = "anc-booking"
       , label = EarlyAncBookingRate
       , unit = UnitPercent
       , target = "80%"
       , targetValue = Just 80
-      , value =
-            \span ->
-                List.filter (bookedIn span)
-                    >> rate (firstAntenatalAgeDays >> Maybe.Extra.unwrap False (\days -> days < firstTrimesterEndDays))
+      , value = earlyBookingRate
       }
     , { id = "median-ga"
       , label = MedianGaAtFirstAnc
@@ -289,22 +351,7 @@ indicators =
       , unit = UnitPercent
       , target = "85%"
       , targetValue = Just 85
-      , value =
-            \span ->
-                -- Pregnancies that reached 20 weeks in the span, while in
-                -- care, against those scanned before then.
-                List.filter
-                    (\record ->
-                        Maybe.Extra.unwrap False
-                            (\weekTwenty -> inSpan span weekTwenty && List.any (.date >> isBefore (Date.add Date.Days 1 weekTwenty)) (antenatalVisits record))
-                            (weekTwentyDate record)
-                    )
-                    >> rate
-                        (\record ->
-                            Maybe.Extra.unwrap False
-                                (\weekTwenty -> List.any (\date -> isBefore weekTwenty date) record.ultrasounds)
-                                (weekTwentyDate record)
-                        )
+      , value = earlyUltrasoundRate
       }
     , { id = "high-risk"
       , label = HighRiskPregnancyRate
@@ -327,10 +374,117 @@ indicators =
       , targetValue = Just 70
       , value =
             \span ->
-                List.filter (.dateConcluded >> Maybe.Extra.unwrap False (inSpan span))
+                List.filter (concludedIn span)
                     >> rate (antenatalVisits >> List.length >> (\visits -> visits >= 8))
       }
     ]
+
+
+{-| Each Program block is the percentage of sites, among those with a rate in
+the span, whose rate crosses the block's threshold.
+-}
+programIndicators : List Indicator
+programIndicators =
+    let
+        indicator id label target targetValue threshold =
+            { id = id
+            , label = label
+            , unit = UnitPercent
+            , target = target
+            , targetValue = Just targetValue
+            , value = \span -> siteRates threshold span >> rate threshold.crosses
+            }
+    in
+    [ indicator "anc-cov80" EarlyAncCoverageFirstTrimester "80%" 80 { rate = earlyBookingRate, crosses = \value -> value >= 80 }
+    , indicator "ultrasound-p" EarlyUltrasoundCoverage "80%" 80 { rate = earlyUltrasoundRate, crosses = \value -> value >= 85 }
+    , indicator "inadequate-gwg" SitesWithInadequateGwg "< 10%" 10 { rate = inadequateGwgRate, crosses = \value -> value > 10 }
+    , indicator "delayed-bw" SitesWithDelayedBirthWeightRecording "< 5%" 5 delayedBirthWeightThreshold
+    , indicator "preterm-sga" SitesWithElevatedPretermOrSgaBirths "< 15%" 15 pretermThreshold
+    , indicator "poor-growth" SitesWithPoorChildGrowthOutcomes "< 10%" 10 { rate = \_ _ -> Nothing, crosses = always False }
+    ]
+
+
+delayedBirthWeightThreshold : SiteThreshold
+delayedBirthWeightThreshold =
+    { rate = delayedBirthWeightRate, crosses = \value -> value > 5 }
+
+
+{-| SGA births are not counted yet, so the rate holds preterm births only.
+-}
+pretermThreshold : SiteThreshold
+pretermThreshold =
+    { rate = pretermRate, crosses = \value -> value > 15 }
+
+
+{-| The rate of every site that has one over the span.
+-}
+siteRates : SiteThreshold -> Span -> List PregnancyRecord -> List Float
+siteRates threshold span =
+    groupBySite
+        >> Dict.values
+        >> List.filterMap (threshold.rate span)
+
+
+
+-- RATES
+
+
+{-| Of the pregnancies first seen in the span, those seen under 13 weeks.
+-}
+earlyBookingRate : Span -> List PregnancyRecord -> Maybe Float
+earlyBookingRate span =
+    List.filter (bookedIn span)
+        >> rate (firstAntenatalAgeDays >> Maybe.Extra.unwrap False (\days -> days < firstTrimesterEndDays))
+
+
+{-| Of the pregnancies that reached 20 weeks in the span, while in care, those
+scanned before then.
+-}
+earlyUltrasoundRate : Span -> List PregnancyRecord -> Maybe Float
+earlyUltrasoundRate span =
+    List.filter
+        (\record ->
+            Maybe.Extra.unwrap False
+                (\weekTwenty -> inSpan span weekTwenty && List.any (.date >> isBefore (Date.add Date.Days 1 weekTwenty)) (antenatalVisits record))
+                (weekTwentyDate record)
+        )
+        >> rate
+            (\record ->
+                Maybe.Extra.unwrap False
+                    (\weekTwenty -> List.any (\date -> isBefore weekTwenty date) record.ultrasounds)
+                    (weekTwentyDate record)
+            )
+
+
+{-| Of the pregnancies seen in the span whose weight gain was ever assessed,
+those found inadequate at any visit.
+-}
+inadequateGwgRate : Span -> List PregnancyRecord -> Maybe Float
+inadequateGwgRate span =
+    List.filter (\record -> seenIn span record && (received IndicatorGwgAdequate record || received IndicatorGwgInadequate record))
+        >> rate (received IndicatorGwgInadequate)
+
+
+{-| Of the newborns born in the span, those whose birth weight is missing or
+was recorded more than a day after birth.
+-}
+delayedBirthWeightRate : Span -> List PregnancyRecord -> Maybe Float
+delayedBirthWeightRate span =
+    List.filterMap .child
+        >> List.filter (.birthDate >> Maybe.Extra.unwrap False (inSpan span))
+        >> rate
+            (\child ->
+                Maybe.map2 (\birthDate examDate -> diffDays birthDate examDate > 1) child.birthDate child.birthWeightDate
+                    |> Maybe.withDefault True
+            )
+
+
+{-| Of the births concluded in the span, live or stillborn, those preterm.
+-}
+pretermRate : Span -> List PregnancyRecord -> Maybe Float
+pretermRate span =
+    List.filter (\record -> concludedIn span record && isBirth record)
+        >> rate (.outcome >> Maybe.Extra.unwrap False (\outcome -> List.member outcome [ OutcomeLivePreterm, OutcomeStillbirthPreterm ]))
 
 
 
@@ -342,13 +496,23 @@ coverage span records =
     let
         seen =
             List.filter (seenIn span) records
-
-        received indicator =
-            .visits >> List.any (.indicators >> List.member indicator)
     in
     [ Coverage Aspirin ProphylaxisCoverage (List.filter .preEclampsiaRisk seen |> rate (received IndicatorAspirin))
     , Coverage Calcium ProphylaxisCoverage (rate (received IndicatorCalcium) seen)
     , Coverage Sqlns SupplementCoverage Nothing
+    ]
+
+
+
+-- CRITICAL ALERTS
+
+
+{-| Placeholders until the Facility alert rules are built.
+-}
+facilityAlerts : List DashboardLabel
+facilityAlerts =
+    [ AlertBirthsMissingBirthWeight 3
+    , AlertPretermRateExceeded
     ]
 
 
@@ -405,6 +569,25 @@ seenIn span =
     antenatalVisits >> List.any (.date >> inSpan span)
 
 
+concludedIn : Span -> PregnancyRecord -> Bool
+concludedIn span =
+    .dateConcluded >> Maybe.Extra.unwrap False (inSpan span)
+
+
+{-| The pregnancy ended in a birth, live or stillborn.
+-}
+isBirth : PregnancyRecord -> Bool
+isBirth =
+    .outcome >> Maybe.Extra.unwrap False ((/=) OutcomeAbortion)
+
+
+{-| A visit of the pregnancy carries the indicator.
+-}
+received : PrenatalIndicator -> PregnancyRecord -> Bool
+received indicator =
+    .visits >> List.any (.indicators >> List.member indicator)
+
+
 {-| `isBefore limit date`: the date comes before the limit.
 -}
 isBefore : NominalDate -> NominalDate -> Bool
@@ -416,15 +599,15 @@ isBefore limit date =
 -- ARITHMETIC
 
 
-{-| The percentage of pregnancies that meet a condition.
+{-| The percentage of items that meet a condition.
 -}
-rate : (PregnancyRecord -> Bool) -> List PregnancyRecord -> Maybe Float
-rate isMet cohort =
-    if List.isEmpty cohort then
+rate : (a -> Bool) -> List a -> Maybe Float
+rate isMet items =
+    if List.isEmpty items then
         Nothing
 
     else
-        Just (100 * toFloat (List.Extra.count isMet cohort) / toFloat (List.length cohort))
+        Just (100 * toFloat (List.Extra.count isMet items) / toFloat (List.length items))
 
 
 mean : List Float -> Maybe Float
