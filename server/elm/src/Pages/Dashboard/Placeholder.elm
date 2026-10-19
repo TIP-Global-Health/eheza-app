@@ -5,7 +5,6 @@ module Pages.Dashboard.Placeholder exposing
     , defaultTrendKpi
     , drillRow
     , drillYears
-    , filtersFor
     , kpisFor
     , performanceSeries
     , targetSeries
@@ -17,9 +16,6 @@ dashboards. The Time filter scopes only the summary tiles and indicator blocks;
 the trend chart follows its own Year selector.
 -}
 
-import App.Types exposing (Site)
-import AssocList as Dict
-import Backend.Components.Model exposing (HealthCenterData)
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Dashboard.Model
@@ -27,15 +23,10 @@ import Pages.Dashboard.Model
         ( Coverage
         , Dashboard(..)
         , DashboardLabel(..)
-        , Filter
-        , FilterKey(..)
-        , FilterOption(..)
         , Kpi
         , Tile
-        , TimePeriod(..)
         , Trend(..)
         )
-import Utils.GeoLocation exposing (getGeoDistricts)
 
 
 
@@ -143,50 +134,6 @@ alertsFor dashboard =
         Program ->
             [ AlertSitesWithDelayedBirthWeightRecording 6
             , AlertSitesWithPretermRate 4
-            ]
-
-
-
--- FILTERS
-
-
-{-| The filter dropdowns. Intervention Site lists the health centers this
-installation holds and Location the site's districts, independently of each
-other. None of them change the figures yet.
--}
-filtersFor : Dashboard -> Site -> List HealthCenterData -> List Filter
-filtersFor dashboard site healthCenters =
-    let
-        siteOptions =
-            List.map OptionName <|
-                if List.isEmpty healthCenters then
-                    [ "XY Health Center", "Rukara HC", "Nyamata HC", "Gahini HC" ]
-
-                else
-                    List.map .name healthCenters
-
-        timeFilter =
-            Filter FilterTime
-                (List.map OptionPeriod [ PeriodWeek, PeriodMonth, PeriodQuarter, PeriodYear ])
-                (OptionPeriod PeriodMonth)
-    in
-    case dashboard of
-        Facility ->
-            [ Filter FilterSite siteOptions (List.head siteOptions |> Maybe.withDefault OptionAll)
-            , timeFilter
-            ]
-
-        Program ->
-            let
-                districtOptions =
-                    Dict.values (getGeoDistricts site)
-                        |> List.map .name
-                        |> List.sort
-                        |> List.map OptionName
-            in
-            [ Filter FilterLocation (OptionAll :: districtOptions) OptionAll
-            , Filter FilterSite (OptionAll :: siteOptions) OptionAll
-            , timeFilter
             ]
 
 

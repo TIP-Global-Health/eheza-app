@@ -5,6 +5,7 @@ module Pages.Dashboard.Utils exposing
     , filterLabel
     , filterOptionLabel
     , filterOptionValue
+    , filtersFor
     , kpiBlockId
     , kpiById
     , monthLabels
@@ -12,8 +13,9 @@ module Pages.Dashboard.Utils exposing
     , yearSelLabel
     )
 
-import App.Types exposing (Language)
+import App.Types exposing (Language, Site)
 import AssocList as Dict
+import Backend.Components.Model exposing (HealthCenterData)
 import Pages.Dashboard.Model
     exposing
         ( Dashboard(..)
@@ -28,6 +30,7 @@ import Pages.Dashboard.Model
         )
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
+import Utils.GeoLocation exposing (getGeoDistricts)
 
 
 dashboardSlug : Dashboard -> String
@@ -87,6 +90,9 @@ filterOptionLabel language option =
         OptionAll ->
             translate language Translate.All
 
+        OptionHealthCenter healthCenter ->
+            healthCenter.name
+
         OptionName name ->
             name
 
@@ -115,6 +121,9 @@ filterOptionValue option =
         OptionAll ->
             "all"
 
+        OptionHealthCenter healthCenter ->
+            "health-center-" ++ String.fromInt healthCenter.id
+
         OptionName name ->
             "name-" ++ name
 
@@ -131,6 +140,42 @@ filterOptionValue option =
 
                 PeriodYear ->
                     "year"
+
+
+{-| The filter dropdowns. Intervention Site lists the health centers Drupal
+hands over, by name; Location lists the site's districts. The two are
+independent.
+-}
+filtersFor : Dashboard -> Site -> List HealthCenterData -> List Filter
+filtersFor dashboard site healthCenters =
+    let
+        siteOptions =
+            List.sortBy (.name >> String.toLower) healthCenters
+                |> List.map OptionHealthCenter
+
+        timeFilter =
+            Filter FilterTime
+                (List.map OptionPeriod [ PeriodWeek, PeriodMonth, PeriodQuarter, PeriodYear ])
+                (OptionPeriod PeriodMonth)
+    in
+    case dashboard of
+        Facility ->
+            [ Filter FilterSite siteOptions (List.head siteOptions |> Maybe.withDefault OptionAll)
+            , timeFilter
+            ]
+
+        Program ->
+            let
+                districtOptions =
+                    Dict.values (getGeoDistricts site)
+                        |> List.map .name
+                        |> List.sort
+                        |> List.map OptionName
+            in
+            [ Filter FilterLocation (OptionAll :: districtOptions) OptionAll
+            , Filter FilterSite (OptionAll :: siteOptions) OptionAll
+            , timeFilter
+            ]
 
 
 kpiById : List Kpi -> String -> Maybe Kpi

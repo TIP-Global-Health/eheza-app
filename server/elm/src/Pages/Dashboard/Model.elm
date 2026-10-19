@@ -22,6 +22,7 @@ the one on screen.
 -}
 
 import AssocList as Dict exposing (Dict)
+import Backend.Components.Model exposing (HealthCenterData)
 
 
 {-| Facility covers a single intervention site; Program aggregates across all
@@ -124,11 +125,12 @@ type alias Filter =
     }
 
 
-{-| One entry of a filter dropdown: "All", a place or site name, or a span of
-time.
+{-| One entry of a filter dropdown: "All", a health center, a district name, or
+a span of time.
 -}
 type FilterOption
     = OptionAll
+    | OptionHealthCenter HealthCenterData
     | OptionName String
     | OptionPeriod TimePeriod
 

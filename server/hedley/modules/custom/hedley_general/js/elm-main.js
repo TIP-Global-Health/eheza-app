@@ -45525,17 +45525,22 @@ var $author$project$Pages$Dashboard$Model$OptionPeriod = function (a) {
 };
 var $author$project$Pages$Dashboard$Model$PeriodQuarter = {$: 'PeriodQuarter'};
 var $author$project$Pages$Dashboard$Model$FilterLocation = {$: 'FilterLocation'};
-var $author$project$Pages$Dashboard$Placeholder$filtersFor = F3(
+var $author$project$Pages$Dashboard$Model$OptionHealthCenter = function (a) {
+	return {$: 'OptionHealthCenter', a: a};
+};
+var $author$project$Pages$Dashboard$Utils$filtersFor = F3(
 	function (dashboard, site, healthCenters) {
 		var siteOptions = A2(
 			$elm$core$List$map,
-			$author$project$Pages$Dashboard$Model$OptionName,
-			$elm$core$List$isEmpty(healthCenters) ? _List_fromArray(
-				['XY Health Center', 'Rukara HC', 'Nyamata HC', 'Gahini HC']) : A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.name;
-				},
+			$author$project$Pages$Dashboard$Model$OptionHealthCenter,
+			A2(
+				$elm$core$List$sortBy,
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.name;
+					},
+					$elm$core$String$toLower),
 				healthCenters));
 		var timeFilter = A3(
 			$author$project$Pages$Dashboard$Model$Filter,
@@ -46390,6 +46395,9 @@ var $author$project$Pages$Dashboard$Utils$filterOptionLabel = F2(
 		switch (option.$) {
 			case 'OptionAll':
 				return A2($author$project$Translate$translate, language, $author$project$Translate$All);
+			case 'OptionHealthCenter':
+				var healthCenter = option.a;
+				return healthCenter.name;
 			case 'OptionName':
 				var name = option.a;
 				return name;
@@ -46416,6 +46424,9 @@ var $author$project$Pages$Dashboard$Utils$filterOptionValue = function (option) 
 	switch (option.$) {
 		case 'OptionAll':
 			return 'all';
+		case 'OptionHealthCenter':
+			var healthCenter = option.a;
+			return 'health-center-' + $elm$core$String$fromInt(healthCenter.id);
 		case 'OptionName':
 			var name = option.a;
 			return 'name-' + name;
@@ -47634,7 +47645,7 @@ var $author$project$Pages$Dashboard$View$behindDrillDownAttributes = function (s
 var $author$project$Pages$Dashboard$View$viewDashboard = F5(
 	function (language, currentDate, data, dashboard, model) {
 		var coverage = $author$project$Pages$Dashboard$Placeholder$coverageFor(dashboard);
-		var filters = A3($author$project$Pages$Dashboard$Placeholder$filtersFor, dashboard, data.site, data.healthCenters);
+		var filters = A3($author$project$Pages$Dashboard$Utils$filtersFor, dashboard, data.site, data.healthCenters);
 		var years = A2($author$project$Pages$Dashboard$Placeholder$drillYears, currentDate, data.firstCohortDate);
 		var tiles = $author$project$Pages$Dashboard$Placeholder$tilesFor(dashboard);
 		var kpis = $author$project$Pages$Dashboard$Placeholder$kpisFor(dashboard);

@@ -41,6 +41,7 @@ import Pages.Dashboard.Utils
         , filterLabel
         , filterOptionLabel
         , filterOptionValue
+        , filtersFor
         , kpiBlockId
         , kpiById
         , monthLabels
@@ -64,7 +65,7 @@ viewDashboard : Language -> NominalDate -> DashboardData -> Dashboard -> Model -
 viewDashboard language currentDate data dashboard model =
     let
         filters =
-            Placeholder.filtersFor dashboard data.site data.healthCenters
+            filtersFor dashboard data.site data.healthCenters
 
         years =
             Placeholder.drillYears currentDate data.firstCohortDate
