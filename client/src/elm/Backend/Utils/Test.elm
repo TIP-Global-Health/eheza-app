@@ -80,36 +80,54 @@ count as changed.
 storedDiagnosesEqualTests : Test
 storedDiagnosesEqualTests =
     let
-        encounterJson diagnosesField diagnoses =
-            """{"individual_participant":"p1","scheduled_date":{"value":"2026-10-01"},"prenatal_encounter_type":"nurse","deleted":false,\"""" ++ diagnosesField ++ "\":" ++ diagnoses ++ "}"
+        encounterJson fields =
+            """{"individual_participant":"p1","scheduled_date":{"value":"2026-10-01"},"deleted":false""" ++ fields ++ "}"
 
-        storedPrenatal diagnoses =
-            decodeString decodePrenatalEncounter (encounterJson "prenatal_diagnoses" diagnoses)
-                |> Result.map .diagnoses
+        -- Nothing leaves the diagnoses field out of the stored encounter.
+        diagnosesField name =
+            Maybe.map (\diagnoses -> ",\"" ++ name ++ "\":" ++ diagnoses)
+                >> Maybe.withDefault ""
 
-        storedNCD diagnoses =
-            decodeString decodeNCDEncounter (encounterJson "ncd_diagnoses" diagnoses)
-                |> Result.map .diagnoses
+        prenatalEqual stored generated =
+            decodeString decodePrenatalEncounter
+                (encounterJson (",\"prenatal_encounter_type\":\"nurse\"" ++ diagnosesField "prenatal_diagnoses" stored))
+                |> Result.map (\encounter -> storedDiagnosesEqual NoPrenatalDiagnosis encounter.diagnoses generated)
+
+        ncdEqual stored generated =
+            decodeString decodeNCDEncounter (encounterJson (diagnosesField "ncd_diagnoses" stored))
+                |> Result.map (\encounter -> storedDiagnosesEqual NoNCDDiagnosis encounter.diagnoses generated)
     in
     describe "storedDiagnosesEqual"
         [ test "prenatal: stored none equals no generated diagnoses" <|
             \_ ->
-                storedPrenatal "[\"none\"]"
-                    |> Result.map (\stored -> storedDiagnosesEqual NoPrenatalDiagnosis stored EverySet.empty)
+                prenatalEqual (Just "[\"none\"]") EverySet.empty
+                    |> Expect.equal (Ok True)
+        , test "prenatal: stored empty list equals no generated diagnoses" <|
+            \_ ->
+                prenatalEqual (Just "[]") EverySet.empty
+                    |> Expect.equal (Ok True)
+        , test "prenatal: stored without the field equals no generated diagnoses" <|
+            \_ ->
+                prenatalEqual Nothing EverySet.empty
                     |> Expect.equal (Ok True)
         , test "prenatal: stored none differs from a generated diagnosis" <|
             \_ ->
-                storedPrenatal "[\"none\"]"
-                    |> Result.map (\stored -> storedDiagnosesEqual NoPrenatalDiagnosis stored (EverySet.singleton DiagnosisChronicHypertensionImmediate))
+                prenatalEqual (Just "[\"none\"]") (EverySet.singleton DiagnosisChronicHypertensionImmediate)
                     |> Expect.equal (Ok False)
         , test "prenatal: a stored diagnosis differs from no generated diagnoses" <|
             \_ ->
-                storedPrenatal "[\"chronic-hypertension-immediate\"]"
-                    |> Result.map (\stored -> storedDiagnosesEqual NoPrenatalDiagnosis stored EverySet.empty)
+                prenatalEqual (Just "[\"chronic-hypertension-immediate\"]") EverySet.empty
                     |> Expect.equal (Ok False)
+        , test "the order of the two sets does not matter" <|
+            \_ ->
+                storedDiagnosesEqual NoPrenatalDiagnosis EverySet.empty (EverySet.singleton NoPrenatalDiagnosis)
+                    |> Expect.equal True
         , test "NCD: stored none equals no generated diagnoses" <|
             \_ ->
-                storedNCD "[\"none\"]"
-                    |> Result.map (\stored -> storedDiagnosesEqual NoNCDDiagnosis stored EverySet.empty)
+                ncdEqual (Just "[\"none\"]") EverySet.empty
                     |> Expect.equal (Ok True)
+        , test "NCD: a stored diagnosis differs from no generated diagnoses" <|
+            \_ ->
+                ncdEqual (Just "[\"renal-complications\"]") EverySet.empty
+                    |> Expect.equal (Ok False)
         ]

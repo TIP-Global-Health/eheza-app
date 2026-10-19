@@ -362,11 +362,11 @@ everySetsEqual set1 set2 =
 
 
 {-| An encounter without diagnoses is stored as "none", which is never
-generated, so "none" is ignored. Stored {none} equals generated {}.
+generated, so "none" is ignored on both sides. Stored {none} equals generated {}.
 -}
 storedDiagnosesEqual : a -> EverySet a -> EverySet a -> Bool
-storedDiagnosesEqual noDiagnosis stored generated =
-    everySetsEqual (EverySet.remove noDiagnosis stored) generated
+storedDiagnosesEqual noDiagnosis set1 set2 =
+    everySetsEqual (EverySet.remove noDiagnosis set1) (EverySet.remove noDiagnosis set2)
 
 
 
