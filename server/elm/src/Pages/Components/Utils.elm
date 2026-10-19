@@ -18,11 +18,12 @@ import Pages.Reports.Utils exposing (csvRow)
 import Translate exposing (translate)
 
 
-{-| Health centers in the order every health center list shows them.
+{-| Health centers in the order every health center list shows them:
+alphabetical, ignoring case, so "abaco" sorts before "ACHI".
 -}
 healthCentersByName : List HealthCenterData -> List HealthCenterData
 healthCentersByName =
-    List.sortBy .name
+    List.sortBy (.name >> String.toLower)
 
 
 populationSelectionOptionToString : PopulationSelectionOption -> String

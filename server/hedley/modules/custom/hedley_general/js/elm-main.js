@@ -45020,9 +45020,12 @@ var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
 			[provinceInput, districtInput, sectorInput, cellInput, villageInput]);
 	});
 var $author$project$Pages$Components$Utils$healthCentersByName = $elm$core$List$sortBy(
-	function ($) {
-		return $.name;
-	});
+	A2(
+		$elm$core$Basics$composeR,
+		function ($) {
+			return $.name;
+		},
+		$elm$core$String$toLower));
 var $author$project$Pages$Components$View$viewHealthCenterSelection = F6(
 	function (language, data, urlPrefix, selectedHealthCenter, setHealthCenterMsg, selectionMadeMsg) {
 		var options = A2(
