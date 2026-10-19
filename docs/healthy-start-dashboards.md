@@ -91,7 +91,7 @@ the data and whether HealthyStart has defined the figure.
 | Tile | Record fields | Status |
 | --- | --- | --- |
 | Women Currently in ANC Care | `dc`, `edd` | Data present. Cutoff for pregnancies never concluded is undefined. |
-| Pregnancies 1st / 2nd / 3rd trimester | `edd`, `dc` | Data present. First trimester boundary (under 13 or under 14 weeks) is unconfirmed. |
+| Pregnancies 1st / 2nd / 3rd trimester | `edd`, `dc` | Data present. The app's boundaries: first trimester under 13 weeks, second under 28. |
 | ANC Miss Rate | `visits.d`, `visits.n`, `edd` | Data present. Definition of a missed visit is open. |
 | Total Deliveries (Institutional) | `dc`, `ol` | Data present. Facility delivery location in the selected period. |
 | Total Children on Routine Care | `child.visits` | Data present. Definition is open. |
@@ -108,7 +108,7 @@ posted on #2231.
 
 | Figure | Formula | Record fields | Status |
 | --- | --- | --- | --- |
-| Early ANC Booking Rate | First visit under 14 weeks ÷ ANC clients | `visits.d`, `edd` | Data present. Cutoff under 14 weeks per spec; the app's first trimester ends at 13. Any visit type counts as first ANC. |
+| Early ANC Booking Rate | First visit in the first trimester ÷ ANC clients | `visits.d`, `edd` | Data present. The app's first trimester, under 13 weeks, decided on 19 October 2026; the spec said under 14. Any visit type counts as first ANC. |
 | Median GA at First ANC | Median gestational age at first visit | `visits.d`, `edd` | Data present. |
 | Early Ultrasound Coverage | Ultrasound under 20 weeks ÷ eligible pregnancies | `us`, `edd` | Data present. "Eligible pregnancies" is undefined. |
 | High-Risk Pregnancy Rate | High-risk ÷ total pregnancies | `risks` | Data present. The NCD list and the C-section sources above are our reading; to confirm. |
