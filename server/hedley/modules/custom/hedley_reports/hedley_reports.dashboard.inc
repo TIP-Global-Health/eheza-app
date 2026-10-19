@@ -181,24 +181,23 @@ function hedley_reports_dashboard_pregnancies_for_node($node) {
     return empty($child_nid) ? [] : hedley_reports_dashboard_pregnancies_by_newborn($child_nid);
   }
 
-  if ($node->type == HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE) {
-    $child_nid = hedley_reports_dashboard_field_value($node, 'field_person', 'target_id');
-
-    return $child_nid ? hedley_reports_dashboard_pregnancies_by_newborn($child_nid) : [];
-  }
-
-  if ($node->type == HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE) {
-    // Attendance is the most numerous synced content; a save that keeps the
-    // attended flag and date costs nothing.
-    if (!empty($node->original)) {
-      $unchanged = TRUE;
-      foreach (['field_attended', 'field_date_measured', 'field_deleted'] as $field_name) {
-        $unchanged = $unchanged
-          && hedley_reports_dashboard_field_value($node, $field_name) == hedley_reports_dashboard_field_value($node->original, $field_name);
-      }
-      if ($unchanged) {
-        return [];
-      }
+  // Content on the child itself; a save that keeps the fields read costs
+  // nothing. Attendance is the most numerous synced content.
+  $child_fields = [
+    HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE => [
+      'field_attended',
+      'field_date_measured',
+      'field_deleted',
+    ],
+    HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE => [
+      'field_weight',
+      'field_date_measured',
+      'field_deleted',
+    ],
+  ];
+  if (isset($child_fields[$node->type])) {
+    if (hedley_reports_dashboard_fields_unchanged($node, $child_fields[$node->type])) {
+      return [];
     }
     $child_nid = hedley_reports_dashboard_field_value($node, 'field_person', 'target_id');
 
@@ -206,6 +205,30 @@ function hedley_reports_dashboard_pregnancies_for_node($node) {
   }
 
   return [];
+}
+
+/**
+ * Checks whether a save kept the first value of each listed field.
+ *
+ * @param object $node
+ *   The saved node, with its "original" when it is an update.
+ * @param array $field_names
+ *   The fields to compare.
+ *
+ * @return bool
+ *   TRUE on an update that changed none of them.
+ */
+function hedley_reports_dashboard_fields_unchanged($node, array $field_names) {
+  if (empty($node->original)) {
+    return FALSE;
+  }
+  foreach ($field_names as $field_name) {
+    if (hedley_reports_dashboard_field_value($node, $field_name) != hedley_reports_dashboard_field_value($node->original, $field_name)) {
+      return FALSE;
+    }
+  }
+
+  return TRUE;
 }
 
 /**
@@ -289,7 +312,8 @@ function hedley_reports_calculate_dashboard_data_worker($queue_item) {
  * @param object $participant
  *   The antenatal individual participant node.
  * @param bool $exclude_set
- *   When TRUE, a pregnancy that already has a record is left as it is.
+ *   When TRUE, a pregnancy whose record is of the current version is left
+ *   as it is.
  *
  * @return bool
  *   TRUE when a record was written.
@@ -299,7 +323,7 @@ function hedley_reports_generate_dashboard_data_for_pregnancy($participant, $exc
     return FALSE;
   }
 
-  if ($exclude_set && hedley_reports_dashboard_field_value($participant, 'field_reports_data')) {
+  if ($exclude_set && hedley_reports_dashboard_record_is_current($participant)) {
     return FALSE;
   }
 
@@ -314,6 +338,22 @@ function hedley_reports_generate_dashboard_data_for_pregnancy($participant, $exc
   entity_get_controller('node')->resetCache([$fresh->nid]);
 
   return TRUE;
+}
+
+/**
+ * Checks whether a pregnancy holds a record of the current format version.
+ *
+ * @param object $participant
+ *   The individual participant node.
+ *
+ * @return bool
+ *   TRUE when nothing needs rewriting after a format change.
+ */
+function hedley_reports_dashboard_record_is_current($participant) {
+  $existing = hedley_reports_dashboard_field_value($participant, 'field_reports_data');
+  $decoded = $existing ? json_decode($existing, TRUE) : NULL;
+
+  return !empty($decoded['v']) && $decoded['v'] == HEDLEY_REPORTS_DASHBOARD_DATA_VERSION;
 }
 
 /**
@@ -486,7 +526,7 @@ function hedley_reports_dashboard_encounter_indicators($encounter, array $measur
   if (in_array('adequate-gwg', $encounter_indicators)) {
     $indicators[] = 'gwg';
   }
-  elseif (in_array('inadequate-gwg', $encounter_indicators)) {
+  if (in_array('inadequate-gwg', $encounter_indicators)) {
     $indicators[] = 'gwg-inadequate';
   }
 
@@ -674,7 +714,7 @@ function hedley_reports_dashboard_child_record($child_nid) {
     'visits' => [],
   ];
 
-  // Birth weight in grams, from the earliest pregnancy summary that has one.
+  // Birth weight in grams, from the earliest newborn exam that has one.
   $summaries_ids = hedley_general_get_person_measurements($child->nid, [HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE]);
   foreach (node_load_multiple($summaries_ids) as $summary) {
     $weight = hedley_reports_dashboard_field_value($summary, 'field_weight');

@@ -7,8 +7,8 @@
  * Execution: drush scr
  *   profiles/hedley/modules/custom/hedley_reports/scripts/dashboard-generate-pregnancy-data.php.
  *
- * Options: --nid, --batch, --exclude_set=1 (skip pregnancies with a record),
- * --open=1 (unconcluded only), --memory_limit.
+ * Options: --nid, --batch, --exclude_set=1 (skip pregnancies whose record is
+ * of the current version), --open=1 (unconcluded only), --memory_limit.
  */
 
 if (!drupal_is_cli()) {
@@ -40,7 +40,11 @@ if ($first_cohort) {
 
 if ($exclude_set) {
   $base_query->leftJoin('field_data_field_reports_data', 'rd', "rd.entity_id = n.nid AND rd.entity_type = 'node' AND rd.deleted = 0");
-  $base_query->isNull('rd.field_reports_data_value');
+  // A record starts with its version, so older ones are told by prefix.
+  $current = db_or()
+    ->isNull('rd.field_reports_data_value')
+    ->condition('rd.field_reports_data_value', db_like('{"v":' . HEDLEY_REPORTS_DASHBOARD_DATA_VERSION . ',') . '%', 'NOT LIKE');
+  $base_query->condition($current);
 }
 
 if ($open_only) {
