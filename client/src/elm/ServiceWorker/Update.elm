@@ -80,7 +80,7 @@ handleIncomingMsg currentTime msg model =
             ( model
             , Cmd.none
             , [ data
-                    |> Backend.Model.HandleRevisions
+                    |> Backend.Model.HandleRevisions Backend.Model.RevisionsFromLocalSave
                     |> App.Model.MsgIndexedDb
               ]
             )

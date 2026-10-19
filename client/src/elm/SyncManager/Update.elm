@@ -70,7 +70,7 @@ update currentTime activePage dbVersion device msg model =
 
         handleNewRevisionsMsg toRevisionFunc backendEntities =
             List.map toRevisionFunc backendEntities
-                |> Backend.Model.HandleRevisions
+                |> Backend.Model.HandleRevisions Backend.Model.RevisionsFromSyncDownload
                 |> App.Model.MsgIndexedDb
 
         requestTimestamp =

@@ -50,7 +50,7 @@ import Backend.Measurement.Utils
         , splitMotherMeasurements
         , testPerformedByExecutionNote
         )
-import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..))
+import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..), RevisionsOrigin(..))
 import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model
 import Backend.NCDEncounter.Update
@@ -165,11 +165,10 @@ updateIndexedDb :
     -> Bool
     -> Bool
     -> Page
-    -> SyncManager.Model.Model
     -> MsgIndexedDb
     -> ModelIndexedDb
     -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb language currentDate currentTime coordinates zscores site features nurseId healthCenterId villageId isChw isLabTech activePage syncManager msg model =
+updateIndexedDb language currentDate currentTime coordinates zscores site features nurseId healthCenterId villageId isChw isLabTech activePage msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -341,7 +340,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         isChw
                         isLabTech
                         activePage
-                        syncManager
                     )
                     extraMsgs
 
@@ -1678,7 +1676,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         isChw
                         isLabTech
                         activePage
-                        syncManager
                     )
                     [ HandleFetchedPeople data ]
 
@@ -2049,18 +2046,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , []
             )
 
-        HandleRevisions revisions ->
+        HandleRevisions origin revisions ->
             let
-                downloadingContent =
-                    case syncManager.syncStatus of
-                        SyncManager.Model.SyncDownloadGeneral _ ->
-                            True
-
-                        SyncManager.Model.SyncDownloadAuthority _ ->
-                            True
-
-                        _ ->
+                downloadedContent =
+                    case origin of
+                        RevisionsFromLocalSave ->
                             False
+
+                        RevisionsFromSyncDownload ->
+                            True
 
                 processRevisionAndDiagnoseAcuteIllness participantId encounterId =
                     let
@@ -2545,7 +2539,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     , []
                     )
             in
-            if downloadingContent then
+            if downloadedContent then
                 processRevisions
 
             else
@@ -4369,7 +4363,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             isChw
                             isLabTech
                             activePage
-                            syncManager
                         )
                         extraMsgs
 
@@ -4608,7 +4601,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         isChw
                         isLabTech
                         activePage
-                        syncManager
                     )
                     extraMsgs
 
@@ -5275,6 +5267,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             else
                 Dict.insert uuid data
 
+        -- A loaded list of the participant's encounters takes the revised one
+        -- in place, as a refetch would. A list not loaded yet is fetched again.
+        participantEncountersActionConsideringDeletedField uuid data =
+            Dict.update data.participant
+                (Maybe.andThen
+                    (RemoteData.toMaybe
+                        >> Maybe.map (measurementActionConsideringDeletedField uuid data >> Success)
+                    )
+                )
+
         familyMeasurementActionConsideringDeletedField uuid data =
             if data.deleted then
                 Dict.remove data.participantId
@@ -5357,7 +5359,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.acuteIllnessEncounters
 
                 acuteIllnessEncountersByParticipant =
-                    Dict.remove data.participant model.acuteIllnessEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.acuteIllnessEncountersByParticipant
             in
             ( { model
                 | acuteIllnessEncounters = acuteIllnessEncounters
@@ -5603,7 +5605,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.childScoreboardEncounters
 
                 childScoreboardEncountersByParticipant =
-                    Dict.remove data.participant model.childScoreboardEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.childScoreboardEncountersByParticipant
             in
             ( { model
                 | childScoreboardEncounters = childScoreboardEncounters
@@ -5939,7 +5941,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.familyNutritionEncounters
 
                 familyNutritionEncountersByParticipant =
-                    Dict.remove data.participant model.familyNutritionEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.familyNutritionEncountersByParticipant
             in
             ( { model
                 | familyNutritionEncounters = familyNutritionEncounters
@@ -6102,7 +6104,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.hivEncounters
 
                 hivEncountersByParticipant =
-                    Dict.remove data.participant model.hivEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.hivEncountersByParticipant
             in
             ( { model
                 | hivEncounters = hivEncounters
@@ -6226,7 +6228,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.homeVisitEncounters
 
                 homeVisitEncountersByParticipant =
-                    Dict.remove data.participant model.homeVisitEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.homeVisitEncountersByParticipant
             in
             ( { model
                 | homeVisitEncounters = homeVisitEncounters
@@ -6467,7 +6469,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.ncdEncounters
 
                 ncdEncountersByParticipant =
-                    Dict.remove data.participant model.ncdEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.ncdEncountersByParticipant
             in
             ( { model
                 | ncdEncounters = ncdEncounters
@@ -6833,7 +6835,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.nutritionEncounters
 
                 nutritionEncountersByParticipant =
-                    Dict.remove data.participant model.nutritionEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.nutritionEncountersByParticipant
             in
             ( { model
                 | nutritionEncounters = nutritionEncounters
@@ -7236,7 +7238,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.prenatalEncounters
 
                 prenatalEncountersByParticipant =
-                    Dict.remove data.participant model.prenatalEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.prenatalEncountersByParticipant
             in
             ( { model
                 | prenatalEncounters = prenatalEncounters
@@ -8019,7 +8021,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.tuberculosisEncounters
 
                 tuberculosisEncountersByParticipant =
-                    Dict.remove data.participant model.tuberculosisEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.tuberculosisEncountersByParticipant
             in
             ( { model
                 | tuberculosisEncounters = tuberculosisEncounters
@@ -8296,7 +8298,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.wellChildEncounters
 
                 wellChildEncountersByParticipant =
-                    Dict.remove data.participant model.wellChildEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.wellChildEncountersByParticipant
             in
             ( { model
                 | wellChildEncounters = wellChildEncounters
