@@ -10,8 +10,9 @@ what is still undefined.
 
 1. Every antenatal pregnancy (`individual_participant` node) holds one JSON record in
    `field_reports_data`, described below.
-2. An AdvancedQueue item rewrites the record when the pregnancy, one of its prenatal encounters, or
-   its newborn's routine care changes. Jenkins drains the queue every ten minutes.
+2. An AdvancedQueue item rewrites the record when the pregnancy, a prenatal encounter or
+   measurement, the mother, or the newborn and its routine care change. Jenkins drains it every
+   ten minutes.
 3. The Elm app loads all records in batches from `/api/reports-data` with `app_type = dashboard`,
    then filters by site, location and period on the client. Nothing is precomputed per filter.
 
@@ -34,11 +35,14 @@ Dates are `YYYY-MM-DD`. A missing value is `null`.
 | `id` | Pregnancy node id. |
 | `hc` | Health center node id, from the pregnancy's shard. |
 | `created` | Registration date. |
+| `mbd` | Mother's birth date. |
 | `edd` | Expected delivery date. LMP is 280 days before it. |
 | `dc` | Conclusion date. |
 | `o` | Outcome: `a` live at term, `b` live preterm, `c` stillbirth at term, `d` stillbirth preterm, `e` abortion. |
 | `ol` | Delivery location: `f` facility, `h` home. |
 | `visits` | Prenatal encounters, earliest first. |
+| `us` | Dates of ultrasound examinations, earliest first. |
+| `risks` | High-risk criteria met, see below. Empty when none. |
 | `child` | The newborn registered on the pregnancy, or `null`. |
 
 Each entry of `visits`:
@@ -48,6 +52,27 @@ Each entry of `visits`:
 | `d` | Encounter date. |
 | `t` | Encounter type: `nurse`, `nurse-postpartum`, `chw-1`, `chw-2`, `chw-3`, `chw-postpartum`. |
 | `n` | Next visit date the encounter set, if any. |
+| `dx` | Diagnosis codes, current and past, as `hedley_reports_prenatal_diagnosis_mapping()` assigns them. |
+| `ind` | Indicator codes as `hedley_reports_prenatal_indicator_mapping()` assigns them: `a` adequate GWG, `b` MMS, `c` ultrasound referral, `d` aspirin, `e` calcium. |
+
+Aspirin, calcium and MMS count when the measurement says "administered today". Aspirin also counts
+when the medication distribution prescribed it.
+
+The `risks` codes, HealthyStart's list of 18 October 2026, and what raises each:
+
+| Code | Criterion | Raised by |
+| --- | --- | --- |
+| `pe` | Risk of pre-eclampsia | Diagnoses `m2` or `n2`, the ones that start low-dose aspirin. |
+| `anemia` | Severe anaemia, Hb under 7 | Diagnoses `q`, `s` or `t`. |
+| `diabetes` | Pre-existing diabetes, or glucose over 11 mmol/L | Diagnoses `t1` or `u1`, from the app's glucose rule. |
+| `malaria` | Confirmed malaria | Diagnoses `o`, `p` or `q`. |
+| `csection` | Prior caesarean section | A C-section count in obstetric history, or a scar in the obstetrical exam. |
+| `ncd` | Pre-existing NCD or heart disease | Chronic hypertension diagnosed, or asthma, cardiac, renal, hypertension or diabetes in the medical history. |
+| `age` | Under 18 or over 40 | Mother's age at the first visit, or at registration without visits. |
+| `hiv` | Known HIV infection | Positive HIV status on the person, HIV in the medical history, a positive test, or diagnoses `h`, `i`. |
+| `underweight` | BMI under 17.5 or MUAC under 21 cm | Any prenatal nutrition measurement. |
+
+"Complex health conditions" has no field behind it and is left out, as agreed on #2231.
 
 The `child` object:
 
@@ -76,21 +101,34 @@ the data and whether HealthyStart has defined the figure.
 Cross-cutting questions still open: what Week, Month, Quarter and Year select exactly, and
 whether a pregnancy is in the cohort by registration date or by an explicit flag.
 
+## What the indicator blocks and coverage bars need
+
+The six KPI blocks of the Facility dashboard and the three coverage bars. Formulas are the spec's,
+posted on #2231.
+
+| Figure | Formula | Record fields | Status |
+| --- | --- | --- | --- |
+| Early ANC Booking Rate | First visit under 14 weeks ÷ ANC clients | `visits.d`, `edd` | Data present. Cutoff under 14 weeks per spec; the app's first trimester ends at 13. Any visit type counts as first ANC. |
+| Median GA at First ANC | Median gestational age at first visit | `visits.d`, `edd` | Data present. |
+| Early Ultrasound Coverage | Ultrasound under 20 weeks ÷ eligible pregnancies | `us`, `edd` | Data present. "Eligible pregnancies" is undefined. |
+| High-Risk Pregnancy Rate | High-risk ÷ total pregnancies | `risks` | Data present. The NCD list and the C-section sources above are our reading; to confirm. |
+| Postpartum Hemorrhage Rate | PPH cases ÷ deliveries | none | Not captured by the app. Parked by HealthyStart. |
+| Complete ANC Attendance Rate | 8 or more visits ÷ eligible women | `visits` | Data present. "Eligible women" is undefined; likely concluded pregnancies. |
+| Aspirin coverage | Received aspirin ÷ eligible women | `ind` code `d`, `risks` code `pe` | Data present. Eligible means the pre-eclampsia risk, as proposed on #2235. |
+| Calcium coverage | Received calcium ÷ women in ANC care | `ind` code `e` | Data present. |
+| SQLNS coverage | Children receiving SQLNS ÷ children on routine care | none | Later, with the nutrition figures. |
+
+Each block also shows the program target and the inter-site average. The inter-site average is
+the mean over the other sites' records. Targets have no source yet; placeholders meanwhile.
+
 ## Not in the record yet
 
-Needed by the indicator blocks, coverage bars, threshold tiles and alerts. Each is added to the
-record, with a trigger for its content type, when its figure is built.
+Needed by the threshold tiles and alerts. Each is added to the record, with a trigger for its
+content type, when its figure is built.
 
 | Figure | Source content |
 | --- | --- |
-| Early ANC booking, median GA at first ANC | `visits.d` and `edd` already suffice. |
-| Early ultrasound coverage | `prenatal_ultrasound` measurement date. |
-| High-risk pregnancy | Diagnoses, hemoglobin, blood sugar, medical history, obstetric history, nutrition, HIV, mother's birth date. |
-| Postpartum hemorrhage | Not captured by the app yet. |
-| Complete ANC attendance | `visits` already suffice. |
-| Aspirin and calcium coverage | `prenatal_aspirin`, `prenatal_calcium`; eligibility rule. |
 | SQLNS coverage | `well_child_feeding`, `nutrition_feeding` supplement type. |
-| Inadequate GWG | `field_prenatal_indicators` on the encounter. |
 | Birth weight recording, SGA | `well_child_pregnancy_summary` weight and its measurement date. |
 | Child growth outcomes | Z-scores on `well_child_weight` and `well_child_height`. |
 
@@ -99,7 +137,8 @@ record, with a trigger for its content type, when its figure is built.
 1. Add the field in `hedley_reports_dashboard_pregnancy_record()` or
    `hedley_reports_dashboard_child_record()`.
 2. If a new content type feeds it, resolve that type to its pregnancy in
-   `hedley_reports_dashboard_pregnancies_for_node()`.
+   `hedley_reports_dashboard_pregnancies_for_node()`. A prenatal measurement already resolves
+   through its encounter; add its bundle to `hedley_reports_dashboard_measurement_bundles()`.
 3. Bump `HEDLEY_REPORTS_DASHBOARD_DATA_VERSION`.
 4. Decode the field in the Elm app, treating records of an older version as missing it.
 5. Rerun the script below on every HealthyStart site, without `--exclude_set`.

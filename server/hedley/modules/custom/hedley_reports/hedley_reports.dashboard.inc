@@ -16,7 +16,7 @@ define('HEDLEY_REPORTS_CALCULATE_DASHBOARD_DATA', 'hedley_reports_calculate_dash
 /**
  * Format version carried by every record, so a decoder can skip old shapes.
  */
-define('HEDLEY_REPORTS_DASHBOARD_DATA_VERSION', 1);
+define('HEDLEY_REPORTS_DASHBOARD_DATA_VERSION', 2);
 
 /**
  * Checks whether dashboard records are maintained on this installation.
@@ -54,6 +54,28 @@ function hedley_reports_dashboard_child_visit_types() {
 }
 
 /**
+ * Measurement bundles the record reads, keyed by their prenatal encounter.
+ *
+ * @return array
+ *   Content type names.
+ */
+function hedley_reports_dashboard_measurement_bundles() {
+  return [
+    'medical_history',
+    'obstetrical_exam',
+    'prenatal_hiv_test',
+    'prenatal_ultrasound',
+    HEDLEY_ACTIVITY_PRENATAL_ASPIRIN_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PRENATAL_CALCIUM_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PRENATAL_MEDICATION_DISTRIBUTION_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PRENATAL_MMS_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PRENATAL_NUTRITION_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_STEP2_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PRENATAL_REFERRAL_CONTENT_TYPE,
+  ];
+}
+
+/**
  * Checks whether a pregnancy belongs to the HealthyStart cohort.
  *
  * Antenatal, and registered on or after the first cohort date. Without that
@@ -70,10 +92,7 @@ function hedley_reports_dashboard_pregnancy_in_cohort($participant) {
     return FALSE;
   }
 
-  $encounter_type = !empty($participant->field_encounter_type[LANGUAGE_NONE][0]['value'])
-    ? $participant->field_encounter_type[LANGUAGE_NONE][0]['value']
-    : '';
-  if ($encounter_type != HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE) {
+  if (hedley_reports_dashboard_field_value($participant, 'field_encounter_type') != HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE) {
     return FALSE;
   }
 
@@ -104,6 +123,9 @@ function hedley_reports_dashboard_pregnancies_by_newborn($child_nid) {
 /**
  * Resolves which pregnancies a saved node changes the record of.
  *
+ * A person may be a mother or a newborn. A node pointing at a prenatal
+ * encounter is a measurement.
+ *
  * @param object $node
  *   The node that was saved.
  *
@@ -121,20 +143,31 @@ function hedley_reports_dashboard_pregnancies_for_node($node) {
   }
 
   if ($node->type == 'person') {
-    return hedley_reports_dashboard_pregnancies_by_newborn($node->nid);
+    return array_merge(
+      hedley_person_individual_participants_for_person($node->nid, [HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE]),
+      hedley_reports_dashboard_pregnancies_by_newborn($node->nid)
+    );
   }
 
   if ($node->type == HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE) {
-    return empty($node->field_individual_participant[LANGUAGE_NONE][0]['target_id'])
-      ? []
-      : [$node->field_individual_participant[LANGUAGE_NONE][0]['target_id']];
+    $participant_id = hedley_reports_dashboard_field_value($node, 'field_individual_participant', 'target_id');
+
+    return $participant_id ? [$participant_id] : [];
+  }
+
+  $encounter_id = hedley_reports_dashboard_field_value($node, 'field_prenatal_encounter', 'target_id');
+  if ($encounter_id) {
+    $encounter = node_load($encounter_id);
+
+    return $encounter ? hedley_reports_dashboard_pregnancies_for_node($encounter) : [];
   }
 
   if (in_array($node->type, $child_visit_bundles)) {
-    if (empty($node->field_individual_participant[LANGUAGE_NONE][0]['target_id'])) {
+    $participant_id = hedley_reports_dashboard_field_value($node, 'field_individual_participant', 'target_id');
+    if (!$participant_id) {
       return [];
     }
-    $wrapper = entity_metadata_wrapper('node', $node->field_individual_participant[LANGUAGE_NONE][0]['target_id']);
+    $wrapper = entity_metadata_wrapper('node', $participant_id);
     $child_nid = $wrapper->field_person->value(['identifier' => TRUE]);
 
     return empty($child_nid) ? [] : hedley_reports_dashboard_pregnancies_by_newborn($child_nid);
@@ -196,12 +229,13 @@ function hedley_reports_calculate_dashboard_data_worker($queue_item) {
   }
 
   $params = ['@nid' => $participant_id];
+  $result = $written
+    ? t('Dashboard data has been calculated for pregnancy ID: @nid', $params)
+    : t('Pregnancy ID: @nid is outside the HealthyStart cohort.', $params);
 
   return [
     'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
-    'result' => $written
-    ? t('Dashboard data has been calculated for pregnancy ID: @nid', $params)
-    : t('Pregnancy ID: @nid is outside the HealthyStart cohort.', $params),
+    'result' => $result,
   ];
 }
 
@@ -224,7 +258,7 @@ function hedley_reports_generate_dashboard_data_for_pregnancy($participant, $exc
     return FALSE;
   }
 
-  if ($exclude_set && !empty($participant->field_reports_data[LANGUAGE_NONE][0]['value'])) {
+  if ($exclude_set && hedley_reports_dashboard_field_value($participant, 'field_reports_data')) {
     return FALSE;
   }
 
@@ -247,48 +281,302 @@ function hedley_reports_generate_dashboard_data_for_pregnancy($participant, $exc
  */
 function hedley_reports_dashboard_pregnancy_record($participant) {
   $outcome_mapping = hedley_reports_pregnancy_outcome_mapping();
-  $outcome = !empty($participant->field_outcome[LANGUAGE_NONE][0]['value'])
-    ? $participant->field_outcome[LANGUAGE_NONE][0]['value']
-    : '';
-  $outcome_location = !empty($participant->field_outcome_location[LANGUAGE_NONE][0]['value'])
-    ? $participant->field_outcome_location[LANGUAGE_NONE][0]['value']
-    : '';
+  $outcome = hedley_reports_dashboard_field_value($participant, 'field_outcome');
+  $outcome_location = hedley_reports_dashboard_field_value($participant, 'field_outcome_location');
+  $mother_id = hedley_reports_dashboard_field_value($participant, 'field_person', 'target_id');
+  $mother = $mother_id ? node_load($mother_id) : NULL;
+  $shard = hedley_reports_dashboard_field_value($participant, 'field_shards', 'target_id');
 
   $record = [
     'v' => HEDLEY_REPORTS_DASHBOARD_DATA_VERSION,
     'id' => (int) $participant->nid,
-    'hc' => !empty($participant->field_shards[LANGUAGE_NONE][0]['target_id'])
-    ? (int) $participant->field_shards[LANGUAGE_NONE][0]['target_id']
-    : NULL,
+    'hc' => $shard ? (int) $shard : NULL,
     'created' => date('Y-m-d', $participant->created),
+    'mbd' => $mother ? hedley_reports_dashboard_field_date($mother, 'field_birth_date') : NULL,
     'edd' => hedley_reports_dashboard_field_date($participant, 'field_expected_date_concluded'),
     'dc' => hedley_reports_dashboard_field_date($participant, 'field_date_concluded'),
     'o' => isset($outcome_mapping[$outcome]) ? $outcome_mapping[$outcome] : NULL,
     'ol' => $outcome_location ? ($outcome_location == 'home' ? 'h' : 'f') : NULL,
     'visits' => [],
+    'us' => [],
+    'risks' => [],
     'child' => NULL,
   ];
 
   $encounters_ids = hedley_person_load_individual_participant_encounters_ids($participant->nid);
-  foreach (node_load_multiple($encounters_ids) as $encounter) {
-    if ($encounter->type != HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE || $encounter->status != NODE_PUBLISHED) {
-      continue;
-    }
+  $encounters = array_filter(node_load_multiple($encounters_ids), function ($encounter) {
+    return $encounter->type == HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE && $encounter->status == NODE_PUBLISHED;
+  });
+  $measurements = $mother
+    ? hedley_reports_dashboard_measurements_by_encounter($mother->nid, array_keys($encounters))
+    : [];
+  $diagnosis_mapping = hedley_reports_prenatal_diagnosis_mapping();
+  $risk_sources = [
+    'csection' => FALSE,
+    'hiv' => $mother && hedley_reports_dashboard_field_value($mother, 'field_hiv_status') == 'positive',
+    'ncd' => FALSE,
+    'underweight' => FALSE,
+  ];
+  $all_diagnoses = [];
+
+  foreach ($encounters as $encounter) {
+    $diagnoses = hedley_reports_dashboard_encounter_diagnoses($encounter, $diagnosis_mapping);
+    $all_diagnoses = array_merge($all_diagnoses, $diagnoses);
+    $encounter_measurements = isset($measurements[$encounter->nid]) ? $measurements[$encounter->nid] : [];
+    $indicators = hedley_reports_dashboard_encounter_indicators($encounter, $encounter_measurements);
+
     $record['visits'][] = [
       'd' => hedley_reports_dashboard_field_date($encounter, 'field_scheduled_date'),
-      't' => !empty($encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'])
-      ? $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value']
-      : 'nurse',
+      't' => hedley_reports_dashboard_field_value($encounter, 'field_prenatal_encounter_type') ?: 'nurse',
       'n' => hedley_reports_dashboard_field_date($encounter, 'field_next_visit_date'),
+      'dx' => $diagnoses,
+      'ind' => $indicators,
     ];
+
+    foreach ($encounter_measurements as $measurement) {
+      hedley_reports_dashboard_collect_measurement($measurement, $record['us'], $risk_sources);
+    }
   }
   usort($record['visits'], 'hedley_reports_dashboard_compare_visits');
+  sort($record['us']);
 
-  if (!empty($participant->field_newborn[LANGUAGE_NONE][0]['target_id'])) {
-    $record['child'] = hedley_reports_dashboard_child_record($participant->field_newborn[LANGUAGE_NONE][0]['target_id']);
+  $record['risks'] = hedley_reports_dashboard_risks($record, $all_diagnoses, $risk_sources);
+
+  $newborn_id = hedley_reports_dashboard_field_value($participant, 'field_newborn', 'target_id');
+  if ($newborn_id) {
+    $record['child'] = hedley_reports_dashboard_child_record($newborn_id);
   }
 
   return $record;
+}
+
+/**
+ * Loads the measurements the record reads, grouped by prenatal encounter.
+ *
+ * @param int $mother_id
+ *   The mother's person node ID.
+ * @param array $encounters_ids
+ *   The pregnancy's prenatal encounter IDs.
+ *
+ * @return array
+ *   Measurement nodes keyed by encounter ID.
+ */
+function hedley_reports_dashboard_measurements_by_encounter($mother_id, array $encounters_ids) {
+  $grouped = [];
+  if (empty($encounters_ids)) {
+    return $grouped;
+  }
+
+  $ids = hedley_general_get_person_measurements($mother_id, hedley_reports_dashboard_measurement_bundles());
+  foreach (node_load_multiple($ids) as $measurement) {
+    $encounter_id = hedley_reports_dashboard_field_value($measurement, 'field_prenatal_encounter', 'target_id');
+    if ($encounter_id && in_array($encounter_id, $encounters_ids)) {
+      $grouped[$encounter_id][] = $measurement;
+    }
+  }
+
+  return $grouped;
+}
+
+/**
+ * Codes of the diagnoses an encounter recorded, current and past.
+ *
+ * @param object $encounter
+ *   The prenatal encounter node.
+ * @param array $mapping
+ *   Diagnosis values to their Statistical Queries codes.
+ *
+ * @return array
+ *   Distinct diagnosis codes.
+ */
+function hedley_reports_dashboard_encounter_diagnoses($encounter, array $mapping) {
+  $codes = [];
+  foreach (['field_prenatal_diagnoses', 'field_past_prenatal_diagnoses'] as $field_name) {
+    foreach (hedley_reports_dashboard_field_values($encounter, $field_name) as $diagnosis) {
+      if (isset($mapping[$diagnosis])) {
+        $codes[] = $mapping[$diagnosis];
+      }
+    }
+  }
+
+  return array_values(array_unique($codes));
+}
+
+/**
+ * Codes of the indicators an encounter recorded.
+ *
+ * Adequate GWG comes from the encounter itself; MMS, aspirin, calcium and
+ * the ultrasound referral from its measurements, as in the person data.
+ *
+ * @param object $encounter
+ *   The prenatal encounter node.
+ * @param array $measurements
+ *   The encounter's measurement nodes.
+ *
+ * @return array
+ *   Distinct indicator codes.
+ */
+function hedley_reports_dashboard_encounter_indicators($encounter, array $measurements) {
+  $mapping = hedley_reports_prenatal_indicator_mapping();
+  $administered = function ($measurement) {
+    return in_array('administered-today', hedley_reports_dashboard_field_values($measurement, 'field_administration_note'));
+  };
+
+  $indicators = [];
+  if (in_array('adequate-gwg', hedley_reports_dashboard_field_values($encounter, 'field_prenatal_indicators'))) {
+    $indicators[] = 'gwg';
+  }
+
+  foreach ($measurements as $measurement) {
+    switch ($measurement->type) {
+      case HEDLEY_ACTIVITY_PRENATAL_ASPIRIN_CONTENT_TYPE:
+        if ($administered($measurement)) {
+          $indicators[] = 'aspirin';
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_CALCIUM_CONTENT_TYPE:
+        if ($administered($measurement)) {
+          $indicators[] = 'calcium';
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_MMS_CONTENT_TYPE:
+        if ($administered($measurement)) {
+          $indicators[] = 'mms';
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_MEDICATION_DISTRIBUTION_CONTENT_TYPE:
+        if (in_array('aspirin', hedley_reports_dashboard_field_values($measurement, 'field_prescribed_medication'))) {
+          $indicators[] = 'aspirin';
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_REFERRAL_CONTENT_TYPE:
+        if (in_array('us', hedley_reports_dashboard_field_values($measurement, 'field_referrals'))) {
+          $indicators[] = 'us';
+        }
+        break;
+    }
+  }
+
+  $codes = [];
+  foreach (array_unique($indicators) as $indicator) {
+    $codes[] = $mapping[$indicator];
+  }
+
+  return $codes;
+}
+
+/**
+ * Reads a measurement for the ultrasound dates and the high-risk sources.
+ *
+ * @param object $measurement
+ *   The measurement node.
+ * @param array $ultrasounds
+ *   Ultrasound dates collected so far; extended in place.
+ * @param array $risk_sources
+ *   Flags for csection, hiv, ncd and underweight; raised in place.
+ */
+function hedley_reports_dashboard_collect_measurement($measurement, array &$ultrasounds, array &$risk_sources) {
+  switch ($measurement->type) {
+    case 'prenatal_ultrasound':
+      $date = hedley_reports_dashboard_field_date($measurement, 'field_execution_date')
+        ?: hedley_reports_dashboard_field_date($measurement, 'field_date_measured');
+      if ($date) {
+        $ultrasounds[] = $date;
+      }
+      break;
+
+    case 'medical_history':
+      $history = hedley_reports_dashboard_field_values($measurement, 'field_medical_history');
+      $ncd_conditions = [
+        'asthma',
+        'cardiac-disease',
+        'diabetes',
+        'hypertension-before-pregnancy',
+        'renal-disease',
+      ];
+      if (array_intersect($history, $ncd_conditions)) {
+        $risk_sources['ncd'] = TRUE;
+      }
+      if (in_array('hiv', $history)) {
+        $risk_sources['hiv'] = TRUE;
+      }
+      break;
+
+    case 'obstetrical_exam':
+      if (in_array(hedley_reports_dashboard_field_value($measurement, 'field_c_section_scar'), ['horizontal', 'vertical'])) {
+        $risk_sources['csection'] = TRUE;
+      }
+      break;
+
+    case HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_STEP2_CONTENT_TYPE:
+      if ((int) hedley_reports_dashboard_field_value($measurement, 'field_c_sections') > 0) {
+        $risk_sources['csection'] = TRUE;
+      }
+      break;
+
+    case 'prenatal_hiv_test':
+      if (hedley_reports_dashboard_field_value($measurement, 'field_test_result') == 'positive') {
+        $risk_sources['hiv'] = TRUE;
+      }
+      break;
+
+    case HEDLEY_ACTIVITY_PRENATAL_NUTRITION_CONTENT_TYPE:
+      $muac = (float) hedley_reports_dashboard_field_value($measurement, 'field_muac');
+      $weight = (float) hedley_reports_dashboard_field_value($measurement, 'field_weight');
+      $height = (float) hedley_reports_dashboard_field_value($measurement, 'field_height');
+      $bmi = ($weight > 0 && $height > 0) ? $weight / pow($height / 100, 2) : 0;
+      if (($muac > 0 && $muac < 21) || ($bmi > 0 && $bmi < 17.5)) {
+        $risk_sources['underweight'] = TRUE;
+      }
+      break;
+  }
+}
+
+/**
+ * The high-risk criteria a pregnancy meets, as HealthyStart listed them.
+ *
+ * @param array $record
+ *   The record built so far, for the dates and the mother's birth date.
+ * @param array $diagnoses
+ *   Diagnosis codes of every visit.
+ * @param array $risk_sources
+ *   Flags raised while reading the measurements.
+ *
+ * @return array
+ *   Risk codes, in a fixed order.
+ */
+function hedley_reports_dashboard_risks(array $record, array $diagnoses, array $risk_sources) {
+  $diagnosed = function (array $codes) use ($diagnoses) {
+    return (bool) array_intersect($codes, $diagnoses);
+  };
+
+  $age = NULL;
+  if ($record['mbd']) {
+    $first_visit = empty($record['visits']) ? $record['created'] : $record['visits'][0]['d'];
+    $age = (int) ((strtotime($first_visit) - strtotime($record['mbd'])) / (365.25 * 86400));
+  }
+
+  $risks = [
+    // Risk of pre-eclampsia: the diagnoses that start low-dose aspirin.
+    'pe' => $diagnosed(['m2', 'n2']),
+    // Severe anaemia, with or without malaria.
+    'anemia' => $diagnosed(['q', 's', 't']),
+    // Diabetes or gestational diabetes, diagnosed by the app's glucose rule.
+    'diabetes' => $diagnosed(['t1', 'u1']),
+    'malaria' => $diagnosed(['o', 'p', 'q']),
+    'csection' => $risk_sources['csection'],
+    // Chronic hypertension diagnosed, or an NCD in the medical history.
+    'ncd' => $risk_sources['ncd'] || $diagnosed(['a']),
+    'age' => $age !== NULL && ($age < 18 || $age > 40),
+    'hiv' => $risk_sources['hiv'] || $diagnosed(['h', 'i']),
+    'underweight' => $risk_sources['underweight'],
+  ];
+
+  return array_keys(array_filter($risks));
 }
 
 /**
@@ -303,13 +591,11 @@ function hedley_reports_dashboard_pregnancy_record($participant) {
  */
 function hedley_reports_dashboard_child_record($child_nid) {
   $child = node_load($child_nid);
-  if (!$child || $child->status != NODE_PUBLISHED || !empty($child->field_deleted[LANGUAGE_NONE][0]['value'])) {
+  if (!$child || $child->status != NODE_PUBLISHED || hedley_reports_dashboard_field_value($child, 'field_deleted')) {
     return NULL;
   }
 
-  $gender = !empty($child->field_gender[LANGUAGE_NONE][0]['value'])
-    ? $child->field_gender[LANGUAGE_NONE][0]['value']
-    : '';
+  $gender = hedley_reports_dashboard_field_value($child, 'field_gender');
   $record = [
     'id' => (int) $child->nid,
     'bd' => hedley_reports_dashboard_field_date($child, 'field_birth_date'),
@@ -341,6 +627,42 @@ function hedley_reports_dashboard_child_record($child_nid) {
 }
 
 /**
+ * Reads the first value of a field.
+ *
+ * @param object $node
+ *   The node holding the field.
+ * @param string $field_name
+ *   The field.
+ * @param string $column
+ *   The column to read, "value" unless given.
+ *
+ * @return mixed|null
+ *   The value, or NULL when the field is empty.
+ */
+function hedley_reports_dashboard_field_value($node, $field_name, $column = 'value') {
+  return empty($node->{$field_name}[LANGUAGE_NONE][0][$column])
+    ? NULL
+    : $node->{$field_name}[LANGUAGE_NONE][0][$column];
+}
+
+/**
+ * Reads every value of a multi-value list field.
+ *
+ * @param object $node
+ *   The node holding the field.
+ * @param string $field_name
+ *   The field.
+ *
+ * @return array
+ *   The values, possibly empty.
+ */
+function hedley_reports_dashboard_field_values($node, $field_name) {
+  return empty($node->{$field_name}[LANGUAGE_NONE])
+    ? []
+    : array_column($node->{$field_name}[LANGUAGE_NONE], 'value');
+}
+
+/**
  * Reads a date field as YYYY-MM-DD.
  *
  * @param object $node
@@ -352,11 +674,9 @@ function hedley_reports_dashboard_child_record($child_nid) {
  *   The date, or NULL when the field is empty.
  */
 function hedley_reports_dashboard_field_date($node, $field_name) {
-  if (empty($node->{$field_name}[LANGUAGE_NONE][0]['value'])) {
-    return NULL;
-  }
+  $value = hedley_reports_dashboard_field_value($node, $field_name);
 
-  return date('Y-m-d', strtotime($node->{$field_name}[LANGUAGE_NONE][0]['value']));
+  return $value ? date('Y-m-d', strtotime($value)) : NULL;
 }
 
 /**
