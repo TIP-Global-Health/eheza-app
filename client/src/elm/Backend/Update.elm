@@ -53,6 +53,7 @@ import Backend.Measurement.Utils
 import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..), RevisionsOrigin(..))
 import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model
+import Backend.NCDEncounter.Types
 import Backend.NCDEncounter.Update
 import Backend.Nurse.Model
 import Backend.Nurse.Update
@@ -8846,9 +8847,9 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
             then
                 let
                     diagnosesBefore =
-                        -- At this stage new diagnoses were not updated yet, therefore,
-                        -- we can use the diganoses set for the encounter.
-                        assembledAfter.encounter.diagnoses
+                        -- New diagnoses are not set yet, so the stored ones are used. An encounter
+                        -- without diagnoses stores "none", which the engine never returns, so it is dropped.
+                        EverySet.remove NoPrenatalDiagnosis assembledAfter.encounter.diagnoses
 
                     diagnosesAfter =
                         Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
@@ -9294,9 +9295,9 @@ generateNCDAssessmentMsgs after id =
         (\assembledAfter ->
             let
                 diagnosesBefore =
-                    -- At this stage new diagnoses were not updated yet, therefore,
-                    -- we can use the diganoses set for the encounter.
-                    assembledAfter.encounter.diagnoses
+                    -- New diagnoses are not set yet, so the stored ones are used. An encounter
+                    -- without diagnoses stores "none", which the engine never returns, so it is dropped.
+                    EverySet.remove Backend.NCDEncounter.Types.NoNCDDiagnosis assembledAfter.encounter.diagnoses
 
                 diagnosesAfter =
                     Pages.NCD.Utils.generateNCDDiagnoses assembledAfter
