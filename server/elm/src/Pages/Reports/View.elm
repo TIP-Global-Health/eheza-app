@@ -250,7 +250,7 @@ viewReportsData language currentDate themePath data model =
                                             viewNutritionReport language limitDate scopeLabel data.nutritionReportData model.nutritionReportData
 
                                         ReportPeripartum ->
-                                            viewPeripartumReport language limitDate scopeLabel recordsTillLimitDate
+                                            viewPeripartumReport language startDate limitDate scopeLabel data.records recordsTillLimitDate
 
                                         ReportPostnatalCare ->
                                             viewPostnatalCareReport language data.site limitDate scopeLabel recordsTillLimitDate
@@ -2676,11 +2676,11 @@ generatePrenatalDiagnosesReportData language records =
     }
 
 
-viewPeripartumReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
-viewPeripartumReport language limitDate scopeLabel records =
+viewPeripartumReport : Language -> NominalDate -> NominalDate -> String -> List PatientData -> List PatientData -> Html Msg
+viewPeripartumReport language startDate limitDate scopeLabel scopeRecords recordsTillLimitDate =
     let
         data =
-            generatePeripartumReportData language records
+            generatePeripartumReportData language startDate limitDate scopeRecords recordsTillLimitDate
 
         captionsRow =
             viewStandardCells data.captions
@@ -2706,17 +2706,35 @@ viewPeripartumReport language limitDate scopeLabel records =
 
 generatePeripartumReportData :
     Language
+    -> NominalDate
+    -> NominalDate
+    -> List PatientData
     -> List PatientData
     -> MetricsResultsTableData
-generatePeripartumReportData language records =
+generatePeripartumReportData language startDate limitDate scopeRecords recordsTillLimitDate =
     let
-        pregnancies =
-            List.map .prenatalData records
-                |> Maybe.Extra.values
-                |> List.concat
+        pregnanciesOf =
+            List.map .prenatalData
+                >> Maybe.Extra.values
+                >> List.concat
+
+        -- Pregnancies with a visit in the range, used for the rows recorded
+        -- at visits.
+        pregnanciesVisitedInRange =
+            pregnanciesOf recordsTillLimitDate
+
+        -- A delivery counts when its date is in the range, even with no
+        -- visit in the range.
+        pregnanciesDeliveredInRange =
+            pregnanciesOf scopeRecords
+                |> List.filter
+                    (.dateConcluded
+                        >> Maybe.map (Date.isBetween startDate limitDate)
+                        >> Maybe.withDefault False
+                    )
 
         countPregnanciesByOutcome outcome =
-            List.filter (.outcome >> (==) (Just outcome)) pregnancies
+            List.filter (.outcome >> (==) (Just outcome)) pregnanciesDeliveredInRange
                 |> List.length
 
         totalLiveAtTerm =
@@ -2752,9 +2770,9 @@ generatePeripartumReportData language records =
         , generateRow Translate.TotalLiveBirths (totalLiveAtTerm + totalLivePreTerm)
         , generateRow Translate.TotalLivePreTermBirths totalLivePreTerm
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorPrematureOnsetContractions)
-            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnancies)
+            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnanciesVisitedInRange)
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorBreastfedFirstHour)
-            (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnancies)
+            (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnanciesVisitedInRange)
         ]
     }
 

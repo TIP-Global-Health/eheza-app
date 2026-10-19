@@ -1,4 +1,4 @@
-module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countChildrenSeenForSelectedMonth, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, dataItemMergeDuplicates, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, resolveECDStatus, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countChildrenSeenForSelectedMonth, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, dataItemMergeDuplicates, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, resolveDayAfterSelectedDate, resolveECDStatus, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -56,7 +56,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Village.Utils exposing (resolveVillageResidents)
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..), ecdMilestoneWarnings)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..), ecdMilestoneWarnings, hasWarningFrom)
 import Date exposing (Unit(..), isBetween)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, toLastDayOfMonth)
@@ -967,19 +967,19 @@ she had an encounter and she has no danger signs, then she is not counted.
 -}
 countCurrentlyPregnantWithDangerSignsForSelectedMonth : NominalDate -> Bool -> List PrenatalDataItem -> Int
 countCurrentlyPregnantWithDangerSignsForSelectedMonth dateLastDayOfSelectedMonth isChw =
+    let
+        dayAfterSelectedDate =
+            resolveDayAfterSelectedDate dateLastDayOfSelectedMonth
+    in
     getCurrentlyPregnantForSelectedMonth dateLastDayOfSelectedMonth isChw
         >> List.filter
             (\pregnancy ->
                 let
                     -- All encounters that took place till selected month (including).
                     encountersTillSelectedMonth =
-                        let
-                            dateFirstDayOfNextMonth =
-                                Date.ceiling Date.Month dateLastDayOfSelectedMonth
-                        in
                         List.filter
                             (\encounter ->
-                                Date.compare encounter.startDate dateFirstDayOfNextMonth == LT
+                                Date.compare encounter.startDate dayAfterSelectedDate == LT
                             )
                             pregnancy.encounters
                 in
@@ -1146,14 +1146,40 @@ countDeliveriesAtLocationForSelectedMonth dateLastDayOfSelectedMonth location =
 --
 
 
+{-| Counts for a selected date take what happened before the day after it, so
+the selected day itself is included: a past month's last day, or today.
+-}
+resolveDayAfterSelectedDate : NominalDate -> NominalDate
+resolveDayAfterSelectedDate selectedDate =
+    Date.add Days 1 selectedDate
+
+
+{-| The village residents' follow ups written before the limit date. A follow up
+written on or after it was not open before it.
+-}
+filterVillageFollowUpsBefore : NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> FollowUpMeasurements
+filterVillageFollowUpsBefore limitDate db villageId allFollowUps =
+    let
+        followUps =
+            filterFollowUpsOfResidents (resolveVillageResidents villageId db) allFollowUps
+
+        measuredBeforeLimitDate =
+            Dict.filter (\_ followUp -> Date.compare followUp.dateMeasured limitDate == LT)
+    in
+    { followUps
+        | acuteIllness = measuredBeforeLimitDate followUps.acuteIllness
+        , nutritionGroup = measuredBeforeLimitDate followUps.nutritionGroup
+        , nutritionIndividual = measuredBeforeLimitDate followUps.nutritionIndividual
+        , prenatal = measuredBeforeLimitDate followUps.prenatal
+        , wellChild = measuredBeforeLimitDate followUps.wellChild
+    }
+
+
 getFollowUpsTotals : NominalDate -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
 getFollowUpsTotals currentDate limitDate db villageId allFollowUps =
     let
-        villageResidents =
-            resolveVillageResidents villageId db
-
         followUps =
-            filterFollowUpsOfResidents villageResidents allFollowUps
+            filterVillageFollowUpsBefore limitDate db villageId allFollowUps
 
         nutritionFollowUps =
             generateNutritionFollowUps limitDate followUps
@@ -1191,11 +1217,8 @@ getAcuteIllnessFollowUpsBreakdownByDiagnosis :
     -> ( Int, Int, Int )
 getAcuteIllnessFollowUpsBreakdownByDiagnosis currentDate limitDate db villageId allFollowUps =
     let
-        villageResidents =
-            resolveVillageResidents villageId db
-
         followUps =
-            filterFollowUpsOfResidents villageResidents allFollowUps
+            filterVillageFollowUpsBefore limitDate db villageId allFollowUps
 
         acuteIllnessFollowUps =
             generateAcuteIllnessFollowUps limitDate db followUps
@@ -2007,9 +2030,7 @@ resolveECDStatus dateLastDayOfSelectedMonth item =
 
     else
         List.filter
-            (\encounter ->
-                List.any (\warning -> EverySet.member warning encounter.warnings) ecdMilestoneWarnings
-            )
+            (.warnings >> hasWarningFrom ecdMilestoneWarnings)
             nurseEncounters
             |> List.sortWith (sortByDateDesc .startDate)
             |> List.head

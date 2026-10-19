@@ -80,6 +80,31 @@ Re-locate the anchors first. Line numbers drift; snippets and function names are
 And if anything about the *intended* behaviour is open, read the issue behind the code before
 presenting — see the hard rule below.
 
+### 2a. Reproduce in the app (optional)
+Offer it when the defect shows on screen or in stored data. The user decides; a recording is
+evidence for the decision and the control the fix is later measured against.
+
+It is a `qa-tester` run with the verdict reversed. Read that skill and its knowledge base,
+then follow its method, with these differences:
+
+- **No overlay.** The main tree's `develop` already holds the defect. Confirm the driver's
+  build matches `develop`'s last `client/src` commit.
+- **Plan first.** Present the scenario table and wait. That approval also covers taking
+  the running app, which stays single-instance.
+- **Checks assert the defect.** A scenario reproduces when every `qa.check` sees the wrong
+  behaviour; a check that sees the right one stops it.
+- **Prove it in the data** when the defect is a stored shape: sync to "Remaining for
+  Upload: 0", then query the backend.
+- **Look before claiming.** Read every screenshot and one video frame at the key moment.
+- **Store locally.** Videos go to `client/qa-recordings/<id>/qa-<id>-<name>.mp4`
+  (gitignored), with the scenario script beside them as `repro-<id>.js`. Nothing is posted.
+
+Record it in the entry: a `🎬 Reproduced <date>` line naming the scenarios, the backend
+rows, and the file paths. Add a `REPRODUCED` row to `qa-tester/knowledge/verified.md`.
+
+When the fix is built, run `repro-<id>.js` against it with each check flipped to expect the
+right behaviour. The two runs together show the defect before and its absence after.
+
 ### 3. Wait for the decision
 Stop. The answer is "implement", "park", or "skip". Do not start building because the item looks
 obvious or small.
@@ -111,10 +136,15 @@ number, tier line, and any side-findings noticed while building appended as new 
   sessions already hold; check it before starting an item, and never work in another session's
   worktree. ⚠ The running app (ddev, `gulp`, local e2e, `ddev simpletest`) is a **single instance**
   rooted in the main tree — ask the user before taking it.
-- ⛔ **Run the medium review yourself, every time.** Right after opening a PR, invoke
+- ⛔ **Two medium review rounds, run yourself, every time.** Right after opening a PR, invoke
   `Skill({skill: "code-review", args: "medium <branch>"})` and say in the announcement that it is
-  running. Never self-run `high` or above. Mechanics in `pr-first-review-workflow` in memory.
-- ⛔ **Post every review finding to the PR, inline, BEFORE reporting anything about the review in
+  running. **Round 1:** fix or decline as you judge, push; post nothing to the PR, ask no approval.
+  **Round 2:** run it on the pushed head; the rules below apply to it. Never self-run `high` or
+  above. Mechanics in `pr-first-review-workflow` in memory.
+- **After round 2 is addressed, suggest whether a `qa-tester` run is worth it** — one line with the
+  reason (visible on screen or in stored data, not covered by e2e). Suggest only; never start it.
+  In the same message, ask whether to move the PR to QA; only on approval add the `Ready for QA` label.
+- ⛔ **Post every round-2 finding to the PR, inline, BEFORE reporting anything about the review in
   chat.** The review agent reports back into the transcript — that arrival is the cue to post, not
   delivery. A review is not finished until its findings are on the PR, anchored to the lines they
   concern, one comment per finding, phrased as the finding was RAISED rather than as your answer to
@@ -127,7 +157,8 @@ number, tier line, and any side-findings noticed while building appended as new 
   `gh api repos/O/R/pulls/<N>/comments --jq '.[] | "\(.path):\(.line)  \(.html_url)"'` after
   posting, and put the link on the finding's own heading. Applies to every finding, in every round,
   including ones you decline; the point is that the user can open the thread you are talking about.
-- ⛔ **Close the loop on every review thread when the fix lands**, and **commit + push the backlog
+- ⛔ **Close the loop on every review thread when the fix lands** — reply with the commit or the
+  reason it was declined, then resolve the thread (mutation in the runbook, step 7) — and **commit + push the backlog
   files on `develop`** in the same step that records them. Three separate misses in one day traced
   to the same shape — work lands, record lags — so treat "the record disagrees with the repository"
   as a defect in its own right. A `Stop` hook commits the files as a backstop; it does not excuse

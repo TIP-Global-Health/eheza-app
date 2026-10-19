@@ -4,7 +4,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..))
 import App.Fetch
 import App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), RollbarErrorSource(..), emptyLoggedInModel, emptyModel)
 import App.Ports exposing (cacheHealthCenter, cachePinCode, cacheVillage, coordinates, logByRollbar, memoryQuota, persistentStorage, scrollToElement, setLanguage, storageQuota)
-import App.Utils exposing (getLoggedInData, updateSubModel)
+import App.Utils exposing (getLoggedInData, getLoggedInModel, updateSubModel)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
@@ -1497,6 +1497,19 @@ update msg model =
                 activePage =
                     activePageByUrl url
 
+                -- Every URL change drops the GPS reading, and the person pages
+                -- ask for a new one, so a failed request shows no reading rather
+                -- than the last person's.
+                personPageCmd =
+                    Cmd.batch
+                        [ App.Ports.bindDropZone ()
+                        , if gpsCoordinatesEnabled features then
+                            App.Ports.getCoordinates ()
+
+                          else
+                            Cmd.none
+                        ]
+
                 cmd =
                     case activePage of
                         UserPage (SessionPage _ (ChildPage _)) ->
@@ -1506,26 +1519,10 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (CreatePersonPage _ _) ->
-                            Cmd.batch
-                                [ App.Ports.bindDropZone ()
-                                , if gpsCoordinatesEnabled features then
-                                    -- Query for GPS coordinates.
-                                    App.Ports.getCoordinates ()
-
-                                  else
-                                    Cmd.none
-                                ]
+                            personPageCmd
 
                         UserPage (EditPersonPage _) ->
-                            Cmd.batch
-                                [ App.Ports.bindDropZone ()
-                                , if gpsCoordinatesEnabled features then
-                                    -- Query for GPS coordinates.
-                                    App.Ports.getCoordinates ()
-
-                                  else
-                                    Cmd.none
-                                ]
+                            personPageCmd
 
                         UserPage (PrenatalActivityPage _ PrenatalPhoto) ->
                             App.Ports.bindDropZone ()
@@ -1542,7 +1539,7 @@ update msg model =
                         _ ->
                             Cmd.none
             in
-            ( { model | url = url, activePage = activePage }
+            ( { model | url = url, activePage = activePage, coordinates = Nothing }
             , cmd
             )
 
@@ -1611,15 +1608,17 @@ handleRevision : Model -> Backend.Model.Revision -> Maybe Msg
 handleRevision model revision =
     case revision of
         Backend.Model.NurseRevision uuid data ->
-            Maybe.andThen
-                (\( _, loggedIn ) ->
-                    if Tuple.first loggedIn.nurse == uuid then
-                        Just (UpdateNurseData ( uuid, data ))
+            -- Applies while the location picker is shown too, so a newly
+            -- assigned location appears there.
+            getLoggedInModel model
+                |> Maybe.andThen
+                    (\loggedIn ->
+                        if Tuple.first loggedIn.nurse == uuid then
+                            Just (UpdateNurseData ( uuid, data ))
 
-                    else
-                        Nothing
-                )
-                (getLoggedInData model)
+                        else
+                            Nothing
+                    )
 
         _ ->
             Nothing

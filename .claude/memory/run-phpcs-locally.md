@@ -9,6 +9,8 @@ metadata:
 
 The phpcs lint IS runnable locally — don't claim "can't run phpcs".
 
+Run it before committing any `*.php`, `*.module`, `*.inc` or `*.test` change; it must report no errors **and** no warnings.
+
 **Easiest: `ddev phpcs`** — a project custom command (`.ddev/commands/web/phpcs`) that runs the
 exact CI lint: `ci-scripts/test_coder.sh` under both `Drupal` and `DrupalPractice` standards across
 all custom modules, auto-installing `drupal/coder` in the container if missing. Exit 0 = passes.

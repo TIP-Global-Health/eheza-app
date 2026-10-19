@@ -17,11 +17,12 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Encounter.Utils exposing (generatePostCreateDestination, getPrenatalEncountersForParticipantDesc)
 import Pages.Prenatal.Participant.Model exposing (Model, Msg(..))
-import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive)
+import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
@@ -81,23 +82,44 @@ viewActions :
     -> Html Msg
 viewActions language currentDate selectedHealthCenter id isChw db model prenatalSessions =
     let
-        activePregnancyData =
-            prenatalSessions
-                |> Dict.toList
-                |> List.filter
-                    (\( _, session ) ->
-                        (session.encounterType == Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
-                            && isPregnancyActive currentDate session
-                    )
-                |> List.head
+        -- An active pregnancy comes first. Without one, a pregnancy concluded in
+        -- this role's postpartum visit today is kept, so the visit reopens.
+        shownPregnancy =
+            let
+                antenatalSessions =
+                    Dict.toList prenatalSessions
+                        |> List.filter (\( _, session ) -> session.encounterType == Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
+
+                withEncounters ( sessionId, session ) =
+                    { sessionId = sessionId
+                    , session = session
+                    , encounters = getPrenatalEncountersForParticipantDesc db sessionId
+                    , keptForPostpartumVisit = False
+                    }
+            in
+            case List.Extra.find (Tuple.second >> isPregnancyActive currentDate) antenatalSessions of
+                Just activePregnancy ->
+                    Just (withEncounters activePregnancy)
+
+                Nothing ->
+                    List.map withEncounters antenatalSessions
+                        |> List.Extra.find
+                            (\pregnancy ->
+                                pregnancyConcludedInTodaysPostpartumVisit currentDate isChw pregnancy.session (List.map Tuple.second pregnancy.encounters)
+                            )
+                        |> Maybe.map (\pregnancy -> { pregnancy | keptForPostpartumVisit = True })
 
         maybeSessionId =
-            Maybe.map Tuple.first activePregnancyData
+            Maybe.map .sessionId shownPregnancy
 
         allEncounters =
-            activePregnancyData
-                |> Maybe.map (Tuple.first >> getPrenatalEncountersForParticipantDesc db)
+            Maybe.map .encounters shownPregnancy
                 |> Maybe.withDefault []
+
+        -- A kept pregnancy already holds its outcome.
+        pregnancyKeptForPostpartumVisit =
+            Maybe.map .keptForPostpartumVisit shownPregnancy
+                |> Maybe.withDefault False
 
         ( nurseEncounters, chwEncounters ) =
             List.partition
@@ -119,7 +141,7 @@ viewActions language currentDate selectedHealthCenter id isChw db model prenatal
             navigateToPregnancyOutcomeAction InitiatorParticipantPage
 
         navigateToPregnancyOutcomeAction destinationPage =
-            if not (List.isEmpty completedEncounts) then
+            if not (List.isEmpty completedEncounts) && not pregnancyKeptForPostpartumVisit then
                 maybeSessionId
                     |> Maybe.map
                         (Pages.Page.PregnancyOutcomePage destinationPage
@@ -142,7 +164,7 @@ viewActions language currentDate selectedHealthCenter id isChw db model prenatal
                     hasNurseEncounter =
                         not <| List.isEmpty nurseEncounters
                 in
-                viewActionsForChw language currentDate selectedHealthCenter id activePregnancyData chwEncounters hasNurseEncounter
+                viewActionsForChw language currentDate selectedHealthCenter id maybeSessionId chwEncounters hasNurseEncounter
 
             else
                 viewActionsForNurse language currentDate selectedHealthCenter id maybeSessionId nurseEncounters
@@ -333,15 +355,12 @@ viewActionsForChw :
     -> NominalDate
     -> HealthCenterId
     -> PersonId
-    -> Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
+    -> Maybe IndividualEncounterParticipantId
     -> List ( PrenatalEncounterId, PrenatalEncounter )
     -> Bool
     -> List (Html Msg)
-viewActionsForChw language currentDate selectedHealthCenter id activePregnancyData encounters hasNurseEncounter =
+viewActionsForChw language currentDate selectedHealthCenter id maybeSessionId encounters hasNurseEncounter =
     let
-        maybeSessionId =
-            Maybe.map Tuple.first activePregnancyData
-
         ( maybeActiveEncounterId, lastEncounterType, encounterWasCompletedToday ) =
             encounters
                 |> List.head

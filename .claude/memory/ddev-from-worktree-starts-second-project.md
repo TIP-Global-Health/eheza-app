@@ -27,3 +27,5 @@ blocks Claude from running it, so the user had to.
   project's containers going up or down does not touch it.
 
 Related: [[worktree-per-item-for-parallel-sessions]], [[e2e-local-run-procedure]]
+
+⛔ **`ddev snapshot restore` restarts the project and runs the post-start hooks too.** While `config.local.yaml` has the `drush site-install` hooks active (left on after a demo reinstall), a restore of a live-copy snapshot is wiped by a fresh demo install seconds later, and still reports success (2026-10-19, B-496 rehearsal, twice). Always `ddev snapshot restore --skip-hooks <name>`, then check `SELECT COUNT(*) FROM node` and uid 1's `created` before trusting it.

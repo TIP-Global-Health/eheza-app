@@ -23,7 +23,7 @@ import Backend.Measurement.Model
 import Date exposing (Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -44,6 +44,7 @@ import Measurement.Utils
         , liverFunctionResultFormWithDefault
         , malariaResultFormWithDefault
         , malariaTestFormWithDefault
+        , mergeVaccinationProgressDicts
         , ncdaFormWithDefault
         , ncdaMeasurementsOutOfRange
         , nextVaccinationDataForVaccine
@@ -59,6 +60,7 @@ import Measurement.Utils
         , toMalariaTestValueWithDefault
         , toPartnerHIVTestValueWithDefault
         , toPregnancyTestValueWithDefault
+        , toRandomBloodSugarTestValueUniversalWithDefault
         )
 import Measurement.View exposing (viewColorAlertIndication)
 import SyncManager.Model exposing (Site(..))
@@ -263,6 +265,58 @@ nextVaccinationDataForVaccineTest =
                 -- dose that does not exist falls due, and nothing clears it.
                 nextDTPDose VaccineDoseFourth
                     |> Expect.equal Nothing
+        ]
+
+
+mergeVaccinationProgressDictsTest : Test
+mergeVaccinationProgressDictsTest =
+    let
+        date day month year =
+            Date.fromCalendarDate year month day
+
+        wellChildProgress doses =
+            Dict.fromList [ ( VaccineOPV, Dict.fromList doses ), ( VaccineBCG, Dict.empty ) ]
+
+        -- The OPV doses of a child followed by both Well Child and Child Scoreboard.
+        mergedOPVDoses wellChildDoses childScoreboardDoses =
+            mergeVaccinationProgressDicts
+                (wellChildProgress wellChildDoses)
+                (Dict.fromList [ ( VaccineOPV, Dict.fromList childScoreboardDoses ), ( VaccineBCG, Dict.empty ) ])
+                |> Dict.get VaccineOPV
+                |> Maybe.map Dict.toList
+
+        firstTwoDoses =
+            [ ( VaccineDoseFirst, date 1 Oct 2025 ), ( VaccineDoseSecond, date 15 Aug 2026 ) ]
+    in
+    describe "mergeVaccinationProgressDicts"
+        [ test "keeps the doses in dose order for a child followed by one program" <|
+            \_ ->
+                mergeVaccinationProgressDicts (wellChildProgress firstTwoDoses) Dict.empty
+                    |> Dict.get VaccineOPV
+                    |> Maybe.map Dict.toList
+                    |> Expect.equal (Just firstTwoDoses)
+        , test "keeps the doses in dose order when the other program has none" <|
+            \_ ->
+                mergedOPVDoses firstTwoDoses []
+                    |> Expect.equal (Just firstTwoDoses)
+        , test "puts doses recorded by both programs in dose order" <|
+            \_ ->
+                mergedOPVDoses
+                    [ ( VaccineDoseFirst, date 1 Oct 2025 ), ( VaccineDoseThird, date 20 Sep 2026 ) ]
+                    [ ( VaccineDoseSecond, date 15 Aug 2026 ) ]
+                    |> Expect.equal
+                        (Just
+                            [ ( VaccineDoseFirst, date 1 Oct 2025 )
+                            , ( VaccineDoseSecond, date 15 Aug 2026 )
+                            , ( VaccineDoseThird, date 20 Sep 2026 )
+                            ]
+                        )
+        , test "keeps the later date of a dose both programs recorded" <|
+            \_ ->
+                mergedOPVDoses
+                    [ ( VaccineDoseFirst, date 1 Oct 2025 ) ]
+                    [ ( VaccineDoseFirst, date 3 Oct 2025 ) ]
+                    |> Expect.equal (Just [ ( VaccineDoseFirst, date 3 Oct 2025 ) ])
         ]
 
 
@@ -958,6 +1012,7 @@ all =
         , getIntervalForVaccineTest
         , getAllDosesForVaccineTest
         , initialVaccinationDateByBirthDateTest
+        , mergeVaccinationProgressDictsTest
         , updateChildSetMuacTest
         , ncdaFormWithDefaultNotTakenTest
         , bloodGlucoseOutOfRangeTest
@@ -1255,6 +1310,25 @@ knownAsPositiveSavesNoPrerequisitesTest =
                     |> toPartnerHIVTestValueWithDefault (Just savedHIVTest)
                     |> Maybe.map .testPrerequisites
                     |> Expect.equal (Just sentToLab)
+        , test "Prenatal random blood sugar test, not performed with a reason" <|
+            \_ ->
+                { emptyRandomBloodSugarTestUniversalForm
+                    | testPerformed = Just False
+                    , testPerformedDirty = True
+                    , executionNote = Just TestNoteNotIndicated
+                    , executionNoteDirty = True
+                }
+                    |> toRandomBloodSugarTestValueUniversalWithDefault
+                        (Just
+                            { executionNote = TestNoteRunToday
+                            , executionDate = Nothing
+                            , testPrerequisites = sentToLab
+                            , sugarCount = Nothing
+                            , originatingEncounter = Nothing
+                            }
+                        )
+                    |> Maybe.map .testPrerequisites
+                    |> Expect.equal (Just Nothing)
         ]
 
 

@@ -10,6 +10,7 @@ import Backend.Measurement.Model
         , CorePhysicalExamValue
         , DangerSign(..)
         , DangerSignsValue
+        , FollowUpOption(..)
         , HIVPCRTestValue
         , HIVTestValue
         , HemoglobinTestValue
@@ -17,6 +18,7 @@ import Backend.Measurement.Model
         , LungsCPESign
         , MalariaTestValue
         , Measurement
+        , ObstetricHistoryStep2Sign(..)
         , PartnerHIVTestValue
         , PrenatalAssesment(..)
         , PrenatalHIVSign(..)
@@ -25,6 +27,8 @@ import Backend.Measurement.Model
         , PrenatalMentalHealthQuestionOption(..)
         , PrenatalSymptom(..)
         , PrenatalSymptomQuestion(..)
+        , PreviousDeliveryPeriod(..)
+        , PreviousDeliverySign(..)
         , ProteinValue(..)
         , RandomBloodSugarTestValue
         , RecommendedTreatmentSign(..)
@@ -40,19 +44,21 @@ import Backend.Measurement.Model
         )
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.Person.Model exposing (Person)
+import Backend.PrenatalActivity.Model exposing (HighRiskFactor(..))
+import Backend.PrenatalActivity.Utils exposing (generateHighRiskAlertData)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (RangedMeasurement(..))
-import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault)
+import Measurement.Model exposing (RangedMeasurement(..), emptyHIVPCRResultForm)
+import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault)
 import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
-import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), PrePregnancyClassification(..), WarningPopupType(..))
+import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
-import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
+import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, resolveNextStepsTasks, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), emptyHealthEducationForm)
 import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedPreviouslyAnyOf, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
 import RemoteData
@@ -1477,6 +1483,67 @@ generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest =
         ]
 
 
+{-| A viral load answered "undetectable" is under 20 copies, so it is saved
+without a number. A number typed before stays on the form, so a mistaken Yes can
+be undone, and a record that still holds one is not diagnosed from it.
+-}
+hivViralLoadUndetectableTest : Test
+hivViralLoadUndetectableTest =
+    let
+        savedDetectable =
+            hivPCRValueNonImmediate 5000
+
+        valueAfter msgs =
+            msgs
+                |> List.foldl
+                    (\msg model ->
+                        update dummyDate SiteRwanda (toEntityUuid "encounter") emptyModelIndexedDb msg model
+                            |> (\( updated, _, _ ) -> updated)
+                    )
+                    emptyModel
+                |> .laboratoryData
+                |> .hivPCRTestForm
+                |> toHIVPCRTestValueWithDefault (Just savedDetectable)
+
+        statusAndLoad value =
+            ( value.hivViralLoadStatus, value.hivViralLoad )
+
+        detectableDiagnosed value =
+            { emptyPrenatalMeasurements | hivPCRTest = wrapMeasurement value }
+                |> diagnoseNurse
+                |> EverySet.member DiagnosisHIVDetectableViralLoadRecurrentPhase
+    in
+    describe "HIV PCR viral load answered undetectable"
+        [ test "first visit: Yes on a saved detectable result saves no number" <|
+            \_ ->
+                valueAfter [ SetHIVViralLoadUndetectable True ]
+                    |> Maybe.map statusAndLoad
+                    |> Expect.equal (Just ( Just ViralLoadUndetectable, Nothing ))
+        , test "first visit: Yes then No on a saved detectable result keeps its number" <|
+            \_ ->
+                valueAfter [ SetHIVViralLoadUndetectable True, SetHIVViralLoadUndetectable False ]
+                    |> Maybe.map statusAndLoad
+                    |> Expect.equal (Just ( Just ViralLoadDetectable, Just 5000 ))
+        , test "first visit: a typed number survives a mistaken Yes" <|
+            \_ ->
+                valueAfter [ SetHIVViralLoad "300", SetHIVViralLoadUndetectable True, SetHIVViralLoadUndetectable False ]
+                    |> Maybe.map statusAndLoad
+                    |> Expect.equal (Just ( Just ViralLoadDetectable, Just 300 ))
+        , test "lab results: a saved detectable result answered undetectable saves no number" <|
+            \_ ->
+                { emptyHIVPCRResultForm | hivViralLoadStatus = Just ViralLoadUndetectable }
+                    |> toHIVPCRResultValueWithDefault (Just savedDetectable)
+                    |> Maybe.map statusAndLoad
+                    |> Expect.equal (Just ( Just ViralLoadUndetectable, Nothing ))
+        , test "a record answered undetectable is not diagnosed from the number it holds" <|
+            \_ ->
+                ( detectableDiagnosed { savedDetectable | hivViralLoadStatus = Just ViralLoadUndetectable }
+                , detectableDiagnosed savedDetectable
+                )
+                    |> Expect.equal ( False, True )
+        ]
+
+
 {-| The discordant-partnership diagnosis carries an Initial and a Recurrent
 variant, and only the Recurrent one prescribes PrEP at the recurrent phase. The
 variant has to follow the test that produced the match: the partner's own test
@@ -2286,6 +2353,7 @@ all =
         , generatePrenatalDiagnosesForNurseHypertensionRecheckTest
         , generatePrenatalDiagnosesForNurseSeverePreeclampsiaRecurrentTest
         , generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest
+        , hivViralLoadUndetectableTest
         , generatePrenatalDiagnosesForNurseDiscordantPartnershipTest
         , resolvePartnerHIVTestResultTest
         , resolveDiscordantCoupleStatusTest
@@ -2296,6 +2364,96 @@ all =
         , historyBeforeEncounterTest
         , repeatedTapOnSavedTest
         , diagnosisKnownAnyOfTest
+        , obstetricHistoryFirstPregnancyTest
+        , nextVisitTaskTest
+        ]
+
+
+{-| Next ANC Visit shows a date computed from the pregnancy's EGA, and only
+saves that date. A pregnancy with no LMP has none, so the task must not be
+asked: it could never be completed, and the visit could never be ended.
+
+CHW visits 2 and 3 have no Pregnancy Dating activity, so an undated
+pregnancy stays undated there.
+
+-}
+nextVisitTaskTest : Test
+nextVisitTaskTest =
+    let
+        withEncounterType encounterType assembled =
+            let
+                encounter =
+                    assembled.encounter
+            in
+            { assembled | encounter = { encounter | encounterType = encounterType } }
+
+        undated assembled =
+            { assembled | globalLmpDate = Nothing }
+
+        asksNextVisit assembled =
+            resolveNextStepsTasks currentDate assembled
+                |> List.member NextStepsNextVisit
+
+        -- The CHW's other Next Steps tasks on a visit without danger signs.
+        withAppointmentAndFollowUp measurements =
+            { measurements
+                | appointmentConfirmation = wrapMeasurement { date = Date.add Date.Weeks 4 currentDate }
+                , followUp =
+                    wrapMeasurement
+                        { options = EverySet.singleton OneDay
+                        , resolutionDate = Nothing
+                        , assesment = AssesmentNormalPregnancy
+                        }
+            }
+
+        nextStepsCompleted assembled =
+            activityCompleted currentDate SiteRwanda EverySet.empty assembled Backend.PrenatalActivity.Model.NextSteps
+    in
+    describe "Next Steps › Next ANC Visit"
+        [ test "CHW visit 2 on an undated pregnancy does not ask for it" <|
+            \_ ->
+                testAssembled emptyPrenatalMeasurements
+                    |> withEncounterType ChwSecondEncounter
+                    |> undated
+                    |> asksNextVisit
+                    |> Expect.equal False
+        , test "CHW visit 3 on an undated pregnancy does not ask for it" <|
+            \_ ->
+                testAssembled emptyPrenatalMeasurements
+                    |> withEncounterType ChwThirdPlusEncounter
+                    |> undated
+                    |> asksNextVisit
+                    |> Expect.equal False
+        , test "a nurse visit on an undated pregnancy does not ask for it" <|
+            \_ ->
+                testAssembled emptyPrenatalMeasurements
+                    |> undated
+                    |> asksNextVisit
+                    |> Expect.equal False
+        , test "CHW visit 2 on an undated pregnancy completes Next Steps once its other tasks are saved" <|
+            \_ ->
+                testAssembled (withAppointmentAndFollowUp emptyPrenatalMeasurements)
+                    |> withEncounterType ChwSecondEncounter
+                    |> undated
+                    |> nextStepsCompleted
+                    |> Expect.equal True
+        , test "CHW visit 2 on a dated pregnancy still needs Next ANC Visit to complete Next Steps" <|
+            \_ ->
+                testAssembled (withAppointmentAndFollowUp emptyPrenatalMeasurements)
+                    |> withEncounterType ChwSecondEncounter
+                    |> nextStepsCompleted
+                    |> Expect.equal False
+        , test "CHW visit 2 on a dated pregnancy asks for it" <|
+            \_ ->
+                testAssembled emptyPrenatalMeasurements
+                    |> withEncounterType ChwSecondEncounter
+                    |> asksNextVisit
+                    |> Expect.equal True
+        , test "a nurse visit on a dated pregnancy asks for it" <|
+            \_ ->
+                testAssembled emptyPrenatalMeasurements
+                    |> asksNextVisit
+                    |> Expect.equal True
         ]
 
 
@@ -2544,4 +2702,150 @@ diagnosisKnownAnyOfTest =
             \_ ->
                 known rhesusNegative "current" [ older, current ]
                     |> Expect.equal (Just False)
+        ]
+
+
+{-| Step 1 corrected to a first pregnancy leaves the step 2 answers on the
+encounter. They describe deliveries that never happened, so no reader counts them.
+-}
+obstetricHistoryFirstPregnancyTest : Test
+obstetricHistoryFirstPregnancyTest =
+    let
+        firstPregnancy =
+            { currentlyPregnant = True
+            , termPregnancy = 0
+            , preTermPregnancy = 0
+            , stillbirthsAtTerm = 0
+            , stillbirthsPreTerm = 0
+            , abortions = 0
+            , liveChildren = 0
+            }
+
+        secondPregnancy =
+            { firstPregnancy | termPregnancy = 1, liveChildren = 1 }
+
+        step2With signs period =
+            { cSections = 0
+            , cSectionReason = Nothing
+            , previousDelivery = EverySet.singleton NoPreviousDeliverySign
+            , previousDeliveryPeriod = EverySet.singleton period
+            , signs = EverySet.fromList signs
+            }
+
+        withHistory step1 step2 =
+            { emptyPrenatalMeasurements
+                | obstetricHistory = wrapMeasurement step1
+                , obstetricHistoryStep2 = wrapMeasurement step2
+            }
+
+        previousPreeclampsia =
+            step2With [ ObstetricHistoryPreeclampsiaPreviousPregnancy ] Neither
+
+        moreThan10Years =
+            step2With [ NoObstetricHistoryStep2Sign ] MoreThan10Years
+
+        convulsions =
+            step2With [ ObstetricHistoryConvulsionsPreviousDelivery ] Neither
+
+        highRisk =
+            EverySet.member DiagnosisHighRiskOfPreeclampsiaInitialPhase
+
+        moderateRisk =
+            EverySet.member DiagnosisModerateRiskOfPreeclampsia
+
+        convulsionsAlert measurements =
+            generateHighRiskAlertData English measurements HighRiskConvulsionsPreviousDelivery
+    in
+    describe "obstetric history step 2 on a first pregnancy"
+        [ test "previous preeclampsia gives high risk when step 1 records an earlier pregnancy" <|
+            \_ ->
+                diagnoseNurse (withHistory secondPregnancy previousPreeclampsia)
+                    |> highRisk
+                    |> Expect.equal True
+        , test "previous preeclampsia gives no high risk when step 1 says first pregnancy" <|
+            \_ ->
+                diagnoseNurse (withHistory firstPregnancy previousPreeclampsia)
+                    |> highRisk
+                    |> Expect.equal False
+        , test "the latest step 1 decides: a first pregnancy at the current visit drops step 2 saved at an earlier one" <|
+            \_ ->
+                diagnoseNurseAfter []
+                    (withHistory secondPregnancy previousPreeclampsia)
+                    { emptyPrenatalMeasurements | obstetricHistory = wrapMeasurement firstPregnancy }
+                    |> highRisk
+                    |> Expect.equal False
+        , test "a first pregnancy recorded at an earlier visit is read the same way at a later one" <|
+            \_ ->
+                diagnoseNurseAfter [] (withHistory firstPregnancy previousPreeclampsia) emptyPrenatalMeasurements
+                    |> highRisk
+                    |> Expect.equal False
+        , test "more than 10 years since delivery gives moderate risk when step 1 records an earlier pregnancy" <|
+            \_ ->
+                diagnoseNurse (withHistory secondPregnancy moreThan10Years)
+                    |> moderateRisk
+                    |> Expect.equal True
+        , test "more than 10 years since delivery gives no moderate risk when step 1 says first pregnancy" <|
+            \_ ->
+                diagnoseNurse (withHistory firstPregnancy moreThan10Years)
+                    |> moderateRisk
+                    |> Expect.equal False
+        , test "convulsions at a previous delivery raise the high-risk alert when step 1 records an earlier pregnancy" <|
+            \_ ->
+                convulsionsAlert (withHistory secondPregnancy convulsions)
+                    |> Expect.notEqual Nothing
+        , test "convulsions at a previous delivery raise no high-risk alert when step 1 says first pregnancy" <|
+            \_ ->
+                convulsionsAlert (withHistory firstPregnancy convulsions)
+                    |> Expect.equal Nothing
+        , test "the skip rule is gravida 01 and para 0000 for every combination of counts" <|
+            \_ ->
+                let
+                    counts =
+                        [ 0, 1, 2, 10 ]
+
+                    values =
+                        List.concatMap
+                            (\currentlyPregnant ->
+                                List.concatMap
+                                    (\term ->
+                                        List.concatMap
+                                            (\preTerm ->
+                                                List.concatMap
+                                                    (\atTerm ->
+                                                        List.concatMap
+                                                            (\stillPreTerm ->
+                                                                List.concatMap
+                                                                    (\abortions ->
+                                                                        List.map
+                                                                            (\liveChildren ->
+                                                                                { currentlyPregnant = currentlyPregnant
+                                                                                , termPregnancy = term
+                                                                                , preTermPregnancy = preTerm
+                                                                                , stillbirthsAtTerm = atTerm
+                                                                                , stillbirthsPreTerm = stillPreTerm
+                                                                                , abortions = abortions
+                                                                                , liveChildren = liveChildren
+                                                                                }
+                                                                            )
+                                                                            counts
+                                                                    )
+                                                                    counts
+                                                            )
+                                                            counts
+                                                    )
+                                                    counts
+                                            )
+                                            counts
+                                    )
+                                    counts
+                            )
+                            [ True, False ]
+                in
+                values
+                    |> List.filter
+                        (\value ->
+                            skipObstetricHistorySecondStep (Just value)
+                                /= (generateGravida value == "01" && generatePara value == "0000")
+                        )
+                    |> Expect.equal []
         ]

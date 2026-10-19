@@ -43,11 +43,12 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils
     exposing
         ( getMeasurementValueFunc
-        , labExpirationPeriod
+        , labsResultsTestAddedMsgs
         , mapChildMeasurementsAtOfflineSession
         , mapMeasurementData
         , splitChildMeasurements
         , splitMotherMeasurements
+        , testPerformedByExecutionNote
         )
 import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..))
 import Backend.NCDActivity.Model
@@ -98,7 +99,7 @@ import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Model
-import Measurement.Utils exposing (bloodSmearResultSet, testPerformedByExecutionNote)
+import Measurement.Utils exposing (bloodSmearResultSet)
 import Pages.AcuteIllness.Activity.Model
 import Pages.AcuteIllness.Activity.Types
 import Pages.AcuteIllness.Activity.Utils
@@ -4628,12 +4629,11 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             )
                         |> Maybe.withDefault person
 
-                -- Adding GPS coordinates. Laid over the stored ones, rather
-                -- than offered instead of them, because a reading that was
-                -- asked for is not always a reading that arrived: without a
-                -- fix this leaves what is stored alone.
+                -- Of the patches, only the edit form's shows a GPS reading, so
+                -- only it adds one. It is laid over the stored coordinates, so
+                -- with no reading they stay.
                 personWithCoordinates =
-                    if gpsCoordinatesEnabled features && person.saveGPSLocation then
+                    if origin == InitiatorEditForm && gpsCoordinatesEnabled features && person.saveGPSLocation then
                         updatePersonWithCoordinates personWithStoredCoordinates coordinates
 
                     else
@@ -9045,53 +9045,11 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                     []
 
                 else
-                    let
-                        testExecuted =
-                            testPerformedByExecutionNote executionNote
-                    in
-                    Maybe.map
-                        (\( resultsId, measurement ) ->
-                            let
-                                updatedValue =
-                                    (\value ->
-                                        { value
-                                            | performedTests =
-                                                if testExecuted then
-                                                    EverySet.insert test value.performedTests
-
-                                                else
-                                                    EverySet.remove test value.performedTests
-
-                                            -- When we have universal form, it's possible to change if test is performed
-                                            -- at lab, or at point of care.
-                                            -- Therefore, we need to make sure that test does not appear as completed,
-                                            -- which can happen, when nurse switches from point of care to lab.
-                                            , completedTests = EverySet.remove test value.completedTests
-                                            , resolutionDate = Date.add Days labExpirationPeriod currentDate
-                                        }
-                                    )
-                                        measurement.value
-                            in
-                            [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
-                        )
+                    labsResultsTestAddedMsgs currentDate
+                        test
+                        (testPerformedByExecutionNote executionNote)
                         assembled.measurements.labsResults
-                        |> Maybe.withDefault
-                            (if testExecuted then
-                                let
-                                    resultsValue =
-                                        Backend.Measurement.Model.LabsResultsValue
-                                            (EverySet.singleton test)
-                                            EverySet.empty
-                                            (Date.add Days labExpirationPeriod currentDate)
-                                            False
-                                            Nothing
-                                            Nothing
-                                in
-                                [ savePrenatalLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
-
-                             else
-                                []
-                            )
+                        (savePrenatalLabsResultsMsg id assembled.participant.person)
             )
         |> Maybe.withDefault []
 
@@ -9366,53 +9324,11 @@ generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
-                let
-                    testExecuted =
-                        testPerformedByExecutionNote executionNote
-                in
-                Maybe.map
-                    (\( resultsId, measurement ) ->
-                        let
-                            updatedValue =
-                                measurement.value
-                                    |> (\value ->
-                                            { value
-                                                | performedTests =
-                                                    if testExecuted then
-                                                        EverySet.insert test value.performedTests
-
-                                                    else
-                                                        EverySet.remove test value.performedTests
-
-                                                -- When we have universal form, it's possible to change if test is performed
-                                                -- at lab, or at point of care.
-                                                -- Therefore, we need to make sure that test does not appear as completed,
-                                                -- which can happen, when nurse switches from point of care to lab.
-                                                , completedTests = EverySet.remove test value.completedTests
-                                                , resolutionDate = Date.add Days labExpirationPeriod currentDate
-                                            }
-                                       )
-                        in
-                        [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
-                    )
+                labsResultsTestAddedMsgs currentDate
+                    test
+                    (testPerformedByExecutionNote executionNote)
                     assembled.measurements.labsResults
-                    |> Maybe.withDefault
-                        (if testExecuted then
-                            let
-                                resultsValue =
-                                    Backend.Measurement.Model.LabsResultsValue
-                                        (EverySet.singleton test)
-                                        EverySet.empty
-                                        (Date.add Days labExpirationPeriod currentDate)
-                                        False
-                                        Nothing
-                                        Nothing
-                            in
-                            [ saveNCDLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
-
-                         else
-                            []
-                        )
+                    (saveNCDLabsResultsMsg id assembled.participant.person)
             )
         |> Maybe.withDefault []
 

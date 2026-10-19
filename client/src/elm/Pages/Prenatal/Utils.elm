@@ -2,7 +2,7 @@ module Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, applyHypertension
 
 import AssocList as Dict
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc, testPerformedByExecutionNote)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -16,7 +16,6 @@ import Measurement.Utils
     exposing
         ( generateVaccinationProgressForVaccine
         , hivSignsAnswered
-        , testPerformedByExecutionNote
         , toEverySet
         , viewAdministeredMedicationCustomLabel
         , viewAdministeredMedicationQuestion

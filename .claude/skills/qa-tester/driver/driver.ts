@@ -335,14 +335,13 @@ test('qa driver', async () => {
       });
     },
     /**
-     * Records an expectation the plan set from the code. A mismatch takes a screenshot
-     * and stops the scenario, so the run pauses only where reality disagrees.
+     * Records an expectation the plan set from the code. A mismatch stops the scenario,
+     * and its reply carries a screenshot. Synchronous, so a missing `await` cannot crash the driver.
      */
-    check: async (label: string, actual: unknown, expected: unknown) => {
+    check: (label: string, actual: unknown, expected: unknown) => {
       const ok = JSON.stringify(actual) === JSON.stringify(expected);
       checks.push({ label, ok, actual, expected });
       if (!ok) {
-        await qa.shot(`check-failed`);
         throw new Error(`check failed: ${label}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
       }
     },

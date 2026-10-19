@@ -1,6 +1,6 @@
 ---
 name: pr-first-review-workflow
-description: "PR goes up FIRST, then the review; findings are posted as inline PR comments; I present analysis and wait for approval before fixing"
+description: "PR goes up FIRST; two medium review rounds — round 1 I fix as I judge, unposted; round 2 posted as inline PR comments, analysis, wait for approval"
 metadata: 
   node_type: memory
   type: feedback
@@ -13,9 +13,27 @@ a development, before asking for a reiew, open a PR - I want to see the code. Th
 review, I want the review comments to be made on that PR, so I could see them in Github. Then, you
 present your analysis, what needs fixing and don't execute before I approve."*):
 
+⭐ **TWO ROUNDS since 2026-10-14** (user: *"run a review (medium) once development is completed,
+address the comments as you see fit (no need to post the comments and the answers on PR), then run
+another review (medium), and post the comments on the PR for me to see."*):
+
+- **Round 1 — mine.** Medium review right after the PR is up. Triage and fix as I judge, push.
+  Nothing posted to the PR, no approval wait; a short chat list of what was fixed or declined.
+- **Round 2 — the user's.** Medium review on the pushed head. Steps 3–5 below apply to it:
+  post inline, analysis with links, wait for approval, then reply and resolve.
+- **Then suggest QA** (user, 2026-10-14: *"after second round of review is addressed, suggest if
+  it's worth testing the develoment with qa-tester skill"*). Say whether a `qa-tester` run is worth
+  it and why; suggest only, the user decides.
+- **In the same message, ask whether to move the PR to QA** (user, 2026-10-14: *"ask if you want
+  to move the PR to QA. If I approve, assign Ready for QA label to the PR"*). On approval:
+  `gh api repos/TIP-Global-Health/eheza-app/issues/<N>/labels -f 'labels[]=Ready for QA'`.
+
+Steps 2–5 below describe round 2 unless they say otherwise.
+
 1. **Develop, commit, push, open the PR** — before any review. The user wants to read the code on
    GitHub. Issue link is the FIRST body line ([[pr-description-issue-link-first-line]]).
-2. **Run the medium review myself, right after the PR is up** — CHANGED 2026-10-11, user: *"From
+2. **Run the medium review myself, right after the PR is up** — this is round 1; round 2 follows
+   its pushed fixes (two-round section above). CHANGED 2026-10-11, user: *"From
    now on, run medium reviews yourself"*. Invoke `Skill({skill: "code-review", args: "medium
    <branch>"})` in the same turn that opens the PR, and say in the announcement that it is running.
    `high` and above are still NEVER self-run (section below). The 100% rule that follows now means
@@ -73,6 +91,12 @@ present your analysis, what needs fixing and don't execute before I approve."*):
    Fall back to a PR-level comment (`gh api repos/O/R/issues/N/comments -f body=...`) ONLY when the line
    is not in the diff — which includes lines a later force-push REMOVED. To revise a posted comment:
    PATCH `pulls/comments/<id>` (inline) or `issues/comments/<id>` (PR-level).
+
+   **Once a finding is fixed or declined, reply on its thread, then resolve it** (user, 2026-10-14:
+   threads were left answered but open on four PRs). `gh` has no command; use GraphQL:
+   `gh api graphql -f query='mutation($id:ID!){resolveReviewThread(input:{threadId:$id}){thread{isResolved}}}' -f id=<thread id>`.
+   Thread ids come from `pullRequest(number:N){reviewThreads(first:100){nodes{id isResolved}}}`.
+   A PR-level comment has no thread to resolve; the reply is enough.
 4. **Present my analysis** — which findings are real, which are not worth acting on, and why.
    ⛔ **Every finding carries the link to its own PR comment** (user, 2026-09-09: *"when review is
    analysed, findings are treated as finding 1, 2, 3 ... But it's hard to match which is which on
@@ -86,7 +110,7 @@ present your analysis, what needs fixing and don't execute before I approve."*):
 
    `html_url` is also returned per comment in the POST response. Every finding, every round,
    declined ones included.
-5. **STOP. Do not fix anything until the user approves.** Approval comes *after* the analysis, not before the review. Once approved, run it through: fix,
+5. **STOP after round 2. Do not fix its findings until the user approves.** Approval comes *after* the analysis, not before the review. Once approved, run it through: fix,
    re-verify, push, watch CI to completion — but **ask before any Copilot request** (below).
 
 ## ⛔ NEVER request a Copilot review without asking first (2026-08-02)

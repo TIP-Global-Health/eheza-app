@@ -1119,7 +1119,6 @@ export async function registerChild(
 ): Promise<{ firstName: string; secondName: string; fullName: string }> {
   const ageMonths = options?.ageMonths ?? 24;
   const firstName = options?.firstName ?? `TestChild${Date.now()}`;
-  const secondName = 'E2ETest';
   const isFemale = options?.isFemale ?? false;
   const isChw = options?.isChw ?? false;
 
@@ -1149,28 +1148,12 @@ export async function registerChild(
     .locator('.ui.grid .column', { hasText: 'First Name:' })
     .waitFor({ timeout: 10000 });
 
-  // Fill the registration form.
-  await formInput(page, 'First Name:').fill(firstName);
-  await formInput(page, 'Second Name:').fill(secondName);
-
   // Set date of birth.
   const dob = new Date();
   dob.setMonth(dob.getMonth() - ageMonths);
   await setDate(page, dob);
 
-  // Select gender.
-  const genderRadios = page
-    .locator('.ui.grid')
-    .filter({ hasText: 'Gender:' })
-    .locator('input[type="radio"]');
-  if (isFemale) {
-    await genderRadios.last().check();
-  } else {
-    await genderRadios.first().check();
-  }
-
-  // Child required field.
-  await selectByLabel(page, 'Mode of delivery:', 1);
+  const names = await fillChildRegistrationFields(page, firstName, isFemale);
 
   if (!isChw) {
     // Nurse: fill address (cascading dropdowns) and health center.
@@ -1198,6 +1181,35 @@ export async function registerChild(
   await page
     .locator(`div.page-participant.individual.${participantClass}`)
     .waitFor({ timeout: 30000 });
+
+  return names;
+}
+
+/**
+ * Fill the fields every child registration asks for: names (second name
+ * `E2ETest`), gender and mode of delivery. Set the date of birth first —
+ * Mode of delivery appears only for a child.
+ */
+export async function fillChildRegistrationFields(
+  page: Page,
+  firstName: string,
+  isFemale: boolean,
+): Promise<{ firstName: string; secondName: string; fullName: string }> {
+  const secondName = 'E2ETest';
+  await formInput(page, 'First Name:').fill(firstName);
+  await formInput(page, 'Second Name:').fill(secondName);
+
+  const genderRadios = page
+    .locator('.ui.grid')
+    .filter({ hasText: 'Gender:' })
+    .locator('input[type="radio"]');
+  if (isFemale) {
+    await genderRadios.last().check();
+  } else {
+    await genderRadios.first().check();
+  }
+
+  await selectByLabel(page, 'Mode of delivery:', 1);
 
   return { firstName, secondName, fullName: `${secondName} ${firstName}` };
 }

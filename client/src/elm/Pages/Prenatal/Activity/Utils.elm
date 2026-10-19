@@ -1,4 +1,4 @@
-module Pages.Prenatal.Activity.Utils exposing (activityCompleted, appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, bmiToPrePregnancyClassification, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectActivity, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generateDangerSignsListForChw, generateFutureVaccinationsDataByProgress, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, highBloodPressureCondition, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mandatoryActivitiesForAssessmentCompleted, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, noDangerSigns, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMeasuredHeight, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, resolveWarningPopupContentForUrgentDiagnoses, respiratoryRateElevated, skipObstetricHistorySecondStep, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview, weightGainStandardsByPrePregnancyClassificationHealthyStart, weightGainStandardsPerPrePregnancyClassification, zscoreToPrePregnancyClassification)
+module Pages.Prenatal.Activity.Utils exposing (activityCompleted, appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, bmiToPrePregnancyClassification, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, dangerSignsPresentAtEncounter, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectActivity, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generateDangerSignsListForChw, generateFutureVaccinationsDataByProgress, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, highBloodPressureCondition, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mandatoryActivitiesForAssessmentCompleted, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, noDangerSigns, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMeasuredHeight, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolveNextVisitDate, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, resolveWarningPopupContentForUrgentDiagnoses, respiratoryRateElevated, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview, weightGainStandardsByPrePregnancyClassificationHealthyStart, weightGainStandardsPerPrePregnancyClassification, zscoreToPrePregnancyClassification)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PrenatalEncounterId)
@@ -11,6 +11,7 @@ import Backend.Measurement.Utils
         , getHeightValue
         , getMeasurementValueFunc
         , muacValueFunc
+        , testPerformedByExecutionNote
         , weightValueFunc
         )
 import Backend.Person.Model exposing (Person)
@@ -49,7 +50,6 @@ import Measurement.Utils
         , medicationAdministrationFormInputsAndTasks
         , medicationAdministrationFormWithDefault
         , resolveLabTestDate
-        , testPerformedByExecutionNote
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         , vitalsFormWithDefault
@@ -57,7 +57,7 @@ import Measurement.Utils
 import Measurement.View exposing (viewActionTakenLabel, vitalsFormInputsAndTasks)
 import Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, BirthPlanForm, BreastExamForm, BreastfeedingForm, DangerSignsForm, ExaminationData, FollowUpForm, GUExamForm, ImmunisationData, MedicalHistoryForm, MedicationData, MedicationForm, MentalHealthForm, Msg(..), NextStepsData, NutritionAssessmentForm, ObstetricFormFirstStep, ObstetricFormSecondStep, ObstetricalExamForm, PregnancyDatingForm, PregnancyTestForm, PrenatalVaccinationForm, SocialHistoryForm, SpecialityCareForm, SymptomReviewForm, TreatmentReviewData, UltrasoundForm)
 import Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), SymptomReviewStep(..), TreatmentReviewTask(..))
-import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferalRequired, generateGravida, generatePara, getAllActivities)
+import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferalRequired, getAllActivities, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
 import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, hypertensionDiagnoses, labTestWithImmediateResult, medicationDistributionFormWithDefaultInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication)
 import Pages.Utils
@@ -568,6 +568,84 @@ expectNextStepsTask currentDate assembled task =
                 , ChwSecondEncounter
                 , ChwThirdPlusEncounter
                 ]
+                -- Asked only when a next visit date can be computed. It comes
+                -- from the pregnancy's EGA, so a pregnancy with no LMP has none.
+                && isJust (resolveNextVisitDate assembled)
+
+
+resolveNextVisitDate : AssembledData -> Maybe NominalDate
+resolveNextVisitDate assembled =
+    Maybe.map (calculateEGAWeeks assembled.encounter.startDate) assembled.globalLmpDate
+        |> Maybe.map
+            (\egaWeekCurrent ->
+                let
+                    -- If moderate Anemia was diagnosed, next visit is supposed
+                    -- to take place within 4 weeks.
+                    moderateAnemiaDiagnosed =
+                        diagnosedAnyOf [ DiagnosisModerateAnemiaInitialPhase, DiagnosisModerateAnemiaRecurrentPhase ] assembled
+
+                    gap =
+                        if egaWeekCurrent < 20 then
+                            if moderateAnemiaDiagnosed then
+                                4
+
+                            else
+                                8
+
+                        else if egaWeekCurrent < 26 then
+                            if moderateAnemiaDiagnosed then
+                                4
+
+                            else
+                                6
+
+                        else if egaWeekCurrent < 30 then
+                            4
+
+                        else
+                            let
+                                egaWeekOnFirstVisit =
+                                    Maybe.map2 calculateEGAWeeks
+                                        (assembled.encounter.startDate
+                                            :: List.map (\( date, _, _ ) -> date) assembled.chwPreviousMeasurementsWithDates
+                                            ++ List.map .startDate assembled.nursePreviousEncountersData
+                                            |> List.sortWith Date.compare
+                                            |> List.head
+                                        )
+                                        assembled.globalLmpDate
+                            in
+                            if egaWeekCurrent < 32 then
+                                let
+                                    firstVisitAt22To27 =
+                                        Maybe.map (\date -> (date >= 22) && (date < 28)) egaWeekOnFirstVisit
+                                            |> Maybe.withDefault False
+                                in
+                                if firstVisitAt22To27 then
+                                    2
+
+                                else
+                                    4
+
+                            else if egaWeekCurrent < 34 then
+                                let
+                                    firstVisitAt28Plus =
+                                        Maybe.map (\date -> date >= 28) egaWeekOnFirstVisit
+                                            |> Maybe.withDefault False
+                                in
+                                if firstVisitAt28Plus then
+                                    2
+
+                                else
+                                    4
+
+                            else if egaWeekCurrent < 40 then
+                                2
+
+                            else
+                                1
+                in
+                Date.add Weeks gap assembled.encounter.startDate
+            )
 
 
 nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
@@ -935,20 +1013,6 @@ historyTaskCompleted assembled task =
 
         OutsideCare ->
             isJust assembled.measurements.outsideCare
-
-
-skipObstetricHistorySecondStep : Maybe ObstetricHistoryValue -> Bool
-skipObstetricHistorySecondStep obstetricHistoryValue =
-    let
-        gravida =
-            Maybe.map generateGravida obstetricHistoryValue
-                |> Maybe.withDefault ""
-
-        para =
-            Maybe.map generatePara obstetricHistoryValue
-                |> Maybe.withDefault ""
-    in
-    gravida == "01" && para == "0000"
 
 
 resolveExaminationTasks : AssembledData -> List ExaminationTask
@@ -1370,36 +1434,40 @@ expectPrenatalPhoto currentDate assembled =
 
 noDangerSigns : AssembledData -> Bool
 noDangerSigns assembled =
+    noDangerSignsAtEncounter assembled.encounter.encounterType assembled.measurements
+
+
+{-| A CHW postpartum encounter records the mother's and the child's signs.
+The other encounters with a Danger Signs activity record the pregnancy signs.
+-}
+noDangerSignsAtEncounter : PrenatalEncounterType -> PrenatalMeasurements -> Bool
+noDangerSignsAtEncounter encounterType measurements =
     let
-        getDangerSignsType getFunc =
-            assembled.measurements.dangerSigns
-                |> Maybe.map (Tuple.second >> .value >> getFunc >> EverySet.toList)
-                |> Maybe.withDefault []
-
-        dangerSignsEmpty emptySign signsList =
-            List.isEmpty signsList || signsList == [ emptySign ]
+        dangerSignsEmpty emptySign signs =
+            EverySet.isEmpty signs || signs == EverySet.singleton emptySign
     in
-    case assembled.encounter.encounterType of
-        ChwPostpartumEncounter ->
-            let
-                motherSignsEmpty =
-                    getDangerSignsType .postpartumMother
-                        |> dangerSignsEmpty NoPostpartumMotherDangerSigns
+    getMeasurementValueFunc measurements.dangerSigns
+        |> Maybe.map
+            (\value ->
+                case encounterType of
+                    ChwPostpartumEncounter ->
+                        dangerSignsEmpty NoPostpartumMotherDangerSigns value.postpartumMother
+                            && dangerSignsEmpty NoPostpartumChildDangerSigns value.postpartumChild
 
-                childSignsEmpty =
-                    getDangerSignsType .postpartumChild
-                        |> dangerSignsEmpty NoPostpartumChildDangerSigns
-            in
-            motherSignsEmpty && childSignsEmpty
-
-        _ ->
-            getDangerSignsType .signs
-                |> dangerSignsEmpty NoDangerSign
+                    _ ->
+                        dangerSignsEmpty NoDangerSign value.signs
+            )
+        |> Maybe.withDefault True
 
 
 dangerSignsPresent : AssembledData -> Bool
 dangerSignsPresent assembled =
-    isJust assembled.measurements.dangerSigns && not (noDangerSigns assembled)
+    dangerSignsPresentAtEncounter assembled.encounter.encounterType assembled.measurements
+
+
+dangerSignsPresentAtEncounter : PrenatalEncounterType -> PrenatalMeasurements -> Bool
+dangerSignsPresentAtEncounter encounterType measurements =
+    not (noDangerSignsAtEncounter encounterType measurements)
 
 
 generateDangerSignsListForNurse : AssembledData -> List DangerSign
@@ -2279,10 +2347,17 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     )
                 |> Maybe.withDefault False
 
+        -- A load recorded as undetectable is under 20 copies, whatever number
+        -- is stored with it.
         hivDetectableViralLoadDiagnosed =
             getMeasurementValueFunc measurements.hivPCRTest
-                |> Maybe.andThen
-                    (.hivViralLoad >> Maybe.map (\viralLoad -> viralLoad >= 20))
+                |> Maybe.map
+                    (\value ->
+                        (value.hivViralLoadStatus /= Just ViralLoadUndetectable)
+                            && (Maybe.map (\viralLoad -> viralLoad >= 20) value.hivViralLoad
+                                    |> Maybe.withDefault False
+                               )
+                    )
                 |> Maybe.withDefault False
 
         -- Partner is not taking ARVs, or is taking them without reaching
@@ -2443,9 +2518,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
         highRiskPreeclampsiaDiagnosedBySignsAndPreviousDiagnoses =
             let
                 byPreviousPreeclampsia =
-                    List.filterMap (.obstetricHistoryStep2 >> getMeasurementValueFunc)
-                        allMeasurements
-                        |> List.head
+                    obstetricHistoryStep2
                         |> Maybe.map
                             (\value ->
                                 EverySet.member ObstetricHistoryPreeclampsiaPreviousPregnancy value.signs
@@ -2493,6 +2566,19 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             assembled.measurements
                 :: (List.map .measurements assembled.nursePreviousEncountersData |> List.reverse)
 
+        obstetricHistory =
+            List.filterMap (.obstetricHistory >> getMeasurementValueFunc) allMeasurements
+                |> List.head
+
+        -- Step 2 answers count only while the latest step 1 records an earlier pregnancy.
+        obstetricHistoryStep2 =
+            if skipObstetricHistorySecondStep obstetricHistory then
+                Nothing
+
+            else
+                List.filterMap (.obstetricHistoryStep2 >> getMeasurementValueFunc) allMeasurements
+                    |> List.head
+
         resolveEGAWeeksAndThen func =
             resolveEGAInWeeksAndThen func egaInWeeks
 
@@ -2513,9 +2599,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                                         assembled.globalLmpDate
 
                                 totalPregnancies =
-                                    List.filterMap (.obstetricHistory >> getMeasurementValueFunc)
-                                        allMeasurements
-                                        |> List.head
+                                    obstetricHistory
                                         |> Maybe.map
                                             (\value ->
                                                 value.termPregnancy + value.preTermPregnancy
@@ -2549,9 +2633,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                                 |> Maybe.withDefault False
 
                         byStillbornChildren =
-                            List.filterMap (.obstetricHistory >> getMeasurementValueFunc)
-                                allMeasurements
-                                |> List.head
+                            obstetricHistory
                                 |> Maybe.map
                                     (\value ->
                                         value.stillbirthsAtTerm + value.stillbirthsPreTerm > 0
@@ -2559,9 +2641,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                                 |> Maybe.withDefault False
 
                         byObstetricHistorySigns =
-                            List.filterMap (.obstetricHistoryStep2 >> getMeasurementValueFunc)
-                                allMeasurements
-                                |> List.head
+                            obstetricHistoryStep2
                                 |> Maybe.map
                                     (\value ->
                                         let

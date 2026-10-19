@@ -61,37 +61,19 @@ RECORD=1 ./node_modules/.bin/playwright test     # Headed, with video recording 
 # converted to .mp4 where ffmpeg is installed)
 ```
 
-### Deployment
-
-```bash
-ddev auth ssh && ddev gulp publish && ddev robo deploy:pantheon
-```
-
 ## Architecture
-
-Elm source lives in `client/src/elm/` (plus generated code in `src/generated/`); the Drupal
-install profile in `server/hedley/`, with its modules under `hedley/modules/custom/`.
-`client/src/elm/LocalConfig.elm` is gitignored — copy it from `LocalConfig.Example.elm`.
 
 ### Drupal configuration
 
 Configuration is managed as code via the **Features** module. After changing config in UI, export with `drush fu <feature_name>`.
 
-### Data Sync
-
-Offline-first: the Elm `SyncManager` handles bidirectional sync with the backend REST API. Data persists in browser storage offline; Drupal + MariaDB is the source of truth. Advanced Queue processes background tasks server-side.
-
 ### Feature Flags
 
-Programs are toggled via `drush vset hedley_admin_feature_<name>_enabled 1|0`. The flag names are `family_nutrition`, `gps_coordinates`, `group_education`, `healthy_start`, `hiv_management`, `ncda`, `report_to_whatsapp`, `stock_management_hc`, `stock_management_village`, `tuberculosis_management`; the canonical list is `hedley_admin_get_available_features()` in `hedley_admin.module`.
+Programs are toggled via `drush vset hedley_admin_feature_<name>_enabled 1|0`. The flag names are listed in `hedley_admin_get_available_features()` in `hedley_admin.module`.
 
 ### Super User Mode
 
 `ddev drush vset hedley_super_user_mode 1` — bypasses content unpublishing/deletion restrictions and allows resetting device pairing codes on already-paired devices. Disable with `ddev drush vset hedley_super_user_mode 0`.
-
-## CI (CircleCI)
-
-Jobs are defined in `.circleci/config.yml`; the scripts they run live in `ci-scripts/`.
 
 ## Local Setup
 
@@ -125,27 +107,8 @@ Two things stay single-instance, and no worktree scheme changes that:
 
 ### Moving a station
 
-Work moves between machines through the repository, so anything the work depends on
-belongs in it. These travel because they are tracked: `.claude/backlog/` (the queue and
-its entries), `.claude/memory/` (the accumulated rules, verification lessons and declined-work
-decisions), `.claude/skills/`, `.claude/agents/`, `.claude/scripts/`, and
-`.claude/settings.json` — which wires the `Stop` hook that commits and pushes the backlog
-on `develop`, so records cannot be left behind on the station that made them.
-
-These do **not** travel, and each new station recreates them:
-
-| what | why it stays | cost of not having it |
-|---|---|---|
-| `.claude/settings.local.json` | globally gitignored | more permission prompts; nothing breaks |
-| `.git/info/exclude` | per-clone by design | `.claude/hooks/` is excluded here only |
-| `client/src/elm/LocalConfig.elm`, `.ddev/config.local.yaml` | gitignored config | covered by Local Setup above |
-| `server/.pantheon-*/` | deploy checkouts | recreated by the deploy skills |
-| `<repo>-wt/` | per-item worktrees | recreated by `.claude/scripts/new-worktree.sh <branch>` |
-
-Memory lives in the repo only because each station points Claude Code at it: set
-`"autoMemoryDirectory": "<repo>/.claude/memory"` in `.claude/settings.local.json` — that key is
-deliberately ignored in checked-in project settings, so it has to be set per station. Without it a
-station writes to `~/.claude/projects/<project>/memory/` and the two copies drift.
+Anything the work depends on belongs in tracked `.claude/` files. Per-station setup, including
+`autoMemoryDirectory`, is in the `new-station` skill.
 
 ## Code Conventions
 

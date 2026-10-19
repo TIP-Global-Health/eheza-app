@@ -1,4 +1,4 @@
-module Components.ReportToWhatsAppDialog.Model exposing (CountryCode(..), DialogState(..), Model, Msg(..), PhoneData, ReportComponentAntenatal(..), ReportComponentNCD(..), ReportComponentWellChild(..), ReportComponentsConfig, ReportComponentsList(..), ReportType(..), emptyModel, emptyPhoneData)
+module Components.ReportToWhatsAppDialog.Model exposing (CountryCode(..), DialogState(..), Model, Msg(..), PhoneData, ReportComponentAntenatal(..), ReportComponentNCD(..), ReportComponentWellChild(..), ReportComponentsConfig, ReportComponentsList(..), ReportType(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
@@ -29,13 +29,6 @@ type DialogState
 type alias PhoneData =
     { countryCode : CountryCode
     , phone : String
-    }
-
-
-emptyPhoneData : PhoneData
-emptyPhoneData =
-    { countryCode = CountryCodeRwanda
-    , phone = ""
     }
 
 

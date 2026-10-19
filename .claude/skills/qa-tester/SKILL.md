@@ -1,6 +1,6 @@
 ---
 name: qa-tester
-description: Act as a manual QA tester for an E-Heza issue/PR — verify in the running app that the change behaves as intended, the way an experienced human tester would, and record the evidence. Trigger when the user asks to QA, manually verify, hand-test, or smoke-test an issue or PR (e.g. "/qa-tester 2124", "QA this PR", "verify #2124 in the app"). NOT for writing automated Playwright tests — use the e2e-test skill for that.
+description: Act as a manual QA tester for an E-Heza issue/PR — verify in the running app that the change behaves as intended, the way an experienced human tester would, and record the evidence. Trigger when the user asks to QA, manually verify, hand-test, or smoke-test an issue or PR (e.g. "/qa-tester 2124", "QA this PR", "verify #2124 in the app"), or to watch for PRs labelled Ready for QA ("/loop /qa-tester watch"). NOT for writing automated Playwright tests — use the e2e-test skill for that.
 ---
 
 # QA Tester Skill for E-Heza
@@ -15,6 +15,58 @@ not reach, and its outcome is recorded so it never needs repeating.
 drive every encounter type through the real UI — `h.prenatal.completeDangerSigns(page)`,
 `h.common.registerAdult(...)`, `h.common.openActivity(...)`. The QA driver (below) runs them
 in a browser it keeps open, so a known path costs one command, not one tool call per click.
+
+**A run does not stop to ask.** Given a PR number, carry on until the report and recordings
+are posted. Stop only when blocked, or before posting a FAIL comment or an issue. A watch run
+stops for neither (see Watch mode).
+
+## Watch mode — `/loop /qa-tester watch`
+
+The user starts the watch in a session kept open for QA, and again after a reboot. Each PR
+moves through labels: `Ready for QA` (set by the developer) → `QA Running` → one result.
+The loop session only dispatches. Each PR is run by a fresh subagent, so the loop's context
+stays small and no PR's run carries over into the next.
+
+The loop paces itself, and each tick does this:
+
+1. If a QA subagent this session started is still running (`ListAgents`), the tick ends:
+   wake again in 1800 s, `noop: true`. Its completion notice wakes the loop sooner.
+2. `bash .claude/skills/qa-tester/scripts/qa-watch.sh next`. If it prints nothing, the tick
+   ends: `ScheduleWakeup` in 1200 s, `noop: true`, the same prompt.
+3. `qa-watch.sh ready`. Anything but `ready` is a station problem, not the PR's: tell the
+   user what is missing, change no label, and wake again in 1200 s with `noop: false`.
+   Never start or restart ddev or gulp yourself.
+4. `qa-watch.sh label <pr> running`, which also removes `Ready for QA`. Then start one
+   `general-purpose` subagent with this prompt, and wake again in 1800 s:
+
+   > Run the qa-tester skill (Skill tool, `qa-tester`, args `<pr>`) in watch mode, from
+   > Step 1 to the learning loop, without stopping to ask. Do not change the PR's labels.
+   > Start your reply with one line, `RESULT: approved|followup|blocked|ready — <why>`,
+   > then give the report and recordings links, any drafted issue, and any helper proposal.
+
+5. When the subagent finishes, set the label from its `RESULT` line with
+   `qa-watch.sh label <pr> <state>`, and relay its links, drafted issue and helper proposal
+   to the user. With no `RESULT` line, leave `QA Running`, so the next tick runs it again.
+   Then wake again in 60 s, so a second labelled PR does not wait.
+
+The subagent picks the result:
+
+- `approved` — every row passed.
+- `followup` — a row failed because the PR is wrong (case 1 under "When you find a bug").
+  The FAIL comment is posted without waiting for approval.
+- `blocked` — the PR could not be tested: it does not build, a screen cannot be reached, or
+  its data cannot be set up. The report says what blocked it. Any blocked row makes the
+  run blocked, unless another row failed, which makes it `followup`.
+- `ready` — the run stopped on a station problem, such as local changes to the PR's files
+  in Step 2. Nothing is posted; the PR goes back in the queue.
+
+`next` lists a PR labelled `QA Running` first. When no subagent of this session is running
+it, its run was cut short, for example when a session closed. Run it again from the start;
+if that run already posted a report, the new run replaces it with `--update`.
+
+A watch run never posts a new issue for a pre-existing bug, and nobody is there to answer a
+helper proposal: both go in the subagent's reply, for the loop to relay. Removing
+`Approved by QA` after new commits land is the user's manual step.
 
 ## Knowledge base — read first, update last
 
@@ -46,7 +98,14 @@ Do not write to the knowledge files mid-run; unvetted guesses never enter memory
 gh issue view <n> --comments    # intent: what should now be true
 gh pr view <n>                  # needs gh 2.99 or later, as does --attach below
 gh pr diff <n>                  # reality: what actually changed
+grep -lw "#<n>" .claude/backlog/items/*.md   # backlog item, if the work came from one
 ```
+
+A matching backlog item adds context: the code paths, how the defect happens, related items,
+and what was verified before merge. Read it when it exists; many PRs have none.
+
+When the backlog item disagrees with the issue or the PR, the issue and the PR win. The item
+records what was believed when it was written; they record what was asked and shipped.
 
 List every user-observable behaviour the diff touches: each new or changed screen, branch,
 message, or condition. The diff — not the issue text, not the commit subjects — defines
@@ -58,14 +117,16 @@ are not tested here: leave them out of the plan and the report.
 ## Step 2: Environment
 
 1. The PR's client code is in the **main tree** (`/var/www/html/ihangane`) — gulp serves
-   only that tree, and other sessions share it, so ask the user before taking it. Do not
+   only that tree, and other sessions share it. Starting a run is the go-ahead to take it;
+   stop only if the `git status` below shows changes you did not make. Do not
    check the PR branch out: a branch older than this skill swaps the skill's own files.
    Overlay only the files the PR changes, and unstage them, because the `Stop` hook commits
    whatever is staged:
 
    ```bash
    b=origin/<branch>; git fetch -q origin "${b#origin/}"
-   files=$(git diff --name-only "$(git merge-base develop $b)" $b -- client)
+   files=$(gh pr diff <n> --name-only | grep '^client/')
+   git status --short -- $files    # must print nothing: never overwrite local changes
    git checkout $b -- $files && git reset -q -- $files
    ```
 
@@ -93,7 +154,7 @@ are not tested here: leave them out of the plan and the report.
    client/src` must exit 0; comparing with HEAD gives false alarms. A fresh profile loads
    the new build; a used one needs `div.version-env` clicked and the update applied.
 
-## Step 3: Test plan — present before executing
+## Step 3: Test plan — present, then execute
 
 A table, one row per behaviour from Step 1, each written as a tester's instruction in plain
 words: where, what to do, and what to verify — "At an NCD encounter, in the Social History
@@ -101,7 +162,8 @@ form, answer that the patient drinks and smokes, enter both counts, save, and ve
 the drinks and cigarettes counts are stored as entered." Beside it, for your own use, how to
 reach it (the helper chain, or by hand with the route from app-map). Expected results come from the diff and the Elm view code that renders the screen —
 reading that code is part of planning, not a shortcut. Include negative cases where the diff has conditions (flag off, wrong role,
-boundary values). Present it and wait for approval.
+boundary values). Present it, then go straight on to Step 4 without waiting for approval.
+The user can interrupt to change it.
 
 ## Step 4: Execute
 
@@ -156,10 +218,31 @@ when unanswered), select values, the task counter, and whether Save is on.
 - **Native dialogs are dismissed automatically** (= Cancel). To accept one, register
   `page.once('dialog', d => d.accept())` in the same command, before the click.
 - **Photos**: `setInputFiles` on the Dropzone's hidden file input (as the photo helpers do).
-- Backend effects land only after sync. `h.common.syncAndWait(page)` waits for it; then
-  check with drush or the helpers' `query*` functions.
 - On an unexpected failure, check pitfalls and Step 2 before concluding the code is broken,
   and say explicitly whether it is an app bug or your own mistake.
+
+### Proving the data was saved
+
+Straight after Save, a form shows the clicks, not what was stored. So every test that
+saves data proves it three ways, each named in its plan row:
+
+1. **Uploaded.** Sync, then Device Status must show nothing left to upload. Only then
+   query the backend, with drush or the helpers' `query*` functions:
+
+   ```js
+   await h.common.syncAndWait(page);
+   await qa.click(page.locator('span.sync-icon'));
+   const hc = page.locator('.health-center', { hasText: 'Nyange' }).locator('.sync-status');
+   qa.check('all uploaded', /Remaining for Upload: 0\b/.test(await hc.innerText()), true);
+   ```
+2. **Loaded from the device.** Reload (`page.reload()`, signing in again if asked), reach
+   the form through the UI, and check every saved value. Now the screen shows stored data.
+3. **Downloaded.** Re-pair: `qa.sh stop`, `qa.sh start --fresh`, then `qa.freshDevice()`.
+   The new device starts empty, so saved values on the form prove they went up and came down.
+
+Re-pairing ends the browser session, so do it once, after the last test, and open every
+test's saved form in one recording, `qa-<pr>-after-repair.mp4`. For an ended encounter,
+open the screen that shows its data, such as the progress report.
 
 ### Recording
 
@@ -202,14 +285,16 @@ First decide which case you are in:
    environment ruled out gets reported.
 
 In all cases: a FAIL comment or a new issue is posted only after the user approves the
-drafted text. QA never fixes — even a one-liner. A found bug is not a pitfall; it feeds
+drafted text. In watch mode the FAIL comment is posted without approval; a new issue still
+waits, drafted in the run's reply. QA never fixes — even a one-liner. A found bug is not a pitfall; it feeds
 memory only as the route that exposed it (app-map) and the FAIL ledger row.
 
 ## Step 5: Report, post, and record
 
 Report to the user per plan row — pass/fail, what was observed, and the recording as a
 link (`file:///var/www/html/ihangane/client/qa-recordings/<pr>/qa-<pr>-<scenario>.mp4`).
-For failures, include the drafted comment or issue and ask for approval to post it.
+For failures, include the drafted comment or issue and ask for approval to post it — in
+watch mode, the posted FAIL comment's link and any drafted issue.
 
 **Then post the QA report to the PR — every run, pass or fail, without waiting for
 approval.** It opens with the caption
@@ -232,8 +317,9 @@ an earlier report instead of adding one. The report names no video files.
 
 **Then post the recordings as a separate comment**, one player per video. Preparation comes
 first, each as `**Preparation <k>:** <what is prepared, and which test needs it>`, then each
-test as `**Recording — test <n>:** <one line on what it shows>`, with its video referenced
-below it. Attach the files; `gh` uploads them and puts each player where its reference is:
+test as `**Recording — test <n>:** <one line on what it shows>`, and last
+`**After re-pairing:** <the saved values each test's form shows>`, each with its video below.
+Attach the files; `gh` uploads them and puts each player where its reference is:
 
 ```bash
 # recordings.md:  **Recording — test 1:** …  then a line  ![](client/qa-recordings/<pr>/qa-<pr>-<name>.mp4)
@@ -242,7 +328,8 @@ gh pr comment <pr> --body-file recordings.md --attach client/qa-recordings/<pr>/
 
 A video may be at most 10 MB on a Free plan. Check the posted comment renders a `<video>`.
 
-Then stop the driver and run the learning loop.
+Then stop the driver and run the learning loop. In watch mode, the reply opens with the `RESULT`
+line, and the loop sets the label.
 
 ## Fallback: Claude in Chrome
 

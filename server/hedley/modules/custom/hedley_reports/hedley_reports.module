@@ -628,7 +628,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     : '',
   ];
 
-  $sessions_ids = $zscores_by_encounter = $vaccinations_by_encounter = $muac_edema_by_encounter = [];
+  $sessions_ids = $zscores_by_encounter = $vaccinations_by_encounter = $muac_edema_by_encounter = $first_pregnancy_encounters = [];
   $prenatal_indicators_by_encounter = [
     'mms' => [],
     'us' => [],
@@ -880,6 +880,14 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         if (!empty($abortions) && $abortions > 0) {
           $prenatal_indicators_by_encounter['abortion'][] = $encounter_id;
         }
+        // First pregnancy, as skipObstetricHistorySecondStep decides it in the
+        // client: currently pregnant, and every pregnancy and child count is 0.
+        $previous_pregnancies = (int) $preterm + (int) $stillbirths_at_term + (int) $stillbirths_preterm + (int) $abortions
+          + (int) $measurement->field_term_pregnancy[LANGUAGE_NONE][0]['value']
+          + (int) $measurement->field_live_children[LANGUAGE_NONE][0]['value'];
+        if ($previous_pregnancies == 0 && !empty($measurement->field_currently_pregnant[LANGUAGE_NONE][0]['value'])) {
+          $first_pregnancy_encounters[] = $encounter_id;
+        }
         break;
 
       case HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_STEP2_CONTENT_TYPE:
@@ -1029,6 +1037,13 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         $sessions_ids[] = $encounter_id;
     }
   }
+
+  // The app skips obstetric history step 2 on a first pregnancy, so step 2
+  // answers left on that encounter do not count.
+  $prenatal_indicators_by_encounter['intrauterine-death'] = array_diff(
+    $prenatal_indicators_by_encounter['intrauterine-death'],
+    $first_pregnancy_encounters
+  );
 
   $encounters_data = [];
   $ai_diagnosis_mapping = hedley_reports_ai_diagnosis_mapping();

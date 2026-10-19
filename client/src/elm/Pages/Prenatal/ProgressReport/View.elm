@@ -1,4 +1,4 @@
-module Pages.Prenatal.ProgressReport.View exposing (view, viewTreatmentForOutsideCareDiagnosis)
+module Pages.Prenatal.ProgressReport.View exposing (matchCHWActivityAtEncounter, view, viewTreatmentForDiagnosis, viewTreatmentForOutsideCareDiagnosis)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -28,6 +28,7 @@ import Backend.Measurement.Model
         , RecommendedTreatmentSign(..)
         , ReferToFacilitySign(..)
         , ReferralFacility(..)
+        , ReinforceTreatmentSign(..)
         , SendToHCSign(..)
         , SpecialityCareSign(..)
         , TestExecutionNote(..)
@@ -53,7 +54,7 @@ import Backend.PrenatalActivity.Model
         , allTrimesters
         )
 import Backend.PrenatalActivity.Utils exposing (getEncounterTrimesterData)
-import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType, PrenatalProgressReportInitiator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Backend.Utils exposing (healthyStartEnabled, reportToWhatsAppEnabled)
@@ -88,7 +89,7 @@ import Pages.Prenatal.Activity.Utils
         , weightGainStandardsByPrePregnancyClassificationHealthyStart
         , weightGainStandardsPerPrePregnancyClassification
         )
-import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, getAllActivities, getFirstNurseEncounterMeasurements, resolveGlobalLmpValue)
+import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, getAllActivities, getFirstNurseEncounterMeasurements, getObstetricHistoryStep2, resolveGlobalLmpValue)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
 import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..), Model, Msg(..), medicalDiagnoses, obstetricalDiagnoses)
@@ -722,7 +723,7 @@ viewObstetricHistoryPane language measurements =
                 |> Maybe.withDefault []
 
         obstetricHistoryStep2 =
-            getMeasurementValueFunc measurements.obstetricHistoryStep2
+            getObstetricHistoryStep2 measurements
                 |> Maybe.map
                     (\value ->
                         let
@@ -1260,8 +1261,8 @@ viewChwActivityPane language currentDate isChw assembled =
 
         activitiesWithDate =
             List.map
-                (\( date, _, measurements ) ->
-                    ( date, List.filter (matchCHWActivityAtEncounter measurements) allCHWActions )
+                (\( date, encounterType, measurements ) ->
+                    ( date, List.filter (matchCHWActivityAtEncounter encounterType measurements) allCHWActions )
                 )
                 allMeasurementsWithDates
 
@@ -1299,8 +1300,8 @@ viewChwActivityPane language currentDate isChw assembled =
         ]
 
 
-matchCHWActivityAtEncounter : PrenatalMeasurements -> CHWAction -> Bool
-matchCHWActivityAtEncounter measurements activity =
+matchCHWActivityAtEncounter : PrenatalEncounterType -> PrenatalMeasurements -> CHWAction -> Bool
+matchCHWActivityAtEncounter encounterType measurements activity =
     case activity of
         ActionPregnancyDating ->
             isJust measurements.lastMenstrualPeriod
@@ -1309,20 +1310,7 @@ matchCHWActivityAtEncounter measurements activity =
             isJust measurements.pregnancyTest
 
         ActionDangerSignsPresent ->
-            getMeasurementValueFunc measurements.dangerSigns
-                |> Maybe.map
-                    (\value ->
-                        case EverySet.toList value.signs of
-                            [] ->
-                                False
-
-                            [ NoDangerSign ] ->
-                                False
-
-                            _ ->
-                                True
-                    )
-                |> Maybe.withDefault False
+            Pages.Prenatal.Activity.Utils.dangerSignsPresentAtEncounter encounterType measurements
 
         ActionReferredToHealthCenter ->
             getMeasurementValueFunc measurements.sendToHC
@@ -2185,6 +2173,13 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         diagnosisForProgressReport =
             diagnosisForProgressReportToString language diagnosis
 
+        diagnosisOnDateMessage =
+            diagnosisForProgressReport
+                ++ " "
+                ++ (String.toLower <| translate language Translate.On)
+                ++ " "
+                ++ formatDDMMYYYY date
+
         hypertensionTreatmentMessage =
             getMeasurementValueFunc measurements.medicationDistribution
                 |> Maybe.andThen .recommendedTreatmentSigns
@@ -2492,16 +2487,8 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Aspirin
                             |> Maybe.map
                                 (\treatmentMessage ->
-                                    let
-                                        diagnosisMessage =
-                                            diagnosisForProgressReport
-                                                ++ " "
-                                                ++ (String.toLower <| translate language Translate.On)
-                                                ++ " "
-                                                ++ formatDDMMYYYY date
-                                    in
                                     [ li []
-                                        [ p [] [ text diagnosisMessage ]
+                                        [ p [] [ text diagnosisOnDateMessage ]
                                         , p [] [ text treatmentMessage ]
                                         ]
                                     ]
@@ -2534,11 +2521,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> wrapWithLI
 
         noTreatmentAdministeredMessage =
-            diagnosisForProgressReport
-                ++ " "
-                ++ (String.toLower <| translate language Translate.On)
-                ++ " "
-                ++ formatDDMMYYYY date
+            diagnosisOnDateMessage
                 ++ " - "
                 ++ (String.toLower <| translate language Translate.NoTreatmentAdministered)
                 |> wrapWithLI
@@ -2603,16 +2586,8 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                                         in
                                         Maybe.map2
                                             (\tdf3TCTreatmentMessage dolutegravirTreatmentmessage ->
-                                                let
-                                                    diagnosisMessage =
-                                                        diagnosisForProgressReport
-                                                            ++ " "
-                                                            ++ (String.toLower <| translate language Translate.On)
-                                                            ++ " "
-                                                            ++ formatDDMMYYYY date
-                                                in
                                                 [ li []
-                                                    [ p [] [ text diagnosisMessage ]
+                                                    [ p [] [ text diagnosisOnDateMessage ]
                                                     , p [] [ text tdf3TCTreatmentMessage ]
                                                     , p [] [ text dolutegravirTreatmentmessage ]
                                                     ]
@@ -2658,16 +2633,8 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         treatmentMessageForMedication value.distributionSigns nonAdministrationReasons TDF3TC
                             |> Maybe.map
                                 (\tdf3TCTreatmentMessage ->
-                                    let
-                                        diagnosisMessage =
-                                            diagnosisForProgressReport
-                                                ++ " "
-                                                ++ (String.toLower <| translate language Translate.On)
-                                                ++ " "
-                                                ++ formatDDMMYYYY date
-                                    in
                                     [ li []
-                                        [ p [] [ text diagnosisMessage ]
+                                        [ p [] [ text diagnosisOnDateMessage ]
                                         , p [] [ text tdf3TCTreatmentMessage ]
                                         ]
                                     ]
@@ -2786,28 +2753,51 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.andThen
                     (\value ->
                         let
-                            nonAdministrationReasons =
-                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
-                        in
-                        Maybe.map2
-                            (\ironTreatmentMessage folicAcidTreatmentMessage ->
-                                let
-                                    diagnosisMessage =
-                                        diagnosisForProgressReport
-                                            ++ " "
-                                            ++ (String.toLower <| translate language Translate.On)
-                                            ++ " "
-                                            ++ formatDDMMYYYY date
-                                in
-                                [ li []
-                                    [ p [] [ text diagnosisMessage ]
-                                    , p [] [ text ironTreatmentMessage ]
-                                    , p [] [ text folicAcidTreatmentMessage ]
-                                    ]
+                            withDiagnosisMessage treatmentMessages =
+                                [ li [] <|
+                                    p [] [ text diagnosisOnDateMessage ]
+                                        :: List.map (\message -> p [] [ text message ]) treatmentMessages
                                 ]
-                            )
-                            (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Iron)
-                            (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons FolicAcid)
+                        in
+                        case value.reinforceTreatmentSigns of
+                            Just reinforceSigns ->
+                                -- Each reinforce question with the nurse's answer.
+                                -- A sign missing from the set was answered No.
+                                let
+                                    answerMessage question sign =
+                                        let
+                                            answer =
+                                                if EverySet.member sign reinforceSigns then
+                                                    Translate.Yes
+
+                                                else
+                                                    Translate.No
+                                        in
+                                        question ++ ": " ++ translate language answer
+
+                                    adherenceQuestion =
+                                        Translate.MedicationDistributionSign
+                                            >> Measurement.Utils.reinforceAdherenceQuestion language
+                                in
+                                withDiagnosisMessage
+                                    [ answerMessage (adherenceQuestion Fefol) ReinforceSignFefol
+                                    , answerMessage (adherenceQuestion MMS) ReinforceSignMMS
+                                    , answerMessage (translate language Translate.RepeatHemoglobinTestQuestion) ReinforceSignRepeatHemoglobinTest
+                                    ]
+                                    |> Just
+
+                            -- Without reinforce answers, the line lists Iron and Folic acid.
+                            Nothing ->
+                                let
+                                    nonAdministrationReasons =
+                                        Measurement.Utils.resolveMedicationsNonAdministrationReasons value
+                                in
+                                Maybe.map2
+                                    (\ironTreatmentMessage folicAcidTreatmentMessage ->
+                                        withDiagnosisMessage [ ironTreatmentMessage, folicAcidTreatmentMessage ]
+                                    )
+                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Iron)
+                                    (treatmentMessageForMedication value.distributionSigns nonAdministrationReasons FolicAcid)
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
@@ -3044,16 +3034,8 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         in
                         Maybe.map2
                             (\ceftriaxoneMessage azithromycinMessage ->
-                                let
-                                    diagnosisMessage =
-                                        diagnosisForProgressReport
-                                            ++ " "
-                                            ++ (String.toLower <| translate language Translate.On)
-                                            ++ " "
-                                            ++ formatDDMMYYYY date
-                                in
                                 [ li []
-                                    [ p [] [ text diagnosisMessage ]
+                                    [ p [] [ text diagnosisOnDateMessage ]
                                     , p [] [ text ceftriaxoneMessage ]
                                     , p [] [ text azithromycinMessage ]
                                     ]

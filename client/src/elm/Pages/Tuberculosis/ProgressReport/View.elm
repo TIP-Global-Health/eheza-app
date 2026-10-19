@@ -1,4 +1,4 @@
-module Pages.Tuberculosis.ProgressReport.View exposing (view)
+module Pages.Tuberculosis.ProgressReport.View exposing (view, viewAdverseEventsPane)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model
@@ -11,7 +11,7 @@ import Backend.Measurement.Model
         , TuberculosisHealthEducationSign(..)
         , TuberculosisPrescribedMedication(..)
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (adverseEventsReported, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Components.ReportToWhatsAppDialog.Model
 import Components.ReportToWhatsAppDialog.View
@@ -290,9 +290,13 @@ viewAdverseEventsPane language allEncountersData =
             List.filterMap
                 (\data ->
                     getMeasurementValueFunc data.measurements.treatmentReview
-                        |> Maybe.map
+                        |> Maybe.andThen
                             (\value ->
-                                ( data.startDate, value.adverseEvents )
+                                if adverseEventsReported value.adverseEvents then
+                                    Just ( data.startDate, value.adverseEvents )
+
+                                else
+                                    Nothing
                             )
                 )
                 allEncountersData

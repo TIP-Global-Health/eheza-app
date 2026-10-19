@@ -258,17 +258,34 @@ nutritionAssessmentGateTests =
                     }
             }
 
+        encounterId =
+            toEntityUuid "encounter"
+
+        run model msg =
+            update (Date.fromCalendarDate 2026 Time.Jul 27)
+                SiteRwanda
+                encounterId
+                emptyModelIndexedDb
+                msg
+                model
+
         preSave model msg =
             let
                 ( updatedModel, _, appMsgs ) =
-                    update (Date.fromCalendarDate 2026 Time.Jul 27)
-                        SiteRwanda
-                        (toEntityUuid "encounter")
-                        emptyModelIndexedDb
-                        msg
-                        model
+                    run model msg
             in
             ( updatedModel.warningPopupState, List.isEmpty appMsgs )
+
+        encounterMsgs model msg =
+            let
+                ( _, _, appMsgs ) =
+                    run model msg
+            in
+            appMsgs
+
+        encounterMsg =
+            Backend.Model.MsgWellChildEncounter encounterId
+                >> App.Model.MsgIndexedDb
 
         person =
             toEntityUuid "person"
@@ -335,6 +352,18 @@ nutritionAssessmentGateTests =
                 preSave (withHeadCircumference 45 False)
                     (PreSaveHeadCircumference person (Just 0.2) Nothing Nothing)
                     |> Expect.equal ( Nothing, False )
+        , test "a head circumference with a normal z-score clears the cephaly warnings" <|
+            \_ ->
+                encounterMsgs (withHeadCircumference 45 False)
+                    (PreSaveHeadCircumferenceWarning person (Just 0.2) Nothing Nothing)
+                    |> List.member (encounterMsg Backend.WellChildEncounter.Model.ClearHeadCircumferenceWarnings)
+                    |> Expect.equal True
+        , test "a head circumference with a high z-score clears nothing" <|
+            \_ ->
+                encounterMsgs (withHeadCircumference 55 False)
+                    (PreSaveHeadCircumferenceWarning person (Just 3.5) Nothing Nothing)
+                    |> List.member (encounterMsg Backend.WellChildEncounter.Model.ClearHeadCircumferenceWarnings)
+                    |> Expect.equal False
         ]
 
 

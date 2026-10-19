@@ -195,3 +195,93 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Rule:** measurement node types carry the module's prefix (`nutrition_height`, not
   `height`), so guessed names match nothing. Use the module's own query helper (`h.nutrition.queryBackendNodes(name)`) or
   read the types from the e2e spec for that encounter.
+
+## Overlaying from a merge base with a stale local develop
+
+- **Symptom:** the overlay copied `package.json`, `package-lock.json`, `gulpfile.js` and `elm.json` along with the PR's five Elm files, and overwrote a lock file the user had modified locally.
+- **Wrong conclusion:** `git diff $(git merge-base develop $b) $b` lists the PR's files.
+- **Rule:** local develop can be behind origin, so the merge base drags in commits already on origin/develop. Take the file list from `gh pr diff <n> --name-only`, and check `git status --short -- $files` is empty before checking out over them.
+
+## A scripted step after a helper that already finished the flow
+
+- **Symptom:** prenatal Next Steps ended on the main menu, and the script's own "Pause Encounter" click then waited 10 s and failed, leaving a dead tail on the video.
+- **Wrong conclusion:** the pause did not happen.
+- **Rule:** read what a helper does at its end before adding a step after it. `completeNextSteps` presses Pause Encounter on the Wait task itself.
+
+## Trusting the form straight after Save
+
+- **Symptom:** after Save, the reopened form showed the entered values, and the run called them saved.
+- **Wrong conclusion:** the data is stored, uploaded and readable by other devices.
+- **Rule:** the form after Save shows the clicks. Prove the upload (Remaining for Upload: 0), reload and reopen it, then re-pair and open it again (SKILL.md, Proving the data was saved).
+
+## Checking for an activity card before the encounter page has drawn it
+
+- **Symptom:** straight after closing the progress report, a script found no History card in To Do, switched to Completed, and then failed there.
+- **Wrong conclusion:** the activity moved to Completed, or the app lost it.
+- **Rule:** `isVisible()` does not wait. Click `#pending-tab`, then `waitFor` the card a few seconds before falling back to `#completed-tab`.
+
+## A check over an empty collection passes
+
+- **Symptom:** "no Next Steps card" passed, but the `.card` list it searched was empty — the encounter page draws no `.card` at all.
+- **Wrong conclusion:** the activity is absent.
+- **Rule:** before asserting that something is absent from a list, assert the list is not empty, or read a counter the page prints ("To Do (0)"). An absence proven by a selector that matches nothing proves nothing.
+
+## A server-side edit of a measurement skips what the app does after a save
+
+- **Symptom:** a test record changed with drush looked right, but the Case Management results record still named the test.
+- **Wrong conclusion:** the PR leaves the entry open.
+- **Rule:** saving a lab test in the app also rewrites the encounter's results record (`generate…LabsTestAddedMsgs`); a drush edit does not. A server-built fixture stands only for the record edited — say which follow-on records it leaves stale, and do not judge them.
+
+## Reading a Dashboard figure before its data loads
+
+- **Symptom:** straight after opening the CHW Dashboard, Case Management "Home Visit" read 0; a minute earlier it read 3.
+- **Wrong conclusion:** the figure changed, or the baseline is 0.
+- **Rule:** `page.goto('/')` reloads the app, and the cards read 0 until follow-ups load. Poll the value until it holds for a few seconds before recording it.
+
+## `backdateEncounter` also ends the visit
+
+- **Symptom:** a scenario needs a visit started yesterday and still open; the helper's backdate would have left it ended.
+- **Wrong conclusion:** the helper moves only the start date.
+- **Rule:** `h.common.backdateEncounter` sets both `value` and `value2` of `field_scheduled_date`, and `value2` is the end date (null = open). To keep a visit open, set only `value` in your own drush script.
+
+## Reloading as a CHW asks for the village again
+
+- **Symptom:** after `page.goto('/')` as CHW, waiting for `.wrap-cards` times out on a "VILLAGE" screen.
+- **Wrong conclusion:** the sign-in was lost or the app hung.
+- **Rule:** a full load makes a CHW pick the village again. Click "Akanduga at Mbirima" if it shows, or move by in-app navigation. The nurse's health centre choice survives a load.
+
+## Playwright's `page.clock` stalls the app
+
+- **Symptom:** with `page.clock.setSystemTime(...)`, a new nutrition visit's page showed a spinner for over a minute.
+- **Wrong conclusion:** the app cannot load a visit created on that date.
+- **Rule:** `page.clock` fakes the page's timers too, and once installed it stays until the driver restarts. To change the date, shift only `Date` (recipe in app-map, The QA driver).
+
+## A shifted page date leaves the service worker on the real date
+
+- **Symptom:** on 1 October (shifted), a new antenatal and an acute illness follow-up were missing from the dashboard and from Case Management until the page was reloaded.
+- **Wrong conclusion:** the app does not show new follow-ups straight away. At the real date it does.
+- **Rule:** with a shifted date, reload before reading any count, and say so in the report. Recheck anything odd at the real date before calling it a bug.
+
+## The participant page's back arrow goes to the search page
+
+- **Symptom:** a script waiting for the main menu after one back click timed out on "SEARCH EXISTING PARTICIPANTS".
+- **Wrong conclusion:** navigation broke.
+- **Rule:** from a participant page, press back until `.wrap-cards` shows, or reload to `/`.
+
+## A fixture that never reaches the defect passes on both builds
+
+- **Symptom:** the nurse's OPV form for a child followed by both programs showed doses 1, 2 in order and the right date range, with the PR.
+- **Wrong conclusion:** the fix is verified. The same screen on develop showed the same: with dose 1 at Child Scorecard and dose 2 at Well Child, develop's merge happened to come out in order.
+- **Rule:** for an ordering or merge fix, open the screen under test on develop first, with the same data. Swap the overlaid files back, wait for gulp, then apply the update in the driver. Only a fixture where develop shows the defect is evidence; keep the others as regression rows.
+
+## A scripted form flow that forgets a follow-up question
+
+- **Symptom:** after recording dose 2 "given previously", the script pressed Save, and the click failed on a disabled button.
+- **Wrong conclusion:** the save broke.
+- **Rule:** an Immunisation form asks again after each recorded dose while another is due. Work out from the dates which questions follow, and script each answer.
+
+## `qa.form()` calls a Save button disabled when it has neither class
+
+- **Symptom:** on prenatal Next Steps › Next ANC Visit, `qa.form()` reported `save: "disabled"`, while the screenshot showed a bright, pressable SAVE.
+- **Wrong conclusion:** the button is off, so its Save "doing nothing" is expected.
+- **Rule:** `qa.form()` reads `active` as enabled and anything else as disabled. `viewEncounterActionButton` sets neither class when allowed. Check for the `disabled` class, and look at the screenshot.
