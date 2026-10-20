@@ -3,6 +3,7 @@ module Backend.Dashboard.Model exposing
     , DashboardData
     , DeliveryLocation(..)
     , Msg(..)
+    , PregnancyOutcome(..)
     , PregnancyRecord
     , PrenatalIndicator(..)
     , PrenatalVisit
@@ -33,6 +34,7 @@ type alias PregnancyRecord =
     { healthCenter : HealthCenterId
     , edd : Maybe NominalDate
     , dateConcluded : Maybe NominalDate
+    , outcome : Maybe PregnancyOutcome
     , deliveryLocation : Maybe DeliveryLocation
     , visits : List PrenatalVisit
     , ultrasounds : List NominalDate
@@ -40,6 +42,14 @@ type alias PregnancyRecord =
     , preEclampsiaRisk : Bool
     , child : Maybe ChildRecord
     }
+
+
+type PregnancyOutcome
+    = OutcomeAbortion
+    | OutcomeLiveAtTerm
+    | OutcomeLivePreterm
+    | OutcomeStillbirthAtTerm
+    | OutcomeStillbirthPreterm
 
 
 type DeliveryLocation
@@ -61,13 +71,19 @@ type alias PrenatalVisit =
 type PrenatalIndicator
     = IndicatorAspirin
     | IndicatorCalcium
+    | IndicatorGwgAdequate
+    | IndicatorGwgInadequate
 
 
 {-| The newborn registered on the pregnancy, with the dates of its routine
-care visits.
+care visits. `birthWeight` is in grams; `birthWeightDate` is the date of the
+exam that recorded it.
 -}
 type alias ChildRecord =
-    { visits : List NominalDate
+    { birthDate : Maybe NominalDate
+    , birthWeight : Maybe Int
+    , birthWeightDate : Maybe NominalDate
+    , visits : List NominalDate
     }
 
 

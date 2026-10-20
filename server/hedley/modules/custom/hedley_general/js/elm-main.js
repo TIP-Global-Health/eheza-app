@@ -10321,31 +10321,69 @@ var $author$project$Backend$Dashboard$Update$allSites = A6($author$project$Backe
 var $author$project$Backend$Dashboard$Model$HandleSyncResponse = function (a) {
 	return {$: 'HandleSyncResponse', a: a};
 };
-var $author$project$Backend$Dashboard$Model$PregnancyRecord = F9(
-	function (healthCenter, edd, dateConcluded, deliveryLocation, visits, ultrasounds, highRisk, preEclampsiaRisk, child) {
-		return {edd: edd, child: child, visits: visits, highRisk: highRisk, ultrasounds: ultrasounds, healthCenter: healthCenter, dateConcluded: dateConcluded, deliveryLocation: deliveryLocation, preEclampsiaRisk: preEclampsiaRisk};
-	});
-var $author$project$Backend$Dashboard$Model$ChildRecord = function (visits) {
-	return {visits: visits};
+var $author$project$Backend$Dashboard$Model$PregnancyRecord = function (healthCenter) {
+	return function (edd) {
+		return function (dateConcluded) {
+			return function (outcome) {
+				return function (deliveryLocation) {
+					return function (visits) {
+						return function (ultrasounds) {
+							return function (highRisk) {
+								return function (preEclampsiaRisk) {
+									return function (child) {
+										return {edd: edd, child: child, visits: visits, outcome: outcome, highRisk: highRisk, ultrasounds: ultrasounds, healthCenter: healthCenter, dateConcluded: dateConcluded, deliveryLocation: deliveryLocation, preEclampsiaRisk: preEclampsiaRisk};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
 };
+var $author$project$Backend$Dashboard$Model$ChildRecord = F4(
+	function (birthDate, birthWeight, birthWeightDate, visits) {
+		return {visits: visits, birthDate: birthDate, birthWeight: birthWeight, birthWeightDate: birthWeightDate};
+	});
 var $author$project$Backend$Dashboard$Decoder$decodeChildRecord = A3(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 	'visits',
 	$elm$json$Json$Decode$list(
 		A2($elm$json$Json$Decode$field, 'd', $author$project$Gizra$NominalDate$decodeYYYYMMDD)),
-	$elm$json$Json$Decode$succeed($author$project$Backend$Dashboard$Model$ChildRecord));
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'bwd',
+		$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+		$elm$core$Maybe$Nothing,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'bw',
+			$elm$json$Json$Decode$nullable($elm$json$Json$Decode$int),
+			$elm$core$Maybe$Nothing,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'bd',
+				$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+				$elm$json$Json$Decode$succeed($author$project$Backend$Dashboard$Model$ChildRecord)))));
 var $author$project$Backend$Dashboard$Model$PrenatalVisit = F3(
 	function (date, antenatal, indicators) {
 		return {date: date, antenatal: antenatal, indicators: indicators};
 	});
 var $author$project$Backend$Dashboard$Model$IndicatorAspirin = {$: 'IndicatorAspirin'};
 var $author$project$Backend$Dashboard$Model$IndicatorCalcium = {$: 'IndicatorCalcium'};
+var $author$project$Backend$Dashboard$Model$IndicatorGwgAdequate = {$: 'IndicatorGwgAdequate'};
+var $author$project$Backend$Dashboard$Model$IndicatorGwgInadequate = {$: 'IndicatorGwgInadequate'};
 var $author$project$Backend$Dashboard$Decoder$prenatalIndicatorFromCode = function (code) {
 	switch (code) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$IndicatorGwgAdequate);
 		case 'd':
 			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$IndicatorAspirin);
 		case 'e':
 			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$IndicatorCalcium);
+		case 'n':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$IndicatorGwgInadequate);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -10383,6 +10421,27 @@ var $author$project$Backend$Dashboard$Decoder$deliveryLocationFromCode = functio
 			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$FacilityDelivery);
 		case 'h':
 			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$HomeDelivery);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Dashboard$Model$OutcomeAbortion = {$: 'OutcomeAbortion'};
+var $author$project$Backend$Dashboard$Model$OutcomeLiveAtTerm = {$: 'OutcomeLiveAtTerm'};
+var $author$project$Backend$Dashboard$Model$OutcomeLivePreterm = {$: 'OutcomeLivePreterm'};
+var $author$project$Backend$Dashboard$Model$OutcomeStillbirthAtTerm = {$: 'OutcomeStillbirthAtTerm'};
+var $author$project$Backend$Dashboard$Model$OutcomeStillbirthPreterm = {$: 'OutcomeStillbirthPreterm'};
+var $author$project$Backend$Dashboard$Decoder$pregnancyOutcomeFromCode = function (code) {
+	switch (code) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$OutcomeLiveAtTerm);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$OutcomeLivePreterm);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$OutcomeStillbirthAtTerm);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$OutcomeStillbirthPreterm);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$OutcomeAbortion);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -10425,17 +10484,24 @@ var $author$project$Backend$Dashboard$Decoder$decodePregnancyRecord = function (
 								$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string)),
 							A3(
 								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-								'dc',
-								$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+								'o',
+								A2(
+									$elm$json$Json$Decode$map,
+									$elm$core$Maybe$andThen($author$project$Backend$Dashboard$Decoder$pregnancyOutcomeFromCode),
+									$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string)),
 								A3(
 									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-									'edd',
+									'dc',
 									$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
 									A3(
 										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-										'hc',
-										$author$project$Gizra$Json$decodeInt,
-										$elm$json$Json$Decode$succeed($author$project$Backend$Dashboard$Model$PregnancyRecord))))))))));
+										'edd',
+										$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+										A3(
+											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+											'hc',
+											$author$project$Gizra$Json$decodeInt,
+											$elm$json$Json$Decode$succeed($author$project$Backend$Dashboard$Model$PregnancyRecord)))))))))));
 }();
 var $author$project$Backend$Dashboard$Decoder$decodeSyncResponse = $author$project$Backend$Components$Decoder$decodeSyncResponse($author$project$Backend$Dashboard$Decoder$decodePregnancyRecord);
 var $author$project$Backend$Dashboard$Model$DashboardData = F4(
@@ -46584,165 +46650,725 @@ var $author$project$Pages$Dashboard$Model$Tile = F2(
 	function (label, value) {
 		return {label: label, value: value};
 	});
+var $elm_community$list_extra$List$Extra$count = function (predicate) {
+	return A2(
+		$elm$core$List$foldl,
+		F2(
+			function (x, acc) {
+				return predicate(x) ? (acc + 1) : acc;
+			}),
+		0);
+};
+var $elm_community$maybe_extra$Maybe$Extra$filter = F2(
+	function (f, m) {
+		var _v0 = A2($elm$core$Maybe$map, f, m);
+		if ((_v0.$ === 'Just') && _v0.a) {
+			return m;
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Pages$Dashboard$Figures$inSpan = function (span) {
+	return A2($justinmimbs$date$Date$isBetween, span.start, span.end);
+};
+var $author$project$Pages$Dashboard$Figures$notDefined = '—';
+var $author$project$Pages$Dashboard$Model$AncMissRate = {$: 'AncMissRate'};
+var $author$project$Pages$Dashboard$Figures$concludedIn = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		function ($) {
+			return $.dateConcluded;
+		},
+		A2(
+			$elm_community$maybe_extra$Maybe$Extra$unwrap,
+			false,
+			$author$project$Pages$Dashboard$Figures$inSpan(span)));
+};
+var $author$project$Pages$Dashboard$Model$LostToFollowUp = {$: 'LostToFollowUp'};
+var $author$project$Pages$Dashboard$Figures$gestationalAgeDays = F2(
+	function (record, date) {
+		return A2(
+			$elm$core$Maybe$map,
+			function (edd) {
+				return 280 - A2($author$project$Gizra$NominalDate$diffDays, date, edd);
+			},
+			record.edd);
+	});
+var $author$project$Pages$Dashboard$Figures$firstTrimesterEndDays = 91;
+var $author$project$Pages$Dashboard$Figures$secondTrimesterEndDays = 196;
+var $author$project$Pages$Dashboard$Model$WomenCurrentlyInAncCare = {$: 'WomenCurrentlyInAncCare'};
+var $author$project$Pages$Dashboard$Model$GraduatedMotherChildPairs = {$: 'GraduatedMotherChildPairs'};
+var $author$project$Pages$Dashboard$Model$PregnanciesFirstTrimester = {$: 'PregnanciesFirstTrimester'};
+var $author$project$Pages$Dashboard$Model$PregnanciesThirdTrimester = {$: 'PregnanciesThirdTrimester'};
+var $author$project$Pages$Dashboard$Model$PregnanciesSecondTrimester = {$: 'PregnanciesSecondTrimester'};
+var $author$project$Pages$Dashboard$Model$TotalChildrenOnRoutineCare = {$: 'TotalChildrenOnRoutineCare'};
+var $author$project$Pages$Dashboard$Figures$tiles = F5(
+	function (currentDate, span, deliveriesTile, isDelivery, records) {
+		var childrenOnRoutineCare = A2(
+			$elm_community$list_extra$List$Extra$count,
+			function (record) {
+				return A3(
+					$elm_community$maybe_extra$Maybe$Extra$unwrap,
+					false,
+					A2(
+						$elm$core$Basics$composeR,
+						function ($) {
+							return $.visits;
+						},
+						$elm$core$List$any(
+							$author$project$Pages$Dashboard$Figures$inSpan(span))),
+					record.child);
+			},
+			records);
+		var deliveries = A2(
+			$elm_community$list_extra$List$Extra$count,
+			function (record) {
+				return A2($author$project$Pages$Dashboard$Figures$concludedIn, span, record) && isDelivery(record);
+			},
+			records);
+		var inCare = A2(
+			$elm$core$List$filterMap,
+			function (record) {
+				return $elm_community$maybe_extra$Maybe$Extra$isJust(record.dateConcluded) ? $elm$core$Maybe$Nothing : A2(
+					$elm_community$maybe_extra$Maybe$Extra$filter,
+					function (days) {
+						return (days >= 0) && (days < 294);
+					},
+					A2($author$project$Pages$Dashboard$Figures$gestationalAgeDays, record, currentDate));
+			},
+			records);
+		var countInCare = function (isInTrimester) {
+			return A2($elm_community$list_extra$List$Extra$count, isInTrimester, inCare);
+		};
+		var count = $elm$core$String$fromInt;
+		return _List_fromArray(
+			[
+				A2(
+				$author$project$Pages$Dashboard$Model$Tile,
+				$author$project$Pages$Dashboard$Model$WomenCurrentlyInAncCare,
+				count(
+					$elm$core$List$length(inCare))),
+				A2(
+				$author$project$Pages$Dashboard$Model$Tile,
+				$author$project$Pages$Dashboard$Model$PregnanciesFirstTrimester,
+				count(
+					countInCare(
+						function (days) {
+							return _Utils_cmp(days, $author$project$Pages$Dashboard$Figures$firstTrimesterEndDays) < 0;
+						}))),
+				A2(
+				$author$project$Pages$Dashboard$Model$Tile,
+				$author$project$Pages$Dashboard$Model$PregnanciesSecondTrimester,
+				count(
+					countInCare(
+						function (days) {
+							return (_Utils_cmp(days, $author$project$Pages$Dashboard$Figures$firstTrimesterEndDays) > -1) && (_Utils_cmp(days, $author$project$Pages$Dashboard$Figures$secondTrimesterEndDays) < 0);
+						}))),
+				A2(
+				$author$project$Pages$Dashboard$Model$Tile,
+				$author$project$Pages$Dashboard$Model$PregnanciesThirdTrimester,
+				count(
+					countInCare(
+						function (days) {
+							return _Utils_cmp(days, $author$project$Pages$Dashboard$Figures$secondTrimesterEndDays) > -1;
+						}))),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$AncMissRate, $author$project$Pages$Dashboard$Figures$notDefined),
+				deliveriesTile(
+				count(deliveries)),
+				A2(
+				$author$project$Pages$Dashboard$Model$Tile,
+				$author$project$Pages$Dashboard$Model$TotalChildrenOnRoutineCare,
+				count(childrenOnRoutineCare)),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$GraduatedMotherChildPairs, $author$project$Pages$Dashboard$Figures$notDefined),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$LostToFollowUp, $author$project$Pages$Dashboard$Figures$notDefined)
+			]);
+	});
+var $author$project$Pages$Dashboard$Figures$isBirth = A2(
+	$elm$core$Basics$composeR,
+	function ($) {
+		return $.outcome;
+	},
+	A2(
+		$elm_community$maybe_extra$Maybe$Extra$unwrap,
+		false,
+		$elm$core$Basics$neq($author$project$Backend$Dashboard$Model$OutcomeAbortion)));
+var $author$project$Pages$Dashboard$Figures$rate = F2(
+	function (isMet, items) {
+		return $elm$core$List$isEmpty(items) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+			(100 * A2($elm_community$list_extra$List$Extra$count, isMet, items)) / $elm$core$List$length(items));
+	});
 var $author$project$Pages$Dashboard$Model$Sqlns = {$: 'Sqlns'};
+var $author$project$Pages$Dashboard$Figures$antenatalVisits = A2(
+	$elm$core$Basics$composeR,
+	function ($) {
+		return $.visits;
+	},
+	$elm$core$List$filter(
+		function ($) {
+			return $.antenatal;
+		}));
+var $author$project$Pages$Dashboard$Figures$seenIn = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Pages$Dashboard$Figures$antenatalVisits,
+		$elm$core$List$any(
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.date;
+				},
+				$author$project$Pages$Dashboard$Figures$inSpan(span))));
+};
 var $author$project$Pages$Dashboard$Model$Aspirin = {$: 'Aspirin'};
 var $author$project$Pages$Dashboard$Model$Calcium = {$: 'Calcium'};
 var $author$project$Pages$Dashboard$Model$Coverage = F3(
 	function (emphasis, label, pct) {
 		return {pct: pct, label: label, emphasis: emphasis};
 	});
-var $author$project$Pages$Dashboard$Model$AncMissRate = {$: 'AncMissRate'};
-var $author$project$Pages$Dashboard$Placeholder$rnd = function (n) {
+var $author$project$Pages$Dashboard$Figures$received = function (indicator) {
 	return A2(
-		$elm$core$Basics$modBy,
-		233280,
-		($elm$core$Basics$abs(n) * 9301) + 49297) / 233280;
+		$elm$core$Basics$composeR,
+		function ($) {
+			return $.visits;
+		},
+		$elm$core$List$any(
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.indicators;
+				},
+				$elm$core$List$member(indicator))));
 };
-var $author$project$Pages$Dashboard$Placeholder$monthly = F3(
-	function (seed, base, yearKey) {
+var $author$project$Pages$Dashboard$Model$SupplementCoverage = {$: 'SupplementCoverage'};
+var $author$project$Pages$Dashboard$Model$ProphylaxisCoverage = {$: 'ProphylaxisCoverage'};
+var $author$project$Pages$Dashboard$Figures$coverage = F2(
+	function (span, records) {
+		var seen = A2(
+			$elm$core$List$filter,
+			$author$project$Pages$Dashboard$Figures$seenIn(span),
+			records);
+		return _List_fromArray(
+			[
+				A3(
+				$author$project$Pages$Dashboard$Model$Coverage,
+				$author$project$Pages$Dashboard$Model$Aspirin,
+				$author$project$Pages$Dashboard$Model$ProphylaxisCoverage,
+				A2(
+					$author$project$Pages$Dashboard$Figures$rate,
+					$author$project$Pages$Dashboard$Figures$received($author$project$Backend$Dashboard$Model$IndicatorAspirin),
+					A2(
+						$elm$core$List$filter,
+						function ($) {
+							return $.preEclampsiaRisk;
+						},
+						seen))),
+				A3(
+				$author$project$Pages$Dashboard$Model$Coverage,
+				$author$project$Pages$Dashboard$Model$Calcium,
+				$author$project$Pages$Dashboard$Model$ProphylaxisCoverage,
+				A2(
+					$author$project$Pages$Dashboard$Figures$rate,
+					$author$project$Pages$Dashboard$Figures$received($author$project$Backend$Dashboard$Model$IndicatorCalcium),
+					seen)),
+				A3($author$project$Pages$Dashboard$Model$Coverage, $author$project$Pages$Dashboard$Model$Sqlns, $author$project$Pages$Dashboard$Model$SupplementCoverage, $elm$core$Maybe$Nothing)
+			]);
+	});
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var $author$project$Pages$Dashboard$Figures$groupBySite = A2(
+	$elm$core$List$foldl,
+	function (record) {
 		return A2(
-			$elm$core$List$map,
-			function (month) {
-				var noise = ($author$project$Pages$Dashboard$Placeholder$rnd(((seed * 131) + (yearKey * 17)) + (month * 7)) - 0.5) * 13;
-				var drift = month * 0.9;
-				return A3($elm$core$Basics$clamp, 0, 100, ((base - 5) + drift) + noise);
-			},
-			A2($elm$core$List$range, 0, 11));
+			$elm$core$Dict$update,
+			record.healthCenter,
+			A2(
+				$elm$core$Basics$composeR,
+				$elm$core$Maybe$withDefault(_List_Nil),
+				A2(
+					$elm$core$Basics$composeR,
+					$elm$core$List$cons(record),
+					$elm$core$Maybe$Just)));
+	},
+	$elm$core$Dict$empty);
+var $author$project$Pages$Dashboard$Figures$siteRates = F2(
+	function (threshold, span) {
+		return A2(
+			$elm$core$Basics$composeR,
+			$author$project$Pages$Dashboard$Figures$groupBySite,
+			A2(
+				$elm$core$Basics$composeR,
+				$elm$core$Dict$values,
+				$elm$core$List$filterMap(
+					threshold.rate(span))));
 	});
-var $author$project$Pages$Dashboard$Model$Kpi = F7(
-	function (id, label, unit, current, target, average, delta) {
-		return {id: id, unit: unit, delta: delta, label: label, target: target, average: average, current: current};
+var $author$project$Pages$Dashboard$Figures$Span = F2(
+	function (start, end) {
+		return {end: end, start: start};
 	});
+var $justinmimbs$date$Date$Year = {$: 'Year'};
+var $justinmimbs$date$Date$Quarter = {$: 'Quarter'};
+var $author$project$Pages$Dashboard$Figures$currentSpan = F3(
+	function (currentDate, firstCohortDate, period) {
+		var start = function () {
+			switch (period.$) {
+				case 'PeriodMonth':
+					return A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, currentDate);
+				case 'PeriodQuarter':
+					return A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Quarter, currentDate);
+				case 'PeriodWeek':
+					return A2(
+						$elm$core$Maybe$withDefault,
+						A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Monday, currentDate),
+						A2(
+							$elm$core$Maybe$map,
+							function (cohortDate) {
+								return A3(
+									$justinmimbs$date$Date$add,
+									$justinmimbs$date$Date$Days,
+									-A2(
+										$elm$core$Basics$modBy,
+										7,
+										A2($author$project$Gizra$NominalDate$diffDays, cohortDate, currentDate)),
+									currentDate);
+							},
+							firstCohortDate));
+				default:
+					return A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Year, currentDate);
+			}
+		}();
+		return A2($author$project$Pages$Dashboard$Figures$Span, start, currentDate);
+	});
+var $author$project$Pages$Dashboard$Figures$previousSpan = F2(
+	function (period, span) {
+		var _v0 = function () {
+			switch (period.$) {
+				case 'PeriodMonth':
+					return _Utils_Tuple2($justinmimbs$date$Date$Months, 1);
+				case 'PeriodQuarter':
+					return _Utils_Tuple2($justinmimbs$date$Date$Months, 3);
+				case 'PeriodWeek':
+					return _Utils_Tuple2($justinmimbs$date$Date$Days, 7);
+				default:
+					return _Utils_Tuple2($justinmimbs$date$Date$Years, 1);
+			}
+		}();
+		var unit = _v0.a;
+		var count = _v0.b;
+		return A2(
+			$author$project$Pages$Dashboard$Figures$Span,
+			A3($justinmimbs$date$Date$add, unit, -count, span.start),
+			A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -1, span.start));
+	});
+var $elm_community$maybe_extra$Maybe$Extra$join = function (mx) {
+	if (mx.$ === 'Just') {
+		var x = mx.a;
+		return x;
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Pages$Dashboard$Figures$months = _List_fromArray(
+	[$elm$time$Time$Jan, $elm$time$Time$Feb, $elm$time$Time$Mar, $elm$time$Time$Apr, $elm$time$Time$May, $elm$time$Time$Jun, $elm$time$Time$Jul, $elm$time$Time$Aug, $elm$time$Time$Sep, $elm$time$Time$Oct, $elm$time$Time$Nov, $elm$time$Time$Dec]);
+var $justinmimbs$date$Date$min = F2(
+	function (dateA, dateB) {
+		var a = dateA.a;
+		var b = dateB.a;
+		return (_Utils_cmp(a, b) < 0) ? dateA : dateB;
+	});
+var $author$project$Pages$Dashboard$Figures$monthSpan = F3(
+	function (currentDate, year, month) {
+		var start = A3($justinmimbs$date$Date$fromCalendarDate, year, month, 1);
+		return _Utils_eq(
+			A2($justinmimbs$date$Date$compare, start, currentDate),
+			$elm$core$Basics$GT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+			A2(
+				$author$project$Pages$Dashboard$Figures$Span,
+				start,
+				A2(
+					$justinmimbs$date$Date$min,
+					currentDate,
+					A3(
+						$justinmimbs$date$Date$add,
+						$justinmimbs$date$Date$Days,
+						-1,
+						A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, 1, start)))));
+	});
+var $author$project$Pages$Dashboard$Figures$indicatorFigures = F6(
+	function (currentDate, span, previous, records, averageOf, indicators) {
+		var series = function (kpi) {
+			var indicator = A2(
+				$elm_community$list_extra$List$Extra$find,
+				function (candidate) {
+					return _Utils_eq(candidate.id, kpi.id);
+				},
+				indicators);
+			var monthly = F2(
+				function (valueOver, year) {
+					return A2(
+						$elm$core$List$map,
+						function (month) {
+							return $elm_community$maybe_extra$Maybe$Extra$join(
+								A3(
+									$elm$core$Maybe$map2,
+									valueOver,
+									indicator,
+									A3($author$project$Pages$Dashboard$Figures$monthSpan, currentDate, year, month)));
+						},
+						$author$project$Pages$Dashboard$Figures$months);
+				});
+			return {
+				target: A2(
+					$elm$core$List$repeat,
+					12,
+					A2(
+						$elm$core$Maybe$andThen,
+						function ($) {
+							return $.targetValue;
+						},
+						indicator)),
+				average: monthly(averageOf),
+				performance: monthly(
+					F2(
+						function (found, monthOfYear) {
+							return A2(found.value, monthOfYear, records);
+						}))
+			};
+		};
+		var kpiFor = function (indicator) {
+			var current = A2(indicator.value, span, records);
+			return {
+				id: indicator.id,
+				unit: indicator.unit,
+				delta: A3(
+					$elm$core$Maybe$map2,
+					$elm$core$Basics$sub,
+					current,
+					A2(indicator.value, previous, records)),
+				label: indicator.label,
+				target: indicator.target,
+				average: A2(averageOf, indicator, span),
+				current: current
+			};
+		};
+		return {
+			kpis: A2($elm$core$List$map, kpiFor, indicators),
+			series: series
+		};
+	});
+var $author$project$Pages$Dashboard$Figures$pretermRate = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$filter(
+			function (record) {
+				return A2($author$project$Pages$Dashboard$Figures$concludedIn, span, record) && $author$project$Pages$Dashboard$Figures$isBirth(record);
+			}),
+		$author$project$Pages$Dashboard$Figures$rate(
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.outcome;
+				},
+				A2(
+					$elm_community$maybe_extra$Maybe$Extra$unwrap,
+					false,
+					function (outcome) {
+						return A2(
+							$elm$core$List$member,
+							outcome,
+							_List_fromArray(
+								[$author$project$Backend$Dashboard$Model$OutcomeLivePreterm, $author$project$Backend$Dashboard$Model$OutcomeStillbirthPreterm]));
+					}))));
+};
+var $author$project$Pages$Dashboard$Figures$pretermThreshold = {
+	rate: $author$project$Pages$Dashboard$Figures$pretermRate,
+	crosses: function (value) {
+		return value > 15;
+	}
+};
 var $author$project$Pages$Dashboard$Model$UnitPercent = {$: 'UnitPercent'};
-var $author$project$Pages$Dashboard$Placeholder$PlaceholderIndicator = F4(
-	function (kpi, seed, baseCurrent, baseTarget) {
-		return {kpi: kpi, seed: seed, baseTarget: baseTarget, baseCurrent: baseCurrent};
+var $author$project$Pages$Dashboard$Figures$bookedIn = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Pages$Dashboard$Figures$antenatalVisits,
+		A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$head,
+			A2(
+				$elm_community$maybe_extra$Maybe$Extra$unwrap,
+				false,
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.date;
+					},
+					$author$project$Pages$Dashboard$Figures$inSpan(span)))));
+};
+var $author$project$Pages$Dashboard$Figures$firstAntenatalAgeDays = function (record) {
+	return A2(
+		$elm$core$Maybe$andThen,
+		A2(
+			$elm$core$Basics$composeR,
+			function ($) {
+				return $.date;
+			},
+			$author$project$Pages$Dashboard$Figures$gestationalAgeDays(record)),
+		$elm$core$List$head(
+			$author$project$Pages$Dashboard$Figures$antenatalVisits(record)));
+};
+var $author$project$Pages$Dashboard$Figures$earlyBookingRate = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$filter(
+			$author$project$Pages$Dashboard$Figures$bookedIn(span)),
+		$author$project$Pages$Dashboard$Figures$rate(
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Pages$Dashboard$Figures$firstAntenatalAgeDays,
+				A2(
+					$elm_community$maybe_extra$Maybe$Extra$unwrap,
+					false,
+					function (days) {
+						return _Utils_cmp(days, $author$project$Pages$Dashboard$Figures$firstTrimesterEndDays) < 0;
+					}))));
+};
+var $author$project$Pages$Dashboard$Figures$inadequateGwgRate = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$filter(
+			function (record) {
+				return A2($author$project$Pages$Dashboard$Figures$seenIn, span, record) && (A2($author$project$Pages$Dashboard$Figures$received, $author$project$Backend$Dashboard$Model$IndicatorGwgAdequate, record) || A2($author$project$Pages$Dashboard$Figures$received, $author$project$Backend$Dashboard$Model$IndicatorGwgInadequate, record));
+			}),
+		$author$project$Pages$Dashboard$Figures$rate(
+			$author$project$Pages$Dashboard$Figures$received($author$project$Backend$Dashboard$Model$IndicatorGwgInadequate)));
+};
+var $author$project$Pages$Dashboard$Figures$isBefore = F2(
+	function (limit, date) {
+		return _Utils_eq(
+			A2($justinmimbs$date$Date$compare, date, limit),
+			$elm$core$Basics$LT);
 	});
+var $author$project$Pages$Dashboard$Figures$weekTwentyDate = A2(
+	$elm$core$Basics$composeR,
+	function ($) {
+		return $.edd;
+	},
+	$elm$core$Maybe$map(
+		A2($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 140 - 280)));
+var $author$project$Pages$Dashboard$Figures$earlyUltrasoundRate = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$filter(
+			function (record) {
+				return A3(
+					$elm_community$maybe_extra$Maybe$Extra$unwrap,
+					false,
+					function (weekTwenty) {
+						return A2($author$project$Pages$Dashboard$Figures$inSpan, span, weekTwenty) && A2(
+							$elm$core$List$any,
+							A2(
+								$elm$core$Basics$composeR,
+								function ($) {
+									return $.date;
+								},
+								$author$project$Pages$Dashboard$Figures$isBefore(
+									A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 1, weekTwenty))),
+							$author$project$Pages$Dashboard$Figures$antenatalVisits(record));
+					},
+					$author$project$Pages$Dashboard$Figures$weekTwentyDate(record));
+			}),
+		$author$project$Pages$Dashboard$Figures$rate(
+			function (record) {
+				return A3(
+					$elm_community$maybe_extra$Maybe$Extra$unwrap,
+					false,
+					function (weekTwenty) {
+						return A2(
+							$elm$core$List$any,
+							function (date) {
+								return A2($author$project$Pages$Dashboard$Figures$isBefore, weekTwenty, date);
+							},
+							record.ultrasounds);
+					},
+					$author$project$Pages$Dashboard$Figures$weekTwentyDate(record));
+			}));
+};
 var $author$project$Pages$Dashboard$Model$SitesWithInadequateGwg = {$: 'SitesWithInadequateGwg'};
 var $author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverage = {$: 'EarlyUltrasoundCoverage'};
+var $author$project$Pages$Dashboard$Figures$delayedBirthWeightRate = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$filterMap(
+			function ($) {
+				return $.child;
+			}),
+		A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$filter(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.birthDate;
+					},
+					A2(
+						$elm_community$maybe_extra$Maybe$Extra$unwrap,
+						false,
+						$author$project$Pages$Dashboard$Figures$inSpan(span)))),
+			$author$project$Pages$Dashboard$Figures$rate(
+				function (child) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						true,
+						A3(
+							$elm$core$Maybe$map2,
+							F2(
+								function (birthDate, examDate) {
+									return A2($author$project$Gizra$NominalDate$diffDays, birthDate, examDate) > 1;
+								}),
+							child.birthDate,
+							child.birthWeightDate));
+				})));
+};
+var $author$project$Pages$Dashboard$Figures$delayedBirthWeightThreshold = {
+	rate: $author$project$Pages$Dashboard$Figures$delayedBirthWeightRate,
+	crosses: function (value) {
+		return value > 5;
+	}
+};
 var $author$project$Pages$Dashboard$Model$EarlyAncCoverageFirstTrimester = {$: 'EarlyAncCoverageFirstTrimester'};
 var $author$project$Pages$Dashboard$Model$SitesWithPoorChildGrowthOutcomes = {$: 'SitesWithPoorChildGrowthOutcomes'};
 var $author$project$Pages$Dashboard$Model$SitesWithElevatedPretermOrSgaBirths = {$: 'SitesWithElevatedPretermOrSgaBirths'};
 var $author$project$Pages$Dashboard$Model$SitesWithDelayedBirthWeightRecording = {$: 'SitesWithDelayedBirthWeightRecording'};
-var $author$project$Pages$Dashboard$Placeholder$programIndicators = function () {
+var $author$project$Pages$Dashboard$Figures$programIndicators = function () {
 	var indicator = F5(
-		function (id, label, current, target, delta) {
-			return $author$project$Pages$Dashboard$Placeholder$PlaceholderIndicator(
-				A7(
-					$author$project$Pages$Dashboard$Model$Kpi,
-					id,
-					label,
-					$author$project$Pages$Dashboard$Model$UnitPercent,
-					$elm$core$Maybe$Just(current),
-					target,
-					$elm$core$Maybe$Nothing,
-					$elm$core$Maybe$Just(delta)));
+		function (id, label, target, targetValue, threshold) {
+			return {
+				id: id,
+				unit: $author$project$Pages$Dashboard$Model$UnitPercent,
+				label: label,
+				value: function (span) {
+					return A2(
+						$elm$core$Basics$composeR,
+						A2($author$project$Pages$Dashboard$Figures$siteRates, threshold, span),
+						$author$project$Pages$Dashboard$Figures$rate(threshold.crosses));
+				},
+				target: target,
+				targetValue: $elm$core$Maybe$Just(targetValue)
+			};
 		});
 	return _List_fromArray(
 		[
-			A8(indicator, 'anc-cov80', $author$project$Pages$Dashboard$Model$EarlyAncCoverageFirstTrimester, 72, '80%', 3.5, 71, 72, 86),
-			A8(indicator, 'ultrasound-p', $author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverage, 66, '80%', -1.5, 83, 68, 88),
-			A8(indicator, 'inadequate-gwg', $author$project$Pages$Dashboard$Model$SitesWithInadequateGwg, 18, '< 10%', 4.5, 91, 24, 12),
-			A8(indicator, 'delayed-bw', $author$project$Pages$Dashboard$Model$SitesWithDelayedBirthWeightRecording, 14, '< 5%', -1.5, 97, 16, 8),
-			A8(indicator, 'preterm-sga', $author$project$Pages$Dashboard$Model$SitesWithElevatedPretermOrSgaBirths, 20, '< 15%', 0.5, 103, 24, 16),
-			A8(indicator, 'poor-growth', $author$project$Pages$Dashboard$Model$SitesWithPoorChildGrowthOutcomes, 15, '< 10%', 1.2, 109, 18, 12)
+			A5(
+			indicator,
+			'anc-cov80',
+			$author$project$Pages$Dashboard$Model$EarlyAncCoverageFirstTrimester,
+			'80%',
+			80,
+			{
+				rate: $author$project$Pages$Dashboard$Figures$earlyBookingRate,
+				crosses: function (value) {
+					return value >= 80;
+				}
+			}),
+			A5(
+			indicator,
+			'ultrasound-p',
+			$author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverage,
+			'80%',
+			80,
+			{
+				rate: $author$project$Pages$Dashboard$Figures$earlyUltrasoundRate,
+				crosses: function (value) {
+					return value >= 85;
+				}
+			}),
+			A5(
+			indicator,
+			'inadequate-gwg',
+			$author$project$Pages$Dashboard$Model$SitesWithInadequateGwg,
+			'< 10%',
+			10,
+			{
+				rate: $author$project$Pages$Dashboard$Figures$inadequateGwgRate,
+				crosses: function (value) {
+					return value > 10;
+				}
+			}),
+			A5(indicator, 'delayed-bw', $author$project$Pages$Dashboard$Model$SitesWithDelayedBirthWeightRecording, '< 5%', 5, $author$project$Pages$Dashboard$Figures$delayedBirthWeightThreshold),
+			A5(indicator, 'preterm-sga', $author$project$Pages$Dashboard$Model$SitesWithElevatedPretermOrSgaBirths, '< 15%', 15, $author$project$Pages$Dashboard$Figures$pretermThreshold),
+			A5(
+			indicator,
+			'poor-growth',
+			$author$project$Pages$Dashboard$Model$SitesWithPoorChildGrowthOutcomes,
+			'< 10%',
+			10,
+			{
+				rate: F2(
+					function (_v0, _v1) {
+						return $elm$core$Maybe$Nothing;
+					}),
+				crosses: $elm$core$Basics$always(false)
+			})
 		]);
 }();
-var $author$project$Pages$Dashboard$Placeholder$programSeries = function (kpi) {
-	var _v0 = A2(
-		$elm$core$Maybe$withDefault,
-		_Utils_Tuple3(0, 0, 0),
-		A2(
-			$elm$core$Maybe$map,
-			function (indicator) {
-				return _Utils_Tuple3(indicator.seed, indicator.baseCurrent, indicator.baseTarget);
-			},
-			$elm$core$List$head(
-				A2(
-					$elm$core$List$filter,
-					function (indicator) {
-						return _Utils_eq(indicator.kpi.id, kpi.id);
-					},
-					$author$project$Pages$Dashboard$Placeholder$programIndicators))));
-	var seed = _v0.a;
-	var baseCurrent = _v0.b;
-	var baseTarget = _v0.c;
-	return {
-		target: A2(
-			$elm$core$List$map,
-			function (month) {
-				return $elm$core$Maybe$Just(
-					A3($elm$core$Basics$clamp, 0, 100, (baseTarget - 8) + ((month / 11) * 8)));
-			},
-			A2($elm$core$List$range, 0, 11)),
-		average: $elm$core$Basics$always(
-			A2($elm$core$List$repeat, 12, $elm$core$Maybe$Nothing)),
-		performance: A2(
-			$elm$core$Basics$composeR,
-			A2($author$project$Pages$Dashboard$Placeholder$monthly, seed, baseCurrent),
-			$elm$core$List$map($elm$core$Maybe$Just))
-	};
-};
-var $author$project$Pages$Dashboard$Model$LostToFollowUp = {$: 'LostToFollowUp'};
-var $author$project$Pages$Dashboard$Model$SupplementCoverage = {$: 'SupplementCoverage'};
-var $author$project$Pages$Dashboard$Model$ProphylaxisCoverage = {$: 'ProphylaxisCoverage'};
 var $author$project$Pages$Dashboard$Model$TotalDeliveriesProgram = {$: 'TotalDeliveriesProgram'};
-var $author$project$Pages$Dashboard$Model$WomenCurrentlyInAncCare = {$: 'WomenCurrentlyInAncCare'};
 var $author$project$Pages$Dashboard$Model$AlertSitesWithPretermRate = function (a) {
 	return {$: 'AlertSitesWithPretermRate', a: a};
 };
-var $author$project$Pages$Dashboard$Model$GraduatedMotherChildPairs = {$: 'GraduatedMotherChildPairs'};
-var $author$project$Pages$Dashboard$Model$PregnanciesFirstTrimester = {$: 'PregnanciesFirstTrimester'};
-var $author$project$Pages$Dashboard$Model$PregnanciesThirdTrimester = {$: 'PregnanciesThirdTrimester'};
-var $author$project$Pages$Dashboard$Model$PregnanciesSecondTrimester = {$: 'PregnanciesSecondTrimester'};
-var $author$project$Pages$Dashboard$Model$TotalChildrenOnRoutineCare = {$: 'TotalChildrenOnRoutineCare'};
 var $author$project$Pages$Dashboard$Model$AlertSitesWithDelayedBirthWeightRecording = function (a) {
 	return {$: 'AlertSitesWithDelayedBirthWeightRecording', a: a};
 };
-var $author$project$Pages$Dashboard$Placeholder$programFigures = {
-	kpis: A2(
-		$elm$core$List$map,
-		function ($) {
-			return $.kpi;
-		},
-		$author$project$Pages$Dashboard$Placeholder$programIndicators),
-	tiles: _List_fromArray(
-		[
-			A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$WomenCurrentlyInAncCare, '2,418'),
-			A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$PregnanciesFirstTrimester, '646'),
-			A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$PregnanciesSecondTrimester, '921'),
-			A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$PregnanciesThirdTrimester, '851'),
-			A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$AncMissRate, '14%'),
-			A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$TotalDeliveriesProgram, '3,772'),
-			A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$TotalChildrenOnRoutineCare, '6,540'),
-			A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$GraduatedMotherChildPairs, '2,689'),
-			A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$LostToFollowUp, '402')
-		]),
-	alerts: _List_fromArray(
-		[
-			$author$project$Pages$Dashboard$Model$AlertSitesWithDelayedBirthWeightRecording(6),
-			$author$project$Pages$Dashboard$Model$AlertSitesWithPretermRate(4)
-		]),
-	series: $author$project$Pages$Dashboard$Placeholder$programSeries,
-	coverage: _List_fromArray(
-		[
-			A3(
-			$author$project$Pages$Dashboard$Model$Coverage,
-			$author$project$Pages$Dashboard$Model$Aspirin,
-			$author$project$Pages$Dashboard$Model$ProphylaxisCoverage,
-			$elm$core$Maybe$Just(79)),
-			A3(
-			$author$project$Pages$Dashboard$Model$Coverage,
-			$author$project$Pages$Dashboard$Model$Calcium,
-			$author$project$Pages$Dashboard$Model$ProphylaxisCoverage,
-			$elm$core$Maybe$Just(71)),
-			A3(
-			$author$project$Pages$Dashboard$Model$Coverage,
-			$author$project$Pages$Dashboard$Model$Sqlns,
-			$author$project$Pages$Dashboard$Model$SupplementCoverage,
-			$elm$core$Maybe$Just(65))
-		])
-};
+var $author$project$Pages$Dashboard$Figures$programFigures = F4(
+	function (currentDate, firstCohortDate, records, period) {
+		var span = A3($author$project$Pages$Dashboard$Figures$currentSpan, currentDate, firstCohortDate, period);
+		var alert = F2(
+			function (toLabel, threshold) {
+				var sites = A2(
+					$elm_community$list_extra$List$Extra$count,
+					threshold.crosses,
+					A3($author$project$Pages$Dashboard$Figures$siteRates, threshold, span, records));
+				return (sites > 0) ? $elm$core$Maybe$Just(
+					toLabel(sites)) : $elm$core$Maybe$Nothing;
+			});
+		var blocks = A6(
+			$author$project$Pages$Dashboard$Figures$indicatorFigures,
+			currentDate,
+			span,
+			A2($author$project$Pages$Dashboard$Figures$previousSpan, period, span),
+			records,
+			F2(
+				function (_v0, _v1) {
+					return $elm$core$Maybe$Nothing;
+				}),
+			$author$project$Pages$Dashboard$Figures$programIndicators);
+		return {
+			kpis: blocks.kpis,
+			tiles: A5(
+				$author$project$Pages$Dashboard$Figures$tiles,
+				currentDate,
+				span,
+				$author$project$Pages$Dashboard$Model$Tile($author$project$Pages$Dashboard$Model$TotalDeliveriesProgram),
+				$author$project$Pages$Dashboard$Figures$isBirth,
+				records),
+			alerts: A2(
+				$elm$core$List$filterMap,
+				$elm$core$Basics$identity,
+				_List_fromArray(
+					[
+						A2(alert, $author$project$Pages$Dashboard$Model$AlertSitesWithDelayedBirthWeightRecording, $author$project$Pages$Dashboard$Figures$delayedBirthWeightThreshold),
+						A2(alert, $author$project$Pages$Dashboard$Model$AlertSitesWithPretermRate, $author$project$Pages$Dashboard$Figures$pretermThreshold)
+					])),
+			series: blocks.series,
+			coverage: A2($author$project$Pages$Dashboard$Figures$coverage, span, records)
+		};
+	});
 var $author$project$Pages$Dashboard$Model$OpenDrill = function (a) {
 	return {$: 'OpenDrill', a: a};
 };
@@ -47074,254 +47700,20 @@ var $author$project$Pages$Dashboard$View$viewLeftColumn = F5(
 						coverage))
 				]));
 	});
-var $elm_community$maybe_extra$Maybe$Extra$join = function (mx) {
-	if (mx.$ === 'Just') {
-		var x = mx.a;
-		return x;
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Pages$Dashboard$Facility$mean = function (values) {
+var $author$project$Pages$Dashboard$Figures$mean = function (values) {
 	return $elm$core$List$isEmpty(values) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
 		$elm$core$List$sum(values) / $elm$core$List$length(values));
 };
-var $elm_community$list_extra$List$Extra$count = function (predicate) {
-	return A2(
-		$elm$core$List$foldl,
-		F2(
-			function (x, acc) {
-				return predicate(x) ? (acc + 1) : acc;
-			}),
-		0);
+var $author$project$Pages$Dashboard$Model$AlertPretermRateExceeded = {$: 'AlertPretermRateExceeded'};
+var $author$project$Pages$Dashboard$Model$AlertBirthsMissingBirthWeight = function (a) {
+	return {$: 'AlertBirthsMissingBirthWeight', a: a};
 };
-var $elm_community$maybe_extra$Maybe$Extra$filter = F2(
-	function (f, m) {
-		var _v0 = A2($elm$core$Maybe$map, f, m);
-		if ((_v0.$ === 'Just') && _v0.a) {
-			return m;
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$Pages$Dashboard$Facility$inSpan = function (span) {
-	return A2($justinmimbs$date$Date$isBetween, span.start, span.end);
-};
-var $author$project$Pages$Dashboard$Facility$notDefined = '—';
-var $author$project$Pages$Dashboard$Facility$gestationalAgeDays = F2(
-	function (record, date) {
-		return A2(
-			$elm$core$Maybe$map,
-			function (edd) {
-				return 280 - A2($author$project$Gizra$NominalDate$diffDays, date, edd);
-			},
-			record.edd);
-	});
-var $author$project$Pages$Dashboard$Facility$firstTrimesterEndDays = 91;
-var $author$project$Pages$Dashboard$Facility$secondTrimesterEndDays = 196;
-var $author$project$Pages$Dashboard$Model$TotalDeliveriesInstitutional = {$: 'TotalDeliveriesInstitutional'};
-var $author$project$Pages$Dashboard$Facility$tiles = F3(
-	function (currentDate, span, records) {
-		var childrenOnRoutineCare = A2(
-			$elm_community$list_extra$List$Extra$count,
-			function (record) {
-				return A3(
-					$elm_community$maybe_extra$Maybe$Extra$unwrap,
-					false,
-					A2(
-						$elm$core$Basics$composeR,
-						function ($) {
-							return $.visits;
-						},
-						$elm$core$List$any(
-							$author$project$Pages$Dashboard$Facility$inSpan(span))),
-					record.child);
-			},
-			records);
-		var deliveries = A2(
-			$elm_community$list_extra$List$Extra$count,
-			function (record) {
-				return _Utils_eq(
-					record.deliveryLocation,
-					$elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$FacilityDelivery)) && A3(
-					$elm_community$maybe_extra$Maybe$Extra$unwrap,
-					false,
-					$author$project$Pages$Dashboard$Facility$inSpan(span),
-					record.dateConcluded);
-			},
-			records);
-		var inCare = A2(
-			$elm$core$List$filterMap,
-			function (record) {
-				return $elm_community$maybe_extra$Maybe$Extra$isJust(record.dateConcluded) ? $elm$core$Maybe$Nothing : A2(
-					$elm_community$maybe_extra$Maybe$Extra$filter,
-					function (days) {
-						return (days >= 0) && (days < 294);
-					},
-					A2($author$project$Pages$Dashboard$Facility$gestationalAgeDays, record, currentDate));
-			},
-			records);
-		var countInCare = function (isInTrimester) {
-			return A2($elm_community$list_extra$List$Extra$count, isInTrimester, inCare);
-		};
-		var count = $elm$core$String$fromInt;
-		return _List_fromArray(
-			[
-				A2(
-				$author$project$Pages$Dashboard$Model$Tile,
-				$author$project$Pages$Dashboard$Model$WomenCurrentlyInAncCare,
-				count(
-					$elm$core$List$length(inCare))),
-				A2(
-				$author$project$Pages$Dashboard$Model$Tile,
-				$author$project$Pages$Dashboard$Model$PregnanciesFirstTrimester,
-				count(
-					countInCare(
-						function (days) {
-							return _Utils_cmp(days, $author$project$Pages$Dashboard$Facility$firstTrimesterEndDays) < 0;
-						}))),
-				A2(
-				$author$project$Pages$Dashboard$Model$Tile,
-				$author$project$Pages$Dashboard$Model$PregnanciesSecondTrimester,
-				count(
-					countInCare(
-						function (days) {
-							return (_Utils_cmp(days, $author$project$Pages$Dashboard$Facility$firstTrimesterEndDays) > -1) && (_Utils_cmp(days, $author$project$Pages$Dashboard$Facility$secondTrimesterEndDays) < 0);
-						}))),
-				A2(
-				$author$project$Pages$Dashboard$Model$Tile,
-				$author$project$Pages$Dashboard$Model$PregnanciesThirdTrimester,
-				count(
-					countInCare(
-						function (days) {
-							return _Utils_cmp(days, $author$project$Pages$Dashboard$Facility$secondTrimesterEndDays) > -1;
-						}))),
-				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$AncMissRate, $author$project$Pages$Dashboard$Facility$notDefined),
-				A2(
-				$author$project$Pages$Dashboard$Model$Tile,
-				$author$project$Pages$Dashboard$Model$TotalDeliveriesInstitutional,
-				count(deliveries)),
-				A2(
-				$author$project$Pages$Dashboard$Model$Tile,
-				$author$project$Pages$Dashboard$Model$TotalChildrenOnRoutineCare,
-				count(childrenOnRoutineCare)),
-				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$GraduatedMotherChildPairs, $author$project$Pages$Dashboard$Facility$notDefined),
-				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$LostToFollowUp, $author$project$Pages$Dashboard$Facility$notDefined)
-			]);
-	});
-var $author$project$Pages$Dashboard$Facility$months = _List_fromArray(
-	[$elm$time$Time$Jan, $elm$time$Time$Feb, $elm$time$Time$Mar, $elm$time$Time$Apr, $elm$time$Time$May, $elm$time$Time$Jun, $elm$time$Time$Jul, $elm$time$Time$Aug, $elm$time$Time$Sep, $elm$time$Time$Oct, $elm$time$Time$Nov, $elm$time$Time$Dec]);
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
-var $author$project$Pages$Dashboard$Facility$rate = F2(
-	function (isMet, cohort) {
-		return $elm$core$List$isEmpty(cohort) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
-			(100 * A2($elm_community$list_extra$List$Extra$count, isMet, cohort)) / $elm$core$List$length(cohort));
-	});
-var $author$project$Pages$Dashboard$Facility$antenatalVisits = A2(
-	$elm$core$Basics$composeR,
-	function ($) {
-		return $.visits;
-	},
-	$elm$core$List$filter(
-		function ($) {
-			return $.antenatal;
-		}));
-var $author$project$Pages$Dashboard$Facility$seenIn = function (span) {
-	return A2(
-		$elm$core$Basics$composeR,
-		$author$project$Pages$Dashboard$Facility$antenatalVisits,
-		$elm$core$List$any(
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.date;
-				},
-				$author$project$Pages$Dashboard$Facility$inSpan(span))));
-};
-var $author$project$Pages$Dashboard$Facility$coverage = F2(
-	function (span, records) {
-		var received = function (indicator) {
-			return A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.visits;
-				},
-				$elm$core$List$any(
-					A2(
-						$elm$core$Basics$composeR,
-						function ($) {
-							return $.indicators;
-						},
-						$elm$core$List$member(indicator))));
-		};
-		var seen = A2(
-			$elm$core$List$filter,
-			$author$project$Pages$Dashboard$Facility$seenIn(span),
-			records);
-		return _List_fromArray(
-			[
-				A3(
-				$author$project$Pages$Dashboard$Model$Coverage,
-				$author$project$Pages$Dashboard$Model$Aspirin,
-				$author$project$Pages$Dashboard$Model$ProphylaxisCoverage,
-				A2(
-					$author$project$Pages$Dashboard$Facility$rate,
-					received($author$project$Backend$Dashboard$Model$IndicatorAspirin),
-					A2(
-						$elm$core$List$filter,
-						function ($) {
-							return $.preEclampsiaRisk;
-						},
-						seen))),
-				A3(
-				$author$project$Pages$Dashboard$Model$Coverage,
-				$author$project$Pages$Dashboard$Model$Calcium,
-				$author$project$Pages$Dashboard$Model$ProphylaxisCoverage,
-				A2(
-					$author$project$Pages$Dashboard$Facility$rate,
-					received($author$project$Backend$Dashboard$Model$IndicatorCalcium),
-					seen)),
-				A3($author$project$Pages$Dashboard$Model$Coverage, $author$project$Pages$Dashboard$Model$Sqlns, $author$project$Pages$Dashboard$Model$SupplementCoverage, $elm$core$Maybe$Nothing)
-			]);
-	});
-var $justinmimbs$date$Date$min = F2(
-	function (dateA, dateB) {
-		var a = dateA.a;
-		var b = dateB.a;
-		return (_Utils_cmp(a, b) < 0) ? dateA : dateB;
-	});
-var $author$project$Pages$Dashboard$Facility$Span = F2(
-	function (start, end) {
-		return {end: end, start: start};
-	});
-var $author$project$Pages$Dashboard$Facility$monthSpan = F3(
-	function (currentDate, year, month) {
-		var start = A3($justinmimbs$date$Date$fromCalendarDate, year, month, 1);
-		return _Utils_eq(
-			A2($justinmimbs$date$Date$compare, start, currentDate),
-			$elm$core$Basics$GT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
-			A2(
-				$author$project$Pages$Dashboard$Facility$Span,
-				start,
-				A2(
-					$justinmimbs$date$Date$min,
-					currentDate,
-					A3(
-						$justinmimbs$date$Date$add,
-						$justinmimbs$date$Date$Days,
-						-1,
-						A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, 1, start)))));
-	});
-var $author$project$Pages$Dashboard$Facility$median = function (values) {
+var $author$project$Pages$Dashboard$Figures$facilityAlerts = _List_fromArray(
+	[
+		$author$project$Pages$Dashboard$Model$AlertBirthsMissingBirthWeight(3),
+		$author$project$Pages$Dashboard$Model$AlertPretermRateExceeded
+	]);
+var $author$project$Pages$Dashboard$Figures$median = function (values) {
 	var sorted = $elm$core$List$sort(values);
 	var middle = ($elm$core$List$length(sorted) / 2) | 0;
 	return (A2(
@@ -47336,76 +47728,19 @@ var $author$project$Pages$Dashboard$Facility$median = function (values) {
 		A2($elm_community$list_extra$List$Extra$getAt, middle - 1, sorted),
 		A2($elm_community$list_extra$List$Extra$getAt, middle, sorted));
 };
-var $author$project$Pages$Dashboard$Facility$bookedIn = function (span) {
-	return A2(
-		$elm$core$Basics$composeR,
-		$author$project$Pages$Dashboard$Facility$antenatalVisits,
-		A2(
-			$elm$core$Basics$composeR,
-			$elm$core$List$head,
-			A2(
-				$elm_community$maybe_extra$Maybe$Extra$unwrap,
-				false,
-				A2(
-					$elm$core$Basics$composeR,
-					function ($) {
-						return $.date;
-					},
-					$author$project$Pages$Dashboard$Facility$inSpan(span)))));
-};
-var $author$project$Pages$Dashboard$Facility$isBefore = F2(
-	function (limit, date) {
-		return _Utils_eq(
-			A2($justinmimbs$date$Date$compare, date, limit),
-			$elm$core$Basics$LT);
-	});
 var $author$project$Pages$Dashboard$Model$UnitWeeks = {$: 'UnitWeeks'};
-var $author$project$Pages$Dashboard$Facility$weekTwentyDate = A2(
-	$elm$core$Basics$composeR,
-	function ($) {
-		return $.edd;
-	},
-	$elm$core$Maybe$map(
-		A2($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 140 - 280)));
 var $author$project$Pages$Dashboard$Model$MedianGaAtFirstAnc = {$: 'MedianGaAtFirstAnc'};
 var $author$project$Pages$Dashboard$Model$EarlyAncBookingRate = {$: 'EarlyAncBookingRate'};
 var $author$project$Pages$Dashboard$Model$HighRiskPregnancyRate = {$: 'HighRiskPregnancyRate'};
-var $author$project$Pages$Dashboard$Facility$firstAntenatalAgeDays = function (record) {
-	return A2(
-		$elm$core$Maybe$andThen,
-		A2(
-			$elm$core$Basics$composeR,
-			function ($) {
-				return $.date;
-			},
-			$author$project$Pages$Dashboard$Facility$gestationalAgeDays(record)),
-		$elm$core$List$head(
-			$author$project$Pages$Dashboard$Facility$antenatalVisits(record)));
-};
 var $author$project$Pages$Dashboard$Model$PostpartumHemorrhageRate = {$: 'PostpartumHemorrhageRate'};
 var $author$project$Pages$Dashboard$Model$CompleteAncAttendanceRate = {$: 'CompleteAncAttendanceRate'};
-var $author$project$Pages$Dashboard$Facility$indicators = _List_fromArray(
+var $author$project$Pages$Dashboard$Figures$facilityIndicators = _List_fromArray(
 	[
 		{
 		id: 'anc-booking',
 		unit: $author$project$Pages$Dashboard$Model$UnitPercent,
 		label: $author$project$Pages$Dashboard$Model$EarlyAncBookingRate,
-		value: function (span) {
-			return A2(
-				$elm$core$Basics$composeR,
-				$elm$core$List$filter(
-					$author$project$Pages$Dashboard$Facility$bookedIn(span)),
-				$author$project$Pages$Dashboard$Facility$rate(
-					A2(
-						$elm$core$Basics$composeR,
-						$author$project$Pages$Dashboard$Facility$firstAntenatalAgeDays,
-						A2(
-							$elm_community$maybe_extra$Maybe$Extra$unwrap,
-							false,
-							function (days) {
-								return _Utils_cmp(days, $author$project$Pages$Dashboard$Facility$firstTrimesterEndDays) < 0;
-							}))));
-		},
+		value: $author$project$Pages$Dashboard$Figures$earlyBookingRate,
 		target: '80%',
 		targetValue: $elm$core$Maybe$Just(80)
 	},
@@ -47417,18 +47752,18 @@ var $author$project$Pages$Dashboard$Facility$indicators = _List_fromArray(
 			return A2(
 				$elm$core$Basics$composeR,
 				$elm$core$List$filter(
-					$author$project$Pages$Dashboard$Facility$bookedIn(span)),
+					$author$project$Pages$Dashboard$Figures$bookedIn(span)),
 				A2(
 					$elm$core$Basics$composeR,
 					$elm$core$List$filterMap(
 						A2(
 							$elm$core$Basics$composeR,
-							$author$project$Pages$Dashboard$Facility$firstAntenatalAgeDays,
+							$author$project$Pages$Dashboard$Figures$firstAntenatalAgeDays,
 							$elm$core$Maybe$map(
 								function (days) {
 									return days / 7;
 								}))),
-					$author$project$Pages$Dashboard$Facility$median));
+					$author$project$Pages$Dashboard$Figures$median));
 		},
 		target: '≤ 12 wk',
 		targetValue: $elm$core$Maybe$Just(12)
@@ -47437,44 +47772,7 @@ var $author$project$Pages$Dashboard$Facility$indicators = _List_fromArray(
 		id: 'ultrasound',
 		unit: $author$project$Pages$Dashboard$Model$UnitPercent,
 		label: $author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverage,
-		value: function (span) {
-			return A2(
-				$elm$core$Basics$composeR,
-				$elm$core$List$filter(
-					function (record) {
-						return A3(
-							$elm_community$maybe_extra$Maybe$Extra$unwrap,
-							false,
-							function (weekTwenty) {
-								return A2($author$project$Pages$Dashboard$Facility$inSpan, span, weekTwenty) && A2(
-									$elm$core$List$any,
-									A2(
-										$elm$core$Basics$composeR,
-										function ($) {
-											return $.date;
-										},
-										$author$project$Pages$Dashboard$Facility$isBefore(
-											A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 1, weekTwenty))),
-									$author$project$Pages$Dashboard$Facility$antenatalVisits(record));
-							},
-							$author$project$Pages$Dashboard$Facility$weekTwentyDate(record));
-					}),
-				$author$project$Pages$Dashboard$Facility$rate(
-					function (record) {
-						return A3(
-							$elm_community$maybe_extra$Maybe$Extra$unwrap,
-							false,
-							function (weekTwenty) {
-								return A2(
-									$elm$core$List$any,
-									function (date) {
-										return A2($author$project$Pages$Dashboard$Facility$isBefore, weekTwenty, date);
-									},
-									record.ultrasounds);
-							},
-							$author$project$Pages$Dashboard$Facility$weekTwentyDate(record));
-					}));
-		},
+		value: $author$project$Pages$Dashboard$Figures$earlyUltrasoundRate,
 		target: '85%',
 		targetValue: $elm$core$Maybe$Just(85)
 	},
@@ -47486,8 +47784,8 @@ var $author$project$Pages$Dashboard$Facility$indicators = _List_fromArray(
 			return A2(
 				$elm$core$Basics$composeR,
 				$elm$core$List$filter(
-					$author$project$Pages$Dashboard$Facility$seenIn(span)),
-				$author$project$Pages$Dashboard$Facility$rate(
+					$author$project$Pages$Dashboard$Figures$seenIn(span)),
+				$author$project$Pages$Dashboard$Figures$rate(
 					function ($) {
 						return $.highRisk;
 					}));
@@ -47514,19 +47812,11 @@ var $author$project$Pages$Dashboard$Facility$indicators = _List_fromArray(
 			return A2(
 				$elm$core$Basics$composeR,
 				$elm$core$List$filter(
+					$author$project$Pages$Dashboard$Figures$concludedIn(span)),
+				$author$project$Pages$Dashboard$Figures$rate(
 					A2(
 						$elm$core$Basics$composeR,
-						function ($) {
-							return $.dateConcluded;
-						},
-						A2(
-							$elm_community$maybe_extra$Maybe$Extra$unwrap,
-							false,
-							$author$project$Pages$Dashboard$Facility$inSpan(span)))),
-				$author$project$Pages$Dashboard$Facility$rate(
-					A2(
-						$elm$core$Basics$composeR,
-						$author$project$Pages$Dashboard$Facility$antenatalVisits,
+						$author$project$Pages$Dashboard$Figures$antenatalVisits,
 						A2(
 							$elm$core$Basics$composeR,
 							$elm$core$List$length,
@@ -47538,87 +47828,10 @@ var $author$project$Pages$Dashboard$Facility$indicators = _List_fromArray(
 		targetValue: $elm$core$Maybe$Just(70)
 	}
 	]);
-var $justinmimbs$date$Date$Year = {$: 'Year'};
-var $justinmimbs$date$Date$Quarter = {$: 'Quarter'};
-var $author$project$Pages$Dashboard$Facility$currentSpan = F3(
-	function (currentDate, firstCohortDate, period) {
-		var start = function () {
-			switch (period.$) {
-				case 'PeriodMonth':
-					return A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, currentDate);
-				case 'PeriodQuarter':
-					return A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Quarter, currentDate);
-				case 'PeriodWeek':
-					return A2(
-						$elm$core$Maybe$withDefault,
-						A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Monday, currentDate),
-						A2(
-							$elm$core$Maybe$map,
-							function (cohortDate) {
-								return A3(
-									$justinmimbs$date$Date$add,
-									$justinmimbs$date$Date$Days,
-									-A2(
-										$elm$core$Basics$modBy,
-										7,
-										A2($author$project$Gizra$NominalDate$diffDays, cohortDate, currentDate)),
-									currentDate);
-							},
-							firstCohortDate));
-				default:
-					return A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Year, currentDate);
-			}
-		}();
-		return A2($author$project$Pages$Dashboard$Facility$Span, start, currentDate);
-	});
-var $author$project$Pages$Dashboard$Facility$previousSpan = F2(
-	function (period, span) {
-		var _v0 = function () {
-			switch (period.$) {
-				case 'PeriodMonth':
-					return _Utils_Tuple2($justinmimbs$date$Date$Months, 1);
-				case 'PeriodQuarter':
-					return _Utils_Tuple2($justinmimbs$date$Date$Months, 3);
-				case 'PeriodWeek':
-					return _Utils_Tuple2($justinmimbs$date$Date$Days, 7);
-				default:
-					return _Utils_Tuple2($justinmimbs$date$Date$Years, 1);
-			}
-		}();
-		var unit = _v0.a;
-		var count = _v0.b;
-		return A2(
-			$author$project$Pages$Dashboard$Facility$Span,
-			A3($justinmimbs$date$Date$add, unit, -count, span.start),
-			A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -1, span.start));
-	});
-var $author$project$Pages$Dashboard$Model$AlertPretermRateExceeded = {$: 'AlertPretermRateExceeded'};
-var $author$project$Pages$Dashboard$Model$AlertBirthsMissingBirthWeight = function (a) {
-	return {$: 'AlertBirthsMissingBirthWeight', a: a};
-};
-var $author$project$Pages$Dashboard$Placeholder$facilityAlerts = _List_fromArray(
-	[
-		$author$project$Pages$Dashboard$Model$AlertBirthsMissingBirthWeight(3),
-		$author$project$Pages$Dashboard$Model$AlertPretermRateExceeded
-	]);
-var $author$project$Pages$Dashboard$Facility$facilityFigures = F5(
+var $author$project$Pages$Dashboard$Model$TotalDeliveriesInstitutional = {$: 'TotalDeliveriesInstitutional'};
+var $author$project$Pages$Dashboard$Figures$facilityFigures = F5(
 	function (currentDate, firstCohortDate, records, site, period) {
-		var bySite = A3(
-			$elm$core$List$foldl,
-			function (record) {
-				return A2(
-					$elm$core$Dict$update,
-					record.healthCenter,
-					A2(
-						$elm$core$Basics$composeR,
-						$elm$core$Maybe$withDefault(_List_Nil),
-						A2(
-							$elm$core$Basics$composeR,
-							$elm$core$List$cons(record),
-							$elm$core$Maybe$Just)));
-			},
-			$elm$core$Dict$empty,
-			records);
+		var bySite = $author$project$Pages$Dashboard$Figures$groupBySite(records);
 		var otherSites = $elm$core$Dict$values(
 			A3(
 				$elm_community$maybe_extra$Maybe$Extra$unwrap,
@@ -47629,7 +47842,7 @@ var $author$project$Pages$Dashboard$Facility$facilityFigures = F5(
 				site));
 		var averageOf = F2(
 			function (indicator, overSpan) {
-				return $author$project$Pages$Dashboard$Facility$mean(
+				return $author$project$Pages$Dashboard$Figures$mean(
 					A2(
 						$elm$core$List$filterMap,
 						indicator.value(overSpan),
@@ -47644,69 +47857,33 @@ var $author$project$Pages$Dashboard$Facility$facilityFigures = F5(
 					return A2($elm$core$Dict$get, id, bySite);
 				},
 				site));
-		var series = function (kpi) {
-			var indicator = A2(
-				$elm_community$list_extra$List$Extra$find,
-				function (candidate) {
-					return _Utils_eq(candidate.id, kpi.id);
-				},
-				$author$project$Pages$Dashboard$Facility$indicators);
-			var monthly = F2(
-				function (valueOver, year) {
-					return A2(
-						$elm$core$List$map,
-						function (month) {
-							return $elm_community$maybe_extra$Maybe$Extra$join(
-								A3(
-									$elm$core$Maybe$map2,
-									valueOver,
-									indicator,
-									A3($author$project$Pages$Dashboard$Facility$monthSpan, currentDate, year, month)));
-						},
-						$author$project$Pages$Dashboard$Facility$months);
-				});
-			return {
-				target: A2(
-					$elm$core$List$repeat,
-					12,
-					A2(
-						$elm$core$Maybe$andThen,
-						function ($) {
-							return $.targetValue;
-						},
-						indicator)),
-				average: monthly(averageOf),
-				performance: monthly(
-					F2(
-						function (found, monthOfYear) {
-							return A2(found.value, monthOfYear, siteRecords);
-						}))
-			};
-		};
-		var span = A3($author$project$Pages$Dashboard$Facility$currentSpan, currentDate, firstCohortDate, period);
-		var previous = A2($author$project$Pages$Dashboard$Facility$previousSpan, period, span);
-		var kpiFor = function (indicator) {
-			var current = A2(indicator.value, span, siteRecords);
-			return {
-				id: indicator.id,
-				unit: indicator.unit,
-				delta: A3(
-					$elm$core$Maybe$map2,
-					$elm$core$Basics$sub,
-					current,
-					A2(indicator.value, previous, siteRecords)),
-				label: indicator.label,
-				target: indicator.target,
-				average: A2(averageOf, indicator, span),
-				current: current
-			};
-		};
+		var span = A3($author$project$Pages$Dashboard$Figures$currentSpan, currentDate, firstCohortDate, period);
+		var blocks = A6(
+			$author$project$Pages$Dashboard$Figures$indicatorFigures,
+			currentDate,
+			span,
+			A2($author$project$Pages$Dashboard$Figures$previousSpan, period, span),
+			siteRecords,
+			averageOf,
+			$author$project$Pages$Dashboard$Figures$facilityIndicators);
 		return {
-			kpis: A2($elm$core$List$map, kpiFor, $author$project$Pages$Dashboard$Facility$indicators),
-			tiles: A3($author$project$Pages$Dashboard$Facility$tiles, currentDate, span, siteRecords),
-			alerts: $author$project$Pages$Dashboard$Placeholder$facilityAlerts,
-			series: series,
-			coverage: A2($author$project$Pages$Dashboard$Facility$coverage, span, siteRecords)
+			kpis: blocks.kpis,
+			tiles: A5(
+				$author$project$Pages$Dashboard$Figures$tiles,
+				currentDate,
+				span,
+				$author$project$Pages$Dashboard$Model$Tile($author$project$Pages$Dashboard$Model$TotalDeliveriesInstitutional),
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.deliveryLocation;
+					},
+					$elm$core$Basics$eq(
+						$elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$FacilityDelivery))),
+				siteRecords),
+			alerts: $author$project$Pages$Dashboard$Figures$facilityAlerts,
+			series: blocks.series,
+			coverage: A2($author$project$Pages$Dashboard$Figures$coverage, span, siteRecords)
 		};
 	});
 var $author$project$Pages$Dashboard$Model$ProgramLevel = {$: 'ProgramLevel'};
@@ -48577,9 +48754,9 @@ var $author$project$Pages$Dashboard$View$viewFigures = F5(
 						return $elm$core$Maybe$Nothing;
 					}
 				}();
-				return A5($author$project$Pages$Dashboard$Facility$facilityFigures, currentDate, data.firstCohortDate, data.records, site, period);
+				return A5($author$project$Pages$Dashboard$Figures$facilityFigures, currentDate, data.firstCohortDate, data.records, site, period);
 			} else {
-				return $author$project$Pages$Dashboard$Placeholder$programFigures;
+				return A4($author$project$Pages$Dashboard$Figures$programFigures, currentDate, data.firstCohortDate, data.records, period);
 			}
 		}();
 		var years = A2($author$project$Pages$Dashboard$Utils$drillYears, currentDate, data.firstCohortDate);
