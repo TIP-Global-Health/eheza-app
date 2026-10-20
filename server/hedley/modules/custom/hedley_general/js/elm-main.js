@@ -6149,9 +6149,29 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 						startingYear) > -1;
 				};
 				var records = A2(
-					$elm$core$List$filter,
+					$elm$core$List$map,
 					function (record) {
-						return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, record.birthDate, currentDate) < 6;
+						var underSix = function (encounter) {
+							return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, record.birthDate, encounter.startDate) < 6;
+						};
+						var keepGroupVisits = $elm$core$Maybe$map(
+							$elm$core$List$filter(underSix));
+						var keepIndividualVisits = $elm$core$Maybe$map(
+							$elm$core$List$map(
+								$elm$core$List$filter(underSix)));
+						return _Utils_update(
+							record,
+							{
+								wellChildData: keepIndividualVisits(record.wellChildData),
+								familyNutritionData: keepIndividualVisits(record.familyNutritionData),
+								groupNutritionChwData: keepGroupVisits(record.groupNutritionChwData),
+								groupNutritionFbfData: keepGroupVisits(record.groupNutritionFbfData),
+								groupNutritionAchiData: keepGroupVisits(record.groupNutritionAchiData),
+								familyNutritionMuacData: keepIndividualVisits(record.familyNutritionMuacData),
+								groupNutritionPmtctData: keepGroupVisits(record.groupNutritionPmtctData),
+								individualNutritionData: keepIndividualVisits(record.individualNutritionData),
+								groupNutritionSorwatheData: keepGroupVisits(record.groupNutritionSorwatheData)
+							});
 					},
 					data);
 				var impacted = A2(

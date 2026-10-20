@@ -109,10 +109,32 @@ calculateNutritionReportDataTask : NominalDate -> List PatientData -> Task Strin
 calculateNutritionReportDataTask currentDate data =
     Task.succeed
         (let
+            -- A visit counts only if the child was under six on that day.
+            -- A child born 2019-03 keeps a 2024 visit, but not a 2025-04 one.
             records =
-                List.filter
+                List.map
                     (\record ->
-                        Date.diff Years record.birthDate currentDate < 6
+                        let
+                            underSix encounter =
+                                Date.diff Years record.birthDate encounter.startDate < 6
+
+                            keepGroupVisits =
+                                Maybe.map (List.filter underSix)
+
+                            keepIndividualVisits =
+                                Maybe.map (List.map (List.filter underSix))
+                        in
+                        { record
+                            | familyNutritionData = keepIndividualVisits record.familyNutritionData
+                            , familyNutritionMuacData = keepIndividualVisits record.familyNutritionMuacData
+                            , wellChildData = keepIndividualVisits record.wellChildData
+                            , individualNutritionData = keepIndividualVisits record.individualNutritionData
+                            , groupNutritionPmtctData = keepGroupVisits record.groupNutritionPmtctData
+                            , groupNutritionFbfData = keepGroupVisits record.groupNutritionFbfData
+                            , groupNutritionSorwatheData = keepGroupVisits record.groupNutritionSorwatheData
+                            , groupNutritionChwData = keepGroupVisits record.groupNutritionChwData
+                            , groupNutritionAchiData = keepGroupVisits record.groupNutritionAchiData
+                        }
                     )
                     data
 
@@ -196,15 +218,9 @@ calculateNutritionReportDataTask currentDate data =
                     )
                     records
 
-            -- Per-child family-nutrition MUAC measurements live under
-            -- familyNutritionMuacData on each child record. The bucket
-            -- entry uses record.id (the child's id), giving correct
-            -- per-child denominators in the AM stats. The mother-side
-            -- familyNutritionData (date-only entries used by the
-            -- Demographics encounter row) is intentionally not consumed
-            -- here -- mothers are filtered out by the records age filter
-            -- above, and the Demographics row already counts them
-            -- elsewhere.
+            -- A child's family-nutrition MUAC visits, keyed by the child's id.
+            -- The mother-side familyNutritionData is counted by the
+            -- Demographics row, not here.
             familyNutritionEncounters =
                 List.concatMap
                     (\record ->

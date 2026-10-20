@@ -2356,9 +2356,12 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
         drush_print("Processed $processed out of $total patients...");
       }
     }
-    if (hedley_reports_calculate_year_difference($patient_data->birth_date) > 5) {
-      continue;
-    }
+    // A visit counts only if the child was under six on that day.
+    // A child born 2019-03 keeps a 2024 visit, but not a 2025-04 one.
+    $sixth_birthday = DateTime::createFromFormat('Y-m-d', $patient_data->birth_date)->modify('+6 years')->format('Y-m-d');
+    $is_visit_under_six = function ($encounter) use ($sixth_birthday) {
+      return substr($encounter, 0, 10) < $sixth_birthday;
+    };
 
     $data_for_patient = [
       'id' => $patient_data->id,
@@ -2414,7 +2417,11 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
         }
       }
     }
-    $data_for_patient['family_encounters'] = $family_encounters;
+    $data_for_patient['encounters'] = array_filter($data_for_patient['encounters'], $is_visit_under_six);
+    $data_for_patient['family_encounters'] = array_filter($family_encounters, $is_visit_under_six);
+    if (empty($data_for_patient['encounters']) && empty($data_for_patient['family_encounters'])) {
+      continue;
+    }
 
     $nutrition_data[] = $data_for_patient;
 
@@ -2964,54 +2971,6 @@ function hedley_reports_quarter_to_months($quarter) {
     $months[] = 3 * ($quarter - 1) + $i;
   }
   return $months;
-}
-
-/**
- * Calculates the year difference between two dates.
- *
- * This function calculates the difference in years between two dates.
- * If the second date is not provided, the current date is used.
- *
- * @param string $fromDateString
- *   The starting date in 'Y-m-d' format.
- * @param string|null $toDateString
- *   The ending date in 'Y-m-d' format. Defaults to the current date
- *   if not provided.
- *
- * @return int|string
- *   The difference in years as an integer, or an error message if the date
- *   format is invalid.
- */
-function hedley_reports_calculate_year_difference($fromDateString, $toDateString = NULL) {
-  // Convert the from date string to a DateTime object.
-  $fromDate = DateTime::createFromFormat('Y-m-d', $fromDateString);
-  if (!$fromDate) {
-    return "Invalid from date format.";
-  }
-
-  // Use the current date if to date is not provided.
-  if ($toDateString === NULL) {
-    $toDate = new DateTime();
-  }
-  else {
-    // Convert the to date string to a DateTime object.
-    $toDate = DateTime::createFromFormat('Y-m-d', $toDateString);
-    if (!$toDate) {
-      return "Invalid to date format.";
-    }
-  }
-
-  // Calculate the difference between the two dates.
-  $interval = $toDate->diff($fromDate);
-
-  // Determine the sign of the difference.
-  $yearDifference = $interval->y;
-  if ($toDate < $fromDate) {
-    $yearDifference = -$yearDifference;
-  }
-
-  // Return the difference in years.
-  return $yearDifference;
 }
 
 /**
