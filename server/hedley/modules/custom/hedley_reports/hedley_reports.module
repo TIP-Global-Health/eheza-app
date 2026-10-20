@@ -6,6 +6,7 @@
  */
 
 include_once 'hedley_reports.features.inc';
+include_once 'hedley_reports.dashboard.inc';
 
 /**
  * @file
@@ -212,7 +213,7 @@ function hedley_reports_dashboard_program_access() {
  *   TRUE when the current user may view the dashboard.
  */
 function hedley_reports_dashboard_access($role_name) {
-  if (!variable_get('hedley_admin_feature_healthy_start_enabled', FALSE)) {
+  if (!hedley_reports_dashboard_data_enabled()) {
     return FALSE;
   }
 
@@ -227,6 +228,8 @@ function hedley_reports_dashboard_access($role_name) {
  * Implements hook_node_insert().
  */
 function hedley_reports_node_insert($node) {
+  hedley_reports_trigger_dashboard_data_recalculation($node);
+
   // Generate initial Reports data for newly created person.
   if ($node->type == 'person') {
     hedley_reports_trigger_recalculation_for_created_person($node);
@@ -240,6 +243,8 @@ function hedley_reports_node_insert($node) {
  * Implements hook_node_update().
  */
 function hedley_reports_node_update($node) {
+  hedley_reports_trigger_dashboard_data_recalculation($node);
+
   if ($node->type == 'person') {
     hedley_reports_trigger_recalculation_for_edited_person($node);
   }
@@ -260,6 +265,16 @@ function hedley_reports_advanced_queue_info() {
     // The number of seconds to retry after.
     'retry after' => 120,
     // The maximum number of attempts after a failure.
+    'max attempts' => 3,
+  ];
+
+  $items[HEDLEY_REPORTS_CALCULATE_DASHBOARD_DATA] = [
+    'label' => t('Calculate HealthyStart dashboard data'),
+    'worker callback' => 'hedley_reports_calculate_dashboard_data_worker',
+    'groups' => [
+      'hedley',
+    ],
+    'retry after' => 120,
     'max attempts' => 3,
   ];
 
@@ -2385,6 +2400,7 @@ function hedley_reports_prenatal_indicator_mapping() {
     'anemia-test' => 'k',
     'breastfed-first-hour' => 'l',
     'premature-onset-contractions' => 'm',
+    'gwg-inadequate' => 'n',
   ];
 }
 
@@ -3449,34 +3465,8 @@ function hedley_reports_generate_completion_data_for_restful($from_nid, $batch, 
     'well_child_encounter',
   ];
 
-  // Direct SELECT against the field table avoids the node_load_multiple() that
-  // EntityFieldQuery would force; the JSON payload is read straight from
-  // field_data_field_reports_data. The shared $build closure keeps the COUNT
-  // and data queries in lockstep.
-  $build = function () use ($from_nid, $bundles, $health_center) {
-    $q = db_select('field_data_field_reports_data', 'fr');
-    $q->innerJoin('node', 'n', 'n.nid = fr.entity_id');
-    $q->condition('fr.entity_type', 'node')
-      ->condition('fr.bundle', $bundles, 'IN')
-      ->condition('fr.deleted', 0)
-      ->condition('n.status', NODE_PUBLISHED)
-      ->condition('n.nid', $from_nid, '>')
-      ->isNotNull('fr.field_reports_data_value');
-    if (!empty($health_center)) {
-      $alias = $q->innerJoin('field_data_field_shards', 'fs',
-        "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");
-      $q->condition("$alias.field_shards_target_id", $health_center);
-    }
-    return $q;
-  };
-
-  // Count remaining rows from $from_nid. addExpression() emits "SELECT COUNT(*)
-  // FROM ..." rather than the subquery wrapper countQuery() would generate.
-  $count_q = $build();
-  $count_q->addExpression('COUNT(*)', 'cnt');
-  $count = (int) $count_q->execute()->fetchField();
-
-  if ($count === 0) {
+  $loaded = hedley_reports_load_reports_data_batch($from_nid, $batch, $bundles, $health_center);
+  if ($loaded['count'] === 0) {
     // No more items left -- return the structured shape Elm expects so
     // its decoder doesn't fail and leave sync stuck at "PENDING".
     return [
@@ -3485,13 +3475,7 @@ function hedley_reports_generate_completion_data_for_restful($from_nid, $batch, 
       'last' => 0,
     ];
   }
-
-  $data_q = $build();
-  $data_q->fields('n', ['nid', 'type'])
-    ->fields('fr', ['field_reports_data_value'])
-    ->orderBy('n.nid')
-    ->range(0, $batch);
-  $rows = $data_q->execute()->fetchAll();
+  $rows = $loaded['rows'];
 
   $type_to_bucket = [
     'acute_illness_encounter'    => 'acute_illness',
@@ -3520,9 +3504,66 @@ function hedley_reports_generate_completion_data_for_restful($from_nid, $batch, 
 
   return [
     'batch' => $data,
-    'total_remaining' => $count - count($rows),
+    'total_remaining' => $loaded['count'] - count($rows),
     'last' => $last,
   ];
+}
+
+/**
+ * Loads one batch of stored reports data rows, cursored by node ID.
+ *
+ * Reads field_data_field_reports_data directly, so no node is loaded. Live,
+ * published nodes only; optionally one health center's shard.
+ *
+ * @param int $from_nid
+ *   Rows of nodes with a greater ID are loaded.
+ * @param int $batch
+ *   Most rows to load.
+ * @param array $bundles
+ *   Content types to load rows of.
+ * @param int|null $health_center
+ *   Health center ID to limit the rows to, or NULL for all.
+ *
+ * @return array
+ *   "count": rows left after $from_nid; "rows": objects with nid, type and
+ *   field_reports_data_value, ordered by nid.
+ */
+function hedley_reports_load_reports_data_batch($from_nid, $batch, array $bundles, $health_center) {
+  // The shared $build closure keeps the COUNT and data queries in lockstep.
+  $build = function () use ($from_nid, $bundles, $health_center) {
+    $q = db_select('field_data_field_reports_data', 'fr');
+    $q->innerJoin('node', 'n', 'n.nid = fr.entity_id');
+    hedley_general_apply_exclude_deleted($q, 'n');
+    $q->condition('fr.entity_type', 'node')
+      ->condition('fr.bundle', $bundles, 'IN')
+      ->condition('fr.deleted', 0)
+      ->condition('n.status', NODE_PUBLISHED)
+      ->condition('n.nid', $from_nid, '>')
+      ->isNotNull('fr.field_reports_data_value');
+    if (!empty($health_center)) {
+      $alias = $q->innerJoin('field_data_field_shards', 'fs',
+        "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");
+      $q->condition("$alias.field_shards_target_id", $health_center);
+    }
+    return $q;
+  };
+
+  // addExpression() emits "SELECT COUNT(*) FROM ..." rather than the subquery
+  // wrapper countQuery() would generate.
+  $count_q = $build();
+  $count_q->addExpression('COUNT(*)', 'cnt');
+  $count = (int) $count_q->execute()->fetchField();
+  if ($count === 0) {
+    return ['count' => 0, 'rows' => []];
+  }
+
+  $data_q = $build();
+  $data_q->fields('n', ['nid', 'type'])
+    ->fields('fr', ['field_reports_data_value'])
+    ->orderBy('n.nid')
+    ->range(0, $batch);
+
+  return ['count' => $count, 'rows' => $data_q->execute()->fetchAll()];
 }
 
 /**
