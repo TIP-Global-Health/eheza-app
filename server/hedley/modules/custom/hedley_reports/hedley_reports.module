@@ -2358,7 +2358,11 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
     }
     // A visit counts only if the child was under six on that day.
     // A child born 2019-03 keeps a 2024 visit, but not a 2025-04 one.
-    $sixth_birthday = DateTime::createFromFormat('Y-m-d', $patient_data->birth_date)->modify('+6 years')->format('Y-m-d');
+    $birth_date = DateTime::createFromFormat('Y-m-d', $patient_data->birth_date);
+    if (!$birth_date) {
+      continue;
+    }
+    $sixth_birthday = $birth_date->modify('+6 years')->format('Y-m-d');
     $is_visit_under_six = function ($encounter) use ($sixth_birthday) {
       return substr($encounter, 0, 10) < $sixth_birthday;
     };

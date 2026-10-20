@@ -148,9 +148,8 @@ countTotalNutritionEncounters data =
     in
     countIndividualDataEncounters data.wellChildData
         + countIndividualDataEncounters data.individualNutritionData
-        -- familyNutritionData (date-only, mother-side) is always 0 for
-        -- children (the nutrition report filters to under-6), but this
-        -- function is also called via countTotalEncounters for the
+        -- familyNutritionData is mother-side: the nutrition report's under-six
+        -- trim empties it, but countTotalEncounters also uses this for the
         -- Demographics impacted filter, which iterates mothers.
         + countIndividualDataEncounters data.familyNutritionData
         + countIndividualDataEncounters data.familyNutritionMuacData
