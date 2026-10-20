@@ -227,6 +227,16 @@ flag simply does not appear.
   preeclampsia-risk diagnoses also need EGA ≥ 12 weeks; age under 18 or 35+ on a first pregnancy
   gives Moderate Risk on its own, so use age 25. These diagnoses raise no popup: read them on the
   progress report.
+- Aspirin is given in Next Steps → Medication Distribution ("Administer: Aspirin (150 mg)"), once a
+  preeclampsia risk is diagnosed. Next Steps shows only after every activity but Malaria Prevention,
+  Photo and Ultrasound is saved. `completeHistory` overwrites obstetric counts, so a first pregnancy
+  needs Obstetric (all 0) and Medical filled by hand. Medication's Calcium tab starts at 14 weeks.
+- With Healthy Start on, a nurse visit has an Ultrasound activity: viable, fetuses, location, the scan
+  date, and weeks + days by scan. Saving it re-dates the pregnancy from the scan. The scan date is
+  `field_execution_date` on `prenatal_ultrasound`.
+- Healthy Start GWG: the Nutrition Assessment form of a later visit shows "GWG Classification:
+  Inadequate" when the gain since the previous weight falls short. Move the earlier visit and its
+  measurements first (pitfalls, backdating).
 - Prenatal progress report: Reports tab → Clinical Progress Report (`h.progressReport.openReport(page,
   'prenatal')`). The Obstetric History pane is the first `.risk-factors`; diagnoses are under
   OBSTETRIC DIAGNOSIS. The encounter page's red `div.alerts` icon opens `.alerts-dialog` (High Risk
@@ -418,6 +428,23 @@ flag simply does not appear.
   `/var/www/html/server/www/…`); delete it afterwards.
 - Prenatal data sits under `individual.antenatal`. Each encounter is `date|nurse|<diagnosis codes>|<indicator codes>`;
   the codes are in `hedley_reports_prenatal_*_mapping()` (for example `h` is intra-uterine death).
+
+## HealthyStart dashboards (admin)
+
+- `/admin/reports/dashboards/facility` and `/program`, behind `hedley_admin_feature_healthy_start_enabled`.
+  The first cohort date is `hedley_admin_healthy_start_first_cohort_date` (YYYY-MM-DD). Only pregnancies
+  created on or after it get a record, so setting it to the run's day leaves older QA data out.
+- Each pregnancy (`individual_participant`) holds its record in `field_reports_data`. Saves queue
+  `hedley_reports_calculate_dashboard_data`, one item per pregnancy. Drain it with
+  `ddev drush advancedqueue-process-queue hedley_reports_calculate_dashboard_data --timeout=30`;
+  it finishes at once but then idles until the timeout.
+- Sign in without a password: `ddev drush uli --uri=https://ihangane.ddev.site:4443` gives a one-time
+  link, for Chrome or the QA driver's own page. A role-only user lands on its dashboard.
+- Selects: `#filter-facility-site|time`, `#filter-program-location|site|time`, `select[id^=trend-kpi]`.
+  Blocks are `#kpi-block-<id>`; a click opens `#dashboard-drill-down`. Facility opens on the first site by name (Muhondo).
+- At the driver's 820 px the admin theme lays pages out 960 px wide, Statistical Queries too.
+- Moving a person to another centre on the server: set the person's `field_shards`, then
+  `hedley_patient_recalculate_shards_for_person_content($nid)`; the pregnancy and visits follow.
 
 ## The QA driver
 

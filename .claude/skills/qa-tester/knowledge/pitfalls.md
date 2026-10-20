@@ -340,3 +340,27 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after my own Continue click, `completePriorTreatment` failed hovering the same modal's Continue.
 - **Wrong conclusion:** a second popup appeared.
 - **Rule:** the modal fades out while `isVisible` still says yes. After dismissing, `waitFor({ state: 'hidden' })` before calling a helper that dismisses popups itself.
+
+## A local-time `Date` handed to the date picker
+
+- **Symptom:** an ultrasound entered as 3 October was stored as 2 October, and the EDD moved by a day.
+- **Wrong conclusion:** the form or the encounter's date shifted it.
+- **Rule:** driver scripts run in Node on the host's time zone, while the page runs in UTC. `new Date(2026, 9, 3)` is 2 October in UTC. Build dates as `new Date('2026-10-03T12:00:00Z')` or `Date.now() - n * 864e5`.
+
+## A fixture "at another health centre" registered at Nyange
+
+- **Symptom:** women registered while signed in at Muhondo carried `hc: 4` (Nyange) in their records.
+- **Wrong conclusion:** the record reads the wrong shard.
+- **Rule:** `registerAdult` always picks Nyange as Registering Health Center. For another centre, re-shard on the server (app-map, Dashboards) or fill the select by hand.
+
+## Moving a visit across a birthday
+
+- **Symptom:** a woman registered "aged 41" had no `age` risk after her visit was moved back a day.
+- **Wrong conclusion:** the age rule is off by one.
+- **Rule:** `registerAdult` sets the birth date to today minus N years, so moving any visit earlier makes her N−1. Register one year older than the age wanted at the moved visit.
+
+## Recording admin pages with the Chrome extension
+
+- **Symptom:** a GIF of four Time filter states showed two; zoomed and scaled screenshots were not captured.
+- **Wrong conclusion:** the GIF is the evidence for every state checked.
+- **Rule:** check values in Chrome if asked, but record admin pages with the QA driver. Its browser opens them after a `drush uli` link (app-map, Dashboards).
