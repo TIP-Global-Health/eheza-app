@@ -480,7 +480,7 @@ B-479	4	READY			2349	27	Immunisation (Burundi, child in Well Child AND Child Sco
 B-480	4	READY			2355	38	Statistical Queries › Prenatal (ANC): the outcomes and delivery-location tables count a delivery from before the FROM da
 B-481	4	READY			2357	26	Well Child progress report: a normal head circumference never ends an earlier cephaly warning, so a child whose head is 
 B-482	4	IMPLEMENTED	LOW	2366	2367	42	Case Management Prenatal Labs: an entry whose last lab test is withdrawn stays listed for 35 days with nothing to record
-B-483	3	READY	MED			42	Statistical Queries › Nutrition report: the under-six gate is evaluated at generation time, so every historical column l
+B-483	3	IMPLEMENTED	MED	2390	2391	42	Statistical Queries › Nutrition report: the under-six gate is evaluated at generation time, so every historical column l
 B-484	4	READY	LOW			42	Dashboard › Beneficiaries table, "Last month": the 0–5 / 6–8 / 9–11 / 12+ month bands are cut at the child's age TODAY w
 B-485	4	READY	LOW			42	Antenatal clinical progress report of a CONCLUDED pregnancy (opened from the Patient Record): the header EGA keeps count
 B-486	3	IMPLEMENTED	MED-LOW	2362	2363	42	Antenatal progress report › CHW Activity pane: a CHW postpartum visit never gets the "Danger Signs Present" chip, becaus
