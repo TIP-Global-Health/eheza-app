@@ -112,31 +112,36 @@ calculateNutritionReportDataTask currentDate data =
             -- A visit counts only if the child was under six on that day.
             -- A child born 2019-03 keeps a 2024 visit, but not a 2025-04 one.
             records =
-                List.map
+                -- Six by 1 January of the starting year: no visit in the report counts.
+                List.filter
                     (\record ->
-                        let
-                            underSix encounter =
-                                Date.diff Years record.birthDate encounter.startDate < 6
-
-                            keepGroupVisits =
-                                Maybe.map (List.filter underSix)
-
-                            keepIndividualVisits =
-                                Maybe.map (List.map (List.filter underSix))
-                        in
-                        { record
-                            | familyNutritionData = keepIndividualVisits record.familyNutritionData
-                            , familyNutritionMuacData = keepIndividualVisits record.familyNutritionMuacData
-                            , wellChildData = keepIndividualVisits record.wellChildData
-                            , individualNutritionData = keepIndividualVisits record.individualNutritionData
-                            , groupNutritionPmtctData = keepGroupVisits record.groupNutritionPmtctData
-                            , groupNutritionFbfData = keepGroupVisits record.groupNutritionFbfData
-                            , groupNutritionSorwatheData = keepGroupVisits record.groupNutritionSorwatheData
-                            , groupNutritionChwData = keepGroupVisits record.groupNutritionChwData
-                            , groupNutritionAchiData = keepGroupVisits record.groupNutritionAchiData
-                        }
+                        Date.diff Years record.birthDate (Date.fromOrdinalDate startingYear 1) < 6
                     )
                     data
+                    |> List.map
+                        (\record ->
+                            let
+                                underSix encounter =
+                                    Date.diff Years record.birthDate encounter.startDate < 6
+
+                                keepGroupVisits =
+                                    Maybe.map (List.filter underSix)
+
+                                keepIndividualVisits =
+                                    Maybe.map (List.map (List.filter underSix))
+                            in
+                            { record
+                                | familyNutritionData = keepIndividualVisits record.familyNutritionData
+                                , familyNutritionMuacData = keepIndividualVisits record.familyNutritionMuacData
+                                , wellChildData = keepIndividualVisits record.wellChildData
+                                , individualNutritionData = keepIndividualVisits record.individualNutritionData
+                                , groupNutritionPmtctData = keepGroupVisits record.groupNutritionPmtctData
+                                , groupNutritionFbfData = keepGroupVisits record.groupNutritionFbfData
+                                , groupNutritionSorwatheData = keepGroupVisits record.groupNutritionSorwatheData
+                                , groupNutritionChwData = keepGroupVisits record.groupNutritionChwData
+                                , groupNutritionAchiData = keepGroupVisits record.groupNutritionAchiData
+                            }
+                        )
 
             impacted =
                 List.filterMap

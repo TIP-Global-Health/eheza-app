@@ -2346,6 +2346,10 @@ function hedley_reports_get_unique_districts_by_province($province) {
 function hedley_reports_generate_nutrition_report_data(array $data) {
   $impacted = [];
   $nutrition_data = [];
+  // The report shows the previous 2 years, plus the year before them for
+  // Incidence, so visits count from 1 January, 3 years back.
+  $today = new DateTime();
+  $starting_year = $today->format('Y') - 3;
 
   $total = count($data);
   $processed = 0;
@@ -2363,6 +2367,10 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       continue;
     }
     $sixth_birthday = $birth_date->modify('+6 years')->format('Y-m-d');
+    // Six by 1 January of the starting year: no visit in the report counts.
+    if ($sixth_birthday <= "$starting_year-01-01") {
+      continue;
+    }
     $is_visit_under_six = function ($encounter) use ($sixth_birthday) {
       return substr($encounter, 0, 10) < $sixth_birthday;
     };
@@ -2440,12 +2448,6 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
     }
   }
 
-  // Filtering out encounters performed before Jan 01 of starting year.
-  // Starting year is current year, minus 3, as Nutrition report shows
-  // data from previous 2 years, and we need prior year as well, to
-  // compute Incidence.
-  $today = new DateTime();
-  $starting_year = $today->format('Y') - 3;
   // Initialize the dictionary (associative array in PHP)
   $encounters_by_month = [];
   $total = count($nutrition_data);

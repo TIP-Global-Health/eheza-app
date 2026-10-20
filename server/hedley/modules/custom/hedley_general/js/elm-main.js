@@ -5965,6 +5965,16 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
+var $elm$core$Basics$clamp = F3(
+	function (low, high, number) {
+		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
+	});
+var $justinmimbs$date$Date$fromOrdinalDate = F2(
+	function (y, od) {
+		var daysInYear = $justinmimbs$date$Date$isLeapYear(y) ? 366 : 365;
+		return $justinmimbs$date$Date$RD(
+			$justinmimbs$date$Date$daysBeforeYear(y) + A3($elm$core$Basics$clamp, 1, daysInYear, od));
+	});
 var $author$project$Pages$Reports$Model$emptyNutritionMetrics = {wastingNormal: _List_Nil, wastingSevere: _List_Nil, stuntingNormal: _List_Nil, stuntingSevere: _List_Nil, wastingModerate: _List_Nil, stuntingModerate: _List_Nil, underweightNormal: _List_Nil, underweightSevere: _List_Nil, underweightModerate: _List_Nil, acuteMalnutritionMam: _List_Nil, acuteMalnutritionSam: _List_Nil, acuteMalnutritionNormal: _List_Nil};
 var $author$project$Pages$Reports$Utils$sumNutritionMetrics = A2(
 	$elm$core$List$foldl,
@@ -6173,7 +6183,16 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 								groupNutritionSorwatheData: keepGroupVisits(record.groupNutritionSorwatheData)
 							});
 					},
-					data);
+					A2(
+						$elm$core$List$filter,
+						function (record) {
+							return A3(
+								$justinmimbs$date$Date$diff,
+								$justinmimbs$date$Date$Years,
+								record.birthDate,
+								A2($justinmimbs$date$Date$fromOrdinalDate, startingYear, 1)) < 6;
+						},
+						data));
 				var impacted = A2(
 					$elm$core$List$filterMap,
 					function (record) {
@@ -11992,10 +12011,6 @@ var $elm$time$Time$toMonth = F2(
 			default:
 				return $elm$time$Time$Dec;
 		}
-	});
-var $elm$core$Basics$clamp = F3(
-	function (low, high, number) {
-		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
 	});
 var $justinmimbs$date$Date$fromCalendarDate = F3(
 	function (y, m, d) {
