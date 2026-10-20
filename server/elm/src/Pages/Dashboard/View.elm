@@ -9,14 +9,16 @@ import App.Types exposing (Language)
 import Backend.Dashboard.Model exposing (DashboardData)
 import Backend.Model exposing (ModelBackend)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (Attribute, Html, a, button, div, h1, h2, label, li, option, p, select, span, table, tbody, td, text, th, thead, tr, ul)
 import Html.Attributes exposing (attribute, class, classList, colspan, for, href, id, selected, style, tabindex, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode
+import List.Extra
 import Maybe.Extra
 import Pages.Components.TrendChart as TrendChart
-import Pages.Components.Utils exposing (reportTableDataToCSV, reportTablesDataToCSV)
+import Pages.Components.Utils exposing (isSyncComplete, reportTableDataToCSV, reportTablesDataToCSV, viewSyncingPlaceholder)
+import Pages.Dashboard.Figures exposing (facilityFigures, programFigures)
 import Pages.Dashboard.Model
     exposing
         ( Coverage
@@ -24,19 +26,23 @@ import Pages.Dashboard.Model
         , DashboardLabel(..)
         , Filter
         , FilterKey(..)
+        , FilterOption(..)
         , Kpi
+        , KpiSeries
+        , KpiUnit(..)
         , Model
         , Msg(..)
         , Screen(..)
         , Tile
-        , Trend(..)
+        , TimePeriod(..)
         , YearSel(..)
         )
-import Pages.Dashboard.Placeholder as Placeholder
 import Pages.Dashboard.Utils
     exposing
         ( dashboardSlug
+        , defaultTrendKpi
         , drillDialogId
+        , drillYears
         , filterKeySlug
         , filterLabel
         , filterOptionLabel
@@ -50,6 +56,7 @@ import Pages.Dashboard.Utils
         )
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils exposing (viewBackendData)
+import Round
 import Svg
 import Svg.Attributes as SA
 import Translate exposing (translate)
@@ -63,21 +70,68 @@ view language currentDate modelBackend dashboard model =
 
 viewDashboard : Language -> NominalDate -> DashboardData -> Dashboard -> Model -> Html Msg
 viewDashboard language currentDate data dashboard model =
+    if isSyncComplete data.remainingForDownload then
+        viewFigures language currentDate data dashboard model
+
+    else
+        div [ class "ehs-dashboard mx-auto w-full max-w-[1440px] px-3 py-4 md:px-6" ]
+            [ viewSyncingPlaceholder language (List.length data.records) data.remainingForDownload ]
+
+
+viewFigures : Language -> NominalDate -> DashboardData -> Dashboard -> Model -> Html Msg
+viewFigures language currentDate data dashboard model =
     let
         filters =
             filtersFor dashboard data.menu.site data.menu.healthCenters
 
+        selectedOption key =
+            List.Extra.find (\filter -> filter.key == key) filters
+                |> Maybe.map (selectedFilterValue model)
+
+        period =
+            case selectedOption FilterTime of
+                Just (OptionPeriod selected) ->
+                    selected
+
+                _ ->
+                    PeriodMonth
+
         years =
-            Placeholder.drillYears currentDate data.firstCohortDate
+            drillYears currentDate data.firstCohortDate
 
-        tiles =
-            Placeholder.tilesFor dashboard
+        siteName =
+            resolveSiteName language dashboard selectedOption
 
-        kpis =
-            Placeholder.kpisFor dashboard
+        -- Names the site and the day of export, like
+        -- healthystart-facility-nyange-month-2026-10-20.csv.
+        exportFileName content =
+            let
+                siteWords =
+                    case dashboard of
+                        Facility ->
+                            String.words (String.toLower siteName)
 
-        coverage =
-            Placeholder.coverageFor dashboard
+                        Program ->
+                            []
+            in
+            String.join "-" (("healthystart" :: dashboardSlug dashboard :: siteWords) ++ [ content, formatYYYYMMDD currentDate ]) ++ ".csv"
+
+        figures =
+            case dashboard of
+                Facility ->
+                    let
+                        site =
+                            case selectedOption FilterSite of
+                                Just (OptionHealthCenter healthCenter) ->
+                                    Just healthCenter.id
+
+                                _ ->
+                                    Nothing
+                    in
+                    facilityFigures currentDate data.firstCohortDate data.records site period
+
+                Program ->
+                    programFigures currentDate data.firstCohortDate data.records period
     in
     div [ class "ehs-dashboard mx-auto w-full max-w-[1440px] px-3 py-4 md:px-6" ]
         [ div
@@ -86,14 +140,17 @@ viewDashboard language currentDate data dashboard model =
             )
             [ viewBanner language
                 dashboard
-                (resolveSiteName language dashboard filters model)
-                (dashboardExportMsg language dashboard tiles kpis coverage)
+                siteName
+                (dashboardExportMsg language dashboard (exportFileName (filterOptionValue (OptionPeriod period))) figures.tiles figures.kpis figures.coverage)
             , div [ class "px-4 py-4 md:px-6" ]
                 [ viewFilterRow language dashboard filters model
-                , viewTileRow language tiles
+                , viewTileRow language figures.tiles
                 , div [ class "mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2" ]
-                    [ viewLeftColumn language kpis coverage
-                    , viewRightColumn language dashboard years kpis model
+                    [ viewLeftColumn language dashboard period figures.kpis figures.coverage
+                    , div []
+                        [ viewTrendsPanel language dashboard years figures.kpis figures.series model
+                        , viewAlertsPanel language figures.alerts
+                        ]
                     ]
                 ]
             ]
@@ -102,7 +159,7 @@ viewDashboard language currentDate data dashboard model =
                 emptyNode
 
             DrillScreen kpi ->
-                viewDrillDown language dashboard years kpi
+                viewDrillDown language dashboard (exportFileName kpi.id) years kpi (figures.series kpi)
         ]
 
 
@@ -122,13 +179,12 @@ behindDrillDownAttributes screen =
 {-| The Facility dashboard is about the site the filter selects; the Program
 dashboard is about all of them at once.
 -}
-resolveSiteName : Language -> Dashboard -> List Filter -> Model -> String
-resolveSiteName language dashboard filters model =
+resolveSiteName : Language -> Dashboard -> (FilterKey -> Maybe FilterOption) -> String
+resolveSiteName language dashboard selectedOption =
     case dashboard of
         Facility ->
-            List.filter (\filter -> filter.key == FilterSite) filters
-                |> List.head
-                |> Maybe.map (selectedFilterValue model >> filterOptionLabel language)
+            selectedOption FilterSite
+                |> Maybe.map (filterOptionLabel language)
                 |> Maybe.withDefault ""
 
         Program ->
@@ -287,21 +343,29 @@ viewTile language tile =
 -- INDICATOR BLOCKS AND COVERAGE BARS
 
 
-viewLeftColumn : Language -> List Kpi -> List Coverage -> Html Msg
-viewLeftColumn language kpis coverage =
+viewLeftColumn : Language -> Dashboard -> TimePeriod -> List Kpi -> List Coverage -> Html Msg
+viewLeftColumn language dashboard period kpis coverage =
     div []
         [ div [ class "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3" ]
-            (List.map (viewKpiBlock language) kpis)
+            (List.map (viewKpiBlock language dashboard period) kpis)
         , div [ class "mt-6 flex flex-col gap-4" ]
             (List.map (viewCoverageBar language) coverage)
         ]
 
 
-viewKpiBlock : Language -> Kpi -> Html Msg
-viewKpiBlock language kpi =
+viewKpiBlock : Language -> Dashboard -> TimePeriod -> Kpi -> Html Msg
+viewKpiBlock language dashboard period kpi =
     let
         kpiLabel =
             translateLabel language kpi.label
+
+        averageReference =
+            case dashboard of
+                Facility ->
+                    [ viewKpiReference language (formatValue language kpi.unit kpi.average) InterventionSiteAverage ]
+
+                Program ->
+                    []
     in
     button
         [ type_ "button"
@@ -313,18 +377,12 @@ viewKpiBlock language kpi =
         [ h2 [ class "min-h-[2.5rem] text-sm font-bold leading-tight text-slate-800" ] [ text kpiLabel ]
         , div [ class "mt-2 flex items-stretch gap-3 border-t border-slate-100 pt-2" ]
             [ div [ class "flex flex-col" ]
-                [ span [ class "text-3xl font-extrabold leading-none text-accent" ] [ text kpi.current ]
-                , viewTrendIndicator language kpi
+                [ span [ class "text-3xl font-extrabold leading-none text-accent" ] [ text (formatValue language kpi.unit kpi.current) ]
+                , viewTrendIndicator language period kpi
                 ]
             , div [ class "w-px self-stretch bg-slate-200" ] []
             , div [ class "flex flex-col justify-center gap-1 text-sm" ]
-                (viewKpiReference language kpi.target ProgramTargetShort
-                    :: (Maybe.map
-                            (\average -> [ viewKpiReference language average InterventionSiteAverage ])
-                            kpi.average
-                            |> Maybe.withDefault []
-                       )
-                )
+                (viewKpiReference language kpi.target ProgramTargetShort :: averageReference)
             ]
         ]
 
@@ -337,22 +395,32 @@ viewKpiReference language reference labelId =
         ]
 
 
-viewTrendIndicator : Language -> Kpi -> Html Msg
-viewTrendIndicator language kpi =
-    let
-        ( glyph, colorClass ) =
-            case kpi.deltaDir of
-                Down ->
-                    ( "▼", "text-alert" )
+{-| The change from the previous period. As in the mockups, a green triangle
+points up and a red one down: colour shows direction, not clinical merit.
+-}
+viewTrendIndicator : Language -> TimePeriod -> Kpi -> Html Msg
+viewTrendIndicator language period kpi =
+    Maybe.map
+        (\delta ->
+            let
+                glyph =
+                    if delta > 0 then
+                        span [ class "text-xs text-trend-avg", attribute "aria-hidden" "true" ] [ text "▲" ]
 
-                Up ->
-                    ( "▲", "text-trend-avg" )
-    in
-    div [ class "mt-1 flex items-center gap-1" ]
-        [ span [ class ("text-xs " ++ colorClass), attribute "aria-hidden" "true" ] [ text glyph ]
-        , span [ class "text-xs italic text-slate-600" ]
-            [ text (kpi.deltaValue ++ " " ++ translateLabel language FromPreviousMonth) ]
-        ]
+                    else if delta < 0 then
+                        span [ class "text-xs text-alert", attribute "aria-hidden" "true" ] [ text "▼" ]
+
+                    else
+                        emptyNode
+            in
+            div [ class "mt-1 flex items-center gap-1" ]
+                [ glyph
+                , span [ class "text-xs italic text-slate-600" ]
+                    [ text (formatValue language kpi.unit (Just (abs delta)) ++ " " ++ translateLabel language (FromPreviousPeriod period)) ]
+                ]
+        )
+        kpi.delta
+        |> Maybe.withDefault emptyNode
 
 
 viewCoverageBar : Language -> Coverage -> Html Msg
@@ -365,7 +433,14 @@ viewCoverageBar language coverage =
             translateLabel language coverage.label
 
         filled =
-            String.fromInt coverage.pct ++ "%"
+            formatValue language UnitPercent coverage.pct
+
+        width =
+            Maybe.Extra.unwrap "0%" (\pct -> String.fromInt (round pct) ++ "%") coverage.pct
+
+        -- A short bar has no room for its value, which then follows it.
+        valueInside =
+            Maybe.Extra.unwrap False (\pct -> pct >= 15) coverage.pct
     in
     div []
         [ p [ class "mb-1 text-sm" ]
@@ -373,16 +448,23 @@ viewCoverageBar language coverage =
             , span [ class "ml-1 font-semibold text-slate-800" ] [ text coverageLabel ]
             ]
         , div
-            [ class "relative h-6 w-full overflow-hidden rounded bg-bar-track"
+            [ class "relative flex h-6 w-full items-center overflow-hidden rounded bg-bar-track"
             , attribute "role" "img"
             , attribute "aria-label" (emphasis ++ " " ++ coverageLabel ++ ": " ++ filled)
             ]
-            [ div
-                [ class "flex h-full items-center justify-end rounded bg-accent pr-2"
-                , style "width" filled
+            (if valueInside then
+                [ div
+                    [ class "flex h-full items-center justify-end rounded bg-accent pr-2"
+                    , style "width" width
+                    ]
+                    [ span [ class "text-xs font-bold text-white" ] [ text filled ] ]
                 ]
-                [ span [ class "text-xs font-bold text-white" ] [ text filled ] ]
-            ]
+
+             else
+                [ div [ class "h-full rounded bg-accent", style "width" width ] []
+                , span [ class "ml-2 text-xs font-bold text-slate-800" ] [ text filled ]
+                ]
+            )
         ]
 
 
@@ -390,37 +472,35 @@ viewCoverageBar language coverage =
 -- TRENDS AND CRITICAL ALERTS
 
 
-viewRightColumn : Language -> Dashboard -> List Int -> List Kpi -> Model -> Html Msg
-viewRightColumn language dashboard years kpis model =
-    div []
-        [ viewTrendsPanel language dashboard years kpis model
-        , viewAlertsPanel language dashboard
-        ]
-
-
-viewTrendsPanel : Language -> Dashboard -> List Int -> List Kpi -> Model -> Html Msg
-viewTrendsPanel language dashboard years kpis model =
+viewTrendsPanel : Language -> Dashboard -> List Int -> List Kpi -> (Kpi -> KpiSeries) -> Model -> Html Msg
+viewTrendsPanel language dashboard years kpis seriesOf model =
     let
         selectedId =
-            Maybe.withDefault (Placeholder.defaultTrendKpi dashboard) model.trendKpi
+            Maybe.withDefault (defaultTrendKpi dashboard) model.trendKpi
     in
     kpiById kpis selectedId
         |> Maybe.Extra.orElse (List.head kpis)
-        |> Maybe.map (viewTrends language dashboard years model kpis selectedId)
+        |> Maybe.map (\kpi -> viewTrends language dashboard years model kpis selectedId kpi (seriesOf kpi))
         |> Maybe.withDefault emptyNode
 
 
-viewTrends : Language -> Dashboard -> List Int -> Model -> List Kpi -> String -> Kpi -> Html Msg
-viewTrends language dashboard years model kpis selectedId selectedKpi =
+viewTrends : Language -> Dashboard -> List Int -> Model -> List Kpi -> String -> Kpi -> KpiSeries -> Html Msg
+viewTrends language dashboard years model kpis selectedId selectedKpi series =
     let
         performanceColor =
             "#0273b2"
 
+        -- No line where HealthyStart has set no target.
         targetLine =
-            TrendChart.Series "#c25e00"
-                (translateLabel language (targetLegendLabel dashboard))
-                "8 4"
-                (Placeholder.targetSeries selectedKpi)
+            if List.any Maybe.Extra.isJust series.target then
+                [ TrendChart.Series "#c25e00"
+                    (translateLabel language (targetLegendLabel dashboard))
+                    "8 4"
+                    series.target
+                ]
+
+            else
+                []
 
         -- Solid lines, none of them close to the target's orange. Repeats
         -- after six years.
@@ -435,26 +515,25 @@ viewTrends language dashboard years model kpis selectedId selectedKpi =
                 )
                 (String.fromInt year)
                 ""
-                (Placeholder.performanceSeries selectedKpi year)
+                (series.performance year)
 
         chartSeries =
             case model.trendYear of
                 AllYears ->
-                    List.indexedMap yearLine years ++ [ targetLine ]
+                    List.indexedMap yearLine years ++ targetLine
 
                 Year year ->
-                    [ TrendChart.Series performanceColor
+                    TrendChart.Series performanceColor
                         (translateLabel language CurrentPerformance)
                         ""
-                        (Placeholder.performanceSeries selectedKpi year)
-                    , targetLine
-                    ]
+                        (series.performance year)
+                        :: targetLine
                         ++ (case dashboard of
                                 Facility ->
                                     [ TrendChart.Series "#2f7d32"
                                         (translateLabel language InterventionSiteAverage)
                                         "2 4"
-                                        (Placeholder.averageSeries selectedKpi year)
+                                        (series.average year)
                                     ]
 
                                 Program ->
@@ -586,12 +665,8 @@ viewLegendItem series =
         ]
 
 
-viewAlertsPanel : Language -> Dashboard -> Html Msg
-viewAlertsPanel language dashboard =
-    let
-        alerts =
-            Placeholder.alertsFor dashboard
-    in
+viewAlertsPanel : Language -> List DashboardLabel -> Html Msg
+viewAlertsPanel language alerts =
     div [ class "mt-6 overflow-hidden rounded-lg border border-slate-200" ]
         [ h2 [ class "bg-accent px-3 py-2 text-lg font-bold text-white" ]
             [ text <| translateLabel language CriticalAlerts ]
@@ -617,11 +692,14 @@ viewAlert language alert =
 -- DRILL DOWN
 
 
-viewDrillDown : Language -> Dashboard -> List Int -> Kpi -> Html Msg
-viewDrillDown language dashboard years kpi =
+viewDrillDown : Language -> Dashboard -> String -> List Int -> Kpi -> KpiSeries -> Html Msg
+viewDrillDown language dashboard fileName years kpi series =
     let
         kpiLabel =
             translateLabel language kpi.label
+
+        rows =
+            drillRows language dashboard years kpi series
     in
     div
         [ class "ehs-dashboard__drill fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4"
@@ -634,9 +712,9 @@ viewDrillDown language dashboard years kpi =
         ]
         [ div [ class "mt-10 w-full max-w-[1200px] rounded-lg bg-white p-5 shadow-2xl md:p-6" ]
             [ h2 [ class "mb-3 text-2xl font-bold text-accent" ] [ text kpiLabel ]
-            , div [ class "overflow-x-auto" ] [ viewDrillTable language dashboard years kpi ]
+            , div [ class "overflow-x-auto" ] [ viewDrillTable language dashboard years rows ]
             , div [ class "mt-4 flex justify-end gap-6" ]
-                [ viewDrillAction language (drillExportMsg language dashboard years kpi) Export
+                [ viewDrillAction language (drillExportMsg language dashboard fileName years kpi rows) Export
                 , viewDrillAction language PrintPage Print
                 , viewDrillAction language CloseDrill Return
                 ]
@@ -654,8 +732,8 @@ viewDrillAction language msg labelId =
         [ text <| translateLabel language labelId ]
 
 
-viewDrillTable : Language -> Dashboard -> List Int -> Kpi -> Html Msg
-viewDrillTable language dashboard years kpi =
+viewDrillTable : Language -> Dashboard -> List Int -> List ( String, List String ) -> Html Msg
+viewDrillTable language dashboard years rows =
     let
         monthHeader backgroundClass =
             th [ class (backgroundClass ++ " p-2"), attribute "scope" "col" ]
@@ -673,7 +751,7 @@ viewDrillTable language dashboard years kpi =
                 )
             ]
         , tbody []
-            (List.indexedMap (viewDrillMonthRow dashboard years kpi) (monthLabels language))
+            (List.indexedMap viewDrillMonthRow rows)
         ]
 
 
@@ -713,8 +791,8 @@ drillColumnLabels dashboard =
             [ Performance, Target, Delta ]
 
 
-viewDrillMonthRow : Dashboard -> List Int -> Kpi -> Int -> String -> Html Msg
-viewDrillMonthRow dashboard years kpi monthIndex monthName =
+viewDrillMonthRow : Int -> ( String, List String ) -> Html Msg
+viewDrillMonthRow monthIndex ( monthName, cells ) =
     let
         zebra =
             if modBy 2 monthIndex == 0 then
@@ -726,33 +804,49 @@ viewDrillMonthRow dashboard years kpi monthIndex monthName =
     tr [ class zebra ]
         (th [ class "bg-slate-300 px-3 py-1.5 text-left font-semibold text-slate-900", attribute "scope" "row" ]
             [ text monthName ]
-            :: List.concatMap
-                (\year ->
-                    List.map (\cellValue -> td [ class "px-3 py-1.5 text-center text-slate-800" ] [ text cellValue ])
-                        (drillCellValues dashboard kpi year monthIndex)
-                )
-                years
+            :: List.map (\cellValue -> td [ class "px-3 py-1.5 text-center text-slate-800" ] [ text cellValue ]) cells
         )
 
 
-{-| The three values of one drill down cell group, as they are shown and
-exported.
+{-| One row per month: its name, then three values per year, as shown and
+exported. The third is the inter site average on Facility, performance minus
+target on Program.
 -}
-drillCellValues : Dashboard -> Kpi -> Int -> Int -> List String
-drillCellValues dashboard kpi year monthIndex =
+drillRows : Language -> Dashboard -> List Int -> Kpi -> KpiSeries -> List ( String, List String )
+drillRows language dashboard years kpi series =
     let
-        ( perf, targ, third ) =
-            Placeholder.drillRow dashboard kpi year monthIndex
+        format =
+            formatValue language kpi.unit
 
-        thirdValue =
-            case dashboard of
-                Facility ->
-                    percentage third
+        yearColumns year =
+            let
+                performance =
+                    series.performance year
 
-                Program ->
-                    signedValue third
+                third =
+                    case dashboard of
+                        Facility ->
+                            List.map format (series.average year)
+
+                        Program ->
+                            List.map2 (Maybe.map2 (-)) performance series.target
+                                |> List.map (Maybe.Extra.unwrap noValue signedValue)
+            in
+            List.map3 (\perf targ thirdValue -> [ format perf, format targ, thirdValue ])
+                performance
+                series.target
+                third
+
+        byYear =
+            List.map yearColumns years
     in
-    [ percentage perf, percentage targ, thirdValue ]
+    List.indexedMap
+        (\monthIndex monthName ->
+            ( monthName
+            , List.concatMap (List.Extra.getAt monthIndex >> Maybe.withDefault []) byYear
+            )
+        )
+        (monthLabels language)
 
 
 
@@ -762,8 +856,8 @@ drillCellValues dashboard kpi year monthIndex =
 {-| The dashboard export: the summary tiles and the coverage bars as label and
 value pairs, then the indicator blocks with the figures they compare against.
 -}
-dashboardExportMsg : Language -> Dashboard -> List Tile -> List Kpi -> List Coverage -> Msg
-dashboardExportMsg language dashboard tiles kpis coverage =
+dashboardExportMsg : Language -> Dashboard -> String -> List Tile -> List Kpi -> List Coverage -> Msg
+dashboardExportMsg language dashboard fileName tiles kpis coverage =
     let
         labelAndValue labelId value =
             [ translateLabel language labelId, value ]
@@ -773,7 +867,7 @@ dashboardExportMsg language dashboard tiles kpis coverage =
                 ++ List.map
                     (\bar ->
                         [ translateLabel language bar.emphasis ++ " " ++ translateLabel language bar.label
-                        , String.fromInt bar.pct ++ "%"
+                        , formatValue language UnitPercent bar.pct
                         ]
                     )
                     coverage
@@ -789,11 +883,16 @@ dashboardExportMsg language dashboard tiles kpis coverage =
                    )
 
         kpiRow kpi =
-            [ translateLabel language kpi.label, kpi.current, kpi.target ]
-                ++ (Maybe.map List.singleton kpi.average |> Maybe.withDefault [])
+            [ translateLabel language kpi.label, formatValue language kpi.unit kpi.current, kpi.target ]
+                ++ (case dashboard of
+                        Facility ->
+                            [ formatValue language kpi.unit kpi.average ]
+
+                        Program ->
+                            []
+                   )
     in
-    DownloadCSV
-        (exportFileName dashboard "dashboard")
+    DownloadCSV fileName
         (reportTablesDataToCSV
             [ MetricsResultsTableData
                 (translateLabel language (dashboardTitleLabel dashboard))
@@ -809,8 +908,8 @@ dashboardExportMsg language dashboard tiles kpis coverage =
 
 {-| The drill down export: one row per month, one column group per year.
 -}
-drillExportMsg : Language -> Dashboard -> List Int -> Kpi -> Msg
-drillExportMsg language dashboard years kpi =
+drillExportMsg : Language -> Dashboard -> String -> List Int -> Kpi -> List ( String, List String ) -> Msg
+drillExportMsg language dashboard fileName years kpi rows =
     let
         captions =
             translate language Translate.MonthLabel
@@ -821,25 +920,14 @@ drillExportMsg language dashboard years kpi =
                             (drillColumnLabels dashboard)
                     )
                     years
-
-        rows =
-            List.indexedMap
-                (\monthIndex monthName ->
-                    monthName
-                        :: List.concatMap (\year -> drillCellValues dashboard kpi year monthIndex) years
-                )
-                (monthLabels language)
     in
-    DownloadCSV
-        (exportFileName dashboard kpi.id)
+    DownloadCSV fileName
         (reportTableDataToCSV
-            (MetricsResultsTableData (translateLabel language kpi.label) captions rows)
+            (MetricsResultsTableData (translateLabel language kpi.label)
+                captions
+                (List.map (\( monthName, cells ) -> monthName :: cells) rows)
+            )
         )
-
-
-exportFileName : Dashboard -> String -> String
-exportFileName dashboard suffix =
-    "healthystart-" ++ dashboardSlug dashboard ++ "-" ++ suffix ++ ".csv"
 
 
 dashboardTitleLabel : Dashboard -> DashboardLabel
@@ -879,9 +967,25 @@ translateLabel language labelId =
     translate language (Translate.DashboardLabel labelId)
 
 
-percentage : Float -> String
-percentage value =
-    String.fromInt (round value) ++ "%"
+{-| A figure as the dashboards show it: a whole percentage, or weeks to one
+decimal. A dash where there is no figure.
+-}
+formatValue : Language -> KpiUnit -> Maybe Float -> String
+formatValue language unit =
+    Maybe.Extra.unwrap noValue
+        (\value ->
+            case unit of
+                UnitPercent ->
+                    String.fromInt (round value) ++ "%"
+
+                UnitWeeks ->
+                    translateLabel language (ValueInWeeks (Round.round 1 value))
+        )
+
+
+noValue : String
+noValue =
+    "—"
 
 
 signedValue : Float -> String

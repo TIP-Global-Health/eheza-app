@@ -60,6 +60,6 @@ updateBackend backendUrl csrfToken msg model =
         MsgDashboard subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.Dashboard.Update.update subMsg_ model_)
+                (\subMsg_ model_ -> Backend.Dashboard.Update.update backendUrl csrfToken subMsg_ model_)
                 (\subCmds -> MsgDashboard subCmds)
                 model

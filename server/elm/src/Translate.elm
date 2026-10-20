@@ -3925,9 +3925,21 @@ translateMonth month short =
 -}
 translateDashboardLabel : DashboardLabel -> TranslationSet
 translateDashboardLabel label =
+    let
+        -- Like "1 site" and "2 sites".
+        countOf count one many =
+            String.fromInt count
+                ++ " "
+                ++ (if count == 1 then
+                        one
+
+                    else
+                        many
+                   )
+    in
     case label of
         Dashboard.AlertBirthsMissingBirthWeight count ->
-            { english = String.fromInt count ++ " births missing birth weight in last 7 days"
+            { english = countOf count "birth" "births" ++ " missing birth weight in last 7 days"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -3941,14 +3953,14 @@ translateDashboardLabel label =
             }
 
         Dashboard.AlertSitesWithDelayedBirthWeightRecording count ->
-            { english = String.fromInt count ++ " sites with delayed birth weight recording"
+            { english = countOf count "site" "sites" ++ " with delayed birth weight recording"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
             }
 
         Dashboard.AlertSitesWithPretermRate count ->
-            { english = String.fromInt count ++ " sites with preterm rate >15%"
+            { english = countOf count "site" "sites" ++ " with preterm rate >15%"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -4055,6 +4067,13 @@ translateDashboardLabel label =
             , somali = Nothing
             }
 
+        Dashboard.EarlyUltrasoundCoverageSites ->
+            { english = "Early Ultrasound Coverage ≥85% (<20 W)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         Dashboard.Export ->
             { english = "Export"
             , kinyarwanda = Nothing
@@ -4069,8 +4088,20 @@ translateDashboardLabel label =
             , somali = Nothing
             }
 
-        Dashboard.FromPreviousMonth ->
-            { english = "from prev. month"
+        Dashboard.FromPreviousPeriod period ->
+            { english =
+                case period of
+                    Dashboard.PeriodMonth ->
+                        "from prev. month"
+
+                    Dashboard.PeriodQuarter ->
+                        "from prev. quarter"
+
+                    Dashboard.PeriodWeek ->
+                        "from prev. week"
+
+                    Dashboard.PeriodYear ->
+                        "from prev. year"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -4350,7 +4381,7 @@ translateDashboardLabel label =
             }
 
         Dashboard.TrendChartDescriptionAllYearsProgram kpi years ->
-            { english = "Line chart of " ++ kpi ++ " by month, with one line per year (" ++ years ++ ") and the program target."
+            { english = "Line chart of " ++ kpi ++ " by month, with one line per year (" ++ years ++ ")."
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -4364,7 +4395,7 @@ translateDashboardLabel label =
             }
 
         Dashboard.TrendChartDescriptionProgram kpi year ->
-            { english = "Line chart of " ++ kpi ++ " by month for " ++ year ++ ", showing current performance and program target."
+            { english = "Line chart of " ++ kpi ++ " by month for " ++ year ++ ", showing current performance."
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -4379,6 +4410,13 @@ translateDashboardLabel label =
 
         Dashboard.ValueColumn ->
             { english = "Value"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Dashboard.ValueInWeeks value ->
+            { english = value ++ " wk"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing

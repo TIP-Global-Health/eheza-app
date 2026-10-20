@@ -11,14 +11,15 @@ import Svg exposing (Svg)
 import Svg.Attributes as SA
 
 
-{-| One plotted line. An empty `dash` (a stroke-dasharray) draws it solid.
-`points` holds one value per x step, spread across the full plot width.
+{-| One plotted line; an empty `dash` (a stroke-dasharray) draws it solid.
+`points` holds one value per x step, across the full plot width; Nothing
+breaks the line.
 -}
 type alias Series =
     { color : String
     , label : String
     , dash : String
-    , points : List Float
+    , points : List (Maybe Float)
     }
 
 
@@ -136,7 +137,8 @@ xLabel count index label =
         [ Svg.text label ]
 
 
-{-| A polyline plus circular markers for one series.
+{-| A polyline for each unbroken run of values, plus circular markers for one
+series.
 -}
 seriesLayer : Series -> List (Svg msg)
 seriesLayer series =
@@ -144,8 +146,37 @@ seriesLayer series =
         pointCount =
             List.length series.points
 
-        coordinates =
-            List.indexedMap (\index value -> ( xAt pointCount index, yAt value )) series.points
+        runs =
+            List.indexedMap (\index value -> Maybe.map (\present -> ( xAt pointCount index, yAt present )) value) series.points
+                |> List.foldr
+                    (\point acc ->
+                        case ( point, acc ) of
+                            ( Just coordinate, run :: rest ) ->
+                                (coordinate :: run) :: rest
+
+                            ( Just coordinate, [] ) ->
+                                [ [ coordinate ] ]
+
+                            ( Nothing, [] :: _ ) ->
+                                acc
+
+                            ( Nothing, _ ) ->
+                                [] :: acc
+                    )
+                    []
+                |> List.filter (not << List.isEmpty)
+
+        polyline coordinates =
+            Svg.polyline
+                [ SA.points (List.map (\( x, y ) -> String.fromFloat x ++ "," ++ String.fromFloat y) coordinates |> String.join " ")
+                , SA.fill "none"
+                , SA.stroke series.color
+                , SA.strokeWidth "2.5"
+                , SA.strokeDasharray series.dash
+                , SA.strokeLinejoin "round"
+                , SA.strokeLinecap "round"
+                ]
+                []
 
         marker ( x, y ) =
             Svg.circle
@@ -156,14 +187,5 @@ seriesLayer series =
                 ]
                 []
     in
-    Svg.polyline
-        [ SA.points (List.map (\( x, y ) -> String.fromFloat x ++ "," ++ String.fromFloat y) coordinates |> String.join " ")
-        , SA.fill "none"
-        , SA.stroke series.color
-        , SA.strokeWidth "2.5"
-        , SA.strokeDasharray series.dash
-        , SA.strokeLinejoin "round"
-        , SA.strokeLinecap "round"
-        ]
-        []
-        :: List.map marker coordinates
+    List.map polyline runs
+        ++ List.concatMap (List.map marker) runs

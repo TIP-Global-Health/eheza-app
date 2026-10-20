@@ -2,16 +2,18 @@ module Pages.Dashboard.Model exposing
     ( Coverage
     , Dashboard(..)
     , DashboardLabel(..)
+    , Figures
     , Filter
     , FilterKey(..)
     , FilterOption(..)
     , Kpi
+    , KpiSeries
+    , KpiUnit(..)
     , Model
     , Msg(..)
     , Screen(..)
     , Tile
     , TimePeriod(..)
-    , Trend(..)
     , YearSel(..)
     , emptyModel
     )
@@ -56,9 +58,10 @@ type DashboardLabel
     | EarlyAncBookingRate
     | EarlyAncCoverageFirstTrimester
     | EarlyUltrasoundCoverage
+    | EarlyUltrasoundCoverageSites
     | Export
     | FilterLabel
-    | FromPreviousMonth
+    | FromPreviousPeriod TimePeriod
     | GraduatedMotherChildPairs
     | HealthyStart
     | HighRiskPregnancyRate
@@ -103,6 +106,7 @@ type DashboardLabel
     | TrendChartDescriptionProgram String String
     | Trends
     | ValueColumn
+    | ValueInWeeks String
     | Week
     | WomenCurrentlyInAncCare
 
@@ -145,22 +149,46 @@ type TimePeriod
     | PeriodYear
 
 
-{-| An indicator block: current value, programme target and, on the Facility
-dashboard only, the inter site `average`. `base*` centre each placeholder
-series, so every indicator draws its own curve.
+{-| What one dashboard shows, worked out for the filters selected.
+-}
+type alias Figures =
+    { tiles : List Tile
+    , kpis : List Kpi
+    , coverage : List Coverage
+    , alerts : List DashboardLabel
+    , series : Kpi -> KpiSeries
+    }
+
+
+{-| An indicator block: current value, programme target and, shown on the
+Facility dashboard only, the inter site `average`. `delta` is the change from
+the previous period.
 -}
 type alias Kpi =
     { id : String
     , label : DashboardLabel
-    , current : String
+    , unit : KpiUnit
+    , current : Maybe Float
     , target : String
-    , average : Maybe String
-    , deltaValue : String
-    , deltaDir : Trend
-    , seed : Int
-    , baseCurrent : Float
-    , baseTarget : Float
-    , baseAvg : Float
+    , average : Maybe Float
+    , delta : Maybe Float
+    }
+
+
+{-| What an indicator's numbers count: a percentage, or gestational weeks.
+-}
+type KpiUnit
+    = UnitPercent
+    | UnitWeeks
+
+
+{-| An indicator's monthly values, one per month from January, for the trend
+chart and the drill down. `performance` and `average` take the year.
+-}
+type alias KpiSeries =
+    { performance : Int -> List (Maybe Float)
+    , target : List (Maybe Float)
+    , average : Int -> List (Maybe Float)
     }
 
 
@@ -173,21 +201,13 @@ type alias Tile =
 
 
 {-| A horizontal coverage bar. `pct` is the filled percentage; the rest of the
-bar renders as a grey track.
+bar renders as a grey track. Nothing leaves the bar empty.
 -}
 type alias Coverage =
     { emphasis : DashboardLabel
     , label : DashboardLabel
-    , pct : Int
+    , pct : Maybe Float
     }
-
-
-{-| Direction of the "x% from prev. month" indicator: Up is a green triangle,
-Down a red one. As in the mockups, colour shows direction, not clinical merit.
--}
-type Trend
-    = Down
-    | Up
 
 
 {-| The year the trend chart plots: one year, or all of them, one line each.

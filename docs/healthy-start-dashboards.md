@@ -131,7 +131,7 @@ grouped by `hc`.
 | Tile | Record fields | Status |
 | --- | --- | --- |
 | Early ANC Coverage ≥80% | `visits.d`, `edd` | Data present. Same rate as Early ANC Booking. |
-| Early Ultrasound Coverage <20 weeks | `us`, `edd` | Data present. Same rate as the Facility block. |
+| Early Ultrasound Coverage <20 weeks | `us`, `edd` | Data present. Same rate as the Facility block. The spec names no threshold; the Facility target, 85%, stands in and the block's title shows it. |
 | Sites with Inadequate GWG >10% | `ind` codes `a`, `n` | Data present. Pregnancies with `n` at any visit ÷ pregnancies assessed. To confirm. |
 | Delayed or Missing Birth Weight >5% | `child.bd`, `child.bw`, `child.bwd` | Data present. Delayed means the exam came more than a day after birth, as the alert says. To confirm; the NCDA forms also carry a birth weight, copied from the health card, and are not read. |
 | Elevated Preterm or SGA Births >15% | `o`, `edd`, `child.bd`, `child.bw` | Preterm present. SGA needs the growth standard and percentile HealthyStart wants. |
@@ -139,6 +139,62 @@ grouped by `hc`.
 
 The alerts "births missing birth weight in the last 7 days" and "preterm rate exceeded 15%" read
 the same fields.
+
+## How the Facility dashboard counts
+
+`Pages/Dashboard/Figures.elm` works the figures out from the selected site's records. The Facility
+critical alerts are still placeholders.
+
+The Time filter picks the period holding today, up to today. Weeks count from the first cohort
+date. Each block compares with the whole previous period of the same kind.
+
+Gestational age counts from the LMP, 280 days before the EDD; figures that need it skip pregnancies
+without one. Antenatal visits are every visit type but postpartum.
+
+| Figure | Pregnancies counted | Of which |
+| --- | --- | --- |
+| Women Currently in ANC Care | Not concluded, under 42 weeks today | |
+| Pregnancies by trimester | The same, by gestational age today | |
+| Total Deliveries (Institutional) | Concluded in the period, delivered at a facility | |
+| Total Children on Routine Care | Newborn has a routine care visit in the period | |
+| Early ANC Booking Rate | First antenatal visit in the period | First visit under 13 weeks |
+| Median GA at First ANC | First antenatal visit in the period | Median weeks at that visit |
+| Early Ultrasound Coverage | Reached 20 weeks in the period, seen by then | Scanned before 20 weeks |
+| High-Risk Pregnancy Rate | An antenatal visit in the period | Any `risks` code |
+| Complete ANC Attendance Rate | Concluded in the period | 8 or more antenatal visits |
+| Aspirin coverage | An antenatal visit in the period, `pe` risk | Aspirin at any visit |
+| Calcium coverage | An antenatal visit in the period | Calcium at any visit |
+
+A dash shows a rate with no pregnancy to count, and the figures not defined or captured yet: ANC
+Miss Rate, Graduated Pairs, Lost to Follow-Up, PPH, SQLNS.
+
+The trend chart and the drill down count each calendar month the same way. Months still to come
+stay empty. Targets are placeholders.
+
+## How the Program dashboard counts
+
+The same file works the Program figures out from every site's records. The Location and
+Intervention Site filters do not apply yet; health centres carry no district.
+
+The summary tiles, coverage bars and Time filter count as on the Facility dashboard, over all sites.
+Total Deliveries (Program) counts births, live or stillborn, wherever they happened.
+
+Each block is the percentage of sites over its threshold. Only sites with a rate in the period
+count: with 3 such sites and 1 over, the block reads 33%.
+
+| Block | Rate per site | Counted when |
+| --- | --- | --- |
+| Early ANC Coverage | Early ANC Booking Rate | 80% or more |
+| Early Ultrasound Coverage | Early Ultrasound Coverage | 85% or more |
+| Inadequate GWG | Seen in the period and GWG ever assessed; `n` at any visit | Over 10% |
+| Delayed or Missing Birth Weight | Newborns born in the period; no weight, or the exam over a day after birth | Over 5% |
+| Elevated Preterm or SGA Births | Births concluded in the period; outcome preterm. SGA is not counted yet | Over 15% |
+| Poor Child Growth Outcomes | Not built; shows a dash | |
+
+The alerts name how many sites are over the delayed birth weight and the preterm thresholds in
+the period.
+
+The blocks show no inter-site average, and no target: none is set yet for the share of sites.
 
 ## Not in the record yet
 
@@ -158,7 +214,7 @@ Each is added to the record, with a trigger for its content type, when its figur
    through its encounter; add its bundle to `hedley_reports_dashboard_measurement_bundles()`.
 3. Bump `HEDLEY_REPORTS_DASHBOARD_DATA_VERSION`. The nightly `--exclude_set=1` run then rewrites
    every older record; a run by hand brings them forward sooner.
-4. Decode the field in the Elm app, treating records of an older version as missing it.
+4. Decode the field in `Backend/Dashboard/Decoder.elm`, treating records of an older version as missing it.
 5. Update the tables in this file.
 
 ## Scripts and operations

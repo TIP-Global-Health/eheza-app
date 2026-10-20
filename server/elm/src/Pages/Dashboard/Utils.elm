@@ -1,6 +1,8 @@
 module Pages.Dashboard.Utils exposing
     ( dashboardSlug
+    , defaultTrendKpi
     , drillDialogId
+    , drillYears
     , filterKeySlug
     , filterLabel
     , filterOptionLabel
@@ -16,6 +18,8 @@ module Pages.Dashboard.Utils exposing
 import App.Types exposing (Language, Site)
 import AssocList as Dict
 import Backend.Components.Model exposing (HealthCenterData)
+import Date
+import Gizra.NominalDate exposing (NominalDate)
 import Pages.Components.Utils exposing (healthCentersByName)
 import Pages.Dashboard.Model
     exposing
@@ -42,6 +46,36 @@ dashboardSlug dashboard =
 
         Program ->
             "program"
+
+
+{-| The indicator the trend chart plots until the viewer picks another one.
+-}
+defaultTrendKpi : Dashboard -> String
+defaultTrendKpi dashboard =
+    case dashboard of
+        Facility ->
+            "ultrasound"
+
+        Program ->
+            "ultrasound-p"
+
+
+{-| The years the drill down table and the year selector offer: from the
+first cohort's enrolment year to this year, most recent first. Without that
+date, only this year.
+-}
+drillYears : NominalDate -> Maybe NominalDate -> List Int
+drillYears currentDate firstCohortDate =
+    let
+        currentYear =
+            Date.year currentDate
+
+        firstYear =
+            Maybe.map (Date.year >> min currentYear) firstCohortDate
+                |> Maybe.withDefault currentYear
+    in
+    List.range firstYear currentYear
+        |> List.reverse
 
 
 {-| The drill down dialog, which takes focus while it is open.
