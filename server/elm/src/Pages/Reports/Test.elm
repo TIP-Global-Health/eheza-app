@@ -138,7 +138,9 @@ calculateNutritionReportDataTest =
                     |> Expect.equal [ ( ( 2024, 7 ), 1 ) ]
         , test "someone six by 1 January of the starting year adds nothing" <|
             \_ ->
-                [ childWithGroupVisits 1 (Date.fromCalendarDate 2016 Jun 1) [ Date.fromCalendarDate 2023 Mar 5, Date.fromCalendarDate 2023 Apr 5 ]
+                -- Child 1 made two visits before six, both before 2023: only
+                -- the starting-year skip keeps the child out of impacted.
+                [ childWithGroupVisits 1 (Date.fromCalendarDate 2016 Jun 1) [ Date.fromCalendarDate 2021 Mar 5, Date.fromCalendarDate 2022 Mar 5 ]
                 , childWithGroupVisits 2 (Date.fromCalendarDate 1990 Jan 1) [ Date.fromCalendarDate 2025 Nov 3 ]
                 ]
                     |> calculate

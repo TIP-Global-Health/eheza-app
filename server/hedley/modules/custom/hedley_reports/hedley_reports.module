@@ -2573,11 +2573,15 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
  *
  * @return string|false
  *   The sixth birthday as Y-m-d (2020-02-29 gives 2026-03-01), or FALSE when
- *   the birth date cannot be read.
+ *   the birth date is not a real Y-m-d date.
  */
 function hedley_reports_sixth_birthday($birth_date) {
   $date = DateTime::createFromFormat('Y-m-d', $birth_date);
-  return $date ? $date->modify('+6 years')->format('Y-m-d') : FALSE;
+  // A date like 2019-02-30 is rolled over to 2019-03-02, so it is refused.
+  if (!$date || $date->format('Y-m-d') !== $birth_date) {
+    return FALSE;
+  }
+  return $date->modify('+6 years')->format('Y-m-d');
 }
 
 /**

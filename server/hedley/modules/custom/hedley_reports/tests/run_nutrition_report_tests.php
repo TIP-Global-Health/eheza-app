@@ -66,7 +66,8 @@ function monthly_cell(array $tables, $type, $row, $months_ago) {
   $key = (new DateTime(month_day($months_ago, 1)))->format('Y-m');
   foreach ($tables as $table) {
     if ($table['type'] === $type) {
-      return $table[$row][array_search($key, $table['period'])];
+      $column = array_search($key, $table['period']);
+      return $column === FALSE ? "month $key not in table" : $table[$row][$column];
     }
   }
   return NULL;
@@ -83,6 +84,7 @@ function stunted_visit($date) {
 assert_same(hedley_reports_sixth_birthday('2019-06-15'), '2025-06-15', 'sixth birthday of 2019-06-15', $passed, $failed);
 assert_same(hedley_reports_sixth_birthday('2020-02-29'), '2026-03-01', 'a child born on 29 February is six on 1 March', $passed, $failed);
 assert_same(hedley_reports_sixth_birthday(''), FALSE, 'an unreadable birth date has no sixth birthday', $passed, $failed);
+assert_same(hedley_reports_sixth_birthday('2019-02-30'), FALSE, 'an impossible birth date has no sixth birthday', $passed, $failed);
 
 // A child who is six today keeps the visits made before turning six.
 $tables = generate([
@@ -138,16 +140,8 @@ $tables = generate([
     'birth_date' => month_day(30, 1),
     'group_nutrition' => [
       'chw' => [
-        month_day(8, 12) . ' -1,
-        ,
-        ,
-        ,
-        ',
-        month_day(4, 12) . ' -1,
-        ,
-        ,
-        ,
-        ',
+        month_day(8, 12) . ' -1,,,,',
+        month_day(4, 12) . ' -1,,,,',
       ],
     ],
   ],
