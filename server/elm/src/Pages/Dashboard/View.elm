@@ -9,7 +9,7 @@ import App.Types exposing (Language)
 import Backend.Dashboard.Model exposing (DashboardData)
 import Backend.Model exposing (ModelBackend)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (Attribute, Html, a, button, div, h1, h2, label, li, option, p, select, span, table, tbody, td, text, th, thead, tr, ul)
 import Html.Attributes exposing (attribute, class, classList, colspan, for, href, id, selected, style, tabindex, type_, value)
 import Html.Events exposing (on, onClick, onInput)
@@ -99,6 +99,23 @@ viewFigures language currentDate data dashboard model =
         years =
             drillYears currentDate data.firstCohortDate
 
+        siteName =
+            resolveSiteName language dashboard selectedOption
+
+        -- Names the site and the day of export, like
+        -- healthystart-facility-nyange-month-2026-10-20.csv.
+        exportFileName content =
+            let
+                siteWords =
+                    case dashboard of
+                        Facility ->
+                            String.words (String.toLower siteName)
+
+                        Program ->
+                            []
+            in
+            String.join "-" (("healthystart" :: dashboardSlug dashboard :: siteWords) ++ [ content, formatYYYYMMDD currentDate ]) ++ ".csv"
+
         figures =
             case dashboard of
                 Facility ->
@@ -123,8 +140,8 @@ viewFigures language currentDate data dashboard model =
             )
             [ viewBanner language
                 dashboard
-                (resolveSiteName language dashboard selectedOption)
-                (dashboardExportMsg language dashboard figures.tiles figures.kpis figures.coverage)
+                siteName
+                (dashboardExportMsg language dashboard (exportFileName (filterOptionValue (OptionPeriod period))) figures.tiles figures.kpis figures.coverage)
             , div [ class "px-4 py-4 md:px-6" ]
                 [ viewFilterRow language dashboard filters model
                 , viewTileRow language figures.tiles
@@ -142,7 +159,7 @@ viewFigures language currentDate data dashboard model =
                 emptyNode
 
             DrillScreen kpi ->
-                viewDrillDown language dashboard years kpi (figures.series kpi)
+                viewDrillDown language dashboard (exportFileName kpi.id) years kpi (figures.series kpi)
         ]
 
 
@@ -473,11 +490,17 @@ viewTrends language dashboard years model kpis selectedId selectedKpi series =
         performanceColor =
             "#0273b2"
 
+        -- No line where HealthyStart has set no target.
         targetLine =
-            TrendChart.Series "#c25e00"
-                (translateLabel language (targetLegendLabel dashboard))
-                "8 4"
-                series.target
+            if List.any Maybe.Extra.isJust series.target then
+                [ TrendChart.Series "#c25e00"
+                    (translateLabel language (targetLegendLabel dashboard))
+                    "8 4"
+                    series.target
+                ]
+
+            else
+                []
 
         -- Solid lines, none of them close to the target's orange. Repeats
         -- after six years.
@@ -497,15 +520,14 @@ viewTrends language dashboard years model kpis selectedId selectedKpi series =
         chartSeries =
             case model.trendYear of
                 AllYears ->
-                    List.indexedMap yearLine years ++ [ targetLine ]
+                    List.indexedMap yearLine years ++ targetLine
 
                 Year year ->
-                    [ TrendChart.Series performanceColor
+                    TrendChart.Series performanceColor
                         (translateLabel language CurrentPerformance)
                         ""
                         (series.performance year)
-                    , targetLine
-                    ]
+                        :: targetLine
                         ++ (case dashboard of
                                 Facility ->
                                     [ TrendChart.Series "#2f7d32"
@@ -670,8 +692,8 @@ viewAlert language alert =
 -- DRILL DOWN
 
 
-viewDrillDown : Language -> Dashboard -> List Int -> Kpi -> KpiSeries -> Html Msg
-viewDrillDown language dashboard years kpi series =
+viewDrillDown : Language -> Dashboard -> String -> List Int -> Kpi -> KpiSeries -> Html Msg
+viewDrillDown language dashboard fileName years kpi series =
     let
         kpiLabel =
             translateLabel language kpi.label
@@ -692,7 +714,7 @@ viewDrillDown language dashboard years kpi series =
             [ h2 [ class "mb-3 text-2xl font-bold text-accent" ] [ text kpiLabel ]
             , div [ class "overflow-x-auto" ] [ viewDrillTable language dashboard years rows ]
             , div [ class "mt-4 flex justify-end gap-6" ]
-                [ viewDrillAction language (drillExportMsg language dashboard years kpi rows) Export
+                [ viewDrillAction language (drillExportMsg language dashboard fileName years kpi rows) Export
                 , viewDrillAction language PrintPage Print
                 , viewDrillAction language CloseDrill Return
                 ]
@@ -834,8 +856,8 @@ drillRows language dashboard years kpi series =
 {-| The dashboard export: the summary tiles and the coverage bars as label and
 value pairs, then the indicator blocks with the figures they compare against.
 -}
-dashboardExportMsg : Language -> Dashboard -> List Tile -> List Kpi -> List Coverage -> Msg
-dashboardExportMsg language dashboard tiles kpis coverage =
+dashboardExportMsg : Language -> Dashboard -> String -> List Tile -> List Kpi -> List Coverage -> Msg
+dashboardExportMsg language dashboard fileName tiles kpis coverage =
     let
         labelAndValue labelId value =
             [ translateLabel language labelId, value ]
@@ -870,8 +892,7 @@ dashboardExportMsg language dashboard tiles kpis coverage =
                             []
                    )
     in
-    DownloadCSV
-        (exportFileName dashboard "dashboard")
+    DownloadCSV fileName
         (reportTablesDataToCSV
             [ MetricsResultsTableData
                 (translateLabel language (dashboardTitleLabel dashboard))
@@ -887,8 +908,8 @@ dashboardExportMsg language dashboard tiles kpis coverage =
 
 {-| The drill down export: one row per month, one column group per year.
 -}
-drillExportMsg : Language -> Dashboard -> List Int -> Kpi -> List ( String, List String ) -> Msg
-drillExportMsg language dashboard years kpi rows =
+drillExportMsg : Language -> Dashboard -> String -> List Int -> Kpi -> List ( String, List String ) -> Msg
+drillExportMsg language dashboard fileName years kpi rows =
     let
         captions =
             translate language Translate.MonthLabel
@@ -900,19 +921,13 @@ drillExportMsg language dashboard years kpi rows =
                     )
                     years
     in
-    DownloadCSV
-        (exportFileName dashboard kpi.id)
+    DownloadCSV fileName
         (reportTableDataToCSV
             (MetricsResultsTableData (translateLabel language kpi.label)
                 captions
                 (List.map (\( monthName, cells ) -> monthName :: cells) rows)
             )
         )
-
-
-exportFileName : Dashboard -> String -> String
-exportFileName dashboard suffix =
-    "healthystart-" ++ dashboardSlug dashboard ++ "-" ++ suffix ++ ".csv"
 
 
 dashboardTitleLabel : Dashboard -> DashboardLabel

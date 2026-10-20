@@ -58,6 +58,7 @@ type DashboardLabel
     | EarlyAncBookingRate
     | EarlyAncCoverageFirstTrimester
     | EarlyUltrasoundCoverage
+    | EarlyUltrasoundCoverageSites
     | Export
     | FilterLabel
     | FromPreviousPeriod TimePeriod

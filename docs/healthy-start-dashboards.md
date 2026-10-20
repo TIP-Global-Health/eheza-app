@@ -131,7 +131,7 @@ grouped by `hc`.
 | Tile | Record fields | Status |
 | --- | --- | --- |
 | Early ANC Coverage ≥80% | `visits.d`, `edd` | Data present. Same rate as Early ANC Booking. |
-| Early Ultrasound Coverage <20 weeks | `us`, `edd` | Data present. Same rate as the Facility block. The spec names no threshold; the Facility target, 85%, stands in. |
+| Early Ultrasound Coverage <20 weeks | `us`, `edd` | Data present. Same rate as the Facility block. The spec names no threshold; the Facility target, 85%, stands in and the block's title shows it. |
 | Sites with Inadequate GWG >10% | `ind` codes `a`, `n` | Data present. Pregnancies with `n` at any visit ÷ pregnancies assessed. To confirm. |
 | Delayed or Missing Birth Weight >5% | `child.bd`, `child.bw`, `child.bwd` | Data present. Delayed means the exam came more than a day after birth, as the alert says. To confirm; the NCDA forms also carry a birth weight, copied from the health card, and are not read. |
 | Elevated Preterm or SGA Births >15% | `o`, `edd`, `child.bd`, `child.bw` | Preterm present. SGA needs the growth standard and percentile HealthyStart wants. |
@@ -192,7 +192,9 @@ count: with 3 such sites and 1 over, the block reads 33%.
 | Poor Child Growth Outcomes | Not built; shows a dash | |
 
 The alerts name how many sites are over the delayed birth weight and the preterm thresholds in
-the period. Targets are placeholders, and the inter-site average is not shown.
+the period.
+
+The blocks show no inter-site average, and no target: none is set yet for the share of sites.
 
 ## Not in the record yet
 

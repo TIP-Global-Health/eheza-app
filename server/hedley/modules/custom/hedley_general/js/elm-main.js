@@ -15338,12 +15338,16 @@ var $author$project$Translate$translationSet = function (transId) {
 	}
 };
 var $author$project$Translate$translateDashboardLabel = function (label) {
+	var countOf = F3(
+		function (count, one, many) {
+			return $elm$core$String$fromInt(count) + (' ' + ((count === 1) ? one : many));
+		});
 	switch (label.$) {
 		case 'AlertBirthsMissingBirthWeight':
 			var count = label.a;
 			return {
 				somali: $elm$core$Maybe$Nothing,
-				english: $elm$core$String$fromInt(count) + ' births missing birth weight in last 7 days',
+				english: A3(countOf, count, 'birth', 'births') + ' missing birth weight in last 7 days',
 				kirundi: $elm$core$Maybe$Nothing,
 				kinyarwanda: $elm$core$Maybe$Nothing
 			};
@@ -15353,7 +15357,7 @@ var $author$project$Translate$translateDashboardLabel = function (label) {
 			var count = label.a;
 			return {
 				somali: $elm$core$Maybe$Nothing,
-				english: $elm$core$String$fromInt(count) + ' sites with delayed birth weight recording',
+				english: A3(countOf, count, 'site', 'sites') + ' with delayed birth weight recording',
 				kirundi: $elm$core$Maybe$Nothing,
 				kinyarwanda: $elm$core$Maybe$Nothing
 			};
@@ -15361,7 +15365,7 @@ var $author$project$Translate$translateDashboardLabel = function (label) {
 			var count = label.a;
 			return {
 				somali: $elm$core$Maybe$Nothing,
-				english: $elm$core$String$fromInt(count) + ' sites with preterm rate >15%',
+				english: A3(countOf, count, 'site', 'sites') + ' with preterm rate >15%',
 				kirundi: $elm$core$Maybe$Nothing,
 				kinyarwanda: $elm$core$Maybe$Nothing
 			};
@@ -15396,6 +15400,8 @@ var $author$project$Translate$translateDashboardLabel = function (label) {
 			return {somali: $elm$core$Maybe$Nothing, english: 'Early ANC Coverage >80 (1st Trimester)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'EarlyUltrasoundCoverage':
 			return {somali: $elm$core$Maybe$Nothing, english: 'Early Ultrasound Coverage (<20 W)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'EarlyUltrasoundCoverageSites':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Early Ultrasound Coverage ≥85% (<20 W)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'Export':
 			return {somali: $elm$core$Maybe$Nothing, english: 'Export', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'FilterLabel':
@@ -15502,7 +15508,7 @@ var $author$project$Translate$translateDashboardLabel = function (label) {
 		case 'TrendChartDescriptionAllYearsProgram':
 			var kpi = label.a;
 			var years = label.b;
-			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month, with one line per year (' + (years + ') and the program target.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month, with one line per year (' + (years + ').'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'TrendChartDescriptionFacility':
 			var kpi = label.a;
 			var year = label.b;
@@ -15510,7 +15516,7 @@ var $author$project$Translate$translateDashboardLabel = function (label) {
 		case 'TrendChartDescriptionProgram':
 			var kpi = label.a;
 			var year = label.b;
-			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month for ' + (year + ', showing current performance and program target.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month for ' + (year + ', showing current performance.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'Trends':
 			return {somali: $elm$core$Maybe$Nothing, english: 'Trends', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 		case 'ValueColumn':
@@ -46033,6 +46039,13 @@ var $author$project$Pages$Dashboard$View$viewTileRow = F2(
 				$author$project$Pages$Dashboard$View$viewTile(language),
 				tiles));
 	});
+var $author$project$Pages$Dashboard$Utils$dashboardSlug = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return 'facility';
+	} else {
+		return 'program';
+	}
+};
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $author$project$Pages$Dashboard$Model$Return = {$: 'Return'};
@@ -46153,17 +46166,6 @@ var $author$project$Pages$Dashboard$Model$DownloadCSV = F2(
 	function (a, b) {
 		return {$: 'DownloadCSV', a: a, b: b};
 	});
-var $author$project$Pages$Dashboard$Utils$dashboardSlug = function (dashboard) {
-	if (dashboard.$ === 'Facility') {
-		return 'facility';
-	} else {
-		return 'program';
-	}
-};
-var $author$project$Pages$Dashboard$View$exportFileName = F2(
-	function (dashboard, suffix) {
-		return 'healthystart-' + ($author$project$Pages$Dashboard$Utils$dashboardSlug(dashboard) + ('-' + (suffix + '.csv')));
-	});
 var $author$project$Pages$Dashboard$Model$Delta = {$: 'Delta'};
 var $author$project$Pages$Dashboard$Model$Target = {$: 'Target'};
 var $author$project$Pages$Dashboard$Model$Average = {$: 'Average'};
@@ -46181,8 +46183,8 @@ var $author$project$Pages$Model$MetricsResultsTableData = F3(
 	function (heading, captions, rows) {
 		return {rows: rows, heading: heading, captions: captions};
 	});
-var $author$project$Pages$Dashboard$View$drillExportMsg = F5(
-	function (language, dashboard, years, kpi, rows) {
+var $author$project$Pages$Dashboard$View$drillExportMsg = F6(
+	function (language, dashboard, fileName, years, kpi, rows) {
 		var captions = A2(
 			$elm$core$List$cons,
 			A2($author$project$Translate$translate, language, $author$project$Translate$MonthLabel),
@@ -46199,7 +46201,7 @@ var $author$project$Pages$Dashboard$View$drillExportMsg = F5(
 				years));
 		return A2(
 			$author$project$Pages$Dashboard$Model$DownloadCSV,
-			A2($author$project$Pages$Dashboard$View$exportFileName, dashboard, kpi.id),
+			fileName,
 			$author$project$Pages$Components$Utils$reportTableDataToCSV(
 				A3(
 					$author$project$Pages$Model$MetricsResultsTableData,
@@ -46387,8 +46389,8 @@ var $author$project$Pages$Dashboard$View$viewDrillAction = F3(
 				]));
 	});
 var $author$project$Pages$Dashboard$Model$MonthByMonthDetail = {$: 'MonthByMonthDetail'};
-var $author$project$Pages$Dashboard$View$viewDrillDown = F5(
-	function (language, dashboard, years, kpi, series) {
+var $author$project$Pages$Dashboard$View$viewDrillDown = F6(
+	function (language, dashboard, fileName, years, kpi, series) {
 		var kpiLabel = A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label);
 		var rows = A5($author$project$Pages$Dashboard$View$drillRows, language, dashboard, years, kpi, series);
 		return A2(
@@ -46447,7 +46449,7 @@ var $author$project$Pages$Dashboard$View$viewDrillDown = F5(
 									A3(
 									$author$project$Pages$Dashboard$View$viewDrillAction,
 									language,
-									A5($author$project$Pages$Dashboard$View$drillExportMsg, language, dashboard, years, kpi, rows),
+									A6($author$project$Pages$Dashboard$View$drillExportMsg, language, dashboard, fileName, years, kpi, rows),
 									$author$project$Pages$Dashboard$Model$Export),
 									A3($author$project$Pages$Dashboard$View$viewDrillAction, language, $author$project$Pages$Dashboard$Model$PrintPage, $author$project$Pages$Dashboard$Model$Print),
 									A3($author$project$Pages$Dashboard$View$viewDrillAction, language, $author$project$Pages$Dashboard$Model$CloseDrill, $author$project$Pages$Dashboard$Model$Return)
@@ -46646,6 +46648,9 @@ var $author$project$Pages$Dashboard$View$viewFilterRow = F4(
 					A3($author$project$Pages$Dashboard$View$viewFilterControl, language, dashboard, model),
 					filters)));
 	});
+var $author$project$Gizra$NominalDate$formatYYYYMMDD = function (date) {
+	return A2($justinmimbs$date$Date$format, 'yyyy-MM-dd', date);
+};
 var $author$project$Pages$Dashboard$Model$Tile = F2(
 	function (label, value) {
 		return {label: label, value: value};
@@ -47201,7 +47206,6 @@ var $author$project$Pages$Dashboard$Figures$earlyUltrasoundRate = function (span
 			}));
 };
 var $author$project$Pages$Dashboard$Model$SitesWithInadequateGwg = {$: 'SitesWithInadequateGwg'};
-var $author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverage = {$: 'EarlyUltrasoundCoverage'};
 var $author$project$Pages$Dashboard$Figures$delayedBirthWeightRate = function (span) {
 	return A2(
 		$elm$core$Basics$composeR,
@@ -47242,13 +47246,14 @@ var $author$project$Pages$Dashboard$Figures$delayedBirthWeightThreshold = {
 		return value > 5;
 	}
 };
+var $author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverageSites = {$: 'EarlyUltrasoundCoverageSites'};
 var $author$project$Pages$Dashboard$Model$EarlyAncCoverageFirstTrimester = {$: 'EarlyAncCoverageFirstTrimester'};
 var $author$project$Pages$Dashboard$Model$SitesWithPoorChildGrowthOutcomes = {$: 'SitesWithPoorChildGrowthOutcomes'};
 var $author$project$Pages$Dashboard$Model$SitesWithElevatedPretermOrSgaBirths = {$: 'SitesWithElevatedPretermOrSgaBirths'};
 var $author$project$Pages$Dashboard$Model$SitesWithDelayedBirthWeightRecording = {$: 'SitesWithDelayedBirthWeightRecording'};
 var $author$project$Pages$Dashboard$Figures$programIndicators = function () {
-	var indicator = F5(
-		function (id, label, target, targetValue, threshold) {
+	var indicator = F3(
+		function (id, label, threshold) {
 			return {
 				id: id,
 				unit: $author$project$Pages$Dashboard$Model$UnitPercent,
@@ -47259,56 +47264,48 @@ var $author$project$Pages$Dashboard$Figures$programIndicators = function () {
 						A2($author$project$Pages$Dashboard$Figures$siteRates, threshold, span),
 						$author$project$Pages$Dashboard$Figures$rate(threshold.crosses));
 				},
-				target: target,
-				targetValue: $elm$core$Maybe$Just(targetValue)
+				target: $author$project$Pages$Dashboard$Figures$notDefined,
+				targetValue: $elm$core$Maybe$Nothing
 			};
 		});
 	return _List_fromArray(
 		[
-			A5(
+			A3(
 			indicator,
 			'anc-cov80',
 			$author$project$Pages$Dashboard$Model$EarlyAncCoverageFirstTrimester,
-			'80%',
-			80,
 			{
 				rate: $author$project$Pages$Dashboard$Figures$earlyBookingRate,
 				crosses: function (value) {
 					return value >= 80;
 				}
 			}),
-			A5(
+			A3(
 			indicator,
 			'ultrasound-p',
-			$author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverage,
-			'80%',
-			80,
+			$author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverageSites,
 			{
 				rate: $author$project$Pages$Dashboard$Figures$earlyUltrasoundRate,
 				crosses: function (value) {
 					return value >= 85;
 				}
 			}),
-			A5(
+			A3(
 			indicator,
 			'inadequate-gwg',
 			$author$project$Pages$Dashboard$Model$SitesWithInadequateGwg,
-			'< 10%',
-			10,
 			{
 				rate: $author$project$Pages$Dashboard$Figures$inadequateGwgRate,
 				crosses: function (value) {
 					return value > 10;
 				}
 			}),
-			A5(indicator, 'delayed-bw', $author$project$Pages$Dashboard$Model$SitesWithDelayedBirthWeightRecording, '< 5%', 5, $author$project$Pages$Dashboard$Figures$delayedBirthWeightThreshold),
-			A5(indicator, 'preterm-sga', $author$project$Pages$Dashboard$Model$SitesWithElevatedPretermOrSgaBirths, '< 15%', 15, $author$project$Pages$Dashboard$Figures$pretermThreshold),
-			A5(
+			A3(indicator, 'delayed-bw', $author$project$Pages$Dashboard$Model$SitesWithDelayedBirthWeightRecording, $author$project$Pages$Dashboard$Figures$delayedBirthWeightThreshold),
+			A3(indicator, 'preterm-sga', $author$project$Pages$Dashboard$Model$SitesWithElevatedPretermOrSgaBirths, $author$project$Pages$Dashboard$Figures$pretermThreshold),
+			A3(
 			indicator,
 			'poor-growth',
 			$author$project$Pages$Dashboard$Model$SitesWithPoorChildGrowthOutcomes,
-			'< 10%',
-			10,
 			{
 				rate: F2(
 					function (_v0, _v1) {
@@ -47732,6 +47729,7 @@ var $author$project$Pages$Dashboard$Model$UnitWeeks = {$: 'UnitWeeks'};
 var $author$project$Pages$Dashboard$Model$MedianGaAtFirstAnc = {$: 'MedianGaAtFirstAnc'};
 var $author$project$Pages$Dashboard$Model$EarlyAncBookingRate = {$: 'EarlyAncBookingRate'};
 var $author$project$Pages$Dashboard$Model$HighRiskPregnancyRate = {$: 'HighRiskPregnancyRate'};
+var $author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverage = {$: 'EarlyUltrasoundCoverage'};
 var $author$project$Pages$Dashboard$Model$PostpartumHemorrhageRate = {$: 'PostpartumHemorrhageRate'};
 var $author$project$Pages$Dashboard$Model$CompleteAncAttendanceRate = {$: 'CompleteAncAttendanceRate'};
 var $author$project$Pages$Dashboard$Figures$facilityIndicators = _List_fromArray(
@@ -48428,15 +48426,18 @@ var $author$project$Pages$Dashboard$View$viewTrends = F8(
 		var performanceColor = '#0273b2';
 		var yearColors = _List_fromArray(
 			[performanceColor, '#7b3294', '#00838f', '#ad1457', '#475569', '#2f7d32']);
-		var targetLine = A4(
-			$author$project$Pages$Components$TrendChart$Series,
-			'#c25e00',
-			A2(
-				$author$project$Pages$Dashboard$View$translateLabel,
-				language,
-				$author$project$Pages$Dashboard$View$targetLegendLabel(dashboard)),
-			'8 4',
-			series.target);
+		var targetLine = A2($elm$core$List$any, $elm_community$maybe_extra$Maybe$Extra$isJust, series.target) ? _List_fromArray(
+			[
+				A4(
+				$author$project$Pages$Components$TrendChart$Series,
+				'#c25e00',
+				A2(
+					$author$project$Pages$Dashboard$View$translateLabel,
+					language,
+					$author$project$Pages$Dashboard$View$targetLegendLabel(dashboard)),
+				'8 4',
+				series.target)
+			]) : _List_Nil;
 		var yearLine = F2(
 			function (index, year) {
 				return A4(
@@ -48461,36 +48462,34 @@ var $author$project$Pages$Dashboard$View$viewTrends = F8(
 			if (_v0.$ === 'AllYears') {
 				return _Utils_ap(
 					A2($elm$core$List$indexedMap, yearLine, years),
-					_List_fromArray(
-						[targetLine]));
+					targetLine);
 			} else {
 				var year = _v0.a;
-				return _Utils_ap(
-					_List_fromArray(
-						[
-							A4(
-							$author$project$Pages$Components$TrendChart$Series,
-							performanceColor,
-							A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$CurrentPerformance),
-							'',
-							series.performance(year)),
-							targetLine
-						]),
-					function () {
-						if (dashboard.$ === 'Facility') {
-							return _List_fromArray(
-								[
-									A4(
-									$author$project$Pages$Components$TrendChart$Series,
-									'#2f7d32',
-									A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$InterventionSiteAverage),
-									'2 4',
-									series.average(year))
-								]);
-						} else {
-							return _List_Nil;
-						}
-					}());
+				return A2(
+					$elm$core$List$cons,
+					A4(
+						$author$project$Pages$Components$TrendChart$Series,
+						performanceColor,
+						A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$CurrentPerformance),
+						'',
+						series.performance(year)),
+					_Utils_ap(
+						targetLine,
+						function () {
+							if (dashboard.$ === 'Facility') {
+								return _List_fromArray(
+									[
+										A4(
+										$author$project$Pages$Components$TrendChart$Series,
+										'#2f7d32',
+										A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$InterventionSiteAverage),
+										'2 4',
+										series.average(year))
+									]);
+							} else {
+								return _List_Nil;
+							}
+						}()));
 			}
 		}();
 		var selectId = 'trend-kpi-' + $author$project$Pages$Dashboard$Utils$dashboardSlug(dashboard);
@@ -48624,8 +48623,8 @@ var $author$project$Pages$Dashboard$View$dashboardTitleLabel = function (dashboa
 		return $author$project$Pages$Dashboard$Model$DashboardTitleProgram;
 	}
 };
-var $author$project$Pages$Dashboard$View$dashboardExportMsg = F5(
-	function (language, dashboard, tiles, kpis, coverage) {
+var $author$project$Pages$Dashboard$View$dashboardExportMsg = F6(
+	function (language, dashboard, fileName, tiles, kpis, coverage) {
 		var labelAndValue = F2(
 			function (labelId, value) {
 				return _List_fromArray(
@@ -48683,7 +48682,7 @@ var $author$project$Pages$Dashboard$View$dashboardExportMsg = F5(
 		};
 		return A2(
 			$author$project$Pages$Dashboard$Model$DownloadCSV,
-			A2($author$project$Pages$Dashboard$View$exportFileName, dashboard, 'dashboard'),
+			fileName,
 			$author$project$Pages$Components$Utils$reportTablesDataToCSV(
 				_List_fromArray(
 					[
@@ -48734,6 +48733,33 @@ var $author$project$Pages$Dashboard$View$viewFigures = F5(
 					},
 					filters));
 		};
+		var siteName = A3($author$project$Pages$Dashboard$View$resolveSiteName, language, dashboard, selectedOption);
+		var exportFileName = function (content) {
+			var siteWords = function () {
+				if (dashboard.$ === 'Facility') {
+					return $elm$core$String$words(
+						$elm$core$String$toLower(siteName));
+				} else {
+					return _List_Nil;
+				}
+			}();
+			return A2(
+				$elm$core$String$join,
+				'-',
+				_Utils_ap(
+					A2(
+						$elm$core$List$cons,
+						'healthystart',
+						A2(
+							$elm$core$List$cons,
+							$author$project$Pages$Dashboard$Utils$dashboardSlug(dashboard),
+							siteWords)),
+					_List_fromArray(
+						[
+							content,
+							$author$project$Gizra$NominalDate$formatYYYYMMDD(currentDate)
+						]))) + '.csv';
+		};
 		var period = function () {
 			var _v3 = selectedOption($author$project$Pages$Dashboard$Model$FilterTime);
 			if ((_v3.$ === 'Just') && (_v3.a.$ === 'OptionPeriod')) {
@@ -48780,8 +48806,17 @@ var $author$project$Pages$Dashboard$View$viewFigures = F5(
 							$author$project$Pages$Dashboard$View$viewBanner,
 							language,
 							dashboard,
-							A3($author$project$Pages$Dashboard$View$resolveSiteName, language, dashboard, selectedOption),
-							A5($author$project$Pages$Dashboard$View$dashboardExportMsg, language, dashboard, figures.tiles, figures.kpis, figures.coverage)),
+							siteName,
+							A6(
+								$author$project$Pages$Dashboard$View$dashboardExportMsg,
+								language,
+								dashboard,
+								exportFileName(
+									$author$project$Pages$Dashboard$Utils$filterOptionValue(
+										$author$project$Pages$Dashboard$Model$OptionPeriod(period))),
+								figures.tiles,
+								figures.kpis,
+								figures.coverage)),
 							A2(
 							$elm$html$Html$div,
 							_List_fromArray(
@@ -48818,10 +48853,11 @@ var $author$project$Pages$Dashboard$View$viewFigures = F5(
 						return $author$project$Gizra$Html$emptyNode;
 					} else {
 						var kpi = _v0.a;
-						return A5(
+						return A6(
 							$author$project$Pages$Dashboard$View$viewDrillDown,
 							language,
 							dashboard,
+							exportFileName(kpi.id),
 							years,
 							kpi,
 							figures.series(kpi));

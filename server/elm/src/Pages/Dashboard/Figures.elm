@@ -380,27 +380,28 @@ facilityIndicators =
     ]
 
 
-{-| Each Program block is the percentage of sites, among those with a rate in
-the span, whose rate crosses the block's threshold.
+{-| Each Program block is the percentage of sites with a rate in the span
+whose rate crosses the threshold in the block's title. These blocks have no
+target yet.
 -}
 programIndicators : List Indicator
 programIndicators =
     let
-        indicator id label target targetValue threshold =
+        indicator id label threshold =
             { id = id
             , label = label
             , unit = UnitPercent
-            , target = target
-            , targetValue = Just targetValue
+            , target = notDefined
+            , targetValue = Nothing
             , value = \span -> siteRates threshold span >> rate threshold.crosses
             }
     in
-    [ indicator "anc-cov80" EarlyAncCoverageFirstTrimester "80%" 80 { rate = earlyBookingRate, crosses = \value -> value >= 80 }
-    , indicator "ultrasound-p" EarlyUltrasoundCoverage "80%" 80 { rate = earlyUltrasoundRate, crosses = \value -> value >= 85 }
-    , indicator "inadequate-gwg" SitesWithInadequateGwg "< 10%" 10 { rate = inadequateGwgRate, crosses = \value -> value > 10 }
-    , indicator "delayed-bw" SitesWithDelayedBirthWeightRecording "< 5%" 5 delayedBirthWeightThreshold
-    , indicator "preterm-sga" SitesWithElevatedPretermOrSgaBirths "< 15%" 15 pretermThreshold
-    , indicator "poor-growth" SitesWithPoorChildGrowthOutcomes "< 10%" 10 { rate = \_ _ -> Nothing, crosses = always False }
+    [ indicator "anc-cov80" EarlyAncCoverageFirstTrimester { rate = earlyBookingRate, crosses = \value -> value >= 80 }
+    , indicator "ultrasound-p" EarlyUltrasoundCoverageSites { rate = earlyUltrasoundRate, crosses = \value -> value >= 85 }
+    , indicator "inadequate-gwg" SitesWithInadequateGwg { rate = inadequateGwgRate, crosses = \value -> value > 10 }
+    , indicator "delayed-bw" SitesWithDelayedBirthWeightRecording delayedBirthWeightThreshold
+    , indicator "preterm-sga" SitesWithElevatedPretermOrSgaBirths pretermThreshold
+    , indicator "poor-growth" SitesWithPoorChildGrowthOutcomes { rate = \_ _ -> Nothing, crosses = always False }
     ]
 
 
