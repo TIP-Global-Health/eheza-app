@@ -2362,11 +2362,10 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
     }
     // A visit counts only if the child was under six on that day.
     // A child born 2019-03 keeps a 2024 visit, but not a 2025-04 one.
-    $birth_date = DateTime::createFromFormat('Y-m-d', $patient_data->birth_date);
-    if (!$birth_date) {
+    $sixth_birthday = hedley_reports_sixth_birthday($patient_data->birth_date);
+    if (!$sixth_birthday) {
       continue;
     }
-    $sixth_birthday = $birth_date->modify('+6 years')->format('Y-m-d');
     // Six by 1 January of the starting year: no visit in the report counts.
     if ($sixth_birthday <= "$starting_year-01-01") {
       continue;
@@ -2564,6 +2563,21 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
     hedley_reports_nutrition_metrics_to_table_data('incidence-year-1', $incidence_by_year_one_visit_or_more_data),
     hedley_reports_nutrition_metrics_to_table_data('incidence-year-2', $incidence_by_year_two_visits_or_more_data),
   ];
+}
+
+/**
+ * Returns the day a child turns six.
+ *
+ * @param string $birth_date
+ *   The birth date, as Y-m-d.
+ *
+ * @return string|false
+ *   The sixth birthday as Y-m-d (2020-02-29 gives 2026-03-01), or FALSE when
+ *   the birth date cannot be read.
+ */
+function hedley_reports_sixth_birthday($birth_date) {
+  $date = DateTime::createFromFormat('Y-m-d', $birth_date);
+  return $date ? $date->modify('+6 years')->format('Y-m-d') : FALSE;
 }
 
 /**
