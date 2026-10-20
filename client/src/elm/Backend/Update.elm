@@ -53,6 +53,7 @@ import Backend.Measurement.Utils
 import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..), RevisionsOrigin(..))
 import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NCDEncounter.Update
 import Backend.Nurse.Model
 import Backend.Nurse.Update
@@ -87,7 +88,7 @@ import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
-import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, sw, updateVillageStockManagementCaches)
+import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, storedDiagnosesEqual, sw, updateVillageStockManagementCaches)
 import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
@@ -8853,7 +8854,7 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                     diagnosesAfter =
                         Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
                 in
-                if everySetsEqual diagnosesBefore diagnosesAfter then
+                if storedDiagnosesEqual NoPrenatalDiagnosis diagnosesBefore diagnosesAfter then
                     []
 
                 else
@@ -9301,7 +9302,7 @@ generateNCDAssessmentMsgs after id =
                 diagnosesAfter =
                     Pages.NCD.Utils.generateNCDDiagnoses assembledAfter
             in
-            if everySetsEqual diagnosesBefore diagnosesAfter then
+            if storedDiagnosesEqual NoNCDDiagnosis diagnosesBefore diagnosesAfter then
                 []
 
             else
