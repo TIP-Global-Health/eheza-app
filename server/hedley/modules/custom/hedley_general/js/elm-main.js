@@ -17066,6 +17066,13 @@ var $author$project$Pages$Reports$Utils$isPregnancyCompleted = F2(
 			},
 			pregnancy.eddDate);
 	});
+var $author$project$Pages$Reports$Utils$isPostpartumEncounter = function (encounter) {
+	return A2(
+		$elm$core$List$member,
+		encounter.encounterType,
+		_List_fromArray(
+			[$author$project$Backend$Reports$Model$NursePostpartumEncounter, $author$project$Backend$Reports$Model$ChwPostpartumEncounter]));
+};
 var $author$project$Gizra$NominalDate$diffDays = F2(
 	function (low, high) {
 		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Days, low, high);
@@ -17201,13 +17208,7 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 				if ($elm_community$maybe_extra$Maybe$Extra$isJust(participantData.eddDate)) {
 					var filteredEncounters = A2(
 						$elm$core$List$filter,
-						function (encounter) {
-							return !A2(
-								$elm$core$List$member,
-								encounter.encounterType,
-								_List_fromArray(
-									[$author$project$Backend$Reports$Model$NursePostpartumEncounter, $author$project$Backend$Reports$Model$ChwPostpartumEncounter]));
-						},
+						A2($elm$core$Basics$composeR, $author$project$Pages$Reports$Utils$isPostpartumEncounter, $elm$core$Basics$not),
 						participantData.encounters);
 					return $elm$core$Maybe$Just(
 						_Utils_update(
@@ -20879,13 +20880,7 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 				if (A2($author$project$Pages$Reports$Utils$isPregnancyCompleted, limitDate, pregnancy)) {
 					var nonPostpartumEncounters = A2(
 						$elm$core$List$filter,
-						function (encounter) {
-							return !A2(
-								$elm$core$List$member,
-								encounter.encounterType,
-								_List_fromArray(
-									[$author$project$Backend$Reports$Model$NursePostpartumEncounter, $author$project$Backend$Reports$Model$ChwPostpartumEncounter]));
-						},
+						A2($elm$core$Basics$composeR, $author$project$Pages$Reports$Utils$isPostpartumEncounter, $elm$core$Basics$not),
 						pregnancy.encounters);
 					return $elm$core$Maybe$Just(
 						$elm$core$List$length(nonPostpartumEncounters));

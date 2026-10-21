@@ -1,9 +1,9 @@
-module Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, countTotalNutritionEncounters, csvRow, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isPregnancyCompleted, isWideScope, nutritionEncounterDataToNutritionMetrics, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
+module Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, countTotalNutritionEncounters, csvRow, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isPostpartumEncounter, isPregnancyCompleted, isWideScope, nutritionEncounterDataToNutritionMetrics, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
 
 import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Components.Model exposing (PersonId, SelectedEntity(..))
-import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData, PrenatalParticipantData)
+import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData, PrenatalEncounterData, PrenatalEncounterType(..), PrenatalParticipantData)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)
@@ -44,6 +44,11 @@ prenatalContactTypeToEncountersAtWeek prenatalContactType =
 eddToLmpDate : NominalDate -> NominalDate
 eddToLmpDate eddDate =
     Date.add Days -280 eddDate
+
+
+isPostpartumEncounter : PrenatalEncounterData -> Bool
+isPostpartumEncounter encounter =
+    List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
 
 
 {-| A pregnancy is completed once it is concluded, or more than 30 days

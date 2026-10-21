@@ -43,7 +43,7 @@ import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Components.View exposing (viewMetricsResultsTable, viewReportDateInputs, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
-import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isPregnancyCompleted, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
+import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isPostpartumEncounter, isPregnancyCompleted, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
 import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils
     exposing
@@ -1445,11 +1445,7 @@ generatePrenatalReportData language limitDate records =
                         if isJust participantData.eddDate then
                             let
                                 filteredEncounters =
-                                    List.filter
-                                        (\encounter ->
-                                            not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
-                                        )
-                                        participantData.encounters
+                                    List.filter (isPostpartumEncounter >> not) participantData.encounters
                             in
                             Just { participantData | encounters = filteredEncounters }
 
@@ -2409,12 +2405,7 @@ generatePrenatalContactsReportData language limitDate records =
                     if isPregnancyCompleted limitDate pregnancy then
                         let
                             nonPostpartumEncounters =
-                                List.filter
-                                    (\encounter ->
-                                        -- Encounter was started not after EGA date.
-                                        not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
-                                    )
-                                    pregnancy.encounters
+                                List.filter (isPostpartumEncounter >> not) pregnancy.encounters
                         in
                         Just <| List.length nonPostpartumEncounters
 
