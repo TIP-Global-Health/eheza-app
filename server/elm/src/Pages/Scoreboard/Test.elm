@@ -20,6 +20,7 @@ import Pages.Scoreboard.Utils
         , generateMonthsGap
         , isOnTrackForImmunisation
         , isPregnancyMonth
+        , registeredBy
         , resolveTargetDateForMonth
         )
 import Test exposing (Test, describe, test)
@@ -266,12 +267,28 @@ childrenUnder2Test =
                 ]
                     |> countChildrenUnder2 today (generateMonthsGap today 0)
                     |> Expect.equal [ 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1 ]
-        , test "a child registered after the month's date does not count in it" <|
+        , test "a child registered on the month's last day counts in that month, one registered the day after does not" <|
             \_ ->
-                [ scoreboardChild (Date.fromCalendarDate 2026 Mar 31) (Date.fromCalendarDate 2025 Jan 1) ]
+                [ Date.fromCalendarDate 2026 Mar 31, Date.fromCalendarDate 2026 Apr 1 ]
+                    |> List.map
+                        (\created ->
+                            [ scoreboardChild created (Date.fromCalendarDate 2025 Jan 1) ]
+                                |> countChildrenUnder2 today (generateMonthsGap today 0)
+                                |> List.take 4
+                        )
+                    |> Expect.equal [ [ 0, 0, 1, 1 ], [ 0, 0, 0, 1 ] ]
+        , test "a child registered today counts in this month" <|
+            \_ ->
+                [ scoreboardChild today (Date.fromCalendarDate 2025 Jan 1) ]
                     |> countChildrenUnder2 today (generateMonthsGap today 0)
-                    |> List.take 4
-                    |> Expect.equal [ 0, 0, 0, 1 ]
+                    |> List.drop 9
+                    |> List.head
+                    |> Expect.equal (Just 1)
+        , test "registeredBy includes the column's date" <|
+            \_ ->
+                [ Date.add Days -1 today, today, Date.add Days 1 today ]
+                    |> List.map (\created -> registeredBy today { created = created })
+                    |> Expect.equal [ True, True, False ]
         ]
 
 

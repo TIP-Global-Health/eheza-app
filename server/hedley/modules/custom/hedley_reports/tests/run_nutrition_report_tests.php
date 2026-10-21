@@ -18,6 +18,12 @@ function drupal_is_cli() {
 
 require_once dirname(__DIR__) . '/hedley_reports.module';
 
+// The cases are dated relative to today. A run crossing into a new month
+// would compare two different months, so wait until the month has turned.
+if (date('Y-m') !== date('Y-m', time() + 120)) {
+  sleep(121);
+}
+
 $passed = 0;
 $failed = 0;
 

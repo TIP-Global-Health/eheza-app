@@ -12,7 +12,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Scoreboard.Model exposing (Model, Msg(..), NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..), ViewMode(..))
-import Pages.Scoreboard.Utils exposing (countChildrenUnder2, datesForMonth, foldRecordsByMonth, formatValues, generateMonthsGap, isOnTrackForImmunisation, isPregnancyMonth, valuesByViewMode, viewPercentage)
+import Pages.Scoreboard.Utils exposing (countChildrenUnder2, datesForMonth, foldRecordsByMonth, formatValues, generateMonthsGap, isOnTrackForImmunisation, isPregnancyMonth, registeredBy, valuesByViewMode, viewPercentage)
 import Pages.Utils exposing (viewBackendData, viewYearSelector)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
@@ -124,8 +124,7 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnde
                             diffMonths (Date.floor Month record.birthDate) targetDateForMonth
 
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
+                            registeredBy targetDateForMonth record
 
                         row2 =
                             if existedDuringExaminationMonth && ageInMonths == 0 then
@@ -203,8 +202,7 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childre
                 (\targetDateForMonth record accumValue ->
                     let
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
+                            registeredBy targetDateForMonth record
 
                         muacSevereAsAgeInMonths =
                             datesForMonth targetDateForMonth record.nutrition.muac.severe
@@ -284,8 +282,7 @@ viewStuntingPane language currentDate yearSelectorGap monthsGap childrenUnder2 v
                 (\targetDateForMonth record accumValue ->
                     let
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
+                            registeredBy targetDateForMonth record
 
                         severeAsAgeInMonths =
                             datesForMonth targetDateForMonth record.nutrition.stunting.severe
@@ -432,8 +429,7 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                 (\targetDateForMonth record accumValue ->
                     let
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
+                            registeredBy targetDateForMonth record
 
                         row2AsAgeInMonths =
                             datesForMonth targetDateForMonth record.ncda.universalIntervention.row2
@@ -557,8 +553,7 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childre
                 (\targetDateForMonth record accumValue ->
                     let
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
+                            registeredBy targetDateForMonth record
 
                         ageInMonths =
                             diffMonths (Date.floor Month record.birthDate) targetDateForMonth
@@ -665,8 +660,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                 (\targetDateForMonth record accumValue ->
                     let
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
+                            registeredBy targetDateForMonth record
 
                         ageInMonths =
                             diffMonths (Date.floor Month record.birthDate) targetDateForMonth
@@ -825,8 +819,7 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
                 (\targetDateForMonth record accumValue ->
                     let
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
+                            registeredBy targetDateForMonth record
 
                         row1AsAgeInMonths =
                             datesForMonth targetDateForMonth record.ncda.infrastructureEnvironmentWash.row1

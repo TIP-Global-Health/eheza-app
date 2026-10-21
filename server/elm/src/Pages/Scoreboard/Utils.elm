@@ -1,4 +1,4 @@
-module Pages.Scoreboard.Utils exposing (allVaccineTypes, countChildrenUnder2, datesForMonth, foldRecordsByMonth, formatValues, generateFutureVaccinationsData, generateMonthsGap, isOnTrackForImmunisation, isPregnancyMonth, resolveTargetDateForMonth, valuesByViewMode, viewPercentage)
+module Pages.Scoreboard.Utils exposing (allVaccineTypes, countChildrenUnder2, datesForMonth, foldRecordsByMonth, formatValues, generateFutureVaccinationsData, generateMonthsGap, isOnTrackForImmunisation, isPregnancyMonth, registeredBy, resolveTargetDateForMonth, valuesByViewMode, viewPercentage)
 
 import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
@@ -469,6 +469,14 @@ formatValues currentDate yearSelectorGap =
         )
 
 
+{-| Whether the patient was registered by a month column's date, that date
+included.
+-}
+registeredBy : NominalDate -> { a | created : NominalDate } -> Bool
+registeredBy targetDateForMonth record =
+    Date.compare record.created targetDateForMonth /= GT
+
+
 {-| The children under two at each month column, counting only those
 already registered by the column's date.
 -}
@@ -482,8 +490,7 @@ countChildrenUnder2 currentDate monthsGap =
                     diffMonths record.birthDate targetDateForMonth
 
                 existedDuringExaminationMonth =
-                    -- Making sure patient was already created during examination month.
-                    Date.compare record.created targetDateForMonth == LT
+                    registeredBy targetDateForMonth record
             in
             if
                 existedDuringExaminationMonth
@@ -525,8 +532,7 @@ isOnTrackForImmunisation : Site -> NominalDate -> PatientData -> Bool
 isOnTrackForImmunisation site targetDateForMonth record =
     let
         existedDuringExaminationMonth =
-            -- Making sure patient was already created during examination month.
-            Date.compare record.created targetDateForMonth == LT
+            registeredBy targetDateForMonth record
 
         ageInMonths =
             diffMonths (Date.floor Month record.birthDate) targetDateForMonth

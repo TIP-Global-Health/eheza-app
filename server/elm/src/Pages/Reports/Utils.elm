@@ -813,14 +813,7 @@ filterRecordsByDateRange currentDate startDate limitDate records =
                                         else
                                             let
                                                 filteredEncounters =
-                                                    List.filter
-                                                        (\encounterData ->
-                                                            -- Encounter was created not before the FROM date and
-                                                            -- not after the TO date.
-                                                            (not <| Date.compare encounterData.startDate startDate == LT)
-                                                                && (not <| Date.compare encounterData.startDate limitDate == GT)
-                                                        )
-                                                        participantData.encounters
+                                                    List.filter (inRangeBy .startDate) participantData.encounters
                                             in
                                             if List.isEmpty filteredEncounters then
                                                 Nothing
