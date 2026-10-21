@@ -1,9 +1,9 @@
-module Pages.Reports.Utils exposing (allVaccineTypes, calculateNutritionReportData, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
+module Pages.Reports.Utils exposing (allVaccineTypes, calculateNutritionReportData, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isPostpartumEncounter, isPregnancyCompleted, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
 
 import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Components.Model exposing (PersonId, SelectedEntity(..))
-import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData)
+import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData, PrenatalEncounterData, PrenatalEncounterType(..), PrenatalParticipantData)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)
@@ -44,6 +44,20 @@ prenatalContactTypeToEncountersAtWeek prenatalContactType =
 eddToLmpDate : NominalDate -> NominalDate
 eddToLmpDate eddDate =
     Date.add Days -280 eddDate
+
+
+isPostpartumEncounter : PrenatalEncounterData -> Bool
+isPostpartumEncounter encounter =
+    List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
+
+
+{-| A pregnancy is completed once it is concluded, or more than 30 days
+after its EDD. For example, EDD 1 March is still active on 31 March.
+-}
+isPregnancyCompleted : NominalDate -> PrenatalParticipantData -> Bool
+isPregnancyCompleted limitDate pregnancy =
+    Maybe.Extra.isJust pregnancy.dateConcluded
+        || Maybe.Extra.unwrap False (\eddDate -> Date.compare (Date.add Days 30 eddDate) limitDate == LT) pregnancy.eddDate
 
 
 resolvePregnancyTrimester : NominalDate -> NominalDate -> PregnancyTrimester
