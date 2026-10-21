@@ -479,34 +479,27 @@ all =
         -- lane answers a request that lane no longer waits on.
         , test "an authority reply arriving in the statistics lane is ignored" <|
             \() ->
-                { testSyncManagerModel
-                    | syncStatus = SyncDownloadAuthorityDashboardStats RemoteData.Loading
-                    , syncInfoAuthorities = Just (authorities "hc-A" [])
-                    , downloadRequestTime = Time.millisToPosix 5000
-                }
-                    |> runUpdate (BackendAuthorityFetchHandle (authorities "hc-A" []) (Time.millisToPosix 5000) (RemoteData.Success (authorityResponse [])))
+                downloadingStats (authorities "hc-A" [])
+                    |> runUpdate (BackendAuthorityFetchHandle (authorities "hc-A" []) (Time.millisToPosix 0) (RemoteData.Success (authorityResponse [])))
                     |> (\model -> ( model.syncStatus, model.downloadAuthorityResponse ))
                     |> Expect.equal ( SyncDownloadAuthorityDashboardStats RemoteData.Loading, RemoteData.NotAsked )
         , test "an authority reply for an earlier authority arriving in the statistics lane does not restart the authority lane" <|
             \() ->
-                { testSyncManagerModel
-                    | syncStatus = SyncDownloadAuthorityDashboardStats RemoteData.Loading
-                    , syncInfoAuthorities = Just (authorities "hc-A" [ "hc-B" ])
-                    , downloadRequestTime = Time.millisToPosix 5000
-                }
-                    |> runUpdate (BackendAuthorityFetchHandle (authorities "hc-B" [ "hc-A" ]) (Time.millisToPosix 5000) (RemoteData.Success (authorityResponse [])))
+                downloadingStats (authorities "hc-A" [ "hc-B" ])
+                    |> runUpdate (BackendAuthorityFetchHandle (authorities "hc-B" [ "hc-A" ]) (Time.millisToPosix 0) (RemoteData.Success (authorityResponse [])))
                     |> .syncStatus
                     |> Expect.equal (SyncDownloadAuthorityDashboardStats RemoteData.Loading)
         , test "an authority batch acknowledged in the statistics lane does not restart the authority lane" <|
             \() ->
-                { testSyncManagerModel
-                    | syncStatus = SyncDownloadAuthorityDashboardStats RemoteData.Loading
-                    , syncInfoAuthorities = Just (authorities "hc-A" [])
-                    , downloadRequestTime = Time.millisToPosix 5000
-                    , downloadAuthorityResponse = RemoteData.Success (authorityResponse [])
+                let
+                    model =
+                        downloadingStats (authorities "hc-A" [])
+                in
+                { model
+                    | downloadAuthorityResponse = RemoteData.Success (authorityResponse [])
                     , downloadAuthorityAtRequest = emptySyncInfoAuthority "hc-A"
                 }
-                    |> runUpdate (authorityBatchSaved "5000")
+                    |> runUpdate (authorityBatchSaved "0")
                     |> .syncStatus
                     |> Expect.equal (SyncDownloadAuthorityDashboardStats RemoteData.Loading)
         , test "a general reply arriving in the authority lane is ignored" <|
@@ -531,6 +524,12 @@ all =
                     |> runUpdate (BackendAuthorityDashboardStatsFetchHandle (authorities "hc-A" []) (RemoteData.Success (authorityResponse [])))
                     |> (\model -> ( model.syncStatus, statuses model ))
                     |> Expect.equal ( SyncDownloadAuthority RemoteData.Loading, [ ( "hc-A", NotAvailable ) ] )
+        , test "a statistics reply arriving in the general lane is ignored, also once no health centre is left" <|
+            \() ->
+                downloadingGeneral 0
+                    |> runUpdate (BackendAuthorityDashboardStatsFetchHandle (authorities "hc-A" []) (RemoteData.Success (authorityResponse [])))
+                    |> .syncStatus
+                    |> Expect.equal (SyncDownloadGeneral RemoteData.Loading)
         , test "a statistics response for an authority that is no longer current leaves the list alone" <|
             \() ->
                 { testSyncManagerModel

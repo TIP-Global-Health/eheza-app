@@ -429,116 +429,117 @@ update currentTime activePage dbVersion device msg model =
                     determineSyncStatus
 
         BackendAuthorityDashboardStatsFetchHandle requestZipper webData ->
-            case model.syncInfoAuthorities of
-                Nothing ->
-                    dropAndRefetch SyncDownloadAuthorityDashboardStats
+            if outsideLane SyncDownloadAuthorityDashboardStats then
+                noChange
 
-                Just zipper ->
-                    if outsideLane SyncDownloadAuthorityDashboardStats then
-                        noChange
-
-                    else if (Zipper.current zipper).uuid /= (Zipper.current requestZipper).uuid then
+            else
+                case model.syncInfoAuthorities of
+                    Nothing ->
                         dropAndRefetch SyncDownloadAuthorityDashboardStats
 
-                    else
-                        let
-                            currentZipper =
-                                Zipper.current zipper
+                    Just zipper ->
+                        if (Zipper.current zipper).uuid /= (Zipper.current requestZipper).uuid then
+                            dropAndRefetch SyncDownloadAuthorityDashboardStats
 
-                            ( cmd, statsCacheHash, appMsgs ) =
-                                case RemoteData.toMaybe webData of
-                                    Just data ->
-                                        if List.isEmpty data.entities then
+                        else
+                            let
+                                currentZipper =
+                                    Zipper.current zipper
+
+                                ( cmd, statsCacheHash, appMsgs ) =
+                                    case RemoteData.toMaybe webData of
+                                        Just data ->
+                                            if List.isEmpty data.entities then
+                                                ( Cmd.none, currentZipper.statsCacheHash, [] )
+
+                                            else
+                                                let
+                                                    dataToSend =
+                                                        data.entities
+                                                            |> List.foldl
+                                                                (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
+                                                                []
+                                                            |> List.reverse
+
+                                                    -- Grab the updated cache hash.
+                                                    cacheHash =
+                                                        data.entities
+                                                            |> List.head
+                                                            |> Maybe.map
+                                                                (\backendAuthorityEntity ->
+                                                                    case backendAuthorityEntity of
+                                                                        BackendAuthorityDashboardStats statsEntity ->
+                                                                            statsEntity.entity.cacheHash
+
+                                                                        _ ->
+                                                                            currentZipper.statsCacheHash
+                                                                )
+                                                            |> Maybe.withDefault currentZipper.statsCacheHash
+                                                in
+                                                ( sendSyncedDataToIndexDb { table = "AuthorityStats", data = dataToSend, shard = currentZipper.uuid, timestamp = "" }
+                                                , cacheHash
+                                                , [ handleNewRevisionsMsg backendAuthorityEntityToRevision data.entities ]
+                                                )
+
+                                        Nothing ->
                                             ( Cmd.none, currentZipper.statsCacheHash, [] )
 
+                                currentTimeMillis =
+                                    Time.posixToMillis currentTime
+
+                                syncInfoAuthorities =
+                                    case RemoteData.toMaybe webData of
+                                        Just data ->
+                                            Zipper.mapCurrent
+                                                (\old ->
+                                                    { old
+                                                        | lastSuccesfulContact = currentTimeMillis
+                                                        , remainingToDownload = data.revisionCount
+                                                        , status = Success
+                                                        , statsCacheHash = statsCacheHash
+                                                    }
+                                                )
+                                                zipper
+
+                                        Nothing ->
+                                            Zipper.mapCurrent (\old -> { old | status = Error }) zipper
+
+                                modelWithSyncStatus =
+                                    SyncManager.Utils.determineSyncStatus activePage
+                                        { model
+                                            | syncStatus = SyncDownloadAuthorityDashboardStats webData
+                                            , syncInfoAuthorities = Just syncInfoAuthorities
+                                        }
+
+                                -- When the cycle ends: after a successful sync longer than 45 seconds
+                                -- (an initial sync, for example) we refresh the page; otherwise we download photos.
+                                extraMsgs =
+                                    if modelWithSyncStatus.syncStatus == SyncIdle then
+                                        let
+                                            authoritiesSyncTime =
+                                                currentTimeMillis - model.syncInfoGeneral.lastSuccesfulContact
+                                        in
+                                        if RemoteData.isSuccess webData && authoritiesSyncTime > 45000 then
+                                            [ SchedulePageRefresh ]
+
                                         else
-                                            let
-                                                dataToSend =
-                                                    data.entities
-                                                        |> List.foldl
-                                                            (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
-                                                            []
-                                                        |> List.reverse
-
-                                                -- Grab the updated cache hash.
-                                                cacheHash =
-                                                    data.entities
-                                                        |> List.head
-                                                        |> Maybe.map
-                                                            (\backendAuthorityEntity ->
-                                                                case backendAuthorityEntity of
-                                                                    BackendAuthorityDashboardStats statsEntity ->
-                                                                        statsEntity.entity.cacheHash
-
-                                                                    _ ->
-                                                                        currentZipper.statsCacheHash
-                                                            )
-                                                        |> Maybe.withDefault currentZipper.statsCacheHash
-                                            in
-                                            ( sendSyncedDataToIndexDb { table = "AuthorityStats", data = dataToSend, shard = currentZipper.uuid, timestamp = "" }
-                                            , cacheHash
-                                            , [ handleNewRevisionsMsg backendAuthorityEntityToRevision data.entities ]
-                                            )
-
-                                    Nothing ->
-                                        ( Cmd.none, currentZipper.statsCacheHash, [] )
-
-                            currentTimeMillis =
-                                Time.posixToMillis currentTime
-
-                            syncInfoAuthorities =
-                                case RemoteData.toMaybe webData of
-                                    Just data ->
-                                        Zipper.mapCurrent
-                                            (\old ->
-                                                { old
-                                                    | lastSuccesfulContact = currentTimeMillis
-                                                    , remainingToDownload = data.revisionCount
-                                                    , status = Success
-                                                    , statsCacheHash = statsCacheHash
-                                                }
-                                            )
-                                            zipper
-
-                                    Nothing ->
-                                        Zipper.mapCurrent (\old -> { old | status = Error }) zipper
-
-                            modelWithSyncStatus =
-                                SyncManager.Utils.determineSyncStatus activePage
-                                    { model
-                                        | syncStatus = SyncDownloadAuthorityDashboardStats webData
-                                        , syncInfoAuthorities = Just syncInfoAuthorities
-                                    }
-
-                            -- When the cycle ends: after a successful sync longer than 45 seconds
-                            -- (an initial sync, for example) we refresh the page; otherwise we download photos.
-                            extraMsgs =
-                                if modelWithSyncStatus.syncStatus == SyncIdle then
-                                    let
-                                        authoritiesSyncTime =
-                                            currentTimeMillis - model.syncInfoGeneral.lastSuccesfulContact
-                                    in
-                                    if RemoteData.isSuccess webData && authoritiesSyncTime > 45000 then
-                                        [ SchedulePageRefresh ]
+                                            [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                                     else
-                                        [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
-
-                                else
-                                    -- Sync is not completed yet - no additional actions.
-                                    []
-                        in
-                        SubModelReturn
-                            modelWithSyncStatus
-                            (Cmd.batch
-                                [ cmd
-                                , -- Send to JS the updated revision ID. We send the entire list.
-                                  sendSyncInfoAuthoritiesCmd syncInfoAuthorities
-                                ]
-                            )
-                            (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
-                            appMsgs
-                            |> sequenceSubModelReturn (update currentTime activePage dbVersion device) extraMsgs
+                                        -- Sync is not completed yet - no additional actions.
+                                        []
+                            in
+                            SubModelReturn
+                                modelWithSyncStatus
+                                (Cmd.batch
+                                    [ cmd
+                                    , -- Send to JS the updated revision ID. We send the entire list.
+                                      sendSyncInfoAuthoritiesCmd syncInfoAuthorities
+                                    ]
+                                )
+                                (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
+                                appMsgs
+                                |> sequenceSubModelReturn (update currentTime activePage dbVersion device) extraMsgs
 
         BackendFetchMain ->
             case model.syncStatus of
