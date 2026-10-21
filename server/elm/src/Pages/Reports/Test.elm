@@ -24,16 +24,19 @@ import Date exposing (Unit(..))
 import EverySet
 import Expect exposing (FloatingPointTolerance(..))
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, NutritionReportData, emptyNutritionMetrics)
+import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), emptyNutritionMetrics)
 import Pages.Reports.Utils
     exposing
         ( calculateNutritionReportData
         , csvRow
+        , eddToLmpDate
+        , filterRecordsByDateRange
         , generateIncidenceNutritionMetricsResults
         , generatePrevalenceNutritionMetricsResults
         , resolveDataSetForMonth
         , resolveDataSetForQuarter
         , resolveDataSetForYear
+        , resolvePregnancyTrimester
         , resolvePreviousDataSetForMonth
         , resolveQuarterForIndex
         )
@@ -44,7 +47,10 @@ import Pages.Reports.View
         , generateDemographicsReportPatientsData
         , generatePeripartumReportData
         , generatePostnatalCareReportData
+        , generatePrenatalContactsReportData
+        , generatePrenatalReportData
         )
+import Pages.Utils exposing (launchDate)
 import Test exposing (Test, describe, test)
 import Time exposing (Month(..))
 import Translate exposing (translate)
@@ -958,13 +964,256 @@ csvRowTest =
         ]
 
 
+{-| A pregnancy whose LMP is this many days before TO, with visits on
+the given days after the LMP.
+-}
+pregnancyFromLmp : Int -> List ( Int, PrenatalEncounterType ) -> PrenatalParticipantData
+pregnancyFromLmp lmpDaysBeforeTo visits =
+    let
+        lmpDate =
+            Date.add Days -lmpDaysBeforeTo toDate
+
+        dated =
+            pregnancy
+                (List.map
+                    (\( day, encounterType ) ->
+                        let
+                            visit =
+                                prenatalVisit encounterType []
+                        in
+                        { visit | startDate = Date.add Days day lmpDate }
+                    )
+                    visits
+                )
+    in
+    { dated | eddDate = Just (Date.add Days 280 lmpDate) }
+
+
+{-| A pregnancy whose EDD is this many days before TO, with this many
+nurse visits.
+-}
+pregnancyFromEdd : Int -> Int -> PrenatalParticipantData
+pregnancyFromEdd eddDaysBeforeTo visits =
+    pregnancyFromLmp (280 + eddDaysBeforeTo) (List.map (\index -> ( 30 * index, NurseEncounter )) (List.range 1 visits))
+
+
+{-| The "All" column of the active and completed pregnancies tables, by
+row: 1 to 4 visits, 5 or more, then the total.
+-}
+ancActiveAndCompleted : List PrenatalParticipantData -> List (List String)
+ancActiveAndCompleted pregnancies =
+    generatePrenatalReportData English toDate [ mother 1 pregnancies ]
+        |> List.drop 1
+        |> List.take 2
+        |> List.map (.rows >> List.take 6 >> List.filterMap (List.drop 3 >> List.head))
+
+
+ancReportTest : Test
+ancReportTest =
+    describe "generatePrenatalReportData"
+        [ test "a pregnancy whose EDD + 30 is TO is active, one a day older is completed" <|
+            \_ ->
+                [ ancActiveAndCompleted [ pregnancyFromEdd 30 1 ], ancActiveAndCompleted [ pregnancyFromEdd 31 1 ] ]
+                    |> Expect.equal
+                        [ [ [ "1", "0", "0", "0", "0", "1" ], [ "0", "0", "0", "0", "0", "0" ] ]
+                        , [ [ "0", "0", "0", "0", "0", "0" ], [ "1", "0", "0", "0", "0", "1" ] ]
+                        ]
+        , test "a concluded pregnancy is completed" <|
+            \_ ->
+                let
+                    concluded =
+                        pregnancyFromEdd -60 2
+                in
+                ancActiveAndCompleted [ { concluded | dateConcluded = Just toDate } ]
+                    |> Expect.equal [ [ "0", "0", "0", "0", "0", "0" ], [ "0", "1", "0", "0", "0", "1" ] ]
+        , test "a pregnancy with no EDD is left out" <|
+            \_ ->
+                ancActiveAndCompleted [ pregnancy [ prenatalVisit NurseEncounter [] ] ]
+                    |> Expect.equal [ [ "0", "0", "0", "0", "0", "0" ], [ "0", "0", "0", "0", "0", "0" ] ]
+        , test "5 and 9 visits both count as 5 or more" <|
+            \_ ->
+                ancActiveAndCompleted [ pregnancyFromEdd -10 5, pregnancyFromEdd -10 9 ]
+                    |> Expect.equal [ [ "0", "0", "0", "0", "2", "2" ], [ "0", "0", "0", "0", "0", "0" ] ]
+        , test "postpartum visits are not counted" <|
+            \_ ->
+                ancActiveAndCompleted [ pregnancyFromLmp 200 [ ( 50, NurseEncounter ), ( 150, NursePostpartumEncounter ), ( 160, ChwPostpartumEncounter ) ] ]
+                    |> Expect.equal [ [ "1", "0", "0", "0", "0", "1" ], [ "0", "0", "0", "0", "0", "0" ] ]
+        , test "CHW and nurse visits have their own columns" <|
+            \_ ->
+                generatePrenatalReportData English toDate [ mother 1 [ pregnancyFromLmp 200 [ ( 50, NurseEncounter ), ( 60, ChwFirstEncounter ), ( 70, ChwSecondEncounter ) ] ] ]
+                    |> List.head
+                    |> Maybe.map (.rows >> List.take 3 >> List.map (List.drop 1))
+                    |> Expect.equal (Just [ [ "0", "1", "0" ], [ "1", "0", "0" ], [ "0", "0", "1" ] ])
+        , test "the first visit's trimester" <|
+            \_ ->
+                generatePrenatalReportData English toDate [ mother 1 [ pregnancyFromLmp 200 [ ( 90, NurseEncounter ) ], pregnancyFromLmp 200 [ ( 91, NurseEncounter ) ] ] ]
+                    |> List.drop 3
+                    |> List.head
+                    |> Maybe.map rowValues
+                    |> Expect.equal (Just [ [ "50.00%" ], [ "50.00%" ], [ "0.00%" ] ])
+        , test "outcomes count only completed pregnancies" <|
+            \_ ->
+                let
+                    withOutcome eddDaysBeforeTo =
+                        let
+                            withEdd =
+                                pregnancyFromEdd eddDaysBeforeTo 1
+                        in
+                        { withEdd | outcome = Just OutcomeLiveAtTerm }
+                in
+                generatePrenatalReportData English toDate [ mother 1 [ withOutcome 40, withOutcome 10 ] ]
+                    |> List.drop 4
+                    |> List.head
+                    |> Maybe.map (rowValues >> List.head)
+                    |> Expect.equal (Just (Just [ "1" ]))
+        ]
+
+
+trimesterTest : Test
+trimesterTest =
+    describe "resolvePregnancyTrimester"
+        [ test "weeks 0 to 12 are the first trimester, 13 to 27 the second, then the third" <|
+            \_ ->
+                let
+                    lmpDate =
+                        Date.fromCalendarDate 2026 Jan 1
+                in
+                [ 0, 90, 91, 195, 196 ]
+                    |> List.map (\days -> resolvePregnancyTrimester (Date.add Days days lmpDate) lmpDate)
+                    |> Expect.equal [ FirstTrimester, FirstTrimester, SecondTrimester, SecondTrimester, ThirdTrimester ]
+        , test "the LMP is 280 days before the EDD" <|
+            \_ ->
+                eddToLmpDate (Date.fromCalendarDate 2026 Oct 8)
+                    |> Expect.equal (Date.fromCalendarDate 2026 Jan 1)
+        ]
+
+
+{-| The ANC Contacts rows: contacts 1 to 8, first contact in the first
+trimester, then at least 4, 6 and 8 visits.
+-}
+ancContacts : List PrenatalParticipantData -> List String
+ancContacts pregnancies =
+    generatePrenatalContactsReportData English toDate [ mother 1 pregnancies ]
+        |> rowValues
+        |> List.take 12
+        |> List.concat
+
+
+ancContactsTest : Test
+ancContactsTest =
+    describe "generatePrenatalContactsReportData"
+        [ test "a visit on LMP + 84 days is contact 1, one on LMP + 85 is not" <|
+            \_ ->
+                [ ancContacts [ pregnancyFromLmp 200 [ ( 84, NurseEncounter ) ] ]
+                , ancContacts [ pregnancyFromLmp 200 [ ( 85, NurseEncounter ) ] ]
+                ]
+                    |> List.map (List.take 1)
+                    |> Expect.equal [ [ "1" ], [ "0" ] ]
+        , test "a contact counts only once its week is reached by TO" <|
+            \_ ->
+                [ ancContacts [ pregnancyFromLmp 84 [ ( 10, NurseEncounter ) ] ]
+                , ancContacts [ pregnancyFromLmp 83 [ ( 10, NurseEncounter ) ] ]
+                ]
+                    |> List.map List.head
+                    |> Expect.equal [ Just "1", Just "0" ]
+        , test "a contact needs exactly its number of visits by its week" <|
+            \_ ->
+                ancContacts [ pregnancyFromLmp 200 [ ( 30, NurseEncounter ), ( 60, NurseEncounter ) ] ]
+                    |> List.take 2
+                    |> Expect.equal [ "0", "1" ]
+        , test "at least 4 visits counts completed pregnancies, without postpartum visits" <|
+            \_ ->
+                let
+                    concluded visits =
+                        let
+                            withVisits =
+                                pregnancyFromLmp 300 visits
+                        in
+                        { withVisits | dateConcluded = Just toDate }
+                in
+                [ ancContacts [ concluded [ ( 30, NurseEncounter ), ( 60, NurseEncounter ), ( 90, NurseEncounter ), ( 290, NursePostpartumEncounter ) ] ]
+                , ancContacts [ concluded [ ( 30, NurseEncounter ), ( 60, NurseEncounter ), ( 90, NurseEncounter ), ( 120, ChwThirdPlusEncounter ) ] ]
+                , ancContacts [ pregnancyFromLmp 200 [ ( 30, NurseEncounter ), ( 60, NurseEncounter ), ( 90, NurseEncounter ), ( 120, NurseEncounter ) ] ]
+                ]
+                    |> List.map (List.drop 9 >> List.head)
+                    |> Expect.equal [ Just "0", Just "1", Just "0" ]
+        ]
+
+
+{-| The date ranges filter's current date, FROM and TO.
+-}
+filterInRange : List PatientData -> List PatientData
+filterInRange =
+    filterRecordsByDateRange (Date.fromCalendarDate 2026 Oct 20) fromDate toDate
+
+
+dateRangeFilterTest : Test
+dateRangeFilterTest =
+    describe "filterRecordsByDateRange"
+        [ test "patients created after TO are left out" <|
+            \_ ->
+                let
+                    patient =
+                        emptyPatient 1 (Date.fromCalendarDate 2020 Jan 1)
+                in
+                [ { patient | created = toDate }, { patient | id = 2, created = Date.add Days 1 toDate } ]
+                    |> filterInRange
+                    |> List.map .id
+                    |> Expect.equal [ 1 ]
+        , test "visits on FROM and TO are kept, the days outside are not" <|
+            \_ ->
+                let
+                    patient =
+                        emptyPatient 1 (Date.fromCalendarDate 2020 Jan 1)
+                in
+                [ { patient | ncdData = Just [ [ Date.add Days -1 fromDate, fromDate, toDate, Date.add Days 1 toDate ] ] } ]
+                    |> filterInRange
+                    |> List.map .ncdData
+                    |> Expect.equal [ Just [ [ fromDate, toDate ] ] ]
+        , test "a pregnancy with no visit in the range, or created after TO, is left out" <|
+            \_ ->
+                let
+                    inRange =
+                        pregnancy [ prenatalVisit NurseEncounter [] ]
+
+                    noVisitInRange =
+                        pregnancyFromLmp 200 [ ( 10, NurseEncounter ) ]
+                in
+                [ mother 1 [ inRange, noVisitInRange, { inRange | created = Date.add Days 1 toDate } ] ]
+                    |> filterInRange
+                    |> List.map (.prenatalData >> Maybe.map List.length)
+                    |> Expect.equal [ Just 1 ]
+        , test "a pregnancy concluded after TO reads as not concluded" <|
+            \_ ->
+                let
+                    inRange =
+                        pregnancy [ prenatalVisit NurseEncounter [] ]
+                in
+                [ mother 1 [ { inRange | dateConcluded = Just toDate }, { inRange | dateConcluded = Just (Date.add Days 1 toDate) } ] ]
+                    |> filterInRange
+                    |> List.map (.prenatalData >> Maybe.map (List.map .dateConcluded))
+                    |> Expect.equal [ Just [ Just toDate, Nothing ] ]
+        , test "the whole range, from the launch date to today, keeps every record as it is" <|
+            \_ ->
+                let
+                    records =
+                        [ mother 1 [ pregnancyFromLmp 200 [ ( 10, NurseEncounter ) ] ] ]
+                in
+                filterRecordsByDateRange (Date.fromCalendarDate 2026 Oct 20) launchDate (Date.fromCalendarDate 2026 Oct 20) records
+                    |> Expect.equal records
+        ]
+
+
 all : Test
 all =
     describe "Pages.Reports"
         [ acuteIllnessTest
+        , ancContactsTest
+        , ancReportTest
         , bandsTest
         , calculateNutritionReportDataTest
         , csvRowTest
+        , dateRangeFilterTest
         , demographicsEncountersTest
         , demographicsPatientsTest
         , incidenceTest
@@ -972,5 +1221,6 @@ all =
         , periodWindowsTest
         , postnatalCareTest
         , prevalenceTest
+        , trimesterTest
         , underSixGateTest
         ]
