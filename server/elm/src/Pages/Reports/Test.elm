@@ -1,15 +1,34 @@
 module Pages.Reports.Test exposing (all)
 
+import App.Types exposing (Language(..), Site(..), SiteFeature(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Components.Model exposing (PersonId)
-import Backend.Reports.Model exposing (Gender(..), NutritionData, NutritionEncounterData, PatientData)
-import Date
+import Backend.Reports.Model
+    exposing
+        ( AcuteIllnessDiagnosis(..)
+        , AcuteIllnessEncounterData
+        , AcuteIllnessEncounterType(..)
+        , Gender(..)
+        , NutritionData
+        , NutritionEncounterData
+        , PatientData
+        , PregnancyOutcome(..)
+        , PrenatalEncounterData
+        , PrenatalEncounterType(..)
+        , PrenatalIndicator(..)
+        , PrenatalParticipantData
+        , WellChildEncounterData
+        )
+import Backend.Scoreboard.Model exposing (VaccineType(..))
+import Date exposing (Unit(..))
+import EverySet
 import Expect exposing (FloatingPointTolerance(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, NutritionReportData, emptyNutritionMetrics)
 import Pages.Reports.Utils
     exposing
         ( calculateNutritionReportData
+        , csvRow
         , generateIncidenceNutritionMetricsResults
         , generatePrevalenceNutritionMetricsResults
         , resolveDataSetForMonth
@@ -18,8 +37,17 @@ import Pages.Reports.Utils
         , resolvePreviousDataSetForMonth
         , resolveQuarterForIndex
         )
+import Pages.Reports.View
+    exposing
+        ( generateAcuteIllnessReportData
+        , generateDemographicsReportEncountersData
+        , generateDemographicsReportPatientsData
+        , generatePeripartumReportData
+        , generatePostnatalCareReportData
+        )
 import Test exposing (Test, describe, test)
 import Time exposing (Month(..))
+import Translate exposing (translate)
 
 
 {-| The report is calculated on 2026-10-20, so it shows visits from
@@ -476,25 +504,473 @@ underSixGateTest =
         , test "a mother with only family-nutrition visits adds nothing" <|
             \_ ->
                 let
-                    mother =
-                        emptyPatient 1 (Date.fromCalendarDate 1995 Mar 1)
+                    patient =
+                        mother 1 []
 
                     visit date =
                         { startDate = date, ahezaAmount = Just 500 }
                 in
-                [ { mother | familyNutritionData = Just [ [ visit (Date.fromCalendarDate 2025 May 2), visit (Date.fromCalendarDate 2025 Jun 2) ] ] } ]
+                [ { patient | familyNutritionData = Just [ [ visit (Date.fromCalendarDate 2025 May 2), visit (Date.fromCalendarDate 2025 Jun 2) ] ] } ]
                     |> calculate
                     |> Expect.equal { impacted = [], encountersByMonth = Dict.empty }
+        ]
+
+
+{-| The FROM and TO dates of the date-range reports.
+-}
+fromDate : NominalDate
+fromDate =
+    Date.fromCalendarDate 2026 Mar 1
+
+
+toDate : NominalDate
+toDate =
+    Date.fromCalendarDate 2026 Mar 31
+
+
+{-| The numbers of each row of a table, without its label.
+-}
+rowValues : { a | rows : List (List String) } -> List (List String)
+rowValues =
+    .rows >> List.map (List.drop 1)
+
+
+pregnancy : List PrenatalEncounterData -> PrenatalParticipantData
+pregnancy encounters =
+    { created = Date.fromCalendarDate 2025 Jul 1
+    , eddDate = Nothing
+    , dateConcluded = Nothing
+    , outcome = Nothing
+    , deliveryLocation = Nothing
+    , encounters = encounters
+    }
+
+
+prenatalVisit : PrenatalEncounterType -> List PrenatalIndicator -> PrenatalEncounterData
+prenatalVisit encounterType indicators =
+    { startDate = Date.fromCalendarDate 2026 Mar 10, encounterType = encounterType, diagnoses = [], indicators = indicators }
+
+
+mother : PersonId -> List PrenatalParticipantData -> PatientData
+mother id pregnancies =
+    let
+        patient =
+            emptyPatient id (Date.fromCalendarDate 1995 Jan 1)
+    in
+    { patient | gender = Female, prenatalData = Just pregnancies }
+
+
+delivered : PersonId -> NominalDate -> PregnancyOutcome -> PatientData
+delivered id date outcome =
+    let
+        concluded =
+            pregnancy []
+    in
+    mother id [ { concluded | dateConcluded = Just date, outcome = Just outcome } ]
+
+
+peripartumTest : Test
+peripartumTest =
+    describe "generatePeripartumReportData"
+        [ test "deliveries on FROM and on TO count, the days outside do not" <|
+            \_ ->
+                generatePeripartumReportData English
+                    fromDate
+                    toDate
+                    [ delivered 1 (Date.fromCalendarDate 2026 Feb 28) OutcomeLiveAtTerm
+                    , delivered 2 fromDate OutcomeLiveAtTerm
+                    , delivered 3 toDate OutcomeLiveAtTerm
+                    , delivered 4 (Date.fromCalendarDate 2026 Apr 1) OutcomeLiveAtTerm
+                    ]
+                    []
+                    |> rowValues
+                    |> Expect.equal [ [ "2" ], [ "2" ], [ "0" ], [ "0" ], [ "0" ] ]
+        , test "a delivery with no visit in the range counts, by its outcome" <|
+            \_ ->
+                generatePeripartumReportData English
+                    fromDate
+                    toDate
+                    [ delivered 1 (Date.fromCalendarDate 2026 Mar 5) OutcomeLiveAtTerm
+                    , delivered 2 (Date.fromCalendarDate 2026 Mar 6) OutcomeLivePreTerm
+                    , delivered 3 (Date.fromCalendarDate 2026 Mar 7) OutcomeStillAtTerm
+                    , delivered 4 (Date.fromCalendarDate 2026 Mar 8) OutcomeAbortions
+                    ]
+                    []
+                    |> rowValues
+                    |> Expect.equal [ [ "3" ], [ "2" ], [ "1" ], [ "0" ], [ "0" ] ]
+        , test "the visit rows count pregnancies with a visit in the range that recorded them" <|
+            \_ ->
+                generatePeripartumReportData English
+                    fromDate
+                    toDate
+                    []
+                    [ mother 1 [ pregnancy [ prenatalVisit NurseEncounter [ IndicatorBreastfedFirstHour ], prenatalVisit NurseEncounter [ IndicatorBreastfedFirstHour ] ] ]
+                    , mother 2 [ pregnancy [ prenatalVisit NurseEncounter [ IndicatorPrematureOnsetContractions ] ] ]
+                    , mother 3 [ pregnancy [ prenatalVisit NurseEncounter [] ] ]
+                    ]
+                    |> rowValues
+                    |> Expect.equal [ [ "0" ], [ "0" ], [ "0" ], [ "1" ], [ "1" ] ]
+        ]
+
+
+{-| A child born this many days before TO.
+-}
+bornDaysBeforeTo : Int -> NominalDate
+bornDaysBeforeTo days =
+    Date.add Days -days toDate
+
+
+{-| A well-child visit that gave the vaccines on the dates listed.
+-}
+spv : NominalDate -> List ( VaccineType, List NominalDate ) -> WellChildEncounterData
+spv date doses =
+    { startDate = date
+    , nutritionData = Nothing
+    , muacCm = Nothing
+    , hasEdema = False
+    , immunisationData =
+        if List.isEmpty doses then
+            Nothing
+
+        else
+            Just (Dict.fromList (List.map (Tuple.mapSecond EverySet.fromList) doses))
+    }
+
+
+childWithSpvs : PersonId -> NominalDate -> List WellChildEncounterData -> PatientData
+childWithSpvs id birthDate visits =
+    let
+        patient =
+            emptyPatient id birthDate
+    in
+    { patient | wellChildData = Just [ visits ] }
+
+
+{-| Every dose of the Rwanda schedule, so the child is up to date at any age.
+-}
+fullCourse : NominalDate -> List ( VaccineType, List NominalDate )
+fullCourse birthDate =
+    let
+        weeks n =
+            Date.add Weeks n birthDate
+    in
+    [ ( VaccineBCG, [ birthDate ] )
+    , ( VaccineOPV, [ birthDate, weeks 6, weeks 10, weeks 14 ] )
+    , ( VaccineDTP, [ weeks 6, weeks 10, weeks 14 ] )
+    , ( VaccinePCV13, [ weeks 6, weeks 10, weeks 14 ] )
+    , ( VaccineRotarix, [ weeks 6, weeks 10 ] )
+    , ( VaccineIPV, [ weeks 14, weeks 36 ] )
+    , ( VaccineMR, [ weeks 36, weeks 62 ] )
+    ]
+
+
+{-| The birth doses, then the 6-week doses, so the next is due at 10 weeks.
+-}
+dosesTo6Weeks : NominalDate -> ( List ( VaccineType, List NominalDate ), List ( VaccineType, List NominalDate ) )
+dosesTo6Weeks birthDate =
+    let
+        sixWeeks =
+            Date.add Weeks 6 birthDate
+    in
+    ( [ ( VaccineBCG, [ birthDate ] ), ( VaccineOPV, [ birthDate ] ) ]
+    , [ ( VaccineOPV, [ sixWeeks ] ), ( VaccineDTP, [ sixWeeks ] ), ( VaccinePCV13, [ sixWeeks ] ), ( VaccineRotarix, [ sixWeeks ] ) ]
+    )
+
+
+postnatalCare : List PatientData -> List (List String)
+postnatalCare =
+    generatePostnatalCareReportData English SiteRwanda toDate >> rowValues
+
+
+postnatalCareTest : Test
+postnatalCareTest =
+    describe "generatePostnatalCareReportData"
+        [ test "a first visit on the day of birth or the next counts as within 24 hours" <|
+            \_ ->
+                [ childWithSpvs 1 (bornDaysBeforeTo 10) [ spv (bornDaysBeforeTo 10) [] ]
+                , childWithSpvs 2 (bornDaysBeforeTo 10) [ spv (bornDaysBeforeTo 5) [], spv (bornDaysBeforeTo 9) [] ]
+                , childWithSpvs 3 (bornDaysBeforeTo 10) [ spv (bornDaysBeforeTo 8) [] ]
+                ]
+                    |> postnatalCare
+                    |> List.head
+                    |> Expect.equal (Just [ "2" ])
+        , test "children up to date, by age at TO" <|
+            \_ ->
+                -- 6 and 7 weeks, 11 and 15 weeks, then 10, 19 and 24 months.
+                (List.map bornDaysBeforeTo [ 48, 49, 77, 105 ]
+                    ++ [ Date.fromCalendarDate 2025 May 31, Date.fromCalendarDate 2024 Aug 31, Date.fromCalendarDate 2024 Mar 31 ]
+                )
+                    |> List.indexedMap (\index birthDate -> childWithSpvs index birthDate [ spv toDate (fullCourse birthDate) ])
+                    |> postnatalCare
+                    |> Expect.equal [ [ "0" ], [ "1" ], [ "1" ], [ "1" ], [ "1" ], [ "1" ] ]
+        , test "a dose due on TO is not up to date, one due the day after is" <|
+            \_ ->
+                [ 70, 69 ]
+                    |> List.map
+                        (\days ->
+                            let
+                                birthDate =
+                                    bornDaysBeforeTo days
+
+                                ( atBirth, atSixWeeks ) =
+                                    dosesTo6Weeks birthDate
+                            in
+                            childWithSpvs days birthDate [ spv toDate (atBirth ++ atSixWeeks) ]
+                        )
+                    |> postnatalCare
+                    |> List.drop 1
+                    |> Expect.equal [ [ "1" ], [ "0" ], [ "0" ], [ "0" ], [ "0" ] ]
+        , test "doses are gathered from every visit" <|
+            \_ ->
+                let
+                    birthDate =
+                        bornDaysBeforeTo 69
+
+                    ( atBirth, atSixWeeks ) =
+                        dosesTo6Weeks birthDate
+                in
+                [ childWithSpvs 1 birthDate [ spv birthDate atBirth, spv (Date.add Weeks 6 birthDate) atSixWeeks ] ]
+                    |> postnatalCare
+                    |> List.drop 1
+                    |> Expect.equal [ [ "1" ], [ "0" ], [ "0" ], [ "0" ], [ "0" ] ]
+        ]
+
+
+{-| A FROM date before every patient was created.
+-}
+allTime : NominalDate
+allTime =
+    Date.fromCalendarDate 1900 Jan 1
+
+
+registeredRows : NominalDate -> List PatientData -> Maybe (List (List String))
+registeredRows limitDate records =
+    generateDemographicsReportPatientsData English allTime limitDate records
+        |> .tables
+        |> List.head
+        |> Maybe.map (.rows >> List.map (List.drop 1))
+
+
+demographicsPatientsTest : Test
+demographicsPatientsTest =
+    describe "generateDemographicsReportPatientsData"
+        [ test "age bands at TO, by gender" <|
+            \_ ->
+                let
+                    girl =
+                        emptyPatient 3 (Date.fromCalendarDate 2026 Mar 10)
+                in
+                [ emptyPatient 1 (Date.fromCalendarDate 2026 Mar 2)
+                , emptyPatient 2 (Date.fromCalendarDate 2026 Feb 28)
+                , { girl | gender = Female }
+                , emptyPatient 4 (Date.fromCalendarDate 2021 Mar 31)
+                , emptyPatient 5 (Date.fromCalendarDate 1976 Mar 31)
+                ]
+                    |> registeredRows toDate
+                    |> Expect.equal (Just [ [ "1", "1" ], [ "1", "0" ], [ "0", "0" ], [ "1", "0" ], [ "0", "0" ], [ "0", "0" ], [ "1", "0" ] ])
+        , test "a child born on 29 February is under two on 28 February" <|
+            \_ ->
+                [ emptyPatient 1 (Date.fromCalendarDate 2024 Feb 29) ]
+                    |> registeredRows (Date.fromCalendarDate 2026 Feb 28)
+                    |> Maybe.map (List.take 3)
+                    |> Expect.equal (Just [ [ "0", "0" ], [ "1", "0" ], [ "0", "0" ] ])
+        , test "a child born on 29 February is two on 1 March" <|
+            \_ ->
+                [ emptyPatient 1 (Date.fromCalendarDate 2024 Feb 29) ]
+                    |> registeredRows (Date.fromCalendarDate 2026 Mar 1)
+                    |> Maybe.map (List.take 3)
+                    |> Expect.equal (Just [ [ "0", "0" ], [ "0", "0" ], [ "1", "0" ] ])
+        , test "only patients created from FROM on are registered" <|
+            \_ ->
+                let
+                    before =
+                        emptyPatient 1 (Date.fromCalendarDate 2020 Jan 1)
+
+                    onFrom =
+                        emptyPatient 2 (Date.fromCalendarDate 2020 Jan 1)
+                in
+                [ { before | created = Date.fromCalendarDate 2026 Feb 28 }, { onFrom | created = fromDate } ]
+                    |> generateDemographicsReportPatientsData English fromDate toDate
+                    |> .tables
+                    |> List.map .totals
+                    |> Expect.equal [ ( "Total", "1" ), ( "Total", "0" ) ]
+        , test "a patient with visits in two programs is impacted" <|
+            \_ ->
+                let
+                    patient =
+                        mother 1 [ pregnancy [ prenatalVisit NurseEncounter [] ] ]
+
+                    illness =
+                        { startDate = Date.fromCalendarDate 2026 Mar 12, encounterType = AcuteIllnessEncounterNurse, diagnosis = Nothing }
+                in
+                [ { patient | acuteIllnessData = Just [ [ illness ] ] }, mother 2 [ pregnancy [ prenatalVisit NurseEncounter [] ] ] ]
+                    |> generateDemographicsReportPatientsData English allTime toDate
+                    |> .tables
+                    |> List.map .totals
+                    |> Expect.equal [ ( "Total", "2" ), ( "Total", "1" ) ]
+        ]
+
+
+{-| The (all, unique) counts of the encounters table rows, and its totals.
+-}
+encounterCounts : List SiteFeature -> List PatientData -> ( List ( String, String, String ), ( String, String ) )
+encounterCounts features records =
+    let
+        data =
+            generateDemographicsReportEncountersData English (EverySet.fromList features) records
+    in
+    ( List.filterMap
+        (\( cells, _ ) ->
+            case cells of
+                [ label, total, unique ] ->
+                    Just ( label, total, unique )
+
+                _ ->
+                    Nothing
+        )
+        data.rows
+    , ( data.totals.total, data.totals.unique )
+    )
+
+
+demographicsEncountersTest : Test
+demographicsEncountersTest =
+    describe "generateDemographicsReportEncountersData"
+        [ test "all counts the visits, unique the patients" <|
+            \_ ->
+                let
+                    patient =
+                        emptyPatient 1 (Date.fromCalendarDate 1990 Jan 1)
+
+                    other =
+                        emptyPatient 2 (Date.fromCalendarDate 1990 Jan 1)
+                in
+                [ { patient | ncdData = Just [ [ fromDate, toDate ] ] }, { other | ncdData = Just [ [ toDate ] ] } ]
+                    |> encounterCounts []
+                    |> Tuple.mapFirst (List.filter (\( label, _, _ ) -> label == translate English Translate.NCD))
+                    |> Expect.equal ( [ ( translate English Translate.NCD, "3", "2" ) ], ( "3", "2" ) )
+        , test "postpartum visits count with their health center or CHW row" <|
+            \_ ->
+                [ mother 1 [ pregnancy [ prenatalVisit NursePostpartumEncounter [] ] ]
+                , mother 2 [ pregnancy [ prenatalVisit ChwPostpartumEncounter [], prenatalVisit ChwFirstEncounter [] ] ]
+                ]
+                    |> encounterCounts []
+                    |> Tuple.first
+                    |> List.take 3
+                    |> List.map (\( _, total, unique ) -> ( total, unique ))
+                    |> Expect.equal [ ( "3", "2" ), ( "1", "1" ), ( "2", "1" ) ]
+        , test "family-nutrition visits have a row only where the feature is on" <|
+            \_ ->
+                let
+                    patient =
+                        mother 1 []
+
+                    visit =
+                        { startDate = fromDate, ahezaAmount = Nothing }
+
+                    records =
+                        [ { patient | familyNutritionData = Just [ [ visit, visit ] ] } ]
+
+                    familyNutritionRow =
+                        Tuple.mapFirst (List.filter (\( label, _, _ ) -> label == translate English Translate.FamilyNutrition))
+                in
+                Expect.equal
+                    ( ( [ ( translate English Translate.FamilyNutrition, "2", "1" ) ], ( "2", "1" ) ), ( [], ( "0", "0" ) ) )
+                    ( familyNutritionRow (encounterCounts [ FeatureFamilyNutrition ] records)
+                    , familyNutritionRow (encounterCounts [] records)
+                    )
+        ]
+
+
+acuteIllnessVisit : Int -> Maybe AcuteIllnessDiagnosis -> AcuteIllnessEncounterData
+acuteIllnessVisit day diagnosis =
+    { startDate = Date.fromCalendarDate 2026 Mar day, encounterType = AcuteIllnessEncounterNurse, diagnosis = diagnosis }
+
+
+{-| The Uncomplicated Malaria, total and no diagnosis counts.
+-}
+acuteIllnessCounts : List (List AcuteIllnessEncounterData) -> List String
+acuteIllnessCounts illnesses =
+    let
+        patient =
+            emptyPatient 1 (Date.fromCalendarDate 1990 Jan 1)
+
+        rows =
+            generateAcuteIllnessReportData English fromDate [ { patient | acuteIllnessData = Just illnesses } ]
+                |> .rows
+    in
+    List.filterMap
+        (\label ->
+            List.filter (List.head >> (==) (Just label)) rows
+                |> List.head
+                |> Maybe.andThen (List.drop 1 >> List.head)
+        )
+        [ translate English (Translate.AcuteIllnessDiagnosis DiagnosisMalariaUncomplicated)
+        , translate English Translate.Total
+        , translate English Translate.NoDiagnosis
+        ]
+
+
+acuteIllnessTest : Test
+acuteIllnessTest =
+    describe "generateAcuteIllnessReportData"
+        [ test "each visit with a diagnosis counts in its row and the total" <|
+            \_ ->
+                acuteIllnessCounts
+                    [ [ acuteIllnessVisit 5 (Just DiagnosisMalariaUncomplicated) ]
+                    , [ acuteIllnessVisit 6 (Just DiagnosisMalariaUncomplicated), acuteIllnessVisit 9 (Just DiagnosisMalariaUncomplicated) ]
+                    ]
+                    |> Expect.equal [ "3", "3", "0" ]
+
+        -- What the "no diagnosis" row should count is undecided. These pin
+        -- what it counts today: an illness whose latest visit has no diagnosis.
+        , test "no diagnosis: an illness whose latest visit has none counts, even when an earlier one had one" <|
+            \_ ->
+                acuteIllnessCounts
+                    [ [ acuteIllnessVisit 5 (Just DiagnosisMalariaUncomplicated), acuteIllnessVisit 9 Nothing ]
+                    , [ acuteIllnessVisit 6 Nothing ]
+                    ]
+                    |> Expect.equal [ "1", "1", "2" ]
+        , test "no diagnosis: an illness whose latest visit is before FROM does not count" <|
+            \_ ->
+                acuteIllnessCounts [ [ { startDate = Date.fromCalendarDate 2026 Feb 20, encounterType = AcuteIllnessEncounterCHW, diagnosis = Nothing } ] ]
+                    |> Expect.equal [ "0", "0", "0" ]
+        ]
+
+
+csvRowTest : Test
+csvRowTest =
+    describe "csvRow"
+        [ test "a plain cell is written as it is, a cell with a comma, quote or line break is quoted" <|
+            \_ ->
+                csvRow [ "plain", "a, b", "say \"hi\"", "line\nbreak", "carriage\u{000D}return", "" ]
+                    |> Expect.equal "plain,\"a, b\",\"say \"\"hi\"\"\",\"line\nbreak\",\"carriage\u{000D}return\","
+        , test "an empty row is an empty line" <|
+            \_ -> Expect.equal "" (csvRow [])
+        , test "the ANC Contacts labels that hold commas stay in one column" <|
+            \_ ->
+                [ IndicatorHistoryOfAdversePregnancyOutcomes, IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin ]
+                    |> List.map (\indicator -> csvRow [ translate English (Translate.PrenatalIndicatorLabel indicator), "3" ])
+                    |> Expect.equal
+                        [ "\"Pregnant women with a history of preterm births, spontaneous abortion, stillbirth, or intrauterine fetal deaths\",3"
+                        , "\"Pregnant women with a history of adverse pregnancy outcomes, who received Azithromycin\",3"
+                        ]
         ]
 
 
 all : Test
 all =
     describe "Pages.Reports"
-        [ bandsTest
+        [ acuteIllnessTest
+        , bandsTest
         , calculateNutritionReportDataTest
+        , csvRowTest
+        , demographicsEncountersTest
+        , demographicsPatientsTest
         , incidenceTest
+        , peripartumTest
         , periodWindowsTest
+        , postnatalCareTest
         , prevalenceTest
         , underSixGateTest
         ]

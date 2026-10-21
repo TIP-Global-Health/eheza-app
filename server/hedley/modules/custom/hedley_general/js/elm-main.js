@@ -19323,8 +19323,8 @@ var $author$project$Pages$Reports$Utils$countTotalEncounters = function (data) {
 				}),
 			data.prenatalData))) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.homeVisitData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.childScorecardData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.ncdData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.hivData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.tuberculosisData);
 };
-var $author$project$Pages$Reports$View$generateDemographicsReportPatientsData = F3(
-	function (language, limitDate, records) {
+var $author$project$Pages$Reports$View$generateDemographicsReportPatientsData = F4(
+	function (language, startDate, limitDate, records) {
 		var filterImpacted = $elm$core$List$filter(
 			function (patient) {
 				return $author$project$Pages$Reports$Utils$countTotalEncounters(patient) > 1;
@@ -19350,7 +19350,14 @@ var $author$project$Pages$Reports$View$generateDemographicsReportPatientsData = 
 					return $.gender;
 				},
 				$elm$core$Basics$eq($author$project$Backend$Reports$Model$Male)),
-			records);
+			A2(
+				$elm$core$List$filter,
+				function (record) {
+					return !_Utils_eq(
+						A2($justinmimbs$date$Date$compare, record.created, startDate),
+						$elm$core$Basics$LT);
+				},
+				records));
 		var males = _v0.a;
 		var females = _v0.b;
 		var females1Month2Years = A2(
@@ -19857,18 +19864,7 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 var $author$project$Pages$Reports$View$viewDemographicsReport = F6(
 	function (language, features, startDate, limitDate, scopeLabel, records) {
 		var demographicsReportEncountersData = A3($author$project$Pages$Reports$View$generateDemographicsReportEncountersData, language, features, records);
-		var demographicsReportPatientsData = A3(
-			$author$project$Pages$Reports$View$generateDemographicsReportPatientsData,
-			language,
-			limitDate,
-			A2(
-				$elm$core$List$filter,
-				function (record) {
-					return !_Utils_eq(
-						A2($justinmimbs$date$Date$compare, record.created, startDate),
-						$elm$core$Basics$LT);
-				},
-				records));
+		var demographicsReportPatientsData = A4($author$project$Pages$Reports$View$generateDemographicsReportPatientsData, language, startDate, limitDate, records);
 		var csvFileName = 'demographics-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
 		var csvContent = $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV(demographicsReportPatientsData) + ('\u000A\u000A\u000A' + $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV(demographicsReportEncountersData));

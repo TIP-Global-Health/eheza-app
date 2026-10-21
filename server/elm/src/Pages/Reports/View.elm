@@ -1,4 +1,4 @@
-module Pages.Reports.View exposing (view)
+module Pages.Reports.View exposing (generateAcuteIllnessReportData, generateDemographicsReportEncountersData, generateDemographicsReportPatientsData, generatePeripartumReportData, generatePostnatalCareReportData, view)
 
 import App.Types exposing (Language, Site, SiteFeature(..))
 import AssocList as Dict exposing (Dict)
@@ -315,17 +315,7 @@ viewDemographicsReport : Language -> EverySet SiteFeature -> NominalDate -> Nomi
 viewDemographicsReport language features startDate limitDate scopeLabel records =
     let
         demographicsReportPatientsData =
-            -- We get recoderds for all patients that were created not before
-            -- the TO date.
-            -- In this report however, we want to get only those patients that
-            -- were created not after the FROM date, hence the filtering.
-            List.filter
-                (\record ->
-                    -- Patient was created not before the FROM date.
-                    not <| Date.compare record.created startDate == LT
-                )
-                records
-                |> generateDemographicsReportPatientsData language limitDate
+            generateDemographicsReportPatientsData language startDate limitDate records
 
         demographicsReportEncountersData =
             generateDemographicsReportEncountersData language features records
@@ -348,8 +338,13 @@ viewDemographicsReport language features startDate limitDate scopeLabel records 
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
+{-| The patients registered between FROM and TO, by age at TO. The records
+hold every patient created up to TO, so those created before FROM are
+left out here.
+-}
 generateDemographicsReportPatientsData :
     Language
+    -> NominalDate
     -> NominalDate
     -> List PatientData
     ->
@@ -362,10 +357,11 @@ generateDemographicsReportPatientsData :
                 , totals : ( String, String )
                 }
         }
-generateDemographicsReportPatientsData language limitDate records =
+generateDemographicsReportPatientsData language startDate limitDate records =
     let
         ( males, females ) =
-            List.partition (.gender >> (==) Male) records
+            List.filter (\record -> Date.compare record.created startDate /= LT) records
+                |> List.partition (.gender >> (==) Male)
 
         males1MonthAndLess =
             List.filter (\patient -> Date.diff Months patient.birthDate limitDate == 0)
