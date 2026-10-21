@@ -14148,7 +14148,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							somali: $elm$core$Maybe$Nothing,
 							english: 'Imminent delivery',
-							kirundi: $elm$core$Maybe$Just('Gutanga bigaragara/'),
+							kirundi: $elm$core$Maybe$Just('Gutanga bigaragara'),
 							kinyarwanda: $elm$core$Maybe$Just('Kubyara biri hafi')
 						};
 					case 'DiagnosisLaborAndDelivery':
@@ -14320,7 +14320,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							somali: $elm$core$Maybe$Just('Xanuun qaska ah ama Dheecaan'),
 							english: 'Perineal pain or discharge',
-							kirundi: $elm$core$Maybe$Just('Ububabare bw\u0027umugongo hepfo'),
+							kirundi: $elm$core$Maybe$Just('Ububabare bwo mu gihimba c\u0027irondoka (périnée) canke isohoka ridasanzwe'),
 							kinyarwanda: $elm$core$Maybe$Just('Arababara perine cg aratakaza ibintu budasanzwe')
 						};
 					case 'DiagnosisPostpartumInfection':
