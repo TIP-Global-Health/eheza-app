@@ -35,3 +35,8 @@ gulp zscore
 gulp version
 
 elm-test "src/elm/**/Test.elm"
+
+# The server Elm app (Statistical Queries and the other admin reports) keeps
+# its tests the same way, as src/**/Test.elm. It needs no generated files.
+cd "$CIRCLE_WORKING_DIRECTORY"/server/elm
+elm-test "src/**/Test.elm"

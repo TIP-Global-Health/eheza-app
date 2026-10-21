@@ -307,7 +307,7 @@ B-306	4	READY	LOW			26	Acute Illness follow-up: a saved follow-up keeps the diag
 B-307	3	IMPLEMENTED	MED	2192	2193	24	Case Management follow-up entries: tapping one always creates a NEW encounter, so a second encounter can be opened the s
 B-308	2	IMPLEMENTED	MED	2254	2255	28	Statistical Queries › Acute Illness: three respiratory diagnosis rows show each other's counts — the PHP code table and 
 B-309	3	READY	MED-LOW			28	Statistical Queries › Postnatal Care: "Up to date with immunization" rows never see doses recorded at Child Scoreboard e
-B-310	4	READY	LOW			28	Aggregated NCDA scoreboard: the shared "children under 2" denominator uses the exact birth date while every age-gated nu
+B-310	4	IMPLEMENTED	LOW	2404	2405	28	Aggregated NCDA scoreboard, current-month column: it mixes "as of today" and "by the end of the month", so the Immunizat
 B-311	2	IMPLEMENTED	MED-HIGH	2261	2262	28	Aggregated NCDA scoreboard: the "born in the last 3 years" cutoff is evaluated at request time, so every historical colu
 B-312	3	READY	MED-LOW			28	Aggregated NCDA scoreboard, "Iron during pregnancy" row: the nine counted months sit one month before the pregnancy — th
 B-313	4	READY	LOW			28	NCDA scoreboard (server blob): nothing re-triggers a child's recalculation when the pregnancy-side inputs change — newbo
@@ -454,7 +454,7 @@ B-453	1	PARKED	LOW			39	Prenatal postpartum mastitis: a mother who is NOT breast
 B-454	1	IMPLEMENTED	LOW	2330	2331	39	NCD labs: a random blood sugar test sent to the lab, then corrected to "not performed", keeps "result from the lab" in i
 B-455	4	WONTFIX	LOW			39	Prenatal labs: a Hepatitis B test run at point of care, then corrected to "known as positive", still saves the result of
 B-456	4	READY	LOW			39	Admin reports CSV download: the file has no byte-order mark and always separates with a comma, so Excel can garble accen
-B-457	4	READY	LOW			39	Admin Elm app (`server/elm`): no unit tests can be written, because it has no elm-test setup, so pure helpers such as th
+B-457	4	CLOSED	LOW		2391	39	Admin Elm app (`server/elm`): no unit tests can be written, because it has no elm-test setup, so pure helpers such as th
 B-458	4	READY	LOW			39	Admin content: outside super user mode, three more ways to delete or unpublish a node are still offered and always fail 
 B-459	1	PARKED	LOW			38	Prenatal diagnosis: a treated malaria found again at a different anemia level is filed as a new episode, and "treated" m
 B-460	2	IMPLEMENTED		2320	2321		Sync incidents: the backend cannot re-create a missing entity the device sent, because a `false` boolean is written as a
@@ -497,8 +497,11 @@ B-496	2	IMPLEMENTED	MED	2376	2377	44	Acute illness + Prenatal: the diagnosis the
 B-497	4	IMPLEMENTED	LOW	2380	2381	44	Prenatal: an encounter with no diagnoses is re-patched with "none" on every trigger save, because the stored `["none"]` 
 B-498	4	READY	LOW		2377	44	Service worker: a save on the device is reported to every open tab, so each tab runs the assessments and may write its o
 B-499	2	MONITORING	MED	2376		44	Acute Illness and Prenatal: encounters saved after the #2128 deploy by devices still on an older build keep a shown diag
-B-500	4	READY	LOW			survey	Aggregated NCDA scoreboard › Immunization row: a dose given on the last day of the child's month of age reads as not giv
-B-501	4	READY	LOW			survey	Statistical Queries › ANC report: a pregnancy whose EDD was exactly 30 days before the TO date still counts as active, w
+B-500	4	IMPLEMENTED	LOW	2392	2394	survey	Aggregated NCDA scoreboard › Immunization row: a dose given on the last day of the child's month of age reads as not giv
+B-501	4	IMPLEMENTED	LOW	2393	2395	survey	Statistical Queries › ANC Contacts: a pregnancy exactly 30 days past its EDD counts as completed, while the ANC report c
+B-502	4	CLOSED	LOW		2394	survey	Aggregated NCDA scoreboard › Immunization row: the current-month column judges vaccines against the END of this month, s
+B-503	4	IMPLEMENTED	LOW	2403	2402	survey	Aggregated NCDA scoreboard: a child registered on a column's target date (the month's last day, or today for the current
+B-504	4	READY	LOW		2405	survey	Aggregated NCDA scoreboard: the Acute Malnutrition, Stunting and Infrastructure/WASH rows count children of any age the 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
@@ -526,9 +529,9 @@ TH-16		READY				16	Pin AcuteIllness SUBSEQUENT-encounter diagnosis branch (zero 
 TH-17		READY				16	Pin COVID path edge branches + suspect threshold
 TH-18		READY				16	Pin Prenatal emergency-referral aggregation + hypertension-like hierarchy (un-pinned engines)
 TH-19		READY				16	Extend Nutrition assessment pins: boundaries + combination markers + over-6mo asymmetry
-TH-28		READY				survey	Statistical Queries › Nutrition report: pin the figures against their PHP twin — z-score/MUAC bands, prevalence dedup, i
-TH-29		READY				survey	Server Elm wire decoders and letter tables: pin report, scoreboard and Completion decoding against what PHP sends
-TH-30		READY				survey	Aggregated NCDA scoreboard: pin the server copy of the vaccination schedule engine
-TH-31		READY				survey	Statistical Queries › ANC and ANC Contacts reports: pin the date-range filter, pregnancy completion and contact counts
-TH-32		READY				survey	Statistical Queries › Peripartum, Postnatal Care, Demographics, Acute Illness and CSV export: pin the report builders
-TH-33		READY				survey	Aggregated NCDA scoreboard panes and Completion: move the date arithmetic out of the views and pin it
+TH-28		IMPLEMENTED		2396	2402	survey	Statistical Queries › Nutrition report: pin the figures against their PHP twin — z-score/MUAC bands, prevalence dedup, i
+TH-29		IMPLEMENTED		2397	2402	survey	Server Elm wire decoders and letter tables: pin report, scoreboard and Completion decoding against what PHP sends
+TH-30		IMPLEMENTED		2398	2402	survey	Aggregated NCDA scoreboard: pin the server copy of the vaccination schedule engine
+TH-31		IMPLEMENTED		2399	2402	survey	Statistical Queries › ANC and ANC Contacts reports: pin the date-range filter, pregnancy completion and contact counts
+TH-32		IMPLEMENTED		2400	2402	survey	Statistical Queries › Peripartum, Postnatal Care, Demographics, Acute Illness and CSV export: pin the report builders
+TH-33		IMPLEMENTED		2401	2402	survey	Aggregated NCDA scoreboard panes and Completion: move the date arithmetic out of the views and pin it
