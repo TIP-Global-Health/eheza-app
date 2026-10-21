@@ -12,7 +12,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Scoreboard.Model exposing (Model, Msg(..), NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..), ViewMode(..))
-import Pages.Scoreboard.Utils exposing (allVaccineTypes, diffCalendarMonths, generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
+import Pages.Scoreboard.Utils exposing (allVaccineTypes, generateFutureVaccinationsData, monthsSinceMonthOf, valuesByViewMode, viewPercentage)
 import Pages.Utils exposing (viewBackendData, viewYearSelector)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
@@ -78,7 +78,7 @@ viewScoreboardData language currentDate data model =
                                 let
                                     ageInMonths =
                                         -- Counted from the first of the birth month, as the panes do.
-                                        diffCalendarMonths record.birthDate targetDateForMonth
+                                        monthsSinceMonthOf record.birthDate targetDateForMonth
 
                                     existedDuringExaminationMonth =
                                         -- Making sure patient was already created during examination month.
@@ -194,7 +194,7 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnde
                 (\targetDateForMonth record accumValue ->
                     let
                         ageInMonths =
-                            diffCalendarMonths record.birthDate targetDateForMonth
+                            monthsSinceMonthOf record.birthDate targetDateForMonth
 
                         existedDuringExaminationMonth =
                             -- Making sure patient was already created during examination month.
@@ -459,7 +459,7 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                 ageInMonths =
                                     -- Using EDD date to properly resolve the month of
                                     -- pregnancy (as child may have been born premature).
-                                    diffCalendarMonths record.eddDate targetDateForMonth
+                                    monthsSinceMonthOf record.eddDate targetDateForMonth
 
                                 monthsBeforeDelivery =
                                     -- Age is negative for months that precede the
@@ -524,7 +524,7 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                             Date.compare record.created targetDateForMonth == LT
 
                         ageInMonths =
-                            diffCalendarMonths record.birthDate targetDateForMonth
+                            monthsSinceMonthOf record.birthDate targetDateForMonth
 
                         row2AsAgeInMonths =
                             datesForMonth targetDateForMonth record.ncda.universalIntervention.row2
@@ -700,7 +700,7 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childre
                             Date.compare record.created targetDateForMonth == LT
 
                         ageInMonths =
-                            diffCalendarMonths record.birthDate targetDateForMonth
+                            monthsSinceMonthOf record.birthDate targetDateForMonth
 
                         row2AsAgeInMonths =
                             datesForMonth targetDateForMonth record.ncda.nutritionBehavior.row2
@@ -808,7 +808,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                             Date.compare record.created targetDateForMonth == LT
 
                         ageInMonths =
-                            diffCalendarMonths record.birthDate targetDateForMonth
+                            monthsSinceMonthOf record.birthDate targetDateForMonth
 
                         row1AsAgeInMonths =
                             datesForMonth targetDateForMonth record.ncda.targetedInterventions.row1

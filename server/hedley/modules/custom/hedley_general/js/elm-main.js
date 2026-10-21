@@ -22827,7 +22827,7 @@ var $author$project$Pages$Scoreboard$View$generateMonthsGap = F2(
 					},
 					A2($elm$core$List$range, 1, 12))));
 	});
-var $author$project$Pages$Scoreboard$Utils$diffCalendarMonths = F2(
+var $author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf = F2(
 	function (from, to) {
 		return A2(
 			$author$project$Gizra$NominalDate$diffMonths,
@@ -22851,7 +22851,7 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 				function (targetDateForMonth, record, accumValue) {
 					var row1AsAgeInMonths = A2($author$project$Pages$Scoreboard$View$datesForMonth, targetDateForMonth, record.ncda.ancNewborn.row1);
 					var row2 = function () {
-						var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$diffCalendarMonths, record.eddDate, targetDateForMonth);
+						var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf, record.eddDate, targetDateForMonth);
 						var monthsBeforeDelivery = -ageInMonths;
 						return ((record.ncda.ancNewborn.row2 && (monthsBeforeDelivery > 0)) && (monthsBeforeDelivery < 10)) ? (accumValue.row2 + 1) : accumValue.row2;
 					}();
@@ -22929,7 +22929,7 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F7(
 					var existedDuringExaminationMonth = _Utils_eq(
 						A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
 						$elm$core$Basics$LT);
-					var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$diffCalendarMonths, record.birthDate, targetDateForMonth);
+					var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf, record.birthDate, targetDateForMonth);
 					var row3 = (existedDuringExaminationMonth && ((!ageInMonths) && _Utils_eq(
 						record.lowBirthWeight,
 						$elm$core$Maybe$Just(true)))) ? (accumValue.row3 + 1) : accumValue.row3;
@@ -23125,7 +23125,7 @@ var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F7(
 					var row4AsAgeInMonths = A2($author$project$Pages$Scoreboard$View$datesForMonth, targetDateForMonth, record.ncda.nutritionBehavior.row4);
 					var row3AsAgeInMonths = A2($author$project$Pages$Scoreboard$View$datesForMonth, targetDateForMonth, record.ncda.nutritionBehavior.row3);
 					var row2AsAgeInMonths = A2($author$project$Pages$Scoreboard$View$datesForMonth, targetDateForMonth, record.ncda.nutritionBehavior.row2);
-					var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$diffCalendarMonths, record.birthDate, targetDateForMonth);
+					var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf, record.birthDate, targetDateForMonth);
 					var row4 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row4AsAgeInMonths))) ? (accumValue.row4 + 1) : accumValue.row4;
 					var row3 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row3AsAgeInMonths))) ? (accumValue.row3 + 1) : accumValue.row3;
 					var row2 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row2AsAgeInMonths))) ? (accumValue.row2 + 1) : accumValue.row2;
@@ -23225,7 +23225,7 @@ var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F7(
 					var row3AsAgeInMonths = A2($author$project$Pages$Scoreboard$View$datesForMonth, targetDateForMonth, record.ncda.targetedInterventions.row3);
 					var row2AsAgeInMonths = A2($author$project$Pages$Scoreboard$View$datesForMonth, targetDateForMonth, record.ncda.targetedInterventions.row2);
 					var row1AsAgeInMonths = A2($author$project$Pages$Scoreboard$View$datesForMonth, targetDateForMonth, record.ncda.targetedInterventions.row1);
-					var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$diffCalendarMonths, record.birthDate, targetDateForMonth);
+					var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf, record.birthDate, targetDateForMonth);
 					var row6 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row6AsAgeInMonths))) ? (accumValue.row6 + 1) : accumValue.row6;
 					var row5 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row5AsAgeInMonths))) ? (accumValue.row5 + 1) : accumValue.row5;
 					var row4 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row4AsAgeInMonths))) ? (accumValue.row4 + 1) : accumValue.row4;
@@ -23348,7 +23348,7 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 					var row4AsAgeInMonths = A2($author$project$Pages$Scoreboard$View$datesForMonth, targetDateForMonth, record.ncda.universalIntervention.row4);
 					var row3AsAgeInMonths = A2($author$project$Pages$Scoreboard$View$datesForMonth, targetDateForMonth, record.ncda.universalIntervention.row3);
 					var row2AsAgeInMonths = A2($author$project$Pages$Scoreboard$View$datesForMonth, targetDateForMonth, record.ncda.universalIntervention.row2);
-					var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$diffCalendarMonths, record.birthDate, targetDateForMonth);
+					var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf, record.birthDate, targetDateForMonth);
 					var row5 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row5AsAgeInMonths))) ? (accumValue.row5 + 1) : accumValue.row5;
 					var row4 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row4AsAgeInMonths))) ? (accumValue.row4 + 1) : accumValue.row4;
 					var row3 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row3AsAgeInMonths))) ? (accumValue.row3 + 1) : accumValue.row3;
@@ -23733,7 +23733,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 							var existedDuringExaminationMonth = _Utils_eq(
 								A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
 								$elm$core$Basics$LT);
-							var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$diffCalendarMonths, record.birthDate, targetDateForMonth);
+							var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf, record.birthDate, targetDateForMonth);
 							return (existedDuringExaminationMonth && ((ageInMonths >= 0) && (ageInMonths < 24))) ? (accumValue + 1) : accumValue;
 						}),
 					0,

@@ -1,4 +1,4 @@
-module Pages.Scoreboard.Utils exposing (allVaccineTypes, diffCalendarMonths, generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
+module Pages.Scoreboard.Utils exposing (allVaccineTypes, generateFutureVaccinationsData, monthsSinceMonthOf, valuesByViewMode, viewPercentage)
 
 import App.Types exposing (Site(..))
 import AssocList as Dict
@@ -13,8 +13,8 @@ import Round
 {-| Whole calendar months from the month of the first date to the second.
 For example, 25 October 2024 to 21 October 2026 is 24.
 -}
-diffCalendarMonths : NominalDate -> NominalDate -> Int
-diffCalendarMonths from to =
+monthsSinceMonthOf : NominalDate -> NominalDate -> Int
+monthsSinceMonthOf from to =
     diffMonths (Date.floor Date.Month from) to
 
 
