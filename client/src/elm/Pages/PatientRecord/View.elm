@@ -25,7 +25,7 @@ import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (Model, Msg(..), PatientRecordFilter(..), PatientType(..), ViewMode(..))
 import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipantDesc)
-import Pages.Prenatal.Participant.Utils exposing (antenatalPregnanciesNewestFirst, isPregnancyActive)
+import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive)
 import Pages.Report.Model exposing (PaneEntryStatus(..))
 import Pages.Report.Utils exposing (diagnosisEntryStatusToString)
 import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries)
@@ -212,13 +212,18 @@ viewContentForOther :
     -> Html Msg
 viewContentForOther language currentDate site features personId person patientType initiator db model =
     let
-        participantsByPerson =
+        individualParticipants =
             Dict.get personId db.individualParticipantsByPerson
                 |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.withDefault Dict.empty
+                |> Maybe.map Dict.toList
+                |> Maybe.withDefault []
 
         pregnancies =
-            antenatalPregnanciesNewestFirst participantsByPerson
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.AntenatalEncounter
+                )
+                individualParticipants
 
         selectedPane =
             case model.filter of
@@ -229,7 +234,7 @@ viewContentForOther language currentDate site features personId person patientTy
                                 (\( _, participant ) ->
                                     participant.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
                                 )
-                                (Dict.toList participantsByPerson)
+                                individualParticipants
                     in
                     viewAcuteIllnessPane language personId initiator acuteIllnesses db
 

@@ -13,7 +13,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEnco
 import Date
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Prenatal.Participant.Utils exposing (antenatalPregnanciesNewestFirst, isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit, resolveShownPregnancy)
+import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit, resolveShownPregnancy)
 import Pages.Prenatal.Utils exposing (marginalBloodPressureCondition)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import Test exposing (Test, describe, test)
@@ -195,7 +195,7 @@ pregnancyConcludedInTodaysPostpartumVisitTest =
         , test "earlier visits do not get in the way -> True" <|
             \_ ->
                 pregnancyConcludedInTodaysPostpartumVisit currentDate
-                    False
+                    isNurse
                     (pregnancyConcludedDaysAgo 0)
                     [ visitStartedDaysAgo 0 NursePostpartumEncounter, visitStartedDaysAgo 30 NurseEncounter ]
                     |> Expect.equal True
@@ -268,18 +268,39 @@ twoActivePregnancies =
     ]
 
 
+{-| One prenatal visit for the pregnancy with the given id, none for others.
+-}
+visitsFor : String -> IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter )
+visitsFor id sessionId =
+    if fromEntityUuid sessionId == id then
+        [ ( toEntityUuid "visit", visitStartedDaysAgo 30 NurseEncounter ) ]
+
+    else
+        []
+
+
 resolveShownPregnancyTest : Test
 resolveShownPregnancyTest =
     describe "resolveShownPregnancy"
-        [ test "lists only antenatal pregnancies, newest first" <|
+        [ test "of two active pregnancies, the newest is shown, even with fewer visits" <|
             \_ ->
-                antenatalPregnanciesNewestFirst (participants twoActivePregnancies)
-                    |> List.map (Tuple.first >> fromEntityUuid)
-                    |> Expect.equal [ "today", "earlier" ]
-        , test "of two active pregnancies, the newest is shown" <|
-            \_ ->
-                shownPregnancyId (always []) twoActivePregnancies
+                shownPregnancyId (visitsFor "earlier") twoActivePregnancies
                     |> Expect.equal (Just "today")
+        , test "an active pregnancy is shown over a newer concluded one" <|
+            \_ ->
+                let
+                    concluded =
+                        pregnancyConcludedDaysAgo 5
+                in
+                shownPregnancyId (always [])
+                    [ ( "new-concluded", { concluded | startDate = Date.add Date.Days -30 currentDate } )
+                    , ( "old-active", pregnancyRegisteredDaysAgo 300 )
+                    ]
+                    |> Expect.equal (Just "old-active")
+        , test "of two active pregnancies registered the same day, the one with visits is shown" <|
+            \_ ->
+                shownPregnancyId (visitsFor "b") [ ( "a", pregnancyRegisteredDaysAgo 10 ), ( "b", pregnancyRegisteredDaysAgo 10 ) ]
+                    |> Expect.equal (Just "b")
         , test "of two active pregnancies registered the same day, every device shows the same one" <|
             \_ ->
                 [ [ ( "b", pregnancyRegisteredDaysAgo 10 ), ( "a", pregnancyRegisteredDaysAgo 10 ) ]
