@@ -500,7 +500,7 @@ B-499	2	MONITORING	MED	2376		44	Acute Illness and Prenatal: encounters saved aft
 B-500	4	IMPLEMENTED	LOW	2392	2394	survey	Aggregated NCDA scoreboard › Immunization row: a dose given on the last day of the child's month of age reads as not giv
 B-501	4	IMPLEMENTED	LOW	2393	2395	survey	Statistical Queries › ANC Contacts: a pregnancy exactly 30 days past its EDD counts as completed, while the ANC report c
 B-502	4	CLOSED	LOW		2394	survey	Aggregated NCDA scoreboard › Immunization row: the current-month column judges vaccines against the END of this month, s
-B-503	4	READY	LOW		2394	survey	Aggregated NCDA scoreboard: a child registered on a column's target date (the month's last day, or today for the current
+B-503	4	IMPLEMENTED	LOW	2403	2402	survey	Aggregated NCDA scoreboard: a child registered on a column's target date (the month's last day, or today for the current
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
