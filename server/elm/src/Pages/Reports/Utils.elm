@@ -1,15 +1,16 @@
-module Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, countTotalNutritionEncounters, csvRow, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
+module Pages.Reports.Utils exposing (allVaccineTypes, calculateNutritionReportData, countTotalEncounters, csvRow, eddToLmpDate, filterRecordsByDateRange, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isPostpartumEncounter, isPregnancyCompleted, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, resolveQuarterForIndex)
 
 import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Components.Model exposing (PersonId, SelectedEntity(..))
-import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData)
+import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData, PrenatalEncounterData, PrenatalEncounterType(..), PrenatalParticipantData)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra exposing (unique)
 import Maybe.Extra
-import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), emptyNutritionMetrics)
+import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), emptyNutritionMetrics)
+import Pages.Utils exposing (launchDate)
 import Set
 
 
@@ -44,6 +45,20 @@ prenatalContactTypeToEncountersAtWeek prenatalContactType =
 eddToLmpDate : NominalDate -> NominalDate
 eddToLmpDate eddDate =
     Date.add Days -280 eddDate
+
+
+isPostpartumEncounter : PrenatalEncounterData -> Bool
+isPostpartumEncounter encounter =
+    List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
+
+
+{-| A pregnancy is completed once it is concluded, or more than 30 days
+after its EDD. For example, EDD 1 March is still active on 31 March.
+-}
+isPregnancyCompleted : NominalDate -> PrenatalParticipantData -> Bool
+isPregnancyCompleted limitDate pregnancy =
+    Maybe.Extra.isJust pregnancy.dateConcluded
+        || Maybe.Extra.unwrap False (\eddDate -> Date.compare (Date.add Days 30 eddDate) limitDate == LT) pregnancy.eddDate
 
 
 resolvePregnancyTrimester : NominalDate -> NominalDate -> PregnancyTrimester
@@ -148,10 +163,9 @@ countTotalNutritionEncounters data =
     in
     countIndividualDataEncounters data.wellChildData
         + countIndividualDataEncounters data.individualNutritionData
-        -- familyNutritionData (date-only, mother-side) is always 0 for
-        -- children (the nutrition report filters to under-6), but this
-        -- function is also called via countTotalEncounters for the
-        -- Demographics impacted filter, which iterates mothers.
+        -- familyNutritionData is mother-side. The nutrition report skips
+        -- anyone six by its first year, so never sees mothers; the
+        -- Demographics impacted filter, through countTotalEncounters, does.
         + countIndividualDataEncounters data.familyNutritionData
         + countIndividualDataEncounters data.familyNutritionMuacData
         + countGroupDataEncounters data.groupNutritionPmtctData
@@ -492,11 +506,8 @@ resolvePreviousDataSetForMonth date monthIndex encountersByMonth =
 resolveDataSetForQuarter : NominalDate -> Int -> Dict ( Int, Int ) NutritionMetrics -> NutritionMetrics
 resolveDataSetForQuarter date quarterIndex encountersByMonth =
     let
-        selectedDate =
-            Date.add Months (-3 * (quarterIndex - 1)) date
-
         ( year, quarter ) =
-            resolvePreviousQuarterDateInfo selectedDate
+            resolveQuarterForIndex date quarterIndex
     in
     quarterToMonths quarter
         |> List.map
@@ -505,6 +516,15 @@ resolveDataSetForQuarter date quarterIndex encountersByMonth =
             )
         |> Maybe.Extra.values
         |> sumNutritionMetrics
+
+
+{-| The (year, quarter) of a quarter column. Index 1 is the last complete
+quarter: on 2027-01-15 it is (2026, 4), and index 2 is (2026, 3).
+-}
+resolveQuarterForIndex : NominalDate -> Int -> ( Int, Int )
+resolveQuarterForIndex date quarterIndex =
+    Date.add Months (-3 * (quarterIndex - 1)) date
+        |> resolvePreviousQuarterDateInfo
 
 
 resolvePreviousQuarterDateInfo : NominalDate -> ( Int, Int )
@@ -588,3 +608,285 @@ csvRow =
                 cell
     in
     List.map csvCell >> String.join ","
+
+
+calculateNutritionReportData : NominalDate -> List PatientData -> NutritionReportData
+calculateNutritionReportData currentDate data =
+    let
+        -- A visit counts only if the child was under six on that day.
+        -- A child born 2019-03 keeps a 2024 visit, but not a 2025-04 one.
+        records =
+            -- Six by 1 January of the starting year: no visit in the report counts.
+            List.filter
+                (\record ->
+                    Date.diff Years record.birthDate (Date.fromOrdinalDate startingYear 1) < 6
+                )
+                data
+                |> List.map
+                    (\record ->
+                        let
+                            underSix encounter =
+                                Date.diff Years record.birthDate encounter.startDate < 6
+
+                            keepGroupVisits =
+                                Maybe.map (List.filter underSix)
+
+                            keepIndividualVisits =
+                                Maybe.map (List.map (List.filter underSix))
+                        in
+                        { record
+                            | familyNutritionData = keepIndividualVisits record.familyNutritionData
+                            , familyNutritionMuacData = keepIndividualVisits record.familyNutritionMuacData
+                            , wellChildData = keepIndividualVisits record.wellChildData
+                            , individualNutritionData = keepIndividualVisits record.individualNutritionData
+                            , groupNutritionPmtctData = keepGroupVisits record.groupNutritionPmtctData
+                            , groupNutritionFbfData = keepGroupVisits record.groupNutritionFbfData
+                            , groupNutritionSorwatheData = keepGroupVisits record.groupNutritionSorwatheData
+                            , groupNutritionChwData = keepGroupVisits record.groupNutritionChwData
+                            , groupNutritionAchiData = keepGroupVisits record.groupNutritionAchiData
+                        }
+                    )
+
+        impacted =
+            List.filterMap
+                (\record ->
+                    if countTotalNutritionEncounters record > 1 then
+                        Just record.id
+
+                    else
+                        Nothing
+                )
+                records
+
+        currentYear =
+            Date.year currentDate
+
+        startingYear =
+            currentYear - 3
+
+        filterByYear encounter =
+            Date.year encounter.startDate >= startingYear
+
+        allEncounters =
+            List.concatMap
+                (\record ->
+                    [ Maybe.map
+                        (List.concat
+                            >> List.filter filterByYear
+                            >> List.map
+                                (\item ->
+                                    -- WellChildEncounterData mirrors NutritionEncounterData's
+                                    -- shape (date, nutritionData, muacCm, hasEdema) plus
+                                    -- immunisationData; well-child has no FBF distribution,
+                                    -- so that one is absent.
+                                    ( record.id
+                                    , { startDate = item.startDate
+                                      , nutritionData = item.nutritionData
+                                      , muacCm = item.muacCm
+                                      , hasEdema = item.hasEdema
+                                      , fbfAmount = Nothing
+                                      }
+                                    )
+                                )
+                        )
+                        record.wellChildData
+                    , Maybe.map
+                        (List.concat
+                            >> List.filter filterByYear
+                            >> List.map (Tuple.pair record.id)
+                        )
+                        record.individualNutritionData
+                    , Maybe.map
+                        (List.filter filterByYear
+                            >> List.map (Tuple.pair record.id)
+                        )
+                        record.groupNutritionPmtctData
+                    , Maybe.map
+                        (List.filter filterByYear
+                            >> List.map (Tuple.pair record.id)
+                        )
+                        record.groupNutritionFbfData
+                    , Maybe.map
+                        (List.filter filterByYear
+                            >> List.map (Tuple.pair record.id)
+                        )
+                        record.groupNutritionSorwatheData
+                    , Maybe.map
+                        (List.filter filterByYear
+                            >> List.map (Tuple.pair record.id)
+                        )
+                        record.groupNutritionChwData
+                    , Maybe.map
+                        (List.filter filterByYear
+                            >> List.map (Tuple.pair record.id)
+                        )
+                        record.groupNutritionAchiData
+                    ]
+                        |> Maybe.Extra.values
+                        |> List.concat
+                )
+                records
+
+        -- A child's family-nutrition MUAC visits, keyed by the child's id.
+        -- The mother-side familyNutritionData is counted by the
+        -- Demographics row, not here.
+        familyNutritionEncounters =
+            List.concatMap
+                (\record ->
+                    record.familyNutritionMuacData
+                        |> Maybe.map
+                            (List.concat
+                                >> List.filter filterByYear
+                                >> List.map (Tuple.pair record.id)
+                            )
+                        |> Maybe.withDefault []
+                )
+                records
+
+        insertMetricsForMonth ( year, month ) encounterMetrics accum =
+            let
+                updatedMetrics =
+                    Dict.get ( year, month ) accum
+                        |> Maybe.map
+                            (\metricsSoFar ->
+                                sumNutritionMetrics [ metricsSoFar, encounterMetrics ]
+                            )
+                        |> Maybe.withDefault encounterMetrics
+            in
+            Dict.insert ( year, month ) updatedMetrics accum
+
+        encountersByMonthFromNutrition =
+            List.foldl
+                (\( personId, encounter ) accum ->
+                    let
+                        year =
+                            Date.year encounter.startDate
+
+                        month =
+                            Date.monthNumber encounter.startDate
+
+                        encounterMetrics =
+                            nutritionEncounterDataToNutritionMetrics personId encounter
+                    in
+                    insertMetricsForMonth ( year, month ) encounterMetrics accum
+                )
+                Dict.empty
+                allEncounters
+
+        encountersByMonth =
+            List.foldl
+                (\( personId, encounter ) accum ->
+                    let
+                        year =
+                            Date.year encounter.startDate
+
+                        month =
+                            Date.monthNumber encounter.startDate
+
+                        encounterMetrics =
+                            familyNutritionEncounterToMetrics personId encounter
+                    in
+                    insertMetricsForMonth ( year, month ) encounterMetrics accum
+                )
+                encountersByMonthFromNutrition
+                familyNutritionEncounters
+    in
+    { impacted = impacted
+    , encountersByMonth = encountersByMonth
+    }
+
+
+{-| The records the date-range reports use: patients and pregnancies created
+by TO, with only visits between FROM and TO. A pregnancy concluded after TO
+reads as ongoing.
+-}
+filterRecordsByDateRange : NominalDate -> NominalDate -> NominalDate -> List PatientData -> List PatientData
+filterRecordsByDateRange currentDate startDate limitDate records =
+    if
+        (Date.compare startDate launchDate == EQ)
+            && (Date.compare limitDate currentDate == EQ)
+    then
+        records
+
+    else
+        List.filterMap
+            (\record ->
+                if
+                    -- Patient was created not after the TO date.
+                    not <| Date.compare record.created limitDate == GT
+                then
+                    let
+                        filterPrenatalData =
+                            Maybe.map
+                                (List.filterMap
+                                    (\participantData ->
+                                        -- Pregnancy was created not after the TO date.
+                                        if Date.compare participantData.created limitDate == GT then
+                                            Nothing
+
+                                        else
+                                            let
+                                                filteredEncounters =
+                                                    List.filter (inRangeBy .startDate) participantData.encounters
+                                            in
+                                            if List.isEmpty filteredEncounters then
+                                                Nothing
+
+                                            else
+                                                let
+                                                    dateConcluded =
+                                                        -- If pregnancy was concluded, but conclusion date is
+                                                        -- after TO date, we mark pregnancy as not concluded.
+                                                        Maybe.andThen
+                                                            (\date ->
+                                                                if Date.compare limitDate date == LT then
+                                                                    Nothing
+
+                                                                else
+                                                                    Just date
+                                                            )
+                                                            participantData.dateConcluded
+                                                in
+                                                Just { participantData | dateConcluded = dateConcluded, encounters = filteredEncounters }
+                                    )
+                                )
+
+                        inRangeBy resolveDateFunc encounterData =
+                            let
+                                encounterDate =
+                                    resolveDateFunc encounterData
+                            in
+                            (not <| Date.compare encounterDate startDate == LT)
+                                && (not <| Date.compare encounterDate limitDate == GT)
+
+                        filterIndividualBy resolveDateFunc =
+                            Maybe.map (List.map (List.filter (inRangeBy resolveDateFunc)))
+
+                        filterGroupBy resolveDateFunc =
+                            Maybe.map (List.filter (inRangeBy resolveDateFunc))
+                    in
+                    Just
+                        { record
+                            | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
+                            , prenatalData = filterPrenatalData record.prenatalData
+                            , homeVisitData = filterIndividualBy identity record.homeVisitData
+                            , wellChildData = filterIndividualBy .startDate record.wellChildData
+                            , childScorecardData = filterIndividualBy identity record.childScorecardData
+                            , ncdData = filterIndividualBy identity record.ncdData
+                            , hivData = filterIndividualBy identity record.hivData
+                            , tuberculosisData = filterIndividualBy identity record.tuberculosisData
+                            , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
+                            , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
+                            , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
+                            , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
+                            , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
+                            , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
+                            , groupNutritionFbfMotherData = filterGroupBy .startDate record.groupNutritionFbfMotherData
+                            , familyNutritionData = filterIndividualBy .startDate record.familyNutritionData
+                            , familyNutritionMuacData = filterIndividualBy .startDate record.familyNutritionMuacData
+                        }
+
+                else
+                    Nothing
+            )
+            records

@@ -21,6 +21,7 @@
             "elm-community/json-extra": "4.0.0",
             "elm-community/list-extra": "8.7.0",
             "elm-community/maybe-extra": "5.0.0",
+            "elm-explorations/test": "2.2.1",
             "justinmimbs/date": "4.0.1",
             "krisajenkins/remotedata": "5.0.0",
             "lukewestby/elm-http-builder": "6.0.0",
@@ -28,7 +29,9 @@
             "pzp1997/assoc-list": "1.0.0"
         },
         "indirect": {
+            "elm/bytes": "1.0.8",
             "elm/parser": "1.1.0",
+            "elm/random": "1.0.0",
             "elm/url": "1.0.0",
             "rtfeldman/elm-iso8601-date-strings": "1.1.3"
         }

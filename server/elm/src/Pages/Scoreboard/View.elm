@@ -1,22 +1,20 @@
 module Pages.Scoreboard.View exposing (view)
 
 import App.Types exposing (Language, Site)
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Scoreboard.Model exposing (ScoreboardData)
-import Date exposing (Unit(..))
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, toLastDayOfMonth)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Scoreboard.Model exposing (Model, Msg(..), NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..), ViewMode(..))
-import Pages.Scoreboard.Utils exposing (allVaccineTypes, generateFutureVaccinationsData, monthsSinceMonthOf, valuesByViewMode, viewPercentage)
+import Pages.Scoreboard.Utils exposing (countChildrenUnder2, datesForMonth, foldRecordsByMonth, formatValues, generateMonthsGap, isOnTrackForImmunisation, isPregnancyMonth, monthsSinceMonthOf, registeredBy, valuesByViewMode, viewPercentage)
 import Pages.Utils exposing (viewBackendData, viewYearSelector)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
-import Utils.NominalDate exposing (equalByYearAndMonth)
 
 
 view : Language -> NominalDate -> ModelBackend -> Model -> Html Msg
@@ -72,30 +70,7 @@ viewScoreboardData language currentDate data model =
                         generateMonthsGap currentDate model.yearSelectorGap
 
                     childrenUnder2 =
-                        foldRecordsByMonth currentDate
-                            monthsGap
-                            (\targetDateForMonth record accumValue ->
-                                let
-                                    ageInMonths =
-                                        -- Counted from the first of the birth month, as the panes do.
-                                        monthsSinceMonthOf record.birthDate targetDateForMonth
-
-                                    existedDuringExaminationMonth =
-                                        -- Making sure patient was already created during examination month.
-                                        Date.compare record.created targetDateForMonth == LT
-                                in
-                                if
-                                    existedDuringExaminationMonth
-                                        && (ageInMonths >= 0)
-                                        && (ageInMonths < 24)
-                                then
-                                    accumValue + 1
-
-                                else
-                                    accumValue
-                            )
-                            0
-                            data.records
+                        countChildrenUnder2 currentDate monthsGap data.records
                 in
                 [ viewAggregatedChildScoreboardPane language data
                 , viewDemographicsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
@@ -113,55 +88,6 @@ viewScoreboardData language currentDate data model =
     in
     div [ class "page-content" ]
         (topBar :: panes)
-
-
-{-| Resolves the date for the examined month.
-For the current month, it's the current date. For any other month (past or future),
-it's the last day of that month.
-
-Note that the returned date already accounts for the column offset, so an age
-measured against it is the age the patient had at that column. Do not subtract
-gapInMonths from such an age - that would apply the offset a second time.
-
--}
-resolveTargetDateForMonth : Int -> NominalDate -> NominalDate
-resolveTargetDateForMonth gapInMonths currentDate =
-    if gapInMonths == 0 then
-        currentDate
-
-    else
-        Date.add Months (-1 * gapInMonths) currentDate
-            |> toLastDayOfMonth
-
-
-{-| The dates on the list that fall within the month of the target date.
--}
-datesForMonth : NominalDate -> List NominalDate -> List NominalDate
-datesForMonth targetDate dates =
-    List.filter (\date -> equalByYearAndMonth date targetDate) dates
-
-
-{-| Folds patient records into the 12 values of a pane's month columns.
-For each record and column, resolves the target date of the column's month,
-and lets the given function update the column's accumulated value.
--}
-foldRecordsByMonth : NominalDate -> Dict Int Int -> (NominalDate -> record -> accum -> accum) -> accum -> List record -> List accum
-foldRecordsByMonth currentDate monthsGap updateForMonth emptyValue records =
-    List.foldl
-        (\record accum ->
-            List.indexedMap
-                (\index accumValue ->
-                    Dict.get index monthsGap
-                        |> Maybe.map
-                            (\gapInMonths ->
-                                updateForMonth (resolveTargetDateForMonth gapInMonths currentDate) record accumValue
-                            )
-                        |> Maybe.withDefault accumValue
-                )
-                accum
-        )
-        (List.repeat 12 emptyValue)
-        records
 
 
 viewAggregatedChildScoreboardPane : Language -> ScoreboardData -> Html any
@@ -197,8 +123,7 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnde
                             monthsSinceMonthOf record.birthDate targetDateForMonth
 
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
+                            registeredBy targetDateForMonth record
 
                         row2 =
                             if existedDuringExaminationMonth && ageInMonths == 0 then
@@ -276,8 +201,7 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childre
                 (\targetDateForMonth record accumValue ->
                     let
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
+                            registeredBy targetDateForMonth record
 
                         muacSevereAsAgeInMonths =
                             datesForMonth targetDateForMonth record.nutrition.muac.severe
@@ -357,8 +281,7 @@ viewStuntingPane language currentDate yearSelectorGap monthsGap childrenUnder2 v
                 (\targetDateForMonth record accumValue ->
                     let
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
+                            registeredBy targetDateForMonth record
 
                         severeAsAgeInMonths =
                             datesForMonth targetDateForMonth record.nutrition.stunting.severe
@@ -455,25 +378,10 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                 accumValue.row1
 
                         row2 =
-                            let
-                                ageInMonths =
-                                    -- Using EDD date to properly resolve the month of
-                                    -- pregnancy (as child may have been born premature).
-                                    monthsSinceMonthOf record.eddDate targetDateForMonth
-
-                                monthsBeforeDelivery =
-                                    -- Age is negative for months that precede the
-                                    -- expected delivery date, which are the ones
-                                    -- pregnancy is examined at.
-                                    negate ageInMonths
-                            in
-                            if
-                                --  We do not a condition to check if child existed during
-                                -- examination month because we're examining pregnancy months
-                                -- and it's likely that child did not existy on the system.
-                                (record.ncda.ancNewborn.row2 && monthsBeforeDelivery > 0)
-                                    && (monthsBeforeDelivery < 10)
-                            then
+                            --  We do not a condition to check if child existed during
+                            -- examination month because we're examining pregnancy months
+                            -- and it's likely that child did not existy on the system.
+                            if record.ncda.ancNewborn.row2 && isPregnancyMonth record.eddDate targetDateForMonth then
                                 accumValue.row2 + 1
 
                             else
@@ -520,11 +428,7 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                 (\targetDateForMonth record accumValue ->
                     let
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
-
-                        ageInMonths =
-                            monthsSinceMonthOf record.birthDate targetDateForMonth
+                            registeredBy targetDateForMonth record
 
                         row2AsAgeInMonths =
                             datesForMonth targetDateForMonth record.ncda.universalIntervention.row2
@@ -539,59 +443,11 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                             datesForMonth targetDateForMonth record.ncda.universalIntervention.row5
 
                         row1 =
-                            if
-                                not existedDuringExaminationMonth
-                                    || (ageInMonths < 0)
-                                    || (ageInMonths >= 24)
-                            then
-                                accumValue.row1
+                            if existedDuringExaminationMonth && isOnTrackForImmunisation site targetDateForMonth record then
+                                accumValue.row1 + 1
 
                             else
-                                let
-                                    referenceDate =
-                                        -- The last day of a past month, or today for the current
-                                        -- month. A dose due after this date is not yet missed.
-                                        targetDateForMonth
-
-                                    -- Filter out vaccinations that were performed
-                                    -- after the reference date.
-                                    vaccinationProgressOnReferrenceDate =
-                                        Dict.map
-                                            (\_ dosesDict ->
-                                                Dict.filter
-                                                    (\_ administeredDate ->
-                                                        Date.compare administeredDate referenceDate /= GT
-                                                    )
-                                                    dosesDict
-                                            )
-                                            record.ncda.universalIntervention.row1
-
-                                    futureVaccinations =
-                                        generateFutureVaccinationsData site
-                                            record.birthDate
-                                            vaccinationProgressOnReferrenceDate
-                                            (allVaccineTypes site)
-
-                                    closestDateForVaccination =
-                                        List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
-                                            |> List.sortWith Date.compare
-                                            |> List.head
-                                in
-                                Maybe.map
-                                    (\closestDate ->
-                                        if Date.compare closestDate referenceDate == GT then
-                                            -- The next dose is due after the reference date, so the
-                                            -- child is on track.
-                                            accumValue.row1 + 1
-
-                                        else
-                                            -- Otherwise, we're off track.
-                                            accumValue.row1
-                                    )
-                                    closestDateForVaccination
-                                    |> Maybe.withDefault
-                                        -- No doses are left to give, so the child is on track.
-                                        (accumValue.row1 + 1)
+                                accumValue.row1
 
                         row2 =
                             -- Value is taken from NCDA questionnaire, that is given monthly, until child
@@ -696,8 +552,7 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childre
                 (\targetDateForMonth record accumValue ->
                     let
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
+                            registeredBy targetDateForMonth record
 
                         ageInMonths =
                             monthsSinceMonthOf record.birthDate targetDateForMonth
@@ -804,8 +659,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                 (\targetDateForMonth record accumValue ->
                     let
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
+                            registeredBy targetDateForMonth record
 
                         ageInMonths =
                             monthsSinceMonthOf record.birthDate targetDateForMonth
@@ -964,8 +818,7 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
                 (\targetDateForMonth record accumValue ->
                     let
                         existedDuringExaminationMonth =
-                            -- Making sure patient was already created during examination month.
-                            Date.compare record.created targetDateForMonth == LT
+                            registeredBy targetDateForMonth record
 
                         row1AsAgeInMonths =
                             datesForMonth targetDateForMonth record.ncda.infrastructureEnvironmentWash.row1
@@ -1067,18 +920,6 @@ viewPaneHeading language label =
         [ text <| translate language label ]
 
 
-generateMonthsGap : NominalDate -> Int -> Dict Int Int
-generateMonthsGap currentDate yearSelectorGap =
-    let
-        currentMonthNumber =
-            Date.monthNumber currentDate
-    in
-    List.range 1 12
-        |> List.map (\monthNumber -> (-1 * 12 * yearSelectorGap) + (-1 * (monthNumber - currentMonthNumber)))
-        |> List.indexedMap Tuple.pair
-        |> Dict.fromList
-
-
 viewTableHeader : Language -> Html any
 viewTableHeader language =
     let
@@ -1114,37 +955,3 @@ viewTableRow language currentDate yearSelectorGap itemTransId values =
     div [ class "table-row" ] <|
         activityCell
             :: valueCells
-
-
-formatValues : NominalDate -> Int -> List String -> List String
-formatValues currentDate yearSelectorGap =
-    let
-        currentMonthNumber =
-            Date.monthNumber currentDate
-
-        yearsGapFrom2023 =
-            2023 - Date.year currentDate
-    in
-    List.indexedMap
-        (\index value ->
-            if yearSelectorGap == 0 then
-                -- We're at current year.
-                if index < currentMonthNumber then
-                    value
-
-                else
-                    -- Not showing data of future months.
-                    ""
-
-            else if yearSelectorGap > yearsGapFrom2023 then
-                -- We're in 2024, or above.
-                value
-
-            else if index >= 10 then
-                -- We're in 2023. Showing data starting Nov 2023.
-                -- For prior dates - dash for all rows.
-                value
-
-            else
-                "-"
-        )
