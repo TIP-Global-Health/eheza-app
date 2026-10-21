@@ -22860,12 +22860,16 @@ var $author$project$Pages$Scoreboard$Utils$generateMonthsGap = F2(
 	});
 var $author$project$Translate$ANCNewborn = {$: 'ANCNewborn'};
 var $author$project$Pages$Scoreboard$Model$RegularCheckups = {$: 'RegularCheckups'};
+var $author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf = F2(
+	function (from, to) {
+		return A2(
+			$author$project$Gizra$NominalDate$diffMonths,
+			A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, from),
+			to);
+	});
 var $author$project$Pages$Scoreboard$Utils$isPregnancyMonth = F2(
 	function (eddDate, targetDateForMonth) {
-		var ageInMonths = A2(
-			$author$project$Gizra$NominalDate$diffMonths,
-			A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, eddDate),
-			targetDateForMonth);
+		var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf, eddDate, targetDateForMonth);
 		var monthsBeforeDelivery = -ageInMonths;
 		return (monthsBeforeDelivery > 0) && (monthsBeforeDelivery < 10);
 	});
@@ -22949,7 +22953,7 @@ var $author$project$Pages$Scoreboard$Utils$countChildrenUnder2 = F2(
 			F3(
 				function (targetDateForMonth, record, accumValue) {
 					var existedDuringExaminationMonth = A2($author$project$Pages$Scoreboard$Utils$registeredBy, targetDateForMonth, record);
-					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, targetDateForMonth);
+					var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf, record.birthDate, targetDateForMonth);
 					return (existedDuringExaminationMonth && ((ageInMonths >= 0) && (ageInMonths < 24))) ? (accumValue + 1) : accumValue;
 				}),
 			0);
@@ -22970,10 +22974,7 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F7(
 			F3(
 				function (targetDateForMonth, record, accumValue) {
 					var existedDuringExaminationMonth = A2($author$project$Pages$Scoreboard$Utils$registeredBy, targetDateForMonth, record);
-					var ageInMonths = A2(
-						$author$project$Gizra$NominalDate$diffMonths,
-						A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
-						targetDateForMonth);
+					var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf, record.birthDate, targetDateForMonth);
 					var row3 = (existedDuringExaminationMonth && ((!ageInMonths) && _Utils_eq(
 						record.lowBirthWeight,
 						$elm$core$Maybe$Just(true)))) ? (accumValue.row3 + 1) : accumValue.row3;
@@ -23165,10 +23166,7 @@ var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F7(
 					var row4AsAgeInMonths = A2($author$project$Pages$Scoreboard$Utils$datesForMonth, targetDateForMonth, record.ncda.nutritionBehavior.row4);
 					var row3AsAgeInMonths = A2($author$project$Pages$Scoreboard$Utils$datesForMonth, targetDateForMonth, record.ncda.nutritionBehavior.row3);
 					var row2AsAgeInMonths = A2($author$project$Pages$Scoreboard$Utils$datesForMonth, targetDateForMonth, record.ncda.nutritionBehavior.row2);
-					var ageInMonths = A2(
-						$author$project$Gizra$NominalDate$diffMonths,
-						A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
-						targetDateForMonth);
+					var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf, record.birthDate, targetDateForMonth);
 					var row4 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row4AsAgeInMonths))) ? (accumValue.row4 + 1) : accumValue.row4;
 					var row3 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row3AsAgeInMonths))) ? (accumValue.row3 + 1) : accumValue.row3;
 					var row2 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row2AsAgeInMonths))) ? (accumValue.row2 + 1) : accumValue.row2;
@@ -23266,10 +23264,7 @@ var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F7(
 					var row3AsAgeInMonths = A2($author$project$Pages$Scoreboard$Utils$datesForMonth, targetDateForMonth, record.ncda.targetedInterventions.row3);
 					var row2AsAgeInMonths = A2($author$project$Pages$Scoreboard$Utils$datesForMonth, targetDateForMonth, record.ncda.targetedInterventions.row2);
 					var row1AsAgeInMonths = A2($author$project$Pages$Scoreboard$Utils$datesForMonth, targetDateForMonth, record.ncda.targetedInterventions.row1);
-					var ageInMonths = A2(
-						$author$project$Gizra$NominalDate$diffMonths,
-						A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
-						targetDateForMonth);
+					var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf, record.birthDate, targetDateForMonth);
 					var row6 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row6AsAgeInMonths))) ? (accumValue.row6 + 1) : accumValue.row6;
 					var row5 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row5AsAgeInMonths))) ? (accumValue.row5 + 1) : accumValue.row5;
 					var row4 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row4AsAgeInMonths))) ? (accumValue.row4 + 1) : accumValue.row4;
@@ -23375,26 +23370,11 @@ var $author$project$Pages$Scoreboard$Utils$allVaccineTypes = function (site) {
 };
 var $author$project$Pages$Scoreboard$Utils$isOnTrackForImmunisation = F3(
 	function (site, targetDateForMonth, record) {
-		var ageInMonths = A2(
-			$author$project$Gizra$NominalDate$diffMonths,
-			A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
-			targetDateForMonth);
+		var ageInMonths = A2($author$project$Pages$Scoreboard$Utils$monthsSinceMonthOf, record.birthDate, targetDateForMonth);
 		if ((ageInMonths < 0) || (ageInMonths >= 24)) {
 			return false;
 		} else {
-			var resolveLastDayForMonthX = F2(
-				function (monthX, childBirthDate) {
-					return A3(
-						$justinmimbs$date$Date$add,
-						$justinmimbs$date$Date$Days,
-						-1,
-						A3(
-							$justinmimbs$date$Date$add,
-							$justinmimbs$date$Date$Months,
-							monthX + 1,
-							A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, childBirthDate)));
-				});
-			var referenceDate = A2(resolveLastDayForMonthX, ageInMonths, record.birthDate);
+			var referenceDate = targetDateForMonth;
 			var vaccinationProgressOnReferrenceDate = A2(
 				$pzp1997$assoc_list$AssocList$map,
 				F2(

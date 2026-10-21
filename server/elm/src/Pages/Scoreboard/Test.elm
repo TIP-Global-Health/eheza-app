@@ -20,6 +20,7 @@ import Pages.Scoreboard.Utils
         , generateMonthsGap
         , isOnTrackForImmunisation
         , isPregnancyMonth
+        , monthsSinceMonthOf
         , registeredBy
         , resolveTargetDateForMonth
         )
@@ -284,11 +285,29 @@ childrenUnder2Test =
                     |> List.drop 9
                     |> List.head
                     |> Expect.equal (Just 1)
+        , test "a child who turns two later this month is out of this month's count" <|
+            \_ ->
+                [ scoreboardChild (Date.fromCalendarDate 2024 Oct 25) (Date.fromCalendarDate 2024 Oct 25) ]
+                    |> countChildrenUnder2 (Date.fromCalendarDate 2026 Oct 21) (generateMonthsGap (Date.fromCalendarDate 2026 Oct 21) 0)
+                    |> List.drop 8
+                    |> List.take 2
+                    |> Expect.equal [ 1, 0 ]
         , test "registeredBy includes the column's date" <|
             \_ ->
                 [ Date.add Days -1 today, today, Date.add Days 1 today ]
                     |> List.map (\created -> registeredBy today { created = created })
                     |> Expect.equal [ True, True, False ]
+        ]
+
+
+monthsSinceMonthOfTest : Test
+monthsSinceMonthOfTest =
+    describe "monthsSinceMonthOf"
+        [ test "counts whole calendar months from the first date's month" <|
+            \_ ->
+                [ Date.fromCalendarDate 2026 Oct 21, Date.fromCalendarDate 2026 Sep 30, Date.fromCalendarDate 2024 Oct 1 ]
+                    |> List.map (monthsSinceMonthOf (Date.fromCalendarDate 2024 Oct 25))
+                    |> Expect.equal [ 24, 23, 0 ]
         ]
 
 
@@ -364,6 +383,11 @@ immunisationOnTrackTest =
                 vaccinatedChild [ ( VaccineBCG, [ Date.fromCalendarDate 2024 Jan 31 ] ), ( VaccineOPV, [ birthDate ] ) ]
                     |> isOnTrackForImmunisation SiteRwanda (Date.fromCalendarDate 2024 Jan 31)
                     |> Expect.equal True
+        , test "this month: a dose due later this month is not yet missed" <|
+            \_ ->
+                [ Date.fromCalendarDate 2024 Feb 10, Date.fromCalendarDate 2024 Feb 29 ]
+                    |> List.map (\targetDate -> isOnTrackForImmunisation SiteRwanda targetDate (vaccinatedChild [ ( VaccineBCG, [ birthDate ] ), ( VaccineOPV, [ birthDate ] ) ]))
+                    |> Expect.equal [ True, False ]
         , test "a child with every dose is counted until it turns two" <|
             \_ ->
                 let
@@ -393,6 +417,7 @@ all =
         , immunisationOnTrackTest
         , ipvTest
         , monthColumnsTest
+        , monthsSinceMonthOfTest
         , mrTest
         , opvTest
         , pregnancyMonthTest

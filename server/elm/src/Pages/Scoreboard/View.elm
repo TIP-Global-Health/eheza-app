@@ -4,15 +4,14 @@ import App.Types exposing (Language, Site)
 import AssocList exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Scoreboard.Model exposing (ScoreboardData)
-import Date exposing (Interval(..))
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Scoreboard.Model exposing (Model, Msg(..), NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..), ViewMode(..))
-import Pages.Scoreboard.Utils exposing (countChildrenUnder2, datesForMonth, foldRecordsByMonth, formatValues, generateMonthsGap, isOnTrackForImmunisation, isPregnancyMonth, registeredBy, valuesByViewMode, viewPercentage)
+import Pages.Scoreboard.Utils exposing (countChildrenUnder2, datesForMonth, foldRecordsByMonth, formatValues, generateMonthsGap, isOnTrackForImmunisation, isPregnancyMonth, monthsSinceMonthOf, registeredBy, valuesByViewMode, viewPercentage)
 import Pages.Utils exposing (viewBackendData, viewYearSelector)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
@@ -121,7 +120,7 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnde
                 (\targetDateForMonth record accumValue ->
                     let
                         ageInMonths =
-                            diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+                            monthsSinceMonthOf record.birthDate targetDateForMonth
 
                         existedDuringExaminationMonth =
                             registeredBy targetDateForMonth record
@@ -556,7 +555,7 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childre
                             registeredBy targetDateForMonth record
 
                         ageInMonths =
-                            diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+                            monthsSinceMonthOf record.birthDate targetDateForMonth
 
                         row2AsAgeInMonths =
                             datesForMonth targetDateForMonth record.ncda.nutritionBehavior.row2
@@ -663,7 +662,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                             registeredBy targetDateForMonth record
 
                         ageInMonths =
-                            diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+                            monthsSinceMonthOf record.birthDate targetDateForMonth
 
                         row1AsAgeInMonths =
                             datesForMonth targetDateForMonth record.ncda.targetedInterventions.row1

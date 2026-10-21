@@ -1,14 +1,22 @@
-module Pages.Scoreboard.Utils exposing (allVaccineTypes, countChildrenUnder2, datesForMonth, foldRecordsByMonth, formatValues, generateFutureVaccinationsData, generateMonthsGap, isOnTrackForImmunisation, isPregnancyMonth, registeredBy, resolveTargetDateForMonth, valuesByViewMode, viewPercentage)
+module Pages.Scoreboard.Utils exposing (allVaccineTypes, countChildrenUnder2, datesForMonth, foldRecordsByMonth, formatValues, generateFutureVaccinationsData, generateMonthsGap, isOnTrackForImmunisation, isPregnancyMonth, monthsSinceMonthOf, registeredBy, resolveTargetDateForMonth, valuesByViewMode, viewPercentage)
 
 import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Scoreboard.Model exposing (PatientData, VaccinationProgressDict, VaccineDose(..), VaccineType(..))
 import Backend.Scoreboard.Utils exposing (vaccineDoseToComparable)
-import Date exposing (Interval(..), Unit(..))
+import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffMonths, toLastDayOfMonth)
 import Pages.Scoreboard.Model exposing (ViewMode(..))
 import Round
 import Utils.NominalDate exposing (equalByYearAndMonth)
+
+
+{-| Whole calendar months from the month of the first date to the second.
+For example, 25 October 2024 to 21 October 2026 is 24.
+-}
+monthsSinceMonthOf : NominalDate -> NominalDate -> Int
+monthsSinceMonthOf from to =
+    diffMonths (Date.floor Date.Month from) to
 
 
 {-| For each type of vaccine, we generate next dose and administration date.
@@ -487,7 +495,7 @@ countChildrenUnder2 currentDate monthsGap =
         (\targetDateForMonth record accumValue ->
             let
                 ageInMonths =
-                    diffMonths record.birthDate targetDateForMonth
+                    monthsSinceMonthOf record.birthDate targetDateForMonth
 
                 existedDuringExaminationMonth =
                     registeredBy targetDateForMonth record
@@ -514,7 +522,7 @@ isPregnancyMonth eddDate targetDateForMonth =
         ageInMonths =
             -- Using EDD date to properly resolve the month of
             -- pregnancy (as child may have been born premature).
-            diffMonths (Date.floor Month eddDate) targetDateForMonth
+            monthsSinceMonthOf eddDate targetDateForMonth
 
         monthsBeforeDelivery =
             -- Age is negative for months that precede the
@@ -525,14 +533,14 @@ isPregnancyMonth eddDate targetDateForMonth =
     (monthsBeforeDelivery > 0) && (monthsBeforeDelivery < 10)
 
 
-{-| Whether a child under two had every vaccine that was due by the end of
-that month of age. The caller checks the child was registered by then.
+{-| Whether a child under two had every vaccine due by the target date: a
+past month's last day, or today. The caller checks the registration.
 -}
 isOnTrackForImmunisation : Site -> NominalDate -> PatientData -> Bool
 isOnTrackForImmunisation site targetDateForMonth record =
     let
         ageInMonths =
-            diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+            monthsSinceMonthOf record.birthDate targetDateForMonth
     in
     if (ageInMonths < 0) || (ageInMonths >= 24) then
         False
@@ -540,19 +548,8 @@ isOnTrackForImmunisation site targetDateForMonth record =
     else
         let
             referenceDate =
-                -- We use it to determine if child was
-                -- behind on any of vaccines at that month.
-                resolveLastDayForMonthX ageInMonths record.birthDate
-
-            -- Last day of the calendar month X months after the birth month.
-            -- For example, born 20 January: X = 0 gives 31 January.
-            resolveLastDayForMonthX monthX childBirthDate =
-                -- Get to first day of the birth months.
-                Date.floor Date.Month childBirthDate
-                    |> -- Add required number of months.
-                       Date.add Date.Months (monthX + 1)
-                    |> -- Substract one day
-                       Date.add Date.Days -1
+                -- A dose due after this date is not yet missed.
+                targetDateForMonth
 
             -- Filter out vaccinations that were performed
             -- after the reference date.
@@ -580,13 +577,11 @@ isOnTrackForImmunisation site targetDateForMonth record =
         in
         Maybe.map
             (\closestDate ->
-                -- Closest date when vaccine is required is after end of
-                -- referenced month, which means that we're on track.
-                -- Otherwise, we're off track.
+                -- The next dose is due after the reference date, so the
+                -- child is on track. Otherwise the child is off track.
                 Date.compare closestDate referenceDate == GT
             )
             closestDateForVaccination
             |> Maybe.withDefault
-                -- This indicates that there're no future vaccinations to be
-                -- done, and therefore, we're on track at referenced month.
+                -- No doses are left to give, so the child is on track.
                 True
