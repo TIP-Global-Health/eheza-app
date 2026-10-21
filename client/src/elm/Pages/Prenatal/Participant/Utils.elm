@@ -1,22 +1,69 @@
-module Pages.Prenatal.Participant.Utils exposing (antenatalPregnanciesNewestFirst, isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
+module Pages.Prenatal.Participant.Utils exposing (antenatalPregnanciesNewestFirst, isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit, resolveShownPregnancy)
 
 import AssocList as Dict exposing (Dict)
+import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
+import List.Extra
 import Maybe.Extra exposing (isJust)
+import Pages.Prenatal.Participant.Model exposing (ShownPregnancy)
+import Restful.Endpoint exposing (fromEntityUuid)
 import Utils.NominalDate exposing (sortEncounterTuplesDesc)
 
 
-{-| A person's antenatal pregnancies, newest first. When two are active, the
-page shows the newest, not whichever the device happened to load first.
+{-| A person's antenatal pregnancies, newest first by registration date.
+Pregnancies registered on the same day are ordered by their id, so every
+device lists them alike.
 -}
-antenatalPregnanciesNewestFirst : Dict id IndividualEncounterParticipant -> List ( id, IndividualEncounterParticipant )
+antenatalPregnanciesNewestFirst : Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
 antenatalPregnanciesNewestFirst participants =
     Dict.toList participants
         |> List.filter (\( _, participant ) -> participant.encounterType == AntenatalEncounter)
+        |> List.sortBy (Tuple.first >> fromEntityUuid)
         |> List.sortWith sortEncounterTuplesDesc
+
+
+{-| The pregnancy the participant page shows: the newest active one. Without
+one, a pregnancy concluded in this role's postpartum visit today is kept, so
+the visit reopens.
+-}
+resolveShownPregnancy :
+    NominalDate
+    -> Bool
+    -> (IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter ))
+    -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
+    -> Maybe ShownPregnancy
+resolveShownPregnancy currentDate isChw encountersFor participants =
+    let
+        pregnancies =
+            antenatalPregnanciesNewestFirst participants
+
+        shown keptForPostpartumVisit sessionId =
+            { sessionId = sessionId
+            , encounters = encountersFor sessionId
+            , keptForPostpartumVisit = keptForPostpartumVisit
+            }
+    in
+    case List.Extra.find (Tuple.second >> isPregnancyActive currentDate) pregnancies of
+        Just ( sessionId, _ ) ->
+            Just (shown False sessionId)
+
+        Nothing ->
+            List.Extra.findMap
+                (\( sessionId, session ) ->
+                    let
+                        pregnancy =
+                            shown True sessionId
+                    in
+                    if pregnancyConcludedInTodaysPostpartumVisit currentDate isChw session (List.map Tuple.second pregnancy.encounters) then
+                        Just pregnancy
+
+                    else
+                        Nothing
+                )
+                pregnancies
 
 
 {-| Pregnancy is considered 'active' if it does not have its end date and

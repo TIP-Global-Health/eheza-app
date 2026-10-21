@@ -25,7 +25,7 @@ import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (Model, Msg(..), PatientRecordFilter(..), PatientType(..), ViewMode(..))
 import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipantDesc)
-import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive)
+import Pages.Prenatal.Participant.Utils exposing (antenatalPregnanciesNewestFirst, isPregnancyActive)
 import Pages.Report.Model exposing (PaneEntryStatus(..))
 import Pages.Report.Utils exposing (diagnosisEntryStatusToString)
 import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries)
@@ -212,18 +212,13 @@ viewContentForOther :
     -> Html Msg
 viewContentForOther language currentDate site features personId person patientType initiator db model =
     let
-        individualParticipants =
+        participantsByPerson =
             Dict.get personId db.individualParticipantsByPerson
                 |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map Dict.toList
-                |> Maybe.withDefault []
+                |> Maybe.withDefault Dict.empty
 
         pregnancies =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.AntenatalEncounter
-                )
-                individualParticipants
+            antenatalPregnanciesNewestFirst participantsByPerson
 
         selectedPane =
             case model.filter of
@@ -234,7 +229,7 @@ viewContentForOther language currentDate site features personId person patientTy
                                 (\( _, participant ) ->
                                     participant.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
                                 )
-                                individualParticipants
+                                (Dict.toList participantsByPerson)
                     in
                     viewAcuteIllnessPane language personId initiator acuteIllnesses db
 
