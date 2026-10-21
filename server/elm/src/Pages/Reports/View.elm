@@ -43,7 +43,7 @@ import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Components.View exposing (viewMetricsResultsTable, viewReportDateInputs, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
-import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
+import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isPregnancyCompleted, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
 import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils
     exposing
@@ -1458,23 +1458,7 @@ generatePrenatalReportData language limitDate records =
                     )
 
         ( completed, active ) =
-            List.partition
-                (\participantData ->
-                    -- Pregnancy is considered completed if
-                    -- either conclusion date was set.
-                    isJust participantData.dateConcluded
-                        || (-- Or it's been 30 days or more since estimated delivery date.
-                            Maybe.map
-                                (\eddDate ->
-                                    Date.compare (Date.add Days 30 eddDate) limitDate == LT
-                                )
-                                participantData.eddDate
-                                |> -- We never get here, as filtered, only contains pregnancies
-                                   -- that got EDD set.
-                                   Maybe.withDefault False
-                           )
-                )
-                filtered
+            List.partition (isPregnancyCompleted limitDate) filtered
 
         partitionedVisitsForActive =
             countVisitsByType active
@@ -2421,19 +2405,8 @@ generatePrenatalContactsReportData language limitDate records =
 
         encountersAtCompletedPregnancies =
             List.filterMap
-                (\( lmpDate, pregnancy ) ->
-                    let
-                        completed =
-                            let
-                                thirtyDaysAfterEDD =
-                                    Date.add Days 310 lmpDate
-                            in
-                            -- Pregnancy is completed when it's completion date is set, or,
-                            -- 30 days after estimated delivery date.
-                            isJust pregnancy.dateConcluded
-                                || (not <| Date.compare thirtyDaysAfterEDD limitDate == GT)
-                    in
-                    if completed then
+                (\( _, pregnancy ) ->
+                    if isPregnancyCompleted limitDate pregnancy then
                         let
                             nonPostpartumEncounters =
                                 List.filter
