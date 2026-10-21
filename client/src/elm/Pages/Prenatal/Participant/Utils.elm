@@ -1,10 +1,22 @@
-module Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
+module Pages.Prenatal.Participant.Utils exposing (antenatalPregnanciesNewestFirst, isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
 
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
+import AssocList as Dict exposing (Dict)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isJust)
+import Utils.NominalDate exposing (sortEncounterTuplesDesc)
+
+
+{-| A person's antenatal pregnancies, newest first. When two are active, the
+page shows the newest, not whichever the device happened to load first.
+-}
+antenatalPregnanciesNewestFirst : Dict id IndividualEncounterParticipant -> List ( id, IndividualEncounterParticipant )
+antenatalPregnanciesNewestFirst participants =
+    Dict.toList participants
+        |> List.filter (\( _, participant ) -> participant.encounterType == AntenatalEncounter)
+        |> List.sortWith sortEncounterTuplesDesc
 
 
 {-| Pregnancy is considered 'active' if it does not have its end date and

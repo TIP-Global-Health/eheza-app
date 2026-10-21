@@ -22,7 +22,7 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Encounter.Utils exposing (generatePostCreateDestination, getPrenatalEncountersForParticipantDesc)
 import Pages.Prenatal.Participant.Model exposing (Model, Msg(..))
-import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
+import Pages.Prenatal.Participant.Utils exposing (antenatalPregnanciesNewestFirst, isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
@@ -87,8 +87,7 @@ viewActions language currentDate selectedHealthCenter id isChw db model prenatal
         shownPregnancy =
             let
                 antenatalSessions =
-                    Dict.toList prenatalSessions
-                        |> List.filter (\( _, session ) -> session.encounterType == Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
+                    antenatalPregnanciesNewestFirst prenatalSessions
 
                 withEncounters ( sessionId, session ) =
                     { sessionId = sessionId

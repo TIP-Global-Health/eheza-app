@@ -1,5 +1,6 @@
 module Pages.Prenatal.Test exposing (all)
 
+import AssocList
 import Backend.IndividualEncounterParticipant.Model
     exposing
         ( IndividualEncounterParticipant
@@ -11,7 +12,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEnco
 import Date
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
+import Pages.Prenatal.Participant.Utils exposing (antenatalPregnanciesNewestFirst, isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
 import Pages.Prenatal.Utils exposing (marginalBloodPressureCondition)
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
@@ -236,10 +237,45 @@ pregnancyConcludedInTodaysPostpartumVisitTest =
         ]
 
 
+{-| A person with an old pregnancy that gained an EDD after it expired, loaded
+before the pregnancy opened today.
+-}
+twoActivePregnancies : AssocList.Dict String IndividualEncounterParticipant
+twoActivePregnancies =
+    let
+        old =
+            pregnancyRegisteredDaysAgo 400
+    in
+    AssocList.fromList
+        [ ( "old", { old | eddDate = Just (Date.add Date.Days 30 currentDate) } )
+        , ( "new", pregnancyRegisteredDaysAgo 0 )
+        , ( "child-visit", TestFixtures.testParticipant currentDate NutritionEncounter )
+        ]
+
+
+antenatalPregnanciesNewestFirstTest : Test
+antenatalPregnanciesNewestFirstTest =
+    describe "antenatalPregnanciesNewestFirst"
+        [ test "lists only antenatal pregnancies, newest first" <|
+            \_ ->
+                antenatalPregnanciesNewestFirst twoActivePregnancies
+                    |> List.map Tuple.first
+                    |> Expect.equal [ "new", "old" ]
+        , test "of two active pregnancies, the newest is shown" <|
+            \_ ->
+                antenatalPregnanciesNewestFirst twoActivePregnancies
+                    |> List.filter (Tuple.second >> isPregnancyActive currentDate)
+                    |> List.head
+                    |> Maybe.map Tuple.first
+                    |> Expect.equal (Just "new")
+        ]
+
+
 all : Test
 all =
     describe "Prenatal tests"
-        [ marginalBloodPressureConditionTest
+        [ antenatalPregnanciesNewestFirstTest
+        , marginalBloodPressureConditionTest
         , isPregnancyActiveTest
         , pregnancyConcludedInTodaysPostpartumVisitTest
         ]
