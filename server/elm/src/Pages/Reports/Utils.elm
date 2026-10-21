@@ -149,9 +149,9 @@ countTotalNutritionEncounters data =
     in
     countIndividualDataEncounters data.wellChildData
         + countIndividualDataEncounters data.individualNutritionData
-        -- familyNutritionData is mother-side: the nutrition report's under-six
-        -- trim empties it, but countTotalEncounters also uses this for the
-        -- Demographics impacted filter, which iterates mothers.
+        -- familyNutritionData is mother-side. The nutrition report skips
+        -- anyone six by its first year, so never sees mothers; the
+        -- Demographics impacted filter, through countTotalEncounters, does.
         + countIndividualDataEncounters data.familyNutritionData
         + countIndividualDataEncounters data.familyNutritionMuacData
         + countGroupDataEncounters data.groupNutritionPmtctData
