@@ -366,7 +366,7 @@ B-365	1	IMPLEMENTED	LOW	2248	2249	31	Prenatal diagnosis: saving or correcting me
 B-366	3	READY	MED-LOW			31	Antenatal dashboard (nurse): "Hospital Referrals" has read 0 every month since the card was added — it counts `send_to_h
 B-367	3	READY	MED-LOW			31	Acute Illness dashboard: every COVID figure counts only the OBSOLETE "COVID suspect" diagnosis — confirmed COVID (pneumo
 B-368	4	READY	LOW			31	Dashboard minors ×3: nurse "Total High Risk Pregnancies" counts a woman twice; CHW home "Acute Illness Diagnosed" includ
-B-369	4	READY	LOW			32	Prenatal participant (mixed fleet, release #2128): once a new device opens a fresh pregnancy over an expired undated one
+B-369	4	CLOSED	LOW		2409	32	Prenatal participant (mixed fleet, release #2128): once a new device opens a fresh pregnancy over an expired undated one
 B-370	4	IMPLEMENTED	LOW	2364	2365	32	Login location selection: an assignment added to a nurse or CHW on the server never reaches the health-centre / village 
 B-371	2	IMPLEMENTED	MED	2352	2353	32	Prenatal CHW visits 2 and 3 on an undated pregnancy can never be ended: Next Visit is required but its Save does nothing
 B-372	4	READY	LOW			32	Well Child next pediatric visit: on a month-end clamp day the "next" ECD / medication visit date is today, because the a
