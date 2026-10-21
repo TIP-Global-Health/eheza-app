@@ -4,15 +4,15 @@ import App.Types exposing (Language, Site)
 import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Scoreboard.Model exposing (ScoreboardData)
-import Date exposing (Interval(..), Unit(..))
+import Date exposing (Unit(..))
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffMonths, toLastDayOfMonth)
+import Gizra.NominalDate exposing (NominalDate, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Scoreboard.Model exposing (Model, Msg(..), NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..), ViewMode(..))
-import Pages.Scoreboard.Utils exposing (allVaccineTypes, generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
+import Pages.Scoreboard.Utils exposing (allVaccineTypes, diffCalendarMonths, generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
 import Pages.Utils exposing (viewBackendData, viewYearSelector)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
@@ -78,7 +78,7 @@ viewScoreboardData language currentDate data model =
                                 let
                                     ageInMonths =
                                         -- Counted from the first of the birth month, as the panes do.
-                                        diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+                                        diffCalendarMonths record.birthDate targetDateForMonth
 
                                     existedDuringExaminationMonth =
                                         -- Making sure patient was already created during examination month.
@@ -194,7 +194,7 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnde
                 (\targetDateForMonth record accumValue ->
                     let
                         ageInMonths =
-                            diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+                            diffCalendarMonths record.birthDate targetDateForMonth
 
                         existedDuringExaminationMonth =
                             -- Making sure patient was already created during examination month.
@@ -459,7 +459,7 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                 ageInMonths =
                                     -- Using EDD date to properly resolve the month of
                                     -- pregnancy (as child may have been born premature).
-                                    diffMonths (Date.floor Month record.eddDate) targetDateForMonth
+                                    diffCalendarMonths record.eddDate targetDateForMonth
 
                                 monthsBeforeDelivery =
                                     -- Age is negative for months that precede the
@@ -524,7 +524,7 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                             Date.compare record.created targetDateForMonth == LT
 
                         ageInMonths =
-                            diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+                            diffCalendarMonths record.birthDate targetDateForMonth
 
                         row2AsAgeInMonths =
                             datesForMonth targetDateForMonth record.ncda.universalIntervention.row2
@@ -560,7 +560,7 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                             (\_ dosesDict ->
                                                 Dict.filter
                                                     (\_ administeredDate ->
-                                                        Date.compare administeredDate referenceDate == LT
+                                                        Date.compare administeredDate referenceDate /= GT
                                                     )
                                                     dosesDict
                                             )
@@ -580,8 +580,8 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                 Maybe.map
                                     (\closestDate ->
                                         if Date.compare closestDate referenceDate == GT then
-                                            -- Closest date when vaccine is required is after end of
-                                            -- referenced month, which means that we're on track.
+                                            -- The next dose is due after the reference date, so the
+                                            -- child is on track.
                                             accumValue.row1 + 1
 
                                         else
@@ -590,8 +590,7 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                     )
                                     closestDateForVaccination
                                     |> Maybe.withDefault
-                                        -- This indicates that there're no future vaccinations to be
-                                        -- done, and therefore, we're on track at referenced month.
+                                        -- No doses are left to give, so the child is on track.
                                         (accumValue.row1 + 1)
 
                         row2 =
@@ -701,7 +700,7 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childre
                             Date.compare record.created targetDateForMonth == LT
 
                         ageInMonths =
-                            diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+                            diffCalendarMonths record.birthDate targetDateForMonth
 
                         row2AsAgeInMonths =
                             datesForMonth targetDateForMonth record.ncda.nutritionBehavior.row2
@@ -809,7 +808,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                             Date.compare record.created targetDateForMonth == LT
 
                         ageInMonths =
-                            diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+                            diffCalendarMonths record.birthDate targetDateForMonth
 
                         row1AsAgeInMonths =
                             datesForMonth targetDateForMonth record.ncda.targetedInterventions.row1

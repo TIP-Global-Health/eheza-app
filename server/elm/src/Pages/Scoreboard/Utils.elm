@@ -1,13 +1,21 @@
-module Pages.Scoreboard.Utils exposing (allVaccineTypes, generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
+module Pages.Scoreboard.Utils exposing (allVaccineTypes, diffCalendarMonths, generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
 
 import App.Types exposing (Site(..))
 import AssocList as Dict
 import Backend.Scoreboard.Model exposing (VaccinationProgressDict, VaccineDose(..), VaccineType(..))
 import Backend.Scoreboard.Utils exposing (vaccineDoseToComparable)
 import Date exposing (Unit(..))
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Pages.Scoreboard.Model exposing (ViewMode(..))
 import Round
+
+
+{-| Whole calendar months from the month of the first date to the second.
+For example, 25 October 2024 to 21 October 2026 is 24.
+-}
+diffCalendarMonths : NominalDate -> NominalDate -> Int
+diffCalendarMonths from to =
+    diffMonths (Date.floor Date.Month from) to
 
 
 {-| For each type of vaccine, we generate next dose and administration date.
