@@ -29,6 +29,10 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   the migration devices (Tablet 1 `12345678`, Tablet 2 `87654321`) and turns the feature
   flags back on. A browser profile from before it holds credentials for a database that no
   longer exists: start the driver with `--fresh`.
+- Every upload failing, with the watchdog showing `Autoloader not found: …/sites/all/vendor/autoload.php`
+  and `Class 'Ramsey\Uuid\Uuid' not found`, means the server's Composer libraries are missing. The
+  user runs `composer install` (or `composer update <new package> --with-all-dependencies` when the
+  lock lacks a package) in `server/www/sites/default/files/composer`, inside ddev.
 - Re-pairing an already-paired device needs super user mode
   (`ddev drush vset hedley_super_user_mode 1`, back to 0 after).
 

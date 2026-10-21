@@ -285,3 +285,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** on prenatal Next Steps › Next ANC Visit, `qa.form()` reported `save: "disabled"`, while the screenshot showed a bright, pressable SAVE.
 - **Wrong conclusion:** the button is off, so its Save "doing nothing" is expected.
 - **Rule:** `qa.form()` reads `active` as enabled and anything else as disabled. `viewEncounterActionButton` sets neither class when allowed. Check for the `disabled` class, and look at the screenshot.
+
+## `page.reload()` keeps the current screen
+
+- **Symptom:** after `page.reload()` on Device Status, waiting for `.wrap-cards` timed out after 60 s.
+- **Wrong conclusion:** the app did not load.
+- **Rule:** a reload keeps the URL's hash, so the app reopens the same screen. Follow it with `page.goto('/')` before waiting for the main menu.
+
+## A screen that looks the same with no data at all
+
+- **Symptom:** on a re-paired device, the participant page of a woman whose pregnancy had ended showed First Antenatal and Postpartum on, Record Pregnancy Outcome off.
+- **Wrong conclusion:** the concluded pregnancy came down. A woman with no pregnancy on the device gets exactly the same buttons.
+- **Rule:** when the expected screen equals the empty one, prove the download another way: read the record from IndexedDB `shards` on the new device.
