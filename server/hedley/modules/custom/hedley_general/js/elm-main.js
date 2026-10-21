@@ -17053,20 +17053,18 @@ var $author$project$Translate$OutcomesTableHeading = {$: 'OutcomesTableHeading'}
 var $author$project$Translate$PregnanciesCompleted = {$: 'PregnanciesCompleted'};
 var $author$project$Pages$Reports$Utils$isPregnancyCompleted = F2(
 	function (limitDate, pregnancy) {
-		return $elm_community$maybe_extra$Maybe$Extra$isJust(pregnancy.dateConcluded) || A2(
-			$elm$core$Maybe$withDefault,
+		return $elm_community$maybe_extra$Maybe$Extra$isJust(pregnancy.dateConcluded) || A3(
+			$elm_community$maybe_extra$Maybe$Extra$unwrap,
 			false,
-			A2(
-				$elm$core$Maybe$map,
-				function (eddDate) {
-					return !_Utils_eq(
-						A2(
-							$justinmimbs$date$Date$compare,
-							A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 30, eddDate),
-							limitDate),
-						$elm$core$Basics$GT);
-				},
-				pregnancy.eddDate));
+			function (eddDate) {
+				return _Utils_eq(
+					A2(
+						$justinmimbs$date$Date$compare,
+						A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 30, eddDate),
+						limitDate),
+					$elm$core$Basics$LT);
+			},
+			pregnancy.eddDate);
 	});
 var $author$project$Gizra$NominalDate$diffDays = F2(
 	function (low, high) {

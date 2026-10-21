@@ -46,15 +46,13 @@ eddToLmpDate eddDate =
     Date.add Days -280 eddDate
 
 
-{-| A pregnancy is completed once it is concluded, or from the 30th day
-after its EDD. For example, EDD 1 March completes on 31 March.
+{-| A pregnancy is completed once it is concluded, or more than 30 days
+after its EDD. For example, EDD 1 March is still active on 31 March.
 -}
 isPregnancyCompleted : NominalDate -> PrenatalParticipantData -> Bool
 isPregnancyCompleted limitDate pregnancy =
     Maybe.Extra.isJust pregnancy.dateConcluded
-        || (Maybe.map (\eddDate -> Date.compare (Date.add Days 30 eddDate) limitDate /= GT) pregnancy.eddDate
-                |> Maybe.withDefault False
-           )
+        || Maybe.Extra.unwrap False (\eddDate -> Date.compare (Date.add Days 30 eddDate) limitDate == LT) pregnancy.eddDate
 
 
 resolvePregnancyTrimester : NominalDate -> NominalDate -> PregnancyTrimester
