@@ -301,7 +301,7 @@ resolveShownPregnancyTest =
             \_ ->
                 shownPregnancyId (visitsFor "b") [ ( "a", pregnancyRegisteredDaysAgo 10 ), ( "b", pregnancyRegisteredDaysAgo 10 ) ]
                     |> Expect.equal (Just "b")
-        , test "of two active pregnancies registered the same day, every device shows the same one" <|
+        , test "of two active pregnancies registered the same day, the choice does not depend on load order" <|
             \_ ->
                 [ [ ( "b", pregnancyRegisteredDaysAgo 10 ), ( "a", pregnancyRegisteredDaysAgo 10 ) ]
                 , [ ( "a", pregnancyRegisteredDaysAgo 10 ), ( "b", pregnancyRegisteredDaysAgo 10 ) ]

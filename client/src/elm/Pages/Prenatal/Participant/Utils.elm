@@ -5,12 +5,12 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
+import Date
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra
 import Maybe.Extra exposing (isJust)
 import Pages.Prenatal.Participant.Model exposing (ShownPregnancy)
 import Restful.Endpoint exposing (fromEntityUuid)
-import Utils.NominalDate exposing (sortByStartDateDesc)
 
 
 {-| The pregnancy the participant page shows: the newest active one. Without
@@ -26,7 +26,7 @@ resolveShownPregnancy :
 resolveShownPregnancy currentDate isChw encountersFor participants =
     let
         -- Newest registration first. Of those registered the same day, the one
-        -- with more visits comes first, then the lower id, so every device agrees.
+        -- with more visits comes first, then the lower id, so load order never decides.
         pregnancies =
             Dict.toList participants
                 |> List.filter (\( _, participant ) -> participant.encounterType == AntenatalEncounter)
@@ -39,19 +39,9 @@ resolveShownPregnancy currentDate isChw encountersFor participants =
                           }
                         )
                     )
-                |> List.sortWith
-                    (\( sessionA, a ) ( sessionB, b ) ->
-                        case sortByStartDateDesc sessionA sessionB of
-                            EQ ->
-                                case compare (List.length b.encounters) (List.length a.encounters) of
-                                    EQ ->
-                                        compare (fromEntityUuid a.sessionId) (fromEntityUuid b.sessionId)
-
-                                    order ->
-                                        order
-
-                            order ->
-                                order
+                |> List.sortBy
+                    (\( session, pregnancy ) ->
+                        ( negate (Date.toRataDie session.startDate), negate (List.length pregnancy.encounters), fromEntityUuid pregnancy.sessionId )
                     )
     in
     case List.Extra.find (Tuple.first >> isPregnancyActive currentDate) pregnancies of
