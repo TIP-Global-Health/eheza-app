@@ -533,9 +533,8 @@ isPregnancyMonth eddDate targetDateForMonth =
     (monthsBeforeDelivery > 0) && (monthsBeforeDelivery < 10)
 
 
-{-| Whether a child under two had every vaccine that was due by the target
-date: the last day of a past month, or today for the current month. The
-caller checks the child was registered by then.
+{-| Whether a child under two had every vaccine due by the target date: a
+past month's last day, or today. The caller checks the registration.
 -}
 isOnTrackForImmunisation : Site -> NominalDate -> PatientData -> Bool
 isOnTrackForImmunisation site targetDateForMonth record =
