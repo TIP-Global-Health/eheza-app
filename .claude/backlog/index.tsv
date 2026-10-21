@@ -497,6 +497,8 @@ B-496	2	IMPLEMENTED	MED	2376	2377	44	Acute illness + Prenatal: the diagnosis the
 B-497	4	IMPLEMENTED	LOW	2380	2381	44	Prenatal: an encounter with no diagnoses is re-patched with "none" on every trigger save, because the stored `["none"]` 
 B-498	4	READY	LOW		2377	44	Service worker: a save on the device is reported to every open tab, so each tab runs the assessments and may write its o
 B-499	2	MONITORING	MED	2376		44	Acute Illness and Prenatal: encounters saved after the #2128 deploy by devices still on an older build keep a shown diag
+B-500	4	READY	LOW			survey	Aggregated NCDA scoreboard › Immunization row: a dose given on the last day of the child's month of age reads as not giv
+B-501	4	READY	LOW			survey	Statistical Queries › ANC report: a pregnancy whose EDD was exactly 30 days before the TO date still counts as active, w
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
@@ -524,3 +526,9 @@ TH-16		READY				16	Pin AcuteIllness SUBSEQUENT-encounter diagnosis branch (zero 
 TH-17		READY				16	Pin COVID path edge branches + suspect threshold
 TH-18		READY				16	Pin Prenatal emergency-referral aggregation + hypertension-like hierarchy (un-pinned engines)
 TH-19		READY				16	Extend Nutrition assessment pins: boundaries + combination markers + over-6mo asymmetry
+TH-28		READY				survey	Statistical Queries › Nutrition report: pin the figures against their PHP twin — z-score/MUAC bands, prevalence dedup, i
+TH-29		READY				survey	Server Elm wire decoders and letter tables: pin report, scoreboard and Completion decoding against what PHP sends
+TH-30		READY				survey	Aggregated NCDA scoreboard: pin the server copy of the vaccination schedule engine
+TH-31		READY				survey	Statistical Queries › ANC and ANC Contacts reports: pin the date-range filter, pregnancy completion and contact counts
+TH-32		READY				survey	Statistical Queries › Peripartum, Postnatal Care, Demographics, Acute Illness and CSV export: pin the report builders
+TH-33		READY				survey	Aggregated NCDA scoreboard panes and Completion: move the date arithmetic out of the views and pin it
