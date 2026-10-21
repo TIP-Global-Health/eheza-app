@@ -43,7 +43,7 @@ import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Components.View exposing (viewMetricsResultsTable, viewReportDateInputs, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
-import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
+import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, resolveQuarterForIndex)
 import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils
     exposing
@@ -1276,14 +1276,8 @@ generateQuarterlyIncidenceTableData language currentDate heading encountersByMon
         |> List.map
             (\index ->
                 let
-                    selectedDate =
-                        Date.add Months (-3 * index) currentDate
-
-                    year =
-                        Date.year selectedDate
-
-                    quarter =
-                        Date.quarter selectedDate
+                    ( year, quarter ) =
+                        resolveQuarterForIndex currentDate index
 
                     dataSet =
                         List.Extra.getAt (index - 1) dataSetsByQuarter

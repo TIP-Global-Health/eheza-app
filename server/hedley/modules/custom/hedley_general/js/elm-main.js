@@ -18249,6 +18249,16 @@ var $author$project$Translate$QuarterYear = F2(
 	function (a, b) {
 		return {$: 'QuarterYear', a: a, b: b};
 	});
+var $author$project$Pages$Reports$Utils$resolvePreviousQuarterDateInfo = function (date) {
+	var quarter = $justinmimbs$date$Date$quarter(date);
+	var year = $justinmimbs$date$Date$year(date);
+	return (quarter === 1) ? _Utils_Tuple2(year - 1, 4) : _Utils_Tuple2(year, quarter - 1);
+};
+var $author$project$Pages$Reports$Utils$resolveQuarterForIndex = F2(
+	function (date, quarterIndex) {
+		return $author$project$Pages$Reports$Utils$resolvePreviousQuarterDateInfo(
+			A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-3) * (quarterIndex - 1), date));
+	});
 var $author$project$Pages$Reports$Utils$quarterToMonths = function (quarter) {
 	return A2(
 		$elm$core$List$map,
@@ -18257,15 +18267,9 @@ var $author$project$Pages$Reports$Utils$quarterToMonths = function (quarter) {
 		},
 		A2($elm$core$List$range, 1, 3));
 };
-var $author$project$Pages$Reports$Utils$resolvePreviousQuarterDateInfo = function (date) {
-	var quarter = $justinmimbs$date$Date$quarter(date);
-	var year = $justinmimbs$date$Date$year(date);
-	return (quarter === 1) ? _Utils_Tuple2(year - 1, 4) : _Utils_Tuple2(year, quarter - 1);
-};
 var $author$project$Pages$Reports$Utils$resolveDataSetForQuarter = F3(
 	function (date, quarterIndex, encountersByMonth) {
-		var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-3) * (quarterIndex - 1), date);
-		var _v0 = $author$project$Pages$Reports$Utils$resolvePreviousQuarterDateInfo(selectedDate);
+		var _v0 = A2($author$project$Pages$Reports$Utils$resolveQuarterForIndex, date, quarterIndex);
 		var year = _v0.a;
 		var quarter = _v0.b;
 		return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
@@ -18299,13 +18303,13 @@ var $author$project$Pages$Reports$View$generateQuarterlyIncidenceTableData = F4(
 						$elm$core$Maybe$withDefault,
 						$author$project$Pages$Reports$Model$emptyNutritionMetrics,
 						A2($elm_community$list_extra$List$Extra$getAt, index, dataSetsByQuarter));
-					var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-3) * index, currentDate);
-					var quarter = $justinmimbs$date$Date$quarter(selectedDate);
+					var _v0 = A2($author$project$Pages$Reports$Utils$resolveQuarterForIndex, currentDate, index);
+					var year = _v0.a;
+					var quarter = _v0.b;
 					var dataSet = A2(
 						$elm$core$Maybe$withDefault,
 						$author$project$Pages$Reports$Model$emptyNutritionMetrics,
 						A2($elm_community$list_extra$List$Extra$getAt, index - 1, dataSetsByQuarter));
-					var year = $justinmimbs$date$Date$year(selectedDate);
 					return _Utils_Tuple2(
 						A2($author$project$Translate$QuarterYear, quarter, year),
 						A2($author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults, dataSet, previousDataSet));

@@ -1,4 +1,4 @@
-module Pages.Reports.Utils exposing (allVaccineTypes, calculateNutritionReportData, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
+module Pages.Reports.Utils exposing (allVaccineTypes, calculateNutritionReportData, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, resolveQuarterForIndex)
 
 import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
@@ -491,11 +491,8 @@ resolvePreviousDataSetForMonth date monthIndex encountersByMonth =
 resolveDataSetForQuarter : NominalDate -> Int -> Dict ( Int, Int ) NutritionMetrics -> NutritionMetrics
 resolveDataSetForQuarter date quarterIndex encountersByMonth =
     let
-        selectedDate =
-            Date.add Months (-3 * (quarterIndex - 1)) date
-
         ( year, quarter ) =
-            resolvePreviousQuarterDateInfo selectedDate
+            resolveQuarterForIndex date quarterIndex
     in
     quarterToMonths quarter
         |> List.map
@@ -504,6 +501,15 @@ resolveDataSetForQuarter date quarterIndex encountersByMonth =
             )
         |> Maybe.Extra.values
         |> sumNutritionMetrics
+
+
+{-| The (year, quarter) of a quarter column. Index 1 is the last complete
+quarter: on 2027-01-15 it is (2026, 4), and index 2 is (2026, 3).
+-}
+resolveQuarterForIndex : NominalDate -> Int -> ( Int, Int )
+resolveQuarterForIndex date quarterIndex =
+    Date.add Months (-3 * (quarterIndex - 1)) date
+        |> resolvePreviousQuarterDateInfo
 
 
 resolvePreviousQuarterDateInfo : NominalDate -> ( Int, Int )
