@@ -296,7 +296,7 @@ function quarter_before(array $year_quarter) {
 }
 
 /**
- * The first day of a quarter, as Y-m-d.
+ * The 10th of a quarter's first month, as Y-m-d.
  */
 function quarter_start(array $year_quarter) {
   [$year, $quarter] = $year_quarter;
@@ -345,7 +345,8 @@ foreach ($cases as $day => [$year, $expected]) {
   foreach ($tables as $table) {
     if ($table['type'] === 'incidence-year-1') {
       $column = array_search((string) ($this_year - 2), $table['period']);
-      assert_same($table['stunting_moderate'][$column], $expected, "a normal visit on $year-$day as the previous year", $passed, $failed);
+      $cell = $column === FALSE ? 'year ' . ($this_year - 2) . ' not in table' : $table['stunting_moderate'][$column];
+      assert_same($cell, $expected, "a normal visit on $year-$day as the previous year", $passed, $failed);
     }
   }
 }

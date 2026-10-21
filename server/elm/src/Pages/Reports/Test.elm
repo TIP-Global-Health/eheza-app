@@ -1196,8 +1196,12 @@ dateRangeFilterTest =
         , test "the whole range, from the launch date to today, keeps every record as it is" <|
             \_ ->
                 let
+                    patient =
+                        emptyPatient 1 (Date.fromCalendarDate 2010 Jan 1)
+
+                    -- The range filter would drop the visit before the launch date.
                     records =
-                        [ mother 1 [ pregnancyFromLmp 200 [ ( 10, NurseEncounter ) ] ] ]
+                        [ { patient | ncdData = Just [ [ Date.fromCalendarDate 2017 Jun 1, Date.fromCalendarDate 2026 Oct 20 ] ] } ]
                 in
                 filterRecordsByDateRange (Date.fromCalendarDate 2026 Oct 20) launchDate (Date.fromCalendarDate 2026 Oct 20) records
                     |> Expect.equal records

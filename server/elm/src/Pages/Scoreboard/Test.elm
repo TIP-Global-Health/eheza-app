@@ -342,16 +342,32 @@ immunisationOnTrackTest =
                 vaccinatedChild [ ( VaccineBCG, [ Date.fromCalendarDate 2024 Feb 2 ] ), ( VaccineOPV, [ birthDate ] ) ]
                     |> isOnTrackForImmunisation SiteRwanda (Date.fromCalendarDate 2024 Jan 31)
                     |> Expect.equal False
-        , test "a child not yet registered, or two or older, is not counted" <|
+        , test "a child on track is not counted before it is registered" <|
             \_ ->
                 let
                     child =
-                        vaccinatedChild []
+                        vaccinatedChild [ ( VaccineBCG, [ birthDate ] ), ( VaccineOPV, [ birthDate ] ) ]
                 in
-                [ isOnTrackForImmunisation SiteRwanda (Date.fromCalendarDate 2024 Jan 31) { child | created = Date.fromCalendarDate 2024 Feb 1 }
-                , isOnTrackForImmunisation SiteRwanda (Date.fromCalendarDate 2026 Jan 31) child
-                ]
-                    |> Expect.equal [ False, False ]
+                [ child, { child | created = Date.fromCalendarDate 2024 Feb 1 } ]
+                    |> List.map (isOnTrackForImmunisation SiteRwanda (Date.fromCalendarDate 2024 Jan 31))
+                    |> Expect.equal [ True, False ]
+        , test "a child with every dose is counted until it turns two" <|
+            \_ ->
+                let
+                    child =
+                        vaccinatedChild
+                            [ ( VaccineBCG, [ birthDate ] )
+                            , ( VaccineOPV, [ birthDate, weeksOld 6, weeksOld 10, weeksOld 14 ] )
+                            , ( VaccineDTP, [ weeksOld 6, weeksOld 10, weeksOld 14 ] )
+                            , ( VaccinePCV13, [ weeksOld 6, weeksOld 10, weeksOld 14 ] )
+                            , ( VaccineRotarix, [ weeksOld 6, weeksOld 10 ] )
+                            , ( VaccineIPV, [ weeksOld 14, weeksOld 36 ] )
+                            , ( VaccineMR, [ weeksOld 36, weeksOld 62 ] )
+                            ]
+                in
+                [ Date.fromCalendarDate 2025 Dec 31, Date.fromCalendarDate 2026 Jan 31 ]
+                    |> List.map (\targetDate -> isOnTrackForImmunisation SiteRwanda targetDate child)
+                    |> Expect.equal [ True, False ]
         ]
 
 
