@@ -251,7 +251,7 @@ B-250	3	READY	MED			25	Dashboard stats: soft-deleted people still appear in case
 B-251	3	READY	MED			25	Progress-report lab pane: urine-dipstick rows are built from an unfiltered list, so a long-only test also renders a phan
 B-252	4	IMPLEMENTED	LOW	2198	2200	25	NCD progress report: the Partner HIV lab row ignores its own display flag, so every NCD report shows a permanently blank
 B-253	4	IMPLEMENTED	LOW			25	Pregnancy Outcome page reads an arbitrary encounter instead of the latest, so Gravida and Para can render as `----`
-B-254	4	READY	LOW			25	Prenatal participant page picks an arbitrary pregnancy when a person has two active ones, so encounters can land on the 
+B-254	4	IMPLEMENTED	LOW	2408	2409	25	Prenatal participant page picks an arbitrary pregnancy when a person has two active ones, so encounters can land on the 
 B-255	4	READY	LOW			25	CHW progress report: the breech/transverse alert re-grades a stale exam against TODAY's gestational age, so a normal EGA
 B-256	4	READY	MED-LOW			25	Well-child registration: a birth date exactly 13 years back is offered, and then the form demands two fields it never re
 B-257	4	READY	LOW			25	Duplicate-patient lookup is triggered by any text field over 13 characters and sized to Rwanda's ID, so the duplicate wa
@@ -383,7 +383,7 @@ B-382	3	READY	MED			33	National-ID patient search accepts only digits, so on Bur
 B-383	4	READY	LOW			33	Resilience survey cap counts duplicate saves, so a nurse who saved one sitting twice is permanently denied the programme
 B-384	4	READY	LOW			33	Un-enrolling a nurse from the resilience programme hides the Wellbeing card but leaves the reminder modals firing and th
 B-385	4	READY	LOW			33	Kinyarwanda header for the End-Of-Period resilience category reads "end of the FIRST month" above all seven of those mes
-B-386	4	READY	LOW			33	Client and server now spell five clinical labels differently, so a device screen and a generated report name the same di
+B-386	4	IMPLEMENTED	LOW	2410	2411	33	Client and server now spell five clinical labels differently, so a device screen and a generated report name the same di
 B-387	4	READY	LOW			33	The new duplicate-English check documents a guarantee it does not implement: its exemption list is unbounded, so an alre
 B-388	3	READY	MED			33	A village saved with any geo field blank makes the general sync batch undecodable, stopping ALL sync for every device on
 B-389	4	READY	LOW			33	A live uvl village carries a sector name that is not in the geo table, and nothing validates it: a CHW assigned there co
@@ -433,7 +433,7 @@ B-432	4	READY	LOW			36	Dashboard group-education drill-in: attendee names and ge
 B-433	4	IMPLEMENTED	LOW	2278	2279	35	Prenatal labs: a repeated tap on "known as positive" for a test reopened from the record still clears it — the repeat-ta
 B-434	4	READY	LOW			24	Case Management HIV positive-result entry: a tap creates a second HIV participant when the patient already has an open o
 B-435	4	READY	LOW			36	Photo download: the single-photo GET has no timeout, and an offline failure leaves it loading, so the photo lane can sta
-B-436	3	READY	MED-LOW		2266	37	Sync download: a late second copy of a download reply puts the cycle back into a lane it has already left
+B-436	3	IMPLEMENTED	MED-LOW	2406	2407	37	Sync download: a late second copy of a download reply puts the cycle back into a lane it has already left
 B-437	2	IMPLEMENTED	MED	2324	2325	37	Statistical Queries: the z-score cleanup leaves the cleared impossible z-scores in the nutrition reports
 B-438	3	READY	MED-LOW			37	Patient merge: TB and HIV episodes of the duplicate are folded into its OLDEST participant, and the open episode is dele
 B-439	4	READY	LOW			37	Acute illness contact tracing: the "register contact" form shows a stale backend error from an earlier person save
