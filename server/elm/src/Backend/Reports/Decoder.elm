@@ -1,4 +1,4 @@
-module Backend.Reports.Decoder exposing (decodeReportsData, decodeSyncResponse)
+module Backend.Reports.Decoder exposing (acuteIllnessDiagnosisFromMapping, decodeReportsData, decodeSyncResponse, prenatalDiagnosisFromMapping, prenatalIndicatorFromMapping, vaccineTypeFromMapping)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
