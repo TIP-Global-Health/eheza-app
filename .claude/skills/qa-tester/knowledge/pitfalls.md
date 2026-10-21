@@ -297,3 +297,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** on a re-paired device, the participant page of a woman whose pregnancy had ended showed First Antenatal and Postpartum on, Record Pregnancy Outcome off.
 - **Wrong conclusion:** the concluded pregnancy came down. A woman with no pregnancy on the device gets exactly the same buttons.
 - **Rule:** when the expected screen equals the empty one, prove the download another way: read the record from IndexedDB `shards` on the new device.
+
+## Timing a sync resend from the server's side
+
+- **Symptom:** a held download's copy reached the server 20 s after the page sent it, and an "extra" request in the window turned out to be the newer request's own 30-second resend.
+- **Wrong conclusion:** the build under test sends a request it should not.
+- **Rule:** Chrome holds a second GET to the same address for up to 20 s while the first is open, and every copy of a download has the same address. The app's clock moves every 10 s. Time scenarios from the page's own request log, and keep windows short of the next resend.
+
+## Waiting on a log line that existed before the step
+
+- **Symptom:** "wait for the copy to answer" matched an authority reply from before the hold was set, so the next hold caught the wrong request.
+- **Wrong conclusion:** the scenario ran as planned.
+- **Rule:** when waiting for an event in a log, require it to come after the step that should cause it (compare timestamps or ids).

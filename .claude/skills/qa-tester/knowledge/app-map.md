@@ -79,6 +79,7 @@ flag simply does not appear.
 - The upload lane then idles (Sync Settings → Idle time, default 600 s; after an error it
   sleeps that long). "TRY SYNCING WITH BACKEND" on Device Status forces a round;
   `h.common.syncAndWait(page)` presses the sync icon and waits for Success.
+- Sync timing: the app's clock (`currentTime`) moves every 10 s, so a download is sent again 30–40 s after it was sent; after a failed reply the loop ticks at the offline pace (10 s). A `UserPage` never reloads itself after a long sync; Device Status can.
 - Device Status shows each health centre in a `.health-center` block, with Last Successful
   Contact, Remaining for Upload, Remaining for Download and Status in `.sync-status`.
 - "Status: Success" alone does not prove the upload: check "Remaining for Upload: 0" too.
