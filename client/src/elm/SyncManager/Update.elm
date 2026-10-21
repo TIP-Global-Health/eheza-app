@@ -82,10 +82,15 @@ update currentTime activePage dbVersion device msg model =
         dropAndRefetch status =
             SubModelReturn { model | syncStatus = status RemoteData.NotAsked } Cmd.none noError []
 
-        -- A download request is sent again after 30 seconds, so a late copy can
-        -- reply once the cycle has left its lane. Such a reply is ignored.
+        -- A download reply can arrive after the cycle has left its lane, for
+        -- example from a request sent again after 30 seconds. Such a reply is ignored.
         outsideLane lane =
             not (SyncManager.Utils.isInDownloadLane lane model.syncStatus)
+
+        -- A failed reply from a request that was sent again. The newer copy is
+        -- still in flight and drives the lane.
+        supersededFailure requestTime webData =
+            RemoteData.isFailure webData && requestTime /= model.downloadRequestTime
     in
     case msg of
         MsgDebouncer subMsg ->
@@ -192,7 +197,7 @@ update currentTime activePage dbVersion device msg model =
                     determineSyncStatus
 
         BackendAuthorityFetchHandle zipper requestTime webData ->
-            if outsideLane SyncDownloadAuthority then
+            if outsideLane SyncDownloadAuthority || supersededFailure requestTime webData then
                 noChange
 
             else
@@ -773,7 +778,7 @@ update currentTime activePage dbVersion device msg model =
                         []
 
         BackendGeneralFetchHandle baseRevision requestTime webData ->
-            if outsideLane SyncDownloadGeneral then
+            if outsideLane SyncDownloadGeneral || supersededFailure requestTime webData then
                 noChange
 
             else if baseRevision == model.syncInfoGeneral.lastFetchedRevisionId then

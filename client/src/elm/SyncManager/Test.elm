@@ -473,6 +473,18 @@ all =
                     |> runUpdate (BackendGeneralFetchHandle 0 (Time.millisToPosix 5000) (RemoteData.Failure Http.NetworkError))
                     |> (\model -> ( model.syncStatus, model.downloadGeneralResponse, model.syncInfoGeneral.lastFetchedRevisionId ))
                     |> Expect.equal ( SyncDownloadGeneral (RemoteData.Failure Http.NetworkError), RemoteData.NotAsked, 0 )
+        , test "a failed authority reply from a request sent again is ignored while the newer copy is in flight" <|
+            \() ->
+                downloadingAuthority (authorities "hc-A" [ "hc-B" ]) 5000
+                    |> runUpdate (BackendAuthorityFetchHandle (authorities "hc-A" [ "hc-B" ]) (Time.millisToPosix 1000) (RemoteData.Failure Http.NetworkError))
+                    |> .syncStatus
+                    |> Expect.equal (SyncDownloadAuthority RemoteData.Loading)
+        , test "a failed general reply from a request sent again is ignored while the newer copy is in flight" <|
+            \() ->
+                downloadingGeneral 0
+                    |> runUpdate (BackendGeneralFetchHandle 0 (Time.millisToPosix 1000) (RemoteData.Failure Http.NetworkError))
+                    |> .syncStatus
+                    |> Expect.equal (SyncDownloadGeneral RemoteData.Loading)
 
         -- After 30 seconds a download request is sent again, and both copies
         -- reply. A copy that reaches the cycle once it has moved on to another
@@ -502,6 +514,22 @@ all =
                     |> runUpdate (authorityBatchSaved "0")
                     |> .syncStatus
                     |> Expect.equal (SyncDownloadAuthorityDashboardStats RemoteData.Loading)
+        , test "an authority reply arriving in the general lane is ignored" <|
+            \() ->
+                let
+                    model =
+                        downloadingGeneral 0
+                in
+                { model | syncInfoAuthorities = Just (authorities "hc-A" []) }
+                    |> runUpdate (BackendAuthorityFetchHandle (authorities "hc-A" []) (Time.millisToPosix 5000) (RemoteData.Success (authorityResponse [])))
+                    |> (\updated -> ( updated.syncStatus, updated.downloadAuthorityResponse ))
+                    |> Expect.equal ( SyncDownloadGeneral RemoteData.Loading, RemoteData.NotAsked )
+        , test "a general reply arriving in the statistics lane is ignored" <|
+            \() ->
+                downloadingStats (authorities "hc-A" [])
+                    |> runUpdate (BackendGeneralFetchHandle 0 (Time.millisToPosix 0) (RemoteData.Success emptyGeneralResponse))
+                    |> (\model -> ( model.syncStatus, model.downloadGeneralResponse ))
+                    |> Expect.equal ( SyncDownloadAuthorityDashboardStats RemoteData.Loading, RemoteData.NotAsked )
         , test "a general reply arriving in the authority lane is ignored" <|
             \() ->
                 downloadingAuthority (authorities "hc-A" []) 5000
