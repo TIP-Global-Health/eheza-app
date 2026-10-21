@@ -87,6 +87,9 @@ jobs:
       - run:
           name: Run standalone Z-Score calculation tests
           command: php server/hedley/modules/custom/hedley_zscore/tests/run_zscore_tests.php
+      - run:
+          name: Run standalone Nutrition report tests
+          command: php server/hedley/modules/custom/hedley_reports/tests/run_nutrition_report_tests.php
   test_elm:
     docker:
       - image: cimg/node:18.20

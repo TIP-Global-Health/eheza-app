@@ -1,4 +1,4 @@
-module Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, countTotalNutritionEncounters, csvRow, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
+module Pages.Reports.Utils exposing (allVaccineTypes, calculateNutritionReportData, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
 
 import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
@@ -9,7 +9,7 @@ import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra exposing (unique)
 import Maybe.Extra
-import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), emptyNutritionMetrics)
+import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), emptyNutritionMetrics)
 import Set
 
 
@@ -148,10 +148,9 @@ countTotalNutritionEncounters data =
     in
     countIndividualDataEncounters data.wellChildData
         + countIndividualDataEncounters data.individualNutritionData
-        -- familyNutritionData (date-only, mother-side) is always 0 for
-        -- children (the nutrition report filters to under-6), but this
-        -- function is also called via countTotalEncounters for the
-        -- Demographics impacted filter, which iterates mothers.
+        -- familyNutritionData is mother-side. The nutrition report skips
+        -- anyone six by its first year, so never sees mothers; the
+        -- Demographics impacted filter, through countTotalEncounters, does.
         + countIndividualDataEncounters data.familyNutritionData
         + countIndividualDataEncounters data.familyNutritionMuacData
         + countGroupDataEncounters data.groupNutritionPmtctData
@@ -588,3 +587,189 @@ csvRow =
                 cell
     in
     List.map csvCell >> String.join ","
+
+
+calculateNutritionReportData : NominalDate -> List PatientData -> NutritionReportData
+calculateNutritionReportData currentDate data =
+    let
+        -- A visit counts only if the child was under six on that day.
+        -- A child born 2019-03 keeps a 2024 visit, but not a 2025-04 one.
+        records =
+            -- Six by 1 January of the starting year: no visit in the report counts.
+            List.filter
+                (\record ->
+                    Date.diff Years record.birthDate (Date.fromOrdinalDate startingYear 1) < 6
+                )
+                data
+                |> List.map
+                    (\record ->
+                        let
+                            underSix encounter =
+                                Date.diff Years record.birthDate encounter.startDate < 6
+
+                            keepGroupVisits =
+                                Maybe.map (List.filter underSix)
+
+                            keepIndividualVisits =
+                                Maybe.map (List.map (List.filter underSix))
+                        in
+                        { record
+                            | familyNutritionData = keepIndividualVisits record.familyNutritionData
+                            , familyNutritionMuacData = keepIndividualVisits record.familyNutritionMuacData
+                            , wellChildData = keepIndividualVisits record.wellChildData
+                            , individualNutritionData = keepIndividualVisits record.individualNutritionData
+                            , groupNutritionPmtctData = keepGroupVisits record.groupNutritionPmtctData
+                            , groupNutritionFbfData = keepGroupVisits record.groupNutritionFbfData
+                            , groupNutritionSorwatheData = keepGroupVisits record.groupNutritionSorwatheData
+                            , groupNutritionChwData = keepGroupVisits record.groupNutritionChwData
+                            , groupNutritionAchiData = keepGroupVisits record.groupNutritionAchiData
+                        }
+                    )
+
+        impacted =
+            List.filterMap
+                (\record ->
+                    if countTotalNutritionEncounters record > 1 then
+                        Just record.id
+
+                    else
+                        Nothing
+                )
+                records
+
+        currentYear =
+            Date.year currentDate
+
+        startingYear =
+            currentYear - 3
+
+        filterByYear encounter =
+            Date.year encounter.startDate >= startingYear
+
+        allEncounters =
+            List.concatMap
+                (\record ->
+                    [ Maybe.map
+                        (List.concat
+                            >> List.filter filterByYear
+                            >> List.map
+                                (\item ->
+                                    -- WellChildEncounterData mirrors NutritionEncounterData's
+                                    -- shape (date, nutritionData, muacCm, hasEdema) plus
+                                    -- immunisationData; well-child has no FBF distribution,
+                                    -- so that one is absent.
+                                    ( record.id
+                                    , { startDate = item.startDate
+                                      , nutritionData = item.nutritionData
+                                      , muacCm = item.muacCm
+                                      , hasEdema = item.hasEdema
+                                      , fbfAmount = Nothing
+                                      }
+                                    )
+                                )
+                        )
+                        record.wellChildData
+                    , Maybe.map
+                        (List.concat
+                            >> List.filter filterByYear
+                            >> List.map (Tuple.pair record.id)
+                        )
+                        record.individualNutritionData
+                    , Maybe.map
+                        (List.filter filterByYear
+                            >> List.map (Tuple.pair record.id)
+                        )
+                        record.groupNutritionPmtctData
+                    , Maybe.map
+                        (List.filter filterByYear
+                            >> List.map (Tuple.pair record.id)
+                        )
+                        record.groupNutritionFbfData
+                    , Maybe.map
+                        (List.filter filterByYear
+                            >> List.map (Tuple.pair record.id)
+                        )
+                        record.groupNutritionSorwatheData
+                    , Maybe.map
+                        (List.filter filterByYear
+                            >> List.map (Tuple.pair record.id)
+                        )
+                        record.groupNutritionChwData
+                    , Maybe.map
+                        (List.filter filterByYear
+                            >> List.map (Tuple.pair record.id)
+                        )
+                        record.groupNutritionAchiData
+                    ]
+                        |> Maybe.Extra.values
+                        |> List.concat
+                )
+                records
+
+        -- A child's family-nutrition MUAC visits, keyed by the child's id.
+        -- The mother-side familyNutritionData is counted by the
+        -- Demographics row, not here.
+        familyNutritionEncounters =
+            List.concatMap
+                (\record ->
+                    record.familyNutritionMuacData
+                        |> Maybe.map
+                            (List.concat
+                                >> List.filter filterByYear
+                                >> List.map (Tuple.pair record.id)
+                            )
+                        |> Maybe.withDefault []
+                )
+                records
+
+        insertMetricsForMonth ( year, month ) encounterMetrics accum =
+            let
+                updatedMetrics =
+                    Dict.get ( year, month ) accum
+                        |> Maybe.map
+                            (\metricsSoFar ->
+                                sumNutritionMetrics [ metricsSoFar, encounterMetrics ]
+                            )
+                        |> Maybe.withDefault encounterMetrics
+            in
+            Dict.insert ( year, month ) updatedMetrics accum
+
+        encountersByMonthFromNutrition =
+            List.foldl
+                (\( personId, encounter ) accum ->
+                    let
+                        year =
+                            Date.year encounter.startDate
+
+                        month =
+                            Date.monthNumber encounter.startDate
+
+                        encounterMetrics =
+                            nutritionEncounterDataToNutritionMetrics personId encounter
+                    in
+                    insertMetricsForMonth ( year, month ) encounterMetrics accum
+                )
+                Dict.empty
+                allEncounters
+
+        encountersByMonth =
+            List.foldl
+                (\( personId, encounter ) accum ->
+                    let
+                        year =
+                            Date.year encounter.startDate
+
+                        month =
+                            Date.monthNumber encounter.startDate
+
+                        encounterMetrics =
+                            familyNutritionEncounterToMetrics personId encounter
+                    in
+                    insertMetricsForMonth ( year, month ) encounterMetrics accum
+                )
+                encountersByMonthFromNutrition
+                familyNutritionEncounters
+    in
+    { impacted = impacted
+    , encountersByMonth = encountersByMonth
+    }

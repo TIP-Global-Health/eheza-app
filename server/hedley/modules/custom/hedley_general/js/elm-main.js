@@ -5965,6 +5965,16 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
+var $elm$core$Basics$clamp = F3(
+	function (low, high, number) {
+		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
+	});
+var $justinmimbs$date$Date$fromOrdinalDate = F2(
+	function (y, od) {
+		var daysInYear = $justinmimbs$date$Date$isLeapYear(y) ? 366 : 365;
+		return $justinmimbs$date$Date$RD(
+			$justinmimbs$date$Date$daysBeforeYear(y) + A3($elm$core$Basics$clamp, 1, daysInYear, od));
+	});
 var $author$project$Pages$Reports$Model$emptyNutritionMetrics = {wastingNormal: _List_Nil, wastingSevere: _List_Nil, stuntingNormal: _List_Nil, stuntingSevere: _List_Nil, wastingModerate: _List_Nil, stuntingModerate: _List_Nil, underweightNormal: _List_Nil, underweightSevere: _List_Nil, underweightModerate: _List_Nil, acuteMalnutritionMam: _List_Nil, acuteMalnutritionSam: _List_Nil, acuteMalnutritionNormal: _List_Nil};
 var $author$project$Pages$Reports$Utils$sumNutritionMetrics = A2(
 	$elm$core$List$foldl,
@@ -6113,153 +6123,103 @@ var $author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics
 		var wastingSevere = _v3.c;
 		return {wastingNormal: wastingNormal, wastingSevere: wastingSevere, stuntingNormal: stuntingNormal, stuntingSevere: stuntingSevere, wastingModerate: wastingModerate, stuntingModerate: stuntingModerate, underweightNormal: underweightNormal, underweightSevere: underweightSevere, underweightModerate: underweightModerate, acuteMalnutritionMam: acuteMalnutritionMam, acuteMalnutritionSam: acuteMalnutritionSam, acuteMalnutritionNormal: acuteMalnutritionNormal};
 	});
-var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
+var $author$project$Pages$Reports$Utils$calculateNutritionReportData = F2(
 	function (currentDate, data) {
-		return $elm$core$Task$succeed(
-			function () {
-				var insertMetricsForMonth = F3(
-					function (_v2, encounterMetrics, accum) {
-						var year = _v2.a;
-						var month = _v2.b;
-						var updatedMetrics = A2(
-							$elm$core$Maybe$withDefault,
-							encounterMetrics,
-							A2(
-								$elm$core$Maybe$map,
-								function (metricsSoFar) {
-									return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
-										_List_fromArray(
-											[metricsSoFar, encounterMetrics]));
-								},
-								A2(
-									$pzp1997$assoc_list$AssocList$get,
-									_Utils_Tuple2(year, month),
-									accum)));
-						return A3(
-							$pzp1997$assoc_list$AssocList$insert,
-							_Utils_Tuple2(year, month),
-							updatedMetrics,
-							accum);
-					});
-				var currentYear = $justinmimbs$date$Date$year(currentDate);
-				var startingYear = currentYear - 3;
-				var filterByYear = function (encounter) {
-					return _Utils_cmp(
-						$justinmimbs$date$Date$year(encounter.startDate),
-						startingYear) > -1;
-				};
-				var records = A2(
-					$elm$core$List$filter,
-					function (record) {
-						return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, record.birthDate, currentDate) < 6;
-					},
-					data);
-				var impacted = A2(
-					$elm$core$List$filterMap,
-					function (record) {
-						return ($author$project$Pages$Reports$Utils$countTotalNutritionEncounters(record) > 1) ? $elm$core$Maybe$Just(record.id) : $elm$core$Maybe$Nothing;
-					},
-					records);
-				var allEncounters = A2(
-					$elm$core$List$concatMap,
-					function (record) {
-						return $elm$core$List$concat(
-							$elm_community$maybe_extra$Maybe$Extra$values(
+		var insertMetricsForMonth = F3(
+			function (_v2, encounterMetrics, accum) {
+				var year = _v2.a;
+				var month = _v2.b;
+				var updatedMetrics = A2(
+					$elm$core$Maybe$withDefault,
+					encounterMetrics,
+					A2(
+						$elm$core$Maybe$map,
+						function (metricsSoFar) {
+							return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
 								_List_fromArray(
-									[
-										A2(
-										$elm$core$Maybe$map,
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$concat,
-											A2(
-												$elm$core$Basics$composeR,
-												$elm$core$List$filter(filterByYear),
-												$elm$core$List$map(
-													function (item) {
-														return _Utils_Tuple2(
-															record.id,
-															{muacCm: item.muacCm, hasEdema: item.hasEdema, fbfAmount: $elm$core$Maybe$Nothing, startDate: item.startDate, nutritionData: item.nutritionData});
-													}))),
-										record.wellChildData),
-										A2(
-										$elm$core$Maybe$map,
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$concat,
-											A2(
-												$elm$core$Basics$composeR,
-												$elm$core$List$filter(filterByYear),
-												$elm$core$List$map(
-													$elm$core$Tuple$pair(record.id)))),
-										record.individualNutritionData),
-										A2(
-										$elm$core$Maybe$map,
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$filter(filterByYear),
-											$elm$core$List$map(
-												$elm$core$Tuple$pair(record.id))),
-										record.groupNutritionPmtctData),
-										A2(
-										$elm$core$Maybe$map,
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$filter(filterByYear),
-											$elm$core$List$map(
-												$elm$core$Tuple$pair(record.id))),
-										record.groupNutritionFbfData),
-										A2(
-										$elm$core$Maybe$map,
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$filter(filterByYear),
-											$elm$core$List$map(
-												$elm$core$Tuple$pair(record.id))),
-										record.groupNutritionSorwatheData),
-										A2(
-										$elm$core$Maybe$map,
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$filter(filterByYear),
-											$elm$core$List$map(
-												$elm$core$Tuple$pair(record.id))),
-										record.groupNutritionChwData),
-										A2(
-										$elm$core$Maybe$map,
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$filter(filterByYear),
-											$elm$core$List$map(
-												$elm$core$Tuple$pair(record.id))),
-										record.groupNutritionAchiData)
-									])));
-					},
-					records);
-				var encountersByMonthFromNutrition = A3(
-					$elm$core$List$foldl,
-					F2(
-						function (_v1, accum) {
-							var personId = _v1.a;
-							var encounter = _v1.b;
-							var encounterMetrics = A2($author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics, personId, encounter);
-							var month = $justinmimbs$date$Date$monthNumber(encounter.startDate);
-							var year = $justinmimbs$date$Date$year(encounter.startDate);
-							return A3(
-								insertMetricsForMonth,
-								_Utils_Tuple2(year, month),
-								encounterMetrics,
-								accum);
-						}),
-					$pzp1997$assoc_list$AssocList$empty,
-					allEncounters);
-				var familyNutritionEncounters = A2(
-					$elm$core$List$concatMap,
-					function (record) {
-						return A2(
-							$elm$core$Maybe$withDefault,
-							_List_Nil,
-							A2(
+									[metricsSoFar, encounterMetrics]));
+						},
+						A2(
+							$pzp1997$assoc_list$AssocList$get,
+							_Utils_Tuple2(year, month),
+							accum)));
+				return A3(
+					$pzp1997$assoc_list$AssocList$insert,
+					_Utils_Tuple2(year, month),
+					updatedMetrics,
+					accum);
+			});
+		var currentYear = $justinmimbs$date$Date$year(currentDate);
+		var startingYear = currentYear - 3;
+		var filterByYear = function (encounter) {
+			return _Utils_cmp(
+				$justinmimbs$date$Date$year(encounter.startDate),
+				startingYear) > -1;
+		};
+		var records = A2(
+			$elm$core$List$map,
+			function (record) {
+				var underSix = function (encounter) {
+					return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, record.birthDate, encounter.startDate) < 6;
+				};
+				var keepGroupVisits = $elm$core$Maybe$map(
+					$elm$core$List$filter(underSix));
+				var keepIndividualVisits = $elm$core$Maybe$map(
+					$elm$core$List$map(
+						$elm$core$List$filter(underSix)));
+				return _Utils_update(
+					record,
+					{
+						wellChildData: keepIndividualVisits(record.wellChildData),
+						familyNutritionData: keepIndividualVisits(record.familyNutritionData),
+						groupNutritionChwData: keepGroupVisits(record.groupNutritionChwData),
+						groupNutritionFbfData: keepGroupVisits(record.groupNutritionFbfData),
+						groupNutritionAchiData: keepGroupVisits(record.groupNutritionAchiData),
+						familyNutritionMuacData: keepIndividualVisits(record.familyNutritionMuacData),
+						groupNutritionPmtctData: keepGroupVisits(record.groupNutritionPmtctData),
+						individualNutritionData: keepIndividualVisits(record.individualNutritionData),
+						groupNutritionSorwatheData: keepGroupVisits(record.groupNutritionSorwatheData)
+					});
+			},
+			A2(
+				$elm$core$List$filter,
+				function (record) {
+					return A3(
+						$justinmimbs$date$Date$diff,
+						$justinmimbs$date$Date$Years,
+						record.birthDate,
+						A2($justinmimbs$date$Date$fromOrdinalDate, startingYear, 1)) < 6;
+				},
+				data));
+		var impacted = A2(
+			$elm$core$List$filterMap,
+			function (record) {
+				return ($author$project$Pages$Reports$Utils$countTotalNutritionEncounters(record) > 1) ? $elm$core$Maybe$Just(record.id) : $elm$core$Maybe$Nothing;
+			},
+			records);
+		var allEncounters = A2(
+			$elm$core$List$concatMap,
+			function (record) {
+				return $elm$core$List$concat(
+					$elm_community$maybe_extra$Maybe$Extra$values(
+						_List_fromArray(
+							[
+								A2(
+								$elm$core$Maybe$map,
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$List$concat,
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$List$filter(filterByYear),
+										$elm$core$List$map(
+											function (item) {
+												return _Utils_Tuple2(
+													record.id,
+													{muacCm: item.muacCm, hasEdema: item.hasEdema, fbfAmount: $elm$core$Maybe$Nothing, startDate: item.startDate, nutritionData: item.nutritionData});
+											}))),
+								record.wellChildData),
+								A2(
 								$elm$core$Maybe$map,
 								A2(
 									$elm$core$Basics$composeR,
@@ -6269,28 +6229,109 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 										$elm$core$List$filter(filterByYear),
 										$elm$core$List$map(
 											$elm$core$Tuple$pair(record.id)))),
-								record.familyNutritionMuacData));
-					},
-					records);
-				var encountersByMonth = A3(
-					$elm$core$List$foldl,
-					F2(
-						function (_v0, accum) {
-							var personId = _v0.a;
-							var encounter = _v0.b;
-							var encounterMetrics = A2($author$project$Pages$Reports$Utils$familyNutritionEncounterToMetrics, personId, encounter);
-							var month = $justinmimbs$date$Date$monthNumber(encounter.startDate);
-							var year = $justinmimbs$date$Date$year(encounter.startDate);
-							return A3(
-								insertMetricsForMonth,
-								_Utils_Tuple2(year, month),
-								encounterMetrics,
-								accum);
-						}),
-					encountersByMonthFromNutrition,
-					familyNutritionEncounters);
-				return {impacted: impacted, encountersByMonth: encountersByMonth};
-			}());
+								record.individualNutritionData),
+								A2(
+								$elm$core$Maybe$map,
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$List$filter(filterByYear),
+									$elm$core$List$map(
+										$elm$core$Tuple$pair(record.id))),
+								record.groupNutritionPmtctData),
+								A2(
+								$elm$core$Maybe$map,
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$List$filter(filterByYear),
+									$elm$core$List$map(
+										$elm$core$Tuple$pair(record.id))),
+								record.groupNutritionFbfData),
+								A2(
+								$elm$core$Maybe$map,
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$List$filter(filterByYear),
+									$elm$core$List$map(
+										$elm$core$Tuple$pair(record.id))),
+								record.groupNutritionSorwatheData),
+								A2(
+								$elm$core$Maybe$map,
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$List$filter(filterByYear),
+									$elm$core$List$map(
+										$elm$core$Tuple$pair(record.id))),
+								record.groupNutritionChwData),
+								A2(
+								$elm$core$Maybe$map,
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$List$filter(filterByYear),
+									$elm$core$List$map(
+										$elm$core$Tuple$pair(record.id))),
+								record.groupNutritionAchiData)
+							])));
+			},
+			records);
+		var encountersByMonthFromNutrition = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v1, accum) {
+					var personId = _v1.a;
+					var encounter = _v1.b;
+					var encounterMetrics = A2($author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics, personId, encounter);
+					var month = $justinmimbs$date$Date$monthNumber(encounter.startDate);
+					var year = $justinmimbs$date$Date$year(encounter.startDate);
+					return A3(
+						insertMetricsForMonth,
+						_Utils_Tuple2(year, month),
+						encounterMetrics,
+						accum);
+				}),
+			$pzp1997$assoc_list$AssocList$empty,
+			allEncounters);
+		var familyNutritionEncounters = A2(
+			$elm$core$List$concatMap,
+			function (record) {
+				return A2(
+					$elm$core$Maybe$withDefault,
+					_List_Nil,
+					A2(
+						$elm$core$Maybe$map,
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$List$concat,
+							A2(
+								$elm$core$Basics$composeR,
+								$elm$core$List$filter(filterByYear),
+								$elm$core$List$map(
+									$elm$core$Tuple$pair(record.id)))),
+						record.familyNutritionMuacData));
+			},
+			records);
+		var encountersByMonth = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, accum) {
+					var personId = _v0.a;
+					var encounter = _v0.b;
+					var encounterMetrics = A2($author$project$Pages$Reports$Utils$familyNutritionEncounterToMetrics, personId, encounter);
+					var month = $justinmimbs$date$Date$monthNumber(encounter.startDate);
+					var year = $justinmimbs$date$Date$year(encounter.startDate);
+					return A3(
+						insertMetricsForMonth,
+						_Utils_Tuple2(year, month),
+						encounterMetrics,
+						accum);
+				}),
+			encountersByMonthFromNutrition,
+			familyNutritionEncounters);
+		return {impacted: impacted, encountersByMonth: encountersByMonth};
+	});
+var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
+	function (currentDate, data) {
+		return $elm$core$Task$succeed(
+			A2($author$project$Pages$Reports$Utils$calculateNutritionReportData, currentDate, data));
 	});
 var $author$project$Pages$Reports$Model$NutritionReportDataCalculationCompleted = function (a) {
 	return {$: 'NutritionReportDataCalculationCompleted', a: a};
@@ -11972,10 +12013,6 @@ var $elm$time$Time$toMonth = F2(
 			default:
 				return $elm$time$Time$Dec;
 		}
-	});
-var $elm$core$Basics$clamp = F3(
-	function (low, high, number) {
-		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
 	});
 var $justinmimbs$date$Date$fromCalendarDate = F3(
 	function (y, m, d) {
