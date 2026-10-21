@@ -444,7 +444,7 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                             datesForMonth targetDateForMonth record.ncda.universalIntervention.row5
 
                         row1 =
-                            if isOnTrackForImmunisation site targetDateForMonth record then
+                            if existedDuringExaminationMonth && isOnTrackForImmunisation site targetDateForMonth record then
                                 accumValue.row1 + 1
 
                             else

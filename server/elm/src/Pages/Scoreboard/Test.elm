@@ -359,15 +359,6 @@ immunisationOnTrackTest =
                 vaccinatedChild [ ( VaccineBCG, [ Date.fromCalendarDate 2024 Feb 2 ] ), ( VaccineOPV, [ birthDate ] ) ]
                     |> isOnTrackForImmunisation SiteRwanda (Date.fromCalendarDate 2024 Jan 31)
                     |> Expect.equal False
-        , test "a child on track is not counted before it is registered" <|
-            \_ ->
-                let
-                    child =
-                        vaccinatedChild [ ( VaccineBCG, [ birthDate ] ), ( VaccineOPV, [ birthDate ] ) ]
-                in
-                [ child, { child | created = Date.fromCalendarDate 2024 Feb 1 } ]
-                    |> List.map (isOnTrackForImmunisation SiteRwanda (Date.fromCalendarDate 2024 Jan 31))
-                    |> Expect.equal [ True, False ]
         , test "a child with every dose is counted until it turns two" <|
             \_ ->
                 let

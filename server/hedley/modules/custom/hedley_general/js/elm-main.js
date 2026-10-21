@@ -23387,12 +23387,11 @@ var $author$project$Pages$Scoreboard$Utils$allVaccineTypes = function (site) {
 };
 var $author$project$Pages$Scoreboard$Utils$isOnTrackForImmunisation = F3(
 	function (site, targetDateForMonth, record) {
-		var existedDuringExaminationMonth = A2($author$project$Pages$Scoreboard$Utils$registeredBy, targetDateForMonth, record);
 		var ageInMonths = A2(
 			$author$project$Gizra$NominalDate$diffMonths,
 			A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
 			targetDateForMonth);
-		if ((!existedDuringExaminationMonth) || ((ageInMonths < 0) || (ageInMonths >= 24))) {
+		if ((ageInMonths < 0) || (ageInMonths >= 24)) {
 			return false;
 		} else {
 			var resolveLastDayForMonthX = F2(
@@ -23474,7 +23473,7 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 					var row4 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row4AsAgeInMonths))) ? (accumValue.row4 + 1) : accumValue.row4;
 					var row3 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row3AsAgeInMonths))) ? (accumValue.row3 + 1) : accumValue.row3;
 					var row2 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row2AsAgeInMonths))) ? (accumValue.row2 + 1) : accumValue.row2;
-					var row1 = A3($author$project$Pages$Scoreboard$Utils$isOnTrackForImmunisation, site, targetDateForMonth, record) ? (accumValue.row1 + 1) : accumValue.row1;
+					var row1 = (existedDuringExaminationMonth && A3($author$project$Pages$Scoreboard$Utils$isOnTrackForImmunisation, site, targetDateForMonth, record)) ? (accumValue.row1 + 1) : accumValue.row1;
 					return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
 				}),
 			emptyValue,

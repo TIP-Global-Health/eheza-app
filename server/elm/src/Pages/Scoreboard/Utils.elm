@@ -525,23 +525,16 @@ isPregnancyMonth eddDate targetDateForMonth =
     (monthsBeforeDelivery > 0) && (monthsBeforeDelivery < 10)
 
 
-{-| Whether a child under two, registered by the target date, had every
-vaccine that was due by the end of that month of age.
+{-| Whether a child under two had every vaccine that was due by the end of
+that month of age. The caller checks the child was registered by then.
 -}
 isOnTrackForImmunisation : Site -> NominalDate -> PatientData -> Bool
 isOnTrackForImmunisation site targetDateForMonth record =
     let
-        existedDuringExaminationMonth =
-            registeredBy targetDateForMonth record
-
         ageInMonths =
             diffMonths (Date.floor Month record.birthDate) targetDateForMonth
     in
-    if
-        not existedDuringExaminationMonth
-            || (ageInMonths < 0)
-            || (ageInMonths >= 24)
-    then
+    if (ageInMonths < 0) || (ageInMonths >= 24) then
         False
 
     else
