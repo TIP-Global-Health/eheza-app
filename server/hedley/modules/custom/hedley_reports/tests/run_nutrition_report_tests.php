@@ -18,6 +18,12 @@ function drupal_is_cli() {
 
 require_once dirname(__DIR__) . '/hedley_reports.module';
 
+// The cases are dated relative to today. A run crossing into a new month
+// would compare two different months, so wait until the month has turned.
+if (date('Y-m') !== date('Y-m', time() + 120)) {
+  sleep(121);
+}
+
 $passed = 0;
 $failed = 0;
 
@@ -181,6 +187,232 @@ $tables = generate([
   ],
 ]);
 assert_same(monthly_cell($tables, 'prevalence-1', 'stunting_moderate', 4), '0%', 'an adult and an unreadable birth date add no visit', $passed, $failed);
+
+// Bands, as [normal, moderate, severe] lists of person 1.
+$normal = [[1], [], []];
+$moderate = [[], [1], []];
+$severe = [[], [], [1]];
+$no_band = [[], [], []];
+
+// Bands of a z-score.
+assert_same(hedley_reports_categorize_z_score(-3.0, 1), $severe, 'z-score -3.0 is severe', $passed, $failed);
+assert_same(hedley_reports_categorize_z_score(-2.99, 1), $moderate, 'z-score -2.99 is moderate', $passed, $failed);
+assert_same(hedley_reports_categorize_z_score(-2.0, 1), $moderate, 'z-score -2.0 is moderate', $passed, $failed);
+assert_same(hedley_reports_categorize_z_score(-1.99, 1), $normal, 'z-score -1.99 is normal', $passed, $failed);
+assert_same(hedley_reports_categorize_z_score(NULL, 1), $no_band, 'no z-score is in no band', $passed, $failed);
+
+// Bands of MUAC and edema.
+assert_same(hedley_reports_categorize_acute_malnutrition(11.4, FALSE, 1), $severe, 'MUAC 11.4 is SAM', $passed, $failed);
+assert_same(hedley_reports_categorize_acute_malnutrition(11.5, FALSE, 1), $moderate, 'MUAC 11.5 is MAM', $passed, $failed);
+assert_same(hedley_reports_categorize_acute_malnutrition(12.49, FALSE, 1), $moderate, 'MUAC 12.49 is MAM', $passed, $failed);
+assert_same(hedley_reports_categorize_acute_malnutrition(12.5, FALSE, 1), $normal, 'MUAC 12.5 is normal', $passed, $failed);
+assert_same(hedley_reports_categorize_acute_malnutrition(13.0, TRUE, 1), $severe, 'edema with MUAC 13 is SAM', $passed, $failed);
+assert_same(hedley_reports_categorize_acute_malnutrition(NULL, TRUE, 1), $no_band, 'edema without MUAC is in no band', $passed, $failed);
+
+// The edema token is read from the wire, at group and well-child visits.
+$tables = generate([
+  [
+    'id' => 1,
+    'birth_date' => month_day(30, 1),
+    'group_nutrition' => ['chw' => [month_day(4, 10) . ' ,,,13,1']],
+    'individual' => ['well-child' => [[month_day(5, 10) . '|,,,13,1|']]],
+  ],
+]);
+assert_same(monthly_cell($tables, 'prevalence-1', 'acute_malnutrition_sam', 4), '100%', 'edema at a group visit is SAM', $passed, $failed);
+assert_same(monthly_cell($tables, 'prevalence-1', 'acute_malnutrition_sam', 5), '100%', 'edema at a well-child visit is SAM', $passed, $failed);
+
+/**
+ * Empty nutrition metrics with the given buckets filled in.
+ */
+function metrics(array $buckets) {
+  return array_merge(hedley_reports_empty_nutrition_metrics(), $buckets);
+}
+
+// Prevalence counts each child once.
+$prevalence = hedley_reports_generate_prevalence_nutrition_metrics_results(metrics([
+  'stunting_moderate' => [1, 1],
+  'stunting_normal' => [2],
+]));
+assert_same($prevalence['stunting_moderate'], '50%', 'child 1 moderate twice and child 2 normal is 50%', $passed, $failed);
+$prevalence = hedley_reports_generate_prevalence_nutrition_metrics_results(metrics(['stunting_moderate' => [1], 'stunting_normal' => [1]]));
+assert_same($prevalence['stunting_moderate'], '100%', 'a child moderate at one visit and normal at another is 100% moderate', $passed, $failed);
+$prevalence = hedley_reports_generate_prevalence_nutrition_metrics_results(metrics([
+  'acute_malnutrition_mam' => [1],
+  'acute_malnutrition_sam' => [2],
+  'acute_malnutrition_normal' => [3, 4],
+]));
+assert_same([$prevalence['acute_malnutrition_mam'], $prevalence['acute_malnutrition_sam']], ['25%', '25%'], 'MAM and SAM share the MUAC denominator', $passed, $failed);
+$prevalence = hedley_reports_generate_prevalence_nutrition_metrics_results(metrics([]));
+assert_same($prevalence['stunting_moderate'], '0%', 'no measured children is 0%', $passed, $failed);
+
+/**
+ * Incidence for the current and previous period buckets.
+ */
+function incidence(array $current, array $previous) {
+  return hedley_reports_generate_incidence_nutrition_metrics_results(metrics($current), metrics($previous));
+}
+
+// Incidence counts children newly moderate or severe.
+assert_same(incidence(['stunting_moderate' => [1]], ['stunting_normal' => [1]])['stunting_moderate'], '100%', 'normal before, moderate now, counts', $passed, $failed);
+assert_same(incidence(['stunting_moderate' => [1]], ['stunting_moderate' => [1]])['stunting_moderate'], '0%', 'moderate before, moderate now, does not count', $passed, $failed);
+assert_same(incidence(['stunting_moderate' => [1]], ['stunting_severe' => [1]])['stunting_moderate'], '0%', 'severe before, moderate now, does not count', $passed, $failed);
+assert_same(incidence(['stunting_severe' => [1]], ['stunting_moderate' => [1]])['stunting_severe'], '100%', 'moderate before, severe now, counts', $passed, $failed);
+assert_same(incidence(['stunting_moderate' => [1]], ['stunting_normal' => [2]])['stunting_moderate'], '0%', 'a child not tested before does not count', $passed, $failed);
+$tested_before = ['stunting_normal' => [1, 2, 2, 3, 4]];
+assert_same(incidence(['stunting_moderate' => [1]], $tested_before)['stunting_moderate'], '25%', 'the denominator is the children tested before, each once', $passed, $failed);
+assert_same(incidence(['acute_malnutrition_mam' => [1]], ['acute_malnutrition_normal' => [1, 2]])['acute_malnutrition_mam'], '50%', 'MUAC: normal before, MAM now, counts', $passed, $failed);
+
+// The months each period column takes.
+assert_same(hedley_reports_resolve_quarter_date_info(strtotime('2027-01-15')), [2026, 4], 'in January, the previous quarter is the last of the year before', $passed, $failed);
+assert_same(array_map('intval', hedley_reports_resolve_quarter_date_info(strtotime('2026-05-31'))), [2026, 1], 'on 31 May, the previous quarter is the first', $passed, $failed);
+
+$expected_months = [];
+for ($months_ago = 1; $months_ago <= 12; $months_ago++) {
+  $expected_months[] = substr(month_day($months_ago, 1), 0, 7);
+}
+$tables = generate([]);
+assert_same($tables[0]['period'], $expected_months, 'the monthly columns are the 12 months before this one', $passed, $failed);
+
+// The previous set of a month is the three months before it.
+$tables = generate([
+  [
+    'id' => 1,
+    'birth_date' => month_day(30, 1),
+    'group_nutrition' => [
+      'chw' => [
+        month_day(4, 10) . ' -1,,,,',
+        stunted_visit(month_day(1, 10)),
+      ],
+    ],
+  ],
+  [
+    'id' => 2,
+    'birth_date' => month_day(30, 1),
+    'group_nutrition' => ['chw' => [month_day(5, 10) . ' -1,,,,']],
+  ],
+]);
+assert_same(monthly_cell($tables, 'incidence-month-1', 'stunting_moderate', 1), '100%', 'a visit 3 months before the column is in its previous set, one 4 months before is not', $passed, $failed);
+
+/**
+ * The quarter before the given (year, quarter), as [year, quarter].
+ */
+function quarter_before(array $year_quarter) {
+  [$year, $quarter] = $year_quarter;
+  return $quarter == 1 ? [$year - 1, 4] : [$year, $quarter - 1];
+}
+
+/**
+ * The 10th of a quarter's first month, as Y-m-d.
+ */
+function quarter_start(array $year_quarter) {
+  [$year, $quarter] = $year_quarter;
+  return sprintf('%d-%02d-10', $year, 3 * ($quarter - 1) + 1);
+}
+
+// The first quarter column holds the last complete quarter, and is
+// captioned with it.
+$last_quarter = quarter_before([(int) date('Y'), (int) ceil(date('n') / 3)]);
+$quarter_before_last = quarter_before($last_quarter);
+$tables = generate([
+  [
+    'id' => 1,
+    'birth_date' => month_day(30, 1),
+    'group_nutrition' => [
+      'chw' => [
+        quarter_start($quarter_before_last) . ' -1,,,,',
+        stunted_visit(quarter_start($last_quarter)),
+      ],
+    ],
+  ],
+]);
+foreach ($tables as $table) {
+  if ($table['type'] === 'incidence-quarter-1') {
+    assert_same($table['period'][0], implode('-', $last_quarter), 'the first quarter column is captioned with the last complete quarter', $passed, $failed);
+    assert_same($table['stunting_moderate'][0], '100%', 'the first quarter column holds the last complete quarter', $passed, $failed);
+  }
+}
+
+// A visit on 31 December before the starting year is dropped, one on
+// 1 January is kept. Either one is the previous year of a moderate visit
+// two years ago.
+$this_year = (int) date('Y');
+$cases = [
+  '12-31' => [$this_year - 4, '0%'],
+  '01-01' => [$this_year - 3, '100%'],
+];
+foreach ($cases as $day => [$year, $expected]) {
+  $tables = generate([
+    [
+      'id' => 1,
+      'birth_date' => ($this_year - 5) . '-06-01',
+      'group_nutrition' => ['chw' => ["$year-$day -1,,,,", stunted_visit(($this_year - 2) . '-06-01')]],
+    ],
+  ]);
+  foreach ($tables as $table) {
+    if ($table['type'] === 'incidence-year-1') {
+      $column = array_search((string) ($this_year - 2), $table['period']);
+      $cell = $column === FALSE ? 'year ' . ($this_year - 2) . ' not in table' : $table['stunting_moderate'][$column];
+      assert_same($cell, $expected, "a normal visit on $year-$day as the previous year", $passed, $failed);
+    }
+  }
+}
+
+// Well-child and individual nutrition visits count only before six.
+$tables = generate([
+  [
+    'id' => 1,
+    'birth_date' => six_years_before(month_day(6, 15)),
+    'individual' => [
+      'well-child' => [
+        [
+          month_day(9, 10) . '|-2.5,,,,|',
+          month_day(3, 10) . '|-2.5,,,,|',
+        ],
+      ],
+      'nutrition' => [
+        [
+          stunted_visit(month_day(8, 10)),
+          stunted_visit(month_day(2, 10)),
+        ],
+      ],
+    ],
+  ],
+]);
+assert_same(
+  [
+    monthly_cell($tables, 'prevalence-1', 'stunting_moderate', 9),
+    monthly_cell($tables, 'prevalence-1', 'stunting_moderate', 8),
+    monthly_cell($tables, 'prevalence-1', 'stunting_moderate', 3),
+    monthly_cell($tables, 'prevalence-1', 'stunting_moderate', 2),
+  ],
+  ['100%', '100%', '0%', '0%'],
+  'well-child and individual nutrition visits count only before six',
+  $passed,
+  $failed
+);
+
+// One group visit and one family-nutrition MUAC visit make a child impacted.
+$tables = generate([
+  [
+    'id' => 1,
+    'birth_date' => month_day(30, 1),
+    'group_nutrition' => ['chw' => [stunted_visit(month_day(8, 10))]],
+    'individual' => ['family-nutrition-muac' => [[month_day(4, 10) . ' 13']]],
+  ],
+]);
+assert_same(monthly_cell($tables, 'prevalence-2', 'stunting_moderate', 8), '100%', 'one group and one family-nutrition MUAC visit make a child impacted', $passed, $failed);
+
+// A mother with only family-nutrition visits adds nothing.
+$tables = generate([
+  [
+    'id' => 1,
+    'birth_date' => '1995-03-01',
+    'individual' => [
+      'family-nutrition' => [[month_day(4, 10), month_day(3, 10)]],
+    ],
+  ],
+]);
+assert_same(monthly_cell($tables, 'prevalence-1', 'acute_malnutrition_mam', 4), '0%', 'a mother with only family-nutrition visits adds nothing', $passed, $failed);
 
 $total = $passed + $failed;
 echo "\n";

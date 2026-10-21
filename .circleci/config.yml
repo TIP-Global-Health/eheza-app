@@ -90,6 +90,9 @@ jobs:
       - run:
           name: Run standalone Nutrition report tests
           command: php server/hedley/modules/custom/hedley_reports/tests/run_nutrition_report_tests.php
+      - run:
+          name: Run standalone expected immunisation tests
+          command: php server/hedley/modules/custom/hedley_reports/tests/run_expected_immunisations_tests.php
   test_elm:
     docker:
       - image: cimg/node:18.20
