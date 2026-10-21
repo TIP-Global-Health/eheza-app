@@ -1476,7 +1476,7 @@ translationSet transId =
         NCDAAcuteMalnutritionItemLabel item ->
             case item of
                 SevereAcuteMalnutrition ->
-                    { english = "Severe Acute Malnutrition"
+                    { english = "Severe acute malnutrition"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
@@ -2459,7 +2459,7 @@ translationSet transId =
                     }
 
                 DiagnosisGestationalHypertension ->
-                    { english = "Pregnancy-Induced Hypertension"
+                    { english = "Pregnancy-induced hypertension"
                     , kinyarwanda = Just "Umuvuduko w'amaraso watewe no gutwita"
                     , kirundi = Just "Umuvuduko w'amaraso utewe n'imbanyi"
                     , somali = Nothing
@@ -2669,7 +2669,7 @@ translationSet transId =
                     }
 
                 DiagnosisSevereVomiting ->
-                    { english = "Severe Vomiting"
+                    { english = "Severe vomiting"
                     , kinyarwanda = Just "Kuruka bikabije"
                     , kirundi = Just "Ukudahwa gukaze"
                     , somali = Nothing
@@ -2690,7 +2690,7 @@ translationSet transId =
                     }
 
                 DiagnosisImminentDelivery ->
-                    { english = "Imminent Delivery"
+                    { english = "Imminent delivery"
                     , kinyarwanda = Just "Kubyara biri hafi"
                     , kirundi = Just "Gutanga bigaragara/"
                     , somali = Nothing
@@ -2861,7 +2861,7 @@ translationSet transId =
                     }
 
                 DiagnosisPostpartumPerinealPainOrDischarge ->
-                    { english = "Perineal Pain or Discharge"
+                    { english = "Perineal pain or discharge"
                     , kinyarwanda = Just "Arababara perine cg aratakaza ibintu budasanzwe"
                     , kirundi = Just "Ububabare bw'umugongo hepfo"
                     , somali = Just "Xanuun qaska ah ama Dheecaan"

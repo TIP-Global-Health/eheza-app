@@ -13309,7 +13309,7 @@ var $author$project$Translate$translationSet = function (transId) {
 				var item = transId.a;
 				switch (item.$) {
 					case 'SevereAcuteMalnutrition':
-						return {somali: $elm$core$Maybe$Nothing, english: 'Severe Acute Malnutrition', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+						return {somali: $elm$core$Maybe$Nothing, english: 'Severe acute malnutrition', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 					case 'ModerateAcuteMalnutrition':
 						return {somali: $elm$core$Maybe$Nothing, english: 'Moderate Acute Malnutrition', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 					default:
@@ -13916,7 +13916,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisGestationalHypertension':
 						return {
 							somali: $elm$core$Maybe$Nothing,
-							english: 'Pregnancy-Induced Hypertension',
+							english: 'Pregnancy-induced hypertension',
 							kirundi: $elm$core$Maybe$Just('Umuvuduko w\u0027amaraso utewe n\u0027imbanyi'),
 							kinyarwanda: $elm$core$Maybe$Just('Umuvuduko w\u0027amaraso watewe no gutwita')
 						};
@@ -14126,7 +14126,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisSevereVomiting':
 						return {
 							somali: $elm$core$Maybe$Nothing,
-							english: 'Severe Vomiting',
+							english: 'Severe vomiting',
 							kirundi: $elm$core$Maybe$Just('Ukudahwa gukaze'),
 							kinyarwanda: $elm$core$Maybe$Just('Kuruka bikabije')
 						};
@@ -14147,7 +14147,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisImminentDelivery':
 						return {
 							somali: $elm$core$Maybe$Nothing,
-							english: 'Imminent Delivery',
+							english: 'Imminent delivery',
 							kirundi: $elm$core$Maybe$Just('Gutanga bigaragara/'),
 							kinyarwanda: $elm$core$Maybe$Just('Kubyara biri hafi')
 						};
@@ -14319,7 +14319,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisPostpartumPerinealPainOrDischarge':
 						return {
 							somali: $elm$core$Maybe$Just('Xanuun qaska ah ama Dheecaan'),
-							english: 'Perineal Pain or Discharge',
+							english: 'Perineal pain or discharge',
 							kirundi: $elm$core$Maybe$Just('Ububabare bw\u0027umugongo hepfo'),
 							kinyarwanda: $elm$core$Maybe$Just('Arababara perine cg aratakaza ibintu budasanzwe')
 						};
