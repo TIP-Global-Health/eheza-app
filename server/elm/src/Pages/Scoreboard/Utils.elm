@@ -544,9 +544,8 @@ isOnTrackForImmunisation site targetDateForMonth record =
                 -- behind on any of vaccines at that month.
                 resolveLastDayForMonthX ageInMonths record.birthDate
 
-            -- Resolves the date for last day of month X after child birth date.
-            -- For example, for X = 0, this is
-            -- the last day, before child turns 1 month old.
+            -- Last day of the calendar month X months after the birth month.
+            -- For example, born 20 January: X = 0 gives 31 January.
             resolveLastDayForMonthX monthX childBirthDate =
                 -- Get to first day of the birth months.
                 Date.floor Date.Month childBirthDate
@@ -562,7 +561,7 @@ isOnTrackForImmunisation site targetDateForMonth record =
                     (\_ dosesDict ->
                         Dict.filter
                             (\_ administeredDate ->
-                                Date.compare administeredDate referenceDate == LT
+                                Date.compare administeredDate referenceDate /= GT
                             )
                             dosesDict
                     )
