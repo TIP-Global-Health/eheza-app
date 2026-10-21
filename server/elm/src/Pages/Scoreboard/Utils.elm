@@ -1,13 +1,14 @@
-module Pages.Scoreboard.Utils exposing (allVaccineTypes, generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
+module Pages.Scoreboard.Utils exposing (allVaccineTypes, countChildrenUnder2, datesForMonth, foldRecordsByMonth, formatValues, generateFutureVaccinationsData, generateMonthsGap, isOnTrackForImmunisation, isPregnancyMonth, resolveTargetDateForMonth, valuesByViewMode, viewPercentage)
 
 import App.Types exposing (Site(..))
-import AssocList as Dict
-import Backend.Scoreboard.Model exposing (VaccinationProgressDict, VaccineDose(..), VaccineType(..))
+import AssocList as Dict exposing (Dict)
+import Backend.Scoreboard.Model exposing (PatientData, VaccinationProgressDict, VaccineDose(..), VaccineType(..))
 import Backend.Scoreboard.Utils exposing (vaccineDoseToComparable)
-import Date exposing (Unit(..))
-import Gizra.NominalDate exposing (NominalDate)
+import Date exposing (Interval(..), Unit(..))
+import Gizra.NominalDate exposing (NominalDate, diffMonths, toLastDayOfMonth)
 import Pages.Scoreboard.Model exposing (ViewMode(..))
 import Round
+import Utils.NominalDate exposing (equalByYearAndMonth)
 
 
 {-| For each type of vaccine, we generate next dose and administration date.
@@ -378,3 +379,216 @@ viewPercentage nominator denominator =
             |> (*) 100
             |> Round.round 1
             |> (\number -> number ++ "%")
+
+
+{-| The date a month column is measured at: today for this month, else the
+month's last day. An age measured against it is already the column's age.
+-}
+resolveTargetDateForMonth : Int -> NominalDate -> NominalDate
+resolveTargetDateForMonth gapInMonths currentDate =
+    if gapInMonths == 0 then
+        currentDate
+
+    else
+        Date.add Months (-1 * gapInMonths) currentDate
+            |> toLastDayOfMonth
+
+
+{-| The dates on the list that fall within the month of the target date.
+-}
+datesForMonth : NominalDate -> List NominalDate -> List NominalDate
+datesForMonth targetDate dates =
+    List.filter (\date -> equalByYearAndMonth date targetDate) dates
+
+
+{-| Folds patient records into a pane's 12 month columns, passing the given
+function each column's date.
+-}
+foldRecordsByMonth : NominalDate -> Dict Int Int -> (NominalDate -> record -> accum -> accum) -> accum -> List record -> List accum
+foldRecordsByMonth currentDate monthsGap updateForMonth emptyValue records =
+    List.foldl
+        (\record accum ->
+            List.indexedMap
+                (\index accumValue ->
+                    Dict.get index monthsGap
+                        |> Maybe.map
+                            (\gapInMonths ->
+                                updateForMonth (resolveTargetDateForMonth gapInMonths currentDate) record accumValue
+                            )
+                        |> Maybe.withDefault accumValue
+                )
+                accum
+        )
+        (List.repeat 12 emptyValue)
+        records
+
+
+generateMonthsGap : NominalDate -> Int -> Dict Int Int
+generateMonthsGap currentDate yearSelectorGap =
+    let
+        currentMonthNumber =
+            Date.monthNumber currentDate
+    in
+    List.range 1 12
+        |> List.map (\monthNumber -> (-1 * 12 * yearSelectorGap) + (-1 * (monthNumber - currentMonthNumber)))
+        |> List.indexedMap Tuple.pair
+        |> Dict.fromList
+
+
+formatValues : NominalDate -> Int -> List String -> List String
+formatValues currentDate yearSelectorGap =
+    let
+        currentMonthNumber =
+            Date.monthNumber currentDate
+
+        yearsGapFrom2023 =
+            2023 - Date.year currentDate
+    in
+    List.indexedMap
+        (\index value ->
+            if yearSelectorGap == 0 then
+                -- We're at current year.
+                if index < currentMonthNumber then
+                    value
+
+                else
+                    -- Not showing data of future months.
+                    ""
+
+            else if yearSelectorGap > yearsGapFrom2023 then
+                -- We're in 2024, or above.
+                value
+
+            else if index >= 10 then
+                -- We're in 2023. Showing data starting Nov 2023.
+                -- For prior dates - dash for all rows.
+                value
+
+            else
+                "-"
+        )
+
+
+{-| The children under two at each month column, counting only those
+already registered by the column's date.
+-}
+countChildrenUnder2 : NominalDate -> Dict Int Int -> List PatientData -> List Int
+countChildrenUnder2 currentDate monthsGap =
+    foldRecordsByMonth currentDate
+        monthsGap
+        (\targetDateForMonth record accumValue ->
+            let
+                ageInMonths =
+                    diffMonths record.birthDate targetDateForMonth
+
+                existedDuringExaminationMonth =
+                    -- Making sure patient was already created during examination month.
+                    Date.compare record.created targetDateForMonth == LT
+            in
+            if
+                existedDuringExaminationMonth
+                    && (ageInMonths >= 0)
+                    && (ageInMonths < 24)
+            then
+                accumValue + 1
+
+            else
+                accumValue
+        )
+        0
+
+
+{-| Whether a pregnancy with this EDD is counted at the month column of the
+target date.
+-}
+isPregnancyMonth : NominalDate -> NominalDate -> Bool
+isPregnancyMonth eddDate targetDateForMonth =
+    let
+        ageInMonths =
+            -- Using EDD date to properly resolve the month of
+            -- pregnancy (as child may have been born premature).
+            diffMonths (Date.floor Month eddDate) targetDateForMonth
+
+        monthsBeforeDelivery =
+            -- Age is negative for months that precede the
+            -- expected delivery date, which are the ones
+            -- pregnancy is examined at.
+            negate ageInMonths
+    in
+    (monthsBeforeDelivery > 0) && (monthsBeforeDelivery < 10)
+
+
+{-| Whether a child under two, registered by the target date, had every
+vaccine that was due by the end of that month of age.
+-}
+isOnTrackForImmunisation : Site -> NominalDate -> PatientData -> Bool
+isOnTrackForImmunisation site targetDateForMonth record =
+    let
+        existedDuringExaminationMonth =
+            -- Making sure patient was already created during examination month.
+            Date.compare record.created targetDateForMonth == LT
+
+        ageInMonths =
+            diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+    in
+    if
+        not existedDuringExaminationMonth
+            || (ageInMonths < 0)
+            || (ageInMonths >= 24)
+    then
+        False
+
+    else
+        let
+            referenceDate =
+                -- We use it to determine if child was
+                -- behind on any of vaccines at that month.
+                resolveLastDayForMonthX ageInMonths record.birthDate
+
+            -- Resolves the date for last day of month X after child birth date.
+            -- For example, for X = 0, this is
+            -- the last day, before child turns 1 month old.
+            resolveLastDayForMonthX monthX childBirthDate =
+                -- Get to first day of the birth months.
+                Date.floor Date.Month childBirthDate
+                    |> -- Add required number of months.
+                       Date.add Date.Months (monthX + 1)
+                    |> -- Substract one day
+                       Date.add Date.Days -1
+
+            -- Filter out vaccinations that were performed
+            -- after the reference date.
+            vaccinationProgressOnReferrenceDate =
+                Dict.map
+                    (\_ dosesDict ->
+                        Dict.filter
+                            (\_ administeredDate ->
+                                Date.compare administeredDate referenceDate == LT
+                            )
+                            dosesDict
+                    )
+                    record.ncda.universalIntervention.row1
+
+            futureVaccinations =
+                generateFutureVaccinationsData site
+                    record.birthDate
+                    vaccinationProgressOnReferrenceDate
+                    (allVaccineTypes site)
+
+            closestDateForVaccination =
+                List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
+                    |> List.sortWith Date.compare
+                    |> List.head
+        in
+        Maybe.map
+            (\closestDate ->
+                -- Closest date when vaccine is required is after end of
+                -- referenced month, which means that we're on track.
+                -- Otherwise, we're off track.
+                Date.compare closestDate referenceDate == GT
+            )
+            closestDateForVaccination
+            |> Maybe.withDefault
+                -- This indicates that there're no future vaccinations to be
+                -- done, and therefore, we're on track at referenced month.
+                True
