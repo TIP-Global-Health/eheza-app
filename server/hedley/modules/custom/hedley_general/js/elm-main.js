@@ -13309,7 +13309,7 @@ var $author$project$Translate$translationSet = function (transId) {
 				var item = transId.a;
 				switch (item.$) {
 					case 'SevereAcuteMalnutrition':
-						return {somali: $elm$core$Maybe$Nothing, english: 'Severe acute malnutrition', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+						return {somali: $elm$core$Maybe$Nothing, english: 'Severe Acute Malnutrition', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 					case 'ModerateAcuteMalnutrition':
 						return {somali: $elm$core$Maybe$Nothing, english: 'Moderate Acute Malnutrition', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 					default:

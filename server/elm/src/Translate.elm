@@ -1476,7 +1476,7 @@ translationSet transId =
         NCDAAcuteMalnutritionItemLabel item ->
             case item of
                 SevereAcuteMalnutrition ->
-                    { english = "Severe acute malnutrition"
+                    { english = "Severe Acute Malnutrition"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
