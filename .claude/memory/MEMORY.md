@@ -65,6 +65,8 @@
 - [elm-review: no --fix-all on merges](elm-review-no-fix-all-on-merges.md) — ⛔ `--fix-all` after merging develop into a stale branch deletes wildcard imports the compiler needs; fix file-by-file; `NoMissingSubscriptionsCall` ignore list for update-level tests
 - [E2E Acute Illness lessons](e2e-acute-illness-lessons.md) — popups appear mid-activity; the diagnosis decides the activity set; adult/CHW tab differences; reload on "Not Found"; checkbox labels and icon classes
 - [ClinicsPage "Not Found" race](clinics-not-found-race.md) — declined: SW IndexedDB read races the sync write and `FetchClinics` never retries on `Failure`; e2e uses a reload loop
+- [HS dashboards: children are cohort newborns](hs-dashboards-children-are-cohort-newborns.md) — child figures count only newborns linked to cohort pregnancies via `field_newborn`, never every child seen; reading put to Adam on #2231 (2026-10-20), unconfirmed
 - [Feature: Healthy Start](feature-healthy-start.md) — a flag that tweaks Prenatal (Ultrasound activity, MUAC-based pre-pregnancy class, GWG curves, progress-report chart); check both `isHealthyStart` branches
 - [OCL/PIH concept mappings](ocl-pih-mappings.md) — `docs/ocl-pih-mappings` branch, `docs/ocl/README.md` entry point; upload only via `delta_upload.py`, and cutting a released source version is mandatory
 - [OpenMRS integration](openmrs-integration.md) — E-Heza→OpenFN→OpenMRS PoC: patient create (#1763) + prenatal encounter (#1766), REST not FHIR, Lightning credential gotchas
+- [drush advancedqueue needs --timeout](drush-advancedqueue-needs-timeout.md) — ⛔ `drush advancedqueue <queue>` polls forever without `--timeout=N`; kill via in-container PID
