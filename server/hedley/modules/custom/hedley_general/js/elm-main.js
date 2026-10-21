@@ -23423,9 +23423,9 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 											$pzp1997$assoc_list$AssocList$filter,
 											F2(
 												function (_v1, administeredDate) {
-													return _Utils_eq(
+													return !_Utils_eq(
 														A2($justinmimbs$date$Date$compare, administeredDate, referenceDate),
-														$elm$core$Basics$LT);
+														$elm$core$Basics$GT);
 												}),
 											dosesDict);
 									}),
