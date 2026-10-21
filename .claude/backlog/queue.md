@@ -79,7 +79,7 @@ B-007 (nodes.js half only), B-010, B-012, B-013, B-014 (a+b only), B-015, B-016,
 
 **Parallel tracks (zero production risk — interleave with the tiers, e.g. 1 meaty + 2 small per day):**
 - **Test-hardening (TH-track):** TH-00 (foundation, do first), TH-13 (the B-037 reference site), then TH-01..TH-12, TH-14..TH-19 in any order; suggested first-week batch TH-00+TH-13+TH-14+TH-19. Full entries in the Round 16 section.
-- **Server Elm unit tests (survey 2026-10-20): TH-28..TH-33**, one PR each — suggested order TH-28 (Nutrition report, PHP-twinned) → TH-29 (decoders, letter tables) → TH-30 (vaccination engine) → TH-32 → TH-31 → TH-33 (largest refactor, last). All need PR #2391 merged (it adds the server `elm-test` setup).
+- **Server Elm unit tests (survey 2026-10-20): TH-28..TH-33** — ✅ all six built 2026-10-21 in ONE PR #2402 (issues #2396..#2401), stacked on #2391.
 - **Guard-tooling (G-track):** G-01+G-02+G-03 as one first PR, then G-04, G-05 (needs curation input), G-06, G-07.
 
 R16 verification note: all 2026-07-12 additions entered CONFIRMED (or PROVEN for the dead-code deletions) except B-098/B-099 (confirmed-mechanism; statistical/optimizer-dependent occurrence — fixes are safe regardless) and the two gated items above. R16 items are marked "(R16: …)" inline in the tier lines; full entries live in the "Round 16 + conversion pass" section below.

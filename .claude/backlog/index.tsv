@@ -454,7 +454,7 @@ B-453	1	PARKED	LOW			39	Prenatal postpartum mastitis: a mother who is NOT breast
 B-454	1	IMPLEMENTED	LOW	2330	2331	39	NCD labs: a random blood sugar test sent to the lab, then corrected to "not performed", keeps "result from the lab" in i
 B-455	4	WONTFIX	LOW			39	Prenatal labs: a Hepatitis B test run at point of care, then corrected to "known as positive", still saves the result of
 B-456	4	READY	LOW			39	Admin reports CSV download: the file has no byte-order mark and always separates with a comma, so Excel can garble accen
-B-457	4	READY	LOW			39	Admin Elm app (`server/elm`): no unit tests can be written, because it has no elm-test setup, so pure helpers such as th
+B-457	4	CLOSED	LOW		2391	39	Admin Elm app (`server/elm`): no unit tests can be written, because it has no elm-test setup, so pure helpers such as th
 B-458	4	READY	LOW			39	Admin content: outside super user mode, three more ways to delete or unpublish a node are still offered and always fail 
 B-459	1	PARKED	LOW			38	Prenatal diagnosis: a treated malaria found again at a different anemia level is filed as a new episode, and "treated" m
 B-460	2	IMPLEMENTED		2320	2321		Sync incidents: the backend cannot re-create a missing entity the device sent, because a `false` boolean is written as a
@@ -528,9 +528,9 @@ TH-16		READY				16	Pin AcuteIllness SUBSEQUENT-encounter diagnosis branch (zero 
 TH-17		READY				16	Pin COVID path edge branches + suspect threshold
 TH-18		READY				16	Pin Prenatal emergency-referral aggregation + hypertension-like hierarchy (un-pinned engines)
 TH-19		READY				16	Extend Nutrition assessment pins: boundaries + combination markers + over-6mo asymmetry
-TH-28		READY				survey	Statistical Queries › Nutrition report: pin the figures against their PHP twin — z-score/MUAC bands, prevalence dedup, i
-TH-29		READY				survey	Server Elm wire decoders and letter tables: pin report, scoreboard and Completion decoding against what PHP sends
-TH-30		READY				survey	Aggregated NCDA scoreboard: pin the server copy of the vaccination schedule engine
-TH-31		READY				survey	Statistical Queries › ANC and ANC Contacts reports: pin the date-range filter, pregnancy completion and contact counts
-TH-32		READY				survey	Statistical Queries › Peripartum, Postnatal Care, Demographics, Acute Illness and CSV export: pin the report builders
-TH-33		READY				survey	Aggregated NCDA scoreboard panes and Completion: move the date arithmetic out of the views and pin it
+TH-28		IMPLEMENTED		2396	2402	survey	Statistical Queries › Nutrition report: pin the figures against their PHP twin — z-score/MUAC bands, prevalence dedup, i
+TH-29		IMPLEMENTED		2397	2402	survey	Server Elm wire decoders and letter tables: pin report, scoreboard and Completion decoding against what PHP sends
+TH-30		IMPLEMENTED		2398	2402	survey	Aggregated NCDA scoreboard: pin the server copy of the vaccination schedule engine
+TH-31		IMPLEMENTED		2399	2402	survey	Statistical Queries › ANC and ANC Contacts reports: pin the date-range filter, pregnancy completion and contact counts
+TH-32		IMPLEMENTED		2400	2402	survey	Statistical Queries › Peripartum, Postnatal Care, Demographics, Acute Illness and CSV export: pin the report builders
+TH-33		IMPLEMENTED		2401	2402	survey	Aggregated NCDA scoreboard panes and Completion: move the date arithmetic out of the views and pin it
