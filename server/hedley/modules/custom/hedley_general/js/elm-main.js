@@ -22390,6 +22390,7 @@ var $author$project$Pages$Completion$View$view = F4(
 				return A4($author$project$Pages$Completion$View$viewCompletionData, language, currentDate, data, model);
 			});
 	});
+var $justinmimbs$date$Date$Month = {$: 'Month'};
 var $author$project$Pages$Scoreboard$Model$SetViewMode = function (a) {
 	return {$: 'SetViewMode', a: a};
 };
@@ -22557,7 +22558,6 @@ var $elm$core$List$repeat = F2(
 	function (n, value) {
 		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
 	});
-var $justinmimbs$date$Date$Month = {$: 'Month'};
 var $author$project$Gizra$NominalDate$toLastDayOfMonth = A2(
 	$elm$core$Basics$composeR,
 	$justinmimbs$date$Date$floor($justinmimbs$date$Date$Month),
@@ -23339,18 +23339,6 @@ var $author$project$Translate$NCDAUniversalInterventionItemLabel = function (a) 
 };
 var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 	function (language, currentDate, site, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {
-		var resolveLastDayForMonthX = F2(
-			function (monthX, childBirthDate) {
-				return A3(
-					$justinmimbs$date$Date$add,
-					$justinmimbs$date$Date$Days,
-					-1,
-					A3(
-						$justinmimbs$date$Date$add,
-						$justinmimbs$date$Date$Months,
-						monthX + 1,
-						A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, childBirthDate)));
-			});
 		var emptyValue = {row1: 0, row2: 0, row3: 0, row4: 0, row5: 0};
 		var valuesByRow = A5(
 			$author$project$Pages$Scoreboard$View$foldRecordsByMonth,
@@ -23377,7 +23365,7 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 						if ((!existedDuringExaminationMonth) || ((ageInMonths < 0) || (ageInMonths >= 24))) {
 							return accumValue.row1;
 						} else {
-							var referenceDate = A2(resolveLastDayForMonthX, ageInMonths, record.birthDate);
+							var referenceDate = targetDateForMonth;
 							var vaccinationProgressOnReferrenceDate = A2(
 								$pzp1997$assoc_list$AssocList$map,
 								F2(
@@ -23753,7 +23741,10 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 							var existedDuringExaminationMonth = _Utils_eq(
 								A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
 								$elm$core$Basics$LT);
-							var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, targetDateForMonth);
+							var ageInMonths = A2(
+								$author$project$Gizra$NominalDate$diffMonths,
+								A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
+								targetDateForMonth);
 							return (existedDuringExaminationMonth && ((ageInMonths >= 0) && (ageInMonths < 24))) ? (accumValue + 1) : accumValue;
 						}),
 					0,

@@ -77,7 +77,8 @@ viewScoreboardData language currentDate data model =
                             (\targetDateForMonth record accumValue ->
                                 let
                                     ageInMonths =
-                                        diffMonths record.birthDate targetDateForMonth
+                                        -- Counted from the first of the birth month, as the panes do.
+                                        diffMonths (Date.floor Month record.birthDate) targetDateForMonth
 
                                     existedDuringExaminationMonth =
                                         -- Making sure patient was already created during examination month.
@@ -548,9 +549,9 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                             else
                                 let
                                     referenceDate =
-                                        -- We use it to determine if child was
-                                        -- behind on any of vaccines at that month.
-                                        resolveLastDayForMonthX ageInMonths record.birthDate
+                                        -- The last day of a past month, or today for the current
+                                        -- month. A dose due after this date is not yet missed.
+                                        targetDateForMonth
 
                                     -- Filter out vaccinations that were performed
                                     -- after the reference date.
@@ -658,17 +659,6 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                 )
                 emptyValue
                 data.records
-
-        -- Resolves the date for last day of month X after child birth date.
-        -- For example, for X = 0, this is
-        -- the last day, before child turns 1 month old.
-        resolveLastDayForMonthX monthX childBirthDate =
-            -- Get to first day of the birth months.
-            Date.floor Date.Month childBirthDate
-                |> -- Add required number of months.
-                   Date.add Date.Months (monthX + 1)
-                |> -- Substract one day
-                   Date.add Date.Days -1
 
         emptyValue =
             { row1 = 0, row2 = 0, row3 = 0, row4 = 0, row5 = 0 }
