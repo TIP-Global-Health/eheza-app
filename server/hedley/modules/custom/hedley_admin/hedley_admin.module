@@ -79,7 +79,61 @@ function hedley_admin_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
+  $items['admin/config/system/healthy-start'] = array(
+    'title' => 'HealthyStart settings',
+    'description' => 'Settings of the HealthyStart dashboards',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hedley_admin_healthy_start_settings_form'),
+    'access callback' => 'hedley_admin_administrators_access',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
   return $items;
+}
+
+/**
+ * Settings form of the HealthyStart dashboards.
+ *
+ * @param array $form
+ *   The form array.
+ * @param array $form_state
+ *   The form state array.
+ *
+ * @return array
+ *   The settings form.
+ */
+function hedley_admin_healthy_start_settings_form(array $form, array &$form_state) {
+  $form['hedley_admin_healthy_start_first_cohort_date'] = [
+    '#type' => 'textfield',
+    '#title' => t('First cohort enrolment date'),
+    '#description' => t('The date the first cohort was enrolled, as YYYY-MM-DD, for example 2025-03-17. Dashboard weeks count from it, and the trend chart offers the years from it on.'),
+    '#default_value' => variable_get('hedley_admin_healthy_start_first_cohort_date', ''),
+    '#size' => 10,
+    '#maxlength' => 10,
+    '#element_validate' => ['hedley_admin_validate_date_element'],
+  ];
+
+  return system_settings_form($form);
+}
+
+/**
+ * Accepts an empty value or a real date written as YYYY-MM-DD.
+ *
+ * @param array $element
+ *   The form element.
+ * @param array $form_state
+ *   The form state array.
+ */
+function hedley_admin_validate_date_element(array $element, array &$form_state) {
+  $value = $element['#value'];
+  if ($value === '') {
+    return;
+  }
+
+  $date = DateTime::createFromFormat('!Y-m-d', $value);
+  if (!$date || $date->format('Y-m-d') !== $value) {
+    form_error($element, t('@title must be a date written as YYYY-MM-DD.', ['@title' => $element['#title']]));
+  }
 }
 
 /**

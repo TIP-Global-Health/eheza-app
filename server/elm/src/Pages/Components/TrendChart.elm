@@ -1,0 +1,191 @@
+module Pages.Components.TrendChart exposing (Series, view)
+
+{-| A monthly trend chart as inline SVG, for any series of values from 0
+to 100. Lines differ by colour and dash style; screen readers get one labelled
+image.
+-}
+
+import Html exposing (Html)
+import Html.Attributes
+import Svg exposing (Svg)
+import Svg.Attributes as SA
+
+
+{-| One plotted line; an empty `dash` (a stroke-dasharray) draws it solid.
+`points` holds one value per x step, across the full plot width; Nothing
+breaks the line.
+-}
+type alias Series =
+    { color : String
+    , label : String
+    , dash : String
+    , points : List (Maybe Float)
+    }
+
+
+
+-- PLOT GEOMETRY (SVG user units; the chart scales to its container width).
+
+
+plotLeft : Float
+plotLeft =
+    46
+
+
+plotRight : Float
+plotRight =
+    556
+
+
+plotTop : Float
+plotTop =
+    14
+
+
+plotBottom : Float
+plotBottom =
+    216
+
+
+plotWidth : Float
+plotWidth =
+    plotRight - plotLeft
+
+
+plotHeight : Float
+plotHeight =
+    plotBottom - plotTop
+
+
+{-| The x of one point, given how many points the series holds. A series always
+spans the full plot width; a single point sits in the middle of it.
+-}
+xAt : Int -> Int -> Float
+xAt count index =
+    if count <= 1 then
+        plotLeft + plotWidth / 2
+
+    else
+        plotLeft + toFloat index * (plotWidth / toFloat (count - 1))
+
+
+yAt : Float -> Float
+yAt value =
+    plotBottom - (value / 100) * plotHeight
+
+
+view : { xLabels : List String, series : List Series, ariaLabel : String } -> Html msg
+view config =
+    let
+        labelCount =
+            List.length config.xLabels
+    in
+    Svg.svg
+        [ SA.viewBox "0 0 580 250"
+        , SA.class "w-full h-auto"
+        , Html.Attributes.attribute "role" "img"
+        , Html.Attributes.attribute "aria-label" config.ariaLabel
+        , SA.preserveAspectRatio "xMidYMid meet"
+        ]
+        (gridAndYAxis
+            ++ List.indexedMap (xLabel labelCount) config.xLabels
+            ++ List.concatMap seriesLayer config.series
+        )
+
+
+{-| Horizontal gridlines and y axis value labels at 0/20/40/60/80/100.
+-}
+gridAndYAxis : List (Svg msg)
+gridAndYAxis =
+    List.concatMap
+        (\value ->
+            let
+                y =
+                    yAt (toFloat value)
+            in
+            [ Svg.line
+                [ SA.x1 (String.fromFloat plotLeft)
+                , SA.y1 (String.fromFloat y)
+                , SA.x2 (String.fromFloat plotRight)
+                , SA.y2 (String.fromFloat y)
+                , SA.stroke "#e2e8f0"
+                , SA.strokeWidth "1"
+                ]
+                []
+            , Svg.text_
+                [ SA.x (String.fromFloat (plotLeft - 10))
+                , SA.y (String.fromFloat (y + 4))
+                , SA.textAnchor "end"
+                , SA.fontSize "12"
+                , SA.fill "#475569"
+                ]
+                [ Svg.text (String.fromInt value) ]
+            ]
+        )
+        [ 0, 20, 40, 60, 80, 100 ]
+
+
+xLabel : Int -> Int -> String -> Svg msg
+xLabel count index label =
+    Svg.text_
+        [ SA.x (String.fromFloat (xAt count index))
+        , SA.y (String.fromFloat (plotBottom + 22))
+        , SA.textAnchor "middle"
+        , SA.fontSize "12"
+        , SA.fill "#334155"
+        ]
+        [ Svg.text label ]
+
+
+{-| A polyline for each unbroken run of values, plus circular markers for one
+series.
+-}
+seriesLayer : Series -> List (Svg msg)
+seriesLayer series =
+    let
+        pointCount =
+            List.length series.points
+
+        runs =
+            List.indexedMap (\index value -> Maybe.map (\present -> ( xAt pointCount index, yAt present )) value) series.points
+                |> List.foldr
+                    (\point acc ->
+                        case ( point, acc ) of
+                            ( Just coordinate, run :: rest ) ->
+                                (coordinate :: run) :: rest
+
+                            ( Just coordinate, [] ) ->
+                                [ [ coordinate ] ]
+
+                            ( Nothing, [] :: _ ) ->
+                                acc
+
+                            ( Nothing, _ ) ->
+                                [] :: acc
+                    )
+                    []
+                |> List.filter (not << List.isEmpty)
+
+        polyline coordinates =
+            Svg.polyline
+                [ SA.points (List.map (\( x, y ) -> String.fromFloat x ++ "," ++ String.fromFloat y) coordinates |> String.join " ")
+                , SA.fill "none"
+                , SA.stroke series.color
+                , SA.strokeWidth "2.5"
+                , SA.strokeDasharray series.dash
+                , SA.strokeLinejoin "round"
+                , SA.strokeLinecap "round"
+                ]
+                []
+
+        marker ( x, y ) =
+            Svg.circle
+                [ SA.cx (String.fromFloat x)
+                , SA.cy (String.fromFloat y)
+                , SA.r "3.5"
+                , SA.fill series.color
+                ]
+                []
+    in
+    List.map polyline runs
+        ++ List.concatMap (List.map marker) runs
