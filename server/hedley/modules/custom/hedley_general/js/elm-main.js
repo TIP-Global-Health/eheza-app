@@ -13916,7 +13916,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisGestationalHypertension':
 						return {
 							somali: $elm$core$Maybe$Nothing,
-							english: 'Pregnancy-Induced Hypertension',
+							english: 'Pregnancy-induced hypertension',
 							kirundi: $elm$core$Maybe$Just('Umuvuduko w\u0027amaraso utewe n\u0027imbanyi'),
 							kinyarwanda: $elm$core$Maybe$Just('Umuvuduko w\u0027amaraso watewe no gutwita')
 						};
@@ -14126,7 +14126,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisSevereVomiting':
 						return {
 							somali: $elm$core$Maybe$Nothing,
-							english: 'Severe Vomiting',
+							english: 'Severe vomiting',
 							kirundi: $elm$core$Maybe$Just('Ukudahwa gukaze'),
 							kinyarwanda: $elm$core$Maybe$Just('Kuruka bikabije')
 						};
@@ -14147,8 +14147,8 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisImminentDelivery':
 						return {
 							somali: $elm$core$Maybe$Nothing,
-							english: 'Imminent Delivery',
-							kirundi: $elm$core$Maybe$Just('Gutanga bigaragara/'),
+							english: 'Imminent delivery',
+							kirundi: $elm$core$Maybe$Just('Gutanga bigaragara'),
 							kinyarwanda: $elm$core$Maybe$Just('Kubyara biri hafi')
 						};
 					case 'DiagnosisLaborAndDelivery':
@@ -14319,8 +14319,8 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'DiagnosisPostpartumPerinealPainOrDischarge':
 						return {
 							somali: $elm$core$Maybe$Just('Xanuun qaska ah ama Dheecaan'),
-							english: 'Perineal Pain or Discharge',
-							kirundi: $elm$core$Maybe$Just('Ububabare bw\u0027umugongo hepfo'),
+							english: 'Perineal pain or discharge',
+							kirundi: $elm$core$Maybe$Just('Ububabare bwo mu gihimba c\u0027irondoka (périnée) canke isohoka ridasanzwe'),
 							kinyarwanda: $elm$core$Maybe$Just('Arababara perine cg aratakaza ibintu budasanzwe')
 						};
 					case 'DiagnosisPostpartumInfection':
