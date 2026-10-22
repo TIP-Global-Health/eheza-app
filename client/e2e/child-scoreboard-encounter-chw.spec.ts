@@ -1,3 +1,4 @@
+import { openReport, closeReport } from './helpers/progress-report';
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
@@ -11,7 +12,6 @@ import {
   completeVaccinationHistory,
   endChildScoreboardEncounter,
   queryChildScoreboardNodes,
-  openScorecardReport,
   endEncounterDialog,
   diarrheaReferralPopup,
 } from './helpers/child-scoreboard';
@@ -69,6 +69,12 @@ test.describe('CHW: Child Scoreboard Encounter — First NCDA + Vaccination Hist
     await completeVaccinationHistory(page);
 
     // 5. End encounter (no diarrhea popup since we answered No).
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'child-scoreboard');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await expect(report.locator('.pane.vaccination-history')).toBeVisible();
+    await closeReport(page, 'child-scoreboard');
+
     await endChildScoreboardEncounter(page);
 
     // 6. Sync to backend.
@@ -139,6 +145,12 @@ test.describe('CHW: Child Scoreboard Encounter — child under six months', () =
     // Answering the vaccination question on the NCDA asks for this too, and the
     // encounter will not end while it is still pending.
     await completeVaccinationHistory(page);
+    // Progress report must show what this encounter recorded.
+    const report = await openReport(page, 'child-scoreboard');
+    await expect(report.locator('.pane.person-details')).toContainText(fullName);
+    await expect(report.locator('.pane.vaccination-history')).toBeVisible();
+    await closeReport(page, 'child-scoreboard');
+
     await endChildScoreboardEncounter(page);
     await syncAndWait(page);
 
@@ -188,7 +200,7 @@ test.describe('CHW: Child Scoreboard Encounter — ending it from the progress r
     await completeVaccinationHistory(page);
 
     // 2. End the encounter from the report, not from the encounter page.
-    await openScorecardReport(page);
+    await openReport(page, 'child-scoreboard');
     await click(page.locator('button', { hasText: 'End Encounter' }).first(), page);
 
     const dialog = endEncounterDialog(page);

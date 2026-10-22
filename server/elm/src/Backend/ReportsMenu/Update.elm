@@ -1,7 +1,7 @@
 module Backend.ReportsMenu.Update exposing (update)
 
+import Backend.Components.Decoder exposing (decodeMenuData)
 import Backend.Model exposing (ModelBackend)
-import Backend.ReportsMenu.Decoder exposing (decodeMenuData)
 import Backend.ReportsMenu.Model exposing (Msg(..))
 import Backend.Types exposing (BackendReturn)
 import Error.Utils exposing (noError)

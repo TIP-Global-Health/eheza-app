@@ -29,7 +29,6 @@ import Backend.Measurement.Model
         , PostpartumMotherDangerSign(..)
         , PrenatalSymptom(..)
         , VaginalExamSign(..)
-        , ViralLoadStatus(..)
         )
 import Backend.Measurement.Utils exposing (bilirubinValueFromString, bloodGroupFromString, bloodSmearResultFromString, getMeasurementValueFunc, glucoseValueFromString, haemoglobinValueFromString, ketoneValueFromString, leukocytesValueFromString, nitriteValueFromString, nonReferralReasonToSign, phValueFromString, pregnancyTestResultFromString, proteinValueFromString, rhesusFromString, testResultFromString, urobilinogenValueFromString)
 import Backend.Model exposing (ModelIndexedDb)
@@ -46,7 +45,10 @@ import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
         , familyPlanningFormWithDefault
+        , hepatitisBTestFormWithDefault
+        , hivTestUniversalFormWithDefault
         , outsideCareFormWithDefault
+        , partnerHIVTestFormWithDefault
         , syphilisTestFormWithDefault
         , toAdministrationNoteWithDefault
         , toBloodGpRsTestValueWithDefault
@@ -80,6 +82,14 @@ import SyncManager.Model exposing (Site)
 update : NominalDate -> Site -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate site id db msg model =
     let
+        -- A bool input decides whether a tap repeats the answer shown, so it
+        -- acts on the form as the nurse sees it: merged with the saved test.
+        savedLabForm getMeasurement formWithDefault form =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map (getMeasurement >> getMeasurementValueFunc >> formWithDefault form)
+                |> Maybe.withDefault form
+
         medicalHistoryForm =
             Dict.get id db.prenatalMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -2277,11 +2287,9 @@ update currentDate site id db msg model =
 
         SetHIVTestFormBoolInput formUpdateFunc value ->
             let
-                form =
-                    model.laboratoryData.hivTestForm
-
                 updatedForm =
-                    formUpdateFunc value form
+                    savedLabForm .hivTest hivTestUniversalFormWithDefault model.laboratoryData.hivTestForm
+                        |> formUpdateFunc value
 
                 updatedData =
                     model.laboratoryData
@@ -2439,11 +2447,9 @@ update currentDate site id db msg model =
 
         SetHepatitisBTestFormBoolInput formUpdateFunc value ->
             let
-                form =
-                    model.laboratoryData.hepatitisBTestForm
-
                 updatedForm =
-                    formUpdateFunc value form
+                    savedLabForm .hepatitisBTest hepatitisBTestFormWithDefault model.laboratoryData.hepatitisBTestForm
+                        |> formUpdateFunc value
 
                 updatedData =
                     model.laboratoryData
@@ -3084,15 +3090,8 @@ update currentDate site id db msg model =
                 form =
                     model.laboratoryData.hivPCRTestForm
 
-                status =
-                    if undetectable then
-                        ViralLoadUndetectable
-
-                    else
-                        ViralLoadDetectable
-
                 updatedForm =
-                    { form | hivViralLoadStatus = Just status, hivViralLoadStatusDirty = True }
+                    Measurement.Utils.setHIVViralLoadUndetectable undetectable form
 
                 updatedData =
                     model.laboratoryData
@@ -3133,11 +3132,9 @@ update currentDate site id db msg model =
 
         SetPartnerHIVTestFormBoolInput formUpdateFunc value ->
             let
-                form =
-                    model.laboratoryData.partnerHIVTestForm
-
                 updatedForm =
-                    formUpdateFunc value form
+                    savedLabForm .partnerHIVTest partnerHIVTestFormWithDefault model.laboratoryData.partnerHIVTestForm
+                        |> formUpdateFunc value
 
                 updatedData =
                     model.laboratoryData

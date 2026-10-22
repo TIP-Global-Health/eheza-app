@@ -1,14 +1,17 @@
 module Backend.Measurement.Test exposing (all)
 
-import Backend.Measurement.Encoder exposing (encodeMedicalHistoryValue)
-import Backend.Measurement.Model exposing (ColorAlertIndication(..), GlucoseValue(..), HeadCircumferenceInCm(..), MuacInCm(..), OccursInFamilySign(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..), UrineDipstickTestValue)
-import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, headCircumferenceIndication, muacIndicationForAdult, muacIndicationForChild, muacValueFuncForSite)
+import Backend.Measurement.Encoder exposing (encodeMedicalHistoryValue, encodeNCDSocialHistoryValue)
+import Backend.Measurement.Model exposing (ColorAlertIndication(..), FoodGroup(..), GlucoseValue(..), HeadCircumferenceInCm(..), LaboratoryTest(..), MuacInCm(..), NCDSocialHistorySign(..), OccursInFamilySign(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..))
+import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, headCircumferenceIndication, labsResultsTestAddedMsgs, muacIndicationForAdult, muacIndicationForChild, muacValueFuncForSite)
+import Date
 import EverySet
 import Expect
 import Json.Decode
 import Json.Encode
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
+import TestFixtures exposing (urineGlucoseValue)
+import Time
 
 
 muacIndicationTest : Test
@@ -109,27 +112,6 @@ rbsValue fasting sugar =
     }
 
 
-{-| A Urine Dipstick test value with the given glucose reading; all other fields
-are defaulted (the classifier reads only `.glucose`).
--}
-urineValue : GlucoseValue -> UrineDipstickTestValue
-urineValue glucose =
-    { testVariant = Nothing
-    , executionNote = TestNoteRunToday
-    , executionDate = Nothing
-    , testPrerequisites = Nothing
-    , protein = Nothing
-    , ph = Nothing
-    , glucose = Just glucose
-    , leukocytes = Nothing
-    , nitrite = Nothing
-    , urobilinogen = Nothing
-    , haemoglobin = Nothing
-    , ketone = Nothing
-    , bilirubin = Nothing
-    }
-
-
 diabetesBySugarCountTest : Test
 diabetesBySugarCountTest =
     -- Clinical (ADA) oracle: fasting plasma glucose >= 126 mg/dL is diabetes;
@@ -156,6 +138,14 @@ diabetesBySugarCountTest =
             \_ -> diabetesBySugarCount (rbsValue True 150) |> Expect.equal True
         , test "non-fasting 150 -> not diabetes [Labs tab's >126 non-fasting would wrongly flag this]" <|
             \_ -> diabetesBySugarCount (rbsValue False 150) |> Expect.equal False
+        , test "a reading left on a test that was not performed -> not diabetes" <|
+            \_ ->
+                let
+                    reading =
+                        rbsValue False 210
+                in
+                diabetesBySugarCount { reading | executionNote = TestNoteNotIndicated }
+                    |> Expect.equal False
         ]
 
 
@@ -164,15 +154,15 @@ diabetesByUrineGlucoseTest =
     -- Oracle: glucosuria of +2 or more indicates diabetes.
     describe "diabetesByUrineGlucose"
         [ test "Glucose0 -> not diabetes" <|
-            \_ -> diabetesByUrineGlucose (urineValue Glucose0) |> Expect.equal False
+            \_ -> diabetesByUrineGlucose (urineGlucoseValue Glucose0) |> Expect.equal False
         , test "GlucosePlus1 -> not diabetes" <|
-            \_ -> diabetesByUrineGlucose (urineValue GlucosePlus1) |> Expect.equal False
+            \_ -> diabetesByUrineGlucose (urineGlucoseValue GlucosePlus1) |> Expect.equal False
         , test "GlucosePlus2 -> diabetes (threshold)" <|
-            \_ -> diabetesByUrineGlucose (urineValue GlucosePlus2) |> Expect.equal True
+            \_ -> diabetesByUrineGlucose (urineGlucoseValue GlucosePlus2) |> Expect.equal True
         , test "GlucosePlus3 -> diabetes" <|
-            \_ -> diabetesByUrineGlucose (urineValue GlucosePlus3) |> Expect.equal True
+            \_ -> diabetesByUrineGlucose (urineGlucoseValue GlucosePlus3) |> Expect.equal True
         , test "GlucosePlus4 -> diabetes" <|
-            \_ -> diabetesByUrineGlucose (urineValue GlucosePlus4) |> Expect.equal True
+            \_ -> diabetesByUrineGlucose (urineGlucoseValue GlucosePlus4) |> Expect.equal True
         ]
 
 
@@ -203,6 +193,32 @@ preeclampsiaInFamilyEncodeTest =
         ]
 
 
+ncdSocialHistoryEncodeTest : Test
+ncdSocialHistoryEncodeTest =
+    -- Regression: the two per-week counts must reach their own keys. The
+    -- fixture gives them different values on purpose -- equal counts would
+    -- pass even if both keys were fed from the same field.
+    let
+        encoded =
+            encodeNCDSocialHistoryValue
+                { signs = EverySet.singleton SignDrinkAlcohol
+                , foodGroup = FoodGroupVegetables
+                , beveragesPerWeek = Just 3
+                , cigarettesPerWeek = Just 7
+                }
+                |> Json.Encode.object
+
+        encodedCount key =
+            Json.Decode.decodeValue (Json.Decode.field key Json.Decode.int) encoded
+    in
+    describe "encodeNCDSocialHistoryValue keeps the two per-week counts apart"
+        [ test "beverages_per_week carries the drinks count" <|
+            \_ -> encodedCount "beverages_per_week" |> Expect.equal (Ok 3)
+        , test "cigarettes_per_week carries the cigarettes count" <|
+            \_ -> encodedCount "cigarettes_per_week" |> Expect.equal (Ok 7)
+        ]
+
+
 muacValueFuncForSiteTest : Test
 muacValueFuncForSiteTest =
     -- MUAC is stored in cm; Burundi displays it in mm (x10), other sites in cm.
@@ -230,5 +246,80 @@ all =
         , diabetesBySugarCountTest
         , diabetesByUrineGlucoseTest
         , preeclampsiaInFamilyEncodeTest
+        , ncdSocialHistoryEncodeTest
         , muacValueFuncForSiteTest
+        , labsResultsTestAddedMsgsTest
+        ]
+
+
+{-| NCD and Prenatal labs Case Management entries share this update, so the
+cases cover a test from each.
+-}
+labsResultsTestAddedMsgsTest : Test
+labsResultsTestAddedMsgsTest =
+    let
+        today =
+            Date.fromCalendarDate 2020 Time.Jun 1
+
+        entryWith tests =
+            Just
+                ( "entry"
+                , { value =
+                        { performedTests = EverySet.fromList tests
+                        , completedTests = EverySet.fromList tests
+                        , resolutionDate = Date.add Date.Days 10 today
+                        , patientNotified = False
+                        , reviewState = Nothing
+                        , testsWithFollowUp = Nothing
+                        }
+                  }
+                )
+
+        savesAfter test_ testExecuted entry =
+            labsResultsTestAddedMsgs today test_ testExecuted entry Tuple.pair
+                |> List.map
+                    (\( resultsId, value ) ->
+                        { resultsId = resultsId
+                        , performedTests = EverySet.toList value.performedTests
+                        , completedTests = EverySet.toList value.completedTests
+                        , resolutionDate = value.resolutionDate
+                        }
+                    )
+
+        open35Days =
+            Date.add Date.Days 35 today
+    in
+    describe "labs Case Management entry, when a test is marked performed or not performed"
+        [ test "marking the only NCD test not performed closes the entry today" <|
+            \_ ->
+                savesAfter TestRandomBloodSugar False (entryWith [ TestRandomBloodSugar ])
+                    |> Expect.equal [ { resultsId = Just "entry", performedTests = [], completedTests = [], resolutionDate = today } ]
+        , test "marking the only Prenatal test not performed closes the entry today" <|
+            \_ ->
+                savesAfter TestHIV False (entryWith [ TestHIV ])
+                    |> Expect.equal [ { resultsId = Just "entry", performedTests = [], completedTests = [], resolutionDate = today } ]
+        , test "a vitals recheck no longer needed closes an entry holding only it" <|
+            \_ ->
+                savesAfter TestVitalsRecheck False (entryWith [ TestVitalsRecheck ])
+                    |> Expect.equal [ { resultsId = Just "entry", performedTests = [], completedTests = [], resolutionDate = today } ]
+        , test "a vitals recheck not needed leaves an entry without one unsaved" <|
+            \_ ->
+                savesAfter TestVitalsRecheck False (entryWith [ TestHIV ])
+                    |> Expect.equal []
+        , test "marking one of two tests not performed keeps the entry open for the other" <|
+            \_ ->
+                savesAfter TestRandomBloodSugar False (entryWith [ TestRandomBloodSugar, TestCreatinine ])
+                    |> Expect.equal [ { resultsId = Just "entry", performedTests = [ TestCreatinine ], completedTests = [ TestCreatinine ], resolutionDate = open35Days } ]
+        , test "a performed test keeps the entry open, and is no longer completed" <|
+            \_ ->
+                savesAfter TestHIV True (entryWith [ TestHIV ])
+                    |> Expect.equal [ { resultsId = Just "entry", performedTests = [ TestHIV ], completedTests = [], resolutionDate = open35Days } ]
+        , test "a first performed test creates an entry holding it, open for 35 days" <|
+            \_ ->
+                savesAfter TestHIV True Nothing
+                    |> Expect.equal [ { resultsId = Nothing, performedTests = [ TestHIV ], completedTests = [], resolutionDate = open35Days } ]
+        , test "a test marked not performed creates no entry" <|
+            \_ ->
+                savesAfter TestHIV False Nothing
+                    |> Expect.equal []
         ]

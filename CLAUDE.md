@@ -40,6 +40,9 @@ elm-format client/src/                   # Auto-format
 elm-test                                 # Run Elm unit tests (from client/)
 elm-review                               # Elm linting (from client/)
 
+# Comments: new ones within 30 words, tests exempt
+python3 ci-scripts/check_comments.py --base origin/develop
+
 # PHP
 REVIEW_STANDARD="Drupal" ci-scripts/test_coder.sh
 REVIEW_STANDARD="DrupalPractice" ci-scripts/test_coder.sh
@@ -58,37 +61,19 @@ RECORD=1 ./node_modules/.bin/playwright test     # Headed, with video recording 
 # converted to .mp4 where ffmpeg is installed)
 ```
 
-### Deployment
-
-```bash
-ddev auth ssh && ddev gulp publish && ddev robo deploy:pantheon
-```
-
 ## Architecture
-
-Elm source lives in `client/src/elm/` (plus generated code in `src/generated/`); the Drupal
-install profile in `server/hedley/`, with its modules under `hedley/modules/custom/`.
-`client/src/elm/LocalConfig.elm` is gitignored — copy it from `LocalConfig.Example.elm`.
 
 ### Drupal configuration
 
 Configuration is managed as code via the **Features** module. After changing config in UI, export with `drush fu <feature_name>`.
 
-### Data Sync
-
-Offline-first: the Elm `SyncManager` handles bidirectional sync with the backend REST API. Data persists in browser storage offline; Drupal + MariaDB is the source of truth. Advanced Queue processes background tasks server-side.
-
 ### Feature Flags
 
-Programs are toggled via `drush vset hedley_admin_feature_<name>_enabled 1|0`. Flags include: `ncda`, `stock_management`, `tuberculosis_management`, `group_education`, `report_to_whatsapp`, `hiv_management`, `gps_coordinates`, `family_nutrition`.
+Programs are toggled via `drush vset hedley_admin_feature_<name>_enabled 1|0`. The flag names are listed in `hedley_admin_get_available_features()` in `hedley_admin.module`.
 
 ### Super User Mode
 
 `ddev drush vset hedley_super_user_mode 1` — bypasses content unpublishing/deletion restrictions and allows resetting device pairing codes on already-paired devices. Disable with `ddev drush vset hedley_super_user_mode 0`.
-
-## CI (CircleCI)
-
-Jobs are defined in `.circleci/config.yml`; the scripts they run live in `ci-scripts/`.
 
 ## Local Setup
 
@@ -101,6 +86,29 @@ ddev gulp
 ```
 
 Default credentials (created by migration): pairing code `12345678`, nurse PIN `1234`, Drupal admin `admin`/`admin`.
+
+### Parallel sessions
+
+Several Claude Code sessions work different backlog items at once, so **the main tree
+(`/var/www/html/ihangane`) stays on `develop` permanently.** It is the backlog source of truth, the
+symlink donor for worktree builds, and the one tree ddev and gulp build. Each item gets its own
+worktree at `<repo>-wt/<branch>`, created by `.claude/scripts/new-worktree.sh <branch>` when the work
+starts and released once it is pushed — recreated by the same script if review brings more work;
+`git worktree list` shows what every session currently holds.
+
+Two things stay single-instance, and no worktree scheme changes that:
+
+- **The running app** — one DDEV project rooted in the main tree, so `ddev gulp`, local e2e and
+  `ddev simpletest` are shared. Ask before taking them.
+- **Bookkeeping edits.** Separate `.claude/backlog/items/<id>.md` files are safe to write in
+  parallel; `HANDOFF.md` and `queue.md` are not. Re-read immediately before writing them. The `Stop`
+  hook serializes its own commit with `flock` and rebases onto whatever another session pushed
+  first, so the git side of the race is handled — the working-tree side is not.
+
+### Moving a station
+
+Anything the work depends on belongs in tracked `.claude/` files. Per-station setup, including
+`autoMemoryDirectory`, is in the `new-station` skill.
 
 ## Code Conventions
 
@@ -136,7 +144,7 @@ A helper that exists only to be called twice in one function belongs in that fun
 
 - Comments describe current behavior only — no change history, no issue numbers, no references to how the code used to work.
 - Plain language, in terms already used in the codebase. No invented jargon or pattern names.
-- Keep comments short. When more explanation is needed, use simple English and a small example.
+- Keep comments, and paragraphs in `.md` files, to 30 words; CI rejects longer ones a PR adds, except in tests. Use simple English, with a small example where it helps.
 
 ### Issues and Pull Requests
 

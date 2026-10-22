@@ -525,7 +525,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     : '',
   ];
 
-  $sessions_ids = $zscores_by_encounter = $vaccinations_by_encounter = $muac_edema_by_encounter = [];
+  $sessions_ids = $zscores_by_encounter = $vaccinations_by_encounter = $muac_edema_by_encounter = $first_pregnancy_encounters = [];
   $prenatal_indicators_by_encounter = [
     'mms' => [],
     'us' => [],
@@ -777,6 +777,14 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         if (!empty($abortions) && $abortions > 0) {
           $prenatal_indicators_by_encounter['abortion'][] = $encounter_id;
         }
+        // First pregnancy, as skipObstetricHistorySecondStep decides it in the
+        // client: currently pregnant, and every pregnancy and child count is 0.
+        $previous_pregnancies = (int) $preterm + (int) $stillbirths_at_term + (int) $stillbirths_preterm + (int) $abortions
+          + (int) $measurement->field_term_pregnancy[LANGUAGE_NONE][0]['value']
+          + (int) $measurement->field_live_children[LANGUAGE_NONE][0]['value'];
+        if ($previous_pregnancies == 0 && !empty($measurement->field_currently_pregnant[LANGUAGE_NONE][0]['value'])) {
+          $first_pregnancy_encounters[] = $encounter_id;
+        }
         break;
 
       case HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_STEP2_CONTENT_TYPE:
@@ -926,6 +934,13 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         $sessions_ids[] = $encounter_id;
     }
   }
+
+  // The app skips obstetric history step 2 on a first pregnancy, so step 2
+  // answers left on that encounter do not count.
+  $prenatal_indicators_by_encounter['intrauterine-death'] = array_diff(
+    $prenatal_indicators_by_encounter['intrauterine-death'],
+    $first_pregnancy_encounters
+  );
 
   $encounters_data = [];
   $ai_diagnosis_mapping = hedley_reports_ai_diagnosis_mapping();
@@ -2126,6 +2141,8 @@ function hedley_reports_ai_diagnosis_mapping() {
  *   An associative array mapping diagnosis identifiers to their codes.
  */
 function hedley_reports_prenatal_diagnosis_mapping() {
+  // Reconfirmations ('-continued', '-persistent') get no code: they repeat a
+  // diagnosis the encounter that found the condition is already counted for.
   return [
     'chronic-hypertension-immediate' => 'a',
     'chronic-hypertension-recheck' => 'a',
@@ -2177,7 +2194,9 @@ function hedley_reports_prenatal_diagnosis_mapping() {
     'prom' => 'c1',
     'pprom' => 'd1',
     'hyperemesis-gravidum' => 'e1',
+    'hyperemesis-gravidum-by-symptoms' => 'e1',
     'severe-vomiting' => 'f1',
+    'severe-vomiting-by-symptoms' => 'f1',
     'maternal-complications' => 'g1',
     'infection' => 'h1',
     'imminent-delivery' => 'i1',
@@ -2213,6 +2232,9 @@ function hedley_reports_prenatal_diagnosis_mapping() {
     'postpartum-excessive-bleeding' => 'j2',
     'postpartum-early-mastitis-engorgment' => 'k2',
     'postpartum-mastitis' => 'l2',
+    'high-risk-of-preeclampsia-initial' => 'm2',
+    'high-risk-of-preeclampsia-recurrent' => 'm2',
+    'moderate-risk-of-preeclampsia' => 'n2',
   ];
 }
 
@@ -2324,6 +2346,10 @@ function hedley_reports_get_unique_districts_by_province($province) {
 function hedley_reports_generate_nutrition_report_data(array $data) {
   $impacted = [];
   $nutrition_data = [];
+  // The report shows the previous 2 years, plus the year before them for
+  // Incidence, so visits count from 1 January, 3 years back.
+  $today = new DateTime();
+  $starting_year = $today->format('Y') - 3;
 
   $total = count($data);
   $processed = 0;
@@ -2334,9 +2360,19 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
         drush_print("Processed $processed out of $total patients...");
       }
     }
-    if (hedley_reports_calculate_year_difference($patient_data->birth_date) > 5) {
+    // A visit counts only if the child was under six on that day.
+    // A child born 2019-03 keeps a 2024 visit, but not a 2025-04 one.
+    $sixth_birthday = hedley_reports_sixth_birthday($patient_data->birth_date);
+    if (!$sixth_birthday) {
       continue;
     }
+    // Six by 1 January of the starting year: no visit in the report counts.
+    if ($sixth_birthday <= "$starting_year-01-01") {
+      continue;
+    }
+    $is_visit_under_six = function ($encounter) use ($sixth_birthday) {
+      return substr($encounter, 0, 10) < $sixth_birthday;
+    };
 
     $data_for_patient = [
       'id' => $patient_data->id,
@@ -2392,7 +2428,11 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
         }
       }
     }
-    $data_for_patient['family_encounters'] = $family_encounters;
+    $data_for_patient['encounters'] = array_filter($data_for_patient['encounters'], $is_visit_under_six);
+    $data_for_patient['family_encounters'] = array_filter($family_encounters, $is_visit_under_six);
+    if (empty($data_for_patient['encounters']) && empty($data_for_patient['family_encounters'])) {
+      continue;
+    }
 
     $nutrition_data[] = $data_for_patient;
 
@@ -2407,12 +2447,6 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
     }
   }
 
-  // Filtering out encounters performed before Jan 01 of starting year.
-  // Starting year is current year, minus 3, as Nutrition report shows
-  // data from previous 2 years, and we need prior year as well, to
-  // compute Incidence.
-  $today = new DateTime();
-  $starting_year = $today->format('Y') - 3;
   // Initialize the dictionary (associative array in PHP)
   $encounters_by_month = [];
   $total = count($nutrition_data);
@@ -2529,6 +2563,25 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
     hedley_reports_nutrition_metrics_to_table_data('incidence-year-1', $incidence_by_year_one_visit_or_more_data),
     hedley_reports_nutrition_metrics_to_table_data('incidence-year-2', $incidence_by_year_two_visits_or_more_data),
   ];
+}
+
+/**
+ * Returns the day a child turns six.
+ *
+ * @param string $birth_date
+ *   The birth date, as Y-m-d.
+ *
+ * @return string|false
+ *   The sixth birthday as Y-m-d (2020-02-29 gives 2026-03-01), or FALSE when
+ *   the birth date is not a real Y-m-d date.
+ */
+function hedley_reports_sixth_birthday($birth_date) {
+  $date = DateTime::createFromFormat('Y-m-d', $birth_date);
+  // A date like 2019-02-30 is rolled over to 2019-03-02, so it is refused.
+  if (!$date || $date->format('Y-m-d') !== $birth_date) {
+    return FALSE;
+  }
+  return $date->modify('+6 years')->format('Y-m-d');
 }
 
 /**
@@ -2942,54 +2995,6 @@ function hedley_reports_quarter_to_months($quarter) {
     $months[] = 3 * ($quarter - 1) + $i;
   }
   return $months;
-}
-
-/**
- * Calculates the year difference between two dates.
- *
- * This function calculates the difference in years between two dates.
- * If the second date is not provided, the current date is used.
- *
- * @param string $fromDateString
- *   The starting date in 'Y-m-d' format.
- * @param string|null $toDateString
- *   The ending date in 'Y-m-d' format. Defaults to the current date
- *   if not provided.
- *
- * @return int|string
- *   The difference in years as an integer, or an error message if the date
- *   format is invalid.
- */
-function hedley_reports_calculate_year_difference($fromDateString, $toDateString = NULL) {
-  // Convert the from date string to a DateTime object.
-  $fromDate = DateTime::createFromFormat('Y-m-d', $fromDateString);
-  if (!$fromDate) {
-    return "Invalid from date format.";
-  }
-
-  // Use the current date if to date is not provided.
-  if ($toDateString === NULL) {
-    $toDate = new DateTime();
-  }
-  else {
-    // Convert the to date string to a DateTime object.
-    $toDate = DateTime::createFromFormat('Y-m-d', $toDateString);
-    if (!$toDate) {
-      return "Invalid to date format.";
-    }
-  }
-
-  // Calculate the difference between the two dates.
-  $interval = $toDate->diff($fromDate);
-
-  // Determine the sign of the difference.
-  $yearDifference = $interval->y;
-  if ($toDate < $fromDate) {
-    $yearDifference = -$yearDifference;
-  }
-
-  // Return the difference in years.
-  return $yearDifference;
 }
 
 /**
@@ -9398,14 +9403,23 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
   if ($hiv_diagnosed) {
     $hiv_test_measurement = $encounter_data['measurements_by_type']['prenatal_hiv_test'];
     if (!empty($hiv_test_measurement) && !empty($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE])) {
+      // A lab technician's save leaves the follow up questions to the nurse,
+      // marking the answers as pending. Until the nurse answers whether
+      // there is an HIV program at the health center, no medication is
+      // required.
       $hiv_program_at_hc = FALSE;
+      $answers_pending = FALSE;
       foreach ($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE] as $sign) {
         if ($sign['value'] == 'hiv-program-hc') {
           $hiv_program_at_hc = TRUE;
           break;
         }
+        if ($sign['value'] == 'pending-input') {
+          $answers_pending = TRUE;
+          break;
+        }
       }
-      if (!$hiv_program_at_hc) {
+      if (!$hiv_program_at_hc && !$answers_pending) {
         return TRUE;
       }
     }

@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, isCurrentAuthorityRequest, isInDownloadLane, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -38,7 +38,7 @@ import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
 import Maybe.Extra
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import RemoteData
+import RemoteData exposing (WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import SyncManager.Model exposing (..)
 import Utils.WebData
@@ -68,6 +68,35 @@ pageAllowsBackgroundRefresh page =
             True
 
         UserPage _ ->
+            False
+
+
+{-| Whether a download issued for this authority entry still answers what the
+model asks: the entry is current, and its revision cursor has not moved since.
+-}
+isCurrentAuthorityRequest : SyncInfoAuthority -> Model -> Bool
+isCurrentAuthorityRequest requested model =
+    Maybe.map Zipper.current model.syncInfoAuthorities
+        |> Maybe.map (\current -> current.uuid == requested.uuid && current.lastFetchedRevisionId == requested.lastFetchedRevisionId)
+        |> Maybe.withDefault False
+
+
+{-| Whether the sync cycle is in the given download lane. For example, a
+`SyncDownloadAuthority` reply is out of its lane once the cycle reached statistics.
+-}
+isInDownloadLane : (WebData (DownloadSyncResponse a) -> SyncStatus) -> SyncStatus -> Bool
+isInDownloadLane lane status =
+    case ( lane RemoteData.NotAsked, status ) of
+        ( SyncDownloadAuthority _, SyncDownloadAuthority _ ) ->
+            True
+
+        ( SyncDownloadAuthorityDashboardStats _, SyncDownloadAuthorityDashboardStats _ ) ->
+            True
+
+        ( SyncDownloadGeneral _, SyncDownloadGeneral _ ) ->
+            True
+
+        _ ->
             False
 
 
@@ -322,25 +351,28 @@ determineSyncStatus activePage model =
                                 , syncInfoAuthorities
                                 )
 
-                            ( Just zipper, RemoteData.Success _ ) ->
-                                -- Go to the next authority if there is
-                                -- otherwise, to the next status
-                                case Zipper.next zipper of
-                                    Just nextZipper ->
-                                        ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
-                                        , Just nextZipper
-                                        )
+                            ( Just zipper, _ ) ->
+                                -- A failed download moves on too, so uploads are not held
+                                -- back; the statistics are fetched again next cycle.
+                                if RemoteData.isSuccess webData || RemoteData.isFailure webData then
+                                    -- Go to the next authority if there is
+                                    -- otherwise, to the next status
+                                    case Zipper.next zipper of
+                                        Just nextZipper ->
+                                            ( SyncDownloadAuthorityDashboardStats RemoteData.NotAsked
+                                            , Just nextZipper
+                                            )
 
-                                    Nothing ->
-                                        -- We've reached the last element,
-                                        -- so reset authorities zipper to first element,
-                                        -- and rotate to the next status.
-                                        ( SyncIdle
-                                        , Just (Zipper.first zipper)
-                                        )
+                                        Nothing ->
+                                            -- We've reached the last element,
+                                            -- so reset authorities zipper to first element,
+                                            -- and rotate to the next status.
+                                            ( SyncIdle
+                                            , Just (Zipper.first zipper)
+                                            )
 
-                            _ ->
-                                noChange
+                                else
+                                    noChange
         in
         { model
             | syncStatus = syncStatusUpdated

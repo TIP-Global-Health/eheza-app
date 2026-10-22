@@ -14,8 +14,8 @@
 set -e
 
 # Install the Elm toolchain (same versions as ci-scripts/install_client.sh).
-npm install -g elm@latest-0.19.2
-npm install -g elm-test@0.19.2-0
+npm install -g elm@latest-0.19.3
+npm install -g elm-test@0.19.3-0
 npm install --global gulp-cli
 
 cd "$CIRCLE_WORKING_DIRECTORY"/client
@@ -35,3 +35,8 @@ gulp zscore
 gulp version
 
 elm-test "src/elm/**/Test.elm"
+
+# The server Elm app (Statistical Queries and the other admin reports) keeps
+# its tests the same way, as src/**/Test.elm. It needs no generated files.
+cd "$CIRCLE_WORKING_DIRECTORY"/server/elm
+elm-test "src/**/Test.elm"

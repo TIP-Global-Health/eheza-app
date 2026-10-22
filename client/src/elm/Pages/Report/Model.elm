@@ -29,7 +29,9 @@ type alias LabsResultsValues encounterId =
     , hepatitisB : List (Backend.Measurement.Model.HepatitisBTestValue encounterId)
     , hivPCR : List Backend.Measurement.Model.HIVPCRTestValue
     , partnerHIV : List Backend.Measurement.Model.PartnerHIVTestValue
-    , malaria : List Backend.Measurement.Model.MalariaTestValue
+    , -- Paired with the date the measurement was recorded, which is what a
+      -- blood smear is listed under when it carries no execution date of its own.
+      malaria : List ( NominalDate, Backend.Measurement.Model.MalariaTestValue )
     , syphilis : List (Backend.Measurement.Model.SyphilisTestValue encounterId)
     , creatinine : List Backend.Measurement.Model.CreatinineTestValue
     , liverFunction : List Backend.Measurement.Model.LiverFunctionTestValue

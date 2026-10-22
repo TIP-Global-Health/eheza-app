@@ -637,12 +637,6 @@ export function queryNCDAWeight(personName: string): number | null {
 /**
  * Open the progress report (the "scorecard" tab of the encounter).
  */
-export async function openScorecardReport(page: Page) {
-  await click(page.locator('#scorecard-tab'), page);
-  await page.locator('h1', { hasText: 'PROGRESS REPORT' }).waitFor({ timeout: 30000 });
-  await page.waitForTimeout(WAIT.elmRerender);
-}
-
 /**
  * The confirmation dialog the report shows before ending an encounter.
  * Distinct from the diarrhea warning, which is a .danger-signs-popup - both

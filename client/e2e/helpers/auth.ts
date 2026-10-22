@@ -1,13 +1,12 @@
 import { Locator, Page } from '@playwright/test';
 
-const recording = !!process.env.RECORD;
-
 /**
  * Click a locator. In recording mode, hover first and pause
- * so the cursor position is visible in the video.
+ * so the cursor position is visible in the video. RECORD is read
+ * on each call, so the QA driver can switch it on per recording.
  */
 export async function click(locator: Locator, page: Page) {
-  if (recording) {
+  if (process.env.RECORD) {
     await locator.hover();
     await page.waitForTimeout(1000);
   }
@@ -83,8 +82,13 @@ export async function pairDevice(page: Page, pairingCode = '99999999') {
  * download nurse data from the backend. This function retries the
  * PIN login until the data is available.
  */
-export async function login(page: Page, pin = '1234', location = 'Nyange Health Center') {
-  await pairDevice(page);
+export async function login(
+  page: Page,
+  pin = '1234',
+  location = 'Nyange Health Center',
+  pairingCode = '99999999',
+) {
+  await pairDevice(page, pairingCode);
 
   // Give the sync manager time to download nurse data after pairing.
   await page.waitForTimeout(2000);
@@ -134,8 +138,9 @@ export async function setupDevice(
   pin = '1234',
   location = 'Nyange Health Center',
   healthCenter = 'Nyange Health Center',
+  pairingCode = '99999999',
 ) {
-  await login(page, pin, location);
+  await login(page, pin, location, pairingCode);
 
   // Navigate to Device Status page via dashboard card.
   await click(page.locator('.icon-task-device-status'), page);
