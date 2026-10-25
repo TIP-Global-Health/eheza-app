@@ -3827,19 +3827,7 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
     }
     $encounter_data['illness_diagnosis'] = $diagnosis;
 
-    // When a nurse takes over from CHWs, the nurse encounter is initial,
-    // and earlier CHW encounters are ignored. When nurse ran the first
-    // encounter, all are kept.
-    $initial_nurse_encounter_index = -1;
-    foreach ($previous_encounters_data as $ind => $data) {
-      if ($data['encounter_type'] == 'nurse-encounter') {
-        $initial_nurse_encounter_index = $ind;
-      }
-    }
-
-    $encounter_data['initial_with_subsequents'] = $initial_nurse_encounter_index > 0 ?
-      array_slice($previous_encounters_data, $initial_nurse_encounter_index) :
-      $previous_encounters_data;
+    $encounter_data['initial_with_subsequents'] = hedley_reports_acute_illness_initial_with_subsequents($previous_encounters_data);
 
     $fever_at_symptoms = FALSE;
     if (!empty($measurements_by_type['symptoms_general'])) {
@@ -3925,6 +3913,29 @@ function hedley_reports_acute_illness_generate_expected_initial_activities(array
   }
 
   return $expected;
+}
+
+/**
+ * Resolves the earlier encounters that Acute Illness follow-up rules read.
+ *
+ * When a nurse takes over from CHWs, the nurse encounter is initial, and
+ * earlier CHW encounters are ignored.
+ *
+ * @param array $previous_encounters_data
+ *   The earlier encounters of the illness, oldest first.
+ *
+ * @return array
+ *   The encounters from the last initial nurse encounter on, or all of them.
+ */
+function hedley_reports_acute_illness_initial_with_subsequents(array $previous_encounters_data) {
+  $initial_index = 0;
+  foreach ($previous_encounters_data as $index => $data) {
+    if ($data['encounter_type'] == 'nurse-encounter') {
+      $initial_index = $index;
+    }
+  }
+
+  return array_slice($previous_encounters_data, $initial_index);
 }
 
 /**
