@@ -1,7 +1,6 @@
 module Backend.IndividualEncounterParticipant.Update exposing (update)
 
 import App.Model
-import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (individualEncounterParticipantEndpoint)
 import Backend.Entities exposing (IndividualEncounterParticipantId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterParticipantOutcome(..), Model, Msg(..))
@@ -90,10 +89,15 @@ update currentDate participantId participantState msg model =
                 (\participant -> { participant | newborn = Just personId })
                 model
 
-        HandleUpdatedIndividualEncounterParticipant data ->
+        HandleUpdatedIndividualEncounterParticipant action data ->
             ( { model | updateIndividualEncounterParticipant = data }
             , Cmd.none
-            , triggerRollbarOnFailure data
+            , case data of
+                Failure error ->
+                    [ reportDroppedUpdate action participantId ("update failed (" ++ viewErrorForRollbar error ++ ")") ]
+
+                _ ->
+                    []
             )
 
 
@@ -108,23 +112,13 @@ updateIndividualEncounterParticipant individualEncounterParticipantId participan
     participantState
         |> Maybe.andThen RemoteData.toMaybe
         |> unwrap
-            -- The participant is not loaded, so there is nothing to apply the
-            -- update to, and it is discarded. Discarding used to be silent,
-            -- which made field occurrences (pregnancies left without EDD)
-            -- undiagnosable - so report it, with the cache state that explains
-            -- why the participant was not available.
+            -- The participant is not loaded, so the update is discarded and
+            -- reported, with the cache state that explains why.
             ( model
             , Cmd.none
-            , [ ("Dropped '"
-                    ++ action
-                    ++ "' for individual participant "
-                    ++ fromEntityUuid individualEncounterParticipantId
-                    ++ ": participant not loaded (cache state: "
-                    ++ describeParticipantState participantState
-                    ++ ")"
-                )
-                    |> Plain
-                    |> App.Model.TriggerRollbar App.Model.IndexedDB
+            , [ reportDroppedUpdate action
+                    individualEncounterParticipantId
+                    ("participant not loaded (cache state: " ++ describeParticipantState participantState ++ ")")
               ]
             )
             (\individualEncounterParticipant ->
@@ -132,10 +126,20 @@ updateIndividualEncounterParticipant individualEncounterParticipantId participan
                 , updateFunc individualEncounterParticipant
                     |> sw.patchFull individualEncounterParticipantEndpoint individualEncounterParticipantId
                     |> withoutDecoder
-                    |> toCmd (RemoteData.fromResult >> HandleUpdatedIndividualEncounterParticipant)
+                    |> toCmd (RemoteData.fromResult >> HandleUpdatedIndividualEncounterParticipant action)
                 , []
                 )
             )
+
+
+{-| Reports an update that will not reach the backend. Sent as plain text, so a
+network error is reported too: this request goes to the service worker.
+-}
+reportDroppedUpdate : String -> IndividualEncounterParticipantId -> String -> App.Model.Msg
+reportDroppedUpdate action participantId reason =
+    ("Dropped '" ++ action ++ "' for individual participant " ++ fromEntityUuid participantId ++ ": " ++ reason)
+        |> Plain
+        |> App.Model.TriggerRollbar App.Model.IndexedDB
 
 
 describeParticipantState : Maybe (WebData IndividualEncounterParticipant) -> String

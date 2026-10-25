@@ -538,7 +538,7 @@ elmApp.ports.getCoordinates.subscribe(function() {
   const options = {
       enableHighAccuracy: true,  // Use GPS if available for better accuracy.
       timeout: 15000,            // Time to wait for position (15 * 1000 ms).
-      maximumAge: 600000         // Accept cached positions up to 10 minutes old (10 * 60 * 1000 ms).
+      maximumAge: 60000          // Accept cached positions up to 1 minute old (60 * 1000 ms).
   };
 
   navigator.geolocation.getCurrentPosition(
@@ -1764,6 +1764,9 @@ elmApp.ports.initRollbar.subscribe(function(data) {
               // The build the report came from, so a stack trace can be read
               // against the bundle that produced it.
               code_version: data.version,
+              // Rollbar fetches Main.js.map, so frames in the mangled bundle
+              // show Elm function names.
+              source_map_enabled: true,
             }
           },
           person: {
@@ -1793,9 +1796,8 @@ elmApp.ports.initRollbar.subscribe(function(data) {
       // Send all items.
       let localIds = [];
       result.forEach(function(row) {
-          // The report carries the build that sends it, which is not the build
-          // that recorded it when the app updated in between. Rows written
-          // before this was kept have no build to say.
+          // The report carries the sending build, not the recording one if the
+          // app updated in between. Service worker rows, and older rows, have no build.
           if (row.version) {
               rollbar.log(row.error, { recordedOnVersion: row.version });
           }
@@ -2013,7 +2015,7 @@ elmApp.ports.serviceWorkerOut.subscribe(function(message) {
         }).catch(function(error) {
         elmApp.ports.serviceWorkerIn.send({
           tag: 'RegistrationFailed',
-          error: JSON.stringify(error)
+          error: String(error)
         });
       });
       break;

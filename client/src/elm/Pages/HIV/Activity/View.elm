@@ -32,7 +32,7 @@ import Measurement.View
         , viewSendToHealthCenterForm
         )
 import Pages.HIV.Activity.Model exposing (DiagnosticsData, DiagnosticsForm, HealthEducationForm, MedicationData, MedicationTask(..), Model, Msg(..), NextStepsData, NextStepsTask(..), PrescribedMedicationForm, SymptomReviewData)
-import Pages.HIV.Activity.Utils exposing (diagnosticsFormWithDefault, expectMedicationTask, expectNextStepsTask, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, medicationTaskCompleted, medicationTasks, medicationTasksCompletedFromTotal, nextStepsTaskCompleted, nextStepsTasks, nextStepsTasksCompletedFromTotal, prescribedMedicationFormWithDefault, prescribedMedicationsInputsAndTasks, symptomReviewFormWithDefault)
+import Pages.HIV.Activity.Utils exposing (diagnosticsFormWithDefault, expectMedicationTask, expectNextStepsTask, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, medicationTaskCompleted, medicationTasks, medicationTasksCompletedFromTotal, nextStepsTaskCompleted, nextStepsTasks, nextStepsTasksCompletedFromTotal, prescribedMedicationFormWithDefault, prescribedMedicationsInputsAndTasks, setResultPositive, setRunHIVTest, symptomReviewFormWithDefault)
 import Pages.HIV.Encounter.Model exposing (AssembledData)
 import Pages.HIV.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -286,21 +286,7 @@ resolveInputsAndTasksForNonExistingPositiveHIVResult language currentDate form =
       , viewBoolInput
             language
             form.resultPositive
-            (SetDiagnosticsBoolInput
-                (\value form_ ->
-                    { form_
-                        | resultPositive = Just value
-                        , positiveResultDate = Nothing
-                        , positiveResultDateDirty = True
-                        , positiveResultDateEstimated = Nothing
-                        , positiveResultDateEstimatedDirty = True
-                        , runHIVTest = Nothing
-                        , runHIVTestDirty = True
-                        , testResult = Nothing
-                        , testResultDirty = True
-                    }
-                )
-            )
+            (SetDiagnosticsBoolInput setResultPositive)
             "result-positive"
             Nothing
       ]
@@ -396,20 +382,7 @@ resolveInputsAndTasksForSuggestedHIVTest language form =
       , viewBoolInput
             language
             form.runHIVTest
-            (SetDiagnosticsBoolInput
-                (\value form_ ->
-                    { form_
-                        | runHIVTest = Just value
-                        , runHIVTestDirty = True
-                        , testResult = Nothing
-                        , testResultDirty = True
-                        , positiveResultDate = Nothing
-                        , positiveResultDateDirty = True
-                        , positiveResultDateEstimated = Nothing
-                        , positiveResultDateEstimatedDirty = True
-                    }
-                )
-            )
+            (SetDiagnosticsBoolInput setRunHIVTest)
             "run-hiv-test"
             Nothing
       ]

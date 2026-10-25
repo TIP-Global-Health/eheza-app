@@ -55,7 +55,7 @@ type Msg
     | CloseHIVSession HIVOutcome
     | SetEddDate NominalDate
     | SetNewborn PersonId
-    | HandleUpdatedIndividualEncounterParticipant (WebData ())
+    | HandleUpdatedIndividualEncounterParticipant String (WebData ())
 
 
 emptyModel : Model

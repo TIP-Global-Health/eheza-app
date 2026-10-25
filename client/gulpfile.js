@@ -281,14 +281,18 @@ gulp.task("minify", gulp.series(
   gulp.parallel("styles", "zscore", "copy:images", "copy:favicon"),
   function minifyFiles() {
     return gulp.src("serve/**/*.*")
-      // Concatenate JavaScript files and preserve important comments.
-      // DropZone had a problem if we mangle
-      // ... see <https://github.com/rowanwins/vue-dropzone/issues/119>
-      .pipe($.if(["*.js", "!service-worker.js", "!workbox-*.js", "!app.js", "!bulkPhotos.js", "!nodes.js", "!photos.js", "!statistics.js"], uglify({
+      // Elm keeps all its names inside one function, so Main.js is mangled.
+      // Other files keep their names: DropZone breaks when mangled, see
+      // <https://github.com/rowanwins/vue-dropzone/issues/119>
+      .pipe($.if("Main.js", $.sourcemaps.init()))
+      .pipe($.if("Main.js", uglify(), $.if(["*.js", "!service-worker.js", "!workbox-*.js", "!app.js", "!bulkPhotos.js", "!nodes.js", "!photos.js", "!statistics.js"], uglify({
         mangle: false
-      }))).on('error', function(err) {
-        console.error(err);
-      })
+      }))))
+      // Main.js.map turns positions in Rollbar stack traces back into Elm
+      // function names.
+      .pipe($.if("Main.js", $.sourcemaps.write(".", {
+        includeContent: false
+      })))
 
     // Minify CSS
     .pipe($.if("*.css", $.minifyCss()))

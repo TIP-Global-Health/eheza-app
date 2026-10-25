@@ -66,14 +66,20 @@ export function cleanupStaleTestData() {
  * unique title. Device pairing codes are single-use, so this must
  * be called before each test that needs to pair.
  *
+ * The next e2e run deletes every device titled "E2E...", so a device
+ * meant to outlive it, such as a QA run's, needs another title prefix.
+ *
  * Note: execSync with hardcoded commands — no user input involved.
  */
-export function resetDevice(pairingCode = '99999999') {
+export function resetDevice(pairingCode = '99999999', titlePrefix = 'E2E Device') {
   if (!/^\d+$/.test(pairingCode)) {
     throw new Error(`Invalid pairing code: must be digits only, got "${pairingCode}"`);
   }
+  if (!/^[\w ]+$/.test(titlePrefix)) {
+    throw new Error(`Invalid title prefix: letters, digits and spaces only, got "${titlePrefix}"`);
+  }
 
-  const title = `E2E Device ${Date.now()}`;
+  const title = `${titlePrefix} ${Date.now()}`;
 
   const php = `
       // Clear pairing code on any existing device that holds it,
@@ -98,7 +104,7 @@ export function resetDevice(pairingCode = '99999999') {
       \\$wrapper->field_pairing_code->set('${pairingCode}');
       node_save(\\$node);
 
-      echo 'E2E device created with pairing code ${pairingCode}';
+      echo '${title} created with pairing code ${pairingCode}';
   `;
 
   const { drushCmd, cwd } = drushEnv();

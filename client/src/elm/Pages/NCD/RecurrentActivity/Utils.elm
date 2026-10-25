@@ -1,11 +1,11 @@
 module Pages.NCD.RecurrentActivity.Utils exposing (activityCompleted, expectActivity, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultTasks, resolveNextStepsTasks)
 
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
 import Backend.NCDActivity.Model exposing (NCDRecurrentActivity(..))
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils exposing (expectUniversalTestResultTask, testPerformedByExecutionNote, testPerformedByValue)
+import Measurement.Utils exposing (expectUniversalTestResultTask, testPerformedByValue)
 import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
 import Pages.NCD.RecurrentActivity.Model exposing (Msg(..), NextStepsData)
 import Pages.NCD.RecurrentActivity.Types exposing (NextStepsTask(..))
@@ -192,7 +192,11 @@ expectLaboratoryResultTask assembled task =
 
         TaskRandomBloodSugarTest ->
             getMeasurementValueFunc assembled.measurements.randomBloodSugarTest
-                |> Maybe.map expectUniversalTestResultTask
+                |> Maybe.map
+                    (\value ->
+                        testPerformedByExecutionNote value.executionNote
+                            && expectUniversalTestResultTask value
+                    )
                 |> Maybe.withDefault False
 
         TaskUrineDipstickTest ->

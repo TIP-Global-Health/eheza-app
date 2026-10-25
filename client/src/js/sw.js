@@ -289,7 +289,7 @@ function sendErrorResponses (err) {
 }
 
 function databaseError (err) {
-    var response = new Response(JSON.stringify(err), {
+    var response = new Response(String(err), {
         status: 500,
         statusText: 'Database Error'
     });

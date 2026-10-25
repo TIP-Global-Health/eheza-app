@@ -56,6 +56,10 @@ fetchForAdult personId db =
         fetchPrenatalMeasurementsMsgs =
             List.map FetchPrenatalMeasurements prenatalEncountersIds
 
+        fetchAcuteIllnessEncountersMsg =
+            resolveIndividualParticipantsForPerson personId AcuteIllnessEncounter db
+                |> FetchAcuteIllnessEncountersForParticipants
+
         fetchChildrenMsgs =
             Dict.get personId db.relationshipsByPerson
                 |> Maybe.andThen RemoteData.toMaybe
@@ -69,6 +73,7 @@ fetchForAdult personId db =
     [ FetchIndividualEncounterParticipantsForPerson personId
     , FetchMotherMeasurements personId
     , fetchPrenatalEncountersMsg
+    , fetchAcuteIllnessEncountersMsg
     ]
         ++ fetchPrenatalMeasurementsMsgs
         ++ fetchChildrenMsgs

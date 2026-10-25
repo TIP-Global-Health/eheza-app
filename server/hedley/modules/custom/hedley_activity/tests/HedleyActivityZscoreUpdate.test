@@ -71,8 +71,56 @@ class HedleyActivityZscoreUpdate extends HedleyWebTestBase {
     $weight = entity_metadata_wrapper('node', $weight_id);
     $height = entity_metadata_wrapper('node', $height_id);
 
-    $this->assertEqual(round($height->field_zscore_age->value(), 2), 7.63);
-    $this->assertEqual(round($weight->field_zscore_age->value(), 2), 5.48);
+    // At five months, 82 cm and 13 kg give 7.63 and 5.48, beyond the WHO
+    // limits, so the z-scores are cleared.
+    $this->assertNull($height->field_zscore_age->value());
+    $this->assertNull($weight->field_zscore_age->value());
+
+    // A weight of 0 was not measured, so it gets no z-score.
+    $zero_weight_id = $this->createWeight('weight', $session_id, $child_id, 0, $one_year_old);
+    $zero_weight = entity_metadata_wrapper('node', $zero_weight_id);
+    $this->assertNull($zero_weight->field_zscore_age->value());
+
+    // Back to a one year old, for the head circumference.
+    $child->field_birth_date->set(strtotime('2015-06-27'));
+    $child->save();
+
+    $head_circumference_id = $this->createHeadCircumference($child_id, 46, 'none', $one_year_old);
+    $head_circumference = entity_metadata_wrapper('node', $head_circumference_id);
+    $this->assertEqual(round($head_circumference->field_zscore_age->value(), 2), -0.06);
+
+    // "Not taken" is stored as 0 cm, and gets no z-score.
+    $not_taken_id = $this->createHeadCircumference($child_id, 0, 'not-taken', $one_year_old);
+    $not_taken = entity_metadata_wrapper('node', $not_taken_id);
+    $this->assertNull($not_taken->field_zscore_age->value());
+  }
+
+  /**
+   * Create a well child head circumference.
+   *
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param float $cm
+   *   The head circumference.
+   * @param string $note
+   *   The measurement note: 'none' or 'not-taken'.
+   * @param int $timestamp
+   *   The date the measurement was taken, as a unix timestamp.
+   *
+   * @return int
+   *   The node ID of the head circumference.
+   */
+  protected function createHeadCircumference($child_id, $cm, $note, $timestamp) {
+    $node = $this->drupalCreateNode(['type' => 'well_child_head_circumference']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_head_circumference->set($cm);
+    $wrapper->field_measurement_notes->set([$note]);
+    $wrapper->save();
+
+    return $node->nid;
   }
 
 }

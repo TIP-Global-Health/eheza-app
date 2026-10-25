@@ -1,4 +1,4 @@
-module Pages.Reports.View exposing (view)
+module Pages.Reports.View exposing (generateAcuteIllnessReportData, generateDemographicsReportEncountersData, generateDemographicsReportPatientsData, generatePeripartumReportData, generatePostnatalCareReportData, generatePrenatalContactsReportData, generatePrenatalReportData, view)
 
 import App.Types exposing (Language, Site, SiteFeature(..))
 import AssocList as Dict exposing (Dict)
@@ -31,7 +31,6 @@ import Gizra.NominalDate
         , customFormatDDMMYYYY
         , diffMonths
         , diffWeeks
-        , formatDDMMYYYY
         , sortByDate
         , sortByDateDesc
         )
@@ -41,16 +40,17 @@ import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
-import Pages.Components.View exposing (viewMetricsResultsTable, viewStandardCells, viewStandardRow)
+import Pages.Components.View exposing (viewMetricsResultsTable, viewReportDateInputs, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
-import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
+import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, filterRecordsByDateRange, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isPostpartumEncounter, isPregnancyCompleted, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, resolveQuarterForIndex)
 import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils
     exposing
         ( calculatePercentage
         , generateReportsHeaderImage
         , launchDate
+        , viewBackendData
         , viewCustomLabel
         , viewSelectListInput
         , wrapSelectListInput
@@ -63,15 +63,8 @@ import Utils.Html exposing (viewModal)
 
 view : Language -> NominalDate -> String -> ModelBackend -> Model -> Html Msg
 view language currentDate themePath modelBackend model =
-    case modelBackend.reportsData of
-        Just (Ok data) ->
-            viewReportsData language currentDate themePath data model
-
-        Just (Err err) ->
-            text <| Debug.toString err
-
-        Nothing ->
-            emptyNode
+    viewBackendData modelBackend.reportsData
+        (\data -> viewReportsData language currentDate themePath data model)
 
 
 viewReportsData : Language -> NominalDate -> String -> ReportsData -> Model -> Html Msg
@@ -110,61 +103,15 @@ viewReportsData language currentDate themePath data model =
                                     []
 
                                 else
-                                    let
-                                        startDateInput =
-                                            let
-                                                dateSelectorConfig =
-                                                    { select = SetStartDate
-                                                    , close = SetStartDateSelectorState Nothing
-                                                    , dateFrom = launchDate
-                                                    , dateTo = currentDate
-                                                    , dateDefault = Just launchDate
-                                                    }
-
-                                                dateForView =
-                                                    Maybe.map formatDDMMYYYY model.startDate
-                                                        |> Maybe.withDefault ""
-                                            in
-                                            div
-                                                [ class "form-input date"
-                                                , onClick <| SetStartDateSelectorState (Just dateSelectorConfig)
-                                                ]
-                                                [ text dateForView ]
-                                                |> wrapSelectListInput language Translate.SelectStartDate False
-
-                                        limitDateInput =
-                                            if
-                                                -- Reports requires setting start date before
-                                                -- limit date can be shown.
-                                                isNothing model.startDate
-                                            then
-                                                emptyNode
-
-                                            else
-                                                let
-                                                    dateFrom =
-                                                        Maybe.withDefault launchDate model.startDate
-
-                                                    dateSelectorConfig =
-                                                        { select = SetLimitDate
-                                                        , close = SetLimitDateSelectorState Nothing
-                                                        , dateFrom = dateFrom
-                                                        , dateTo = currentDate
-                                                        , dateDefault = Just currentDate
-                                                        }
-
-                                                    limitDateForView =
-                                                        Maybe.map formatDDMMYYYY model.limitDate
-                                                            |> Maybe.withDefault ""
-                                                in
-                                                div
-                                                    [ class "form-input date"
-                                                    , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
-                                                    ]
-                                                    [ text limitDateForView ]
-                                                    |> wrapSelectListInput language Translate.SelectLimitDate False
-                                    in
-                                    [ startDateInput, limitDateInput ]
+                                    viewReportDateInputs language
+                                        currentDate
+                                        model.startDate
+                                        model.limitDate
+                                        { setStartDate = SetStartDate
+                                        , setStartDateSelectorState = SetStartDateSelectorState
+                                        , setLimitDate = SetLimitDate
+                                        , setLimitDateSelectorState = SetLimitDateSelectorState
+                                        }
                             )
                             model.reportType
                             |> Maybe.withDefault []
@@ -193,115 +140,7 @@ viewReportsData language currentDate themePath data model =
                                 (\reportType startDate limitDate ->
                                     let
                                         recordsTillLimitDate =
-                                            if
-                                                (Date.compare startDate launchDate == EQ)
-                                                    && (Date.compare limitDate currentDate == EQ)
-                                            then
-                                                data.records
-
-                                            else
-                                                List.filterMap
-                                                    (\record ->
-                                                        if
-                                                            -- Patient was created not after the TO date.
-                                                            not <| Date.compare record.created limitDate == GT
-                                                        then
-                                                            let
-                                                                filterPrenatalData =
-                                                                    Maybe.map
-                                                                        (List.filterMap
-                                                                            (\participantData ->
-                                                                                -- Pregnancy was created not after the TO date.
-                                                                                if Date.compare participantData.created limitDate == GT then
-                                                                                    Nothing
-
-                                                                                else
-                                                                                    let
-                                                                                        filteredEncounters =
-                                                                                            List.filter
-                                                                                                (\encounterData ->
-                                                                                                    -- Encounter was created not before the FROM date and
-                                                                                                    -- not after the TO date.
-                                                                                                    (not <| Date.compare encounterData.startDate startDate == LT)
-                                                                                                        && (not <| Date.compare encounterData.startDate limitDate == GT)
-                                                                                                )
-                                                                                                participantData.encounters
-                                                                                    in
-                                                                                    if List.isEmpty filteredEncounters then
-                                                                                        Nothing
-
-                                                                                    else
-                                                                                        let
-                                                                                            dateConcluded =
-                                                                                                -- If pregnancy was concluded, but conclusion date is
-                                                                                                -- after TO date, we mark pregnancy as not concluded.
-                                                                                                Maybe.andThen
-                                                                                                    (\date ->
-                                                                                                        if Date.compare limitDate date == LT then
-                                                                                                            Nothing
-
-                                                                                                        else
-                                                                                                            Just date
-                                                                                                    )
-                                                                                                    participantData.dateConcluded
-                                                                                        in
-                                                                                        Just { participantData | dateConcluded = dateConcluded, encounters = filteredEncounters }
-                                                                            )
-                                                                        )
-
-                                                                filterIndividualBy resolveDateFunc =
-                                                                    Maybe.map
-                                                                        (List.map
-                                                                            (List.filter
-                                                                                (\encounterData ->
-                                                                                    let
-                                                                                        encounterDate =
-                                                                                            resolveDateFunc encounterData
-                                                                                    in
-                                                                                    (not <| Date.compare encounterDate startDate == LT)
-                                                                                        && (not <| Date.compare encounterDate limitDate == GT)
-                                                                                )
-                                                                            )
-                                                                        )
-
-                                                                filterGroupBy resolveDateFunc =
-                                                                    Maybe.map
-                                                                        (List.filter
-                                                                            (\encounterData ->
-                                                                                let
-                                                                                    encounterDate =
-                                                                                        resolveDateFunc encounterData
-                                                                                in
-                                                                                (not <| Date.compare encounterDate startDate == LT)
-                                                                                    && (not <| Date.compare encounterDate limitDate == GT)
-                                                                            )
-                                                                        )
-                                                            in
-                                                            Just
-                                                                { record
-                                                                    | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
-                                                                    , prenatalData = filterPrenatalData record.prenatalData
-                                                                    , homeVisitData = filterIndividualBy identity record.homeVisitData
-                                                                    , wellChildData = filterIndividualBy .startDate record.wellChildData
-                                                                    , childScorecardData = filterIndividualBy identity record.childScorecardData
-                                                                    , ncdData = filterIndividualBy identity record.ncdData
-                                                                    , hivData = filterIndividualBy identity record.hivData
-                                                                    , tuberculosisData = filterIndividualBy identity record.tuberculosisData
-                                                                    , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
-                                                                    , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
-                                                                    , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
-                                                                    , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
-                                                                    , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
-                                                                    , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
-                                                                    , groupNutritionFbfMotherData = filterGroupBy .startDate record.groupNutritionFbfMotherData
-                                                                    , familyNutritionData = filterIndividualBy .startDate record.familyNutritionData
-                                                                    , familyNutritionMuacData = filterIndividualBy .startDate record.familyNutritionMuacData
-                                                                }
-
-                                                        else
-                                                            Nothing
-                                                    )
-                                                    data.records
+                                            filterRecordsByDateRange currentDate startDate limitDate data.records
                                     in
                                     case reportType of
                                         ReportAcuteIllness ->
@@ -317,7 +156,7 @@ viewReportsData language currentDate themePath data model =
                                             viewNutritionReport language limitDate scopeLabel data.nutritionReportData model.nutritionReportData
 
                                         ReportPeripartum ->
-                                            viewPeripartumReport language limitDate scopeLabel recordsTillLimitDate
+                                            viewPeripartumReport language startDate limitDate scopeLabel data.records recordsTillLimitDate
 
                                         ReportPostnatalCare ->
                                             viewPostnatalCareReport language data.site limitDate scopeLabel recordsTillLimitDate
@@ -382,17 +221,7 @@ viewDemographicsReport : Language -> EverySet SiteFeature -> NominalDate -> Nomi
 viewDemographicsReport language features startDate limitDate scopeLabel records =
     let
         demographicsReportPatientsData =
-            -- We get recoderds for all patients that were created not before
-            -- the TO date.
-            -- In this report however, we want to get only those patients that
-            -- were created not after the FROM date, hence the filtering.
-            List.filter
-                (\record ->
-                    -- Patient was created not before the FROM date.
-                    not <| Date.compare record.created startDate == LT
-                )
-                records
-                |> generateDemographicsReportPatientsData language limitDate
+            generateDemographicsReportPatientsData language startDate limitDate records
 
         demographicsReportEncountersData =
             generateDemographicsReportEncountersData language features records
@@ -415,8 +244,13 @@ viewDemographicsReport language features startDate limitDate scopeLabel records 
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
+{-| The patients registered between FROM and TO, by age at TO. The records
+hold every patient created up to TO, so those created before FROM are
+left out here.
+-}
 generateDemographicsReportPatientsData :
     Language
+    -> NominalDate
     -> NominalDate
     -> List PatientData
     ->
@@ -429,10 +263,11 @@ generateDemographicsReportPatientsData :
                 , totals : ( String, String )
                 }
         }
-generateDemographicsReportPatientsData language limitDate records =
+generateDemographicsReportPatientsData language startDate limitDate records =
     let
         ( males, females ) =
-            List.partition (.gender >> (==) Male) records
+            List.filter (\record -> Date.compare record.created startDate /= LT) records
+                |> List.partition (.gender >> (==) Male)
 
         males1MonthAndLess =
             List.filter (\patient -> Date.diff Months patient.birthDate limitDate == 0)
@@ -680,15 +515,19 @@ demographicsReportPatientsDataToCSV :
 demographicsReportPatientsDataToCSV data =
     let
         tableDataToCSV tableData =
-            [ String.join "," tableData.captions
-            , List.map (String.join ",")
+            let
+                ( totalsLabel, totalsValue ) =
+                    tableData.totals
+            in
+            [ csvRow tableData.captions
+            , List.map csvRow
                 tableData.rows
                 |> String.join "\n"
-            , Tuple.first tableData.totals ++ "," ++ Tuple.second tableData.totals
+            , csvRow [ totalsLabel, totalsValue ]
             ]
                 |> String.join "\n"
     in
-    [ data.heading ++ "\n"
+    [ csvRow [ data.heading ] ++ "\n"
     , List.map tableDataToCSV data.tables
         |> String.join "\n\n"
     ]
@@ -1074,12 +913,12 @@ demographicsReportEncountersDataToCSV :
     }
     -> String
 demographicsReportEncountersDataToCSV data =
-    [ data.heading ++ "\n"
-    , String.join "," data.captions
-    , List.map (Tuple.first >> String.join ",")
+    [ csvRow [ data.heading ] ++ "\n"
+    , csvRow data.captions
+    , List.map (Tuple.first >> csvRow)
         data.rows
         |> String.join "\n"
-    , String.join "," [ data.totals.label, data.totals.total, data.totals.unique ]
+    , csvRow [ data.totals.label, data.totals.total, data.totals.unique ]
     ]
         |> String.join "\n"
 
@@ -1262,25 +1101,13 @@ generateMonthlyPrevalenceTableData :
     -> Dict ( Int, Int ) NutritionMetrics
     -> MetricsResultsTableData
 generateMonthlyPrevalenceTableData language currentDate heading encountersByMonth =
-    List.range 1 12
-        |> List.map
-            (\index ->
-                let
-                    selectedDate =
-                        Date.add Months (-1 * index) currentDate
-
-                    year =
-                        Date.year selectedDate
-
-                    monthNumber =
-                        Date.monthNumber selectedDate
-                in
-                ( Translate.MonthYear monthNumber year True
-                , resolveDataSetForMonth currentDate index encountersByMonth
-                    |> generatePrevalenceNutritionMetricsResults
-                )
-            )
-        |> toMetricsResultsTableData language heading
+    generateMonthlyTableData language
+        currentDate
+        heading
+        (\index ->
+            resolveDataSetForMonth currentDate index encountersByMonth
+                |> generatePrevalenceNutritionMetricsResults
+        )
 
 
 generateMonthlyIncidenceTableData :
@@ -1290,25 +1117,38 @@ generateMonthlyIncidenceTableData :
     -> Dict ( Int, Int ) NutritionMetrics
     -> MetricsResultsTableData
 generateMonthlyIncidenceTableData language currentDate heading encountersByMonth =
+    generateMonthlyTableData language
+        currentDate
+        heading
+        (\index ->
+            generateIncidenceNutritionMetricsResults
+                (resolveDataSetForMonth currentDate index encountersByMonth)
+                -- Per definition, for month, previous data set contains
+                -- data of 3 months that came prior.
+                (resolvePreviousDataSetForMonth currentDate index encountersByMonth)
+        )
+
+
+{-| A table with one column per month, covering the 12 months before current
+date. The given function resolves column metrics from the month's index
+(1 = last month, 12 = a year ago).
+-}
+generateMonthlyTableData :
+    Language
+    -> NominalDate
+    -> TranslationId
+    -> (Int -> NutritionMetricsResults)
+    -> MetricsResultsTableData
+generateMonthlyTableData language currentDate heading resolveMetricsResultsForMonth =
     List.range 1 12
         |> List.map
             (\index ->
                 let
                     selectedDate =
                         Date.add Months (-1 * index) currentDate
-
-                    year =
-                        Date.year selectedDate
-
-                    monthNumber =
-                        Date.monthNumber selectedDate
                 in
-                ( Translate.MonthYear monthNumber year True
-                , generateIncidenceNutritionMetricsResults
-                    (resolveDataSetForMonth currentDate index encountersByMonth)
-                    -- Per definition, for month, previous data set contains
-                    -- data of 3 months that came prior.
-                    (resolvePreviousDataSetForMonth currentDate index encountersByMonth)
+                ( Translate.MonthYear (Date.monthNumber selectedDate) (Date.year selectedDate) True
+                , resolveMetricsResultsForMonth index
                 )
             )
         |> toMetricsResultsTableData language heading
@@ -1338,14 +1178,8 @@ generateQuarterlyIncidenceTableData language currentDate heading encountersByMon
         |> List.map
             (\index ->
                 let
-                    selectedDate =
-                        Date.add Months (-3 * index) currentDate
-
-                    year =
-                        Date.year selectedDate
-
-                    quarter =
-                        Date.quarter selectedDate
+                    ( year, quarter ) =
+                        resolveQuarterForIndex currentDate index
 
                     dataSet =
                         List.Extra.getAt (index - 1) dataSetsByQuarter
@@ -1507,11 +1341,7 @@ generatePrenatalReportData language limitDate records =
                         if isJust participantData.eddDate then
                             let
                                 filteredEncounters =
-                                    List.filter
-                                        (\encounter ->
-                                            not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
-                                        )
-                                        participantData.encounters
+                                    List.filter (isPostpartumEncounter >> not) participantData.encounters
                             in
                             Just { participantData | encounters = filteredEncounters }
 
@@ -1520,23 +1350,7 @@ generatePrenatalReportData language limitDate records =
                     )
 
         ( completed, active ) =
-            List.partition
-                (\participantData ->
-                    -- Pregnancy is considered completed if
-                    -- either conclusion date was set.
-                    isJust participantData.dateConcluded
-                        || (-- Or it's been 30 days or more since estimated delivery date.
-                            Maybe.map
-                                (\eddDate ->
-                                    Date.compare (Date.add Days 30 eddDate) limitDate == LT
-                                )
-                                participantData.eddDate
-                                |> -- We never get here, as filtered, only contains pregnancies
-                                   -- that got EDD set.
-                                   Maybe.withDefault False
-                           )
-                )
-                filtered
+            List.partition (isPregnancyCompleted limitDate) filtered
 
         partitionedVisitsForActive =
             countVisitsByType active
@@ -2142,6 +1956,12 @@ prenatalDiagnosisCssClass diagnosis =
         DiagnosisGestationalHypertension ->
             "diagnosis-gestational-hypertension"
 
+        DiagnosisHighRiskOfPreeclampsia ->
+            "diagnosis-high-risk-preeclampsia"
+
+        DiagnosisModerateRiskOfPreeclampsia ->
+            "diagnosis-moderate-risk-preeclampsia"
+
         DiagnosisModeratePreeclampsia ->
             "diagnosis-moderate-preeclampsia"
 
@@ -2326,6 +2146,20 @@ prenatalDiagnosisCssClass diagnosis =
             "no-diagnosis"
 
 
+countOccurrencesDict : List a -> Dict a Int
+countOccurrencesDict =
+    List.foldl
+        (\item accum ->
+            Dict.get item accum
+                |> Maybe.map
+                    (\value ->
+                        Dict.insert item (value + 1) accum
+                    )
+                |> Maybe.withDefault (Dict.insert item 1 accum)
+        )
+        Dict.empty
+
+
 generateAcuteIllnessReportData :
     Language
     -> NominalDate
@@ -2343,16 +2177,7 @@ generateAcuteIllnessReportData language startDate records =
             List.concat acuteIllnessParticipantRecords
                 |> List.map .diagnosis
                 |> Maybe.Extra.values
-                |> List.foldl
-                    (\diagnosis accum ->
-                        Dict.get diagnosis accum
-                            |> Maybe.map
-                                (\value ->
-                                    Dict.insert diagnosis (value + 1) accum
-                                )
-                            |> Maybe.withDefault (Dict.insert diagnosis 1 accum)
-                    )
-                    Dict.empty
+                |> countOccurrencesDict
 
         -- Initial encounter always determines a diagnosis.
         -- Here we count the illnesses for which no diagnosis was determined.
@@ -2472,27 +2297,11 @@ generatePrenatalContactsReportData language limitDate records =
 
         encountersAtCompletedPregnancies =
             List.filterMap
-                (\( lmpDate, pregnancy ) ->
-                    let
-                        completed =
-                            let
-                                thirtyDaysAfterEDD =
-                                    Date.add Days 310 lmpDate
-                            in
-                            -- Pregnancy is completed when it's completion date is set, or,
-                            -- 30 days after estimated delivery date.
-                            isJust pregnancy.dateConcluded
-                                || (not <| Date.compare thirtyDaysAfterEDD limitDate == GT)
-                    in
-                    if completed then
+                (\( _, pregnancy ) ->
+                    if isPregnancyCompleted limitDate pregnancy then
                         let
                             nonPostpartumEncounters =
-                                List.filter
-                                    (\encounter ->
-                                        -- Encounter was started not after EGA date.
-                                        not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
-                                    )
-                                    pregnancy.encounters
+                                List.filter (isPostpartumEncounter >> not) pregnancy.encounters
                         in
                         Just <| List.length nonPostpartumEncounters
 
@@ -2697,17 +2506,7 @@ generatePrenatalDiagnosesReportData language records =
                     )
 
         diagnosesCountDict =
-            List.foldl
-                (\diagnosis accum ->
-                    Dict.get diagnosis accum
-                        |> Maybe.map
-                            (\value ->
-                                Dict.insert diagnosis (value + 1) accum
-                            )
-                        |> Maybe.withDefault (Dict.insert diagnosis 1 accum)
-                )
-                Dict.empty
-                allDiagnoses
+            countOccurrencesDict allDiagnoses
 
         rows =
             List.map
@@ -2737,11 +2536,11 @@ generatePrenatalDiagnosesReportData language records =
     }
 
 
-viewPeripartumReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
-viewPeripartumReport language limitDate scopeLabel records =
+viewPeripartumReport : Language -> NominalDate -> NominalDate -> String -> List PatientData -> List PatientData -> Html Msg
+viewPeripartumReport language startDate limitDate scopeLabel scopeRecords recordsTillLimitDate =
     let
         data =
-            generatePeripartumReportData language records
+            generatePeripartumReportData language startDate limitDate scopeRecords recordsTillLimitDate
 
         captionsRow =
             viewStandardCells data.captions
@@ -2767,17 +2566,35 @@ viewPeripartumReport language limitDate scopeLabel records =
 
 generatePeripartumReportData :
     Language
+    -> NominalDate
+    -> NominalDate
+    -> List PatientData
     -> List PatientData
     -> MetricsResultsTableData
-generatePeripartumReportData language records =
+generatePeripartumReportData language startDate limitDate scopeRecords recordsTillLimitDate =
     let
-        pregnancies =
-            List.map .prenatalData records
-                |> Maybe.Extra.values
-                |> List.concat
+        pregnanciesOf =
+            List.map .prenatalData
+                >> Maybe.Extra.values
+                >> List.concat
+
+        -- Pregnancies with a visit in the range, used for the rows recorded
+        -- at visits.
+        pregnanciesVisitedInRange =
+            pregnanciesOf recordsTillLimitDate
+
+        -- A delivery counts when its date is in the range, even with no
+        -- visit in the range.
+        pregnanciesDeliveredInRange =
+            pregnanciesOf scopeRecords
+                |> List.filter
+                    (.dateConcluded
+                        >> Maybe.map (Date.isBetween startDate limitDate)
+                        >> Maybe.withDefault False
+                    )
 
         countPregnanciesByOutcome outcome =
-            List.filter (.outcome >> (==) (Just outcome)) pregnancies
+            List.filter (.outcome >> (==) (Just outcome)) pregnanciesDeliveredInRange
                 |> List.length
 
         totalLiveAtTerm =
@@ -2813,9 +2630,9 @@ generatePeripartumReportData language records =
         , generateRow Translate.TotalLiveBirths (totalLiveAtTerm + totalLivePreTerm)
         , generateRow Translate.TotalLivePreTermBirths totalLivePreTerm
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorPrematureOnsetContractions)
-            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnancies)
+            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnanciesVisitedInRange)
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorBreastfedFirstHour)
-            (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnancies)
+            (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnanciesVisitedInRange)
         ]
     }
 
@@ -3234,9 +3051,9 @@ reportTablesDataToCSV =
 
 reportTableDataToCSV : MetricsResultsTableData -> String
 reportTableDataToCSV tableData =
-    [ tableData.heading
-    , String.join "," tableData.captions
-    , List.map (String.join ",") tableData.rows
+    [ csvRow [ tableData.heading ]
+    , csvRow tableData.captions
+    , List.map csvRow tableData.rows
         |> String.join "\n"
     ]
         |> String.join "\n"

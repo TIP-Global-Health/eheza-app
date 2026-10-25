@@ -1,6 +1,7 @@
 module Pages.GlobalCaseManagement.Fetch exposing (fetch)
 
 import AssocList as Dict
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (FollowUpMeasurements)
@@ -9,7 +10,7 @@ import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
 import Backend.Village.Utils exposing (resolveVillageResidents)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.GlobalCaseManagement.Utils exposing (filterFollowUpsOfResidents, generateAcuteIllnessEncounters, generateAcuteIllnessParticipants, generateHIVParticipants, generatePrenatalEncounters, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisParticipants, resolveUniquePatientsFromFollowUps)
+import Pages.GlobalCaseManagement.Utils exposing (filterFollowUpsOfResidents, filterResolvedFollowUps, generateAcuteIllnessEncounters, generateAcuteIllnessParticipants, generateHIVParticipants, generatePrenatalEncounters, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisParticipants, resolveUniquePatientsFromFollowUps)
 import Pages.Utils
 import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -59,6 +60,7 @@ fetchForCHWAtVillage currentDate villageId db allFollowUps =
 
         fetchIndividualParticipantsMsg =
             peopleFromPositiveResultHIVFollowUps
+                ++ peopleFromTuberculosisSuspectFollowUps
                 ++ residentsForNutrition
                 ++ residentsForImmunization
                 |> Pages.Utils.unique
@@ -143,6 +145,22 @@ fetchForCHWAtVillage currentDate villageId db allFollowUps =
             EverySet.toList tuberculosisParticipants
                 |> FetchTuberculosisEncountersForParticipants
 
+        -- Used to fetch Tuberculosis participants for patients suspected at
+        -- Acute Illness, and their Tuberculosis encounters. An encounter
+        -- started on or after the suspicion hides the follow up entry.
+        peopleFromTuberculosisSuspectFollowUps =
+            Dict.values followUps.acuteIllness
+                |> List.filter
+                    (\followUp ->
+                        (followUp.value.diagnosis == Just DiagnosisTuberculosisSuspect)
+                            && filterResolvedFollowUps currentDate followUp.value.resolutionDate
+                    )
+                |> List.map .participantId
+
+        fetchTuberculosisEncountersForSuspectedPatientsMsg =
+            participantsOfPeople TuberculosisEncounter peopleFromTuberculosisSuspectFollowUps
+                |> FetchTuberculosisEncountersForParticipants
+
         --
         --  HIV follows ups calculations.
         --
@@ -188,12 +206,14 @@ fetchForCHWAtVillage currentDate villageId db allFollowUps =
             List.map .participantId positiveResultHIVFollowUps
 
         fetchHIVEncountersForPositiveResultFollowUpsParticipantMsg =
+            participantsOfPeople HIVEncounter peopleFromPositiveResultHIVFollowUps
+                |> FetchHIVEncountersForParticipants
+
+        participantsOfPeople encounterType =
             List.concatMap
                 (\personId ->
-                    resolveIndividualParticipantsForPerson personId HIVEncounter db
+                    resolveIndividualParticipantsForPerson personId encounterType db
                 )
-                peopleFromPositiveResultHIVFollowUps
-                |> FetchHIVEncountersForParticipants
     in
     [ FetchPeopleInVillage villageId
     , fetchAcuteIllnessEncountersMsg
@@ -212,6 +232,7 @@ fetchForCHWAtVillage currentDate villageId db allFollowUps =
     , fetchHIVEncountersForParticipantMsg
     , fetchIndividualParticipantsMsg
     , fetchHIVEncountersForPositiveResultFollowUpsParticipantMsg
+    , fetchTuberculosisEncountersForSuspectedPatientsMsg
     ]
 
 

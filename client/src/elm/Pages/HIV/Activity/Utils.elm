@@ -1,8 +1,8 @@
-module Pages.HIV.Activity.Utils exposing (activityCompleted, diagnosticsFormWithDefault, expectActivity, expectMedicationTask, expectNextStepsTask, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, medicationTaskCompleted, medicationTasks, medicationTasksCompletedFromTotal, nextStepsTaskCompleted, nextStepsTasks, nextStepsTasksCompletedFromTotal, prescribedMedicationFormWithDefault, prescribedMedicationsInputsAndTasks, symptomReviewFormWithDefault, toDiagnosticsValueWithDefault, toHealthEducationValueWithDefault, toPrescribedMedicationValueWithDefault, toSymptomReviewValueWithDefault)
+module Pages.HIV.Activity.Utils exposing (activityCompleted, diagnosticsFormWithDefault, expectActivity, expectMedicationTask, expectNextStepsTask, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, medicationTaskCompleted, medicationTasks, medicationTasksCompletedFromTotal, nextStepsTaskCompleted, nextStepsTasks, nextStepsTasksCompletedFromTotal, prescribedMedicationFormWithDefault, prescribedMedicationsInputsAndTasks, setResultPositive, setRunHIVTest, symptomReviewFormWithDefault, toDiagnosticsValue, toHealthEducationValueWithDefault, toPrescribedMedicationValueWithDefault, toSymptomReviewValueWithDefault)
 
 import Backend.HIVActivity.Model exposing (HIVActivity(..))
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (adverseEventsReported, getMeasurementValueFunc)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -177,18 +177,7 @@ expectNextStepsTask assembled task =
 adverseEventReported : HIVMeasurements -> Bool
 adverseEventReported measurements =
     getMeasurementValueFunc measurements.treatmentReview
-        |> Maybe.map
-            (\value ->
-                case EverySet.toList value.adverseEvents of
-                    [] ->
-                        False
-
-                    [ NoAdverseEvent ] ->
-                        False
-
-                    _ ->
-                        True
-            )
+        |> Maybe.map (.adverseEvents >> adverseEventsReported)
         |> Maybe.withDefault False
 
 
@@ -329,15 +318,9 @@ diagnosticsFormWithDefault form saved =
                     maybeValueConsideringIsDirtyField form.testResultDirty
                         form.testResult
                         value.testResult
-                , testResultDirty = False
+                , testResultDirty = form.testResultDirty
                 }
             )
-
-
-toDiagnosticsValueWithDefault : Bool -> Maybe HIVDiagnosticsValue -> DiagnosticsForm -> Maybe HIVDiagnosticsValue
-toDiagnosticsValueWithDefault positiveResultRecorded saved form =
-    diagnosticsFormWithDefault form saved
-        |> toDiagnosticsValue positiveResultRecorded
 
 
 toDiagnosticsValue : Bool -> DiagnosticsForm -> Maybe HIVDiagnosticsValue
@@ -349,6 +332,15 @@ toDiagnosticsValue positiveResultRecorded form =
 
             else
                 []
+
+        -- A result belongs to the test run that produced it, so none is saved
+        -- once the run is withdrawn.
+        testResult =
+            if form.runHIVTest == Just True then
+                form.testResult
+
+            else
+                Nothing
     in
     if positiveResultRecorded then
         Maybe.map
@@ -363,7 +355,7 @@ toDiagnosticsValue positiveResultRecorded form =
                 in
                 { signs = EverySet.fromList <| mainSign ++ esitmatedSign
                 , positiveResultDate = form.positiveResultDate
-                , testResult = form.testResult
+                , testResult = testResult
                 }
             )
             form.resultDateCorrect
@@ -384,7 +376,7 @@ toDiagnosticsValue positiveResultRecorded form =
                 in
                 { signs = EverySet.fromList <| mainSign ++ esitmatedSign
                 , positiveResultDate = form.positiveResultDate
-                , testResult = form.testResult
+                , testResult = testResult
                 }
             )
             form.resultPositive
@@ -641,3 +633,46 @@ resolvePrescribedMedicationSets notChangedOption allEncountersData =
     ( List.head prescribedMedicationSets
     , List.drop 1 prescribedMedicationSets |> List.head
     )
+
+
+{-| Every option of a bool input fires on a tap, including the one already
+chosen. A repeated answer is not a correction, so it leaves the form alone.
+-}
+setResultPositive : Bool -> DiagnosticsForm -> DiagnosticsForm
+setResultPositive value form =
+    if form.resultPositive == Just value then
+        form
+
+    else
+        { form
+            | resultPositive = Just value
+            , positiveResultDate = Nothing
+            , positiveResultDateDirty = True
+            , positiveResultDateEstimated = Nothing
+            , positiveResultDateEstimatedDirty = True
+            , runHIVTest = Nothing
+            , runHIVTestDirty = True
+            , testResult = Nothing
+            , testResultDirty = True
+        }
+
+
+{-| Answering whether the test was run withdraws the result and its date. A
+repeated answer leaves the form alone, as above.
+-}
+setRunHIVTest : Bool -> DiagnosticsForm -> DiagnosticsForm
+setRunHIVTest value form =
+    if form.runHIVTest == Just value then
+        form
+
+    else
+        { form
+            | runHIVTest = Just value
+            , runHIVTestDirty = True
+            , testResult = Nothing
+            , testResultDirty = True
+            , positiveResultDate = Nothing
+            , positiveResultDateDirty = True
+            , positiveResultDateEstimated = Nothing
+            , positiveResultDateEstimatedDirty = True
+        }

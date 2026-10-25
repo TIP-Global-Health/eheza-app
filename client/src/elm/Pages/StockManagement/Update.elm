@@ -176,7 +176,11 @@ update currentDate context msg model =
                     model.receiveStockForm
 
                 updatedForm =
-                    { form | batchNumber = Just value }
+                    if String.isEmpty (String.trim value) then
+                        { form | batchNumber = Nothing }
+
+                    else
+                        { form | batchNumber = Just value }
             in
             ( { model | receiveStockForm = updatedForm }
             , Cmd.none
