@@ -8,16 +8,7 @@ metadata:
   modified: 2026-09-14
 ---
 
-📦 **NEXT RELEASE — post-deploy instructions waiting for the next "Developments starting …" PR** (none open since #2128 merged 2026-10-25). Paste into its `### Post deploy instructions:` when it is opened, then remove this block.
-- **#2415 (B-185)** — on each site with completion data (ihangane, vhw, uvl), after the deploy; rewrites completion data stored wrongly since March 2025 (user 2026-10-25: keep manual):
-    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-acute-illness-data.php`
-    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-child-scoreboard-data.php`
-    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-hiv-data.php`
-    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-ncd-data.php`
-    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-prenatal-data.php`
-    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-tuberculosis-data.php`
-    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-well-child-data.php`
-    - Without `--exclude_set`. A script that prints "Stopped before out of memory" is resumed with `--nid=<the node ID it prints>`.
+📦 **Next release: PR #2417** ("Developments starting October 25, 2026", `develop`→`main`, opened 2026-10-25). Its `### Post deploy instructions:` holds every post-deploy step; add new ones there. First entry: #2415 (B-185), the seven completion scripts run without `--exclude_set`.
 
 **B-496 root cause CONFIRMED (2026-10-18); scope = client fix + restore script in ONE item, both for the release deploying ≈ 2026-10-23/24 (user 2026-10-18); restore runs once post-deploy on a regenerated list.** The `HandleRevisions` download gate (`Backend/Update.elm` ≈2052-2062, 2548) swallows the device's own save revision when it lands during a sync download; reproduced ×2 on the demo site (control ×2 stored the diagnosis). Details, blast radius (nutrition assessments share the gate — unmeasured) and fix shape in the item. ⚠ **Environment changed for it:** local DDEV `db` is now the fresh DEMO site again (reinstalled via `ddev restart`); the ihangane live copy survives as DDEV snapshot `ihangane-copy-post-2128-trial` (8.3 GB, post-#2128-trial state) next to `pre-2128-trial`; `vhw_live` database untouched. The reinstall's `composer install` step failed (`sentry/sdk` missing from the lock file) — `sites/all/vendor` from before still has ramsey/twilio, only `logs_glitchtip` would miss sentry. Local `sites/default/settings.php` and `client/e2e/` were restored to clean after the run.
 
@@ -319,7 +310,7 @@ Checked every PR merged from the `v1.18.0` cut (2026-07-07) to today, 160 of the
 
 - **Released PRs: 34 in `v1.18.1` + 3 in `v1.18.2`, and every issue they deliver is CLOSED.** Zero overdue. The post-release sweeps were done properly, in both windows.
 - **40 issues are open because they are delivered on `develop` only**, awaiting the next release. That is the normal state here: PRs merge to `develop`, which is not the default branch, so `Fixes #N` never auto-closes (see `release-issue-reconciliation` in memory).
-- The next release is the open **#2128** (`develop`→`main`, opened 2026-08-21, now **326 commits** ahead). Its sweep closes those 40.
+- #2128 merged to `main` on 2026-10-25; the next release is **#2417** (opened 2026-10-25). The release sweep for #2128 closes those 40.
 - **4 of the 160 PRs carry no issue reference, all legitimately**: #2132 (Drupal core 7.106), #2125 (QA tooling skill), #2091 (the CLAUDE.md duplication rule), #1918 (the previous release PR).
 
 ⚠ **Judgment cases for whoever runs the next sweep — do NOT blind-close these four:**
