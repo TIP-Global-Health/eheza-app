@@ -3827,29 +3827,19 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
     }
     $encounter_data['illness_diagnosis'] = $diagnosis;
 
-    // Acute illness module defines following logic:
-    // If first encounter(s) were taken by CHW, but then
-    // nurse ran and encounter, we consider that encounter of
-    // nurse as initial. All data collected by CHWs until that
-    // encounter should be ignored.
+    // When a nurse takes over from CHWs, the nurse encounter is initial,
+    // and earlier CHW encounters are ignored. When nurse ran the first
+    // encounter, all are kept.
     $initial_nurse_encounter_index = -1;
     foreach ($previous_encounters_data as $ind => $data) {
       if ($data['encounter_type'] == 'nurse-encounter') {
         $initial_nurse_encounter_index = $ind;
-        break;
       }
     }
 
-    if ($initial_nurse_encounter_index == -1) {
-      $first_initial_with_subsequents = $previous_encounters_data;
-      $second_initial_with_subsequents = [];
-    }
-    else {
-      $first_initial_with_subsequents = array_slice($previous_encounters_data, 0, $initial_nurse_encounter_index + 1);
-      $second_initial_with_subsequents = array_slice($previous_encounters_data, $initial_nurse_encounter_index + 1);
-    }
-    $initial_with_subsequents = empty($second_initial_with_subsequents) ? $first_initial_with_subsequents : $second_initial_with_subsequents;
-    $encounter_data['initial_with_subsequents'] = $initial_with_subsequents;
+    $encounter_data['initial_with_subsequents'] = $initial_nurse_encounter_index > 0 ?
+      array_slice($previous_encounters_data, $initial_nurse_encounter_index) :
+      $previous_encounters_data;
 
     $fever_at_symptoms = FALSE;
     if (!empty($measurements_by_type['symptoms_general'])) {
