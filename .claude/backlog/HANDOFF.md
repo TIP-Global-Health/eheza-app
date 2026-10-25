@@ -8,6 +8,17 @@ metadata:
   modified: 2026-09-14
 ---
 
+📦 **NEXT RELEASE — post-deploy instructions waiting for the next "Developments starting …" PR** (none open since #2128 merged 2026-10-25). Paste into its `### Post deploy instructions:` when it is opened, then remove this block.
+- **#2415 (B-185)** — on each site with completion data (ihangane, vhw, uvl), after the deploy; rewrites completion data stored wrongly since March 2025 (user 2026-10-25: keep manual):
+    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-acute-illness-data.php`
+    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-child-scoreboard-data.php`
+    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-hiv-data.php`
+    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-ncd-data.php`
+    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-prenatal-data.php`
+    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-tuberculosis-data.php`
+    - `drush scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-well-child-data.php`
+    - Without `--exclude_set`. A script that prints "Stopped before out of memory" is resumed with `--nid=<the node ID it prints>`.
+
 **B-496 root cause CONFIRMED (2026-10-18); scope = client fix + restore script in ONE item, both for the release deploying ≈ 2026-10-23/24 (user 2026-10-18); restore runs once post-deploy on a regenerated list.** The `HandleRevisions` download gate (`Backend/Update.elm` ≈2052-2062, 2548) swallows the device's own save revision when it lands during a sync download; reproduced ×2 on the demo site (control ×2 stored the diagnosis). Details, blast radius (nutrition assessments share the gate — unmeasured) and fix shape in the item. ⚠ **Environment changed for it:** local DDEV `db` is now the fresh DEMO site again (reinstalled via `ddev restart`); the ihangane live copy survives as DDEV snapshot `ihangane-copy-post-2128-trial` (8.3 GB, post-#2128-trial state) next to `pre-2128-trial`; `vhw_live` database untouched. The reinstall's `composer install` step failed (`sentry/sdk` missing from the lock file) — `sites/all/vendor` from before still has ramsey/twilio, only `logs_glitchtip` would miss sentry. Local `sites/default/settings.php` and `client/e2e/` were restored to clean after the run.
 
 # Session handoff — E-Heza improvement work

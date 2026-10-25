@@ -503,6 +503,7 @@ B-502	4	CLOSED	LOW		2405	survey	Aggregated NCDA scoreboard › Immunization row:
 B-503	4	IMPLEMENTED	LOW	2403	2402	survey	Aggregated NCDA scoreboard: a child registered on a column's target date (the month's last day, or today for the current
 B-504	4	READY	LOW		2405	survey	Aggregated NCDA scoreboard: the Acute Malnutrition, Stunting and Infrastructure/WASH rows count children of any age the 
 B-505	4	READY	LOW			survey	Sync download (general): two copies of one general request that both reply before the first batch's save is acknowledged
+B-506	4	READY	LOW			0	Completion builders: each of the seven history-reading builders decides on its own whether to skip saving, so a new buil
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
