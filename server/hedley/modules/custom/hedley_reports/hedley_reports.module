@@ -3715,7 +3715,8 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
  * @param object $participant
  *   The participant node object representing illness.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_acute_illness($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -3768,7 +3769,6 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
 
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     // If encounter type field is empty, we default to CHW, since
@@ -4727,7 +4727,8 @@ function hedley_reports_count_acute_illness_signs(array $values) {
  * @param object $participant
  *   The participant node object representing illness.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_well_child($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -4802,7 +4803,6 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
 
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     // If encounter type field is empty, we default to pediatric care.
@@ -6258,7 +6258,8 @@ function hedley_reports_generate_completion_data_for_home_visit_encounter($encou
  * @param object $participant
  *   The participant node object with which encounters are associated.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_child_scoreboard_encounter($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -6311,7 +6312,6 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
 
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
 
@@ -6741,7 +6741,8 @@ function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_w
  * @param object $participant
  *   The participant node object with which encounters are associated.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -6813,7 +6814,6 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
 
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
@@ -7317,7 +7317,8 @@ function hedley_reports_ncd_add_labs_results_activities(array &$expected, array 
  * @param object $participant
  *   The participant node object with which encounters are associated.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -7354,7 +7355,6 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
 
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
@@ -7473,7 +7473,8 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
  * @param object $participant
  *   The participant node object with which encounters are associated.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_tuberculosis($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -7511,7 +7512,6 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
 
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
@@ -7629,7 +7629,8 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
  * @param object $participant
  *   The participant node object representing pregnancy.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_prenatal($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -7729,7 +7730,6 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
   $encounters_data = [];
   // Assembling needed data for each encounter.
   foreach ($encounters as $encounter) {
-
     // If encounter type field is empty, we default to 'nurse'.
     if (empty($encounter->field_prenatal_encounter_type)) {
       $encounter_type = 'nurse';
