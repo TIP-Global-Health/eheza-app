@@ -17,6 +17,7 @@ function drupal_is_cli() {
 }
 
 require_once dirname(__DIR__) . '/hedley_reports.module';
+require_once __DIR__ . '/assertions.inc';
 
 // The cases are dated relative to today. A run crossing into a new month
 // would compare two different months, so wait until the month has turned.
@@ -26,18 +27,6 @@ if (date('Y-m') !== date('Y-m', time() + 120)) {
 
 $passed = 0;
 $failed = 0;
-
-/**
- * Compares a result with the expected value and records the outcome.
- */
-function assert_same($result, $expected, $case, &$passed, &$failed) {
-  if ($result === $expected) {
-    $passed++;
-    return;
-  }
-  $failed++;
-  echo "FAIL: $case\n  expected: " . var_export($expected, TRUE) . "\n  got: " . var_export($result, TRUE) . "\n";
-}
 
 /**
  * Returns a day of a month before the current one, as Y-m-d.
@@ -414,14 +403,4 @@ $tables = generate([
 ]);
 assert_same(monthly_cell($tables, 'prevalence-1', 'acute_malnutrition_mam', 4), '0%', 'a mother with only family-nutrition visits adds nothing', $passed, $failed);
 
-$total = $passed + $failed;
-echo "\n";
-echo "Nutrition report tests: $total total, $passed passed, $failed failed.\n";
-
-if ($failed > 0) {
-  echo "FAILED\n";
-  exit(1);
-}
-
-echo "OK\n";
-exit(0);
+report_results('Nutrition report', $passed, $failed);
