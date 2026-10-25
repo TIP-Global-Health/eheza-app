@@ -3980,7 +3980,7 @@ function hedley_reports_acute_illness_add_expected_malaria_testing(array $encoun
     foreach ($initial_with_subsequents as $prev_encounter_data) {
       $prev_measurements_by_type = $prev_encounter_data['measurements_by_type'];
       if (!empty($prev_measurements_by_type['malaria_testing'])) {
-        $malaria_rapid_test_result = $prev_measurements_by_type['malaria_testing']->field_rapid_test_result[LANGUAGE_NONE][0]['value'];
+        $malaria_rapid_test_result = $prev_measurements_by_type['malaria_testing']->field_malaria_rapid_test[LANGUAGE_NONE][0]['value'];
         if (!empty($malaria_rapid_test_result)) {
           if (in_array($malaria_rapid_test_result, RDT_POSITIVE_VALUES)) {
             $diagnosed_with_malaria_previously = TRUE;
