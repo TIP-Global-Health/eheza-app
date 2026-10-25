@@ -182,7 +182,7 @@ B-181	3	READY				20	Completion report: Ultrasound activity (healthy_start) does 
 B-182	3	IMPLEMENTED		2102	2103	20	NCD completion: women 45-49 invisible for Family Planning + Pregnancy Test, and pregnancy-test validity reads the HIV te
 B-183	3	READY				20	Prenatal completion: chw-1 after a health-center visit is charged for Pregnancy Dating the app hides
 B-184	4	READY				20	Prenatal completion: postpartum SpecialityCare triggers omit hypertension
-B-185	2	READY	MED			20	Completion report: since March 2025 the nightly run stores most follow-up visits as first visits, on ihangane and vhw, i
+B-185	2	IMPLEMENTED	MED	2414	2415	20	Completion report: since March 2025 the nightly run stores most follow-up visits as first visits, on ihangane and vhw, i
 B-186	3	READY				20	Prenatal completion: the mental-health check CLOBBERS every earlier health-education trigger
 B-187	3	READY				20	Prenatal completion: medication-distribution port drifts ×6 (preeclampsia continuation, Mebendazole-on-missing-questionn
 B-188	3	IMPLEMENTED		2104	2105	20	Dashboard ANC: the "# of Women with 4 Visits or more" card never counts visits — any pregnancy with ONE nurse encounter 
