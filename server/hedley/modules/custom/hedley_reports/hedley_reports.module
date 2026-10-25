@@ -3762,7 +3762,7 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
-  // An incremental run has nothing to generate when every encounter has data.
+  // Return before loading measurements when every encounter already has data.
   if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
     return;
   }
@@ -4796,7 +4796,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
-  // An incremental run has nothing to generate when every encounter has data.
+  // Return before loading measurements when every encounter already has data.
   if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
     return;
   }
@@ -6305,7 +6305,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
-  // An incremental run has nothing to generate when every encounter has data.
+  // Return before loading measurements when every encounter already has data.
   if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
     return;
   }
@@ -6807,7 +6807,7 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
-  // An incremental run has nothing to generate when every encounter has data.
+  // Return before loading measurements when every encounter already has data.
   if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
     return;
   }
@@ -7348,7 +7348,7 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
-  // An incremental run has nothing to generate when every encounter has data.
+  // Return before loading measurements when every encounter already has data.
   if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
     return;
   }
@@ -7505,7 +7505,7 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
-  // An incremental run has nothing to generate when every encounter has data.
+  // Return before loading measurements when every encounter already has data.
   if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
     return;
   }
@@ -7722,7 +7722,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
-  // An incremental run has nothing to generate when every encounter has data.
+  // Return before loading measurements when every encounter already has data.
   if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
     return;
   }
