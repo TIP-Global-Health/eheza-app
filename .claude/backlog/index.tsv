@@ -506,6 +506,7 @@ B-505	4	READY	LOW			survey	Sync download (general): two copies of one general re
 B-506	4	READY	LOW			0	Completion builders: each of the seven history-reading builders decides on its own whether to skip saving, so a new buil
 B-507	4	IMPLEMENTED	LOW	2148	2419	0	Completion report: Acute Illness follow-ups ignore the nurse's first encounter
 B-508	4	IMPLEMENTED	LOW	2418	2419	0	Completion report: Acute Illness follow-ups expect a Malaria test after a positive one
+B-509	3	READY	MED-LOW			45	Completion report full run (#2417's post-deploy step): every encounter of seven programs gets a new revision, so every d
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
@@ -539,3 +540,4 @@ TH-30		IMPLEMENTED		2398	2402	survey	Aggregated NCDA scoreboard: pin the server 
 TH-31		IMPLEMENTED		2399	2402	survey	Statistical Queries › ANC and ANC Contacts reports: pin the date-range filter, pregnancy completion and contact counts
 TH-32		IMPLEMENTED		2400	2402	survey	Statistical Queries › Peripartum, Postnatal Care, Demographics, Acute Illness and CSV export: pin the report builders
 TH-33		IMPLEMENTED		2401	2402	survey	Aggregated NCDA scoreboard panes and Completion: move the date arithmetic out of the views and pin it
+TH-34		READY				45	Completion report incremental run (B-185): no automated test pins that an already-set encounter stays in the history a l
