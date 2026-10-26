@@ -510,6 +510,8 @@ B-509	3	READY	MED-LOW			45	Completion report full run (#2417's post-deploy step)
 B-510	4	READY	LOW			45	Sync incidents: a user's incident details naming only entities that already exist are never cleared, by the live save pa
 B-511	4	READY	LOW		2422	45	Service worker: while the database version differs from `dbVerno`, every request opens a new connection and never closes
 B-512	4	READY	LOW			45	Nutrition assessment: a "malnutrition-signs" assessment is stored with "none" as its only sign, so the screens show "Mal
+B-513	4	READY	LOW			45	Statistical Queries per-person data: a measurement saved while the person's recalculation is already running is never re
+B-514	3	READY	MED-LOW			45	Sync-incident re-creation + nightly measurement dedup: a re-created measurement for an encounter that already holds one 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
