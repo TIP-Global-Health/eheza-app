@@ -10367,14 +10367,14 @@ filterNutritionAssessmentsFromNutritionValue dateMeasured value =
                 |> List.filterMap
                     (\assesment ->
                         case assesment of
-                            NoNutritionAssessment ->
-                                Nothing
-
                             AssesmentMalnutritionSigns _ ->
                                 EverySet.toList value.signs
                                     |> malnutritionSignsForAssessment
                                     |> AssesmentMalnutritionSigns
                                     |> Just
+
+                            NoNutritionAssessment ->
+                                Nothing
 
                             _ ->
                                 Just assesment
@@ -10395,9 +10395,6 @@ filterNutritionAssessmentsFromFollowUpValue dateMeasured value =
                 |> List.filterMap
                     (\assesment ->
                         case assesment of
-                            AssesmentMalnutritionSigns signs ->
-                                Just <| AssesmentMalnutritionSigns (malnutritionSignsForAssessment signs)
-
                             NoNutritionAssessment ->
                                 Nothing
 

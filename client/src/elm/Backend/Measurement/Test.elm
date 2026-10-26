@@ -1,7 +1,8 @@
 module Backend.Measurement.Test exposing (all)
 
+import Backend.Measurement.Decoder exposing (decodeNutritionAssessment)
 import Backend.Measurement.Encoder exposing (encodeMedicalHistoryValue, encodeNCDSocialHistoryValue)
-import Backend.Measurement.Model exposing (ColorAlertIndication(..), FoodGroup(..), GlucoseValue(..), HeadCircumferenceInCm(..), LaboratoryTest(..), MuacInCm(..), NCDSocialHistorySign(..), OccursInFamilySign(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), ColorAlertIndication(..), FoodGroup(..), GlucoseValue(..), HeadCircumferenceInCm(..), LaboratoryTest(..), MuacInCm(..), NCDSocialHistorySign(..), NutritionAssessment(..), OccursInFamilySign(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..))
 import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, headCircumferenceIndication, labsResultsTestAddedMsgs, muacIndicationForAdult, muacIndicationForChild, muacValueFuncForSite)
 import Date
 import EverySet
@@ -238,10 +239,37 @@ muacValueFuncForSiteTest =
         ]
 
 
+decodeNutritionAssessmentTest : Test
+decodeNutritionAssessmentTest =
+    let
+        decodeWithSigns signs =
+            Json.Encode.object
+                [ ( "nutrition_assesment", Json.Encode.list Json.Encode.string [ "malnutrition-signs" ] )
+                , ( "nutrition_signs", Json.Encode.list Json.Encode.string signs )
+                ]
+                |> Json.Decode.decodeValue decodeNutritionAssessment
+                |> Result.map EverySet.toList
+
+        expected =
+            Ok [ AssesmentMalnutritionSigns [ Apathy, Edema ] ]
+    in
+    describe "decodeNutritionAssessment"
+        [ test "signs stored in sorted order give the sorted list" <|
+            \_ ->
+                decodeWithSigns [ "apathy", "edema" ]
+                    |> Expect.equal expected
+        , test "signs stored in reverse order give the sorted list" <|
+            \_ ->
+                decodeWithSigns [ "edema", "apathy" ]
+                    |> Expect.equal expected
+        ]
+
+
 all : Test
 all =
     describe "Measurement data tests"
         [ muacIndicationTest
+        , decodeNutritionAssessmentTest
         , headCircumferenceIndicationTest
         , diabetesBySugarCountTest
         , diabetesByUrineGlucoseTest
