@@ -8907,6 +8907,7 @@ testNotPerformedByWhyNotAtExecutionNote executionNote =
         , TestNoteNoEquipment
         , TestNoteBrokenEquipment
         , TestNoteNotIndicated
+        , TestNoteNotPresent
         ]
 
 

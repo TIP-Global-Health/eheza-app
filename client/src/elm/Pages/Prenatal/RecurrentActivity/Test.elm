@@ -517,17 +517,33 @@ technician answered.
 laboratoryResultNotPerformedTest : Test
 laboratoryResultNotPerformedTest =
     let
-        hemoglobinWith executionNote =
+        sentToLab =
+            Just (EverySet.singleton NoTestPrerequisites)
+
+        hemoglobinWith executionNote hemoglobinCount =
             let
                 value : HemoglobinTestValue
                 value =
                     { executionNote = executionNote
                     , executionDate = Just currentDate
-                    , testPrerequisites = Just (EverySet.singleton NoTestPrerequisites)
-                    , hemoglobinCount = Nothing
+                    , testPrerequisites = sentToLab
+                    , hemoglobinCount = hemoglobinCount
                     }
             in
             { emptyPrenatalMeasurements | hemoglobinTest = TestFixtures.wrapMeasurement currentDate value }
+
+        partnerHIVNotPresent =
+            let
+                value : PartnerHIVTestValue
+                value =
+                    { executionNote = TestNoteNotPresent
+                    , executionDate = Just currentDate
+                    , testPrerequisites = sentToLab
+                    , testResult = Nothing
+                    , hivSigns = Nothing
+                    }
+            in
+            { emptyPrenatalMeasurements | partnerHIVTest = TestFixtures.wrapMeasurement currentDate value }
 
         resolve task measurements =
             laboratoryResultNotPerformed (testAssembled measurements) task
@@ -535,16 +551,28 @@ laboratoryResultNotPerformedTest =
     describe "laboratoryResultNotPerformed"
         [ test "a test the lab technician declined gives their reason" <|
             \_ ->
-                resolve TaskHemoglobinTest (hemoglobinWith TestNoteLackOfReagents)
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteLackOfReagents Nothing)
                     |> Expect.equal (Just ( TestNoteLackOfReagents, Just currentDate ))
+        , test "a declined test that holds a result gives no reason, so the result stays in view" <|
+            \_ ->
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteLackOfReagents (Just 11))
+                    |> Expect.equal Nothing
         , test "a test the lab technician ran gives no reason" <|
             \_ ->
-                resolve TaskHemoglobinTest (hemoglobinWith TestNoteRunConfirmedByLabTech)
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteRunConfirmedByLabTech Nothing)
                     |> Expect.equal Nothing
         , test "a test still waiting for the lab gives no reason" <|
             \_ ->
-                resolve TaskHemoglobinTest (hemoglobinWith TestNoteRunToday)
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteRunToday Nothing)
                     |> Expect.equal Nothing
+        , test "a partner HIV test the lab technician declined as partner not present gives that reason" <|
+            \_ ->
+                resolve TaskPartnerHIVTest partnerHIVNotPresent
+                    |> Expect.equal (Just ( TestNoteNotPresent, Just currentDate ))
+        , test "a partner HIV test declined as partner not present is complete for the nurse" <|
+            \_ ->
+                laboratoryResultTaskCompleted False (testAssembled partnerHIVNotPresent) TaskPartnerHIVTest
+                    |> Expect.equal True
         , test "a blood smear the lab technician declined gives their reason" <|
             \_ ->
                 resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteLackOfReagents BloodSmearNotTaken)
@@ -552,6 +580,10 @@ laboratoryResultNotPerformedTest =
         , test "a blood smear still waiting for the lab gives no reason, though the rapid test has one" <|
             \_ ->
                 resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteLackOfReagents BloodSmearPendingInput)
+                    |> Expect.equal Nothing
+        , test "a blood smear the lab technician read gives no reason" <|
+            \_ ->
+                resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteRunConfirmedByLabTech BloodSmearNegative)
                     |> Expect.equal Nothing
         ]
 
