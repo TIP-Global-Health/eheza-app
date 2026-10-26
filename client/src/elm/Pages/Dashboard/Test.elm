@@ -648,10 +648,11 @@ countCurrentlyPregnantWithDangerSignsForSelectedMonthTest =
 previousThreeMonthsNewestFirstTest : Test
 previousThreeMonthsNewestFirstTest =
     let
-        -- Every month key the statistics can hold, 13 meaning 13 months ago.
+        -- Every month key the statistics can hold.
         resultFor currentMonth =
             List.range 1 13
                 |> List.map (\month -> ( month, () ))
+                |> Dict.fromList
                 |> previousThreeMonthsNewestFirst currentMonth
                 |> List.map Tuple.first
     in
@@ -676,6 +677,12 @@ previousThreeMonthsNewestFirstTest =
             \_ ->
                 resultFor 12
                     |> Expect.equal [ 11, 10, 9 ]
+        , test "a month with no entry is left out" <|
+            \_ ->
+                Dict.fromList [ ( 1, () ), ( 11, () ) ]
+                    |> previousThreeMonthsNewestFirst 2
+                    |> List.map Tuple.first
+                    |> Expect.equal [ 1, 11 ]
         ]
 
 
