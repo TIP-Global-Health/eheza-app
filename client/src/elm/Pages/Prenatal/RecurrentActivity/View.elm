@@ -43,6 +43,7 @@ import Measurement.Utils
         , urineDipstickResultFormAndTasks
         , urineDipstickResultFormWithDefault
         , viewLaboratoryResultNotPerformed
+        , viewLaboratoryResultNotPerformedAnswer
         , vitalsFormWithDefault
         )
 import Measurement.View
@@ -189,6 +190,17 @@ viewLabResultsContent language isLabTech assembled model =
                     tasks
                     |> Dict.fromList
 
+        -- A declined test with no result stored has nothing to fill in, and
+        -- so no Save.
+        activeTaskToFillIn =
+            Maybe.Extra.filter
+                (\task ->
+                    Dict.get task notPerformedTasks
+                        |> Maybe.map .holdsResult
+                        |> Maybe.withDefault True
+                )
+                activeTask
+
         viewTask task =
             let
                 iconClass =
@@ -331,12 +343,28 @@ viewLabResultsContent language isLabTech assembled model =
                 )
                 tasks
                 |> Dict.fromList
-                |> Dict.union
-                    (Dict.map
-                        (\task notPerformed ->
-                            ( viewLaboratoryResultNotPerformed language task notPerformed, 0, 0 )
-                        )
-                        notPerformedTasks
+                |> Dict.map
+                    (\task ( form, completed, total ) ->
+                        Dict.get task notPerformedTasks
+                            |> Maybe.map
+                                (\notPerformed ->
+                                    if notPerformed.holdsResult then
+                                        ( div []
+                                            [ div [ class "ui form laboratory not-performed" ] <|
+                                                viewLaboratoryResultNotPerformedAnswer language notPerformed.reason
+                                            , form
+                                            ]
+                                        , completed
+                                        , total
+                                        )
+
+                                    else
+                                        ( viewLaboratoryResultNotPerformed language task notPerformed.executionDate notPerformed.reason
+                                        , 0
+                                        , 0
+                                        )
+                                )
+                            |> Maybe.withDefault ( form, completed, total )
                     )
 
         ( viewForm, tasksCompleted, totalTasks ) =
@@ -404,7 +432,7 @@ viewLabResultsContent language isLabTech assembled model =
                         )
                         saveMsg
                 )
-                (Maybe.Extra.filter (\task -> not <| Dict.member task notPerformedTasks) activeTask)
+                activeTaskToFillIn
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
