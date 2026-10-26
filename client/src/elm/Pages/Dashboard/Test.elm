@@ -17,7 +17,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode
 import Json.Encode
 import Pages.Dashboard.Model exposing (ECDStatus(..))
-import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, dataItemMergeDuplicates, getFollowUpsTotals, resolveDayAfterSelectedDate, resolveECDStatus)
+import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, dataItemMergeDuplicates, getFollowUpsTotals, resolveDayAfterSelectedDate, resolveECDStatus, sortMonthsNewestFirst)
 import RemoteData
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
@@ -645,6 +645,34 @@ countCurrentlyPregnantWithDangerSignsForSelectedMonthTest =
         ]
 
 
+sortMonthsNewestFirstTest : Test
+sortMonthsNewestFirstTest =
+    let
+        sortedFor currentMonth months =
+            List.map (\month -> ( month, () )) months
+                |> sortMonthsNewestFirst currentMonth
+                |> List.map Tuple.first
+    in
+    describe "sortMonthsNewestFirst"
+        [ test "January lists December, November, October" <|
+            \_ ->
+                sortedFor 1 [ 10, 11, 12 ]
+                    |> Expect.equal [ 12, 11, 10 ]
+        , test "February lists January before the previous year's months" <|
+            \_ ->
+                sortedFor 2 [ 1, 11, 12 ]
+                    |> Expect.equal [ 1, 12, 11 ]
+        , test "March lists February, January, December" <|
+            \_ ->
+                sortedFor 3 [ 1, 2, 12 ]
+                    |> Expect.equal [ 2, 1, 12 ]
+        , test "July lists June, May, April" <|
+            \_ ->
+                sortedFor 7 [ 4, 5, 6 ]
+                    |> Expect.equal [ 6, 5, 4 ]
+        ]
+
+
 all : Test
 all =
     describe "Pages.Dashboard.Utils"
@@ -656,5 +684,6 @@ all =
         , dataItemMergeDuplicatesTest
         , followUpsTotalsTest
         , resolveDayAfterSelectedDateTest
+        , sortMonthsNewestFirstTest
         , statsStorageRoundTripTest
         ]
