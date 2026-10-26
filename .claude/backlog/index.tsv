@@ -258,7 +258,7 @@ B-257	4	READY	LOW			25	Duplicate-patient lookup is triggered by any text field o
 B-258	4	READY	LOW			25	Person edit page never fetches relationships, so after a page reload an address change silently skips the children
 B-259	4	IMPLEMENTED	LOW	2267	2269	25	A freshly opened person form greets the nurse with "Person has been saved"
 B-260	4	READY	LOW			25	Strict decoders on optional stats values: two dashboard enum sites lack the fallback their siblings have, and one requir
-B-261	4	READY	LOW			25	Dashboard case-management table: columns are sorted by bare month number, so they come out of order when the stats month
+B-261	4	IMPLEMENTED	LOW	2423	2424	25	Dashboard case-management table: columns are sorted by bare month number, so they come out of order when the stats month
 B-262	4	READY	LOW			25	Person-counting cards that count participants or measurements instead of people (three siblings, one family)
 B-263	4	READY	LOW			25	Dashboard's copy of the vaccination-progress builder drops DTP-standalone after a fourth dose date, so the Burundi immun
 B-264	3	READY	MED-LOW			25	Dashboard monthly charts divide a case-management numerator by a beneficiaries denominator from a different population
@@ -319,7 +319,7 @@ B-318	2	IMPLEMENTED	MED	2290	2291	28	Sync: the dashboard-statistics download has
 B-319	1	IMPLEMENTED	MED	2223	2224	28	Prenatal labs (lab technician): a blood-smear order opens pre-answered "test will NOT be performed today" with the nurse
 B-320	1	IMPLEMENTED	MED	2211	2212	28	Prenatal HIV test: correcting to "known as positive" after a negative RDT keeps the result and the partner answers, so t
 B-321	4	READY	LOW			28	NCD Laboratory (urine dipstick, creatinine, liver function, lipid panel): re-saving a test task after its results were e
-B-322	4	READY	LOW			28	Child progress report, Diagnosis pane: "Malnutrition signs" is listed twice for one date, because the nutrition-derived 
+B-322	4	IMPLEMENTED	LOW	2425	2426	28	Child progress report, Diagnosis pane: "Malnutrition signs" is listed twice for one date, because the nutrition-derived 
 B-323	1	IMPLEMENTED	MED	2209	2210	28	Prenatal: a partner HIV result entered by a LAB TECHNICIAN produces no discordant-partnership diagnosis at all, because 
 B-324	1	IMPLEMENTED	MED-LOW	2217	2218	29	Acute Illness diagnosis: on a site without Tuberculosis Management, a COVID-suspect patient with a cough of more than tw
 B-325	2	PARKED	MED-HIGH			29	🅿 **PARKED (user, 2026-09-23): "park"** — said after the frequency estimate (7-day live census: roughly 1–3 lost uploads
@@ -509,6 +509,7 @@ B-508	4	IMPLEMENTED	LOW	2418	2419	0	Completion report: Acute Illness follow-ups 
 B-509	3	READY	MED-LOW			45	Completion report full run (#2417's post-deploy step): every encounter of seven programs gets a new revision, so every d
 B-510	4	READY	LOW			45	Sync incidents: a user's incident details naming only entities that already exist are never cleared, by the live save pa
 B-511	4	READY	LOW		2422	45	Service worker: while the database version differs from `dbVerno`, every request opens a new connection and never closes
+B-512	4	READY	LOW		2426	45	Nutrition assessment: a "malnutrition-signs" assessment is stored with "none" as its only sign, so the screens show "Mal
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
