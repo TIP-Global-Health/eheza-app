@@ -508,6 +508,7 @@ B-507	4	IMPLEMENTED	LOW	2148	2419	0	Completion report: Acute Illness follow-ups 
 B-508	4	IMPLEMENTED	LOW	2418	2419	0	Completion report: Acute Illness follow-ups expect a Malaria test after a positive one
 B-509	3	READY	MED-LOW			45	Completion report full run (#2417's post-deploy step): every encounter of seven programs gets a new revision, so every d
 B-510	4	READY	LOW			45	Sync incidents: a user's incident details naming only entities that already exist are never cleared, by the live save pa
+B-511	4	READY	LOW		2422	45	Service worker: while the database version differs from `dbVerno`, every request opens a new connection and never closes
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
