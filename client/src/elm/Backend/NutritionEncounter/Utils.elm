@@ -123,7 +123,10 @@ generateNutritionAssessment currentDate zscores childId muacValue nutritionValue
         dangerSigns =
             nutritionValue
                 |> Maybe.map
-                    (EverySet.toList >> malnutritionSignsForAssessment)
+                    (EverySet.toList
+                        >> List.filter ((/=) NormalChildNutrition)
+                        >> malnutritionSignsForAssessment
+                    )
                 |> Maybe.withDefault []
     in
     assesmentByMuacAndWeight ++ assementByNutritionSigns

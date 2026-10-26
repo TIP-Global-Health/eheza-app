@@ -262,6 +262,10 @@ decodeNutritionAssessmentTest =
             \_ ->
                 decodeWithSigns [ "edema", "apathy" ]
                     |> Expect.equal expected
+        , test "a stored \"none\" sign is kept" <|
+            \_ ->
+                decodeWithSigns [ "none" ]
+                    |> Expect.equal (Ok [ AssesmentMalnutritionSigns [ NormalChildNutrition ] ])
         ]
 
 

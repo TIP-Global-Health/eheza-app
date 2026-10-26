@@ -763,13 +763,12 @@ nutritionSignToString sign =
             "poor-appetite"
 
 
-{-| The signs of a malnutrition-signs assessment, without "none" and in a fixed
-order, so two assessments holding the same signs compare equal.
+{-| Puts the signs of a malnutrition-signs assessment in a fixed order, so two
+assessments holding the same signs compare equal.
 -}
 malnutritionSignsForAssessment : List ChildNutritionSign -> List ChildNutritionSign
 malnutritionSignsForAssessment =
-    List.filter ((/=) NormalChildNutrition)
-        >> List.sortBy nutritionSignToString
+    List.sortBy nutritionSignToString
 
 
 symptomsGeneralSignToString : SymptomsGeneralSign -> String
