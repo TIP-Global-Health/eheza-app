@@ -60,32 +60,32 @@
 
         // This hook is activated as a result of new content being created on device.
         instance.shards.hook('creating', function (primKey, obj, trans) {
-          if (obj.type === 'person') {
-            if (typeof obj.label == 'string') {
-              obj.name_search = gatherWords(obj.label);
+            if (obj.type === 'person') {
+                if (typeof obj.label == 'string') {
+                    obj.name_search = gatherWords(obj.label);
+                }
             }
-          }
         });
 
         // This hook is activated as a result of content being edited on device.
         instance.shards.hook('updating', function (mods, primKey, obj, trans) {
-          if (obj.type === 'person') {
-            if (mods.hasOwnProperty("label")) {
-              if (typeof mods.label == 'string') {
-                return {
-                  name_search: gatherWords(mods.label)
-                };
-              } else {
-                return {
-                  name_search: []
-                };
-              }
-            } else {
-              return {
-                name_search: gatherWords(obj.label)
-              };
+            if (obj.type === 'person') {
+                if (mods.hasOwnProperty("label")) {
+                    if (typeof mods.label == 'string') {
+                        return {
+                            name_search: gatherWords(mods.label)
+                        };
+                    } else {
+                        return {
+                            name_search: []
+                        };
+                    }
+                } else {
+                    return {
+                        name_search: gatherWords(obj.label)
+                    };
+                }
             }
-          }
         });
 
         // A hook to create matching row in `authorityPhotoUploadChanges`, if entity has a photo.
@@ -105,8 +105,8 @@
             statusText: 'Not Found'
         });
 
-        // Requests that reach a just-started service worker wait for one shared
-        // opening, so they all use the same connection.
+        // Requests that arrive while the database is being opened wait for that
+        // opening, so they share its connection instead of opening their own.
         if (dbSync === null || dbSync.verno != dbVerno) {
             if (dbOpening === null) {
                 dbOpening = openSyncDb().finally(function () {
@@ -313,7 +313,7 @@
                                                 // may have been a glitch. If operation fails again,
                                                 // we log error with Rollbar.
                                                 return changeTable.add(change).catch(function (secondError) {
-                                                    reportUnqueuedChange(changeTable.db, change, firstError, secondError);
+                                                    reportUnqueuedChange(change, firstError, secondError);
                                                     var reject = new Response(body, {
                                                         status: 400,
                                                         statusText: 'Failure: PATCH at changes table'
@@ -402,7 +402,7 @@
                                               // may have been a glitch. If operation fails again,
                                               // we log error with Rollbar.
                                               return changeTable.add(change).catch(function (secondError) {
-                                                  reportUnqueuedChange(changeTable.db, change, firstError, secondError);
+                                                  reportUnqueuedChange(change, firstError, secondError);
                                                   var reject = new Response(body, {
                                                       status: 400,
                                                       statusText: 'Failure: POST at changes table'
@@ -425,16 +425,16 @@
         }).catch(sendErrorResponses);
     }
 
-    // Records, in `dbErrors` on the save's connection, a change whose upload row was
-    // not stored. The app sends them to Rollbar after a General download, once it has a token.
-    function reportUnqueuedChange (store, change, firstError, secondError) {
+    // Records, in `dbErrors`, a change whose upload row could not be stored. The app
+    // sends `dbErrors` to Rollbar after a General download, once it has a token.
+    function reportUnqueuedChange (change, firstError, secondError) {
         var error = 'Dropped ' + change.method + ' ' + change.type + ' ' + change.uuid
             + ': upload row not stored (' + String(firstError) + '; retry: ' + String(secondError) + ')';
 
         // A report that cannot be stored is given up, so the save is not affected.
         try {
             Dexie.ignoreTransaction(function () {
-                return store.dbErrors.add({ error: error, isSynced: 0 });
+                return dbSync.dbErrors.add({ error: error, isSynced: 0 });
             }).catch(function () {});
         }
         catch (e) {}
