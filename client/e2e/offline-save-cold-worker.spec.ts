@@ -6,36 +6,27 @@ import { test, expect, Page } from '@playwright/test';
 const SHARD = 'e2e0c01d-0000-4000-8000-000000000001';
 const ROUNDS = 20;
 
-// Opens the app's IndexedDB and waits until its service worker controls the page.
+// Loads the app under its service worker. A page the worker has just taken over
+// reloads itself, so the test reloads first. Opening `dbSync` creates the 'sync'
+// database, which the worker needs before it answers.
 async function openApp(page: Page) {
   await page.goto('/');
   await expect.poll(async () => {
-    return page.evaluate(async () => {
-      if (!navigator.serviceWorker.controller) {
-        return false;
-      }
-      // @ts-ignore -- `dbSync` is the app's global Dexie instance (app.js).
-      await dbSync.open();
-      return true;
-    }).catch(() => false);
-  }, { timeout: 90000, intervals: [2000] }).toBe(true);
+    return page.evaluate(() => !!navigator.serviceWorker.controller).catch(() => false);
+  }, { timeout: 90000, intervals: [1000] }).toBe(true);
+  await page.reload();
+  await page.evaluate(async () => {
+    // @ts-ignore -- `dbSync` is the app's global Dexie instance (app.js).
+    await dbSync.open();
+  });
 }
 
 // Counts the queued PATCH upload rows for one node.
 async function countPatchRows(page: Page, uuid: string): Promise<number> {
-  return page.evaluate((uuid) => new Promise<number>((resolve, reject) => {
-    const open = indexedDB.open('sync');
-    open.onsuccess = () => {
-      const db = open.result;
-      const request = db.transaction('shardChanges').objectStore('shardChanges').getAll();
-      request.onsuccess = () => {
-        db.close();
-        resolve(request.result.filter((row: any) => row.uuid === uuid && row.method === 'PATCH').length);
-      };
-      request.onerror = () => reject(request.error);
-    };
-    open.onerror = () => reject(open.error);
-  }), uuid);
+  return page.evaluate((uuid) => {
+    // @ts-ignore -- `dbSync` is the app's global Dexie instance (app.js).
+    return dbSync.shardChanges.where('uuid').equals(uuid).filter((row: any) => row.method === 'PATCH').count();
+  }, uuid);
 }
 
 test.describe('Offline saves', () => {
@@ -43,20 +34,30 @@ test.describe('Offline saves', () => {
     test.setTimeout(300000);
     await openApp(page);
 
-    const uuid = await page.evaluate(async (shard) => {
+    const created = await page.evaluate(async (shard) => {
       const response = await fetch('/sw/nodes/individual_participant', {
         method: 'POST',
         body: JSON.stringify({ shard, person: 'e2e-person', encounter_type: 'antenatal', deleted: false }),
       });
-      return (await response.json()).data[0].uuid;
+      return { status: response.status, body: await response.text() };
     }, SHARD);
+    expect(created.status, 'the participant was not created').toBe(200);
+    const uuid = JSON.parse(created.body).data[0].uuid;
 
+    // Tracks the running status of the active worker.
     const cdp = await context.newCDPSession(page);
+    let workerStatus = '';
+    cdp.on('ServiceWorker.workerVersionUpdated', (event) => {
+      event.versions
+        .filter((version) => version.status === 'activated')
+        .forEach((version) => { workerStatus = version.runningStatus; });
+    });
     await cdp.send('ServiceWorker.enable');
 
-    const lost: string[] = [];
+    const failed: string[] = [];
     for (let round = 0; round < ROUNDS; round++) {
       await cdp.send('ServiceWorker.stopAllWorkers');
+      await expect.poll(() => workerStatus, { message: 'the service worker did not stop', timeout: 10000 }).toBe('stopped');
       const before = await countPatchRows(page, uuid);
 
       // The requests a pregnancy dating save sends, staggered by a few
@@ -82,11 +83,11 @@ test.describe('Offline saves', () => {
       }, [uuid, SHARD, round] as const);
 
       const added = (await countPatchRows(page, uuid)) - before;
-      if (added !== 1 || statuses[3] !== '200') {
-        lost.push(`round ${round}: PATCH ${statuses[3]}, upload rows added ${added}`);
+      if (added !== 1 || statuses.some(status => status !== '200')) {
+        failed.push(`round ${round}: statuses ${statuses.join(', ')}; PATCH upload rows added ${added}`);
       }
     }
 
-    expect(lost).toEqual([]);
+    expect(failed).toEqual([]);
   });
 });
