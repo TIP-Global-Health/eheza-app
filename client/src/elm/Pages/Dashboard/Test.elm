@@ -17,7 +17,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode
 import Json.Encode
 import Pages.Dashboard.Model exposing (ECDStatus(..))
-import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, dataItemMergeDuplicates, getFollowUpsTotals, resolveDayAfterSelectedDate, resolveECDStatus, sortMonthsNewestFirst)
+import Pages.Dashboard.Utils exposing (caseManagementMergeDuplicates, countChildrenSeenForSelectedMonth, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, dataItemMergeDuplicates, getFollowUpsTotals, previousThreeMonthsNewestFirst, resolveDayAfterSelectedDate, resolveECDStatus)
 import RemoteData
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
@@ -645,31 +645,37 @@ countCurrentlyPregnantWithDangerSignsForSelectedMonthTest =
         ]
 
 
-sortMonthsNewestFirstTest : Test
-sortMonthsNewestFirstTest =
+previousThreeMonthsNewestFirstTest : Test
+previousThreeMonthsNewestFirstTest =
     let
-        sortedFor currentMonth months =
-            List.map (\month -> ( month, () )) months
-                |> sortMonthsNewestFirst currentMonth
+        -- Every month key the statistics can hold, 13 meaning 13 months ago.
+        resultFor currentMonth =
+            List.range 1 13
+                |> List.map (\month -> ( month, () ))
+                |> previousThreeMonthsNewestFirst currentMonth
                 |> List.map Tuple.first
     in
-    describe "sortMonthsNewestFirst"
+    describe "previousThreeMonthsNewestFirst"
         [ test "January lists December, November, October" <|
             \_ ->
-                sortedFor 1 [ 10, 11, 12 ]
+                resultFor 1
                     |> Expect.equal [ 12, 11, 10 ]
         , test "February lists January before the previous year's months" <|
             \_ ->
-                sortedFor 2 [ 1, 11, 12 ]
+                resultFor 2
                     |> Expect.equal [ 1, 12, 11 ]
         , test "March lists February, January, December" <|
             \_ ->
-                sortedFor 3 [ 1, 2, 12 ]
+                resultFor 3
                     |> Expect.equal [ 2, 1, 12 ]
         , test "July lists June, May, April" <|
             \_ ->
-                sortedFor 7 [ 4, 5, 6 ]
+                resultFor 7
                     |> Expect.equal [ 6, 5, 4 ]
+        , test "December lists November, October, September" <|
+            \_ ->
+                resultFor 12
+                    |> Expect.equal [ 11, 10, 9 ]
         ]
 
 
@@ -683,7 +689,7 @@ all =
         , countCurrentlyPregnantWithDangerSignsForSelectedMonthTest
         , dataItemMergeDuplicatesTest
         , followUpsTotalsTest
+        , previousThreeMonthsNewestFirstTest
         , resolveDayAfterSelectedDateTest
-        , sortMonthsNewestFirstTest
         , statsStorageRoundTripTest
         ]
