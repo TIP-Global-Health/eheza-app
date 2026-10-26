@@ -89,6 +89,12 @@ flag simply does not appear.
 - "Status: Success" alone does not prove the upload: check "Remaining for Upload: 0" too.
   Queued changes are the IndexedDB `nodeChanges` and `shardChanges` rows.
 - Device Status has "Error log" and "Sync Manager" debug panels behind its top-left links.
+- **Stopping the service worker** (Chrome does it to an idle worker): `cdp = await page.context().newCDPSession(page)`,
+  listen to `ServiceWorker.workerVersionUpdated` (the `activated` version's `runningStatus`), `ServiceWorker.enable`,
+  then `ServiceWorker.stopAllWorkers` and wait for `stopped`. The next `/sw/` request starts it again.
+- The page has the app's Dexie instance as global `dbSync`: `shardChanges` rows carry an auto-increment `localId`,
+  so "rows added by this save" is `where('localId').above(<last before>)`, which a sync that deletes rows cannot fool.
+  Service-worker save failures land in `dbErrors` (`Dropped <method> <type> <uuid>: …`).
 - IndexedDB `sync` stores: `nodes` (general data only, ~36 rows), `shards` (authority data:
   persons, relationships, measurements), `nodeChanges` / `shardChanges` (queued uploads),
   `authorityPhotoUploadChanges` (`{localId, photo, fileId}`, `fileId` null until the file
@@ -135,7 +141,7 @@ flag simply does not appear.
   MONTH, click the day, then the popup's SAVE — the day click alone does not close it.
   `h.common.setDate` does this.
 - Photos: the widget is a Dropzone (`#dropzone`), not a camera. Give it a file with
-  `setInputFiles` on its hidden input; the thumbnail turning into a `/cache-upload/images/<id>`
+  `setInputFiles` on its hidden input, `input.dz-hidden-input`, which sits on `body`, not inside `#dropzone`; the thumbnail turning into a `/cache-upload/images/<id>`
   URL means it took.
 
 ## Registration
@@ -145,7 +151,8 @@ flag simply does not appear.
 - Fields depend on the date of birth: "Mode of delivery" appears for a child, "Level of
   Education" / "Marital Status" for an adult. Set the date first.
 - Address values: Amajyaruguru 2755 → Gakenke 2756 → Coko 2803 → Mbirima 2809 → Akanduga
-  2810. Nyange HC uuid `5f89c5f3-34a2-5760-afc5-731db5c8cff9`.
+  2810. Nyange HC is nid 4, uuid `725a9a6f-ded6-5e94-b914-94a221d2ba93` (Muhondo nid 5, `b6b0a893-…`); a
+  record's `shard` on the device holds that uuid.
 - `registerAdult` names everyone `E2ETest <firstName>` (Drupal title "secondName firstName").
   A nurse's registration takes the first option at each address level: Amajyaruguru →
   Gakenke → Busengo → Birambo → Birambo.
@@ -217,6 +224,9 @@ flag simply does not appear.
   one icon, so pick tabs by text. A sample sent to the Lab makes Next Steps end with Wait → Pause
   Encounter, back on the main menu.
 - Labs history rows are `.history-entry` (name, date, and an `.action` reading UPDATE).
+- A Pregnancy Dating save sends two requests together: the LMP (POST, PATCH when corrected) and a PATCH of the
+  pregnancy (`individual_participant`) setting its EDD. The visit header shows EDD and EGA; reopen the form from
+  Completed to correct it, which sends both again. Backend EDD: `h.common.queryPregnancyEdd(name)`.
 - Prenatal History → Obstetric is in two steps. Step 1 holds the counts
   (`.form-input.number.<term-pregnancy|preterm-pregnancy|stillbirths-at-term|stillbirths-pre-term|abortions|live-children>`).
   If every count is 0 and the patient is currently pregnant, the button reads Save and step 2

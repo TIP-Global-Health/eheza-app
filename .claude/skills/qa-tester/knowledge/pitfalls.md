@@ -382,3 +382,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** `git checkout HEAD -- <overlaid files>` failed on one path and restored nothing.
 - **Wrong conclusion:** the tree is back on `develop`.
 - **Rule:** a file new on `origin/develop` does not exist in HEAD, and one bad path aborts the whole checkout. Remove those files, then check the rest out, and confirm `git status` lists only the user's own changes.
+
+## Taking a fixed id from memory into a check
+
+- **Symptom:** a cold-worker registration "failed" its shard check: expected Nyange `5f89c5f3-…`, got `725a9a6f-…`.
+- **Wrong conclusion:** the save went to the wrong health centre.
+- **Rule:** `725a9a6f-…` was Nyange; the uuid in app-map was stale. Before checking a stored id, read it from the server (`field_uuid` of the nid) in the same run. A failed check that created a record means a re-run under a new name.
+
+## Clicking an activity card straight after the save that returned to the encounter
+
+- **Symptom:** a loop reopening Pregnancy Dating from Completed timed out on the card's click in its second round. The same click worked a second later.
+- **Wrong conclusion:** the activity left Completed, or the save broke the page.
+- **Rule:** after `saveActivity`, wait about a second, click the tab you want (`#completed-tab`) explicitly, then the card.
