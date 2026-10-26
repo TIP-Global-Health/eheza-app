@@ -18,7 +18,6 @@
     // As we defined Dexie's store in app.js, we'll need to redefine tables properties here.
     // Since we don't know exactly when the DB will be ready, we define DB placeholder here.
     var dbSync = null;
-    var db = null;
 
     // This defines our URL scheme. A URL will look like
     //
@@ -46,7 +45,7 @@
     // The opening in progress, shared by every request that arrives meanwhile.
     var dbOpening = null;
 
-    // Opens the database and sets `dbSync` and `db` only once it is ready.
+    // Opens the database and sets `dbSync` only once it is ready.
     // Resolves to false while the app has not created the database yet.
     async function openSyncDb () {
         if (!await Dexie.exists('sync')) {
@@ -96,7 +95,6 @@
         });
 
         dbSync = instance;
-        db = instance;
 
         return true;
     }
@@ -265,10 +263,8 @@
                 return request.json().catch(jsonError).then(function (json) {
                     return table.update(uuid, json).catch(databaseError).then(function () {
                         return sendRevisedNode(table, uuid).then(function () {
-                            // For hooks to be able to work, we need to declare the
-                            // tables that may be altered due to a change. In this case
-                            // We want to allow adding pending upload photos.
-                            // See for example dbSync.nodeChanges.hook().
+                            // The photo upload table is included for the `shardChanges` 'creating'
+                            // hook in openSyncDb(), which adds pending photo uploads.
                             var tableName = table.name;
                             return table.db.transaction('rw', tableName, table.db.nodeChanges, table.db.shardChanges, table.db.authorityPhotoUploadChanges, function() {
                                 return table.get(uuid).catch(databaseError).then(function (node) {
@@ -317,7 +313,7 @@
                                                 // may have been a glitch. If operation fails again,
                                                 // we log error with Rollbar.
                                                 return changeTable.add(change).catch(function (secondError) {
-                                                    reportUnqueuedChange(change, firstError, secondError);
+                                                    reportUnqueuedChange(changeTable.db, change, firstError, secondError);
                                                     var reject = new Response(body, {
                                                         status: 400,
                                                         statusText: 'Failure: PATCH at changes table'
@@ -369,10 +365,8 @@
                             return table.put(json).catch(databaseError).then(function () {
                                 return sendRevisedNode(table, uuid).then(function () {
                                     var tableName = table.name;
-                                    // For hooks to be able to work, we need to declare the
-                                    // tables that may be altered due to a change. In this case
-                                    // We want to allow adding pending upload photos.
-                                    // See for example dbSync.nodeChanges.hook().
+                                    // The photo upload table is included for the `shardChanges` 'creating'
+                                    // hook in openSyncDb(), which adds pending photo uploads.
                                     return table.db.transaction('rw', tableName, table.db.nodeChanges, table.db.shardChanges, table.db.authorityPhotoUploadChanges, function() {
                                           var body = JSON.stringify({
                                               data: [json]
@@ -408,7 +402,7 @@
                                               // may have been a glitch. If operation fails again,
                                               // we log error with Rollbar.
                                               return changeTable.add(change).catch(function (secondError) {
-                                                  reportUnqueuedChange(change, firstError, secondError);
+                                                  reportUnqueuedChange(changeTable.db, change, firstError, secondError);
                                                   var reject = new Response(body, {
                                                       status: 400,
                                                       statusText: 'Failure: POST at changes table'
@@ -431,16 +425,16 @@
         }).catch(sendErrorResponses);
     }
 
-    // Records, in `dbErrors`, a change whose upload row could not be stored. The app
-    // sends `dbErrors` to Rollbar after a General download, once it has a token.
-    function reportUnqueuedChange (change, firstError, secondError) {
+    // Records, in `dbErrors` on the save's connection, a change whose upload row was
+    // not stored. The app sends them to Rollbar after a General download, once it has a token.
+    function reportUnqueuedChange (store, change, firstError, secondError) {
         var error = 'Dropped ' + change.method + ' ' + change.type + ' ' + change.uuid
             + ': upload row not stored (' + String(firstError) + '; retry: ' + String(secondError) + ')';
 
         // A report that cannot be stored is given up, so the save is not affected.
         try {
             Dexie.ignoreTransaction(function () {
-                return dbSync.dbErrors.add({ error: error, isSynced: 0 });
+                return store.dbErrors.add({ error: error, isSynced: 0 });
             }).catch(function () {});
         }
         catch (e) {}
