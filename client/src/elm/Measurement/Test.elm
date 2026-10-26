@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Measurement.Model
     exposing
         ( BloodSmearResult(..)
+        , ChildNutritionSign(..)
         , ColorAlertIndication(..)
         , CreatinineTestValue
         , HeightInCm(..)
@@ -11,6 +12,7 @@ import Backend.Measurement.Model
         , MalariaTestValue
         , MuacInCm(..)
         , NCDASign(..)
+        , NutritionAssessment(..)
         , SkippedForm(..)
         , StuntingLevel(..)
         , TestExecutionNote(..)
@@ -32,6 +34,7 @@ import Measurement.Utils
         , bloodGlucoseOutOfRange
         , bornUnderweightByBirthWeight
         , creatinineResultFormWithDefault
+        , generateIndividualNutritionAssessmentEntries
         , getAllDosesForVaccine
         , getInputConstraintsHeight
         , getInputConstraintsMuac
@@ -1049,10 +1052,58 @@ bloodSmearOrderedTest =
         ]
 
 
+generateIndividualNutritionAssessmentEntriesTest : Test
+generateIndividualNutritionAssessmentEntriesTest =
+    let
+        date =
+            Date.fromCalendarDate 2026 Oct 1
+
+        entriesForSignsTapped signs =
+            generateIndividualNutritionAssessmentEntries
+                [ { nutrition =
+                        Just
+                            ( ()
+                            , { dateMeasured = date
+                              , value =
+                                    { signs = EverySet.fromList signs
+                                    , assesment = EverySet.singleton (AssesmentMalnutritionSigns signs)
+                                    }
+                              }
+                            )
+                  , followUp =
+                        Just
+                            ( ()
+                            , { dateMeasured = date
+                              , value =
+                                    { options = EverySet.empty
+                                    , resolutionDate = Nothing
+                                    , assesment = EverySet.singleton (AssesmentMalnutritionSigns [ Apathy, Edema ])
+                                    }
+                              }
+                            )
+                  }
+                ]
+
+        expected =
+            [ ( date, [ AssesmentMalnutritionSigns [ Apathy, Edema ] ] ) ]
+    in
+    describe "generateIndividualNutritionAssessmentEntries"
+        [ test "signs tapped in sorted order give one malnutrition signs entry" <|
+            \_ ->
+                entriesForSignsTapped [ Apathy, Edema ]
+                    |> Expect.equal expected
+        , test "signs tapped in reverse order give one malnutrition signs entry" <|
+            \_ ->
+                entriesForSignsTapped [ Edema, Apathy ]
+                    |> Expect.equal expected
+        ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
         [ nextVaccinationDataForVaccineTest
+        , generateIndividualNutritionAssessmentEntriesTest
         , viewChildFormsTest
         , viewMotherFormsTest
         , viewColorAlertIndicationTest
