@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault)
+module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
@@ -250,6 +250,67 @@ expectLaboratoryResultTask isLabTech assembled task =
         -- Others are not in use for Prenatal.
         _ ->
             False
+
+
+{-| The reason and date of a test listed for results that was not performed,
+because the lab technician answered that it will not be performed today.
+-}
+laboratoryResultNotPerformed : AssembledData -> LaboratoryTask -> Maybe ( TestExecutionNote, Maybe NominalDate )
+laboratoryResultNotPerformed assembled task =
+    let
+        notPerformed =
+            Maybe.andThen
+                (\value ->
+                    if testNotPerformedByWhyNotAtExecutionNote value.executionNote then
+                        Just ( value.executionNote, value.executionDate )
+
+                    else
+                        Nothing
+                )
+
+        notPerformedByMeasurement getMeasurementFunc =
+            getMeasurementFunc assembled.measurements
+                |> getMeasurementValueFunc
+                |> notPerformed
+    in
+    case task of
+        TaskBloodGpRsTest ->
+            notPerformedByMeasurement .bloodGpRsTest
+
+        TaskHemoglobinTest ->
+            notPerformedByMeasurement .hemoglobinTest
+
+        TaskHepatitisBTest ->
+            notPerformedByMeasurement .hepatitisBTest
+
+        TaskHIVPCRTest ->
+            notPerformedByMeasurement .hivPCRTest
+
+        TaskHIVTest ->
+            notPerformedByMeasurement .hivTest
+
+        TaskMalariaTest ->
+            getMeasurementValueFunc assembled.measurements.malariaTest
+                -- A smear ordered at the lab keeps the nurse's reason for not
+                -- running the rapid test, and still awaits its result.
+                |> Maybe.Extra.filter (.bloodSmearResult >> (/=) BloodSmearPendingInput)
+                |> notPerformed
+
+        TaskPartnerHIVTest ->
+            notPerformedByMeasurement .partnerHIVTest
+
+        TaskRandomBloodSugarTest ->
+            notPerformedByMeasurement .randomBloodSugarTest
+
+        TaskSyphilisTest ->
+            notPerformedByMeasurement .syphilisTest
+
+        TaskUrineDipstickTest ->
+            notPerformedByMeasurement .urineDipstickTest
+
+        -- Others have no result to wait for at Prenatal.
+        _ ->
+            Nothing
 
 
 laboratoryResultFollowUpsTasks : List LaboratoryTask

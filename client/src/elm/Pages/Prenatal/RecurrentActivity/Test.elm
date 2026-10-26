@@ -8,6 +8,7 @@ import Backend.Measurement.Model
         ( AdministrationNote(..)
         , BloodSmearResult(..)
         , HIVTestValue
+        , HemoglobinTestValue
         , HepatitisBTestValue
         , LaboratoryTest(..)
         , LabsResultsValue
@@ -37,7 +38,8 @@ import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..),
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils
     exposing
-        ( laboratoryResultTaskCompleted
+        ( laboratoryResultNotPerformed
+        , laboratoryResultTaskCompleted
         , nextStepsTaskCompleted
         , resolveLaboratoryResultFollowUpsTasks
         , resolveNextStepsTasks
@@ -509,6 +511,51 @@ laboratoryResultTaskCompletedKnownAsPositiveTest =
         )
 
 
+{-| Tests sent to the lab, as the nurse's Lab Results reads them after the lab
+technician answered.
+-}
+laboratoryResultNotPerformedTest : Test
+laboratoryResultNotPerformedTest =
+    let
+        hemoglobinWith executionNote =
+            let
+                value : HemoglobinTestValue
+                value =
+                    { executionNote = executionNote
+                    , executionDate = Just currentDate
+                    , testPrerequisites = Just (EverySet.singleton NoTestPrerequisites)
+                    , hemoglobinCount = Nothing
+                    }
+            in
+            { emptyPrenatalMeasurements | hemoglobinTest = TestFixtures.wrapMeasurement currentDate value }
+
+        resolve task measurements =
+            laboratoryResultNotPerformed (testAssembled measurements) task
+    in
+    describe "laboratoryResultNotPerformed"
+        [ test "a test the lab technician declined gives their reason" <|
+            \_ ->
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteLackOfReagents)
+                    |> Expect.equal (Just ( TestNoteLackOfReagents, Just currentDate ))
+        , test "a test the lab technician ran gives no reason" <|
+            \_ ->
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteRunConfirmedByLabTech)
+                    |> Expect.equal Nothing
+        , test "a test still waiting for the lab gives no reason" <|
+            \_ ->
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteRunToday)
+                    |> Expect.equal Nothing
+        , test "a blood smear the lab technician declined gives their reason" <|
+            \_ ->
+                resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteLackOfReagents BloodSmearNotTaken)
+                    |> Expect.equal (Just ( TestNoteLackOfReagents, Just currentDate ))
+        , test "a blood smear still waiting for the lab gives no reason, though the rapid test has one" <|
+            \_ ->
+                resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteLackOfReagents BloodSmearPendingInput)
+                    |> Expect.equal Nothing
+        ]
+
+
 {-| Hypertension diagnosed at an earlier visit, treated with Methyldopa 2x a
 day. Today's BP is normal, so the recommendation is to keep that dose; the
 nurse chose 3x a day and gave no reason.
@@ -594,6 +641,7 @@ all : Test
 all =
     describe "Pages.Prenatal.RecurrentActivity.Utils"
         [ laboratoryResultTaskCompletedKnownAsPositiveTest
+        , laboratoryResultNotPerformedTest
         , laboratoryResultTaskCompletedMalariaTest
         , nextStepsHealthEducationExpectedTest
         , nextStepsMedicationDistributionCompletedTest
