@@ -558,6 +558,16 @@ laboratoryResultNotPerformedTest =
             in
             { measurements | hivTest = TestFixtures.wrapMeasurement currentDate { declined | testPrerequisites = sentToLab } }
 
+        hivDeclinedHoldingResult =
+            let
+                declined =
+                    hivTestValueWith TestNoteLackOfReagents (Just TestPositive) Nothing
+
+                measurements =
+                    measurementsWith [ TestHIV ] Nothing Nothing
+            in
+            { measurements | hivTest = TestFixtures.wrapMeasurement currentDate { declined | testPrerequisites = sentToLab } }
+
         smearOrderedWithRapidTestResult =
             let
                 measurements =
@@ -612,6 +622,15 @@ laboratoryResultNotPerformedTest =
             \_ ->
                 resolveLaboratoryResultFollowUpsTasks (testAssembled hivDeclinedOnFollowUpList)
                     |> Expect.equal []
+        , test "an HIV test holding a result is not shown at Lab Results" <|
+            \_ ->
+                resolveLaboratoryResultTasks False (testAssembled hivDeclinedHoldingResult)
+                    |> List.member TaskHIVTest
+                    |> Expect.equal False
+        , test "an HIV test holding a result keeps its follow up questions" <|
+            \_ ->
+                resolveLaboratoryResultFollowUpsTasks (testAssembled hivDeclinedHoldingResult)
+                    |> Expect.equal [ TaskHIVTest ]
         , test "a blood smear gives their reason" <|
             \_ ->
                 resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteLackOfReagents BloodSmearNotTaken)

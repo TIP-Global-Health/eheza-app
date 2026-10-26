@@ -43,7 +43,6 @@ import Measurement.Utils
         , urineDipstickResultFormAndTasks
         , urineDipstickResultFormWithDefault
         , viewLaboratoryResultNotPerformed
-        , viewLaboratoryResultNotPerformedAnswer
         , vitalsFormWithDefault
         )
 import Measurement.View
@@ -350,8 +349,7 @@ viewLabResultsContent language isLabTech assembled model =
                                 (\notPerformed ->
                                     if notPerformed.holdsResult then
                                         ( div []
-                                            [ div [ class "ui form laboratory not-performed" ] <|
-                                                viewLaboratoryResultNotPerformedAnswer language notPerformed.reason
+                                            [ viewLaboratoryResultNotPerformed language Nothing notPerformed.reason
                                             , form
                                             ]
                                         , completed
@@ -359,7 +357,7 @@ viewLabResultsContent language isLabTech assembled model =
                                         )
 
                                     else
-                                        ( viewLaboratoryResultNotPerformed language task notPerformed.executionDate notPerformed.reason
+                                        ( viewLaboratoryResultNotPerformed language (Just ( task, notPerformed.executionDate )) notPerformed.reason
                                         , 0
                                         , 0
                                         )

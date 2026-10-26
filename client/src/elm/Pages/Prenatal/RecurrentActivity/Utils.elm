@@ -146,31 +146,29 @@ expectLaboratoryResultTask isLabTech assembled task =
                 |> Maybe.map expectUniversalTestResultTask
                 |> Maybe.withDefault False
 
-        -- For nurses, a test whose follow up questions the lab technician
-        -- left is shown at Lab Results Follow Ups instead. A declined test has
-        -- none, so it stays here.
-        shownToNurse test =
-            let
-                followUpWasNotScheduled =
-                    getMeasurementValueFunc assembled.measurements.labsResults
+        -- For nurses, a test with follow up questions from the lab technician
+        -- is shown at Lab Results Follow Ups instead. One declined without a
+        -- result has none.
+        shownToNurse labTask test =
+            laboratoryResultDeclinedWithoutResult assembled labTask
+                || (getMeasurementValueFunc assembled.measurements.labsResults
                         |> Maybe.andThen .testsWithFollowUp
                         |> Maybe.map (EverySet.member test >> not)
                         |> Maybe.withDefault True
-            in
-            followUpWasNotScheduled || isJust (laboratoryResultNotPerformed assembled task)
+                   )
     in
     case task of
         TaskHIVTest ->
             wasTestPerformed .hivTest
-                && (isLabTech || shownToNurse TestHIV)
+                && (isLabTech || shownToNurse TaskHIVTest TestHIV)
 
         TaskPartnerHIVTest ->
             wasTestPerformed .partnerHIVTest
-                && (isLabTech || shownToNurse TestPartnerHIV)
+                && (isLabTech || shownToNurse TaskPartnerHIVTest TestPartnerHIV)
 
         TaskSyphilisTest ->
             wasTestPerformed .syphilisTest
-                && (isLabTech || shownToNurse TestSyphilis)
+                && (isLabTech || shownToNurse TaskSyphilisTest TestSyphilis)
 
         TaskHepatitisBTest ->
             wasTestPerformed .hepatitisBTest
@@ -221,6 +219,16 @@ laboratoryResultNotPerformed assembled task =
                     )
                     value.notPerformedReason
             )
+
+
+{-| The lab technician declined the test and no result is stored, so the nurse
+has nothing to fill in or follow up.
+-}
+laboratoryResultDeclinedWithoutResult : AssembledData -> LaboratoryTask -> Bool
+laboratoryResultDeclinedWithoutResult assembled task =
+    laboratoryResultNotPerformed assembled task
+        |> Maybe.map (.holdsResult >> not)
+        |> Maybe.withDefault False
 
 
 {-| What a test's record holds: its date, whether any result is stored, whether
@@ -301,9 +309,10 @@ laboratoryResultValue assembled task =
                                 notPerformedReasonByNote value.executionNote
                         , resultOfRun =
                             smearRead
-                                || (value.bloodSmearResult /= BloodSmearPendingInput)
-                                && testPerformedByExecutionNote value.executionNote
-                                && isJust value.testResult
+                                || (not smearTaken
+                                        && testPerformedByExecutionNote value.executionNote
+                                        && isJust value.testResult
+                                   )
                         }
                     )
 
@@ -384,20 +393,14 @@ expectLaboratoryResultFollowUpsTask assembled task =
                     getMeasurementValueFunc assembled.measurements.hivTest
                         |> Maybe.map (.testResult >> (==) (Just TestPositive))
                         |> Maybe.withDefault False
-
-                -- Nothing to follow up on: the nurse finds the reason at
-                -- Lab Results instead.
-                declinedWithoutResult =
-                    laboratoryResultNotPerformed assembled TaskHIVTest
-                        |> Maybe.map (.holdsResult >> not)
-                        |> Maybe.withDefault False
             in
             -- At TaskPartnerHIVTest task we ask same follow up questions,
             -- as we do for TestHIV when test result is negative.
             -- So we either do not expect TaskPartnerHIVTest follow up, or,
             -- only when test HIV result is positive.
             wasFollowUpScheduled TestHIV
-                && not declinedWithoutResult
+                -- The nurse finds a declined test's reason at Lab Results.
+                && not (laboratoryResultDeclinedWithoutResult assembled TaskHIVTest)
                 && (not partnerHIVTestFollowUpExpected || hivTestResultPositive)
 
         TaskSyphilisTest ->
