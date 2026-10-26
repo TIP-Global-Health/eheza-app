@@ -348,6 +348,15 @@ flag simply does not appear.
   Hepatitis B / Malaria / Blood Group / Urine Dipstick / Hemoglobin / Random Blood Sugar.
 - Pane filter buttons are `div.ui.segment.filters button`; an entry's tap target is
   `div.icon-forward`.
+- **Nurse after the lab technician**: once every ordered test is answered, the nurse's ANC Labs entry opens the
+  progress report (`openLabsResultsReviewFromCaseManagement`), and "Review & Accept" opens the recurrent encounter.
+  The entry stays listed as reviewed and then opens the encounter directly; Lab Results sits under Completed.
+- Lab technician and nurse share one tablet: `qa.signIn('3333', 'Nyange')`, then `qa.signIn('1234', 'Nyange')`.
+- The lab technician's "Will this test be performed today?" No offers Lack of Reagents, Lack of Other Supplies,
+  Broken Equipment, No Equipment, Not Indicated, and for Partner HIV also Not Present. Any lab technician save on
+  HIV, Syphilis or Partner HIV, a decline included, lists that test in `field_tests_with_follow_up`.
+- Read-only labels (`viewLabel`) end in a colon: "Will this test be performed today:", "Why not:". The question
+  above a yes/no input ends in "?".
 - **ANC Labs** (nurse) lists an encounter while today is before its `prenatal_labs_results` resolution
   date, labelled "ANC Lab Results", or "Vitals Recheck" while the recheck is owed. First-visit
   Vitals with systolic 140–159 or diastolic 90–109 schedules the recheck; 145/95 does it.
@@ -473,5 +482,7 @@ flag simply does not appear.
   record it on the served build, then overlay and wait for gulp once.
 - Only a caller that can read `.driver/token` (owner-only, new each start) can send commands;
   requests from a browser page are refused.
+- `qa.freshDevice()` can fail once with "Navigation … interrupted by another navigation" on a fresh
+  profile; running it again pairs normally.
 - Measured: empty profile → paired, signed in and synced in ~10 s; register a woman, open a
   first ANC encounter and reach the Random Blood Sugar tab, while recording, in ~17 s.

@@ -364,3 +364,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a GIF of four Time filter states showed two; zoomed and scaled screenshots were not captured.
 - **Wrong conclusion:** the GIF is the evidence for every state checked.
 - **Rule:** check values in Chrome if asked, but record admin pages with the QA driver. Its browser opens them after a `drush uli` link (app-map, Dashboards).
+
+## Evidence below the fold of a recorded form
+
+- **Symptom:** checks on a Lab Results tab passed, but the video's frame showed only the tab's header and date; the answer under test sat below the 1024 px viewport.
+- **Wrong conclusion:** the recording is the evidence for what the checks read.
+- **Rule:** the activity pages scroll an inner container, so `scrollIntoView` does not move them. After opening the tab, `page.mouse.move(400, 900)` then `page.mouse.wheel(0, 900)`. Check one frame per test before the next row changes its data.
+
+## Changing a fixture before its recordings are checked
+
+- **Symptom:** a server edit for a later row changed the record an earlier row's video showed. Re-recording that row meant undoing the edit, syncing, recording, and editing again.
+- **Wrong conclusion:** a row is done once its checks pass.
+- **Rule:** a row is done when its frame shows the evidence. Check frames before any step that changes the shared fixture.
+
+## Restoring the main tree after a develop overlay
+
+- **Symptom:** `git checkout HEAD -- <overlaid files>` failed on one path and restored nothing.
+- **Wrong conclusion:** the tree is back on `develop`.
+- **Rule:** a file new on `origin/develop` does not exist in HEAD, and one bad path aborts the whole checkout. Remove those files, then check the rest out, and confirm `git status` lists only the user's own changes.
