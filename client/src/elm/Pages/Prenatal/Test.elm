@@ -1,5 +1,7 @@
 module Pages.Prenatal.Test exposing (all)
 
+import AssocList
+import Backend.Entities exposing (IndividualEncounterParticipantId, PrenatalEncounterId)
 import Backend.IndividualEncounterParticipant.Model
     exposing
         ( IndividualEncounterParticipant
@@ -11,9 +13,9 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEnco
 import Date
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
+import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit, resolveShownPregnancy)
 import Pages.Prenatal.Utils exposing (marginalBloodPressureCondition)
-import Restful.Endpoint exposing (toEntityUuid)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import Test exposing (Test, describe, test)
 import TestFixtures
 import Time
@@ -236,10 +238,100 @@ pregnancyConcludedInTodaysPostpartumVisitTest =
         ]
 
 
+{-| Participants keyed by id, in the order the device loaded them.
+-}
+participants : List ( String, IndividualEncounterParticipant ) -> AssocList.Dict IndividualEncounterParticipantId IndividualEncounterParticipant
+participants =
+    List.map (Tuple.mapFirst toEntityUuid) >> AssocList.fromList
+
+
+{-| The id of the pregnancy the participant page shows.
+-}
+shownPregnancyId : (IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter )) -> List ( String, IndividualEncounterParticipant ) -> Maybe String
+shownPregnancyId encountersFor loaded =
+    resolveShownPregnancy currentDate False encountersFor (participants loaded)
+        |> Maybe.map (.sessionId >> fromEntityUuid)
+
+
+{-| An old pregnancy that gained an EDD after it expired, loaded before the
+pregnancy opened today, and a child's visit.
+-}
+twoActivePregnancies : List ( String, IndividualEncounterParticipant )
+twoActivePregnancies =
+    let
+        old =
+            pregnancyRegisteredDaysAgo 400
+    in
+    [ ( "earlier", { old | eddDate = Just (Date.add Date.Days 30 currentDate) } )
+    , ( "today", pregnancyRegisteredDaysAgo 0 )
+    , ( "child-visit", TestFixtures.testParticipant currentDate NutritionEncounter )
+    ]
+
+
+{-| One prenatal visit for the pregnancy with the given id, none for others.
+-}
+visitsFor : String -> IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter )
+visitsFor id sessionId =
+    if fromEntityUuid sessionId == id then
+        [ ( toEntityUuid "visit", visitStartedDaysAgo 30 NurseEncounter ) ]
+
+    else
+        []
+
+
+resolveShownPregnancyTest : Test
+resolveShownPregnancyTest =
+    describe "resolveShownPregnancy"
+        [ test "of two active pregnancies, the newest is shown, even with fewer visits" <|
+            \_ ->
+                shownPregnancyId (visitsFor "earlier") twoActivePregnancies
+                    |> Expect.equal (Just "today")
+        , test "an active pregnancy is shown over a newer concluded one" <|
+            \_ ->
+                let
+                    concluded =
+                        pregnancyConcludedDaysAgo 5
+                in
+                shownPregnancyId (always [])
+                    [ ( "new-concluded", { concluded | startDate = Date.add Date.Days -30 currentDate } )
+                    , ( "old-active", pregnancyRegisteredDaysAgo 300 )
+                    ]
+                    |> Expect.equal (Just "old-active")
+        , test "of two active pregnancies registered the same day, the one with visits is shown" <|
+            \_ ->
+                shownPregnancyId (visitsFor "b") [ ( "a", pregnancyRegisteredDaysAgo 10 ), ( "b", pregnancyRegisteredDaysAgo 10 ) ]
+                    |> Expect.equal (Just "b")
+        , test "of two active pregnancies registered the same day, the choice does not depend on load order" <|
+            \_ ->
+                [ [ ( "b", pregnancyRegisteredDaysAgo 10 ), ( "a", pregnancyRegisteredDaysAgo 10 ) ]
+                , [ ( "a", pregnancyRegisteredDaysAgo 10 ), ( "b", pregnancyRegisteredDaysAgo 10 ) ]
+                ]
+                    |> List.map (shownPregnancyId (always []))
+                    |> Expect.equal [ Just "a", Just "a" ]
+        , test "without an active pregnancy, one concluded in today's postpartum visit is kept" <|
+            \_ ->
+                let
+                    encountersFor sessionId =
+                        if fromEntityUuid sessionId == "concluded-today" then
+                            [ ( toEntityUuid "visit", visitStartedDaysAgo 0 NursePostpartumEncounter ) ]
+
+                        else
+                            []
+                in
+                resolveShownPregnancy currentDate
+                    False
+                    encountersFor
+                    (participants [ ( "concluded-earlier", pregnancyConcludedDaysAgo 30 ), ( "concluded-today", pregnancyConcludedDaysAgo 0 ) ])
+                    |> Maybe.map (\shown -> ( fromEntityUuid shown.sessionId, shown.keptForPostpartumVisit ))
+                    |> Expect.equal (Just ( "concluded-today", True ))
+        ]
+
+
 all : Test
 all =
     describe "Prenatal tests"
-        [ marginalBloodPressureConditionTest
-        , isPregnancyActiveTest
+        [ isPregnancyActiveTest
+        , marginalBloodPressureConditionTest
         , pregnancyConcludedInTodaysPostpartumVisitTest
+        , resolveShownPregnancyTest
         ]

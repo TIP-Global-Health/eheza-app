@@ -17,12 +17,11 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Encounter.Utils exposing (generatePostCreateDestination, getPrenatalEncountersForParticipantDesc)
 import Pages.Prenatal.Participant.Model exposing (Model, Msg(..))
-import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
+import Pages.Prenatal.Participant.Utils exposing (resolveShownPregnancy)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
@@ -82,32 +81,8 @@ viewActions :
     -> Html Msg
 viewActions language currentDate selectedHealthCenter id isChw db model prenatalSessions =
     let
-        -- An active pregnancy comes first. Without one, a pregnancy concluded in
-        -- this role's postpartum visit today is kept, so the visit reopens.
         shownPregnancy =
-            let
-                antenatalSessions =
-                    Dict.toList prenatalSessions
-                        |> List.filter (\( _, session ) -> session.encounterType == Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
-
-                withEncounters ( sessionId, session ) =
-                    { sessionId = sessionId
-                    , session = session
-                    , encounters = getPrenatalEncountersForParticipantDesc db sessionId
-                    , keptForPostpartumVisit = False
-                    }
-            in
-            case List.Extra.find (Tuple.second >> isPregnancyActive currentDate) antenatalSessions of
-                Just activePregnancy ->
-                    Just (withEncounters activePregnancy)
-
-                Nothing ->
-                    List.map withEncounters antenatalSessions
-                        |> List.Extra.find
-                            (\pregnancy ->
-                                pregnancyConcludedInTodaysPostpartumVisit currentDate isChw pregnancy.session (List.map Tuple.second pregnancy.encounters)
-                            )
-                        |> Maybe.map (\pregnancy -> { pregnancy | keptForPostpartumVisit = True })
+            resolveShownPregnancy currentDate isChw (getPrenatalEncountersForParticipantDesc db) prenatalSessions
 
         maybeSessionId =
             Maybe.map .sessionId shownPregnancy

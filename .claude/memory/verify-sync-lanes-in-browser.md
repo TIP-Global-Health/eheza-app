@@ -48,3 +48,5 @@ Related: [[e2e-local-run-procedure]], [[verify-served-bundle-before-e2e]], [[ver
    localStorage and reloads, the init script re-applies). Keep a hold under ~40 s or the 45 s rule refreshes the page.
    Spec template: scratchpad `r45/b496-repro.spec.ts` of session 50b2c76a (untracked spec in `client/e2e/`, deleted after).
 
+
+9. **Chrome's 20 s same-address wait (PR #2407 QA, 2026-10-21).** While a download is held, every copy has the same URL, and Chrome holds each one back up to 20 s before it reaches the server — so a resend lands ~50 s after the first request, not 30. Time scenarios from a page-side XHR log (patch `XMLHttpRequest.prototype.send`), not the server log. Holding server-side: a temporary block at the end of the git-ignored `settings.php` plus a `files/qa-hold/` directory; create the directory with the Write tool and edit with Edit — `mkdir`/`curl -k` there are classifier-blocked, plain-HTTPS `curl` to `https://ihangane.ddev.site:4443` worked after the user allowed it.

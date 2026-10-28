@@ -1,6 +1,6 @@
 ---
 name: stacked-pr-base-is-parent-branch
-description: ⛔ A stacked PR's GitHub base must be the PARENT BRANCH, not develop — AND merge the child only after GitHub has retargeted it to develop (#2214 merged into its already-merged parent 38 s too early and never reached develop)
+description: ⛔ A stacked PR's GitHub base must be the PARENT BRANCH, not develop — AND never `--delete-branch` the parent while a child is open (it CLOSES the child, #2402 2026-10-21); merge parent, PATCH child base=develop, merge child, then delete
 metadata:
   type: feedback
 ---
@@ -31,3 +31,15 @@ into `develop` at 05:26:11 and #2214 was merged 38 seconds later while its base 
 check `gh pr view <N> --json baseRefName` says `develop`** (retarget by hand with the PATCH above if not),
 and after merging a stack confirm each head is on develop:
 `git merge-base --is-ancestor <headRefOid> origin/develop`.
+
+⛔ **Delete-time clause (2026-10-21, #2391 → #2402).** `gh pr merge --delete-branch` on the PARENT
+**closes the child outright** — GitHub's auto-retarget runs only when GitHub itself removes the branch
+(the "Delete branch" button, or the repo setting `delete_branch_on_merge`, which is `false` on
+eheza-app). gh's separate ref delete lands before any retarget: #2391 merged 10:07:39, #2402 was
+closed 10:07:42, the ref delete was logged 10:07:43. Recovery: `git push origin <parentHeadSha>:refs/heads/<parent-branch>`,
+`gh api .../pulls/<child> -X PATCH -f state=open`, then `-f base=develop`, then delete the branch again
+(a closed PR's base cannot be changed, so the branch must exist to reopen it).
+**Order that works:** merge the parent with plain `gh pr merge --merge` (no `--delete-branch`) → PATCH the
+child's `base=develop` → confirm `mergeable=MERGEABLE` and the diff lists only the child's files → merge the
+child `--delete-branch` → `git push origin --delete <parent-branch>`. The user was offered turning the
+repo setting on instead (then GitHub deletes and retargets itself); not decided.

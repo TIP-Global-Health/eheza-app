@@ -48,4 +48,12 @@ Bookkeeping races are handled on the git side only: the `Stop` hook takes a `flo
 whatever another session pushed first. Two sessions editing `HANDOFF.md` or `queue.md` at the same
 time can still clobber each other in the working tree — re-read immediately before writing.
 
+**Check the branch before EVERY bookkeeping commit, not once per session.** On 2026-10-19 another
+party checked the main tree out to a feature branch between two of my bookkeeping steps, four minutes
+apart. My chain (`git pull --ff-only && … commit && git push origin develop`) committed onto the
+feature branch, and the push of `develop` by name succeeded as a silent no-op. Caught only because an
+edit assertion failed on the stale file. Guard: start the chain with
+`[ "$(git branch --show-current)" = develop ] ||` stop, or commit from a detached `origin/develop`
+worktree and `git push origin HEAD:develop`.
+
 Related: [[e2e-local-run-procedure]], [[verify-by-running-not-reasoning]]

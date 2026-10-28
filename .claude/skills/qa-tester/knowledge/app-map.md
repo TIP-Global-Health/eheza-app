@@ -29,6 +29,10 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   the migration devices (Tablet 1 `12345678`, Tablet 2 `87654321`) and turns the feature
   flags back on. A browser profile from before it holds credentials for a database that no
   longer exists: start the driver with `--fresh`.
+- Every upload failing, with the watchdog showing `Autoloader not found: …/sites/all/vendor/autoload.php`
+  and `Class 'Ramsey\Uuid\Uuid' not found`, means the server's Composer libraries are missing. The
+  user runs `composer install` (or `composer update <new package> --with-all-dependencies` when the
+  lock lacks a package) in `server/www/sites/default/files/composer`, inside ddev.
 - Re-pairing an already-paired device needs super user mode
   (`ddev drush vset hedley_super_user_mode 1`, back to 0 after).
 
@@ -75,6 +79,7 @@ flag simply does not appear.
 - The upload lane then idles (Sync Settings → Idle time, default 600 s; after an error it
   sleeps that long). "TRY SYNCING WITH BACKEND" on Device Status forces a round;
   `h.common.syncAndWait(page)` presses the sync icon and waits for Success.
+- Sync timing: the app's clock (`currentTime`) moves every 10 s, so a download is sent again 30–40 s after it was sent; after a failed reply the loop ticks at the offline pace (10 s). A `UserPage` never reloads itself after a long sync; Device Status can.
 - Device Status shows each health centre in a `.health-center` block, with Last Successful
   Contact, Remaining for Upload, Remaining for Download and Status in `.sync-status`.
 - "Status: Success" alone does not prove the upload: check "Remaining for Upload: 0" too.

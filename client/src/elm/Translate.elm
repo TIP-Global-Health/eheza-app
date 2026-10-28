@@ -8998,7 +8998,7 @@ translationSet trans =
         ImminentDeliveryLabel ->
             { english = "Imminent delivery"
             , kinyarwanda = Just "Kubyara biri hafi"
-            , kirundi = Just "Gutanga bigaragara/"
+            , kirundi = Just "Gutanga bigaragara"
             , somali = Nothing
             }
 
@@ -12077,7 +12077,7 @@ translationSet trans =
         PerinealPainOrDischarge ->
             { english = "Perineal pain or discharge"
             , kinyarwanda = Just "Arababara perine cg aratakaza ibintu budasanzwe"
-            , kirundi = Just "Ububabare bw'umugongo hepfo"
+            , kirundi = Just "Ububabare bwo mu gihimba c'irondoka (périnée) canke isohoka ridasanzwe"
             , somali = Just "Xanuun qaska ah ama Dheecaan"
             }
 

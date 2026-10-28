@@ -1,4 +1,4 @@
-module Pages.Reports.View exposing (view)
+module Pages.Reports.View exposing (generateAcuteIllnessReportData, generateDemographicsReportEncountersData, generateDemographicsReportPatientsData, generatePeripartumReportData, generatePostnatalCareReportData, generatePrenatalContactsReportData, generatePrenatalReportData, view)
 
 import App.Types exposing (Language, Site, SiteFeature(..))
 import AssocList as Dict exposing (Dict)
@@ -43,7 +43,7 @@ import Pages.Components.Utils exposing (isSyncComplete, reportTableDataToCSV, re
 import Pages.Components.View exposing (viewMetricsResultsTable, viewReportDateInputs, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
-import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
+import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, filterRecordsByDateRange, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isPostpartumEncounter, isPregnancyCompleted, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, resolveQuarterForIndex)
 import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils
     exposing
@@ -140,101 +140,7 @@ viewReportsData language currentDate themePath data model =
                                 (\reportType startDate limitDate ->
                                     let
                                         recordsTillLimitDate =
-                                            if
-                                                (Date.compare startDate launchDate == EQ)
-                                                    && (Date.compare limitDate currentDate == EQ)
-                                            then
-                                                data.records
-
-                                            else
-                                                List.filterMap
-                                                    (\record ->
-                                                        if
-                                                            -- Patient was created not after the TO date.
-                                                            not <| Date.compare record.created limitDate == GT
-                                                        then
-                                                            let
-                                                                filterPrenatalData =
-                                                                    Maybe.map
-                                                                        (List.filterMap
-                                                                            (\participantData ->
-                                                                                -- Pregnancy was created not after the TO date.
-                                                                                if Date.compare participantData.created limitDate == GT then
-                                                                                    Nothing
-
-                                                                                else
-                                                                                    let
-                                                                                        filteredEncounters =
-                                                                                            List.filter
-                                                                                                (\encounterData ->
-                                                                                                    -- Encounter was created not before the FROM date and
-                                                                                                    -- not after the TO date.
-                                                                                                    (not <| Date.compare encounterData.startDate startDate == LT)
-                                                                                                        && (not <| Date.compare encounterData.startDate limitDate == GT)
-                                                                                                )
-                                                                                                participantData.encounters
-                                                                                    in
-                                                                                    if List.isEmpty filteredEncounters then
-                                                                                        Nothing
-
-                                                                                    else
-                                                                                        let
-                                                                                            dateConcluded =
-                                                                                                -- If pregnancy was concluded, but conclusion date is
-                                                                                                -- after TO date, we mark pregnancy as not concluded.
-                                                                                                Maybe.andThen
-                                                                                                    (\date ->
-                                                                                                        if Date.compare limitDate date == LT then
-                                                                                                            Nothing
-
-                                                                                                        else
-                                                                                                            Just date
-                                                                                                    )
-                                                                                                    participantData.dateConcluded
-                                                                                        in
-                                                                                        Just { participantData | dateConcluded = dateConcluded, encounters = filteredEncounters }
-                                                                            )
-                                                                        )
-
-                                                                inRangeBy resolveDateFunc encounterData =
-                                                                    let
-                                                                        encounterDate =
-                                                                            resolveDateFunc encounterData
-                                                                    in
-                                                                    (not <| Date.compare encounterDate startDate == LT)
-                                                                        && (not <| Date.compare encounterDate limitDate == GT)
-
-                                                                filterIndividualBy resolveDateFunc =
-                                                                    Maybe.map (List.map (List.filter (inRangeBy resolveDateFunc)))
-
-                                                                filterGroupBy resolveDateFunc =
-                                                                    Maybe.map (List.filter (inRangeBy resolveDateFunc))
-                                                            in
-                                                            Just
-                                                                { record
-                                                                    | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
-                                                                    , prenatalData = filterPrenatalData record.prenatalData
-                                                                    , homeVisitData = filterIndividualBy identity record.homeVisitData
-                                                                    , wellChildData = filterIndividualBy .startDate record.wellChildData
-                                                                    , childScorecardData = filterIndividualBy identity record.childScorecardData
-                                                                    , ncdData = filterIndividualBy identity record.ncdData
-                                                                    , hivData = filterIndividualBy identity record.hivData
-                                                                    , tuberculosisData = filterIndividualBy identity record.tuberculosisData
-                                                                    , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
-                                                                    , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
-                                                                    , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
-                                                                    , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
-                                                                    , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
-                                                                    , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
-                                                                    , groupNutritionFbfMotherData = filterGroupBy .startDate record.groupNutritionFbfMotherData
-                                                                    , familyNutritionData = filterIndividualBy .startDate record.familyNutritionData
-                                                                    , familyNutritionMuacData = filterIndividualBy .startDate record.familyNutritionMuacData
-                                                                }
-
-                                                        else
-                                                            Nothing
-                                                    )
-                                                    data.records
+                                            filterRecordsByDateRange currentDate startDate limitDate data.records
                                     in
                                     case reportType of
                                         ReportAcuteIllness ->
@@ -315,17 +221,7 @@ viewDemographicsReport : Language -> EverySet SiteFeature -> NominalDate -> Nomi
 viewDemographicsReport language features startDate limitDate scopeLabel records =
     let
         demographicsReportPatientsData =
-            -- We get recoderds for all patients that were created not before
-            -- the TO date.
-            -- In this report however, we want to get only those patients that
-            -- were created not after the FROM date, hence the filtering.
-            List.filter
-                (\record ->
-                    -- Patient was created not before the FROM date.
-                    not <| Date.compare record.created startDate == LT
-                )
-                records
-                |> generateDemographicsReportPatientsData language limitDate
+            generateDemographicsReportPatientsData language startDate limitDate records
 
         demographicsReportEncountersData =
             generateDemographicsReportEncountersData language features records
@@ -348,8 +244,13 @@ viewDemographicsReport language features startDate limitDate scopeLabel records 
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
+{-| The patients registered between FROM and TO, by age at TO. The records
+hold every patient created up to TO, so those created before FROM are
+left out here.
+-}
 generateDemographicsReportPatientsData :
     Language
+    -> NominalDate
     -> NominalDate
     -> List PatientData
     ->
@@ -362,10 +263,11 @@ generateDemographicsReportPatientsData :
                 , totals : ( String, String )
                 }
         }
-generateDemographicsReportPatientsData language limitDate records =
+generateDemographicsReportPatientsData language startDate limitDate records =
     let
         ( males, females ) =
-            List.partition (.gender >> (==) Male) records
+            List.filter (\record -> Date.compare record.created startDate /= LT) records
+                |> List.partition (.gender >> (==) Male)
 
         males1MonthAndLess =
             List.filter (\patient -> Date.diff Months patient.birthDate limitDate == 0)
@@ -1276,14 +1178,8 @@ generateQuarterlyIncidenceTableData language currentDate heading encountersByMon
         |> List.map
             (\index ->
                 let
-                    selectedDate =
-                        Date.add Months (-3 * index) currentDate
-
-                    year =
-                        Date.year selectedDate
-
-                    quarter =
-                        Date.quarter selectedDate
+                    ( year, quarter ) =
+                        resolveQuarterForIndex currentDate index
 
                     dataSet =
                         List.Extra.getAt (index - 1) dataSetsByQuarter
@@ -1445,11 +1341,7 @@ generatePrenatalReportData language limitDate records =
                         if isJust participantData.eddDate then
                             let
                                 filteredEncounters =
-                                    List.filter
-                                        (\encounter ->
-                                            not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
-                                        )
-                                        participantData.encounters
+                                    List.filter (isPostpartumEncounter >> not) participantData.encounters
                             in
                             Just { participantData | encounters = filteredEncounters }
 
@@ -1458,23 +1350,7 @@ generatePrenatalReportData language limitDate records =
                     )
 
         ( completed, active ) =
-            List.partition
-                (\participantData ->
-                    -- Pregnancy is considered completed if
-                    -- either conclusion date was set.
-                    isJust participantData.dateConcluded
-                        || (-- Or it's been 30 days or more since estimated delivery date.
-                            Maybe.map
-                                (\eddDate ->
-                                    Date.compare (Date.add Days 30 eddDate) limitDate == LT
-                                )
-                                participantData.eddDate
-                                |> -- We never get here, as filtered, only contains pregnancies
-                                   -- that got EDD set.
-                                   Maybe.withDefault False
-                           )
-                )
-                filtered
+            List.partition (isPregnancyCompleted limitDate) filtered
 
         partitionedVisitsForActive =
             countVisitsByType active
@@ -2421,27 +2297,11 @@ generatePrenatalContactsReportData language limitDate records =
 
         encountersAtCompletedPregnancies =
             List.filterMap
-                (\( lmpDate, pregnancy ) ->
-                    let
-                        completed =
-                            let
-                                thirtyDaysAfterEDD =
-                                    Date.add Days 310 lmpDate
-                            in
-                            -- Pregnancy is completed when it's completion date is set, or,
-                            -- 30 days after estimated delivery date.
-                            isJust pregnancy.dateConcluded
-                                || (not <| Date.compare thirtyDaysAfterEDD limitDate == GT)
-                    in
-                    if completed then
+                (\( _, pregnancy ) ->
+                    if isPregnancyCompleted limitDate pregnancy then
                         let
                             nonPostpartumEncounters =
-                                List.filter
-                                    (\encounter ->
-                                        -- Encounter was started not after EGA date.
-                                        not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
-                                    )
-                                    pregnancy.encounters
+                                List.filter (isPostpartumEncounter >> not) pregnancy.encounters
                         in
                         Just <| List.length nonPostpartumEncounters
 

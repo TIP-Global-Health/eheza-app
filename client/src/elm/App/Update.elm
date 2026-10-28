@@ -290,7 +290,6 @@ update msg model =
                         isChw
                         isLabTech
                         model.activePage
-                        model.syncManager
                         subMsg
                         model.indexedDb
 
@@ -298,7 +297,7 @@ update msg model =
                 -- is at least one we need to catch here.
                 revisionMsgs =
                     case subMsg of
-                        Backend.Model.HandleRevisions revisions ->
+                        Backend.Model.HandleRevisions _ revisions ->
                             List.filterMap (handleRevision model) revisions
 
                         _ ->
