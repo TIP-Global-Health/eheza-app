@@ -20,7 +20,7 @@ B-019	3	PARKED					hedley_view_export requeue path missing switchUserBack
 B-020	1	PARKED					Stats recalc non-atomic → dashboard blanks/stale for an HC
 B-021	4	READY	LOW				Unbatched soft-delete cascade can time out (CORRECTED: availability only, atomic rollback)
 B-022	4	CLOSED					i18n objective leftover: Kirundi prose in `english` field
-B-023	4	READY				10	Stale merge-conflict "REVIEW:" comment committed on develop
+B-023	4	IMPLEMENTED		2430	2435	10	Stale merge-conflict "REVIEW:" comment committed on develop
 B-024	2	IMPLEMENTED		1937	1938	10	4 of 5 progress-report pages never fetch health centers → Next-Appointment "Location" renders blank
 B-025	1	IMPLEMENTED	HIGH	1888	1889	10	Upload lanes wedge the WHOLE sync cycle permanently when the JS handler dies without replying
 B-026	1	IMPLEMENTED	HIGH	1898	1899	10	Deferred-photo download lane wedges permanently on mid-body network drop
@@ -79,7 +79,7 @@ B-078	4	READY				16	NCDA scorecard: `continue` on empty Vitamin A skips the MUAC
 B-079		CLOSED				16	Demographics report 50-year age-band gap (person exactly 50.0y dropped from totals)
 B-080	4	REFUTED				16	`hedley_device_assign_shards` education_session edit branch leaves `$shards` undefined (PHP notice)
 B-081	4	CLOSED				16	CLAUDE.md doc drift (one doc PR): feature-flag names + missing flag + stale CI-job count
-B-082	4	READY				16	`SaveMotherFbf` inserts into a copy of the WRONG tracker dict
+B-082	4	IMPLEMENTED		2431	2436	16	`SaveMotherFbf` inserts into a copy of the WRONG tracker dict
 B-083		READY				16	HC-level stock view counts village-tagged stock updates as receipts
 B-084	3	IMPLEMENTED			1979	16	Shared `viewNumberInput` accepts hand-typed negatives (HTML min="0" only)
 B-085	4	READY				16	Person shards not recomputed on health-center change
@@ -88,7 +88,7 @@ B-087	3	PARKED				16	view_export worker returns permanent FAILURE when the final
 B-088	4	READY				16	No `hook_node_delete` in hedley_ncda / hedley_reports / hedley_stats → hard-delete (super_user_mode only) leaves stale a
 B-089	4	IMPLEMENTED		2202	2200	16	Kirundi `MissedDosesOfMedication` missing leading space ("3y'imiti")
 B-090	4	READY				16	Stats case-management "month 13" cutoff not midnight-anchored
-B-091	4	READY				16	Prenatal syphilis medication guard omits `syphilisAdverseEventsHospitalization`
+B-091	4	IMPLEMENTED		2431	2436	16	Prenatal syphilis medication guard omits `syphilisAdverseEventsHospitalization`
 B-092	4	READY				16	a11y PR1: shared/shell primitives (~30 sites: `Pages/Utils` viewAlert :1154 / viewPhotoThumb :1249 / exclamation :1356, 
 B-093	4	READY				16	a11y PR2: group-session flow (~34 sites: Attendance/Activities/Participants nav tabs + check-in/out toggles, EducationSe
 B-094	4	READY				16	a11y PR3: Prenatal + NCD (~27 sites: 13 imgs incl. ProgressReport timeline icons, 14 back-links incl. span-onClick varia
@@ -298,7 +298,7 @@ B-297	4	READY	LOW			27	Group sessions: nothing has closed a session since mid-20
 B-298	4	READY	MED-LOW			27	Group measurement forms: the save button's double-submission guard and error indication are dead — `EditableSession.upda
 B-299	3	IMPLEMENTED	MED-LOW	2186	2187	27	Stock Management (CHW village): a saved stock update never reaches the village view in-session — the revision path updat
 B-300	4	READY	MED-LOW			27	Stock Management (CHW village): the monthly data is computed as soon as measurements load, without waiting for the villa
-B-301	4	READY	LOW			27	Stock Management: the oldest history row opens month details at gap 12 while the clamp is 11, and the back arrow then pa
+B-301	4	IMPLEMENTED	LOW	2427	2432	27	Stock Management: the oldest history row opens month details at gap 12 while the clamp is 11, and the back arrow then pa
 B-302	4	READY	LOW			27	Stock Management (CHW village): the computed data cache is keyed by health center but holds one village's figures — a CH
 B-303	3	IMPLEMENTED	MED	2181	2183	27	Translate: clinical-content translation errors batch — wrong dosage, wrong instruction, collapsed screening options, wro
 B-304	3	IMPLEMENTED	MED-LOW	2182	2183	27	Translate: copied-neighbor label batch — a lab/service/category label answers the WRONG English source (10 sites, each v
@@ -407,7 +407,7 @@ B-406	4	READY	LOW			34	Every precache revision in the shipped service worker is 
 B-407	4	READY	LOW			34	`.ddev/config.local.yaml.example` is not in the "default state" both deploy skills tell the operator to expect, so a sta
 B-408	4	READY	LOW			34	Both deploy skills run their clean-tree and terminus preflight checks before the `ddev restart` that invalidates them
 B-409	4	REFUTED	LOW			34	The native install/reset/upgrade scripts end with a bootstrap check that is missing its pipe, so a fully successful run 
-B-410	4	READY	LOW			34	`generateReleaseNotes` drops all GitHub enrichment when `origin` is an HTTPS remote, because it reads the org and repo f
+B-410	4	IMPLEMENTED	LOW	2429	2434	34	`generateReleaseNotes` drops all GitHub enrichment when `origin` is an HTTPS remote, because it reads the org and repo f
 B-411	4	READY	LOW			34	`server/scripts/setup-dev` writes Drupal's settings files to the repository root instead of the docroot
 B-412	4	READY	LOW			34	Three exported field instances permit a shape the client decoder or the sync query cannot survive — the same poison-reco
 B-413	3	READY	MED			34	Every admin content list and CSV export shows soft-deleted content as live, because the views filter `node.status` and n
@@ -453,7 +453,7 @@ B-452	1	IMPLEMENTED		2328	2329	39	Prenatal obstetric history: correcting step 1 
 B-453	1	PARKED	LOW			39	Prenatal postpartum mastitis: a mother who is NOT breastfeeding because of breast pain or breast redness is never diagno
 B-454	1	IMPLEMENTED	LOW	2330	2331	39	NCD labs: a random blood sugar test sent to the lab, then corrected to "not performed", keeps "result from the lab" in i
 B-455	4	WONTFIX	LOW			39	Prenatal labs: a Hepatitis B test run at point of care, then corrected to "known as positive", still saves the result of
-B-456	4	READY	LOW			39	Admin reports CSV download: the file has no byte-order mark and always separates with a comma, so Excel can garble accen
+B-456	4	IMPLEMENTED	LOW	2428	2433	39	Admin reports CSV download: the file has no byte-order mark and always separates with a comma, so Excel can garble accen
 B-457	4	CLOSED	LOW		2391	39	Admin Elm app (`server/elm`): no unit tests can be written, because it has no elm-test setup, so pure helpers such as th
 B-458	4	READY	LOW			39	Admin content: outside super user mode, three more ways to delete or unpublish a node are still offered and always fail 
 B-459	1	PARKED	LOW			38	Prenatal diagnosis: a treated malaria found again at a different anemia level is filed as a new episode, and "treated" m
