@@ -308,15 +308,12 @@ class RoboFile extends Tasks {
       ->run()
       ->getMessage();
 
-    if (!empty($remote)) {
-      // The last two parts are the organization and the repository, both in
-      // "git@github.com:ORG/REPO.git" and "https://github.com/ORG/REPO.git".
-      $origin_parts = array_values(array_filter(preg_split('/[:\/]/', preg_replace('/\.git$/', '', trim($remote)))));
-      $count = count($origin_parts);
-      if ($count >= 2) {
-        $github_org = $origin_parts[$count - 2];
-        $github_project = $origin_parts[$count - 1];
-      }
+    // Matches both "git@github.com:ORG/REPO.git" and
+    // "https://github.com/ORG/REPO.git"; a remote on another host matches
+    // nothing.
+    if (preg_match('#github\.com[:/]([^/]+)/([^/]+?)(?:\.git)?/?$#', trim($remote), $matches)) {
+      $github_org = $matches[1];
+      $github_project = $matches[2];
     }
 
     if (!isset($github_org) || !isset($github_project)) {
