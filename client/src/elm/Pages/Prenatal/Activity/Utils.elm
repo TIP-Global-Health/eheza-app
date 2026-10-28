@@ -4575,7 +4575,14 @@ toMedicationValue form =
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
 
         syphilisTreatment =
-            if List.all isNothing [ form.syphilisStillTaking, form.syphilisMissedDoses, form.syphilisAdverseEvents ] then
+            if
+                List.all isNothing
+                    [ form.syphilisStillTaking
+                    , form.syphilisMissedDoses
+                    , form.syphilisAdverseEvents
+                    , form.syphilisAdverseEventsHospitalization
+                    ]
+            then
                 Nothing
 
             else
