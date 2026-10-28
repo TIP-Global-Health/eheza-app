@@ -4514,85 +4514,42 @@ toMedicationValue form =
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHIVTreatment)
 
-        hypertensionTreatment =
-            if
-                List.all isNothing
-                    [ form.hypertensionStillTaking
-                    , form.hypertensionMissedDoses
-                    , form.hypertensionAdverseEvents
-                    , form.hypertensionAdverseEventsHospitalization
-                    ]
-            then
+        toMedicationTreatmentValue stillTaking missedDoses adverseEvents adverseEventsHospitalization =
+            if List.all isNothing [ stillTaking, missedDoses, adverseEvents, adverseEventsHospitalization ] then
                 Nothing
 
             else
-                [ ifNullableTrue MedicationTreatmentStillTaking form.hypertensionStillTaking
-                , ifNullableTrue MedicationTreatmentMissedDoses form.hypertensionMissedDoses
-                , ifNullableTrue MedicationTreatmentAdverseEvents form.hypertensionAdverseEvents
-                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.hypertensionAdverseEventsHospitalization
+                [ ifNullableTrue MedicationTreatmentStillTaking stillTaking
+                , ifNullableTrue MedicationTreatmentMissedDoses missedDoses
+                , ifNullableTrue MedicationTreatmentAdverseEvents adverseEvents
+                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization adverseEventsHospitalization
                 ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
+
+        hypertensionTreatment =
+            toMedicationTreatmentValue form.hypertensionStillTaking
+                form.hypertensionMissedDoses
+                form.hypertensionAdverseEvents
+                form.hypertensionAdverseEventsHospitalization
 
         malariaTreatment =
-            if
-                List.all isNothing
-                    [ form.malariaStillTaking
-                    , form.malariaMissedDoses
-                    , form.malariaAdverseEvents
-                    , form.malariaAdverseEventsHospitalization
-                    ]
-            then
-                Nothing
-
-            else
-                [ ifNullableTrue MedicationTreatmentStillTaking form.malariaStillTaking
-                , ifNullableTrue MedicationTreatmentMissedDoses form.malariaMissedDoses
-                , ifNullableTrue MedicationTreatmentAdverseEvents form.malariaAdverseEvents
-                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.malariaAdverseEventsHospitalization
-                ]
-                    |> Maybe.Extra.combine
-                    |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
+            toMedicationTreatmentValue form.malariaStillTaking
+                form.malariaMissedDoses
+                form.malariaAdverseEvents
+                form.malariaAdverseEventsHospitalization
 
         anemiaTreatment =
-            if
-                List.all isNothing
-                    [ form.anemiaStillTaking
-                    , form.anemiaMissedDoses
-                    , form.anemiaAdverseEvents
-                    , form.anemiaAdverseEventsHospitalization
-                    ]
-            then
-                Nothing
-
-            else
-                [ ifNullableTrue MedicationTreatmentStillTaking form.anemiaStillTaking
-                , ifNullableTrue MedicationTreatmentMissedDoses form.anemiaMissedDoses
-                , ifNullableTrue MedicationTreatmentAdverseEvents form.anemiaAdverseEvents
-                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.anemiaAdverseEventsHospitalization
-                ]
-                    |> Maybe.Extra.combine
-                    |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
+            toMedicationTreatmentValue form.anemiaStillTaking
+                form.anemiaMissedDoses
+                form.anemiaAdverseEvents
+                form.anemiaAdverseEventsHospitalization
 
         syphilisTreatment =
-            if
-                List.all isNothing
-                    [ form.syphilisStillTaking
-                    , form.syphilisMissedDoses
-                    , form.syphilisAdverseEvents
-                    , form.syphilisAdverseEventsHospitalization
-                    ]
-            then
-                Nothing
-
-            else
-                [ ifNullableTrue MedicationTreatmentStillTaking form.syphilisStillTaking
-                , ifNullableTrue MedicationTreatmentMissedDoses form.syphilisMissedDoses
-                , ifNullableTrue MedicationTreatmentAdverseEvents form.syphilisAdverseEvents
-                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.syphilisAdverseEventsHospitalization
-                ]
-                    |> Maybe.Extra.combine
-                    |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
+            toMedicationTreatmentValue form.syphilisStillTaking
+                form.syphilisMissedDoses
+                form.syphilisAdverseEvents
+                form.syphilisAdverseEventsHospitalization
     in
     if
         isNothing signs
