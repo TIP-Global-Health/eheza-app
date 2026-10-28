@@ -308,10 +308,10 @@ class RoboFile extends Tasks {
       ->run()
       ->getMessage();
 
-    // Matches both "git@github.com:ORG/REPO.git" and
-    // "https://github.com/ORG/REPO.git"; a remote on another host matches
+    // Matches "git@github.com:ORG/REPO.git", "https://github.com/ORG/REPO.git"
+    // and "ssh://git@github.com:22/ORG/REPO"; a remote on another host matches
     // nothing.
-    if (preg_match('#github\.com[:/]([^/]+)/([^/]+?)(?:\.git)?/?$#', trim($remote), $matches)) {
+    if (preg_match('#(?:^|[@/])github\.com(?::\d+/|[:/])([^/]+)/([^/]+?)(?:\.git)?/?$#i', trim($remote), $matches)) {
       $github_org = $matches[1];
       $github_project = $matches[2];
     }
