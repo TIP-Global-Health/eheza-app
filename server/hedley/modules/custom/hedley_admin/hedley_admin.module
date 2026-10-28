@@ -146,7 +146,8 @@ function hedley_admin_vbo_export_csv($variables) {
     fputcsv($handle, $row);
   }
   rewind($handle);
-  $csv_output = '';
+  // The leading byte-order mark makes Excel read the file as UTF-8.
+  $csv_output = "\xEF\xBB\xBF";
   while (!feof($handle)) {
     $csv_output .= fread($handle, 8192);
   }
