@@ -394,3 +394,10 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a loop reopening Pregnancy Dating from Completed timed out on the card's click in its second round. The same click worked a second later.
 - **Wrong conclusion:** the activity left Completed, or the save broke the page.
 - **Rule:** after `saveActivity`, wait about a second, click the tab you want (`#completed-tab`) explicitly, then the card.
+
+## Enabling a feature by a flag name that nothing reads
+
+- **Symptom:** `drush vget hedley_admin_feature` listed `stock_management_enabled: 1`, so the flag looked on.
+- **Wrong conclusion:** Stock Management is enabled; a missing card would be a bug.
+- **Rule:** an old variable can outlive a rename. Check the name against `hedley_admin_get_available_features()`
+  before trusting a flag, and set the name listed there.

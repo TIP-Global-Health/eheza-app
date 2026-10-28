@@ -38,6 +38,9 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
 `hedley_admin_get_available_features()` in `hedley_admin.module`. A screen behind a disabled
 flag simply does not appear.
 
+- Stock Management needs `stock_management_hc` (nurse) or `stock_management_village` (CHW).
+  A local database can still carry `hedley_admin_feature_stock_management_enabled`, which nothing reads.
+
 ## Accounts and roles
 
 | account | PIN | after sign-in |
@@ -433,6 +436,17 @@ flag simply does not appear.
   `.month-selector .label`; previous month is `span.icon-back:not(.rotate-180)`, next is `.rotate-180`.
 - Sub-pages: Antenatal Care / Child Nutrition / Acute Illness / Group Education buttons; Acute
   Illness has Overview / COVID-19 / Malaria / Gastro in `.page-filters`.
+
+## Stock Management
+
+- Main menu → STOCK MANAGEMENT (`h.stockManagement.navigateToStockManagement`). A fresh local
+  database has no `stock_update` nodes, so the page shows empty months until stock is received.
+- History lists the 12 months before the current one (newest first); each row's VIEW opens that
+  month's details. Both pages have `.month-selector`; a hidden arrow is `visibility: hidden`.
+- `completeReceiveStock` always dates the receipt today. Receive Stock's date picker reaches five
+  years back, so a past month's receipt can be entered through the form with `h.common.setDate`.
+- Details rows: `.pane.month-details .row:not(.header)`; the signature cell holds only an image,
+  so a row's joined `textContent` ends in an empty cell.
 
 ## Statistical Queries (admin)
 
