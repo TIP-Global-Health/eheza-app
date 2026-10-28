@@ -44,9 +44,12 @@ emptyModel =
     }
 
 
+{-| The history lists the 12 months before the current one, so both month
+selectors reach back as far as its oldest row, and no further.
+-}
 maxMonthGap : Int
 maxMonthGap =
-    11
+    12
 
 
 type DisplayMode
