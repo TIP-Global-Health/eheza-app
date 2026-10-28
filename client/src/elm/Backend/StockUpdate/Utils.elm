@@ -80,8 +80,7 @@ generateVillageStockManagementData currentDate villageId db measurements =
     generateStockManagementDataFromDistributions currentDate allDistributions allStockUpdates
 
 
-{-| The stock data covers the current month and the 12 before it, so month
-selectors reach back as far as the History's oldest row, and no further.
+{-| The stock data covers the current month and the 12 before it.
 -}
 maxMonthGap : Int
 maxMonthGap =
@@ -122,7 +121,7 @@ generateStockManagementDataFromDistributions currentDate allDistributions allSto
         -- The current month (gap 0) is included so its own window can be looked
         -- up here; the window is always the 6 months before the month.
         distributionsByMonth =
-            List.range 0 18
+            List.range 0 (maxMonthGap + 6)
                 |> List.map
                     (\monthGap ->
                         let
