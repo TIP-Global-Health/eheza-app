@@ -1,4 +1,4 @@
-module Pages.StockManagement.Model exposing (CorrectEntryForm, CorrectionEntryType(..), DisplayMode(..), Model, Msg(..), ReceiveStockForm, StockManagementContext(..), StockManagementMenu(..), emptyModel, maxMonthGap, resolveStockManagementContext)
+module Pages.StockManagement.Model exposing (CorrectEntryForm, CorrectionEntryType(..), DisplayMode(..), Model, Msg(..), ReceiveStockForm, StockManagementContext(..), StockManagementMenu(..), emptyModel, resolveStockManagementContext)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ImageUrl, StockCorrectionReason, StockSupplier)
@@ -42,14 +42,6 @@ emptyModel =
     , correctEntryForm = emptyCorrectEntryForm
     , monthGap = 0
     }
-
-
-{-| The history lists the 12 months before the current one, so both month
-selectors reach back as far as its oldest row, and no further.
--}
-maxMonthGap : Int
-maxMonthGap =
-    12
 
 
 type DisplayMode
