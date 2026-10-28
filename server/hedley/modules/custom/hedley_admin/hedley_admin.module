@@ -617,7 +617,8 @@ function hedley_admin_resilience_survey_export_csv($form, &$form_state) {
   drupal_add_http_header('Pragma', 'no-cache');
   drupal_add_http_header('Cache-Control', 'must-revalidate, post-check=0, pre-check=0');
 
-  echo $csv_output;
+  // The leading byte-order mark makes Excel read the file as UTF-8.
+  echo "\xEF\xBB\xBF" . $csv_output;
   exit;
 }
 
