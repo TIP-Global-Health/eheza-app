@@ -139,63 +139,100 @@ not run.
 laboratoryResultEntered : AssembledData -> LaboratoryTask -> Bool
 laboratoryResultEntered assembled task =
     laboratoryResultValue assembled task
-        |> Maybe.map (\value -> value.resultOfRun || isJust value.notPerformedReason)
+        |> Maybe.map resultOrReasonEntered
         |> Maybe.withDefault False
 
 
-{-| The labs entry with each performed test counted as completed when its own
-measurement says so. A device's copy of the entry can be behind its tests.
+{-| Whether a test's result value holds a result, or the reason it was not run.
+-}
+resultOrReasonEntered : { r | resultOfRun : Bool, notPerformedReason : Maybe TestExecutionNote } -> Bool
+resultOrReasonEntered value =
+    value.resultOfRun || isJust value.notPerformedReason
+
+
+{-| The labs entry with tests read from their own measurements too: a test run
+with a result is performed and completed, one not run is completed if performed.
 -}
 withCompletedTestsFromMeasurements : AssembledData -> LabsResultsValue -> LabsResultsValue
 withCompletedTestsFromMeasurements assembled value =
     let
-        completedByMeasurement test =
+        -- Whether the test ran with a result, and whether a result or the
+        -- reason it was not run is entered.
+        measurementStatus test =
+            let
+                byTask task =
+                    laboratoryResultValue assembled task
+                        |> Maybe.map (\result -> ( result.resultOfRun, resultOrReasonEntered result ))
+                        |> Maybe.withDefault ( False, False )
+            in
             case test of
                 TestBloodGpRs ->
-                    laboratoryResultEntered assembled TaskBloodGpRsTest
+                    byTask TaskBloodGpRsTest
 
                 TestCreatinine ->
-                    False
+                    ( False, False )
 
                 TestHemoglobin ->
-                    laboratoryResultEntered assembled TaskHemoglobinTest
+                    byTask TaskHemoglobinTest
 
                 TestHepatitisB ->
-                    laboratoryResultEntered assembled TaskHepatitisBTest
+                    byTask TaskHepatitisBTest
 
                 TestHIV ->
-                    laboratoryResultEntered assembled TaskHIVTest
+                    byTask TaskHIVTest
 
                 TestHIVPCR ->
-                    laboratoryResultEntered assembled TaskHIVPCRTest
+                    byTask TaskHIVPCRTest
 
                 TestLipidPanel ->
-                    False
+                    ( False, False )
 
                 TestLiverFunction ->
-                    False
+                    ( False, False )
 
                 TestMalaria ->
-                    laboratoryResultEntered assembled TaskMalariaTest
+                    byTask TaskMalariaTest
 
                 TestPartnerHIV ->
-                    laboratoryResultEntered assembled TaskPartnerHIVTest
+                    byTask TaskPartnerHIVTest
 
                 TestRandomBloodSugar ->
-                    laboratoryResultEntered assembled TaskRandomBloodSugarTest
+                    byTask TaskRandomBloodSugarTest
 
                 TestSyphilis ->
-                    laboratoryResultEntered assembled TaskSyphilisTest
+                    byTask TaskSyphilisTest
 
                 TestUrineDipstick ->
-                    laboratoryResultEntered assembled TaskUrineDipstickTest
+                    byTask TaskUrineDipstickTest
 
                 TestVitalsRecheck ->
-                    examinationMeasurementTaken assembled ExaminationVitals
+                    let
+                        taken =
+                            examinationMeasurementTaken assembled ExaminationVitals
+                    in
+                    ( taken, taken )
+
+        performedTests =
+            [ TestBloodGpRs
+            , TestHemoglobin
+            , TestHepatitisB
+            , TestHIV
+            , TestHIVPCR
+            , TestMalaria
+            , TestPartnerHIV
+            , TestRandomBloodSugar
+            , TestSyphilis
+            , TestUrineDipstick
+            , TestVitalsRecheck
+            ]
+                |> List.filter (measurementStatus >> Tuple.first)
+                |> EverySet.fromList
+                |> EverySet.union value.performedTests
     in
     { value
-        | completedTests =
-            EverySet.filter completedByMeasurement value.performedTests
+        | performedTests = performedTests
+        , completedTests =
+            EverySet.filter (measurementStatus >> Tuple.second) performedTests
                 |> EverySet.union value.completedTests
     }
 
@@ -221,16 +258,16 @@ resolved today, and reviewed once every performed test is completed.
 concludedLabsResultsValue : NominalDate -> AssembledData -> PrenatalLabsResults -> LabsResultsValue
 concludedLabsResultsValue currentDate assembled results =
     let
-        ( performedTests, completedTests ) =
-            labsResultsTests currentDate assembled results
-
         value =
-            results.value
+            withCompletedTestsFromMeasurements assembled results.value
+
+        -- The stored tests are kept; a vitals recheck from another day only
+        -- stays out of the review decision.
+        ( performedTests, completedTests ) =
+            labsResultsTestData currentDate { results | value = value }
     in
     { value
-        | performedTests = performedTests
-        , completedTests = completedTests
-        , reviewState =
+        | reviewState =
             if allLabsCompleted performedTests completedTests then
                 Just LabsResultsReviewCompleted
 

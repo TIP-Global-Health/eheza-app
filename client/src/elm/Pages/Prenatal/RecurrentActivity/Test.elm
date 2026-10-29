@@ -781,8 +781,11 @@ measurementsWithTests ( hivNote, hivResult ) ( hemoglobinNote, hemoglobinCount )
 withCompletedTestsFromMeasurementsTest : Test
 withCompletedTestsFromMeasurementsTest =
     let
-        completedTests measurements entry =
+        withMeasurements measurements entry =
             withCompletedTestsFromMeasurements (testAssembled measurements) entry
+
+        completedTests measurements entry =
+            withMeasurements measurements entry
                 |> .completedTests
     in
     describe "withCompletedTestsFromMeasurements"
@@ -804,12 +807,26 @@ withCompletedTestsFromMeasurementsTest =
                     (measurementsWithTests ( TestNoteRunToday, Nothing ) ( TestNoteRunToday, Nothing ))
                     (labsEntry [ TestHIV, TestHemoglobin ] [ TestHIV ])
                     |> Expect.equal (EverySet.fromList [ TestHIV ])
-        , test "a test that is not performed on the entry is not added" <|
+        , test "a test run with a result is performed and completed, though the entry does not list it" <|
             \_ ->
-                completedTests
+                withMeasurements
                     (measurementsWithTests ( TestNoteRunToday, Just TestNegative ) ( TestNoteRunToday, Just 11 ))
                     (labsEntry [ TestHemoglobin ] [])
-                    |> Expect.equal (EverySet.fromList [ TestHemoglobin ])
+                    |> (\value -> ( value.performedTests, value.completedTests ))
+                    |> Expect.equal
+                        ( EverySet.fromList [ TestHIV, TestHemoglobin ]
+                        , EverySet.fromList [ TestHIV, TestHemoglobin ]
+                        )
+        , test "a test not run is not added when the entry does not list it" <|
+            \_ ->
+                withMeasurements
+                    (measurementsWithTests ( TestNoteLackOfReagents, Nothing ) ( TestNoteRunToday, Just 11 ))
+                    (labsEntry [ TestHemoglobin ] [])
+                    |> (\value -> ( value.performedTests, value.completedTests ))
+                    |> Expect.equal
+                        ( EverySet.fromList [ TestHemoglobin ]
+                        , EverySet.fromList [ TestHemoglobin ]
+                        )
         , test "a vitals recheck is completed once the repeated reading is taken" <|
             \_ ->
                 let
@@ -865,13 +882,13 @@ concludedLabsResultsValueTest =
                     (labsEntry [ TestHIV, TestHemoglobin ] [])
                     |> Maybe.map (\value -> ( value.completedTests, value.reviewState, value.resolutionDate ))
                     |> Expect.equal (Just ( EverySet.fromList [ TestHIV ], Nothing, currentDate ))
-        , test "a vitals recheck from another day is left out, so the entry is reviewed" <|
+        , test "a vitals recheck from another day stays on the entry, and does not hold back the review" <|
             \_ ->
                 concludedOn (Date.add Date.Days -2 currentDate) allResults (labsEntry [ TestHIV, TestHemoglobin, TestVitalsRecheck ] [])
                     |> Maybe.map (\value -> ( value.performedTests, value.completedTests, value.reviewState ))
                     |> Expect.equal
                         (Just
-                            ( EverySet.fromList [ TestHIV, TestHemoglobin ]
+                            ( EverySet.fromList [ TestHIV, TestHemoglobin, TestVitalsRecheck ]
                             , EverySet.fromList [ TestHIV, TestHemoglobin ]
                             , Just LabsResultsReviewCompleted
                             )
