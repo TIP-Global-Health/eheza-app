@@ -328,7 +328,7 @@ B-327	4	READY	LOW			29	Device pairing: once a device is paired there is no way b
 B-328	4	READY	LOW			29	Role gating: `viewUserPage` authorises by location only, so a lab technician or CHW reaches every nurse page through the
 B-329	3	READY	MED-LOW			29	Group session NCDA: the activity page never fetches the child's individual data, so the "behind on vaccinations" sign ca
 B-330	4	READY	LOW			29	Group "Begin new encounter" page: its fetch is empty, so after a reload at that URL the Group Assessment button is dead,
-B-331	3	READY	MED			29	Backend error reporting: the Sentry SDK that `logs_glitchtip` needs is not in the deployed vendor tree, so every backend
+B-331	3	IMPLEMENTED	MED	2439	2440	29	Backend error reporting: the Sentry SDK that `logs_glitchtip` needs is not in the deployed vendor tree, so every backend
 B-332	4	READY	LOW			29	Backend error reporting: the GlitchTip event buffer is a `drupal_static`, and the stats/report/village builders call bar
 B-333	3	READY	MED-LOW			29	Admin lists: the "E-ledger viewer" role, which the ledger scopes to the user's own health centres, can open every health
 B-334	4	IMPLEMENTED	LOW	2313	2315	29	Admin sidebar: the "Create PMTCT Participation" link points at `node/add/pmtct-paticipation`, a path that does not exist
