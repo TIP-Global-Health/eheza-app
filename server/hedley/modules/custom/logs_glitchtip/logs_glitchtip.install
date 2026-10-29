@@ -6,6 +6,27 @@
  */
 
 /**
+ * Implements hook_requirements().
+ */
+function logs_glitchtip_requirements($phase) {
+  $requirements = [];
+
+  // Without the SDK every event is dropped, and the error handler cannot say
+  // so without risking a crash, so the Status report says it instead.
+  if ($phase == 'runtime' && logs_glitchtip_is_active() && !function_exists('\Sentry\init')) {
+    $t = get_t();
+    $requirements['logs_glitchtip_sdk'] = [
+      'title' => $t('GlitchTip'),
+      'value' => $t('Sentry SDK missing'),
+      'description' => $t('Reporting is configured, but the sentry/sdk Composer package is not installed, so no error reaches GlitchTip.'),
+      'severity' => REQUIREMENT_ERROR,
+    ];
+  }
+
+  return $requirements;
+}
+
+/**
  * Implements hook_uninstall().
  */
 function logs_glitchtip_uninstall() {

@@ -68,6 +68,10 @@ class RoboFile extends Tasks {
       throw new Exception("'php_version:' directive is missing from pantheon.upstream.yml in Pantheon directory ($pantheonDirectory)");
     }
 
+    // The rsync below deletes from Pantheon whatever the local vendor tree
+    // lacks, so a package left out locally disappears from the site.
+    $this->assertVendorHasRequiredPackages('www/sites/default/files/composer');
+
     $result = $this
       ->taskExec("cd $pantheonDirectory && git checkout $branchName")
       ->printOutput(FALSE)
@@ -263,6 +267,45 @@ class RoboFile extends Tasks {
     }
 
     throw new Exception("`drush $drushCommand` failed on $environment on each of the " . self::DEPLOY_STEP_ATTEMPTS . ' attempts. The environment is on the new code, but this step and the ones after it have not run.');
+  }
+
+  /**
+   * Checks that every package composer.json requires is in the vendor tree.
+   *
+   * A stale composer.lock makes `composer install` skip packages added to
+   * composer.json since, with only a warning.
+   *
+   * @param string $composerDirectory
+   *   The directory holding the composer.json that composer_manager builds.
+   *
+   * @throws \Exception
+   *   If a file cannot be read, or a required package is not installed.
+   */
+  protected function assertVendorHasRequiredPackages(string $composerDirectory) {
+    $composer = json_decode((string) @file_get_contents("$composerDirectory/composer.json"), TRUE);
+    if (empty($composer['config']['vendor-dir'])) {
+      throw new Exception("Cannot read the vendor directory from $composerDirectory/composer.json.");
+    }
+
+    $installedFile = $composerDirectory . '/' . $composer['config']['vendor-dir'] . '/composer/installed.json';
+    $installed = json_decode((string) @file_get_contents($installedFile), TRUE);
+    if (!is_array($installed)) {
+      throw new Exception("Cannot read $installedFile. Run `composer install` in $composerDirectory.");
+    }
+
+    // Composer 2 nests the list under 'packages'; Composer 1 does not.
+    $installedNames = array_column($installed['packages'] ?? $installed, 'name');
+
+    // Only names with a vendor prefix are packages; "php" and "ext-*" are
+    // platform requirements.
+    $requiredNames = array_filter(array_keys($composer['require'] ?? []), function ($name) {
+      return strpos($name, '/') !== FALSE;
+    });
+
+    $missing = array_diff($requiredNames, $installedNames);
+    if ($missing) {
+      throw new Exception('The vendor tree lacks ' . implode(', ', $missing) . ", which composer.json requires, and the deploy would remove it from Pantheon. Run `composer update --lock && composer install` in $composerDirectory.");
+    }
   }
 
   /**
