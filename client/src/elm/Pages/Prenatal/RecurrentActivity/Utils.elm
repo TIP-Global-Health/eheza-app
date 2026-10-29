@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, allLabsCompleted, concludedLabsResultsValue, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, labsResultsTests, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault, withCompletedTestsFromMeasurements)
+module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, concludedLabsResultsValue, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, labsResultsTests, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault, withCompletedTestsFromMeasurements)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
@@ -24,7 +24,7 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (vitalsFormInputsAndTasks)
-import Pages.GlobalCaseManagement.Utils exposing (labsResultsTestData)
+import Pages.GlobalCaseManagement.Utils exposing (allLabsCompleted, labsResultsTestData)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (ExaminationData, Msg(..), NextStepsData)
 import Pages.Prenatal.RecurrentActivity.Types exposing (ExaminationTask(..), NextStepsTask(..))
@@ -243,13 +243,6 @@ the test measurements too. A vitals recheck scheduled on another day is left out
 labsResultsTests : NominalDate -> AssembledData -> PrenatalLabsResults -> ( EverySet LaboratoryTest, EverySet LaboratoryTest )
 labsResultsTests currentDate assembled results =
     labsResultsTestData currentDate { results | value = withCompletedTestsFromMeasurements assembled results.value }
-
-
-{-| Whether every performed test is completed.
--}
-allLabsCompleted : EverySet LaboratoryTest -> EverySet LaboratoryTest -> Bool
-allLabsCompleted performedTests completedTests =
-    EverySet.isEmpty <| EverySet.diff performedTests completedTests
 
 
 {-| The labs entry as a nurse closes it at the end of the recurrent phase:

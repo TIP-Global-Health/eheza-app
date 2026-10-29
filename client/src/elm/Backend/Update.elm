@@ -9089,7 +9089,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
                                             EverySet.insert test completedTests
 
                                         allLabsCompleted =
-                                            Pages.Prenatal.RecurrentActivity.Utils.allLabsCompleted updatedPerformedTests updatedCompletedTests
+                                            Pages.GlobalCaseManagement.Utils.allLabsCompleted updatedPerformedTests updatedCompletedTests
 
                                         updatedTestsWithFollowUp =
                                             -- Mark tests which results were entered by Lab Tech, and got
@@ -9354,45 +9354,34 @@ generateNCDLabsResultsAddedMsgs currentDate after test id =
 
                         else
                             let
-                                ( performedTests, completedTests ) =
-                                    Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
+                                value =
+                                    Pages.NCD.RecurrentActivity.Utils.withCompletedTestsFromMeasurements assembled results.value
 
+                                -- Since lab results can be entered right away (at poit of care),
+                                -- or at latter stage (after test was ordered at lab), we
+                                -- update both performed and completed tests.
+                                -- Since data structure is EverySet, it will not create duplicacies.
                                 updatedValue =
-                                    (\value ->
-                                        let
-                                            -- Since lab results can be entered right away (at poit of care),
-                                            -- or at latter stage (after test was ordered at lab), we
-                                            -- update both performed and completed tests.
-                                            -- Since data structure is EverySet, it will not create duplicacies.
-                                            updatedPerformedTests =
-                                                EverySet.insert test performedTests
+                                    { value
+                                        | performedTests = EverySet.insert test value.performedTests
+                                        , completedTests = EverySet.insert test value.completedTests
+                                    }
 
-                                            updatedCompletedTests =
-                                                EverySet.insert test completedTests
+                                resolvedValue =
+                                    -- When all performed tests are completed, and Next Steps are either
+                                    -- completed, or not required, setting today as resolution date.
+                                    if
+                                        Pages.NCD.RecurrentActivity.Utils.activityCompleted
+                                            assembled
+                                            Backend.NCDActivity.Model.RecurrentNextSteps
+                                    then
+                                        Pages.NCD.RecurrentActivity.Utils.resolvedLabsResultsValue currentDate updatedValue
+                                            |> Maybe.withDefault updatedValue
 
-                                            resolutionDate =
-                                                -- When all performed tests are completed, and Next Steps are either
-                                                -- completed, or not required, setting today as resolution date.
-                                                if
-                                                    (EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests)
-                                                        && Pages.NCD.RecurrentActivity.Utils.activityCompleted
-                                                            assembled
-                                                            Backend.NCDActivity.Model.RecurrentNextSteps
-                                                then
-                                                    currentDate
-
-                                                else
-                                                    value.resolutionDate
-                                        in
-                                        { value
-                                            | performedTests = updatedPerformedTests
-                                            , completedTests = updatedCompletedTests
-                                            , resolutionDate = resolutionDate
-                                        }
-                                    )
-                                        results.value
+                                    else
+                                        updatedValue
                             in
-                            [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                            [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) resolvedValue ]
                     )
                     assembled.measurements.labsResults
             )

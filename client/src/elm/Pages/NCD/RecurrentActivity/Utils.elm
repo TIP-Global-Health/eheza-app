@@ -1,11 +1,14 @@
-module Pages.NCD.RecurrentActivity.Utils exposing (activityCompleted, expectActivity, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultTasks, resolveNextStepsTasks)
+module Pages.NCD.RecurrentActivity.Utils exposing (activityCompleted, expectActivity, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolvedLabsResultsValue, withCompletedTestsFromMeasurements)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
 import Backend.NCDActivity.Model exposing (NCDRecurrentActivity(..))
+import EverySet
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Measurement.Utils exposing (expectUniversalTestResultTask, testPerformedByValue)
+import Pages.GlobalCaseManagement.Utils exposing (allLabsCompleted)
 import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
 import Pages.NCD.RecurrentActivity.Model exposing (Msg(..), NextStepsData)
 import Pages.NCD.RecurrentActivity.Types exposing (NextStepsTask(..))
@@ -141,15 +144,8 @@ laboratoryResultTaskCompleted assembled task =
         taskExpected =
             expectLaboratoryResultTask assembled
 
-        testResultsCompleted getMeasurementFunc getResultFieldFunc =
-            getMeasurementFunc assembled.measurements
-                |> getMeasurementValueFunc
-                |> Maybe.map
-                    (\value ->
-                        testPerformedByExecutionNote value.executionNote
-                            && (isJust <| getResultFieldFunc value)
-                    )
-                |> Maybe.withDefault False
+        testResultsCompleted getMeasurementFunc =
+            testResultEntered (getMeasurementFunc assembled.measurements)
     in
     case task of
         TaskHIVTest ->
@@ -176,6 +172,59 @@ laboratoryResultTaskCompleted assembled task =
         -- Others are not in use for NCD.
         _ ->
             False
+
+
+{-| Whether the test's measurement shows it was run, with its result entered.
+-}
+testResultEntered :
+    Maybe ( id, { m | value : { v | executionNote : TestExecutionNote } } )
+    -> ({ v | executionNote : TestExecutionNote } -> Maybe result)
+    -> Bool
+testResultEntered measurement getResultFieldFunc =
+    getMeasurementValueFunc measurement
+        |> Maybe.map
+            (\value ->
+                testPerformedByExecutionNote value.executionNote
+                    && (isJust <| getResultFieldFunc value)
+            )
+        |> Maybe.withDefault False
+
+
+{-| The labs entry with tests read from their own measurements too: a test run
+with its result entered is performed and completed.
+-}
+withCompletedTestsFromMeasurements : AssembledData -> LabsResultsValue -> LabsResultsValue
+withCompletedTestsFromMeasurements assembled value =
+    let
+        measurements =
+            assembled.measurements
+
+        testsWithResults =
+            [ ( TestCreatinine, testResultEntered measurements.creatinineTest .creatinineResult )
+            , ( TestLipidPanel, testResultEntered measurements.lipidPanelTest .totalCholesterolResult )
+            , ( TestLiverFunction, testResultEntered measurements.liverFunctionTest .altResult )
+            , ( TestRandomBloodSugar, testResultEntered measurements.randomBloodSugarTest .sugarCount )
+            , ( TestUrineDipstick, testResultEntered measurements.urineDipstickTest .protein )
+            ]
+                |> List.filter Tuple.second
+                |> List.map Tuple.first
+                |> EverySet.fromList
+    in
+    { value
+        | performedTests = EverySet.union testsWithResults value.performedTests
+        , completedTests = EverySet.union testsWithResults value.completedTests
+    }
+
+
+{-| The labs entry resolved today, when every performed test is completed.
+-}
+resolvedLabsResultsValue : NominalDate -> LabsResultsValue -> Maybe LabsResultsValue
+resolvedLabsResultsValue currentDate value =
+    if allLabsCompleted value.performedTests value.completedTests then
+        Just { value | resolutionDate = currentDate }
+
+    else
+        Nothing
 
 
 expectLaboratoryResultTask : AssembledData -> LaboratoryTask -> Bool
