@@ -401,3 +401,33 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Wrong conclusion:** Stock Management is enabled; a missing card would be a bug.
 - **Rule:** an old variable can outlive a rename. Check the name against `hedley_admin_get_available_features()`
   before trusting a flag, and set the name listed there.
+
+## Judging a race from the final state of one develop run
+
+- **Symptom:** a develop control for "the second save overwrites the first" ended with the record correct, so develop looked fine.
+- **Wrong conclusion:** the defect does not reproduce locally. The two saves did disagree; arrival order decided which one stood, and that run happened to land the correct one last.
+- **Rule:** when a fix is about two saves of one record, read each save, not the final state: the server's `node_revision` rows (with the `field_revision_*` tables) or the upload rows in `shardChanges`.
+
+## Reading the upload queue after a fast sync took it
+
+- **Symptom:** a check on the `shardChanges` rows added by a save found none, three seconds after the save.
+- **Wrong conclusion:** the save queued nothing.
+- **Rule:** with `syncSpeed` idle at 5 s, rows upload and leave the queue within seconds. Read the server revisions instead, or check the queue in the same command, straight after the save.
+
+## Picking a lab test whose result brings Next Steps
+
+- **Symptom:** a control meant to end the recurrent phase on the last lab result stopped on the encounter page with Next Steps to do.
+- **Wrong conclusion:** the phase-end save does not happen on develop.
+- **Rule:** an HIV result at the recurrent phase brings HIV health education into Next Steps, so the phase ends on that save, not on the result. Read `expectNextStepsTask` before choosing the tests. Syphilis, Hepatitis B and Hemoglobin (12) results bring none.
+
+## Assuming the recurrent vitals recheck is dropped on a later day
+
+- **Symptom:** a check that Examination is not offered the day after the first visit failed.
+- **Wrong conclusion:** the PR offers it wrongly. The recheck is expected whenever the first-visit BP was marginal, whatever the day.
+- **Rule:** take a screen's expectations from its `expect…` function, not from a nearby rule on the labs entry (`labsResultsTestData` is the one that looks at the day).
+
+## Posting attached videos next to text
+
+- **Symptom:** `gh pr comment --attach` (2.103) turned each `![](file.mp4)` into a `[name.mp4](url)` link under the caption line, and the comment held no `<video>`.
+- **Wrong conclusion:** the upload failed, or videos cannot be posted.
+- **Rule:** after posting, count `<video` in the comment's `body_html`. A player needs the bare URL alone in its own paragraph: rewrite each link to a blank line, the URL, a blank line, then PATCH the comment.

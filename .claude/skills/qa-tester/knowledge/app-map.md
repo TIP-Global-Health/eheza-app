@@ -244,6 +244,7 @@ flag simply does not appear.
   preeclampsia risk is diagnosed. Next Steps shows only after every activity but Malaria Prevention,
   Photo and Ultrasound is saved. `completeHistory` overwrites obstetric counts, so a first pregnancy
   needs Obstetric (all 0) and Medical filled by hand. Medication's Calcium tab starts at 14 weeks.
+  The full first-visit helper chain needs EGA ≥ 28 weeks: `completeMentalHealth` waits for a card shown only then.
 - With Healthy Start on, a nurse visit has an Ultrasound activity: viable, fetuses, location, the scan
   date, and weeks + days by scan. Saving it re-dates the pregnancy from the scan. The scan date is
   `field_execution_date` on `prenatal_ultrasound`.
@@ -378,7 +379,18 @@ flag simply does not appear.
   `field_date_concluded`.
 - Withdrawing a test: reopen Laboratory, its tab, "performed today?" No, tick a `.why-not` reason,
   Save. `completeLaboratoryNurseForLab(page, { onlyTabs: ['HIV', 'Syphilis - RPR'] })` orders
-  only those tabs, by their label text.
+  only those tabs, by their label text, and leaves the rest unanswered on the activity. To finish the visit,
+  answer each other tab "performed today?" No with the first reason; Malaria's No adds one more yes/no.
+- At the recurrent phase an HIV result brings Next Steps (HIV health education), so the phase ends on that save.
+  Negative Syphilis or Hepatitis B, or Hemoglobin 12, bring none: the last result's save ends the phase and opens
+  the progress report, which carries End Encounter.
+- Recurrent Examination (the vitals recheck) is offered whenever the first visit's BP was marginal, on any later
+  day, and the phase cannot end until it is taken. On a later day the last lab result alone still closes the entry.
+- After entering results, the lab technician lands on the progress report (SUBMIT RESULTS / EDIT RESULTS); Submit
+  returns to Case Management. The nurse's Review & Accept saves the tablet's whole copy, changing only the review state.
+- Every save of a labs entry sets its `date_measured` to the save day.
+- Each save of a labs entry is a server revision: read `field_revision_field_completed_tests`,
+  `field_revision_field_review_state` and `field_revision_field_date_concluded` by `revision_id` from `node_revision`.
 - **NCD Labs** lists an encounter while today is before its results record's resolution date
   (`ncd_labs_results`: `field_performed_tests`, `field_date_concluded`). Sending a test to
   the lab sets it 35 days out. The entry opens the recurrent encounter; its Lab Results card is
