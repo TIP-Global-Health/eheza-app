@@ -6,6 +6,7 @@ import Backend.Measurement.Model
     exposing
         ( CreatinineTestValue
         , GlucoseValue(..)
+        , LaboratoryTest(..)
         , Measurement
         , MedicalCondition(..)
         , NCDMeasurements
@@ -16,6 +17,7 @@ import Backend.Measurement.Model
         , TestResult(..)
         , UrineDipstickTestValue
         )
+import Backend.Measurement.Utils exposing (laboratoryTestToString)
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.NCDEncounter.Model as NCDEncounterModel
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
@@ -30,7 +32,7 @@ import Pages.NCD.Activity.Types exposing (NextStepsTask(..))
 import Pages.NCD.Activity.Update
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask, resolveNextStepsTasks, resolvePreviousMaybeValue)
 import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..), PreviousEncounterData)
-import Pages.NCD.RecurrentActivity.Utils exposing (resolveLaboratoryResultTasks)
+import Pages.NCD.RecurrentActivity.Utils exposing (labsResultsValueWithResult, resolveLaboratoryResultTasks, resolvedLabsResultsValue, withCompletedTestsFromMeasurements)
 import Pages.NCD.Utils
     exposing
         ( generateAssembledData
@@ -977,6 +979,7 @@ all =
         , pregnancyTestExpectedTest
         , repeatedTapOnSavedTest
         , randomBloodSugarNotPerformedTest
+        , labsEntryClosingTest
         ]
 
 
@@ -1122,4 +1125,105 @@ randomBloodSugarNotPerformedTest =
             \_ ->
                 resultTasksWith TestNoteRunToday
                     |> Expect.equal [ TaskRandomBloodSugarTest ]
+        ]
+
+
+{-| The labs entry is written from the device's copy, which can be behind the
+test measurements. Completed tests are read from the measurements too, and the
+entry is resolved only when every performed test is completed.
+-}
+labsEntryClosingTest : Test
+labsEntryClosingTest =
+    let
+        labsEntry =
+            TestFixtures.labsEntry dummyDate
+
+        -- Test names, sorted, since set order follows insertion.
+        names =
+            EverySet.toList >> List.map laboratoryTestToString >> List.sort
+
+        tests value =
+            ( names value.performedTests, names value.completedTests )
+
+        withMeasurements measurements entry =
+            withCompletedTestsFromMeasurements measurements entry
+                |> tests
+
+        -- The entry saved when the test's result is entered, with no Next
+        -- Steps required.
+        savedWithResult test measurements entry =
+            labsResultsValueWithResult dummyDate (ncdAssembled measurements) test entry
+                |> Maybe.map (\value -> ( tests value, value.resolutionDate ))
+
+        bothResults =
+            emptyNCDMeasurements |> withCreatinine 90 |> withRandomBloodSugar False 6
+
+        sentToLab =
+            { emptyNCDMeasurements
+                | randomBloodSugarTest =
+                    wrapMeasurement
+                        { executionNote = TestNoteRunToday
+                        , executionDate = Nothing
+                        , testPrerequisites = Nothing
+                        , sugarCount = Nothing
+                        , originatingEncounter = Nothing
+                        }
+            }
+
+        notPerformedWithResult =
+            let
+                value =
+                    creatinineValueWith 90
+            in
+            { emptyNCDMeasurements | creatinineTest = wrapMeasurement { value | executionNote = TestNoteNotIndicated } }
+    in
+    describe "closing the NCD labs entry"
+        [ test "a test whose measurement holds its result is completed" <|
+            \_ ->
+                withMeasurements (withCreatinine 90 sentToLab) (labsEntry [ TestCreatinine, TestRandomBloodSugar ] [])
+                    |> Expect.equal ( [ "creatinine", "random-blood-sugar" ], [ "creatinine" ] )
+        , test "a test run with its result is performed and completed, though the entry does not list it" <|
+            \_ ->
+                withMeasurements (withCreatinine 90 sentToLab) (labsEntry [ TestRandomBloodSugar ] [])
+                    |> Expect.equal ( [ "creatinine", "random-blood-sugar" ], [ "creatinine" ] )
+        , test "a test sent to the lab stays pending until its result is entered" <|
+            \_ ->
+                withMeasurements sentToLab (labsEntry [ TestRandomBloodSugar ] [])
+                    |> Expect.equal ( [ "random-blood-sugar" ], [] )
+        , test "a test not performed is not added, though a result is stored" <|
+            \_ ->
+                withMeasurements notPerformedWithResult (labsEntry [ TestRandomBloodSugar ] [])
+                    |> Expect.equal ( [ "random-blood-sugar" ], [] )
+        , test "a test completed on the entry stays completed" <|
+            \_ ->
+                withMeasurements emptyNCDMeasurements (labsEntry [ TestCreatinine ] [ TestCreatinine ])
+                    |> Expect.equal ( [ "creatinine" ], [ "creatinine" ] )
+        , test "a completed test no longer performed does not resolve an entry with a pending one" <|
+            \_ ->
+                resolvedLabsResultsValue dummyDate (labsEntry [ TestRandomBloodSugar ] [ TestCreatinine ])
+                    |> Expect.equal Nothing
+        , test "an entry with every performed test completed is resolved today" <|
+            \_ ->
+                resolvedLabsResultsValue dummyDate (labsEntry [ TestCreatinine ] [ TestCreatinine ])
+                    |> Maybe.map .resolutionDate
+                    |> Expect.equal (Just dummyDate)
+        , test "an entry behind its measurements is resolved with the tests it was missing" <|
+            \_ ->
+                withCompletedTestsFromMeasurements bothResults
+                    (labsEntry [ TestCreatinine, TestRandomBloodSugar ] [ TestRandomBloodSugar ])
+                    |> resolvedLabsResultsValue dummyDate
+                    |> Maybe.map (\value -> ( tests value, value.resolutionDate ))
+                    |> Expect.equal (Just ( ( [ "creatinine", "random-blood-sugar" ], [ "creatinine", "random-blood-sugar" ] ), dummyDate ))
+        , test "entering the last result resolves the entry today" <|
+            \_ ->
+                savedWithResult TestCreatinine (withCreatinine 90 emptyNCDMeasurements) (labsEntry [ TestCreatinine ] [])
+                    |> Expect.equal (Just ( ( [ "creatinine" ], [ "creatinine" ] ), dummyDate ))
+        , test "a result entered again saves the completed tests the entry was missing" <|
+            \_ ->
+                savedWithResult TestRandomBloodSugar bothResults (labsEntry [ TestCreatinine, TestRandomBloodSugar ] [ TestRandomBloodSugar ])
+                    |> Expect.equal (Just ( ( [ "creatinine", "random-blood-sugar" ], [ "creatinine", "random-blood-sugar" ] ), dummyDate ))
+        , test "a result entered again saves nothing when the entry holds every completed test" <|
+            \_ ->
+                savedWithResult TestRandomBloodSugar (withRandomBloodSugar False 6 emptyNCDMeasurements) (labsEntry [ TestRandomBloodSugar ] [ TestRandomBloodSugar ])
+                    |> Expect.equal Nothing
         ]
