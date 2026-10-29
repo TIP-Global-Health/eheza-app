@@ -52,7 +52,7 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Utils exposing (generateFutureVaccinationsData)
 import Pages.Dashboard.GraphUtils exposing (barChartHeight, barChartWidth, column, familyPlanningSignToColor, familyPlanningSignsColors, feverCauseToColor, feverCausesColors, gridXScale, gridYScale, padding, pieChartHeight, pieChartWidth, radius, xAxis, xGridLine, xScale, yAxis, yGridLine)
 import Pages.Dashboard.Model exposing (BeneficiariesTableLabels(..), CardValueSeverity(..), DashboardFilter(..), DashboardSubFilter(..), ECDStatus(..), FamilyPlanningSignsCounter, FeverCause(..), FilterGender(..), FilterPeriod(..), FilterProgramType(..), FilterType(..), MalnorishedNutritionData, ModalState(..), Model, MonthlyChartType(..), Msg(..), StatsCard, caseManagementFilters, caseManagementSubFilters, filterGenders, filterPeriodsForStatsPage, maxMonthGap, monthlyChartFilters)
-import Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countChildrenSeenForSelectedMonth, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, dataItemMergeDuplicates, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, resolveDayAfterSelectedDate, resolveECDStatus, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+import Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countChildrenSeenForSelectedMonth, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, dataItemMergeDuplicates, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, previousThreeMonthsNewestFirst, resolveDayAfterSelectedDate, resolveECDStatus, resolvePreviousMonth, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 import Pages.Page
     exposing
         ( AcuteIllnessSubPage(..)
@@ -448,34 +448,28 @@ viewCaseManagementPage language currentDate stats patientsDetails model =
                                 let
                                     nutrition =
                                         caseNutrition.nutrition.stunting
-                                            |> Dict.toList
-                                            |> List.filterMap
+                                            |> previousThreeMonthsNewestFirst currentMonth
+                                            |> List.map
                                                 (\( month, stuntingValue ) ->
-                                                    if withinThreePreviousMonths currentMonth month then
-                                                        let
-                                                            resolveValueClass func =
-                                                                Dict.get month (func caseNutrition.nutrition)
-                                                                    |> Maybe.withDefault emptyNutritionValue
-                                                                    |> .class
-                                                        in
-                                                        if
-                                                            List.all ((==) Backend.Dashboard.Model.Neutral)
-                                                                [ stuntingValue.class
-                                                                , resolveValueClass .underweight
-                                                                , resolveValueClass .wasting
-                                                                , resolveValueClass .muac
-                                                                ]
-                                                        then
-                                                            Just ( month, emptyNutritionValue )
-
-                                                        else
-                                                            Just ( month, NutritionValue Backend.Dashboard.Model.Good "V" )
+                                                    let
+                                                        resolveValueClass func =
+                                                            Dict.get month (func caseNutrition.nutrition)
+                                                                |> Maybe.withDefault emptyNutritionValue
+                                                                |> .class
+                                                    in
+                                                    if
+                                                        List.all ((==) Backend.Dashboard.Model.Neutral)
+                                                            [ stuntingValue.class
+                                                            , resolveValueClass .underweight
+                                                            , resolveValueClass .wasting
+                                                            , resolveValueClass .muac
+                                                            ]
+                                                    then
+                                                        ( month, emptyNutritionValue )
 
                                                     else
-                                                        Nothing
+                                                        ( month, NutritionValue Backend.Dashboard.Model.Good "V" )
                                                 )
-                                            |> List.sortBy Tuple.first
-                                            |> List.reverse
 
                                     name =
                                         Dict.get caseNutrition.identifier patientsDetails
@@ -499,16 +493,16 @@ viewCaseManagementPage language currentDate stats patientsDetails model =
                                 in
                                 case model.currentCaseManagementFilter of
                                     Stunting ->
-                                        { name = name, nutrition = filterForCaseManagementTableFunc caseNutrition.nutrition.stunting } :: accum
+                                        { name = name, nutrition = previousThreeMonthsNewestFirst currentMonth caseNutrition.nutrition.stunting } :: accum
 
                                     Underweight ->
-                                        { name = name, nutrition = filterForCaseManagementTableFunc caseNutrition.nutrition.underweight } :: accum
+                                        { name = name, nutrition = previousThreeMonthsNewestFirst currentMonth caseNutrition.nutrition.underweight } :: accum
 
                                     Wasting ->
-                                        { name = name, nutrition = filterForCaseManagementTableFunc caseNutrition.nutrition.wasting } :: accum
+                                        { name = name, nutrition = previousThreeMonthsNewestFirst currentMonth caseNutrition.nutrition.wasting } :: accum
 
                                     MUAC ->
-                                        { name = name, nutrition = filterForCaseManagementTableFunc caseNutrition.nutrition.muac } :: accum
+                                        { name = name, nutrition = previousThreeMonthsNewestFirst currentMonth caseNutrition.nutrition.muac } :: accum
 
                                     -- We'll never get here - need to list it to satisfy compiler.
                                     MissedSession ->
@@ -539,13 +533,6 @@ viewCaseManagementPage language currentDate stats patientsDetails model =
                 tableDataUnsorted
                     -- Sort table by person's (lowercase) name.
                     |> List.sortWith (\p1 p2 -> compare (String.toLower p1.name) (String.toLower p2.name))
-
-            filterForCaseManagementTableFunc nutritionDict =
-                nutritionDict
-                    |> Dict.toList
-                    |> List.filter (Tuple.first >> withinThreePreviousMonths currentMonth)
-                    |> List.sortBy Tuple.first
-                    |> List.reverse
         in
         [ div [ class "ui segment blue" ]
             [ div [ class "case-management" ]
@@ -2579,37 +2566,6 @@ getFamilyPlanningSignsCounter stats =
         )
         Dict.empty
         stats.familyPlanning
-
-
-withinThreePreviousMonths : Int -> Int -> Bool
-withinThreePreviousMonths currentMonth monthNumber =
-    if monthNumber == 13 then
-        -- This indicates that we look at data of 13 months ago month.
-        -- It's for sure not within last 3 month.
-        False
-
-    else
-        case currentMonth of
-            1 ->
-                monthNumber > 9
-
-            2 ->
-                monthNumber > 10 || monthNumber == 1
-
-            3 ->
-                monthNumber == 12 || monthNumber == 1 || monthNumber == 2
-
-            _ ->
-                monthNumber < currentMonth && monthNumber >= (currentMonth - 3)
-
-
-resolvePreviousMonth : Int -> Int
-resolvePreviousMonth thisMonth =
-    if thisMonth == 1 then
-        12
-
-    else
-        thisMonth - 1
 
 
 monthSelector : Language -> NominalDate -> Model -> Html Msg
