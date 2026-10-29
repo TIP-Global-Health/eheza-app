@@ -16,6 +16,11 @@ define('HEDLEY_VIEW_EXPORT_EXPORT_VIEW_QUEUE', 'export_view');
 define('HEDLEY_VIEW_EXPORT_DIR', 'private://hedley_view_export');
 
 /**
+ * The leading byte-order mark that makes Excel read a CSV file as UTF-8.
+ */
+define('HEDLEY_VIEW_EXPORT_CSV_BOM', "\xEF\xBB\xBF");
+
+/**
  * Implements hook_views_api().
  */
 function hedley_view_export_views_api() {
@@ -148,9 +153,8 @@ function hedley_view_export_add_item(string $type, string $view_name, string $di
   // Add random characters to the filename, to make it unique.
   $random = drupal_random_key(16);
   $uri = "$dir/$view_name-$random.$type";
-  // Every batch is appended, so the file starts with the byte-order mark that
-  // makes Excel read it as UTF-8.
-  $file = file_save_data("\xEF\xBB\xBF", $uri);
+  // Every batch is appended, so the file starts with the byte-order mark.
+  $file = file_save_data(HEDLEY_VIEW_EXPORT_CSV_BOM, $uri);
 
   // Add the AQ item.
   $title = format_string('Export @view as @type, by @user on @time', [
