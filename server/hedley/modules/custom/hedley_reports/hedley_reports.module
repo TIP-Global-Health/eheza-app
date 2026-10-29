@@ -10919,7 +10919,8 @@ function hedley_reports_save_completion_data($node, $completion_data) {
 
   // The node was loaded before the data was built, so reload it to keep
   // edits made since, as the person save does.
-  $node = node_load($node->nid, NULL, TRUE);
+  entity_get_controller('node')->resetCache([$node->nid]);
+  $node = node_load($node->nid);
   if (!$node || $is_unchanged($node)) {
     return;
   }

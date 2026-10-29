@@ -21,9 +21,9 @@ $failed = 0;
  * Keeps the stored nodes, and the nodes saved since the last reset.
  */
 function storage($key, $value = NULL, $reset = FALSE) {
-  static $storage = ['stored' => [], 'saved' => []];
+  static $storage = ['stored' => [], 'saved' => [], 'reset' => []];
   if ($reset) {
-    $storage = ['stored' => [], 'saved' => []];
+    $storage = ['stored' => [], 'saved' => [], 'reset' => []];
   }
   elseif ($value !== NULL) {
     $storage[$key][] = $value;
@@ -32,9 +32,36 @@ function storage($key, $value = NULL, $reset = FALSE) {
 }
 
 /**
+ * Node cache stub: records the node IDs each reset names.
+ */
+class HedleyReportsNodeCacheStub {
+
+  /**
+   * Records which node IDs were reset.
+   */
+  public function resetCache(array $ids = NULL) {
+    storage('reset', $ids === NULL ? 'all' : implode(',', $ids));
+  }
+
+}
+
+/**
+ * Returns the node cache stub.
+ */
+function entity_get_controller($entity_type) {
+  return new HedleyReportsNodeCacheStub();
+}
+
+/**
  * Returns the stored copy of a node, or FALSE when there is none.
+ *
+ * The copy is returned only after its cache entry was reset, as Drupal would
+ * otherwise return the cached one.
  */
 function node_load($nid, $vid = NULL, $reset = FALSE) {
+  if (!$reset && !in_array((string) $nid, storage('reset'), TRUE)) {
+    return FALSE;
+  }
   foreach (storage('stored') as $node) {
     if ($node->nid == $nid) {
       return clone $node;
@@ -103,5 +130,8 @@ assert_same(count($saved) === 1 && isset($saved[0]->field_edited), TRUE, 'an edi
 assert_same(count(saves_for(encounter_node($other), $data, encounter_node($encoded))), 0, 'no save when the stored copy already holds the data', $passed, $failed);
 
 assert_same(count(saves_for(encounter_node(), $data, FALSE)), 0, 'no save when the node was deleted since it was loaded', $passed, $failed);
+
+saves_for(encounter_node($other), $data);
+assert_same(storage('reset'), ['1'], 'only the saved node is reset in the node cache', $passed, $failed);
 
 report_results('Completion data save', $passed, $failed);
