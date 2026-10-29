@@ -13,10 +13,10 @@ import Backend.Measurement.Utils
         ( getHeightValue
         , getMeasurementValueFunc
         , headCircumferenceTakenValue
+        , malnutritionSignsForAssessment
         , muacIndicationForChild
         , muacValueForSite
         , muacValueFunc
-        , nutritionSignToString
         , weightValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -125,9 +125,7 @@ generateNutritionAssessment currentDate zscores childId muacValue nutritionValue
                 |> Maybe.map
                     (EverySet.toList
                         >> List.filter ((/=) NormalChildNutrition)
-                        -- Maintain constant order, to avoid problems
-                        -- when comparing 2 assessments.
-                        >> List.sortBy nutritionSignToString
+                        >> malnutritionSignsForAssessment
                     )
                 |> Maybe.withDefault []
     in
