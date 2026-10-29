@@ -22,7 +22,7 @@ and `server/RoboFile.php`.
 2. **Aborts if the eheza-app working tree is dirty.**
 3. **Aborts if the Pantheon clone (`.pantheon-<name>`) is dirty.**
 4. **Aborts if `pantheon.upstream.yml` is missing or has no `php_version:`.**
-5. **Aborts if the local vendor tree lacks a package `composer.json` requires** (`www/sites/default/files/composer`), naming it. The rsync deletes from Pantheon whatever is missing locally, so a stale `composer.lock` would remove that package from the site.
+5. **Aborts if the local vendor tree lacks a package `composer.json` requires** (`www/sites/default/files/composer`), naming it. Otherwise the rsync would delete that package from Pantheon.
 6. Checks out the target branch in the Pantheon clone (`master` for Dev, else the multidev branch name), then pulls it. Checkout and pull fail with different messages, so a pull that fails for its own reasons — no network to the code server, no upstream, a conflict — does not read as a missing branch.
 7. rsyncs `www/.` (server) and `client/dist/.` (app) into the clone, excluding `.git`, `.ddev`, `client`, etc.
 8. Prints `git status`, then asks **"Commit changes and deploy?"** (interactive — needs a human).

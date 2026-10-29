@@ -13,7 +13,7 @@ function logs_glitchtip_requirements($phase) {
 
   // Without the SDK every event is dropped, and the error handler cannot say
   // so without risking a crash, so the Status report says it instead.
-  if ($phase == 'runtime' && logs_glitchtip_is_active() && !function_exists('\Sentry\init')) {
+  if ($phase == 'runtime' && logs_glitchtip_is_active() && !logs_glitchtip_sdk_is_available()) {
     $t = get_t();
     $requirements['logs_glitchtip_sdk'] = [
       'title' => $t('GlitchTip'),

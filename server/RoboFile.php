@@ -272,8 +272,8 @@ class RoboFile extends Tasks {
   /**
    * Checks that every package composer.json requires is in the vendor tree.
    *
-   * A stale composer.lock makes `composer install` skip packages added to
-   * composer.json since, with only a warning.
+   * An old composer.lock makes `composer install` skip packages added to
+   * composer.json since.
    *
    * @param string $composerDirectory
    *   The directory holding the composer.json that composer_manager builds.
@@ -304,7 +304,7 @@ class RoboFile extends Tasks {
 
     $missing = array_diff($requiredNames, $installedNames);
     if ($missing) {
-      throw new Exception('The vendor tree lacks ' . implode(', ', $missing) . ", which composer.json requires, and the deploy would remove it from Pantheon. Run `composer update --lock && composer install` in $composerDirectory.");
+      throw new Exception('The vendor tree lacks ' . implode(', ', $missing) . ", which composer.json requires, and the deploy would remove it from Pantheon. Run `composer update` in $composerDirectory.");
     }
   }
 
