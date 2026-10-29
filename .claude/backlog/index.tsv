@@ -421,7 +421,7 @@ B-420	4	IMPLEMENTED	LOW	2299	2301	35	Stock management (Somali): history months s
 B-421	1	IMPLEMENTED	MED	2274	2275	35	NCD pregnancy test: changing a test to "not performed" keeps its hidden result, so pregnancy status for hypertension tre
 B-422	1	IMPLEMENTED	LOW	2282	2283	35	HIV program Diagnostics: correcting a saved Positive result to "test not run" still stores Positive, and the participant
 B-423	4	IMPLEMENTED	LOW	2300	2302	35	Stock management Receive Stock: an erased batch number still counts as filled
-B-424	3	READY	MED-LOW			36	Prenatal recurrent labs: entering the last outstanding result saves the labs-results record twice, and the second save i
+B-424	3	IMPLEMENTED	MED-LOW	2441	2442	36	Prenatal recurrent labs: entering the last outstanding result saves the labs-results record twice, and the second save i
 B-425	4	READY	LOW			36	Prenatal Completion report: the referral row expects an ARV / NCD-programme referral when the patient says she IS enroll
 B-426	4	READY	LOW			36	Prenatal Completion report: a vitals recheck is expected at postpartum (and any later nurse) encounters with borderline 
 B-427	3	READY	MED-LOW			36	Child Scoreboard NCDA scorecard: the three "6–24 months" nutrition-behaviour rows and the Breastfed row show a red X for
@@ -490,7 +490,7 @@ B-489	4	READY	LOW			42	WhatsApp send script: a record with no phone number, scre
 B-490	4	READY	LOW		2367	42	Prenatal labs Case Management: a test sent to the lab after the nurse has completed every other result never reaches the
 B-491	4	READY	LOW			43	NCDA scorecard "4+ ANC visits": an opened-but-empty antenatal encounter counts as a visit, so 17 of the 67 pregnancies t
 B-492	3	READY	MED-LOW			43	Case Management Acute Illness pane: entries of illnesses the CHW never closed stay listed for years (6,141 site-wide, >9
-B-493	3	READY	MED-LOW			43	Prenatal labs entry: "End encounter" and the last-result save write the device's whole local copy of the entry back, so 
+B-493	3	IMPLEMENTED	MED-LOW	2441	2442	43	Prenatal labs entry: "End encounter" and the last-result save write the device's whole local copy of the entry back, so 
 B-494	3	IMPLEMENTED	MED-LOW	2374	2375	43	Case Management Immunization pane (B-232's fix, merged, UNRELEASED): on release it lists every child with an immunisatio
 B-495	4	IMPLEMENTED	LOW	2370	2371	41	Child Scoreboard NCDA form: a "treated for acute malnutrition" answer survives a MUAC corrected to green or marked not t
 B-496	2	IMPLEMENTED	MED	2376	2377	44	Acute illness + Prenatal: the diagnosis the device computed and acted on is never written to the encounter — 5 % of acut
