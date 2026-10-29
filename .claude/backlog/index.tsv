@@ -512,7 +512,7 @@ B-511	4	READY	LOW		2422	45	Service worker: while the database version differs fr
 B-512	4	READY	LOW			45	Nutrition assessment: a "malnutrition-signs" assessment is stored with "none" as its only sign, so the screens show "Mal
 B-513	4	READY	LOW			45	Statistical Queries per-person data: a measurement saved while the person's recalculation is already running is never re
 B-514	3	MONITORING	MED-LOW			45	Sync-incident re-creation + nightly measurement dedup: a re-created measurement for an encounter that already holds one 
-B-515	4	READY	LOW		2433	45	Admin content CSV links (children, clinics, mothers, measurements): the file has no byte-order mark, so Excel garbles ac
+B-515	4	IMPLEMENTED	LOW	2443	2444	45	Admin content CSV links (children, clinics, mothers, measurements): the file has no byte-order mark, so Excel garbles ac
 B-516	4	READY	LOW		2434	45	Release notes: no issue title is fetched for a PR from a `B-…` (or any non-numeric) branch, and GitHub API errors read a
 B-517	4	READY	LOW		2436	45	Group session: about 20 per-person `save*Request` trackers are filled on every save and never read
 B-518	4	READY	LOW		2438	45	Statistical Queries per-person data: a recalculation that produces the same data still saves the person, so every device
