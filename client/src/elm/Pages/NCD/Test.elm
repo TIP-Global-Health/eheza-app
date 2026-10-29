@@ -32,7 +32,7 @@ import Pages.NCD.Activity.Types exposing (NextStepsTask(..))
 import Pages.NCD.Activity.Update
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask, resolveNextStepsTasks, resolvePreviousMaybeValue)
 import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..), PreviousEncounterData)
-import Pages.NCD.RecurrentActivity.Utils exposing (resolveLaboratoryResultTasks, resolvedLabsResultsValue, withCompletedTestsFromMeasurements)
+import Pages.NCD.RecurrentActivity.Utils exposing (labsResultsValueWithResult, resolveLaboratoryResultTasks, resolvedLabsResultsValue, withCompletedTestsFromMeasurements)
 import Pages.NCD.Utils
     exposing
         ( generateAssembledData
@@ -1146,8 +1146,17 @@ labsEntryClosingTest =
             ( names value.performedTests, names value.completedTests )
 
         withMeasurements measurements entry =
-            withCompletedTestsFromMeasurements (ncdAssembled measurements) entry
+            withCompletedTestsFromMeasurements measurements entry
                 |> tests
+
+        -- The entry saved when the test's result is entered, with no Next
+        -- Steps required.
+        savedWithResult test measurements entry =
+            labsResultsValueWithResult dummyDate (ncdAssembled measurements) test entry
+                |> Maybe.map (\value -> ( tests value, value.resolutionDate ))
+
+        bothResults =
+            emptyNCDMeasurements |> withCreatinine 90 |> withRandomBloodSugar False 6
 
         sentToLab =
             { emptyNCDMeasurements
@@ -1200,10 +1209,21 @@ labsEntryClosingTest =
                     |> Expect.equal (Just dummyDate)
         , test "an entry behind its measurements is resolved with the tests it was missing" <|
             \_ ->
-                withCompletedTestsFromMeasurements
-                    (ncdAssembled (emptyNCDMeasurements |> withCreatinine 90 |> withRandomBloodSugar False 6))
+                withCompletedTestsFromMeasurements bothResults
                     (labsEntry [ TestCreatinine, TestRandomBloodSugar ] [ TestRandomBloodSugar ])
                     |> resolvedLabsResultsValue dummyDate
                     |> Maybe.map (\value -> ( tests value, value.resolutionDate ))
                     |> Expect.equal (Just ( ( [ "creatinine", "random-blood-sugar" ], [ "creatinine", "random-blood-sugar" ] ), dummyDate ))
+        , test "entering the last result resolves the entry today" <|
+            \_ ->
+                savedWithResult TestCreatinine (withCreatinine 90 emptyNCDMeasurements) (labsEntry [ TestCreatinine ] [])
+                    |> Expect.equal (Just ( ( [ "creatinine" ], [ "creatinine" ] ), dummyDate ))
+        , test "a result entered again saves the completed tests the entry was missing" <|
+            \_ ->
+                savedWithResult TestRandomBloodSugar bothResults (labsEntry [ TestCreatinine, TestRandomBloodSugar ] [ TestRandomBloodSugar ])
+                    |> Expect.equal (Just ( ( [ "creatinine", "random-blood-sugar" ], [ "creatinine", "random-blood-sugar" ] ), dummyDate ))
+        , test "a result entered again saves nothing when the entry holds every completed test" <|
+            \_ ->
+                savedWithResult TestRandomBloodSugar (withRandomBloodSugar False 6 emptyNCDMeasurements) (labsEntry [ TestRandomBloodSugar ] [ TestRandomBloodSugar ])
+                    |> Expect.equal Nothing
         ]

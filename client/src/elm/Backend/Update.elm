@@ -51,7 +51,6 @@ import Backend.Measurement.Utils
         , testPerformedByExecutionNote
         )
 import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..), RevisionsOrigin(..))
-import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NCDEncounter.Update
@@ -9343,49 +9342,14 @@ generateNCDLabsResultsAddedMsgs currentDate after test id =
         |> RemoteData.toMaybe
         |> Maybe.andThen
             (\assembled ->
-                Maybe.map
+                Maybe.andThen
                     (\( resultsId, results ) ->
-                        if
-                            EverySet.member test results.value.completedTests
-                                && EverySet.member test results.value.performedTests
-                        then
-                            -- Do not update value if we have it set up properly already.
-                            []
-
-                        else
-                            let
-                                value =
-                                    Pages.NCD.RecurrentActivity.Utils.withCompletedTestsFromMeasurements assembled results.value
-
-                                -- Since lab results can be entered right away (at poit of care),
-                                -- or at latter stage (after test was ordered at lab), we
-                                -- update both performed and completed tests.
-                                -- Since data structure is EverySet, it will not create duplicacies.
-                                updatedValue =
-                                    { value
-                                        | performedTests = EverySet.insert test value.performedTests
-                                        , completedTests = EverySet.insert test value.completedTests
-                                    }
-
-                                resolvedValue =
-                                    -- When all performed tests are completed, and Next Steps are either
-                                    -- completed, or not required, setting today as resolution date.
-                                    if
-                                        Pages.NCD.RecurrentActivity.Utils.activityCompleted
-                                            assembled
-                                            Backend.NCDActivity.Model.RecurrentNextSteps
-                                    then
-                                        Pages.NCD.RecurrentActivity.Utils.resolvedLabsResultsValue currentDate updatedValue
-                                            |> Maybe.withDefault updatedValue
-
-                                    else
-                                        updatedValue
-                            in
-                            [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) resolvedValue ]
+                        Pages.NCD.RecurrentActivity.Utils.labsResultsValueWithResult currentDate assembled test results.value
+                            |> Maybe.map (saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId))
                     )
                     assembled.measurements.labsResults
             )
-        |> Maybe.withDefault []
+        |> Maybe.Extra.toList
 
 
 saveNCDLabsResultsMsg :

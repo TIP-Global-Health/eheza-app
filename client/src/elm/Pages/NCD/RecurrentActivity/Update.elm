@@ -20,7 +20,7 @@ import Measurement.Utils
         )
 import Pages.NCD.RecurrentActivity.Model exposing (Model, Msg(..))
 import Pages.NCD.RecurrentActivity.Utils exposing (resolvedLabsResultsValue, withCompletedTestsFromMeasurements)
-import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault, toMedicationDistributionValueWithDefault, toReferralValueWithDefault)
+import Pages.NCD.Utils exposing (medicationDistributionFormWithDefault, referralFormWithDefault, toMedicationDistributionValueWithDefault, toReferralValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (saveMeasurementMsgs, setMultiSelectInputValue)
 import RemoteData
@@ -50,17 +50,17 @@ update currentDate id db msg model =
                         -- When Next steps are completed, and all lab results were
                         -- entered, we close the entry.
                         closeLabsResultsMsg =
-                            generateAssembledData id db
-                                |> RemoteData.toMaybe
+                            Dict.get id db.ncdMeasurements
+                                |> Maybe.andThen RemoteData.toMaybe
                                 |> Maybe.andThen
-                                    (\assembled ->
+                                    (\measurements ->
                                         Maybe.andThen
                                             (\( labsResultsId, results ) ->
-                                                withCompletedTestsFromMeasurements assembled results.value
+                                                withCompletedTestsFromMeasurements measurements results.value
                                                     |> resolvedLabsResultsValue currentDate
                                                     |> Maybe.map (CloseLabsResultsEntry personId labsResultsId)
                                             )
-                                            assembled.measurements.labsResults
+                                            measurements.labsResults
                                     )
                                 |> Maybe.Extra.toList
                      in

@@ -1,4 +1,4 @@
-module Pages.NCD.RecurrentActivity.Utils exposing (activityCompleted, expectActivity, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolvedLabsResultsValue, withCompletedTestsFromMeasurements)
+module Pages.NCD.RecurrentActivity.Utils exposing (activityCompleted, expectActivity, laboratoryResultTaskCompleted, labsResultsValueWithResult, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolvedLabsResultsValue, withCompletedTestsFromMeasurements)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
@@ -144,70 +144,85 @@ laboratoryResultTaskCompleted assembled task =
         taskExpected =
             expectLaboratoryResultTask assembled
 
-        testResultsCompleted getMeasurementFunc =
-            testResultEntered (getMeasurementFunc assembled.measurements)
+        resultCompleted =
+            (not <| taskExpected task) || measurementResultEntered assembled.measurements task
     in
     case task of
         TaskHIVTest ->
             not <| taskExpected TaskHIVTest
 
         TaskRandomBloodSugarTest ->
-            (not <| taskExpected TaskRandomBloodSugarTest) || testResultsCompleted .randomBloodSugarTest .sugarCount
+            resultCompleted
 
         TaskUrineDipstickTest ->
-            (not <| taskExpected TaskUrineDipstickTest) || testResultsCompleted .urineDipstickTest .protein
+            resultCompleted
 
         TaskPregnancyTest ->
             not <| taskExpected TaskPregnancyTest
 
         TaskCreatinineTest ->
-            (not <| taskExpected TaskCreatinineTest) || testResultsCompleted .creatinineTest .creatinineResult
+            resultCompleted
 
         TaskLiverFunctionTest ->
-            (not <| taskExpected TaskLiverFunctionTest) || testResultsCompleted .liverFunctionTest .altResult
+            resultCompleted
 
         TaskLipidPanelTest ->
-            (not <| taskExpected TaskLipidPanelTest) || testResultsCompleted .lipidPanelTest .totalCholesterolResult
+            resultCompleted
 
         -- Others are not in use for NCD.
         _ ->
             False
 
 
-{-| Whether the test's measurement shows it was run, with its result entered.
+{-| Whether the task's test measurement shows it was run, with its result entered.
 -}
-testResultEntered :
-    Maybe ( id, { m | value : { v | executionNote : TestExecutionNote } } )
-    -> ({ v | executionNote : TestExecutionNote } -> Maybe result)
-    -> Bool
-testResultEntered measurement getResultFieldFunc =
-    getMeasurementValueFunc measurement
-        |> Maybe.map
-            (\value ->
-                testPerformedByExecutionNote value.executionNote
-                    && (isJust <| getResultFieldFunc value)
-            )
-        |> Maybe.withDefault False
+measurementResultEntered : NCDMeasurements -> LaboratoryTask -> Bool
+measurementResultEntered measurements task =
+    let
+        resultEntered measurement getResultFieldFunc =
+            getMeasurementValueFunc measurement
+                |> Maybe.map
+                    (\value ->
+                        testPerformedByExecutionNote value.executionNote
+                            && (isJust <| getResultFieldFunc value)
+                    )
+                |> Maybe.withDefault False
+    in
+    case task of
+        TaskCreatinineTest ->
+            resultEntered measurements.creatinineTest .creatinineResult
+
+        TaskLipidPanelTest ->
+            resultEntered measurements.lipidPanelTest .totalCholesterolResult
+
+        TaskLiverFunctionTest ->
+            resultEntered measurements.liverFunctionTest .altResult
+
+        TaskRandomBloodSugarTest ->
+            resultEntered measurements.randomBloodSugarTest .sugarCount
+
+        TaskUrineDipstickTest ->
+            resultEntered measurements.urineDipstickTest .protein
+
+        _ ->
+            False
 
 
 {-| The labs entry with tests read from their own measurements too: a test run
 with its result entered is performed and completed.
 -}
-withCompletedTestsFromMeasurements : AssembledData -> LabsResultsValue -> LabsResultsValue
-withCompletedTestsFromMeasurements assembled value =
+withCompletedTestsFromMeasurements : NCDMeasurements -> LabsResultsValue -> LabsResultsValue
+withCompletedTestsFromMeasurements measurements value =
     let
-        measurements =
-            assembled.measurements
-
         testsWithResults =
-            [ ( TestCreatinine, testResultEntered measurements.creatinineTest .creatinineResult )
-            , ( TestLipidPanel, testResultEntered measurements.lipidPanelTest .totalCholesterolResult )
-            , ( TestLiverFunction, testResultEntered measurements.liverFunctionTest .altResult )
-            , ( TestRandomBloodSugar, testResultEntered measurements.randomBloodSugarTest .sugarCount )
-            , ( TestUrineDipstick, testResultEntered measurements.urineDipstickTest .protein )
+            [ ( TaskCreatinineTest, TestCreatinine )
+            , ( TaskLipidPanelTest, TestLipidPanel )
+            , ( TaskLiverFunctionTest, TestLiverFunction )
+            , ( TaskRandomBloodSugarTest, TestRandomBloodSugar )
+            , ( TaskUrineDipstickTest, TestUrineDipstick )
             ]
-                |> List.filter Tuple.second
-                |> List.map Tuple.first
+                |> List.filter (Tuple.first >> measurementResultEntered measurements)
+                |> List.map Tuple.second
                 |> EverySet.fromList
     in
     { value
@@ -225,6 +240,41 @@ resolvedLabsResultsValue currentDate value =
 
     else
         Nothing
+
+
+{-| The labs entry once the test's result is entered, or nothing when the entry
+already holds every completed test.
+-}
+labsResultsValueWithResult : NominalDate -> AssembledData -> LaboratoryTest -> LabsResultsValue -> Maybe LabsResultsValue
+labsResultsValueWithResult currentDate assembled test storedValue =
+    let
+        value =
+            withCompletedTestsFromMeasurements assembled.measurements storedValue
+
+        -- A result is entered at point of care or later from the lab, so the
+        -- test is added to both performed and completed tests.
+        updatedValue =
+            { value
+                | performedTests = EverySet.insert test value.performedTests
+                , completedTests = EverySet.insert test value.completedTests
+            }
+
+        unchanged =
+            EverySet.isEmpty (EverySet.diff updatedValue.performedTests storedValue.performedTests)
+                && EverySet.isEmpty (EverySet.diff updatedValue.completedTests storedValue.completedTests)
+    in
+    if unchanged then
+        Nothing
+
+    else if activityCompleted assembled RecurrentNextSteps then
+        -- With Next Steps completed or not required, the entry is resolved
+        -- once every performed test is completed.
+        resolvedLabsResultsValue currentDate updatedValue
+            |> Maybe.withDefault updatedValue
+            |> Just
+
+    else
+        Just updatedValue
 
 
 expectLaboratoryResultTask : AssembledData -> LaboratoryTask -> Bool
