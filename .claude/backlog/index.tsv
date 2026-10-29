@@ -516,6 +516,7 @@ B-515	4	READY	LOW		2433	45	Admin content CSV links (children, clinics, mothers, 
 B-516	4	READY	LOW		2434	45	Release notes: no issue title is fetched for a PR from a `B-…` (or any non-numeric) branch, and GitHub API errors read a
 B-517	4	READY	LOW		2436	45	Group session: about 20 per-person `save*Request` trackers are filled on every save and never read
 B-518	4	READY	LOW		2438	45	Statistical Queries per-person data: a recalculation that produces the same data still saves the person, so every device
+B-519	4	READY	LOW		2442	45	NCD labs: the labs entry is closed from the device's own copy, and "all completed" compares set sizes, so a copy behind 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
