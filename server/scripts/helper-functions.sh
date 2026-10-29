@@ -204,9 +204,7 @@ function composer_install {
   echo -e "${LBLUE}> Composer install${RESTORE}"
 
   cd "$ROOT"/www/sites/default/files/composer
-  # Resolve from composer.json, not from an old composer.lock: an install
-  # leaves out any package added to composer.json since the lock was made.
-  composer update
+  composer install
   echo
 
   cd "$ROOT"

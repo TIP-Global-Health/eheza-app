@@ -70,7 +70,7 @@ class RoboFile extends Tasks {
 
     // The rsync below deletes from Pantheon whatever the local vendor tree
     // lacks, so a package left out locally disappears from the site.
-    $this->assertVendorHasRequiredPackages('www/sites/default/files/composer');
+    $this->assertVendorIsUpToDate('www/sites/default/files/composer');
 
     $result = $this
       ->taskExec("cd $pantheonDirectory && git checkout $branchName")
@@ -270,42 +270,42 @@ class RoboFile extends Tasks {
   }
 
   /**
-   * Checks that every package composer.json requires is in the vendor tree.
+   * Checks that the vendor tree is what composer.json asks for.
    *
-   * An old composer.lock makes `composer install` skip packages added to
-   * composer.json since.
+   * An old composer.lock makes `composer install` skip or downgrade packages
+   * changed in composer.json since.
    *
    * @param string $composerDirectory
    *   The directory holding the composer.json that composer_manager builds.
    *
    * @throws \Exception
-   *   If a file cannot be read, or a required package is not installed.
+   *   If composer.lock is older than composer.json, or an install would change
+   *   the vendor tree.
    */
-  protected function assertVendorHasRequiredPackages(string $composerDirectory) {
-    $composer = json_decode((string) @file_get_contents("$composerDirectory/composer.json"), TRUE);
-    if (empty($composer['config']['vendor-dir'])) {
-      throw new Exception("Cannot read the vendor directory from $composerDirectory/composer.json.");
+  protected function assertVendorIsUpToDate(string $composerDirectory) {
+    // Fails when composer.lock was made before the last composer.json change.
+    $validate = $this
+      ->taskExec("cd $composerDirectory && composer validate --no-check-publish --no-check-all 2>&1")
+      ->printOutput(FALSE)
+      ->run();
+
+    // Lists what an install would change, including package files missing
+    // from disk; an up-to-date vendor tree needs nothing.
+    $dryRun = $this
+      ->taskExec("cd $composerDirectory && composer install --dry-run --no-interaction 2>&1")
+      ->printOutput(FALSE)
+      ->run();
+
+    if ($validate->wasSuccessful() && $dryRun->wasSuccessful() && strpos($dryRun->getMessage(), 'Nothing to install, update or remove') !== FALSE) {
+      return;
     }
 
-    $installedFile = $composerDirectory . '/' . $composer['config']['vendor-dir'] . '/composer/installed.json';
-    $installed = json_decode((string) @file_get_contents($installedFile), TRUE);
-    if (!is_array($installed)) {
-      throw new Exception("Cannot read $installedFile. Run `composer install` in $composerDirectory.");
+    // A failed command already printed its output, but a dry run that would
+    // install something succeeds, so show what it would do.
+    if ($dryRun->wasSuccessful()) {
+      $this->say($dryRun->getMessage());
     }
-
-    // Composer 2 nests the list under 'packages'; Composer 1 does not.
-    $installedNames = array_column($installed['packages'] ?? $installed, 'name');
-
-    // Only names with a vendor prefix are packages; "php" and "ext-*" are
-    // platform requirements.
-    $requiredNames = array_filter(array_keys($composer['require'] ?? []), function ($name) {
-      return strpos($name, '/') !== FALSE;
-    });
-
-    $missing = array_diff($requiredNames, $installedNames);
-    if ($missing) {
-      throw new Exception('The vendor tree lacks ' . implode(', ', $missing) . ", which composer.json requires, and the deploy would remove it from Pantheon. Run `composer update` in $composerDirectory.");
-    }
+    throw new Exception("The vendor tree does not match $composerDirectory/composer.json, and the deploy would copy it to Pantheon. Run `composer update` in $composerDirectory.");
   }
 
   /**
