@@ -68,6 +68,10 @@ class RoboFile extends Tasks {
       throw new Exception("'php_version:' directive is missing from pantheon.upstream.yml in Pantheon directory ($pantheonDirectory)");
     }
 
+    // The rsync below deletes from Pantheon whatever the local vendor tree
+    // lacks, so a package left out locally disappears from the site.
+    $this->assertVendorIsUpToDate('www/sites/default/files/composer');
+
     $result = $this
       ->taskExec("cd $pantheonDirectory && git checkout $branchName")
       ->printOutput(FALSE)
@@ -263,6 +267,45 @@ class RoboFile extends Tasks {
     }
 
     throw new Exception("`drush $drushCommand` failed on $environment on each of the " . self::DEPLOY_STEP_ATTEMPTS . ' attempts. The environment is on the new code, but this step and the ones after it have not run.');
+  }
+
+  /**
+   * Checks that the vendor tree is what composer.json asks for.
+   *
+   * An old composer.lock makes `composer install` skip or downgrade packages
+   * changed in composer.json since.
+   *
+   * @param string $composerDirectory
+   *   The directory holding the composer.json that composer_manager builds.
+   *
+   * @throws \Exception
+   *   If composer.lock is older than composer.json, or an install would change
+   *   the vendor tree.
+   */
+  protected function assertVendorIsUpToDate(string $composerDirectory) {
+    // Fails when composer.lock was made before the last composer.json change.
+    $validate = $this
+      ->taskExec("cd $composerDirectory && composer validate --no-check-publish --no-check-all 2>&1")
+      ->printOutput(FALSE)
+      ->run();
+
+    // Lists what an install would change, including package files missing
+    // from disk; an up-to-date vendor tree needs nothing.
+    $dryRun = $this
+      ->taskExec("cd $composerDirectory && composer install --dry-run --no-interaction 2>&1")
+      ->printOutput(FALSE)
+      ->run();
+
+    if ($validate->wasSuccessful() && $dryRun->wasSuccessful() && strpos($dryRun->getMessage(), 'Nothing to install, update or remove') !== FALSE) {
+      return;
+    }
+
+    // A failed command already printed its output, but a dry run that would
+    // install something succeeds, so show what it would do.
+    if ($dryRun->wasSuccessful()) {
+      $this->say($dryRun->getMessage());
+    }
+    throw new Exception("The vendor tree does not match $composerDirectory/composer.json, and the deploy would copy it to Pantheon. Run `composer update` in $composerDirectory.");
   }
 
   /**
