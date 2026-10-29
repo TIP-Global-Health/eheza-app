@@ -9070,18 +9070,10 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
         |> Maybe.andThen
             (\assembled ->
                 Maybe.map
-                    (\( resultsId, storedResults ) ->
+                    (\( resultsId, results ) ->
                         let
-                            results =
-                                { storedResults
-                                    | value =
-                                        Pages.Prenatal.RecurrentActivity.Utils.withCompletedTestsFromMeasurements
-                                            assembled
-                                            storedResults.value
-                                }
-
                             ( performedTests, completedTests ) =
-                                Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
+                                Pages.Prenatal.RecurrentActivity.Utils.labsResultsTests currentDate assembled results
 
                             updatedValue =
                                 (\value ->
@@ -9097,7 +9089,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
                                             EverySet.insert test completedTests
 
                                         allLabsCompleted =
-                                            EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests
+                                            Pages.Prenatal.RecurrentActivity.Utils.allLabsCompleted updatedPerformedTests updatedCompletedTests
 
                                         updatedTestsWithFollowUp =
                                             -- Mark tests which results were entered by Lab Tech, and got
@@ -9236,7 +9228,7 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                                 [ savePrenatalLabsResultsMsg id
                                     assembled.participant.person
                                     (Just resultsId)
-                                    (Pages.Prenatal.RecurrentActivity.Utils.concludedLabsResultsValue currentDate assembled results.value)
+                                    (Pages.Prenatal.RecurrentActivity.Utils.concludedLabsResultsValue currentDate assembled results)
                                 , App.Model.SetActivePage <|
                                     UserPage <|
                                         ClinicalProgressReportPage

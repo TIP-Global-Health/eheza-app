@@ -39,7 +39,8 @@ import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..),
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils
     exposing
-        ( concludedLabsResultsValue
+        ( allLabsCompleted
+        , concludedLabsResultsValue
         , laboratoryResultNotPerformed
         , laboratoryResultTaskCompleted
         , nextStepsTaskCompleted
@@ -744,7 +745,7 @@ resolveMedicationDistributionContinuedHypertensionTest =
 -- measurements too, and never dropped.
 
 
-{-| A labs entry as first stored: the given tests ordered, none completed.
+{-| A labs entry with the given performed and completed tests.
 -}
 labsEntry : List LaboratoryTest -> List LaboratoryTest -> LabsResultsValue
 labsEntry performed completed =
@@ -837,34 +838,66 @@ concludedLabsResultsValueTest =
             measurementsWithTests ( TestNoteRunToday, Just TestNegative ) ( TestNoteRunToday, Just 11 )
 
         concluded measurements entry =
-            concludedLabsResultsValue currentDate (testAssembled measurements) entry
+            concludedOn currentDate measurements entry
+
+        concludedOn dateMeasured measurements entry =
+            TestFixtures.wrapMeasurement dateMeasured entry
+                |> Maybe.map (Tuple.second >> concludedLabsResultsValue currentDate (testAssembled measurements))
     in
     describe "concludedLabsResultsValue"
         [ test "an entry behind its measurements is closed with every test completed and reviewed" <|
             \_ ->
                 concluded allResults (labsEntry [ TestHIV, TestHemoglobin ] [])
                     |> Expect.equal
-                        { performedTests = EverySet.fromList [ TestHIV, TestHemoglobin ]
-                        , completedTests = EverySet.fromList [ TestHIV, TestHemoglobin ]
-                        , resolutionDate = currentDate
-                        , patientNotified = False
-                        , reviewState = Just LabsResultsReviewCompleted
-                        , testsWithFollowUp = Nothing
-                        }
+                        (Just
+                            { performedTests = EverySet.fromList [ TestHIV, TestHemoglobin ]
+                            , completedTests = EverySet.fromList [ TestHIV, TestHemoglobin ]
+                            , resolutionDate = currentDate
+                            , patientNotified = False
+                            , reviewState = Just LabsResultsReviewCompleted
+                            , testsWithFollowUp = Nothing
+                            }
+                        )
         , test "an entry with a test still waiting keeps its review state" <|
             \_ ->
                 concluded
                     (measurementsWithTests ( TestNoteRunToday, Just TestNegative ) ( TestNoteRunToday, Nothing ))
                     (labsEntry [ TestHIV, TestHemoglobin ] [])
-                    |> (\value -> ( value.completedTests, value.reviewState, value.resolutionDate ))
-                    |> Expect.equal ( EverySet.fromList [ TestHIV ], Nothing, currentDate )
+                    |> Maybe.map (\value -> ( value.completedTests, value.reviewState, value.resolutionDate ))
+                    |> Expect.equal (Just ( EverySet.fromList [ TestHIV ], Nothing, currentDate ))
+        , test "a vitals recheck from another day is left out, so the entry is reviewed" <|
+            \_ ->
+                concludedOn (Date.add Date.Days -2 currentDate) allResults (labsEntry [ TestHIV, TestHemoglobin, TestVitalsRecheck ] [])
+                    |> Maybe.map (\value -> ( value.performedTests, value.completedTests, value.reviewState ))
+                    |> Expect.equal
+                        (Just
+                            ( EverySet.fromList [ TestHIV, TestHemoglobin ]
+                            , EverySet.fromList [ TestHIV, TestHemoglobin ]
+                            , Just LabsResultsReviewCompleted
+                            )
+                        )
+        ]
+
+
+allLabsCompletedTest : Test
+allLabsCompletedTest =
+    describe "allLabsCompleted"
+        [ test "a completed test that is no longer performed does not stand in for a pending one" <|
+            \_ ->
+                allLabsCompleted (EverySet.fromList [ TestHIV, TestHemoglobin ]) (EverySet.fromList [ TestVitalsRecheck, TestHIV ])
+                    |> Expect.equal False
+        , test "every performed test completed" <|
+            \_ ->
+                allLabsCompleted (EverySet.fromList [ TestHIV ]) (EverySet.fromList [ TestHIV, TestVitalsRecheck ])
+                    |> Expect.equal True
         ]
 
 
 all : Test
 all =
     describe "Pages.Prenatal.RecurrentActivity.Utils"
-        [ concludedLabsResultsValueTest
+        [ allLabsCompletedTest
+        , concludedLabsResultsValueTest
         , laboratoryResultTaskCompletedKnownAsPositiveTest
         , laboratoryResultNotPerformedTest
         , laboratoryResultTaskCompletedMalariaTest

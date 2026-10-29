@@ -1,10 +1,10 @@
-module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, concludedLabsResultsValue, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault, withCompletedTestsFromMeasurements)
+module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, allLabsCompleted, concludedLabsResultsValue, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, labsResultsTests, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault, withCompletedTestsFromMeasurements)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
 import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Maybe.Extra exposing (isJust, or, unwrap)
@@ -24,6 +24,7 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (vitalsFormInputsAndTasks)
+import Pages.GlobalCaseManagement.Utils exposing (labsResultsTestData)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (ExaminationData, Msg(..), NextStepsData)
 import Pages.Prenatal.RecurrentActivity.Types exposing (ExaminationTask(..), NextStepsTask(..))
@@ -199,25 +200,42 @@ withCompletedTestsFromMeasurements assembled value =
     }
 
 
+{-| The labs entry's performed and completed tests, with completions read from
+the test measurements too. A vitals recheck scheduled on another day is left out.
+-}
+labsResultsTests : NominalDate -> AssembledData -> PrenatalLabsResults -> ( EverySet LaboratoryTest, EverySet LaboratoryTest )
+labsResultsTests currentDate assembled results =
+    labsResultsTestData currentDate { results | value = withCompletedTestsFromMeasurements assembled results.value }
+
+
+{-| Whether every performed test is completed.
+-}
+allLabsCompleted : EverySet LaboratoryTest -> EverySet LaboratoryTest -> Bool
+allLabsCompleted performedTests completedTests =
+    EverySet.isEmpty <| EverySet.diff performedTests completedTests
+
+
 {-| The labs entry as a nurse closes it at the end of the recurrent phase:
 resolved today, and reviewed once every performed test is completed.
 -}
-concludedLabsResultsValue : NominalDate -> AssembledData -> LabsResultsValue -> LabsResultsValue
-concludedLabsResultsValue currentDate assembled value =
+concludedLabsResultsValue : NominalDate -> AssembledData -> PrenatalLabsResults -> LabsResultsValue
+concludedLabsResultsValue currentDate assembled results =
     let
-        withCompletedTests =
-            withCompletedTestsFromMeasurements assembled value
+        ( performedTests, completedTests ) =
+            labsResultsTests currentDate assembled results
 
-        allCompleted =
-            EverySet.isEmpty <| EverySet.diff withCompletedTests.performedTests withCompletedTests.completedTests
+        value =
+            results.value
     in
-    { withCompletedTests
-        | reviewState =
-            if allCompleted then
+    { value
+        | performedTests = performedTests
+        , completedTests = completedTests
+        , reviewState =
+            if allLabsCompleted performedTests completedTests then
                 Just LabsResultsReviewCompleted
 
             else
-                withCompletedTests.reviewState
+                value.reviewState
         , resolutionDate = currentDate
     }
 
