@@ -20,7 +20,7 @@ B-019	3	PARKED					hedley_view_export requeue path missing switchUserBack
 B-020	1	PARKED					Stats recalc non-atomic → dashboard blanks/stale for an HC
 B-021	4	READY	LOW				Unbatched soft-delete cascade can time out (CORRECTED: availability only, atomic rollback)
 B-022	4	CLOSED					i18n objective leftover: Kirundi prose in `english` field
-B-023	4	READY				10	Stale merge-conflict "REVIEW:" comment committed on develop
+B-023	4	IMPLEMENTED		2430	2435	10	Stale merge-conflict "REVIEW:" comment committed on develop
 B-024	2	IMPLEMENTED		1937	1938	10	4 of 5 progress-report pages never fetch health centers → Next-Appointment "Location" renders blank
 B-025	1	IMPLEMENTED	HIGH	1888	1889	10	Upload lanes wedge the WHOLE sync cycle permanently when the JS handler dies without replying
 B-026	1	IMPLEMENTED	HIGH	1898	1899	10	Deferred-photo download lane wedges permanently on mid-body network drop
@@ -79,7 +79,7 @@ B-078	4	READY				16	NCDA scorecard: `continue` on empty Vitamin A skips the MUAC
 B-079		CLOSED				16	Demographics report 50-year age-band gap (person exactly 50.0y dropped from totals)
 B-080	4	REFUTED				16	`hedley_device_assign_shards` education_session edit branch leaves `$shards` undefined (PHP notice)
 B-081	4	CLOSED				16	CLAUDE.md doc drift (one doc PR): feature-flag names + missing flag + stale CI-job count
-B-082	4	READY				16	`SaveMotherFbf` inserts into a copy of the WRONG tracker dict
+B-082	4	IMPLEMENTED		2431	2436	16	`SaveMotherFbf` inserts into a copy of the WRONG tracker dict
 B-083		READY				16	HC-level stock view counts village-tagged stock updates as receipts
 B-084	3	IMPLEMENTED			1979	16	Shared `viewNumberInput` accepts hand-typed negatives (HTML min="0" only)
 B-085	4	READY				16	Person shards not recomputed on health-center change
@@ -88,7 +88,7 @@ B-087	3	PARKED				16	view_export worker returns permanent FAILURE when the final
 B-088	4	READY				16	No `hook_node_delete` in hedley_ncda / hedley_reports / hedley_stats → hard-delete (super_user_mode only) leaves stale a
 B-089	4	IMPLEMENTED		2202	2200	16	Kirundi `MissedDosesOfMedication` missing leading space ("3y'imiti")
 B-090	4	READY				16	Stats case-management "month 13" cutoff not midnight-anchored
-B-091	4	READY				16	Prenatal syphilis medication guard omits `syphilisAdverseEventsHospitalization`
+B-091	4	IMPLEMENTED		2431	2436	16	Prenatal syphilis medication guard omits `syphilisAdverseEventsHospitalization`
 B-092	4	READY				16	a11y PR1: shared/shell primitives (~30 sites: `Pages/Utils` viewAlert :1154 / viewPhotoThumb :1249 / exclamation :1356, 
 B-093	4	READY				16	a11y PR2: group-session flow (~34 sites: Attendance/Activities/Participants nav tabs + check-in/out toggles, EducationSe
 B-094	4	READY				16	a11y PR3: Prenatal + NCD (~27 sites: 13 imgs incl. ProgressReport timeline icons, 14 back-links incl. span-onClick varia
@@ -182,7 +182,7 @@ B-181	3	READY				20	Completion report: Ultrasound activity (healthy_start) does 
 B-182	3	IMPLEMENTED		2102	2103	20	NCD completion: women 45-49 invisible for Family Planning + Pregnancy Test, and pregnancy-test validity reads the HIV te
 B-183	3	READY				20	Prenatal completion: chw-1 after a health-center visit is charged for Pregnancy Dating the app hides
 B-184	4	READY				20	Prenatal completion: postpartum SpecialityCare triggers omit hypertension
-B-185	4	READY				20	Completion generation: `--exclude_set` incremental runs would corrupt encounter history (subsequent encounters classify 
+B-185	2	IMPLEMENTED	MED	2414	2415	20	Completion report: since March 2025 the nightly run stores most follow-up visits as first visits, on ihangane and vhw, i
 B-186	3	READY				20	Prenatal completion: the mental-health check CLOBBERS every earlier health-education trigger
 B-187	3	READY				20	Prenatal completion: medication-distribution port drifts ×6 (preeclampsia continuation, Mebendazole-on-missing-questionn
 B-188	3	IMPLEMENTED		2104	2105	20	Dashboard ANC: the "# of Women with 4 Visits or more" card never counts visits — any pregnancy with ONE nurse encounter 
@@ -258,7 +258,7 @@ B-257	4	READY	LOW			25	Duplicate-patient lookup is triggered by any text field o
 B-258	4	READY	LOW			25	Person edit page never fetches relationships, so after a page reload an address change silently skips the children
 B-259	4	IMPLEMENTED	LOW	2267	2269	25	A freshly opened person form greets the nurse with "Person has been saved"
 B-260	4	READY	LOW			25	Strict decoders on optional stats values: two dashboard enum sites lack the fallback their siblings have, and one requir
-B-261	4	READY	LOW			25	Dashboard case-management table: columns are sorted by bare month number, so they come out of order when the stats month
+B-261	4	IMPLEMENTED	LOW	2423	2424	25	Dashboard case-management table: columns are sorted by bare month number, so they come out of order when the stats month
 B-262	4	READY	LOW			25	Person-counting cards that count participants or measurements instead of people (three siblings, one family)
 B-263	4	READY	LOW			25	Dashboard's copy of the vaccination-progress builder drops DTP-standalone after a fourth dose date, so the Burundi immun
 B-264	3	READY	MED-LOW			25	Dashboard monthly charts divide a case-management numerator by a beneficiaries denominator from a different population
@@ -298,7 +298,7 @@ B-297	4	READY	LOW			27	Group sessions: nothing has closed a session since mid-20
 B-298	4	READY	MED-LOW			27	Group measurement forms: the save button's double-submission guard and error indication are dead — `EditableSession.upda
 B-299	3	IMPLEMENTED	MED-LOW	2186	2187	27	Stock Management (CHW village): a saved stock update never reaches the village view in-session — the revision path updat
 B-300	4	READY	MED-LOW			27	Stock Management (CHW village): the monthly data is computed as soon as measurements load, without waiting for the villa
-B-301	4	READY	LOW			27	Stock Management: the oldest history row opens month details at gap 12 while the clamp is 11, and the back arrow then pa
+B-301	4	IMPLEMENTED	LOW	2427	2432	27	Stock Management: the oldest history row opens month details at gap 12 while the clamp is 11, and the back arrow then pa
 B-302	4	READY	LOW			27	Stock Management (CHW village): the computed data cache is keyed by health center but holds one village's figures — a CH
 B-303	3	IMPLEMENTED	MED	2181	2183	27	Translate: clinical-content translation errors batch — wrong dosage, wrong instruction, collapsed screening options, wro
 B-304	3	IMPLEMENTED	MED-LOW	2182	2183	27	Translate: copied-neighbor label batch — a lab/service/category label answers the WRONG English source (10 sites, each v
@@ -319,7 +319,7 @@ B-318	2	IMPLEMENTED	MED	2290	2291	28	Sync: the dashboard-statistics download has
 B-319	1	IMPLEMENTED	MED	2223	2224	28	Prenatal labs (lab technician): a blood-smear order opens pre-answered "test will NOT be performed today" with the nurse
 B-320	1	IMPLEMENTED	MED	2211	2212	28	Prenatal HIV test: correcting to "known as positive" after a negative RDT keeps the result and the partner answers, so t
 B-321	4	READY	LOW			28	NCD Laboratory (urine dipstick, creatinine, liver function, lipid panel): re-saving a test task after its results were e
-B-322	4	READY	LOW			28	Child progress report, Diagnosis pane: "Malnutrition signs" is listed twice for one date, because the nutrition-derived 
+B-322	4	IMPLEMENTED	LOW	2425	2426	28	Child progress report, Diagnosis pane: "Malnutrition signs" is listed twice for one date, because the nutrition-derived 
 B-323	1	IMPLEMENTED	MED	2209	2210	28	Prenatal: a partner HIV result entered by a LAB TECHNICIAN produces no discordant-partnership diagnosis at all, because 
 B-324	1	IMPLEMENTED	MED-LOW	2217	2218	29	Acute Illness diagnosis: on a site without Tuberculosis Management, a COVID-suspect patient with a cough of more than tw
 B-325	2	PARKED	MED-HIGH			29	🅿 **PARKED (user, 2026-09-23): "park"** — said after the frequency estimate (7-day live census: roughly 1–3 lost uploads
@@ -328,7 +328,7 @@ B-327	4	READY	LOW			29	Device pairing: once a device is paired there is no way b
 B-328	4	READY	LOW			29	Role gating: `viewUserPage` authorises by location only, so a lab technician or CHW reaches every nurse page through the
 B-329	3	READY	MED-LOW			29	Group session NCDA: the activity page never fetches the child's individual data, so the "behind on vaccinations" sign ca
 B-330	4	READY	LOW			29	Group "Begin new encounter" page: its fetch is empty, so after a reload at that URL the Group Assessment button is dead,
-B-331	3	READY	MED			29	Backend error reporting: the Sentry SDK that `logs_glitchtip` needs is not in the deployed vendor tree, so every backend
+B-331	3	IMPLEMENTED	MED	2439	2440	29	Backend error reporting: the Sentry SDK that `logs_glitchtip` needs is not in the deployed vendor tree, so every backend
 B-332	4	READY	LOW			29	Backend error reporting: the GlitchTip event buffer is a `drupal_static`, and the stats/report/village builders call bar
 B-333	3	READY	MED-LOW			29	Admin lists: the "E-ledger viewer" role, which the ledger scopes to the user's own health centres, can open every health
 B-334	4	IMPLEMENTED	LOW	2313	2315	29	Admin sidebar: the "Create PMTCT Participation" link points at `node/add/pmtct-paticipation`, a path that does not exist
@@ -401,13 +401,13 @@ B-400	4	READY	LOW			34	The Well Child "Vitals skip round-trip" e2e test passes w
 B-401	4	READY	LOW			34	Eight e2e backend checks skip the async-write retry every sibling call site uses, so a lagging write fails the test
 B-402	4	READY	LOW			34	A test comment records a "FINDING" that is false — the Labs tab's glucose ranges are not swapped — and two test cases ar
 B-403	4	READY	LOW			34	The `HandleRevisions` re-assessment dispatch has no test and cannot get one the usual way, so dropping a revision from B
-B-404	4	READY	LOW			34	`minify`'s uglify error handler has no `isPublishing` guard, so `gulp publish` still cannot report a minification failur
+B-404	4	CLOSED	LOW			34	`minify`'s uglify error handler has no `isPublishing` guard, so `gulp publish` still cannot report a minification failur
 B-405	4	READY	LOW			34	The production build runs image optimisation and then throws the result away: all 302 deployed images are byte-identical
 B-406	4	READY	LOW			34	Every precache revision in the shipped service worker is the hash of the file *before* minification, so a minifier-only 
 B-407	4	READY	LOW			34	`.ddev/config.local.yaml.example` is not in the "default state" both deploy skills tell the operator to expect, so a sta
 B-408	4	READY	LOW			34	Both deploy skills run their clean-tree and terminus preflight checks before the `ddev restart` that invalidates them
 B-409	4	REFUTED	LOW			34	The native install/reset/upgrade scripts end with a bootstrap check that is missing its pipe, so a fully successful run 
-B-410	4	READY	LOW			34	`generateReleaseNotes` drops all GitHub enrichment when `origin` is an HTTPS remote, because it reads the org and repo f
+B-410	4	IMPLEMENTED	LOW	2429	2434	34	`generateReleaseNotes` drops all GitHub enrichment when `origin` is an HTTPS remote, because it reads the org and repo f
 B-411	4	READY	LOW			34	`server/scripts/setup-dev` writes Drupal's settings files to the repository root instead of the docroot
 B-412	4	READY	LOW			34	Three exported field instances permit a shape the client decoder or the sync query cannot survive — the same poison-reco
 B-413	3	READY	MED			34	Every admin content list and CSV export shows soft-deleted content as live, because the views filter `node.status` and n
@@ -421,7 +421,7 @@ B-420	4	IMPLEMENTED	LOW	2299	2301	35	Stock management (Somali): history months s
 B-421	1	IMPLEMENTED	MED	2274	2275	35	NCD pregnancy test: changing a test to "not performed" keeps its hidden result, so pregnancy status for hypertension tre
 B-422	1	IMPLEMENTED	LOW	2282	2283	35	HIV program Diagnostics: correcting a saved Positive result to "test not run" still stores Positive, and the participant
 B-423	4	IMPLEMENTED	LOW	2300	2302	35	Stock management Receive Stock: an erased batch number still counts as filled
-B-424	3	READY	MED-LOW			36	Prenatal recurrent labs: entering the last outstanding result saves the labs-results record twice, and the second save i
+B-424	3	IMPLEMENTED	MED-LOW	2441	2442	36	Prenatal recurrent labs: entering the last outstanding result saves the labs-results record twice, and the second save i
 B-425	4	READY	LOW			36	Prenatal Completion report: the referral row expects an ARV / NCD-programme referral when the patient says she IS enroll
 B-426	4	READY	LOW			36	Prenatal Completion report: a vitals recheck is expected at postpartum (and any later nurse) encounters with borderline 
 B-427	3	READY	MED-LOW			36	Child Scoreboard NCDA scorecard: the three "6–24 months" nutrition-behaviour rows and the Breastfed row show a red X for
@@ -453,7 +453,7 @@ B-452	1	IMPLEMENTED		2328	2329	39	Prenatal obstetric history: correcting step 1 
 B-453	1	PARKED	LOW			39	Prenatal postpartum mastitis: a mother who is NOT breastfeeding because of breast pain or breast redness is never diagno
 B-454	1	IMPLEMENTED	LOW	2330	2331	39	NCD labs: a random blood sugar test sent to the lab, then corrected to "not performed", keeps "result from the lab" in i
 B-455	4	WONTFIX	LOW			39	Prenatal labs: a Hepatitis B test run at point of care, then corrected to "known as positive", still saves the result of
-B-456	4	READY	LOW			39	Admin reports CSV download: the file has no byte-order mark and always separates with a comma, so Excel can garble accen
+B-456	4	IMPLEMENTED	LOW	2428	2433	39	Admin reports CSV download: the file has no byte-order mark and always separates with a comma, so Excel can garble accen
 B-457	4	CLOSED	LOW		2391	39	Admin Elm app (`server/elm`): no unit tests can be written, because it has no elm-test setup, so pure helpers such as th
 B-458	4	READY	LOW			39	Admin content: outside super user mode, three more ways to delete or unpublish a node are still offered and always fail 
 B-459	1	PARKED	LOW			38	Prenatal diagnosis: a treated malaria found again at a different anemia level is filed as a new episode, and "treated" m
@@ -490,7 +490,7 @@ B-489	4	READY	LOW			42	WhatsApp send script: a record with no phone number, scre
 B-490	4	READY	LOW		2367	42	Prenatal labs Case Management: a test sent to the lab after the nurse has completed every other result never reaches the
 B-491	4	READY	LOW			43	NCDA scorecard "4+ ANC visits": an opened-but-empty antenatal encounter counts as a visit, so 17 of the 67 pregnancies t
 B-492	3	READY	MED-LOW			43	Case Management Acute Illness pane: entries of illnesses the CHW never closed stay listed for years (6,141 site-wide, >9
-B-493	3	READY	MED-LOW			43	Prenatal labs entry: "End encounter" and the last-result save write the device's whole local copy of the entry back, so 
+B-493	3	IMPLEMENTED	MED-LOW	2441	2442	43	Prenatal labs entry: "End encounter" and the last-result save write the device's whole local copy of the entry back, so 
 B-494	3	IMPLEMENTED	MED-LOW	2374	2375	43	Case Management Immunization pane (B-232's fix, merged, UNRELEASED): on release it lists every child with an immunisatio
 B-495	4	IMPLEMENTED	LOW	2370	2371	41	Child Scoreboard NCDA form: a "treated for acute malnutrition" answer survives a MUAC corrected to green or marked not t
 B-496	2	IMPLEMENTED	MED	2376	2377	44	Acute illness + Prenatal: the diagnosis the device computed and acted on is never written to the encounter — 5 % of acut
@@ -503,6 +503,21 @@ B-502	4	CLOSED	LOW		2405	survey	Aggregated NCDA scoreboard › Immunization row:
 B-503	4	IMPLEMENTED	LOW	2403	2402	survey	Aggregated NCDA scoreboard: a child registered on a column's target date (the month's last day, or today for the current
 B-504	4	READY	LOW		2405	survey	Aggregated NCDA scoreboard: the Acute Malnutrition, Stunting and Infrastructure/WASH rows count children of any age the 
 B-505	4	READY	LOW			survey	Sync download (general): two copies of one general request that both reply before the first batch's save is acknowledged
+B-506	4	READY	LOW			0	Completion builders: each of the seven history-reading builders decides on its own whether to skip saving, so a new buil
+B-507	4	IMPLEMENTED	LOW	2148	2419	0	Completion report: Acute Illness follow-ups ignore the nurse's first encounter
+B-508	4	IMPLEMENTED	LOW	2418	2419	0	Completion report: Acute Illness follow-ups expect a Malaria test after a positive one
+B-509	3	IMPLEMENTED	MED-LOW	2437	2438	45	Completion report full run (#2417's post-deploy step): every encounter of seven programs gets a new revision, so every d
+B-510	4	READY	LOW			45	Sync incidents: a user's incident details naming only entities that already exist are never cleared, by the live save pa
+B-511	4	READY	LOW		2422	45	Service worker: while the database version differs from `dbVerno`, every request opens a new connection and never closes
+B-512	4	READY	LOW			45	Nutrition assessment: a "malnutrition-signs" assessment is stored with "none" as its only sign, so the screens show "Mal
+B-513	4	READY	LOW			45	Statistical Queries per-person data: a measurement saved while the person's recalculation is already running is never re
+B-514	3	MONITORING	MED-LOW			45	Sync-incident re-creation + nightly measurement dedup: a re-created measurement for an encounter that already holds one 
+B-515	4	IMPLEMENTED	LOW	2443	2444	45	Admin content CSV links (children, clinics, mothers, measurements): the file has no byte-order mark, so Excel garbles ac
+B-516	4	READY	LOW		2434	45	Release notes: no issue title is fetched for a PR from a `B-…` (or any non-numeric) branch, and GitHub API errors read a
+B-517	4	READY	LOW		2436	45	Group session: about 20 per-person `save*Request` trackers are filled on every save and never read
+B-518	4	READY	LOW		2438	45	Statistical Queries per-person data: a recalculation that produces the same data still saves the person, so every device
+B-519	4	IMPLEMENTED	LOW	2445	2446	45	NCD labs: the labs entry is closed from the device's own copy, and "all completed" compares set sizes, so a copy behind 
+B-520	4	READY	LOW		2446	45	Prenatal initial phase: "second phase required" compares the sizes of the labs entry's performed and completed tests, so
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
@@ -536,3 +551,4 @@ TH-30		IMPLEMENTED		2398	2402	survey	Aggregated NCDA scoreboard: pin the server 
 TH-31		IMPLEMENTED		2399	2402	survey	Statistical Queries › ANC and ANC Contacts reports: pin the date-range filter, pregnancy completion and contact counts
 TH-32		IMPLEMENTED		2400	2402	survey	Statistical Queries › Peripartum, Postnatal Care, Demographics, Acute Illness and CSV export: pin the report builders
 TH-33		IMPLEMENTED		2401	2402	survey	Aggregated NCDA scoreboard panes and Completion: move the date arithmetic out of the views and pin it
+TH-34		READY				45	Completion report incremental run (B-185): no automated test pins that an already-set encounter stays in the history a l

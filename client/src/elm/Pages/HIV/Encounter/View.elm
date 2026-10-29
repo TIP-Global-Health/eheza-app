@@ -102,14 +102,10 @@ viewMainPageContent language currentDate assembled model =
         completedTabTitle =
             translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
 
-        reportsTabTitle =
-            translate language Translate.ProgressReport
-
         tabs =
             div [ class "ui tabular menu" ]
                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
-                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
                 ]
 
         viewCard activity =
@@ -119,40 +115,25 @@ viewMainPageContent language currentDate assembled model =
                 (SetActivePage <| UserPage <| HIVActivityPage assembled.id activity)
 
         innerContent =
-            if model.selectedTab == Reports then
-                div [ class "reports-wrapper" ]
-                    [-- @todo:
-                     -- viewReportLink language
-                     --     Translate.ProgressReport
-                     --     (SetActivePage <|
-                     --         UserPage <|
-                     --             HIVProgressReportPage (InitiatorEncounterPage assembled.id)
-                     --     )
+            let
+                ( selectedActivities, emptySectionMessage ) =
+                    case model.selectedTab of
+                        Completed ->
+                            ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                        Pending ->
+                            ( pendingActivities, translate language Translate.NoActivitiesPending )
+            in
+            div [ class "full content" ]
+                [ div [ class "wrap-cards" ]
+                    [ div [ class "ui four cards" ] <|
+                        if List.isEmpty selectedActivities then
+                            [ span [] [ text emptySectionMessage ] ]
+
+                        else
+                            List.map viewCard selectedActivities
                     ]
-
-            else
-                let
-                    ( selectedActivities, emptySectionMessage ) =
-                        case model.selectedTab of
-                            Pending ->
-                                ( pendingActivities, translate language Translate.NoActivitiesPending )
-
-                            Completed ->
-                                ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-                            Reports ->
-                                ( [], "" )
-                in
-                div [ class "full content" ]
-                    [ div [ class "wrap-cards" ]
-                        [ div [ class "ui four cards" ] <|
-                            if List.isEmpty selectedActivities then
-                                [ span [] [ text emptySectionMessage ] ]
-
-                            else
-                                List.map viewCard selectedActivities
-                        ]
-                    ]
+                ]
 
         allowEndEncounter =
             allowEndingEncounter pendingActivities

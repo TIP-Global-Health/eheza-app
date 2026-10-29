@@ -36,7 +36,9 @@
             const filename = data[0];
             const content = data[1];
             const element = document.createElement('a');
-            element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(content));
+            // The leading byte-order mark makes Excel read the file as UTF-8,
+            // so accented letters like "é" are not garbled.
+            element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent('\uFEFF' + content));
             element.setAttribute('download', filename);
             element.style.display = 'none';
             document.body.appendChild(element);

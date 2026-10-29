@@ -469,10 +469,7 @@ function hedley_reports_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_MUAC_BUNDLES,
-    // REVIEW: HEAD dropped HEDLEY_ACTIVITY_NUTRITION_BUNDLES from this
-    // trigger list; base re-added it. Keeping it here so report recalcs
-    // still fire on nutrition-measurement saves; remove if this branch
-    // intentionally moved that handling elsewhere.
+    // Nutrition signs carry edema, which the reports read.
     HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
     HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES,
@@ -3715,7 +3712,8 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
  * @param object $participant
  *   The participant node object representing illness.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_acute_illness($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -3761,13 +3759,13 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     // If encounter type field is empty, we default to CHW, since
@@ -3805,6 +3803,11 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $encounter_type = $encounter_data['encounter_type'];
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
@@ -3827,29 +3830,7 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
     }
     $encounter_data['illness_diagnosis'] = $diagnosis;
 
-    // Acute illness module defines following logic:
-    // If first encounter(s) were taken by CHW, but then
-    // nurse ran and encounter, we consider that encounter of
-    // nurse as initial. All data collected by CHWs until that
-    // encounter should be ignored.
-    $initial_nurse_encounter_index = -1;
-    foreach ($previous_encounters_data as $ind => $data) {
-      if ($data['encounter_type'] == 'nurse-encounter') {
-        $initial_nurse_encounter_index = $ind;
-        break;
-      }
-    }
-
-    if ($initial_nurse_encounter_index == -1) {
-      $first_initial_with_subsequents = $previous_encounters_data;
-      $second_initial_with_subsequents = [];
-    }
-    else {
-      $first_initial_with_subsequents = array_slice($previous_encounters_data, 0, $initial_nurse_encounter_index + 1);
-      $second_initial_with_subsequents = array_slice($previous_encounters_data, $initial_nurse_encounter_index + 1);
-    }
-    $initial_with_subsequents = empty($second_initial_with_subsequents) ? $first_initial_with_subsequents : $second_initial_with_subsequents;
-    $encounter_data['initial_with_subsequents'] = $initial_with_subsequents;
+    $encounter_data['initial_with_subsequents'] = hedley_reports_acute_illness_initial_with_subsequents($previous_encounters_data);
 
     $fever_at_symptoms = FALSE;
     if (!empty($measurements_by_type['symptoms_general'])) {
@@ -3938,6 +3919,29 @@ function hedley_reports_acute_illness_generate_expected_initial_activities(array
 }
 
 /**
+ * Resolves the earlier encounters that Acute Illness follow-up rules read.
+ *
+ * When a nurse takes over from CHWs, the nurse encounter is initial, and
+ * earlier CHW encounters are ignored.
+ *
+ * @param array $previous_encounters_data
+ *   The earlier encounters of the illness, oldest first.
+ *
+ * @return array
+ *   The encounters from the last initial nurse encounter on, or all of them.
+ */
+function hedley_reports_acute_illness_initial_with_subsequents(array $previous_encounters_data) {
+  $initial_index = 0;
+  foreach ($previous_encounters_data as $index => $data) {
+    if ($data['encounter_type'] == 'nurse-encounter') {
+      $initial_index = $index;
+    }
+  }
+
+  return array_slice($previous_encounters_data, $initial_index);
+}
+
+/**
  * Adds Malaria Testing as expected activity, if conditions match.
  *
  * @param array $encounter_data
@@ -3990,7 +3994,7 @@ function hedley_reports_acute_illness_add_expected_malaria_testing(array $encoun
     foreach ($initial_with_subsequents as $prev_encounter_data) {
       $prev_measurements_by_type = $prev_encounter_data['measurements_by_type'];
       if (!empty($prev_measurements_by_type['malaria_testing'])) {
-        $malaria_rapid_test_result = $prev_measurements_by_type['malaria_testing']->field_rapid_test_result[LANGUAGE_NONE][0]['value'];
+        $malaria_rapid_test_result = $prev_measurements_by_type['malaria_testing']->field_malaria_rapid_test[LANGUAGE_NONE][0]['value'];
         if (!empty($malaria_rapid_test_result)) {
           if (in_array($malaria_rapid_test_result, RDT_POSITIVE_VALUES)) {
             $diagnosed_with_malaria_previously = TRUE;
@@ -4721,7 +4725,8 @@ function hedley_reports_count_acute_illness_signs(array $values) {
  * @param object $participant
  *   The participant node object representing illness.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_well_child($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -4789,13 +4794,13 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     // If encounter type field is empty, we default to pediatric care.
@@ -4831,6 +4836,11 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
     $start_date_obj = $encounter_data['start_date_obj'];
@@ -6246,7 +6256,8 @@ function hedley_reports_generate_completion_data_for_home_visit_encounter($encou
  * @param object $participant
  *   The participant node object with which encounters are associated.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_child_scoreboard_encounter($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -6292,13 +6303,13 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
 
@@ -6322,6 +6333,11 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
     $expected = ['child_scoreboard_ncda'];
@@ -6723,7 +6739,8 @@ function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_w
  * @param object $participant
  *   The participant node object with which encounters are associated.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -6788,13 +6805,13 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
@@ -6812,6 +6829,11 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
     // Resolve encounter start date.
@@ -7293,7 +7315,8 @@ function hedley_reports_ncd_add_labs_results_activities(array &$expected, array 
  * @param object $participant
  *   The participant node object with which encounters are associated.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -7323,13 +7346,13 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
@@ -7347,6 +7370,11 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
     // Resolve encounter start date.
@@ -7443,7 +7471,8 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
  * @param object $participant
  *   The participant node object with which encounters are associated.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_tuberculosis($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -7474,13 +7503,13 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
@@ -7498,6 +7527,11 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
     // Resolve encounter start date.
@@ -7593,7 +7627,8 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
  * @param object $participant
  *   The participant node object representing pregnancy.
  * @param bool $exclude_set
- *   Indicate whether to exclude encounters with report data already set.
+ *   Whether to skip generating data for encounters that already have it.
+ *   Those encounters still count as history for later ones.
  */
 function hedley_reports_generate_completion_data_for_prenatal($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
@@ -7685,14 +7720,14 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
 
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
+  // Return before loading measurements when every encounter already has data.
+  if ($exclude_set && !hedley_reports_completion_data_missing($encounters)) {
+    return;
+  }
+
   $encounters_data = [];
   // Assembling needed data for each encounter.
   foreach ($encounters as $encounter) {
-    // Skip encounter if exclusion flag is raised and it's report data is set.
-    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
-      continue;
-    }
-
     // If encounter type field is empty, we default to 'nurse'.
     if (empty($encounter->field_prenatal_encounter_type)) {
       $encounter_type = 'nurse';
@@ -7738,6 +7773,11 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
+    // Encounters that already have data stay in the history, but their
+    // data is not generated again.
+    if ($exclude_set && hedley_reports_completion_data_is_set($encounter)) {
+      continue;
+    }
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
     // Resolve encounter start date.
@@ -10847,6 +10887,38 @@ function hedley_reports_generate_completion_result(array $expected, array $measu
   }
 
   return implode(',', $expected) . '|' . implode(',', $completed);
+}
+
+/**
+ * Checks whether completion data was already generated for an encounter.
+ *
+ * @param object $encounter
+ *   The encounter node.
+ *
+ * @return bool
+ *   TRUE if the encounter has completion data.
+ */
+function hedley_reports_completion_data_is_set($encounter) {
+  return !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value']);
+}
+
+/**
+ * Checks whether any of the encounters still needs completion data.
+ *
+ * @param array $encounters
+ *   The encounter nodes.
+ *
+ * @return bool
+ *   TRUE if at least one encounter has no completion data.
+ */
+function hedley_reports_completion_data_missing(array $encounters) {
+  foreach ($encounters as $encounter) {
+    if (!hedley_reports_completion_data_is_set($encounter)) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
 }
 
 /**

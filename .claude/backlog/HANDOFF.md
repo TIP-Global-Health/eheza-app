@@ -8,7 +8,13 @@ metadata:
   modified: 2026-09-14
 ---
 
+⏰ **Monitoring due — raise at the start of the survey on or after the date:** **B-514** 2026-11-19 (rerun the recurrence query in the entry on ihangane + vhw; user 2026-10-29: mention it when process-backlog runs that day) · **B-499** 2026-11-24 (second restore pass; harness lost, rebuild first).
+
+📦 **Next release: PR #2417** ("Developments starting October 25, 2026", `develop`→`main`, opened 2026-10-25). Its `### Post deploy instructions:` holds every post-deploy step; add new ones there. First entry: #2415 (B-185) + #2419 (B-507/B-508), the seven completion scripts run without `--exclude_set`. Merged to develop 2026-10-26: #2415, #2416 (#2147, HIV Progress Report tab hidden), #2419. Merged 2026-10-29: #2420, #2422, #2424, #2426, #2432–#2436 (none adds a post-deploy step).
+
 **B-496 root cause CONFIRMED (2026-10-18); scope = client fix + restore script in ONE item, both for the release deploying ≈ 2026-10-23/24 (user 2026-10-18); restore runs once post-deploy on a regenerated list.** The `HandleRevisions` download gate (`Backend/Update.elm` ≈2052-2062, 2548) swallows the device's own save revision when it lands during a sync download; reproduced ×2 on the demo site (control ×2 stored the diagnosis). Details, blast radius (nutrition assessments share the gate — unmeasured) and fix shape in the item. ⚠ **Environment changed for it:** local DDEV `db` is now the fresh DEMO site again (reinstalled via `ddev restart`); the ihangane live copy survives as DDEV snapshot `ihangane-copy-post-2128-trial` (8.3 GB, post-#2128-trial state) next to `pre-2128-trial`; `vhw_live` database untouched. The reinstall's `composer install` step failed (`sentry/sdk` missing from the lock file) — `sites/all/vendor` from before still has ramsey/twilio, only `logs_glitchtip` would miss sentry. Local `sites/default/settings.php` and `client/e2e/` were restored to clean after the run.
+
+🔭 **Round 45 ran 2026-10-26 → 10-27** (`rounds.md`): POST-DEPLOY measurement of v1.18.3 (deployed all sites 2026-10-25) on local copies of the pre- and post-deploy ihangane backups and a post-deploy vhw backup — **every #2128 post-deploy step landed exactly as predicted on both sites** (predicates re-applied → 0, nothing outside a predicate, 0 PHP watchdog rows on new code, queues drained), day-one render 0 SURPRISE on 32 readers, fleet silent (weekend deploy: no device wrote to ihangane 10-23 05:47 → 10-26 02:00). 6 new items, 0 tier 1/2: ⭐ **B-514** (tier 3, ⏳ MONITORING until 2026-11-19 per user 2026-10-29 — rerun the recurrence query in the entry; DEPLOYED, one live instance — the incident re-creation script made a `none` danger sign for an encounter that already held the CHW's `fever` one, and the nightly dedup soft-deleted the CHW's by vid; the repair of node 5386418 is your call), **B-509** (tier 3, ON RELEASE — #2417's full completion run re-revisions 179,226 encounters and queues ~95k recalcs, unmentioned in the step), B-513 (tier 4, AQ dedup race), B-510 (tier 4, incident details never cleared), TH-34. **Operational flags for you:** (a) robot uid 243 (`anatoly@gizra.com`) wrote a prenatal encounter + 6 measurements on **vhw production** on deploy day — smoke-test data left live; (b) re-created `well_child_height` 102056 on vhw is 0 cm and downloads to devices; (c) robot 3987 (Runyonza CHW) updated to v1.18.3 and now reports no synced authorities — look at that tablet; (d) ⏰ **B-499's per-build question needs the first ihangane backup after a working day** — rerun `scratchpad/r45/unit2` on it; (e) 2026-10-29: snapshots `ihangane-copy-post-2128-trial` + `pre-2128-trial` deleted; the `r45/dumps/` and B-499's harness were lost in the 2026-10-28 reboot; `ihangane_pre`, `ihangane_post`, `vhw_post`, `vhw_live` (~112 GB) are to be dropped by the user (auto mode blocks `DROP DATABASE`). Counts after R45: 277 READY — T1 0 · T2 1 · T3 66 · T4 175 · untiered 35. Dry-stop counter: 0.
 
 # Session handoff — E-Heza improvement work
 
@@ -46,7 +52,12 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
-## Open right now — updated 2026-10-22 (no backlog PR open; #2411, #2409, #2407 merged today)
+## Open right now — updated 2026-10-29 (no backlog PR open; all nine PRs opened 2026-10-26..28 merged today)
+
+✅ **Merged 2026-10-29 with `--delete-branch` (user: "merge all PRs"), all CI green, all threads resolved:** #2420 `6cc375d61` (issue #2225, declined prenatal lab test shows its reason; QA approved), #2422 `c3fe69036` (B-168, issue #2421; QA approved), #2424 `2acec37d7` (B-261, issue #2423), #2426 `280ed1d3b` (B-322, issue #2425), #2432 `7bb68d410` (B-301, issue #2427; QA approved), #2433 `a520bf057` (B-456, issue #2428), #2434 `179e7a795` (B-410, issue #2429), #2435 `42e72fb65` (B-023, issue #2430), #2436 `99853ca46` (B-082 + B-091, issue #2431). No post-deploy steps. Issues stay open — `develop` target; close them in the release sweep. All branches deleted, no worktrees left.
+  - #2426 conflicted after the others landed: `Measurement/Test.elm` import list (`NutritionAssessment(..)` from #2426, `PartnerHIVTestValue` from #2420). Kept both; Measurement tests 159/159 pass, elm-format clean. The merge commit carried `[ci skip]`, so CI did not run on that final head.
+  - B-168: keep the nightly EDD script running until devices take the fixed worker.
+  - Side findings still open from these PRs: B-512, B-516, B-517 (B-515 → PR #2444). B-404 CLOSED (already fixed by `e646392ad`).
 
 ✅ **Merged 2026-10-22 (user: "Merge #2411, #2409, #2407"):** #2411 `7e84e4d8c` (B-386), #2409 `bde8002e4` (B-254, mitigates B-369), #2407 `ebd76e193` (B-436). All three green, no overlap with develop since branching (server bundle safe); every head is an ancestor of `origin/develop`. Issues #2406, #2408, #2410 stay open — `develop` target; close them in the release sweep. Worktrees released, branches deleted. Round 2 settled on all three; QA: #2409 short pass PASS, #2407 slow-reply run (2 of 3 scenarios PASS, superseded failure unit-tested only), #2411 none (labels only); no `Ready for QA` label on any. Side-finding logged: B-505 (double general acceptance).
 
@@ -308,7 +319,7 @@ Checked every PR merged from the `v1.18.0` cut (2026-07-07) to today, 160 of the
 
 - **Released PRs: 34 in `v1.18.1` + 3 in `v1.18.2`, and every issue they deliver is CLOSED.** Zero overdue. The post-release sweeps were done properly, in both windows.
 - **40 issues are open because they are delivered on `develop` only**, awaiting the next release. That is the normal state here: PRs merge to `develop`, which is not the default branch, so `Fixes #N` never auto-closes (see `release-issue-reconciliation` in memory).
-- The next release is the open **#2128** (`develop`→`main`, opened 2026-08-21, now **326 commits** ahead). Its sweep closes those 40.
+- #2128 merged to `main` on 2026-10-25; the next release is **#2417** (opened 2026-10-25). The release sweep for #2128 closes those 40.
 - **4 of the 160 PRs carry no issue reference, all legitimately**: #2132 (Drupal core 7.106), #2125 (QA tooling skill), #2091 (the CLAUDE.md duplication rule), #1918 (the previous release PR).
 
 ⚠ **Judgment cases for whoever runs the next sweep — do NOT blind-close these four:**

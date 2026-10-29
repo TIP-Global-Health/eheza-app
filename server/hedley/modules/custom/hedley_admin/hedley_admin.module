@@ -146,7 +146,8 @@ function hedley_admin_vbo_export_csv($variables) {
     fputcsv($handle, $row);
   }
   rewind($handle);
-  $csv_output = '';
+  // The leading byte-order mark makes Excel read the file as UTF-8.
+  $csv_output = "\xEF\xBB\xBF";
   while (!feof($handle)) {
     $csv_output .= fread($handle, 8192);
   }
@@ -617,7 +618,8 @@ function hedley_admin_resilience_survey_export_csv($form, &$form_state) {
   drupal_add_http_header('Pragma', 'no-cache');
   drupal_add_http_header('Cache-Control', 'must-revalidate, post-check=0, pre-check=0');
 
-  echo $csv_output;
+  // The leading byte-order mark makes Excel read the file as UTF-8.
+  echo "\xEF\xBB\xBF" . $csv_output;
   exit;
 }
 

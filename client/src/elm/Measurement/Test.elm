@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Measurement.Model
     exposing
         ( BloodSmearResult(..)
+        , ChildNutritionSign(..)
         , ColorAlertIndication(..)
         , CreatinineTestValue
         , HeightInCm(..)
@@ -11,6 +12,8 @@ import Backend.Measurement.Model
         , MalariaTestValue
         , MuacInCm(..)
         , NCDASign(..)
+        , NutritionAssessment(..)
+        , PartnerHIVTestValue
         , SkippedForm(..)
         , StuntingLevel(..)
         , TestExecutionNote(..)
@@ -24,7 +27,7 @@ import Backend.Measurement.Model
 import Date exposing (Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -32,6 +35,7 @@ import Measurement.Utils
         , bloodGlucoseOutOfRange
         , bornUnderweightByBirthWeight
         , creatinineResultFormWithDefault
+        , generateIndividualNutritionAssessmentEntries
         , getAllDosesForVaccine
         , getInputConstraintsHeight
         , getInputConstraintsMuac
@@ -50,6 +54,7 @@ import Measurement.Utils
         , ncdaMeasurementsOutOfRange
         , nextVaccinationDataForVaccine
         , outOfRangeAsEntered
+        , partnerHIVResultFormWithDefault
         , rdtKnownAsPositiveUpdate
         , rdtTestPerformedUpdate
         , setNCDAStep
@@ -773,6 +778,30 @@ savedLiverFunctionTest =
     }
 
 
+{-| The lab technician reopens a partner HIV test they declined because the
+partner was not present.
+-}
+partnerHIVResultFormNotPresentTest : Test
+partnerHIVResultFormNotPresentTest =
+    let
+        saved : PartnerHIVTestValue
+        saved =
+            { executionNote = TestNoteNotPresent
+            , executionDate = Just (Date.fromCalendarDate 2024 Time.Jan 1)
+            , testPrerequisites = Nothing
+            , testResult = Nothing
+            , hivSigns = Nothing
+            }
+    in
+    describe "partnerHIVResultFormWithDefault, on a partner who was not present"
+        [ test "shows the test will not be performed today" <|
+            \_ ->
+                partnerHIVResultFormWithDefault emptyPartnerHIVResultForm (Just saved)
+                    |> .runConfirmedByLabTech
+                    |> Expect.equal (Just False)
+        ]
+
+
 liverFunctionResultFormWithDefaultTest : Test
 liverFunctionResultFormWithDefaultTest =
     let
@@ -1049,10 +1078,58 @@ bloodSmearOrderedTest =
         ]
 
 
+generateIndividualNutritionAssessmentEntriesTest : Test
+generateIndividualNutritionAssessmentEntriesTest =
+    let
+        date =
+            Date.fromCalendarDate 2026 Oct 1
+
+        entriesForSignsTapped signs =
+            generateIndividualNutritionAssessmentEntries
+                [ { nutrition =
+                        Just
+                            ( ()
+                            , { dateMeasured = date
+                              , value =
+                                    { signs = EverySet.fromList signs
+                                    , assesment = EverySet.singleton (AssesmentMalnutritionSigns signs)
+                                    }
+                              }
+                            )
+                  , followUp =
+                        Just
+                            ( ()
+                            , { dateMeasured = date
+                              , value =
+                                    { options = EverySet.empty
+                                    , resolutionDate = Nothing
+                                    , assesment = EverySet.singleton (AssesmentMalnutritionSigns [ Apathy, Edema ])
+                                    }
+                              }
+                            )
+                  }
+                ]
+
+        expected =
+            [ ( date, [ AssesmentMalnutritionSigns [ Apathy, Edema ] ] ) ]
+    in
+    describe "generateIndividualNutritionAssessmentEntries"
+        [ test "signs tapped in sorted order give one malnutrition signs entry" <|
+            \_ ->
+                entriesForSignsTapped [ Apathy, Edema ]
+                    |> Expect.equal expected
+        , test "signs tapped in reverse order give one malnutrition signs entry" <|
+            \_ ->
+                entriesForSignsTapped [ Edema, Apathy ]
+                    |> Expect.equal expected
+        ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
         [ nextVaccinationDataForVaccineTest
+        , generateIndividualNutritionAssessmentEntriesTest
         , viewChildFormsTest
         , viewMotherFormsTest
         , viewColorAlertIndicationTest
@@ -1073,6 +1150,7 @@ all =
         , heightFormWithDefaultSkippedTest
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
+        , partnerHIVResultFormNotPresentTest
         , malariaResultFormWithDefaultTest
         , malariaResultFormBloodSmearTakenTest
         , malariaResultFormSmearResultTest
