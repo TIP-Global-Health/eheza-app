@@ -13,6 +13,7 @@ import Backend.Measurement.Model
         , MuacInCm(..)
         , NCDASign(..)
         , NutritionAssessment(..)
+        , PartnerHIVTestValue
         , SkippedForm(..)
         , StuntingLevel(..)
         , TestExecutionNote(..)
@@ -26,7 +27,7 @@ import Backend.Measurement.Model
 import Date exposing (Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -53,6 +54,7 @@ import Measurement.Utils
         , ncdaMeasurementsOutOfRange
         , nextVaccinationDataForVaccine
         , outOfRangeAsEntered
+        , partnerHIVResultFormWithDefault
         , rdtKnownAsPositiveUpdate
         , rdtTestPerformedUpdate
         , setNCDAStep
@@ -776,6 +778,30 @@ savedLiverFunctionTest =
     }
 
 
+{-| The lab technician reopens a partner HIV test they declined because the
+partner was not present.
+-}
+partnerHIVResultFormNotPresentTest : Test
+partnerHIVResultFormNotPresentTest =
+    let
+        saved : PartnerHIVTestValue
+        saved =
+            { executionNote = TestNoteNotPresent
+            , executionDate = Just (Date.fromCalendarDate 2024 Time.Jan 1)
+            , testPrerequisites = Nothing
+            , testResult = Nothing
+            , hivSigns = Nothing
+            }
+    in
+    describe "partnerHIVResultFormWithDefault, on a partner who was not present"
+        [ test "shows the test will not be performed today" <|
+            \_ ->
+                partnerHIVResultFormWithDefault emptyPartnerHIVResultForm (Just saved)
+                    |> .runConfirmedByLabTech
+                    |> Expect.equal (Just False)
+        ]
+
+
 liverFunctionResultFormWithDefaultTest : Test
 liverFunctionResultFormWithDefaultTest =
     let
@@ -1124,6 +1150,7 @@ all =
         , heightFormWithDefaultSkippedTest
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
+        , partnerHIVResultFormNotPresentTest
         , malariaResultFormWithDefaultTest
         , malariaResultFormBloodSmearTakenTest
         , malariaResultFormSmearResultTest

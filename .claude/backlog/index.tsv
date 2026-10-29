@@ -20,7 +20,7 @@ B-019	3	PARKED					hedley_view_export requeue path missing switchUserBack
 B-020	1	PARKED					Stats recalc non-atomic → dashboard blanks/stale for an HC
 B-021	4	READY	LOW				Unbatched soft-delete cascade can time out (CORRECTED: availability only, atomic rollback)
 B-022	4	CLOSED					i18n objective leftover: Kirundi prose in `english` field
-B-023	4	READY				10	Stale merge-conflict "REVIEW:" comment committed on develop
+B-023	4	IMPLEMENTED		2430	2435	10	Stale merge-conflict "REVIEW:" comment committed on develop
 B-024	2	IMPLEMENTED		1937	1938	10	4 of 5 progress-report pages never fetch health centers → Next-Appointment "Location" renders blank
 B-025	1	IMPLEMENTED	HIGH	1888	1889	10	Upload lanes wedge the WHOLE sync cycle permanently when the JS handler dies without replying
 B-026	1	IMPLEMENTED	HIGH	1898	1899	10	Deferred-photo download lane wedges permanently on mid-body network drop
@@ -79,7 +79,7 @@ B-078	4	READY				16	NCDA scorecard: `continue` on empty Vitamin A skips the MUAC
 B-079		CLOSED				16	Demographics report 50-year age-band gap (person exactly 50.0y dropped from totals)
 B-080	4	REFUTED				16	`hedley_device_assign_shards` education_session edit branch leaves `$shards` undefined (PHP notice)
 B-081	4	CLOSED				16	CLAUDE.md doc drift (one doc PR): feature-flag names + missing flag + stale CI-job count
-B-082	4	READY				16	`SaveMotherFbf` inserts into a copy of the WRONG tracker dict
+B-082	4	IMPLEMENTED		2431	2436	16	`SaveMotherFbf` inserts into a copy of the WRONG tracker dict
 B-083		READY				16	HC-level stock view counts village-tagged stock updates as receipts
 B-084	3	IMPLEMENTED			1979	16	Shared `viewNumberInput` accepts hand-typed negatives (HTML min="0" only)
 B-085	4	READY				16	Person shards not recomputed on health-center change
@@ -88,7 +88,7 @@ B-087	3	PARKED				16	view_export worker returns permanent FAILURE when the final
 B-088	4	READY				16	No `hook_node_delete` in hedley_ncda / hedley_reports / hedley_stats → hard-delete (super_user_mode only) leaves stale a
 B-089	4	IMPLEMENTED		2202	2200	16	Kirundi `MissedDosesOfMedication` missing leading space ("3y'imiti")
 B-090	4	READY				16	Stats case-management "month 13" cutoff not midnight-anchored
-B-091	4	READY				16	Prenatal syphilis medication guard omits `syphilisAdverseEventsHospitalization`
+B-091	4	IMPLEMENTED		2431	2436	16	Prenatal syphilis medication guard omits `syphilisAdverseEventsHospitalization`
 B-092	4	READY				16	a11y PR1: shared/shell primitives (~30 sites: `Pages/Utils` viewAlert :1154 / viewPhotoThumb :1249 / exclamation :1356, 
 B-093	4	READY				16	a11y PR2: group-session flow (~34 sites: Attendance/Activities/Participants nav tabs + check-in/out toggles, EducationSe
 B-094	4	READY				16	a11y PR3: Prenatal + NCD (~27 sites: 13 imgs incl. ProgressReport timeline icons, 14 back-links incl. span-onClick varia
@@ -258,7 +258,7 @@ B-257	4	READY	LOW			25	Duplicate-patient lookup is triggered by any text field o
 B-258	4	READY	LOW			25	Person edit page never fetches relationships, so after a page reload an address change silently skips the children
 B-259	4	IMPLEMENTED	LOW	2267	2269	25	A freshly opened person form greets the nurse with "Person has been saved"
 B-260	4	READY	LOW			25	Strict decoders on optional stats values: two dashboard enum sites lack the fallback their siblings have, and one requir
-B-261	4	READY	LOW			25	Dashboard case-management table: columns are sorted by bare month number, so they come out of order when the stats month
+B-261	4	IMPLEMENTED	LOW	2423	2424	25	Dashboard case-management table: columns are sorted by bare month number, so they come out of order when the stats month
 B-262	4	READY	LOW			25	Person-counting cards that count participants or measurements instead of people (three siblings, one family)
 B-263	4	READY	LOW			25	Dashboard's copy of the vaccination-progress builder drops DTP-standalone after a fourth dose date, so the Burundi immun
 B-264	3	READY	MED-LOW			25	Dashboard monthly charts divide a case-management numerator by a beneficiaries denominator from a different population
@@ -298,7 +298,7 @@ B-297	4	READY	LOW			27	Group sessions: nothing has closed a session since mid-20
 B-298	4	READY	MED-LOW			27	Group measurement forms: the save button's double-submission guard and error indication are dead — `EditableSession.upda
 B-299	3	IMPLEMENTED	MED-LOW	2186	2187	27	Stock Management (CHW village): a saved stock update never reaches the village view in-session — the revision path updat
 B-300	4	READY	MED-LOW			27	Stock Management (CHW village): the monthly data is computed as soon as measurements load, without waiting for the villa
-B-301	4	READY	LOW			27	Stock Management: the oldest history row opens month details at gap 12 while the clamp is 11, and the back arrow then pa
+B-301	4	IMPLEMENTED	LOW	2427	2432	27	Stock Management: the oldest history row opens month details at gap 12 while the clamp is 11, and the back arrow then pa
 B-302	4	READY	LOW			27	Stock Management (CHW village): the computed data cache is keyed by health center but holds one village's figures — a CH
 B-303	3	IMPLEMENTED	MED	2181	2183	27	Translate: clinical-content translation errors batch — wrong dosage, wrong instruction, collapsed screening options, wro
 B-304	3	IMPLEMENTED	MED-LOW	2182	2183	27	Translate: copied-neighbor label batch — a lab/service/category label answers the WRONG English source (10 sites, each v
@@ -319,7 +319,7 @@ B-318	2	IMPLEMENTED	MED	2290	2291	28	Sync: the dashboard-statistics download has
 B-319	1	IMPLEMENTED	MED	2223	2224	28	Prenatal labs (lab technician): a blood-smear order opens pre-answered "test will NOT be performed today" with the nurse
 B-320	1	IMPLEMENTED	MED	2211	2212	28	Prenatal HIV test: correcting to "known as positive" after a negative RDT keeps the result and the partner answers, so t
 B-321	4	READY	LOW			28	NCD Laboratory (urine dipstick, creatinine, liver function, lipid panel): re-saving a test task after its results were e
-B-322	4	READY	LOW			28	Child progress report, Diagnosis pane: "Malnutrition signs" is listed twice for one date, because the nutrition-derived 
+B-322	4	IMPLEMENTED	LOW	2425	2426	28	Child progress report, Diagnosis pane: "Malnutrition signs" is listed twice for one date, because the nutrition-derived 
 B-323	1	IMPLEMENTED	MED	2209	2210	28	Prenatal: a partner HIV result entered by a LAB TECHNICIAN produces no discordant-partnership diagnosis at all, because 
 B-324	1	IMPLEMENTED	MED-LOW	2217	2218	29	Acute Illness diagnosis: on a site without Tuberculosis Management, a COVID-suspect patient with a cough of more than tw
 B-325	2	PARKED	MED-HIGH			29	🅿 **PARKED (user, 2026-09-23): "park"** — said after the frequency estimate (7-day live census: roughly 1–3 lost uploads
@@ -401,13 +401,13 @@ B-400	4	READY	LOW			34	The Well Child "Vitals skip round-trip" e2e test passes w
 B-401	4	READY	LOW			34	Eight e2e backend checks skip the async-write retry every sibling call site uses, so a lagging write fails the test
 B-402	4	READY	LOW			34	A test comment records a "FINDING" that is false — the Labs tab's glucose ranges are not swapped — and two test cases ar
 B-403	4	READY	LOW			34	The `HandleRevisions` re-assessment dispatch has no test and cannot get one the usual way, so dropping a revision from B
-B-404	4	READY	LOW			34	`minify`'s uglify error handler has no `isPublishing` guard, so `gulp publish` still cannot report a minification failur
+B-404	4	CLOSED	LOW			34	`minify`'s uglify error handler has no `isPublishing` guard, so `gulp publish` still cannot report a minification failur
 B-405	4	READY	LOW			34	The production build runs image optimisation and then throws the result away: all 302 deployed images are byte-identical
 B-406	4	READY	LOW			34	Every precache revision in the shipped service worker is the hash of the file *before* minification, so a minifier-only 
 B-407	4	READY	LOW			34	`.ddev/config.local.yaml.example` is not in the "default state" both deploy skills tell the operator to expect, so a sta
 B-408	4	READY	LOW			34	Both deploy skills run their clean-tree and terminus preflight checks before the `ddev restart` that invalidates them
 B-409	4	REFUTED	LOW			34	The native install/reset/upgrade scripts end with a bootstrap check that is missing its pipe, so a fully successful run 
-B-410	4	READY	LOW			34	`generateReleaseNotes` drops all GitHub enrichment when `origin` is an HTTPS remote, because it reads the org and repo f
+B-410	4	IMPLEMENTED	LOW	2429	2434	34	`generateReleaseNotes` drops all GitHub enrichment when `origin` is an HTTPS remote, because it reads the org and repo f
 B-411	4	READY	LOW			34	`server/scripts/setup-dev` writes Drupal's settings files to the repository root instead of the docroot
 B-412	4	READY	LOW			34	Three exported field instances permit a shape the client decoder or the sync query cannot survive — the same poison-reco
 B-413	3	READY	MED			34	Every admin content list and CSV export shows soft-deleted content as live, because the views filter `node.status` and n
@@ -453,7 +453,7 @@ B-452	1	IMPLEMENTED		2328	2329	39	Prenatal obstetric history: correcting step 1 
 B-453	1	PARKED	LOW			39	Prenatal postpartum mastitis: a mother who is NOT breastfeeding because of breast pain or breast redness is never diagno
 B-454	1	IMPLEMENTED	LOW	2330	2331	39	NCD labs: a random blood sugar test sent to the lab, then corrected to "not performed", keeps "result from the lab" in i
 B-455	4	WONTFIX	LOW			39	Prenatal labs: a Hepatitis B test run at point of care, then corrected to "known as positive", still saves the result of
-B-456	4	READY	LOW			39	Admin reports CSV download: the file has no byte-order mark and always separates with a comma, so Excel can garble accen
+B-456	4	IMPLEMENTED	LOW	2428	2433	39	Admin reports CSV download: the file has no byte-order mark and always separates with a comma, so Excel can garble accen
 B-457	4	CLOSED	LOW		2391	39	Admin Elm app (`server/elm`): no unit tests can be written, because it has no elm-test setup, so pure helpers such as th
 B-458	4	READY	LOW			39	Admin content: outside super user mode, three more ways to delete or unpublish a node are still offered and always fail 
 B-459	1	PARKED	LOW			38	Prenatal diagnosis: a treated malaria found again at a different anemia level is filed as a new episode, and "treated" m
@@ -509,6 +509,12 @@ B-508	4	IMPLEMENTED	LOW	2418	2419	0	Completion report: Acute Illness follow-ups 
 B-509	3	READY	MED-LOW			45	Completion report full run (#2417's post-deploy step): every encounter of seven programs gets a new revision, so every d
 B-510	4	READY	LOW			45	Sync incidents: a user's incident details naming only entities that already exist are never cleared, by the live save pa
 B-511	4	READY	LOW		2422	45	Service worker: while the database version differs from `dbVerno`, every request opens a new connection and never closes
+B-512	4	READY	LOW			45	Nutrition assessment: a "malnutrition-signs" assessment is stored with "none" as its only sign, so the screens show "Mal
+B-513	4	READY	LOW			45	Statistical Queries per-person data: a measurement saved while the person's recalculation is already running is never re
+B-514	3	READY	MED-LOW			45	Sync-incident re-creation + nightly measurement dedup: a re-created measurement for an encounter that already holds one 
+B-515	4	READY	LOW		2433	45	Admin content CSV links (children, clinics, mothers, measurements): the file has no byte-order mark, so Excel garbles ac
+B-516	4	READY	LOW		2434	45	Release notes: no issue title is fetched for a PR from a `B-…` (or any non-numeric) branch, and GitHub API errors read a
+B-517	4	READY	LOW		2436	45	Group session: about 20 per-person `save*Request` trackers are filled on every save and never read
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

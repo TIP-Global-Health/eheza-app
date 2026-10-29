@@ -8,6 +8,7 @@ import Backend.Measurement.Model
         ( AdministrationNote(..)
         , BloodSmearResult(..)
         , HIVTestValue
+        , HemoglobinTestValue
         , HepatitisBTestValue
         , LaboratoryTest(..)
         , LabsResultsValue
@@ -37,9 +38,11 @@ import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..),
 import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Utils
     exposing
-        ( laboratoryResultTaskCompleted
+        ( laboratoryResultNotPerformed
+        , laboratoryResultTaskCompleted
         , nextStepsTaskCompleted
         , resolveLaboratoryResultFollowUpsTasks
+        , resolveLaboratoryResultTasks
         , resolveNextStepsTasks
         )
 import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, resolveMedicationDistributionInputsAndTasks, resolveRequiredMedicationsSet)
@@ -509,6 +512,148 @@ laboratoryResultTaskCompletedKnownAsPositiveTest =
         )
 
 
+{-| Tests sent to the lab, as the nurse's Lab Results reads them after the lab
+technician answered.
+-}
+laboratoryResultNotPerformedTest : Test
+laboratoryResultNotPerformedTest =
+    let
+        sentToLab =
+            Just (EverySet.singleton NoTestPrerequisites)
+
+        hemoglobinWith executionNote hemoglobinCount =
+            let
+                value : HemoglobinTestValue
+                value =
+                    { executionNote = executionNote
+                    , executionDate = Just currentDate
+                    , testPrerequisites = sentToLab
+                    , hemoglobinCount = hemoglobinCount
+                    }
+            in
+            { emptyPrenatalMeasurements | hemoglobinTest = TestFixtures.wrapMeasurement currentDate value }
+
+        partnerHIVNotPresent =
+            let
+                value : PartnerHIVTestValue
+                value =
+                    { executionNote = TestNoteNotPresent
+                    , executionDate = Just currentDate
+                    , testPrerequisites = sentToLab
+                    , testResult = Nothing
+                    , hivSigns = Nothing
+                    }
+            in
+            { emptyPrenatalMeasurements | partnerHIVTest = TestFixtures.wrapMeasurement currentDate value }
+
+        -- Saving any HIV answer puts the test on the follow up list, a
+        -- decline included.
+        hivDeclinedOnFollowUpList =
+            let
+                declined =
+                    hivTestValueWith TestNoteLackOfReagents Nothing Nothing
+
+                measurements =
+                    measurementsWith [ TestHIV ] Nothing Nothing
+            in
+            { measurements | hivTest = TestFixtures.wrapMeasurement currentDate { declined | testPrerequisites = sentToLab } }
+
+        hivDeclinedHoldingResult =
+            let
+                declined =
+                    hivTestValueWith TestNoteLackOfReagents (Just TestPositive) Nothing
+
+                measurements =
+                    measurementsWith [ TestHIV ] Nothing Nothing
+            in
+            { measurements | hivTest = TestFixtures.wrapMeasurement currentDate { declined | testPrerequisites = sentToLab } }
+
+        smearOrderedWithRapidTestResult =
+            let
+                measurements =
+                    measurementsWithMalariaTest TestNoteRunToday BloodSmearPendingInput
+
+                withRapidTestResult value =
+                    { value | testResult = Just TestNegative }
+            in
+            { measurements
+                | malariaTest =
+                    getMeasurementValueFunc measurements.malariaTest
+                        |> Maybe.andThen (withRapidTestResult >> TestFixtures.wrapMeasurement currentDate)
+            }
+
+        resolve task measurements =
+            laboratoryResultNotPerformed (testAssembled measurements) task
+
+        declinedFor reason holdsResult =
+            Just { executionDate = Just currentDate, holdsResult = holdsResult, reason = reason }
+    in
+    describe "a test the lab technician declined"
+        [ test "gives their reason" <|
+            \_ ->
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteLackOfReagents Nothing)
+                    |> Expect.equal (declinedFor TestNoteLackOfReagents False)
+        , test "gives their reason, and says when a result is stored anyway" <|
+            \_ ->
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteLackOfReagents (Just 11))
+                    |> Expect.equal (declinedFor TestNoteLackOfReagents True)
+        , test "a test the lab technician ran gives no reason" <|
+            \_ ->
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteRunConfirmedByLabTech Nothing)
+                    |> Expect.equal Nothing
+        , test "a test still waiting for the lab gives no reason" <|
+            \_ ->
+                resolve TaskHemoglobinTest (hemoglobinWith TestNoteRunToday Nothing)
+                    |> Expect.equal Nothing
+        , test "partner not present is a reason" <|
+            \_ ->
+                resolve TaskPartnerHIVTest partnerHIVNotPresent
+                    |> Expect.equal (declinedFor TestNoteNotPresent False)
+        , test "partner not present completes the nurse's task" <|
+            \_ ->
+                laboratoryResultTaskCompleted False (testAssembled partnerHIVNotPresent) TaskPartnerHIVTest
+                    |> Expect.equal True
+        , test "an HIV test on the follow up list is shown to the nurse" <|
+            \_ ->
+                resolveLaboratoryResultTasks False (testAssembled hivDeclinedOnFollowUpList)
+                    |> List.member TaskHIVTest
+                    |> Expect.equal True
+        , test "an HIV test has no follow up questions" <|
+            \_ ->
+                resolveLaboratoryResultFollowUpsTasks (testAssembled hivDeclinedOnFollowUpList)
+                    |> Expect.equal []
+        , test "an HIV test holding a result is not shown at Lab Results" <|
+            \_ ->
+                resolveLaboratoryResultTasks False (testAssembled hivDeclinedHoldingResult)
+                    |> List.member TaskHIVTest
+                    |> Expect.equal False
+        , test "an HIV test holding a result keeps its follow up questions" <|
+            \_ ->
+                resolveLaboratoryResultFollowUpsTasks (testAssembled hivDeclinedHoldingResult)
+                    |> Expect.equal [ TaskHIVTest ]
+        , test "a blood smear gives their reason" <|
+            \_ ->
+                resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteLackOfReagents BloodSmearNotTaken)
+                    |> Expect.equal (declinedFor TestNoteLackOfReagents False)
+        , test "a blood smear still waiting for the lab gives no reason, though the rapid test has one" <|
+            \_ ->
+                resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteLackOfReagents BloodSmearPendingInput)
+                    |> Expect.equal Nothing
+        , test "a blood smear still waiting for the lab is not complete, though a rapid test result is stored" <|
+            \_ ->
+                laboratoryResultTaskCompleted False (testAssembled smearOrderedWithRapidTestResult) TaskMalariaTest
+                    |> Expect.equal False
+        , test "a blood smear the lab technician read gives no reason" <|
+            \_ ->
+                resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteRunConfirmedByLabTech BloodSmearNegative)
+                    |> Expect.equal Nothing
+        , test "a blood smear the nurse read gives no reason, though the rapid test has one" <|
+            \_ ->
+                resolve TaskMalariaTest (measurementsWithMalariaTest TestNoteLackOfReagents BloodSmearNegative)
+                    |> Expect.equal Nothing
+        ]
+
+
 {-| Hypertension diagnosed at an earlier visit, treated with Methyldopa 2x a
 day. Today's BP is normal, so the recommendation is to keep that dose; the
 nurse chose 3x a day and gave no reason.
@@ -594,6 +739,7 @@ all : Test
 all =
     describe "Pages.Prenatal.RecurrentActivity.Utils"
         [ laboratoryResultTaskCompletedKnownAsPositiveTest
+        , laboratoryResultNotPerformedTest
         , laboratoryResultTaskCompletedMalariaTest
         , nextStepsHealthEducationExpectedTest
         , nextStepsMedicationDistributionCompletedTest

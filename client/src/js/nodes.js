@@ -18,7 +18,6 @@
     // As we defined Dexie's store in app.js, we'll need to redefine tables properties here.
     // Since we don't know exactly when the DB will be ready, we define DB placeholder here.
     var dbSync = null;
-    var db = null;
 
     // This defines our URL scheme. A URL will look like
     //
@@ -43,65 +42,81 @@
         }
     });
 
+    // The opening in progress, shared by every request that arrives meanwhile.
+    var dbOpening = null;
+
+    // Opens the database and sets `dbSync` only once it is ready.
+    // Resolves to false while the app has not created the database yet.
+    async function openSyncDb () {
+        if (!await Dexie.exists('sync')) {
+            return false;
+        }
+
+        var instance = new Dexie('sync');
+        await instance.open();
+        instance.tables.forEach(function (table) {
+            instance[table.name] = table;
+        });
+
+        // This hook is activated as a result of new content being created on device.
+        instance.shards.hook('creating', function (primKey, obj, trans) {
+            if (obj.type === 'person') {
+                if (typeof obj.label == 'string') {
+                    obj.name_search = gatherWords(obj.label);
+                }
+            }
+        });
+
+        // This hook is activated as a result of content being edited on device.
+        instance.shards.hook('updating', function (mods, primKey, obj, trans) {
+            if (obj.type === 'person') {
+                if (mods.hasOwnProperty("label")) {
+                    if (typeof mods.label == 'string') {
+                        return {
+                            name_search: gatherWords(mods.label)
+                        };
+                    } else {
+                        return {
+                            name_search: []
+                        };
+                    }
+                } else {
+                    return {
+                        name_search: gatherWords(obj.label)
+                    };
+                }
+            }
+        });
+
+        // A hook to create matching row in `authorityPhotoUploadChanges`, if entity has a photo.
+        instance.shardChanges.hook('creating', function (primKey, obj, transaction) {
+            const self = this;
+            return addPhotoUploadChanges(self, instance.authorityPhotoUploadChanges, obj);
+        });
+
+        dbSync = instance;
+
+        return true;
+    }
+
     async function handleEvent(event, url, type, uuid) {
         var notFoundResponse = new Response('', {
             status: 404,
             statusText: 'Not Found'
         });
 
-        // If placeholder still indicates tha DB was not initialized,
-        // or version of initialized DB is not as we expect,
-        // initialize it.
+        // Requests that arrive while the database is being opened wait for that
+        // opening, so they share its connection instead of opening their own.
         if (dbSync === null || dbSync.verno != dbVerno) {
-            // Check if IndexedDB exists.
-            var dbExists = await Dexie.exists('sync');
-            if (!dbExists) {
-              // Skip any further actions, if it's not.
-              return notFoundResponse;
+            if (dbOpening === null) {
+                dbOpening = openSyncDb().finally(function () {
+                    dbOpening = null;
+                });
             }
 
-            // Redefine tables properties.
-            dbSync = new Dexie('sync');
-            db = await dbSync.open();
-            db.tables.forEach(function(table) {
-                dbSync[table.name] = table;
-            });
-
-            // This hook is activated as a result of new content being created on device.
-            dbSync.shards.hook('creating', function (primKey, obj, trans) {
-              if (obj.type === 'person') {
-                if (typeof obj.label == 'string') {
-                  obj.name_search = gatherWords(obj.label);
-                }
-              }
-            });
-
-            // This hook is activated as a result of content being edited on device.
-            dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
-              if (obj.type === 'person') {
-                if (mods.hasOwnProperty("label")) {
-                  if (typeof mods.label == 'string') {
-                    return {
-                      name_search: gatherWords(mods.label)
-                    };
-                  } else {
-                    return {
-                      name_search: []
-                    };
-                  }
-                } else {
-                  return {
-                    name_search: gatherWords(obj.label)
-                  };
-                }
-              }
-            });
-
-            // A hook to create matching row in `authorityPhotoUploadChanges`, if entity has a photo.
-            dbSync.shardChanges.hook('creating', function (primKey, obj, transaction) {
-                const self = this;
-                return addPhotoUploadChanges(self, dbSync.authorityPhotoUploadChanges, obj);
-            });
+            if (!await dbOpening) {
+                return notFoundResponse;
+            }
         }
 
         if (event.request.method === 'GET') {
@@ -248,12 +263,10 @@
                 return request.json().catch(jsonError).then(function (json) {
                     return table.update(uuid, json).catch(databaseError).then(function () {
                         return sendRevisedNode(table, uuid).then(function () {
-                            // For hooks to be able to work, we need to declare the
-                            // tables that may be altered due to a change. In this case
-                            // We want to allow adding pending upload photos.
-                            // See for example dbSync.nodeChanges.hook().
+                            // The photo upload table is included for the `shardChanges` 'creating'
+                            // hook in openSyncDb(), which adds pending photo uploads.
                             var tableName = table.name;
-                            return db.transaction('rw', tableName, dbSync.nodeChanges, dbSync.shardChanges,  dbSync.authorityPhotoUploadChanges, function() {
+                            return table.db.transaction('rw', tableName, table.db.nodeChanges, table.db.shardChanges, table.db.authorityPhotoUploadChanges, function() {
                                 return table.get(uuid).catch(databaseError).then(function (node) {
                                     if (node) {
                                         var body = JSON.stringify({
@@ -278,11 +291,11 @@
                                             isSynced: 0
                                         };
 
-                                        var changeTable = dbSync.nodeChanges;
+                                        var changeTable = table.db.nodeChanges;
                                         var addShard = Promise.resolve();
 
                                         if (tableName === 'shards') {
-                                            changeTable = dbSync.shardChanges;
+                                            changeTable = table.db.shardChanges;
 
                                             addShard = table.get(uuid).catch(databaseError).then(function (item) {
                                                 if (item) {
@@ -340,7 +353,7 @@
                         // out the shard, but we'll do it here for now.
                         var addShard = Promise.resolve(json);
 
-                        if (table === dbSync.shards) {
+                        if (table.name === 'shards') {
                             addShard = determineShard(json).then(function (shard) {
                                 json.shard = shard;
 
@@ -352,11 +365,9 @@
                             return table.put(json).catch(databaseError).then(function () {
                                 return sendRevisedNode(table, uuid).then(function () {
                                     var tableName = table.name;
-                                    // For hooks to be able to work, we need to declare the
-                                    // tables that may be altered due to a change. In this case
-                                    // We want to allow adding pending upload photos.
-                                    // See for example dbSync.nodeChanges.hook().
-                                    return db.transaction('rw', tableName, dbSync.nodeChanges, dbSync.shardChanges, dbSync.authorityPhotoUploadChanges, function() {
+                                    // The photo upload table is included for the `shardChanges` 'creating'
+                                    // hook in openSyncDb(), which adds pending photo uploads.
+                                    return table.db.transaction('rw', tableName, table.db.nodeChanges, table.db.shardChanges, table.db.authorityPhotoUploadChanges, function() {
                                           var body = JSON.stringify({
                                               data: [json]
                                           });
@@ -379,10 +390,10 @@
                                               isSynced: 0
                                           };
 
-                                          var changeTable = dbSync.nodeChanges;
+                                          var changeTable = table.db.nodeChanges;
 
                                           if (tableName === 'shards') {
-                                              changeTable = dbSync.shardChanges;
+                                              changeTable = table.db.shardChanges;
                                               change.shard = json.shard;
                                           }
 

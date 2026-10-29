@@ -5,7 +5,7 @@ import App.Ports exposing (bindSignaturePad, clearSignaturePad, storeSignature)
 import Backend.Measurement.Model exposing (ImageUrl(..), StockUpdateType(..))
 import Backend.Model
 import Backend.StockUpdate.Model
-import Backend.StockUpdate.Utils exposing (stockSupplierFromString)
+import Backend.StockUpdate.Utils exposing (maxMonthGap, stockSupplierFromString)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra
@@ -84,7 +84,7 @@ update currentDate context msg model =
             )
 
         ChangeMonthGap value ->
-            ( { model | monthGap = model.monthGap + value }
+            ( { model | monthGap = clamp 0 maxMonthGap (model.monthGap + value) }
             , Cmd.none
             , []
             )
@@ -97,7 +97,7 @@ update currentDate context msg model =
                     , []
                     )
                         |> sequenceExtra (update currentDate context)
-                            [ SetDisplayMode (ModeMonthDetails (monthGap + value)) ]
+                            [ SetDisplayMode (ModeMonthDetails (clamp 0 maxMonthGap (monthGap + value))) ]
 
                 _ ->
                     ( model

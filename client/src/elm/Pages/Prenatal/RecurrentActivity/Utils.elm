@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault)
+module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
@@ -120,76 +120,21 @@ resolveLaboratoryResultTasks isLabTech assembled =
 laboratoryResultTaskCompleted : Bool -> AssembledData -> LaboratoryTask -> Bool
 laboratoryResultTaskCompleted isLabTech assembled task =
     let
-        taskExpected =
-            expectLaboratoryResultTask isLabTech assembled
-
-        testResultsCompleted getMeasurementFunc getResultFieldFunc =
-            getMeasurementFunc assembled.measurements
-                |> getMeasurementValueFunc
-                |> Maybe.map
-                    (\value ->
-                        testNotPerformedByWhyNotAtExecutionNote value.executionNote
-                            || (testPerformedByExecutionNote value.executionNote
-                                    && (isJust <| getResultFieldFunc value)
-                               )
-                    )
-                |> Maybe.withDefault False
+        taskNotExpected =
+            not <| expectLaboratoryResultTask isLabTech assembled task
     in
     case task of
-        TaskPartnerHIVTest ->
-            (not <| taskExpected TaskPartnerHIVTest) || testResultsCompleted .partnerHIVTest .testResult
-
-        TaskHIVTest ->
-            (not <| taskExpected TaskHIVTest) || testResultsCompleted .hivTest .testResult
-
-        TaskSyphilisTest ->
-            (not <| taskExpected TaskSyphilisTest) || testResultsCompleted .syphilisTest .testResult
-
-        TaskHepatitisBTest ->
-            (not <| taskExpected TaskHepatitisBTest) || testResultsCompleted .hepatitisBTest .testResult
-
-        TaskMalariaTest ->
-            let
-                resultSet =
-                    getMeasurementValueFunc assembled.measurements.malariaTest
-                        |> Maybe.map
-                            (\value ->
-                                if value.bloodSmearResult == BloodSmearPendingInput then
-                                    -- A smear ordered at the lab is still owed
-                                    -- a result, whatever the note about the
-                                    -- rapid test says.
-                                    False
-
-                                else
-                                    testNotPerformedByWhyNotAtExecutionNote value.executionNote
-                                        || (testPerformedByExecutionNote value.executionNote && isJust value.testResult)
-                                        || bloodSmearResultSet value.bloodSmearResult
-                            )
-                        |> Maybe.withDefault False
-            in
-            (not <| taskExpected TaskMalariaTest) || resultSet
-
-        TaskBloodGpRsTest ->
-            (not <| taskExpected TaskBloodGpRsTest) || testResultsCompleted .bloodGpRsTest .bloodGroup
-
-        TaskUrineDipstickTest ->
-            (not <| taskExpected TaskUrineDipstickTest) || testResultsCompleted .urineDipstickTest .protein
-
-        TaskHemoglobinTest ->
-            (not <| taskExpected TaskHemoglobinTest) || testResultsCompleted .hemoglobinTest .hemoglobinCount
-
-        TaskRandomBloodSugarTest ->
-            (not <| taskExpected TaskRandomBloodSugarTest) || testResultsCompleted .randomBloodSugarTest .sugarCount
-
-        TaskHIVPCRTest ->
-            (not <| taskExpected TaskHIVPCRTest) || testResultsCompleted .hivPCRTest .hivViralLoadStatus
-
         TaskCompletePreviousTests ->
-            not <| taskExpected TaskCompletePreviousTests
+            taskNotExpected
 
-        -- Others are not in use for Prenatal.
         _ ->
-            False
+            List.member task laboratoryResultTasks
+                && (taskNotExpected
+                        || (laboratoryResultValue assembled task
+                                |> Maybe.map (\value -> value.resultOfRun || isJust value.notPerformedReason)
+                                |> Maybe.withDefault False
+                           )
+                   )
 
 
 expectLaboratoryResultTask : Bool -> AssembledData -> LaboratoryTask -> Bool
@@ -201,27 +146,29 @@ expectLaboratoryResultTask isLabTech assembled task =
                 |> Maybe.map expectUniversalTestResultTask
                 |> Maybe.withDefault False
 
-        -- For nurses, we don't want to show laboratory task if its results were
-        -- set by Lab tech, and it got follow up questions (filled by nurse),
-        -- as that task will be shown at Lab Results Follow Ups activity.
-        followUpWasNotScheduled test =
-            getMeasurementValueFunc assembled.measurements.labsResults
-                |> Maybe.andThen .testsWithFollowUp
-                |> Maybe.map (EverySet.member test >> not)
-                |> Maybe.withDefault True
+        -- For nurses, a test with follow up questions from the lab technician
+        -- is shown at Lab Results Follow Ups instead. One declined without a
+        -- result has none.
+        shownToNurse labTask test =
+            laboratoryResultDeclinedWithoutResult assembled labTask
+                || (getMeasurementValueFunc assembled.measurements.labsResults
+                        |> Maybe.andThen .testsWithFollowUp
+                        |> Maybe.map (EverySet.member test >> not)
+                        |> Maybe.withDefault True
+                   )
     in
     case task of
         TaskHIVTest ->
             wasTestPerformed .hivTest
-                && (isLabTech || followUpWasNotScheduled TestHIV)
+                && (isLabTech || shownToNurse TaskHIVTest TestHIV)
 
         TaskPartnerHIVTest ->
             wasTestPerformed .partnerHIVTest
-                && (isLabTech || followUpWasNotScheduled TestPartnerHIV)
+                && (isLabTech || shownToNurse TaskPartnerHIVTest TestPartnerHIV)
 
         TaskSyphilisTest ->
             wasTestPerformed .syphilisTest
-                && (isLabTech || followUpWasNotScheduled TestSyphilis)
+                && (isLabTech || shownToNurse TaskSyphilisTest TestSyphilis)
 
         TaskHepatitisBTest ->
             wasTestPerformed .hepatitisBTest
@@ -250,6 +197,140 @@ expectLaboratoryResultTask isLabTech assembled task =
         -- Others are not in use for Prenatal.
         _ ->
             False
+
+
+{-| Why and when the lab technician did not perform a test listed for results,
+and whether a result was entered for it anyway.
+-}
+laboratoryResultNotPerformed :
+    AssembledData
+    -> LaboratoryTask
+    -> Maybe { executionDate : Maybe NominalDate, holdsResult : Bool, reason : TestExecutionNote }
+laboratoryResultNotPerformed assembled task =
+    laboratoryResultValue assembled task
+        |> Maybe.andThen
+            (\value ->
+                Maybe.map
+                    (\reason ->
+                        { executionDate = value.executionDate
+                        , holdsResult = value.holdsResult
+                        , reason = reason
+                        }
+                    )
+                    value.notPerformedReason
+            )
+
+
+{-| The lab technician declined the test and no result is stored, so the nurse
+has nothing to fill in or follow up.
+-}
+laboratoryResultDeclinedWithoutResult : AssembledData -> LaboratoryTask -> Bool
+laboratoryResultDeclinedWithoutResult assembled task =
+    laboratoryResultNotPerformed assembled task
+        |> Maybe.map (.holdsResult >> not)
+        |> Maybe.withDefault False
+
+
+{-| What a test's record holds: its date, whether any result is stored, whether
+that result is from a run, and why the test was not performed.
+-}
+laboratoryResultValue :
+    AssembledData
+    -> LaboratoryTask
+    ->
+        Maybe
+            { executionDate : Maybe NominalDate
+            , holdsResult : Bool
+            , notPerformedReason : Maybe TestExecutionNote
+            , resultOfRun : Bool
+            }
+laboratoryResultValue assembled task =
+    let
+        notPerformedReasonByNote executionNote =
+            if testNotPerformedByWhyNotAtExecutionNote executionNote then
+                Just executionNote
+
+            else
+                Nothing
+
+        byMeasurement getMeasurementFunc getResultFieldFunc =
+            getMeasurementFunc assembled.measurements
+                |> getMeasurementValueFunc
+                |> Maybe.map
+                    (\value ->
+                        let
+                            holdsResult =
+                                isJust <| getResultFieldFunc value
+                        in
+                        { executionDate = value.executionDate
+                        , holdsResult = holdsResult
+                        , notPerformedReason = notPerformedReasonByNote value.executionNote
+                        , resultOfRun = testPerformedByExecutionNote value.executionNote && holdsResult
+                        }
+                    )
+    in
+    case task of
+        TaskBloodGpRsTest ->
+            byMeasurement .bloodGpRsTest .bloodGroup
+
+        TaskHemoglobinTest ->
+            byMeasurement .hemoglobinTest .hemoglobinCount
+
+        TaskHepatitisBTest ->
+            byMeasurement .hepatitisBTest .testResult
+
+        TaskHIVPCRTest ->
+            byMeasurement .hivPCRTest .hivViralLoadStatus
+
+        TaskHIVTest ->
+            byMeasurement .hivTest .testResult
+
+        TaskMalariaTest ->
+            getMeasurementValueFunc assembled.measurements.malariaTest
+                |> Maybe.map
+                    (\value ->
+                        let
+                            smearRead =
+                                bloodSmearResultSet value.bloodSmearResult
+
+                            -- The reason is the nurse's, for not running the
+                            -- rapid test, when a smear was ordered at the lab,
+                            -- or read.
+                            smearTaken =
+                                smearRead || value.bloodSmearResult == BloodSmearPendingInput
+                        in
+                        { executionDate = value.executionDate
+                        , holdsResult = isJust value.testResult || smearRead
+                        , notPerformedReason =
+                            if smearTaken then
+                                Nothing
+
+                            else
+                                notPerformedReasonByNote value.executionNote
+                        , resultOfRun =
+                            smearRead
+                                || (not smearTaken
+                                        && testPerformedByExecutionNote value.executionNote
+                                        && isJust value.testResult
+                                   )
+                        }
+                    )
+
+        TaskPartnerHIVTest ->
+            byMeasurement .partnerHIVTest .testResult
+
+        TaskRandomBloodSugarTest ->
+            byMeasurement .randomBloodSugarTest .sugarCount
+
+        TaskSyphilisTest ->
+            byMeasurement .syphilisTest .testResult
+
+        TaskUrineDipstickTest ->
+            byMeasurement .urineDipstickTest .protein
+
+        -- Others have no result to wait for at Prenatal.
+        _ ->
+            Nothing
 
 
 laboratoryResultFollowUpsTasks : List LaboratoryTask
@@ -318,6 +399,8 @@ expectLaboratoryResultFollowUpsTask assembled task =
             -- So we either do not expect TaskPartnerHIVTest follow up, or,
             -- only when test HIV result is positive.
             wasFollowUpScheduled TestHIV
+                -- The nurse finds a declined test's reason at Lab Results.
+                && not (laboratoryResultDeclinedWithoutResult assembled TaskHIVTest)
                 && (not partnerHIVTestFollowUpExpected || hivTestResultPositive)
 
         TaskSyphilisTest ->

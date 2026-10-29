@@ -1,4 +1,4 @@
-module Pages.StockManagement.Model exposing (CorrectEntryForm, CorrectionEntryType(..), DisplayMode(..), Model, Msg(..), ReceiveStockForm, StockManagementContext(..), StockManagementMenu(..), emptyModel, maxMonthGap, resolveStockManagementContext)
+module Pages.StockManagement.Model exposing (CorrectEntryForm, CorrectionEntryType(..), DisplayMode(..), Model, Msg(..), ReceiveStockForm, StockManagementContext(..), StockManagementMenu(..), emptyModel, resolveStockManagementContext)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ImageUrl, StockCorrectionReason, StockSupplier)
@@ -42,11 +42,6 @@ emptyModel =
     , correctEntryForm = emptyCorrectEntryForm
     , monthGap = 0
     }
-
-
-maxMonthGap : Int
-maxMonthGap =
-    11
 
 
 type DisplayMode
