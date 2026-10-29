@@ -1,4 +1,4 @@
-module Backend.StockUpdate.Utils exposing (dateToMonthYear, generateStockManagementData, generateStockManagementDataFromDistributions, generateVillageStockManagementData, monthYearDiff, stockCorrectionReasonFromString, stockCorrectionReasonToString, stockSupplierFromString, stockSupplierToString, stockUpdateTypeFromString, stockUpdateTypeToString)
+module Backend.StockUpdate.Utils exposing (dateToMonthYear, generateStockManagementData, generateStockManagementDataFromDistributions, generateVillageStockManagementData, maxMonthGap, monthYearDiff, stockCorrectionReasonFromString, stockCorrectionReasonToString, stockSupplierFromString, stockSupplierToString, stockUpdateTypeFromString, stockUpdateTypeToString)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -80,6 +80,13 @@ generateVillageStockManagementData currentDate villageId db measurements =
     generateStockManagementDataFromDistributions currentDate allDistributions allStockUpdates
 
 
+{-| The stock data covers the current month and the 12 before it.
+-}
+maxMonthGap : Int
+maxMonthGap =
+    12
+
+
 generateStockManagementDataFromDistributions :
     NominalDate
     -> List DistributionEntry
@@ -88,7 +95,7 @@ generateStockManagementDataFromDistributions :
 generateStockManagementDataFromDistributions currentDate allDistributions allStockUpdates =
     let
         firstMonthForDisplay =
-            Date.add Date.Months -12 currentDate
+            Date.add Date.Months (-1 * maxMonthGap) currentDate
                 |> dateToMonthYear
 
         -- Stock Management feature is launched by initial setup is
@@ -114,7 +121,7 @@ generateStockManagementDataFromDistributions currentDate allDistributions allSto
         -- The current month (gap 0) is included so its own window can be looked
         -- up here; the window is always the 6 months before the month.
         distributionsByMonth =
-            List.range 0 18
+            List.range 0 (maxMonthGap + 6)
                 |> List.map
                     (\monthGap ->
                         let
@@ -206,7 +213,7 @@ generateStockManagementDataFromDistributions currentDate allDistributions allSto
             toFloat initialStockByStockUpdate - initialStockByDistributions
 
         receivedIssuedByMonthYear =
-            List.range 0 12
+            List.range 0 maxMonthGap
                 |> List.map
                     (\monthGap ->
                         let
