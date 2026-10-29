@@ -7,6 +7,8 @@ import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Pages.Completion.View
 import Pages.CompletionMenu.View
+import Pages.Dashboard.Model exposing (Dashboard(..))
+import Pages.Dashboard.View
 import Pages.Reports.View
 import Pages.ReportsMenu.View
 import Pages.Scoreboard.View
@@ -82,6 +84,26 @@ view model =
                         model.completionPage
                 ]
 
+        DashboardFacility ->
+            viewDashboard model Facility
+
+        DashboardProgram ->
+            viewDashboard model Program
+
         NotFound ->
             div []
                 [ text <| translate model.language Translate.WrongPage ]
+
+
+viewDashboard : Model -> Dashboard -> Html Msg
+viewDashboard model dashboard =
+    div []
+        [ Error.View.view model.language model.errors
+        , Html.map MsgDashboardPage <|
+            Pages.Dashboard.View.view
+                model.language
+                (fromLocalDateTime model.currentTime)
+                model.backend
+                dashboard
+                model.dashboardPage
+        ]

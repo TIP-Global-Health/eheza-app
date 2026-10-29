@@ -1,5 +1,11 @@
 {
   "devDependencies": {
-    "elm-review": "^2.10.2"
+    "@tailwindcss/cli": "^4.2.2",
+    "elm-review": "^2.10.2",
+    "tailwindcss": "^4.2.2"
+  },
+  "scripts": {
+    "css": "tailwindcss -i css/dashboards.css -o ../hedley/modules/custom/hedley_general/css/dashboards.css --minify",
+    "css:watch": "tailwindcss -i css/dashboards.css -o ../hedley/modules/custom/hedley_general/css/dashboards.css --watch"
   }
 }

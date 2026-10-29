@@ -1,15 +1,29 @@
 module Pages.Components.Utils exposing
-    ( isSyncComplete
+    ( healthCentersByName
+    , isSyncComplete
     , populationSelectionOptionFromString
     , populationSelectionOptionToString
+    , reportTableDataToCSV
+    , reportTablesDataToCSV
     , viewSyncingPlaceholder
     )
 
 import App.Types exposing (Language)
+import Backend.Components.Model exposing (HealthCenterData)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
+import Pages.Model exposing (MetricsResultsTableData)
+import Pages.Reports.Utils exposing (csvRow)
 import Translate exposing (translate)
+
+
+{-| Health centers in the order every health center list shows them:
+alphabetical, ignoring case, so "abaco" sorts before "ACHI".
+-}
+healthCentersByName : List HealthCenterData -> List HealthCenterData
+healthCentersByName =
+    List.sortBy (.name >> String.toLower)
 
 
 populationSelectionOptionToString : PopulationSelectionOption -> String
@@ -101,3 +115,19 @@ viewSyncingPlaceholder language downloaded maybeRemaining =
         , div [ class "explanation" ] [ text <| translate language Translate.DownloadingExplanation ]
         , div [ class "progress" ] [ text progress ]
         ]
+
+
+reportTablesDataToCSV : List MetricsResultsTableData -> String
+reportTablesDataToCSV =
+    List.map reportTableDataToCSV
+        >> String.join "\n\n"
+
+
+reportTableDataToCSV : MetricsResultsTableData -> String
+reportTableDataToCSV tableData =
+    [ csvRow [ tableData.heading ]
+    , csvRow tableData.captions
+    , List.map csvRow tableData.rows
+        |> String.join "\n"
+    ]
+        |> String.join "\n"

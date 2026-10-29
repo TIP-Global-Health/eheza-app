@@ -2405,335 +2405,6 @@ function _Platform_mergeExportsDebug(moduleName, obj, exports)
 
 
 
-// SEND REQUEST
-
-var _Http_toTask = F2(function(request, maybeProgress)
-{
-	return _Scheduler_binding(function(callback)
-	{
-		var xhr = new XMLHttpRequest();
-
-		_Http_configureProgress(xhr, maybeProgress);
-
-		xhr.addEventListener('error', function() {
-			callback(_Scheduler_fail($elm$http$Http$NetworkError));
-		});
-		xhr.addEventListener('timeout', function() {
-			callback(_Scheduler_fail($elm$http$Http$Timeout));
-		});
-		xhr.addEventListener('load', function() {
-			callback(_Http_handleResponse(xhr, request.expect.a));
-		});
-
-		try
-		{
-			xhr.open(request.method, request.url, true);
-		}
-		catch (e)
-		{
-			return callback(_Scheduler_fail($elm$http$Http$BadUrl(request.url)));
-		}
-
-		_Http_configureRequest(xhr, request);
-
-		var body = request.body;
-		xhr.send($elm$http$Http$Internal$isStringBody(body)
-			? (xhr.setRequestHeader('Content-Type', body.a), body.b)
-			: body.a
-		);
-
-		return function() { xhr.abort(); };
-	});
-});
-
-function _Http_configureProgress(xhr, maybeProgress)
-{
-	if (!$elm$core$Maybe$isJust(maybeProgress))
-	{
-		return;
-	}
-
-	xhr.addEventListener('progress', function(event) {
-		if (!event.lengthComputable)
-		{
-			return;
-		}
-		_Scheduler_rawSpawn(maybeProgress.a({
-			bytes: event.loaded,
-			bytesExpected: event.total
-		}));
-	});
-}
-
-function _Http_configureRequest(xhr, request)
-{
-	for (var headers = request.headers; headers.b; headers = headers.b) // WHILE_CONS
-	{
-		xhr.setRequestHeader(headers.a.a, headers.a.b);
-	}
-
-	xhr.responseType = request.expect.b;
-	xhr.withCredentials = request.withCredentials;
-
-	$elm$core$Maybe$isJust(request.timeout) && (xhr.timeout = request.timeout.a);
-}
-
-
-// RESPONSES
-
-function _Http_handleResponse(xhr, responseToResult)
-{
-	var response = _Http_toResponse(xhr);
-
-	if (xhr.status < 200 || 300 <= xhr.status)
-	{
-		response.body = xhr.responseText;
-		return _Scheduler_fail($elm$http$Http$BadStatus(response));
-	}
-
-	var result = responseToResult(response);
-
-	if ($elm$core$Result$isOk(result))
-	{
-		return _Scheduler_succeed(result.a);
-	}
-	else
-	{
-		response.body = xhr.responseText;
-		return _Scheduler_fail(A2($elm$http$Http$BadPayload, result.a, response));
-	}
-}
-
-function _Http_toResponse(xhr)
-{
-	return {
-		url: xhr.responseURL,
-		status: { code: xhr.status, message: xhr.statusText },
-		headers: _Http_parseHeaders(xhr.getAllResponseHeaders()),
-		body: xhr.response
-	};
-}
-
-function _Http_parseHeaders(rawHeaders)
-{
-	var headers = $elm$core$Dict$empty;
-
-	if (!rawHeaders)
-	{
-		return headers;
-	}
-
-	var headerPairs = rawHeaders.split('\u000d\u000a');
-	for (var i = headerPairs.length; i--; )
-	{
-		var headerPair = headerPairs[i];
-		var index = headerPair.indexOf('\u003a\u0020');
-		if (index > 0)
-		{
-			var key = headerPair.substring(0, index);
-			var value = headerPair.substring(index + 2);
-
-			headers = A3($elm$core$Dict$update, key, function(oldValue) {
-				return $elm$core$Maybe$Just($elm$core$Maybe$isJust(oldValue)
-					? value + ', ' + oldValue.a
-					: value
-				);
-			}, headers);
-		}
-	}
-
-	return headers;
-}
-
-
-// EXPECTORS
-
-function _Http_expectStringResponse(responseToResult)
-{
-	return {
-		$: 0,
-		b: 'text',
-		a: responseToResult
-	};
-}
-
-var _Http_mapExpect = F2(function(func, expect)
-{
-	return {
-		$: 0,
-		b: expect.b,
-		a: function(response) {
-			var convertedResponse = expect.a(response);
-			return A2($elm$core$Result$map, func, convertedResponse);
-		}
-	};
-});
-
-
-// BODY
-
-function _Http_multipart(parts)
-{
-
-
-	for (var formData = new FormData(); parts.b; parts = parts.b) // WHILE_CONS
-	{
-		var part = parts.a;
-		formData.append(part.a, part.b);
-	}
-
-	return $elm$http$Http$Internal$FormDataBody(formData);
-}
-
-
-function _Url_percentEncode(string)
-{
-	return encodeURIComponent(string);
-}
-
-function _Url_percentDecode(string)
-{
-	try
-	{
-		return $elm$core$Maybe$Just(decodeURIComponent(string));
-	}
-	catch (e)
-	{
-		return $elm$core$Maybe$Nothing;
-	}
-}
-
-
-
-// STRINGS
-
-
-var _Parser_isSubString = F5(function(smallString, offset, row, col, bigString)
-{
-	var smallLength = smallString.length;
-	var isGood = offset + smallLength <= bigString.length;
-
-	for (var i = 0; isGood && i < smallLength; )
-	{
-		var code = bigString.charCodeAt(offset);
-		isGood =
-			smallString[i++] === bigString[offset++]
-			&& (
-				code === 0x000A /* \n */
-					? ( row++, col=1 )
-					: ( col++, (code & 0xF800) === 0xD800 ? smallString[i++] === bigString[offset++] : 1 )
-			)
-	}
-
-	return _Utils_Tuple3(isGood ? offset : -1, row, col);
-});
-
-
-
-// CHARS
-
-
-var _Parser_isSubChar = F3(function(predicate, offset, string)
-{
-	return (
-		string.length <= offset
-			? -1
-			:
-		(string.charCodeAt(offset) & 0xF800) === 0xD800
-			? (predicate(_Utils_chr(string.substr(offset, 2))) ? offset + 2 : -1)
-			:
-		(predicate(_Utils_chr(string[offset]))
-			? ((string[offset] === '\n') ? -2 : (offset + 1))
-			: -1
-		)
-	);
-});
-
-
-var _Parser_isAsciiCode = F3(function(code, offset, string)
-{
-	return string.charCodeAt(offset) === code;
-});
-
-
-
-// NUMBERS
-
-
-var _Parser_chompBase10 = F2(function(offset, string)
-{
-	for (; offset < string.length; offset++)
-	{
-		var code = string.charCodeAt(offset);
-		if (code < 0x30 || 0x39 < code)
-		{
-			return offset;
-		}
-	}
-	return offset;
-});
-
-
-var _Parser_consumeBase = F3(function(base, offset, string)
-{
-	for (var total = 0; offset < string.length; offset++)
-	{
-		var digit = string.charCodeAt(offset) - 0x30;
-		if (digit < 0 || base <= digit) break;
-		total = base * total + digit;
-	}
-	return _Utils_Tuple2(offset, total);
-});
-
-
-var _Parser_consumeBase16 = F2(function(offset, string)
-{
-	for (var total = 0; offset < string.length; offset++)
-	{
-		var code = string.charCodeAt(offset);
-		if (0x30 <= code && code <= 0x39)
-		{
-			total = 16 * total + code - 0x30;
-		}
-		else if (0x41 <= code && code <= 0x46)
-		{
-			total = 16 * total + code - 55;
-		}
-		else if (0x61 <= code && code <= 0x66)
-		{
-			total = 16 * total + code - 87;
-		}
-		else
-		{
-			break;
-		}
-	}
-	return _Utils_Tuple2(offset, total);
-});
-
-
-
-// FIND STRING
-
-
-var _Parser_findSubString = F5(function(smallString, offset, row, col, bigString)
-{
-	var newOffset = bigString.indexOf(smallString, offset);
-	var target = newOffset < 0 ? bigString.length : newOffset + smallString.length;
-
-	while (offset < target)
-	{
-		var code = bigString.charCodeAt(offset++);
-		code === 0x000A /* \n */
-			? ( col=1, row++ )
-			: ( col++, (code & 0xF800) === 0xD800 && offset++ )
-	}
-
-	return _Utils_Tuple3(newOffset, row, col);
-});
-
-
-
 
 // HELPERS
 
@@ -4292,43 +3963,6 @@ function _VirtualDom_dekey(keyedNode)
 
 
 
-var _Bitwise_and = F2(function(a, b)
-{
-	return a & b;
-});
-
-var _Bitwise_or = F2(function(a, b)
-{
-	return a | b;
-});
-
-var _Bitwise_xor = F2(function(a, b)
-{
-	return a ^ b;
-});
-
-function _Bitwise_complement(a)
-{
-	return ~a;
-};
-
-var _Bitwise_shiftLeftBy = F2(function(offset, a)
-{
-	return a << offset;
-});
-
-var _Bitwise_shiftRightBy = F2(function(offset, a)
-{
-	return a >> offset;
-});
-
-var _Bitwise_shiftRightZfBy = F2(function(offset, a)
-{
-	return a >>> offset;
-});
-
-
-
 
 // ELEMENT
 
@@ -4767,6 +4401,372 @@ function _Browser_load(url)
 		}
 	}));
 }
+
+
+
+// SEND REQUEST
+
+var _Http_toTask = F2(function(request, maybeProgress)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var xhr = new XMLHttpRequest();
+
+		_Http_configureProgress(xhr, maybeProgress);
+
+		xhr.addEventListener('error', function() {
+			callback(_Scheduler_fail($elm$http$Http$NetworkError));
+		});
+		xhr.addEventListener('timeout', function() {
+			callback(_Scheduler_fail($elm$http$Http$Timeout));
+		});
+		xhr.addEventListener('load', function() {
+			callback(_Http_handleResponse(xhr, request.expect.a));
+		});
+
+		try
+		{
+			xhr.open(request.method, request.url, true);
+		}
+		catch (e)
+		{
+			return callback(_Scheduler_fail($elm$http$Http$BadUrl(request.url)));
+		}
+
+		_Http_configureRequest(xhr, request);
+
+		var body = request.body;
+		xhr.send($elm$http$Http$Internal$isStringBody(body)
+			? (xhr.setRequestHeader('Content-Type', body.a), body.b)
+			: body.a
+		);
+
+		return function() { xhr.abort(); };
+	});
+});
+
+function _Http_configureProgress(xhr, maybeProgress)
+{
+	if (!$elm$core$Maybe$isJust(maybeProgress))
+	{
+		return;
+	}
+
+	xhr.addEventListener('progress', function(event) {
+		if (!event.lengthComputable)
+		{
+			return;
+		}
+		_Scheduler_rawSpawn(maybeProgress.a({
+			bytes: event.loaded,
+			bytesExpected: event.total
+		}));
+	});
+}
+
+function _Http_configureRequest(xhr, request)
+{
+	for (var headers = request.headers; headers.b; headers = headers.b) // WHILE_CONS
+	{
+		xhr.setRequestHeader(headers.a.a, headers.a.b);
+	}
+
+	xhr.responseType = request.expect.b;
+	xhr.withCredentials = request.withCredentials;
+
+	$elm$core$Maybe$isJust(request.timeout) && (xhr.timeout = request.timeout.a);
+}
+
+
+// RESPONSES
+
+function _Http_handleResponse(xhr, responseToResult)
+{
+	var response = _Http_toResponse(xhr);
+
+	if (xhr.status < 200 || 300 <= xhr.status)
+	{
+		response.body = xhr.responseText;
+		return _Scheduler_fail($elm$http$Http$BadStatus(response));
+	}
+
+	var result = responseToResult(response);
+
+	if ($elm$core$Result$isOk(result))
+	{
+		return _Scheduler_succeed(result.a);
+	}
+	else
+	{
+		response.body = xhr.responseText;
+		return _Scheduler_fail(A2($elm$http$Http$BadPayload, result.a, response));
+	}
+}
+
+function _Http_toResponse(xhr)
+{
+	return {
+		url: xhr.responseURL,
+		status: { code: xhr.status, message: xhr.statusText },
+		headers: _Http_parseHeaders(xhr.getAllResponseHeaders()),
+		body: xhr.response
+	};
+}
+
+function _Http_parseHeaders(rawHeaders)
+{
+	var headers = $elm$core$Dict$empty;
+
+	if (!rawHeaders)
+	{
+		return headers;
+	}
+
+	var headerPairs = rawHeaders.split('\u000d\u000a');
+	for (var i = headerPairs.length; i--; )
+	{
+		var headerPair = headerPairs[i];
+		var index = headerPair.indexOf('\u003a\u0020');
+		if (index > 0)
+		{
+			var key = headerPair.substring(0, index);
+			var value = headerPair.substring(index + 2);
+
+			headers = A3($elm$core$Dict$update, key, function(oldValue) {
+				return $elm$core$Maybe$Just($elm$core$Maybe$isJust(oldValue)
+					? value + ', ' + oldValue.a
+					: value
+				);
+			}, headers);
+		}
+	}
+
+	return headers;
+}
+
+
+// EXPECTORS
+
+function _Http_expectStringResponse(responseToResult)
+{
+	return {
+		$: 0,
+		b: 'text',
+		a: responseToResult
+	};
+}
+
+var _Http_mapExpect = F2(function(func, expect)
+{
+	return {
+		$: 0,
+		b: expect.b,
+		a: function(response) {
+			var convertedResponse = expect.a(response);
+			return A2($elm$core$Result$map, func, convertedResponse);
+		}
+	};
+});
+
+
+// BODY
+
+function _Http_multipart(parts)
+{
+
+
+	for (var formData = new FormData(); parts.b; parts = parts.b) // WHILE_CONS
+	{
+		var part = parts.a;
+		formData.append(part.a, part.b);
+	}
+
+	return $elm$http$Http$Internal$FormDataBody(formData);
+}
+
+
+function _Url_percentEncode(string)
+{
+	return encodeURIComponent(string);
+}
+
+function _Url_percentDecode(string)
+{
+	try
+	{
+		return $elm$core$Maybe$Just(decodeURIComponent(string));
+	}
+	catch (e)
+	{
+		return $elm$core$Maybe$Nothing;
+	}
+}
+
+
+
+// STRINGS
+
+
+var _Parser_isSubString = F5(function(smallString, offset, row, col, bigString)
+{
+	var smallLength = smallString.length;
+	var isGood = offset + smallLength <= bigString.length;
+
+	for (var i = 0; isGood && i < smallLength; )
+	{
+		var code = bigString.charCodeAt(offset);
+		isGood =
+			smallString[i++] === bigString[offset++]
+			&& (
+				code === 0x000A /* \n */
+					? ( row++, col=1 )
+					: ( col++, (code & 0xF800) === 0xD800 ? smallString[i++] === bigString[offset++] : 1 )
+			)
+	}
+
+	return _Utils_Tuple3(isGood ? offset : -1, row, col);
+});
+
+
+
+// CHARS
+
+
+var _Parser_isSubChar = F3(function(predicate, offset, string)
+{
+	return (
+		string.length <= offset
+			? -1
+			:
+		(string.charCodeAt(offset) & 0xF800) === 0xD800
+			? (predicate(_Utils_chr(string.substr(offset, 2))) ? offset + 2 : -1)
+			:
+		(predicate(_Utils_chr(string[offset]))
+			? ((string[offset] === '\n') ? -2 : (offset + 1))
+			: -1
+		)
+	);
+});
+
+
+var _Parser_isAsciiCode = F3(function(code, offset, string)
+{
+	return string.charCodeAt(offset) === code;
+});
+
+
+
+// NUMBERS
+
+
+var _Parser_chompBase10 = F2(function(offset, string)
+{
+	for (; offset < string.length; offset++)
+	{
+		var code = string.charCodeAt(offset);
+		if (code < 0x30 || 0x39 < code)
+		{
+			return offset;
+		}
+	}
+	return offset;
+});
+
+
+var _Parser_consumeBase = F3(function(base, offset, string)
+{
+	for (var total = 0; offset < string.length; offset++)
+	{
+		var digit = string.charCodeAt(offset) - 0x30;
+		if (digit < 0 || base <= digit) break;
+		total = base * total + digit;
+	}
+	return _Utils_Tuple2(offset, total);
+});
+
+
+var _Parser_consumeBase16 = F2(function(offset, string)
+{
+	for (var total = 0; offset < string.length; offset++)
+	{
+		var code = string.charCodeAt(offset);
+		if (0x30 <= code && code <= 0x39)
+		{
+			total = 16 * total + code - 0x30;
+		}
+		else if (0x41 <= code && code <= 0x46)
+		{
+			total = 16 * total + code - 55;
+		}
+		else if (0x61 <= code && code <= 0x66)
+		{
+			total = 16 * total + code - 87;
+		}
+		else
+		{
+			break;
+		}
+	}
+	return _Utils_Tuple2(offset, total);
+});
+
+
+
+// FIND STRING
+
+
+var _Parser_findSubString = F5(function(smallString, offset, row, col, bigString)
+{
+	var newOffset = bigString.indexOf(smallString, offset);
+	var target = newOffset < 0 ? bigString.length : newOffset + smallString.length;
+
+	while (offset < target)
+	{
+		var code = bigString.charCodeAt(offset++);
+		code === 0x000A /* \n */
+			? ( col=1, row++ )
+			: ( col++, (code & 0xF800) === 0xD800 && offset++ )
+	}
+
+	return _Utils_Tuple3(newOffset, row, col);
+});
+
+
+
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
 var $elm$core$List$cons = _List_cons;
 var $elm$core$Dict$foldr = F3(
 	function (func, acc, t) {
@@ -5368,6 +5368,10 @@ var $author$project$App$Fetch$fetch = function (model) {
 					return $author$project$App$Model$MsgBackend(subMsg);
 				},
 				$author$project$Pages$Completion$Fetch$fetch);
+		case 'DashboardFacility':
+			return _List_Nil;
+		case 'DashboardProgram':
+			return _List_Nil;
 		default:
 			return _List_Nil;
 	}
@@ -6450,6 +6454,302 @@ var $author$project$Pages$Reports$Update$update = F4(
 					_List_Nil);
 		}
 	});
+var $author$project$Pages$Dashboard$Model$NoOp = {$: 'NoOp'};
+var $elm$json$Json$Decode$map = _Json_map1;
+var $elm$json$Json$Decode$map2 = _Json_map2;
+var $elm$json$Json$Decode$succeed = _Json_succeed;
+var $elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
+	switch (handler.$) {
+		case 'Normal':
+			return 0;
+		case 'MayStopPropagation':
+			return 1;
+		case 'MayPreventDefault':
+			return 2;
+		default:
+			return 3;
+	}
+};
+var $elm$core$Basics$never = function (_v0) {
+	never:
+	while (true) {
+		var nvr = _v0.a;
+		var $temp$_v0 = nvr;
+		_v0 = $temp$_v0;
+		continue never;
+	}
+};
+var $elm$browser$Browser$External = function (a) {
+	return {$: 'External', a: a};
+};
+var $elm$browser$Browser$Internal = function (a) {
+	return {$: 'Internal', a: a};
+};
+var $elm$browser$Browser$Dom$NotFound = function (a) {
+	return {$: 'NotFound', a: a};
+};
+var $elm$url$Url$Http = {$: 'Http'};
+var $elm$url$Url$Https = {$: 'Https'};
+var $elm$core$String$slice = _String_slice;
+var $elm$core$String$length = _String_length;
+var $elm$core$String$dropLeft = F2(
+	function (n, string) {
+		return (n < 1) ? string : A3(
+			$elm$core$String$slice,
+			n,
+			$elm$core$String$length(string),
+			string);
+	});
+var $elm$core$String$startsWith = _String_startsWith;
+var $elm$core$String$left = F2(
+	function (n, string) {
+		return (n < 1) ? '' : A3($elm$core$String$slice, 0, n, string);
+	});
+var $elm$core$String$indexes = _String_indexes;
+var $elm$core$String$isEmpty = function (string) {
+	return string === '';
+};
+var $elm$url$Url$Url = F6(
+	function (protocol, host, port_, path, query, fragment) {
+		return {host: host, path: path, port_: port_, query: query, fragment: fragment, protocol: protocol};
+	});
+var $elm$core$String$toInt = _String_toInt;
+var $elm$core$String$contains = _String_contains;
+var $elm$url$Url$chompBeforePath = F5(
+	function (protocol, path, params, frag, str) {
+		if ($elm$core$String$isEmpty(str) || A2($elm$core$String$contains, '@', str)) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var _v0 = A2($elm$core$String$indexes, ':', str);
+			if (!_v0.b) {
+				return $elm$core$Maybe$Just(
+					A6($elm$url$Url$Url, protocol, str, $elm$core$Maybe$Nothing, path, params, frag));
+			} else {
+				if (!_v0.b.b) {
+					var i = _v0.a;
+					var _v1 = $elm$core$String$toInt(
+						A2($elm$core$String$dropLeft, i + 1, str));
+					if (_v1.$ === 'Nothing') {
+						return $elm$core$Maybe$Nothing;
+					} else {
+						var port_ = _v1;
+						return $elm$core$Maybe$Just(
+							A6(
+								$elm$url$Url$Url,
+								protocol,
+								A2($elm$core$String$left, i, str),
+								port_,
+								path,
+								params,
+								frag));
+					}
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			}
+		}
+	});
+var $elm$url$Url$chompBeforeQuery = F4(
+	function (protocol, params, frag, str) {
+		if ($elm$core$String$isEmpty(str)) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var _v0 = A2($elm$core$String$indexes, '/', str);
+			if (!_v0.b) {
+				return A5($elm$url$Url$chompBeforePath, protocol, '/', params, frag, str);
+			} else {
+				var i = _v0.a;
+				return A5(
+					$elm$url$Url$chompBeforePath,
+					protocol,
+					A2($elm$core$String$dropLeft, i, str),
+					params,
+					frag,
+					A2($elm$core$String$left, i, str));
+			}
+		}
+	});
+var $elm$url$Url$chompBeforeFragment = F3(
+	function (protocol, frag, str) {
+		if ($elm$core$String$isEmpty(str)) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var _v0 = A2($elm$core$String$indexes, '?', str);
+			if (!_v0.b) {
+				return A4($elm$url$Url$chompBeforeQuery, protocol, $elm$core$Maybe$Nothing, frag, str);
+			} else {
+				var i = _v0.a;
+				return A4(
+					$elm$url$Url$chompBeforeQuery,
+					protocol,
+					$elm$core$Maybe$Just(
+						A2($elm$core$String$dropLeft, i + 1, str)),
+					frag,
+					A2($elm$core$String$left, i, str));
+			}
+		}
+	});
+var $elm$url$Url$chompAfterProtocol = F2(
+	function (protocol, str) {
+		if ($elm$core$String$isEmpty(str)) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var _v0 = A2($elm$core$String$indexes, '#', str);
+			if (!_v0.b) {
+				return A3($elm$url$Url$chompBeforeFragment, protocol, $elm$core$Maybe$Nothing, str);
+			} else {
+				var i = _v0.a;
+				return A3(
+					$elm$url$Url$chompBeforeFragment,
+					protocol,
+					$elm$core$Maybe$Just(
+						A2($elm$core$String$dropLeft, i + 1, str)),
+					A2($elm$core$String$left, i, str));
+			}
+		}
+	});
+var $elm$url$Url$fromString = function (str) {
+	return A2($elm$core$String$startsWith, 'http://', str) ? A2(
+		$elm$url$Url$chompAfterProtocol,
+		$elm$url$Url$Http,
+		A2($elm$core$String$dropLeft, 7, str)) : (A2($elm$core$String$startsWith, 'https://', str) ? A2(
+		$elm$url$Url$chompAfterProtocol,
+		$elm$url$Url$Https,
+		A2($elm$core$String$dropLeft, 8, str)) : $elm$core$Maybe$Nothing);
+};
+var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return $elm$core$Task$command(
+			$elm$core$Task$Perform(
+				A2(
+					$elm$core$Task$onError,
+					A2(
+						$elm$core$Basics$composeL,
+						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+						$elm$core$Result$Err),
+					A2(
+						$elm$core$Task$andThen,
+						A2(
+							$elm$core$Basics$composeL,
+							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+							$elm$core$Result$Ok),
+						task))));
+	});
+var $author$project$Pages$Dashboard$Update$focus = function (elementId) {
+	return A2(
+		$elm$core$Task$attempt,
+		$elm$core$Basics$always($author$project$Pages$Dashboard$Model$NoOp),
+		$elm$browser$Browser$Dom$focus(elementId));
+};
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $author$project$App$Ports$printPage = _Platform_outgoingPort(
+	'printPage',
+	function ($) {
+		return $elm$json$Json$Encode$null;
+	});
+var $author$project$Pages$Dashboard$Utils$kpiBlockId = function (kpi) {
+	return 'kpi-block-' + kpi.id;
+};
+var $author$project$Pages$Dashboard$Model$DrillScreen = function (a) {
+	return {$: 'DrillScreen', a: a};
+};
+var $author$project$Pages$Dashboard$Utils$drillDialogId = 'dashboard-drill-down';
+var $author$project$Pages$Dashboard$Model$DashboardScreen = {$: 'DashboardScreen'};
+var $author$project$Pages$Dashboard$Update$update = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'CloseDrill':
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{screen: $author$project$Pages$Dashboard$Model$DashboardScreen}),
+					function () {
+						var _v1 = model.screen;
+						if (_v1.$ === 'DashboardScreen') {
+							return $elm$core$Platform$Cmd$none;
+						} else {
+							var kpi = _v1.a;
+							return $author$project$Pages$Dashboard$Update$focus(
+								$author$project$Pages$Dashboard$Utils$kpiBlockId(kpi));
+						}
+					}(),
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'DownloadCSV':
+				var fileName = msg.a;
+				var content = msg.b;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					model,
+					$author$project$App$Ports$downloadCsv(
+						_Utils_Tuple2(fileName, content)),
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'NoOp':
+				return A4($author$project$App$Model$PagesReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+			case 'OpenDrill':
+				var kpi = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							screen: $author$project$Pages$Dashboard$Model$DrillScreen(kpi)
+						}),
+					$author$project$Pages$Dashboard$Update$focus($author$project$Pages$Dashboard$Utils$drillDialogId),
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'PrintPage':
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					model,
+					$author$project$App$Ports$printPage(_Utils_Tuple0),
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'SelectTrendKpi':
+				var kpiId = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							trendKpi: $elm$core$Maybe$Just(kpiId)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'SelectTrendYear':
+				var year = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{trendYear: year}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			default:
+				var key = msg.a;
+				var value = msg.b;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							selectedFilters: A3($pzp1997$assoc_list$AssocList$insert, key, value, model.selectedFilters)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+		}
+	});
 var $author$project$Backend$Completion$Model$TakenByCHW = {$: 'TakenByCHW'};
 var $author$project$Backend$Completion$Model$TakenByNurse = {$: 'TakenByNurse'};
 var $author$project$Backend$Completion$Model$TakenByUnknown = {$: 'TakenByUnknown'};
@@ -6610,7 +6910,6 @@ var $author$project$Pages$Scoreboard$Update$update = F2(
 				_List_Nil);
 		}
 	});
-var $elm$core$String$toInt = _String_toInt;
 var $author$project$Pages$Components$Types$SelectionOptionGlobal = {$: 'SelectionOptionGlobal'};
 var $author$project$Pages$Components$Types$SelectionOptionDemographics = {$: 'SelectionOptionDemographics'};
 var $author$project$Pages$Components$Types$SelectionOptionHealthCenter = {$: 'SelectionOptionHealthCenter'};
@@ -7326,9 +7625,6 @@ var $elm$http$Http$Internal$Request = function (a) {
 	return {$: 'Request', a: a};
 };
 var $elm$http$Http$request = $elm$http$Http$Internal$Request;
-var $elm$core$String$isEmpty = function (string) {
-	return string === '';
-};
 var $lukewestby$elm_http_builder$HttpBuilder$replace = F2(
 	function (old, _new) {
 		return A2(
@@ -7411,29 +7707,6 @@ var $lukewestby$elm_http_builder$HttpBuilder$toTask = function (builder) {
 		return $lukewestby$elm_http_builder$HttpBuilder$toTaskPlain(builder);
 	}
 };
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$core$Task$attempt = F2(
-	function (resultToMessage, task) {
-		return $elm$core$Task$command(
-			$elm$core$Task$Perform(
-				A2(
-					$elm$core$Task$onError,
-					A2(
-						$elm$core$Basics$composeL,
-						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-						$elm$core$Result$Err),
-					A2(
-						$elm$core$Task$andThen,
-						A2(
-							$elm$core$Basics$composeL,
-							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-							$elm$core$Result$Ok),
-						task))));
-	});
 var $lukewestby$elm_http_builder$HttpBuilder$send = F2(
 	function (tagger, builder) {
 		return A2(
@@ -7640,8 +7913,6 @@ var $author$project$Backend$Components$Sync$handleSetData = F3(
 	});
 var $elm$json$Json$Decode$list = _Json_decodeList;
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $elm$json$Json$Decode$succeed = _Json_succeed;
-var $elm$json$Json$Decode$map = _Json_map1;
 var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$nullable = function (decoder) {
@@ -7653,7 +7924,6 @@ var $elm$json$Json$Decode$nullable = function (decoder) {
 			]));
 };
 var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$map2 = _Json_map2;
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 	function (key, valDecoder, decoder) {
@@ -8114,7 +8384,6 @@ var $elm$parser$Parser$Advanced$Good = F3(
 var $elm$parser$Parser$Advanced$Parser = function (a) {
 	return {$: 'Parser', a: a};
 };
-var $elm$core$String$length = _String_length;
 var $elm$parser$Parser$Advanced$Empty = {$: 'Empty'};
 var $elm$parser$Parser$Advanced$DeadEnd = F4(
 	function (row, col, problem, contextStack) {
@@ -8352,7 +8621,6 @@ var $elm$parser$Parser$Advanced$succeed = function (a) {
 		});
 };
 var $elm$parser$Parser$succeed = $elm$parser$Parser$Advanced$succeed;
-var $elm$core$String$slice = _String_slice;
 var $elm$parser$Parser$Advanced$mapChompedString = F2(
 	function (func, _v0) {
 		var parse = _v0.a;
@@ -10090,6 +10358,305 @@ var $author$project$Backend$Reports$Update$update = F4(
 				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
 		}
 	});
+var $author$project$Backend$Dashboard$Update$allSites = A6($author$project$Backend$Components$Model$ReportParams, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing);
+var $author$project$Backend$Dashboard$Model$HandleSyncResponse = function (a) {
+	return {$: 'HandleSyncResponse', a: a};
+};
+var $author$project$Backend$Dashboard$Model$PregnancyRecord = function (healthCenter) {
+	return function (edd) {
+		return function (dateConcluded) {
+			return function (outcome) {
+				return function (deliveryLocation) {
+					return function (visits) {
+						return function (ultrasounds) {
+							return function (highRisk) {
+								return function (preEclampsiaRisk) {
+									return function (child) {
+										return {edd: edd, child: child, visits: visits, outcome: outcome, highRisk: highRisk, ultrasounds: ultrasounds, healthCenter: healthCenter, dateConcluded: dateConcluded, deliveryLocation: deliveryLocation, preEclampsiaRisk: preEclampsiaRisk};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $author$project$Backend$Dashboard$Model$ChildRecord = F4(
+	function (birthDate, birthWeight, birthWeightDate, visits) {
+		return {visits: visits, birthDate: birthDate, birthWeight: birthWeight, birthWeightDate: birthWeightDate};
+	});
+var $author$project$Backend$Dashboard$Decoder$decodeChildRecord = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'visits',
+	$elm$json$Json$Decode$list(
+		A2($elm$json$Json$Decode$field, 'd', $author$project$Gizra$NominalDate$decodeYYYYMMDD)),
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'bwd',
+		$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+		$elm$core$Maybe$Nothing,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'bw',
+			$elm$json$Json$Decode$nullable($elm$json$Json$Decode$int),
+			$elm$core$Maybe$Nothing,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'bd',
+				$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+				$elm$json$Json$Decode$succeed($author$project$Backend$Dashboard$Model$ChildRecord)))));
+var $author$project$Backend$Dashboard$Model$PrenatalVisit = F3(
+	function (date, antenatal, indicators) {
+		return {date: date, antenatal: antenatal, indicators: indicators};
+	});
+var $author$project$Backend$Dashboard$Model$IndicatorAspirin = {$: 'IndicatorAspirin'};
+var $author$project$Backend$Dashboard$Model$IndicatorCalcium = {$: 'IndicatorCalcium'};
+var $author$project$Backend$Dashboard$Model$IndicatorGwgAdequate = {$: 'IndicatorGwgAdequate'};
+var $author$project$Backend$Dashboard$Model$IndicatorGwgInadequate = {$: 'IndicatorGwgInadequate'};
+var $author$project$Backend$Dashboard$Decoder$prenatalIndicatorFromCode = function (code) {
+	switch (code) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$IndicatorGwgAdequate);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$IndicatorAspirin);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$IndicatorCalcium);
+		case 'n':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$IndicatorGwgInadequate);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Dashboard$Decoder$decodePrenatalVisit = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'ind',
+	A2(
+		$elm$json$Json$Decode$map,
+		$elm$core$List$filterMap($author$project$Backend$Dashboard$Decoder$prenatalIndicatorFromCode),
+		$elm$json$Json$Decode$list($elm$json$Json$Decode$string)),
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		't',
+		A2(
+			$elm$json$Json$Decode$map,
+			function (encounterType) {
+				return !A2(
+					$elm$core$List$member,
+					encounterType,
+					_List_fromArray(
+						['nurse-postpartum', 'chw-postpartum']));
+			},
+			$elm$json$Json$Decode$string),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'd',
+			$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Dashboard$Model$PrenatalVisit))));
+var $author$project$Backend$Dashboard$Model$HomeDelivery = {$: 'HomeDelivery'};
+var $author$project$Backend$Dashboard$Model$FacilityDelivery = {$: 'FacilityDelivery'};
+var $author$project$Backend$Dashboard$Decoder$deliveryLocationFromCode = function (code) {
+	switch (code) {
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$FacilityDelivery);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$HomeDelivery);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Dashboard$Model$OutcomeAbortion = {$: 'OutcomeAbortion'};
+var $author$project$Backend$Dashboard$Model$OutcomeLiveAtTerm = {$: 'OutcomeLiveAtTerm'};
+var $author$project$Backend$Dashboard$Model$OutcomeLivePreterm = {$: 'OutcomeLivePreterm'};
+var $author$project$Backend$Dashboard$Model$OutcomeStillbirthAtTerm = {$: 'OutcomeStillbirthAtTerm'};
+var $author$project$Backend$Dashboard$Model$OutcomeStillbirthPreterm = {$: 'OutcomeStillbirthPreterm'};
+var $author$project$Backend$Dashboard$Decoder$pregnancyOutcomeFromCode = function (code) {
+	switch (code) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$OutcomeLiveAtTerm);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$OutcomeLivePreterm);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$OutcomeStillbirthAtTerm);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$OutcomeStillbirthPreterm);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$OutcomeAbortion);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Dashboard$Decoder$decodePregnancyRecord = function () {
+	var risks = A2(
+		$elm$json$Json$Decode$field,
+		'risks',
+		$elm$json$Json$Decode$list($elm$json$Json$Decode$string));
+	return A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'child',
+		$elm$json$Json$Decode$nullable($author$project$Backend$Dashboard$Decoder$decodeChildRecord),
+		A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2(
+				$elm$json$Json$Decode$map,
+				$elm$core$List$member('pe'),
+				risks),
+			A2(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+				A2(
+					$elm$json$Json$Decode$map,
+					A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty),
+					risks),
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'us',
+					$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'visits',
+						$elm$json$Json$Decode$list($author$project$Backend$Dashboard$Decoder$decodePrenatalVisit),
+						A3(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+							'ol',
+							A2(
+								$elm$json$Json$Decode$map,
+								$elm$core$Maybe$andThen($author$project$Backend$Dashboard$Decoder$deliveryLocationFromCode),
+								$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string)),
+							A3(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+								'o',
+								A2(
+									$elm$json$Json$Decode$map,
+									$elm$core$Maybe$andThen($author$project$Backend$Dashboard$Decoder$pregnancyOutcomeFromCode),
+									$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string)),
+								A3(
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+									'dc',
+									$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+									A3(
+										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+										'edd',
+										$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+										A3(
+											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+											'hc',
+											$author$project$Gizra$Json$decodeInt,
+											$elm$json$Json$Decode$succeed($author$project$Backend$Dashboard$Model$PregnancyRecord)))))))))));
+}();
+var $author$project$Backend$Dashboard$Decoder$decodeSyncResponse = $author$project$Backend$Components$Decoder$decodeSyncResponse($author$project$Backend$Dashboard$Decoder$decodePregnancyRecord);
+var $author$project$Backend$Dashboard$Model$DashboardData = F4(
+	function (firstCohortDate, menu, records, remainingForDownload) {
+		return {menu: menu, records: records, firstCohortDate: firstCohortDate, remainingForDownload: remainingForDownload};
+	});
+var $elm$json$Json$Decode$maybe = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
+				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
+			]));
+};
+var $author$project$Backend$Components$Model$MenuData = F3(
+	function (site, healthCenters, scope) {
+		return {site: site, scope: scope, healthCenters: healthCenters};
+	});
+var $author$project$Backend$Components$Model$ScopeFull = {$: 'ScopeFull'};
+var $author$project$Backend$Components$Model$ScopeHealthCenters = {$: 'ScopeHealthCenters'};
+var $author$project$Backend$Components$Decoder$decodeMenuScope = A2(
+	$elm$json$Json$Decode$andThen,
+	function (scope) {
+		switch (scope) {
+			case 'full':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeFull);
+			case 'health_centers':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeHealthCenters);
+			default:
+				return $elm$json$Json$Decode$fail(scope + ' is unknown MenuScope type');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Components$Model$HealthCenterData = F2(
+	function (id, name) {
+		return {id: id, name: name};
+	});
+var $author$project$Backend$Components$Decoder$decodeHealthCenterData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'name',
+	$elm$json$Json$Decode$string,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'id',
+		$author$project$Gizra$Json$decodeInt,
+		$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$HealthCenterData)));
+var $author$project$Backend$Components$Decoder$decodeMenuData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'scope',
+	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
+	$elm$core$Maybe$Nothing,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'health_centers',
+		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'site',
+			$author$project$Backend$Decoder$decodeSite,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$MenuData))));
+var $author$project$Backend$Dashboard$Decoder$decodeDashboardData = A2(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+	$elm$core$Maybe$Nothing,
+	A2(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+		_List_Nil,
+		A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			$author$project$Backend$Components$Decoder$decodeMenuData,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'first_cohort_date',
+				$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+				$elm$core$Maybe$Nothing,
+				$elm$json$Json$Decode$succeed($author$project$Backend$Dashboard$Model$DashboardData)))));
+var $author$project$Backend$Dashboard$Update$update = F4(
+	function (backendUrl, csrfToken, msg, model) {
+		var config = {
+			appType: 'dashboard',
+			getData: function ($) {
+				return $.dashboardData;
+			},
+			setData: F2(
+				function (v, m) {
+					return _Utils_update(
+						m,
+						{dashboardData: v});
+				}),
+			csrfToken: csrfToken,
+			getParams: $elm$core$Basics$always($author$project$Backend$Dashboard$Update$allSites),
+			backendUrl: backendUrl,
+			dataDecoder: $author$project$Backend$Dashboard$Decoder$decodeDashboardData,
+			getRemaining: function ($) {
+				return $.totalRemaining;
+			},
+			mergeResponse: $author$project$Backend$Components$Sync$mergeSyncResponse,
+			getLastIdSynced: function ($) {
+				return $.lastIdSynced;
+			},
+			wrapHandleResponse: $author$project$Backend$Dashboard$Model$HandleSyncResponse,
+			syncResponseDecoder: $author$project$Backend$Dashboard$Decoder$decodeSyncResponse
+		};
+		switch (msg.$) {
+			case 'HandleSyncResponse':
+				var data = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
+			case 'SendSyncRequest':
+				var fromId = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSendRequest, config, fromId, model);
+			default:
+				var value = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSetData, config, value, model);
+		}
+	});
 var $author$project$Backend$Completion$Model$HandleSyncResponse = function (a) {
 	return {$: 'HandleSyncResponse', a: a};
 };
@@ -11114,14 +11681,6 @@ var $author$project$Backend$Scoreboard$Model$HandleSyncResponse = function (a) {
 	return {$: 'HandleSyncResponse', a: a};
 };
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $elm$json$Json$Decode$maybe = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
-				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
-			]));
-};
 var $author$project$Backend$Scoreboard$Model$PatientData = F6(
 	function (created, birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
 		return {ncda: ncda, created: created, eddDate: eddDate, birthDate: birthDate, nutrition: nutrition, lowBirthWeight: lowBirthWeight};
@@ -11664,52 +12223,6 @@ var $author$project$Backend$Scoreboard$Update$update = F4(
 				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
 		}
 	});
-var $author$project$Backend$Components$Model$MenuData = F3(
-	function (site, healthCenters, scope) {
-		return {site: site, scope: scope, healthCenters: healthCenters};
-	});
-var $author$project$Backend$Components$Model$ScopeFull = {$: 'ScopeFull'};
-var $author$project$Backend$Components$Model$ScopeHealthCenters = {$: 'ScopeHealthCenters'};
-var $author$project$Backend$Components$Decoder$decodeMenuScope = A2(
-	$elm$json$Json$Decode$andThen,
-	function (scope) {
-		switch (scope) {
-			case 'full':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeFull);
-			case 'health_centers':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeHealthCenters);
-			default:
-				return $elm$json$Json$Decode$fail(scope + ' is unknown MenuScope type');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$Backend$Components$Model$HealthCenterData = F2(
-	function (id, name) {
-		return {id: id, name: name};
-	});
-var $author$project$Backend$Components$Decoder$decodeHealthCenterData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'name',
-	$elm$json$Json$Decode$string,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'id',
-		$author$project$Gizra$Json$decodeInt,
-		$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$HealthCenterData)));
-var $author$project$Backend$Components$Decoder$decodeMenuData = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'scope',
-	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
-	$elm$core$Maybe$Nothing,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'health_centers',
-		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'site',
-			$author$project$Backend$Decoder$decodeSite,
-			$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$MenuData))));
 var $author$project$Backend$ReportsMenu$Update$update = F2(
 	function (msg, model) {
 		var value = msg.a;
@@ -11753,6 +12266,9 @@ var $author$project$Backend$ScoreboardMenu$Update$update = F2(
 	});
 var $author$project$Backend$Model$MsgReports = function (a) {
 	return {$: 'MsgReports', a: a};
+};
+var $author$project$Backend$Model$MsgDashboard = function (a) {
+	return {$: 'MsgDashboard', a: a};
 };
 var $author$project$Backend$Model$MsgCompletion = function (a) {
 	return {$: 'MsgCompletion', a: a};
@@ -11848,7 +12364,7 @@ var $author$project$Backend$Update$updateBackend = F4(
 						return $author$project$Backend$Model$MsgCompletionMenu(subCmds);
 					},
 					model);
-			default:
+			case 'MsgCompletion':
 				var subMsg = msg.a;
 				return A4(
 					$author$project$Backend$Utils$updateSubModel,
@@ -11859,6 +12375,19 @@ var $author$project$Backend$Update$updateBackend = F4(
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgCompletion(subCmds);
+					},
+					model);
+			default:
+				var subMsg = msg.a;
+				return A4(
+					$author$project$Backend$Utils$updateSubModel,
+					subMsg,
+					F2(
+						function (subMsg_, model_) {
+							return A4($author$project$Backend$Dashboard$Update$update, backendUrl, csrfToken, subMsg_, model_);
+						}),
+					function (subCmds) {
+						return $author$project$Backend$Model$MsgDashboard(subCmds);
 					},
 					model);
 		}
@@ -11911,6 +12440,9 @@ var $author$project$App$Utils$updateSubModel = F6(
 						appCmds
 					])));
 	});
+var $author$project$App$Model$MsgDashboardPage = function (a) {
+	return {$: 'MsgDashboardPage', a: a};
+};
 var $author$project$App$Model$MsgCompletionPage = function (a) {
 	return {$: 'MsgCompletionPage', a: a};
 };
@@ -12189,6 +12721,26 @@ var $author$project$App$Update$update = F2(
 						return $author$project$App$Model$MsgCompletionPage(subCmds);
 					},
 					model);
+			case 'MsgDashboardPage':
+				var subMsg = msg.a;
+				return A6(
+					$author$project$App$Utils$updateSubModel,
+					subMsg,
+					model.dashboardPage,
+					F2(
+						function (subMsg_, subModel) {
+							return A2($author$project$Pages$Dashboard$Update$update, subMsg_, subModel);
+						}),
+					F2(
+						function (subModel, model_) {
+							return _Utils_update(
+								model_,
+								{dashboardPage: subModel});
+						}),
+					function (subCmds) {
+						return $author$project$App$Model$MsgDashboardPage(subCmds);
+					},
+					model);
 			default:
 				var date = msg.a;
 				return _Utils_Tuple2(
@@ -12219,6 +12771,8 @@ var $author$project$Backend$ScoreboardMenu$Model$SetData = function (a) {
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$NotFound = {$: 'NotFound'};
 var $author$project$Pages$Reports$Model$emptyModel = {limitDate: $elm$core$Maybe$Nothing, startDate: $elm$core$Maybe$Nothing, reportType: $elm$core$Maybe$Nothing, nutritionReportData: $krisajenkins$remotedata$RemoteData$NotAsked, limitDateSelectorPopupState: $elm$core$Maybe$Nothing, startDateSelectorPopupState: $elm$core$Maybe$Nothing};
+var $author$project$Pages$Dashboard$Model$AllYears = {$: 'AllYears'};
+var $author$project$Pages$Dashboard$Model$emptyModel = {screen: $author$project$Pages$Dashboard$Model$DashboardScreen, trendKpi: $elm$core$Maybe$Nothing, trendYear: $author$project$Pages$Dashboard$Model$AllYears, selectedFilters: $pzp1997$assoc_list$AssocList$empty};
 var $author$project$Pages$Completion$Model$emptyModel = {takenBy: $elm$core$Maybe$Nothing, limitDate: $elm$core$Maybe$Nothing, startDate: $elm$core$Maybe$Nothing, reportType: $elm$core$Maybe$Nothing, limitDateSelectorPopupState: $elm$core$Maybe$Nothing, startDateSelectorPopupState: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Scoreboard$Model$ModeValues = {$: 'ModeValues'};
 var $author$project$Pages$Scoreboard$Model$emptyModel = {viewMode: $author$project$Pages$Scoreboard$Model$ModeValues, yearSelectorGap: 0};
@@ -12226,7 +12780,7 @@ var $author$project$Pages$Components$Model$emptyDemographicsSelection = {cell: $
 var $author$project$Pages$ReportsMenu$Model$emptyModel = {selected: false, populationSelection: $elm$core$Maybe$Nothing, selectedDemographics: $author$project$Pages$Components$Model$emptyDemographicsSelection, selectedHealthCenter: $elm$core$Maybe$Nothing};
 var $author$project$Pages$CompletionMenu$Model$emptyModel = {selected: false, populationSelection: $elm$core$Maybe$Nothing, selectedHealthCenter: $elm$core$Maybe$Nothing};
 var $author$project$Pages$ScoreboardMenu$Model$emptyModel = {selected: false, selectedDemographics: $author$project$Pages$Components$Model$emptyDemographicsSelection};
-var $author$project$Backend$Model$emptyModelBackend = {reportsData: $elm$core$Maybe$Nothing, completionData: $elm$core$Maybe$Nothing, scoreboardData: $elm$core$Maybe$Nothing, reportsMenuData: $elm$core$Maybe$Nothing, completionMenuData: $elm$core$Maybe$Nothing, scoreboardMenuData: $elm$core$Maybe$Nothing};
+var $author$project$Backend$Model$emptyModelBackend = {reportsData: $elm$core$Maybe$Nothing, dashboardData: $elm$core$Maybe$Nothing, completionData: $elm$core$Maybe$Nothing, scoreboardData: $elm$core$Maybe$Nothing, reportsMenuData: $elm$core$Maybe$Nothing, completionMenuData: $elm$core$Maybe$Nothing, scoreboardMenuData: $elm$core$Maybe$Nothing};
 var $author$project$App$Model$emptyModel = {
 	errors: _List_Nil,
 	backend: $author$project$Backend$Model$emptyModelBackend,
@@ -12237,6 +12791,7 @@ var $author$project$App$Model$emptyModel = {
 	backendUrl: '',
 	currentTime: $elm$time$Time$millisToPosix(0),
 	reportsPage: $author$project$Pages$Reports$Model$emptyModel,
+	dashboardPage: $author$project$Pages$Dashboard$Model$emptyModel,
 	completionPage: $author$project$Pages$Completion$Model$emptyModel,
 	scoreboardPage: $author$project$Pages$Scoreboard$Model$emptyModel,
 	reportsMenuPage: $author$project$Pages$ReportsMenu$Model$emptyModel,
@@ -12252,6 +12807,8 @@ var $author$project$App$Types$Scoreboard = {$: 'Scoreboard'};
 var $author$project$App$Types$ReportsMenu = {$: 'ReportsMenu'};
 var $author$project$App$Types$CompletionMenu = {$: 'CompletionMenu'};
 var $author$project$App$Types$ScoreboardMenu = {$: 'ScoreboardMenu'};
+var $author$project$App$Types$DashboardProgram = {$: 'DashboardProgram'};
+var $author$project$App$Types$DashboardFacility = {$: 'DashboardFacility'};
 var $author$project$App$Update$resolveActivePage = function (page) {
 	switch (page) {
 		case 'ncda-menu':
@@ -12266,10 +12823,26 @@ var $author$project$App$Update$resolveActivePage = function (page) {
 			return $author$project$App$Types$CompletionMenu;
 		case 'completion-results':
 			return $author$project$App$Types$Completion;
+		case 'dashboard-facility':
+			return $author$project$App$Types$DashboardFacility;
+		case 'dashboard-program':
+			return $author$project$App$Types$DashboardProgram;
 		default:
 			return $author$project$App$Types$NotFound;
 	}
 };
+var $author$project$Backend$Dashboard$Model$SetData = function (a) {
+	return {$: 'SetData', a: a};
+};
+var $author$project$App$Update$updateWithDashboardData = F2(
+	function (appData, model) {
+		return A2(
+			$author$project$App$Update$update,
+			$author$project$App$Model$MsgBackend(
+				$author$project$Backend$Model$MsgDashboard(
+					$author$project$Backend$Dashboard$Model$SetData(appData))),
+			model);
+	});
 var $author$project$App$Update$init = function (flags) {
 	var activePage = $author$project$App$Update$resolveActivePage(flags.page);
 	var model = _Utils_update(
@@ -12320,6 +12893,10 @@ var $author$project$App$Update$init = function (flags) {
 						$author$project$Backend$Model$MsgCompletion(
 							$author$project$Backend$Completion$Model$SetData(flags.appData))),
 					model);
+			case 'DashboardFacility':
+				return A2($author$project$App$Update$updateWithDashboardData, flags.appData, model);
+			case 'DashboardProgram':
+				return A2($author$project$App$Update$updateWithDashboardData, flags.appData, model);
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
@@ -12348,18 +12925,6 @@ var $author$project$App$Update$init = function (flags) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
-	switch (handler.$) {
-		case 'Normal':
-			return 0;
-		case 'MayStopPropagation':
-			return 1;
-		case 'MayPreventDefault':
-			return 2;
-		default:
-			return 3;
-	}
-};
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
@@ -12581,6 +13146,9 @@ var $author$project$Translate$ImmunisationHPV = {$: 'ImmunisationHPV'};
 var $author$project$Translate$ImmunisationIPV = {$: 'ImmunisationIPV'};
 var $author$project$Translate$ImmunisationOPV = {$: 'ImmunisationOPV'};
 var $author$project$Translate$TreatmentReview = {$: 'TreatmentReview'};
+var $author$project$Translate$PrenatalActivity = function (a) {
+	return {$: 'PrenatalActivity', a: a};
+};
 var $author$project$Translate$translateMonthYY = F3(
 	function (month, year, _short) {
 		return function (set) {
@@ -12980,6 +13548,9 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {somali: $elm$core$Maybe$Nothing, english: 'Core Exam', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'DangerSigns':
 				return {somali: $elm$core$Maybe$Nothing, english: 'Danger Signs', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+			case 'DashboardLabel':
+				var label = transId.a;
+				return $author$project$Translate$translateDashboardLabel(label);
 			case 'DeliveryLocation':
 				var location = transId.a;
 				if (location.$ === 'FacilityDelivery') {
@@ -14803,6 +15374,199 @@ var $author$project$Translate$translationSet = function (transId) {
 		}
 	}
 };
+var $author$project$Translate$translateDashboardLabel = function (label) {
+	var countOf = F3(
+		function (count, one, many) {
+			return $elm$core$String$fromInt(count) + (' ' + ((count === 1) ? one : many));
+		});
+	switch (label.$) {
+		case 'AlertBirthsMissingBirthWeight':
+			var count = label.a;
+			return {
+				somali: $elm$core$Maybe$Nothing,
+				english: A3(countOf, count, 'birth', 'births') + ' missing birth weight in last 7 days',
+				kirundi: $elm$core$Maybe$Nothing,
+				kinyarwanda: $elm$core$Maybe$Nothing
+			};
+		case 'AlertPretermRateExceeded':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Preterm rate exceeded 15% this month', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'AlertSitesWithDelayedBirthWeightRecording':
+			var count = label.a;
+			return {
+				somali: $elm$core$Maybe$Nothing,
+				english: A3(countOf, count, 'site', 'sites') + ' with delayed birth weight recording',
+				kirundi: $elm$core$Maybe$Nothing,
+				kinyarwanda: $elm$core$Maybe$Nothing
+			};
+		case 'AlertSitesWithPretermRate':
+			var count = label.a;
+			return {
+				somali: $elm$core$Maybe$Nothing,
+				english: A3(countOf, count, 'site', 'sites') + ' with preterm rate >15%',
+				kirundi: $elm$core$Maybe$Nothing,
+				kinyarwanda: $elm$core$Maybe$Nothing
+			};
+		case 'AncMissRate':
+			return {somali: $elm$core$Maybe$Nothing, english: 'ANC Miss Rate (≥1 Missed Visit)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Aspirin':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Aspirin', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Average':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Avg.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Calcium':
+			return $author$project$Translate$translationSet(
+				$author$project$Translate$PrenatalActivity($author$project$Backend$Completion$Model$PrenatalCalcium));
+		case 'CompleteAncAttendanceRate':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Complete ANC Attendance Rate', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'CriticalAlerts':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Critical Alerts', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'CurrentPerformance':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Current Performance', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'DashboardThree':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Dashboard III', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'DashboardTitleFacility':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Facility Performance Dashboard', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'DashboardTitleProgram':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Program Monitoring Dashboard', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'DashboardTwo':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Dashboard II', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Delta':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Δ', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'EarlyAncBookingRate':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Early ANC Booking Rate', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'EarlyAncCoverageFirstTrimester':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Early ANC Coverage >80 (1st Trimester)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'EarlyUltrasoundCoverage':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Early Ultrasound Coverage (<20 W)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'EarlyUltrasoundCoverageSites':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Early Ultrasound Coverage ≥85% (<20 W)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Export':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Export', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'FilterLabel':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Filter', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'FromPreviousPeriod':
+			var period = label.a;
+			return {
+				somali: $elm$core$Maybe$Nothing,
+				english: function () {
+					switch (period.$) {
+						case 'PeriodMonth':
+							return 'from prev. month';
+						case 'PeriodQuarter':
+							return 'from prev. quarter';
+						case 'PeriodWeek':
+							return 'from prev. week';
+						default:
+							return 'from prev. year';
+					}
+				}(),
+				kirundi: $elm$core$Maybe$Nothing,
+				kinyarwanda: $elm$core$Maybe$Nothing
+			};
+		case 'GraduatedMotherChildPairs':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Graduated Mother–Child Pairs', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'HealthyStart':
+			return {somali: $elm$core$Maybe$Nothing, english: 'HealthyStart', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'HighRiskPregnancyRate':
+			return {somali: $elm$core$Maybe$Nothing, english: 'High-Risk Pregnancy Rate', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'IndicatorColumn':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Indicator', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Indicators':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Indicators', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'InstitutionalTarget':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Institutional Target', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'InterventionSite':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Intervention Site', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'InterventionSiteAverage':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Int. Site Average', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'LogOut':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Log out', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'LostToFollowUp':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Lost to Follow-Up (ANC–PNC–Child)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'MedianGaAtFirstAnc':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Median GA at First ANC', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'MonthByMonthDetail':
+			return {somali: $elm$core$Maybe$Nothing, english: 'month-by-month detail', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'NoActiveAlerts':
+			return {somali: $elm$core$Maybe$Nothing, english: 'No active alerts.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'OpenMonthByMonthDetailFor':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Open month-by-month detail for', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Performance':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Perf.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'PostpartumHemorrhageRate':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Postpartum Hemorrhage Rate', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'PregnanciesFirstTrimester':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Pregnancies 1st Trimester', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'PregnanciesSecondTrimester':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Pregnancies 2nd Trimester', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'PregnanciesThirdTrimester':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Pregnancies 3rd Trimester', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Print':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Print', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'ProgramLevel':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Program-Level', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'ProgramTarget':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Program Target', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'ProgramTargetShort':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Prog. Target', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'ProphylaxisCoverage':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Prophylaxis Coverage', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Quarter':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Quarter', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Return':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Return', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'SelectKpiToPlot':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Select indicator to plot', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'SitesWithDelayedBirthWeightRecording':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Sites with Delayed/Missing Birth Weight Recording (>5%)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'SitesWithElevatedPretermOrSgaBirths':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Sites with Elevated Preterm or SGA Births (>15%)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'SitesWithInadequateGwg':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Sites with Inadequate GWG (>10%)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'SitesWithPoorChildGrowthOutcomes':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Sites with Poor Child Growth Outcomes (>10%)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Sqlns':
+			return {somali: $elm$core$Maybe$Nothing, english: 'SQLNS', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'SupplementCoverage':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Supplement Coverage', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Target':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Targ.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Time':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Time', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TotalChildrenOnRoutineCare':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Total Children on Routine Care', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TotalDeliveriesInstitutional':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Total Deliveries (Institutional)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TotalDeliveriesProgram':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Total Deliveries (Program)', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TrendChartDescriptionAllYearsFacility':
+			var kpi = label.a;
+			var years = label.b;
+			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month, with one line per year (' + (years + ') and the institutional target.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TrendChartDescriptionAllYearsProgram':
+			var kpi = label.a;
+			var years = label.b;
+			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month, with one line per year (' + (years + ').'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TrendChartDescriptionFacility':
+			var kpi = label.a;
+			var year = label.b;
+			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month for ' + (year + ', showing current performance, institutional target, and inter-site average.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'TrendChartDescriptionProgram':
+			var kpi = label.a;
+			var year = label.b;
+			return {somali: $elm$core$Maybe$Nothing, english: 'Line chart of ' + (kpi + (' by month for ' + (year + ', showing current performance.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Trends':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Trends', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'ValueColumn':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Value', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'ValueInWeeks':
+			var value = label.a;
+			return {somali: $elm$core$Maybe$Nothing, english: value + ' wk', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		case 'Week':
+			return {somali: $elm$core$Maybe$Nothing, english: 'Week', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+		default:
+			return {somali: $elm$core$Maybe$Nothing, english: 'Women Currently in ANC Care', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+	}
+};
 var $author$project$Translate$translate = F2(
 	function (language, transId) {
 		var set = $author$project$Translate$translationSet(transId);
@@ -15108,7 +15872,6 @@ var $justinmimbs$date$Date$day = A2(
 	function ($) {
 		return $.day;
 	});
-var $elm$json$Json$Encode$null = _Json_encodeNull;
 var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$tbody = _VirtualDom_node('tbody');
 var $author$project$DateSelector$Selector$Dimmed = {$: 'Dimmed'};
@@ -16122,10 +16885,6 @@ var $author$project$Pages$Components$View$viewStandardRow = A2(
 			[
 				$elm$html$Html$Attributes$class('row')
 			])));
-var $elm$core$String$left = F2(
-	function (n, string) {
-		return (n < 1) ? '' : A3($elm$core$String$slice, 0, n, string);
-	});
 var $justinmimbs$date$Date$weekdayToName = function (wd) {
 	switch (wd.$) {
 		case 'Mon':
@@ -16758,7 +17517,7 @@ var $author$project$Pages$Reports$Utils$csvRow = function () {
 		$elm$core$List$map(csvCell),
 		$elm$core$String$join(','));
 }();
-var $author$project$Pages$Reports$View$reportTableDataToCSV = function (tableData) {
+var $author$project$Pages$Components$Utils$reportTableDataToCSV = function (tableData) {
 	return A2(
 		$elm$core$String$join,
 		'\u000A',
@@ -16774,9 +17533,9 @@ var $author$project$Pages$Reports$View$reportTableDataToCSV = function (tableDat
 				A2($elm$core$List$map, $author$project$Pages$Reports$Utils$csvRow, tableData.rows))
 			]));
 };
-var $author$project$Pages$Reports$View$reportTablesDataToCSV = A2(
+var $author$project$Pages$Components$Utils$reportTablesDataToCSV = A2(
 	$elm$core$Basics$composeR,
-	$elm$core$List$map($author$project$Pages$Reports$View$reportTableDataToCSV),
+	$elm$core$List$map($author$project$Pages$Components$Utils$reportTableDataToCSV),
 	$elm$core$String$join('\u000A\u000A'));
 var $author$project$Translate$DownloadCSV = {$: 'DownloadCSV'};
 var $author$project$Pages$Reports$Model$DownloadCSV = F2(
@@ -16888,14 +17647,6 @@ var $elm$core$String$padRight = F3(
 				$elm$core$String$fromChar(_char)));
 	});
 var $elm$core$String$fromFloat = _String_fromNumber;
-var $elm$core$String$dropLeft = F2(
-	function (n, string) {
-		return (n < 1) ? string : A3(
-			$elm$core$String$slice,
-			n,
-			$elm$core$String$length(string),
-			string);
-	});
 var $elm$core$Tuple$mapFirst = F2(
 	function (func, _v0) {
 		var x = _v0.a;
@@ -16920,7 +17671,6 @@ var $myrho$elm_round$Round$splitComma = function (str) {
 		return _Utils_Tuple2('0', '0');
 	}
 };
-var $elm$core$String$startsWith = _String_startsWith;
 var $myrho$elm_round$Round$toDecimal = function (fl) {
 	var _v0 = A2(
 		$elm$core$String$split,
@@ -17578,7 +18328,7 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 		var csvFileName = 'anc-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
 		var data = A3($author$project$Pages$Reports$View$generatePrenatalReportData, language, limitDate, records);
-		var csvContent = $author$project$Pages$Reports$View$reportTablesDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTablesDataToCSV(data);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -18599,7 +19349,7 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 				mBackendGeneratedData));
 		var csvFileName = 'nutrition-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', currentDate) + '.csv')));
-		var csvContent = $author$project$Pages$Reports$View$reportTablesDataToCSV(generatedData);
+		var csvContent = $author$project$Pages$Components$Utils$reportTablesDataToCSV(generatedData);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -18846,7 +19596,7 @@ var $author$project$Pages$Reports$View$viewPeripartumReport = F6(
 		var csvFileName = 'peripartum-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
 		var data = A5($author$project$Pages$Reports$View$generatePeripartumReportData, language, startDate, limitDate, scopeRecords, recordsTillLimitDate);
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -19117,7 +19867,7 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F5(
 				}),
 			diagnosisClasses,
 			data.rows);
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -20484,7 +21234,7 @@ var $author$project$Pages$Reports$View$viewPostnatalCareReport = F5(
 		var csvFileName = 'postnatal-care-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
 		var data = A4($author$project$Pages$Reports$View$generatePostnatalCareReportData, language, site, limitDate, records);
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -20870,7 +21620,7 @@ var $author$project$Pages$Reports$View$viewFBFDistributionReport = F5(
 				}),
 			categories,
 			data.rows);
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -21189,7 +21939,7 @@ var $author$project$Pages$Reports$View$viewPrenatalContactsReport = F4(
 		var csvFileName = 'anc-contacts-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
 		var data = A3($author$project$Pages$Reports$View$generatePrenatalContactsReportData, language, limitDate, records);
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -21441,7 +22191,7 @@ var $author$project$Pages$Reports$View$viewPrenatalDiagnosesReport = F4(
 				}),
 			prenatalDiagnosisClasses,
 			data.rows);
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var csvContent = $author$project$Pages$Components$Utils$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -21934,9 +22684,6 @@ var $author$project$Pages$Completion$Utils$reportTypeToString = function (report
 		default:
 			return 'well-child';
 	}
-};
-var $author$project$Translate$PrenatalActivity = function (a) {
-	return {$: 'PrenatalActivity', a: a};
 };
 var $author$project$Pages$Completion$Utils$allPrenatalActivities = _List_fromArray(
 	[$author$project$Backend$Completion$Model$PrenatalAppointmentConfirmation, $author$project$Backend$Completion$Model$PrenatalBirthPlan, $author$project$Backend$Completion$Model$PrenatalBloodGprsTest, $author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult, $author$project$Backend$Completion$Model$PrenatalBreastExam, $author$project$Backend$Completion$Model$PrenatalBreastfeeding, $author$project$Backend$Completion$Model$PrenatalCalcium, $author$project$Backend$Completion$Model$PrenatalCorePhysicalExam, $author$project$Backend$Completion$Model$PrenatalDangerSigns, $author$project$Backend$Completion$Model$PrenatalFamilyPlanning, $author$project$Backend$Completion$Model$PrenatalFefol, $author$project$Backend$Completion$Model$PrenatalFolate, $author$project$Backend$Completion$Model$PrenatalFollowUp, $author$project$Backend$Completion$Model$PrenatalGuExam, $author$project$Backend$Completion$Model$PrenatalHealthEducation, $author$project$Backend$Completion$Model$PrenatalHemoglobinTest, $author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult, $author$project$Backend$Completion$Model$PrenatalHepatitisBTest, $author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult, $author$project$Backend$Completion$Model$PrenatalHIVPCRTest, $author$project$Backend$Completion$Model$PrenatalHIVPCRTestResult, $author$project$Backend$Completion$Model$PrenatalHIVTest, $author$project$Backend$Completion$Model$PrenatalHIVTestResult, $author$project$Backend$Completion$Model$PrenatalIron, $author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod, $author$project$Backend$Completion$Model$PrenatalMalariaTest, $author$project$Backend$Completion$Model$PrenatalMalariaTestResult, $author$project$Backend$Completion$Model$PrenatalMebendazole, $author$project$Backend$Completion$Model$PrenatalMedicalHistory, $author$project$Backend$Completion$Model$PrenatalMedication, $author$project$Backend$Completion$Model$PrenatalMedicationDistribution, $author$project$Backend$Completion$Model$PrenatalMentalHealth, $author$project$Backend$Completion$Model$PrenatalMMS, $author$project$Backend$Completion$Model$PrenatalNutrition, $author$project$Backend$Completion$Model$PrenatalObstetricalExam, $author$project$Backend$Completion$Model$PrenatalObstetricHistory, $author$project$Backend$Completion$Model$PrenatalObstetricHistoryStep2, $author$project$Backend$Completion$Model$PrenatalOutsideCare, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTest, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTestResult, $author$project$Backend$Completion$Model$PrenatalPhoto, $author$project$Backend$Completion$Model$PrenatalPostpartumTreatmentReview, $author$project$Backend$Completion$Model$PrenatalPregnancyOutcome, $author$project$Backend$Completion$Model$PrenatalPregnancyTesting, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTest, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTestResult, $author$project$Backend$Completion$Model$PrenatalResource, $author$project$Backend$Completion$Model$PrenatalSendToHC, $author$project$Backend$Completion$Model$PrenatalSocialHistory, $author$project$Backend$Completion$Model$PrenatalSpecialityCare, $author$project$Backend$Completion$Model$PrenatalSymptomReview, $author$project$Backend$Completion$Model$PrenatalSyphilisTest, $author$project$Backend$Completion$Model$PrenatalSyphilisTestResult, $author$project$Backend$Completion$Model$PrenatalTetanusImmunisation, $author$project$Backend$Completion$Model$PrenatalTreatmentReview, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTest, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult, $author$project$Backend$Completion$Model$PrenatalVitals, $author$project$Backend$Completion$Model$PrenatalVitalsRecheck]);
@@ -44523,6 +45270,13 @@ var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
 		return _List_fromArray(
 			[provinceInput, districtInput, sectorInput, cellInput, villageInput]);
 	});
+var $author$project$Pages$Components$Utils$healthCentersByName = $elm$core$List$sortBy(
+	A2(
+		$elm$core$Basics$composeR,
+		function ($) {
+			return $.name;
+		},
+		$elm$core$String$toLower));
 var $author$project$Pages$Components$View$viewHealthCenterSelection = F6(
 	function (language, data, urlPrefix, selectedHealthCenter, setHealthCenterMsg, selectionMadeMsg) {
 		var options = A2(
@@ -44530,12 +45284,7 @@ var $author$project$Pages$Components$View$viewHealthCenterSelection = F6(
 			function (healthCenter) {
 				return _Utils_Tuple2(healthCenter.name, healthCenter.id);
 			},
-			A2(
-				$elm$core$List$sortBy,
-				function ($) {
-					return $.name;
-				},
-				data.healthCenters));
+			$author$project$Pages$Components$Utils$healthCentersByName(data.healthCenters));
 		return _Utils_Tuple2(
 			_List_fromArray(
 				[
@@ -44876,7 +45625,3296 @@ var $author$project$Pages$ScoreboardMenu$View$view = F3(
 				return A3($author$project$Pages$ScoreboardMenu$View$viewMenu, language, data, model);
 			});
 	});
+var $author$project$Pages$Dashboard$Model$Program = {$: 'Program'};
+var $author$project$Pages$Dashboard$Model$Facility = {$: 'Facility'};
 var $author$project$Translate$WrongPage = {$: 'WrongPage'};
+var $elm_community$list_extra$List$Extra$find = F2(
+	function (predicate, list) {
+		find:
+		while (true) {
+			if (!list.b) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var first = list.a;
+				var rest = list.b;
+				if (predicate(first)) {
+					return $elm$core$Maybe$Just(first);
+				} else {
+					var $temp$predicate = predicate,
+						$temp$list = rest;
+					predicate = $temp$predicate;
+					list = $temp$list;
+					continue find;
+				}
+			}
+		}
+	});
+var $author$project$Pages$Dashboard$Model$FilterSite = {$: 'FilterSite'};
+var $author$project$Pages$Dashboard$Model$FilterTime = {$: 'FilterTime'};
+var $author$project$Pages$Dashboard$Utils$drillYears = F2(
+	function (currentDate, firstCohortDate) {
+		var currentYear = $justinmimbs$date$Date$year(currentDate);
+		var firstYear = A2(
+			$elm$core$Maybe$withDefault,
+			currentYear,
+			A2(
+				$elm$core$Maybe$map,
+				A2(
+					$elm$core$Basics$composeR,
+					$justinmimbs$date$Date$year,
+					$elm$core$Basics$min(currentYear)),
+				firstCohortDate));
+		return $elm$core$List$reverse(
+			A2($elm$core$List$range, firstYear, currentYear));
+	});
+var $elm$core$List$sort = function (xs) {
+	return A2($elm$core$List$sortBy, $elm$core$Basics$identity, xs);
+};
+var $author$project$Pages$Dashboard$Model$Filter = F3(
+	function (key, options, selected) {
+		return {key: key, options: options, selected: selected};
+	});
+var $author$project$Pages$Dashboard$Model$OptionAll = {$: 'OptionAll'};
+var $author$project$Pages$Dashboard$Model$OptionName = function (a) {
+	return {$: 'OptionName', a: a};
+};
+var $author$project$Pages$Dashboard$Model$PeriodWeek = {$: 'PeriodWeek'};
+var $author$project$Pages$Dashboard$Model$PeriodYear = {$: 'PeriodYear'};
+var $author$project$Pages$Dashboard$Model$PeriodMonth = {$: 'PeriodMonth'};
+var $author$project$Pages$Dashboard$Model$OptionPeriod = function (a) {
+	return {$: 'OptionPeriod', a: a};
+};
+var $author$project$Pages$Dashboard$Model$PeriodQuarter = {$: 'PeriodQuarter'};
+var $author$project$Pages$Dashboard$Model$FilterLocation = {$: 'FilterLocation'};
+var $author$project$Pages$Dashboard$Model$OptionHealthCenter = function (a) {
+	return {$: 'OptionHealthCenter', a: a};
+};
+var $author$project$Pages$Dashboard$Utils$filtersFor = F3(
+	function (dashboard, site, healthCenters) {
+		var siteOptions = A2(
+			$elm$core$List$map,
+			$author$project$Pages$Dashboard$Model$OptionHealthCenter,
+			$author$project$Pages$Components$Utils$healthCentersByName(healthCenters));
+		var timeFilter = A3(
+			$author$project$Pages$Dashboard$Model$Filter,
+			$author$project$Pages$Dashboard$Model$FilterTime,
+			A2(
+				$elm$core$List$map,
+				$author$project$Pages$Dashboard$Model$OptionPeriod,
+				_List_fromArray(
+					[$author$project$Pages$Dashboard$Model$PeriodWeek, $author$project$Pages$Dashboard$Model$PeriodMonth, $author$project$Pages$Dashboard$Model$PeriodQuarter, $author$project$Pages$Dashboard$Model$PeriodYear])),
+			$author$project$Pages$Dashboard$Model$OptionPeriod($author$project$Pages$Dashboard$Model$PeriodMonth));
+		if (dashboard.$ === 'Facility') {
+			return _List_fromArray(
+				[
+					A3(
+					$author$project$Pages$Dashboard$Model$Filter,
+					$author$project$Pages$Dashboard$Model$FilterSite,
+					siteOptions,
+					A2(
+						$elm$core$Maybe$withDefault,
+						$author$project$Pages$Dashboard$Model$OptionAll,
+						$elm$core$List$head(siteOptions))),
+					timeFilter
+				]);
+		} else {
+			var districtOptions = A2(
+				$elm$core$List$map,
+				$author$project$Pages$Dashboard$Model$OptionName,
+				$elm$core$List$sort(
+					A2(
+						$elm$core$List$map,
+						function ($) {
+							return $.name;
+						},
+						$pzp1997$assoc_list$AssocList$values(
+							$author$project$Utils$GeoLocation$getGeoDistricts(site)))));
+			return _List_fromArray(
+				[
+					A3(
+					$author$project$Pages$Dashboard$Model$Filter,
+					$author$project$Pages$Dashboard$Model$FilterLocation,
+					A2($elm$core$List$cons, $author$project$Pages$Dashboard$Model$OptionAll, districtOptions),
+					$author$project$Pages$Dashboard$Model$OptionAll),
+					A3(
+					$author$project$Pages$Dashboard$Model$Filter,
+					$author$project$Pages$Dashboard$Model$FilterSite,
+					A2($elm$core$List$cons, $author$project$Pages$Dashboard$Model$OptionAll, siteOptions),
+					$author$project$Pages$Dashboard$Model$OptionAll),
+					timeFilter
+				]);
+		}
+	});
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $author$project$Pages$Dashboard$Model$Print = {$: 'Print'};
+var $author$project$Pages$Dashboard$Model$Export = {$: 'Export'};
+var $author$project$Pages$Dashboard$Model$LogOut = {$: 'LogOut'};
+var $author$project$Pages$Dashboard$Model$PrintPage = {$: 'PrintPage'};
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
+var $author$project$Pages$Dashboard$Model$DashboardTwo = {$: 'DashboardTwo'};
+var $author$project$Pages$Dashboard$Model$HealthyStart = {$: 'HealthyStart'};
+var $author$project$Pages$Dashboard$Model$DashboardThree = {$: 'DashboardThree'};
+var $author$project$Translate$DashboardLabel = function (a) {
+	return {$: 'DashboardLabel', a: a};
+};
+var $author$project$Pages$Dashboard$View$translateLabel = F2(
+	function (language, labelId) {
+		return A2(
+			$author$project$Translate$translate,
+			language,
+			$author$project$Translate$DashboardLabel(labelId));
+	});
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $author$project$Pages$Dashboard$View$bannerActionClass = 'text-lg font-semibold underline decoration-2 underline-offset-4 hover:text-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
+var $author$project$Pages$Dashboard$View$viewBannerAction = F3(
+	function (msg, labelId, language) {
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$type_('button'),
+					$elm$html$Html$Events$onClick(msg),
+					$elm$html$Html$Attributes$class($author$project$Pages$Dashboard$View$bannerActionClass)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Pages$Dashboard$View$translateLabel, language, labelId))
+				]));
+	});
+var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
+var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
+var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var $author$project$Pages$Dashboard$View$viewDashboardIcon = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return A2(
+			$elm$svg$Svg$svg,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$viewBox('0 0 24 24'),
+					$elm$svg$Svg$Attributes$class('h-7 w-7'),
+					$elm$svg$Svg$Attributes$fill('currentColor')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$path,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$d('M4 21V7l8-4 8 4v14h-5v-5h-6v5H4Zm7-9h2v-2h2V9h-2V7h-2v2H9v2h2v1Z')
+						]),
+					_List_Nil)
+				]));
+	} else {
+		return A2(
+			$elm$svg$Svg$svg,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$viewBox('0 0 24 24'),
+					$elm$svg$Svg$Attributes$class('h-7 w-7'),
+					$elm$svg$Svg$Attributes$fill('currentColor')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx('12'),
+							$elm$svg$Svg$Attributes$cy('5'),
+							$elm$svg$Svg$Attributes$r('2.4')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx('5'),
+							$elm$svg$Svg$Attributes$cy('12'),
+							$elm$svg$Svg$Attributes$r('2.4')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx('19'),
+							$elm$svg$Svg$Attributes$cy('12'),
+							$elm$svg$Svg$Attributes$r('2.4')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx('12'),
+							$elm$svg$Svg$Attributes$cy('19'),
+							$elm$svg$Svg$Attributes$r('2.4')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$path,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$d('M12 7v10M7 12h10'),
+							$elm$svg$Svg$Attributes$stroke('currentColor'),
+							$elm$svg$Svg$Attributes$strokeWidth('1.6')
+						]),
+					_List_Nil)
+				]));
+	}
+};
+var $author$project$Pages$Dashboard$Model$DashboardTitleProgram = {$: 'DashboardTitleProgram'};
+var $author$project$Pages$Dashboard$Model$DashboardTitleFacility = {$: 'DashboardTitleFacility'};
+var $author$project$Pages$Dashboard$View$viewBanner = F4(
+	function (language, dashboard, siteName, exportMsg) {
+		var _v0 = function () {
+			if (dashboard.$ === 'Facility') {
+				return _Utils_Tuple2($author$project$Pages$Dashboard$Model$DashboardTwo, $author$project$Pages$Dashboard$Model$DashboardTitleFacility);
+			} else {
+				return _Utils_Tuple2($author$project$Pages$Dashboard$Model$DashboardThree, $author$project$Pages$Dashboard$Model$DashboardTitleProgram);
+			}
+		}();
+		var number = _v0.a;
+		var title = _v0.b;
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('grid grid-cols-1 items-center gap-3 bg-accent px-4 py-4 text-white md:grid-cols-3 md:px-6')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('flex items-center gap-3')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('flex h-12 w-12 shrink-0 items-center justify-center rounded bg-white/90 text-accent'),
+									A2($elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
+								]),
+							_List_fromArray(
+								[
+									$author$project$Pages$Dashboard$View$viewDashboardIcon(dashboard)
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$p,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('text-xl font-extrabold underline decoration-white/60 underline-offset-4')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Pages$Dashboard$View$translateLabel, language, number))
+										])),
+									A2(
+									$elm$html$Html$p,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('text-sm text-white/90')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Pages$Dashboard$View$translateLabel, language, title))
+										]))
+								]))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('text-center')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$h1,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('border-b border-white/60 pb-1 text-2xl font-extrabold tracking-tight md:text-3xl')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$HealthyStart))
+								])),
+							A2(
+							$elm$html$Html$p,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('mt-1 text-lg font-semibold')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(siteName)
+								]))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('ehs-dashboard__actions flex items-center justify-start gap-6 md:justify-end')
+						]),
+					_List_fromArray(
+						[
+							A3($author$project$Pages$Dashboard$View$viewBannerAction, exportMsg, $author$project$Pages$Dashboard$Model$Export, language),
+							A3($author$project$Pages$Dashboard$View$viewBannerAction, $author$project$Pages$Dashboard$Model$PrintPage, $author$project$Pages$Dashboard$Model$Print, language),
+							A2(
+							$elm$html$Html$a,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$href('/user/logout'),
+									$elm$html$Html$Attributes$class($author$project$Pages$Dashboard$View$bannerActionClass)
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$LogOut))
+								]))
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewTile = F2(
+	function (language, tile) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('flex flex-col overflow-hidden rounded ring-1 ring-slate-200')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('flex min-h-[3.25rem] items-center justify-center bg-accent px-2 py-1.5 text-center text-[11px] font-bold leading-tight text-white')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, tile.label))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('bg-white py-1 text-center text-xl font-extrabold text-accent')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(tile.value)
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewTileRow = F2(
+	function (language, tiles) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9')
+				]),
+			A2(
+				$elm$core$List$map,
+				$author$project$Pages$Dashboard$View$viewTile(language),
+				tiles));
+	});
+var $author$project$Pages$Dashboard$Utils$dashboardSlug = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return 'facility';
+	} else {
+		return 'program';
+	}
+};
+var $elm$html$Html$h2 = _VirtualDom_node('h2');
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $author$project$Pages$Dashboard$Model$Return = {$: 'Return'};
+var $author$project$Pages$Dashboard$View$onEscape = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'keydown',
+		A2(
+			$elm$json$Json$Decode$andThen,
+			function (key) {
+				return (key === 'Escape') ? $elm$json$Json$Decode$succeed(msg) : $elm$json$Json$Decode$fail('not Escape');
+			},
+			A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string)));
+};
+var $elm$html$Html$Attributes$tabindex = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'tabIndex',
+		$elm$core$String$fromInt(n));
+};
+var $elm$core$List$map3 = _List_map3;
+var $author$project$Pages$Dashboard$View$noValue = '—';
+var $author$project$Pages$Dashboard$Model$ValueInWeeks = function (a) {
+	return {$: 'ValueInWeeks', a: a};
+};
+var $author$project$Pages$Dashboard$View$formatValue = F2(
+	function (language, unit) {
+		return A2(
+			$elm_community$maybe_extra$Maybe$Extra$unwrap,
+			$author$project$Pages$Dashboard$View$noValue,
+			function (value) {
+				if (unit.$ === 'UnitPercent') {
+					return $elm$core$String$fromInt(
+						$elm$core$Basics$round(value)) + '%';
+				} else {
+					return A2(
+						$author$project$Pages$Dashboard$View$translateLabel,
+						language,
+						$author$project$Pages$Dashboard$Model$ValueInWeeks(
+							A2($myrho$elm_round$Round$round, 1, value)));
+				}
+			});
+	});
+var $author$project$Pages$Dashboard$Utils$monthLabels = function (language) {
+	return A2(
+		$elm$core$List$map,
+		function (month) {
+			return A2(
+				$author$project$Translate$translate,
+				language,
+				A2($author$project$Translate$ResolveMonth, true, month));
+		},
+		_List_fromArray(
+			[$elm$time$Time$Jan, $elm$time$Time$Feb, $elm$time$Time$Mar, $elm$time$Time$Apr, $elm$time$Time$May, $elm$time$Time$Jun, $elm$time$Time$Jul, $elm$time$Time$Aug, $elm$time$Time$Sep, $elm$time$Time$Oct, $elm$time$Time$Nov, $elm$time$Time$Dec]));
+};
+var $author$project$Pages$Dashboard$View$signedValue = function (value) {
+	var rounded = $elm$core$Basics$round(value);
+	return _Utils_ap(
+		(rounded > 0) ? '+' : '',
+		$elm$core$String$fromInt(rounded));
+};
+var $author$project$Pages$Dashboard$View$drillRows = F5(
+	function (language, dashboard, years, kpi, series) {
+		var format = A2($author$project$Pages$Dashboard$View$formatValue, language, kpi.unit);
+		var yearColumns = function (year) {
+			var performance = series.performance(year);
+			var third = function () {
+				if (dashboard.$ === 'Facility') {
+					return A2(
+						$elm$core$List$map,
+						format,
+						series.average(year));
+				} else {
+					return A2(
+						$elm$core$List$map,
+						A2($elm_community$maybe_extra$Maybe$Extra$unwrap, $author$project$Pages$Dashboard$View$noValue, $author$project$Pages$Dashboard$View$signedValue),
+						A3(
+							$elm$core$List$map2,
+							$elm$core$Maybe$map2($elm$core$Basics$sub),
+							performance,
+							series.target));
+				}
+			}();
+			return A4(
+				$elm$core$List$map3,
+				F3(
+					function (perf, targ, thirdValue) {
+						return _List_fromArray(
+							[
+								format(perf),
+								format(targ),
+								thirdValue
+							]);
+					}),
+				performance,
+				series.target,
+				third);
+		};
+		var byYear = A2($elm$core$List$map, yearColumns, years);
+		return A2(
+			$elm$core$List$indexedMap,
+			F2(
+				function (monthIndex, monthName) {
+					return _Utils_Tuple2(
+						monthName,
+						A2(
+							$elm$core$List$concatMap,
+							A2(
+								$elm$core$Basics$composeR,
+								$elm_community$list_extra$List$Extra$getAt(monthIndex),
+								$elm$core$Maybe$withDefault(_List_Nil)),
+							byYear));
+				}),
+			$author$project$Pages$Dashboard$Utils$monthLabels(language));
+	});
+var $author$project$Pages$Dashboard$Model$CloseDrill = {$: 'CloseDrill'};
+var $author$project$Pages$Dashboard$Model$DownloadCSV = F2(
+	function (a, b) {
+		return {$: 'DownloadCSV', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$Model$Delta = {$: 'Delta'};
+var $author$project$Pages$Dashboard$Model$Target = {$: 'Target'};
+var $author$project$Pages$Dashboard$Model$Average = {$: 'Average'};
+var $author$project$Pages$Dashboard$Model$Performance = {$: 'Performance'};
+var $author$project$Pages$Dashboard$View$drillColumnLabels = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return _List_fromArray(
+			[$author$project$Pages$Dashboard$Model$Performance, $author$project$Pages$Dashboard$Model$Target, $author$project$Pages$Dashboard$Model$Average]);
+	} else {
+		return _List_fromArray(
+			[$author$project$Pages$Dashboard$Model$Performance, $author$project$Pages$Dashboard$Model$Target, $author$project$Pages$Dashboard$Model$Delta]);
+	}
+};
+var $author$project$Pages$Model$MetricsResultsTableData = F3(
+	function (heading, captions, rows) {
+		return {rows: rows, heading: heading, captions: captions};
+	});
+var $author$project$Pages$Dashboard$View$drillExportMsg = F6(
+	function (language, dashboard, fileName, years, kpi, rows) {
+		var captions = A2(
+			$elm$core$List$cons,
+			A2($author$project$Translate$translate, language, $author$project$Translate$MonthLabel),
+			A2(
+				$elm$core$List$concatMap,
+				function (year) {
+					return A2(
+						$elm$core$List$map,
+						function (labelId) {
+							return $elm$core$String$fromInt(year) + (' ' + A2($author$project$Pages$Dashboard$View$translateLabel, language, labelId));
+						},
+						$author$project$Pages$Dashboard$View$drillColumnLabels(dashboard));
+				},
+				years));
+		return A2(
+			$author$project$Pages$Dashboard$Model$DownloadCSV,
+			fileName,
+			$author$project$Pages$Components$Utils$reportTableDataToCSV(
+				A3(
+					$author$project$Pages$Model$MetricsResultsTableData,
+					A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label),
+					captions,
+					A2(
+						$elm$core$List$map,
+						function (_v0) {
+							var monthName = _v0.a;
+							var cells = _v0.b;
+							return A2($elm$core$List$cons, monthName, cells);
+						},
+						rows))));
+	});
+var $author$project$Pages$Dashboard$View$viewSubHeaderCell = F3(
+	function (language, year, labelId) {
+		return A2(
+			$elm$html$Html$th,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('bg-slate-200 px-3 py-1.5 font-semibold text-slate-800'),
+					A2($elm$html$Html$Attributes$attribute, 'scope', 'col')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('sr-only')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							$elm$core$String$fromInt(year) + ' ')
+						])),
+					$elm$html$Html$text(
+					A2($author$project$Pages$Dashboard$View$translateLabel, language, labelId))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewSubHeaders = F3(
+	function (language, dashboard, year) {
+		return A2(
+			$elm$core$List$map,
+			A2($author$project$Pages$Dashboard$View$viewSubHeaderCell, language, year),
+			$author$project$Pages$Dashboard$View$drillColumnLabels(dashboard));
+	});
+var $author$project$Pages$Dashboard$View$viewDrillMonthRow = F2(
+	function (monthIndex, _v0) {
+		var monthName = _v0.a;
+		var cells = _v0.b;
+		var zebra = (!A2($elm$core$Basics$modBy, 2, monthIndex)) ? 'bg-slate-50' : 'bg-slate-100';
+		return A2(
+			$elm$html$Html$tr,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class(zebra)
+				]),
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$html$Html$th,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('bg-slate-300 px-3 py-1.5 text-left font-semibold text-slate-900'),
+							A2($elm$html$Html$Attributes$attribute, 'scope', 'row')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(monthName)
+						])),
+				A2(
+					$elm$core$List$map,
+					function (cellValue) {
+						return A2(
+							$elm$html$Html$td,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('px-3 py-1.5 text-center text-slate-800')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(cellValue)
+								]));
+					},
+					cells)));
+	});
+var $elm$html$Html$Attributes$colspan = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'colspan',
+		$elm$core$String$fromInt(n));
+};
+var $author$project$Pages$Dashboard$View$viewYearGroupHeader = function (year) {
+	return A2(
+		$elm$html$Html$th,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('bg-brand-navy p-2 text-lg font-bold text-white'),
+				$elm$html$Html$Attributes$colspan(3),
+				A2($elm$html$Html$Attributes$attribute, 'scope', 'colgroup')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				$elm$core$String$fromInt(year))
+			]));
+};
+var $author$project$Pages$Dashboard$View$viewDrillTable = F4(
+	function (language, dashboard, years, rows) {
+		var monthHeader = function (backgroundClass) {
+			return A2(
+				$elm$html$Html$th,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class(backgroundClass + ' p-2'),
+						A2($elm$html$Html$Attributes$attribute, 'scope', 'col')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$span,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('sr-only')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								A2($author$project$Translate$translate, language, $author$project$Translate$MonthLabel))
+							]))
+					]));
+		};
+		return A2(
+			$elm$html$Html$table,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('w-full min-w-[760px] border-collapse text-sm')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$thead,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$tr,
+							_List_Nil,
+							A2(
+								$elm$core$List$cons,
+								monthHeader('bg-brand-navy'),
+								A2($elm$core$List$map, $author$project$Pages$Dashboard$View$viewYearGroupHeader, years))),
+							A2(
+							$elm$html$Html$tr,
+							_List_Nil,
+							A2(
+								$elm$core$List$cons,
+								monthHeader('bg-slate-200'),
+								A2(
+									$elm$core$List$concatMap,
+									A2($author$project$Pages$Dashboard$View$viewSubHeaders, language, dashboard),
+									years)))
+						])),
+					A2(
+					$elm$html$Html$tbody,
+					_List_Nil,
+					A2($elm$core$List$indexedMap, $author$project$Pages$Dashboard$View$viewDrillMonthRow, rows))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewDrillAction = F3(
+	function (language, msg, labelId) {
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$type_('button'),
+					$elm$html$Html$Events$onClick(msg),
+					$elm$html$Html$Attributes$class('text-lg font-semibold text-accent underline decoration-2 underline-offset-4 hover:text-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Pages$Dashboard$View$translateLabel, language, labelId))
+				]));
+	});
+var $author$project$Pages$Dashboard$Model$MonthByMonthDetail = {$: 'MonthByMonthDetail'};
+var $author$project$Pages$Dashboard$View$viewDrillDown = F6(
+	function (language, dashboard, fileName, years, kpi, series) {
+		var kpiLabel = A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label);
+		var rows = A5($author$project$Pages$Dashboard$View$drillRows, language, dashboard, years, kpi, series);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('ehs-dashboard__drill fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4'),
+					$elm$html$Html$Attributes$id($author$project$Pages$Dashboard$Utils$drillDialogId),
+					$elm$html$Html$Attributes$tabindex(-1),
+					$author$project$Pages$Dashboard$View$onEscape($author$project$Pages$Dashboard$Model$CloseDrill),
+					A2($elm$html$Html$Attributes$attribute, 'role', 'dialog'),
+					A2($elm$html$Html$Attributes$attribute, 'aria-modal', 'true'),
+					A2(
+					$elm$html$Html$Attributes$attribute,
+					'aria-label',
+					kpiLabel + (' — ' + A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$MonthByMonthDetail)))
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('mt-10 w-full max-w-[1200px] rounded-lg bg-white p-5 shadow-2xl md:p-6')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$h2,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('mb-3 text-2xl font-bold text-accent')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(kpiLabel)
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('overflow-x-auto')
+								]),
+							_List_fromArray(
+								[
+									A4($author$project$Pages$Dashboard$View$viewDrillTable, language, dashboard, years, rows)
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('mt-4 flex justify-end gap-6')
+								]),
+							_List_fromArray(
+								[
+									A3(
+									$author$project$Pages$Dashboard$View$viewDrillAction,
+									language,
+									A6($author$project$Pages$Dashboard$View$drillExportMsg, language, dashboard, fileName, years, kpi, rows),
+									$author$project$Pages$Dashboard$Model$Export),
+									A3($author$project$Pages$Dashboard$View$viewDrillAction, language, $author$project$Pages$Dashboard$Model$PrintPage, $author$project$Pages$Dashboard$Model$Print),
+									A3($author$project$Pages$Dashboard$View$viewDrillAction, language, $author$project$Pages$Dashboard$Model$CloseDrill, $author$project$Pages$Dashboard$Model$Return)
+								]))
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$Model$FilterLabel = {$: 'FilterLabel'};
+var $elm$html$Html$Attributes$for = $elm$html$Html$Attributes$stringProperty('htmlFor');
+var $elm$html$Html$label = _VirtualDom_node('label');
+var $author$project$Pages$Dashboard$Model$SetFilter = F2(
+	function (a, b) {
+		return {$: 'SetFilter', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$Model$Time = {$: 'Time'};
+var $author$project$Pages$Dashboard$Model$InterventionSite = {$: 'InterventionSite'};
+var $author$project$Pages$Dashboard$Utils$filterLabel = function (key) {
+	switch (key.$) {
+		case 'FilterLocation':
+			return $author$project$Translate$Location;
+		case 'FilterSite':
+			return $author$project$Translate$DashboardLabel($author$project$Pages$Dashboard$Model$InterventionSite);
+		default:
+			return $author$project$Translate$DashboardLabel($author$project$Pages$Dashboard$Model$Time);
+	}
+};
+var $author$project$Pages$Dashboard$Utils$filterKeySlug = function (key) {
+	switch (key.$) {
+		case 'FilterLocation':
+			return 'location';
+		case 'FilterSite':
+			return 'site';
+		default:
+			return 'time';
+	}
+};
+var $author$project$Pages$Dashboard$Model$Week = {$: 'Week'};
+var $author$project$Pages$Dashboard$Model$Quarter = {$: 'Quarter'};
+var $author$project$Pages$Dashboard$Utils$filterOptionLabel = F2(
+	function (language, option) {
+		switch (option.$) {
+			case 'OptionAll':
+				return A2($author$project$Translate$translate, language, $author$project$Translate$All);
+			case 'OptionHealthCenter':
+				var healthCenter = option.a;
+				return healthCenter.name;
+			case 'OptionName':
+				var name = option.a;
+				return name;
+			default:
+				var period = option.a;
+				return A2(
+					$author$project$Translate$translate,
+					language,
+					function () {
+						switch (period.$) {
+							case 'PeriodMonth':
+								return $author$project$Translate$MonthLabel;
+							case 'PeriodQuarter':
+								return $author$project$Translate$DashboardLabel($author$project$Pages$Dashboard$Model$Quarter);
+							case 'PeriodWeek':
+								return $author$project$Translate$DashboardLabel($author$project$Pages$Dashboard$Model$Week);
+							default:
+								return $author$project$Translate$YearLabel;
+						}
+					}());
+		}
+	});
+var $author$project$Pages$Dashboard$Utils$filterOptionValue = function (option) {
+	switch (option.$) {
+		case 'OptionAll':
+			return 'all';
+		case 'OptionHealthCenter':
+			var healthCenter = option.a;
+			return 'health-center-' + $elm$core$String$fromInt(healthCenter.id);
+		case 'OptionName':
+			var name = option.a;
+			return 'name-' + name;
+		default:
+			var period = option.a;
+			switch (period.$) {
+				case 'PeriodMonth':
+					return 'month';
+				case 'PeriodQuarter':
+					return 'quarter';
+				case 'PeriodWeek':
+					return 'week';
+				default:
+					return 'year';
+			}
+	}
+};
+var $author$project$Pages$Dashboard$Utils$selectedFilterValue = F2(
+	function (model, filter) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			filter.selected,
+			A2($pzp1997$assoc_list$AssocList$get, filter.key, model.selectedFilters));
+	});
+var $author$project$Pages$Dashboard$View$viewFilterControl = F4(
+	function (language, dashboard, model, filter) {
+		var selectedOption = A2($author$project$Pages$Dashboard$Utils$selectedFilterValue, model, filter);
+		var setFilter = function (optionValue) {
+			return A2(
+				$elm$core$Maybe$withDefault,
+				$author$project$Pages$Dashboard$Model$NoOp,
+				A2(
+					$elm$core$Maybe$map,
+					$author$project$Pages$Dashboard$Model$SetFilter(filter.key),
+					$elm$core$List$head(
+						A2(
+							$elm$core$List$filter,
+							function (option) {
+								return _Utils_eq(
+									$author$project$Pages$Dashboard$Utils$filterOptionValue(option),
+									optionValue);
+							},
+							filter.options))));
+		};
+		var selectId = 'filter-' + ($author$project$Pages$Dashboard$Utils$dashboardSlug(dashboard) + ('-' + $author$project$Pages$Dashboard$Utils$filterKeySlug(filter.key)));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('flex flex-col gap-1')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$label,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$for(selectId),
+							$elm$html$Html$Attributes$class('text-sm font-bold text-slate-800')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2(
+								$author$project$Translate$translate,
+								language,
+								$author$project$Pages$Dashboard$Utils$filterLabel(filter.key)))
+						])),
+					A2(
+					$elm$html$Html$select,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$id(selectId),
+							$elm$html$Html$Attributes$class('rounded border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'),
+							$elm$html$Html$Events$onInput(setFilter)
+						]),
+					A2(
+						$elm$core$List$map,
+						function (filterOption) {
+							return A2(
+								$elm$html$Html$option,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$value(
+										$author$project$Pages$Dashboard$Utils$filterOptionValue(filterOption)),
+										$elm$html$Html$Attributes$selected(
+										_Utils_eq(filterOption, selectedOption))
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(
+										A2($author$project$Pages$Dashboard$Utils$filterOptionLabel, language, filterOption))
+									]));
+						},
+						filter.options))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewFilterRow = F4(
+	function (language, dashboard, filters, model) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('ehs-dashboard__filters flex flex-wrap items-end gap-x-5 gap-y-3')
+				]),
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('rounded bg-accent px-3 py-1 text-sm font-semibold text-white')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$FilterLabel))
+						])),
+				A2(
+					$elm$core$List$map,
+					A3($author$project$Pages$Dashboard$View$viewFilterControl, language, dashboard, model),
+					filters)));
+	});
+var $author$project$Gizra$NominalDate$formatYYYYMMDD = function (date) {
+	return A2($justinmimbs$date$Date$format, 'yyyy-MM-dd', date);
+};
+var $author$project$Pages$Dashboard$Model$Tile = F2(
+	function (label, value) {
+		return {label: label, value: value};
+	});
+var $elm_community$list_extra$List$Extra$count = function (predicate) {
+	return A2(
+		$elm$core$List$foldl,
+		F2(
+			function (x, acc) {
+				return predicate(x) ? (acc + 1) : acc;
+			}),
+		0);
+};
+var $elm_community$maybe_extra$Maybe$Extra$filter = F2(
+	function (f, m) {
+		var _v0 = A2($elm$core$Maybe$map, f, m);
+		if ((_v0.$ === 'Just') && _v0.a) {
+			return m;
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Pages$Dashboard$Figures$inSpan = function (span) {
+	return A2($justinmimbs$date$Date$isBetween, span.start, span.end);
+};
+var $author$project$Pages$Dashboard$Figures$notDefined = '—';
+var $author$project$Pages$Dashboard$Model$AncMissRate = {$: 'AncMissRate'};
+var $author$project$Pages$Dashboard$Figures$concludedIn = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		function ($) {
+			return $.dateConcluded;
+		},
+		A2(
+			$elm_community$maybe_extra$Maybe$Extra$unwrap,
+			false,
+			$author$project$Pages$Dashboard$Figures$inSpan(span)));
+};
+var $author$project$Pages$Dashboard$Model$LostToFollowUp = {$: 'LostToFollowUp'};
+var $author$project$Pages$Dashboard$Figures$gestationalAgeDays = F2(
+	function (record, date) {
+		return A2(
+			$elm$core$Maybe$map,
+			function (edd) {
+				return 280 - A2($author$project$Gizra$NominalDate$diffDays, date, edd);
+			},
+			record.edd);
+	});
+var $author$project$Pages$Dashboard$Figures$firstTrimesterEndDays = 91;
+var $author$project$Pages$Dashboard$Figures$secondTrimesterEndDays = 196;
+var $author$project$Pages$Dashboard$Model$WomenCurrentlyInAncCare = {$: 'WomenCurrentlyInAncCare'};
+var $author$project$Pages$Dashboard$Model$GraduatedMotherChildPairs = {$: 'GraduatedMotherChildPairs'};
+var $author$project$Pages$Dashboard$Model$PregnanciesFirstTrimester = {$: 'PregnanciesFirstTrimester'};
+var $author$project$Pages$Dashboard$Model$PregnanciesThirdTrimester = {$: 'PregnanciesThirdTrimester'};
+var $author$project$Pages$Dashboard$Model$PregnanciesSecondTrimester = {$: 'PregnanciesSecondTrimester'};
+var $author$project$Pages$Dashboard$Model$TotalChildrenOnRoutineCare = {$: 'TotalChildrenOnRoutineCare'};
+var $author$project$Pages$Dashboard$Figures$tiles = F5(
+	function (currentDate, span, deliveriesTile, isDelivery, records) {
+		var childrenOnRoutineCare = A2(
+			$elm_community$list_extra$List$Extra$count,
+			function (record) {
+				return A3(
+					$elm_community$maybe_extra$Maybe$Extra$unwrap,
+					false,
+					A2(
+						$elm$core$Basics$composeR,
+						function ($) {
+							return $.visits;
+						},
+						$elm$core$List$any(
+							$author$project$Pages$Dashboard$Figures$inSpan(span))),
+					record.child);
+			},
+			records);
+		var deliveries = A2(
+			$elm_community$list_extra$List$Extra$count,
+			function (record) {
+				return A2($author$project$Pages$Dashboard$Figures$concludedIn, span, record) && isDelivery(record);
+			},
+			records);
+		var inCare = A2(
+			$elm$core$List$filterMap,
+			function (record) {
+				return $elm_community$maybe_extra$Maybe$Extra$isJust(record.dateConcluded) ? $elm$core$Maybe$Nothing : A2(
+					$elm_community$maybe_extra$Maybe$Extra$filter,
+					function (days) {
+						return (days >= 0) && (days < 294);
+					},
+					A2($author$project$Pages$Dashboard$Figures$gestationalAgeDays, record, currentDate));
+			},
+			records);
+		var countInCare = function (isInTrimester) {
+			return A2($elm_community$list_extra$List$Extra$count, isInTrimester, inCare);
+		};
+		var count = $elm$core$String$fromInt;
+		return _List_fromArray(
+			[
+				A2(
+				$author$project$Pages$Dashboard$Model$Tile,
+				$author$project$Pages$Dashboard$Model$WomenCurrentlyInAncCare,
+				count(
+					$elm$core$List$length(inCare))),
+				A2(
+				$author$project$Pages$Dashboard$Model$Tile,
+				$author$project$Pages$Dashboard$Model$PregnanciesFirstTrimester,
+				count(
+					countInCare(
+						function (days) {
+							return _Utils_cmp(days, $author$project$Pages$Dashboard$Figures$firstTrimesterEndDays) < 0;
+						}))),
+				A2(
+				$author$project$Pages$Dashboard$Model$Tile,
+				$author$project$Pages$Dashboard$Model$PregnanciesSecondTrimester,
+				count(
+					countInCare(
+						function (days) {
+							return (_Utils_cmp(days, $author$project$Pages$Dashboard$Figures$firstTrimesterEndDays) > -1) && (_Utils_cmp(days, $author$project$Pages$Dashboard$Figures$secondTrimesterEndDays) < 0);
+						}))),
+				A2(
+				$author$project$Pages$Dashboard$Model$Tile,
+				$author$project$Pages$Dashboard$Model$PregnanciesThirdTrimester,
+				count(
+					countInCare(
+						function (days) {
+							return _Utils_cmp(days, $author$project$Pages$Dashboard$Figures$secondTrimesterEndDays) > -1;
+						}))),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$AncMissRate, $author$project$Pages$Dashboard$Figures$notDefined),
+				deliveriesTile(
+				count(deliveries)),
+				A2(
+				$author$project$Pages$Dashboard$Model$Tile,
+				$author$project$Pages$Dashboard$Model$TotalChildrenOnRoutineCare,
+				count(childrenOnRoutineCare)),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$GraduatedMotherChildPairs, $author$project$Pages$Dashboard$Figures$notDefined),
+				A2($author$project$Pages$Dashboard$Model$Tile, $author$project$Pages$Dashboard$Model$LostToFollowUp, $author$project$Pages$Dashboard$Figures$notDefined)
+			]);
+	});
+var $author$project$Pages$Dashboard$Figures$isBirth = A2(
+	$elm$core$Basics$composeR,
+	function ($) {
+		return $.outcome;
+	},
+	A2(
+		$elm_community$maybe_extra$Maybe$Extra$unwrap,
+		false,
+		$elm$core$Basics$neq($author$project$Backend$Dashboard$Model$OutcomeAbortion)));
+var $author$project$Pages$Dashboard$Figures$rate = F2(
+	function (isMet, items) {
+		return $elm$core$List$isEmpty(items) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+			(100 * A2($elm_community$list_extra$List$Extra$count, isMet, items)) / $elm$core$List$length(items));
+	});
+var $author$project$Pages$Dashboard$Model$Sqlns = {$: 'Sqlns'};
+var $author$project$Pages$Dashboard$Figures$antenatalVisits = A2(
+	$elm$core$Basics$composeR,
+	function ($) {
+		return $.visits;
+	},
+	$elm$core$List$filter(
+		function ($) {
+			return $.antenatal;
+		}));
+var $author$project$Pages$Dashboard$Figures$seenIn = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Pages$Dashboard$Figures$antenatalVisits,
+		$elm$core$List$any(
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.date;
+				},
+				$author$project$Pages$Dashboard$Figures$inSpan(span))));
+};
+var $author$project$Pages$Dashboard$Model$Aspirin = {$: 'Aspirin'};
+var $author$project$Pages$Dashboard$Model$Calcium = {$: 'Calcium'};
+var $author$project$Pages$Dashboard$Model$Coverage = F3(
+	function (emphasis, label, pct) {
+		return {pct: pct, label: label, emphasis: emphasis};
+	});
+var $author$project$Pages$Dashboard$Figures$received = function (indicator) {
+	return A2(
+		$elm$core$Basics$composeR,
+		function ($) {
+			return $.visits;
+		},
+		$elm$core$List$any(
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.indicators;
+				},
+				$elm$core$List$member(indicator))));
+};
+var $author$project$Pages$Dashboard$Model$SupplementCoverage = {$: 'SupplementCoverage'};
+var $author$project$Pages$Dashboard$Model$ProphylaxisCoverage = {$: 'ProphylaxisCoverage'};
+var $author$project$Pages$Dashboard$Figures$coverage = F2(
+	function (span, records) {
+		var seen = A2(
+			$elm$core$List$filter,
+			$author$project$Pages$Dashboard$Figures$seenIn(span),
+			records);
+		return _List_fromArray(
+			[
+				A3(
+				$author$project$Pages$Dashboard$Model$Coverage,
+				$author$project$Pages$Dashboard$Model$Aspirin,
+				$author$project$Pages$Dashboard$Model$ProphylaxisCoverage,
+				A2(
+					$author$project$Pages$Dashboard$Figures$rate,
+					$author$project$Pages$Dashboard$Figures$received($author$project$Backend$Dashboard$Model$IndicatorAspirin),
+					A2(
+						$elm$core$List$filter,
+						function ($) {
+							return $.preEclampsiaRisk;
+						},
+						seen))),
+				A3(
+				$author$project$Pages$Dashboard$Model$Coverage,
+				$author$project$Pages$Dashboard$Model$Calcium,
+				$author$project$Pages$Dashboard$Model$ProphylaxisCoverage,
+				A2(
+					$author$project$Pages$Dashboard$Figures$rate,
+					$author$project$Pages$Dashboard$Figures$received($author$project$Backend$Dashboard$Model$IndicatorCalcium),
+					seen)),
+				A3($author$project$Pages$Dashboard$Model$Coverage, $author$project$Pages$Dashboard$Model$Sqlns, $author$project$Pages$Dashboard$Model$SupplementCoverage, $elm$core$Maybe$Nothing)
+			]);
+	});
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var $author$project$Pages$Dashboard$Figures$groupBySite = A2(
+	$elm$core$List$foldl,
+	function (record) {
+		return A2(
+			$elm$core$Dict$update,
+			record.healthCenter,
+			A2(
+				$elm$core$Basics$composeR,
+				$elm$core$Maybe$withDefault(_List_Nil),
+				A2(
+					$elm$core$Basics$composeR,
+					$elm$core$List$cons(record),
+					$elm$core$Maybe$Just)));
+	},
+	$elm$core$Dict$empty);
+var $author$project$Pages$Dashboard$Figures$siteRates = F2(
+	function (threshold, span) {
+		return A2(
+			$elm$core$Basics$composeR,
+			$author$project$Pages$Dashboard$Figures$groupBySite,
+			A2(
+				$elm$core$Basics$composeR,
+				$elm$core$Dict$values,
+				$elm$core$List$filterMap(
+					threshold.rate(span))));
+	});
+var $author$project$Pages$Dashboard$Figures$Span = F2(
+	function (start, end) {
+		return {end: end, start: start};
+	});
+var $justinmimbs$date$Date$Year = {$: 'Year'};
+var $justinmimbs$date$Date$Quarter = {$: 'Quarter'};
+var $author$project$Pages$Dashboard$Figures$currentSpan = F3(
+	function (currentDate, firstCohortDate, period) {
+		var start = function () {
+			switch (period.$) {
+				case 'PeriodMonth':
+					return A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, currentDate);
+				case 'PeriodQuarter':
+					return A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Quarter, currentDate);
+				case 'PeriodWeek':
+					return A2(
+						$elm$core$Maybe$withDefault,
+						A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Monday, currentDate),
+						A2(
+							$elm$core$Maybe$map,
+							function (cohortDate) {
+								return A3(
+									$justinmimbs$date$Date$add,
+									$justinmimbs$date$Date$Days,
+									-A2(
+										$elm$core$Basics$modBy,
+										7,
+										A2($author$project$Gizra$NominalDate$diffDays, cohortDate, currentDate)),
+									currentDate);
+							},
+							firstCohortDate));
+				default:
+					return A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Year, currentDate);
+			}
+		}();
+		return A2($author$project$Pages$Dashboard$Figures$Span, start, currentDate);
+	});
+var $author$project$Pages$Dashboard$Figures$previousSpan = F2(
+	function (period, span) {
+		var _v0 = function () {
+			switch (period.$) {
+				case 'PeriodMonth':
+					return _Utils_Tuple2($justinmimbs$date$Date$Months, 1);
+				case 'PeriodQuarter':
+					return _Utils_Tuple2($justinmimbs$date$Date$Months, 3);
+				case 'PeriodWeek':
+					return _Utils_Tuple2($justinmimbs$date$Date$Days, 7);
+				default:
+					return _Utils_Tuple2($justinmimbs$date$Date$Years, 1);
+			}
+		}();
+		var unit = _v0.a;
+		var count = _v0.b;
+		return A2(
+			$author$project$Pages$Dashboard$Figures$Span,
+			A3($justinmimbs$date$Date$add, unit, -count, span.start),
+			A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -1, span.start));
+	});
+var $elm_community$maybe_extra$Maybe$Extra$join = function (mx) {
+	if (mx.$ === 'Just') {
+		var x = mx.a;
+		return x;
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Pages$Dashboard$Figures$months = _List_fromArray(
+	[$elm$time$Time$Jan, $elm$time$Time$Feb, $elm$time$Time$Mar, $elm$time$Time$Apr, $elm$time$Time$May, $elm$time$Time$Jun, $elm$time$Time$Jul, $elm$time$Time$Aug, $elm$time$Time$Sep, $elm$time$Time$Oct, $elm$time$Time$Nov, $elm$time$Time$Dec]);
+var $justinmimbs$date$Date$min = F2(
+	function (dateA, dateB) {
+		var a = dateA.a;
+		var b = dateB.a;
+		return (_Utils_cmp(a, b) < 0) ? dateA : dateB;
+	});
+var $author$project$Pages$Dashboard$Figures$monthSpan = F3(
+	function (currentDate, year, month) {
+		var start = A3($justinmimbs$date$Date$fromCalendarDate, year, month, 1);
+		return _Utils_eq(
+			A2($justinmimbs$date$Date$compare, start, currentDate),
+			$elm$core$Basics$GT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+			A2(
+				$author$project$Pages$Dashboard$Figures$Span,
+				start,
+				A2(
+					$justinmimbs$date$Date$min,
+					currentDate,
+					A3(
+						$justinmimbs$date$Date$add,
+						$justinmimbs$date$Date$Days,
+						-1,
+						A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, 1, start)))));
+	});
+var $author$project$Pages$Dashboard$Figures$indicatorFigures = F6(
+	function (currentDate, span, previous, records, averageOf, indicators) {
+		var series = function (kpi) {
+			var indicator = A2(
+				$elm_community$list_extra$List$Extra$find,
+				function (candidate) {
+					return _Utils_eq(candidate.id, kpi.id);
+				},
+				indicators);
+			var monthly = F2(
+				function (valueOver, year) {
+					return A2(
+						$elm$core$List$map,
+						function (month) {
+							return $elm_community$maybe_extra$Maybe$Extra$join(
+								A3(
+									$elm$core$Maybe$map2,
+									valueOver,
+									indicator,
+									A3($author$project$Pages$Dashboard$Figures$monthSpan, currentDate, year, month)));
+						},
+						$author$project$Pages$Dashboard$Figures$months);
+				});
+			return {
+				target: A2(
+					$elm$core$List$repeat,
+					12,
+					A2(
+						$elm$core$Maybe$andThen,
+						function ($) {
+							return $.targetValue;
+						},
+						indicator)),
+				average: monthly(averageOf),
+				performance: monthly(
+					F2(
+						function (found, monthOfYear) {
+							return A2(found.value, monthOfYear, records);
+						}))
+			};
+		};
+		var kpiFor = function (indicator) {
+			var current = A2(indicator.value, span, records);
+			return {
+				id: indicator.id,
+				unit: indicator.unit,
+				delta: A3(
+					$elm$core$Maybe$map2,
+					$elm$core$Basics$sub,
+					current,
+					A2(indicator.value, previous, records)),
+				label: indicator.label,
+				target: indicator.target,
+				average: A2(averageOf, indicator, span),
+				current: current
+			};
+		};
+		return {
+			kpis: A2($elm$core$List$map, kpiFor, indicators),
+			series: series
+		};
+	});
+var $author$project$Pages$Dashboard$Figures$pretermRate = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$filter(
+			function (record) {
+				return A2($author$project$Pages$Dashboard$Figures$concludedIn, span, record) && $author$project$Pages$Dashboard$Figures$isBirth(record);
+			}),
+		$author$project$Pages$Dashboard$Figures$rate(
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.outcome;
+				},
+				A2(
+					$elm_community$maybe_extra$Maybe$Extra$unwrap,
+					false,
+					function (outcome) {
+						return A2(
+							$elm$core$List$member,
+							outcome,
+							_List_fromArray(
+								[$author$project$Backend$Dashboard$Model$OutcomeLivePreterm, $author$project$Backend$Dashboard$Model$OutcomeStillbirthPreterm]));
+					}))));
+};
+var $author$project$Pages$Dashboard$Figures$pretermThreshold = {
+	rate: $author$project$Pages$Dashboard$Figures$pretermRate,
+	crosses: function (value) {
+		return value > 15;
+	}
+};
+var $author$project$Pages$Dashboard$Model$UnitPercent = {$: 'UnitPercent'};
+var $author$project$Pages$Dashboard$Figures$bookedIn = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Pages$Dashboard$Figures$antenatalVisits,
+		A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$head,
+			A2(
+				$elm_community$maybe_extra$Maybe$Extra$unwrap,
+				false,
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.date;
+					},
+					$author$project$Pages$Dashboard$Figures$inSpan(span)))));
+};
+var $author$project$Pages$Dashboard$Figures$firstAntenatalAgeDays = function (record) {
+	return A2(
+		$elm$core$Maybe$andThen,
+		A2(
+			$elm$core$Basics$composeR,
+			function ($) {
+				return $.date;
+			},
+			$author$project$Pages$Dashboard$Figures$gestationalAgeDays(record)),
+		$elm$core$List$head(
+			$author$project$Pages$Dashboard$Figures$antenatalVisits(record)));
+};
+var $author$project$Pages$Dashboard$Figures$earlyBookingRate = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$filter(
+			$author$project$Pages$Dashboard$Figures$bookedIn(span)),
+		$author$project$Pages$Dashboard$Figures$rate(
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Pages$Dashboard$Figures$firstAntenatalAgeDays,
+				A2(
+					$elm_community$maybe_extra$Maybe$Extra$unwrap,
+					false,
+					function (days) {
+						return _Utils_cmp(days, $author$project$Pages$Dashboard$Figures$firstTrimesterEndDays) < 0;
+					}))));
+};
+var $author$project$Pages$Dashboard$Figures$inadequateGwgRate = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$filter(
+			function (record) {
+				return A2($author$project$Pages$Dashboard$Figures$seenIn, span, record) && (A2($author$project$Pages$Dashboard$Figures$received, $author$project$Backend$Dashboard$Model$IndicatorGwgAdequate, record) || A2($author$project$Pages$Dashboard$Figures$received, $author$project$Backend$Dashboard$Model$IndicatorGwgInadequate, record));
+			}),
+		$author$project$Pages$Dashboard$Figures$rate(
+			$author$project$Pages$Dashboard$Figures$received($author$project$Backend$Dashboard$Model$IndicatorGwgInadequate)));
+};
+var $author$project$Pages$Dashboard$Figures$isBefore = F2(
+	function (limit, date) {
+		return _Utils_eq(
+			A2($justinmimbs$date$Date$compare, date, limit),
+			$elm$core$Basics$LT);
+	});
+var $author$project$Pages$Dashboard$Figures$weekTwentyDate = A2(
+	$elm$core$Basics$composeR,
+	function ($) {
+		return $.edd;
+	},
+	$elm$core$Maybe$map(
+		A2($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 140 - 280)));
+var $author$project$Pages$Dashboard$Figures$earlyUltrasoundRate = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$filter(
+			function (record) {
+				return A3(
+					$elm_community$maybe_extra$Maybe$Extra$unwrap,
+					false,
+					function (weekTwenty) {
+						return A2($author$project$Pages$Dashboard$Figures$inSpan, span, weekTwenty) && A2(
+							$elm$core$List$any,
+							A2(
+								$elm$core$Basics$composeR,
+								function ($) {
+									return $.date;
+								},
+								$author$project$Pages$Dashboard$Figures$isBefore(
+									A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 1, weekTwenty))),
+							$author$project$Pages$Dashboard$Figures$antenatalVisits(record));
+					},
+					$author$project$Pages$Dashboard$Figures$weekTwentyDate(record));
+			}),
+		$author$project$Pages$Dashboard$Figures$rate(
+			function (record) {
+				return A3(
+					$elm_community$maybe_extra$Maybe$Extra$unwrap,
+					false,
+					function (weekTwenty) {
+						return A2(
+							$elm$core$List$any,
+							function (date) {
+								return A2($author$project$Pages$Dashboard$Figures$isBefore, weekTwenty, date);
+							},
+							record.ultrasounds);
+					},
+					$author$project$Pages$Dashboard$Figures$weekTwentyDate(record));
+			}));
+};
+var $author$project$Pages$Dashboard$Model$SitesWithInadequateGwg = {$: 'SitesWithInadequateGwg'};
+var $author$project$Pages$Dashboard$Figures$delayedBirthWeightRate = function (span) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$filterMap(
+			function ($) {
+				return $.child;
+			}),
+		A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$filter(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.birthDate;
+					},
+					A2(
+						$elm_community$maybe_extra$Maybe$Extra$unwrap,
+						false,
+						$author$project$Pages$Dashboard$Figures$inSpan(span)))),
+			$author$project$Pages$Dashboard$Figures$rate(
+				function (child) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						true,
+						A3(
+							$elm$core$Maybe$map2,
+							F2(
+								function (birthDate, examDate) {
+									return A2($author$project$Gizra$NominalDate$diffDays, birthDate, examDate) > 1;
+								}),
+							child.birthDate,
+							child.birthWeightDate));
+				})));
+};
+var $author$project$Pages$Dashboard$Figures$delayedBirthWeightThreshold = {
+	rate: $author$project$Pages$Dashboard$Figures$delayedBirthWeightRate,
+	crosses: function (value) {
+		return value > 5;
+	}
+};
+var $author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverageSites = {$: 'EarlyUltrasoundCoverageSites'};
+var $author$project$Pages$Dashboard$Model$EarlyAncCoverageFirstTrimester = {$: 'EarlyAncCoverageFirstTrimester'};
+var $author$project$Pages$Dashboard$Model$SitesWithPoorChildGrowthOutcomes = {$: 'SitesWithPoorChildGrowthOutcomes'};
+var $author$project$Pages$Dashboard$Model$SitesWithElevatedPretermOrSgaBirths = {$: 'SitesWithElevatedPretermOrSgaBirths'};
+var $author$project$Pages$Dashboard$Model$SitesWithDelayedBirthWeightRecording = {$: 'SitesWithDelayedBirthWeightRecording'};
+var $author$project$Pages$Dashboard$Figures$programIndicators = function () {
+	var indicator = F3(
+		function (id, label, threshold) {
+			return {
+				id: id,
+				unit: $author$project$Pages$Dashboard$Model$UnitPercent,
+				label: label,
+				value: function (span) {
+					return A2(
+						$elm$core$Basics$composeR,
+						A2($author$project$Pages$Dashboard$Figures$siteRates, threshold, span),
+						$author$project$Pages$Dashboard$Figures$rate(threshold.crosses));
+				},
+				target: $author$project$Pages$Dashboard$Figures$notDefined,
+				targetValue: $elm$core$Maybe$Nothing
+			};
+		});
+	return _List_fromArray(
+		[
+			A3(
+			indicator,
+			'anc-cov80',
+			$author$project$Pages$Dashboard$Model$EarlyAncCoverageFirstTrimester,
+			{
+				rate: $author$project$Pages$Dashboard$Figures$earlyBookingRate,
+				crosses: function (value) {
+					return value >= 80;
+				}
+			}),
+			A3(
+			indicator,
+			'ultrasound-p',
+			$author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverageSites,
+			{
+				rate: $author$project$Pages$Dashboard$Figures$earlyUltrasoundRate,
+				crosses: function (value) {
+					return value >= 85;
+				}
+			}),
+			A3(
+			indicator,
+			'inadequate-gwg',
+			$author$project$Pages$Dashboard$Model$SitesWithInadequateGwg,
+			{
+				rate: $author$project$Pages$Dashboard$Figures$inadequateGwgRate,
+				crosses: function (value) {
+					return value > 10;
+				}
+			}),
+			A3(indicator, 'delayed-bw', $author$project$Pages$Dashboard$Model$SitesWithDelayedBirthWeightRecording, $author$project$Pages$Dashboard$Figures$delayedBirthWeightThreshold),
+			A3(indicator, 'preterm-sga', $author$project$Pages$Dashboard$Model$SitesWithElevatedPretermOrSgaBirths, $author$project$Pages$Dashboard$Figures$pretermThreshold),
+			A3(
+			indicator,
+			'poor-growth',
+			$author$project$Pages$Dashboard$Model$SitesWithPoorChildGrowthOutcomes,
+			{
+				rate: F2(
+					function (_v0, _v1) {
+						return $elm$core$Maybe$Nothing;
+					}),
+				crosses: $elm$core$Basics$always(false)
+			})
+		]);
+}();
+var $author$project$Pages$Dashboard$Model$TotalDeliveriesProgram = {$: 'TotalDeliveriesProgram'};
+var $author$project$Pages$Dashboard$Model$AlertSitesWithPretermRate = function (a) {
+	return {$: 'AlertSitesWithPretermRate', a: a};
+};
+var $author$project$Pages$Dashboard$Model$AlertSitesWithDelayedBirthWeightRecording = function (a) {
+	return {$: 'AlertSitesWithDelayedBirthWeightRecording', a: a};
+};
+var $author$project$Pages$Dashboard$Figures$programFigures = F4(
+	function (currentDate, firstCohortDate, records, period) {
+		var span = A3($author$project$Pages$Dashboard$Figures$currentSpan, currentDate, firstCohortDate, period);
+		var alert = F2(
+			function (toLabel, threshold) {
+				var sites = A2(
+					$elm_community$list_extra$List$Extra$count,
+					threshold.crosses,
+					A3($author$project$Pages$Dashboard$Figures$siteRates, threshold, span, records));
+				return (sites > 0) ? $elm$core$Maybe$Just(
+					toLabel(sites)) : $elm$core$Maybe$Nothing;
+			});
+		var blocks = A6(
+			$author$project$Pages$Dashboard$Figures$indicatorFigures,
+			currentDate,
+			span,
+			A2($author$project$Pages$Dashboard$Figures$previousSpan, period, span),
+			records,
+			F2(
+				function (_v0, _v1) {
+					return $elm$core$Maybe$Nothing;
+				}),
+			$author$project$Pages$Dashboard$Figures$programIndicators);
+		return {
+			kpis: blocks.kpis,
+			tiles: A5(
+				$author$project$Pages$Dashboard$Figures$tiles,
+				currentDate,
+				span,
+				$author$project$Pages$Dashboard$Model$Tile($author$project$Pages$Dashboard$Model$TotalDeliveriesProgram),
+				$author$project$Pages$Dashboard$Figures$isBirth,
+				records),
+			alerts: A2(
+				$elm$core$List$filterMap,
+				$elm$core$Basics$identity,
+				_List_fromArray(
+					[
+						A2(alert, $author$project$Pages$Dashboard$Model$AlertSitesWithDelayedBirthWeightRecording, $author$project$Pages$Dashboard$Figures$delayedBirthWeightThreshold),
+						A2(alert, $author$project$Pages$Dashboard$Model$AlertSitesWithPretermRate, $author$project$Pages$Dashboard$Figures$pretermThreshold)
+					])),
+			series: blocks.series,
+			coverage: A2($author$project$Pages$Dashboard$Figures$coverage, span, records)
+		};
+	});
+var $author$project$Pages$Dashboard$Model$OpenDrill = function (a) {
+	return {$: 'OpenDrill', a: a};
+};
+var $author$project$Pages$Dashboard$View$viewKpiReference = F3(
+	function (language, reference, labelId) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('font-bold text-accent')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(reference)
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('ml-1 text-xs text-slate-600')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, labelId))
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$Model$ProgramTargetShort = {$: 'ProgramTargetShort'};
+var $author$project$Pages$Dashboard$Model$FromPreviousPeriod = function (a) {
+	return {$: 'FromPreviousPeriod', a: a};
+};
+var $author$project$Pages$Dashboard$View$viewTrendIndicator = F3(
+	function (language, period, kpi) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A2(
+				$elm$core$Maybe$map,
+				function (delta) {
+					var glyph = (delta > 0) ? A2(
+						$elm$html$Html$span,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('text-xs text-trend-avg'),
+								A2($elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('▲')
+							])) : ((delta < 0) ? A2(
+						$elm$html$Html$span,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('text-xs text-alert'),
+								A2($elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('▼')
+							])) : $author$project$Gizra$Html$emptyNode);
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('mt-1 flex items-center gap-1')
+							]),
+						_List_fromArray(
+							[
+								glyph,
+								A2(
+								$elm$html$Html$span,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('text-xs italic text-slate-600')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(
+										A3(
+											$author$project$Pages$Dashboard$View$formatValue,
+											language,
+											kpi.unit,
+											$elm$core$Maybe$Just(
+												$elm$core$Basics$abs(delta))) + (' ' + A2(
+											$author$project$Pages$Dashboard$View$translateLabel,
+											language,
+											$author$project$Pages$Dashboard$Model$FromPreviousPeriod(period))))
+									]))
+							]));
+				},
+				kpi.delta));
+	});
+var $author$project$Pages$Dashboard$Model$InterventionSiteAverage = {$: 'InterventionSiteAverage'};
+var $author$project$Pages$Dashboard$Model$OpenMonthByMonthDetailFor = {$: 'OpenMonthByMonthDetailFor'};
+var $author$project$Pages$Dashboard$View$viewKpiBlock = F4(
+	function (language, dashboard, period, kpi) {
+		var averageReference = function () {
+			if (dashboard.$ === 'Facility') {
+				return _List_fromArray(
+					[
+						A3(
+						$author$project$Pages$Dashboard$View$viewKpiReference,
+						language,
+						A3($author$project$Pages$Dashboard$View$formatValue, language, kpi.unit, kpi.average),
+						$author$project$Pages$Dashboard$Model$InterventionSiteAverage)
+					]);
+			} else {
+				return _List_Nil;
+			}
+		}();
+		var kpiLabel = A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label);
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$type_('button'),
+					$elm$html$Html$Attributes$id(
+					$author$project$Pages$Dashboard$Utils$kpiBlockId(kpi)),
+					$elm$html$Html$Events$onClick(
+					$author$project$Pages$Dashboard$Model$OpenDrill(kpi)),
+					A2(
+					$elm$html$Html$Attributes$attribute,
+					'aria-label',
+					A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$OpenMonthByMonthDetailFor) + (' ' + kpiLabel)),
+					$elm$html$Html$Attributes$class('flex w-full flex-col rounded-lg border border-slate-200 p-3 text-left transition hover:border-accent hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$h2,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('min-h-[2.5rem] text-sm font-bold leading-tight text-slate-800')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(kpiLabel)
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('mt-2 flex items-stretch gap-3 border-t border-slate-100 pt-2')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('flex flex-col')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$span,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('text-3xl font-extrabold leading-none text-accent')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A3($author$project$Pages$Dashboard$View$formatValue, language, kpi.unit, kpi.current))
+										])),
+									A3($author$project$Pages$Dashboard$View$viewTrendIndicator, language, period, kpi)
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('w-px self-stretch bg-slate-200')
+								]),
+							_List_Nil),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('flex flex-col justify-center gap-1 text-sm')
+								]),
+							A2(
+								$elm$core$List$cons,
+								A3($author$project$Pages$Dashboard$View$viewKpiReference, language, kpi.target, $author$project$Pages$Dashboard$Model$ProgramTargetShort),
+								averageReference))
+						]))
+				]));
+	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Pages$Dashboard$View$viewCoverageBar = F2(
+	function (language, coverage) {
+		var coverageLabel = A2($author$project$Pages$Dashboard$View$translateLabel, language, coverage.label);
+		var valueInside = A3(
+			$elm_community$maybe_extra$Maybe$Extra$unwrap,
+			false,
+			function (pct) {
+				return pct >= 15;
+			},
+			coverage.pct);
+		var emphasis = A2($author$project$Pages$Dashboard$View$translateLabel, language, coverage.emphasis);
+		var filled = A3($author$project$Pages$Dashboard$View$formatValue, language, $author$project$Pages$Dashboard$Model$UnitPercent, coverage.pct);
+		var width = A3(
+			$elm_community$maybe_extra$Maybe$Extra$unwrap,
+			'0%',
+			function (pct) {
+				return $elm$core$String$fromInt(
+					$elm$core$Basics$round(pct)) + '%';
+			},
+			coverage.pct);
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$p,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('mb-1 text-sm')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$span,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('font-bold text-accent')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(emphasis)
+								])),
+							A2(
+							$elm$html$Html$span,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('ml-1 font-semibold text-slate-800')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(coverageLabel)
+								]))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('relative flex h-6 w-full items-center overflow-hidden rounded bg-bar-track'),
+							A2($elm$html$Html$Attributes$attribute, 'role', 'img'),
+							A2($elm$html$Html$Attributes$attribute, 'aria-label', emphasis + (' ' + (coverageLabel + (': ' + filled))))
+						]),
+					valueInside ? _List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('flex h-full items-center justify-end rounded bg-accent pr-2'),
+									A2($elm$html$Html$Attributes$style, 'width', width)
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$span,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('text-xs font-bold text-white')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(filled)
+										]))
+								]))
+						]) : _List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('h-full rounded bg-accent'),
+									A2($elm$html$Html$Attributes$style, 'width', width)
+								]),
+							_List_Nil),
+							A2(
+							$elm$html$Html$span,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('ml-2 text-xs font-bold text-slate-800')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(filled)
+								]))
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewLeftColumn = F5(
+	function (language, dashboard, period, kpis, coverage) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3')
+						]),
+					A2(
+						$elm$core$List$map,
+						A3($author$project$Pages$Dashboard$View$viewKpiBlock, language, dashboard, period),
+						kpis)),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('mt-6 flex flex-col gap-4')
+						]),
+					A2(
+						$elm$core$List$map,
+						$author$project$Pages$Dashboard$View$viewCoverageBar(language),
+						coverage))
+				]));
+	});
+var $author$project$Pages$Dashboard$Figures$mean = function (values) {
+	return $elm$core$List$isEmpty(values) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+		$elm$core$List$sum(values) / $elm$core$List$length(values));
+};
+var $author$project$Pages$Dashboard$Model$AlertPretermRateExceeded = {$: 'AlertPretermRateExceeded'};
+var $author$project$Pages$Dashboard$Model$AlertBirthsMissingBirthWeight = function (a) {
+	return {$: 'AlertBirthsMissingBirthWeight', a: a};
+};
+var $author$project$Pages$Dashboard$Figures$facilityAlerts = _List_fromArray(
+	[
+		$author$project$Pages$Dashboard$Model$AlertBirthsMissingBirthWeight(3),
+		$author$project$Pages$Dashboard$Model$AlertPretermRateExceeded
+	]);
+var $author$project$Pages$Dashboard$Figures$median = function (values) {
+	var sorted = $elm$core$List$sort(values);
+	var middle = ($elm$core$List$length(sorted) / 2) | 0;
+	return (A2(
+		$elm$core$Basics$modBy,
+		2,
+		$elm$core$List$length(sorted)) === 1) ? A2($elm_community$list_extra$List$Extra$getAt, middle, sorted) : A3(
+		$elm$core$Maybe$map2,
+		F2(
+			function (low, high) {
+				return (low + high) / 2;
+			}),
+		A2($elm_community$list_extra$List$Extra$getAt, middle - 1, sorted),
+		A2($elm_community$list_extra$List$Extra$getAt, middle, sorted));
+};
+var $author$project$Pages$Dashboard$Model$UnitWeeks = {$: 'UnitWeeks'};
+var $author$project$Pages$Dashboard$Model$MedianGaAtFirstAnc = {$: 'MedianGaAtFirstAnc'};
+var $author$project$Pages$Dashboard$Model$EarlyAncBookingRate = {$: 'EarlyAncBookingRate'};
+var $author$project$Pages$Dashboard$Model$HighRiskPregnancyRate = {$: 'HighRiskPregnancyRate'};
+var $author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverage = {$: 'EarlyUltrasoundCoverage'};
+var $author$project$Pages$Dashboard$Model$PostpartumHemorrhageRate = {$: 'PostpartumHemorrhageRate'};
+var $author$project$Pages$Dashboard$Model$CompleteAncAttendanceRate = {$: 'CompleteAncAttendanceRate'};
+var $author$project$Pages$Dashboard$Figures$facilityIndicators = _List_fromArray(
+	[
+		{
+		id: 'anc-booking',
+		unit: $author$project$Pages$Dashboard$Model$UnitPercent,
+		label: $author$project$Pages$Dashboard$Model$EarlyAncBookingRate,
+		value: $author$project$Pages$Dashboard$Figures$earlyBookingRate,
+		target: '80%',
+		targetValue: $elm$core$Maybe$Just(80)
+	},
+		{
+		id: 'median-ga',
+		unit: $author$project$Pages$Dashboard$Model$UnitWeeks,
+		label: $author$project$Pages$Dashboard$Model$MedianGaAtFirstAnc,
+		value: function (span) {
+			return A2(
+				$elm$core$Basics$composeR,
+				$elm$core$List$filter(
+					$author$project$Pages$Dashboard$Figures$bookedIn(span)),
+				A2(
+					$elm$core$Basics$composeR,
+					$elm$core$List$filterMap(
+						A2(
+							$elm$core$Basics$composeR,
+							$author$project$Pages$Dashboard$Figures$firstAntenatalAgeDays,
+							$elm$core$Maybe$map(
+								function (days) {
+									return days / 7;
+								}))),
+					$author$project$Pages$Dashboard$Figures$median));
+		},
+		target: '≤ 12 wk',
+		targetValue: $elm$core$Maybe$Just(12)
+	},
+		{
+		id: 'ultrasound',
+		unit: $author$project$Pages$Dashboard$Model$UnitPercent,
+		label: $author$project$Pages$Dashboard$Model$EarlyUltrasoundCoverage,
+		value: $author$project$Pages$Dashboard$Figures$earlyUltrasoundRate,
+		target: '85%',
+		targetValue: $elm$core$Maybe$Just(85)
+	},
+		{
+		id: 'high-risk',
+		unit: $author$project$Pages$Dashboard$Model$UnitPercent,
+		label: $author$project$Pages$Dashboard$Model$HighRiskPregnancyRate,
+		value: function (span) {
+			return A2(
+				$elm$core$Basics$composeR,
+				$elm$core$List$filter(
+					$author$project$Pages$Dashboard$Figures$seenIn(span)),
+				$author$project$Pages$Dashboard$Figures$rate(
+					function ($) {
+						return $.highRisk;
+					}));
+		},
+		target: '< 15%',
+		targetValue: $elm$core$Maybe$Just(15)
+	},
+		{
+		id: 'pph',
+		unit: $author$project$Pages$Dashboard$Model$UnitPercent,
+		label: $author$project$Pages$Dashboard$Model$PostpartumHemorrhageRate,
+		value: F2(
+			function (_v0, _v1) {
+				return $elm$core$Maybe$Nothing;
+			}),
+		target: '< 5%',
+		targetValue: $elm$core$Maybe$Just(5)
+	},
+		{
+		id: 'complete-anc',
+		unit: $author$project$Pages$Dashboard$Model$UnitPercent,
+		label: $author$project$Pages$Dashboard$Model$CompleteAncAttendanceRate,
+		value: function (span) {
+			return A2(
+				$elm$core$Basics$composeR,
+				$elm$core$List$filter(
+					$author$project$Pages$Dashboard$Figures$concludedIn(span)),
+				$author$project$Pages$Dashboard$Figures$rate(
+					A2(
+						$elm$core$Basics$composeR,
+						$author$project$Pages$Dashboard$Figures$antenatalVisits,
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$List$length,
+							function (visits) {
+								return visits >= 8;
+							}))));
+		},
+		target: '70%',
+		targetValue: $elm$core$Maybe$Just(70)
+	}
+	]);
+var $author$project$Pages$Dashboard$Model$TotalDeliveriesInstitutional = {$: 'TotalDeliveriesInstitutional'};
+var $author$project$Pages$Dashboard$Figures$facilityFigures = F5(
+	function (currentDate, firstCohortDate, records, site, period) {
+		var bySite = $author$project$Pages$Dashboard$Figures$groupBySite(records);
+		var otherSites = $elm$core$Dict$values(
+			A3(
+				$elm_community$maybe_extra$Maybe$Extra$unwrap,
+				bySite,
+				function (id) {
+					return A2($elm$core$Dict$remove, id, bySite);
+				},
+				site));
+		var averageOf = F2(
+			function (indicator, overSpan) {
+				return $author$project$Pages$Dashboard$Figures$mean(
+					A2(
+						$elm$core$List$filterMap,
+						indicator.value(overSpan),
+						otherSites));
+			});
+		var siteRecords = A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$andThen,
+				function (id) {
+					return A2($elm$core$Dict$get, id, bySite);
+				},
+				site));
+		var span = A3($author$project$Pages$Dashboard$Figures$currentSpan, currentDate, firstCohortDate, period);
+		var blocks = A6(
+			$author$project$Pages$Dashboard$Figures$indicatorFigures,
+			currentDate,
+			span,
+			A2($author$project$Pages$Dashboard$Figures$previousSpan, period, span),
+			siteRecords,
+			averageOf,
+			$author$project$Pages$Dashboard$Figures$facilityIndicators);
+		return {
+			kpis: blocks.kpis,
+			tiles: A5(
+				$author$project$Pages$Dashboard$Figures$tiles,
+				currentDate,
+				span,
+				$author$project$Pages$Dashboard$Model$Tile($author$project$Pages$Dashboard$Model$TotalDeliveriesInstitutional),
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.deliveryLocation;
+					},
+					$elm$core$Basics$eq(
+						$elm$core$Maybe$Just($author$project$Backend$Dashboard$Model$FacilityDelivery))),
+				siteRecords),
+			alerts: $author$project$Pages$Dashboard$Figures$facilityAlerts,
+			series: blocks.series,
+			coverage: A2($author$project$Pages$Dashboard$Figures$coverage, span, siteRecords)
+		};
+	});
+var $author$project$Pages$Dashboard$Model$ProgramLevel = {$: 'ProgramLevel'};
+var $author$project$Pages$Dashboard$View$resolveSiteName = F3(
+	function (language, dashboard, selectedOption) {
+		if (dashboard.$ === 'Facility') {
+			return A2(
+				$elm$core$Maybe$withDefault,
+				'',
+				A2(
+					$elm$core$Maybe$map,
+					$author$project$Pages$Dashboard$Utils$filterOptionLabel(language),
+					selectedOption($author$project$Pages$Dashboard$Model$FilterSite)));
+		} else {
+			return A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$ProgramLevel);
+		}
+	});
+var $author$project$Pages$Dashboard$View$viewAlert = F2(
+	function (language, alert) {
+		return A2(
+			$elm$html$Html$li,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('flex items-center gap-2.5')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('inline-block h-3.5 w-3.5 shrink-0 rounded-full bg-alert'),
+							A2($elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
+						]),
+					_List_Nil),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('text-base text-slate-800')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, alert))
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$Model$CriticalAlerts = {$: 'CriticalAlerts'};
+var $author$project$Pages$Dashboard$Model$NoActiveAlerts = {$: 'NoActiveAlerts'};
+var $author$project$Pages$Dashboard$View$viewAlertsPanel = F2(
+	function (language, alerts) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('mt-6 overflow-hidden rounded-lg border border-slate-200')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$h2,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('bg-accent px-3 py-2 text-lg font-bold text-white')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$CriticalAlerts))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('bg-white p-3')
+						]),
+					_List_fromArray(
+						[
+							$elm$core$List$isEmpty(alerts) ? A2(
+							$elm$html$Html$p,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('text-sm text-slate-600')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$NoActiveAlerts))
+								])) : A2(
+							$elm$html$Html$ul,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('flex flex-col gap-2')
+								]),
+							A2(
+								$elm$core$List$map,
+								$author$project$Pages$Dashboard$View$viewAlert(language),
+								alerts))
+						]))
+				]));
+	});
+var $elm_community$maybe_extra$Maybe$Extra$orElse = F2(
+	function (ma, mb) {
+		if (mb.$ === 'Nothing') {
+			return ma;
+		} else {
+			return mb;
+		}
+	});
+var $author$project$Pages$Dashboard$Utils$kpiById = F2(
+	function (kpis, id) {
+		return $elm$core$List$head(
+			A2(
+				$elm$core$List$filter,
+				function (kpi) {
+					return _Utils_eq(kpi.id, id);
+				},
+				kpis));
+	});
+var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var $author$project$Pages$Components$TrendChart$plotLeft = 46;
+var $author$project$Pages$Components$TrendChart$plotRight = 556;
+var $author$project$Pages$Components$TrendChart$plotWidth = $author$project$Pages$Components$TrendChart$plotRight - $author$project$Pages$Components$TrendChart$plotLeft;
+var $author$project$Pages$Components$TrendChart$xAt = F2(
+	function (count, index) {
+		return (count <= 1) ? ($author$project$Pages$Components$TrendChart$plotLeft + ($author$project$Pages$Components$TrendChart$plotWidth / 2)) : ($author$project$Pages$Components$TrendChart$plotLeft + (index * ($author$project$Pages$Components$TrendChart$plotWidth / (count - 1))));
+	});
+var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
+var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
+var $author$project$Pages$Components$TrendChart$plotBottom = 216;
+var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
+var $author$project$Pages$Components$TrendChart$xLabel = F3(
+	function (count, index, label) {
+		return A2(
+			$elm$svg$Svg$text_,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$x(
+					$elm$core$String$fromFloat(
+						A2($author$project$Pages$Components$TrendChart$xAt, count, index))),
+					$elm$svg$Svg$Attributes$y(
+					$elm$core$String$fromFloat($author$project$Pages$Components$TrendChart$plotBottom + 22)),
+					$elm$svg$Svg$Attributes$textAnchor('middle'),
+					$elm$svg$Svg$Attributes$fontSize('12'),
+					$elm$svg$Svg$Attributes$fill('#334155')
+				]),
+			_List_fromArray(
+				[
+					$elm$svg$Svg$text(label)
+				]));
+	});
+var $author$project$Pages$Components$TrendChart$plotTop = 14;
+var $author$project$Pages$Components$TrendChart$plotHeight = $author$project$Pages$Components$TrendChart$plotBottom - $author$project$Pages$Components$TrendChart$plotTop;
+var $author$project$Pages$Components$TrendChart$yAt = function (value) {
+	return $author$project$Pages$Components$TrendChart$plotBottom - ((value / 100) * $author$project$Pages$Components$TrendChart$plotHeight);
+};
+var $elm$svg$Svg$Attributes$points = _VirtualDom_attribute('points');
+var $elm$svg$Svg$polyline = $elm$svg$Svg$trustedNode('polyline');
+var $elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
+var $elm$svg$Svg$Attributes$strokeLinejoin = _VirtualDom_attribute('stroke-linejoin');
+var $elm$svg$Svg$Attributes$strokeDasharray = _VirtualDom_attribute('stroke-dasharray');
+var $author$project$Pages$Components$TrendChart$seriesLayer = function (series) {
+	var pointCount = $elm$core$List$length(series.points);
+	var polyline = function (coordinates) {
+		return A2(
+			$elm$svg$Svg$polyline,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$points(
+					A2(
+						$elm$core$String$join,
+						' ',
+						A2(
+							$elm$core$List$map,
+							function (_v6) {
+								var x = _v6.a;
+								var y = _v6.b;
+								return $elm$core$String$fromFloat(x) + (',' + $elm$core$String$fromFloat(y));
+							},
+							coordinates))),
+					$elm$svg$Svg$Attributes$fill('none'),
+					$elm$svg$Svg$Attributes$stroke(series.color),
+					$elm$svg$Svg$Attributes$strokeWidth('2.5'),
+					$elm$svg$Svg$Attributes$strokeDasharray(series.dash),
+					$elm$svg$Svg$Attributes$strokeLinejoin('round'),
+					$elm$svg$Svg$Attributes$strokeLinecap('round')
+				]),
+			_List_Nil);
+	};
+	var marker = function (_v5) {
+		var x = _v5.a;
+		var y = _v5.b;
+		return A2(
+			$elm$svg$Svg$circle,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$cx(
+					$elm$core$String$fromFloat(x)),
+					$elm$svg$Svg$Attributes$cy(
+					$elm$core$String$fromFloat(y)),
+					$elm$svg$Svg$Attributes$r('3.5'),
+					$elm$svg$Svg$Attributes$fill(series.color)
+				]),
+			_List_Nil);
+	};
+	var runs = A2(
+		$elm$core$List$filter,
+		A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty),
+		A3(
+			$elm$core$List$foldr,
+			F2(
+				function (point, acc) {
+					var _v0 = _Utils_Tuple2(point, acc);
+					if (_v0.a.$ === 'Just') {
+						if (_v0.b.b) {
+							var coordinate = _v0.a.a;
+							var _v1 = _v0.b;
+							var run = _v1.a;
+							var rest = _v1.b;
+							return A2(
+								$elm$core$List$cons,
+								A2($elm$core$List$cons, coordinate, run),
+								rest);
+						} else {
+							var coordinate = _v0.a.a;
+							return _List_fromArray(
+								[
+									_List_fromArray(
+									[coordinate])
+								]);
+						}
+					} else {
+						if (_v0.b.b && (!_v0.b.a.b)) {
+							var _v2 = _v0.a;
+							var _v3 = _v0.b;
+							return acc;
+						} else {
+							var _v4 = _v0.a;
+							return A2($elm$core$List$cons, _List_Nil, acc);
+						}
+					}
+				}),
+			_List_Nil,
+			A2(
+				$elm$core$List$indexedMap,
+				F2(
+					function (index, value) {
+						return A2(
+							$elm$core$Maybe$map,
+							function (present) {
+								return _Utils_Tuple2(
+									A2($author$project$Pages$Components$TrendChart$xAt, pointCount, index),
+									$author$project$Pages$Components$TrendChart$yAt(present));
+							},
+							value);
+					}),
+				series.points)));
+	return _Utils_ap(
+		A2($elm$core$List$map, polyline, runs),
+		A2(
+			$elm$core$List$concatMap,
+			$elm$core$List$map(marker),
+			runs));
+};
+var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
+var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
+var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
+var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
+var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
+var $author$project$Pages$Components$TrendChart$gridAndYAxis = A2(
+	$elm$core$List$concatMap,
+	function (value) {
+		var y = $author$project$Pages$Components$TrendChart$yAt(value);
+		return _List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$line,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x1(
+						$elm$core$String$fromFloat($author$project$Pages$Components$TrendChart$plotLeft)),
+						$elm$svg$Svg$Attributes$y1(
+						$elm$core$String$fromFloat(y)),
+						$elm$svg$Svg$Attributes$x2(
+						$elm$core$String$fromFloat($author$project$Pages$Components$TrendChart$plotRight)),
+						$elm$svg$Svg$Attributes$y2(
+						$elm$core$String$fromFloat(y)),
+						$elm$svg$Svg$Attributes$stroke('#e2e8f0'),
+						$elm$svg$Svg$Attributes$strokeWidth('1')
+					]),
+				_List_Nil),
+				A2(
+				$elm$svg$Svg$text_,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x(
+						$elm$core$String$fromFloat($author$project$Pages$Components$TrendChart$plotLeft - 10)),
+						$elm$svg$Svg$Attributes$y(
+						$elm$core$String$fromFloat(y + 4)),
+						$elm$svg$Svg$Attributes$textAnchor('end'),
+						$elm$svg$Svg$Attributes$fontSize('12'),
+						$elm$svg$Svg$Attributes$fill('#475569')
+					]),
+				_List_fromArray(
+					[
+						$elm$svg$Svg$text(
+						$elm$core$String$fromInt(value))
+					]))
+			]);
+	},
+	_List_fromArray(
+		[0, 20, 40, 60, 80, 100]));
+var $elm$svg$Svg$Attributes$preserveAspectRatio = _VirtualDom_attribute('preserveAspectRatio');
+var $author$project$Pages$Components$TrendChart$view = function (config) {
+	var labelCount = $elm$core$List$length(config.xLabels);
+	return A2(
+		$elm$svg$Svg$svg,
+		_List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$viewBox('0 0 580 250'),
+				$elm$svg$Svg$Attributes$class('w-full h-auto'),
+				A2($elm$html$Html$Attributes$attribute, 'role', 'img'),
+				A2($elm$html$Html$Attributes$attribute, 'aria-label', config.ariaLabel),
+				$elm$svg$Svg$Attributes$preserveAspectRatio('xMidYMid meet')
+			]),
+		_Utils_ap(
+			$author$project$Pages$Components$TrendChart$gridAndYAxis,
+			_Utils_ap(
+				A2(
+					$elm$core$List$indexedMap,
+					$author$project$Pages$Components$TrendChart$xLabel(labelCount),
+					config.xLabels),
+				A2($elm$core$List$concatMap, $author$project$Pages$Components$TrendChart$seriesLayer, config.series))));
+};
+var $author$project$Pages$Components$TrendChart$Series = F4(
+	function (color, label, dash, points) {
+		return {dash: dash, color: color, label: label, points: points};
+	});
+var $author$project$Pages$Dashboard$Model$Trends = {$: 'Trends'};
+var $author$project$Pages$Dashboard$View$viewLegendItem = function (series) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('flex items-center gap-2')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$svg,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$viewBox('0 0 28 10'),
+						$elm$svg$Svg$Attributes$class('h-2.5 w-7'),
+						A2($elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$line,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$x1('0'),
+								$elm$svg$Svg$Attributes$y1('5'),
+								$elm$svg$Svg$Attributes$x2('28'),
+								$elm$svg$Svg$Attributes$y2('5'),
+								$elm$svg$Svg$Attributes$stroke(series.color),
+								$elm$svg$Svg$Attributes$strokeWidth('3'),
+								$elm$svg$Svg$Attributes$strokeDasharray(series.dash)
+							]),
+						_List_Nil)
+					])),
+				A2(
+				$elm$html$Html$span,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('text-sm text-slate-800')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(series.label)
+					]))
+			]));
+};
+var $author$project$Pages$Dashboard$View$viewLegend = function (series) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1')
+			]),
+		A2($elm$core$List$map, $author$project$Pages$Dashboard$View$viewLegendItem, series));
+};
+var $author$project$Pages$Dashboard$Model$SelectTrendKpi = function (a) {
+	return {$: 'SelectTrendKpi', a: a};
+};
+var $author$project$Pages$Dashboard$Model$SelectKpiToPlot = {$: 'SelectKpiToPlot'};
+var $author$project$Pages$Dashboard$Model$TrendChartDescriptionProgram = F2(
+	function (a, b) {
+		return {$: 'TrendChartDescriptionProgram', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$Model$TrendChartDescriptionFacility = F2(
+	function (a, b) {
+		return {$: 'TrendChartDescriptionFacility', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$Model$TrendChartDescriptionAllYearsProgram = F2(
+	function (a, b) {
+		return {$: 'TrendChartDescriptionAllYearsProgram', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$Model$TrendChartDescriptionAllYearsFacility = F2(
+	function (a, b) {
+		return {$: 'TrendChartDescriptionAllYearsFacility', a: a, b: b};
+	});
+var $author$project$Pages$Dashboard$View$chartDescription = F5(
+	function (language, dashboard, years, kpi, selection) {
+		var yearList = A2(
+			$elm$core$String$join,
+			', ',
+			A2($elm$core$List$map, $elm$core$String$fromInt, years));
+		var kpiLabel = A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label);
+		return A2(
+			$author$project$Pages$Dashboard$View$translateLabel,
+			language,
+			function () {
+				var _v0 = _Utils_Tuple2(selection, dashboard);
+				if (_v0.a.$ === 'AllYears') {
+					if (_v0.b.$ === 'Facility') {
+						var _v1 = _v0.a;
+						var _v2 = _v0.b;
+						return A2($author$project$Pages$Dashboard$Model$TrendChartDescriptionAllYearsFacility, kpiLabel, yearList);
+					} else {
+						var _v3 = _v0.a;
+						var _v4 = _v0.b;
+						return A2($author$project$Pages$Dashboard$Model$TrendChartDescriptionAllYearsProgram, kpiLabel, yearList);
+					}
+				} else {
+					if (_v0.b.$ === 'Facility') {
+						var year = _v0.a.a;
+						var _v5 = _v0.b;
+						return A2(
+							$author$project$Pages$Dashboard$Model$TrendChartDescriptionFacility,
+							kpiLabel,
+							$elm$core$String$fromInt(year));
+					} else {
+						var year = _v0.a.a;
+						var _v6 = _v0.b;
+						return A2(
+							$author$project$Pages$Dashboard$Model$TrendChartDescriptionProgram,
+							kpiLabel,
+							$elm$core$String$fromInt(year));
+					}
+				}
+			}());
+	});
+var $author$project$Pages$Dashboard$Model$Year = function (a) {
+	return {$: 'Year', a: a};
+};
+var $author$project$Pages$Dashboard$Utils$yearSelLabel = F2(
+	function (language, selection) {
+		if (selection.$ === 'AllYears') {
+			return A2($author$project$Translate$translate, language, $author$project$Translate$All);
+		} else {
+			var year = selection.a;
+			return $elm$core$String$fromInt(year);
+		}
+	});
+var $author$project$Pages$Dashboard$Model$SelectTrendYear = function (a) {
+	return {$: 'SelectTrendYear', a: a};
+};
+var $author$project$Pages$Dashboard$View$viewYearButton = F3(
+	function (language, current, selection) {
+		var isActive = _Utils_eq(current, selection);
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$type_('button'),
+					$elm$html$Html$Events$onClick(
+					$author$project$Pages$Dashboard$Model$SelectTrendYear(selection)),
+					A2(
+					$elm$html$Html$Attributes$attribute,
+					'aria-pressed',
+					isActive ? 'true' : 'false'),
+					$elm$html$Html$Attributes$class('rounded px-1.5 text-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'),
+					$elm$html$Html$Attributes$classList(
+					_List_fromArray(
+						[
+							_Utils_Tuple2('font-extrabold text-accent underline underline-offset-4', isActive),
+							_Utils_Tuple2('font-medium text-slate-700 hover:text-accent', !isActive)
+						]))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Pages$Dashboard$Utils$yearSelLabel, language, selection))
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewYearSelector = F3(
+	function (language, years, current) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('mb-2 flex flex-wrap items-center gap-3')
+				]),
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('font-bold text-slate-900')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, $author$project$Translate$YearLabel) + ':')
+						])),
+				A2(
+					$elm$core$List$map,
+					A2($author$project$Pages$Dashboard$View$viewYearButton, language, current),
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Dashboard$Model$AllYears,
+						A2($elm$core$List$map, $author$project$Pages$Dashboard$Model$Year, years)))));
+	});
+var $author$project$Pages$Dashboard$Model$ProgramTarget = {$: 'ProgramTarget'};
+var $author$project$Pages$Dashboard$Model$InstitutionalTarget = {$: 'InstitutionalTarget'};
+var $author$project$Pages$Dashboard$View$targetLegendLabel = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return $author$project$Pages$Dashboard$Model$InstitutionalTarget;
+	} else {
+		return $author$project$Pages$Dashboard$Model$ProgramTarget;
+	}
+};
+var $author$project$Pages$Dashboard$Model$CurrentPerformance = {$: 'CurrentPerformance'};
+var $author$project$Pages$Dashboard$View$viewTrends = F8(
+	function (language, dashboard, years, model, kpis, selectedId, selectedKpi, series) {
+		var performanceColor = '#0273b2';
+		var yearColors = _List_fromArray(
+			[performanceColor, '#7b3294', '#00838f', '#ad1457', '#475569', '#2f7d32']);
+		var targetLine = A2($elm$core$List$any, $elm_community$maybe_extra$Maybe$Extra$isJust, series.target) ? _List_fromArray(
+			[
+				A4(
+				$author$project$Pages$Components$TrendChart$Series,
+				'#c25e00',
+				A2(
+					$author$project$Pages$Dashboard$View$translateLabel,
+					language,
+					$author$project$Pages$Dashboard$View$targetLegendLabel(dashboard)),
+				'8 4',
+				series.target)
+			]) : _List_Nil;
+		var yearLine = F2(
+			function (index, year) {
+				return A4(
+					$author$project$Pages$Components$TrendChart$Series,
+					A2(
+						$elm$core$Maybe$withDefault,
+						performanceColor,
+						$elm$core$List$head(
+							A2(
+								$elm$core$List$drop,
+								A2(
+									$elm$core$Basics$modBy,
+									$elm$core$List$length(yearColors),
+									index),
+								yearColors))),
+					$elm$core$String$fromInt(year),
+					'',
+					series.performance(year));
+			});
+		var chartSeries = function () {
+			var _v0 = model.trendYear;
+			if (_v0.$ === 'AllYears') {
+				return _Utils_ap(
+					A2($elm$core$List$indexedMap, yearLine, years),
+					targetLine);
+			} else {
+				var year = _v0.a;
+				return A2(
+					$elm$core$List$cons,
+					A4(
+						$author$project$Pages$Components$TrendChart$Series,
+						performanceColor,
+						A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$CurrentPerformance),
+						'',
+						series.performance(year)),
+					_Utils_ap(
+						targetLine,
+						function () {
+							if (dashboard.$ === 'Facility') {
+								return _List_fromArray(
+									[
+										A4(
+										$author$project$Pages$Components$TrendChart$Series,
+										'#2f7d32',
+										A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$InterventionSiteAverage),
+										'2 4',
+										series.average(year))
+									]);
+							} else {
+								return _List_Nil;
+							}
+						}()));
+			}
+		}();
+		var selectId = 'trend-kpi-' + $author$project$Pages$Dashboard$Utils$dashboardSlug(dashboard);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('overflow-hidden rounded-lg border border-slate-200')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('flex flex-wrap items-center gap-3 bg-accent px-3 py-2 text-white')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$h2,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('text-lg font-bold')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$Trends))
+								])),
+							A2(
+							$elm$html$Html$label,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$for(selectId),
+									$elm$html$Html$Attributes$class('sr-only')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$SelectKpiToPlot))
+								])),
+							A2(
+							$elm$html$Html$select,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$id(selectId),
+									$elm$html$Html$Attributes$class('max-w-full rounded border border-white/40 bg-white px-2 py-1 text-sm font-semibold text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'),
+									$elm$html$Html$Events$onInput($author$project$Pages$Dashboard$Model$SelectTrendKpi)
+								]),
+							A2(
+								$elm$core$List$map,
+								function (kpi) {
+									return A2(
+										$elm$html$Html$option,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$value(kpi.id),
+												$elm$html$Html$Attributes$selected(
+												_Utils_eq(kpi.id, selectedId))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text(
+												A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label))
+											]));
+								},
+								kpis))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('bg-white p-3')
+						]),
+					_List_fromArray(
+						[
+							A3($author$project$Pages$Dashboard$View$viewYearSelector, language, years, model.trendYear),
+							$author$project$Pages$Components$TrendChart$view(
+							{
+								series: chartSeries,
+								xLabels: $author$project$Pages$Dashboard$Utils$monthLabels(language),
+								ariaLabel: A5($author$project$Pages$Dashboard$View$chartDescription, language, dashboard, years, selectedKpi, model.trendYear)
+							}),
+							$author$project$Pages$Dashboard$View$viewLegend(chartSeries)
+						]))
+				]));
+	});
+var $author$project$Pages$Dashboard$Utils$defaultTrendKpi = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return 'ultrasound';
+	} else {
+		return 'ultrasound-p';
+	}
+};
+var $author$project$Pages$Dashboard$View$viewTrendsPanel = F6(
+	function (language, dashboard, years, kpis, seriesOf, model) {
+		var selectedId = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Pages$Dashboard$Utils$defaultTrendKpi(dashboard),
+			model.trendKpi);
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A2(
+				$elm$core$Maybe$map,
+				function (kpi) {
+					return A8(
+						$author$project$Pages$Dashboard$View$viewTrends,
+						language,
+						dashboard,
+						years,
+						model,
+						kpis,
+						selectedId,
+						kpi,
+						seriesOf(kpi));
+				},
+				A2(
+					$elm_community$maybe_extra$Maybe$Extra$orElse,
+					$elm$core$List$head(kpis),
+					A2($author$project$Pages$Dashboard$Utils$kpiById, kpis, selectedId))));
+	});
+var $author$project$Pages$Dashboard$Model$Indicators = {$: 'Indicators'};
+var $author$project$Pages$Dashboard$Model$ValueColumn = {$: 'ValueColumn'};
+var $author$project$Pages$Dashboard$Model$IndicatorColumn = {$: 'IndicatorColumn'};
+var $author$project$Pages$Dashboard$View$dashboardTitleLabel = function (dashboard) {
+	if (dashboard.$ === 'Facility') {
+		return $author$project$Pages$Dashboard$Model$DashboardTitleFacility;
+	} else {
+		return $author$project$Pages$Dashboard$Model$DashboardTitleProgram;
+	}
+};
+var $author$project$Pages$Dashboard$View$dashboardExportMsg = F6(
+	function (language, dashboard, fileName, tiles, kpis, coverage) {
+		var labelAndValue = F2(
+			function (labelId, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Pages$Dashboard$View$translateLabel, language, labelId),
+						value
+					]);
+			});
+		var summaryRows = _Utils_ap(
+			A2(
+				$elm$core$List$map,
+				function (tile) {
+					return A2(labelAndValue, tile.label, tile.value);
+				},
+				tiles),
+			A2(
+				$elm$core$List$map,
+				function (bar) {
+					return _List_fromArray(
+						[
+							A2($author$project$Pages$Dashboard$View$translateLabel, language, bar.emphasis) + (' ' + A2($author$project$Pages$Dashboard$View$translateLabel, language, bar.label)),
+							A3($author$project$Pages$Dashboard$View$formatValue, language, $author$project$Pages$Dashboard$Model$UnitPercent, bar.pct)
+						]);
+				},
+				coverage));
+		var kpiCaptions = _Utils_ap(
+			_List_fromArray(
+				[$author$project$Pages$Dashboard$Model$IndicatorColumn, $author$project$Pages$Dashboard$Model$CurrentPerformance, $author$project$Pages$Dashboard$Model$ProgramTargetShort]),
+			function () {
+				if (dashboard.$ === 'Facility') {
+					return _List_fromArray(
+						[$author$project$Pages$Dashboard$Model$InterventionSiteAverage]);
+				} else {
+					return _List_Nil;
+				}
+			}());
+		var kpiRow = function (kpi) {
+			return _Utils_ap(
+				_List_fromArray(
+					[
+						A2($author$project$Pages$Dashboard$View$translateLabel, language, kpi.label),
+						A3($author$project$Pages$Dashboard$View$formatValue, language, kpi.unit, kpi.current),
+						kpi.target
+					]),
+				function () {
+					if (dashboard.$ === 'Facility') {
+						return _List_fromArray(
+							[
+								A3($author$project$Pages$Dashboard$View$formatValue, language, kpi.unit, kpi.average)
+							]);
+					} else {
+						return _List_Nil;
+					}
+				}());
+		};
+		return A2(
+			$author$project$Pages$Dashboard$Model$DownloadCSV,
+			fileName,
+			$author$project$Pages$Components$Utils$reportTablesDataToCSV(
+				_List_fromArray(
+					[
+						A3(
+						$author$project$Pages$Model$MetricsResultsTableData,
+						A2(
+							$author$project$Pages$Dashboard$View$translateLabel,
+							language,
+							$author$project$Pages$Dashboard$View$dashboardTitleLabel(dashboard)),
+						A2(
+							$elm$core$List$map,
+							$author$project$Pages$Dashboard$View$translateLabel(language),
+							_List_fromArray(
+								[$author$project$Pages$Dashboard$Model$IndicatorColumn, $author$project$Pages$Dashboard$Model$ValueColumn])),
+						summaryRows),
+						A3(
+						$author$project$Pages$Model$MetricsResultsTableData,
+						A2($author$project$Pages$Dashboard$View$translateLabel, language, $author$project$Pages$Dashboard$Model$Indicators),
+						A2(
+							$elm$core$List$map,
+							$author$project$Pages$Dashboard$View$translateLabel(language),
+							kpiCaptions),
+						A2($elm$core$List$map, kpiRow, kpis))
+					])));
+	});
+var $author$project$Pages$Dashboard$View$behindDrillDownAttributes = function (screen) {
+	if (screen.$ === 'DashboardScreen') {
+		return _List_Nil;
+	} else {
+		return _List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$attribute, 'aria-hidden', 'true'),
+				A2($elm$html$Html$Attributes$attribute, 'inert', '')
+			]);
+	}
+};
+var $author$project$Pages$Dashboard$View$viewFigures = F5(
+	function (language, currentDate, data, dashboard, model) {
+		var filters = A3($author$project$Pages$Dashboard$Utils$filtersFor, dashboard, data.menu.site, data.menu.healthCenters);
+		var selectedOption = function (key) {
+			return A2(
+				$elm$core$Maybe$map,
+				$author$project$Pages$Dashboard$Utils$selectedFilterValue(model),
+				A2(
+					$elm_community$list_extra$List$Extra$find,
+					function (filter) {
+						return _Utils_eq(filter.key, key);
+					},
+					filters));
+		};
+		var siteName = A3($author$project$Pages$Dashboard$View$resolveSiteName, language, dashboard, selectedOption);
+		var exportFileName = function (content) {
+			var siteWords = function () {
+				if (dashboard.$ === 'Facility') {
+					return $elm$core$String$words(
+						$elm$core$String$toLower(siteName));
+				} else {
+					return _List_Nil;
+				}
+			}();
+			return A2(
+				$elm$core$String$join,
+				'-',
+				_Utils_ap(
+					A2(
+						$elm$core$List$cons,
+						'healthystart',
+						A2(
+							$elm$core$List$cons,
+							$author$project$Pages$Dashboard$Utils$dashboardSlug(dashboard),
+							siteWords)),
+					_List_fromArray(
+						[
+							content,
+							$author$project$Gizra$NominalDate$formatYYYYMMDD(currentDate)
+						]))) + '.csv';
+		};
+		var period = function () {
+			var _v3 = selectedOption($author$project$Pages$Dashboard$Model$FilterTime);
+			if ((_v3.$ === 'Just') && (_v3.a.$ === 'OptionPeriod')) {
+				var selected = _v3.a.a;
+				return selected;
+			} else {
+				return $author$project$Pages$Dashboard$Model$PeriodMonth;
+			}
+		}();
+		var figures = function () {
+			if (dashboard.$ === 'Facility') {
+				var site = function () {
+					var _v2 = selectedOption($author$project$Pages$Dashboard$Model$FilterSite);
+					if ((_v2.$ === 'Just') && (_v2.a.$ === 'OptionHealthCenter')) {
+						var healthCenter = _v2.a.a;
+						return $elm$core$Maybe$Just(healthCenter.id);
+					} else {
+						return $elm$core$Maybe$Nothing;
+					}
+				}();
+				return A5($author$project$Pages$Dashboard$Figures$facilityFigures, currentDate, data.firstCohortDate, data.records, site, period);
+			} else {
+				return A4($author$project$Pages$Dashboard$Figures$programFigures, currentDate, data.firstCohortDate, data.records, period);
+			}
+		}();
+		var years = A2($author$project$Pages$Dashboard$Utils$drillYears, currentDate, data.firstCohortDate);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('ehs-dashboard mx-auto w-full max-w-[1440px] px-3 py-4 md:px-6')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					A2(
+						$elm$core$List$cons,
+						$elm$html$Html$Attributes$class('ehs-dashboard__page overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-slate-200'),
+						$author$project$Pages$Dashboard$View$behindDrillDownAttributes(model.screen)),
+					_List_fromArray(
+						[
+							A4(
+							$author$project$Pages$Dashboard$View$viewBanner,
+							language,
+							dashboard,
+							siteName,
+							A6(
+								$author$project$Pages$Dashboard$View$dashboardExportMsg,
+								language,
+								dashboard,
+								exportFileName(
+									$author$project$Pages$Dashboard$Utils$filterOptionValue(
+										$author$project$Pages$Dashboard$Model$OptionPeriod(period))),
+								figures.tiles,
+								figures.kpis,
+								figures.coverage)),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('px-4 py-4 md:px-6')
+								]),
+							_List_fromArray(
+								[
+									A4($author$project$Pages$Dashboard$View$viewFilterRow, language, dashboard, filters, model),
+									A2($author$project$Pages$Dashboard$View$viewTileRow, language, figures.tiles),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2')
+										]),
+									_List_fromArray(
+										[
+											A5($author$project$Pages$Dashboard$View$viewLeftColumn, language, dashboard, period, figures.kpis, figures.coverage),
+											A2(
+											$elm$html$Html$div,
+											_List_Nil,
+											_List_fromArray(
+												[
+													A6($author$project$Pages$Dashboard$View$viewTrendsPanel, language, dashboard, years, figures.kpis, figures.series, model),
+													A2($author$project$Pages$Dashboard$View$viewAlertsPanel, language, figures.alerts)
+												]))
+										]))
+								]))
+						])),
+					function () {
+					var _v0 = model.screen;
+					if (_v0.$ === 'DashboardScreen') {
+						return $author$project$Gizra$Html$emptyNode;
+					} else {
+						var kpi = _v0.a;
+						return A6(
+							$author$project$Pages$Dashboard$View$viewDrillDown,
+							language,
+							dashboard,
+							exportFileName(kpi.id),
+							years,
+							kpi,
+							figures.series(kpi));
+					}
+				}()
+				]));
+	});
+var $author$project$Pages$Dashboard$View$viewDashboard = F5(
+	function (language, currentDate, data, dashboard, model) {
+		return $author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload) ? A5($author$project$Pages$Dashboard$View$viewFigures, language, currentDate, data, dashboard, model) : A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('ehs-dashboard mx-auto w-full max-w-[1440px] px-3 py-4 md:px-6')
+				]),
+			_List_fromArray(
+				[
+					A3(
+					$author$project$Pages$Components$Utils$viewSyncingPlaceholder,
+					language,
+					$elm$core$List$length(data.records),
+					data.remainingForDownload)
+				]));
+	});
+var $author$project$Pages$Dashboard$View$view = F5(
+	function (language, currentDate, modelBackend, dashboard, model) {
+		return A2(
+			$author$project$Pages$Utils$viewBackendData,
+			modelBackend.dashboardData,
+			function (data) {
+				return A5($author$project$Pages$Dashboard$View$viewDashboard, language, currentDate, data, dashboard, model);
+			});
+	});
+var $author$project$App$View$viewDashboard = F2(
+	function (model, dashboard) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2($author$project$Error$View$view, model.language, model.errors),
+					A2(
+					$elm$html$Html$map,
+					$author$project$App$Model$MsgDashboardPage,
+					A5(
+						$author$project$Pages$Dashboard$View$view,
+						model.language,
+						$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
+						model.backend,
+						dashboard,
+						model.dashboardPage))
+				]));
+	});
 var $author$project$App$View$view = function (model) {
 	var _v0 = model.activePage;
 	switch (_v0.$) {
@@ -44968,6 +49006,10 @@ var $author$project$App$View$view = function (model) {
 							model.backend,
 							model.completionPage))
 					]));
+		case 'DashboardFacility':
+			return A2($author$project$App$View$viewDashboard, model, $author$project$Pages$Dashboard$Model$Facility);
+		case 'DashboardProgram':
+			return A2($author$project$App$View$viewDashboard, model, $author$project$Pages$Dashboard$Model$Program);
 		default:
 			return A2(
 				$elm$html$Html$div,
@@ -44978,134 +49020,6 @@ var $author$project$App$View$view = function (model) {
 						A2($author$project$Translate$translate, model.language, $author$project$Translate$WrongPage))
 					]));
 	}
-};
-var $elm$core$Basics$never = function (_v0) {
-	never:
-	while (true) {
-		var nvr = _v0.a;
-		var $temp$_v0 = nvr;
-		_v0 = $temp$_v0;
-		continue never;
-	}
-};
-var $elm$browser$Browser$External = function (a) {
-	return {$: 'External', a: a};
-};
-var $elm$browser$Browser$Internal = function (a) {
-	return {$: 'Internal', a: a};
-};
-var $elm$browser$Browser$Dom$NotFound = function (a) {
-	return {$: 'NotFound', a: a};
-};
-var $elm$url$Url$Http = {$: 'Http'};
-var $elm$url$Url$Https = {$: 'Https'};
-var $elm$core$String$indexes = _String_indexes;
-var $elm$url$Url$Url = F6(
-	function (protocol, host, port_, path, query, fragment) {
-		return {host: host, path: path, port_: port_, query: query, fragment: fragment, protocol: protocol};
-	});
-var $elm$core$String$contains = _String_contains;
-var $elm$url$Url$chompBeforePath = F5(
-	function (protocol, path, params, frag, str) {
-		if ($elm$core$String$isEmpty(str) || A2($elm$core$String$contains, '@', str)) {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var _v0 = A2($elm$core$String$indexes, ':', str);
-			if (!_v0.b) {
-				return $elm$core$Maybe$Just(
-					A6($elm$url$Url$Url, protocol, str, $elm$core$Maybe$Nothing, path, params, frag));
-			} else {
-				if (!_v0.b.b) {
-					var i = _v0.a;
-					var _v1 = $elm$core$String$toInt(
-						A2($elm$core$String$dropLeft, i + 1, str));
-					if (_v1.$ === 'Nothing') {
-						return $elm$core$Maybe$Nothing;
-					} else {
-						var port_ = _v1;
-						return $elm$core$Maybe$Just(
-							A6(
-								$elm$url$Url$Url,
-								protocol,
-								A2($elm$core$String$left, i, str),
-								port_,
-								path,
-								params,
-								frag));
-					}
-				} else {
-					return $elm$core$Maybe$Nothing;
-				}
-			}
-		}
-	});
-var $elm$url$Url$chompBeforeQuery = F4(
-	function (protocol, params, frag, str) {
-		if ($elm$core$String$isEmpty(str)) {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var _v0 = A2($elm$core$String$indexes, '/', str);
-			if (!_v0.b) {
-				return A5($elm$url$Url$chompBeforePath, protocol, '/', params, frag, str);
-			} else {
-				var i = _v0.a;
-				return A5(
-					$elm$url$Url$chompBeforePath,
-					protocol,
-					A2($elm$core$String$dropLeft, i, str),
-					params,
-					frag,
-					A2($elm$core$String$left, i, str));
-			}
-		}
-	});
-var $elm$url$Url$chompBeforeFragment = F3(
-	function (protocol, frag, str) {
-		if ($elm$core$String$isEmpty(str)) {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var _v0 = A2($elm$core$String$indexes, '?', str);
-			if (!_v0.b) {
-				return A4($elm$url$Url$chompBeforeQuery, protocol, $elm$core$Maybe$Nothing, frag, str);
-			} else {
-				var i = _v0.a;
-				return A4(
-					$elm$url$Url$chompBeforeQuery,
-					protocol,
-					$elm$core$Maybe$Just(
-						A2($elm$core$String$dropLeft, i + 1, str)),
-					frag,
-					A2($elm$core$String$left, i, str));
-			}
-		}
-	});
-var $elm$url$Url$chompAfterProtocol = F2(
-	function (protocol, str) {
-		if ($elm$core$String$isEmpty(str)) {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var _v0 = A2($elm$core$String$indexes, '#', str);
-			if (!_v0.b) {
-				return A3($elm$url$Url$chompBeforeFragment, protocol, $elm$core$Maybe$Nothing, str);
-			} else {
-				var i = _v0.a;
-				return A3(
-					$elm$url$Url$chompBeforeFragment,
-					protocol,
-					$elm$core$Maybe$Just(
-						A2($elm$core$String$dropLeft, i + 1, str)),
-					A2($elm$core$String$left, i, str));
-			}
-		}
-	});
-var $elm$url$Url$fromString = function (str) {
-	return A2($elm$core$String$startsWith, 'http://', str) ? A2(
-		$elm$url$Url$chompAfterProtocol,
-		$elm$url$Url$Http,
-		A2($elm$core$String$dropLeft, 7, str)) : (A2($elm$core$String$startsWith, 'https://', str) ? A2(
-		$elm$url$Url$chompAfterProtocol,
-		$elm$url$Url$Https,
-		A2($elm$core$String$dropLeft, 8, str)) : $elm$core$Maybe$Nothing);
 };
 var $elm$browser$Browser$element = _Browser_element;
 var $ccapndave$elm_update_extra$Update$Extra$andThen = F3(

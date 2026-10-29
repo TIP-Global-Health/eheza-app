@@ -12,6 +12,7 @@ import Error.Model exposing (Error)
 import Json.Decode exposing (Value)
 import Pages.Completion.Model
 import Pages.CompletionMenu.Model
+import Pages.Dashboard.Model
 import Pages.Reports.Model
 import Pages.ReportsMenu.Model
 import Pages.Scoreboard.Model
@@ -35,6 +36,7 @@ type Msg
     | MsgReportsPage Pages.Reports.Model.Msg
     | MsgCompletionMenuPage Pages.CompletionMenu.Model.Msg
     | MsgCompletionPage Pages.Completion.Model.Msg
+    | MsgDashboardPage Pages.Dashboard.Model.Msg
     | SetCurrentTime Time.Posix
 
 
@@ -63,6 +65,7 @@ type alias Model =
     , reportsPage : Pages.Reports.Model.Model
     , completionMenuPage : Pages.CompletionMenu.Model.Model
     , completionPage : Pages.Completion.Model.Model
+    , dashboardPage : Pages.Dashboard.Model.Model
     }
 
 
@@ -82,4 +85,5 @@ emptyModel =
     , reportsPage = Pages.Reports.Model.emptyModel
     , completionMenuPage = Pages.CompletionMenu.Model.emptyModel
     , completionPage = Pages.Completion.Model.emptyModel
+    , dashboardPage = Pages.Dashboard.Model.emptyModel
     }

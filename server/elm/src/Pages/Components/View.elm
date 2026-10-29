@@ -13,7 +13,7 @@ import Html.Events exposing (onClick)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Components.Model exposing (DemographicsSelection)
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
-import Pages.Components.Utils exposing (populationSelectionOptionToString)
+import Pages.Components.Utils exposing (healthCentersByName, populationSelectionOptionToString)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils
     exposing
@@ -77,7 +77,7 @@ viewHealthCenterSelection :
 viewHealthCenterSelection language data urlPrefix selectedHealthCenter setHealthCenterMsg selectionMadeMsg =
     let
         options =
-            List.sortBy .name data.healthCenters
+            healthCentersByName data.healthCenters
                 |> List.map (\healthCenter -> ( healthCenter.name, healthCenter.id ))
     in
     ( [ viewCustomSelectListInput
