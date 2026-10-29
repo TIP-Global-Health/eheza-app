@@ -111,6 +111,22 @@ function hedley_admin_preprocess_views_view(&$vars) {
 }
 
 /**
+ * Implements preprocess_views_data_export_csv_header().
+ *
+ * Starts the CSV file of a views_data_export display with a byte-order mark.
+ */
+function hedley_admin_preprocess_views_data_export_csv_header(&$vars) {
+  // A file converted to another encoding is not UTF-8, so it gets no mark.
+  if (empty($vars['header']) || !empty($vars['options']['encoding'])) {
+    return;
+  }
+
+  // The leading byte-order mark makes Excel read the file as UTF-8.
+  $first = array_key_first($vars['header']);
+  $vars['header'][$first] = "\xEF\xBB\xBF" . $vars['header'][$first];
+}
+
+/**
  * Implements hook_theme_registry_alter().
  */
 function hedley_admin_theme_registry_alter(&$theme_registry) {
