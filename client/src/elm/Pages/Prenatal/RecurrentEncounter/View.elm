@@ -23,7 +23,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData)
-import Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, expectActivity)
+import Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, concludedLabsResultsValue, expectActivity)
 import Pages.Prenatal.RecurrentEncounter.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Prenatal.RecurrentEncounter.Utils exposing (getAllActivities)
 import Pages.Utils exposing (viewCustomAction, viewReportLink)
@@ -172,7 +172,7 @@ viewMainPageContent language currentDate nurse assembled model =
                                     assembled.participant.person
                                     assembled.id
                                     resultsId
-                                    value
+                                    (concludedLabsResultsValue currentDate assembled value)
                                 )
                             )
                             assembled.measurements.labsResults

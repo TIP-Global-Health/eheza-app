@@ -9070,8 +9070,16 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
         |> Maybe.andThen
             (\assembled ->
                 Maybe.map
-                    (\( resultsId, results ) ->
+                    (\( resultsId, storedResults ) ->
                         let
+                            results =
+                                { storedResults
+                                    | value =
+                                        Pages.Prenatal.RecurrentActivity.Utils.withCompletedTestsFromMeasurements
+                                            assembled
+                                            storedResults.value
+                                }
+
                             ( performedTests, completedTests ) =
                                 Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
 
@@ -9225,14 +9233,10 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                     if List.isEmpty pendingActivities then
                         Maybe.map
                             (\( resultsId, results ) ->
-                                let
-                                    value =
-                                        results.value
-                                in
                                 [ savePrenatalLabsResultsMsg id
                                     assembled.participant.person
                                     (Just resultsId)
-                                    { value | resolutionDate = currentDate }
+                                    (Pages.Prenatal.RecurrentActivity.Utils.concludedLabsResultsValue currentDate assembled results.value)
                                 , App.Model.SetActivePage <|
                                     UserPage <|
                                         ClinicalProgressReportPage

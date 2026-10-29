@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault)
+module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, concludedLabsResultsValue, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault, withCompletedTestsFromMeasurements)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
@@ -129,12 +129,97 @@ laboratoryResultTaskCompleted isLabTech assembled task =
 
         _ ->
             List.member task laboratoryResultTasks
-                && (taskNotExpected
-                        || (laboratoryResultValue assembled task
-                                |> Maybe.map (\value -> value.resultOfRun || isJust value.notPerformedReason)
-                                |> Maybe.withDefault False
-                           )
-                   )
+                && (taskNotExpected || laboratoryResultEntered assembled task)
+
+
+{-| Whether the test's own measurement holds a result, or the reason it was
+not run.
+-}
+laboratoryResultEntered : AssembledData -> LaboratoryTask -> Bool
+laboratoryResultEntered assembled task =
+    laboratoryResultValue assembled task
+        |> Maybe.map (\value -> value.resultOfRun || isJust value.notPerformedReason)
+        |> Maybe.withDefault False
+
+
+{-| The labs entry with each performed test counted as completed when its own
+measurement says so. A device's copy of the entry can be behind its tests.
+-}
+withCompletedTestsFromMeasurements : AssembledData -> LabsResultsValue -> LabsResultsValue
+withCompletedTestsFromMeasurements assembled value =
+    let
+        completedByMeasurement test =
+            case test of
+                TestBloodGpRs ->
+                    laboratoryResultEntered assembled TaskBloodGpRsTest
+
+                TestCreatinine ->
+                    False
+
+                TestHemoglobin ->
+                    laboratoryResultEntered assembled TaskHemoglobinTest
+
+                TestHepatitisB ->
+                    laboratoryResultEntered assembled TaskHepatitisBTest
+
+                TestHIV ->
+                    laboratoryResultEntered assembled TaskHIVTest
+
+                TestHIVPCR ->
+                    laboratoryResultEntered assembled TaskHIVPCRTest
+
+                TestLipidPanel ->
+                    False
+
+                TestLiverFunction ->
+                    False
+
+                TestMalaria ->
+                    laboratoryResultEntered assembled TaskMalariaTest
+
+                TestPartnerHIV ->
+                    laboratoryResultEntered assembled TaskPartnerHIVTest
+
+                TestRandomBloodSugar ->
+                    laboratoryResultEntered assembled TaskRandomBloodSugarTest
+
+                TestSyphilis ->
+                    laboratoryResultEntered assembled TaskSyphilisTest
+
+                TestUrineDipstick ->
+                    laboratoryResultEntered assembled TaskUrineDipstickTest
+
+                TestVitalsRecheck ->
+                    examinationMeasurementTaken assembled ExaminationVitals
+    in
+    { value
+        | completedTests =
+            EverySet.filter completedByMeasurement value.performedTests
+                |> EverySet.union value.completedTests
+    }
+
+
+{-| The labs entry as a nurse closes it at the end of the recurrent phase:
+resolved today, and reviewed once every performed test is completed.
+-}
+concludedLabsResultsValue : NominalDate -> AssembledData -> LabsResultsValue -> LabsResultsValue
+concludedLabsResultsValue currentDate assembled value =
+    let
+        withCompletedTests =
+            withCompletedTestsFromMeasurements assembled value
+
+        allCompleted =
+            EverySet.isEmpty <| EverySet.diff withCompletedTests.performedTests withCompletedTests.completedTests
+    in
+    { withCompletedTests
+        | reviewState =
+            if allCompleted then
+                Just LabsResultsReviewCompleted
+
+            else
+                withCompletedTests.reviewState
+        , resolutionDate = currentDate
+    }
 
 
 expectLaboratoryResultTask : Bool -> AssembledData -> LaboratoryTask -> Bool
