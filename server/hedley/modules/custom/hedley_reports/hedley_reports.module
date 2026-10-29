@@ -3583,6 +3583,8 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
   }
 
   $measurements_ids = array_keys($result['node']);
+  // A fixed order, so the same session always gives the same data.
+  sort($measurements_ids);
   $measurements = node_load_multiple($measurements_ids);
   $measurements_by_participant = [];
   foreach ($measurements as $measurement) {
@@ -10901,13 +10903,24 @@ function hedley_reports_completion_data_is_set($encounter) {
  * An unchanged node gets no new revision, so devices do not download it again.
  *
  * @param object $node
- *   The encounter node.
+ *   The encounter node, or the attendance node for group sessions.
  * @param mixed $completion_data
  *   The completion data to store.
  */
 function hedley_reports_save_completion_data($node, $completion_data) {
   $encoded = json_encode($completion_data);
-  if (hedley_reports_completion_data_is_set($node) && $node->field_reports_data[LANGUAGE_NONE][0]['value'] === $encoded) {
+  $is_unchanged = function ($node) use ($encoded) {
+    return isset($node->field_reports_data[LANGUAGE_NONE][0]['value']) && $node->field_reports_data[LANGUAGE_NONE][0]['value'] === $encoded;
+  };
+
+  if ($is_unchanged($node)) {
+    return;
+  }
+
+  // The node was loaded before the data was built, so reload it to keep
+  // edits made since, as the person save does.
+  $node = node_load($node->nid, NULL, TRUE);
+  if (!$node || $is_unchanged($node)) {
     return;
   }
 
