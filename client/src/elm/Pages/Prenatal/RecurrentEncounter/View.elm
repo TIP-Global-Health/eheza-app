@@ -2,7 +2,6 @@ module Pages.Prenatal.RecurrentEncounter.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isLabTechnician)
@@ -23,7 +22,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData)
-import Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, expectActivity)
+import Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, concludedLabsResultsValue, expectActivity)
 import Pages.Prenatal.RecurrentEncounter.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Prenatal.RecurrentEncounter.Utils exposing (getAllActivities)
 import Pages.Utils exposing (viewCustomAction, viewReportLink)
@@ -165,18 +164,17 @@ viewMainPageContent language currentDate nurse assembled model =
                     if not isLabTech && List.isEmpty pendingActivities then
                         -- Nurse has completed all activities => end the
                         -- encounter (by setting resolution date to today).
-                        Maybe.map2
-                            (\( resultsId, _ ) value ->
+                        Maybe.map
+                            (\( resultsId, results ) ->
                                 ( Translate.EndEncounter
                                 , ConcludeEncounter
                                     assembled.participant.person
                                     assembled.id
                                     resultsId
-                                    value
+                                    (concludedLabsResultsValue currentDate assembled results)
                                 )
                             )
                             assembled.measurements.labsResults
-                            (getMeasurementValueFunc assembled.measurements.labsResults)
                             |> Maybe.withDefault leaveEncounterTuple
 
                     else

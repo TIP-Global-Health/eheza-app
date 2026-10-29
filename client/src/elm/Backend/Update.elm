@@ -9073,7 +9073,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
                     (\( resultsId, results ) ->
                         let
                             ( performedTests, completedTests ) =
-                                Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
+                                Pages.Prenatal.RecurrentActivity.Utils.labsResultsTests currentDate assembled results
 
                             updatedValue =
                                 (\value ->
@@ -9089,7 +9089,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
                                             EverySet.insert test completedTests
 
                                         allLabsCompleted =
-                                            EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests
+                                            Pages.Prenatal.RecurrentActivity.Utils.allLabsCompleted updatedPerformedTests updatedCompletedTests
 
                                         updatedTestsWithFollowUp =
                                             -- Mark tests which results were entered by Lab Tech, and got
@@ -9225,14 +9225,10 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                     if List.isEmpty pendingActivities then
                         Maybe.map
                             (\( resultsId, results ) ->
-                                let
-                                    value =
-                                        results.value
-                                in
                                 [ savePrenatalLabsResultsMsg id
                                     assembled.participant.person
                                     (Just resultsId)
-                                    { value | resolutionDate = currentDate }
+                                    (Pages.Prenatal.RecurrentActivity.Utils.concludedLabsResultsValue currentDate assembled results)
                                 , App.Model.SetActivePage <|
                                     UserPage <|
                                         ClinicalProgressReportPage
