@@ -3869,8 +3869,7 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -4869,8 +4868,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -6385,8 +6383,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -6864,8 +6861,7 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -7460,8 +7456,7 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -7616,8 +7611,7 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -7884,8 +7878,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
-    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($encounter);
+    hedley_reports_save_completion_data($encounter, $completion_data);
   }
 }
 
@@ -10900,6 +10893,26 @@ function hedley_reports_generate_completion_result(array $expected, array $measu
  */
 function hedley_reports_completion_data_is_set($encounter) {
   return !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value']);
+}
+
+/**
+ * Stores completion data on a node, saving it only when the data changed.
+ *
+ * An unchanged node gets no new revision, so devices do not download it again.
+ *
+ * @param object $node
+ *   The encounter node.
+ * @param mixed $completion_data
+ *   The completion data to store.
+ */
+function hedley_reports_save_completion_data($node, $completion_data) {
+  $encoded = json_encode($completion_data);
+  if (hedley_reports_completion_data_is_set($node) && $node->field_reports_data[LANGUAGE_NONE][0]['value'] === $encoded) {
+    return;
+  }
+
+  $node->field_reports_data[LANGUAGE_NONE][0]['value'] = $encoded;
+  node_save($node);
 }
 
 /**
