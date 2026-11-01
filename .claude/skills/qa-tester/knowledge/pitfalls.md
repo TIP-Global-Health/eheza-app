@@ -455,3 +455,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** Write refused the drafted `report.md` as a "report file" in a watch-mode subagent.
 - **Wrong conclusion:** the report cannot be posted from a subagent.
 - **Rule:** write the post script's input with a Bash heredoc in the scratchpad; it is tool input, not a report file.
+
+## Expecting develop's defect exactly as the issue words it
+
+- **Symptom:** the issue said a rejected character "stays in the box"; on develop the box dropped it and kept the digits after it (`724/50-17` became `7245017`).
+- **Wrong conclusion:** the control does not reproduce the defect, or the build is wrong.
+- **Rule:** an issue's account of the symptom can be off in detail. Record what develop actually shows; the control proves the defect when the searched ID cannot be found, whatever the box shows.
+
+## Sharing a scratchpad folder with an earlier run
+
+- **Symptom:** the scratchpad's `qa/` folder already held another PR's `report.md`, `recordings.md` and scripts.
+- **Wrong conclusion:** the files there belong to this run.
+- **Rule:** keep each run's scripts and drafts in `scratchpad/qa<pr>/`, so a post never picks up another PR's report.

@@ -17,6 +17,9 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   its own service-worker cache, so two browsers can show two builds at the same time —
   always read the version in the browser doing the run.
 - `EHEZA_SITE` (rwanda / burundi) is set in `.ddev/config.local.yaml`.
+- The tablet takes its site from each general download: `ddev drush vset hedley_general_site_name burundi`, then
+  `syncAndWait`, and localStorage `syncInfoGeneral.site` reads `burundi`. No ddev restart is needed. Set it back to
+  `rwanda` before the run ends.
 - Drupal admin: `admin` / `admin`.
 - GitHub CLI 2.99 or later is required: it is the first with `--attach` for videos, and
   older ones fail on this repo's `gh issue view` / `gh pr view` (Projects classic).
@@ -61,6 +64,8 @@ flag simply does not appear.
 - Individual encounters offered — nurse: Acute Illness, Antenatal Care, Child Nutrition,
   Noncommunicable Diseases, Standard Pediatric Visit. CHW: Acute Illness, Antenatal Care,
   Child Nutrition, Well Child Visit, Child Scorecard, TB Management, HIV Management.
+- Family Encounter (flag `family_nutrition`) is CHW-only: Clinical → `button.family-assessment` → Nutrition Encounter.
+  Its search lists adults of the chosen village.
 - **The newborn exam (Birth History) is CHW-only.** A nurse always starts a `PediatricCare`
   encounter, which never offers it (`Pages/WellChild/Participant/View.elm` picks
   `NewbornExam` only for a CHW and a child under two months).
@@ -123,6 +128,9 @@ flag simply does not appear.
 - Main-menu cards: the click handler is on `div.card > div.image`, not the card or label.
 - Clinical: `button.individual-assessment` / `button.group-assessment`.
 - Participant search: type in `input.search-input`; each result is `.item.participant-view`.
+  The mode is the `.search-by` radio pair (Name / National ID); switching clears the box. The count is
+  `.results-summary` ("There is 1 participant that matches your search."), the results `.participants-list .item`.
+  Results land about a second after the last key (debounce plus the device query). National ID matches the start of the ID.
 - Search results and Participant Directory rows open through their `span.action-icon.forward`;
   the row itself is not clickable. The edit pencil (`span.action-icon.edit`) is on the person
   page, as is "Add Child" (`div.add-participant-icon-wrapper`).
@@ -160,10 +168,16 @@ flag simply does not appear.
 - `registerAdult` names everyone `E2ETest <firstName>` (Drupal title "secondName firstName").
   A nurse's registration takes the first option at each address level: Amajyaruguru →
   Gakenke → Busengo → Birambo → Birambo.
-- Demo data: 86 persons, all with a migration photo; demo children are born in 2022, too old
+- Demo data: 86 persons, all with a migration photo; their national IDs are 16 digits starting `119`; demo children are born in 2022, too old
   for head circumference or the newborn exam — register a newborn for those.
 - **Editing a demo person needs Level of Education and Marital Status**, which the migration
   left empty; the form refuses to save without them.
+- National ID: Rwanda's field is a number input and accepts 16 digits only. Burundi's is free text, so letters,
+  `/` and `-` need the Burundi site, or a server edit (`field_national_id_number`, reaching `shards` `national_id_number` on
+  the next sync). Once the field holds more than 13 characters, Save warns "National ID … is already assigned to patient
+  …" (CANCEL / CONTINUE) when a stored ID starts with it.
+- Burundi registration: Second Name comes first; the address is Province → Commune → Zone → Colline → Sub-Colline. A
+  CHW's registration fails there ("cell/district/… is a required field"): the local villages are Rwandan. Use the nurse.
 - An address edit propagates to children only if each child is loaded: open the child's own
   person page first, then go back and edit the parent.
 - Saving a photo measurement also sets the **person's** photo, server-side
