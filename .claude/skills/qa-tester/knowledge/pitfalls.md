@@ -443,3 +443,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** none here, but the tablet's queued save of the entry would have replaced the edit on upload.
 - **Wrong conclusion:** the entry on the server is the one the tablet just saved.
 - **Rule:** before editing an entry on the server, poll it until it shows the tablet's last save (its completed tests or date), then edit, then wait for the tablet's `shards` row to show the edit.
+
+## A helper that skips a tab it was given no value for
+
+- **Symptom:** `completeNutritionAssessment(page, { height, weight })` for a 3-year-old returned on the MUAC tab, Save off, the activity still To Do.
+- **Wrong conclusion:** the helper finished the activity.
+- **Rule:** the helper fills only the tabs it has options for. Read the reply's tabs, and pass every value the child's age brings (MUAC from 6 months; head circumference only under 36 months).
+
+## Drafting the PR report with the Write tool in a subagent
+
+- **Symptom:** Write refused the drafted `report.md` as a "report file" in a watch-mode subagent.
+- **Wrong conclusion:** the report cannot be posted from a subagent.
+- **Rule:** write the post script's input with a Bash heredoc in the scratchpad; it is tool input, not a report file.

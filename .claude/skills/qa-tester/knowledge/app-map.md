@@ -319,6 +319,11 @@ flag simply does not appear.
 - Well Child progress report (`#reports-tab`): Active Diagnosis lists the visit warnings as
   `.entry.diagnosis` — "Microcephaly ONGOING 14/10/2026", "Missed ECD Milestone - 24 Mo …" — or
   "No matches found". REVIEW PRIOR DIAGNOSIS swaps in the Prior Diagnosis pane.
+- Well Child progress report growth charts (`.growth-charts svg`, title `text.gender`): under 26 months Length-for-age,
+  Weight-for-age, Weight-for-length 0–2 and head circumference (0–13 weeks below 13 weeks); under 60 months the 0–5
+  set; older, Height-for-age 5–19, Weight-for-age 5–10, HC 0–5. Read geometry from the SVG: labelled lines `line.st18`,
+  inner `line.st19`, left labels `text.st16` at x 95.4252/88.4252 (y = transform y − 2), the child's dots are circles
+  filled `#06B9FF`; the plot runs y 506.7 (minY) to 119.9 (maxY) in `ZScore/View.elm`'s configs.
 - `h.wellChild.createChildAndStartWellChildEncounter` always starts the visit. To stop on the
   participant page, register by its steps up to `div.page-participant.individual.well-child`.
 - On the device, IndexedDB `sync` → `shards` holds each measurement with `type`, `person` (uuid),
