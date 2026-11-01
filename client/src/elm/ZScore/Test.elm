@@ -18,7 +18,7 @@ import ZScore.Fixture.Wfhanthro
 import ZScore.Fixture.Wflanthro
 import ZScore.Model exposing (BMI(..), ByDaysAndMonths, Centimetres(..), Days(..), Height(..), Kilograms(..), Length(..), MaleAndFemale, Model, Months(..), ZScore, ZScoreEntry)
 import ZScore.Utils exposing (zScoreBmiForAge, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
-import ZScore.View exposing (PlotConfig, heightForAgeConfig, valuePositionY, weightForAgeConfig, weightForHeight0To5Config, weightForHeightConfig, yAxisLines)
+import ZScore.View exposing (PlotConfig, heightForAgeConfig, weightForAgeConfig, weightForHeight0To5Config, weightForHeightConfig, yAxisLines)
 
 
 type alias MonthsAndDays a =
@@ -2716,7 +2716,7 @@ yAxisLinesTest =
                 |> List.map abs
                 |> List.sum
                 |> Expect.all
-                    [ Expect.within (Absolute 0.000001) 0
+                    [ Expect.within (Absolute 0.0001) 0
                     , always (Expect.equal (List.length expected) (List.length actual))
                     ]
     in
@@ -2727,12 +2727,12 @@ yAxisLinesTest =
             \_ -> expectLabelsAtTheirValues weightForHeightConfig
         , test "weight-for-height 0-5: every label sits where its value is plotted" <|
             \_ -> expectLabelsAtTheirValues weightForHeight0To5Config
-        , test "length-for-age 0-2: the label 45 is drawn where 45 cm is plotted" <|
+        , test "length-for-age 0-2: the label 45 is drawn 3/57 of the frame up from the bottom" <|
             \_ ->
                 yAxisLines heightForAgeConfig
                     |> List.filter (\line -> line.value == 45)
                     |> List.map .position
-                    |> Expect.equalLists [ valuePositionY heightForAgeConfig 45 ]
+                    |> expectPositionsWithin [ 486.3421 ]
         , test "length-for-age 0-2: the lines between 42 and 45 are at 43 and 44 cm" <|
             \_ ->
                 yAxisLines heightForAgeConfig

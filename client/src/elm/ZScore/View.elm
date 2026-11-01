@@ -8,7 +8,6 @@ module ZScore.View exposing
     , YAxisConfig
     , YAxisSpaceType
     , heightForAgeConfig
-    , valuePositionY
     , viewHeadCircumferenceForAge0To13WeeksBoys
     , viewHeadCircumferenceForAge0To13WeeksGirls
     , viewHeadCircumferenceForAge0To2Boys
