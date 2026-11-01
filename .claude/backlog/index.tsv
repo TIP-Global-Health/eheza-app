@@ -518,6 +518,7 @@ B-517	4	READY	LOW		2436	45	Group session: about 20 per-person `save*Request` tra
 B-518	4	READY	LOW		2438	45	Statistical Queries per-person data: a recalculation that produces the same data still saves the person, so every device
 B-519	4	IMPLEMENTED	LOW	2445	2446	45	NCD labs: the labs entry is closed from the device's own copy, and "all completed" compares set sizes, so a copy behind 
 B-520	4	READY	LOW		2446	45	Prenatal initial phase: "second phase required" compares the sizes of the labs entry's performed and completed tests, so
+B-521	4	READY	LOW		2450	45	Patient search by National ID: spaces and separators must be typed exactly as stored, so a Rwanda ID typed with the card
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
