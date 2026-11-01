@@ -473,3 +473,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the drafted recordings comment put the upload video under "test 4", whose video was the other-charts comparison.
 - **Wrong conclusion:** the captions match the files because the names look alike.
 - **Rule:** list the files the draft attaches (`grep -o 'qa-<pr>-[a-z0-9-]*\.mp4'`), numbered, and read each against its caption before posting.
+
+## Showing a downloaded file by leaving the page
+
+- **Symptom:** a CSV opened with `page.goto('file://…')` started a second download instead; shown with `page.setContent`, it flashed for a millisecond in the video, out of order.
+- **Wrong conclusion:** the video shows the file's contents.
+- **Rule:** keep the same document while recording. Put the file's text in a fixed `div` overlay with `page.evaluate`, scroll that, then remove it.
+
+## Checking a report the moment it is chosen
+
+- **Symptom:** a check that Demographics "still loads" at a health-centre scope failed: the page showed only the date inputs.
+- **Wrong conclusion:** the PR broke the other reports at that scope.
+- **Rule:** most Statistical Queries reports render only after a date range is set (`h.reports.setDateRange`); Nutrition needs none. Read the page before asserting on it.

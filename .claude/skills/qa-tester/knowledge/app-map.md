@@ -504,6 +504,21 @@ flag simply does not appear.
 - Village scope: `/admin/reports/statistical-queries/demographics/<province>/<district>/<sector>/<cell>/<village>`.
   It reads each person's `field_reports_data` as the page loads, so a recomputed person shows on reload.
   Global, province, district and health-centre scopes use precomputed data.
+- Reached through the menu `/admin/reports/statistical-queries`: Scope select `all` / `demographics` / `hc`, then
+  cascading selects (by label: Amajyaruguru → Gakenke → Coko → Mbirima → Akanduga; or Nyange Health Center), then
+  the Load Data button in `.actions`. Results carry New Scope and a Report Type select.
+- **Nutrition report**: eight tables, last 12 complete months (quarters, years for incidence), no date range. Large
+  scopes read `report_data` nodes (`field_reports_data` JSON `nutrition_report_data`), one per province, district,
+  health centre and Global. Build them: `generate-data-for-all.php` (person data, ~14 s locally), then
+  `recalculate-large-datasets.php` (~15 s), both under `hedley_reports/scripts/`. A fresh local DB has neither.
+- A person's nutrition encounter in `field_reports_data` reads `date stunting_z,underweight_z,wasting_z,muac,sign`
+  (`individual.nutrition`); well-child ones are `date|…|`. Expected report counts can be worked out from these.
+- Other reports need a start and end date before they render (`h.reports.setDateRange`). Download CSV fires a
+  Playwright `download` event (`page.waitForEvent('download')`).
+- Admin pages lay out 960 px+ wide: at the driver's 820 px the right columns of the 12-month tables are cut off.
+  `page.setViewportSize({ width: 1280, height: 1000 })` shows them, in the video too.
+- A server-only PR (module, compiled `hedley_general/js/elm-main.js`, `elm.css`) is live once the files are
+  overlaid in the main tree and `ddev drush cc all` runs; gulp is not involved. Leave `server/elm/src` alone.
 - Sign in with `h.reports.drupalLogin(page)`. Pick the report with the first `select.select-input`
   (`prenatal-contacts` is ANC Contact), then `h.reports.setDateRange`. Read rows with
   `h.reports.readPrenatalContactsTable` and `findSimpleRow`.
