@@ -7639,11 +7639,11 @@ var $author$project$Backend$Components$Sync$handleSetData = F3(
 				model));
 	});
 var $elm$json$Json$Decode$list = _Json_decodeList;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $elm$json$Json$Decode$succeed = _Json_succeed;
 var $elm$json$Json$Decode$map = _Json_map1;
 var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$nullable = function (decoder) {
 	return $elm$json$Json$Decode$oneOf(
 		_List_fromArray(
@@ -7860,15 +7860,6 @@ var $author$project$Backend$Decoder$siteFeaturesFromString = function (str) {
 				$elm$core$String$words(str))));
 };
 var $author$project$Backend$Decoder$decodeSiteFeatures = A2($elm$json$Json$Decode$map, $author$project$Backend$Decoder$siteFeaturesFromString, $elm$json$Json$Decode$string);
-var $author$project$Backend$Decoder$decodeWithFallback = F2(
-	function (fallback, decoder) {
-		return $elm$json$Json$Decode$oneOf(
-			_List_fromArray(
-				[
-					decoder,
-					$elm$json$Json$Decode$succeed(fallback)
-				]));
-	});
 var $author$project$Backend$Components$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Components$Model$EntitySector = {$: 'EntitySector'};
 var $author$project$Backend$Components$Model$EntityVillage = {$: 'EntityVillage'};
@@ -7895,6 +7886,14 @@ var $author$project$Backend$Components$Decoder$decodeSelectedEntity = A2(
 		}
 	},
 	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Decoder$decodeOldNutritionReportData = A2(
+	$elm$json$Json$Decode$map,
+	$elm$core$Basics$always($elm$core$Maybe$Nothing),
+	$elm$json$Json$Decode$list(
+		A2(
+			$elm$json$Json$Decode$field,
+			'stunting_moderate',
+			$elm$json$Json$Decode$list($elm$json$Json$Decode$string))));
 var $elm$json$Json$Decode$index = _Json_decodeIndex;
 var $author$project$Backend$Reports$Model$NutritionRate = F2(
 	function (count, total) {
@@ -7999,11 +7998,13 @@ var $author$project$Backend$Reports$Decoder$decodeReportsData = A2(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 		_List_fromArray(
 			['additional', 'nutrition_report_data']),
-		A2(
-			$author$project$Backend$Decoder$decodeWithFallback,
-			$elm$core$Maybe$Nothing,
-			$elm$json$Json$Decode$nullable(
-				$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionReportTableDate))),
+		$elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					$elm$json$Json$Decode$nullable(
+					$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionReportTableDate)),
+					$author$project$Backend$Reports$Decoder$decodeOldNutritionReportData
+				])),
 		$elm$core$Maybe$Nothing,
 		A2(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
@@ -8894,6 +8895,15 @@ var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
+var $author$project$Backend$Decoder$decodeWithFallback = F2(
+	function (fallback, decoder) {
+		return $elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					decoder,
+					$elm$json$Json$Decode$succeed(fallback)
+				]));
+	});
 var $elm$core$String$trim = _String_trim;
 var $elm$core$String$toFloat = _String_toFloat;
 var $author$project$Backend$Reports$Decoder$decodeMotherFbfEncounterData = A2(
@@ -13582,29 +13592,36 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {somali: $elm$core$Maybe$Nothing, english: 'Nutrition Individual', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'NutritionGroup':
 				return {somali: $elm$core$Maybe$Nothing, english: 'Nutrition Group', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+			case 'NutritionReportPreparedOvernight':
+				return {somali: $elm$core$Maybe$Nothing, english: 'The Nutrition report for this area is prepared overnight, and is not ready yet. Please check again tomorrow.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'NutritionReportTableNote':
 				var tableType = transId.a;
-				var prevalence = {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: children with the condition / children measured that month. A child measured several times in the month counts once.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-				var incidence = function (previousPeriod) {
-					return {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: new cases / children measured in ' + (previousPeriod + '. A new case is one of those children who was not at that level or worse then.'), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+				var childrenWithTwoVisits = 'children with two or more visits';
+				var allChildren = 'children';
+				var prevalence = function (population) {
+					return {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: children with the condition / ' + (population + ' measured that month. A child measured several times in the month counts once.'), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 				};
+				var incidence = F2(
+					function (population, previousPeriod) {
+						return {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: new cases / ' + (population + (' measured in ' + (previousPeriod + '. A new case is one of those children who was not at that level or worse then.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
+					});
 				switch (tableType.$) {
 					case 'NutritionTablePrevalanceOneOrMore':
-						return prevalence;
+						return prevalence(allChildren);
 					case 'NutritionTablePrevalanceTwoOrMore':
-						return prevalence;
+						return prevalence(childrenWithTwoVisits);
 					case 'NutritionTableIncidenceMonthOneOrMore':
-						return incidence('the three months before');
+						return A2(incidence, allChildren, 'the three months before');
 					case 'NutritionTableIncidenceMonthTwoOrMore':
-						return incidence('the three months before');
+						return A2(incidence, childrenWithTwoVisits, 'the three months before');
 					case 'NutritionTableIncidenceQuarterOneOrMore':
-						return incidence('the quarter before');
+						return A2(incidence, allChildren, 'the quarter before');
 					case 'NutritionTableIncidenceQuarterTwoOrMore':
-						return incidence('the quarter before');
+						return A2(incidence, childrenWithTwoVisits, 'the quarter before');
 					case 'NutritionTableIncidenceYearOneOrMore':
-						return incidence('the year before');
+						return A2(incidence, allChildren, 'the year before');
 					default:
-						return incidence('the year before');
+						return A2(incidence, childrenWithTwoVisits, 'the year before');
 				}
 			case 'NutritionReportTableType':
 				var tableType = transId.a;
@@ -16113,6 +16130,10 @@ var $elm$core$String$replace = F3(
 			after,
 			A2($elm$core$String$split, before, string));
 	});
+var $elm$core$List$singleton = function (value) {
+	return _List_fromArray(
+		[value]);
+};
 var $elm$html$Html$Attributes$classList = function (classes) {
 	return $elm$html$Html$Attributes$class(
 		A2(
@@ -16123,11 +16144,11 @@ var $elm$html$Html$Attributes$classList = function (classes) {
 				$elm$core$Tuple$first,
 				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
 };
-var $author$project$Pages$Components$View$viewCustomCells = F2(
+var $author$project$Pages$Components$View$viewCellsContent = F2(
 	function (labelClass, valueClass) {
 		return $elm$core$List$indexedMap(
 			F2(
-				function (index, cellText) {
+				function (index, content) {
 					return A2(
 						$elm$html$Html$div,
 						_List_fromArray(
@@ -16140,11 +16161,16 @@ var $author$project$Pages$Components$View$viewCustomCells = F2(
 										_Utils_Tuple2(valueClass, !(!index))
 									]))
 							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(cellText)
-							]));
+						content);
 				}));
+	});
+var $author$project$Pages$Components$View$viewCustomCells = F2(
+	function (labelClass, valueClass) {
+		return A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$map(
+				A2($elm$core$Basics$composeR, $elm$html$Html$text, $elm$core$List$singleton)),
+			A2($author$project$Pages$Components$View$viewCellsContent, labelClass, valueClass));
 	});
 var $author$project$Pages$Components$View$viewStandardCells = A2($author$project$Pages$Components$View$viewCustomCells, 'label', 'value');
 var $author$project$Pages$Components$View$viewStandardRow = A2(
@@ -17626,145 +17652,16 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
-var $author$project$Translate$WastingSevere = {$: 'WastingSevere'};
-var $author$project$Translate$StuntingSevere = {$: 'StuntingSevere'};
-var $author$project$Translate$WastingModerate = {$: 'WastingModerate'};
-var $author$project$Translate$StuntingModerate = {$: 'StuntingModerate'};
-var $author$project$Translate$UnderweightSevere = {$: 'UnderweightSevere'};
-var $author$project$Translate$UnderweightModerate = {$: 'UnderweightModerate'};
-var $author$project$Translate$AcuteMalnutritionMam = {$: 'AcuteMalnutritionMam'};
-var $author$project$Translate$AcuteMalnutritionSam = {$: 'AcuteMalnutritionSam'};
-var $author$project$Pages$Reports$View$nutritionTableRows = F2(
-	function (language, table) {
-		var row = F2(
-			function (label, rateOf) {
-				return _Utils_Tuple2(
-					A2($author$project$Translate$translate, language, label),
-					A2(
-						$elm$core$List$map,
-						A2($elm$core$Basics$composeR, $elm$core$Tuple$second, rateOf),
-						table.columns));
-			});
-		return _List_fromArray(
-			[
-				A2(
-				row,
-				$author$project$Translate$StuntingModerate,
-				function ($) {
-					return $.stuntingModerate;
-				}),
-				A2(
-				row,
-				$author$project$Translate$StuntingSevere,
-				function ($) {
-					return $.stuntingSevere;
-				}),
-				A2(
-				row,
-				$author$project$Translate$WastingModerate,
-				function ($) {
-					return $.wastingModerate;
-				}),
-				A2(
-				row,
-				$author$project$Translate$WastingSevere,
-				function ($) {
-					return $.wastingSevere;
-				}),
-				A2(
-				row,
-				$author$project$Translate$UnderweightModerate,
-				function ($) {
-					return $.underweightModerate;
-				}),
-				A2(
-				row,
-				$author$project$Translate$UnderweightSevere,
-				function ($) {
-					return $.underweightSevere;
-				}),
-				A2(
-				row,
-				$author$project$Translate$AcuteMalnutritionMam,
-				function ($) {
-					return $.acuteMalnutritionMam;
-				}),
-				A2(
-				row,
-				$author$project$Translate$AcuteMalnutritionSam,
-				function ($) {
-					return $.acuteMalnutritionSam;
-				})
-			]);
-	});
-var $author$project$Translate$NutritionReportTableType = function (a) {
-	return {$: 'NutritionReportTableType', a: a};
-};
-var $author$project$Pages$Reports$View$nutritionTableHeading = F2(
-	function (language, table) {
-		return A2(
-			$author$project$Translate$translate,
-			language,
-			$author$project$Translate$NutritionReportTableType(table.tableType)) + ':';
-	});
-var $author$project$Pages$Reports$View$nutritionTableCaptions = function (table) {
-	return A2(
-		$elm$core$List$cons,
-		'',
-		A2($elm$core$List$map, $elm$core$Tuple$first, table.columns));
-};
-var $author$project$Translate$NutritionReportTableNote = function (a) {
-	return {$: 'NutritionReportTableNote', a: a};
-};
-var $author$project$Pages$Reports$View$viewNutritionTable = F2(
-	function (language, table) {
-		var viewRate = function (rate) {
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('item value')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						A2($author$project$Pages$Utils$calculatePercentage, rate.count, rate.total)),
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('counts')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								$elm$core$String$fromInt(rate.count) + (' / ' + $elm$core$String$fromInt(rate.total)))
-							]))
-					]));
-		};
-		var viewRow = function (_v0) {
-			var label = _v0.a;
-			var rates = _v0.b;
-			return A2(
-				$elm$html$Html$div,
+var $author$project$Pages$Components$View$viewCustomMetricsResultsTable = F3(
+	function (heading, captions, rows) {
+		var viewRow = A2(
+			$elm$core$Basics$composeR,
+			A2($author$project$Pages$Components$View$viewCellsContent, 'row-label', 'value'),
+			$elm$html$Html$div(
 				_List_fromArray(
 					[
 						$elm$html$Html$Attributes$class('row')
-					]),
-				A2(
-					$elm$core$List$cons,
-					A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('item row-label')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(label)
-							])),
-					A2($elm$core$List$map, viewRate, rates)));
-		};
+					])));
 		return _List_fromArray(
 			[
 				A2(
@@ -17775,8 +17672,7 @@ var $author$project$Pages$Reports$View$viewNutritionTable = F2(
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text(
-						A2($author$project$Pages$Reports$View$nutritionTableHeading, language, table))
+						$elm$html$Html$text(heading)
 					])),
 				A2(
 				$elm$html$Html$div,
@@ -17792,15 +17688,50 @@ var $author$project$Pages$Reports$View$viewNutritionTable = F2(
 							[
 								$elm$html$Html$Attributes$class('row')
 							]),
-						A3(
-							$author$project$Pages$Components$View$viewCustomCells,
-							'row-label',
-							'heading',
-							$author$project$Pages$Reports$View$nutritionTableCaptions(table))),
-					A2(
-						$elm$core$List$map,
-						viewRow,
-						A2($author$project$Pages$Reports$View$nutritionTableRows, language, table)))),
+						A3($author$project$Pages$Components$View$viewCustomCells, 'row-label', 'heading', captions)),
+					A2($elm$core$List$map, viewRow, rows)))
+			]);
+	});
+var $author$project$Pages$Reports$View$viewNutritionTable = function (table) {
+	var viewRate = function (rate) {
+		return _List_fromArray(
+			[
+				$elm$html$Html$text(
+				A2($author$project$Pages$Utils$calculatePercentage, rate.count, rate.total)),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('counts')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$elm$core$String$fromInt(rate.count) + (' / ' + $elm$core$String$fromInt(rate.total)))
+					]))
+			]);
+	};
+	return _Utils_ap(
+		A3(
+			$author$project$Pages$Components$View$viewCustomMetricsResultsTable,
+			table.heading,
+			table.captions,
+			A2(
+				$elm$core$List$map,
+				function (_v0) {
+					var label = _v0.a;
+					var rates = _v0.b;
+					return A2(
+						$elm$core$List$cons,
+						_List_fromArray(
+							[
+								$elm$html$Html$text(label)
+							]),
+						A2($elm$core$List$map, viewRate, rates));
+				},
+				table.rows)),
+		_List_fromArray(
+			[
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -17809,18 +17740,16 @@ var $author$project$Pages$Reports$View$viewNutritionTable = F2(
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text(
-						A2(
-							$author$project$Translate$translate,
-							language,
-							$author$project$Translate$NutritionReportTableNote(table.tableType)))
+						$elm$html$Html$text(table.note)
 					]))
-			]);
-	});
+			]));
+};
 var $author$project$Translate$Numerator = {$: 'Numerator'};
 var $author$project$Translate$Denominator = {$: 'Denominator'};
 var $author$project$Pages$Reports$View$nutritionTableToCSVData = F2(
 	function (language, table) {
+		var denominatorLabel = ' - ' + A2($author$project$Translate$translate, language, $author$project$Translate$Denominator);
+		var numeratorLabel = ' - ' + A2($author$project$Translate$translate, language, $author$project$Translate$Numerator);
 		var rateRows = function (_v0) {
 			var label = _v0.a;
 			var rates = _v0.b;
@@ -17837,7 +17766,7 @@ var $author$project$Pages$Reports$View$nutritionTableToCSVData = F2(
 						rates)),
 					A2(
 					$elm$core$List$cons,
-					label + (' - ' + A2($author$project$Translate$translate, language, $author$project$Translate$Numerator)),
+					_Utils_ap(label, numeratorLabel),
 					A2(
 						$elm$core$List$map,
 						A2(
@@ -17849,7 +17778,7 @@ var $author$project$Pages$Reports$View$nutritionTableToCSVData = F2(
 						rates)),
 					A2(
 					$elm$core$List$cons,
-					label + (' - ' + A2($author$project$Translate$translate, language, $author$project$Translate$Denominator)),
+					_Utils_ap(label, denominatorLabel),
 					A2(
 						$elm$core$List$map,
 						A2(
@@ -17863,24 +17792,17 @@ var $author$project$Pages$Reports$View$nutritionTableToCSVData = F2(
 		};
 		return {
 			rows: _Utils_ap(
-				A2(
-					$elm$core$List$concatMap,
-					rateRows,
-					A2($author$project$Pages$Reports$View$nutritionTableRows, language, table)),
+				A2($elm$core$List$concatMap, rateRows, table.rows),
 				_List_fromArray(
 					[
 						_List_fromArray(
-						[
-							A2(
-							$author$project$Translate$translate,
-							language,
-							$author$project$Translate$NutritionReportTableNote(table.tableType))
-						])
+						[table.note])
 					])),
-			heading: A2($author$project$Pages$Reports$View$nutritionTableHeading, language, table),
-			captions: $author$project$Pages$Reports$View$nutritionTableCaptions(table)
+			heading: table.heading,
+			captions: table.captions
 		};
 	});
+var $author$project$Translate$NutritionReportPreparedOvernight = {$: 'NutritionReportPreparedOvernight'};
 var $pzp1997$assoc_list$AssocList$map = F2(
 	function (alter, _v0) {
 		var alist = _v0.a;
@@ -17903,17 +17825,6 @@ var $elm_community$list_extra$List$Extra$getAt = F2(
 	function (idx, xs) {
 		return (idx < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
 			A2($elm$core$List$drop, idx, xs));
-	});
-var $author$project$Pages$Reports$View$toNutritionTableData = F3(
-	function (language, tableType, data) {
-		return {
-			columns: A2(
-				$elm$core$List$map,
-				$elm$core$Tuple$mapFirst(
-					$author$project$Translate$translate(language)),
-				data),
-			tableType: tableType
-		};
 	});
 var $pzp1997$assoc_list$AssocList$filter = F2(
 	function (isGood, _v0) {
@@ -17941,6 +17852,106 @@ var $author$project$Pages$Reports$Utils$resolveDataSetForYear = F3(
 							return _Utils_eq(year, selectedYear);
 						}),
 					encountersByMonth)));
+	});
+var $author$project$Translate$WastingSevere = {$: 'WastingSevere'};
+var $author$project$Translate$StuntingSevere = {$: 'StuntingSevere'};
+var $author$project$Translate$WastingModerate = {$: 'WastingModerate'};
+var $author$project$Translate$StuntingModerate = {$: 'StuntingModerate'};
+var $author$project$Translate$UnderweightSevere = {$: 'UnderweightSevere'};
+var $author$project$Translate$UnderweightModerate = {$: 'UnderweightModerate'};
+var $author$project$Translate$AcuteMalnutritionMam = {$: 'AcuteMalnutritionMam'};
+var $author$project$Translate$AcuteMalnutritionSam = {$: 'AcuteMalnutritionSam'};
+var $author$project$Translate$NutritionReportTableNote = function (a) {
+	return {$: 'NutritionReportTableNote', a: a};
+};
+var $author$project$Translate$NutritionReportTableType = function (a) {
+	return {$: 'NutritionReportTableType', a: a};
+};
+var $author$project$Pages$Reports$View$toNutritionTableData = F3(
+	function (language, tableType, columns) {
+		var row = F2(
+			function (label, rateOf) {
+				return _Utils_Tuple2(
+					A2($author$project$Translate$translate, language, label),
+					A2(
+						$elm$core$List$map,
+						A2($elm$core$Basics$composeR, $elm$core$Tuple$second, rateOf),
+						columns));
+			});
+		return {
+			note: A2(
+				$author$project$Translate$translate,
+				language,
+				$author$project$Translate$NutritionReportTableNote(tableType)),
+			rows: _List_fromArray(
+				[
+					A2(
+					row,
+					$author$project$Translate$StuntingModerate,
+					function ($) {
+						return $.stuntingModerate;
+					}),
+					A2(
+					row,
+					$author$project$Translate$StuntingSevere,
+					function ($) {
+						return $.stuntingSevere;
+					}),
+					A2(
+					row,
+					$author$project$Translate$WastingModerate,
+					function ($) {
+						return $.wastingModerate;
+					}),
+					A2(
+					row,
+					$author$project$Translate$WastingSevere,
+					function ($) {
+						return $.wastingSevere;
+					}),
+					A2(
+					row,
+					$author$project$Translate$UnderweightModerate,
+					function ($) {
+						return $.underweightModerate;
+					}),
+					A2(
+					row,
+					$author$project$Translate$UnderweightSevere,
+					function ($) {
+						return $.underweightSevere;
+					}),
+					A2(
+					row,
+					$author$project$Translate$AcuteMalnutritionMam,
+					function ($) {
+						return $.acuteMalnutritionMam;
+					}),
+					A2(
+					row,
+					$author$project$Translate$AcuteMalnutritionSam,
+					function ($) {
+						return $.acuteMalnutritionSam;
+					})
+				]),
+			heading: A2(
+				$author$project$Translate$translate,
+				language,
+				$author$project$Translate$NutritionReportTableType(tableType)) + ':',
+			captions: A2(
+				$elm$core$List$cons,
+				'',
+				A2($elm$core$List$map, $elm$core$Tuple$first, columns))
+		};
+	});
+var $author$project$Pages$Reports$View$periodColumnsToNutritionTableData = F2(
+	function (language, tableType) {
+		return A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$map(
+				$elm$core$Tuple$mapFirst(
+					$author$project$Translate$translate(language))),
+			A2($author$project$Pages$Reports$View$toNutritionTableData, language, tableType));
 	});
 var $elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
@@ -18229,7 +18240,7 @@ var $author$project$Pages$Reports$View$generateYearlyIncidenceTableData = F4(
 			},
 			A2($elm$core$List$range, 1, 3));
 		return A3(
-			$author$project$Pages$Reports$View$toNutritionTableData,
+			$author$project$Pages$Reports$View$periodColumnsToNutritionTableData,
 			language,
 			tableType,
 			A2(
@@ -18271,7 +18282,7 @@ var $author$project$Translate$MonthYear = F3(
 var $author$project$Pages$Reports$View$generateMonthlyTableData = F4(
 	function (language, currentDate, tableType, resolveMetricsResultsForMonth) {
 		return A3(
-			$author$project$Pages$Reports$View$toNutritionTableData,
+			$author$project$Pages$Reports$View$periodColumnsToNutritionTableData,
 			language,
 			tableType,
 			A2(
@@ -18409,7 +18420,7 @@ var $author$project$Pages$Reports$View$generateQuarterlyIncidenceTableData = F4(
 			},
 			A2($elm$core$List$range, 1, 5));
 		return A3(
-			$author$project$Pages$Reports$View$toNutritionTableData,
+			$author$project$Pages$Reports$View$periodColumnsToNutritionTableData,
 			language,
 			tableType,
 			A2(
@@ -18619,14 +18630,15 @@ var $author$project$Pages$Reports$View$backendGeneratedNutritionReportTableDateT
 				}
 			}
 		};
-		return {
-			columns: A3(
+		return A3(
+			$author$project$Pages$Reports$View$toNutritionTableData,
+			language,
+			backendTableData.tableType,
+			A3(
 				$elm$core$List$map2,
 				$elm$core$Tuple$pair,
 				A2($elm$core$List$map, translateCaption, backendTableData.captions),
-				backendTableData.results),
-			tableType: backendTableData.tableType
-		};
+				backendTableData.results));
 	});
 var $author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGeneratedData = F2(
 	function (language, data) {
@@ -18663,37 +18675,57 @@ var $author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGen
 					nutritionTableTypeToNumber),
 				data));
 	});
-var $author$project$Pages$Reports$View$viewNutritionReport = F5(
-	function (language, currentDate, scopeLabel, mBackendGeneratedData, reportData) {
-		var generatedData = A2(
-			$elm$core$Maybe$withDefault,
-			A3($author$project$Pages$Reports$View$generareNutritionReportDataFromRawData, language, currentDate, reportData),
-			A2(
-				$elm$core$Maybe$map,
-				$author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGeneratedData(language),
-				mBackendGeneratedData));
-		var csvFileName = 'nutrition-report-' + ($elm$core$String$toLower(
-			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', currentDate) + '.csv')));
-		var csvContent = $author$project$Pages$Reports$View$reportTablesDataToCSV(
-			A2(
-				$elm$core$List$map,
-				$author$project$Pages$Reports$View$nutritionTableToCSVData(language),
-				generatedData));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('report nutrition')
-				]),
-			_Utils_ap(
-				A2(
-					$elm$core$List$concatMap,
-					$author$project$Pages$Reports$View$viewNutritionTable(language),
-					generatedData),
+var $author$project$Pages$Reports$View$viewNutritionReport = F6(
+	function (language, currentDate, scopeLabel, wideScope, mBackendGeneratedData, reportData) {
+		if (wideScope && $elm_community$maybe_extra$Maybe$Extra$isNothing(mBackendGeneratedData)) {
+			return A2(
+				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
-					])));
+						$elm$html$Html$Attributes$class('report nutrition')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('table-note')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								A2($author$project$Translate$translate, language, $author$project$Translate$NutritionReportPreparedOvernight))
+							]))
+					]));
+		} else {
+			var generatedData = A2(
+				$elm$core$Maybe$withDefault,
+				A3($author$project$Pages$Reports$View$generareNutritionReportDataFromRawData, language, currentDate, reportData),
+				A2(
+					$elm$core$Maybe$map,
+					$author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGeneratedData(language),
+					mBackendGeneratedData));
+			var csvFileName = 'nutrition-report-' + ($elm$core$String$toLower(
+				A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', currentDate) + '.csv')));
+			var csvContent = $author$project$Pages$Reports$View$reportTablesDataToCSV(
+				A2(
+					$elm$core$List$map,
+					$author$project$Pages$Reports$View$nutritionTableToCSVData(language),
+					generatedData));
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('report nutrition')
+					]),
+				_Utils_ap(
+					A2($elm$core$List$concatMap, $author$project$Pages$Reports$View$viewNutritionTable, generatedData),
+					_List_fromArray(
+						[
+							A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+						])));
+		}
 	});
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
@@ -21610,7 +21642,14 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 											case 'ReportFBFDistribution':
 												return A5($author$project$Pages$Reports$View$viewFBFDistributionReport, language, data.features, limitDate, scopeLabel, recordsTillLimitDate);
 											case 'ReportNutrition':
-												return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
+												return A6(
+													$author$project$Pages$Reports$View$viewNutritionReport,
+													language,
+													limitDate,
+													scopeLabel,
+													$author$project$Pages$Reports$Utils$isWideScope(data.entityType),
+													data.nutritionReportData,
+													model.nutritionReportData);
 											case 'ReportPeripartum':
 												return A6($author$project$Pages$Reports$View$viewPeripartumReport, language, startDate, limitDate, scopeLabel, data.records, recordsTillLimitDate);
 											case 'ReportPostnatalCare':
@@ -21870,45 +21909,15 @@ var $author$project$Pages$Completion$View$generateReportData = F5(
 		};
 	});
 var $author$project$Pages$Components$View$viewMetricsResultsTable = function (data) {
-	var captionsRow = A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('row')
-			]),
-		A3($author$project$Pages$Components$View$viewCustomCells, 'row-label', 'heading', data.captions));
-	var viewRow = function (cells) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('row')
-				]),
-			A3($author$project$Pages$Components$View$viewCustomCells, 'row-label', 'value', cells));
-	};
-	return _List_fromArray(
-		[
-			A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('section heading')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(data.heading)
-				])),
-			A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('table wide')
-				]),
-			A2(
-				$elm$core$List$cons,
-				captionsRow,
-				A2($elm$core$List$map, viewRow, data.rows)))
-		]);
+	return A3(
+		$author$project$Pages$Components$View$viewCustomMetricsResultsTable,
+		data.heading,
+		data.captions,
+		A2(
+			$elm$core$List$map,
+			$elm$core$List$map(
+				A2($elm$core$Basics$composeR, $elm$html$Html$text, $elm$core$List$singleton)),
+			data.rows));
 };
 var $author$project$Pages$Completion$Utils$eliminateEmptyEncounters = $elm$core$List$filter(
 	A2(

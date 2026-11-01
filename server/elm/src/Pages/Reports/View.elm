@@ -12,7 +12,6 @@ import Backend.Reports.Model
         , DeliveryLocation(..)
         , Gender(..)
         , NutritionMetricsResults
-        , NutritionRate
         , NutritionReportTableType(..)
         , PatientData
         , PregnancyOutcome(..)
@@ -42,7 +41,7 @@ import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
-import Pages.Components.View exposing (viewCustomCells, viewReportDateInputs, viewStandardCells, viewStandardRow)
+import Pages.Components.View exposing (viewCustomMetricsResultsTable, viewReportDateInputs, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionReportData, NutritionTableData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
 import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, filterRecordsByDateRange, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isPostpartumEncounter, isPregnancyCompleted, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, resolveQuarterForIndex)
@@ -155,7 +154,7 @@ viewReportsData language currentDate themePath data model =
                                             viewFBFDistributionReport language data.features limitDate scopeLabel recordsTillLimitDate
 
                                         ReportNutrition ->
-                                            viewNutritionReport language limitDate scopeLabel data.nutritionReportData model.nutritionReportData
+                                            viewNutritionReport language limitDate scopeLabel (isWideScope data.entityType) data.nutritionReportData model.nutritionReportData
 
                                         ReportPeripartum ->
                                             viewPeripartumReport language startDate limitDate scopeLabel data.records recordsTillLimitDate
@@ -925,49 +924,47 @@ demographicsReportEncountersDataToCSV data =
         |> String.join "\n"
 
 
-viewNutritionReport : Language -> NominalDate -> String -> Maybe (List BackendGeneratedNutritionReportTableDate) -> RemoteData String NutritionReportData -> Html Msg
-viewNutritionReport language currentDate scopeLabel mBackendGeneratedData reportData =
+viewNutritionReport : Language -> NominalDate -> String -> Bool -> Maybe (List BackendGeneratedNutritionReportTableDate) -> RemoteData String NutritionReportData -> Html Msg
+viewNutritionReport language currentDate scopeLabel wideScope mBackendGeneratedData reportData =
+    if wideScope && isNothing mBackendGeneratedData then
+        -- Large scopes read tables the nightly job stores, and have none yet.
+        div [ class "report nutrition" ]
+            [ div [ class "table-note" ] [ text <| translate language Translate.NutritionReportPreparedOvernight ] ]
+
+    else
+        let
+            generatedData =
+                Maybe.map (generareNutritionReportDataFromBackendGeneratedData language) mBackendGeneratedData
+                    |> Maybe.withDefault (generareNutritionReportDataFromRawData language currentDate reportData)
+
+            csvFileName =
+                "nutrition-report-"
+                    ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                    ++ "-"
+                    ++ customFormatDDMMYYYY "-" currentDate
+                    ++ ".csv"
+
+            csvContent =
+                List.map (nutritionTableToCSVData language) generatedData
+                    |> reportTablesDataToCSV
+        in
+        div [ class "report nutrition" ] <|
+            List.concatMap viewNutritionTable generatedData
+                ++ [ viewDownloadCSVButton language csvFileName csvContent ]
+
+
+viewNutritionTable : NutritionTableData -> List (Html any)
+viewNutritionTable table =
     let
-        generatedData =
-            Maybe.map (generareNutritionReportDataFromBackendGeneratedData language) mBackendGeneratedData
-                |> Maybe.withDefault (generareNutritionReportDataFromRawData language currentDate reportData)
-
-        csvFileName =
-            "nutrition-report-"
-                ++ (String.toLower <| String.replace " " "-" scopeLabel)
-                ++ "-"
-                ++ customFormatDDMMYYYY "-" currentDate
-                ++ ".csv"
-
-        csvContent =
-            List.map (nutritionTableToCSVData language) generatedData
-                |> reportTablesDataToCSV
-    in
-    div [ class "report nutrition" ] <|
-        List.concatMap (viewNutritionTable language) generatedData
-            ++ [ viewDownloadCSVButton language csvFileName csvContent ]
-
-
-viewNutritionTable : Language -> NutritionTableData -> List (Html any)
-viewNutritionTable language table =
-    let
-        viewRow ( label, rates ) =
-            div [ class "row" ] <|
-                div [ class "item row-label" ] [ text label ]
-                    :: List.map viewRate rates
-
         viewRate rate =
-            div [ class "item value" ]
-                [ text <| calculatePercentage rate.count rate.total
-                , div [ class "counts" ] [ text <| String.fromInt rate.count ++ " / " ++ String.fromInt rate.total ]
-                ]
+            [ text <| calculatePercentage rate.count rate.total
+            , div [ class "counts" ] [ text <| String.fromInt rate.count ++ " / " ++ String.fromInt rate.total ]
+            ]
     in
-    [ div [ class "section heading" ] [ text <| nutritionTableHeading language table ]
-    , div [ class "table wide" ] <|
-        div [ class "row" ] (viewCustomCells "row-label" "heading" (nutritionTableCaptions table))
-            :: List.map viewRow (nutritionTableRows language table)
-    , div [ class "table-note" ] [ text <| translate language <| Translate.NutritionReportTableNote table.tableType ]
-    ]
+    viewCustomMetricsResultsTable table.heading
+        table.captions
+        (List.map (\( label, rates ) -> [ text label ] :: List.map viewRate rates) table.rows)
+        ++ [ div [ class "table-note" ] [ text table.note ] ]
 
 
 {-| In the CSV, each percentage row is followed by a row of its
@@ -976,47 +973,47 @@ numerators and a row of its denominators, and the note closes the table.
 nutritionTableToCSVData : Language -> NutritionTableData -> MetricsResultsTableData
 nutritionTableToCSVData language table =
     let
+        numeratorLabel =
+            " - " ++ translate language Translate.Numerator
+
+        denominatorLabel =
+            " - " ++ translate language Translate.Denominator
+
         rateRows ( label, rates ) =
             [ label :: List.map (\rate -> calculatePercentage rate.count rate.total) rates
-            , (label ++ " - " ++ translate language Translate.Numerator) :: List.map (.count >> String.fromInt) rates
-            , (label ++ " - " ++ translate language Translate.Denominator) :: List.map (.total >> String.fromInt) rates
+            , (label ++ numeratorLabel) :: List.map (.count >> String.fromInt) rates
+            , (label ++ denominatorLabel) :: List.map (.total >> String.fromInt) rates
             ]
     in
-    { heading = nutritionTableHeading language table
-    , captions = nutritionTableCaptions table
-    , rows =
-        List.concatMap rateRows (nutritionTableRows language table)
-            ++ [ [ translate language <| Translate.NutritionReportTableNote table.tableType ] ]
+    { heading = table.heading
+    , captions = table.captions
+    , rows = List.concatMap rateRows table.rows ++ [ [ table.note ] ]
     }
 
 
-nutritionTableHeading : Language -> NutritionTableData -> String
-nutritionTableHeading language table =
-    translate language (Translate.NutritionReportTableType table.tableType) ++ ":"
-
-
-nutritionTableCaptions : NutritionTableData -> List String
-nutritionTableCaptions table =
-    "" :: List.map Tuple.first table.columns
-
-
-{-| One row per indicator: its label, and its rate in each column.
+{-| Builds a table from its period columns: the caption, and the rates
+of that period.
 -}
-nutritionTableRows : Language -> NutritionTableData -> List ( String, List NutritionRate )
-nutritionTableRows language table =
+toNutritionTableData : Language -> NutritionReportTableType -> List ( String, NutritionMetricsResults ) -> NutritionTableData
+toNutritionTableData language tableType columns =
     let
         row label rateOf =
-            ( translate language label, List.map (Tuple.second >> rateOf) table.columns )
+            ( translate language label, List.map (Tuple.second >> rateOf) columns )
     in
-    [ row Translate.StuntingModerate .stuntingModerate
-    , row Translate.StuntingSevere .stuntingSevere
-    , row Translate.WastingModerate .wastingModerate
-    , row Translate.WastingSevere .wastingSevere
-    , row Translate.UnderweightModerate .underweightModerate
-    , row Translate.UnderweightSevere .underweightSevere
-    , row Translate.AcuteMalnutritionMam .acuteMalnutritionMam
-    , row Translate.AcuteMalnutritionSam .acuteMalnutritionSam
-    ]
+    { heading = translate language (Translate.NutritionReportTableType tableType) ++ ":"
+    , captions = "" :: List.map Tuple.first columns
+    , rows =
+        [ row Translate.StuntingModerate .stuntingModerate
+        , row Translate.StuntingSevere .stuntingSevere
+        , row Translate.WastingModerate .wastingModerate
+        , row Translate.WastingSevere .wastingSevere
+        , row Translate.UnderweightModerate .underweightModerate
+        , row Translate.UnderweightSevere .underweightSevere
+        , row Translate.AcuteMalnutritionMam .acuteMalnutritionMam
+        , row Translate.AcuteMalnutritionSam .acuteMalnutritionSam
+        ]
+    , note = translate language (Translate.NutritionReportTableNote tableType)
+    }
 
 
 generareNutritionReportDataFromRawData :
@@ -1153,9 +1150,8 @@ backendGeneratedNutritionReportTableDateToNutritionTableData language backendTab
                     _ ->
                         ""
     in
-    { tableType = backendTableData.tableType
-    , columns = List.map2 Tuple.pair (List.map translateCaption backendTableData.captions) backendTableData.results
-    }
+    List.map2 Tuple.pair (List.map translateCaption backendTableData.captions) backendTableData.results
+        |> toNutritionTableData language backendTableData.tableType
 
 
 generateMonthlyPrevalenceTableData :
@@ -1215,7 +1211,7 @@ generateMonthlyTableData language currentDate tableType resolveMetricsResultsFor
                 , resolveMetricsResultsForMonth index
                 )
             )
-        |> toNutritionTableData language tableType
+        |> periodColumnsToNutritionTableData language tableType
 
 
 generateQuarterlyIncidenceTableData :
@@ -1257,7 +1253,7 @@ generateQuarterlyIncidenceTableData language currentDate tableType encountersByM
                 , generateIncidenceNutritionMetricsResults dataSet previousDataSet
                 )
             )
-        |> toNutritionTableData language tableType
+        |> periodColumnsToNutritionTableData language tableType
 
 
 generateYearlyIncidenceTableData :
@@ -1301,18 +1297,17 @@ generateYearlyIncidenceTableData language currentDate tableType encountersByMont
                 , generateIncidenceNutritionMetricsResults dataSet previousDataSet
                 )
             )
-        |> toNutritionTableData language tableType
+        |> periodColumnsToNutritionTableData language tableType
 
 
-toNutritionTableData :
+periodColumnsToNutritionTableData :
     Language
     -> NutritionReportTableType
     -> List ( TranslationId, NutritionMetricsResults )
     -> NutritionTableData
-toNutritionTableData language tableType data =
-    { tableType = tableType
-    , columns = List.map (Tuple.mapFirst (translate language)) data
-    }
+periodColumnsToNutritionTableData language tableType =
+    List.map (Tuple.mapFirst (translate language))
+        >> toNutritionTableData language tableType
 
 
 viewPrenatalReport : Language -> NominalDate -> String -> List PatientData -> Html Msg

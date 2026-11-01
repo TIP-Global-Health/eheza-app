@@ -55,7 +55,7 @@ function generate(array $patients) {
 }
 
 /**
- * Formats a rate the way the report shows it. Example: [1, 2] is '50%'.
+ * Formats a rate as a percentage to compare. Example: [1, 2] is '50%'.
  */
 function percentage(array $rate) {
   [$count, $total] = $rate;

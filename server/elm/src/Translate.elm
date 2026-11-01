@@ -205,6 +205,7 @@ type TranslationId
     | NutritionBehavior
     | NutritionIndividual
     | NutritionGroup
+    | NutritionReportPreparedOvernight
     | NutritionReportTableNote NutritionReportTableType
     | NutritionReportTableType NutritionReportTableType
     | NutritionTotal
@@ -1842,17 +1843,30 @@ translationSet transId =
             , somali = Nothing
             }
 
+        NutritionReportPreparedOvernight ->
+            { english = "The Nutrition report for this area is prepared overnight, and is not ready yet. Please check again tomorrow."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         NutritionReportTableNote tableType ->
             let
-                prevalence =
-                    { english = "Each cell shows a percentage, then the counts behind it: children with the condition / children measured that month. A child measured several times in the month counts once."
+                allChildren =
+                    "children"
+
+                childrenWithTwoVisits =
+                    "children with two or more visits"
+
+                prevalence population =
+                    { english = "Each cell shows a percentage, then the counts behind it: children with the condition / " ++ population ++ " measured that month. A child measured several times in the month counts once."
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
                     }
 
-                incidence previousPeriod =
-                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in " ++ previousPeriod ++ ". A new case is one of those children who was not at that level or worse then."
+                incidence population previousPeriod =
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / " ++ population ++ " measured in " ++ previousPeriod ++ ". A new case is one of those children who was not at that level or worse then."
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
@@ -1860,28 +1874,28 @@ translationSet transId =
             in
             case tableType of
                 NutritionTablePrevalanceOneOrMore ->
-                    prevalence
+                    prevalence allChildren
 
                 NutritionTablePrevalanceTwoOrMore ->
-                    prevalence
+                    prevalence childrenWithTwoVisits
 
                 NutritionTableIncidenceMonthOneOrMore ->
-                    incidence "the three months before"
+                    incidence allChildren "the three months before"
 
                 NutritionTableIncidenceMonthTwoOrMore ->
-                    incidence "the three months before"
+                    incidence childrenWithTwoVisits "the three months before"
 
                 NutritionTableIncidenceQuarterOneOrMore ->
-                    incidence "the quarter before"
+                    incidence allChildren "the quarter before"
 
                 NutritionTableIncidenceQuarterTwoOrMore ->
-                    incidence "the quarter before"
+                    incidence childrenWithTwoVisits "the quarter before"
 
                 NutritionTableIncidenceYearOneOrMore ->
-                    incidence "the year before"
+                    incidence allChildren "the year before"
 
                 NutritionTableIncidenceYearTwoOrMore ->
-                    incidence "the year before"
+                    incidence childrenWithTwoVisits "the year before"
 
         NutritionReportTableType tableType ->
             case tableType of

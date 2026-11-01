@@ -2,7 +2,7 @@ module Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..)
 
 import AssocList exposing (Dict)
 import Backend.Components.Model exposing (PersonId)
-import Backend.Reports.Model exposing (NutritionMetricsResults, NutritionReportTableType)
+import Backend.Reports.Model exposing (NutritionRate)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import RemoteData exposing (RemoteData(..))
@@ -102,12 +102,14 @@ emptyNutritionMetrics =
     }
 
 
-{-| A Nutrition report table, as its columns: the translated period
-caption, and the rates for that period.
+{-| A Nutrition report table, translated: one row per indicator, with
+its rate in each period column.
 -}
 type alias NutritionTableData =
-    { tableType : NutritionReportTableType
-    , columns : List ( String, NutritionMetricsResults )
+    { heading : String
+    , captions : List String
+    , rows : List ( String, List NutritionRate )
+    , note : String
     }
 
 

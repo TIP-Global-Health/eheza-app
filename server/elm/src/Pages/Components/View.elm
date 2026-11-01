@@ -1,4 +1,4 @@
-module Pages.Components.View exposing (viewCustomCells, viewDemographicsSelection, viewDemographicsSelectionActionButton, viewHealthCenterSelection, viewMetricsResultsTable, viewPopulationSelectionInput, viewReportDateInputs, viewStandardCells, viewStandardRow)
+module Pages.Components.View exposing (viewCustomMetricsResultsTable, viewDemographicsSelection, viewDemographicsSelectionActionButton, viewHealthCenterSelection, viewMetricsResultsTable, viewPopulationSelectionInput, viewReportDateInputs, viewStandardCells, viewStandardRow)
 
 import App.Types exposing (Language, Site)
 import AssocList as Dict
@@ -373,19 +373,23 @@ viewDemographicsSelectionActionButton language site pathPrefix label selectionMa
 
 viewMetricsResultsTable : MetricsResultsTableData -> List (Html any)
 viewMetricsResultsTable data =
-    let
-        captionsRow =
-            div [ class "row" ] <|
-                viewCustomCells "row-label" "heading" data.captions
+    List.map (List.map (text >> List.singleton)) data.rows
+        |> viewCustomMetricsResultsTable data.heading data.captions
 
-        viewRow cells =
-            div [ class "row" ] <|
-                viewCustomCells "row-label" "value" cells
+
+{-| A metrics table whose cells hold any content: each row is a list of
+cells, and each cell a list of elements.
+-}
+viewCustomMetricsResultsTable : String -> List String -> List (List (List (Html any))) -> List (Html any)
+viewCustomMetricsResultsTable heading captions rows =
+    let
+        viewRow =
+            viewCellsContent "row-label" "value" >> div [ class "row" ]
     in
-    [ div [ class "section heading" ] [ text data.heading ]
+    [ div [ class "section heading" ] [ text heading ]
     , div [ class "table wide" ] <|
-        captionsRow
-            :: List.map viewRow data.rows
+        div [ class "row" ] (viewCustomCells "row-label" "heading" captions)
+            :: List.map viewRow rows
     ]
 
 
@@ -402,8 +406,13 @@ viewStandardCells =
 
 viewCustomCells : String -> String -> List String -> List (Html any)
 viewCustomCells labelClass valueClass =
+    List.map (text >> List.singleton) >> viewCellsContent labelClass valueClass
+
+
+viewCellsContent : String -> String -> List (List (Html any)) -> List (Html any)
+viewCellsContent labelClass valueClass =
     List.indexedMap
-        (\index cellText ->
+        (\index content ->
             div
                 [ classList
                     [ ( "item", True )
@@ -411,5 +420,5 @@ viewCustomCells labelClass valueClass =
                     , ( valueClass, index /= 0 )
                     ]
                 ]
-                [ text cellText ]
+                content
         )

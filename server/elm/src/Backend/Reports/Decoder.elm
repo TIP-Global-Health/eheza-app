@@ -11,7 +11,7 @@ import Date
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, fail, index, int, list, map2, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, fail, field, index, int, list, map, map2, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, optionalAt, required)
 import Maybe.Extra
 
@@ -25,10 +25,12 @@ decodeReportsData =
         |> required "entity_type" decodeSelectedEntity
         |> required "params" decodeReportParams
         |> hardcoded []
-        -- Tables stored before the rates carried their counts decode to
-        -- Nothing, so they do not fail every report of the scope.
         |> optionalAt [ "additional", "nutrition_report_data" ]
-            (decodeWithFallback Nothing (nullable (list decodeBackendGeneratedNutritionReportTableDate)))
+            (oneOf
+                [ nullable (list decodeBackendGeneratedNutritionReportTableDate)
+                , decodeOldNutritionReportData
+                ]
+            )
             Nothing
         |> hardcoded Nothing
 
@@ -890,6 +892,15 @@ decodeBackendGeneratedNutritionReportTableDate =
         |> required "type" decodeNutritionReportTableType
         |> required "period" (list string)
         |> required "results" (list decodeNutritionMetricsResults)
+
+
+{-| Tables stored before the rates carried their counts hold percentages,
+like "17.6%". They read as no tables until the nightly rebuild.
+-}
+decodeOldNutritionReportData : Decoder (Maybe a)
+decodeOldNutritionReportData =
+    list (field "stunting_moderate" (list string))
+        |> map (always Nothing)
 
 
 decodeNutritionMetricsResults : Decoder NutritionMetricsResults
