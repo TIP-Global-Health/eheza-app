@@ -525,6 +525,14 @@ B-524	4	READY	LOW			47	Prenatal participant and encounter: a device's whole-copy
 B-525	1	READY	MED			47	Acute Illness CHW first visit: the encounter is classified as "subsequent" and shown the LATER encounter's diagnosis whe
 B-526	3	READY	MED-LOW			47	Nutrition (individual) malnutrition assessment: the weight-based rules read the child's whole weight history assuming th
 B-527	4	READY	LOW			47	Tuberculosis and HIV: "initial encounter" means "no other encounter has fetched measurements", so an empty same-day dupl
+B-528	4	READY	LOW			48	Case Management and Stock Management caches: a downloaded follow-up, FBF or stock update from ANOTHER health centre is f
+B-529	4	READY	LOW			48	Revision fold misses a derived cache, ×3: (a) a positive HIV test or the first real HIV follow-up does not update the Ca
+B-530	4	READY	LOW			48	Family Nutrition: the IndexedDB load takes the LOWEST-uuid mother record while every other picker takes the newest, so a
+B-531	1	READY	MED			48	Nutrition malnutrition assessment reads the weight history of only ONE of a child's nutrition participants (the first by
+B-532	3	READY	MED-LOW			48	Immunisation history across a child's twin participants: Well Child reads the sibling programme's doses from the first C
+B-533	4	READY	LOW			48	Statistical Queries ANC tables and the Dashboard pregnancy counts count PARTICIPANTS, not pregnancies: a woman with two 
+B-534	2	READY	MED-LOW			48	Healthy Start gestational weight gain: the expected-gain window runs from the previous weight's SAVE date, not its visit
+B-535	4	READY	LOW			48	`dateMeasured` is the save date, read as the clinical date, ×5: (a) NCDA "malnutrition treatment" pairs referral with as
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

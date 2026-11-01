@@ -32,3 +32,5 @@ alias, each with its own alias. Done this way in
 `hedley_reports/scripts/recalculate-newly-mapped-prenatal-diagnoses.php`. ⭐ Verify the result by
 running the equivalent raw SQL through [[production-sql-via-host-terminus]] and comparing counts —
 that is what caught it.
+
+**Addendum (R48 unit 5, 2026-11-01):** never call `hedley_general_apply_exclude_deleted()` twice on one query either — core `addJoin` renames the duplicate alias to `fd_2` but the ON string still says `fd.entity_id`, so the second join multiplies rows against the first alias (563k-row table) and the second node alias stays unfiltered. No caller does today.
