@@ -22,7 +22,7 @@ import ZScore.Fixture.Wfhanthro
 import ZScore.Fixture.Wflanthro
 import ZScore.Model exposing (BMI(..), ByDaysAndMonths, Centimetres(..), Days(..), Height(..), Kilograms(..), Length(..), MaleAndFemale, Model, Months(..), ZScore, ZScoreEntry)
 import ZScore.Utils exposing (zScoreBmiForAge, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
-import ZScore.View exposing (PlotConfig, heightForAgeConfig, plotPoints, weightForAgeConfig, weightForHeight0To5Config, weightForHeightConfig, yAxisLines)
+import ZScore.View exposing (PlotConfig, headCircumferenceForAge0To2Config, heightForAgeConfig, plotPoints, weightForAgeConfig, weightForHeight0To5Config, weightForHeightConfig, yAxisLines)
 
 
 type alias MonthsAndDays a =
@@ -2720,9 +2720,11 @@ zeroToTwoChartsTest =
             \_ -> Expect.atMost heightForAgeConfig.input.maxX oldestAgeInDays
         , test "weight-for-age 0-2 reaches every measurement of a child not yet graduated" <|
             \_ -> Expect.atMost weightForAgeConfig.input.maxX oldestAgeInDays
+        , test "head circumference 0-2 reaches every measurement of a child not yet graduated" <|
+            \_ -> Expect.atMost headCircumferenceForAge0To2Config.input.maxX oldestAgeInDays
         , test "length-for-age 0-2: the year lines are 365 days of the frame apart" <|
             \_ ->
-                (heightForAgeConfig.xAxis.width / 3)
+                (heightForAgeConfig.xAxis.width / toFloat (heightForAgeConfig.xAxis.maxAgeUnit - heightForAgeConfig.xAxis.minAgeUnit + 1))
                     |> Expect.within (Absolute 0.000001)
                         ((heightForAgeConfig.output.maxX - heightForAgeConfig.output.minX) * 365 / heightForAgeConfig.input.maxX)
         ]

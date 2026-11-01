@@ -7,6 +7,7 @@ module ZScore.View exposing
     , XAxisTypes
     , YAxisConfig
     , YAxisSpaceType
+    , headCircumferenceForAge0To2Config
     , heightForAgeConfig
     , plotPoints
     , viewHeadCircumferenceForAge0To13WeeksBoys
