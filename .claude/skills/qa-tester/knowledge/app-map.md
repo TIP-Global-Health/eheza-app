@@ -319,6 +319,8 @@ flag simply does not appear.
   main menu.
 - A second encounter on the same day is impossible: backdate the first with
   `h.common.backdateEncounter(name, type, days)`, then sync before starting the next.
+  Well Child measurements point at their visit through `field_well_child_encounter`; set each one's
+  `field_date_measured` to the same day (`node_save`), and the device shows the new dates after a sync.
 - Well Child Head Circumference: its tab shows only for children under 36 months. Under the
   input, "Previous measurement: <cm>" or "No previous measurement on record". "Not taken" is
   stored as 0 cm with a `not-taken` note. A nurse's existing child is reopened through Clinical →
@@ -338,6 +340,12 @@ flag simply does not appear.
   set; older, Height-for-age 5–19, Weight-for-age 5–10, HC 0–5. Read geometry from the SVG: labelled lines `line.st18`,
   inner `line.st19`, left labels `text.st16` at x 95.4252/88.4252 (y = transform y − 2), the child's dots are circles
   filled `#06B9FF`; the plot runs y 506.7 (minY) to 119.9 (maxY) in `ZScore/View.elm`'s configs.
+- Chart SVG for geometry checks: the child's dots are `circle` without a class (`circle.z-score-white` are label
+  backgrounds), joined by `polyline.child-data`; reference curves are `polyline.*-line-new` in the order −3, −2, (−1), 0,
+  (+1), +2, +3; x-axis `line.unit-line` (labels `text.st20`) and `line.unit-breakdown-line` (labels at y 516.5436);
+  z-score labels are `text.st23`. The plot runs x 110.9 to 715.4; a point outside the age range is drawn on that edge.
+- Age-chart fixtures: register with the exact birth date by hand (`h.common.setDate` on `.date-input`); the helpers take
+  whole months only. WHO −2 SD values come from `client/src/assets/z-score/*anthro.txt` (M·(1+L·S·z)^(1/L)).
 - `h.wellChild.createChildAndStartWellChildEncounter` always starts the visit. To stop on the
   participant page, register by its steps up to `div.page-participant.individual.well-child`.
 - On the device, IndexedDB `sync` → `shards` holds each measurement with `type`, `person` (uuid),
@@ -547,6 +555,8 @@ flag simply does not appear.
   it. The service worker keeps the real date (see pitfalls); `page.clock` must not be used.
 - The main tree starts a run on `develop`, so a develop control is cheapest before the overlay:
   record it on the served build, then overlay and wait for gulp once.
+- After an overlay, gulp copies `app.js` at once, but `Main.js` takes about 2.5 minutes to rebuild. Wait until
+  `grep -F` finds a name from the overlay in `client/serve/Main.js`.
 - Only a caller that can read `.driver/token` (owner-only, new each start) can send commands;
   requests from a browser page are refused.
 - `qa.freshDevice()` can fail once with "Navigation … interrupted by another navigation" on a fresh

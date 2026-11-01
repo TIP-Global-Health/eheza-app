@@ -467,3 +467,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the scratchpad's `qa/` folder already held another PR's `report.md`, `recordings.md` and scripts.
 - **Wrong conclusion:** the files there belong to this run.
 - **Rule:** keep each run's scripts and drafts in `scratchpad/qa<pr>/`, so a post never picks up another PR's report.
+
+## Pairing videos with captions by hand
+
+- **Symptom:** the drafted recordings comment put the upload video under "test 4", whose video was the other-charts comparison.
+- **Wrong conclusion:** the captions match the files because the names look alike.
+- **Rule:** list the files the draft attaches (`grep -o 'qa-<pr>-[a-z0-9-]*\.mp4'`), numbered, and read each against its caption before posting.
