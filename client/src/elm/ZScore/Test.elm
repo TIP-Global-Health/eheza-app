@@ -2716,12 +2716,12 @@ zeroToTwoChartsTest =
                 |> toFloat
     in
     describe "0-2 charts"
-        [ test "length-for-age 0-2 reaches every measurement of a child not yet graduated" <|
-            \_ -> Expect.atMost heightForAgeConfig.input.maxX oldestAgeInDays
-        , test "weight-for-age 0-2 reaches every measurement of a child not yet graduated" <|
-            \_ -> Expect.atMost weightForAgeConfig.input.maxX oldestAgeInDays
-        , test "head circumference 0-2 reaches every measurement of a child not yet graduated" <|
-            \_ -> Expect.atMost headCircumferenceForAge0To2Config.input.maxX oldestAgeInDays
+        [ test "length-for-age 0-2 ends at the oldest age of a child not yet graduated" <|
+            \_ -> Expect.within (Absolute 0) oldestAgeInDays heightForAgeConfig.input.maxX
+        , test "weight-for-age 0-2 ends at the oldest age of a child not yet graduated" <|
+            \_ -> Expect.within (Absolute 0) oldestAgeInDays weightForAgeConfig.input.maxX
+        , test "head circumference 0-2 ends at the oldest age of a child not yet graduated" <|
+            \_ -> Expect.within (Absolute 0) oldestAgeInDays headCircumferenceForAge0To2Config.input.maxX
         , test "length-for-age 0-2: the year lines are 365 days of the frame apart" <|
             \_ ->
                 (heightForAgeConfig.xAxis.width / toFloat (heightForAgeConfig.xAxis.maxAgeUnit - heightForAgeConfig.xAxis.minAgeUnit + 1))

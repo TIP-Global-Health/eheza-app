@@ -1300,7 +1300,7 @@ zScoreLabelsWeightForAgeBoys =
         , text_ [ transform "matrix(1 0 0 1 719.6994 333.2261)", class "z-score-semibold st23" ] [ text "-3" ]
         , text_ [ transform "matrix(1 0 0 1 721.6105 169.89)", class "two-line z-score-semibold st23" ] [ text "2" ]
         , text_ [ transform "matrix(1 0 0 1 722.4973 244.8728)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 722.1398 121.1954)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.1398 130.1)", class "z-score-semibold st23" ] [ text "3" ]
         ]
 
 
@@ -1346,7 +1346,7 @@ zScoreLabelsWeightForAgeGirls =
         []
         [ text_ [ transform "matrix(1 0 0 1 720.9238 321.475)", class "two-line z-score-semibold st23" ] [ text "-2" ]
         , text_ [ transform "matrix(1 0 0 1 720.7002 345.1266)", class "z-score-semibold st23" ] [ text "-3" ]
-        , text_ [ transform "matrix(1 0 0 1 723.707 125.8631)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.707 130.1)", class "z-score-semibold st23" ] [ text "3" ]
         , text_ [ transform "matrix(1 0 0 1 723.4619 177.4332)", class "two-line z-score-semibold st23" ] [ text "2" ]
         , text_ [ transform "matrix(1 0 0 1 723.498 262.1624)", class "zero-line z-score-semibold st23" ] [ text "0" ]
         ]
