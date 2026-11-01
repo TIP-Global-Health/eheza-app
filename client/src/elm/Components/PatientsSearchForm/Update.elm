@@ -74,7 +74,7 @@ update msg model =
               }
             , Cmd.none
             )
-                -- The empty input goes to the debouncer too: it holds the last
-                -- input it was given, which would otherwise arrive half a
-                -- second later and search again.
+                -- Every input goes to the debouncer, the empty one included: it
+                -- holds the last input it was given, which would otherwise
+                -- arrive half a second later and search again.
                 |> sequence update [ MsgDebouncer <| provideInput <| SetSearch input ]

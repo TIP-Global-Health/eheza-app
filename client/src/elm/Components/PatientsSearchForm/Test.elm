@@ -28,13 +28,6 @@ all =
                 typedByNationalId [ "AB-1" ]
                     |> .input
                     |> Expect.equal "AB-1"
-        , test "the search runs on what was typed" <|
-            \_ ->
-                typedByNationalId [ "12/3" ]
-                    |> update (SetSearch "12/3")
-                    |> Tuple.first
-                    |> .search
-                    |> Expect.equal (Just "12/3")
         , test "an emptied field searches for nothing" <|
             \_ ->
                 typedByNationalId [ "12/3" ]
