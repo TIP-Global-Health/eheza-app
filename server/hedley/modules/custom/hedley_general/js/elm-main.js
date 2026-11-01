@@ -13596,32 +13596,23 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {somali: $elm$core$Maybe$Nothing, english: 'The Nutrition report for this area is prepared overnight, and is not ready yet. Please check again tomorrow.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'NutritionReportTableNote':
 				var tableType = transId.a;
-				var childrenWithTwoVisits = 'children with two or more visits';
-				var allChildren = 'children';
-				var prevalence = function (population) {
-					return {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: children with the condition / ' + (population + ' measured that month. A child measured several times in the month counts once.'), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-				};
-				var incidence = F2(
-					function (population, previousPeriod) {
-						return {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: new cases / ' + (population + (' measured in ' + (previousPeriod + '. A new case is one of those children who was not at that level or worse then.'))), kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
-					});
 				switch (tableType.$) {
 					case 'NutritionTablePrevalanceOneOrMore':
-						return prevalence(allChildren);
+						return {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: children with the condition / children measured that month. A child measured several times in the month counts once.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 					case 'NutritionTablePrevalanceTwoOrMore':
-						return prevalence(childrenWithTwoVisits);
+						return {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: children with the condition / children measured that month who have had two or more visits. A child measured several times in the month counts once.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 					case 'NutritionTableIncidenceMonthOneOrMore':
-						return A2(incidence, allChildren, 'the three months before');
+						return {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: new cases / children measured in the three months before. A new case is one of those children who was not at that level or worse then.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 					case 'NutritionTableIncidenceMonthTwoOrMore':
-						return A2(incidence, childrenWithTwoVisits, 'the three months before');
+						return {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: new cases / children measured in the three months before who have had two or more visits. A new case is one of those children who was not at that level or worse then.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 					case 'NutritionTableIncidenceQuarterOneOrMore':
-						return A2(incidence, allChildren, 'the quarter before');
+						return {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: new cases / children measured in the quarter before. A new case is one of those children who was not at that level or worse then.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 					case 'NutritionTableIncidenceQuarterTwoOrMore':
-						return A2(incidence, childrenWithTwoVisits, 'the quarter before');
+						return {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: new cases / children measured in the quarter before who have had two or more visits. A new case is one of those children who was not at that level or worse then.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 					case 'NutritionTableIncidenceYearOneOrMore':
-						return A2(incidence, allChildren, 'the year before');
+						return {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: new cases / children measured in the year before. A new case is one of those children who was not at that level or worse then.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 					default:
-						return A2(incidence, childrenWithTwoVisits, 'the year before');
+						return {somali: $elm$core$Maybe$Nothing, english: 'Each cell shows a percentage, then the counts behind it: new cases / children measured in the year before who have had two or more visits. A new case is one of those children who was not at that level or worse then.', kirundi: $elm$core$Maybe$Nothing, kinyarwanda: $elm$core$Maybe$Nothing};
 				}
 			case 'NutritionReportTableType':
 				var tableType = transId.a;
@@ -17652,6 +17643,9 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
+var $author$project$Pages$Reports$View$ratePercentage = function (rate) {
+	return A2($author$project$Pages$Utils$calculatePercentage, rate.count, rate.total);
+};
 var $author$project$Pages$Components$View$viewCustomMetricsResultsTable = F3(
 	function (heading, captions, rows) {
 		var viewRow = A2(
@@ -17696,8 +17690,17 @@ var $author$project$Pages$Reports$View$viewNutritionTable = function (table) {
 	var viewRate = function (rate) {
 		return _List_fromArray(
 			[
-				$elm$html$Html$text(
-				A2($author$project$Pages$Utils$calculatePercentage, rate.count, rate.total)),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('percentage')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$author$project$Pages$Reports$View$ratePercentage(rate))
+					])),
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -17758,12 +17761,7 @@ var $author$project$Pages$Reports$View$nutritionTableToCSVData = F2(
 					A2(
 					$elm$core$List$cons,
 					label,
-					A2(
-						$elm$core$List$map,
-						function (rate) {
-							return A2($author$project$Pages$Utils$calculatePercentage, rate.count, rate.total);
-						},
-						rates)),
+					A2($elm$core$List$map, $author$project$Pages$Reports$View$ratePercentage, rates)),
 					A2(
 					$elm$core$List$cons,
 					_Utils_ap(label, numeratorLabel),

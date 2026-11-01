@@ -12,6 +12,7 @@ import Backend.Reports.Model
         , DeliveryLocation(..)
         , Gender(..)
         , NutritionMetricsResults
+        , NutritionRate
         , NutritionReportTableType(..)
         , PatientData
         , PregnancyOutcome(..)
@@ -957,7 +958,7 @@ viewNutritionTable : NutritionTableData -> List (Html any)
 viewNutritionTable table =
     let
         viewRate rate =
-            [ text <| calculatePercentage rate.count rate.total
+            [ div [ class "percentage" ] [ text <| ratePercentage rate ]
             , div [ class "counts" ] [ text <| String.fromInt rate.count ++ " / " ++ String.fromInt rate.total ]
             ]
     in
@@ -980,7 +981,7 @@ nutritionTableToCSVData language table =
             " - " ++ translate language Translate.Denominator
 
         rateRows ( label, rates ) =
-            [ label :: List.map (\rate -> calculatePercentage rate.count rate.total) rates
+            [ label :: List.map ratePercentage rates
             , (label ++ numeratorLabel) :: List.map (.count >> String.fromInt) rates
             , (label ++ denominatorLabel) :: List.map (.total >> String.fromInt) rates
             ]
@@ -989,6 +990,11 @@ nutritionTableToCSVData language table =
     , captions = table.captions
     , rows = List.concatMap rateRows table.rows ++ [ [ table.note ] ]
     }
+
+
+ratePercentage : NutritionRate -> String
+ratePercentage rate =
+    calculatePercentage rate.count rate.total
 
 
 {-| Builds a table from its period columns: the caption, and the rates

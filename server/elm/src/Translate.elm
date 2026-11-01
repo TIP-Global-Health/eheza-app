@@ -1851,51 +1851,62 @@ translationSet transId =
             }
 
         NutritionReportTableNote tableType ->
-            let
-                allChildren =
-                    "children"
-
-                childrenWithTwoVisits =
-                    "children with two or more visits"
-
-                prevalence population =
-                    { english = "Each cell shows a percentage, then the counts behind it: children with the condition / " ++ population ++ " measured that month. A child measured several times in the month counts once."
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
-
-                incidence population previousPeriod =
-                    { english = "Each cell shows a percentage, then the counts behind it: new cases / " ++ population ++ " measured in " ++ previousPeriod ++ ". A new case is one of those children who was not at that level or worse then."
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
-            in
             case tableType of
                 NutritionTablePrevalanceOneOrMore ->
-                    prevalence allChildren
+                    { english = "Each cell shows a percentage, then the counts behind it: children with the condition / children measured that month. A child measured several times in the month counts once."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
                 NutritionTablePrevalanceTwoOrMore ->
-                    prevalence childrenWithTwoVisits
+                    { english = "Each cell shows a percentage, then the counts behind it: children with the condition / children measured that month who have had two or more visits. A child measured several times in the month counts once."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
                 NutritionTableIncidenceMonthOneOrMore ->
-                    incidence allChildren "the three months before"
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in the three months before. A new case is one of those children who was not at that level or worse then."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
                 NutritionTableIncidenceMonthTwoOrMore ->
-                    incidence childrenWithTwoVisits "the three months before"
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in the three months before who have had two or more visits. A new case is one of those children who was not at that level or worse then."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
                 NutritionTableIncidenceQuarterOneOrMore ->
-                    incidence allChildren "the quarter before"
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in the quarter before. A new case is one of those children who was not at that level or worse then."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
                 NutritionTableIncidenceQuarterTwoOrMore ->
-                    incidence childrenWithTwoVisits "the quarter before"
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in the quarter before who have had two or more visits. A new case is one of those children who was not at that level or worse then."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
                 NutritionTableIncidenceYearOneOrMore ->
-                    incidence allChildren "the year before"
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in the year before. A new case is one of those children who was not at that level or worse then."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
                 NutritionTableIncidenceYearTwoOrMore ->
-                    incidence childrenWithTwoVisits "the year before"
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in the year before who have had two or more visits. A new case is one of those children who was not at that level or worse then."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
         NutritionReportTableType tableType ->
             case tableType of
