@@ -18,6 +18,7 @@ import ZScore.Fixture.Wfhanthro
 import ZScore.Fixture.Wflanthro
 import ZScore.Model exposing (BMI(..), ByDaysAndMonths, Centimetres(..), Days(..), Height(..), Kilograms(..), Length(..), MaleAndFemale, Model, Months(..), ZScore, ZScoreEntry)
 import ZScore.Utils exposing (zScoreBmiForAge, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
+import ZScore.View exposing (PlotConfig, heightForAgeConfig, valuePositionY, weightForAgeConfig, weightForHeight0To5Config, weightForHeightConfig, yAxisLines)
 
 
 type alias MonthsAndDays a =
@@ -2684,4 +2685,67 @@ all : Test
 all =
     describe "ZScore"
         [ calculateZScoreTest
+        , yAxisLinesTest
+        ]
+
+
+{-| Where a value belongs on a chart: the same share of the frame's height as
+of the chart's value range, counted up from the bottom.
+-}
+expectedYPosition : PlotConfig x y -> Float -> Float
+expectedYPosition config value =
+    config.output.maxY
+        - (config.output.maxY - config.output.minY)
+        * (value - config.input.minY)
+        / (config.input.maxY - config.input.minY)
+
+
+yAxisLinesTest : Test
+yAxisLinesTest =
+    let
+        -- The largest distance between where a label is drawn and where its value is plotted.
+        expectLabelsAtTheirValues config =
+            yAxisLines config
+                |> List.map (\{ value, position } -> abs (position - expectedYPosition config value))
+                |> List.maximum
+                |> Maybe.withDefault 1
+                |> Expect.within (Absolute 0.000001) 0
+
+        expectPositionsWithin expected actual =
+            List.map2 (-) expected actual
+                |> List.map abs
+                |> List.sum
+                |> Expect.all
+                    [ Expect.within (Absolute 0.000001) 0
+                    , always (Expect.equal (List.length expected) (List.length actual))
+                    ]
+    in
+    describe "yAxisLines"
+        [ test "length-for-age 0-2: every label sits where its value is plotted" <|
+            \_ -> expectLabelsAtTheirValues heightForAgeConfig
+        , test "weight-for-length 0-2: every label sits where its value is plotted" <|
+            \_ -> expectLabelsAtTheirValues weightForHeightConfig
+        , test "weight-for-height 0-5: every label sits where its value is plotted" <|
+            \_ -> expectLabelsAtTheirValues weightForHeight0To5Config
+        , test "length-for-age 0-2: the label 45 is drawn where 45 cm is plotted" <|
+            \_ ->
+                yAxisLines heightForAgeConfig
+                    |> List.filter (\line -> line.value == 45)
+                    |> List.map .position
+                    |> Expect.equalLists [ valuePositionY heightForAgeConfig 45 ]
+        , test "length-for-age 0-2: the lines between 42 and 45 are at 43 and 44 cm" <|
+            \_ ->
+                yAxisLines heightForAgeConfig
+                    |> List.head
+                    |> Maybe.map .innerPositions
+                    |> Maybe.withDefault []
+                    |> expectPositionsWithin [ expectedYPosition heightForAgeConfig 43, expectedYPosition heightForAgeConfig 44 ]
+        , test "weight-for-age 0-2: evenly labelled, so every gap keeps its four inner lines" <|
+            \_ ->
+                yAxisLines weightForAgeConfig
+                    |> List.reverse
+                    |> List.drop 1
+                    |> List.map (.innerPositions >> List.length)
+                    |> List.all ((==) 4)
+                    |> Expect.equal True
         ]
