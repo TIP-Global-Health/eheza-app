@@ -18,7 +18,7 @@ import ZScore.Fixture.Wfhanthro
 import ZScore.Fixture.Wflanthro
 import ZScore.Model exposing (BMI(..), ByDaysAndMonths, Centimetres(..), Days(..), Height(..), Kilograms(..), Length(..), MaleAndFemale, Model, Months(..), ZScore, ZScoreEntry)
 import ZScore.Utils exposing (zScoreBmiForAge, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
-import ZScore.View exposing (PlotConfig, heightForAgeConfig, weightForAgeConfig, weightForHeight0To5Config, weightForHeightConfig, yAxisLines)
+import ZScore.View exposing (PlotConfig, heightForAgeConfig, plotPoints, weightForAgeConfig, weightForHeight0To5Config, weightForHeightConfig, yAxisLines)
 
 
 type alias MonthsAndDays a =
@@ -2689,15 +2689,14 @@ all =
         ]
 
 
-{-| Where a value belongs on a chart: the same share of the frame's height as
-of the chart's value range, counted up from the bottom.
+{-| Where the chart plots a value, through the same path as the child's points.
 -}
-expectedYPosition : PlotConfig x y -> Float -> Float
-expectedYPosition config value =
-    config.output.maxY
-        - (config.output.maxY - config.output.minY)
-        * (value - config.input.minY)
-        / (config.input.maxY - config.input.minY)
+plottedYPosition : PlotConfig x y -> Float -> Float
+plottedYPosition config value =
+    plotPoints config [ { x = config.input.minX, y = value } ]
+        |> List.head
+        |> Maybe.map Tuple.second
+        |> Maybe.withDefault -1
 
 
 yAxisLinesTest : Test
@@ -2706,7 +2705,7 @@ yAxisLinesTest =
         -- The largest distance between where a label is drawn and where its value is plotted.
         expectLabelsAtTheirValues config =
             yAxisLines config
-                |> List.map (\{ value, position } -> abs (position - expectedYPosition config value))
+                |> List.map (\{ value, position } -> abs (position - plottedYPosition config value))
                 |> List.maximum
                 |> Maybe.withDefault 1
                 |> Expect.within (Absolute 0.000001) 0
@@ -2730,7 +2729,7 @@ yAxisLinesTest =
         , test "length-for-age 0-2: the label 45 is drawn 3/57 of the frame up from the bottom" <|
             \_ ->
                 yAxisLines heightForAgeConfig
-                    |> List.filter (\line -> line.value == 45)
+                    |> List.filter (\line -> abs (line.value - 45) < 0.000001)
                     |> List.map .position
                     |> expectPositionsWithin [ 486.3421 ]
         , test "length-for-age 0-2: the lines between 42 and 45 are at 43 and 44 cm" <|
@@ -2739,7 +2738,7 @@ yAxisLinesTest =
                     |> List.head
                     |> Maybe.map .innerPositions
                     |> Maybe.withDefault []
-                    |> expectPositionsWithin [ expectedYPosition heightForAgeConfig 43, expectedYPosition heightForAgeConfig 44 ]
+                    |> expectPositionsWithin [ plottedYPosition heightForAgeConfig 43, plottedYPosition heightForAgeConfig 44 ]
         , test "weight-for-age 0-2: evenly labelled, so every gap keeps its four inner lines" <|
             \_ ->
                 yAxisLines weightForAgeConfig

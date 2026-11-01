@@ -8,6 +8,7 @@ module ZScore.View exposing
     , YAxisConfig
     , YAxisSpaceType
     , heightForAgeConfig
+    , plotPoints
     , viewHeadCircumferenceForAge0To13WeeksBoys
     , viewHeadCircumferenceForAge0To13WeeksGirls
     , viewHeadCircumferenceForAge0To2Boys
@@ -592,10 +593,13 @@ plotPoints config =
             config.output.minX
                 + ((x - config.input.minX) * scaleX)
                 |> clamp config.output.minX config.output.maxX
+
+        plotY =
+            valuePositionY config
     in
     List.map
         (\{ x, y } ->
-            ( plotX x, valuePositionY config y )
+            ( plotX x, plotY y )
         )
 
 
@@ -603,16 +607,17 @@ plotPoints config =
 gridlines both use it, so a gridline labelled 45 sits where 45 is plotted.
 -}
 valuePositionY : PlotConfig x y -> Float -> Float
-valuePositionY config y =
+valuePositionY config =
     let
         scaleY =
             (config.output.maxY - config.output.minY)
                 / (config.input.maxY - config.input.minY)
     in
-    -- Y is a bit different, because SVG has its origin at the top
-    config.output.maxY
-        - ((y - config.input.minY) * scaleY)
-        |> clamp config.output.minY config.output.maxY
+    \y ->
+        -- Y is a bit different, because SVG has its origin at the top
+        config.output.maxY
+            - ((y - config.input.minY) * scaleY)
+            |> clamp config.output.minY config.output.maxY
 
 
 plotReferenceData : PlotConfig x y -> List ( x, ZScoreEntry y ) -> Svg any
@@ -1612,11 +1617,14 @@ yAxisLines config =
         -- with 4 inner lines give a line every 1 cm.
         innerStep =
             toFloat config.yAxis.yAxisIntervals / toFloat (config.yAxis.innerLinesNumber + 1)
+
+        plotY =
+            valuePositionY config
     in
     List.map2
         (\value next ->
             { value = value
-            , position = valuePositionY config value
+            , position = plotY value
             , innerPositions =
                 Maybe.map
                     (\nextValue ->
@@ -1628,7 +1636,7 @@ yAxisLines config =
                                 round (gap / innerStep)
                         in
                         List.range 1 (parts - 1)
-                            |> List.map (\part -> valuePositionY config (value + gap * toFloat part / toFloat parts))
+                            |> List.map (\part -> plotY (value + gap * toFloat part / toFloat parts))
                     )
                     next
                     |> Maybe.withDefault []
