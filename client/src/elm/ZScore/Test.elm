@@ -1,11 +1,15 @@
 module ZScore.Test exposing (all, testModel)
 
 import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Person.Utils exposing (graduatingAgeInMonth)
+import Date
 import Expect exposing (Expectation, FloatingPointTolerance(..))
+import Gizra.NominalDate exposing (diffMonths)
 import Http
 import Json.Decode exposing (Decoder, decodeString)
 import RemoteData exposing (RemoteData(..), WebData)
 import Test exposing (Test, describe, test)
+import Time exposing (Month(..))
 import Utils.AllDict exposing (AllDict)
 import ZScore.Decoder exposing (decodeForAge, decodeForCentimetres)
 import ZScore.Fixture.Bfawho2007
@@ -2686,6 +2690,41 @@ all =
     describe "ZScore"
         [ calculateZScoreTest
         , yAxisLinesTest
+        , zeroToTwoChartsTest
+        ]
+
+
+zeroToTwoChartsTest : Test
+zeroToTwoChartsTest =
+    let
+        -- For each birth date in four years, the oldest age in days at which the child is still
+        -- under the graduating age, so still shown the 0-2 charts.
+        oldestAgeInDays =
+            List.range 0 (4 * 365)
+                |> List.filterMap
+                    (\offset ->
+                        let
+                            birthDate =
+                                Date.add Date.Days offset (Date.fromCalendarDate 2020 Jan 1)
+                        in
+                        List.range 760 820
+                            |> List.filter (\days -> diffMonths birthDate (Date.add Date.Days days birthDate) < graduatingAgeInMonth)
+                            |> List.maximum
+                    )
+                |> List.maximum
+                |> Maybe.withDefault 0
+                |> toFloat
+    in
+    describe "0-2 charts"
+        [ test "length-for-age 0-2 reaches every measurement of a child not yet graduated" <|
+            \_ -> Expect.atMost heightForAgeConfig.input.maxX oldestAgeInDays
+        , test "weight-for-age 0-2 reaches every measurement of a child not yet graduated" <|
+            \_ -> Expect.atMost weightForAgeConfig.input.maxX oldestAgeInDays
+        , test "length-for-age 0-2: the year lines are 365 days of the frame apart" <|
+            \_ ->
+                (heightForAgeConfig.xAxis.width / 3)
+                    |> Expect.within (Absolute 0.000001)
+                        ((heightForAgeConfig.output.maxX - heightForAgeConfig.output.minX) * 365 / heightForAgeConfig.input.maxX)
         ]
 
 
