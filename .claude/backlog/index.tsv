@@ -311,8 +311,8 @@ B-310	4	IMPLEMENTED	LOW	2404	2405	28	Aggregated NCDA scoreboard, current-month c
 B-311	2	IMPLEMENTED	MED-HIGH	2261	2262	28	Aggregated NCDA scoreboard: the "born in the last 3 years" cutoff is evaluated at request time, so every historical colu
 B-312	3	READY	MED-LOW			28	Aggregated NCDA scoreboard, "Iron during pregnancy" row: the nine counted months sit one month before the pregnancy — th
 B-313	4	READY	LOW			28	NCDA scoreboard (server blob): nothing re-triggers a child's recalculation when the pregnancy-side inputs change — newbo
-B-314	3	READY	MED-LOW			28	Growth charts: on three charts the y-axis gridlines and labels are spaced by tick index while the points are plotted by 
-B-315	3	READY	MED-LOW			28	Growth charts: a measurement outside the chart's x-range is pinned to the frame edge instead of dropped, so a 24–26-mont
+B-314	3	IMPLEMENTED	MED-LOW	2447	2448	28	Growth charts: on three charts the y-axis gridlines and labels are spaced by tick index while the points are plotted by 
+B-315	3	IMPLEMENTED	MED-LOW	2451	2452	28	Growth charts: a measurement outside the chart's x-range is pinned to the frame edge instead of dropped, so a 24–26-mont
 B-316	4	READY	LOW			28	Z-score tables: a failed table download on first load is never retried and never shown, so growth charts render without 
 B-317	2	IMPLEMENTED	MED-HIGH	2265	2266	28	Sync download: a response arriving after its 30-second timeout is applied under whichever health centre is current by th
 B-318	2	IMPLEMENTED	MED	2290	2291	28	Sync: the dashboard-statistics download has no timeout and no elapsed-time guard, so one stalled request wedges uploads 
@@ -518,7 +518,7 @@ B-517	4	READY	LOW		2436	45	Group session: about 20 per-person `save*Request` tra
 B-518	4	READY	LOW		2438	45	Statistical Queries per-person data: a recalculation that produces the same data still saves the person, so every device
 B-519	4	IMPLEMENTED	LOW	2445	2446	45	NCD labs: the labs entry is closed from the device's own copy, and "all completed" compares set sizes, so a copy behind 
 B-520	4	READY	LOW		2446	45	Prenatal initial phase: "second phase required" compares the sizes of the labs entry's performed and completed tests, so
-B-521	4	READY	LOW		2450	45	Patient search by National ID: spaces and separators must be typed exactly as stored, so a Rwanda ID typed with the card
+B-521	4	READY	LOW			46	Growth charts: the weight-for-age 0-2 chart labels its gridlines 1.40, 2.43, 3.45 … kg instead of whole kilograms
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
