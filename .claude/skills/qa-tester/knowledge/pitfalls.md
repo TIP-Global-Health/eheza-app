@@ -431,3 +431,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** `gh pr comment --attach` (2.103) turned each `![](file.mp4)` into a `[name.mp4](url)` link under the caption line, and the comment held no `<video>`.
 - **Wrong conclusion:** the upload failed, or videos cannot be posted.
 - **Rule:** after posting, count `<video` in the comment's `body_html`. A player needs the bare URL alone in its own paragraph: rewrite each link to a blank line, the URL, a blank line, then PATCH the comment.
+
+## Setting a Drupal date field through the wrapper with a timestamp
+
+- **Symptom:** `$w->field_date_concluded->set(strtotime('+35 days'))` stored `2026-12-06 02:00:00`, not midnight like the app's saves.
+- **Wrong conclusion:** the server edit stored the date the tablet will read as given.
+- **Rule:** the wrapper converts the timestamp with the site's time zone. For a fixture, set the raw value (`$node->field_date_concluded[LANGUAGE_NONE][0]['value'] = gmdate('Y-m-d 00:00:00', …)`, `node_save`) and read it back.
+
+## A server edit of a labs entry before the tablet's save reached the server
+
+- **Symptom:** none here, but the tablet's queued save of the entry would have replaced the edit on upload.
+- **Wrong conclusion:** the entry on the server is the one the tablet just saved.
+- **Rule:** before editing an entry on the server, poll it until it shows the tablet's last save (its completed tests or date), then edit, then wait for the tablet's `shards` row to show the edit.

@@ -22,7 +22,8 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   older ones fail on this repo's `gh issue view` / `gh pr view` (Projects classic).
 - Hedley scripts run as `ddev drush scr profiles/hedley/modules/custom/<module>/scripts/<file>.php`.
   Most take `--dry_run` and `--nid` (only records after that nid), so a run can be limited
-  to the records it created.
+  to the records it created. In your own `drush scr` script, `drush_get_arguments()` holds two
+  entries before the script's own arguments (read from index 2).
 - A measurement node is found by its patient: join `field_data_field_person` to the person
   node and match its title (`E2ETest <firstName>`).
 - A **server reinstall** (`server/install`) wipes every device, person and pairing, restores
@@ -195,7 +196,15 @@ flag simply does not appear.
   Creatinine, Urine Dipstick, HIV, Liver Function, Lipid Panel, HBA1C. Its Random Blood Sugar
   asks performed (`test-performed`) → `immediate-result` (Point of Care / Lab) →
   `patient-fasted` → `test-performed-today`; Lab ends on "update test results via case
-  management". Creatinine: performed → performed today. No reveals five why-not reasons.
+  management". Creatinine: performed → performed today, always to the lab. Urine Dipstick: performed →
+  performed today → Short Dip / Long Dip. No reveals five why-not reasons. `completeLaboratory` answers
+  every tab; to send only some tests, drive their tabs by hand and leave the rest unanswered.
+- NCD recurrent Lab Results: Random Blood Sugar `.form-input.measurement.sugar-count`; Creatinine
+  `creatinine-result` and `bun-result` (1 and 15 bring no Next Steps); Urine Dipstick three selects
+  (protein, pH, glucose). The last result returns to the recurrent encounter page ("To Do (0)",
+  LEAVE ENCOUNTER → Case Management). RBS 250 offers Next Steps (Medication Distribution);
+  `completeRecurrentNextSteps` saves it. Lab Results stays openable from Completed, where a
+  result can be saved again unchanged.
 - NCD Next Steps appears only after Danger Signs, Symptom Review, Examination and Medical
   History are saved, even when a lab result already diagnoses (the four helpers do it). Its
   Medication Distribution names the diagnosis: "This patient has Diabetes with glucose … of
@@ -396,6 +405,9 @@ flag simply does not appear.
   the lab sets it 35 days out. The entry opens the recurrent encounter; its Lab Results card is
   `.icon-task-laboratory`, one tab per test still owed. When nothing is left, the page reads
   "To Do (0)" — it draws no `.card` elements to count.
+- Listing rows are `.follow-up-entry .name` under the NCD Labs filter. An entry edited on the server
+  (performed, completed, `field_date_concluded`) reaches the tablet's `shards` row within seconds
+  at syncSpeed idle 5 s; a concluded date 35 days out lists a closed entry again.
 - **Each pane decides for itself whether an encounter clears its entry** — read its
   `generate<Type>FollowUpEntryData` and the `limitDate` its view passes
   (`Pages/GlobalCaseManagement/View.elm`) before choosing a pane for a scenario:
