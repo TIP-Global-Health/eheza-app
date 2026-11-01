@@ -1158,6 +1158,14 @@ labsEntryClosingTest =
         bothResults =
             emptyNCDMeasurements |> withCreatinine 90 |> withRandomBloodSugar False 6
 
+        -- Resolved two days ago, so its resolution date is not after today.
+        resolvedEntry =
+            let
+                entry =
+                    labsEntry [ TestRandomBloodSugar ] [ TestRandomBloodSugar ]
+            in
+            { entry | resolutionDate = Date.add Date.Days -2 dummyDate }
+
         sentToLab =
             { emptyNCDMeasurements
                 | randomBloodSugarTest =
@@ -1222,8 +1230,20 @@ labsEntryClosingTest =
             \_ ->
                 savedWithResult TestRandomBloodSugar bothResults (labsEntry [ TestCreatinine, TestRandomBloodSugar ] [ TestRandomBloodSugar ])
                     |> Expect.equal (Just ( ( [ "creatinine", "random-blood-sugar" ], [ "creatinine", "random-blood-sugar" ] ), dummyDate ))
-        , test "a result entered again saves nothing when the entry holds every completed test" <|
+        , test "a result entered again resolves an open entry that already holds every completed test" <|
             \_ ->
                 savedWithResult TestRandomBloodSugar (withRandomBloodSugar False 6 emptyNCDMeasurements) (labsEntry [ TestRandomBloodSugar ] [ TestRandomBloodSugar ])
+                    |> Expect.equal (Just ( ( [ "random-blood-sugar" ], [ "random-blood-sugar" ] ), dummyDate ))
+        , test "a result entered again saves nothing when the entry is already resolved" <|
+            \_ ->
+                savedWithResult TestRandomBloodSugar (withRandomBloodSugar False 6 emptyNCDMeasurements) resolvedEntry
+                    |> Expect.equal Nothing
+        , test "an entry resolved on an earlier day keeps its resolution date" <|
+            \_ ->
+                resolvedLabsResultsValue dummyDate resolvedEntry
+                    |> Expect.equal Nothing
+        , test "an expired entry is not resolved" <|
+            \_ ->
+                resolvedLabsResultsValue (Date.add Date.Days 31 dummyDate) (labsEntry [ TestCreatinine ] [ TestCreatinine ])
                     |> Expect.equal Nothing
         ]

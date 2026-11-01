@@ -3,6 +3,7 @@ module Pages.NCD.RecurrentActivity.Utils exposing (activityCompleted, expectActi
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
 import Backend.NCDActivity.Model exposing (NCDRecurrentActivity(..))
+import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
@@ -231,11 +232,16 @@ withCompletedTestsFromMeasurements measurements value =
     }
 
 
-{-| The labs entry resolved today, when every performed test is completed.
+{-| The labs entry resolved today, when it is still open and every performed
+test is completed. An open entry's resolution date is its expiry date, which is
+after today.
 -}
 resolvedLabsResultsValue : NominalDate -> LabsResultsValue -> Maybe LabsResultsValue
 resolvedLabsResultsValue currentDate value =
-    if allLabsCompleted value.performedTests value.completedTests then
+    if
+        (Date.compare value.resolutionDate currentDate == GT)
+            && allLabsCompleted value.performedTests value.completedTests
+    then
         Just { value | resolutionDate = currentDate }
 
     else
@@ -243,7 +249,7 @@ resolvedLabsResultsValue currentDate value =
 
 
 {-| The labs entry once the test's result is entered, or nothing when the entry
-already holds every completed test.
+would neither gain a test nor be resolved.
 -}
 labsResultsValueWithResult : NominalDate -> AssembledData -> LaboratoryTest -> LabsResultsValue -> Maybe LabsResultsValue
 labsResultsValueWithResult currentDate assembled test storedValue =
@@ -262,19 +268,22 @@ labsResultsValueWithResult currentDate assembled test storedValue =
         unchanged =
             EverySet.isEmpty (EverySet.diff updatedValue.performedTests storedValue.performedTests)
                 && EverySet.isEmpty (EverySet.diff updatedValue.completedTests storedValue.completedTests)
-    in
-    if unchanged then
-        Nothing
 
-    else if activityCompleted assembled RecurrentNextSteps then
         -- With Next Steps completed or not required, the entry is resolved
         -- once every performed test is completed.
-        resolvedLabsResultsValue currentDate updatedValue
-            |> Maybe.withDefault updatedValue
-            |> Just
+        resolved =
+            if activityCompleted assembled RecurrentNextSteps then
+                resolvedLabsResultsValue currentDate updatedValue
+
+            else
+                Nothing
+    in
+    if unchanged then
+        resolved
 
     else
-        Just updatedValue
+        Maybe.withDefault updatedValue resolved
+            |> Just
 
 
 expectLaboratoryResultTask : AssembledData -> LaboratoryTask -> Bool
