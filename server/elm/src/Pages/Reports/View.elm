@@ -11,6 +11,8 @@ import Backend.Reports.Model
         , BackendGeneratedNutritionReportTableDate
         , DeliveryLocation(..)
         , Gender(..)
+        , NutritionMetricsResults
+        , NutritionRate
         , NutritionReportTableType(..)
         , PatientData
         , PregnancyOutcome(..)
@@ -40,9 +42,9 @@ import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
-import Pages.Components.View exposing (viewMetricsResultsTable, viewReportDateInputs, viewStandardCells, viewStandardRow)
+import Pages.Components.View exposing (viewCustomCells, viewReportDateInputs, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
-import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
+import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionReportData, NutritionTableData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
 import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, filterRecordsByDateRange, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isPostpartumEncounter, isPregnancyCompleted, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, resolveQuarterForIndex)
 import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils
@@ -938,18 +940,90 @@ viewNutritionReport language currentDate scopeLabel mBackendGeneratedData report
                 ++ ".csv"
 
         csvContent =
-            reportTablesDataToCSV generatedData
+            List.map (nutritionTableToCSVData language) generatedData
+                |> reportTablesDataToCSV
     in
     div [ class "report nutrition" ] <|
-        List.concatMap viewMetricsResultsTable generatedData
+        List.concatMap (viewNutritionTable language) generatedData
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]
+
+
+viewNutritionTable : Language -> NutritionTableData -> List (Html any)
+viewNutritionTable language table =
+    let
+        viewRow ( label, rates ) =
+            div [ class "row" ] <|
+                div [ class "item row-label" ] [ text label ]
+                    :: List.map viewRate rates
+
+        viewRate rate =
+            div [ class "item value" ]
+                [ text <| calculatePercentage rate.count rate.total
+                , div [ class "counts" ] [ text <| String.fromInt rate.count ++ " / " ++ String.fromInt rate.total ]
+                ]
+    in
+    [ div [ class "section heading" ] [ text <| nutritionTableHeading language table ]
+    , div [ class "table wide" ] <|
+        div [ class "row" ] (viewCustomCells "row-label" "heading" (nutritionTableCaptions table))
+            :: List.map viewRow (nutritionTableRows language table)
+    , div [ class "table-note" ] [ text <| translate language <| Translate.NutritionReportTableNote table.tableType ]
+    ]
+
+
+{-| In the CSV, each percentage row is followed by a row of its
+numerators and a row of its denominators, and the note closes the table.
+-}
+nutritionTableToCSVData : Language -> NutritionTableData -> MetricsResultsTableData
+nutritionTableToCSVData language table =
+    let
+        rateRows ( label, rates ) =
+            [ label :: List.map (\rate -> calculatePercentage rate.count rate.total) rates
+            , (label ++ " - " ++ translate language Translate.Numerator) :: List.map (.count >> String.fromInt) rates
+            , (label ++ " - " ++ translate language Translate.Denominator) :: List.map (.total >> String.fromInt) rates
+            ]
+    in
+    { heading = nutritionTableHeading language table
+    , captions = nutritionTableCaptions table
+    , rows =
+        List.concatMap rateRows (nutritionTableRows language table)
+            ++ [ [ translate language <| Translate.NutritionReportTableNote table.tableType ] ]
+    }
+
+
+nutritionTableHeading : Language -> NutritionTableData -> String
+nutritionTableHeading language table =
+    translate language (Translate.NutritionReportTableType table.tableType) ++ ":"
+
+
+nutritionTableCaptions : NutritionTableData -> List String
+nutritionTableCaptions table =
+    "" :: List.map Tuple.first table.columns
+
+
+{-| One row per indicator: its label, and its rate in each column.
+-}
+nutritionTableRows : Language -> NutritionTableData -> List ( String, List NutritionRate )
+nutritionTableRows language table =
+    let
+        row label rateOf =
+            ( translate language label, List.map (Tuple.second >> rateOf) table.columns )
+    in
+    [ row Translate.StuntingModerate .stuntingModerate
+    , row Translate.StuntingSevere .stuntingSevere
+    , row Translate.WastingModerate .wastingModerate
+    , row Translate.WastingSevere .wastingSevere
+    , row Translate.UnderweightModerate .underweightModerate
+    , row Translate.UnderweightSevere .underweightSevere
+    , row Translate.AcuteMalnutritionMam .acuteMalnutritionMam
+    , row Translate.AcuteMalnutritionSam .acuteMalnutritionSam
+    ]
 
 
 generareNutritionReportDataFromRawData :
     Language
     -> NominalDate
     -> RemoteData String NutritionReportData
-    -> List MetricsResultsTableData
+    -> List NutritionTableData
 generareNutritionReportDataFromRawData language currentDate reportData =
     case reportData of
         Success data ->
@@ -975,28 +1049,28 @@ generareNutritionReportDataFromRawData language currentDate reportData =
                         data.encountersByMonth
 
                 prevalenceByMonthOneVisitOrMoreData =
-                    generateMonthlyPrevalenceTableData language currentDate Translate.PrevalenceByMonthOneVisitOrMore data.encountersByMonth
+                    generateMonthlyPrevalenceTableData language currentDate NutritionTablePrevalanceOneOrMore data.encountersByMonth
 
                 prevalenceByMonthTwoVisitsOrMoreData =
-                    generateMonthlyPrevalenceTableData language currentDate Translate.PrevalenceByMonthTwoVisitsOrMore encountersByMonthForImpacted
+                    generateMonthlyPrevalenceTableData language currentDate NutritionTablePrevalanceTwoOrMore encountersByMonthForImpacted
 
                 incidenceByMonthOneVisitOrMoreData =
-                    generateMonthlyIncidenceTableData language currentDate Translate.IncidenceByMonthOneVisitOrMore data.encountersByMonth
+                    generateMonthlyIncidenceTableData language currentDate NutritionTableIncidenceMonthOneOrMore data.encountersByMonth
 
                 incidenceByMonthTwoVisitsOrMoreData =
-                    generateMonthlyIncidenceTableData language currentDate Translate.IncidenceByMonthTwoVisitsOrMore encountersByMonthForImpacted
+                    generateMonthlyIncidenceTableData language currentDate NutritionTableIncidenceMonthTwoOrMore encountersByMonthForImpacted
 
                 incidenceByQuarterOneVisitOrMoreData =
-                    generateQuarterlyIncidenceTableData language currentDate Translate.IncidenceByQuarterOneVisitOrMore data.encountersByMonth
+                    generateQuarterlyIncidenceTableData language currentDate NutritionTableIncidenceQuarterOneOrMore data.encountersByMonth
 
                 incidenceByQuarterTwoVisitsOrMoreData =
-                    generateQuarterlyIncidenceTableData language currentDate Translate.IncidenceByQuarterTwoVisitsOrMore encountersByMonthForImpacted
+                    generateQuarterlyIncidenceTableData language currentDate NutritionTableIncidenceQuarterTwoOrMore encountersByMonthForImpacted
 
                 incidenceByYearOneVisitOrMoreData =
-                    generateYearlyIncidenceTableData language currentDate Translate.IncidenceByYearOneVisitOrMore data.encountersByMonth
+                    generateYearlyIncidenceTableData language currentDate NutritionTableIncidenceYearOneOrMore data.encountersByMonth
 
                 incidenceByYearTwoVisitsOrMore =
-                    generateYearlyIncidenceTableData language currentDate Translate.IncidenceByYearTwoVisitsOrMore encountersByMonthForImpacted
+                    generateYearlyIncidenceTableData language currentDate NutritionTableIncidenceYearTwoOrMore encountersByMonthForImpacted
             in
             [ prevalenceByMonthOneVisitOrMoreData
             , prevalenceByMonthTwoVisitsOrMoreData
@@ -1015,7 +1089,7 @@ generareNutritionReportDataFromRawData language currentDate reportData =
 generareNutritionReportDataFromBackendGeneratedData :
     Language
     -> List BackendGeneratedNutritionReportTableDate
-    -> List MetricsResultsTableData
+    -> List NutritionTableData
 generareNutritionReportDataFromBackendGeneratedData language data =
     let
         nutritionTableTypeToNumber tableType =
@@ -1045,11 +1119,11 @@ generareNutritionReportDataFromBackendGeneratedData language data =
                     8
     in
     List.sortBy (.tableType >> nutritionTableTypeToNumber) data
-        |> List.map (backendGeneratedNutritionReportTableDateToMetricsResultsTableData language)
+        |> List.map (backendGeneratedNutritionReportTableDateToNutritionTableData language)
 
 
-backendGeneratedNutritionReportTableDateToMetricsResultsTableData : Language -> BackendGeneratedNutritionReportTableDate -> MetricsResultsTableData
-backendGeneratedNutritionReportTableDateToMetricsResultsTableData language backendTableData =
+backendGeneratedNutritionReportTableDateToNutritionTableData : Language -> BackendGeneratedNutritionReportTableDate -> NutritionTableData
+backendGeneratedNutritionReportTableDateToNutritionTableData language backendTableData =
     let
         translateCaption caption =
             if List.member backendTableData.tableType [ NutritionTableIncidenceQuarterOneOrMore, NutritionTableIncidenceQuarterTwoOrMore ] then
@@ -1079,31 +1153,21 @@ backendGeneratedNutritionReportTableDateToMetricsResultsTableData language backe
                     _ ->
                         ""
     in
-    { heading = translate language <| Translate.NutritionReportTableType backendTableData.tableType
-    , captions = "" :: List.map translateCaption backendTableData.captions
-    , rows =
-        [ translate language Translate.StuntingModerate :: backendTableData.stuntingModerate
-        , translate language Translate.StuntingSevere :: backendTableData.stuntingSevere
-        , translate language Translate.WastingModerate :: backendTableData.wastingModerate
-        , translate language Translate.WastingSevere :: backendTableData.wastingSevere
-        , translate language Translate.UnderweightModerate :: backendTableData.underweightModerate
-        , translate language Translate.UnderweightSevere :: backendTableData.underweightSevere
-        , translate language Translate.AcuteMalnutritionMam :: backendTableData.acuteMalnutritionMam
-        , translate language Translate.AcuteMalnutritionSam :: backendTableData.acuteMalnutritionSam
-        ]
+    { tableType = backendTableData.tableType
+    , columns = List.map2 Tuple.pair (List.map translateCaption backendTableData.captions) backendTableData.results
     }
 
 
 generateMonthlyPrevalenceTableData :
     Language
     -> NominalDate
-    -> TranslationId
+    -> NutritionReportTableType
     -> Dict ( Int, Int ) NutritionMetrics
-    -> MetricsResultsTableData
-generateMonthlyPrevalenceTableData language currentDate heading encountersByMonth =
+    -> NutritionTableData
+generateMonthlyPrevalenceTableData language currentDate tableType encountersByMonth =
     generateMonthlyTableData language
         currentDate
-        heading
+        tableType
         (\index ->
             resolveDataSetForMonth currentDate index encountersByMonth
                 |> generatePrevalenceNutritionMetricsResults
@@ -1113,13 +1177,13 @@ generateMonthlyPrevalenceTableData language currentDate heading encountersByMont
 generateMonthlyIncidenceTableData :
     Language
     -> NominalDate
-    -> TranslationId
+    -> NutritionReportTableType
     -> Dict ( Int, Int ) NutritionMetrics
-    -> MetricsResultsTableData
-generateMonthlyIncidenceTableData language currentDate heading encountersByMonth =
+    -> NutritionTableData
+generateMonthlyIncidenceTableData language currentDate tableType encountersByMonth =
     generateMonthlyTableData language
         currentDate
-        heading
+        tableType
         (\index ->
             generateIncidenceNutritionMetricsResults
                 (resolveDataSetForMonth currentDate index encountersByMonth)
@@ -1136,10 +1200,10 @@ date. The given function resolves column metrics from the month's index
 generateMonthlyTableData :
     Language
     -> NominalDate
-    -> TranslationId
+    -> NutritionReportTableType
     -> (Int -> NutritionMetricsResults)
-    -> MetricsResultsTableData
-generateMonthlyTableData language currentDate heading resolveMetricsResultsForMonth =
+    -> NutritionTableData
+generateMonthlyTableData language currentDate tableType resolveMetricsResultsForMonth =
     List.range 1 12
         |> List.map
             (\index ->
@@ -1151,16 +1215,16 @@ generateMonthlyTableData language currentDate heading resolveMetricsResultsForMo
                 , resolveMetricsResultsForMonth index
                 )
             )
-        |> toMetricsResultsTableData language heading
+        |> toNutritionTableData language tableType
 
 
 generateQuarterlyIncidenceTableData :
     Language
     -> NominalDate
-    -> TranslationId
+    -> NutritionReportTableType
     -> Dict ( Int, Int ) NutritionMetrics
-    -> MetricsResultsTableData
-generateQuarterlyIncidenceTableData language currentDate heading encountersByMonth =
+    -> NutritionTableData
+generateQuarterlyIncidenceTableData language currentDate tableType encountersByMonth =
     let
         dataSetsByQuarter =
             -- We show data of previous 4 quarters. So, if at Q2-2024, we show
@@ -1193,16 +1257,16 @@ generateQuarterlyIncidenceTableData language currentDate heading encountersByMon
                 , generateIncidenceNutritionMetricsResults dataSet previousDataSet
                 )
             )
-        |> toMetricsResultsTableData language heading
+        |> toNutritionTableData language tableType
 
 
 generateYearlyIncidenceTableData :
     Language
     -> NominalDate
-    -> TranslationId
+    -> NutritionReportTableType
     -> Dict ( Int, Int ) NutritionMetrics
-    -> MetricsResultsTableData
-generateYearlyIncidenceTableData language currentDate heading encountersByMonth =
+    -> NutritionTableData
+generateYearlyIncidenceTableData language currentDate tableType encountersByMonth =
     let
         dataSetsByYear =
             -- We show data of previous 2 years. So, if at 2024, we show
@@ -1237,51 +1301,17 @@ generateYearlyIncidenceTableData language currentDate heading encountersByMonth 
                 , generateIncidenceNutritionMetricsResults dataSet previousDataSet
                 )
             )
-        |> toMetricsResultsTableData language heading
+        |> toNutritionTableData language tableType
 
 
-toMetricsResultsTableData :
+toNutritionTableData :
     Language
-    -> TranslationId
+    -> NutritionReportTableType
     -> List ( TranslationId, NutritionMetricsResults )
-    -> MetricsResultsTableData
-toMetricsResultsTableData language heading data =
-    let
-        captions =
-            List.map
-                (\( label, _ ) ->
-                    translate language label
-                )
-                data
-                |> List.append [ "" ]
-
-        generateRow label =
-            List.map
-                (\value ->
-                    Round.round 3 value ++ "%"
-                )
-                >> List.append [ translate language label ]
-    in
-    { heading = translate language heading ++ ":"
-    , captions = captions
-    , rows =
-        [ List.map (Tuple.second >> .stuntingModerate) data
-            |> generateRow Translate.StuntingModerate
-        , List.map (Tuple.second >> .stuntingSevere) data
-            |> generateRow Translate.StuntingSevere
-        , List.map (Tuple.second >> .wastingModerate) data
-            |> generateRow Translate.WastingModerate
-        , List.map (Tuple.second >> .wastingSevere) data
-            |> generateRow Translate.WastingSevere
-        , List.map (Tuple.second >> .underweightModerate) data
-            |> generateRow Translate.UnderweightModerate
-        , List.map (Tuple.second >> .underweightSevere) data
-            |> generateRow Translate.UnderweightSevere
-        , List.map (Tuple.second >> .acuteMalnutritionMam) data
-            |> generateRow Translate.AcuteMalnutritionMam
-        , List.map (Tuple.second >> .acuteMalnutritionSam) data
-            |> generateRow Translate.AcuteMalnutritionSam
-        ]
+    -> NutritionTableData
+toNutritionTableData language tableType data =
+    { tableType = tableType
+    , columns = List.map (Tuple.mapFirst (translate language)) data
     }
 
 

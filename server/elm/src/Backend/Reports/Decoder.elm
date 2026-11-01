@@ -4,14 +4,14 @@ import AssocList as Dict exposing (Dict)
 import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
 import Backend.Components.Model exposing (SyncResponse)
 import Backend.Decoder exposing (decodeSite, decodeSiteFeatures, decodeWithFallback)
-import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), MotherFbfEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, WellChildEncounterData)
+import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), MotherFbfEncounterData, NutritionData, NutritionEncounterData, NutritionMetricsResults, NutritionRate, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, WellChildEncounterData)
 import Backend.Reports.Utils exposing (genderFromString)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, fail, list, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, fail, index, int, list, map2, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, optionalAt, required)
 import Maybe.Extra
 
@@ -25,7 +25,11 @@ decodeReportsData =
         |> required "entity_type" decodeSelectedEntity
         |> required "params" decodeReportParams
         |> hardcoded []
-        |> optionalAt [ "additional", "nutrition_report_data" ] (nullable (list decodeBackendGeneratedNutritionReportTableDate)) Nothing
+        -- Tables stored before the rates carried their counts decode to
+        -- Nothing, so they do not fail every report of the scope.
+        |> optionalAt [ "additional", "nutrition_report_data" ]
+            (decodeWithFallback Nothing (nullable (list decodeBackendGeneratedNutritionReportTableDate)))
+            Nothing
         |> hardcoded Nothing
 
 
@@ -885,14 +889,29 @@ decodeBackendGeneratedNutritionReportTableDate =
     succeed BackendGeneratedNutritionReportTableDate
         |> required "type" decodeNutritionReportTableType
         |> required "period" (list string)
-        |> required "stunting_moderate" (list string)
-        |> required "stunting_severe" (list string)
-        |> required "wasting_moderate" (list string)
-        |> required "wasting_severe" (list string)
-        |> required "underweight_moderate" (list string)
-        |> required "underweight_severe" (list string)
-        |> required "acute_malnutrition_mam" (list string)
-        |> required "acute_malnutrition_sam" (list string)
+        |> required "results" (list decodeNutritionMetricsResults)
+
+
+decodeNutritionMetricsResults : Decoder NutritionMetricsResults
+decodeNutritionMetricsResults =
+    succeed NutritionMetricsResults
+        |> required "stunting_moderate" decodeNutritionRate
+        |> required "stunting_severe" decodeNutritionRate
+        |> required "wasting_moderate" decodeNutritionRate
+        |> required "wasting_severe" decodeNutritionRate
+        |> required "underweight_moderate" decodeNutritionRate
+        |> required "underweight_severe" decodeNutritionRate
+        |> required "acute_malnutrition_mam" decodeNutritionRate
+        |> required "acute_malnutrition_sam" decodeNutritionRate
+
+
+{-| A rate is sent as [count, total], like [85, 496].
+-}
+decodeNutritionRate : Decoder NutritionRate
+decodeNutritionRate =
+    map2 NutritionRate
+        (index 0 int)
+        (index 1 int)
 
 
 decodeNutritionReportTableType : Decoder NutritionReportTableType

@@ -114,6 +114,7 @@ type TranslationId
     | DeliveryLocationsTablePercentage
     | DeliveryLocationsTableTotals
     | Demographics
+    | Denominator
     | Diagnosis
     | Diagnostics
     | District
@@ -197,12 +198,14 @@ type TranslationId
     | NoDiagnosis
     | NumberOfVisits Int
     | NumberOfVisitsLabel
+    | Numerator
     | Nutrition
     | NutritionChildActivity NutritionChildActivity
     | NutritionMotherActivity NutritionMotherActivity
     | NutritionBehavior
     | NutritionIndividual
     | NutritionGroup
+    | NutritionReportTableNote NutritionReportTableType
     | NutritionReportTableType NutritionReportTableType
     | NutritionTotal
     | OutcomesTableHeading
@@ -822,6 +825,13 @@ translationSet transId =
 
         Demographics ->
             { english = "Demographics"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        Denominator ->
+            { english = "Denominator"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -1739,6 +1749,13 @@ translationSet transId =
             , somali = Nothing
             }
 
+        Numerator ->
+            { english = "Numerator"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         Nutrition ->
             { english = "Nutrition"
             , kinyarwanda = Nothing
@@ -1824,6 +1841,47 @@ translationSet transId =
             , kirundi = Nothing
             , somali = Nothing
             }
+
+        NutritionReportTableNote tableType ->
+            let
+                prevalence =
+                    { english = "Each cell shows a percentage, then the counts behind it: children with the condition / children measured that month. A child measured several times in the month counts once."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                incidence previousPeriod =
+                    { english = "Each cell shows a percentage, then the counts behind it: new cases / children measured in " ++ previousPeriod ++ ". A new case is one of those children who was not at that level or worse then."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+            in
+            case tableType of
+                NutritionTablePrevalanceOneOrMore ->
+                    prevalence
+
+                NutritionTablePrevalanceTwoOrMore ->
+                    prevalence
+
+                NutritionTableIncidenceMonthOneOrMore ->
+                    incidence "the three months before"
+
+                NutritionTableIncidenceMonthTwoOrMore ->
+                    incidence "the three months before"
+
+                NutritionTableIncidenceQuarterOneOrMore ->
+                    incidence "the quarter before"
+
+                NutritionTableIncidenceQuarterTwoOrMore ->
+                    incidence "the quarter before"
+
+                NutritionTableIncidenceYearOneOrMore ->
+                    incidence "the year before"
+
+                NutritionTableIncidenceYearTwoOrMore ->
+                    incidence "the year before"
 
         NutritionReportTableType tableType ->
             case tableType of
