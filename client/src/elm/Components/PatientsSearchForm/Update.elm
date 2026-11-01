@@ -2,7 +2,7 @@ module Components.PatientsSearchForm.Update exposing (update)
 
 import Components.PatientsSearchForm.Model exposing (Model, Msg(..), PatientsSearchFormMode(..))
 import Debouncer.Basic as Debouncer exposing (provideInput)
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra
 import Update.Extra exposing (sequence)
 
 
@@ -59,39 +59,22 @@ update msg model =
             )
 
         SetInput input ->
-            case model.mode of
-                ModeSearchByName ->
-                    ( { model
-                        | input = input
-                        , search =
-                            if String.isEmpty (String.trim input) then
-                                Nothing
-
-                            else
-                                model.search
-                      }
-                    , Cmd.none
-                    )
-                        |> sequence update [ MsgDebouncer <| provideInput <| SetSearch input ]
-
-                ModeSearchByNationalId ->
+            -- Both modes search for whatever is typed: a national ID can hold
+            -- letters, "/" or "-", as Burundi IDs do.
+            ( { model
+                | input = input
+                , search =
+                    -- An emptied field searches for nothing, so the results of
+                    -- what it held go with it.
                     if String.isEmpty (String.trim input) then
-                        -- An emptied field searches for nothing, so the results
-                        -- of what it held go with it. The empty input goes to
-                        -- the debouncer too: it holds the last input it was
-                        -- given, and a number given a moment earlier would
-                        -- otherwise arrive half a second later and search again.
-                        ( { model | input = input, search = Nothing }
-                        , Cmd.none
-                        )
-                            |> sequence update [ MsgDebouncer <| provideInput <| SetSearch "" ]
-
-                    else if isJust (String.toInt input) then
-                        ( { model | input = input }
-                        , Cmd.none
-                        )
-                            |> sequence update
-                                [ MsgDebouncer <| provideInput <| SetSearch input ]
+                        Nothing
 
                     else
-                        ( model, Cmd.none )
+                        model.search
+              }
+            , Cmd.none
+            )
+                -- The empty input goes to the debouncer too: it holds the last
+                -- input it was given, which would otherwise arrive half a
+                -- second later and search again.
+                |> sequence update [ MsgDebouncer <| provideInput <| SetSearch input ]

@@ -998,14 +998,14 @@
                     var nationalIdContains = params.get('national_id_contains');
                     if (nationalIdContains) {
                         modifyQuery = modifyQuery.then(function () {
-                            // We search for resulting persons that start with any of the input words (apply 'OR' condition).
-                            query = table.where('national_id_number').startsWith(nationalIdContains).distinct().and(function (person) {
+                            // Persons whose national ID starts with the input. Case is ignored, since some IDs hold letters.
+                            query = table.where('national_id_number').startsWithIgnoreCase(nationalIdContains).distinct().and(function (person) {
                               // If person is marked as deleted, do not include it in search results.
                               return (person.deleted !== true);
                             });
 
                             // Cloning doesn't seem to work for this one.
-                            countQuery = table.where('national_id_number').startsWith(nationalIdContains).distinct().and(function (person) {
+                            countQuery = table.where('national_id_number').startsWithIgnoreCase(nationalIdContains).distinct().and(function (person) {
                               // If person is marked as deleted, do not include it in search results.
                               return (person.deleted !== true);
                             });
