@@ -1224,6 +1224,22 @@ generateAssembledDataTest =
                     ]
                     |> Maybe.map (\assembled -> ( assembled.initialEncounter, assembled.diagnosis ))
                     |> Expect.equal (Just ( False, Just ( currentDate, DiagnosisMalariaUncomplicated ) ))
+        , test "a follow-up takes the diagnosis of the most recent earlier encounter that has one" <|
+            \_ ->
+                let
+                    twoDaysAgo =
+                        Date.add Date.Days -2 currentDate
+
+                    yesterday =
+                        Date.add Date.Days -1 currentDate
+                in
+                assemble "today"
+                    [ ( "twoDaysAgo", chwEncounter twoDaysAgo 1 DiagnosisFeverOfUnknownOrigin )
+                    , ( "yesterday", chwEncounter yesterday 1 DiagnosisMalariaUncomplicated )
+                    , ( "today", chwEncounter currentDate 1 NoAcuteIllnessDiagnosis )
+                    ]
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just (Just ( yesterday, DiagnosisMalariaUncomplicated )))
         , test "previous encounters hold only those that came before" <|
             \_ ->
                 assemble "middle"

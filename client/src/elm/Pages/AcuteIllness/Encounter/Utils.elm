@@ -2,7 +2,7 @@ module Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, g
 
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
-import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis, AcuteIllnessEncounterType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import EverySet exposing (EverySet)
@@ -42,10 +42,19 @@ generateAssembledData currentDate features id isChw db =
                             |> Maybe.withDefault NotAsked
                     )
 
-        previousEncountersData =
+        -- Encounters before this one, by date and then sequence number,
+        -- most recent first. Later encounters are not its history.
+        previousEncounters =
             RemoteData.toMaybe encounter
-                |> Maybe.map (\encounter_ -> generatePreviousMeasurements encounter_ db)
+                |> Maybe.map
+                    (\encounter_ ->
+                        getAcuteIllnessEncountersForParticipant db encounter_.participant
+                            |> List.filter (\( _, other ) -> compareAcuteIllnessEncounters other encounter_ == LT)
+                    )
                 |> Maybe.withDefault []
+
+        previousEncountersData =
+            generatePreviousMeasurements previousEncounters db
 
         assembled =
             RemoteData.map AssembledData (Success id)
@@ -87,12 +96,7 @@ generateAssembledData currentDate features id isChw db =
                         diagnosisByCurrentEncounterMeasurements
 
                     else
-                        -- The diagnosis of the most recent previous encounter that has one.
-                        data.previousEncountersData
-                            |> List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
-                            |> List.reverse
-                            |> List.head
-                            |> Maybe.map (\encounterData -> ( encounterData.startDate, encounterData.diagnosis ))
+                        getAcuteIllnessDiagnosisForEncounters previousEncounters
 
                 diagnosisByCurrentEncounterMeasurements =
                     resolveAcuteIllnessDiagnosis currentDate features isChw data
@@ -158,35 +162,31 @@ splitByInitialNurseEncounter encountersData =
         |> Maybe.withDefault ( encountersData, [] )
 
 
-{-| Encounters that come before the current one, by date and then sequence
-number. Later encounters, and the current one, are left out.
+{-| Data of the given encounters (sorted most recent first) whose
+measurements are loaded, oldest first.
 -}
 generatePreviousMeasurements :
-    AcuteIllnessEncounter
+    List ( AcuteIllnessEncounterId, AcuteIllnessEncounter )
     -> ModelIndexedDb
     -> List AcuteIllnessEncounterData
-generatePreviousMeasurements currentEncounter db =
-    getAcuteIllnessEncountersForParticipant db currentEncounter.participant
+generatePreviousMeasurements encounters db =
+    encounters
         |> List.filterMap
             (\( encounterId, encounter ) ->
-                if compareAcuteIllnessEncounters encounter currentEncounter /= LT then
-                    Nothing
+                case Dict.get encounterId db.acuteIllnessMeasurements of
+                    Just (Success measurements) ->
+                        Just <|
+                            AcuteIllnessEncounterData encounterId
+                                encounter.encounterType
+                                encounter.startDate
+                                encounter.sequenceNumber
+                                encounter.diagnosis
+                                measurements
 
-                else
-                    case Dict.get encounterId db.acuteIllnessMeasurements of
-                        Just (Success measurements) ->
-                            Just <|
-                                AcuteIllnessEncounterData encounterId
-                                    encounter.encounterType
-                                    encounter.startDate
-                                    encounter.sequenceNumber
-                                    encounter.diagnosis
-                                    measurements
-
-                        _ ->
-                            Nothing
+                    _ ->
+                        Nothing
             )
-        |> List.sortWith compareAcuteIllnessEncounters
+        |> List.reverse
 
 
 {-| Since there can be multiple encounters, resolved diagnosis is the one
