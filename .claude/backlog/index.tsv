@@ -529,7 +529,7 @@ B-528	4	READY	LOW			48	Case Management and Stock Management caches: a downloaded
 B-529	4	READY	LOW			48	Revision fold misses a derived cache, ×3: (a) a positive HIV test or the first real HIV follow-up does not update the Ca
 B-530	4	READY	LOW			48	Family Nutrition: the IndexedDB load takes the LOWEST-uuid mother record while every other picker takes the newest, so a
 B-531	1	READY	MED			48	Nutrition malnutrition assessment reads the weight history of only ONE of a child's nutrition participants (the first by
-B-532	3	READY	MED-LOW			48	Immunisation history across a child's twin participants: Well Child reads the sibling programme's doses from the first C
+B-532	3	READY	MED-LOW			48	Immunisation history across a child's DUPLICATE participants (two of the same programme type, B-195): Well Child reads t
 B-533	4	READY	LOW			48	Statistical Queries ANC tables and the Dashboard pregnancy counts count PARTICIPANTS, not pregnancies: a woman with two 
 B-534	2	READY	MED-LOW			48	Healthy Start gestational weight gain: the expected-gain window runs from the previous weight's SAVE date, not its visit
 B-535	4	READY	LOW			48	`dateMeasured` is the save date, read as the clinical date, ×5: (a) NCDA "malnutrition treatment" pairs referral with as
