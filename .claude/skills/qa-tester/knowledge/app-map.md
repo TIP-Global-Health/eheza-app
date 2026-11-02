@@ -234,6 +234,11 @@ flag simply does not appear.
   device row (`acute_illness_encounter`) holds it as `acute_illness_diagnosis: ri-uncomplicated`.
   The progress report's Assessment section and the Patient Record read this stored value; the
   encounter header computes it from the measurements.
+- **Acute Illness, more encounters on one illness the same day**: no backdating is needed. On the participant page, Existing Acute Illness → the illness button opens the role's open encounter, or starts one numbered next for the day
+  (a nurse while a CHW visit is still open; a CHW once their own visit has ended). An illness is listed only once an encounter carries a diagnosis other than Fever of Unknown Origin or TB Suspect.
+- Adult nurse encounter, Cough + Nasal Congestion, RR 18, 37.0 °C, no acute findings: the Physical Exam save gives "Simple Cold and Cough" (`cough-and-cold`). Ending a CHW encounter lands on the main menu.
+- Acute Illness encounter page: header `.ui.basic.segment.head h1` ("Acute Illness Encounter" for a first visit, "Subsequent Acute Illness Encounter: <diagnosis>" for a follow-up), `.diagnosis-wrapper .diagnosis`, cards `.card .icon-task-<activity>`.
+  An ended encounter's page is reached only through browser Back. The device row `acute_illness_encounter` holds `sequence_number`, `ai_encounter_type` (`chw-encounter` / `nurse-encounter`) and `acute_illness_diagnosis`.
 - Acute Illness Prior Treatment: yes/no inputs `fever-past-6-hours`, `malaria-today`,
   `malaria-within-past-month`. A Yes reveals "Do you feel better after taking this?" as
   `<question>-helped`.
@@ -396,7 +401,8 @@ flag simply does not appear.
 - Opened from Participant Directory: search, then the row's `span.patient-record` icon (beside
   the forward arrow). An adult's record opens on the Acute Illness pane (`.pane.acute-illness`):
   one `.entry` per illness with a diagnosis — "<diagnosis> / ONGOING|RESOLVED / DD/MM/YYYY" — or
-  "No matches found". An illness without a diagnosis is not listed.
+  "No matches found". An illness without a diagnosis is not listed. An entry's forward icon opens the progress report of the illness's
+  latest encounter, never an earlier one.
 
 ## Case Management
 

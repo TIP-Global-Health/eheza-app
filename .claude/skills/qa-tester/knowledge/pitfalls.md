@@ -249,7 +249,7 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 
 - **Symptom:** after `page.goto('/')` as CHW, waiting for `.wrap-cards` times out on a "VILLAGE" screen.
 - **Wrong conclusion:** the sign-in was lost or the app hung.
-- **Rule:** a full load makes a CHW pick the village again. Click "Akanduga at Mbirima" if it shows, or move by in-app navigation. The nurse's health centre choice survives a load.
+- **Rule:** a full load makes a CHW pick the village again. Click "Akanduga at Mbirima" if it shows, or move by in-app navigation. The nurse's health centre choice survives a load. `h.acuteIllness.navigateToParticipantPage` calls `page.goto('/')` when the main menu is not showing, so it runs into this too (a dead 10 s video on PR #2457).
 
 ## Playwright's `page.clock` stalls the app
 
@@ -503,3 +503,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** on develop, opening a child's open CHW visit through the participant page would have created a new visit, because the fixture's second participant was the one develop picks.
 - **Wrong conclusion:** fixture steps run the same on any build.
 - **Rule:** finish every fixture step that goes through the screen under test before adding the server-side data that triggers the defect. If that order is impossible, hide the data for a while (`field_deleted` 1, sync), then restore it.
+
+## Waiting on gulp with `pgrep -f` on the compiler's command line
+
+- **Symptom:** a Monitor waiting until `pgrep -f "elm make …/Main.elm"` found nothing never ended, though Main.js had long been rebuilt. A `pkill -f` to stop those monitors then killed its own shell (exit 144).
+- **Wrong conclusion:** gulp was still compiling.
+- **Rule:** `pgrep -f` / `pkill -f` match the waiting script's own command line. Look for the compiler as `ps -eo pid,cmd | grep "[/]usr/bin/elm make"`, and judge the build by a name in `client/serve/Main.js` (`grep -cF`).
+
+## Encounter-reading helpers that leave the Completed tab open
+
+- **Symptom:** after a scripted read of both encounter tabs, `completeDangerSigns` failed waiting for `.icon-task-danger-signs`; a second take of the preparation video was needed.
+- **Wrong conclusion:** Danger Signs was not offered.
+- **Rule:** the same pit as "Opening a To Do activity after coming back from the Completed tab", met again by a reader script. Any script that clicks `#completed-tab` ends by clicking `#pending-tab`.
