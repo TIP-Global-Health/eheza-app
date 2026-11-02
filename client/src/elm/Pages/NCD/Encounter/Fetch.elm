@@ -37,7 +37,7 @@ fetch id db =
         [ Maybe.map FetchIndividualEncounterParticipant participantId
         , Maybe.map FetchPerson personId
         , Maybe.map FetchIndividualEncounterParticipantsForPerson personId
-        , Just <| FetchNCDEncountersForParticipants participantsIds
         , Just <| FetchNCDEncounter id
         ]
+        ++ List.map FetchNCDEncountersForParticipant participantsIds
         ++ fetchMeasurementsMsgs

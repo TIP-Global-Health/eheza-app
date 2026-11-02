@@ -9,7 +9,8 @@ import Backend.Measurement.Utils exposing (bilirubinValueToString, bloodGroupToS
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
-        ( getChildScoreboardEncountersForParticipant
+        ( generateIndividualWellChildMeasurementsForChild
+        , getChildScoreboardEncountersForParticipant
         , getChildScoreboardEncountersForPerson
         , getWellChildEncountersForParticipant
         , getWellChildEncountersForPerson
@@ -67,7 +68,7 @@ import SyncManager.Model exposing (Site(..))
 import Translate exposing (TranslationId, translate)
 import Translate.Model exposing (Language)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (renderDate)
+import Utils.NominalDate exposing (renderDate, sortEncounterTuplesDesc)
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -9508,12 +9509,7 @@ resoloveLastScheduledImmunizationVisitDate : PersonId -> ModelIndexedDb -> Maybe
 resoloveLastScheduledImmunizationVisitDate childId db =
     let
         individualWellChildMeasurements =
-            Backend.Measurement.Utils.generatePreviousMeasurements
-                getWellChildEncountersForParticipant
-                .wellChildMeasurements
-                Nothing
-                (resolveIndividualParticipantsForPerson childId Backend.IndividualEncounterParticipant.Model.WellChildEncounter db)
-                db
+            generateIndividualWellChildMeasurementsForChild childId db
                 |> List.map (Tuple.second >> Tuple.second)
     in
     List.filterMap
@@ -9531,63 +9527,38 @@ resoloveLastScheduledImmunizationVisitDate childId db =
 isBehindOnVaccinationsByProgress : NominalDate -> Site -> PersonId -> ModelIndexedDb -> Bool
 isBehindOnVaccinationsByProgress currentDate site childId db =
     if List.isEmpty (resolveIndividualParticipantsForPerson childId Backend.IndividualEncounterParticipant.Model.WellChildEncounter db) then
-        behindOnVaccinationsByProgressFromChildScoreboard currentDate site childId db
+        behindOnVaccinationsByLastEncounter currentDate
+            site
+            (getChildScoreboardEncountersForPerson db childId)
+            (\id -> generateAssembledDataForChildScoreboard site id db)
 
     else
-        behindOnVaccinationsByProgressFromWellChild currentDate site childId db
+        behindOnVaccinationsByLastEncounter currentDate
+            site
+            (getWellChildEncountersForPerson db childId)
+            (\id -> generateAssembledDataForWellChild site id db)
 
 
-behindOnVaccinationsByProgressFromWellChild : NominalDate -> Site -> PersonId -> ModelIndexedDb -> Bool
-behindOnVaccinationsByProgressFromWellChild currentDate site childId db =
-    let
-        lastWellChildEncounterId =
-            getWellChildEncountersForPerson db childId
-                |> List.map Tuple.first
-                |> List.head
-
-        maybeAssembled =
-            Maybe.andThen
-                (\id ->
-                    generateAssembledDataForWellChild site id db
-                        |> RemoteData.toMaybe
-                )
-                lastWellChildEncounterId
-    in
-    Maybe.map
-        (\assembled ->
-            behindOnVaccinationsByProgress currentDate
-                site
-                assembled.person
-                assembled.vaccinationProgress
-        )
-        maybeAssembled
-        |> Maybe.withDefault False
-
-
-behindOnVaccinationsByProgressFromChildScoreboard : NominalDate -> Site -> PersonId -> ModelIndexedDb -> Bool
-behindOnVaccinationsByProgressFromChildScoreboard currentDate site childId db =
-    let
-        lastChildScoreboardEncounterId =
-            getChildScoreboardEncountersForPerson db childId
-                |> List.map Tuple.first
-                |> List.head
-
-        maybeAssembled =
-            Maybe.andThen
-                (\id ->
-                    generateAssembledDataForChildScoreboard site id db
-                        |> RemoteData.toMaybe
-                )
-                lastChildScoreboardEncounterId
-    in
-    Maybe.map
-        (\assembled ->
-            behindOnVaccinationsByProgress currentDate
-                site
-                assembled.person
-                assembled.vaccinationProgress
-        )
-        maybeAssembled
+{-| Whether the child is behind on vaccinations, by the progress assembled
+for their most recent encounter of a programme.
+-}
+behindOnVaccinationsByLastEncounter :
+    NominalDate
+    -> Site
+    -> List ( encounterId, { encounter | startDate : NominalDate } )
+    -> (encounterId -> WebData { assembled | person : Person, vaccinationProgress : VaccinationProgressDict })
+    -> Bool
+behindOnVaccinationsByLastEncounter currentDate site encounters assembleFunc =
+    List.sortWith sortEncounterTuplesDesc encounters
+        |> List.head
+        |> Maybe.andThen (Tuple.first >> assembleFunc >> RemoteData.toMaybe)
+        |> Maybe.map
+            (\assembled ->
+                behindOnVaccinationsByProgress currentDate
+                    site
+                    assembled.person
+                    assembled.vaccinationProgress
+            )
         |> Maybe.withDefault False
 
 

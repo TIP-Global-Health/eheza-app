@@ -21,6 +21,7 @@ import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.NutritionEncounter.Utils
     exposing
         ( generateIndividualChildScoreboardMeasurementsForChild
+        , generateIndividualNutritionMeasurementsForChild
         , getNewbornExamPregnancySummary
         , getNutritionEncountersForPerson
         , getWellChildEncountersForPerson
@@ -30,7 +31,7 @@ import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, getHealthCenterName, graduatingAgeInMonth)
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Backend.Utils exposing (ncdaEnabled, resolveIndividualParticipantsForPerson)
+import Backend.Utils exposing (ncdaEnabled)
 import Backend.WellChildEncounter.Model
     exposing
         ( EncounterWarning(..)
@@ -66,7 +67,6 @@ import Measurement.Utils
         )
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Nutrition.Activity.View exposing (translateNutritionAssement)
-import Pages.Nutrition.Encounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Report.Model exposing (DiagnosisMode(..), PaneEntryStatus(..), ReportTab(..))
 import Pages.Report.Utils
@@ -397,10 +397,7 @@ assembleProgresReportData site childId db =
             |> Maybe.andThen RemoteData.toMaybe
             |> Maybe.withDefault emptyChildMeasurementList
     , nutritionEncounters = getNutritionEncountersForPerson db childId
-    , individualNutritionMeasurementsWithDates =
-        Pages.Nutrition.Encounter.Utils.generatePreviousMeasurements Nothing
-            (resolveIndividualParticipantsForPerson childId Backend.IndividualEncounterParticipant.Model.NutritionEncounter db)
-            db
+    , individualNutritionMeasurementsWithDates = generateIndividualNutritionMeasurementsForChild childId db
     , wellChildEncounters = wellChildEncounters
     , individualWellChildMeasurementsWithDates =
         Maybe.map
@@ -650,7 +647,7 @@ viewDiagnosisPane language currentDate initiator mandatoryNutritionAssessmentMea
             individualNutritionEntries ++ groupNutritionEntries ++ individuaWellChildEntries
 
         ( activeWarningEntries, completedWarningEntries ) =
-            generatePartitionedWarningEntries db maybeAssembled
+            generatePartitionedWarningEntries wellChildEncounters maybeAssembled
 
         ( activeAssessmentEntries, completedAssessmentEntries ) =
             resolveDateOfLastNutritionAssessment
@@ -828,17 +825,16 @@ resolveDateOfLastNutritionAssessment currentDate initiator mandatoryNutritionAss
 
 
 generatePartitionedWarningEntries :
-    ModelIndexedDb
+    List ( WellChildEncounterId, WellChildEncounter )
     -> Maybe AssembledData
     -> ( List ( NominalDate, PediatricCareMilestone, EncounterWarning ), List ( NominalDate, PediatricCareMilestone, EncounterWarning ) )
-generatePartitionedWarningEntries db maybeAssembled =
+generatePartitionedWarningEntries encounters maybeAssembled =
     Maybe.map
         (\assembled ->
             let
                 wellChildEncounters =
-                    getWellChildEncountersForPerson db assembled.participant.person
-                        -- Sort DESC
-                        |> List.sortWith sortEncounterTuplesDesc
+                    -- Sort DESC
+                    List.sortWith sortEncounterTuplesDesc encounters
 
                 allWarnings =
                     List.filterMap

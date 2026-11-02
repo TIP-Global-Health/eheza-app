@@ -38,7 +38,6 @@ fetch id db =
     Maybe.Extra.values
         [ Just <| FetchHomeVisitEncounter id
         , Maybe.map FetchIndividualEncounterParticipant participantId
-        , Just <| FetchHomeVisitEncountersForParticipants participantsIds
         ]
         ++ (Maybe.map
                 (\personId ->
@@ -48,4 +47,5 @@ fetch id db =
                 maybePersonId
                 |> Maybe.withDefault []
            )
+        ++ List.map FetchHomeVisitEncountersForParticipant participantsIds
         ++ fetchMeasurements

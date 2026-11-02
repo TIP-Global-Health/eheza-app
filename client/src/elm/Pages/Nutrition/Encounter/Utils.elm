@@ -1,4 +1,4 @@
-module Pages.Nutrition.Encounter.Utils exposing (generateAssembledData, generatePreviousMeasurements)
+module Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)

@@ -1,4 +1,4 @@
-module Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, generateIndividualChildScoreboardMeasurementsForChild, generateNutritionAssessment, getAcuteIllnessEncountersForParticipant, getChildScoreboardEncountersForParticipant, getChildScoreboardEncountersForPerson, getHIVEncountersForParticipant, getHomeVisitEncountersForParticipant, getHomeVisitEncountersForPerson, getNCDEncountersForParticipant, getNCDEncountersForPerson, getNewbornExamPregnancySummary, getNutritionEncountersForParticipant, getNutritionEncountersForPerson, getParticipantEncountersByEncounterType, getPrenatalEncountersForParticipant, getTuberculosisEncountersForParticipant, getWellChildEncountersForParticipant, getWellChildEncountersForPerson, nutritionAssessmentForBackend, resolveAllWeightMeasurementsForChild, resolveLatestValue, resolveNCDANeverFilled, resolveNCDANotFilledAfterAgeOfSixMonths, resolvePreviousValuesSetForChild, zScoreWeightForAgeModerate, zScoreWeightForAgeSevere)
+module Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, generateIndividualChildScoreboardMeasurementsForChild, generateIndividualNutritionMeasurementsForChild, generateIndividualWellChildMeasurementsForChild, generateNutritionAssessment, getAcuteIllnessEncountersForParticipant, getChildScoreboardEncountersForParticipant, getChildScoreboardEncountersForPerson, getHIVEncountersForParticipant, getHomeVisitEncountersForParticipant, getHomeVisitEncountersForPerson, getNCDEncountersForParticipant, getNCDEncountersForPerson, getNewbornExamPregnancySummary, getNutritionEncountersForParticipant, getNutritionEncountersForPerson, getParticipantEncountersByEncounterType, getPrenatalEncountersForParticipant, getTuberculosisEncountersForParticipant, getWellChildEncountersForParticipant, getWellChildEncountersForPerson, nutritionAssessmentForBackend, resolveAllWeightMeasurementsForChild, resolveLatestValue, resolveNCDANeverFilled, resolveNCDANotFilledAfterAgeOfSixMonths, resolvePreviousValuesSetForChild, zScoreWeightForAgeModerate, zScoreWeightForAgeSevere)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -220,45 +220,36 @@ generateNutritionAssessmentByWeight currentDate zscores childId child weightValu
 
 
 generateIndividualNutritionMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
-generateIndividualNutritionMeasurementsForChild =
-    generateIndividualMeasurementsForChild getNutritionEncountersForPerson .nutritionMeasurements
+generateIndividualNutritionMeasurementsForChild childId db =
+    Backend.Measurement.Utils.generatePreviousMeasurements getNutritionEncountersForParticipant
+        .nutritionMeasurements
+        Nothing
+        (resolveIndividualParticipantsForPerson childId Backend.IndividualEncounterParticipant.Model.NutritionEncounter db)
+        db
 
 
 generateIndividualWellChildMeasurementsForChild :
     PersonId
     -> ModelIndexedDb
     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
-generateIndividualWellChildMeasurementsForChild =
-    generateIndividualMeasurementsForChild getWellChildEncountersForPerson .wellChildMeasurements
+generateIndividualWellChildMeasurementsForChild childId db =
+    Backend.Measurement.Utils.generatePreviousMeasurements getWellChildEncountersForParticipant
+        .wellChildMeasurements
+        Nothing
+        (resolveIndividualParticipantsForPerson childId Backend.IndividualEncounterParticipant.Model.WellChildEncounter db)
+        db
 
 
 generateIndividualChildScoreboardMeasurementsForChild :
     PersonId
     -> ModelIndexedDb
     -> List ( NominalDate, ( ChildScoreboardEncounterId, ChildScoreboardMeasurements ) )
-generateIndividualChildScoreboardMeasurementsForChild =
-    generateIndividualMeasurementsForChild getChildScoreboardEncountersForPerson .childScoreboardMeasurements
-
-
-generateIndividualMeasurementsForChild :
-    (ModelIndexedDb -> PersonId -> List ( encounterId, { encounter | startDate : NominalDate } ))
-    -> (ModelIndexedDb -> Dict encounterId (WebData measurements))
-    -> PersonId
-    -> ModelIndexedDb
-    -> List ( NominalDate, ( encounterId, measurements ) )
-generateIndividualMeasurementsForChild encountersForPersonFunc measurementsByEncounterFunc childId db =
-    encountersForPersonFunc db childId
-        |> List.filterMap
-            (\( encounterId, encounter ) ->
-                case Dict.get encounterId (measurementsByEncounterFunc db) of
-                    Just (Success data) ->
-                        Just ( encounter.startDate, ( encounterId, data ) )
-
-                    _ ->
-                        Nothing
-            )
-        -- Most recent date to least recent date.
-        |> List.sortWith sortTuplesByDateDesc
+generateIndividualChildScoreboardMeasurementsForChild childId db =
+    Backend.Measurement.Utils.generatePreviousMeasurements getChildScoreboardEncountersForParticipant
+        .childScoreboardMeasurements
+        Nothing
+        (resolveIndividualParticipantsForPerson childId Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter db)
+        db
 
 
 getNewbornExamPregnancySummary :
