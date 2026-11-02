@@ -10,7 +10,7 @@ metadata:
 
 ⏰ **Monitoring due — raise at the start of the survey on or after the date:** **B-514** 2026-11-19 (rerun the recurrence query in the entry on ihangane + vhw; user 2026-10-29: mention it when process-backlog runs that day) · **B-499** 2026-11-24 (second restore pass; harness lost, rebuild first).
 
-🟡 **PR #2457 open (B-525, tier 1, issue #2456) — 2026-11-02:** Acute Illness encounter history holds only earlier encounters, so a later encounter no longer makes a CHW first visit a follow-up or lends it its diagnosis. Rules 1+2 only (user). Medium review round 1 running.
+🟡 **PR #2457 open (B-525, tier 1, issue #2456) — 2026-11-02:** Acute Illness encounter history holds only earlier encounters, so a later encounter no longer makes a CHW first visit a follow-up or lends it its diagnosis. Rules 1+2 only (user). Both medium rounds done (round 2: 1/6/7/9 fixed in `6ab9ad7a9`, 2/3/4/5/8 declined; all 9 threads resolved). Worktree released. Awaiting QA decision.
 
 📦 **Next release: PR #2417** ("Developments starting October 25, 2026", `develop`→`main`, opened 2026-10-25). Its `### Post deploy instructions:` holds every post-deploy step; add new ones there. First entry: #2415 (B-185) + #2419 (B-507/B-508), the seven completion scripts run without `--exclude_set`. Merged to develop 2026-10-26: #2415, #2416 (#2147, HIV Progress Report tab hidden), #2419. Merged 2026-10-29: #2420, #2422, #2424, #2426, #2432–#2436 (none adds a post-deploy step).
 
