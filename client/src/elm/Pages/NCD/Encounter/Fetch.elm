@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
+import Backend.Utils exposing (resolveIndividualParticipantWithDuplicates)
 import Maybe.Extra
 import RemoteData
 
@@ -21,9 +22,12 @@ fetch id db =
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .person
 
-        encountersIds =
-            Maybe.map (getNCDEncountersForParticipant db >> List.map Tuple.first) participantId
+        participantsIds =
+            Maybe.map (\id_ -> resolveIndividualParticipantWithDuplicates id_ db) participantId
                 |> Maybe.withDefault []
+
+        encountersIds =
+            List.concatMap (getNCDEncountersForParticipant db >> List.map Tuple.first) participantsIds
 
         -- We fetch measurements of all encounters.
         fetchMeasurementsMsgs =
@@ -32,7 +36,8 @@ fetch id db =
     Maybe.Extra.values
         [ Maybe.map FetchIndividualEncounterParticipant participantId
         , Maybe.map FetchPerson personId
-        , Maybe.map FetchNCDEncountersForParticipant participantId
+        , Maybe.map FetchIndividualEncounterParticipantsForPerson personId
+        , Just <| FetchNCDEncountersForParticipants participantsIds
         , Just <| FetchNCDEncounter id
         ]
         ++ fetchMeasurementsMsgs

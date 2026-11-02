@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.NutritionEncounter.Fetch
 import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant)
+import Backend.Utils exposing (resolveIndividualParticipantWithDuplicates)
 import Maybe.Extra
 import RemoteData
 
@@ -23,9 +24,12 @@ fetch id db =
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .person
 
-        encountersIds =
-            Maybe.map (getHomeVisitEncountersForParticipant db >> List.map Tuple.first) participantId
+        participantsIds =
+            Maybe.map (\id_ -> resolveIndividualParticipantWithDuplicates id_ db) participantId
                 |> Maybe.withDefault []
+
+        encountersIds =
+            List.concatMap (getHomeVisitEncountersForParticipant db >> List.map Tuple.first) participantsIds
 
         -- We fetch measurements of all encounters.
         fetchMeasurements =
@@ -34,7 +38,7 @@ fetch id db =
     Maybe.Extra.values
         [ Just <| FetchHomeVisitEncounter id
         , Maybe.map FetchIndividualEncounterParticipant participantId
-        , Maybe.map FetchHomeVisitEncountersForParticipant participantId
+        , Just <| FetchHomeVisitEncountersForParticipants participantsIds
         ]
         ++ (Maybe.map
                 (\personId ->

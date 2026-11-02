@@ -24,15 +24,15 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
         ( getHIVEncountersForParticipant
-        , getHomeVisitEncountersForParticipant
+        , getHomeVisitEncountersForPerson
         , getTuberculosisEncountersForParticipant
-        , getWellChildEncountersForParticipant
+        , getWellChildEncountersForPerson
         )
 import Backend.Person.Utils exposing (generateFullName)
 import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
-import Backend.Utils exposing (hivManagementEnabled, resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson, tuberculosisManagementEnabled)
+import Backend.Utils exposing (hivManagementEnabled, resolveIndividualParticipantsForPerson, tuberculosisManagementEnabled)
 import Backend.Village.Utils exposing (resolveVillageResidents)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
@@ -482,13 +482,9 @@ generateNutritionFollowUpEntryData : NominalDate -> ModelIndexedDb -> PersonId -
 generateNutritionFollowUpEntryData limitDate db personId item =
     let
         lastHomeVisitEncounter =
-            resolveIndividualParticipantForPerson personId HomeVisitEncounter db
-                |> Maybe.map
-                    (getHomeVisitEncountersForParticipant db
-                        >> List.map Tuple.second
-                        >> List.filter (\encounter -> Date.compare encounter.startDate limitDate == LT)
-                    )
-                |> Maybe.withDefault []
+            getHomeVisitEncountersForPerson db personId
+                |> List.map Tuple.second
+                |> List.filter (\encounter -> Date.compare encounter.startDate limitDate == LT)
                 -- Sort DESC
                 |> List.sortWith (\e1 e2 -> Date.compare e2.startDate e1.startDate)
                 |> List.head
@@ -1603,17 +1599,13 @@ generateImmunizationFollowUpEntryData : NominalDate -> ModelIndexedDb -> PersonI
 generateImmunizationFollowUpEntryData limitDate db personId item =
     let
         lastWellChildEncounter =
-            resolveIndividualParticipantForPerson personId WellChildEncounter db
-                |> Maybe.map
-                    (getWellChildEncountersForParticipant db
-                        >> List.map Tuple.second
-                        >> List.filter
-                            (\encounter ->
-                                (encounter.encounterType /= NewbornExam)
-                                    && (Date.compare encounter.startDate limitDate == LT)
-                            )
+            getWellChildEncountersForPerson db personId
+                |> List.map Tuple.second
+                |> List.filter
+                    (\encounter ->
+                        (encounter.encounterType /= NewbornExam)
+                            && (Date.compare encounter.startDate limitDate == LT)
                     )
-                |> Maybe.withDefault []
                 -- Sort DESC
                 |> List.sortWith (\e1 e2 -> Date.compare e2.startDate e1.startDate)
                 |> List.head
