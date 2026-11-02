@@ -535,6 +535,7 @@ B-534	2	READY	MED-LOW			48	Healthy Start gestational weight gain: the expected-g
 B-535	4	READY	LOW			48	`dateMeasured` is the save date, read as the clinical date, ×5: (a) NCDA "malnutrition treatment" pairs referral with as
 B-536	1	IMPLEMENTED	MED	2454	2455	48	Individual encounters, read side: every reader of a person's participant takes ONE participant of the type (`List.head` 
 B-537	3	IMPLEMENTED	MED-LOW	2458	2459	48	Individual encounters, repair: ≈ 2,500 accumulated duplicate participants for the one-per-person types (nutrition 1,197 
+B-538	3	READY	MED-LOW		2459	48	HIV and Tuberculosis: a person can hold two OPEN participants (B-195 race), and nothing merges them
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
