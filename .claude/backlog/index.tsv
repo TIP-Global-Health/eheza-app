@@ -533,6 +533,8 @@ B-532	3	READY	MED-LOW			48	Immunisation history across a child's DUPLICATE parti
 B-533	4	READY	LOW			48	Statistical Queries ANC tables and the Dashboard pregnancy counts count PARTICIPANTS, not pregnancies: a woman with two 
 B-534	2	READY	MED-LOW			48	Healthy Start gestational weight gain: the expected-gain window runs from the previous weight's SAVE date, not its visit
 B-535	4	READY	LOW			48	`dateMeasured` is the save date, read as the clinical date, ×5: (a) NCDA "malnutrition treatment" pairs referral with as
+B-536	1	READY	MED			48	Individual encounters, read side: every reader of a person's participant takes ONE participant of the type (`List.head` 
+B-537	3	READY	MED-LOW			48	Individual encounters, repair: ≈ 2,500 accumulated duplicate participants for the one-per-person types (nutrition 1,197 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
