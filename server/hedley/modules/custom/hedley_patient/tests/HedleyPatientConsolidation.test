@@ -666,26 +666,6 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
   }
 
   /**
-   * Creates an open participant, one with no end date.
-   *
-   * @param int $person
-   *   The person node ID.
-   * @param string $type
-   *   The encounter type, like 'tuberculosis'.
-   *
-   * @return int
-   *   The individual_participant node ID.
-   */
-  protected function createOpenParticipant($person, $type) {
-    $participant = $this->createIndividualParticipant($person, REQUEST_TIME, $type);
-    $wrapper = entity_metadata_wrapper('node', $participant);
-    $wrapper->field_expected->set(['value' => date('Y-m-d', REQUEST_TIME)]);
-    $wrapper->save();
-
-    return $participant->nid;
-  }
-
-  /**
    * Duplicate participants merge into the oldest one, and stay merged.
    *
    * Called from testContentIsTransferredOnMerge rather than run as a test of
@@ -722,29 +702,25 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     $this->assertFalse($this->isLive($participants[2]), 'The second participant is deleted.');
     $this->assertFalse($this->isLive($participants[3]), 'The third participant is deleted.');
 
-    // An encounter uploaded later onto a merged participant moves on the next
-    // run.
+    // An encounter uploaded later onto a merged participant, and one a device
+    // sends back there with an edit, move on the next run.
     $late = $this->createEncounter('nutrition_encounter', $participants[2]);
+    _associate_content_by_field([$encounters[3]], 'field_individual_participant', $participants[3]);
     _hedley_patient_merge_duplicate_participants(['nutrition'], FALSE, $report);
     $this->assertEqual($this->participantOf($late), $participants[1], 'A late encounter on a merged participant moves to the oldest one.');
     $this->assertTrue($this->isLive($late), 'The late encounter stays live.');
+    $this->assertEqual($this->participantOf($encounters[3]), $participants[1], 'An encounter sent back to a merged participant moves again.');
 
-    // Two ended Tuberculosis participants are separate episodes, not
-    // duplicates.
-    $patient = $this->createPerson('PatientWithEpisodes');
-    $first = $this->createIndividualParticipant($patient, REQUEST_TIME, 'tuberculosis')->nid;
-    $second = $this->createIndividualParticipant($patient, REQUEST_TIME, 'tuberculosis')->nid;
-    _hedley_patient_merge_duplicate_participants(['tuberculosis'], FALSE, $report);
-    $this->assertTrue($this->isLive($first) && $this->isLive($second), 'Ended Tuberculosis participants are left alone.');
-
-    // Two open Tuberculosis participants are duplicates.
-    $open_first = $this->createOpenParticipant($patient, 'tuberculosis');
-    $open_second = $this->createOpenParticipant($patient, 'tuberculosis');
-    $open_encounter = $this->createEncounter('tuberculosis_encounter', $open_second);
-    _hedley_patient_merge_duplicate_participants(['tuberculosis'], FALSE, $report);
-    $this->assertEqual($this->participantOf($open_encounter), $open_first, 'The encounter of the second open participant moves to the first.');
-    $this->assertFalse($this->isLive($open_second), 'The second open Tuberculosis participant is deleted.');
-    $this->assertTrue($this->isLive($first) && $this->isLive($second), 'Ended Tuberculosis participants are still left alone.');
+    // A participant deleted some other way keeps its encounters.
+    $other = $this->createPerson('ChildWithDeletedParticipant');
+    $deleted = $this->createIndividualParticipant($other, REQUEST_TIME, 'nutrition')->nid;
+    $wrapper = entity_metadata_wrapper('node', $deleted);
+    $wrapper->field_deleted->set(TRUE);
+    $wrapper->save();
+    $this->createIndividualParticipant($other, REQUEST_TIME, 'nutrition');
+    $kept = $this->createEncounter('nutrition_encounter', $deleted);
+    _hedley_patient_merge_duplicate_participants(['nutrition'], FALSE, $report);
+    $this->assertEqual($this->participantOf($kept), $deleted, 'An encounter on a participant deleted by other means stays there.');
   }
 
   /**
