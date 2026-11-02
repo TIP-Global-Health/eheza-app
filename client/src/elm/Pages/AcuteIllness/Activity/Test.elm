@@ -1175,15 +1175,29 @@ generateAssembledDataTest =
         -- Assembles the encounter with the given id, out of an illness
         -- holding the given encounters, all with no measurements.
         assemble id encounters =
+            assembleWithLoading [] id encounters
+
+        -- As assemble, with measurements of the listed encounters still loading.
+        assembleWithLoading loadingIds id encounters =
             let
                 encountersDict =
                     List.map (Tuple.mapFirst toEntityUuid) encounters
                         |> Dict.fromList
 
+                loadingUuids =
+                    List.map toEntityUuid loadingIds
+
+                measurementsFor encounterId =
+                    if List.member encounterId loadingUuids then
+                        Loading
+
+                    else
+                        Success emptyAcuteIllnessMeasurements
+
                 db =
                     { emptyModelIndexedDb
                         | acuteIllnessEncounters = Dict.map (\_ encounter -> Success encounter) encountersDict
-                        , acuteIllnessMeasurements = Dict.map (\_ _ -> Success emptyAcuteIllnessMeasurements) encountersDict
+                        , acuteIllnessMeasurements = Dict.map (\encounterId _ -> measurementsFor encounterId) encountersDict
                         , acuteIllnessEncountersByParticipant = Dict.singleton dummyEncounter.participant (Success encountersDict)
                         , individualParticipants = Dict.singleton dummyEncounter.participant (Success dummyParticipant)
                         , people = Dict.singleton dummyParticipant.person (Success testPerson)
@@ -1240,6 +1254,24 @@ generateAssembledDataTest =
                     ]
                     |> Maybe.map .diagnosis
                     |> Expect.equal (Just (Just ( yesterday, DiagnosisMalariaUncomplicated )))
+        , test "a follow-up stays a follow-up, with the earlier diagnosis, while earlier measurements load" <|
+            \_ ->
+                assembleWithLoading [ "first" ]
+                    "later"
+                    [ ( "first", chwEncounter currentDate 1 DiagnosisMalariaUncomplicated )
+                    , ( "later", chwEncounter nextDay 1 NoAcuteIllnessDiagnosis )
+                    ]
+                    |> Maybe.map (\assembled -> ( assembled.initialEncounter, assembled.diagnosis ))
+                    |> Expect.equal (Just ( False, Just ( currentDate, DiagnosisMalariaUncomplicated ) ))
+        , test "two CHW encounters with the same date and sequence number are both initial" <|
+            \_ ->
+                let
+                    tied =
+                        [ first, ( "twin", chwEncounter currentDate 1 NoAcuteIllnessDiagnosis ) ]
+                in
+                [ assemble "first" tied, assemble "twin" tied ]
+                    |> List.map (Maybe.map .initialEncounter)
+                    |> Expect.equal [ Just True, Just True ]
         , test "previous encounters hold only those that came before" <|
             \_ ->
                 assemble "middle"

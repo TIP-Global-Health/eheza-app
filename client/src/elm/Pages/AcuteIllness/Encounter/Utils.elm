@@ -53,6 +53,8 @@ generateAssembledData currentDate features id isChw db =
                     )
                 |> Maybe.withDefault []
 
+        -- Measurements of the earlier encounters that are loaded. Whether an
+        -- earlier encounter exists is read from previousEncounters.
         previousEncountersData =
             generatePreviousMeasurements previousEncounters db
 
@@ -89,7 +91,7 @@ generateAssembledData currentDate features id isChw db =
 
                         AcuteIllnessEncounterCHW ->
                             -- For CHW, it's only the first encounter at illness.
-                            List.isEmpty previousEncountersData
+                            List.isEmpty previousEncounters
 
                 currentDiagnosis =
                     if initialEncounter || isJust diagnosisByCurrentEncounterMeasurements then
