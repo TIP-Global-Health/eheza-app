@@ -536,6 +536,13 @@ B-535	4	READY	LOW			48	`dateMeasured` is the save date, read as the clinical dat
 B-536	1	IMPLEMENTED	MED	2454	2455	48	Individual encounters, read side: every reader of a person's participant takes ONE participant of the type (`List.head` 
 B-537	3	IMPLEMENTED	MED-LOW	2458	2459	48	Individual encounters, repair: ≈ 2,500 accumulated duplicate participants for the one-per-person types (nutrition 1,197 
 B-538	3	READY	MED-LOW			48	HIV and Tuberculosis: a person can hold two OPEN participants (B-195 race), and nothing merges them
+B-539	4	READY	LOW			49	Statistical Queries, date-range reports: a pregnancy is admitted or dropped by the day its participant node REACHED the 
+B-540	4	READY	LOW			49	Statistical Queries demographics and the aggregated NCDA scoreboard treat the person node's UPLOAD day as the registrati
+B-541	4	READY	LOW			49	Dashboard beneficiaries: a child's "join date" is the day the enrolment REACHED the server — the individual branch ships
+B-542	4	READY	LOW			49	Completion report: every generator orders a participant's encounters by `nid` and treats the lower nids as the history, 
+B-543	4	READY	LOW			49	Photos (group Child Picture, Family Nutrition, person registration): the Dropzone completion event is delivered to which
+B-544	4	READY	LOW			49	Person registration, person edit, Relationship and Receive Stock: the on-entry form resets run only for in-app taps (`Se
+B-545	4	READY	LOW			49	Relationship page: a failed save of A→B keeps showing "Backend error" on A→C and every later relationship page of A, bec
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
