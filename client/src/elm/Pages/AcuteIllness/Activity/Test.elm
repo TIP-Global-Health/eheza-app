@@ -60,7 +60,7 @@ import Pages.AcuteIllness.Activity.Utils
         , treatmentReviewFormWithDefault
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
-import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, splitByInitialNurseEncounter)
+import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, generateAssembledData, splitByInitialNurseEncounter)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature(..))
@@ -884,6 +884,7 @@ all =
         , editedRecordDerivedQuestionsTest
         , generateAllEncountersDataTest
         , splitByInitialNurseEncounterTest
+        , generateAssembledDataTest
         ]
 
 
@@ -1151,4 +1152,85 @@ splitByInitialNurseEncounterTest =
         , test "returns empty sequences for no encounters" <|
             \_ ->
                 expectSplit [] ( [], [] )
+        ]
+
+
+{-| A CHW encounter is the initial one when no encounter of the illness came
+before it. Encounters that come after it, by date and then sequence number,
+are not its history, and their diagnosis is not its diagnosis.
+-}
+generateAssembledDataTest : Test
+generateAssembledDataTest =
+    let
+        nextDay =
+            Date.add Date.Days 1 currentDate
+
+        chwEncounter startDate sequenceNumber diagnosis =
+            { dummyEncounter
+                | startDate = startDate
+                , sequenceNumber = sequenceNumber
+                , diagnosis = diagnosis
+            }
+
+        -- Assembles the encounter with the given id, out of an illness
+        -- holding the given encounters, all with no measurements.
+        assemble id encounters =
+            let
+                encountersDict =
+                    List.map (Tuple.mapFirst toEntityUuid) encounters
+                        |> Dict.fromList
+
+                db =
+                    { emptyModelIndexedDb
+                        | acuteIllnessEncounters = Dict.map (\_ encounter -> Success encounter) encountersDict
+                        , acuteIllnessMeasurements = Dict.map (\_ _ -> Success emptyAcuteIllnessMeasurements) encountersDict
+                        , acuteIllnessEncountersByParticipant = Dict.singleton dummyEncounter.participant (Success encountersDict)
+                        , individualParticipants = Dict.singleton dummyEncounter.participant (Success dummyParticipant)
+                        , people = Dict.singleton dummyParticipant.person (Success testPerson)
+                    }
+            in
+            generateAssembledData currentDate EverySet.empty (toEntityUuid id) True db
+                |> RemoteData.toMaybe
+
+        first =
+            ( "first", chwEncounter currentDate 1 NoAcuteIllnessDiagnosis )
+    in
+    describe "generateAssembledData"
+        [ test "a CHW encounter with no other encounters is initial" <|
+            \_ ->
+                assemble "first" [ first ]
+                    |> Maybe.map .initialEncounter
+                    |> Expect.equal (Just True)
+        , test "a CHW encounter stays initial when a later day's encounter exists" <|
+            \_ ->
+                assemble "first" [ first, ( "later", chwEncounter nextDay 1 NoAcuteIllnessDiagnosis ) ]
+                    |> Maybe.map .initialEncounter
+                    |> Expect.equal (Just True)
+        , test "a CHW encounter stays initial when a later encounter of the same day exists" <|
+            \_ ->
+                assemble "first" [ first, ( "later", chwEncounter currentDate 2 NoAcuteIllnessDiagnosis ) ]
+                    |> Maybe.map .initialEncounter
+                    |> Expect.equal (Just True)
+        , test "a later encounter's diagnosis is not taken by an earlier encounter" <|
+            \_ ->
+                assemble "first" [ first, ( "later", chwEncounter nextDay 1 DiagnosisMalariaUncomplicated ) ]
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just Nothing)
+        , test "a later CHW encounter is subsequent, and takes the earlier encounter's diagnosis" <|
+            \_ ->
+                assemble "later"
+                    [ ( "first", chwEncounter currentDate 1 DiagnosisMalariaUncomplicated )
+                    , ( "later", chwEncounter nextDay 1 NoAcuteIllnessDiagnosis )
+                    ]
+                    |> Maybe.map (\assembled -> ( assembled.initialEncounter, assembled.diagnosis ))
+                    |> Expect.equal (Just ( False, Just ( currentDate, DiagnosisMalariaUncomplicated ) ))
+        , test "previous encounters hold only those that came before" <|
+            \_ ->
+                assemble "middle"
+                    [ first
+                    , ( "middle", chwEncounter currentDate 2 NoAcuteIllnessDiagnosis )
+                    , ( "last", chwEncounter nextDay 1 NoAcuteIllnessDiagnosis )
+                    ]
+                    |> Maybe.map (.previousEncountersData >> List.map .id)
+                    |> Expect.equal (Just [ toEntityUuid "first" ])
         ]

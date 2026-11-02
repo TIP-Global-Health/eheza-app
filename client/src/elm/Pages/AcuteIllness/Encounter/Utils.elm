@@ -1,6 +1,7 @@
 module Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, generateAssembledData, getAcuteIllnessDiagnosisForParticipant, splitByInitialNurseEncounter)
 
 import AssocList as Dict
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -43,7 +44,7 @@ generateAssembledData currentDate features id isChw db =
 
         previousEncountersData =
             RemoteData.toMaybe encounter
-                |> Maybe.map (\encounter_ -> generatePreviousMeasurements id encounter_.participant db)
+                |> Maybe.map (\encounter_ -> generatePreviousMeasurements encounter_ db)
                 |> Maybe.withDefault []
 
         assembled =
@@ -86,7 +87,12 @@ generateAssembledData currentDate features id isChw db =
                         diagnosisByCurrentEncounterMeasurements
 
                     else
-                        getAcuteIllnessDiagnosisByPreviousEncounters id db data.encounter.participant
+                        -- The diagnosis of the most recent previous encounter that has one.
+                        data.previousEncountersData
+                            |> List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
+                            |> List.reverse
+                            |> List.head
+                            |> Maybe.map (\encounterData -> ( encounterData.startDate, encounterData.diagnosis ))
 
                 diagnosisByCurrentEncounterMeasurements =
                     resolveAcuteIllnessDiagnosis currentDate features isChw data
@@ -105,8 +111,8 @@ generateAssembledData currentDate features id isChw db =
         assembled
 
 
-{-| All encounters of the illness, ordered by date. Report is viewed for
-the most recent encounter of the illness, so the one being viewed comes last.
+{-| The encounters of the illness up to the one being viewed, ordered by
+date. The one being viewed comes last.
 -}
 generateAllEncountersData : AssembledData -> List AcuteIllnessEncounterData
 generateAllEncountersData assembled =
@@ -152,17 +158,18 @@ splitByInitialNurseEncounter encountersData =
         |> Maybe.withDefault ( encountersData, [] )
 
 
+{-| Encounters that come before the current one, by date and then sequence
+number. Later encounters, and the current one, are left out.
+-}
 generatePreviousMeasurements :
-    AcuteIllnessEncounterId
-    -> IndividualEncounterParticipantId
+    AcuteIllnessEncounter
     -> ModelIndexedDb
     -> List AcuteIllnessEncounterData
-generatePreviousMeasurements currentEncounterId participantId db =
-    getAcuteIllnessEncountersForParticipant db participantId
+generatePreviousMeasurements currentEncounter db =
+    getAcuteIllnessEncountersForParticipant db currentEncounter.participant
         |> List.filterMap
             (\( encounterId, encounter ) ->
-                -- We do not want to get data of current encounter.
-                if encounterId == currentEncounterId then
+                if compareAcuteIllnessEncounters encounter currentEncounter /= LT then
                     Nothing
 
                 else
@@ -180,26 +187,6 @@ generatePreviousMeasurements currentEncounterId participantId db =
                             Nothing
             )
         |> List.sortWith compareAcuteIllnessEncounters
-
-
-getAcuteIllnessDiagnosisByPreviousEncounters :
-    AcuteIllnessEncounterId
-    -> ModelIndexedDb
-    -> IndividualEncounterParticipantId
-    -> Maybe ( NominalDate, AcuteIllnessDiagnosis )
-getAcuteIllnessDiagnosisByPreviousEncounters currentEncounterId db participantId =
-    getAcuteIllnessEncountersForParticipant db participantId
-        |> List.filterMap
-            (\( encounterId, encounter ) ->
-                -- We do not want to get data of current encounter,
-                -- and those that do not have diagnosis set.
-                if encounterId == currentEncounterId || encounter.diagnosis == NoAcuteIllnessDiagnosis then
-                    Nothing
-
-                else
-                    Just ( encounter.startDate, encounter.diagnosis )
-            )
-        |> List.head
 
 
 {-| Since there can be multiple encounters, resolved diagnosis is the one
