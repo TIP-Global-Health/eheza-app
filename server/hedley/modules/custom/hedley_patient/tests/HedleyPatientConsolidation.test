@@ -700,14 +700,20 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
       $encounters[$index] = $this->createEncounter('nutrition_encounter', $participants[$index]);
     }
 
-    // A dry run saves nothing.
-    _hedley_patient_merge_duplicate_participants(['nutrition'], TRUE);
+    $messages = [];
+    $report = function ($message) use (&$messages) {
+      $messages[] = $message;
+    };
+
+    // A dry run reports both merges and saves nothing.
+    _hedley_patient_merge_duplicate_participants(['nutrition'], TRUE, $report);
+    $this->assertEqual(count(preg_grep('/merged into ' . $participants[1] . '/', $messages)), 2, 'A dry run reports both merges.');
     $this->assertEqual($this->participantOf($encounters[2]), $participants[2], 'A dry run leaves the encounter on its participant.');
     $this->assertTrue($this->isLive($participants[2]), 'A dry run leaves the duplicate participant live.');
 
     // The run moves every encounter to the oldest participant, then deletes
     // the others without taking their former encounters along.
-    _hedley_patient_merge_duplicate_participants(['nutrition'], FALSE);
+    _hedley_patient_merge_duplicate_participants(['nutrition'], FALSE, $report);
     foreach ($encounters as $index => $encounter) {
       $this->assertEqual($this->participantOf($encounter), $participants[1], "Encounter $index is on the oldest participant.");
       $this->assertTrue($this->isLive($encounter), "Encounter $index stays live.");
@@ -719,7 +725,7 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     // An encounter uploaded later onto a merged participant moves on the next
     // run.
     $late = $this->createEncounter('nutrition_encounter', $participants[2]);
-    _hedley_patient_merge_duplicate_participants(['nutrition'], FALSE);
+    _hedley_patient_merge_duplicate_participants(['nutrition'], FALSE, $report);
     $this->assertEqual($this->participantOf($late), $participants[1], 'A late encounter on a merged participant moves to the oldest one.');
     $this->assertTrue($this->isLive($late), 'The late encounter stays live.');
 
@@ -728,14 +734,14 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     $patient = $this->createPerson('PatientWithEpisodes');
     $first = $this->createIndividualParticipant($patient, REQUEST_TIME, 'tuberculosis')->nid;
     $second = $this->createIndividualParticipant($patient, REQUEST_TIME, 'tuberculosis')->nid;
-    _hedley_patient_merge_duplicate_participants(['tuberculosis'], FALSE);
+    _hedley_patient_merge_duplicate_participants(['tuberculosis'], FALSE, $report);
     $this->assertTrue($this->isLive($first) && $this->isLive($second), 'Ended Tuberculosis participants are left alone.');
 
     // Two open Tuberculosis participants are duplicates.
     $open_first = $this->createOpenParticipant($patient, 'tuberculosis');
     $open_second = $this->createOpenParticipant($patient, 'tuberculosis');
     $open_encounter = $this->createEncounter('tuberculosis_encounter', $open_second);
-    _hedley_patient_merge_duplicate_participants(['tuberculosis'], FALSE);
+    _hedley_patient_merge_duplicate_participants(['tuberculosis'], FALSE, $report);
     $this->assertEqual($this->participantOf($open_encounter), $open_first, 'The encounter of the second open participant moves to the first.');
     $this->assertFalse($this->isLive($open_second), 'The second open Tuberculosis participant is deleted.');
     $this->assertTrue($this->isLive($first) && $this->isLive($second), 'Ended Tuberculosis participants are still left alone.');
