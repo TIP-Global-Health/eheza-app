@@ -325,7 +325,8 @@ flag simply does not appear.
   input, "Previous measurement: <cm>" or "No previous measurement on record". "Not taken" is
   stored as 0 cm with a `not-taken` note. A nurse's existing child is reopened through Clinical →
   Individual Encounter → Standard Pediatric Visit → search → forward icon, and a new visit
-  starts with "Standard Pediatric Visit Encounter". A CHW takes it only at the newborn exam.
+  starts with "Standard Pediatric Visit Encounter". A CHW's Well Child visit also has the tab (at 12
+  months, between Height and MUAC), so pass `headCircumference` to `completeNutritionAssessment`.
 - Head circumference for a boy aged 24 months: 38 cm is z −7.53 (microcephaly), 55 cm z 4.96
   (macrocephaly), 48 cm normal. Beyond ±3 a `div.ui.active.modal.danger-signs-popup` warns, and the
   reading saves only on its CONTINUE. The warning is kept on the visit (`field_encounter_warnings`;
@@ -366,6 +367,15 @@ flag simply does not appear.
   Child Scorecard, at Akanduga, and the nurse finds the child at Nyange. A nurse's Standard Pediatric
   Visit creates the Well Child participant. Both forms read one combined history of the two
   programs. Its order on develop depended on which program held which dose, so try both arrangements.
+- **Duplicate participants** (two `individual_participant` nodes, one person, one type) are built on the
+  server: a node with `field_person`, `field_encounter_type`, `field_expected` (start date), `field_uuid`
+  and `field_deleted` 0; shards fill in on save. An encounter moves by `field_individual_participant`.
+- Develop's participant pages pick the participant with the LOWEST uuid (Dexie order), so a chosen uuid
+  (`00000000-…` or `ffffffff-…`) decides develop's pick. Since #2455 new encounters go on the earliest start date.
+- An encounter or participant with `field_deleted` 1 drops out of the tablet's queries after a sync: the way
+  to hide a stray record from a fixture, and to bring it back.
+- From the main menu, an in-app jump to `#well-child-encounter/<uuid>` (location.hash) showed a spinner for a
+  minute. Reach the visit through its participant page.
 - Child Scorecard offers Vaccination History only after NCDA is saved
   (`h.childScoreboard.completeNCDA`), and only while the history shows the child behind.
 - An activity with several tabs stays under To Do until every tab is saved.
@@ -463,7 +473,10 @@ flag simply does not appear.
     Immunizations answering **No** to each vaccine — `h.wellChild.completeImmunisation(page,
     { isChw: true })`; without `isChw` it answers Yes and gives the vaccines. Leave them
     unadministered: a child given everything gets a future date and **no entry**. "BEHIND" on the progress report means the
-    entry will show.
+    entry will show. The entry is the `well_child_next_visit` that Next Steps saves
+    (`h.wellChild.completeNextSteps`); without Next Steps there is none.
+  - Tapping YES on an entry sets that follow-up's `field_date_concluded`, which takes the entry off
+    the pane. Clearing it on the server and syncing lists the entry again.
   - **Acute Illness (CHW, adult) → Acute Illness pane.** Fever + Chills; temperature 38.5;
     Malaria RDT positive, not pregnant → Uncomplicated Malaria; Next Steps: Coartem Yes and
     Follow Up "1 Day".

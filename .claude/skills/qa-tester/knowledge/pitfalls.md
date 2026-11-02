@@ -448,7 +448,7 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 
 - **Symptom:** `completeNutritionAssessment(page, { height, weight })` for a 3-year-old returned on the MUAC tab, Save off, the activity still To Do.
 - **Wrong conclusion:** the helper finished the activity.
-- **Rule:** the helper fills only the tabs it has options for. Read the reply's tabs, and pass every value the child's age brings (MUAC from 6 months; head circumference only under 36 months).
+- **Rule:** the helper fills only the tabs it has options for. Read the reply's tabs, and pass every value the child's age brings (MUAC from 6 months; head circumference under 36 months, for a CHW visit too). Falling in again cost two continuation videos on PR #2455.
 
 ## Drafting the PR report with the Write tool in a subagent
 
@@ -485,3 +485,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a check that Demographics "still loads" at a health-centre scope failed: the page showed only the date inputs.
 - **Wrong conclusion:** the PR broke the other reports at that scope.
 - **Rule:** most Statistical Queries reports render only after a date range is set (`h.reports.setDateRange`); Nutrition needs none. Read the page before asserting on it.
+
+## A probe that runs the whole scenario spends the fixture
+
+- **Symptom:** a script meant to check that a Case Management entry was listed also pressed YES, unrecorded. It created the encounter the develop control was meant to show, and the entry vanished.
+- **Wrong conclusion:** the probe changed nothing, so the recorded run could follow.
+- **Rule:** a probe stops before the first action that writes. Undoing one costs server edits: mark the stray encounter `field_deleted` 1, and clear the follow-up's `field_date_concluded`, which YES sets.
+
+## A shell loop of recordings that carries on after a failed setup
+
+- **Symptom:** a navigation step failed for the first child, and the loop still recorded both children's scenarios, producing two dead 10-second videos.
+- **Wrong conclusion:** each iteration checks its own result.
+- **Rule:** end each setup command in a loop with `|| break`, and check its `ok` before starting the recording.
+
+## Building a fixture on a build that would mishandle it
+
+- **Symptom:** on develop, opening a child's open CHW visit through the participant page would have created a new visit, because the fixture's second participant was the one develop picks.
+- **Wrong conclusion:** fixture steps run the same on any build.
+- **Rule:** finish every fixture step that goes through the screen under test before adding the server-side data that triggers the defect. If that order is impossible, hide the data for a while (`field_deleted` 1, sync), then restore it.
