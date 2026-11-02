@@ -603,6 +603,7 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     );
 
     $this->checkPersonPatchKeepsPhoto();
+    $this->checkDuplicateParticipantsMerge();
   }
 
   /**
@@ -615,10 +616,25 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
    *   The acute_illness_encounter node ID.
    */
   protected function createAcuteIllnessEncounter($participant) {
+    return $this->createEncounter('acute_illness_encounter', $participant);
+  }
+
+  /**
+   * Creates an encounter of given type under a participant.
+   *
+   * @param string $bundle
+   *   The encounter node type, like 'nutrition_encounter'.
+   * @param int $participant
+   *   The individual_participant node ID.
+   *
+   * @return int
+   *   The encounter node ID.
+   */
+  protected function createEncounter($bundle, $participant) {
     // The participant is set at create, because the device shard hook reads
     // its person on the first save.
     $node = $this->drupalCreateNode([
-      'type' => 'acute_illness_encounter',
+      'type' => $bundle,
       'field_individual_participant' => [
         LANGUAGE_NONE => [['target_id' => $participant]],
       ],
@@ -633,6 +649,96 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     ]);
 
     return $node->nid;
+  }
+
+  /**
+   * The participant an encounter belongs to.
+   *
+   * @param int $encounter
+   *   The encounter node ID.
+   *
+   * @return int
+   *   The individual_participant node ID.
+   */
+  protected function participantOf($encounter) {
+    return entity_metadata_wrapper('node', node_load($encounter, NULL, TRUE))
+      ->field_individual_participant->getIdentifier();
+  }
+
+  /**
+   * Creates an open participant, one with no end date.
+   *
+   * @param int $person
+   *   The person node ID.
+   * @param string $type
+   *   The encounter type, like 'tuberculosis'.
+   *
+   * @return int
+   *   The individual_participant node ID.
+   */
+  protected function createOpenParticipant($person, $type) {
+    $participant = $this->createIndividualParticipant($person, REQUEST_TIME, $type);
+    $wrapper = entity_metadata_wrapper('node', $participant);
+    $wrapper->field_expected->set(['value' => date('Y-m-d', REQUEST_TIME)]);
+    $wrapper->save();
+
+    return $participant->nid;
+  }
+
+  /**
+   * Duplicate participants merge into the oldest one, and stay merged.
+   *
+   * Called from testContentIsTransferredOnMerge rather than run as a test of
+   * its own, because each test method reinstalls the site.
+   */
+  protected function checkDuplicateParticipantsMerge() {
+    $child = $this->createPerson('ChildWithDuplicates');
+    $participants = [];
+    $encounters = [];
+    foreach (range(1, 3) as $index) {
+      $participants[$index] = $this->createIndividualParticipant($child, REQUEST_TIME, 'nutrition')->nid;
+      $encounters[$index] = $this->createEncounter('nutrition_encounter', $participants[$index]);
+    }
+
+    // A dry run saves nothing.
+    _hedley_patient_merge_duplicate_participants(['nutrition'], TRUE);
+    $this->assertEqual($this->participantOf($encounters[2]), $participants[2], 'A dry run leaves the encounter on its participant.');
+    $this->assertTrue($this->isLive($participants[2]), 'A dry run leaves the duplicate participant live.');
+
+    // The run moves every encounter to the oldest participant, then deletes
+    // the others without taking their former encounters along.
+    _hedley_patient_merge_duplicate_participants(['nutrition'], FALSE);
+    foreach ($encounters as $index => $encounter) {
+      $this->assertEqual($this->participantOf($encounter), $participants[1], "Encounter $index is on the oldest participant.");
+      $this->assertTrue($this->isLive($encounter), "Encounter $index stays live.");
+    }
+    $this->assertTrue($this->isLive($participants[1]), 'The oldest participant stays live.');
+    $this->assertFalse($this->isLive($participants[2]), 'The second participant is deleted.');
+    $this->assertFalse($this->isLive($participants[3]), 'The third participant is deleted.');
+
+    // An encounter uploaded later onto a merged participant moves on the next
+    // run.
+    $late = $this->createEncounter('nutrition_encounter', $participants[2]);
+    _hedley_patient_merge_duplicate_participants(['nutrition'], FALSE);
+    $this->assertEqual($this->participantOf($late), $participants[1], 'A late encounter on a merged participant moves to the oldest one.');
+    $this->assertTrue($this->isLive($late), 'The late encounter stays live.');
+
+    // Two ended Tuberculosis participants are separate episodes, not
+    // duplicates.
+    $patient = $this->createPerson('PatientWithEpisodes');
+    $first = $this->createIndividualParticipant($patient, REQUEST_TIME, 'tuberculosis')->nid;
+    $second = $this->createIndividualParticipant($patient, REQUEST_TIME, 'tuberculosis')->nid;
+    _hedley_patient_merge_duplicate_participants(['tuberculosis'], FALSE);
+    $this->assertTrue($this->isLive($first) && $this->isLive($second), 'Ended Tuberculosis participants are left alone.');
+
+    // Two open Tuberculosis participants are duplicates.
+    $open_first = $this->createOpenParticipant($patient, 'tuberculosis');
+    $open_second = $this->createOpenParticipant($patient, 'tuberculosis');
+    $open_encounter = $this->createEncounter('tuberculosis_encounter', $open_second);
+    _hedley_patient_merge_duplicate_participants(['tuberculosis'], FALSE);
+    $this->assertEqual($this->participantOf($open_encounter), $open_first, 'The encounter of the second open participant moves to the first.');
+    $this->assertFalse($this->isLive($open_second), 'The second open Tuberculosis participant is deleted.');
+    $this->assertTrue($this->isLive($first) && $this->isLive($second), 'Ended Tuberculosis participants are still left alone.');
   }
 
   /**
