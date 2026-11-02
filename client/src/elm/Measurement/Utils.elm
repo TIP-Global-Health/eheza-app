@@ -13,7 +13,6 @@ import Backend.NutritionEncounter.Utils
         , getChildScoreboardEncountersForParticipant
         , getChildScoreboardEncountersForPerson
         , getWellChildEncountersForParticipant
-        , getWellChildEncountersForPerson
         )
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
@@ -9526,7 +9525,11 @@ resoloveLastScheduledImmunizationVisitDate childId db =
 
 isBehindOnVaccinationsByProgress : NominalDate -> Site -> PersonId -> ModelIndexedDb -> Bool
 isBehindOnVaccinationsByProgress currentDate site childId db =
-    if List.isEmpty (resolveIndividualParticipantsForPerson childId Backend.IndividualEncounterParticipant.Model.WellChildEncounter db) then
+    let
+        wellChildParticipantsIds =
+            resolveIndividualParticipantsForPerson childId Backend.IndividualEncounterParticipant.Model.WellChildEncounter db
+    in
+    if List.isEmpty wellChildParticipantsIds then
         behindOnVaccinationsByLastEncounter currentDate
             site
             (getChildScoreboardEncountersForPerson db childId)
@@ -9535,7 +9538,7 @@ isBehindOnVaccinationsByProgress currentDate site childId db =
     else
         behindOnVaccinationsByLastEncounter currentDate
             site
-            (getWellChildEncountersForPerson db childId)
+            (List.concatMap (getWellChildEncountersForParticipant db) wellChildParticipantsIds)
             (\id -> generateAssembledDataForWellChild site id db)
 
 

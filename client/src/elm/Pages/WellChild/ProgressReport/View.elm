@@ -1590,8 +1590,12 @@ viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
             distributeByAgeInMonthsWithDate child chwNCDAQuestionnaires
 
         vaccinationProgressDict =
-            Maybe.map .vaccinationProgress reportData.maybeAssembled
-                |> Maybe.withDefault (generateVaccinationProgressDictByChildScoreboard site db childId)
+            case reportData.maybeAssembled of
+                Just assembled ->
+                    assembled.vaccinationProgress
+
+                Nothing ->
+                    generateVaccinationProgressDictByChildScoreboard site db childId
     in
     [ viewChildIdentificationPane language site allNCDAQuestionnaires db ( childId, child )
     , viewANCNewbornPane language db childId child allNCDAQuestionnaires

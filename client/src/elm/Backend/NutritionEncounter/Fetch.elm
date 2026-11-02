@@ -8,9 +8,9 @@ import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.NutritionEncounter.Utils
     exposing
         ( getAcuteIllnessEncountersForParticipant
-        , getChildScoreboardEncountersForPerson
-        , getNutritionEncountersForPerson
-        , getWellChildEncountersForPerson
+        , getChildScoreboardEncountersForParticipant
+        , getNutritionEncountersForParticipant
+        , getWellChildEncountersForParticipant
         )
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
@@ -54,7 +54,7 @@ fetch id db =
 fetchForNutrition : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetchForNutrition =
     fetchForIndividualProgramme NutritionEncounter
-        getNutritionEncountersForPerson
+        getNutritionEncountersForParticipant
         FetchNutritionEncountersForParticipant
         FetchNutritionEncounter
         FetchNutritionMeasurements
@@ -63,7 +63,7 @@ fetchForNutrition =
 fetchForWellChild : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetchForWellChild =
     fetchForIndividualProgramme WellChildEncounter
-        getWellChildEncountersForPerson
+        getWellChildEncountersForParticipant
         FetchWellChildEncountersForParticipant
         FetchWellChildEncounter
         FetchWellChildMeasurements
@@ -72,7 +72,7 @@ fetchForWellChild =
 fetchForChildScoreboard : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetchForChildScoreboard =
     fetchForIndividualProgramme ChildScoreboardEncounter
-        getChildScoreboardEncountersForPerson
+        getChildScoreboardEncountersForParticipant
         FetchChildScoreboardEncountersForParticipant
         FetchChildScoreboardEncounter
         FetchChildScoreboardMeasurements
@@ -83,21 +83,20 @@ and the measurements of those encounters.
 -}
 fetchForIndividualProgramme :
     IndividualEncounterType
-    -> (ModelIndexedDb -> PersonId -> List ( encounterId, encounter ))
+    -> (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, encounter ))
     -> (IndividualEncounterParticipantId -> MsgIndexedDb)
     -> (encounterId -> MsgIndexedDb)
     -> (encounterId -> MsgIndexedDb)
     -> PersonId
     -> ModelIndexedDb
     -> List MsgIndexedDb
-fetchForIndividualProgramme encounterType encountersForPersonFunc fetchEncountersForParticipantMsg fetchEncounterMsg fetchMeasurementsMsg id db =
+fetchForIndividualProgramme encounterType encountersByParticipantFunc fetchEncountersForParticipantMsg fetchEncounterMsg fetchMeasurementsMsg id db =
     let
         participantsIds =
             resolveIndividualParticipantsForPerson id encounterType db
 
         encountersIds =
-            encountersForPersonFunc db id
-                |> List.map Tuple.first
+            List.concatMap (encountersByParticipantFunc db >> List.map Tuple.first) participantsIds
     in
     List.map FetchIndividualEncounterParticipant participantsIds
         ++ List.map fetchEncountersForParticipantMsg participantsIds

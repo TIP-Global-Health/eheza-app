@@ -316,6 +316,10 @@ resolveIndividualParticipantsForPerson personId encounterType db =
         |> Maybe.withDefault []
 
 
+{-| The participant that new encounters go on, for programmes with one
+participant per person (Nutrition, Home Visit, Well Child, Child Scoreboard,
+NCD). Other programmes pick their open participant instead.
+-}
 resolveIndividualParticipantForPerson : PersonId -> IndividualEncounterType -> ModelIndexedDb -> Maybe IndividualEncounterParticipantId
 resolveIndividualParticipantForPerson personId encounterType db =
     Dict.get personId db.individualParticipantsByPerson
