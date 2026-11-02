@@ -522,7 +522,7 @@ B-521	4	READY	LOW			46	Growth charts: the weight-for-age 0-2 chart labels its gr
 B-522	3	READY	MED-LOW			47	Sync download: a soft-deleted duplicate measurement clears the KEPT sibling from the device's in-memory encounter — ever
 B-523	4	READY	LOW			47	Sync download: `HealthCenterRevision` ignores `deleted`, so a health centre soft-deleted on the server is re-inserted in
 B-524	4	READY	LOW			47	Prenatal participant and encounter: a device's whole-copy PATCH sends `null` for fields it did not change, so a second w
-B-525	1	READY	MED			47	Acute Illness CHW first visit: the encounter is classified as "subsequent" and shown the LATER encounter's diagnosis whe
+B-525	1	IMPLEMENTED	MED	2456	2457	47	Acute Illness CHW first visit: the encounter is classified as "subsequent" and shown the LATER encounter's diagnosis whe
 B-526	3	READY	MED-LOW			47	Nutrition (individual) malnutrition assessment: the weight-based rules read the child's whole weight history assuming th
 B-527	4	READY	LOW			47	Tuberculosis and HIV: "initial encounter" means "no other encounter has fetched measurements", so an empty same-day dupl
 B-528	4	READY	LOW			48	Case Management and Stock Management caches: a downloaded follow-up, FBF or stock update from ANOTHER health centre is f
