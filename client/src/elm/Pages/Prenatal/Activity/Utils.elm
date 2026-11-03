@@ -1925,18 +1925,18 @@ resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification p
         assembled.globalLmpDate
 
 
-{-| Healthy Start weight gain at this visit, measured against the weight
-recorded at the most recent earlier nurse visit that has one.
+{-| Healthy Start weight gain since the most recent earlier nurse visit with a
+weight, over the days between the two visit dates.
 -}
-resolveGWGClassificationSincePreviousVisit : NominalDate -> PrePregnancyClassification -> Float -> AssembledData -> Maybe GWGClassification
-resolveGWGClassificationSincePreviousVisit currentDate prePregnancyClassification currentWeight assembled =
+resolveGWGClassificationSincePreviousVisit : PrePregnancyClassification -> Float -> AssembledData -> Maybe GWGClassification
+resolveGWGClassificationSincePreviousVisit prePregnancyClassification currentWeight assembled =
     resolvePreviousValueWithDate assembled .nutrition .weight
         |> Maybe.andThen
-            (\( previousWeightDate, previousWeight ) ->
-                resolveGWGClassificationForHealthyStart currentDate
+            (\( previousVisitDate, previousWeight ) ->
+                resolveGWGClassificationForHealthyStart assembled.encounter.startDate
                     prePregnancyClassification
                     (weightValueFunc previousWeight)
-                    previousWeightDate
+                    previousVisitDate
                     currentWeight
                     assembled
             )
@@ -4216,14 +4216,9 @@ resolvePreviousValueWithDate : AssembledData -> (PrenatalMeasurements -> Maybe (
 resolvePreviousValueWithDate assembled measurementFunc valueFunc =
     assembled.nursePreviousEncountersData
         |> List.filterMap
-            (.measurements
-                >> measurementFunc
-                >> Maybe.map
-                    (Tuple.second
-                        >> (\measurement ->
-                                ( measurement.dateMeasured, valueFunc measurement.value )
-                           )
-                    )
+            (\data ->
+                measurementFunc data.measurements
+                    |> Maybe.map (\( _, measurement ) -> ( data.startDate, valueFunc measurement.value ))
             )
         |> List.reverse
         |> List.head

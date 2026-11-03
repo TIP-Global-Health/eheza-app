@@ -3229,7 +3229,7 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site is
             if isHealthyStart then
                 Maybe.Extra.andThen2
                     (\prePregnancyClassification currentWeight ->
-                        resolveGWGClassificationSincePreviousVisit currentDate prePregnancyClassification currentWeight assembled
+                        resolveGWGClassificationSincePreviousVisit prePregnancyClassification currentWeight assembled
                             |> Maybe.map
                                 (\classification ->
                                     let
