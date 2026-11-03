@@ -15,9 +15,9 @@ update=
 caption='**Manual tests executed using the QA Tester skill**'
 
 [ -s "$file" ] || { echo "empty or missing: $file" >&2; exit 1; }
-first=$(grep -m1 -v '^[[:space:]]*$' "$file" | sed 's/^> *//')
+first=$(grep -m1 -v '^[[:space:]]*$' "$file")
 if [ "$first" != "$caption" ]; then
-  echo "the report must open with: $caption" >&2
+  echo "the report's first line must be exactly, with no '>' in front: $caption" >&2
   exit 1
 fi
 

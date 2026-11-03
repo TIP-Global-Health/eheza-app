@@ -238,7 +238,17 @@ test('qa driver', async () => {
   let consoleErrors = new Map<string, number>();
   const noteError = (message: string) =>
     consoleErrors.set(message.slice(0, 200), (consoleErrors.get(message.slice(0, 200)) ?? 0) + 1);
+  // Requests per command, grouped by path with ids replaced, so two builds can be compared.
+  let requestCount = 0;
+  let requestsByPath = new Map<string, number>();
+  const pathKey = (url: string) =>
+    new URL(url).pathname.replace(/[0-9a-f]{8}-[0-9a-f-]{27,}|\d+/g, '<id>');
   const watch = (p: Page) => {
+    p.on('request', (r) => {
+      requestCount += 1;
+      const key = pathKey(r.url());
+      requestsByPath.set(key, (requestsByPath.get(key) ?? 0) + 1);
+    });
     p.on('console', (m) => m.type() === 'error' && noteError(`${m.text()} ${m.location().url}`));
     p.on('pageerror', (e) => noteError(String(e)));
     // ERR_ABORTED is the browser cancelling a request on navigation, not a failure.
@@ -381,9 +391,18 @@ test('qa driver', async () => {
       out.consoleErrors = Array.from(consoleErrors, ([message, n]) => (n > 1 ? `${n}x ${message}` : message));
     }
     if (recorder.active) out.recordingAt = recorder.elapsed;
+    out.requests = {
+      total: requestCount,
+      byPath: Array.from(requestsByPath)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8)
+        .map(([key, n]) => `${n} ${key}`),
+    };
     logs = [];
     checks = [];
     consoleErrors = new Map();
+    requestCount = 0;
+    requestsByPath = new Map();
     return out;
   };
 

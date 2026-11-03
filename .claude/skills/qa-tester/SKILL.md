@@ -124,6 +124,17 @@ Case Management panes, dashboards, Statistical Queries). A caller the issue's sc
 does not run is a hold row in Step 3. For a changed function with three callers, the
 issue usually drives one.
 
+Not every change has callers. A diff that widens a condition — three activities become
+every activity, one role becomes both — or moves a one-shot action into a fetch, a render
+or a sync cycle, is covered by what it now includes. So the plan also names every non-test
+file in the diff, with the row that exercises its change or one line saying why it needs
+none: import-only, a signature change, a removed message. A file no row reaches and no
+line excuses is a gap in the plan, not in the report.
+
+When a condition is widened, each newly included member that renders through different
+view code is a hold row. One screen stands in for another only when both render through
+the same view function, and the report says which stood in for which.
+
 Note what `client/e2e/` already covers; that needs no manual pass. The same holds for
 criteria the backlog item records as fail-first unit tests. A tested criterion needs an
 end-to-end row only once per user-visible path the diff touches, to prove the wiring:
@@ -197,8 +208,14 @@ Every plan has three kinds of row, and each row names its kind:
 - **Boundary rows**: the exact value of each condition the diff adds or moves. Equal to
   the threshold, the same day, the day after, an empty collection, a missing value.
 
-Hold rows are where regressions live. A plan with none says which callers it checked and
-why they cannot be reached.
+Hold rows are where regressions live. A diff of more than three non-test files needs at
+least three, or the plan says what was looked for and why nothing qualifies.
+
+When the diff changes what the app does rather than what it shows — work moved into a
+fetch, a render or a sync cycle — a hold row's oracle is the request count. Every reply
+carries `requests`: how many the command caused and the busiest paths. Run the same
+action on both builds and compare. A tab switch that costs three requests on `develop`
+and thirty on the PR is a FAIL the error channel cannot see.
 
 ## Step 4: Execute
 
@@ -216,8 +233,9 @@ why they cannot be reached.
 Every reply is JSON: the command's return value or error, its duration, and the screen it
 left — URL, build, who is signed in (main menu only), headings, open dialogs, task
 counters, tabs, buttons with `[active]` / `[completed]` / `[disabled]`, choices as
-`(x) Yes` / `( ) No`, and field values. While recording, `recordingAt` is the second of the
-video the command ended at. Read that
+`(x) Yes` / `( ) No`, and field values. `requests` is the number of requests the command
+caused, with the busiest paths (ids replaced by `<id>`). While recording, `recordingAt` is
+the second of the video the command ended at. Read that
 instead of taking a screenshot to find out where you are. In the command body, `page` is
 the Playwright page, `h` holds every helper module (`h.prenatal`, `h.common`, `h.ncd`, …),
 and `qa` has `state()`, `shot(name, { fullPage })`, `log(...)`, `click(locator | text)`,
@@ -358,9 +376,11 @@ For failures, include the drafted comment or issue and ask for approval to post 
 watch mode, the posted FAIL comment's link and any drafted issue.
 
 **Then post the QA report to the PR — every run, pass or fail, without waiting for
-approval.** It opens with the caption
+approval.** Its first line is exactly this, with no `>` or heading mark in front:
 
-> **Manual tests executed using the QA Tester skill**
+```
+**Manual tests executed using the QA Tester skill**
+```
 
 then a table with one row per plan row — the plain-words test from Step 3, its kind (fix,
 hold, boundary) and its result — and a short paragraph per row saying what it showed —
