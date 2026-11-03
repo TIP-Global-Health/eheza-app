@@ -242,7 +242,7 @@ test('qa driver', async () => {
   let requestCount = 0;
   let requestsByPath = new Map<string, number>();
   const pathKey = (url: string) =>
-    new URL(url).pathname.replace(/[0-9a-f]{8}-[0-9a-f-]{27,}|\d+/g, '<id>');
+    new URL(url).pathname.replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/g, '<id>').replace(/\/\d+(?=\/|$)/g, '/<id>');
   const watch = (p: Page) => {
     p.on('request', (r) => {
       requestCount += 1;
