@@ -336,12 +336,12 @@ hsExampleVisit savedOn =
     hsCurrentVisit hsExampleLmp hsJuly13 [ hsPreviousVisitWithWeight hsJune1 savedOn 60.0 ]
 
 
-{-| The verdict when the current visit's weight, `currentWeight`, is saved on
-`filledOn`. This is the only call of the function under test.
+{-| The verdict for the current visit's weight, `currentWeight`. The day the
+form is filled is not an input. This is the only call of the function under test.
 -}
-hsVerdict : PrePregnancyClassification -> NominalDate -> AssembledData -> Float -> Maybe GWGClassification
-hsVerdict prePregnancyClassification filledOn assembled currentWeight =
-    resolveGWGClassificationSincePreviousVisit filledOn prePregnancyClassification currentWeight assembled
+hsVerdict : PrePregnancyClassification -> AssembledData -> Float -> Maybe GWGClassification
+hsVerdict prePregnancyClassification assembled currentWeight =
+    resolveGWGClassificationSincePreviousVisit prePregnancyClassification currentWeight assembled
 
 
 {-| Day `n` counted from `hsSplitLmp`. Day 91 is exactly 13 weeks.
@@ -372,8 +372,8 @@ resolveGWGClassificationSincePreviousVisitTest =
                         hsExampleVisit hsJune11
                 in
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.52 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.4 |> Expect.equal (Just GWGInadequate)
+                    [ \_ -> hsVerdict PrePregnancyNormal assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal assembled 62.4 |> Expect.equal (Just GWGInadequate)
                     ]
                     ()
         , test "Re-saving or editing the previous visit's weight on a later day does not change the period used at the next visit" <|
@@ -381,7 +381,7 @@ resolveGWGClassificationSincePreviousVisitTest =
                 -- The 1 June weight was saved again, unchanged, on 29 June.
                 -- The period stays 42 days (2.52 kg expected), so 1.0 kg is
                 -- not adequate; a 14-day period would have expected 0.84 kg.
-                hsVerdict PrePregnancyNormal hsJuly13 (hsExampleVisit hsJune29) 61.0
+                hsVerdict PrePregnancyNormal (hsExampleVisit hsJune29) 61.0
                     |> Expect.equal (Just GWGInadequate)
         , test "previous weight edited on a later day: the edited weight is measured over the period from the previous visit date" <|
             \_ ->
@@ -393,8 +393,8 @@ resolveGWGClassificationSincePreviousVisitTest =
                         hsCurrentVisit hsExampleLmp hsJuly13 [ hsPreviousVisitWithWeight hsJune1 hsJune29 60.5 ]
                 in
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 63.0 |> Expect.equal (Just GWGInadequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 63.1 |> Expect.equal (Just GWGAdequate)
+                    [ \_ -> hsVerdict PrePregnancyNormal assembled 63.0 |> Expect.equal (Just GWGInadequate)
+                    , \_ -> hsVerdict PrePregnancyNormal assembled 63.1 |> Expect.equal (Just GWGAdequate)
                     ]
                     ()
         , test "previous weight re-saved after the current visit's date does not change the period" <|
@@ -402,7 +402,7 @@ resolveGWGClassificationSincePreviousVisitTest =
                 -- The 1 June weight was saved again on 20 July, a week after
                 -- the current visit of 13 July began. The period is still
                 -- 1 June to 13 July.
-                hsVerdict PrePregnancyNormal hsJuly13 (hsExampleVisit hsJuly20) 61.0
+                hsVerdict PrePregnancyNormal (hsExampleVisit hsJuly20) 61.0
                     |> Expect.equal (Just GWGInadequate)
         , test "Reopening the current visit on a later day and saving its weight gives the same verdict as saving it on the visit day" <|
             \_ ->
@@ -413,8 +413,8 @@ resolveGWGClassificationSincePreviousVisitTest =
                         hsExampleVisit hsJune1
                 in
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    [ \_ -> hsVerdict PrePregnancyNormal assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal assembled 62.52 |> Expect.equal (Just GWGAdequate)
                     ]
                     ()
         , test "current visit ended on the visit day, reopened and its weight saved a week later: same verdict as on the visit day" <|
@@ -429,7 +429,7 @@ resolveGWGClassificationSincePreviousVisitTest =
                     assembled =
                         { base | encounter = { encounter | endDate = Just hsJuly13 } }
                 in
-                hsVerdict PrePregnancyNormal hsJuly20 assembled 62.52
+                hsVerdict PrePregnancyNormal assembled 62.52
                     |> Expect.equal (Just GWGAdequate)
         , test "Earlier visits with no weight recorded are skipped; the period starts at the most recent earlier visit that has one" <|
             \_ ->
@@ -446,8 +446,8 @@ resolveGWGClassificationSincePreviousVisitTest =
                             ]
                 in
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.4 |> Expect.equal (Just GWGInadequate)
+                    [ \_ -> hsVerdict PrePregnancyNormal assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal assembled 62.4 |> Expect.equal (Just GWGInadequate)
                     ]
                     ()
         , test "visit without weight skipped, and the weighed visit's record was re-saved after it: period still starts on the weighed visit's date" <|
@@ -463,8 +463,8 @@ resolveGWGClassificationSincePreviousVisitTest =
                             ]
                 in
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.4 |> Expect.equal (Just GWGInadequate)
+                    [ \_ -> hsVerdict PrePregnancyNormal assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal assembled 62.4 |> Expect.equal (Just GWGInadequate)
                     ]
                     ()
         , test "the most recent weighed visit is chosen by visit date, even when an older visit's weight was re-saved later" <|
@@ -481,14 +481,13 @@ resolveGWGClassificationSincePreviousVisitTest =
                             ]
                 in
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.4 |> Expect.equal (Just GWGInadequate)
+                    [ \_ -> hsVerdict PrePregnancyNormal assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal assembled 62.4 |> Expect.equal (Just GWGInadequate)
                     ]
                     ()
         , test "earlier nurse visits exist but none recorded a weight -> no verdict" <|
             \_ ->
                 hsVerdict PrePregnancyNormal
-                    hsJuly13
                     (hsCurrentVisit hsExampleLmp hsJuly13 [ hsPreviousVisitWithoutWeight hsJune1, hsPreviousVisitWithoutWeight hsJune22 ])
                     61.0
                     |> Expect.equal Nothing
@@ -503,7 +502,7 @@ resolveGWGClassificationSincePreviousVisitTest =
                     assembled =
                         { base | chwPreviousMeasurementsWithDates = [ ( hsJune29, ChwFirstEncounter, hsNutritionWithWeight hsJune29 61.0 ) ] }
                 in
-                hsVerdict PrePregnancyNormal hsJuly13 assembled 62.4
+                hsVerdict PrePregnancyNormal assembled 62.4
                     |> Expect.equal (Just GWGInadequate)
         , test "The 13-week split follows the visit dates: days before 13 weeks use the early-pregnancy rate, days from 13 weeks onward the later rate, even when the form is filled after 13 weeks" <|
             \_ ->
@@ -516,8 +515,8 @@ resolveGWGClassificationSincePreviousVisitTest =
                         hsCurrentVisit hsSplitLmp (hsSplitDay 105) [ hsPreviousVisitWithWeight (hsSplitDay 77) (hsSplitDay 77) 55.0 ]
                 in
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 119) assembled 56.2 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 119) assembled 56.1 |> Expect.equal (Just GWGInadequate)
+                    [ \_ -> hsVerdict PrePregnancyNormal assembled 56.2 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal assembled 56.1 |> Expect.equal (Just GWGInadequate)
                     ]
                     ()
         , test "both visits before 13 weeks, form filled after 13 weeks: only the early-pregnancy rate applies" <|
@@ -531,8 +530,8 @@ resolveGWGClassificationSincePreviousVisitTest =
                         hsCurrentVisit hsSplitLmp (hsSplitDay 84) [ hsPreviousVisitWithWeight (hsSplitDay 63) (hsSplitDay 63) 55.0 ]
                 in
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 98) assembled 55.5 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 98) assembled 55.4 |> Expect.equal (Just GWGInadequate)
+                    [ \_ -> hsVerdict PrePregnancyNormal assembled 55.5 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal assembled 55.4 |> Expect.equal (Just GWGInadequate)
                     ]
                     ()
         , test "current visit exactly at 13 weeks, form filled 3 days later: every day of the period is before 13 weeks" <|
@@ -541,7 +540,6 @@ resolveGWGClassificationSincePreviousVisitTest =
                 -- on day 91 (13 weeks), form filled on day 94. 21 days x
                 -- 0.0235 = 0.4935 kg expected: 0.5 kg gained is adequate.
                 hsVerdict PrePregnancyNormal
-                    (hsSplitDay 94)
                     (hsCurrentVisit hsSplitLmp (hsSplitDay 91) [ hsPreviousVisitWithWeight (hsSplitDay 70) (hsSplitDay 70) 55.0 ])
                     55.5
                     |> Expect.equal (Just GWGAdequate)
@@ -555,8 +553,8 @@ resolveGWGClassificationSincePreviousVisitTest =
                         hsCurrentVisit hsSplitLmp (hsSplitDay 112) [ hsPreviousVisitWithWeight (hsSplitDay 91) (hsSplitDay 91) 55.0 ]
                 in
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 112) assembled 56.3 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 112) assembled 56.2 |> Expect.equal (Just GWGInadequate)
+                    [ \_ -> hsVerdict PrePregnancyNormal assembled 56.3 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal assembled 56.2 |> Expect.equal (Just GWGInadequate)
                     ]
                     ()
         , test "previous visit before 13 weeks, its weight re-saved after 13 weeks: the split still follows the previous visit's date" <|
@@ -566,17 +564,16 @@ resolveGWGClassificationSincePreviousVisitTest =
                 -- split test, 1.169 kg is expected, so 1.1 kg gained falls
                 -- short.
                 hsVerdict PrePregnancyNormal
-                    (hsSplitDay 105)
                     (hsCurrentVisit hsSplitLmp (hsSplitDay 105) [ hsPreviousVisitWithWeight (hsSplitDay 77) (hsSplitDay 98) 55.0 ])
                     56.1
                     |> Expect.equal (Just GWGInadequate)
         , test "Example: previous visit 1 June at 60.0 kg, current visit 13 July, 61.0 kg is not adequate, even if the 1 June weight was re-saved on 29 June or the current weight was entered on 20 July" <|
             \_ ->
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 (hsExampleVisit hsJune1) 61.0 |> Expect.equal (Just GWGInadequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 (hsExampleVisit hsJune29) 61.0 |> Expect.equal (Just GWGInadequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 (hsExampleVisit hsJune1) 61.0 |> Expect.equal (Just GWGInadequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 (hsExampleVisit hsJune29) 61.0 |> Expect.equal (Just GWGInadequate)
+                    [ \_ -> hsVerdict PrePregnancyNormal (hsExampleVisit hsJune1) 61.0 |> Expect.equal (Just GWGInadequate)
+                    , \_ -> hsVerdict PrePregnancyNormal (hsExampleVisit hsJune29) 61.0 |> Expect.equal (Just GWGInadequate)
+                    , \_ -> hsVerdict PrePregnancyNormal (hsExampleVisit hsJune1) 61.0 |> Expect.equal (Just GWGInadequate)
+                    , \_ -> hsVerdict PrePregnancyNormal (hsExampleVisit hsJune29) 61.0 |> Expect.equal (Just GWGInadequate)
                     ]
                     ()
         , test "Example: the expected gain over 1 June to 13 July is 2.52 kg, also when the 1 June weight was re-saved on 29 June and the current weight entered on 20 July" <|
@@ -587,8 +584,8 @@ resolveGWGClassificationSincePreviousVisitTest =
                         hsExampleVisit hsJune29
                 in
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.52 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.51 |> Expect.equal (Just GWGInadequate)
+                    [ \_ -> hsVerdict PrePregnancyNormal assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal assembled 62.51 |> Expect.equal (Just GWGInadequate)
                     ]
                     ()
         , test "severely undernourished at booking: over 1 June to 13 July 3.066 kg is expected, also when the 1 June weight was re-saved on 29 June" <|
@@ -600,8 +597,8 @@ resolveGWGClassificationSincePreviousVisitTest =
                         hsExampleVisit hsJune29
                 in
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyUnderWeight hsJuly13 assembled 63.1 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyUnderWeight hsJuly13 assembled 63.0 |> Expect.equal (Just GWGInadequate)
+                    [ \_ -> hsVerdict PrePregnancyUnderWeight assembled 63.1 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyUnderWeight assembled 63.0 |> Expect.equal (Just GWGInadequate)
                     ]
                     ()
         , test "Gain is adequate when the actual gain is equal to or greater than the expected gain" <|
@@ -614,17 +611,17 @@ resolveGWGClassificationSincePreviousVisitTest =
                         hsExampleVisit hsJune1
                 in
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 63.0 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 66.0 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.51 |> Expect.equal (Just GWGInadequate)
+                    [ \_ -> hsVerdict PrePregnancyNormal assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal assembled 63.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal assembled 66.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal assembled 62.51 |> Expect.equal (Just GWGInadequate)
                     ]
                     ()
         , test "The first visit of a pregnancy shows no weight-gain verdict" <|
             \_ ->
                 Expect.all
-                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 (hsCurrentVisit hsExampleLmp hsJuly13 []) 61.0 |> Expect.equal Nothing
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 (hsCurrentVisit hsExampleLmp hsJuly13 []) 61.0 |> Expect.equal Nothing
+                    [ \_ -> hsVerdict PrePregnancyNormal (hsCurrentVisit hsExampleLmp hsJuly13 []) 61.0 |> Expect.equal Nothing
+                    , \_ -> hsVerdict PrePregnancyNormal (hsCurrentVisit hsExampleLmp hsJuly13 []) 61.0 |> Expect.equal Nothing
                     ]
                     ()
         , test "first nurse visit after CHW visits that recorded a weight: no weight-gain verdict" <|
@@ -636,7 +633,7 @@ resolveGWGClassificationSincePreviousVisitTest =
                     assembled =
                         { base | chwPreviousMeasurementsWithDates = [ ( hsJune1, ChwFirstEncounter, hsNutritionWithWeight hsJune1 60.0 ) ] }
                 in
-                hsVerdict PrePregnancyNormal hsJuly13 assembled 61.0
+                hsVerdict PrePregnancyNormal assembled 61.0
                     |> Expect.equal Nothing
         ]
 
