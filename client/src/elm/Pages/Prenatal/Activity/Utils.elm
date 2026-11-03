@@ -1851,7 +1851,7 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
 
 
 {-| Healthy Start–specific variant of `resolveGWGClassification`.
-This function classifies gestational weight gain between two visit dates
+This function classifies gestational weight gain between two encounters
 using the Healthy Start protocol, which is based on _daily_ expected
 weight gain rates split at 13 weeks gestational age:
 
