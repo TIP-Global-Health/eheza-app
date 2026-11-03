@@ -204,8 +204,11 @@ resolveGWGClassificationForHealthyStartTest =
 -- carried on purpose and must not move the period:
 --   * the day the previous weight record was last saved (`dateMeasured`), which
 --     every re-save or edit restamps;
---   * the day the current form is filled (`filledOn`), later than the visit
---     when the encounter is reopened.
+--   * the day the current visit's weight is saved (`filledOn`), later than
+--     the visit when the encounter is reopened. `hsVerdict` stores it as the
+--     `dateMeasured` of the current visit's own Nutrition measurement, which
+--     holds the weight being entered, and also passes it as the form's date.
+--     Tests about a reopened visit also set the current encounter's `endDate`.
 -- The current visit's date lives on the current encounter (`startDate`), the
 -- previous visit's date on `PreviousEncounterData.startDate`.
 --
@@ -337,11 +340,34 @@ hsExampleVisit savedOn =
 
 
 {-| The verdict when the current visit's weight, `currentWeight`, is saved on
-`filledOn`. This is the only call of the function under test.
+`filledOn`. The save is recorded as the current visit's own Nutrition
+measurement, dated `filledOn`, and `filledOn` is also passed as the form's
+date. This is the only call of the function under test.
 -}
 hsVerdict : PrePregnancyClassification -> NominalDate -> AssembledData -> Float -> Maybe GWGClassification
 hsVerdict prePregnancyClassification filledOn assembled currentWeight =
-    resolveGWGClassificationSincePreviousVisit filledOn prePregnancyClassification currentWeight assembled
+    let
+        measurements =
+            assembled.measurements
+
+        withCurrentWeight =
+            { assembled
+                | measurements =
+                    { measurements | nutrition = (hsNutritionWithWeight filledOn currentWeight).nutrition }
+            }
+    in
+    resolveGWGClassificationSincePreviousVisit filledOn prePregnancyClassification currentWeight withCurrentWeight
+
+
+{-| The current visit, reopened and ended again on `endDate`.
+-}
+hsEndedOn : NominalDate -> AssembledData -> AssembledData
+hsEndedOn endDate assembled =
+    let
+        encounter =
+            assembled.encounter
+    in
+    { assembled | encounter = { encounter | endDate = Just endDate } }
 
 
 {-| Day `n` counted from `hsSplitLmp`. Day 91 is exactly 13 weeks.
@@ -407,29 +433,20 @@ resolveGWGClassificationSincePreviousVisitTest =
         , test "Reopening the current visit on a later day and saving its weight gives the same verdict as saving it on the visit day" <|
             \_ ->
                 -- A gain of exactly the expected 2.52 kg, saved on the visit
-                -- day (13 July) and again after reopening on 20 July.
+                -- day (13 July), and saved on 20 July after reopening, the
+                -- visit then ended again that day.
                 let
                     assembled =
                         hsExampleVisit hsJune1
                 in
                 Expect.all
                     [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
-                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 (hsEndedOn hsJuly20 assembled) 62.52 |> Expect.equal (Just GWGAdequate)
                     ]
                     ()
         , test "current visit ended on the visit day, reopened and its weight saved a week later: same verdict as on the visit day" <|
             \_ ->
-                let
-                    base =
-                        hsExampleVisit hsJune1
-
-                    encounter =
-                        base.encounter
-
-                    assembled =
-                        { base | encounter = { encounter | endDate = Just hsJuly13 } }
-                in
-                hsVerdict PrePregnancyNormal hsJuly20 assembled 62.52
+                hsVerdict PrePregnancyNormal hsJuly20 (hsEndedOn hsJuly13 (hsExampleVisit hsJune1)) 62.52
                     |> Expect.equal (Just GWGAdequate)
         , test "Earlier visits with no weight recorded are skipped; the period starts at the most recent earlier visit that has one" <|
             \_ ->
