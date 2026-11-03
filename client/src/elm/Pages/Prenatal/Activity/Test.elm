@@ -207,7 +207,7 @@ resolveGWGClassificationForHealthyStartTest =
 --   * the day the current visit's weight is saved (`filledOn`), later than
 --     the visit when the encounter is reopened. `hsVerdict` stores it as the
 --     `dateMeasured` of the current visit's own Nutrition measurement, which
---     holds the weight being entered, and also passes it as the form's date.
+--     holds the weight being entered.
 --     Tests about a reopened visit also set the current encounter's `endDate`.
 -- The current visit's date lives on the current encounter (`startDate`), the
 -- previous visit's date on `PreviousEncounterData.startDate`.
