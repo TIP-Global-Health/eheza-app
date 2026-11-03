@@ -152,13 +152,13 @@ nutritionShownWithoutTap =
     describe "Nutrition: the child the page shows without a tap"
         [ test "On the Nutrition activity, the child the page shows without a tap has their individual data loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns emptyModel lists
+                resolveChildToLoad emptyModel lists
                     |> Expect.equal (Just alice)
 
         -- Boundary: a single pending child is the one shown.
         , test "On Nutrition with one pending child, that child is loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns emptyModel { lists | pending = Dict.fromList [ ( claire, childNamed "Claire Habimana" ) ] }
+                resolveChildToLoad emptyModel { lists | pending = Dict.fromList [ ( claire, childNamed "Claire Habimana" ) ] }
                     |> Expect.equal (Just claire)
 
         -- Boundary: nobody pending means the page shows no child on the
@@ -166,13 +166,13 @@ nutritionShownWithoutTap =
         -- on Completed).
         , test "On Nutrition with no pending child, no one is loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns emptyModel { lists | pending = Dict.empty }
+                resolveChildToLoad emptyModel { lists | pending = Dict.empty }
                     |> Expect.equal Nothing
 
         -- Boundary: the empty session.
         , test "On Nutrition with no children at all, no one is loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns emptyModel emptyLists
+                resolveChildToLoad emptyModel emptyLists
                     |> Expect.equal Nothing
         ]
 
@@ -209,14 +209,14 @@ nutritionAfterReload =
     describe "Nutrition after a reload"
         [ test "After a reload since the child's other measurements were taken, the Nutrition page's default child has their individual data loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns emptyModel nutritionLists
+                resolveChildToLoad emptyModel nutritionLists
                     |> Expect.equal (Just alice)
 
         -- Same session, on Weight, where Alice is done: the page shows Bob by
         -- default, and Bob is the one loaded, as today.
         , test "After a reload, the Weight page's default child is the first one still pending there" <|
             \_ ->
-                resolveChildToLoad Weight emptyModel weightLists
+                resolveChildToLoad emptyModel weightLists
                     |> Expect.equal (Just bob)
         ]
 
@@ -234,7 +234,7 @@ nutritionNextChildAfterSave =
     describe "Nutrition: the next child after a save"
         [ test "On Nutrition, the next child the page shows by itself after a save has their individual data loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns (tappedOn Pending alice) listsAfterAliceSaved
+                resolveChildToLoad (tappedOn Pending alice) listsAfterAliceSaved
                     |> Expect.equal (Just bob)
 
         -- Boundary: the saved child was tapped in the middle of the list. The
@@ -242,14 +242,14 @@ nutritionNextChildAfterSave =
         -- the saved child.
         , test "On Nutrition, after saving a child tapped mid-list, the first pending child is loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns (tappedOn Pending bob) listsAfterBobSaved
+                resolveChildToLoad (tappedOn Pending bob) listsAfterBobSaved
                     |> Expect.equal (Just alice)
 
         -- Boundary: the saved child was the last pending one. The page shows
         -- no child on the Pending tab.
         , test "On Nutrition, after saving the last pending child, no one is loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns
+                resolveChildToLoad
                     (tappedOn Pending alice)
                     { pending = Dict.empty
                     , completed = Dict.insert alice (childNamed "Alice Uwase") lists.completed
@@ -261,7 +261,7 @@ nutritionNextChildAfterSave =
         -- Claire, even though Alice heads the unfiltered list.
         , test "On Nutrition, after a save with a filter typed, the next child is the first of the filtered list" <|
             \_ ->
-                resolveChildToLoad NutritionSigns { emptyModel | filter = "habimana", selectedParticipant = Just bob } listsAfterBobSaved
+                resolveChildToLoad { emptyModel | filter = "habimana", selectedParticipant = Just bob } listsAfterBobSaved
                     |> Expect.equal (Just claire)
         ]
 
@@ -278,41 +278,41 @@ nutritionWithNameFilter =
     describe "Nutrition with a name filter typed"
         [ test "On Nutrition with a name filter typed, the first child of the filtered list has their individual data loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns (withFilter "habimana") lists
+                resolveChildToLoad (withFilter "habimana") lists
                     |> Expect.equal (Just bob)
 
         -- Boundary: the page normalises the filter (lower case, trimmed), so
         -- "  HABIMANA " lists the same children.
         , test "On Nutrition, a filter typed with capitals and spaces selects the same first child" <|
             \_ ->
-                resolveChildToLoad NutritionSigns (withFilter "  HABIMANA ") lists
+                resolveChildToLoad (withFilter "  HABIMANA ") lists
                     |> Expect.equal (Just bob)
 
         -- Boundary: a filter that matches the middle of a name.
         , test "On Nutrition, a filter matching the middle of a name selects that child" <|
             \_ ->
-                resolveChildToLoad NutritionSigns (withFilter "aire") lists
+                resolveChildToLoad (withFilter "aire") lists
                     |> Expect.equal (Just claire)
 
         -- Boundary: a filter of spaces only is no filter; the page shows
         -- Alice.
         , test "On Nutrition, a filter of spaces only selects the first unfiltered child" <|
             \_ ->
-                resolveChildToLoad NutritionSigns (withFilter "   ") lists
+                resolveChildToLoad (withFilter "   ") lists
                     |> Expect.equal (Just alice)
 
         -- Boundary: a filter matching nobody pending (only Diane, on
         -- Completed). The page shows no child on the Pending tab.
         , test "On Nutrition, a filter matching no pending child loads no one" <|
             \_ ->
-                resolveChildToLoad NutritionSigns (withFilter "mukamana") lists
+                resolveChildToLoad (withFilter "mukamana") lists
                     |> Expect.equal Nothing
 
         -- Boundary: the filter applies on the Completed tab as well. Diane
         -- heads Completed, but only Eric matches.
         , test "On Nutrition's Completed tab with a filter typed, the first filtered completed child is loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns { emptyModel | selectedTab = Completed, filter = "habimana" } lists
+                resolveChildToLoad { emptyModel | selectedTab = Completed, filter = "habimana" } lists
                     |> Expect.equal (Just eric)
         ]
 
@@ -328,21 +328,21 @@ nutritionCompletedTab =
     describe "Nutrition: the Completed tab"
         [ test "On Nutrition's Completed tab, the child shown there by default has their individual data loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns (withTab Completed) lists
+                resolveChildToLoad (withTab Completed) lists
                     |> Expect.equal (Just diane)
 
         -- Boundary: a child tapped on the Pending tab, then the tab switched.
         -- The tapped child is not on Completed, so the page shows Diane.
         , test "On Nutrition's Completed tab, a child tapped on Pending is not the one shown" <|
             \_ ->
-                resolveChildToLoad NutritionSigns (tappedOn Completed bob) lists
+                resolveChildToLoad (tappedOn Completed bob) lists
                     |> Expect.equal (Just diane)
 
         -- Boundary: nobody completed. The page shows no child on Completed,
         -- even though children are pending.
         , test "On Nutrition's Completed tab with no completed child, no one is loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns (withTab Completed) { lists | completed = Dict.empty }
+                resolveChildToLoad (withTab Completed) { lists | completed = Dict.empty }
                     |> Expect.equal Nothing
         ]
 
@@ -360,31 +360,31 @@ childScorecardShownWithoutTap =
     describe "Child Scorecard: the child the page shows without a tap"
         [ test "On Child Scorecard, the child shown without a tap has their individual data loaded" <|
             \_ ->
-                resolveChildToLoad NCDA emptyModel lists
+                resolveChildToLoad emptyModel lists
                     |> Expect.equal (Just alice)
 
         -- Boundary: the next child after a save on Child Scorecard.
         , test "On Child Scorecard, the next child shown by itself after a save has their individual data loaded" <|
             \_ ->
-                resolveChildToLoad NCDA (tappedOn Pending alice) listsAfterAliceSaved
+                resolveChildToLoad (tappedOn Pending alice) listsAfterAliceSaved
                     |> Expect.equal (Just bob)
 
         -- Boundary: the Completed tab on Child Scorecard.
         , test "On Child Scorecard's Completed tab, the child shown by default has their individual data loaded" <|
             \_ ->
-                resolveChildToLoad NCDA (withTab Completed) lists
+                resolveChildToLoad (withTab Completed) lists
                     |> Expect.equal (Just diane)
 
         -- Boundary: a filter typed on Child Scorecard.
         , test "On Child Scorecard with a name filter typed, the first filtered child has their individual data loaded" <|
             \_ ->
-                resolveChildToLoad NCDA (withFilter "habimana") lists
+                resolveChildToLoad (withFilter "habimana") lists
                     |> Expect.equal (Just bob)
 
         -- Boundary: nobody pending on Child Scorecard.
         , test "On Child Scorecard with no pending child, no one is loaded" <|
             \_ ->
-                resolveChildToLoad NCDA emptyModel { lists | pending = Dict.empty }
+                resolveChildToLoad emptyModel { lists | pending = Dict.empty }
                     |> Expect.equal Nothing
         ]
 
@@ -405,19 +405,19 @@ third child.
 measurementsKeepBehaviour : Test
 measurementsKeepBehaviour =
     let
-        testsFor ( activity, name ) =
+        testsFor ( _, name ) =
             [ test ("On " ++ name ++ ", the child shown by default has their individual data loaded, as today") <|
                 \_ ->
-                    resolveChildToLoad activity emptyModel lists
+                    resolveChildToLoad emptyModel lists
                         |> Expect.equal (Just alice)
             , test ("On " ++ name ++ ", a tapped child keeps having their individual data loaded, as today") <|
                 \_ ->
-                    List.member (resolveChildToLoad activity (tappedOn Pending claire) lists) [ Just claire, Just alice ]
+                    List.member (resolveChildToLoad (tappedOn Pending claire) lists) [ Just claire, Just alice ]
                         |> Expect.equal True
                         |> Expect.onFail "expected the tapped child (claire) or the first pending child (alice)"
             , test ("On " ++ name ++ " with no pending child, no one is loaded, as today") <|
                 \_ ->
-                    resolveChildToLoad activity emptyModel { lists | pending = Dict.empty }
+                    resolveChildToLoad emptyModel { lists | pending = Dict.empty }
                         |> Expect.equal Nothing
             ]
     in
@@ -451,13 +451,13 @@ chwSession =
     describe "CHW group session"
         [ test "In a CHW's group session, the Nutrition page's default child has their individual data loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns emptyModel chwNutritionLists
+                resolveChildToLoad emptyModel chwNutritionLists
                     |> Expect.equal (Just bob)
 
         -- The next child after Alice's save, in a CHW's session.
         , test "In a CHW's group session, the Nutrition page's next child after a save has their individual data loaded" <|
             \_ ->
-                resolveChildToLoad NutritionSigns (tappedOn Pending alice) chwNutritionLists
+                resolveChildToLoad (tappedOn Pending alice) chwNutritionLists
                     |> Expect.equal (Just bob)
         ]
 
