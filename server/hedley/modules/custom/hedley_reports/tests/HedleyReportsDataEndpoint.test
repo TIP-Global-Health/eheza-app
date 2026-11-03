@@ -177,7 +177,7 @@ class HedleyReportsDataEndpoint extends HedleyWebTestBase {
 
     // Piggy-backs on this method's install, per the note above: a second
     // test method would pay another full hedley-profile install.
-    $this->checkPrevalencePercentages();
+    $this->checkPrevalenceCounts();
     $this->checkPrenatalDiagnosisMappingCoverage();
     $this->checkScoreboardBirthDateFloor($dm);
   }
@@ -229,17 +229,15 @@ class HedleyReportsDataEndpoint extends HedleyWebTestBase {
   }
 
   /**
-   * Prevalence percentages count children, not encounters.
+   * Prevalence counts children, not encounters.
    *
-   * The metric arrays collect one entry per encounter, while the total they
-   * are measured against is deduplicated by child. A child measured twice in
-   * the period therefore used to count twice in the numerator but once in the
-   * denominator, inflating the percentage - past 100% in the extreme.
+   * The metric arrays collect one entry per encounter. A child measured twice
+   * in the period counts once, on both sides of the rate.
    *
    * Called from testReportsDataAccess() rather than being a test method of
    * its own, so that it shares that method's install.
    */
-  protected function checkPrevalencePercentages() {
+  protected function checkPrevalenceCounts() {
     // Child 1 was measured twice in the period, both times moderately stunted;
     // child 2 once, normal. Half the children are moderately stunted.
     $metrics = [
@@ -257,14 +255,13 @@ class HedleyReportsDataEndpoint extends HedleyWebTestBase {
       'acute_malnutrition_normal' => [],
     ];
     $results = hedley_reports_generate_prevalence_nutrition_metrics_results($metrics);
-    $this->assertEqual($results['stunting_moderate'], '50%', 'A child measured twice counts once: 1 of 2 children, not 2 of 2.');
+    $this->assertEqual($results['stunting_moderate'], [1, 2], 'A child measured twice counts once: 1 of 2 children, not 2 of 2.');
 
-    // The degenerate case: repeat measurements of the only child in the
-    // bucket used to yield 200%.
+    // Repeat measurements of the only child in the bucket are 1 of 1.
     $metrics['stunting_moderate'] = [1, 1];
     $metrics['stunting_normal'] = [];
     $results = hedley_reports_generate_prevalence_nutrition_metrics_results($metrics);
-    $this->assertEqual($results['stunting_moderate'], '100%', 'A percentage can never exceed 100%.');
+    $this->assertEqual($results['stunting_moderate'], [1, 1], 'The count never exceeds the total.');
 
     // Severity buckets are independent, and a child seen in several of them
     // still counts once per bucket.
@@ -283,11 +280,11 @@ class HedleyReportsDataEndpoint extends HedleyWebTestBase {
       'acute_malnutrition_normal' => [],
     ];
     $results = hedley_reports_generate_prevalence_nutrition_metrics_results($metrics);
-    $this->assertEqual($results['stunting_moderate'], '50%', 'Children 1 and 2 of 4 distinct children are moderately stunted.');
-    $this->assertEqual($results['stunting_severe'], '25%', 'Child 3 of 4 distinct children is severely stunted.');
+    $this->assertEqual($results['stunting_moderate'], [2, 4], 'Children 1 and 2 of 4 distinct children are moderately stunted.');
+    $this->assertEqual($results['stunting_severe'], [1, 4], 'Child 3 of 4 distinct children is severely stunted.');
 
-    // An empty bucket stays at 0%, and does not divide by zero.
-    $this->assertEqual($results['wasting_moderate'], '0%', 'An empty total yields 0%.');
+    // An empty bucket is 0 of 0.
+    $this->assertEqual($results['wasting_moderate'], [0, 0], 'An empty total yields 0 of 0.');
   }
 
   /**

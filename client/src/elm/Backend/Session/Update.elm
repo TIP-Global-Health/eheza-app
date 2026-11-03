@@ -150,7 +150,7 @@ update currentDate nurseId sessionId maybeSession db msg model =
                     )
 
                 SaveMotherFbf valueId value ->
-                    ( { model | saveFbfRequest = Dict.insert personId Loading model.saveLactationRequest }
+                    ( { model | saveFbfRequest = Dict.insert personId Loading model.saveFbfRequest }
                     , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value motherFbfEndpoint (HandleSaveFbf personId)
                     , []
                     )

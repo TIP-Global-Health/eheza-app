@@ -3,7 +3,7 @@ module Components.ReportToWhatsAppDialog.View exposing (view)
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Components.ReportToWhatsAppDialog.Model exposing (DialogState(..), Model, Msg(..), PhoneData, ReportComponentAntenatal(..), ReportComponentNCD(..), ReportComponentWellChild(..), ReportComponentsConfig, ReportComponentsList(..), ReportType(..))
-import Components.ReportToWhatsAppDialog.Utils exposing (allCountryCodes, countryCodeToString, emptyPhoneData, minimalNumberLength, siteToCountryCode, toLocalPhoneNumber, trimLeadingZeros)
+import Components.ReportToWhatsAppDialog.Utils exposing (allCountryCodes, countryCodeToString, emptyPhoneData, siteToCountryCode, toInternationalNumber, toLocalPhoneNumber, toWhatsAppNumber)
 import EverySet
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
@@ -29,7 +29,7 @@ viewDialog language site ( personId, person ) reportType componentsConfig state 
         content =
             case state of
                 Consent ->
-                    viewConsent language newPhoneData person
+                    viewConsent language site newPhoneData person
 
                 PhoneVerification phoneNumber ->
                     viewPhoneVerification language allowComponentsSelection newPhoneData phoneNumber
@@ -74,8 +74,8 @@ viewDialog language site ( personId, person ) reportType componentsConfig state 
         content
 
 
-viewConsent : Language -> PhoneData -> Person -> List (Html (Msg msg))
-viewConsent language newPhoneData person =
+viewConsent : Language -> Site -> PhoneData -> Person -> List (Html (Msg msg))
+viewConsent language site newPhoneData person =
     let
         phoneInput =
             PhoneInput newPhoneData
@@ -87,7 +87,7 @@ viewConsent language newPhoneData person =
                         trimmed =
                             String.trim number
                     in
-                    if isJust (String.toInt trimmed) && String.length trimmed >= minimalNumberLength then
+                    if isJust (toWhatsAppNumber site trimmed) then
                         PhoneVerification trimmed
 
                     else
@@ -164,21 +164,22 @@ viewPhoneInput language site data =
                 allCountryCodes
 
         continueButtonAttributes =
-            if String.length data.phone >= minimalNumberLength then
-                let
-                    curerntPhoneNumber =
-                        if siteToCountryCode site == data.countryCode then
-                            toLocalPhoneNumber site data.phone
+            case toInternationalNumber data.countryCode data.phone of
+                Just internationalNumber ->
+                    let
+                        curerntPhoneNumber =
+                            if siteToCountryCode site == data.countryCode then
+                                toLocalPhoneNumber site data.phone
 
-                        else
-                            "+" ++ countryCodeToString data.countryCode ++ trimLeadingZeros data.phone
-                in
-                [ class "ui primary fluid button"
-                , onClick <| SetState <| Just (PhoneUpdateAtProfile curerntPhoneNumber)
-                ]
+                            else
+                                internationalNumber
+                    in
+                    [ class "ui primary fluid button"
+                    , onClick <| SetState <| Just (PhoneUpdateAtProfile curerntPhoneNumber)
+                    ]
 
-            else
-                [ class "ui primary fluid button disabled" ]
+                Nothing ->
+                    [ class "ui primary fluid button disabled" ]
     in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.ReportToWhatsAppPhoneInputHeader ]
@@ -501,25 +502,15 @@ viewComponentsSelection language phoneNumber componentsList reportType config =
 viewConfirmationBeforeExecuting : Language -> Site -> ReportType -> PersonId -> String -> Maybe msg -> List (Html (Msg msg))
 viewConfirmationBeforeExecuting language site reportType personId phoneNumber clearComponentsMsg =
     let
-        phoneNumberForWhatsApp =
-            if String.startsWith "+" phoneNumber then
-                -- International number with country code. Leave as is.
-                phoneNumber
+        sendButtonAttributes =
+            case toWhatsAppNumber site phoneNumber of
+                Just phoneNumberForWhatsApp ->
+                    [ class "ui primary fluid button"
+                    , onClick <| Execute language reportType personId phoneNumberForWhatsApp
+                    ]
 
-            else
-                let
-                    localCountryCode =
-                        siteToCountryCode site
-                in
-                if String.startsWith "0" phoneNumber then
-                    -- Local number with no country code.
-                    -- Trim leading 0, add '+' and country code.
-                    "+" ++ countryCodeToString localCountryCode ++ trimLeadingZeros phoneNumber
-
-                else
-                    -- Local numberm without leading 0.
-                    -- Add '+' and country code.
-                    "+" ++ countryCodeToString localCountryCode ++ phoneNumber
+                Nothing ->
+                    [ class "ui primary fluid button disabled" ]
     in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.ReportToWhatsAppConfirmationBeforeExecutingHeader ]
@@ -535,9 +526,7 @@ viewConfirmationBeforeExecuting language site reportType personId phoneNumber cl
                 ]
                 [ text <| translate language Translate.No ]
             , button
-                [ class "ui primary fluid button"
-                , onClick <| Execute language reportType personId phoneNumberForWhatsApp
-                ]
+                sendButtonAttributes
                 [ text <| translate language Translate.Send ]
             ]
         ]

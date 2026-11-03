@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, isCurrentAuthorityRequest, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, isCurrentAuthorityRequest, isInDownloadLane, pageAllowsBackgroundRefresh, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -38,7 +38,7 @@ import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
 import Maybe.Extra
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import RemoteData
+import RemoteData exposing (WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import SyncManager.Model exposing (..)
 import Utils.WebData
@@ -79,6 +79,25 @@ isCurrentAuthorityRequest requested model =
     Maybe.map Zipper.current model.syncInfoAuthorities
         |> Maybe.map (\current -> current.uuid == requested.uuid && current.lastFetchedRevisionId == requested.lastFetchedRevisionId)
         |> Maybe.withDefault False
+
+
+{-| Whether the sync cycle is in the given download lane. For example, a
+`SyncDownloadAuthority` reply is out of its lane once the cycle reached statistics.
+-}
+isInDownloadLane : (WebData (DownloadSyncResponse a) -> SyncStatus) -> SyncStatus -> Bool
+isInDownloadLane lane status =
+    case ( lane RemoteData.NotAsked, status ) of
+        ( SyncDownloadAuthority _, SyncDownloadAuthority _ ) ->
+            True
+
+        ( SyncDownloadAuthorityDashboardStats _, SyncDownloadAuthorityDashboardStats _ ) ->
+            True
+
+        ( SyncDownloadGeneral _, SyncDownloadGeneral _ ) ->
+            True
+
+        _ ->
+            False
 
 
 {-| Decide on the Sync status. Either keep the existing one, or set the next one,

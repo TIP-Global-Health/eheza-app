@@ -287,6 +287,7 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Wrong conclusion:** the button is off, so its Save "doing nothing" is expected.
 - **Rule:** `qa.form()` reads `active` as enabled and anything else as disabled. `viewEncounterActionButton` sets neither class when allowed. Check for the `disabled` class, and look at the screenshot.
 
+<<<<<<< HEAD
 ## Opening a To Do activity after coming back from the Completed tab
 
 - **Symptom:** `completePregnancyDating` failed waiting for `.icon-task-pregnancy-dating`, though Pregnancy Dating was still to do.
@@ -515,3 +516,28 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after a scripted read of both encounter tabs, `completeDangerSigns` failed waiting for `.icon-task-danger-signs`; a second take of the preparation video was needed.
 - **Wrong conclusion:** Danger Signs was not offered.
 - **Rule:** the same pit as "Opening a To Do activity after coming back from the Completed tab", met again by a reader script. Any script that clicks `#completed-tab` ends by clicking `#pending-tab`.
+=======
+## `page.reload()` keeps the current screen
+
+- **Symptom:** after `page.reload()` on Device Status, waiting for `.wrap-cards` timed out after 60 s.
+- **Wrong conclusion:** the app did not load.
+- **Rule:** a reload keeps the URL's hash, so the app reopens the same screen. Follow it with `page.goto('/')` before waiting for the main menu.
+
+## A screen that looks the same with no data at all
+
+- **Symptom:** on a re-paired device, the participant page of a woman whose pregnancy had ended showed First Antenatal and Postpartum on, Record Pregnancy Outcome off.
+- **Wrong conclusion:** the concluded pregnancy came down. A woman with no pregnancy on the device gets exactly the same buttons.
+- **Rule:** when the expected screen equals the empty one, prove the download another way: read the record from IndexedDB `shards` on the new device.
+
+## Timing a sync resend from the server's side
+
+- **Symptom:** a held download's copy reached the server 20 s after the page sent it, and an "extra" request in the window turned out to be the newer request's own 30-second resend.
+- **Wrong conclusion:** the build under test sends a request it should not.
+- **Rule:** Chrome holds a second GET to the same address for up to 20 s while the first is open, and every copy of a download has the same address. The app's clock moves every 10 s. Time scenarios from the page's own request log, and keep windows short of the next resend.
+
+## Waiting on a log line that existed before the step
+
+- **Symptom:** "wait for the copy to answer" matched an authority reply from before the hold was set, so the next hold caught the wrong request.
+- **Wrong conclusion:** the scenario ran as planned.
+- **Rule:** when waiting for an event in a log, require it to come after the step that should cause it (compare timestamps or ids).
+>>>>>>> 5148ea2f42282e18a66f28294e66a7281b56617e

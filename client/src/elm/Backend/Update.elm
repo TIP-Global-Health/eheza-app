@@ -43,16 +43,16 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils
     exposing
         ( getMeasurementValueFunc
-        , labExpirationPeriod
+        , labsResultsTestAddedMsgs
         , mapChildMeasurementsAtOfflineSession
         , mapMeasurementData
         , splitChildMeasurements
         , splitMotherMeasurements
         , testPerformedByExecutionNote
         )
-import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..))
-import Backend.NCDActivity.Model
+import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..), RevisionsOrigin(..))
 import Backend.NCDEncounter.Model
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NCDEncounter.Update
 import Backend.Nurse.Model
 import Backend.Nurse.Update
@@ -87,7 +87,7 @@ import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
-import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, sw, updateVillageStockManagementCaches)
+import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, storedDiagnosesEqual, sw, updateVillageStockManagementCaches)
 import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
@@ -165,11 +165,10 @@ updateIndexedDb :
     -> Bool
     -> Bool
     -> Page
-    -> SyncManager.Model.Model
     -> MsgIndexedDb
     -> ModelIndexedDb
     -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb language currentDate currentTime coordinates zscores site features nurseId healthCenterId villageId isChw isLabTech activePage syncManager msg model =
+updateIndexedDb language currentDate currentTime coordinates zscores site features nurseId healthCenterId villageId isChw isLabTech activePage msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -341,7 +340,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         isChw
                         isLabTech
                         activePage
-                        syncManager
                     )
                     extraMsgs
 
@@ -1678,7 +1676,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         isChw
                         isLabTech
                         activePage
-                        syncManager
                     )
                     [ HandleFetchedPeople data ]
 
@@ -2049,18 +2046,15 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , []
             )
 
-        HandleRevisions revisions ->
+        HandleRevisions origin revisions ->
             let
-                downloadingContent =
-                    case syncManager.syncStatus of
-                        SyncManager.Model.SyncDownloadGeneral _ ->
-                            True
-
-                        SyncManager.Model.SyncDownloadAuthority _ ->
-                            True
-
-                        _ ->
+                downloadedContent =
+                    case origin of
+                        RevisionsFromLocalSave ->
                             False
+
+                        RevisionsFromSyncDownload ->
+                            True
 
                 processRevisionAndDiagnoseAcuteIllness participantId encounterId =
                     let
@@ -2545,7 +2539,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     , []
                     )
             in
-            if downloadingContent then
+            if downloadedContent then
                 processRevisions
 
             else
@@ -4369,7 +4363,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             isChw
                             isLabTech
                             activePage
-                            syncManager
                         )
                         extraMsgs
 
@@ -4608,7 +4601,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         isChw
                         isLabTech
                         activePage
-                        syncManager
                     )
                     extraMsgs
 
@@ -4629,12 +4621,11 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             )
                         |> Maybe.withDefault person
 
-                -- Adding GPS coordinates. Laid over the stored ones, rather
-                -- than offered instead of them, because a reading that was
-                -- asked for is not always a reading that arrived: without a
-                -- fix this leaves what is stored alone.
+                -- Of the patches, only the edit form's shows a GPS reading, so
+                -- only it adds one. It is laid over the stored coordinates, so
+                -- with no reading they stay.
                 personWithCoordinates =
-                    if gpsCoordinatesEnabled features && person.saveGPSLocation then
+                    if origin == InitiatorEditForm && gpsCoordinatesEnabled features && person.saveGPSLocation then
                         updatePersonWithCoordinates personWithStoredCoordinates coordinates
 
                     else
@@ -5276,6 +5267,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             else
                 Dict.insert uuid data
 
+        -- A loaded list of the participant's encounters takes the revised one
+        -- in place, as a refetch would. A list not loaded yet is fetched again.
+        participantEncountersActionConsideringDeletedField uuid data =
+            Dict.update data.participant
+                (Maybe.andThen
+                    (RemoteData.toMaybe
+                        >> Maybe.map (measurementActionConsideringDeletedField uuid data >> Success)
+                    )
+                )
+
         familyMeasurementActionConsideringDeletedField uuid data =
             if data.deleted then
                 Dict.remove data.participantId
@@ -5358,7 +5359,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.acuteIllnessEncounters
 
                 acuteIllnessEncountersByParticipant =
-                    Dict.remove data.participant model.acuteIllnessEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.acuteIllnessEncountersByParticipant
             in
             ( { model
                 | acuteIllnessEncounters = acuteIllnessEncounters
@@ -5604,7 +5605,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.childScoreboardEncounters
 
                 childScoreboardEncountersByParticipant =
-                    Dict.remove data.participant model.childScoreboardEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.childScoreboardEncountersByParticipant
             in
             ( { model
                 | childScoreboardEncounters = childScoreboardEncounters
@@ -5940,7 +5941,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.familyNutritionEncounters
 
                 familyNutritionEncountersByParticipant =
-                    Dict.remove data.participant model.familyNutritionEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.familyNutritionEncountersByParticipant
             in
             ( { model
                 | familyNutritionEncounters = familyNutritionEncounters
@@ -6103,7 +6104,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.hivEncounters
 
                 hivEncountersByParticipant =
-                    Dict.remove data.participant model.hivEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.hivEncountersByParticipant
             in
             ( { model
                 | hivEncounters = hivEncounters
@@ -6227,7 +6228,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.homeVisitEncounters
 
                 homeVisitEncountersByParticipant =
-                    Dict.remove data.participant model.homeVisitEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.homeVisitEncountersByParticipant
             in
             ( { model
                 | homeVisitEncounters = homeVisitEncounters
@@ -6468,7 +6469,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.ncdEncounters
 
                 ncdEncountersByParticipant =
-                    Dict.remove data.participant model.ncdEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.ncdEncountersByParticipant
             in
             ( { model
                 | ncdEncounters = ncdEncounters
@@ -6834,7 +6835,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.nutritionEncounters
 
                 nutritionEncountersByParticipant =
-                    Dict.remove data.participant model.nutritionEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.nutritionEncountersByParticipant
             in
             ( { model
                 | nutritionEncounters = nutritionEncounters
@@ -7237,7 +7238,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.prenatalEncounters
 
                 prenatalEncountersByParticipant =
-                    Dict.remove data.participant model.prenatalEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.prenatalEncountersByParticipant
             in
             ( { model
                 | prenatalEncounters = prenatalEncounters
@@ -8020,7 +8021,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.tuberculosisEncounters
 
                 tuberculosisEncountersByParticipant =
-                    Dict.remove data.participant model.tuberculosisEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.tuberculosisEncountersByParticipant
             in
             ( { model
                 | tuberculosisEncounters = tuberculosisEncounters
@@ -8297,7 +8298,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     encounterActionConsideringDeletedField uuid data model.wellChildEncounters
 
                 wellChildEncountersByParticipant =
-                    Dict.remove data.participant model.wellChildEncountersByParticipant
+                    participantEncountersActionConsideringDeletedField uuid data model.wellChildEncountersByParticipant
             in
             ( { model
                 | wellChildEncounters = wellChildEncounters
@@ -8852,7 +8853,7 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                     diagnosesAfter =
                         Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
                 in
-                if everySetsEqual diagnosesBefore diagnosesAfter then
+                if storedDiagnosesEqual NoPrenatalDiagnosis diagnosesBefore diagnosesAfter then
                     []
 
                 else
@@ -9046,53 +9047,11 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                     []
 
                 else
-                    let
-                        testExecuted =
-                            testPerformedByExecutionNote executionNote
-                    in
-                    Maybe.map
-                        (\( resultsId, measurement ) ->
-                            let
-                                updatedValue =
-                                    (\value ->
-                                        { value
-                                            | performedTests =
-                                                if testExecuted then
-                                                    EverySet.insert test value.performedTests
-
-                                                else
-                                                    EverySet.remove test value.performedTests
-
-                                            -- When we have universal form, it's possible to change if test is performed
-                                            -- at lab, or at point of care.
-                                            -- Therefore, we need to make sure that test does not appear as completed,
-                                            -- which can happen, when nurse switches from point of care to lab.
-                                            , completedTests = EverySet.remove test value.completedTests
-                                            , resolutionDate = Date.add Days labExpirationPeriod currentDate
-                                        }
-                                    )
-                                        measurement.value
-                            in
-                            [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
-                        )
+                    labsResultsTestAddedMsgs currentDate
+                        test
+                        (testPerformedByExecutionNote executionNote)
                         assembled.measurements.labsResults
-                        |> Maybe.withDefault
-                            (if testExecuted then
-                                let
-                                    resultsValue =
-                                        Backend.Measurement.Model.LabsResultsValue
-                                            (EverySet.singleton test)
-                                            EverySet.empty
-                                            (Date.add Days labExpirationPeriod currentDate)
-                                            False
-                                            Nothing
-                                            Nothing
-                                in
-                                [ savePrenatalLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
-
-                             else
-                                []
-                            )
+                        (savePrenatalLabsResultsMsg id assembled.participant.person)
             )
         |> Maybe.withDefault []
 
@@ -9113,7 +9072,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
                     (\( resultsId, results ) ->
                         let
                             ( performedTests, completedTests ) =
-                                Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
+                                Pages.Prenatal.RecurrentActivity.Utils.labsResultsTests currentDate assembled results
 
                             updatedValue =
                                 (\value ->
@@ -9129,7 +9088,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
                                             EverySet.insert test completedTests
 
                                         allLabsCompleted =
-                                            EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests
+                                            Pages.GlobalCaseManagement.Utils.allLabsCompleted updatedPerformedTests updatedCompletedTests
 
                                         updatedTestsWithFollowUp =
                                             -- Mark tests which results were entered by Lab Tech, and got
@@ -9265,14 +9224,10 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                     if List.isEmpty pendingActivities then
                         Maybe.map
                             (\( resultsId, results ) ->
-                                let
-                                    value =
-                                        results.value
-                                in
                                 [ savePrenatalLabsResultsMsg id
                                     assembled.participant.person
                                     (Just resultsId)
-                                    { value | resolutionDate = currentDate }
+                                    (Pages.Prenatal.RecurrentActivity.Utils.concludedLabsResultsValue currentDate assembled results)
                                 , App.Model.SetActivePage <|
                                     UserPage <|
                                         ClinicalProgressReportPage
@@ -9342,7 +9297,7 @@ generateNCDAssessmentMsgs after id =
                 diagnosesAfter =
                     Pages.NCD.Utils.generateNCDDiagnoses assembledAfter
             in
-            if everySetsEqual diagnosesBefore diagnosesAfter then
+            if storedDiagnosesEqual NoNCDDiagnosis diagnosesBefore diagnosesAfter then
                 []
 
             else
@@ -9367,36 +9322,11 @@ generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
-                let
-                    testExecuted =
-                        testPerformedByExecutionNote executionNote
-                in
-                Maybe.map
-                    (\( resultsId, measurement ) ->
-                        [ saveNCDLabsResultsMsg id
-                            assembled.participant.person
-                            (Just resultsId)
-                            (Pages.NCD.Utils.labsResultsWithTestAdded currentDate test testExecuted measurement.value)
-                        ]
-                    )
+                labsResultsTestAddedMsgs currentDate
+                    test
+                    (testPerformedByExecutionNote executionNote)
                     assembled.measurements.labsResults
-                    |> Maybe.withDefault
-                        (if testExecuted then
-                            let
-                                resultsValue =
-                                    Backend.Measurement.Model.LabsResultsValue
-                                        (EverySet.singleton test)
-                                        EverySet.empty
-                                        (Date.add Days labExpirationPeriod currentDate)
-                                        False
-                                        Nothing
-                                        Nothing
-                            in
-                            [ saveNCDLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
-
-                         else
-                            []
-                        )
+                    (saveNCDLabsResultsMsg id assembled.participant.person)
             )
         |> Maybe.withDefault []
 
@@ -9412,60 +9342,14 @@ generateNCDLabsResultsAddedMsgs currentDate after test id =
         |> RemoteData.toMaybe
         |> Maybe.andThen
             (\assembled ->
-                Maybe.map
+                Maybe.andThen
                     (\( resultsId, results ) ->
-                        if
-                            EverySet.member test results.value.completedTests
-                                && EverySet.member test results.value.performedTests
-                        then
-                            -- Do not update value if we have it set up properly already.
-                            []
-
-                        else
-                            let
-                                ( performedTests, completedTests ) =
-                                    Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
-
-                                updatedValue =
-                                    (\value ->
-                                        let
-                                            -- Since lab results can be entered right away (at poit of care),
-                                            -- or at latter stage (after test was ordered at lab), we
-                                            -- update both performed and completed tests.
-                                            -- Since data structure is EverySet, it will not create duplicacies.
-                                            updatedPerformedTests =
-                                                EverySet.insert test performedTests
-
-                                            updatedCompletedTests =
-                                                EverySet.insert test completedTests
-
-                                            resolutionDate =
-                                                -- When all performed tests are completed, and Next Steps are either
-                                                -- completed, or not required, setting today as resolution date.
-                                                if
-                                                    (EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests)
-                                                        && Pages.NCD.RecurrentActivity.Utils.activityCompleted
-                                                            assembled
-                                                            Backend.NCDActivity.Model.RecurrentNextSteps
-                                                then
-                                                    currentDate
-
-                                                else
-                                                    value.resolutionDate
-                                        in
-                                        { value
-                                            | performedTests = updatedPerformedTests
-                                            , completedTests = updatedCompletedTests
-                                            , resolutionDate = resolutionDate
-                                        }
-                                    )
-                                        results.value
-                            in
-                            [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                        Pages.NCD.RecurrentActivity.Utils.labsResultsValueWithResult currentDate assembled test results.value
+                            |> Maybe.map (saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId))
                     )
                     assembled.measurements.labsResults
             )
-        |> Maybe.withDefault []
+        |> Maybe.Extra.toList
 
 
 saveNCDLabsResultsMsg :

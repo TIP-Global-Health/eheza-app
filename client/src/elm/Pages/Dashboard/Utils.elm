@@ -1,4 +1,4 @@
-module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countChildrenSeenForSelectedMonth, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, dataItemMergeDuplicates, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, resolveDayAfterSelectedDate, resolveECDStatus, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+module Pages.Dashboard.Utils exposing (applyGenderFilter, caseManagementMergeDuplicates, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countChildrenSeenForSelectedMonth, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, dataItemMergeDuplicates, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isSPVNurseEncounter, previousThreeMonthsNewestFirst, resolveDayAfterSelectedDate, resolveECDStatus, resolvePreviousMonth, resolveStatsDate, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -56,7 +56,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Village.Utils exposing (resolveVillageResidents)
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..), ecdMilestoneWarnings)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..), ecdMilestoneWarnings, hasWarningFrom)
 import Date exposing (Unit(..), isBetween)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, toLastDayOfMonth)
@@ -1313,6 +1313,34 @@ resolveStatsDate currentDate statsGeneratedDate =
     Maybe.withDefault currentDate statsGeneratedDate
 
 
+{-| Keeps the entries of the three months before `currentMonth`, newest first,
+across the year boundary. In February: January, December, November.
+-}
+previousThreeMonthsNewestFirst : Int -> Dict Int a -> List ( Int, a )
+previousThreeMonthsNewestFirst currentMonth dict =
+    let
+        monthBefore1 =
+            resolvePreviousMonth currentMonth
+
+        monthBefore2 =
+            resolvePreviousMonth monthBefore1
+
+        monthBefore3 =
+            resolvePreviousMonth monthBefore2
+    in
+    [ monthBefore1, monthBefore2, monthBefore3 ]
+        |> List.filterMap (\month -> Dict.get month dict |> Maybe.map (Tuple.pair month))
+
+
+resolvePreviousMonth : Int -> Int
+resolvePreviousMonth thisMonth =
+    if thisMonth == 1 then
+        12
+
+    else
+        thisMonth - 1
+
+
 generateTotalBeneficiariesMonthlyDuringPastYear :
     NominalDate
     -> DashboardStats
@@ -2030,9 +2058,7 @@ resolveECDStatus dateLastDayOfSelectedMonth item =
 
     else
         List.filter
-            (\encounter ->
-                List.any (\warning -> EverySet.member warning encounter.warnings) ecdMilestoneWarnings
-            )
+            (.warnings >> hasWarningFrom ecdMilestoneWarnings)
             nurseEncounters
             |> List.sortWith (sortByDateDesc .startDate)
             |> List.head

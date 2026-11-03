@@ -1,15 +1,23 @@
 module Measurement.Test exposing (all)
 
 import AssocList as Dict
+import Backend.ChildScoreboardEncounter.Model exposing (emptyChildScoreboardEncounter)
+import Backend.Entities exposing (IndividualEncounterParticipantId, PersonId)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.Measurement.Model
     exposing
-        ( BloodSmearResult(..)
+        ( AdministrationNote(..)
+        , BloodSmearResult(..)
+        , ChildNutritionSign(..)
         , ColorAlertIndication(..)
         , CreatinineTestValue
         , HeightInCm(..)
         , LiverFunctionTestValue
         , MalariaTestValue
         , MuacInCm(..)
+        , NCDASign(..)
+        , NutritionAssessment(..)
+        , PartnerHIVTestValue
         , SkippedForm(..)
         , StuntingLevel(..)
         , TestExecutionNote(..)
@@ -20,10 +28,11 @@ import Backend.Measurement.Model
         , WeightInKg(..)
         , WellChildVaccineType(..)
         )
-import Date exposing (Unit(..))
+import Backend.Model exposing (ModelIndexedDb, emptyModelIndexedDb)
+import Date exposing (Date, Unit(..))
 import EverySet
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -31,6 +40,8 @@ import Measurement.Utils
         , bloodGlucoseOutOfRange
         , bornUnderweightByBirthWeight
         , creatinineResultFormWithDefault
+        , generateIndividualNutritionAssessmentEntries
+        , generateVaccinationProgressDictByChildScoreboard
         , getAllDosesForVaccine
         , getInputConstraintsHeight
         , getInputConstraintsMuac
@@ -44,10 +55,12 @@ import Measurement.Utils
         , liverFunctionResultFormWithDefault
         , malariaResultFormWithDefault
         , malariaTestFormWithDefault
+        , mergeVaccinationProgressDicts
         , ncdaFormWithDefault
         , ncdaMeasurementsOutOfRange
         , nextVaccinationDataForVaccine
         , outOfRangeAsEntered
+        , partnerHIVResultFormWithDefault
         , rdtKnownAsPositiveUpdate
         , rdtTestPerformedUpdate
         , setNCDAStep
@@ -57,11 +70,14 @@ import Measurement.Utils
         , toHepatitisBTestValueWithDefault
         , toMalariaResultValueWithDefault
         , toMalariaTestValueWithDefault
+        , toNCDAValueWithDefault
         , toPartnerHIVTestValueWithDefault
         , toPregnancyTestValueWithDefault
         , toRandomBloodSugarTestValueUniversalWithDefault
         )
 import Measurement.View exposing (viewColorAlertIndication)
+import RemoteData exposing (RemoteData(..))
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
@@ -267,6 +283,58 @@ nextVaccinationDataForVaccineTest =
         ]
 
 
+mergeVaccinationProgressDictsTest : Test
+mergeVaccinationProgressDictsTest =
+    let
+        date day month year =
+            Date.fromCalendarDate year month day
+
+        wellChildProgress doses =
+            Dict.fromList [ ( VaccineOPV, Dict.fromList doses ), ( VaccineBCG, Dict.empty ) ]
+
+        -- The OPV doses of a child followed by both Well Child and Child Scoreboard.
+        mergedOPVDoses wellChildDoses childScoreboardDoses =
+            mergeVaccinationProgressDicts
+                (wellChildProgress wellChildDoses)
+                (Dict.fromList [ ( VaccineOPV, Dict.fromList childScoreboardDoses ), ( VaccineBCG, Dict.empty ) ])
+                |> Dict.get VaccineOPV
+                |> Maybe.map Dict.toList
+
+        firstTwoDoses =
+            [ ( VaccineDoseFirst, date 1 Oct 2025 ), ( VaccineDoseSecond, date 15 Aug 2026 ) ]
+    in
+    describe "mergeVaccinationProgressDicts"
+        [ test "keeps the doses in dose order for a child followed by one program" <|
+            \_ ->
+                mergeVaccinationProgressDicts (wellChildProgress firstTwoDoses) Dict.empty
+                    |> Dict.get VaccineOPV
+                    |> Maybe.map Dict.toList
+                    |> Expect.equal (Just firstTwoDoses)
+        , test "keeps the doses in dose order when the other program has none" <|
+            \_ ->
+                mergedOPVDoses firstTwoDoses []
+                    |> Expect.equal (Just firstTwoDoses)
+        , test "puts doses recorded by both programs in dose order" <|
+            \_ ->
+                mergedOPVDoses
+                    [ ( VaccineDoseFirst, date 1 Oct 2025 ), ( VaccineDoseThird, date 20 Sep 2026 ) ]
+                    [ ( VaccineDoseSecond, date 15 Aug 2026 ) ]
+                    |> Expect.equal
+                        (Just
+                            [ ( VaccineDoseFirst, date 1 Oct 2025 )
+                            , ( VaccineDoseSecond, date 15 Aug 2026 )
+                            , ( VaccineDoseThird, date 20 Sep 2026 )
+                            ]
+                        )
+        , test "keeps the later date of a dose both programs recorded" <|
+            \_ ->
+                mergedOPVDoses
+                    [ ( VaccineDoseFirst, date 1 Oct 2025 ) ]
+                    [ ( VaccineDoseFirst, date 3 Oct 2025 ) ]
+                    |> Expect.equal (Just [ ( VaccineDoseFirst, date 3 Oct 2025 ) ])
+        ]
+
+
 initialVaccinationDateByBirthDateTest : Test
 initialVaccinationDateByBirthDateTest =
     let
@@ -343,6 +411,51 @@ updateChildSetMuacTest =
                 in
                 model.ncdaData.form.muac
                     |> Expect.equal (Just (MuacInCm 12.5))
+        ]
+
+
+{-| The treatment question is asked only while the MUAC is off. An answer the
+form kept from before the MUAC changed would be saved behind a hidden question,
+for a child the form no longer calls malnourished.
+-}
+ncdaTreatmentAnswerSavedTest : Test
+ncdaTreatmentAnswerSavedTest =
+    let
+        treatedSaved saved form =
+            toNCDAValueWithDefault saved form
+                |> Maybe.map (.signs >> EverySet.member TreatedForAcuteMalnutrition)
+
+        answeredYes =
+            { emptyNCDAForm | treatedForAcuteMalnutrition = Just True }
+
+        savedWithOffMuac =
+            Just
+                { signs = EverySet.singleton TreatedForAcuteMalnutrition
+                , birthWeight = Nothing
+                , ancVisitsDates = EverySet.empty
+                , receivesVitaminA = Nothing
+                , stuntingLevel = Nothing
+                , weight = Nothing
+                , muac = Just (MuacInCm 11)
+                }
+    in
+    describe "the treatment answer and the MUAC it was asked for"
+        [ test "an answer is saved while the MUAC is off" <|
+            \_ ->
+                treatedSaved Nothing { answeredYes | muac = Just (MuacInCm 11) }
+                    |> Expect.equal (Just True)
+        , test "an answer kept from before the MUAC was corrected to green is not saved" <|
+            \_ ->
+                treatedSaved Nothing { answeredYes | muac = Just (MuacInCm 14) }
+                    |> Expect.equal (Just False)
+        , test "an answer kept from before the saved MUAC was marked not taken is not saved" <|
+            \_ ->
+                treatedSaved savedWithOffMuac { answeredYes | muacNotTaken = Just True }
+                    |> Expect.equal (Just False)
+        , test "a saved answer is not saved again once the MUAC on the form is green" <|
+            \_ ->
+                treatedSaved savedWithOffMuac { emptyNCDAForm | muac = Just (MuacInCm 14) }
+                    |> Expect.equal (Just False)
         ]
 
 
@@ -673,6 +786,30 @@ savedLiverFunctionTest =
     }
 
 
+{-| The lab technician reopens a partner HIV test they declined because the
+partner was not present.
+-}
+partnerHIVResultFormNotPresentTest : Test
+partnerHIVResultFormNotPresentTest =
+    let
+        saved : PartnerHIVTestValue
+        saved =
+            { executionNote = TestNoteNotPresent
+            , executionDate = Just (Date.fromCalendarDate 2024 Time.Jan 1)
+            , testPrerequisites = Nothing
+            , testResult = Nothing
+            , hivSigns = Nothing
+            }
+    in
+    describe "partnerHIVResultFormWithDefault, on a partner who was not present"
+        [ test "shows the test will not be performed today" <|
+            \_ ->
+                partnerHIVResultFormWithDefault emptyPartnerHIVResultForm (Just saved)
+                    |> .runConfirmedByLabTech
+                    |> Expect.equal (Just False)
+        ]
+
+
 liverFunctionResultFormWithDefaultTest : Test
 liverFunctionResultFormWithDefaultTest =
     let
@@ -949,28 +1086,180 @@ bloodSmearOrderedTest =
         ]
 
 
+generateIndividualNutritionAssessmentEntriesTest : Test
+generateIndividualNutritionAssessmentEntriesTest =
+    let
+        date =
+            Date.fromCalendarDate 2026 Oct 1
+
+        entriesForSignsTapped signs =
+            generateIndividualNutritionAssessmentEntries
+                [ { nutrition =
+                        Just
+                            ( ()
+                            , { dateMeasured = date
+                              , value =
+                                    { signs = EverySet.fromList signs
+                                    , assesment = EverySet.singleton (AssesmentMalnutritionSigns signs)
+                                    }
+                              }
+                            )
+                  , followUp =
+                        Just
+                            ( ()
+                            , { dateMeasured = date
+                              , value =
+                                    { options = EverySet.empty
+                                    , resolutionDate = Nothing
+                                    , assesment = EverySet.singleton (AssesmentMalnutritionSigns [ Apathy, Edema ])
+                                    }
+                              }
+                            )
+                  }
+                ]
+
+        expected =
+            [ ( date, [ AssesmentMalnutritionSigns [ Apathy, Edema ] ] ) ]
+    in
+    describe "generateIndividualNutritionAssessmentEntries"
+        [ test "signs tapped in sorted order give one malnutrition signs entry" <|
+            \_ ->
+                entriesForSignsTapped [ Apathy, Edema ]
+                    |> Expect.equal expected
+        , test "signs tapped in reverse order give one malnutrition signs entry" <|
+            \_ ->
+                entriesForSignsTapped [ Edema, Apathy ]
+                    |> Expect.equal expected
+        ]
+
+
+{-| A child should have one Child Scoreboard participant, but some have two.
+A dose recorded under either one must count, or it is offered again.
+-}
+vaccinationProgressAcrossDuplicateParticipantsTest : Test
+vaccinationProgressAcrossDuplicateParticipantsTest =
+    let
+        childId : PersonId
+        childId =
+            toEntityUuid "child"
+
+        -- The first OPV dose was given under one participant, the second
+        -- under the other.
+        doses : List ( IndividualEncounterParticipantId, VaccineDose, Date )
+        doses =
+            [ ( toEntityUuid "participant-a", VaccineDoseFirst, Date.fromCalendarDate 2020 Jan 10 )
+            , ( toEntityUuid "participant-b", VaccineDoseSecond, Date.fromCalendarDate 2020 Feb 10 )
+            ]
+
+        encounterId participantId =
+            toEntityUuid ("encounter-" ++ fromEntityUuid participantId)
+
+        measurementsWithOPV participantId dose date =
+            { ncda = Nothing
+            , bcgImmunisation = Nothing
+            , dtpImmunisation = Nothing
+            , dtpStandaloneImmunisation = Nothing
+            , ipvImmunisation = Nothing
+            , mrImmunisation = Nothing
+            , opvImmunisation =
+                Just
+                    ( toEntityUuid ("opv-" ++ fromEntityUuid participantId)
+                    , { dateMeasured = date
+                      , nurse = Nothing
+                      , healthCenter = Nothing
+                      , participantId = childId
+                      , deleted = False
+                      , encounterId = Just (encounterId participantId)
+                      , value =
+                            { administeredDoses = EverySet.singleton dose
+                            , administrationDates = EverySet.singleton date
+                            , administrationNote = AdministeredToday
+                            }
+                      }
+                    )
+            , pcv13Immunisation = Nothing
+            , rotarixImmunisation = Nothing
+            }
+
+        db : ModelIndexedDb
+        db =
+            { emptyModelIndexedDb
+                | individualParticipantsByPerson =
+                    Dict.singleton childId
+                        (Success <|
+                            Dict.fromList <|
+                                List.map
+                                    (\( participantId, _, date ) ->
+                                        ( participantId
+                                        , emptyIndividualEncounterParticipant date childId ChildScoreboardEncounter (toEntityUuid "health-center")
+                                        )
+                                    )
+                                    doses
+                        )
+                , childScoreboardEncountersByParticipant =
+                    Dict.fromList <|
+                        List.map
+                            (\( participantId, _, date ) ->
+                                ( participantId
+                                , Success <| Dict.singleton (encounterId participantId) (emptyChildScoreboardEncounter participantId date Nothing)
+                                )
+                            )
+                            doses
+                , childScoreboardMeasurements =
+                    Dict.fromList <|
+                        List.map
+                            (\( participantId, dose, date ) ->
+                                ( encounterId participantId, Success <| measurementsWithOPV participantId dose date )
+                            )
+                            doses
+            }
+    in
+    describe "Child Scoreboard doses of a child with two participants"
+        [ test "both OPV doses count, whichever participant holds them" <|
+            \_ ->
+                generateVaccinationProgressDictByChildScoreboard SiteRwanda db childId
+                    |> Dict.get VaccineOPV
+                    |> Maybe.map Dict.toList
+                    |> Expect.equal
+                        (Just
+                            [ ( VaccineDoseFirst, Date.fromCalendarDate 2020 Jan 10 )
+                            , ( VaccineDoseSecond, Date.fromCalendarDate 2020 Feb 10 )
+                            ]
+                        )
+        , test "a child with no Child Scoreboard participant has no doses" <|
+            \_ ->
+                generateVaccinationProgressDictByChildScoreboard SiteRwanda emptyModelIndexedDb childId
+                    |> Expect.equal Dict.empty
+        ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
         [ nextVaccinationDataForVaccineTest
+        , generateIndividualNutritionAssessmentEntriesTest
         , viewChildFormsTest
         , viewMotherFormsTest
         , viewColorAlertIndicationTest
         , getIntervalForVaccineTest
         , getAllDosesForVaccineTest
         , initialVaccinationDateByBirthDateTest
+        , mergeVaccinationProgressDictsTest
+        , vaccinationProgressAcrossDuplicateParticipantsTest
         , updateChildSetMuacTest
         , ncdaFormWithDefaultNotTakenTest
         , bloodGlucoseOutOfRangeTest
         , outOfRangeAsEnteredTest
         , updateChildOutOfRangePopupTest
         , ncdaMeasurementsOutOfRangeTest
+        , ncdaTreatmentAnswerSavedTest
         , showNCDAMeasurementOutOfRangeTest
         , birthWeightOutsideConstraintsTest
         , bornUnderweightByBirthWeightTest
         , heightFormWithDefaultSkippedTest
         , creatinineResultFormWithDefaultTest
         , liverFunctionResultFormWithDefaultTest
+        , partnerHIVResultFormNotPresentTest
         , malariaResultFormWithDefaultTest
         , malariaResultFormBloodSmearTakenTest
         , malariaResultFormSmearResultTest

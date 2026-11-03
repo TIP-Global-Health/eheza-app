@@ -558,10 +558,13 @@ update currentDate site id db msg model =
             let
                 ( warning, warningMessage ) =
                     let
-                        setEncounterWarningMsg encounterWarning =
-                            Backend.WellChildEncounter.Model.SetWellChildEncounterWarning encounterWarning
-                                |> Backend.Model.MsgWellChildEncounter id
-                                |> App.Model.MsgIndexedDb
+                        encounterMsg =
+                            Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+
+                        setEncounterWarningMsg =
+                            Backend.WellChildEncounter.Model.SetWellChildEncounterWarning
+                                >> encounterMsg
                     in
                     Maybe.map
                         (\zscore ->
@@ -576,9 +579,11 @@ update currentDate site id db msg model =
                                 )
 
                             else
-                                -- Z-score value is within range, so no warning is
-                                -- shown / recorded on encounter.
-                                ( NoHeadCircumferenceWarning, [] )
+                                -- Within range: no popup, and any cephaly warning
+                                -- saved earlier on this encounter is removed.
+                                ( NoHeadCircumferenceWarning
+                                , [ encounterMsg Backend.WellChildEncounter.Model.ClearHeadCircumferenceWarnings ]
+                                )
                         )
                         maybeZscore
                         |> Maybe.withDefault

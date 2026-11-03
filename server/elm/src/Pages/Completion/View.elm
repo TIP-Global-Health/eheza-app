@@ -23,7 +23,6 @@ import Backend.Completion.Model
 import Backend.Completion.Utils exposing (takenByToString)
 import Backend.Components.Model exposing (SelectedEntity(..))
 import Backend.Model exposing (ModelBackend)
-import Date exposing (Date)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -31,7 +30,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust)
 import Pages.Completion.Model exposing (Model, Msg(..), ReportType(..))
-import Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, newbornExamActivities, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities)
+import Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, applyFilters, customApplyFilters, eliminateEmptyEncounters, newbornExamActivities, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities, spvTakenBy)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Components.View exposing (viewMetricsResultsTable, viewReportDateInputs)
 import Pages.Model exposing (MetricsResultsTableData)
@@ -276,13 +275,7 @@ viewSPVReport language site startDate limitDate mTakenBy reportData =
     eliminateEmptyEncounters reportData
         |> customApplyFilters startDate
             limitDate
-            (\encounter ->
-                if encounter.encounterType == PediatricCare then
-                    TakenByNurse
-
-                else
-                    TakenByCHW
-            )
+            spvTakenBy
             mTakenBy
         |> generateReportData language Translate.StandardPediatricVisit Translate.WellChildActivity (resolveSPVActivities site)
         |> viewMetricsResultsTable
@@ -353,59 +346,6 @@ viewPrenatalReport language startDate limitDate mTakenBy reportData =
         |> generateReportData language Translate.Antenatal Translate.PrenatalActivity allPrenatalActivities
         |> viewMetricsResultsTable
         |> div [ class "report prenatal" ]
-
-
-eliminateEmptyEncounters :
-    List { c | completion : { b | completedActivities : List a } }
-    -> List { c | completion : { b | completedActivities : List a } }
-eliminateEmptyEncounters =
-    List.filter (.completion >> .completedActivities >> List.isEmpty >> not)
-
-
-applyFilters :
-    NominalDate
-    -> NominalDate
-    -> Maybe TakenBy
-    -> List { a | startDate : Date, takenBy : Maybe TakenBy }
-    -> List { a | startDate : Date, takenBy : Maybe TakenBy }
-applyFilters startDate limitDate =
-    applyFiltersBy startDate limitDate .takenBy
-
-
-customApplyFilters :
-    NominalDate
-    -> NominalDate
-    -> ({ a | encounterType : WellChildEncounterType, startDate : Date } -> TakenBy)
-    -> Maybe TakenBy
-    -> List { a | encounterType : WellChildEncounterType, startDate : Date }
-    -> List { a | encounterType : WellChildEncounterType, startDate : Date }
-customApplyFilters startDate limitDate resolveTakenByFunc =
-    applyFiltersBy startDate limitDate (resolveTakenByFunc >> Just)
-
-
-applyFiltersBy :
-    NominalDate
-    -> NominalDate
-    -> ({ a | startDate : Date } -> Maybe TakenBy)
-    -> Maybe TakenBy
-    -> List { a | startDate : Date }
-    -> List { a | startDate : Date }
-applyFiltersBy startDate limitDate resolveTakenByFunc mTakenBy =
-    List.filter
-        (\encounter ->
-            let
-                takenByCondition =
-                    Maybe.map
-                        (\takenBy ->
-                            resolveTakenByFunc encounter == Just takenBy
-                        )
-                        mTakenBy
-                        |> Maybe.withDefault True
-            in
-            (not <| Date.compare encounter.startDate startDate == LT)
-                && (not <| Date.compare encounter.startDate limitDate == GT)
-                && takenByCondition
-        )
 
 
 generateReportData :

@@ -1,9 +1,10 @@
-module Backend.Utils exposing (editMeasurementCmd, everySetsEqual, familyNutritionEnabled, gpsCoordinatesEnabled, groupEducationEnabled, healthyStartEnabled, hivManagementEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, ncdaEnabled, reportToWhatsAppEnabled, resolveFamilyParticipantForPerson, resolveFamilyParticipantsForPerson, resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson, saveMeasurementCmd, stockManagementHCEnabled, stockManagementVillageEnabled, sw, tuberculosisManagementEnabled, updateVillageStockManagementCaches)
+module Backend.Utils exposing (editMeasurementCmd, everySetsEqual, familyNutritionEnabled, gpsCoordinatesEnabled, groupEducationEnabled, healthyStartEnabled, hivManagementEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, ncdaEnabled, reportToWhatsAppEnabled, resolveFamilyParticipantForPerson, resolveFamilyParticipantsForPerson, resolveIndividualParticipantForPerson, resolveIndividualParticipantWithDuplicates, resolveIndividualParticipantsForPerson, saveMeasurementCmd, stockManagementHCEnabled, stockManagementVillageEnabled, storedDiagnosesEqual, sw, tuberculosisManagementEnabled, updateVillageStockManagementCaches)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
+import Backend.IndividualEncounterParticipant.Utils exposing (resolveMainParticipant)
 import Backend.Measurement.Model
     exposing
         ( AcuteIllnessMeasurements
@@ -315,10 +316,32 @@ resolveIndividualParticipantsForPerson personId encounterType db =
         |> Maybe.withDefault []
 
 
+{-| The participant that new encounters go on, for programmes with one
+participant per person (Nutrition, Home Visit, Well Child, Child Scoreboard,
+NCD). Other programmes pick their open participant instead.
+-}
 resolveIndividualParticipantForPerson : PersonId -> IndividualEncounterType -> ModelIndexedDb -> Maybe IndividualEncounterParticipantId
 resolveIndividualParticipantForPerson personId encounterType db =
-    resolveIndividualParticipantsForPerson personId encounterType db
-        |> List.head
+    Dict.get personId db.individualParticipantsByPerson
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.andThen (resolveMainParticipant encounterType)
+
+
+{-| The participant followed by the other participants of its person and
+type. A second participant of a one-per-person programme is a duplicate
+holding part of the history.
+-}
+resolveIndividualParticipantWithDuplicates : IndividualEncounterParticipantId -> ModelIndexedDb -> List IndividualEncounterParticipantId
+resolveIndividualParticipantWithDuplicates participantId db =
+    Dict.get participantId db.individualParticipants
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map
+            (\participant ->
+                resolveIndividualParticipantsForPerson participant.person participant.encounterType db
+                    |> List.filter ((/=) participantId)
+            )
+        |> Maybe.withDefault []
+        |> (::) participantId
 
 
 resolveFamilyParticipantsForPerson : PersonId -> FamilyEncounterType -> ModelIndexedDb -> List FamilyEncounterParticipantId
@@ -359,6 +382,14 @@ everySetsEqual set1 set2 =
                 |> EverySet.size
     in
     (size1 == size2) && (size1 == sizeIntersect)
+
+
+{-| An encounter without diagnoses is stored as "none", which is never
+generated, so "none" is ignored on both sides. Stored {none} equals generated {}.
+-}
+storedDiagnosesEqual : a -> EverySet a -> EverySet a -> Bool
+storedDiagnosesEqual noDiagnosis set1 set2 =
+    everySetsEqual (EverySet.remove noDiagnosis set1) (EverySet.remove noDiagnosis set2)
 
 
 

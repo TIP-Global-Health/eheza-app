@@ -1,7 +1,7 @@
 module Pages.WellChild.ProgressReport.Test exposing (all)
 
 import AssocList as Dict
-import Backend.Measurement.Model exposing (HeightInCm(..), NCDASign(..), NCDAValue, ReceiveOption(..), WeightInKg(..))
+import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), NCDASign(..), NCDAValue, ReceiveOption(..), WeightInKg(..))
 import Backend.Person.Model exposing (Person)
 import Date
 import EverySet
@@ -9,7 +9,7 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Pages.WellChild.ProgressReport.Model exposing (NCDACellValue(..))
-import Pages.WellChild.ProgressReport.View exposing (generateUniversalInterventionsValues, heightCellValuesByAgeInMonths, weightCellValuesByAgeInMonths)
+import Pages.WellChild.ProgressReport.View exposing (generateUniversalInterventionsValues, heightCellValuesByAgeInMonths, malnutritionTreatmentsByAgeInMonthsFromQuestionnaires, weightCellValuesByAgeInMonths)
 import Test exposing (Test, describe, test)
 import TestFixtures exposing (testChild)
 import Time
@@ -20,6 +20,7 @@ all : Test
 all =
     describe "Pages.WellChild.ProgressReport"
         [ fillTheBlanksAgeTests
+        , malnutritionTreatmentValuesTests
         , universalInterventionsValuesTests
         ]
 
@@ -35,9 +36,6 @@ fillTheBlanksAgeTests =
     let
         dateMeasured =
             Date.add Date.Months 3 birthDate
-
-        birthDate =
-            Date.add Date.Months -24 currentDate
     in
     describe "fill the blanks cell values"
         [ test "height typical for the age it was taken at is green" <|
@@ -70,7 +68,12 @@ reached yet.
 -}
 child : Person
 child =
-    testChild (Date.add Date.Months -24 currentDate)
+    testChild birthDate
+
+
+birthDate : NominalDate
+birthDate =
+    Date.add Date.Months -24 currentDate
 
 
 emptyNCDAValue : NCDAValue
@@ -218,4 +221,59 @@ universalInterventionsValuesTests =
                         [ Just NCDACellValueDash
                         , Just NCDACellValueDash
                         ]
+        ]
+
+
+{-| The CHW is asked whether the child is treated for acute malnutrition only
+when the MUAC typed on the same questionnaire is off. A questionnaire that
+never asked holds no answer, and is no data rather than "not treated".
+-}
+malnutritionTreatmentValuesTests : Test
+malnutritionTreatmentValuesTests =
+    let
+        monthTen =
+            Date.add Date.Months 10 birthDate
+
+        cellFor questionnaires =
+            malnutritionTreatmentsByAgeInMonthsFromQuestionnaires child questionnaires
+                |> Maybe.andThen (Dict.get 10)
+                |> Maybe.map Tuple.second
+
+        greenMuac =
+            Just (MuacInCm 14)
+
+        offMuac =
+            Just (MuacInCm 11)
+
+        treated =
+            EverySet.singleton TreatedForAcuteMalnutrition
+    in
+    describe "malnutritionTreatmentsByAgeInMonthsFromQuestionnaires"
+        [ test "a green MUAC never asked the question, so the month has no data" <|
+            \_ ->
+                cellFor [ ( monthTen, { emptyNCDAValue | muac = greenMuac } ) ]
+                    |> Expect.equal Nothing
+        , test "a questionnaire without a MUAC never asked the question, so the month has no data" <|
+            \_ ->
+                cellFor [ ( monthTen, emptyNCDAValue ) ]
+                    |> Expect.equal Nothing
+        , test "an off MUAC with no treatment recorded reads as not treated" <|
+            \_ ->
+                cellFor [ ( monthTen, { emptyNCDAValue | muac = offMuac } ) ]
+                    |> Expect.equal (Just NCDACellValueX)
+        , test "a recorded treatment reads as treated" <|
+            \_ ->
+                cellFor [ ( monthTen, { emptyNCDAValue | muac = offMuac, signs = treated } ) ]
+                    |> Expect.equal (Just NCDACellValueV)
+        , test "a treatment recorded before the MUAC was corrected to green reads as not asked" <|
+            \_ ->
+                cellFor [ ( monthTen, { emptyNCDAValue | muac = greenMuac, signs = treated } ) ]
+                    |> Expect.equal Nothing
+        , test "a month's answer is kept when a later questionnaire that month did not ask" <|
+            \_ ->
+                cellFor
+                    [ ( Date.add Date.Days 2 monthTen, { emptyNCDAValue | muac = offMuac } )
+                    , ( Date.add Date.Days 19 monthTen, { emptyNCDAValue | muac = greenMuac } )
+                    ]
+                    |> Expect.equal (Just NCDACellValueX)
         ]

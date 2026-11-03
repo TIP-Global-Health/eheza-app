@@ -1,4 +1,4 @@
-module Backend.WellChildEncounter.Model exposing (EncounterNote(..), EncounterWarning(..), Model, Msg(..), PediatricCareMilestone(..), WellChildEncounter, WellChildEncounterType(..), ecdMilestoneWarnings, emptyModel, emptyWellChildEncounter, headCircumferenceWarnings, pediatricCareMilestones)
+module Backend.WellChildEncounter.Model exposing (EncounterNote(..), EncounterWarning(..), Model, Msg(..), PediatricCareMilestone(..), WellChildEncounter, WellChildEncounterType(..), ecdMilestoneWarnings, emptyModel, emptyWellChildEncounter, hasWarningFrom, headCircumferenceWarnings, pediatricCareMilestones)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -89,8 +89,8 @@ type
       -- Head Circumference related warnings.
     | WarningHeadCircumferenceMicrocephaly
     | WarningHeadCircumferenceMacrocephaly
-      -- We use this option when Head Circumference activity was
-      -- completed, and no warnings were generated.
+      -- We use this option when Head Circumference was not taken.
+      -- A reading within range records no head circumference warning.
     | NoHeadCircumferenceWarning
       -- This option is set when neither ECD nor
       -- Head Circumference activity were completed.
@@ -105,6 +105,14 @@ ecdMilestoneWarnings =
 headCircumferenceWarnings : List EncounterWarning
 headCircumferenceWarnings =
     [ WarningHeadCircumferenceMicrocephaly, WarningHeadCircumferenceMacrocephaly, NoHeadCircumferenceWarning ]
+
+
+{-| Whether the warnings hold any of the given ones, for example
+`hasWarningFrom ecdMilestoneWarnings warnings`.
+-}
+hasWarningFrom : List EncounterWarning -> EverySet EncounterWarning -> Bool
+hasWarningFrom group warnings =
+    List.any (\warning -> EverySet.member warning warnings) group
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
@@ -192,6 +200,7 @@ type Msg
     | HandleUpdatedWellChildEncounter (WebData ())
     | SetWellChildEncounterNote EncounterNote
     | SetWellChildEncounterWarning EncounterWarning
+    | ClearHeadCircumferenceWarnings
     | SavePregnancySummary PersonId (Maybe WellChildPregnancySummaryId) PregnancySummaryValue
     | HandleSavedPregnancySummary (WebData ())
     | SaveSymptomsReview PersonId (Maybe WellChildSymptomsReviewId) (EverySet WellChildSymptom)

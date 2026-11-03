@@ -1,15 +1,17 @@
-module Measurement.Utils exposing (OutsideCareConfig, ahezaFormWithDefault, ahezaMotherFormWithDefault, allNextStepsTasks, allVaccineTypes, behindOnVaccinationsByHistory, birthWeightOutsideConstraints, bloodGlucoseOutOfRange, bloodGlucoseSaveMsgs, bloodGpRsResultFormAndTasks, bloodGpRsResultFormWithDefault, bloodGpRsTestFormWithDefault, bloodSmearOrderedByValue, bloodSmearResultNotSet, bloodSmearResultSet, bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, corePhysicalExamFormWithDefault, creatinineResultFormAndTasks, creatinineResultFormWithDefault, emptyContentAndTasksForPerformedLaboratoryTestConfig, emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig, emptyContentAndTasksLaboratoryResultConfig, emptyContentAndTasksLaboratoryTestInitialConfig, emptyContentAndTasksLaboratoryUniversalTestInitialConfig, expectParticipantConsent, expectUniversalTestResultTask, expectVaccineDoseForPerson, familyPlanningFormWithDefault, fbfFormToValue, followUpFormWithDefault, generateAssembledDataForChildScoreboard, generateAssembledDataForWellChild, generateFutureVaccinationsData, generateGroupNutritionAssessmentEntries, generateIndividualNutritionAssessmentEntries, generateVaccinationProgressDictByChildScoreboard, generateVaccinationProgressForVaccine, getAllDosesForVaccine, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getIntervalForVaccine, getMotherForm, getNextVaccineDose, getPreviousMeasurements, hba1cTestFormWithDefault, healthEducationFormWithDefault, heightFormWithDefault, heightOutOfRange, hemoglobinResultFormAndTasks, hemoglobinResultFormWithDefault, hemoglobinTestFormWithDefault, hepatitisBResultFormAndTasks, hepatitisBResultFormWithDefault, hepatitisBTestFormWithDefault, hivPCRResultFormAndTasks, hivPCRResultFormWithDefault, hivPCRTestFormWithDefault, hivResultFollowUpsFormAndTasks, hivResultFormAndTasks, hivResultFormWithDefault, hivSignsAnswered, hivTestFormWithDefault, hivTestUniversalFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, isTestResultValid, knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, laboratoryTaskIconClass, lactationFormToSigns, latestVaccinationDataForVaccine, lipidPanelResultFormAndTasks, lipidPanelResultFormWithDefault, liverFunctionResultFormAndTasks, liverFunctionResultFormWithDefault, malariaResultFormAndTasks, malariaResultFormWithDefault, malariaTestFormWithDefault, measurementConstraints, measurementOutOfRange, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, muacMeasurementIsOff, muacOutOfRange, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nextVaccinationDataForVaccine, nonRDTFormWithDefault, nutritionCaringFormWithDefault, nutritionFeedingFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFoodSecurityFormWithDefault, nutritionFormWithDefault, nutritionHygieneFormWithDefault, ongoingTreatmentReviewFormWithDefault, outOfRange, outOfRangeAsEntered, outsideCareFormInputsAndTasks, outsideCareFormWithDefault, outsideCareMedicationOptionsAnemia, outsideCareMedicationOptionsHIV, outsideCareMedicationOptionsHypertension, outsideCareMedicationOptionsMalaria, outsideCareMedicationOptionsSyphilis, partnerHIVResultFollowUpsFormAndTasks, partnerHIVResultFormAndTasks, partnerHIVResultFormWithDefault, partnerHIVTestFormWithDefault, pregnancyTestFormWithDefault, randomBloodSugarFormWithDefault, randomBloodSugarResultFormAndTasks, randomBloodSugarResultFormWithDefault, randomBloodSugarUniversalFormWithDefault, rdtKnownAsPositiveUpdate, rdtTestPerformedUpdate, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveLabTestDate, resolveMedicationsNonAdministrationReasons, resolveNCDASteps, sendToHCFormWithDefault, setHIVViralLoadUndetectable, setNCDAStep, showNCDAMeasurementOutOfRange, showNCDAQuestionsByNewbornExam, syphilisResultFollowUpsFormAndTasks, syphilisResultFormAndTasks, syphilisResultFormWithDefault, syphilisTestFormWithDefault, testNotPerformedByWhyNotAtExecutionNote, testPerformedByValue, toAdministrationNoteWithDefault, toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toBloodGpRsResultValueWithDefault, toBloodGpRsTestValueWithDefault, toContributingFactorsValueWithDefault, toCorePhysicalExamValueWithDefault, toCreatinineResultValueWithDefault, toCreatinineTestValueWithEmptyResults, toEverySet, toFamilyPlanningValueWithDefault, toFollowUpValueWithDefault, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVResultValueWithDefault, toHIVTestValueUniversalWithDefault, toHIVTestValueWithDefault, toHbA1cTestValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toHemoglobinResultValueWithDefault, toHemoglobinTestValueWithDefault, toHepatitisBResultValueWithDefault, toHepatitisBTestValueWithDefault, toLipidPanelResultValueWithDefault, toLipidPanelTestValueWithEmptyResults, toLiverFunctionResultValueWithDefault, toLiverFunctionTestValueWithEmptyResults, toMalariaResultValueWithDefault, toMalariaTestValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNonRDTValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toOutsideCareValueWithDefault, toPartnerHIVResultValueWithDefault, toPartnerHIVTestValueWithDefault, toPregnancyTestValueWithDefault, toRandomBloodSugarResultValueWithDefault, toRandomBloodSugarTestValueUniversalWithDefault, toRandomBloodSugarTestValueWithDefault, toSendToHCValueWithDefault, toSyphilisResultValueWithDefault, toSyphilisTestValueWithDefault, toUrineDipstickResultValueWithDefault, toUrineDipstickTestValueUniversalWithDefault, toUrineDipstickTestValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, treatmentReviewCustomReasonsForNotTakingInputsAndTasks, treatmentReviewInputsAndTasks, urineDipstickFormWithDefault, urineDipstickResultFormAndTasks, urineDipstickResultFormWithDefault, urineDipstickUniversalFormWithDefault, vaccinationFormDynamicContentAndTasks, vaccinationFormWithDefault, vaccineDoseToComparable, viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion, viewBloodGpRsTestForm, viewHIVPCRTestForm, viewHIVTestForm, viewHIVTestUniversalForm, viewHbA1cTestForm, viewHemoglobinTestForm, viewHepatitisBTestForm, viewMalariaTestForm, viewNonRDTForm, viewPartnerHIVTestForm, viewPregnancyTestForm, viewRandomBloodSugarTestForm, viewRandomBloodSugarTestUniversalForm, viewReinforceAdherenceQuestion, viewSelectInput, viewSyphilisTestForm, viewUrineDipstickTestForm, viewUrineDipstickTestUniversalForm, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault, weightOutOfRange)
+module Measurement.Utils exposing (OutsideCareConfig, ahezaFormWithDefault, ahezaMotherFormWithDefault, allNextStepsTasks, allVaccineTypes, allVaccineTypesByGender, behindOnVaccinationsByHistory, birthWeightOutsideConstraints, bloodGlucoseOutOfRange, bloodGlucoseSaveMsgs, bloodGpRsResultFormAndTasks, bloodGpRsResultFormWithDefault, bloodGpRsTestFormWithDefault, bloodSmearOrderedByValue, bloodSmearResultNotSet, bloodSmearResultSet, bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, corePhysicalExamFormWithDefault, creatinineResultFormAndTasks, creatinineResultFormWithDefault, emptyContentAndTasksForPerformedLaboratoryTestConfig, emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig, emptyContentAndTasksLaboratoryResultConfig, emptyContentAndTasksLaboratoryTestInitialConfig, emptyContentAndTasksLaboratoryUniversalTestInitialConfig, expectParticipantConsent, expectUniversalTestResultTask, expectVaccineDoseForPerson, familyPlanningFormWithDefault, fbfFormToValue, followUpFormWithDefault, generateAssembledDataForChildScoreboard, generateAssembledDataForWellChild, generateFutureVaccinationsData, generateGroupNutritionAssessmentEntries, generateIndividualNutritionAssessmentEntries, generateVaccinationProgressDictByChildScoreboard, generateVaccinationProgressForVaccine, getAllDosesForVaccine, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getIntervalForVaccine, getMotherForm, getNextVaccineDose, getPreviousMeasurements, hba1cTestFormWithDefault, healthEducationFormWithDefault, heightFormWithDefault, heightOutOfRange, hemoglobinResultFormAndTasks, hemoglobinResultFormWithDefault, hemoglobinTestFormWithDefault, hepatitisBResultFormAndTasks, hepatitisBResultFormWithDefault, hepatitisBTestFormWithDefault, hivPCRResultFormAndTasks, hivPCRResultFormWithDefault, hivPCRTestFormWithDefault, hivResultFollowUpsFormAndTasks, hivResultFormAndTasks, hivResultFormWithDefault, hivSignsAnswered, hivTestFormWithDefault, hivTestUniversalFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, isTestResultValid, knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, laboratoryTaskIconClass, lactationFormToSigns, latestVaccinationDataForVaccine, lipidPanelResultFormAndTasks, lipidPanelResultFormWithDefault, liverFunctionResultFormAndTasks, liverFunctionResultFormWithDefault, malariaResultFormAndTasks, malariaResultFormWithDefault, malariaTestFormWithDefault, measurementConstraints, measurementOutOfRange, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, mergeVaccinationProgressDicts, muacFormWithDefault, muacMeasurementIsOff, muacOutOfRange, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nextVaccinationDataForVaccine, nonRDTFormWithDefault, nutritionCaringFormWithDefault, nutritionFeedingFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFoodSecurityFormWithDefault, nutritionFormWithDefault, nutritionHygieneFormWithDefault, ongoingTreatmentReviewFormWithDefault, outOfRange, outOfRangeAsEntered, outsideCareFormInputsAndTasks, outsideCareFormWithDefault, outsideCareMedicationOptionsAnemia, outsideCareMedicationOptionsHIV, outsideCareMedicationOptionsHypertension, outsideCareMedicationOptionsMalaria, outsideCareMedicationOptionsSyphilis, partnerHIVResultFollowUpsFormAndTasks, partnerHIVResultFormAndTasks, partnerHIVResultFormWithDefault, partnerHIVTestFormWithDefault, pregnancyTestFormWithDefault, randomBloodSugarFormWithDefault, randomBloodSugarResultFormAndTasks, randomBloodSugarResultFormWithDefault, randomBloodSugarUniversalFormWithDefault, rdtKnownAsPositiveUpdate, rdtTestPerformedUpdate, reinforceAdherenceQuestion, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveLabTestDate, resolveMedicationsNonAdministrationReasons, resolveNCDASteps, sendToHCFormWithDefault, setHIVViralLoadUndetectable, setNCDAStep, showNCDAMeasurementOutOfRange, showNCDAQuestionsByNewbornExam, syphilisResultFollowUpsFormAndTasks, syphilisResultFormAndTasks, syphilisResultFormWithDefault, syphilisTestFormWithDefault, testNotPerformedByWhyNotAtExecutionNote, testPerformedByValue, toAdministrationNoteWithDefault, toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toBloodGpRsResultValueWithDefault, toBloodGpRsTestValueWithDefault, toContributingFactorsValueWithDefault, toCorePhysicalExamValueWithDefault, toCreatinineResultValueWithDefault, toCreatinineTestValueWithEmptyResults, toEverySet, toFamilyPlanningValueWithDefault, toFollowUpValueWithDefault, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVResultValueWithDefault, toHIVTestValueUniversalWithDefault, toHIVTestValueWithDefault, toHbA1cTestValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toHemoglobinResultValueWithDefault, toHemoglobinTestValueWithDefault, toHepatitisBResultValueWithDefault, toHepatitisBTestValueWithDefault, toLipidPanelResultValueWithDefault, toLipidPanelTestValueWithEmptyResults, toLiverFunctionResultValueWithDefault, toLiverFunctionTestValueWithEmptyResults, toMalariaResultValueWithDefault, toMalariaTestValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNonRDTValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toOutsideCareValueWithDefault, toPartnerHIVResultValueWithDefault, toPartnerHIVTestValueWithDefault, toPregnancyTestValueWithDefault, toRandomBloodSugarResultValueWithDefault, toRandomBloodSugarTestValueUniversalWithDefault, toRandomBloodSugarTestValueWithDefault, toSendToHCValueWithDefault, toSyphilisResultValueWithDefault, toSyphilisTestValueWithDefault, toUrineDipstickResultValueWithDefault, toUrineDipstickTestValueUniversalWithDefault, toUrineDipstickTestValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, treatmentReviewCustomReasonsForNotTakingInputsAndTasks, treatmentReviewInputsAndTasks, urineDipstickFormWithDefault, urineDipstickResultFormAndTasks, urineDipstickResultFormWithDefault, urineDipstickUniversalFormWithDefault, vaccinationFormDynamicContentAndTasks, vaccinationFormWithDefault, vaccineDoseToComparable, viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion, viewBloodGpRsTestForm, viewHIVPCRTestForm, viewHIVTestForm, viewHIVTestUniversalForm, viewHbA1cTestForm, viewHemoglobinTestForm, viewHepatitisBTestForm, viewLaboratoryResultNotPerformed, viewMalariaTestForm, viewNonRDTForm, viewPartnerHIVTestForm, viewPregnancyTestForm, viewRandomBloodSugarTestForm, viewRandomBloodSugarTestUniversalForm, viewReinforceAdherenceQuestion, viewSelectInput, viewSyphilisTestForm, viewUrineDipstickTestForm, viewUrineDipstickTestUniversalForm, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault, weightOutOfRange)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (bilirubinValueToString, bloodGroupToString, bloodSmearResultToString, currentValue, currentValues, getHeightValue, getMeasurementDateMeasuredFunc, getMeasurementValueFunc, glucoseValueToString, haemoglobinValueToString, ketoneValueToString, labExpirationPeriod, leukocytesValueToString, mapMeasurementData, muacIndicationForChild, muacValueForSite, muacValueFunc, nitriteValueToString, phValueToString, proteinValueToString, rhesusToString, testPerformedByExecutionNote, testResultToString, unitOfMeasurementToString, urobilinogenValueToString, weightValueFunc)
+import Backend.Measurement.Utils exposing (bilirubinValueToString, bloodGroupToString, bloodSmearResultToString, currentValue, currentValues, getHeightValue, getMeasurementDateMeasuredFunc, getMeasurementValueFunc, glucoseValueToString, haemoglobinValueToString, ketoneValueToString, labExpirationPeriod, leukocytesValueToString, malnutritionSignsForAssessment, mapMeasurementData, muacIndicationForChild, muacValueForSite, muacValueFunc, nitriteValueToString, phValueToString, proteinValueToString, rhesusToString, testPerformedByExecutionNote, testResultToString, unitOfMeasurementToString, urobilinogenValueToString, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
-        ( getChildScoreboardEncountersForParticipant
+        ( generateIndividualWellChildMeasurementsForChild
+        , getChildScoreboardEncountersForParticipant
+        , getChildScoreboardEncountersForPerson
         , getWellChildEncountersForParticipant
         )
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
@@ -18,6 +20,7 @@ import Backend.Person.Utils exposing (ageInMonths)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2)
+import Backend.Utils exposing (resolveIndividualParticipantWithDuplicates, resolveIndividualParticipantsForPerson)
 import Date exposing (Unit(..))
 import DateSelector.Model exposing (DateSelectorConfig)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -64,7 +67,7 @@ import SyncManager.Model exposing (Site(..))
 import Translate exposing (TranslationId, translate)
 import Translate.Model exposing (Language)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (renderDate)
+import Utils.NominalDate exposing (renderDate, sortEncounterTuplesDesc)
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -1298,8 +1301,13 @@ generateVaccinationProgressForVaccine vaccinations =
         )
         []
         vaccinations
-        |> List.sortBy (Tuple.first >> vaccineDoseToComparable)
+        |> sortByDose
         |> Dict.fromList
+
+
+sortByDose : List ( VaccineDose, a ) -> List ( VaccineDose, a )
+sortByDose =
+    List.sortBy (Tuple.first >> vaccineDoseToComparable)
 
 
 getNextVaccineDose : VaccineDose -> Maybe VaccineDose
@@ -8865,6 +8873,20 @@ resultFormHeaderSection language executionDate task =
         :: executionDateSection
 
 
+{-| Shows the nurse the lab technician's answer that a test will not be
+performed today, and why. The header names the test and date, when given.
+-}
+viewLaboratoryResultNotPerformed : Language -> Maybe ( LaboratoryTask, Maybe NominalDate ) -> TestExecutionNote -> Html msg
+viewLaboratoryResultNotPerformed language header reason =
+    div [ class "ui form laboratory not-performed" ] <|
+        unwrap [] (\( task, executionDate ) -> resultFormHeaderSection language executionDate task) header
+            ++ [ viewLabel language Translate.TestWillBePerformedTodayQuestion
+               , p [ class "test-performed" ] [ text <| translate language Translate.No ]
+               , viewLabel language Translate.WhyNot
+               , p [ class "why-not" ] [ text <| translate language <| Translate.TestExecutionNote reason ]
+               ]
+
+
 testPerformedByValue : Maybe { a | executionNote : TestExecutionNote } -> Bool
 testPerformedByValue =
     Maybe.map (.executionNote >> testPerformedByExecutionNote)
@@ -8888,6 +8910,7 @@ testNotPerformedByWhyNotAtExecutionNote executionNote =
         , TestNoteNoEquipment
         , TestNoteBrokenEquipment
         , TestNoteNotIndicated
+        , TestNoteNotPresent
         ]
 
 
@@ -9092,6 +9115,16 @@ toNCDAValueWithDefault saved form =
 toNCDAValue : NCDAForm -> Maybe NCDAValue
 toNCDAValue form =
     let
+        -- The treatment question is asked only while the MUAC is off. An earlier
+        -- answer stays on the form, as the MUAC input fires per keystroke, but
+        -- is not saved.
+        treatedForAcuteMalnutrition =
+            if muacMeasurementIsOff form.muac then
+                form.treatedForAcuteMalnutrition
+
+            else
+                Nothing
+
         signs =
             [ ifNullableTrue AppropriateComplementaryFeeding form.appropriateComplementaryFeeding
             , ifNullableTrue BornWithBirthDefect form.bornWithBirthDefect
@@ -9118,7 +9151,7 @@ toNCDAValue form =
             , ifNullableTrue ReceivingSupport form.receivingSupport
             , ifNullableTrue SupplementsDuringPregnancy form.supplementsDuringPregnancy
             , ifNullableTrue TakenSupplementsPerGuidance form.takenSupplementsPerGuidance
-            , ifNullableTrue TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition
+            , ifNullableTrue TreatedForAcuteMalnutrition treatedForAcuteMalnutrition
             , ifNullableTrue TakingOngeraMNP form.takingOngeraMNP
             , ifNullableTrue MealsAtRecommendedTimes form.mealsAtRecommendedTimes
             , ifNullableTrue ShowsEdemaSigns form.showsEdemaSigns
@@ -9474,33 +9507,8 @@ resolveChildANCPregnancyData childId db =
 resoloveLastScheduledImmunizationVisitDate : PersonId -> ModelIndexedDb -> Maybe NominalDate
 resoloveLastScheduledImmunizationVisitDate childId db =
     let
-        individualParticipants =
-            Dict.get childId db.individualParticipantsByPerson
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map Dict.toList
-                |> Maybe.withDefault []
-
-        individualWellChildParticipantId =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
-                )
-                individualParticipants
-                |> List.head
-                |> Maybe.map Tuple.first
-
         individualWellChildMeasurements =
-            Maybe.map
-                (\participantId ->
-                    Backend.Measurement.Utils.generatePreviousMeasurements
-                        getWellChildEncountersForParticipant
-                        .wellChildMeasurements
-                        Nothing
-                        participantId
-                        db
-                )
-                individualWellChildParticipantId
-                |> Maybe.withDefault []
+            generateIndividualWellChildMeasurementsForChild childId db
                 |> List.map (Tuple.second >> Tuple.second)
     in
     List.filterMap
@@ -9518,95 +9526,42 @@ resoloveLastScheduledImmunizationVisitDate childId db =
 isBehindOnVaccinationsByProgress : NominalDate -> Site -> PersonId -> ModelIndexedDb -> Bool
 isBehindOnVaccinationsByProgress currentDate site childId db =
     let
-        individualParticipants =
-            Dict.get childId db.individualParticipantsByPerson
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map Dict.toList
-                |> Maybe.withDefault []
-
-        individualWellChildParticipantId =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
-                )
-                individualParticipants
-                |> List.head
-                |> Maybe.map Tuple.first
+        wellChildParticipantsIds =
+            resolveIndividualParticipantsForPerson childId Backend.IndividualEncounterParticipant.Model.WellChildEncounter db
     in
-    if isJust individualWellChildParticipantId then
-        behindOnVaccinationsByProgressFromWellChild currentDate site individualWellChildParticipantId db
+    if List.isEmpty wellChildParticipantsIds then
+        behindOnVaccinationsByLastEncounter currentDate
+            site
+            (getChildScoreboardEncountersForPerson db childId)
+            (\id -> generateAssembledDataForChildScoreboard site id db)
 
     else
-        let
-            individualChildScoreboardParticipantId =
-                List.filter
-                    (\( _, participant ) ->
-                        participant.encounterType == Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
-                    )
-                    individualParticipants
-                    |> List.head
-                    |> Maybe.map Tuple.first
-        in
-        behindOnVaccinationsByProgressFromChildScoreboard currentDate site individualChildScoreboardParticipantId db
+        behindOnVaccinationsByLastEncounter currentDate
+            site
+            (List.concatMap (getWellChildEncountersForParticipant db) wellChildParticipantsIds)
+            (\id -> generateAssembledDataForWellChild site id db)
 
 
-behindOnVaccinationsByProgressFromWellChild : NominalDate -> Site -> Maybe IndividualEncounterParticipantId -> ModelIndexedDb -> Bool
-behindOnVaccinationsByProgressFromWellChild currentDate site individualWellChildParticipantId db =
-    let
-        lastWellChildEncounterId =
-            Maybe.andThen
-                (getWellChildEncountersForParticipant db
-                    >> List.map Tuple.first
-                    >> List.head
-                )
-                individualWellChildParticipantId
-
-        maybeAssembled =
-            Maybe.andThen
-                (\id ->
-                    generateAssembledDataForWellChild site id db
-                        |> RemoteData.toMaybe
-                )
-                lastWellChildEncounterId
-    in
-    Maybe.map
-        (\assembled ->
-            behindOnVaccinationsByProgress currentDate
-                site
-                assembled.person
-                assembled.vaccinationProgress
-        )
-        maybeAssembled
-        |> Maybe.withDefault False
-
-
-behindOnVaccinationsByProgressFromChildScoreboard : NominalDate -> Site -> Maybe IndividualEncounterParticipantId -> ModelIndexedDb -> Bool
-behindOnVaccinationsByProgressFromChildScoreboard currentDate site individualChildScoreboardParticipantId db =
-    let
-        lastChildScoreboardEncounterId =
-            Maybe.andThen
-                (getChildScoreboardEncountersForParticipant db
-                    >> List.map Tuple.first
-                    >> List.head
-                )
-                individualChildScoreboardParticipantId
-
-        maybeAssembled =
-            Maybe.andThen
-                (\id ->
-                    generateAssembledDataForChildScoreboard site id db
-                        |> RemoteData.toMaybe
-                )
-                lastChildScoreboardEncounterId
-    in
-    Maybe.map
-        (\assembled ->
-            behindOnVaccinationsByProgress currentDate
-                site
-                assembled.person
-                assembled.vaccinationProgress
-        )
-        maybeAssembled
+{-| Whether the child is behind on vaccinations, by the progress assembled
+for their most recent encounter of a programme.
+-}
+behindOnVaccinationsByLastEncounter :
+    NominalDate
+    -> Site
+    -> List ( encounterId, { encounter | startDate : NominalDate } )
+    -> (encounterId -> WebData { assembled | person : Person, vaccinationProgress : VaccinationProgressDict })
+    -> Bool
+behindOnVaccinationsByLastEncounter currentDate site encounters assembleFunc =
+    List.sortWith sortEncounterTuplesDesc encounters
+        |> List.head
+        |> Maybe.andThen (Tuple.first >> assembleFunc >> RemoteData.toMaybe)
+        |> Maybe.map
+            (\assembled ->
+                behindOnVaccinationsByProgress currentDate
+                    site
+                    assembled.person
+                    assembled.vaccinationProgress
+            )
         |> Maybe.withDefault False
 
 
@@ -9970,7 +9925,7 @@ latestVaccinationDataForVaccine vaccinationsData vaccineType =
     Dict.get vaccineType vaccinationsData
         |> Maybe.andThen
             (Dict.toList
-                >> List.sortBy (Tuple.first >> vaccineDoseToComparable)
+                >> sortByDose
                 >> List.reverse
                 >> List.head
             )
@@ -10263,6 +10218,11 @@ mergeVaccinationProgressDicts dict1 dict2 =
                 dosesDict1
                 dosesDict2
                 Dict.empty
+                -- The steps above add each dose at the end in the order merge
+                -- visits them, which is not dose order. Put them back in dose order.
+                |> Dict.toList
+                |> sortByDose
+                |> Dict.fromList
                 |> Dict.insert vaccineType
         )
         (\vaccineType dosesDict -> Dict.insert vaccineType dosesDict)
@@ -10347,11 +10307,14 @@ filterNutritionAssessmentsFromNutritionValue dateMeasured value =
                 |> List.filterMap
                     (\assesment ->
                         case assesment of
+                            AssesmentMalnutritionSigns _ ->
+                                EverySet.toList value.signs
+                                    |> malnutritionSignsForAssessment
+                                    |> AssesmentMalnutritionSigns
+                                    |> Just
+
                             NoNutritionAssessment ->
                                 Nothing
-
-                            AssesmentMalnutritionSigns _ ->
-                                Just <| AssesmentMalnutritionSigns (EverySet.toList value.signs)
 
                             _ ->
                                 Just assesment
@@ -10442,7 +10405,7 @@ generateAssembledDataForWellChild site id db =
                             getWellChildEncountersForParticipant
                             .wellChildMeasurements
                             (Just id)
-                            encounter_.participant
+                            (resolveIndividualParticipantWithDuplicates encounter_.participant db)
                             db
                     )
                 |> Maybe.withDefault []
@@ -10475,26 +10438,7 @@ generateVaccinationProgressDictsForWellChild site assembled db =
             getPreviousMeasurements assembled.previousMeasurementsWithDates
 
         vaccinationProgressByChildScoreboard =
-            let
-                individualParticipants =
-                    Dict.get assembled.participant.person db.individualParticipantsByPerson
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map Dict.toList
-                        |> Maybe.withDefault []
-
-                individualChildScoreboardParticipantId =
-                    List.filter
-                        (Tuple.second
-                            >> .encounterType
-                            >> (==) Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
-                        )
-                        individualParticipants
-                        |> List.head
-                        |> Maybe.map Tuple.first
-            in
-            Maybe.map (generateVaccinationProgressDictByChildScoreboard site db)
-                individualChildScoreboardParticipantId
-                |> Maybe.withDefault Dict.empty
+            generateVaccinationProgressDictByChildScoreboard site db assembled.participant.person
 
         vaccinationHistory =
             generateVaccinationProgressForWellChild site assembled.person previousMeasurements
@@ -10548,7 +10492,7 @@ generateAssembledDataForChildScoreboard site id db =
                             getChildScoreboardEncountersForParticipant
                             .childScoreboardMeasurements
                             (Just id)
-                            encounter_.participant
+                            (resolveIndividualParticipantWithDuplicates encounter_.participant db)
                             db
                     )
                 |> Maybe.withDefault []
@@ -10581,26 +10525,7 @@ generateVaccinationProgressDictsForChildScoreboard site assembled db =
             getPreviousMeasurements assembled.previousMeasurementsWithDates
 
         vaccinationProgressByWellChild =
-            let
-                individualParticipants =
-                    Dict.get assembled.participant.person db.individualParticipantsByPerson
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map Dict.toList
-                        |> Maybe.withDefault []
-
-                individualWellChildParticipantId =
-                    List.filter
-                        (Tuple.second
-                            >> .encounterType
-                            >> (==) Backend.IndividualEncounterParticipant.Model.WellChildEncounter
-                        )
-                        individualParticipants
-                        |> List.head
-                        |> Maybe.map Tuple.first
-            in
-            Maybe.map (generateVaccinationProgressDictByWellChild site assembled.person db)
-                individualWellChildParticipantId
-                |> Maybe.withDefault Dict.empty
+            generateVaccinationProgressDictByWellChild site assembled.person db assembled.participant.person
 
         vaccinationHistory =
             generateVaccinationProgressForChildScoreboard site previousMeasurements
@@ -10619,28 +10544,59 @@ generateVaccinationProgressDictsForChildScoreboard site assembled db =
     )
 
 
-generateVaccinationProgressDictByWellChild : Site -> Person -> ModelIndexedDb -> IndividualEncounterParticipantId -> VaccinationProgressDict
-generateVaccinationProgressDictByWellChild site person db participantId =
-    Backend.Measurement.Utils.generatePreviousMeasurements
-        Backend.NutritionEncounter.Utils.getWellChildEncountersForParticipant
+{-| Doses recorded at the child's Well Child encounters, across all of the
+child's Well Child participants. Empty when the child has none.
+-}
+generateVaccinationProgressDictByWellChild : Site -> Person -> ModelIndexedDb -> PersonId -> VaccinationProgressDict
+generateVaccinationProgressDictByWellChild site person db childId =
+    generateVaccinationProgressDictForProgramme
+        getWellChildEncountersForParticipant
         .wellChildMeasurements
-        Nothing
-        participantId
+        (generateVaccinationProgressForWellChild site person)
+        Backend.IndividualEncounterParticipant.Model.WellChildEncounter
         db
-        |> getPreviousMeasurements
-        |> generateVaccinationProgressForWellChild site person
+        childId
 
 
-generateVaccinationProgressDictByChildScoreboard : Site -> ModelIndexedDb -> IndividualEncounterParticipantId -> VaccinationProgressDict
-generateVaccinationProgressDictByChildScoreboard site db participantId =
-    Backend.Measurement.Utils.generatePreviousMeasurements
-        Backend.NutritionEncounter.Utils.getChildScoreboardEncountersForParticipant
+{-| Doses recorded at the child's Child Scoreboard encounters, across all of
+the child's Child Scoreboard participants. Empty when the child has none.
+-}
+generateVaccinationProgressDictByChildScoreboard : Site -> ModelIndexedDb -> PersonId -> VaccinationProgressDict
+generateVaccinationProgressDictByChildScoreboard site db childId =
+    generateVaccinationProgressDictForProgramme
+        getChildScoreboardEncountersForParticipant
         .childScoreboardMeasurements
-        Nothing
-        participantId
+        (generateVaccinationProgressForChildScoreboard site)
+        Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
         db
-        |> getPreviousMeasurements
-        |> generateVaccinationProgressForChildScoreboard site
+        childId
+
+
+generateVaccinationProgressDictForProgramme :
+    (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
+    -> (ModelIndexedDb -> Dict encounterId (WebData measurements))
+    -> (List measurements -> VaccinationProgressDict)
+    -> Backend.IndividualEncounterParticipant.Model.IndividualEncounterType
+    -> ModelIndexedDb
+    -> PersonId
+    -> VaccinationProgressDict
+generateVaccinationProgressDictForProgramme encountersByParticipantFunc measurementsByEncounterFunc generateProgressFunc encounterType db childId =
+    let
+        participantsIds =
+            resolveIndividualParticipantsForPerson childId encounterType db
+    in
+    if List.isEmpty participantsIds then
+        Dict.empty
+
+    else
+        Backend.Measurement.Utils.generatePreviousMeasurements
+            encountersByParticipantFunc
+            measurementsByEncounterFunc
+            Nothing
+            participantsIds
+            db
+            |> getPreviousMeasurements
+            |> generateProgressFunc
 
 
 generateVaccinationProgressForWellChild : Site -> Person -> List WellChildMeasurements -> VaccinationProgressDict
@@ -11163,12 +11119,14 @@ viewAdministeredMedicationQuestion language medicineTranslationId =
 viewReinforceAdherenceQuestion : Language -> TranslationId -> Html any
 viewReinforceAdherenceQuestion language medicineTranslationId =
     div [ class "label" ]
-        [ text <|
-            translate language Translate.ReinforceAdherenceQuestion
-                ++ " "
-                ++ translate language medicineTranslationId
-                ++ "?"
-        ]
+        [ text <| reinforceAdherenceQuestion language medicineTranslationId ++ "?" ]
+
+
+reinforceAdherenceQuestion : Language -> TranslationId -> String
+reinforceAdherenceQuestion language medicineTranslationId =
+    translate language Translate.ReinforceAdherenceQuestion
+        ++ " "
+        ++ translate language medicineTranslationId
 
 
 renderDatePart : Language -> Maybe NominalDate -> List (Html any)

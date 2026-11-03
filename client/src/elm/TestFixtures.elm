@@ -1,6 +1,7 @@
 module TestFixtures exposing
     ( emptyAcuteIllnessMeasurements
     , emptyTuberculosisMeasurements
+    , labsEntry
     , testChild
     , testParticipant
     , testPerson
@@ -19,6 +20,8 @@ import Backend.Measurement.Model
         ( AcuteIllnessMeasurements
         , Gender(..)
         , GlucoseValue
+        , LaboratoryTest
+        , LabsResultsValue
         , Measurement
         , TestExecutionNote(..)
         , TuberculosisMeasurements
@@ -224,3 +227,17 @@ testSyncManagerModel =
             , offline = 10000
             }
         }
+
+
+{-| A labs entry with the given performed and completed tests, open for 30
+days from the given date.
+-}
+labsEntry : NominalDate -> List LaboratoryTest -> List LaboratoryTest -> LabsResultsValue
+labsEntry date performed completed =
+    { performedTests = EverySet.fromList performed
+    , completedTests = EverySet.fromList completed
+    , resolutionDate = Date.add Date.Days 30 date
+    , patientNotified = False
+    , reviewState = Nothing
+    , testsWithFollowUp = Nothing
+    }

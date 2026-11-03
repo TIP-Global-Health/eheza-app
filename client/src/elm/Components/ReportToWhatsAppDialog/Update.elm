@@ -6,7 +6,6 @@ import Backend.Model
 import Backend.Person.Model exposing (PatchPersonInitator(..))
 import Components.ReportToWhatsAppDialog.Model exposing (DialogState(..), Model, Msg(..))
 import Components.ReportToWhatsAppDialog.Utils exposing (countryCodeFromString, reportTypeToString)
-import Maybe.Extra exposing (isJust)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate.Utils exposing (languageToCode)
 
@@ -24,7 +23,7 @@ update msg model =
         SetPhoneNumber value ->
             case model.state of
                 Just (PhoneInput data) ->
-                    if isJust (String.toInt value) then
+                    if String.all Char.isDigit value then
                         let
                             updatedState =
                                 PhoneInput { data | phone = value }

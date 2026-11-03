@@ -1,4 +1,4 @@
-module Pages.Reports.View exposing (view)
+module Pages.Reports.View exposing (generateAcuteIllnessReportData, generateDemographicsReportEncountersData, generateDemographicsReportPatientsData, generatePeripartumReportData, generatePostnatalCareReportData, generatePrenatalContactsReportData, generatePrenatalReportData, view)
 
 import App.Types exposing (Language, Site, SiteFeature(..))
 import AssocList as Dict exposing (Dict)
@@ -11,6 +11,8 @@ import Backend.Reports.Model
         , BackendGeneratedNutritionReportTableDate
         , DeliveryLocation(..)
         , Gender(..)
+        , NutritionMetricsResults
+        , NutritionRate
         , NutritionReportTableType(..)
         , PatientData
         , PregnancyOutcome(..)
@@ -40,10 +42,10 @@ import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
-import Pages.Components.View exposing (viewMetricsResultsTable, viewReportDateInputs, viewStandardCells, viewStandardRow)
+import Pages.Components.View exposing (viewCustomMetricsResultsTable, viewReportDateInputs, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
-import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
-import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
+import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionReportData, NutritionTableData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
+import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, csvRow, eddToLmpDate, filterRecordsByDateRange, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isPostpartumEncounter, isPregnancyCompleted, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, resolveQuarterForIndex)
 import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils
     exposing
@@ -140,101 +142,7 @@ viewReportsData language currentDate themePath data model =
                                 (\reportType startDate limitDate ->
                                     let
                                         recordsTillLimitDate =
-                                            if
-                                                (Date.compare startDate launchDate == EQ)
-                                                    && (Date.compare limitDate currentDate == EQ)
-                                            then
-                                                data.records
-
-                                            else
-                                                List.filterMap
-                                                    (\record ->
-                                                        if
-                                                            -- Patient was created not after the TO date.
-                                                            not <| Date.compare record.created limitDate == GT
-                                                        then
-                                                            let
-                                                                filterPrenatalData =
-                                                                    Maybe.map
-                                                                        (List.filterMap
-                                                                            (\participantData ->
-                                                                                -- Pregnancy was created not after the TO date.
-                                                                                if Date.compare participantData.created limitDate == GT then
-                                                                                    Nothing
-
-                                                                                else
-                                                                                    let
-                                                                                        filteredEncounters =
-                                                                                            List.filter
-                                                                                                (\encounterData ->
-                                                                                                    -- Encounter was created not before the FROM date and
-                                                                                                    -- not after the TO date.
-                                                                                                    (not <| Date.compare encounterData.startDate startDate == LT)
-                                                                                                        && (not <| Date.compare encounterData.startDate limitDate == GT)
-                                                                                                )
-                                                                                                participantData.encounters
-                                                                                    in
-                                                                                    if List.isEmpty filteredEncounters then
-                                                                                        Nothing
-
-                                                                                    else
-                                                                                        let
-                                                                                            dateConcluded =
-                                                                                                -- If pregnancy was concluded, but conclusion date is
-                                                                                                -- after TO date, we mark pregnancy as not concluded.
-                                                                                                Maybe.andThen
-                                                                                                    (\date ->
-                                                                                                        if Date.compare limitDate date == LT then
-                                                                                                            Nothing
-
-                                                                                                        else
-                                                                                                            Just date
-                                                                                                    )
-                                                                                                    participantData.dateConcluded
-                                                                                        in
-                                                                                        Just { participantData | dateConcluded = dateConcluded, encounters = filteredEncounters }
-                                                                            )
-                                                                        )
-
-                                                                inRangeBy resolveDateFunc encounterData =
-                                                                    let
-                                                                        encounterDate =
-                                                                            resolveDateFunc encounterData
-                                                                    in
-                                                                    (not <| Date.compare encounterDate startDate == LT)
-                                                                        && (not <| Date.compare encounterDate limitDate == GT)
-
-                                                                filterIndividualBy resolveDateFunc =
-                                                                    Maybe.map (List.map (List.filter (inRangeBy resolveDateFunc)))
-
-                                                                filterGroupBy resolveDateFunc =
-                                                                    Maybe.map (List.filter (inRangeBy resolveDateFunc))
-                                                            in
-                                                            Just
-                                                                { record
-                                                                    | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
-                                                                    , prenatalData = filterPrenatalData record.prenatalData
-                                                                    , homeVisitData = filterIndividualBy identity record.homeVisitData
-                                                                    , wellChildData = filterIndividualBy .startDate record.wellChildData
-                                                                    , childScorecardData = filterIndividualBy identity record.childScorecardData
-                                                                    , ncdData = filterIndividualBy identity record.ncdData
-                                                                    , hivData = filterIndividualBy identity record.hivData
-                                                                    , tuberculosisData = filterIndividualBy identity record.tuberculosisData
-                                                                    , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
-                                                                    , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
-                                                                    , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
-                                                                    , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
-                                                                    , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
-                                                                    , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
-                                                                    , groupNutritionFbfMotherData = filterGroupBy .startDate record.groupNutritionFbfMotherData
-                                                                    , familyNutritionData = filterIndividualBy .startDate record.familyNutritionData
-                                                                    , familyNutritionMuacData = filterIndividualBy .startDate record.familyNutritionMuacData
-                                                                }
-
-                                                        else
-                                                            Nothing
-                                                    )
-                                                    data.records
+                                            filterRecordsByDateRange currentDate startDate limitDate data.records
                                     in
                                     case reportType of
                                         ReportAcuteIllness ->
@@ -247,10 +155,10 @@ viewReportsData language currentDate themePath data model =
                                             viewFBFDistributionReport language data.features limitDate scopeLabel recordsTillLimitDate
 
                                         ReportNutrition ->
-                                            viewNutritionReport language limitDate scopeLabel data.nutritionReportData model.nutritionReportData
+                                            viewNutritionReport language limitDate scopeLabel (isWideScope data.entityType) data.nutritionReportData model.nutritionReportData
 
                                         ReportPeripartum ->
-                                            viewPeripartumReport language limitDate scopeLabel recordsTillLimitDate
+                                            viewPeripartumReport language startDate limitDate scopeLabel data.records recordsTillLimitDate
 
                                         ReportPostnatalCare ->
                                             viewPostnatalCareReport language data.site limitDate scopeLabel recordsTillLimitDate
@@ -315,17 +223,7 @@ viewDemographicsReport : Language -> EverySet SiteFeature -> NominalDate -> Nomi
 viewDemographicsReport language features startDate limitDate scopeLabel records =
     let
         demographicsReportPatientsData =
-            -- We get recoderds for all patients that were created not before
-            -- the TO date.
-            -- In this report however, we want to get only those patients that
-            -- were created not after the FROM date, hence the filtering.
-            List.filter
-                (\record ->
-                    -- Patient was created not before the FROM date.
-                    not <| Date.compare record.created startDate == LT
-                )
-                records
-                |> generateDemographicsReportPatientsData language limitDate
+            generateDemographicsReportPatientsData language startDate limitDate records
 
         demographicsReportEncountersData =
             generateDemographicsReportEncountersData language features records
@@ -348,8 +246,13 @@ viewDemographicsReport language features startDate limitDate scopeLabel records 
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
+{-| The patients registered between FROM and TO, by age at TO. The records
+hold every patient created up to TO, so those created before FROM are
+left out here.
+-}
 generateDemographicsReportPatientsData :
     Language
+    -> NominalDate
     -> NominalDate
     -> List PatientData
     ->
@@ -362,10 +265,11 @@ generateDemographicsReportPatientsData :
                 , totals : ( String, String )
                 }
         }
-generateDemographicsReportPatientsData language limitDate records =
+generateDemographicsReportPatientsData language startDate limitDate records =
     let
         ( males, females ) =
-            List.partition (.gender >> (==) Male) records
+            List.filter (\record -> Date.compare record.created startDate /= LT) records
+                |> List.partition (.gender >> (==) Male)
 
         males1MonthAndLess =
             List.filter (\patient -> Date.diff Months patient.birthDate limitDate == 0)
@@ -1021,33 +925,108 @@ demographicsReportEncountersDataToCSV data =
         |> String.join "\n"
 
 
-viewNutritionReport : Language -> NominalDate -> String -> Maybe (List BackendGeneratedNutritionReportTableDate) -> RemoteData String NutritionReportData -> Html Msg
-viewNutritionReport language currentDate scopeLabel mBackendGeneratedData reportData =
+viewNutritionReport : Language -> NominalDate -> String -> Bool -> Maybe (List BackendGeneratedNutritionReportTableDate) -> RemoteData String NutritionReportData -> Html Msg
+viewNutritionReport language currentDate scopeLabel wideScope mBackendGeneratedData reportData =
+    if wideScope && isNothing mBackendGeneratedData then
+        -- Large scopes read tables the nightly job stores, and have none yet.
+        div [ class "report nutrition" ]
+            [ div [ class "table-note" ] [ text <| translate language Translate.NutritionReportPreparedOvernight ] ]
+
+    else
+        let
+            generatedData =
+                Maybe.map (generareNutritionReportDataFromBackendGeneratedData language) mBackendGeneratedData
+                    |> Maybe.withDefault (generareNutritionReportDataFromRawData language currentDate reportData)
+
+            csvFileName =
+                "nutrition-report-"
+                    ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                    ++ "-"
+                    ++ customFormatDDMMYYYY "-" currentDate
+                    ++ ".csv"
+
+            csvContent =
+                List.map (nutritionTableToCSVData language) generatedData
+                    |> reportTablesDataToCSV
+        in
+        div [ class "report nutrition" ] <|
+            List.concatMap viewNutritionTable generatedData
+                ++ [ viewDownloadCSVButton language csvFileName csvContent ]
+
+
+viewNutritionTable : NutritionTableData -> List (Html any)
+viewNutritionTable table =
     let
-        generatedData =
-            Maybe.map (generareNutritionReportDataFromBackendGeneratedData language) mBackendGeneratedData
-                |> Maybe.withDefault (generareNutritionReportDataFromRawData language currentDate reportData)
-
-        csvFileName =
-            "nutrition-report-"
-                ++ (String.toLower <| String.replace " " "-" scopeLabel)
-                ++ "-"
-                ++ customFormatDDMMYYYY "-" currentDate
-                ++ ".csv"
-
-        csvContent =
-            reportTablesDataToCSV generatedData
+        viewRate rate =
+            [ div [ class "percentage" ] [ text <| ratePercentage rate ]
+            , div [ class "counts" ] [ text <| String.fromInt rate.count ++ " / " ++ String.fromInt rate.total ]
+            ]
     in
-    div [ class "report nutrition" ] <|
-        List.concatMap viewMetricsResultsTable generatedData
-            ++ [ viewDownloadCSVButton language csvFileName csvContent ]
+    viewCustomMetricsResultsTable table.heading
+        table.captions
+        (List.map (\( label, rates ) -> [ text label ] :: List.map viewRate rates) table.rows)
+        ++ [ div [ class "table-note" ] [ text table.note ] ]
+
+
+{-| In the CSV, each percentage row is followed by a row of its
+numerators and a row of its denominators, and the note closes the table.
+-}
+nutritionTableToCSVData : Language -> NutritionTableData -> MetricsResultsTableData
+nutritionTableToCSVData language table =
+    let
+        numeratorLabel =
+            " - " ++ translate language Translate.Numerator
+
+        denominatorLabel =
+            " - " ++ translate language Translate.Denominator
+
+        rateRows ( label, rates ) =
+            [ label :: List.map ratePercentage rates
+            , (label ++ numeratorLabel) :: List.map (.count >> String.fromInt) rates
+            , (label ++ denominatorLabel) :: List.map (.total >> String.fromInt) rates
+            ]
+    in
+    { heading = table.heading
+    , captions = table.captions
+    , rows = List.concatMap rateRows table.rows ++ [ [ table.note ] ]
+    }
+
+
+ratePercentage : NutritionRate -> String
+ratePercentage rate =
+    calculatePercentage rate.count rate.total
+
+
+{-| Builds a table from its period columns: the caption, and the rates
+of that period.
+-}
+toNutritionTableData : Language -> NutritionReportTableType -> List ( String, NutritionMetricsResults ) -> NutritionTableData
+toNutritionTableData language tableType columns =
+    let
+        row label rateOf =
+            ( translate language label, List.map (Tuple.second >> rateOf) columns )
+    in
+    { heading = translate language (Translate.NutritionReportTableType tableType) ++ ":"
+    , captions = "" :: List.map Tuple.first columns
+    , rows =
+        [ row Translate.StuntingModerate .stuntingModerate
+        , row Translate.StuntingSevere .stuntingSevere
+        , row Translate.WastingModerate .wastingModerate
+        , row Translate.WastingSevere .wastingSevere
+        , row Translate.UnderweightModerate .underweightModerate
+        , row Translate.UnderweightSevere .underweightSevere
+        , row Translate.AcuteMalnutritionMam .acuteMalnutritionMam
+        , row Translate.AcuteMalnutritionSam .acuteMalnutritionSam
+        ]
+    , note = translate language (Translate.NutritionReportTableNote tableType)
+    }
 
 
 generareNutritionReportDataFromRawData :
     Language
     -> NominalDate
     -> RemoteData String NutritionReportData
-    -> List MetricsResultsTableData
+    -> List NutritionTableData
 generareNutritionReportDataFromRawData language currentDate reportData =
     case reportData of
         Success data ->
@@ -1073,28 +1052,28 @@ generareNutritionReportDataFromRawData language currentDate reportData =
                         data.encountersByMonth
 
                 prevalenceByMonthOneVisitOrMoreData =
-                    generateMonthlyPrevalenceTableData language currentDate Translate.PrevalenceByMonthOneVisitOrMore data.encountersByMonth
+                    generateMonthlyPrevalenceTableData language currentDate NutritionTablePrevalanceOneOrMore data.encountersByMonth
 
                 prevalenceByMonthTwoVisitsOrMoreData =
-                    generateMonthlyPrevalenceTableData language currentDate Translate.PrevalenceByMonthTwoVisitsOrMore encountersByMonthForImpacted
+                    generateMonthlyPrevalenceTableData language currentDate NutritionTablePrevalanceTwoOrMore encountersByMonthForImpacted
 
                 incidenceByMonthOneVisitOrMoreData =
-                    generateMonthlyIncidenceTableData language currentDate Translate.IncidenceByMonthOneVisitOrMore data.encountersByMonth
+                    generateMonthlyIncidenceTableData language currentDate NutritionTableIncidenceMonthOneOrMore data.encountersByMonth
 
                 incidenceByMonthTwoVisitsOrMoreData =
-                    generateMonthlyIncidenceTableData language currentDate Translate.IncidenceByMonthTwoVisitsOrMore encountersByMonthForImpacted
+                    generateMonthlyIncidenceTableData language currentDate NutritionTableIncidenceMonthTwoOrMore encountersByMonthForImpacted
 
                 incidenceByQuarterOneVisitOrMoreData =
-                    generateQuarterlyIncidenceTableData language currentDate Translate.IncidenceByQuarterOneVisitOrMore data.encountersByMonth
+                    generateQuarterlyIncidenceTableData language currentDate NutritionTableIncidenceQuarterOneOrMore data.encountersByMonth
 
                 incidenceByQuarterTwoVisitsOrMoreData =
-                    generateQuarterlyIncidenceTableData language currentDate Translate.IncidenceByQuarterTwoVisitsOrMore encountersByMonthForImpacted
+                    generateQuarterlyIncidenceTableData language currentDate NutritionTableIncidenceQuarterTwoOrMore encountersByMonthForImpacted
 
                 incidenceByYearOneVisitOrMoreData =
-                    generateYearlyIncidenceTableData language currentDate Translate.IncidenceByYearOneVisitOrMore data.encountersByMonth
+                    generateYearlyIncidenceTableData language currentDate NutritionTableIncidenceYearOneOrMore data.encountersByMonth
 
                 incidenceByYearTwoVisitsOrMore =
-                    generateYearlyIncidenceTableData language currentDate Translate.IncidenceByYearTwoVisitsOrMore encountersByMonthForImpacted
+                    generateYearlyIncidenceTableData language currentDate NutritionTableIncidenceYearTwoOrMore encountersByMonthForImpacted
             in
             [ prevalenceByMonthOneVisitOrMoreData
             , prevalenceByMonthTwoVisitsOrMoreData
@@ -1113,7 +1092,7 @@ generareNutritionReportDataFromRawData language currentDate reportData =
 generareNutritionReportDataFromBackendGeneratedData :
     Language
     -> List BackendGeneratedNutritionReportTableDate
-    -> List MetricsResultsTableData
+    -> List NutritionTableData
 generareNutritionReportDataFromBackendGeneratedData language data =
     let
         nutritionTableTypeToNumber tableType =
@@ -1143,11 +1122,11 @@ generareNutritionReportDataFromBackendGeneratedData language data =
                     8
     in
     List.sortBy (.tableType >> nutritionTableTypeToNumber) data
-        |> List.map (backendGeneratedNutritionReportTableDateToMetricsResultsTableData language)
+        |> List.map (backendGeneratedNutritionReportTableDateToNutritionTableData language)
 
 
-backendGeneratedNutritionReportTableDateToMetricsResultsTableData : Language -> BackendGeneratedNutritionReportTableDate -> MetricsResultsTableData
-backendGeneratedNutritionReportTableDateToMetricsResultsTableData language backendTableData =
+backendGeneratedNutritionReportTableDateToNutritionTableData : Language -> BackendGeneratedNutritionReportTableDate -> NutritionTableData
+backendGeneratedNutritionReportTableDateToNutritionTableData language backendTableData =
     let
         translateCaption caption =
             if List.member backendTableData.tableType [ NutritionTableIncidenceQuarterOneOrMore, NutritionTableIncidenceQuarterTwoOrMore ] then
@@ -1177,31 +1156,20 @@ backendGeneratedNutritionReportTableDateToMetricsResultsTableData language backe
                     _ ->
                         ""
     in
-    { heading = translate language <| Translate.NutritionReportTableType backendTableData.tableType
-    , captions = "" :: List.map translateCaption backendTableData.captions
-    , rows =
-        [ translate language Translate.StuntingModerate :: backendTableData.stuntingModerate
-        , translate language Translate.StuntingSevere :: backendTableData.stuntingSevere
-        , translate language Translate.WastingModerate :: backendTableData.wastingModerate
-        , translate language Translate.WastingSevere :: backendTableData.wastingSevere
-        , translate language Translate.UnderweightModerate :: backendTableData.underweightModerate
-        , translate language Translate.UnderweightSevere :: backendTableData.underweightSevere
-        , translate language Translate.AcuteMalnutritionMam :: backendTableData.acuteMalnutritionMam
-        , translate language Translate.AcuteMalnutritionSam :: backendTableData.acuteMalnutritionSam
-        ]
-    }
+    List.map2 Tuple.pair (List.map translateCaption backendTableData.captions) backendTableData.results
+        |> toNutritionTableData language backendTableData.tableType
 
 
 generateMonthlyPrevalenceTableData :
     Language
     -> NominalDate
-    -> TranslationId
+    -> NutritionReportTableType
     -> Dict ( Int, Int ) NutritionMetrics
-    -> MetricsResultsTableData
-generateMonthlyPrevalenceTableData language currentDate heading encountersByMonth =
+    -> NutritionTableData
+generateMonthlyPrevalenceTableData language currentDate tableType encountersByMonth =
     generateMonthlyTableData language
         currentDate
-        heading
+        tableType
         (\index ->
             resolveDataSetForMonth currentDate index encountersByMonth
                 |> generatePrevalenceNutritionMetricsResults
@@ -1211,13 +1179,13 @@ generateMonthlyPrevalenceTableData language currentDate heading encountersByMont
 generateMonthlyIncidenceTableData :
     Language
     -> NominalDate
-    -> TranslationId
+    -> NutritionReportTableType
     -> Dict ( Int, Int ) NutritionMetrics
-    -> MetricsResultsTableData
-generateMonthlyIncidenceTableData language currentDate heading encountersByMonth =
+    -> NutritionTableData
+generateMonthlyIncidenceTableData language currentDate tableType encountersByMonth =
     generateMonthlyTableData language
         currentDate
-        heading
+        tableType
         (\index ->
             generateIncidenceNutritionMetricsResults
                 (resolveDataSetForMonth currentDate index encountersByMonth)
@@ -1234,10 +1202,10 @@ date. The given function resolves column metrics from the month's index
 generateMonthlyTableData :
     Language
     -> NominalDate
-    -> TranslationId
+    -> NutritionReportTableType
     -> (Int -> NutritionMetricsResults)
-    -> MetricsResultsTableData
-generateMonthlyTableData language currentDate heading resolveMetricsResultsForMonth =
+    -> NutritionTableData
+generateMonthlyTableData language currentDate tableType resolveMetricsResultsForMonth =
     List.range 1 12
         |> List.map
             (\index ->
@@ -1249,16 +1217,16 @@ generateMonthlyTableData language currentDate heading resolveMetricsResultsForMo
                 , resolveMetricsResultsForMonth index
                 )
             )
-        |> toMetricsResultsTableData language heading
+        |> periodColumnsToNutritionTableData language tableType
 
 
 generateQuarterlyIncidenceTableData :
     Language
     -> NominalDate
-    -> TranslationId
+    -> NutritionReportTableType
     -> Dict ( Int, Int ) NutritionMetrics
-    -> MetricsResultsTableData
-generateQuarterlyIncidenceTableData language currentDate heading encountersByMonth =
+    -> NutritionTableData
+generateQuarterlyIncidenceTableData language currentDate tableType encountersByMonth =
     let
         dataSetsByQuarter =
             -- We show data of previous 4 quarters. So, if at Q2-2024, we show
@@ -1276,14 +1244,8 @@ generateQuarterlyIncidenceTableData language currentDate heading encountersByMon
         |> List.map
             (\index ->
                 let
-                    selectedDate =
-                        Date.add Months (-3 * index) currentDate
-
-                    year =
-                        Date.year selectedDate
-
-                    quarter =
-                        Date.quarter selectedDate
+                    ( year, quarter ) =
+                        resolveQuarterForIndex currentDate index
 
                     dataSet =
                         List.Extra.getAt (index - 1) dataSetsByQuarter
@@ -1297,16 +1259,16 @@ generateQuarterlyIncidenceTableData language currentDate heading encountersByMon
                 , generateIncidenceNutritionMetricsResults dataSet previousDataSet
                 )
             )
-        |> toMetricsResultsTableData language heading
+        |> periodColumnsToNutritionTableData language tableType
 
 
 generateYearlyIncidenceTableData :
     Language
     -> NominalDate
-    -> TranslationId
+    -> NutritionReportTableType
     -> Dict ( Int, Int ) NutritionMetrics
-    -> MetricsResultsTableData
-generateYearlyIncidenceTableData language currentDate heading encountersByMonth =
+    -> NutritionTableData
+generateYearlyIncidenceTableData language currentDate tableType encountersByMonth =
     let
         dataSetsByYear =
             -- We show data of previous 2 years. So, if at 2024, we show
@@ -1341,52 +1303,17 @@ generateYearlyIncidenceTableData language currentDate heading encountersByMonth 
                 , generateIncidenceNutritionMetricsResults dataSet previousDataSet
                 )
             )
-        |> toMetricsResultsTableData language heading
+        |> periodColumnsToNutritionTableData language tableType
 
 
-toMetricsResultsTableData :
+periodColumnsToNutritionTableData :
     Language
-    -> TranslationId
+    -> NutritionReportTableType
     -> List ( TranslationId, NutritionMetricsResults )
-    -> MetricsResultsTableData
-toMetricsResultsTableData language heading data =
-    let
-        captions =
-            List.map
-                (\( label, _ ) ->
-                    translate language label
-                )
-                data
-                |> List.append [ "" ]
-
-        generateRow label =
-            List.map
-                (\value ->
-                    Round.round 3 value ++ "%"
-                )
-                >> List.append [ translate language label ]
-    in
-    { heading = translate language heading ++ ":"
-    , captions = captions
-    , rows =
-        [ List.map (Tuple.second >> .stuntingModerate) data
-            |> generateRow Translate.StuntingModerate
-        , List.map (Tuple.second >> .stuntingSevere) data
-            |> generateRow Translate.StuntingSevere
-        , List.map (Tuple.second >> .wastingModerate) data
-            |> generateRow Translate.WastingModerate
-        , List.map (Tuple.second >> .wastingSevere) data
-            |> generateRow Translate.WastingSevere
-        , List.map (Tuple.second >> .underweightModerate) data
-            |> generateRow Translate.UnderweightModerate
-        , List.map (Tuple.second >> .underweightSevere) data
-            |> generateRow Translate.UnderweightSevere
-        , List.map (Tuple.second >> .acuteMalnutritionMam) data
-            |> generateRow Translate.AcuteMalnutritionMam
-        , List.map (Tuple.second >> .acuteMalnutritionSam) data
-            |> generateRow Translate.AcuteMalnutritionSam
-        ]
-    }
+    -> NutritionTableData
+periodColumnsToNutritionTableData language tableType =
+    List.map (Tuple.mapFirst (translate language))
+        >> toNutritionTableData language tableType
 
 
 viewPrenatalReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
@@ -1445,11 +1372,7 @@ generatePrenatalReportData language limitDate records =
                         if isJust participantData.eddDate then
                             let
                                 filteredEncounters =
-                                    List.filter
-                                        (\encounter ->
-                                            not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
-                                        )
-                                        participantData.encounters
+                                    List.filter (isPostpartumEncounter >> not) participantData.encounters
                             in
                             Just { participantData | encounters = filteredEncounters }
 
@@ -1458,23 +1381,7 @@ generatePrenatalReportData language limitDate records =
                     )
 
         ( completed, active ) =
-            List.partition
-                (\participantData ->
-                    -- Pregnancy is considered completed if
-                    -- either conclusion date was set.
-                    isJust participantData.dateConcluded
-                        || (-- Or it's been 30 days or more since estimated delivery date.
-                            Maybe.map
-                                (\eddDate ->
-                                    Date.compare (Date.add Days 30 eddDate) limitDate == LT
-                                )
-                                participantData.eddDate
-                                |> -- We never get here, as filtered, only contains pregnancies
-                                   -- that got EDD set.
-                                   Maybe.withDefault False
-                           )
-                )
-                filtered
+            List.partition (isPregnancyCompleted limitDate) filtered
 
         partitionedVisitsForActive =
             countVisitsByType active
@@ -2421,27 +2328,11 @@ generatePrenatalContactsReportData language limitDate records =
 
         encountersAtCompletedPregnancies =
             List.filterMap
-                (\( lmpDate, pregnancy ) ->
-                    let
-                        completed =
-                            let
-                                thirtyDaysAfterEDD =
-                                    Date.add Days 310 lmpDate
-                            in
-                            -- Pregnancy is completed when it's completion date is set, or,
-                            -- 30 days after estimated delivery date.
-                            isJust pregnancy.dateConcluded
-                                || (not <| Date.compare thirtyDaysAfterEDD limitDate == GT)
-                    in
-                    if completed then
+                (\( _, pregnancy ) ->
+                    if isPregnancyCompleted limitDate pregnancy then
                         let
                             nonPostpartumEncounters =
-                                List.filter
-                                    (\encounter ->
-                                        -- Encounter was started not after EGA date.
-                                        not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
-                                    )
-                                    pregnancy.encounters
+                                List.filter (isPostpartumEncounter >> not) pregnancy.encounters
                         in
                         Just <| List.length nonPostpartumEncounters
 
@@ -2676,11 +2567,11 @@ generatePrenatalDiagnosesReportData language records =
     }
 
 
-viewPeripartumReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
-viewPeripartumReport language limitDate scopeLabel records =
+viewPeripartumReport : Language -> NominalDate -> NominalDate -> String -> List PatientData -> List PatientData -> Html Msg
+viewPeripartumReport language startDate limitDate scopeLabel scopeRecords recordsTillLimitDate =
     let
         data =
-            generatePeripartumReportData language records
+            generatePeripartumReportData language startDate limitDate scopeRecords recordsTillLimitDate
 
         captionsRow =
             viewStandardCells data.captions
@@ -2706,17 +2597,35 @@ viewPeripartumReport language limitDate scopeLabel records =
 
 generatePeripartumReportData :
     Language
+    -> NominalDate
+    -> NominalDate
+    -> List PatientData
     -> List PatientData
     -> MetricsResultsTableData
-generatePeripartumReportData language records =
+generatePeripartumReportData language startDate limitDate scopeRecords recordsTillLimitDate =
     let
-        pregnancies =
-            List.map .prenatalData records
-                |> Maybe.Extra.values
-                |> List.concat
+        pregnanciesOf =
+            List.map .prenatalData
+                >> Maybe.Extra.values
+                >> List.concat
+
+        -- Pregnancies with a visit in the range, used for the rows recorded
+        -- at visits.
+        pregnanciesVisitedInRange =
+            pregnanciesOf recordsTillLimitDate
+
+        -- A delivery counts when its date is in the range, even with no
+        -- visit in the range.
+        pregnanciesDeliveredInRange =
+            pregnanciesOf scopeRecords
+                |> List.filter
+                    (.dateConcluded
+                        >> Maybe.map (Date.isBetween startDate limitDate)
+                        >> Maybe.withDefault False
+                    )
 
         countPregnanciesByOutcome outcome =
-            List.filter (.outcome >> (==) (Just outcome)) pregnancies
+            List.filter (.outcome >> (==) (Just outcome)) pregnanciesDeliveredInRange
                 |> List.length
 
         totalLiveAtTerm =
@@ -2752,9 +2661,9 @@ generatePeripartumReportData language records =
         , generateRow Translate.TotalLiveBirths (totalLiveAtTerm + totalLivePreTerm)
         , generateRow Translate.TotalLivePreTermBirths totalLivePreTerm
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorPrematureOnsetContractions)
-            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnancies)
+            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnanciesVisitedInRange)
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorBreastfedFirstHour)
-            (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnancies)
+            (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnanciesVisitedInRange)
         ]
     }
 

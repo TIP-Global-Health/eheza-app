@@ -1,4 +1,4 @@
-module Pages.Prenatal.Activity.Utils exposing (activityCompleted, appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, bmiToPrePregnancyClassification, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectActivity, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generateDangerSignsListForChw, generateFutureVaccinationsDataByProgress, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, highBloodPressureCondition, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mandatoryActivitiesForAssessmentCompleted, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, noDangerSigns, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMeasuredHeight, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, resolveWarningPopupContentForUrgentDiagnoses, respiratoryRateElevated, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview, weightGainStandardsByPrePregnancyClassificationHealthyStart, weightGainStandardsPerPrePregnancyClassification, zscoreToPrePregnancyClassification)
+module Pages.Prenatal.Activity.Utils exposing (activityCompleted, appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, bmiToPrePregnancyClassification, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, dangerSignsPresentAtEncounter, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectActivity, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generateDangerSignsListForChw, generateFutureVaccinationsDataByProgress, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, highBloodPressureCondition, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mandatoryActivitiesForAssessmentCompleted, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, noDangerSigns, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMeasuredHeight, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolveNextVisitDate, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, resolveWarningPopupContentForUrgentDiagnoses, respiratoryRateElevated, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview, weightGainStandardsByPrePregnancyClassificationHealthyStart, weightGainStandardsPerPrePregnancyClassification, zscoreToPrePregnancyClassification)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PrenatalEncounterId)
@@ -568,6 +568,84 @@ expectNextStepsTask currentDate assembled task =
                 , ChwSecondEncounter
                 , ChwThirdPlusEncounter
                 ]
+                -- Asked only when a next visit date can be computed. It comes
+                -- from the pregnancy's EGA, so a pregnancy with no LMP has none.
+                && isJust (resolveNextVisitDate assembled)
+
+
+resolveNextVisitDate : AssembledData -> Maybe NominalDate
+resolveNextVisitDate assembled =
+    Maybe.map (calculateEGAWeeks assembled.encounter.startDate) assembled.globalLmpDate
+        |> Maybe.map
+            (\egaWeekCurrent ->
+                let
+                    -- If moderate Anemia was diagnosed, next visit is supposed
+                    -- to take place within 4 weeks.
+                    moderateAnemiaDiagnosed =
+                        diagnosedAnyOf [ DiagnosisModerateAnemiaInitialPhase, DiagnosisModerateAnemiaRecurrentPhase ] assembled
+
+                    gap =
+                        if egaWeekCurrent < 20 then
+                            if moderateAnemiaDiagnosed then
+                                4
+
+                            else
+                                8
+
+                        else if egaWeekCurrent < 26 then
+                            if moderateAnemiaDiagnosed then
+                                4
+
+                            else
+                                6
+
+                        else if egaWeekCurrent < 30 then
+                            4
+
+                        else
+                            let
+                                egaWeekOnFirstVisit =
+                                    Maybe.map2 calculateEGAWeeks
+                                        (assembled.encounter.startDate
+                                            :: List.map (\( date, _, _ ) -> date) assembled.chwPreviousMeasurementsWithDates
+                                            ++ List.map .startDate assembled.nursePreviousEncountersData
+                                            |> List.sortWith Date.compare
+                                            |> List.head
+                                        )
+                                        assembled.globalLmpDate
+                            in
+                            if egaWeekCurrent < 32 then
+                                let
+                                    firstVisitAt22To27 =
+                                        Maybe.map (\date -> (date >= 22) && (date < 28)) egaWeekOnFirstVisit
+                                            |> Maybe.withDefault False
+                                in
+                                if firstVisitAt22To27 then
+                                    2
+
+                                else
+                                    4
+
+                            else if egaWeekCurrent < 34 then
+                                let
+                                    firstVisitAt28Plus =
+                                        Maybe.map (\date -> date >= 28) egaWeekOnFirstVisit
+                                            |> Maybe.withDefault False
+                                in
+                                if firstVisitAt28Plus then
+                                    2
+
+                                else
+                                    4
+
+                            else if egaWeekCurrent < 40 then
+                                2
+
+                            else
+                                1
+                in
+                Date.add Weeks gap assembled.encounter.startDate
+            )
 
 
 nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
@@ -1356,36 +1434,40 @@ expectPrenatalPhoto currentDate assembled =
 
 noDangerSigns : AssembledData -> Bool
 noDangerSigns assembled =
+    noDangerSignsAtEncounter assembled.encounter.encounterType assembled.measurements
+
+
+{-| A CHW postpartum encounter records the mother's and the child's signs.
+The other encounters with a Danger Signs activity record the pregnancy signs.
+-}
+noDangerSignsAtEncounter : PrenatalEncounterType -> PrenatalMeasurements -> Bool
+noDangerSignsAtEncounter encounterType measurements =
     let
-        getDangerSignsType getFunc =
-            assembled.measurements.dangerSigns
-                |> Maybe.map (Tuple.second >> .value >> getFunc >> EverySet.toList)
-                |> Maybe.withDefault []
-
-        dangerSignsEmpty emptySign signsList =
-            List.isEmpty signsList || signsList == [ emptySign ]
+        dangerSignsEmpty emptySign signs =
+            EverySet.isEmpty signs || signs == EverySet.singleton emptySign
     in
-    case assembled.encounter.encounterType of
-        ChwPostpartumEncounter ->
-            let
-                motherSignsEmpty =
-                    getDangerSignsType .postpartumMother
-                        |> dangerSignsEmpty NoPostpartumMotherDangerSigns
+    getMeasurementValueFunc measurements.dangerSigns
+        |> Maybe.map
+            (\value ->
+                case encounterType of
+                    ChwPostpartumEncounter ->
+                        dangerSignsEmpty NoPostpartumMotherDangerSigns value.postpartumMother
+                            && dangerSignsEmpty NoPostpartumChildDangerSigns value.postpartumChild
 
-                childSignsEmpty =
-                    getDangerSignsType .postpartumChild
-                        |> dangerSignsEmpty NoPostpartumChildDangerSigns
-            in
-            motherSignsEmpty && childSignsEmpty
-
-        _ ->
-            getDangerSignsType .signs
-                |> dangerSignsEmpty NoDangerSign
+                    _ ->
+                        dangerSignsEmpty NoDangerSign value.signs
+            )
+        |> Maybe.withDefault True
 
 
 dangerSignsPresent : AssembledData -> Bool
 dangerSignsPresent assembled =
-    isJust assembled.measurements.dangerSigns && not (noDangerSigns assembled)
+    dangerSignsPresentAtEncounter assembled.encounter.encounterType assembled.measurements
+
+
+dangerSignsPresentAtEncounter : PrenatalEncounterType -> PrenatalMeasurements -> Bool
+dangerSignsPresentAtEncounter encounterType measurements =
+    not (noDangerSignsAtEncounter encounterType measurements)
 
 
 generateDangerSignsListForNurse : AssembledData -> List DangerSign
@@ -4432,78 +4514,42 @@ toMedicationValue form =
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHIVTreatment)
 
-        hypertensionTreatment =
-            if
-                List.all isNothing
-                    [ form.hypertensionStillTaking
-                    , form.hypertensionMissedDoses
-                    , form.hypertensionAdverseEvents
-                    , form.hypertensionAdverseEventsHospitalization
-                    ]
-            then
+        toMedicationTreatmentValue stillTaking missedDoses adverseEvents adverseEventsHospitalization =
+            if List.all isNothing [ stillTaking, missedDoses, adverseEvents, adverseEventsHospitalization ] then
                 Nothing
 
             else
-                [ ifNullableTrue MedicationTreatmentStillTaking form.hypertensionStillTaking
-                , ifNullableTrue MedicationTreatmentMissedDoses form.hypertensionMissedDoses
-                , ifNullableTrue MedicationTreatmentAdverseEvents form.hypertensionAdverseEvents
-                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.hypertensionAdverseEventsHospitalization
+                [ ifNullableTrue MedicationTreatmentStillTaking stillTaking
+                , ifNullableTrue MedicationTreatmentMissedDoses missedDoses
+                , ifNullableTrue MedicationTreatmentAdverseEvents adverseEvents
+                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization adverseEventsHospitalization
                 ]
                     |> Maybe.Extra.combine
                     |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
+
+        hypertensionTreatment =
+            toMedicationTreatmentValue form.hypertensionStillTaking
+                form.hypertensionMissedDoses
+                form.hypertensionAdverseEvents
+                form.hypertensionAdverseEventsHospitalization
 
         malariaTreatment =
-            if
-                List.all isNothing
-                    [ form.malariaStillTaking
-                    , form.malariaMissedDoses
-                    , form.malariaAdverseEvents
-                    , form.malariaAdverseEventsHospitalization
-                    ]
-            then
-                Nothing
-
-            else
-                [ ifNullableTrue MedicationTreatmentStillTaking form.malariaStillTaking
-                , ifNullableTrue MedicationTreatmentMissedDoses form.malariaMissedDoses
-                , ifNullableTrue MedicationTreatmentAdverseEvents form.malariaAdverseEvents
-                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.malariaAdverseEventsHospitalization
-                ]
-                    |> Maybe.Extra.combine
-                    |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
+            toMedicationTreatmentValue form.malariaStillTaking
+                form.malariaMissedDoses
+                form.malariaAdverseEvents
+                form.malariaAdverseEventsHospitalization
 
         anemiaTreatment =
-            if
-                List.all isNothing
-                    [ form.anemiaStillTaking
-                    , form.anemiaMissedDoses
-                    , form.anemiaAdverseEvents
-                    , form.anemiaAdverseEventsHospitalization
-                    ]
-            then
-                Nothing
-
-            else
-                [ ifNullableTrue MedicationTreatmentStillTaking form.anemiaStillTaking
-                , ifNullableTrue MedicationTreatmentMissedDoses form.anemiaMissedDoses
-                , ifNullableTrue MedicationTreatmentAdverseEvents form.anemiaAdverseEvents
-                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.anemiaAdverseEventsHospitalization
-                ]
-                    |> Maybe.Extra.combine
-                    |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
+            toMedicationTreatmentValue form.anemiaStillTaking
+                form.anemiaMissedDoses
+                form.anemiaAdverseEvents
+                form.anemiaAdverseEventsHospitalization
 
         syphilisTreatment =
-            if List.all isNothing [ form.syphilisStillTaking, form.syphilisMissedDoses, form.syphilisAdverseEvents ] then
-                Nothing
-
-            else
-                [ ifNullableTrue MedicationTreatmentStillTaking form.syphilisStillTaking
-                , ifNullableTrue MedicationTreatmentMissedDoses form.syphilisMissedDoses
-                , ifNullableTrue MedicationTreatmentAdverseEvents form.syphilisAdverseEvents
-                , ifNullableTrue MedicationTreatmentAdverseEventsHospitalization form.syphilisAdverseEventsHospitalization
-                ]
-                    |> Maybe.Extra.combine
-                    |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicationTreatment)
+            toMedicationTreatmentValue form.syphilisStillTaking
+                form.syphilisMissedDoses
+                form.syphilisAdverseEvents
+                form.syphilisAdverseEventsHospitalization
     in
     if
         isNothing signs

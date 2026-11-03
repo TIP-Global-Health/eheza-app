@@ -3,6 +3,7 @@ module Backend.Model exposing
     , ModelIndexedDb
     , MsgIndexedDb(..)
     , Revision(..)
+    , RevisionsOrigin(..)
     , emptyModelIndexedDb
     )
 
@@ -558,10 +559,10 @@ type MsgIndexedDb
     | HandlePostedFamilyNutritionEncounter FamilyEncounterParticipantId (WebData ( FamilyNutritionEncounterId, FamilyNutritionEncounter ))
       -- Operations we may want to perform when logout is clicked.
     | HandleLogout
-      -- Process some revisions we've received from the backend. In some cases,
-      -- we can update our in-memory structures appropriately. In other cases, we
-      -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
-    | HandleRevisions (List Revision)
+      -- Process revisions from the sync download or from a save on this device.
+      -- Each updates our in-memory structures, or sets them to `NotAsked` for
+      -- the "fetch" mechanism to re-fetch them.
+    | HandleRevisions RevisionsOrigin (List Revision)
       -- Handling edits to session data or encounter data
     | MsgSession SessionId Backend.Session.Model.Msg
     | MsgPrenatalEncounter PrenatalEncounterId Backend.PrenatalEncounter.Model.Msg
@@ -582,6 +583,14 @@ type MsgIndexedDb
     | MsgStockUpdate NurseId Backend.StockUpdate.Model.Msg
     | ResetFailedToFetchAuthorities
     | ResetPostPersonRequest
+
+
+{-| Where revisions come from. The device's own save runs the assessments
+(diagnoses, follow-ups); a sync download only stores what the backend sends.
+-}
+type RevisionsOrigin
+    = RevisionsFromLocalSave
+    | RevisionsFromSyncDownload
 
 
 {-| Wrapper for all the revisions we can receive.

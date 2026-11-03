@@ -2,15 +2,12 @@ module Pages.Reports.Update exposing (update)
 
 import App.Model exposing (PagesReturn)
 import App.Ports
-import AssocList as Dict
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model exposing (PatientData)
-import Date exposing (Unit(..))
 import Error.Utils exposing (noError)
 import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra
 import Pages.Reports.Model exposing (Model, Msg(..), NutritionReportData, ReportType(..))
-import Pages.Reports.Utils exposing (countTotalNutritionEncounters, familyNutritionEncounterToMetrics, isWideScope, nutritionEncounterDataToNutritionMetrics, reportTypeFromString, sumNutritionMetrics)
+import Pages.Reports.Utils exposing (calculateNutritionReportData, isWideScope, reportTypeFromString)
 import Pages.Utils exposing (dateSelectorDefault)
 import RemoteData exposing (RemoteData(..))
 import Task exposing (Task)
@@ -108,168 +105,7 @@ performNutritionReportDataCalculation currentDate data =
 calculateNutritionReportDataTask : NominalDate -> List PatientData -> Task String NutritionReportData
 calculateNutritionReportDataTask currentDate data =
     Task.succeed
-        (let
-            records =
-                List.filter
-                    (\record ->
-                        Date.diff Years record.birthDate currentDate < 6
-                    )
-                    data
-
-            impacted =
-                List.filterMap
-                    (\record ->
-                        if countTotalNutritionEncounters record > 1 then
-                            Just record.id
-
-                        else
-                            Nothing
-                    )
-                    records
-
-            currentYear =
-                Date.year currentDate
-
-            startingYear =
-                currentYear - 3
-
-            filterByYear encounter =
-                Date.year encounter.startDate >= startingYear
-
-            allEncounters =
-                List.concatMap
-                    (\record ->
-                        [ Maybe.map
-                            (List.concat
-                                >> List.filter filterByYear
-                                >> List.map
-                                    (\item ->
-                                        -- WellChildEncounterData mirrors NutritionEncounterData's
-                                        -- shape (date, nutritionData, muacCm, hasEdema) plus
-                                        -- immunisationData; well-child has no FBF distribution,
-                                        -- so that one is absent.
-                                        ( record.id
-                                        , { startDate = item.startDate
-                                          , nutritionData = item.nutritionData
-                                          , muacCm = item.muacCm
-                                          , hasEdema = item.hasEdema
-                                          , fbfAmount = Nothing
-                                          }
-                                        )
-                                    )
-                            )
-                            record.wellChildData
-                        , Maybe.map
-                            (List.concat
-                                >> List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
-                            )
-                            record.individualNutritionData
-                        , Maybe.map
-                            (List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
-                            )
-                            record.groupNutritionPmtctData
-                        , Maybe.map
-                            (List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
-                            )
-                            record.groupNutritionFbfData
-                        , Maybe.map
-                            (List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
-                            )
-                            record.groupNutritionSorwatheData
-                        , Maybe.map
-                            (List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
-                            )
-                            record.groupNutritionChwData
-                        , Maybe.map
-                            (List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
-                            )
-                            record.groupNutritionAchiData
-                        ]
-                            |> Maybe.Extra.values
-                            |> List.concat
-                    )
-                    records
-
-            -- Per-child family-nutrition MUAC measurements live under
-            -- familyNutritionMuacData on each child record. The bucket
-            -- entry uses record.id (the child's id), giving correct
-            -- per-child denominators in the AM stats. The mother-side
-            -- familyNutritionData (date-only entries used by the
-            -- Demographics encounter row) is intentionally not consumed
-            -- here -- mothers are filtered out by the records age filter
-            -- above, and the Demographics row already counts them
-            -- elsewhere.
-            familyNutritionEncounters =
-                List.concatMap
-                    (\record ->
-                        record.familyNutritionMuacData
-                            |> Maybe.map
-                                (List.concat
-                                    >> List.filter filterByYear
-                                    >> List.map (Tuple.pair record.id)
-                                )
-                            |> Maybe.withDefault []
-                    )
-                    records
-
-            insertMetricsForMonth ( year, month ) encounterMetrics accum =
-                let
-                    updatedMetrics =
-                        Dict.get ( year, month ) accum
-                            |> Maybe.map
-                                (\metricsSoFar ->
-                                    sumNutritionMetrics [ metricsSoFar, encounterMetrics ]
-                                )
-                            |> Maybe.withDefault encounterMetrics
-                in
-                Dict.insert ( year, month ) updatedMetrics accum
-
-            encountersByMonthFromNutrition =
-                List.foldl
-                    (\( personId, encounter ) accum ->
-                        let
-                            year =
-                                Date.year encounter.startDate
-
-                            month =
-                                Date.monthNumber encounter.startDate
-
-                            encounterMetrics =
-                                nutritionEncounterDataToNutritionMetrics personId encounter
-                        in
-                        insertMetricsForMonth ( year, month ) encounterMetrics accum
-                    )
-                    Dict.empty
-                    allEncounters
-
-            encountersByMonth =
-                List.foldl
-                    (\( personId, encounter ) accum ->
-                        let
-                            year =
-                                Date.year encounter.startDate
-
-                            month =
-                                Date.monthNumber encounter.startDate
-
-                            encounterMetrics =
-                                familyNutritionEncounterToMetrics personId encounter
-                        in
-                        insertMetricsForMonth ( year, month ) encounterMetrics accum
-                    )
-                    encountersByMonthFromNutrition
-                    familyNutritionEncounters
-         in
-         { impacted = impacted
-         , encountersByMonth = encountersByMonth
-         }
-        )
+        (calculateNutritionReportData currentDate data)
 
 
 wrapInResultTask : Task String a -> Task Never (Result String a)

@@ -1,4 +1,4 @@
-module Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, newbornExamActivities, reportTypeFromString, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities)
+module Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, applyFilters, customApplyFilters, eliminateEmptyEncounters, newbornExamActivities, reportTypeFromString, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities, spvTakenBy)
 
 import App.Types exposing (Site(..))
 import Backend.Completion.Model
@@ -11,9 +11,13 @@ import Backend.Completion.Model
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
         , PrenatalActivity(..)
+        , TakenBy(..)
         , TuberculosisActivity(..)
         , WellChildActivity(..)
+        , WellChildEncounterType(..)
         )
+import Date exposing (Date)
+import Gizra.NominalDate exposing (NominalDate)
 import Pages.Completion.Model exposing (ReportType(..))
 
 
@@ -357,3 +361,68 @@ allPrenatalActivities =
     , PrenatalVitals
     , PrenatalVitalsRecheck
     ]
+
+
+eliminateEmptyEncounters :
+    List { c | completion : { b | completedActivities : List a } }
+    -> List { c | completion : { b | completedActivities : List a } }
+eliminateEmptyEncounters =
+    List.filter (.completion >> .completedActivities >> List.isEmpty >> not)
+
+
+applyFilters :
+    NominalDate
+    -> NominalDate
+    -> Maybe TakenBy
+    -> List { a | startDate : Date, takenBy : Maybe TakenBy }
+    -> List { a | startDate : Date, takenBy : Maybe TakenBy }
+applyFilters startDate limitDate =
+    applyFiltersBy startDate limitDate .takenBy
+
+
+customApplyFilters :
+    NominalDate
+    -> NominalDate
+    -> ({ a | encounterType : WellChildEncounterType, startDate : Date } -> TakenBy)
+    -> Maybe TakenBy
+    -> List { a | encounterType : WellChildEncounterType, startDate : Date }
+    -> List { a | encounterType : WellChildEncounterType, startDate : Date }
+customApplyFilters startDate limitDate resolveTakenByFunc =
+    applyFiltersBy startDate limitDate (resolveTakenByFunc >> Just)
+
+
+applyFiltersBy :
+    NominalDate
+    -> NominalDate
+    -> ({ a | startDate : Date } -> Maybe TakenBy)
+    -> Maybe TakenBy
+    -> List { a | startDate : Date }
+    -> List { a | startDate : Date }
+applyFiltersBy startDate limitDate resolveTakenByFunc mTakenBy =
+    List.filter
+        (\encounter ->
+            let
+                takenByCondition =
+                    Maybe.map
+                        (\takenBy ->
+                            resolveTakenByFunc encounter == Just takenBy
+                        )
+                        mTakenBy
+                        |> Maybe.withDefault True
+            in
+            (not <| Date.compare encounter.startDate startDate == LT)
+                && (not <| Date.compare encounter.startDate limitDate == GT)
+                && takenByCondition
+        )
+
+
+{-| Who took a Standard Pediatric Visit: a nurse at the health center, a CHW
+otherwise.
+-}
+spvTakenBy : { a | encounterType : WellChildEncounterType } -> TakenBy
+spvTakenBy encounter =
+    if encounter.encounterType == PediatricCare then
+        TakenByNurse
+
+    else
+        TakenByCHW

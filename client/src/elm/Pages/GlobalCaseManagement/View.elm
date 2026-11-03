@@ -24,15 +24,15 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
         ( getHIVEncountersForParticipant
-        , getHomeVisitEncountersForParticipant
+        , getHomeVisitEncountersForPerson
         , getTuberculosisEncountersForParticipant
-        , getWellChildEncountersForParticipant
+        , getWellChildEncountersForPerson
         )
 import Backend.Person.Utils exposing (generateFullName)
 import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
-import Backend.Utils exposing (hivManagementEnabled, resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson, tuberculosisManagementEnabled)
+import Backend.Utils exposing (hivManagementEnabled, resolveIndividualParticipantsForPerson, tuberculosisManagementEnabled)
 import Backend.Village.Utils exposing (resolveVillageResidents)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
@@ -44,7 +44,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Maybe.Extra exposing (isNothing)
 import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, AcuteIllnessFollowUpItem, CaseManagementFilter(..), ContactsTracingEntryData, FollowUpAcuteIllnessData, FollowUpDialogState(..), FollowUpDueOption(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpImmunizationData, FollowUpNutritionData, FollowUpPrenatalData, FollowUpTuberculosisData, HIVFollowUpEntry, HIVFollowUpItem, ImmunizationFollowUpEntry, ImmunizationFollowUpItem, LabsEntryState(..), Model, Msg(..), NCDLabsEntryData, NutritionFollowUpEntry, NutritionFollowUpItem, PrenatalFollowUpEntry, PrenatalFollowUpItem, PrenatalLabsEntryData, TuberculosisFollowUpEntry, TuberculosisFollowUpItem)
-import Pages.GlobalCaseManagement.Utils exposing (chwFilters, fillPersonName, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessFollowUps, generateHIVFollowUps, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps, generateTuberculosisFollowUps, labTechFilters, labsResultsTestData, nurseFilters)
+import Pages.GlobalCaseManagement.Utils exposing (chwFilters, fillPersonName, filterFollowUpsOfChasedChildren, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessFollowUps, generateHIVFollowUps, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps, generateTuberculosisFollowUps, labTechFilters, labsResultsTestData, nurseFilters)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Utils
 import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipantDesc)
@@ -52,7 +52,7 @@ import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Report.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Pages.Utils exposing (viewBySyncStatus)
 import RemoteData exposing (RemoteData(..))
-import SyncManager.Model exposing (SiteFeature)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewModal)
 import Utils.NominalDate exposing (sortDatesDesc, sortEncounterTuplesDesc)
@@ -91,7 +91,7 @@ view language currentDate features healthCenterId mVillageId isLabTech syncManag
         content =
             Maybe.map
                 (\villageId ->
-                    viewWebData language (viewContentForChw language currentDate features villageId model db) identity followUps
+                    viewWebData language (viewContentForChw language currentDate syncManager.syncInfoGeneral.site features villageId model db) identity followUps
                 )
                 mVillageId
                 |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate isLabTech model db) identity followUps)
@@ -107,8 +107,8 @@ view language currentDate features healthCenterId mVillageId isLabTech syncManag
         ]
 
 
-viewContentForChw : Language -> NominalDate -> EverySet SiteFeature -> VillageId -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
-viewContentForChw language currentDate features villageId model db allFollowUps =
+viewContentForChw : Language -> NominalDate -> Site -> EverySet SiteFeature -> VillageId -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContentForChw language currentDate site features villageId model db allFollowUps =
     let
         villageResidents =
             resolveVillageResidents villageId db
@@ -146,6 +146,7 @@ viewContentForChw language currentDate features villageId model db allFollowUps 
 
         immunizationFollowUps =
             generateImmunizationFollowUps currentDate followUps
+                |> filterFollowUpsOfChasedChildren currentDate site db
                 |> fillPersonName identity db
 
         immunizationFollowUpsPane =
@@ -481,13 +482,9 @@ generateNutritionFollowUpEntryData : NominalDate -> ModelIndexedDb -> PersonId -
 generateNutritionFollowUpEntryData limitDate db personId item =
     let
         lastHomeVisitEncounter =
-            resolveIndividualParticipantForPerson personId HomeVisitEncounter db
-                |> Maybe.map
-                    (getHomeVisitEncountersForParticipant db
-                        >> List.map Tuple.second
-                        >> List.filter (\encounter -> Date.compare encounter.startDate limitDate == LT)
-                    )
-                |> Maybe.withDefault []
+            getHomeVisitEncountersForPerson db personId
+                |> List.map Tuple.second
+                |> List.filter (\encounter -> Date.compare encounter.startDate limitDate == LT)
                 -- Sort DESC
                 |> List.sortWith (\e1 e2 -> Date.compare e2.startDate e1.startDate)
                 |> List.head
@@ -1602,17 +1599,13 @@ generateImmunizationFollowUpEntryData : NominalDate -> ModelIndexedDb -> PersonI
 generateImmunizationFollowUpEntryData limitDate db personId item =
     let
         lastWellChildEncounter =
-            resolveIndividualParticipantForPerson personId WellChildEncounter db
-                |> Maybe.map
-                    (getWellChildEncountersForParticipant db
-                        >> List.map Tuple.second
-                        >> List.filter
-                            (\encounter ->
-                                (encounter.encounterType /= NewbornExam)
-                                    && (Date.compare encounter.startDate limitDate == LT)
-                            )
+            getWellChildEncountersForPerson db personId
+                |> List.map Tuple.second
+                |> List.filter
+                    (\encounter ->
+                        (encounter.encounterType /= NewbornExam)
+                            && (Date.compare encounter.startDate limitDate == LT)
                     )
-                |> Maybe.withDefault []
                 -- Sort DESC
                 |> List.sortWith (\e1 e2 -> Date.compare e2.startDate e1.startDate)
                 |> List.head

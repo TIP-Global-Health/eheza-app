@@ -1,10 +1,60 @@
-module Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit)
+module Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit, resolveShownPregnancy)
 
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
+import AssocList as Dict exposing (Dict)
+import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
+import Date
 import Gizra.NominalDate exposing (NominalDate, diffDays)
+import List.Extra
 import Maybe.Extra exposing (isJust)
+import Pages.Prenatal.Participant.Model exposing (ShownPregnancy)
+import Restful.Endpoint exposing (fromEntityUuid)
+
+
+{-| The pregnancy the participant page shows: the newest active one. Without
+one, a pregnancy concluded in this role's postpartum visit today is kept, so
+the visit reopens.
+-}
+resolveShownPregnancy :
+    NominalDate
+    -> Bool
+    -> (IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter ))
+    -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
+    -> Maybe ShownPregnancy
+resolveShownPregnancy currentDate isChw encountersFor participants =
+    let
+        -- Newest registration first. Of those registered the same day, the one
+        -- with more visits comes first, then the lower id, so load order never decides.
+        pregnancies =
+            Dict.toList participants
+                |> List.filter (\( _, participant ) -> participant.encounterType == AntenatalEncounter)
+                |> List.map
+                    (\( sessionId, session ) ->
+                        ( session
+                        , { sessionId = sessionId
+                          , encounters = encountersFor sessionId
+                          , keptForPostpartumVisit = False
+                          }
+                        )
+                    )
+                |> List.sortBy
+                    (\( session, pregnancy ) ->
+                        ( negate (Date.toRataDie session.startDate), negate (List.length pregnancy.encounters), fromEntityUuid pregnancy.sessionId )
+                    )
+    in
+    case List.Extra.find (Tuple.first >> isPregnancyActive currentDate) pregnancies of
+        Just ( _, pregnancy ) ->
+            Just pregnancy
+
+        Nothing ->
+            List.Extra.find
+                (\( session, pregnancy ) ->
+                    pregnancyConcludedInTodaysPostpartumVisit currentDate isChw session (List.map Tuple.second pregnancy.encounters)
+                )
+                pregnancies
+                |> Maybe.map (\( _, pregnancy ) -> { pregnancy | keptForPostpartumVisit = True })
 
 
 {-| Pregnancy is considered 'active' if it does not have its end date and

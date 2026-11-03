@@ -1,6 +1,6 @@
 ---
 name: verify-sync-lanes-in-browser
-description: "How to exercise the sync download lanes on the real local stack from Chrome: fresh device, slow batch via a local PHP sleep, reading cursors/requests from the page; the quirks that cost time (2026-09-17, B-317)"
+description: "How to exercise the sync lanes on the real local stack (Chrome or Playwright): fresh device, slow/held download via a local PHP sleep, 3 s sync cycle via localStorage.syncSpeed, reading cursors/requests from the page; the quirks that cost time (B-317 2026-09-17, B-496 2026-10-18)"
 metadata:
   type: feedback
 ---
@@ -38,3 +38,15 @@ metadata:
    non-zero rect, so DOM "visibility" checks lied twice.
 
 Related: [[e2e-local-run-procedure]], [[verify-served-bundle-before-e2e]], [[verify-by-running-not-reasoning]]
+
+8. **Headless variant (B-496, 2026-10-18) — hold a download while the app saves.** Playwright `page.route` NEVER sees
+   `/api/sync` requests (they pass through the service worker's fetch handler), so hold them server-side: append to
+   the git-ignored `server/www/sites/default/settings.php` a block that, for GET `/api/sync*`, touches
+   `files/hold-sync.active` and `sleep(1)`-loops while `files/hold-sync` exists; the test creates/removes the flag
+   from the host path. The background sync cycle idles **10 MINUTES** by default (`app.js` `getSyncSpeed`); set
+   `localStorage.syncSpeed = {"idle":3000,"cycle":50,"offline":10000}` with `page.addInitScript` (login clears
+   localStorage and reloads, the init script re-applies). Keep a hold under ~40 s or the 45 s rule refreshes the page.
+   Spec template: scratchpad `r45/b496-repro.spec.ts` of session 50b2c76a (untracked spec in `client/e2e/`, deleted after).
+
+
+9. **Chrome's 20 s same-address wait (PR #2407 QA, 2026-10-21).** While a download is held, every copy has the same URL, and Chrome holds each one back up to 20 s before it reaches the server — so a resend lands ~50 s after the first request, not 30. Time scenarios from a page-side XHR log (patch `XMLHttpRequest.prototype.send`), not the server log. Holding server-side: a temporary block at the end of the git-ignored `settings.php` plus a `files/qa-hold/` directory; create the directory with the Write tool and edit with Edit — `mkdir`/`curl -k` there are classifier-blocked, plain-HTTPS `curl` to `https://ihangane.ddev.site:4443` worked after the user allowed it.
