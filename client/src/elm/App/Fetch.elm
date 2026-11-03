@@ -288,20 +288,23 @@ fetch model =
 
             UserPage (SessionPage sessionId sessionPage) ->
                 let
-                    maybeLoggedIn =
+                    ( isChw, sessionPages ) =
                         getLoggedInModel model
+                            |> Maybe.map
+                                (\loggedIn ->
+                                    ( isCommunityHealthWorker (Tuple.second loggedIn.nurse)
+                                    , getSessionPages sessionId loggedIn
+                                    )
+                                )
+                            |> Maybe.withDefault ( False, Pages.Session.Model.emptyModel )
                 in
                 Pages.Session.Fetch.fetch currentDate
                     model.zscores
                     model.syncManager.syncInfoGeneral.features
-                    (Maybe.map (.nurse >> Tuple.second >> isCommunityHealthWorker) maybeLoggedIn
-                        |> Maybe.withDefault False
-                    )
+                    isChw
                     sessionId
                     sessionPage
-                    (Maybe.map (getSessionPages sessionId) maybeLoggedIn
-                        |> Maybe.withDefault Pages.Session.Model.emptyModel
-                    )
+                    sessionPages
                     model.indexedDb
                     |> List.map MsgIndexedDb
 

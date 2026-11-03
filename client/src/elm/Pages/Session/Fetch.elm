@@ -1,6 +1,6 @@
 module Pages.Session.Fetch exposing (fetch)
 
-import Activity.Model exposing (Activity(..), ChildActivity(..))
+import Activity.Model exposing (Activity(..))
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
@@ -50,22 +50,17 @@ fetch currentDate zscores features isChw sessionId sessionPage pages db =
                         childToLoad =
                             case activity of
                                 ChildActivity childActivity ->
-                                    -- Only these activities read the child's individual data.
-                                    if List.member childActivity [ Height, Muac, NCDA, NutritionSigns, Weight ] then
-                                        Dict.get sessionId db.editableSessions
-                                            |> Maybe.withDefault NotAsked
-                                            |> RemoteData.toMaybe
-                                            |> Maybe.andThen
-                                                (\editableSession ->
-                                                    summarizeForActivity childParticipant currentDate zscores features isChw childActivity editableSession db
-                                                        |> resolveChildToLoad
-                                                            (Dict.get childActivity pages.childActivityPages
-                                                                |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                                                            )
-                                                )
-
-                                    else
-                                        Nothing
+                                    Dict.get sessionId db.editableSessions
+                                        |> Maybe.withDefault NotAsked
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.andThen
+                                            (\editableSession ->
+                                                summarizeForActivity childParticipant currentDate zscores features isChw childActivity editableSession db
+                                                    |> resolveChildToLoad
+                                                        (Dict.get childActivity pages.childActivityPages
+                                                            |> Maybe.withDefault Pages.Activity.Model.emptyModel
+                                                        )
+                                            )
 
                                 _ ->
                                     Nothing

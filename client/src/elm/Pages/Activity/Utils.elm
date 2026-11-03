@@ -1,4 +1,4 @@
-module Pages.Activity.Utils exposing (filterParticipantsByName, resolveChildToLoad, resolveSelectedParticipant, summarizeForActivity, viewChildMeasurements, viewMotherMeasurements)
+module Pages.Activity.Utils exposing (filterParticipantsByName, resolveChildToLoad, summarizeForActivity, viewChildMeasurements, viewMotherMeasurements)
 
 import Activity.Model exposing (ChildActivity, CompletedAndPending, MotherActivity)
 import AssocList as Dict exposing (Dict)
@@ -104,14 +104,27 @@ summarizeForActivity config currentDate zscores features isChw activity session 
         session.checkedIn
 
 
-{-| The child whose individual data the session fetch loads on a child
-activity page: the child the page shows. `children` are the activity's
-children, before the name filter.
+{-| The participant an activity page shows and the session fetch loads: the
+selected one while on the open tab, otherwise its first. `children` come
+before the name filter.
 -}
 resolveChildToLoad : Model PersonId -> CompletedAndPending (Dict PersonId Person) -> Maybe PersonId
 resolveChildToLoad model children =
-    filterParticipantsByName .name (normalizeFilter model.filter) children
-        |> resolveSelectedParticipant model
+    let
+        filtered =
+            filterParticipantsByName .name (normalizeFilter model.filter) children
+
+        onTab =
+            case model.selectedTab of
+                Completed ->
+                    filtered.completed
+
+                Pending ->
+                    filtered.pending
+    in
+    model.selectedParticipant
+        |> Maybe.Extra.filter (\participantId -> Dict.member participantId onTab)
+        |> Maybe.Extra.orElse (Dict.keys onTab |> List.head)
 
 
 {-| Keeps the participants whose name matches the filter typed on the page,
@@ -127,22 +140,3 @@ filterParticipantsByName getName filter participants =
     { pending = Dict.filter nameMatches participants.pending
     , completed = Dict.filter nameMatches participants.completed
     }
-
-
-{-| The participant the page shows: the selected one while it is on the open
-tab, otherwise the first one on that tab.
--}
-resolveSelectedParticipant : Model id -> CompletedAndPending (Dict id participant) -> Maybe id
-resolveSelectedParticipant model participants =
-    let
-        onTab =
-            case model.selectedTab of
-                Completed ->
-                    participants.completed
-
-                Pending ->
-                    participants.pending
-    in
-    model.selectedParticipant
-        |> Maybe.Extra.filter (\participantId -> Dict.member participantId onTab)
-        |> Maybe.Extra.orElse (Dict.keys onTab |> List.head)

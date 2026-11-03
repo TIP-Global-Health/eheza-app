@@ -6,6 +6,7 @@ import AssocList as Dict
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed)
@@ -14,7 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Activity.Utils exposing (filterParticipantsByName, resolveSelectedParticipant, summarizeForActivity)
+import Pages.Activity.Utils exposing (filterParticipantsByName, resolveChildToLoad, summarizeForActivity)
 import Pages.Session.Model
 import Pages.Utils exposing (filterDependentNoResultsMessage, normalizeFilter, viewNameFilter)
 import Participant.Model exposing (Participant)
@@ -41,7 +42,7 @@ could do our own mapping. The caller would have to pass in a tag for us to
 map with, which wouldn't be a problem.
 -}
 view :
-    Participant id value activity msg NominalDate
+    Participant PersonId Person activity msg NominalDate
     -> Language
     -> NominalDate
     -> ZScore.Model.Model
@@ -52,13 +53,15 @@ view :
     -> ( SessionId, EditableSession )
     -> Pages.Session.Model.Model
     -> ModelIndexedDb
-    -> Model id
-    -> ( Html (Msg id msg), Maybe id )
+    -> Model PersonId
+    -> ( Html (Msg PersonId msg), Maybe PersonId )
 view config language currentDate zscores site features isChw selectedActivity ( sessionId, session ) pages db model =
     let
-        participants =
+        summary =
             summarizeForActivity config currentDate zscores features isChw selectedActivity session db
-                |> filterParticipantsByName config.getName filter
+
+        participants =
+            filterParticipantsByName .name filter summary
 
         filter =
             normalizeFilter model.filter
@@ -92,7 +95,7 @@ view config language currentDate zscores site features isChw selectedActivity ( 
                 ]
 
         selectedParticipant =
-            resolveSelectedParticipant model participants
+            resolveChildToLoad model summary
 
         participantsHtml =
             let
