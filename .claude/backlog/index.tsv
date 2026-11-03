@@ -549,7 +549,7 @@ B-548	1	READY	MED			49	Group session, activity-first flow: the child's individua
 B-549	3	READY	MED-LOW			49	Aggregated NCDA scoreboard (server): the weight a CHW records on the Child Scoreboard questionnaire never reaches the Un
 B-550	4	READY	LOW			50	Nurse record: a device's reminder / message / survey action PATCHes its WHOLE copy of the nurse back, `pin_code` and `ro
 B-551	4	READY	LOW			50	CHW location: the health centre is derived from the chosen village once, at selection, and cached; a village moved to an
-B-552	1	READY	MED			50	Prenatal diagnoses: a lab result entered on a LATER day rebuilds the encounter's whole diagnosis set at the entry day's 
+B-552	1	IMPLEMENTED	MED	2462	2463	50	Prenatal diagnoses: a lab result entered on a LATER day rebuilds the encounter's whole diagnosis set at the entry day's 
 B-553	4	READY	LOW			50	Group session child progress report: the page never requests the session's measurement calculation, so after any sync do
 B-554	4	READY	LOW			50	Well Child Next Visit: the pediatric-visit date is never re-derived when ECD or a medication answer is corrected after i
 B-555	4	READY	LOW			50	Case Management Immunization pane: a child whose overdue dose the CHW recorded at a Child Scoreboard visit stays listed 
