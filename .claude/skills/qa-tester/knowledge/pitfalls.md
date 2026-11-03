@@ -581,3 +581,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after popups showed "Moderately underweight", every group `nutrition` node's `field_nutrition_assesment` was empty on both builds.
 - **Wrong conclusion:** the save dropped the assessment, so the PR broke it.
 - **Rule:** the group engine updates that node only when the assessment changes with the save. Read the `follow_up` node, and compare with develop on a loaded child before blaming the change.
+
+## Taking the encounter id from the end of an activity URL
+
+- **Symptom:** after a Nutrition save, the script's read of the encounter's stored indicator returned null, and the control needed a second command.
+- **Wrong conclusion:** the save stored no indicator.
+- **Rule:** an activity page's route is `#prenatal-activity/<uuid>/examination`, so `split('/').pop()` gives `examination`. Take the id with a uuid regex.
+
+## Running the skill from a main tree behind origin
+
+- **Symptom:** the main tree's `develop` was five commits behind `origin/develop`, and two of them changed this skill (hold-row rules, the report's first line).
+- **Wrong conclusion:** the SKILL.md loaded at the start is the current one.
+- **Rule:** at Step 2, `git diff HEAD origin/develop -- .claude/skills/qa-tester/` and follow any newer rules for the run.

@@ -23,6 +23,8 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
 - Drupal admin: `admin` / `admin`.
 - GitHub CLI 2.99 or later is required: it is the first with `--attach` for videos, and
   older ones fail on this repo's `gh issue view` / `gh pr view` (Projects classic).
+  With 2.103, `gh issue view <n> --comments` and `gh pr view <n> --comments` printed nothing, no error:
+  read them with `gh api repos/TIP-Global-Health/eheza-app/issues/<n>` (and `/comments`, `pulls/<n>/comments`).
 - Hedley scripts run as `ddev drush scr profiles/hedley/modules/custom/<module>/scripts/<file>.php`.
   Most take `--dry_run` and `--nid` (only records after that nid), so a run can be limited
   to the records it created. In your own `drush scr` script, `drush_get_arguments()` holds two
@@ -293,6 +295,13 @@ flag simply does not appear.
 - Healthy Start GWG: the Nutrition Assessment form of a later visit shows "GWG Classification:
   Inadequate" when the gain since the previous weight falls short. Move the earlier visit and its
   measurements first (pitfalls, backdating).
+- The verdict is `.gwg-value` (Adequate green / Inadequate red); each Nutrition save stores it on the encounter's
+  `prenatal_indicators` (`adequate-gwg` / `inadequate-gwg`, server `field_prenatal_indicators`). Expected gain is
+  23.5 g/day before 13 weeks, 60 g/day after (73 if underweight), from the previous nurse visit's start to this visit's start.
+- With Healthy Start off the same form shows the four-level verdict and "Pre-pregnancy baseline BMI". The flag reaches the
+  tablet after `syncAndWait` and a reload; the Ultrasound card then goes.
+- A nurse visit's save day can differ from its visit day without drush: shift the page clock (The QA driver), open the
+  visit on one day and reopen it later. Subsequent Antenatal reopens an open nurse visit from any earlier day.
 - Progress report panes: chronic hypertension and diabetes are under `.medical-diagnosis`; gestational hypertension
   ("Pregnancy-induced hypertension"), gestational diabetes and preeclampsia under `.obstetric-diagnosis`.
 - An ended visit's progress report: Participant Directory → `span.patient-record` → `.pane.progress-reports` button
