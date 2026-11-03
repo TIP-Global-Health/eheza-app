@@ -241,7 +241,11 @@ test('qa driver', async () => {
   const watch = (p: Page) => {
     p.on('console', (m) => m.type() === 'error' && noteError(`${m.text()} ${m.location().url}`));
     p.on('pageerror', (e) => noteError(String(e)));
-    p.on('requestfailed', (r) => noteError(`request failed ${r.failure()?.errorText ?? ''} ${r.method()} ${r.url()}`));
+    // ERR_ABORTED is the browser cancelling a request on navigation, not a failure.
+    p.on('requestfailed', (r) => {
+      const why = r.failure()?.errorText ?? '';
+      if (why !== 'net::ERR_ABORTED') noteError(`request failed ${why} ${r.method()} ${r.url()}`);
+    });
     p.on('response', (r) => r.status() >= 400 && noteError(`HTTP ${r.status()} ${r.request().method()} ${r.url()}`));
   };
   watch(page);
