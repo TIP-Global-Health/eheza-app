@@ -1,4 +1,4 @@
-module Pages.GlobalCaseManagement.Utils exposing (calculateDueDate, chwFilters, fillPersonName, filterFollowUpsOfChasedChildren, filterFollowUpsOfResidents, filterResolvedFollowUps, followUpDueOptionByDate, generateAcuteIllnessEncounters, generateAcuteIllnessFollowUps, generateAcuteIllnessParticipants, generateHIVFollowUps, generateHIVParticipants, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalEncounters, generatePrenatalFollowUps, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, labTechFilters, labsResultsTestData, nurseFilters, resolveEncounterStartedToday, resolveUniquePatientsFromFollowUps)
+module Pages.GlobalCaseManagement.Utils exposing (allLabsCompleted, calculateDueDate, chwFilters, fillPersonName, filterFollowUpsOfChasedChildren, filterFollowUpsOfResidents, filterResolvedFollowUps, followUpDueOptionByDate, generateAcuteIllnessEncounters, generateAcuteIllnessFollowUps, generateAcuteIllnessParticipants, generateHIVFollowUps, generateHIVParticipants, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalEncounters, generatePrenatalFollowUps, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, labTechFilters, labsResultsTestData, nurseFilters, resolveEncounterStartedToday, resolveUniquePatientsFromFollowUps)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -695,6 +695,13 @@ labsResultsTestData currentDate results =
         ( EverySet.remove TestVitalsRecheck results.value.performedTests
         , EverySet.remove TestVitalsRecheck results.value.completedTests
         )
+
+
+{-| Whether every performed test is completed.
+-}
+allLabsCompleted : EverySet LaboratoryTest -> EverySet LaboratoryTest -> Bool
+allLabsCompleted performedTests completedTests =
+    EverySet.isEmpty <| EverySet.diff performedTests completedTests
 
 
 resolveUniquePatientsFromFollowUps : NominalDate -> FollowUpMeasurements -> FollowUpPatients

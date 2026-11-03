@@ -9,6 +9,7 @@ import Backend.NCDEncounter.Model
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
+import Maybe.Extra
 import Measurement.Utils
     exposing
         ( toCreatinineResultValueWithDefault
@@ -17,8 +18,8 @@ import Measurement.Utils
         , toRandomBloodSugarResultValueWithDefault
         , toUrineDipstickResultValueWithDefault
         )
-import Pages.GlobalCaseManagement.Utils exposing (labsResultsTestData)
 import Pages.NCD.RecurrentActivity.Model exposing (Model, Msg(..))
+import Pages.NCD.RecurrentActivity.Utils exposing (resolvedLabsResultsValue, withCompletedTestsFromMeasurements)
 import Pages.NCD.Utils exposing (medicationDistributionFormWithDefault, referralFormWithDefault, toMedicationDistributionValueWithDefault, toReferralValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (saveMeasurementMsgs, setMultiSelectInputValue)
@@ -51,27 +52,17 @@ update currentDate id db msg model =
                         closeLabsResultsMsg =
                             Dict.get id db.ncdMeasurements
                                 |> Maybe.andThen RemoteData.toMaybe
-                                |> Maybe.andThen .labsResults
-                                |> Maybe.map
-                                    (\( labsResultsId, results ) ->
-                                        let
-                                            ( performedTests, completedTests ) =
-                                                labsResultsTestData currentDate results
-                                        in
-                                        if EverySet.size performedTests == EverySet.size completedTests then
-                                            let
-                                                updatedValue =
-                                                    results.value
-                                                        |> (\value ->
-                                                                { value | resolutionDate = currentDate }
-                                                           )
-                                            in
-                                            [ CloseLabsResultsEntry personId labsResultsId updatedValue ]
-
-                                        else
-                                            []
+                                |> Maybe.andThen
+                                    (\measurements ->
+                                        Maybe.andThen
+                                            (\( labsResultsId, results ) ->
+                                                withCompletedTestsFromMeasurements measurements results.value
+                                                    |> resolvedLabsResultsValue currentDate
+                                                    |> Maybe.map (CloseLabsResultsEntry personId labsResultsId)
+                                            )
+                                            measurements.labsResults
                                     )
-                                |> Maybe.withDefault []
+                                |> Maybe.Extra.toList
                      in
                      (SetActivePage <| UserPage <| NCDRecurrentEncounterPage id) :: closeLabsResultsMsg
                     )
