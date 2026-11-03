@@ -2587,38 +2587,17 @@ function hedley_reports_sixth_birthday($birth_date) {
  * @param string $type
  *   The type of the table data.
  * @param array $metrics
- *   The metrics to be converted.
+ *   The rates of each period, keyed by the period.
  *
  * @return array
- *   The formatted table data.
+ *   The table: its type, the periods, and the rates of each period.
  */
 function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
-  $result = [
+  return [
     'type' => $type,
-    'period' => [],
-    'stunting_moderate' => [],
-    'stunting_severe' => [],
-    'wasting_moderate' => [],
-    'wasting_severe' => [],
-    'underweight_moderate' => [],
-    'underweight_severe' => [],
-    'acute_malnutrition_mam' => [],
-    'acute_malnutrition_sam' => [],
+    'period' => array_map('strval', array_keys($metrics)),
+    'results' => array_values($metrics),
   ];
-
-  foreach ($metrics as $key => $values) {
-    $result['period'][] = (string) $key;
-    $result['stunting_moderate'][] = $values['stunting_moderate'];
-    $result['stunting_severe'][] = $values['stunting_severe'];
-    $result['wasting_moderate'][] = $values['wasting_moderate'];
-    $result['wasting_severe'][] = $values['wasting_severe'];
-    $result['underweight_moderate'][] = $values['underweight_moderate'];
-    $result['underweight_severe'][] = $values['underweight_severe'];
-    $result['acute_malnutrition_mam'][] = $values['acute_malnutrition_mam'];
-    $result['acute_malnutrition_sam'][] = $values['acute_malnutrition_sam'];
-  }
-
-  return $result;
 }
 
 /**
@@ -2772,15 +2751,14 @@ function hedley_reports_generate_yearly_incidence_data(array $encounters_by_mont
 /**
  * Generates prevalence nutrition metrics results.
  *
- * This function calculates the prevalence percentages for stunting, wasting,
- * and underweight categories based on the provided metrics.
+ * This function counts the children behind the prevalence of stunting,
+ * wasting, underweight and acute malnutrition.
  *
  * @param array $metrics
  *   An array containing nutritional metrics grouped by categories.
  *
  * @return array
- *   An array containing the calculated prevalence percentages for
- *   each category.
+ *   The rate of each category, as hedley_reports_count_children() returns.
  */
 function hedley_reports_generate_prevalence_nutrition_metrics_results(array $metrics) {
   $stunting_total = array_unique(array_merge($metrics['stunting_moderate'], $metrics['stunting_severe'], $metrics['stunting_normal']));
@@ -2789,14 +2767,14 @@ function hedley_reports_generate_prevalence_nutrition_metrics_results(array $met
   $acute_malnutrition_total = array_unique(array_merge($metrics['acute_malnutrition_mam'], $metrics['acute_malnutrition_sam'], $metrics['acute_malnutrition_normal']));
 
   return [
-    'stunting_moderate' => hedley_reports_calculate_percentage($metrics['stunting_moderate'], $stunting_total),
-    'stunting_severe' => hedley_reports_calculate_percentage($metrics['stunting_severe'], $stunting_total),
-    'wasting_moderate' => hedley_reports_calculate_percentage($metrics['wasting_moderate'], $wasting_total),
-    'wasting_severe' => hedley_reports_calculate_percentage($metrics['wasting_severe'], $wasting_total),
-    'underweight_moderate' => hedley_reports_calculate_percentage($metrics['underweight_moderate'], $underweight_total),
-    'underweight_severe' => hedley_reports_calculate_percentage($metrics['underweight_severe'], $underweight_total),
-    'acute_malnutrition_mam' => hedley_reports_calculate_percentage($metrics['acute_malnutrition_mam'], $acute_malnutrition_total),
-    'acute_malnutrition_sam' => hedley_reports_calculate_percentage($metrics['acute_malnutrition_sam'], $acute_malnutrition_total),
+    'stunting_moderate' => hedley_reports_count_children($metrics['stunting_moderate'], $stunting_total),
+    'stunting_severe' => hedley_reports_count_children($metrics['stunting_severe'], $stunting_total),
+    'wasting_moderate' => hedley_reports_count_children($metrics['wasting_moderate'], $wasting_total),
+    'wasting_severe' => hedley_reports_count_children($metrics['wasting_severe'], $wasting_total),
+    'underweight_moderate' => hedley_reports_count_children($metrics['underweight_moderate'], $underweight_total),
+    'underweight_severe' => hedley_reports_count_children($metrics['underweight_severe'], $underweight_total),
+    'acute_malnutrition_mam' => hedley_reports_count_children($metrics['acute_malnutrition_mam'], $acute_malnutrition_total),
+    'acute_malnutrition_sam' => hedley_reports_count_children($metrics['acute_malnutrition_sam'], $acute_malnutrition_total),
   ];
 }
 
@@ -2853,45 +2831,33 @@ function hedley_reports_generate_incidence_nutrition_metrics_results(array $curr
   $acute_malnutrition_sam_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['acute_malnutrition_sam']), array_unique($previous_period_metric['acute_malnutrition_sam']));
 
   return [
-    'stunting_moderate' => hedley_reports_calculate_percentage(array_intersect($stunting_moderate_tested_in_previous_period, $stunting_moderate_not_identified_in_previous_period), $previous_period_stunting_total),
-    'stunting_severe' => hedley_reports_calculate_percentage(array_intersect($stunting_severe_tested_in_previous_period, $stunting_severe_not_identified_in_previous_period), $previous_period_stunting_total),
-    'wasting_moderate' => hedley_reports_calculate_percentage(array_intersect($wasting_moderate_tested_in_previous_period, $wasting_moderate_not_identified_in_previous_period), $previous_period_wasting_total),
-    'wasting_severe' => hedley_reports_calculate_percentage(array_intersect($wasting_severe_tested_in_previous_period, $wasting_severe_not_identified_in_previous_period), $previous_period_wasting_total),
-    'underweight_moderate' => hedley_reports_calculate_percentage(array_intersect($underweight_moderate_tested_in_previous_period, $underweight_moderate_not_identified_in_previous_period), $previous_period_underweight_total),
-    'underweight_severe' => hedley_reports_calculate_percentage(array_intersect($underweight_severe_tested_in_previous_period, $underweight_severe_not_identified_in_previous_period), $previous_period_underweight_total),
-    'acute_malnutrition_mam' => hedley_reports_calculate_percentage(array_intersect($acute_malnutrition_mam_tested_in_previous_period, $acute_malnutrition_mam_not_identified_in_previous_period), $previous_period_acute_malnutrition_total),
-    'acute_malnutrition_sam' => hedley_reports_calculate_percentage(array_intersect($acute_malnutrition_sam_tested_in_previous_period, $acute_malnutrition_sam_not_identified_in_previous_period), $previous_period_acute_malnutrition_total),
+    'stunting_moderate' => hedley_reports_count_children(array_intersect($stunting_moderate_tested_in_previous_period, $stunting_moderate_not_identified_in_previous_period), $previous_period_stunting_total),
+    'stunting_severe' => hedley_reports_count_children(array_intersect($stunting_severe_tested_in_previous_period, $stunting_severe_not_identified_in_previous_period), $previous_period_stunting_total),
+    'wasting_moderate' => hedley_reports_count_children(array_intersect($wasting_moderate_tested_in_previous_period, $wasting_moderate_not_identified_in_previous_period), $previous_period_wasting_total),
+    'wasting_severe' => hedley_reports_count_children(array_intersect($wasting_severe_tested_in_previous_period, $wasting_severe_not_identified_in_previous_period), $previous_period_wasting_total),
+    'underweight_moderate' => hedley_reports_count_children(array_intersect($underweight_moderate_tested_in_previous_period, $underweight_moderate_not_identified_in_previous_period), $previous_period_underweight_total),
+    'underweight_severe' => hedley_reports_count_children(array_intersect($underweight_severe_tested_in_previous_period, $underweight_severe_not_identified_in_previous_period), $previous_period_underweight_total),
+    'acute_malnutrition_mam' => hedley_reports_count_children(array_intersect($acute_malnutrition_mam_tested_in_previous_period, $acute_malnutrition_mam_not_identified_in_previous_period), $previous_period_acute_malnutrition_total),
+    'acute_malnutrition_sam' => hedley_reports_count_children(array_intersect($acute_malnutrition_sam_tested_in_previous_period, $acute_malnutrition_sam_not_identified_in_previous_period), $previous_period_acute_malnutrition_total),
   ];
 }
 
 /**
- * Calculates the percentage of the nominator over the total.
+ * Counts the children behind a rate.
  *
- * This function calculates the percentage value of the nominator divided
- * by the total. It returns the result as a string rounded to three
- * decimal places.
+ * The metric arrays hold one entry per encounter, so both sides are counted
+ * as distinct children. The report shows the percentage and these counts.
  *
  * @param array $nominator
- *   The subset of items for which the percentage is to be calculated.
+ *   The children with the condition, one entry per encounter.
  * @param array $total
- *   The total set of items used as the base for the percentage calculation.
+ *   The children measured, one entry per encounter.
  *
- * @return string
- *   The percentage value as a string, rounded to three decimal places.
+ * @return array
+ *   The rate as [count, total]. Example: [85, 496].
  */
-function hedley_reports_calculate_percentage(array $nominator, array $total) {
-  // The metric arrays hold one entry per encounter, so a child measured
-  // several times during the period appears several times. Count children on
-  // both sides: deduplicating only the total (as callers do) inflated the
-  // percentage, and could push it past 100%.
-  $nominator = array_unique($nominator);
-  $total = array_unique($total);
-
-  if (empty($total)) {
-    return "0%";
-  }
-  $result = (string) round((count($nominator) / count($total)) * 100, 3);
-  return "$result%";
+function hedley_reports_count_children(array $nominator, array $total) {
+  return [count(array_unique($nominator)), count(array_unique($total))];
 }
 
 /**

@@ -3,13 +3,13 @@ module Pages.Reports.Utils exposing (allVaccineTypes, calculateNutritionReportDa
 import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Components.Model exposing (PersonId, SelectedEntity(..))
-import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData, PrenatalEncounterData, PrenatalEncounterType(..), PrenatalParticipantData)
+import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, NutritionMetricsResults, PatientData, PrenatalEncounterData, PrenatalEncounterType(..), PrenatalParticipantData)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra exposing (unique)
 import Maybe.Extra
-import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), emptyNutritionMetrics)
+import Pages.Reports.Model exposing (NutritionMetrics, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), emptyNutritionMetrics)
 import Pages.Utils exposing (launchDate)
 import Set
 
@@ -286,20 +286,12 @@ familyNutritionEncounterToMetrics personId encounter =
 generatePrevalenceNutritionMetricsResults : NutritionMetrics -> NutritionMetricsResults
 generatePrevalenceNutritionMetricsResults metrics =
     let
-        calculatePercentage nominator total =
-            let
-                -- The metric lists hold one entry per encounter, so a child
-                -- measured several times during the period appears several
-                -- times. Count children on both sides: deduplicating only the
-                -- total inflated the percentage, and could push it past 100%.
-                totalChildren =
-                    unique total
-            in
-            if List.isEmpty totalChildren then
-                0
-
-            else
-                (toFloat (List.length (unique nominator)) / toFloat (List.length totalChildren)) * 100
+        -- The lists hold one entry per encounter. Both sides count
+        -- children, so a child measured three times counts once.
+        countChildren nominator total =
+            { count = List.length (unique nominator)
+            , total = List.length (unique total)
+            }
 
         stuntingTotal =
             metrics.stuntingModerate
@@ -325,26 +317,24 @@ generatePrevalenceNutritionMetricsResults metrics =
                 ++ metrics.acuteMalnutritionNormal
                 |> unique
     in
-    { stuntingModerate = calculatePercentage metrics.stuntingModerate stuntingTotal
-    , stuntingSevere = calculatePercentage metrics.stuntingSevere stuntingTotal
-    , wastingModerate = calculatePercentage metrics.wastingModerate wastingTotal
-    , wastingSevere = calculatePercentage metrics.wastingSevere wastingTotal
-    , underweightModerate = calculatePercentage metrics.underweightModerate underweightTotal
-    , underweightSevere = calculatePercentage metrics.underweightSevere underweightTotal
-    , acuteMalnutritionMam = calculatePercentage metrics.acuteMalnutritionMam acuteMalnutritionTotal
-    , acuteMalnutritionSam = calculatePercentage metrics.acuteMalnutritionSam acuteMalnutritionTotal
+    { stuntingModerate = countChildren metrics.stuntingModerate stuntingTotal
+    , stuntingSevere = countChildren metrics.stuntingSevere stuntingTotal
+    , wastingModerate = countChildren metrics.wastingModerate wastingTotal
+    , wastingSevere = countChildren metrics.wastingSevere wastingTotal
+    , underweightModerate = countChildren metrics.underweightModerate underweightTotal
+    , underweightSevere = countChildren metrics.underweightSevere underweightTotal
+    , acuteMalnutritionMam = countChildren metrics.acuteMalnutritionMam acuteMalnutritionTotal
+    , acuteMalnutritionSam = countChildren metrics.acuteMalnutritionSam acuteMalnutritionTotal
     }
 
 
 generateIncidenceNutritionMetricsResults : NutritionMetrics -> NutritionMetrics -> NutritionMetricsResults
 generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetric =
     let
-        calculatePercentage nominator total =
-            if Set.isEmpty total then
-                0
-
-            else
-                (toFloat (Set.size nominator) / toFloat (Set.size total)) * 100
+        countChildren nominator total =
+            { count = Set.size nominator
+            , total = Set.size total
+            }
 
         -- STUNTING
         previousPeriodStuntingModerateSevere =
@@ -439,35 +429,35 @@ generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetri
             Set.diff (Set.fromList currentPeriodMetric.acuteMalnutritionSam) (Set.fromList previousPeriodMetric.acuteMalnutritionSam)
     in
     { stuntingModerate =
-        calculatePercentage
+        countChildren
             (Set.intersect stuntingModerateTestedInPreviousPeriod stuntingModerateNotIdentifiedInPreviousPeriod)
             previousPeriodStuntingTotal
     , stuntingSevere =
-        calculatePercentage
+        countChildren
             (Set.intersect stuntingSevereTestedInPreviousPeriod stuntingSevereNotIdentifiedInPreviousPeriod)
             previousPeriodStuntingTotal
     , wastingModerate =
-        calculatePercentage
+        countChildren
             (Set.intersect wastingModerateTestedInPreviousPeriod wastingModerateNotIdentifiedInPreviousPeriod)
             previousPeriodWastingTotal
     , wastingSevere =
-        calculatePercentage
+        countChildren
             (Set.intersect wastingSevereTestedInPreviousPeriod wastingSevereNotIdentifiedInPreviousPeriod)
             previousPeriodWastingTotal
     , underweightModerate =
-        calculatePercentage
+        countChildren
             (Set.intersect underweightModerateTestedInPreviousPeriod underweightModerateNotIdentifiedInPreviousPeriod)
             previousPeriodUnderweightTotal
     , underweightSevere =
-        calculatePercentage
+        countChildren
             (Set.intersect underweightSevereTestedInPreviousPeriod underweightSevereNotIdentifiedInPreviousPeriod)
             previousPeriodUnderweightTotal
     , acuteMalnutritionMam =
-        calculatePercentage
+        countChildren
             (Set.intersect acuteMalnutritionMamTestedInPreviousPeriod acuteMalnutritionMamNotIdentifiedInPreviousPeriod)
             previousPeriodAcuteMalnutritionTotal
     , acuteMalnutritionSam =
-        calculatePercentage
+        countChildren
             (Set.intersect acuteMalnutritionSamTestedInPreviousPeriod acuteMalnutritionSamNotIdentifiedInPreviousPeriod)
             previousPeriodAcuteMalnutritionTotal
     }
