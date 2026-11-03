@@ -1851,7 +1851,7 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
 
 
 {-| Healthy Start–specific variant of `resolveGWGClassification`.
-This function classifies gestational weight gain between two encounters
+This function classifies gestational weight gain between two visit dates
 using the Healthy Start protocol, which is based on _daily_ expected
 weight gain rates split at 13 weeks gestational age:
 
@@ -1864,7 +1864,7 @@ Gain is adequate when it meets or exceeds the expected gain for the period.
 
 -}
 resolveGWGClassificationForHealthyStart : NominalDate -> PrePregnancyClassification -> Float -> NominalDate -> Float -> AssembledData -> Maybe GWGClassification
-resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification previousWeight previousWeightDate currentWeight assembled =
+resolveGWGClassificationForHealthyStart currentVisitDate prePregnancyClassification previousWeight previousVisitDate currentWeight assembled =
     Maybe.map
         (\lmpDate ->
             let
@@ -1874,16 +1874,16 @@ resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification p
                             Date.add Weeks 13 lmpDate
 
                         totalDays =
-                            Date.diff Days previousWeightDate currentDate
+                            Date.diff Days previousVisitDate currentVisitDate
                                 |> toFloat
 
                         -- Determine how many days fall before and after 13 weeks
                         ( daysBefore13Weeks, daysAfter13Weeks ) =
-                            if Date.compare currentDate thirteenWeeksDate == LT then
+                            if Date.compare currentVisitDate thirteenWeeksDate == LT then
                                 -- Entire period is before 13 weeks
                                 ( totalDays, 0 )
 
-                            else if not <| Date.compare previousWeightDate thirteenWeeksDate == LT then
+                            else if not <| Date.compare previousVisitDate thirteenWeeksDate == LT then
                                 -- Entire period is at or after 13 weeks
                                 ( 0, totalDays )
 
@@ -1891,7 +1891,7 @@ resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification p
                                 -- Period spans 13 weeks boundary
                                 let
                                     daysBefore =
-                                        Date.diff Days previousWeightDate thirteenWeeksDate
+                                        Date.diff Days previousVisitDate thirteenWeeksDate
                                             |> toFloat
 
                                     daysAfter =
@@ -1930,7 +1930,7 @@ weight, over the days between the two visit dates.
 -}
 resolveGWGClassificationSincePreviousVisit : PrePregnancyClassification -> Float -> AssembledData -> Maybe GWGClassification
 resolveGWGClassificationSincePreviousVisit prePregnancyClassification currentWeight assembled =
-    resolvePreviousValueWithDate assembled .nutrition .weight
+    resolvePreviousValueWithVisitDate assembled .nutrition .weight
         |> Maybe.andThen
             (\( previousVisitDate, previousWeight ) ->
                 resolveGWGClassificationForHealthyStart assembled.encounter.startDate
@@ -4212,8 +4212,8 @@ liveChildBorn =
         >> Maybe.withDefault False
 
 
-resolvePreviousValueWithDate : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe ( NominalDate, b )
-resolvePreviousValueWithDate assembled measurementFunc valueFunc =
+resolvePreviousValueWithVisitDate : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe ( NominalDate, b )
+resolvePreviousValueWithVisitDate assembled measurementFunc valueFunc =
     assembled.nursePreviousEncountersData
         |> List.filterMap
             (\data ->
@@ -4226,7 +4226,7 @@ resolvePreviousValueWithDate assembled measurementFunc valueFunc =
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
-    resolvePreviousValueWithDate assembled measurementFunc valueFunc
+    resolvePreviousValueWithVisitDate assembled measurementFunc valueFunc
         |> Maybe.map Tuple.second
 
 
