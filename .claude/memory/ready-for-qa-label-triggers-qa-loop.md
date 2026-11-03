@@ -8,7 +8,9 @@ metadata:
   modified: 2026-11-02T11:08:06.338Z
 ---
 
-Another laptop runs a `qa-tester` loop. When a PR gets the `Ready for QA` label, that loop picks it up and runs `qa-tester` on it (user, 2026-11-02, after PR #2457).
+A `qa-tester` watch loop runs on ONE station at a time. On 2026-11-03 the user moved it to this laptop (`anatoly-Latitude-3540`) and said the other laptop's loop must be off. Two watching stations would claim and re-run each other's `QA Running` PRs.
+
+Earlier note: another laptop ran the loop. When a PR gets the `Ready for QA` label, that loop picks it up and runs `qa-tester` on it (user, 2026-11-02, after PR #2457).
 
 **Why:** the label is not just a status marker; it dispatches real QA work on a separate machine with its own running app.
 
