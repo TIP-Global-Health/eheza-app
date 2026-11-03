@@ -531,7 +531,7 @@ B-530	4	READY	LOW			48	Family Nutrition: the IndexedDB load takes the LOWEST-uui
 B-531	1	IMPLEMENTED	MED	2454	2455	48	Nutrition malnutrition assessment reads the weight history of only ONE of a child's nutrition participants (the first by
 B-532	3	IMPLEMENTED	MED-LOW	2454	2455	48	Immunisation history across a child's DUPLICATE participants (two of the same programme type, B-195): Well Child reads t
 B-533	4	READY	LOW			48	Statistical Queries ANC tables and the Dashboard pregnancy counts count PARTICIPANTS, not pregnancies: a woman with two 
-B-534	2	READY	MED-LOW			48	Healthy Start gestational weight gain: the expected-gain window runs from the previous weight's SAVE date, not its visit
+B-534	2	IMPLEMENTED	MED-LOW	2466	2467	48	Healthy Start gestational weight gain: the expected-gain window runs from the previous weight's SAVE date, not its visit
 B-535	4	READY	LOW			48	`dateMeasured` is the save date, read as the clinical date, ×5: (a) NCDA "malnutrition treatment" pairs referral with as
 B-536	1	IMPLEMENTED	MED	2454	2455	48	Individual encounters, read side: every reader of a person's participant takes ONE participant of the type (`List.head` 
 B-537	3	IMPLEMENTED	MED-LOW	2458	2459	48	Individual encounters, repair: ≈ 2,500 accumulated duplicate participants for the one-per-person types (nutrition 1,197 
