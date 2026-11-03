@@ -10,7 +10,7 @@ metadata:
 
 ⏰ **Monitoring due — raise at the start of the survey on or after the date:** **B-514** 2026-11-19 (rerun the recurrence query in the entry on ihangane + vhw; user 2026-10-29: mention it when process-backlog runs that day) · **B-499** 2026-11-24 (second restore pass; harness lost, rebuild first).
 
-🟢 **Open 2026-11-03: PR #2467 (B-534, issue #2466, tier 2)** — Healthy Start weight gain judged between the two visit dates, both ends (user: "implement both"). 22 blind tests (14 failed on the seam). Both medium review rounds done; all six round-2 findings declined with approval, threads resolved. CI retriggered (`4da4fdaa9`) after package-download timeouts. Awaiting the user's QA decision.
+🟢 **Open 2026-11-03: PR #2467 (B-534, issue #2466, tier 2)** — Healthy Start weight gain judged between the two visit dates, both ends (user: "implement both"). 22 blind tests (14 failed on the seam). Both medium review rounds done; all six round-2 findings declined with approval, threads resolved. CI retriggered (`4da4fdaa9`) after package-download timeouts. Labelled `Ready for QA` 2026-11-03 (user: "move PR #2467 to QA"); awaiting QA and the user's merge.
 
 🟢 **Open 2026-11-03: PR #2465 (B-548, issue #2464, tier 2 — re-tiered from 1 by the user after a narrower reproduction)** — group session activity page and fetch pick the shown child through one function, so a child shown without a tap gets their individual data on every child activity. 36 blind tests (19 failed on the seam), both medium review rounds done, threads resolved. B-329 folded in (its vaccination half refuted). Labelled `Ready for QA` 2026-11-03 (user: "move PR #2465 to QA"); awaiting QA and the user's merge.
 
