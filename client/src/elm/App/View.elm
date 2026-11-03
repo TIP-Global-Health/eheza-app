@@ -1,7 +1,7 @@
 module App.View exposing (view)
 
 import App.Model exposing (ConfiguredModel, Model, Msg(..), MsgLoggedIn(..), StorageQuota)
-import App.Utils exposing (getLoggedInData)
+import App.Utils exposing (getLoggedInData, getSessionPages)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician, nurseAuthorizedForLocation)
@@ -108,7 +108,6 @@ import Pages.Prenatal.RecurrentEncounter.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Router exposing (pageToFragment)
-import Pages.Session.Model
 import Pages.Session.View
 import Pages.StockManagement.Model
 import Pages.StockManagement.View
@@ -681,8 +680,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                     SessionPage sessionId subPage ->
                         let
                             sessionPages =
-                                Dict.get sessionId loggedInModel.sessionPages
-                                    |> Maybe.withDefault Pages.Session.Model.emptyModel
+                                getSessionPages sessionId loggedInModel
                         in
                         Pages.Session.View.view
                             model.language

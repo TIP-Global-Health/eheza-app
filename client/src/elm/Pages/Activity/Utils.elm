@@ -1,4 +1,4 @@
-module Pages.Activity.Utils exposing (filterParticipantsByName, resolveChildToLoad, resolveSelectedParticipant, viewChildMeasurements, viewMotherMeasurements)
+module Pages.Activity.Utils exposing (filterParticipantsByName, resolveChildToLoad, resolveSelectedParticipant, summarizeForActivity, viewChildMeasurements, viewMotherMeasurements)
 
 import Activity.Model exposing (ChildActivity, CompletedAndPending, MotherActivity)
 import AssocList as Dict exposing (Dict)
@@ -8,6 +8,7 @@ import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChi
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getMother, getMotherMeasurementData)
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
@@ -19,7 +20,8 @@ import Measurement.View
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Session.Model
 import Pages.Utils exposing (matchFilter, normalizeFilter)
-import SyncManager.Model exposing (Site)
+import Participant.Model exposing (Participant)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language)
 import ZScore.Model
 
@@ -78,6 +80,28 @@ viewMotherMeasurements language motherId activity pages session =
                         )
                     |> Maybe.withDefault emptyNode
             )
+
+
+{-| The checked-in participants the activity expects, split into completed and
+pending, before the name filter.
+-}
+summarizeForActivity :
+    Participant id value activity msg NominalDate
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> Bool
+    -> activity
+    -> EditableSession
+    -> ModelIndexedDb
+    -> CompletedAndPending (Dict id value)
+summarizeForActivity config currentDate zscores features isChw activity session db =
+    LocalData.unwrap
+        { completed = Dict.empty
+        , pending = Dict.empty
+        }
+        (config.summarizeParticipantsForActivity currentDate zscores features activity session.offlineSession isChw db)
+        session.checkedIn
 
 
 {-| The child whose individual data the session fetch loads on a child

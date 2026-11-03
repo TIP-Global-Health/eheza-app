@@ -1,7 +1,7 @@
 module App.Fetch exposing (fetch, forget, shouldFetch)
 
 import App.Model exposing (Model, Msg(..))
-import App.Utils exposing (getLoggedInData, getLoggedInModel)
+import App.Utils exposing (getLoggedInData, getLoggedInModel, getSessionPages)
 import AssocList as Dict
 import Backend.Fetch
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
@@ -287,22 +287,23 @@ fetch model =
                     |> Maybe.withDefault []
 
             UserPage (SessionPage sessionId sessionPage) ->
-                getLoggedInModel model
-                    |> Maybe.map
-                        (\loggedIn ->
-                            Pages.Session.Fetch.fetch currentDate
-                                model.zscores
-                                model.syncManager.syncInfoGeneral.features
-                                (isCommunityHealthWorker (Tuple.second loggedIn.nurse))
-                                sessionId
-                                sessionPage
-                                (Dict.get sessionId loggedIn.sessionPages
-                                    |> Maybe.withDefault Pages.Session.Model.emptyModel
-                                )
-                                model.indexedDb
-                                |> List.map MsgIndexedDb
-                        )
-                    |> Maybe.withDefault []
+                let
+                    maybeLoggedIn =
+                        getLoggedInModel model
+                in
+                Pages.Session.Fetch.fetch currentDate
+                    model.zscores
+                    model.syncManager.syncInfoGeneral.features
+                    (Maybe.map (.nurse >> Tuple.second >> isCommunityHealthWorker) maybeLoggedIn
+                        |> Maybe.withDefault False
+                    )
+                    sessionId
+                    sessionPage
+                    (Maybe.map (getSessionPages sessionId) maybeLoggedIn
+                        |> Maybe.withDefault Pages.Session.Model.emptyModel
+                    )
+                    model.indexedDb
+                    |> List.map MsgIndexedDb
 
             UserPage (PrenatalEncounterPage id) ->
                 Pages.Prenatal.Encounter.Fetch.fetch id model.indexedDb

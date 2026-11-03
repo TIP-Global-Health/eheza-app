@@ -1,7 +1,6 @@
 module Pages.Session.Fetch exposing (fetch)
 
-import Activity.Model exposing (Activity(..))
-import Activity.Utils
+import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
@@ -9,17 +8,17 @@ import Backend.NutritionEncounter.Fetch
 import Backend.Session.Fetch exposing (fetchEditableSession)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import LocalData
 import Pages.Activities.Fetch
 import Pages.Activity.Fetch
 import Pages.Activity.Model
-import Pages.Activity.Utils
+import Pages.Activity.Utils exposing (resolveChildToLoad, summarizeForActivity)
 import Pages.Attendance.Fetch
 import Pages.Page exposing (SessionPage(..))
 import Pages.Participant.Fetch
 import Pages.Participants.Fetch
 import Pages.ProgressReport.Fetch
 import Pages.Session.Model
+import Participant.Utils exposing (childParticipant)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (SiteFeature)
 import ZScore.Model
@@ -51,29 +50,22 @@ fetch currentDate zscores features isChw sessionId sessionPage pages db =
                         childToLoad =
                             case activity of
                                 ChildActivity childActivity ->
-                                    Dict.get sessionId db.editableSessions
-                                        |> Maybe.withDefault NotAsked
-                                        |> RemoteData.toMaybe
-                                        |> Maybe.andThen
-                                            (\editableSession ->
-                                                editableSession.checkedIn
-                                                    |> LocalData.unwrap
-                                                        { completed = Dict.empty
-                                                        , pending = Dict.empty
-                                                        }
-                                                        (Activity.Utils.summarizeChildActivity currentDate
-                                                            zscores
-                                                            features
-                                                            childActivity
-                                                            editableSession.offlineSession
-                                                            isChw
-                                                            db
-                                                        )
-                                                    |> Pages.Activity.Utils.resolveChildToLoad
-                                                        (Dict.get childActivity pages.childActivityPages
-                                                            |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                                                        )
-                                            )
+                                    -- Only these activities read the child's individual data.
+                                    if List.member childActivity [ Height, Muac, NCDA, NutritionSigns, Weight ] then
+                                        Dict.get sessionId db.editableSessions
+                                            |> Maybe.withDefault NotAsked
+                                            |> RemoteData.toMaybe
+                                            |> Maybe.andThen
+                                                (\editableSession ->
+                                                    summarizeForActivity childParticipant currentDate zscores features isChw childActivity editableSession db
+                                                        |> resolveChildToLoad
+                                                            (Dict.get childActivity pages.childActivityPages
+                                                                |> Maybe.withDefault Pages.Activity.Model.emptyModel
+                                                            )
+                                                )
+
+                                    else
+                                        Nothing
 
                                 _ ->
                                     Nothing

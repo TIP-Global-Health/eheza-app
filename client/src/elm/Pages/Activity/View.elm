@@ -13,9 +13,8 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import LocalData
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Activity.Utils exposing (filterParticipantsByName, resolveSelectedParticipant)
+import Pages.Activity.Utils exposing (filterParticipantsByName, resolveSelectedParticipant, summarizeForActivity)
 import Pages.Session.Model
 import Pages.Utils exposing (filterDependentNoResultsMessage, normalizeFilter, viewNameFilter)
 import Participant.Model exposing (Participant)
@@ -58,14 +57,8 @@ view :
 view config language currentDate zscores site features isChw selectedActivity ( sessionId, session ) pages db model =
     let
         participants =
-            session.checkedIn
-                |> LocalData.unwrap
-                    { completed = Dict.empty
-                    , pending = Dict.empty
-                    }
-                    (config.summarizeParticipantsForActivity currentDate zscores features selectedActivity session.offlineSession isChw db
-                        >> filterParticipantsByName config.getName filter
-                    )
+            summarizeForActivity config currentDate zscores features isChw selectedActivity session db
+                |> filterParticipantsByName config.getName filter
 
         filter =
             normalizeFilter model.filter
