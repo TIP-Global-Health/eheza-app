@@ -34,7 +34,7 @@ import Backend.Measurement.Utils exposing (bilirubinValueFromString, bloodGroupF
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate, pregnancyDurationInDays, pregnancyDurationInWeeks)
+import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
@@ -72,7 +72,7 @@ import Measurement.Utils
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (Model, Msg(..), emptyPregnancyDatingForm)
 import Pages.Prenatal.Activity.Types exposing (ImmunisationTask(..), ObstetricHistoryStep(..), SymptomReviewStep(..), WarningPopupType(..))
-import Pages.Prenatal.Activity.Utils exposing (birthPlanFormWithDefault, breastExamFormWithDefault, dangerSignsFormWithDefault, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormWithDefault, medicalHistoryFormWithDefault, mentalHealthFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, prenatalNutritionFormWithDefault, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType)
+import Pages.Prenatal.Activity.Utils exposing (birthPlanFormWithDefault, breastExamFormWithDefault, dangerSignsFormWithDefault, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormWithDefault, medicalHistoryFormWithDefault, mentalHealthFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, prenatalNutritionFormWithDefault, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType)
 import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultInitialPhase, referralFormWithDefault, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toPrenatalReferralValueWithDefault)
 import Pages.Utils exposing (insertIntoSet, nonAdministrationReasonToSign, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, tasksBarId)
 import RemoteData exposing (RemoteData(..))
@@ -356,26 +356,11 @@ update currentDate site id db msg model =
             , []
             )
 
-        SetExecutionDate weeksValue daysValue value ->
+        SetExecutionDate _ _ value ->
             let
-                updatedForm =
-                    model.ultrasoundData.form
-                        |> (\form ->
-                                let
-                                    eddDate =
-                                        Maybe.map2
-                                            (\weeks days ->
-                                                Date.add Date.Days (pregnancyDurationInDays - (weeks * 7 + days)) value
-                                            )
-                                            weeksValue
-                                            daysValue
-                                in
-                                { form | executionDate = Just value, eddDate = eddDate }
-                           )
-
                 updatedData =
                     model.ultrasoundData
-                        |> (\data -> { data | form = updatedForm })
+                        |> (\data -> { data | form = setUltrasoundExecutionDate value data.form })
             in
             ( { model | ultrasoundData = updatedData }
             , Cmd.none
@@ -384,96 +369,31 @@ update currentDate site id db msg model =
 
         SetExecutionDateSelectorState state ->
             let
-                form =
-                    model.ultrasoundData.form
-
-                defaultSelection =
-                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
-
-                updatedForm =
-                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
-
                 updatedData =
                     model.ultrasoundData
-                        |> (\data -> { data | form = updatedForm })
+                        |> (\data -> { data | form = setUltrasoundExecutionDateSelectorState state data.form })
             in
             ( { model | ultrasoundData = updatedData }
             , Cmd.none
             , []
             )
 
-        SetEDDWeeks executionDateValue daysValue value ->
+        SetEDDWeeks _ _ value ->
             let
-                form =
-                    model.ultrasoundData.form
-
-                updatedForm =
-                    if String.isEmpty value then
-                        { form | eddWeeks = Nothing, eddDate = Nothing }
-
-                    else
-                        String.toInt value
-                            |> Maybe.map
-                                (\newValue ->
-                                    if newValue >= 0 && newValue <= pregnancyDurationInWeeks then
-                                        let
-                                            eddDate =
-                                                Maybe.map2
-                                                    (\executionDate days ->
-                                                        Date.add Date.Days (pregnancyDurationInDays - (newValue * 7 + days)) executionDate
-                                                    )
-                                                    executionDateValue
-                                                    daysValue
-                                        in
-                                        { form | eddWeeks = Just newValue, eddDate = eddDate }
-
-                                    else
-                                        form
-                                )
-                            |> Maybe.withDefault form
-
                 updatedData =
                     model.ultrasoundData
-                        |> (\data -> { data | form = updatedForm })
+                        |> (\data -> { data | form = setUltrasoundEDDWeeks value data.form })
             in
             ( { model | ultrasoundData = updatedData }
             , Cmd.none
             , []
             )
 
-        SetEDDDays executionDateValue weeksValue value ->
+        SetEDDDays _ _ value ->
             let
-                form =
-                    model.ultrasoundData.form
-
-                updatedForm =
-                    if String.isEmpty value then
-                        { form | eddDays = Nothing, eddDate = Nothing }
-
-                    else
-                        String.toInt value
-                            |> Maybe.map
-                                (\newValue ->
-                                    if newValue >= 0 && newValue <= 6 then
-                                        let
-                                            eddDate =
-                                                Maybe.map2
-                                                    (\executionDate weeks ->
-                                                        Date.add Date.Days (pregnancyDurationInDays - (weeks * 7 + newValue)) executionDate
-                                                    )
-                                                    executionDateValue
-                                                    weeksValue
-                                        in
-                                        { form | eddDays = Just newValue, eddDate = eddDate }
-
-                                    else
-                                        form
-                                )
-                            |> Maybe.withDefault form
-
                 updatedData =
                     model.ultrasoundData
-                        |> (\data -> { data | form = updatedForm })
+                        |> (\data -> { data | form = setUltrasoundEDDDays value data.form })
             in
             ( { model | ultrasoundData = updatedData }
             , Cmd.none

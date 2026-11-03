@@ -1,4 +1,4 @@
-module Pages.Prenatal.Activity.Utils exposing (activityCompleted, appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, bmiToPrePregnancyClassification, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, dangerSignsPresentAtEncounter, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectActivity, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generateDangerSignsListForChw, generateFutureVaccinationsDataByProgress, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, highBloodPressureCondition, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mandatoryActivitiesForAssessmentCompleted, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, noDangerSigns, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMeasuredHeight, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolveNextVisitDate, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, resolveWarningPopupContentForUrgentDiagnoses, respiratoryRateElevated, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview, weightGainStandardsByPrePregnancyClassificationHealthyStart, weightGainStandardsPerPrePregnancyClassification, zscoreToPrePregnancyClassification)
+module Pages.Prenatal.Activity.Utils exposing (activityCompleted, appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, bmiToPrePregnancyClassification, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, dangerSignsPresentAtEncounter, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectActivity, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generateDangerSignsListForChw, generateFutureVaccinationsDataByProgress, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, highBloodPressureCondition, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mandatoryActivitiesForAssessmentCompleted, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, noDangerSigns, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMeasuredHeight, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolveNextVisitDate, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, resolveWarningPopupContentForUrgentDiagnoses, respiratoryRateElevated, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundEDDDate, ultrasoundFormInputsAndTasks, ultrasoundFormWithDefault, ultrasoundTasks, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview, weightGainStandardsByPrePregnancyClassificationHealthyStart, weightGainStandardsPerPrePregnancyClassification, zscoreToPrePregnancyClassification)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PrenatalEncounterId)
@@ -18,8 +18,9 @@ import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
+import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter, pregnancyDurationInDays, pregnancyDurationInWeeks)
 import Date exposing (Unit(..))
+import DateSelector.Model exposing (DateSelectorConfig)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -3891,7 +3892,7 @@ ultrasoundFormInputsAndTasks language currentDate assembled ultrasoundForm =
                         ]
                     ]
                 )
-                form.eddDate
+                (ultrasoundEDDDate form)
                 |> Maybe.withDefault []
     in
     ( [ viewQuestionLabel language <| Translate.PregnancySignQuestion PregnancyNotViable
@@ -3943,14 +3944,19 @@ ultrasoundFormInputsAndTasks language currentDate assembled ultrasoundForm =
             Translate.DaysAbbrev
       ]
         ++ eddDateIndicator
-    , [ form.pregnancyNotViable
-      , form.pregnancyMultipleFetuses
-      , form.pregnancyEctopic
-      , maybeToBoolTask form.executionDate
-      , maybeToBoolTask form.eddWeeks
-      , maybeToBoolTask form.eddDays
-      ]
+    , ultrasoundTasks form
     )
+
+
+ultrasoundTasks : UltrasoundForm -> List (Maybe Bool)
+ultrasoundTasks form =
+    [ form.pregnancyNotViable
+    , form.pregnancyMultipleFetuses
+    , form.pregnancyEctopic
+    , maybeToBoolTask form.executionDate
+    , maybeToBoolTask form.eddWeeks
+    , maybeToBoolTask form.eddDays
+    ]
 
 
 healthEducationFormInputsAndTasksForChw : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -7002,6 +7008,88 @@ ultrasoundFormWithDefault form =
             , dateSelectorPopupState = form.dateSelectorPopupState
             }
         )
+
+
+ultrasoundEDDDate : UltrasoundForm -> Maybe NominalDate
+ultrasoundEDDDate =
+    .eddDate
+
+
+setUltrasoundExecutionDate : NominalDate -> UltrasoundForm -> UltrasoundForm
+setUltrasoundExecutionDate value form =
+    let
+        eddDate =
+            Maybe.map2
+                (\weeks days ->
+                    Date.add Days (pregnancyDurationInDays - (weeks * 7 + days)) value
+                )
+                form.eddWeeks
+                form.eddDays
+    in
+    { form | executionDate = Just value, eddDate = eddDate }
+
+
+setUltrasoundExecutionDateSelectorState : Maybe (DateSelectorConfig Msg) -> UltrasoundForm -> UltrasoundForm
+setUltrasoundExecutionDateSelectorState state form =
+    let
+        defaultSelection =
+            Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+    in
+    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+
+setUltrasoundEDDWeeks : String -> UltrasoundForm -> UltrasoundForm
+setUltrasoundEDDWeeks value form =
+    if String.isEmpty value then
+        { form | eddWeeks = Nothing, eddDate = Nothing }
+
+    else
+        String.toInt value
+            |> Maybe.map
+                (\newValue ->
+                    if newValue >= 0 && newValue <= pregnancyDurationInWeeks then
+                        let
+                            eddDate =
+                                Maybe.map2
+                                    (\executionDate days ->
+                                        Date.add Days (pregnancyDurationInDays - (newValue * 7 + days)) executionDate
+                                    )
+                                    form.executionDate
+                                    form.eddDays
+                        in
+                        { form | eddWeeks = Just newValue, eddDate = eddDate }
+
+                    else
+                        form
+                )
+            |> Maybe.withDefault form
+
+
+setUltrasoundEDDDays : String -> UltrasoundForm -> UltrasoundForm
+setUltrasoundEDDDays value form =
+    if String.isEmpty value then
+        { form | eddDays = Nothing, eddDate = Nothing }
+
+    else
+        String.toInt value
+            |> Maybe.map
+                (\newValue ->
+                    if newValue >= 0 && newValue <= 6 then
+                        let
+                            eddDate =
+                                Maybe.map2
+                                    (\executionDate weeks ->
+                                        Date.add Days (pregnancyDurationInDays - (weeks * 7 + newValue)) executionDate
+                                    )
+                                    form.executionDate
+                                    form.eddWeeks
+                        in
+                        { form | eddDays = Just newValue, eddDate = eddDate }
+
+                    else
+                        form
+                )
+            |> Maybe.withDefault form
 
 
 toUltrasoundValueWithDefault : Maybe UltrasoundValue -> UltrasoundForm -> Maybe UltrasoundValue
