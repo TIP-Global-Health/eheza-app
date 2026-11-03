@@ -7,6 +7,8 @@ module ZScore.View exposing
     , XAxisTypes
     , YAxisConfig
     , YAxisSpaceType
+    , heightForAgeConfig
+    , plotPoints
     , viewHeadCircumferenceForAge0To13WeeksBoys
     , viewHeadCircumferenceForAge0To13WeeksGirls
     , viewHeadCircumferenceForAge0To2Boys
@@ -30,6 +32,10 @@ module ZScore.View exposing
     , viewWeightForHeight0To5Girls
     , viewWeightForHeightBoys
     , viewWeightForHeightGirls
+    , weightForAgeConfig
+    , weightForHeight0To5Config
+    , weightForHeightConfig
+    , yAxisLines
     )
 
 {-| Ultimately, the idea is that we've got information in the `Model` that we
@@ -583,25 +589,35 @@ plotPoints config =
             (config.output.maxX - config.output.minX)
                 / (config.input.maxX - config.input.minX)
 
-        scaleY =
-            (config.output.maxY - config.output.minY)
-                / (config.input.maxY - config.input.minY)
-
         plotX x =
             config.output.minX
                 + ((x - config.input.minX) * scaleX)
                 |> clamp config.output.minX config.output.maxX
 
-        plotY y =
-            -- Y is a bit different, because SVG has its origin at the top
-            config.output.maxY
-                - ((y - config.input.minY) * scaleY)
-                |> clamp config.output.minY config.output.maxY
+        plotY =
+            valuePositionY config
     in
     List.map
         (\{ x, y } ->
             ( plotX x, plotY y )
         )
+
+
+{-| Where a value is drawn on the y-axis. The plotted points and the y-axis
+gridlines both use it, so a gridline labelled 45 sits where 45 is plotted.
+-}
+valuePositionY : PlotConfig x y -> Float -> Float
+valuePositionY config =
+    let
+        scaleY =
+            (config.output.maxY - config.output.minY)
+                / (config.input.maxY - config.input.minY)
+    in
+    \y ->
+        -- Y is a bit different, because SVG has its origin at the top
+        config.output.maxY
+            - ((y - config.input.minY) * scaleY)
+            |> clamp config.output.minY config.output.maxY
 
 
 plotReferenceData : PlotConfig x y -> List ( x, ZScoreEntry y ) -> Svg any
@@ -1583,10 +1599,13 @@ xAxisLinesAndText config =
         lines
 
 
-yAxisLinesAndText : PlotConfig x y -> Svg any
-yAxisLinesAndText config =
+{-| The y-axis gridlines: each labelled value with its position, and the
+positions of the unlabelled lines between it and the next labelled value.
+-}
+yAxisLines : PlotConfig x y -> List { value : Float, position : Float, innerPositions : List Float }
+yAxisLines config =
     let
-        yAxisList =
+        values =
             Float.Extra.range { start = config.input.minY, end = config.input.maxY, steps = round <| config.input.maxY - config.input.minY }
                 -- We only display the successive numbers of the intervals defined in the config.
                 |> List.filter
@@ -1594,103 +1613,105 @@ yAxisLinesAndText config =
                         (yInput == config.input.minY) || (yInput == config.input.maxY) || (remainderBy config.yAxis.yAxisIntervals (round yInput) == 0)
                     )
 
-        height =
-            config.output.maxY - config.output.minY
+        -- The value step between unlabelled lines. For example, intervals of 5
+        -- with 4 inner lines give a line every 1 cm.
+        innerStep =
+            toFloat config.yAxis.yAxisIntervals / toFloat (config.yAxis.innerLinesNumber + 1)
 
-        listCount =
-            List.length yAxisList
+        plotY =
+            valuePositionY config
+    in
+    List.map2
+        (\value next ->
+            { value = value
+            , position = plotY value
+            , innerPositions =
+                Maybe.map
+                    (\nextValue ->
+                        let
+                            gap =
+                                nextValue - value
 
-        spaceBetweenLines =
-            height / toFloat (listCount - 1)
+                            parts =
+                                round (gap / innerStep)
+                        in
+                        List.range 1 (parts - 1)
+                            |> List.map (\part -> plotY (value + gap * toFloat part / toFloat parts))
+                    )
+                    next
+                    |> Maybe.withDefault []
+            }
+        )
+        values
+        (List.map Just (List.drop 1 values) ++ [ Nothing ])
 
-        spaceBetweenInnerLines =
-            spaceBetweenLines / (toFloat config.yAxis.innerLinesNumber + 1)
 
-        -- Here we can define the lines as we want.
+yAxisLinesAndText : PlotConfig x y -> Svg any
+yAxisLinesAndText config =
+    let
         lines =
-            List.indexedMap
-                (\i lineText ->
-                    let
-                        index =
-                            toFloat i
+            yAxisLines config
+                |> List.concatMap
+                    (\{ value, position, innerPositions } ->
+                        let
+                            lineTextPosition =
+                                (position + 2)
+                                    |> Round.round 2
 
-                        linesMargin =
-                            if index == 0 then
-                                config.output.maxY
+                            linePosition =
+                                Round.round 4 position
 
-                            else
-                                config.output.maxY - (spaceBetweenLines * index)
+                            innerLines =
+                                List.map
+                                    (\innerPosition ->
+                                        let
+                                            innerLinePosition =
+                                                Round.round 4 innerPosition
+                                        in
+                                        line [ class "st19", x1 "110.8", y1 innerLinePosition, x2 "715.4", y2 innerLinePosition ] []
+                                    )
+                                    innerPositions
 
-                        lineTextPosition =
-                            (linesMargin + 2)
-                                |> Round.round 2
+                            leftTextVerticalPosition =
+                                if config.yAxis.decimalPointsForText > 0 then
+                                    "88.4252"
 
-                        linePosition =
-                            linesMargin
-                                |> Round.round 4
+                                else
+                                    "95.4252"
 
-                        innerLines =
-                            if lineText /= config.input.maxY then
-                                List.range 1 config.yAxis.innerLinesNumber
-                                    |> List.map
-                                        (\innerLine ->
-                                            let
-                                                innerIndex =
-                                                    toFloat innerLine
+                            ( beginningText, endText ) =
+                                ( text_ [ transform <| "matrix(1 0 0 1 " ++ leftTextVerticalPosition ++ " " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| Round.round config.yAxis.decimalPointsForText value ]
+                                , text_ [ transform <| "matrix(1 0 0 1 745.0155 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| Round.round config.yAxis.decimalPointsForText value ]
+                                )
 
-                                                innerLinePosition =
-                                                    linesMargin
-                                                        - (spaceBetweenInnerLines * innerIndex)
-                                                        |> Round.round 4
-                                            in
-                                            line [ class "st19", x1 "110.8", y1 innerLinePosition, x2 "715.4", y2 innerLinePosition ] []
-                                        )
+                            ( beginningTextConditional, endTextConditional ) =
+                                -- There're multiple types of showing the text for each graph, in some of them, we don't
+                                -- need to show the text on the first line, some on the last and some we don't want to show
+                                -- on either side.
+                                case config.yAxis.spaceType of
+                                    SpaceAround ->
+                                        if value == config.input.minY || value == config.input.maxY then
+                                            ( emptyNode, emptyNode )
 
-                            else
-                                []
+                                        else
+                                            ( beginningText, endText )
 
-                        leftTextVerticalPosition =
-                            if config.yAxis.decimalPointsForText > 0 then
-                                "88.4252"
+                                    SpaceBelow ->
+                                        if value == config.input.minY then
+                                            ( emptyNode, emptyNode )
 
-                            else
-                                "95.4252"
+                                        else
+                                            ( beginningText, endText )
 
-                        ( beginningText, endText ) =
-                            ( text_ [ transform <| "matrix(1 0 0 1 " ++ leftTextVerticalPosition ++ " " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| Round.round config.yAxis.decimalPointsForText lineText ]
-                            , text_ [ transform <| "matrix(1 0 0 1 745.0155 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| Round.round config.yAxis.decimalPointsForText lineText ]
-                            )
-
-                        ( beginningTextConditional, endTextConditional ) =
-                            -- There're multiple types of showing the text for each graph, in some of them, we don't
-                            -- need to show the text on the first line, some on the last and some we don't want to show
-                            -- on either side.
-                            case config.yAxis.spaceType of
-                                SpaceAround ->
-                                    if lineText == config.input.minY || lineText == config.input.maxY then
-                                        ( emptyNode, emptyNode )
-
-                                    else
+                                    NoSpace ->
                                         ( beginningText, endText )
-
-                                SpaceBelow ->
-                                    if lineText == config.input.minY then
-                                        ( emptyNode, emptyNode )
-
-                                    else
-                                        ( beginningText, endText )
-
-                                NoSpace ->
-                                    ( beginningText, endText )
-                    in
-                    [ line [ class "st18", x1 "110.8", y1 linePosition, x2 "737.6", y2 linePosition ] []
-                    , beginningTextConditional
-                    , endTextConditional
-                    ]
-                        |> List.append innerLines
-                )
-                yAxisList
-                |> List.concat
+                        in
+                        [ line [ class "st18", x1 "110.8", y1 linePosition, x2 "737.6", y2 linePosition ] []
+                        , beginningTextConditional
+                        , endTextConditional
+                        ]
+                            |> List.append innerLines
+                    )
     in
     g []
         lines
