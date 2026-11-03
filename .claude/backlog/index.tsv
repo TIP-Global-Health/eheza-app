@@ -326,7 +326,7 @@ B-325	2	PARKED	MED-HIGH			29	🅿 **PARKED (user, 2026-09-23): "park"** — said
 B-326	4	READY	LOW			29	Sync shards: a measurement is sharded by the person's health centres, not by the clinic that performed it, so an FBF dis
 B-327	4	READY	LOW			29	Device pairing: once a device is paired there is no way back to the pairing form, so when its access token expires (cont
 B-328	4	READY	LOW			29	Role gating: `viewUserPage` authorises by location only, so a lab technician or CHW reaches every nurse page through the
-B-329	3	READY	MED-LOW			29	Group session NCDA: the activity page never fetches the child's individual data, so the "behind on vaccinations" sign ca
+B-329	3	IMPLEMENTED	MED-LOW	2464	2465	29	Group session NCDA: the activity page never fetches the child's individual data, so the "behind on vaccinations" sign ca
 B-330	4	READY	LOW			29	Group "Begin new encounter" page: its fetch is empty, so after a reload at that URL the Group Assessment button is dead,
 B-331	3	IMPLEMENTED	MED	2439	2440	29	Backend error reporting: the Sentry SDK that `logs_glitchtip` needs is not in the deployed vendor tree, so every backend
 B-332	4	READY	LOW			29	Backend error reporting: the GlitchTip event buffer is a `drupal_static`, and the stats/report/village builders call bar
