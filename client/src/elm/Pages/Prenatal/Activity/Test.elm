@@ -20,6 +20,7 @@ import Backend.Measurement.Model
         , Measurement
         , ObstetricHistoryStep2Sign(..)
         , PartnerHIVTestValue
+        , PregnancySign(..)
         , PrenatalAssesment(..)
         , PrenatalHIVSign(..)
         , PrenatalMeasurements
@@ -54,10 +55,10 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (RangedMeasurement(..), emptyHIVPCRResultForm)
 import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault)
-import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
+import Pages.Prenatal.Activity.Model exposing (Msg(..), UltrasoundForm, emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, resolveNextStepsTasks, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, resolveNextStepsTasks, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, suicideRiskDiagnosedBySigns, toUltrasoundValueWithDefault, ultrasoundEDDDate, ultrasoundFormWithDefault, ultrasoundTasks, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), emptyHealthEducationForm)
 import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedPreviouslyAnyOf, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
@@ -2366,6 +2367,7 @@ all =
         , diagnosisKnownAnyOfTest
         , obstetricHistoryFirstPregnancyTest
         , nextVisitTaskTest
+        , ultrasoundFormTest
         ]
 
 
@@ -2848,4 +2850,493 @@ obstetricHistoryFirstPregnancyTest =
                                 /= (generateGravida value == "01" && generatePara value == "0000")
                         )
                     |> Expect.equal []
+        ]
+
+
+
+-- ULTRASOUND FORM
+--
+-- The Estimated Delivery Date (EDD) is the ultrasound day plus what remains of
+-- a 280-day pregnancy, given how far along the ultrasound found it (weeks and
+-- days). That formula is the independent oracle used below.
+--
+-- The nurse can fill the date, the weeks and the days in any order, and can
+-- set the date two ways: tap a day in the calendar and then Close, or open the
+-- calendar and Close it without tapping a day, which fills in today (the
+-- calendar's default day when no date is set yet).
+--
+-- Save is enabled when every task of the form is completed. What Save stores
+-- is `toUltrasoundValueWithDefault`; when it stores something the activity is
+-- left, and the stored EDD becomes the pregnancy's EDD.
+--
+-- With an ultrasound already saved, the form held by the page starts empty and
+-- the screen shows it merged with the saved ultrasound. Each nurse action is
+-- applied to the form held by the page, which is how the page's update applies
+-- them; the screen and Save then merge it with the saved ultrasound.
+
+
+{-| The form as it is before the nurse touches it.
+-}
+emptyUltrasoundFormForTest : UltrasoundForm
+emptyUltrasoundFormForTest =
+    emptyModel.ultrasoundData.form
+
+
+ultrasoundFormTest : Test
+ultrasoundFormTest =
+    let
+        today =
+            Date.fromCalendarDate 2026 Time.Nov 3
+
+        -- A day picked in the calendar, two weeks before today.
+        earlierDay =
+            Date.fromCalendarDate 2026 Time.Oct 20
+
+        -- Another day picked later, to replace the first pick.
+        otherDay =
+            Date.fromCalendarDate 2026 Time.Oct 1
+
+        expectedEdd executionDate weeks days =
+            Date.add Date.Days (280 - (weeks * 7 + days)) executionDate
+
+        -- The calendar as the date field opens it: the day it starts on is
+        -- the date already set, or today when none is set.
+        openCalendar startDay =
+            setUltrasoundExecutionDateSelectorState
+                (Just
+                    { select = always NoOp
+                    , close = NoOp
+                    , dateFrom = Date.add Date.Months -9 today
+                    , dateTo = today
+                    , dateDefault = Just startDay
+                    }
+                )
+
+        closeCalendar =
+            setUltrasoundExecutionDateSelectorState Nothing
+
+        -- Open the calendar, tap a day, then Close.
+        pickDay startDay day =
+            openCalendar startDay >> setUltrasoundExecutionDate day >> closeCalendar
+
+        -- Open the calendar and Close it without tapping a day.
+        closeWithoutPicking startDay =
+            openCalendar startDay >> closeCalendar
+
+        answerSigns form =
+            { form
+                | pregnancyNotViable = Just False
+                , pregnancyEctopic = Just False
+                , pregnancyMultipleFetuses = Just False
+            }
+
+        noSigns =
+            EverySet.singleton NoPregnancySigns
+
+        apply steps form =
+            List.foldl (\step acc -> step acc) form steps
+
+        -- Nurse actions on a form with nothing saved, after the three
+        -- pregnancy-sign questions are answered.
+        fill steps =
+            apply steps (answerSigns emptyUltrasoundFormForTest)
+
+        saveEnabled shown =
+            List.all ((/=) Nothing) (ultrasoundTasks shown)
+
+        completedTasks shown =
+            ultrasoundTasks shown
+                |> List.filterMap identity
+                |> List.length
+
+        stored =
+            toUltrasoundValueWithDefault Nothing
+
+        -- The ultrasound recorded earlier: done 1 September at 10 weeks.
+        savedDate =
+            Date.fromCalendarDate 2026 Time.Sep 1
+
+        saved =
+            { signs = noSigns
+            , executionDate = savedDate
+            , eddWeeks = 10
+            , eddDays = 0
+            , eddDate = expectedEdd savedDate 10 0
+            }
+
+        -- Nurse actions on the form when an ultrasound is already saved.
+        editSaved steps =
+            apply steps emptyUltrasoundFormForTest
+
+        shownWithSaved form =
+            ultrasoundFormWithDefault form (Just saved)
+
+        storedWithSaved =
+            toUltrasoundValueWithDefault (Just saved)
+
+        weeks12 =
+            setUltrasoundEDDWeeks "12"
+
+        days3 =
+            setUltrasoundEDDDays "3"
+
+        -- The three ways of filling the date, weeks and days in each order,
+        -- for each way of setting the date, with the day it sets.
+        orderings =
+            [ ( "a day picked", pickDay today earlierDay, earlierDay )
+            , ( "the calendar closed without picking", closeWithoutPicking today, today )
+            ]
+                |> List.concatMap
+                    (\( dateName, dateStep, date ) ->
+                        [ ( [ dateName, "weeks", "days" ], [ dateStep, weeks12, days3 ] )
+                        , ( [ dateName, "days", "weeks" ], [ dateStep, days3, weeks12 ] )
+                        , ( [ "weeks", dateName, "days" ], [ weeks12, dateStep, days3 ] )
+                        , ( [ "weeks", "days", dateName ], [ weeks12, days3, dateStep ] )
+                        , ( [ "days", dateName, "weeks" ], [ days3, dateStep, weeks12 ] )
+                        , ( [ "days", "weeks", dateName ], [ days3, weeks12, dateStep ] )
+                        ]
+                            |> List.map
+                                (\( names, steps ) ->
+                                    { name = String.join ", then " names
+                                    , steps = steps
+                                    , date = date
+                                    }
+                                )
+                    )
+
+        -- Every way to a complete form, with what the screen and Save are
+        -- expected to give. `shown` and `store` are how the screen and Save
+        -- see the form: on their own, or merged with a saved ultrasound.
+        completePaths =
+            List.map
+                (\ordering ->
+                    { name = "nothing saved, " ++ ordering.name
+                    , form = fill ordering.steps
+                    , shown = identity
+                    , store = stored
+                    , expected =
+                        { signs = noSigns
+                        , executionDate = ordering.date
+                        , eddWeeks = 12
+                        , eddDays = 3
+                        , eddDate = expectedEdd ordering.date 12 3
+                        }
+                    }
+                )
+                orderings
+                ++ [ { name = "nothing saved, the issue's steps: signs, weeks, days, then the calendar closed without picking"
+                     , form = fill [ weeks12, days3, closeWithoutPicking today ]
+                     , shown = identity
+                     , store = stored
+                     , expected =
+                        { signs = noSigns
+                        , executionDate = today
+                        , eddWeeks = 12
+                        , eddDays = 3
+                        , eddDate = expectedEdd today 12 3
+                        }
+                     }
+                   , { name = "nothing saved, weeks, days, the calendar closed without picking, then the signs answered"
+                     , form =
+                        apply [ weeks12, days3, closeWithoutPicking today, answerSigns ]
+                            emptyUltrasoundFormForTest
+                     , shown = identity
+                     , store = stored
+                     , expected =
+                        { signs = noSigns
+                        , executionDate = today
+                        , eddWeeks = 12
+                        , eddDays = 3
+                        , eddDate = expectedEdd today 12 3
+                        }
+                     }
+                   , { name = "nothing saved, the issue's steps, then the calendar opened and closed again"
+                     , form = fill [ weeks12, days3, closeWithoutPicking today, closeWithoutPicking today ]
+                     , shown = identity
+                     , store = stored
+                     , expected =
+                        { signs = noSigns
+                        , executionDate = today
+                        , eddWeeks = 12
+                        , eddDays = 3
+                        , eddDate = expectedEdd today 12 3
+                        }
+                     }
+                   , { name = "an ultrasound saved, nothing changed"
+                     , form = editSaved []
+                     , shown = shownWithSaved
+                     , store = storedWithSaved
+                     , expected = saved
+                     }
+                   , { name = "an ultrasound saved, the calendar opened and closed without picking"
+                     , form = editSaved [ closeWithoutPicking savedDate ]
+                     , shown = shownWithSaved
+                     , store = storedWithSaved
+                     , expected = saved
+                     }
+                   , { name = "an ultrasound saved, weeks changed to 20"
+                     , form = editSaved [ setUltrasoundEDDWeeks "20" ]
+                     , shown = shownWithSaved
+                     , store = storedWithSaved
+                     , expected = { saved | eddWeeks = 20, eddDate = expectedEdd savedDate 20 0 }
+                     }
+                   , { name = "an ultrasound saved, days changed to 4"
+                     , form = editSaved [ setUltrasoundEDDDays "4" ]
+                     , shown = shownWithSaved
+                     , store = storedWithSaved
+                     , expected = { saved | eddDays = 4, eddDate = expectedEdd savedDate 10 4 }
+                     }
+                   , { name = "an ultrasound saved, a different day picked"
+                     , form = editSaved [ pickDay savedDate earlierDay ]
+                     , shown = shownWithSaved
+                     , store = storedWithSaved
+                     , expected = { saved | executionDate = earlierDay, eddDate = expectedEdd earlierDay 10 0 }
+                     }
+                   ]
+    in
+    describe "Prenatal Ultrasound form"
+        [ describe "Filling the Ultrasound form in any order shows the Estimated Delivery Date as soon as the ultrasound date, weeks and days are all filled in"
+            (List.map
+                (\ordering ->
+                    test ordering.name <|
+                        \_ ->
+                            -- No EDD before the last of the three is filled,
+                            -- the right one straight after it.
+                            ( ultrasoundEDDDate (fill (List.take 2 ordering.steps))
+                            , ultrasoundEDDDate (fill ordering.steps)
+                            )
+                                |> Expect.equal ( Nothing, Just (expectedEdd ordering.date 12 3) )
+                )
+                orderings
+            )
+        , describe "Opening the \"Date Ultrasound was performed\" calendar and closing it without picking a day fills in today's date. If weeks and days are already filled in, the Estimated Delivery Date appears straight away."
+            [ test "closing the calendar without picking a day fills in today's date" <|
+                \_ ->
+                    fill [ closeWithoutPicking today, weeks12, days3 ]
+                        |> stored
+                        |> Maybe.map .executionDate
+                        |> Expect.equal (Just today)
+            , test "on a form with only the signs answered, closing the calendar completes the date task" <|
+                \_ ->
+                    ( completedTasks (fill []), completedTasks (fill [ closeWithoutPicking today ]) )
+                        |> Expect.equal ( 3, 4 )
+            , test "weeks and days already filled in: the Estimated Delivery Date appears straight away" <|
+                \_ ->
+                    fill [ weeks12, days3, closeWithoutPicking today ]
+                        |> ultrasoundEDDDate
+                        |> Expect.equal (Just (expectedEdd today 12 3))
+            , test "weeks and days already filled in: Save stores today's date" <|
+                \_ ->
+                    fill [ weeks12, days3, closeWithoutPicking today ]
+                        |> stored
+                        |> Maybe.map .executionDate
+                        |> Expect.equal (Just today)
+            , test "only weeks filled in: no Estimated Delivery Date until days are filled in too" <|
+                \_ ->
+                    ( ultrasoundEDDDate (fill [ weeks12, closeWithoutPicking today ])
+                    , ultrasoundEDDDate (fill [ weeks12, closeWithoutPicking today, days3 ])
+                    )
+                        |> Expect.equal ( Nothing, Just (expectedEdd today 12 3) )
+            , test "only days filled in: no Estimated Delivery Date until weeks are filled in too" <|
+                \_ ->
+                    ( ultrasoundEDDDate (fill [ days3, closeWithoutPicking today ])
+                    , ultrasoundEDDDate (fill [ days3, closeWithoutPicking today, weeks12 ])
+                    )
+                        |> Expect.equal ( Nothing, Just (expectedEdd today 12 3) )
+            ]
+        , describe "The Estimated Delivery Date shown after closing the calendar is the same as the one shown when today is picked in the calendar"
+            [ test "weeks and days filled in before the date" <|
+                \_ ->
+                    let
+                        closed =
+                            fill [ weeks12, days3, closeWithoutPicking today ]
+
+                        picked =
+                            fill [ weeks12, days3, pickDay today today ]
+                    in
+                    ( ultrasoundEDDDate closed, stored closed )
+                        |> Expect.all
+                            [ Expect.equal ( ultrasoundEDDDate picked, stored picked )
+                            , Tuple.first >> Expect.notEqual Nothing
+                            ]
+            , test "the date filled in before weeks and days" <|
+                \_ ->
+                    let
+                        closed =
+                            fill [ closeWithoutPicking today, weeks12, days3 ]
+
+                        picked =
+                            fill [ pickDay today today, weeks12, days3 ]
+                    in
+                    ( ultrasoundEDDDate closed, stored closed )
+                        |> Expect.all
+                            [ Expect.equal ( ultrasoundEDDDate picked, stored picked )
+                            , Tuple.first >> Expect.notEqual Nothing
+                            ]
+            ]
+        , describe "Picking a different day in the calendar later recalculates the Estimated Delivery Date for that day"
+            [ test "after the calendar was closed without picking, once weeks and days were filled in" <|
+                \_ ->
+                    fill [ weeks12, days3, closeWithoutPicking today, pickDay today earlierDay ]
+                        |> ultrasoundEDDDate
+                        |> Expect.equal (Just (expectedEdd earlierDay 12 3))
+            , test "after a day was picked before weeks and days" <|
+                \_ ->
+                    fill [ pickDay today today, weeks12, days3, pickDay today earlierDay ]
+                        |> ultrasoundEDDDate
+                        |> Expect.equal (Just (expectedEdd earlierDay 12 3))
+            , test "a second pick replaces the first" <|
+                \_ ->
+                    fill [ pickDay today earlierDay, weeks12, days3, pickDay earlierDay otherDay ]
+                        |> ultrasoundEDDDate
+                        |> Expect.equal (Just (expectedEdd otherDay 12 3))
+            , test "Save stores the later day and its Estimated Delivery Date" <|
+                \_ ->
+                    fill [ weeks12, days3, closeWithoutPicking today, pickDay today earlierDay ]
+                        |> stored
+                        |> Maybe.map (\value -> ( value.executionDate, value.eddDate ))
+                        |> Expect.equal (Just ( earlierDay, expectedEdd earlierDay 12 3 ))
+            , test "with an ultrasound saved, the EDD is recalculated from the saved weeks and days" <|
+                \_ ->
+                    editSaved [ pickDay savedDate earlierDay ]
+                        |> shownWithSaved
+                        |> ultrasoundEDDDate
+                        |> Expect.equal (Just (expectedEdd earlierDay 10 0))
+            ]
+        , describe "Opening and closing the calendar when a date is already set leaves the date and the Estimated Delivery Date unchanged"
+            [ test "a day picked, then weeks and days, then the calendar opened and closed" <|
+                \_ ->
+                    fill [ pickDay today earlierDay, weeks12, days3, closeWithoutPicking earlierDay ]
+                        |> stored
+                        |> Maybe.map (\value -> ( value.executionDate, value.eddDate ))
+                        |> Expect.equal (Just ( earlierDay, expectedEdd earlierDay 12 3 ))
+            , test "weeks and days, then a day picked, then the calendar opened and closed" <|
+                \_ ->
+                    let
+                        form =
+                            fill [ weeks12, days3, pickDay today earlierDay, closeWithoutPicking earlierDay ]
+                    in
+                    ( ultrasoundEDDDate form, Maybe.map .executionDate (stored form) )
+                        |> Expect.equal ( Just (expectedEdd earlierDay 12 3), Just earlierDay )
+            , test "a day picked, the calendar opened and closed before weeks and days are filled in" <|
+                \_ ->
+                    fill [ pickDay today earlierDay, closeWithoutPicking earlierDay, weeks12, days3 ]
+                        |> stored
+                        |> Maybe.map (\value -> ( value.executionDate, value.eddDate ))
+                        |> Expect.equal (Just ( earlierDay, expectedEdd earlierDay 12 3 ))
+            , test "today filled in by closing the calendar, then opened and closed again" <|
+                \_ ->
+                    let
+                        form =
+                            fill [ weeks12, days3, closeWithoutPicking today, closeWithoutPicking today ]
+                    in
+                    ( ultrasoundEDDDate form, Maybe.map .executionDate (stored form) )
+                        |> Expect.equal ( Just (expectedEdd today 12 3), Just today )
+            , test "with an ultrasound saved, its date and EDD stay" <|
+                \_ ->
+                    let
+                        form =
+                            editSaved [ closeWithoutPicking savedDate ]
+                    in
+                    ( ultrasoundEDDDate (shownWithSaved form), storedWithSaved form )
+                        |> Expect.equal ( Just saved.eddDate, Just saved )
+            ]
+        , describe "Changing weeks or days after the date is set still recalculates the Estimated Delivery Date"
+            [ test "a day picked, then weeks changed" <|
+                \_ ->
+                    fill [ pickDay today earlierDay, weeks12, days3, setUltrasoundEDDWeeks "20" ]
+                        |> ultrasoundEDDDate
+                        |> Expect.equal (Just (expectedEdd earlierDay 20 3))
+            , test "a day picked, then days changed" <|
+                \_ ->
+                    fill [ pickDay today earlierDay, weeks12, days3, setUltrasoundEDDDays "5" ]
+                        |> ultrasoundEDDDate
+                        |> Expect.equal (Just (expectedEdd earlierDay 12 5))
+            , test "today filled in by closing the calendar after weeks and days, then weeks changed" <|
+                \_ ->
+                    fill [ weeks12, days3, closeWithoutPicking today, setUltrasoundEDDWeeks "20" ]
+                        |> ultrasoundEDDDate
+                        |> Expect.equal (Just (expectedEdd today 20 3))
+            , test "today filled in by closing the calendar after weeks and days, then days changed" <|
+                \_ ->
+                    fill [ weeks12, days3, closeWithoutPicking today, setUltrasoundEDDDays "5" ]
+                        |> ultrasoundEDDDate
+                        |> Expect.equal (Just (expectedEdd today 12 5))
+            , test "weeks cleared: the Estimated Delivery Date goes and Save is disabled" <|
+                \_ ->
+                    let
+                        form =
+                            fill [ pickDay today earlierDay, weeks12, days3, setUltrasoundEDDWeeks "" ]
+                    in
+                    ( ultrasoundEDDDate form, saveEnabled form )
+                        |> Expect.equal ( Nothing, False )
+            , test "weeks cleared and typed again: the Estimated Delivery Date comes back" <|
+                \_ ->
+                    fill [ pickDay today earlierDay, weeks12, days3, setUltrasoundEDDWeeks "", setUltrasoundEDDWeeks "20" ]
+                        |> ultrasoundEDDDate
+                        |> Expect.equal (Just (expectedEdd earlierDay 20 3))
+            , test "with an ultrasound saved, weeks changed: recalculated from the saved date and days" <|
+                \_ ->
+                    editSaved [ setUltrasoundEDDWeeks "20" ]
+                        |> shownWithSaved
+                        |> ultrasoundEDDDate
+                        |> Expect.equal (Just (expectedEdd savedDate 20 0))
+            , test "with an ultrasound saved, days changed: recalculated from the saved date and weeks" <|
+                \_ ->
+                    editSaved [ setUltrasoundEDDDays "4" ]
+                        |> shownWithSaved
+                        |> ultrasoundEDDDate
+                        |> Expect.equal (Just (expectedEdd savedDate 10 4))
+            ]
+        , describe "Whenever Save is enabled, tapping it saves the ultrasound and leaves the activity"
+            (List.map
+                (\path ->
+                    test path.name <|
+                        \_ ->
+                            ( saveEnabled (path.shown path.form)
+                            , path.store path.form /= Nothing
+                            )
+                                |> Expect.equal ( True, True )
+                )
+                completePaths
+                ++ [ test "the signs not answered: Save is disabled and stores nothing" <|
+                        \_ ->
+                            let
+                                form =
+                                    apply [ weeks12, days3, closeWithoutPicking today ] emptyUltrasoundFormForTest
+                            in
+                            ( saveEnabled form, stored form )
+                                |> Expect.equal ( False, Nothing )
+                   , test "days not filled in: Save is disabled and stores nothing" <|
+                        \_ ->
+                            let
+                                form =
+                                    fill [ weeks12, closeWithoutPicking today ]
+                            in
+                            ( saveEnabled form, stored form )
+                                |> Expect.equal ( False, Nothing )
+                   , test "no date set: Save is disabled and stores nothing" <|
+                        \_ ->
+                            let
+                                form =
+                                    fill [ weeks12, days3 ]
+                            in
+                            ( saveEnabled form, stored form )
+                                |> Expect.equal ( False, Nothing )
+                   ]
+            )
+        , describe "The saved ultrasound carries the Estimated Delivery Date that was shown, and the pregnancy's EDD is updated to it, as it is today"
+            (List.map
+                (\path ->
+                    test path.name <|
+                        \_ ->
+                            -- What the screen shows, and the whole ultrasound
+                            -- Save stores, whose EDD the pregnancy takes.
+                            ( ultrasoundEDDDate (path.shown path.form)
+                            , path.store path.form
+                            )
+                                |> Expect.equal ( Just path.expected.eddDate, Just path.expected )
+                )
+                completePaths
+            )
         ]
