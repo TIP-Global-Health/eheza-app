@@ -871,7 +871,7 @@ the plain (non-anemia) variant.
 -}
 diagnoseNurse : PrenatalMeasurements -> EverySet PrenatalDiagnosis
 diagnoseNurse measurements =
-    generatePrenatalDiagnosesForNurse currentDate (testAssembled measurements)
+    generatePrenatalDiagnosesForNurse (testAssembled measurements)
 
 
 {-| Like `diagnoseNurse`, after one earlier nurse encounter, four weeks back,
@@ -890,7 +890,7 @@ diagnoseNurseAfter previousDiagnoses previousMeasurements measurements =
             , measurements = previousMeasurements
             }
     in
-    generatePrenatalDiagnosesForNurse currentDate
+    generatePrenatalDiagnosesForNurse
         { assembled | nursePreviousEncountersData = [ previousEncounter ] }
 
 
@@ -1124,21 +1124,21 @@ generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest =
 
 diagnoseNurse28Weeks : PrenatalMeasurements -> EverySet PrenatalDiagnosis
 diagnoseNurse28Weeks measurements =
-    generatePrenatalDiagnosesForNurse currentDate (testAssembled28Weeks measurements)
+    generatePrenatalDiagnosesForNurse (testAssembled28Weeks measurements)
 
 
 {-| Run the function under test at EGA ~16 weeks (< 20).
 -}
 diagnoseNurse16Weeks : PrenatalMeasurements -> EverySet PrenatalDiagnosis
 diagnoseNurse16Weeks measurements =
-    generatePrenatalDiagnosesForNurse currentDate (testAssembled16Weeks measurements)
+    generatePrenatalDiagnosesForNurse (testAssembled16Weeks measurements)
 
 
 {-| Run the function under test at EGA ~38 weeks (>= 37).
 -}
 diagnoseNurse38Weeks : PrenatalMeasurements -> EverySet PrenatalDiagnosis
 diagnoseNurse38Weeks measurements =
-    generatePrenatalDiagnosesForNurse currentDate (testAssembled38Weeks measurements)
+    generatePrenatalDiagnosesForNurse (testAssembled38Weeks measurements)
 
 
 generatePrenatalDiagnosesForNurseModeratePreeclampsiaTest : Test
@@ -2115,7 +2115,7 @@ historyBeforeEncounterTest =
 
         diagnosesOf encounterId storedEncounters =
             assembledFromDb encounterId storedEncounters
-                |> Maybe.map (generatePrenatalDiagnosesForNurse currentDate >> EverySet.toList)
+                |> Maybe.map (generatePrenatalDiagnosesForNurse >> EverySet.toList)
 
         hasDiagnosis diagnosis encounterId storedEncounters =
             diagnosesOf encounterId storedEncounters
@@ -2934,10 +2934,10 @@ recorded (the lab test still pending). `daysLater` days after the visit,
 with the visit-day diagnoses stored on it.
 -}
 enterResultLaterAfter : List PreviousEncounterData -> ( Int, Int ) -> Int -> (PrenatalMeasurements -> PrenatalMeasurements) -> PrenatalMeasurements -> LateResult
-enterResultLaterAfter previousEncounters ega daysLater enterResult visitMeasurements =
+enterResultLaterAfter previousEncounters ega _ enterResult visitMeasurements =
     let
         stored =
-            generatePrenatalDiagnosesForNurse visitDay
+            generatePrenatalDiagnosesForNurse
                 (visitAssembled ega previousEncounters EverySet.empty visitMeasurements)
 
         assembled =
@@ -2948,7 +2948,7 @@ enterResultLaterAfter previousEncounters ega daysLater enterResult visitMeasurem
     in
     { visitDayDiagnoses = stored
     , afterEntry =
-        generatePrenatalDiagnosesForNurse (Date.add Date.Days daysLater visitDay)
+        generatePrenatalDiagnosesForNurse
             { assembled | encounter = { encounter | endDate = Just visitDay } }
     }
 
@@ -3235,8 +3235,8 @@ lateLabResultSameDayTest =
                 in
                 [ visitDay, Date.add Date.Days 3 visitDay ]
                     |> List.map
-                        (\day ->
-                            generatePrenatalDiagnosesForNurse day undated
+                        (\_ ->
+                            generatePrenatalDiagnosesForNurse undated
                                 |> EverySet.toList
                                 |> List.filter (\diagnosis -> List.member diagnosis [ DiagnosisChronicHypertensionImmediate, DiagnosisGestationalHypertensionImmediate ])
                         )
