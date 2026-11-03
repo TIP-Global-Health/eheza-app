@@ -6,6 +6,8 @@ Evidence is the recording's path relative to the repo root
 (`client/qa-recordings/<pr>/qa-<pr>-<scenario>.mp4`).
 Result is PASS or FAIL; a FAIL row links the PR comment or issue that reports the bug, and
 the behavior is re-verified (new row) after the fix — only a PASS row counts as "verified once".
+Each run ends with a summary row: `Run: N fix, N hold, N boundary rows; N findings`,
+Result `RUN`, no evidence.
 
 | Date | Issue | PR | What was verified | Result | Evidence |
 |------|-------|----|-------------------|--------|----------|
