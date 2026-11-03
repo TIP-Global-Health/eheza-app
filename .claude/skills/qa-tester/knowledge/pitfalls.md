@@ -557,3 +557,27 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a B-548 scenario built on "only the first pending child is loaded" saw the correct behaviour: tapping a child loads that child's data through `Pages/Activity/Update.elm` (`SetSelectedParticipant`), which the entry never read.
 - **Wrong conclusion:** the reproduction failed, so the defect is not real. A narrower case (child shown without a tap) did reproduce.
 - **Rule:** before planning, read every path that can load the data — the page's `Fetch.elm` and the out-messages of its `Update.elm` — and aim the defect scenario at the case none of them covers.
+
+## One long scripted command that writes data and reports only at its end
+
+- **Symptom:** a develop oracle run saved four group weights, then failed on its last step; the reply held no values, and the fixture could not run again.
+- **Wrong conclusion:** a failure costs only a re-run.
+- **Rule:** a script that writes returns nothing if a later step fails. `qa.log` each step's values as soon as it reads them, or end the command before the next write.
+
+## Taking a tap as proof the child's data is loaded
+
+- **Symptom:** on develop, a tapped child's request log showed the child's fetch, so the child looked loaded; its Nutrition save then gave no assessment and Weight showed no previous value.
+- **Wrong conclusion:** the tapped child is loaded, as the issue and the backlog entry said.
+- **Rule:** the tap's fetch is one-shot and loads one level. Judge loading by a screen it changes (Weight's "Previous measurement"), not by a request.
+
+## A global set in an earlier driver command
+
+- **Symptom:** a new request listener never recorded anything; an older `globalThis.__reqlog` from an exploring command already existed, so the guard skipped installing it.
+- **Wrong conclusion:** the page made no such requests.
+- **Rule:** globals live as long as the driver. Give a new listener a new global name, or remove the old one.
+
+## Reading the group assessment from the `nutrition` node
+
+- **Symptom:** after popups showed "Moderately underweight", every group `nutrition` node's `field_nutrition_assesment` was empty on both builds.
+- **Wrong conclusion:** the save dropped the assessment, so the PR broke it.
+- **Rule:** the group engine updates that node only when the assessment changes with the save. Read the `follow_up` node, and compare with develop on a loaded child before blaming the change.

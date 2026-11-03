@@ -413,6 +413,17 @@ flag simply does not appear.
   → register the mother → her person page → Add Child → "is the parent of" → Save. The
   child's activities are then under PARTICIPANTS in the header → the mother's card → the
   baby icon.
+- Group activity page (activities icon in the header → a card's `.icon-task-<name>`; Child Scorecard is
+  `icon-task-history`, nurse only, and first asks "YES, PROCEED / NO, SKIP" on the activities page). Children are
+  `.participant.card` (the shown one `.active`), in uuid order, not registration order; tabs are `.ui.tabular.menu .item`.
+  The activities page keeps its tab, and an activity everyone finished moves to its Completed tab.
+- Weight's form prints "Previous measurement: <kg>" from the child's individual history: the visible sign the child's
+  data is loaded. On develop, a tap, filter or tab switch loads one level only, so it shows only for the default child.
+- A group Nutrition save that assesses opens Next Steps behind a `.diagnosis-popup`. That page has no back link: each task
+  saves with `div.actions.next-steps button`, and the last returns to the activity page. The assessment is kept on the
+  `follow_up` node; the `nutrition` node's own `field_nutrition_assesment` stays empty when the Nutrition save completes
+  the set for a child whose history was already loaded.
+- The child-data load for one child requests `/sw/nodes/pregnancy-by-newborn/<child uuid>` (`context.on('request')` sees it).
 
 ## Patient Record
 
