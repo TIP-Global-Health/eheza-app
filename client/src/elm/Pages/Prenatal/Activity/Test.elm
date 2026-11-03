@@ -2867,7 +2867,7 @@ obstetricHistoryFirstPregnancyTest =
 -- day, from the encounter's Lab results page (Case Management), by a lab
 -- technician, or from a later visit's lab history. Every time a result is
 -- saved, the app reassesses the whole encounter with
--- `generatePrenatalDiagnosesForNurse <entry day> <the visit's assembled data>`
+-- `generatePrenatalDiagnosesForNurse <the visit's assembled data>`
 -- and stores the outcome; the diagnoses it adds over the stored set decide
 -- the emergency-referral warning and the recurrent Next Steps.
 --
@@ -2885,8 +2885,8 @@ obstetricHistoryFirstPregnancyTest =
 -- are first assessed on the visit day (the set the nurse's device stores when
 -- the encounter is completed), then the result is entered into the pending
 -- test, the visit-day set is stored on the encounter, the encounter is
--- closed on the visit day, and the encounter is assessed again on the entry
--- day. Ages are written as (weeks, days) of EGA on the visit day.
+-- closed on the visit day, and the encounter is assessed again after the
+-- entry. Ages are written as (weeks, days) of EGA on the visit day.
 
 
 {-| The visit day of every late-result scenario.
@@ -2929,9 +2929,10 @@ type alias LateResult =
 
 
 {-| A visit at `ega`, after `previousEncounters`, with `visitMeasurements`
-recorded (the lab test still pending). `daysLater` days after the visit,
-`enterResult` fills in the pending result, and the encounter is reassessed
-with the visit-day diagnoses stored on it.
+recorded (the lab test still pending). `enterResult` fills in the pending
+result, and the encounter is reassessed with the visit-day diagnoses stored on
+it. The days-later argument names when the result is entered; the assessment
+reads no entry date.
 -}
 enterResultLaterAfter : List PreviousEncounterData -> ( Int, Int ) -> Int -> (PrenatalMeasurements -> PrenatalMeasurements) -> PrenatalMeasurements -> LateResult
 enterResultLaterAfter previousEncounters ega _ enterResult visitMeasurements =

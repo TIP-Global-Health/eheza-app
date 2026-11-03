@@ -575,7 +575,7 @@ expectNextStepsTask currentDate assembled task =
 
 resolveNextVisitDate : AssembledData -> Maybe NominalDate
 resolveNextVisitDate assembled =
-    Maybe.map (calculateEGAWeeks assembled.encounter.startDate) assembled.globalLmpDate
+    encounterEGAWeeks assembled
         |> Maybe.map
             (\egaWeekCurrent ->
                 let
@@ -1961,6 +1961,13 @@ generatePrenatalAssesmentForChw assembled =
         AssesmentHighRiskPregnancy
 
 
+{-| EGA in weeks on the encounter's start date.
+-}
+encounterEGAWeeks : AssembledData -> Maybe Int
+encounterEGAWeeks assembled =
+    Maybe.map (calculateEGAWeeks assembled.encounter.startDate) assembled.globalLmpDate
+
+
 {-| EGA is taken on the encounter's start date, so a lab result entered on
 a later day grades the visit's findings at the visit's week.
 -}
@@ -1968,9 +1975,7 @@ generatePrenatalDiagnosesForNurse : AssembledData -> EverySet PrenatalDiagnosis
 generatePrenatalDiagnosesForNurse assembled =
     let
         egaInWeeks =
-            Maybe.map
-                (calculateEGAWeeks assembled.encounter.startDate)
-                assembled.globalLmpDate
+            encounterEGAWeeks assembled
 
         dangerSignsList =
             generateDangerSignsListForNurse assembled
