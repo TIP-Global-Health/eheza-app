@@ -111,6 +111,21 @@ function hedley_admin_preprocess_views_view(&$vars) {
 }
 
 /**
+ * Implements hook_preprocess_HOOK() for views_data_export_csv_header.
+ *
+ * Puts the byte-order mark before the header row of a views_data_export CSV.
+ */
+function hedley_admin_preprocess_views_data_export_csv_header(&$vars) {
+  // A file converted to another encoding is not UTF-8, so it gets no mark.
+  if (empty($vars['header']) || !empty($vars['options']['encoding'])) {
+    return;
+  }
+
+  $first = array_key_first($vars['header']);
+  $vars['header'][$first] = HEDLEY_VIEW_EXPORT_CSV_BOM . $vars['header'][$first];
+}
+
+/**
  * Implements hook_theme_registry_alter().
  */
 function hedley_admin_theme_registry_alter(&$theme_registry) {
@@ -146,8 +161,7 @@ function hedley_admin_vbo_export_csv($variables) {
     fputcsv($handle, $row);
   }
   rewind($handle);
-  // The leading byte-order mark makes Excel read the file as UTF-8.
-  $csv_output = "\xEF\xBB\xBF";
+  $csv_output = HEDLEY_VIEW_EXPORT_CSV_BOM;
   while (!feof($handle)) {
     $csv_output .= fread($handle, 8192);
   }
@@ -618,8 +632,7 @@ function hedley_admin_resilience_survey_export_csv($form, &$form_state) {
   drupal_add_http_header('Pragma', 'no-cache');
   drupal_add_http_header('Cache-Control', 'must-revalidate, post-check=0, pre-check=0');
 
-  // The leading byte-order mark makes Excel read the file as UTF-8.
-  echo "\xEF\xBB\xBF" . $csv_output;
+  echo HEDLEY_VIEW_EXPORT_CSV_BOM . $csv_output;
   exit;
 }
 
