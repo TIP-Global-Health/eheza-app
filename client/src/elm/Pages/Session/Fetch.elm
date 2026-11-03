@@ -19,6 +19,7 @@ import Pages.Page exposing (SessionPage(..))
 import Pages.Participant.Fetch
 import Pages.Participants.Fetch
 import Pages.ProgressReport.Fetch
+import Pages.Session.Model
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (SiteFeature)
 import ZScore.Model
@@ -28,11 +29,13 @@ fetch :
     NominalDate
     -> ZScore.Model.Model
     -> EverySet SiteFeature
+    -> Bool
     -> SessionId
     -> SessionPage
+    -> Pages.Session.Model.Model
     -> ModelIndexedDb
     -> List MsgIndexedDb
-fetch currentDate zscores features sessionId sessionPage db =
+fetch currentDate zscores features isChw sessionId sessionPage pages db =
     let
         fetchForChild childId =
             let
@@ -63,10 +66,13 @@ fetch currentDate zscores features sessionId sessionPage db =
                                                             features
                                                             childActivity
                                                             editableSession.offlineSession
-                                                            False
+                                                            isChw
                                                             db
                                                         )
-                                                    |> Pages.Activity.Utils.resolveChildToLoad childActivity Pages.Activity.Model.emptyModel
+                                                    |> Pages.Activity.Utils.resolveChildToLoad
+                                                        (Dict.get childActivity pages.childActivityPages
+                                                            |> Maybe.withDefault Pages.Activity.Model.emptyModel
+                                                        )
                                             )
 
                                 _ ->

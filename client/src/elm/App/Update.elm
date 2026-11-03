@@ -458,10 +458,7 @@ update msg model =
                                     data.sessionPages
                                         |> Dict.get sessionId
                                         |> Maybe.withDefault Pages.Session.Model.emptyModel
-                                        |> Pages.Session.Update.update currentDate
-                                            model.zscores
-                                            site
-                                            features
+                                        |> Pages.Session.Update.update site
                                             sessionId
                                             model.indexedDb
                                             subMsg

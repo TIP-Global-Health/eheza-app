@@ -14,10 +14,10 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import LocalData
-import Maybe.Extra
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Activity.Utils exposing (filterParticipantsByName, resolveSelectedParticipant)
 import Pages.Session.Model
-import Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, normalizeFilter, viewNameFilter)
+import Pages.Utils exposing (filterDependentNoResultsMessage, normalizeFilter, viewNameFilter)
 import Participant.Model exposing (Participant)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, translate)
@@ -64,18 +64,8 @@ view config language currentDate zscores site features isChw selectedActivity ( 
                     , pending = Dict.empty
                     }
                     (config.summarizeParticipantsForActivity currentDate zscores features selectedActivity session.offlineSession isChw db
-                        >> applyNameFilter
+                        >> filterParticipantsByName config.getName filter
                     )
-
-        applyNameFilter { pending, completed } =
-            { pending = Dict.filter filterParticipantNames pending
-            , completed = Dict.filter filterParticipantNames completed
-            }
-
-        filterParticipantNames _ participant =
-            participant
-                |> config.getName
-                |> matchFilter filter
 
         filter =
             normalizeFilter model.filter
@@ -108,32 +98,8 @@ view config language currentDate zscores site features isChw selectedActivity ( 
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 ]
 
-        -- We compute this so that it's consistent with the tab
         selectedParticipant =
-            case model.selectedTab of
-                Completed ->
-                    model.selectedParticipant
-                        |> Maybe.andThen
-                            (\participant ->
-                                if Dict.member participant participants.completed then
-                                    Just participant
-
-                                else
-                                    Nothing
-                            )
-                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (Dict.toList participants.completed |> List.head))
-
-                Pending ->
-                    model.selectedParticipant
-                        |> Maybe.andThen
-                            (\participant ->
-                                if Dict.member participant participants.pending then
-                                    Just participant
-
-                                else
-                                    Nothing
-                            )
-                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (Dict.toList participants.pending |> List.head))
+            resolveSelectedParticipant model participants
 
         participantsHtml =
             let

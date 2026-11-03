@@ -1,10 +1,11 @@
 module App.Fetch exposing (fetch, forget, shouldFetch)
 
 import App.Model exposing (Model, Msg(..))
-import App.Utils exposing (getLoggedInData)
+import App.Utils exposing (getLoggedInData, getLoggedInModel)
 import AssocList as Dict
 import Backend.Fetch
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..))
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.AcuteIllness.Activity.Fetch
@@ -62,6 +63,7 @@ import Pages.Prenatal.RecurrentActivity.Fetch
 import Pages.Prenatal.RecurrentEncounter.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
+import Pages.Session.Model
 import Pages.StockManagement.Fetch
 import Pages.StockManagement.Model
 import Pages.TraceContact.Fetch
@@ -285,17 +287,22 @@ fetch model =
                     |> Maybe.withDefault []
 
             UserPage (SessionPage sessionId sessionPage) ->
-                let
-                    features =
-                        model.syncManager.syncInfoGeneral.features
-                in
-                Pages.Session.Fetch.fetch currentDate
-                    model.zscores
-                    features
-                    sessionId
-                    sessionPage
-                    model.indexedDb
-                    |> List.map MsgIndexedDb
+                getLoggedInModel model
+                    |> Maybe.map
+                        (\loggedIn ->
+                            Pages.Session.Fetch.fetch currentDate
+                                model.zscores
+                                model.syncManager.syncInfoGeneral.features
+                                (isCommunityHealthWorker (Tuple.second loggedIn.nurse))
+                                sessionId
+                                sessionPage
+                                (Dict.get sessionId loggedIn.sessionPages
+                                    |> Maybe.withDefault Pages.Session.Model.emptyModel
+                                )
+                                model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
             UserPage (PrenatalEncounterPage id) ->
                 Pages.Prenatal.Encounter.Fetch.fetch id model.indexedDb
