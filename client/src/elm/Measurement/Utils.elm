@@ -9,7 +9,9 @@ import Backend.Measurement.Utils exposing (bilirubinValueToString, bloodGroupToS
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
-        ( getChildScoreboardEncountersForParticipant
+        ( generateIndividualWellChildMeasurementsForChild
+        , getChildScoreboardEncountersForParticipant
+        , getChildScoreboardEncountersForPerson
         , getWellChildEncountersForParticipant
         )
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
@@ -18,6 +20,7 @@ import Backend.Person.Utils exposing (ageInMonths)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2)
+import Backend.Utils exposing (resolveIndividualParticipantWithDuplicates, resolveIndividualParticipantsForPerson)
 import Date exposing (Unit(..))
 import DateSelector.Model exposing (DateSelectorConfig)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -64,7 +67,7 @@ import SyncManager.Model exposing (Site(..))
 import Translate exposing (TranslationId, translate)
 import Translate.Model exposing (Language)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (renderDate)
+import Utils.NominalDate exposing (renderDate, sortEncounterTuplesDesc)
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -9504,33 +9507,8 @@ resolveChildANCPregnancyData childId db =
 resoloveLastScheduledImmunizationVisitDate : PersonId -> ModelIndexedDb -> Maybe NominalDate
 resoloveLastScheduledImmunizationVisitDate childId db =
     let
-        individualParticipants =
-            Dict.get childId db.individualParticipantsByPerson
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map Dict.toList
-                |> Maybe.withDefault []
-
-        individualWellChildParticipantId =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
-                )
-                individualParticipants
-                |> List.head
-                |> Maybe.map Tuple.first
-
         individualWellChildMeasurements =
-            Maybe.map
-                (\participantId ->
-                    Backend.Measurement.Utils.generatePreviousMeasurements
-                        getWellChildEncountersForParticipant
-                        .wellChildMeasurements
-                        Nothing
-                        participantId
-                        db
-                )
-                individualWellChildParticipantId
-                |> Maybe.withDefault []
+            generateIndividualWellChildMeasurementsForChild childId db
                 |> List.map (Tuple.second >> Tuple.second)
     in
     List.filterMap
@@ -9548,95 +9526,42 @@ resoloveLastScheduledImmunizationVisitDate childId db =
 isBehindOnVaccinationsByProgress : NominalDate -> Site -> PersonId -> ModelIndexedDb -> Bool
 isBehindOnVaccinationsByProgress currentDate site childId db =
     let
-        individualParticipants =
-            Dict.get childId db.individualParticipantsByPerson
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map Dict.toList
-                |> Maybe.withDefault []
-
-        individualWellChildParticipantId =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
-                )
-                individualParticipants
-                |> List.head
-                |> Maybe.map Tuple.first
+        wellChildParticipantsIds =
+            resolveIndividualParticipantsForPerson childId Backend.IndividualEncounterParticipant.Model.WellChildEncounter db
     in
-    if isJust individualWellChildParticipantId then
-        behindOnVaccinationsByProgressFromWellChild currentDate site individualWellChildParticipantId db
+    if List.isEmpty wellChildParticipantsIds then
+        behindOnVaccinationsByLastEncounter currentDate
+            site
+            (getChildScoreboardEncountersForPerson db childId)
+            (\id -> generateAssembledDataForChildScoreboard site id db)
 
     else
-        let
-            individualChildScoreboardParticipantId =
-                List.filter
-                    (\( _, participant ) ->
-                        participant.encounterType == Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
-                    )
-                    individualParticipants
-                    |> List.head
-                    |> Maybe.map Tuple.first
-        in
-        behindOnVaccinationsByProgressFromChildScoreboard currentDate site individualChildScoreboardParticipantId db
+        behindOnVaccinationsByLastEncounter currentDate
+            site
+            (List.concatMap (getWellChildEncountersForParticipant db) wellChildParticipantsIds)
+            (\id -> generateAssembledDataForWellChild site id db)
 
 
-behindOnVaccinationsByProgressFromWellChild : NominalDate -> Site -> Maybe IndividualEncounterParticipantId -> ModelIndexedDb -> Bool
-behindOnVaccinationsByProgressFromWellChild currentDate site individualWellChildParticipantId db =
-    let
-        lastWellChildEncounterId =
-            Maybe.andThen
-                (getWellChildEncountersForParticipant db
-                    >> List.map Tuple.first
-                    >> List.head
-                )
-                individualWellChildParticipantId
-
-        maybeAssembled =
-            Maybe.andThen
-                (\id ->
-                    generateAssembledDataForWellChild site id db
-                        |> RemoteData.toMaybe
-                )
-                lastWellChildEncounterId
-    in
-    Maybe.map
-        (\assembled ->
-            behindOnVaccinationsByProgress currentDate
-                site
-                assembled.person
-                assembled.vaccinationProgress
-        )
-        maybeAssembled
-        |> Maybe.withDefault False
-
-
-behindOnVaccinationsByProgressFromChildScoreboard : NominalDate -> Site -> Maybe IndividualEncounterParticipantId -> ModelIndexedDb -> Bool
-behindOnVaccinationsByProgressFromChildScoreboard currentDate site individualChildScoreboardParticipantId db =
-    let
-        lastChildScoreboardEncounterId =
-            Maybe.andThen
-                (getChildScoreboardEncountersForParticipant db
-                    >> List.map Tuple.first
-                    >> List.head
-                )
-                individualChildScoreboardParticipantId
-
-        maybeAssembled =
-            Maybe.andThen
-                (\id ->
-                    generateAssembledDataForChildScoreboard site id db
-                        |> RemoteData.toMaybe
-                )
-                lastChildScoreboardEncounterId
-    in
-    Maybe.map
-        (\assembled ->
-            behindOnVaccinationsByProgress currentDate
-                site
-                assembled.person
-                assembled.vaccinationProgress
-        )
-        maybeAssembled
+{-| Whether the child is behind on vaccinations, by the progress assembled
+for their most recent encounter of a programme.
+-}
+behindOnVaccinationsByLastEncounter :
+    NominalDate
+    -> Site
+    -> List ( encounterId, { encounter | startDate : NominalDate } )
+    -> (encounterId -> WebData { assembled | person : Person, vaccinationProgress : VaccinationProgressDict })
+    -> Bool
+behindOnVaccinationsByLastEncounter currentDate site encounters assembleFunc =
+    List.sortWith sortEncounterTuplesDesc encounters
+        |> List.head
+        |> Maybe.andThen (Tuple.first >> assembleFunc >> RemoteData.toMaybe)
+        |> Maybe.map
+            (\assembled ->
+                behindOnVaccinationsByProgress currentDate
+                    site
+                    assembled.person
+                    assembled.vaccinationProgress
+            )
         |> Maybe.withDefault False
 
 
@@ -10480,7 +10405,7 @@ generateAssembledDataForWellChild site id db =
                             getWellChildEncountersForParticipant
                             .wellChildMeasurements
                             (Just id)
-                            encounter_.participant
+                            (resolveIndividualParticipantWithDuplicates encounter_.participant db)
                             db
                     )
                 |> Maybe.withDefault []
@@ -10513,26 +10438,7 @@ generateVaccinationProgressDictsForWellChild site assembled db =
             getPreviousMeasurements assembled.previousMeasurementsWithDates
 
         vaccinationProgressByChildScoreboard =
-            let
-                individualParticipants =
-                    Dict.get assembled.participant.person db.individualParticipantsByPerson
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map Dict.toList
-                        |> Maybe.withDefault []
-
-                individualChildScoreboardParticipantId =
-                    List.filter
-                        (Tuple.second
-                            >> .encounterType
-                            >> (==) Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
-                        )
-                        individualParticipants
-                        |> List.head
-                        |> Maybe.map Tuple.first
-            in
-            Maybe.map (generateVaccinationProgressDictByChildScoreboard site db)
-                individualChildScoreboardParticipantId
-                |> Maybe.withDefault Dict.empty
+            generateVaccinationProgressDictByChildScoreboard site db assembled.participant.person
 
         vaccinationHistory =
             generateVaccinationProgressForWellChild site assembled.person previousMeasurements
@@ -10586,7 +10492,7 @@ generateAssembledDataForChildScoreboard site id db =
                             getChildScoreboardEncountersForParticipant
                             .childScoreboardMeasurements
                             (Just id)
-                            encounter_.participant
+                            (resolveIndividualParticipantWithDuplicates encounter_.participant db)
                             db
                     )
                 |> Maybe.withDefault []
@@ -10619,26 +10525,7 @@ generateVaccinationProgressDictsForChildScoreboard site assembled db =
             getPreviousMeasurements assembled.previousMeasurementsWithDates
 
         vaccinationProgressByWellChild =
-            let
-                individualParticipants =
-                    Dict.get assembled.participant.person db.individualParticipantsByPerson
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map Dict.toList
-                        |> Maybe.withDefault []
-
-                individualWellChildParticipantId =
-                    List.filter
-                        (Tuple.second
-                            >> .encounterType
-                            >> (==) Backend.IndividualEncounterParticipant.Model.WellChildEncounter
-                        )
-                        individualParticipants
-                        |> List.head
-                        |> Maybe.map Tuple.first
-            in
-            Maybe.map (generateVaccinationProgressDictByWellChild site assembled.person db)
-                individualWellChildParticipantId
-                |> Maybe.withDefault Dict.empty
+            generateVaccinationProgressDictByWellChild site assembled.person db assembled.participant.person
 
         vaccinationHistory =
             generateVaccinationProgressForChildScoreboard site previousMeasurements
@@ -10657,28 +10544,59 @@ generateVaccinationProgressDictsForChildScoreboard site assembled db =
     )
 
 
-generateVaccinationProgressDictByWellChild : Site -> Person -> ModelIndexedDb -> IndividualEncounterParticipantId -> VaccinationProgressDict
-generateVaccinationProgressDictByWellChild site person db participantId =
-    Backend.Measurement.Utils.generatePreviousMeasurements
-        Backend.NutritionEncounter.Utils.getWellChildEncountersForParticipant
+{-| Doses recorded at the child's Well Child encounters, across all of the
+child's Well Child participants. Empty when the child has none.
+-}
+generateVaccinationProgressDictByWellChild : Site -> Person -> ModelIndexedDb -> PersonId -> VaccinationProgressDict
+generateVaccinationProgressDictByWellChild site person db childId =
+    generateVaccinationProgressDictForProgramme
+        getWellChildEncountersForParticipant
         .wellChildMeasurements
-        Nothing
-        participantId
+        (generateVaccinationProgressForWellChild site person)
+        Backend.IndividualEncounterParticipant.Model.WellChildEncounter
         db
-        |> getPreviousMeasurements
-        |> generateVaccinationProgressForWellChild site person
+        childId
 
 
-generateVaccinationProgressDictByChildScoreboard : Site -> ModelIndexedDb -> IndividualEncounterParticipantId -> VaccinationProgressDict
-generateVaccinationProgressDictByChildScoreboard site db participantId =
-    Backend.Measurement.Utils.generatePreviousMeasurements
-        Backend.NutritionEncounter.Utils.getChildScoreboardEncountersForParticipant
+{-| Doses recorded at the child's Child Scoreboard encounters, across all of
+the child's Child Scoreboard participants. Empty when the child has none.
+-}
+generateVaccinationProgressDictByChildScoreboard : Site -> ModelIndexedDb -> PersonId -> VaccinationProgressDict
+generateVaccinationProgressDictByChildScoreboard site db childId =
+    generateVaccinationProgressDictForProgramme
+        getChildScoreboardEncountersForParticipant
         .childScoreboardMeasurements
-        Nothing
-        participantId
+        (generateVaccinationProgressForChildScoreboard site)
+        Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
         db
-        |> getPreviousMeasurements
-        |> generateVaccinationProgressForChildScoreboard site
+        childId
+
+
+generateVaccinationProgressDictForProgramme :
+    (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
+    -> (ModelIndexedDb -> Dict encounterId (WebData measurements))
+    -> (List measurements -> VaccinationProgressDict)
+    -> Backend.IndividualEncounterParticipant.Model.IndividualEncounterType
+    -> ModelIndexedDb
+    -> PersonId
+    -> VaccinationProgressDict
+generateVaccinationProgressDictForProgramme encountersByParticipantFunc measurementsByEncounterFunc generateProgressFunc encounterType db childId =
+    let
+        participantsIds =
+            resolveIndividualParticipantsForPerson childId encounterType db
+    in
+    if List.isEmpty participantsIds then
+        Dict.empty
+
+    else
+        Backend.Measurement.Utils.generatePreviousMeasurements
+            encountersByParticipantFunc
+            measurementsByEncounterFunc
+            Nothing
+            participantsIds
+            db
+            |> getPreviousMeasurements
+            |> generateProgressFunc
 
 
 generateVaccinationProgressForWellChild : Site -> Person -> List WellChildMeasurements -> VaccinationProgressDict

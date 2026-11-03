@@ -12,7 +12,7 @@ import Backend.FamilyEncounterParticipant.Model
         )
 import Backend.FamilyNutritionEncounter.Model
 import Backend.FamilyNutritionEncounter.Utils exposing (getFamilyNutritionEncountersForParticipant)
-import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
+import Backend.IndividualEncounterParticipant.Utils exposing (resolveTodaysEncounterState)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Initiator(..))
 import Gizra.NominalDate exposing (NominalDate)
@@ -116,21 +116,7 @@ viewFamilyNutritionAction language currentDate selectedHealthCenter id db sessio
         -- (started and ended on the same day), as we do not want to allow creating new encounter
         -- at same day, previous one has ended.
         ( maybeActiveEncounterId, encounterWasCompletedToday ) =
-            Maybe.map (getFamilyNutritionEncountersForParticipant db) maybeSessionId
-                |> Maybe.map
-                    (\list ->
-                        ( List.filter (Tuple.second >> isDailyEncounterActive currentDate) list
-                            |> List.head
-                            |> Maybe.map Tuple.first
-                        , List.filter
-                            (\( _, encounter ) ->
-                                encounter.startDate == currentDate && encounter.endDate == Just currentDate
-                            )
-                            list
-                            |> List.isEmpty
-                            |> not
-                        )
-                    )
+            Maybe.map (getFamilyNutritionEncountersForParticipant db >> resolveTodaysEncounterState currentDate) maybeSessionId
                 |> Maybe.withDefault ( Nothing, False )
 
         action =

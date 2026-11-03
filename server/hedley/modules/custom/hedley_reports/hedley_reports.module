@@ -5010,12 +5010,8 @@ function hedley_reports_generate_vaccination_progress_data(array $immunisations_
 /**
  * Loads child-scoreboard immunisation history for a person.
  *
- * Performs the database work that
- * hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard()
- * used to repeat for every well-child encounter: resolves the child-scoreboard
- * participant, loads all its encounters and their immunisation measurements,
- * and returns the raw doses and dates per encounter, tagged with the encounter
- * start date. Callers filter this in memory by date cutoff.
+ * Covers all of the person's child-scoreboard participants. Returns the doses
+ * and dates of each encounter; callers filter them by date.
  *
  * @param int $person_id
  *   The ID of the person (child) whose scoreboard data is being loaded.
@@ -5040,23 +5036,21 @@ function hedley_reports_well_child_load_child_scoreboard_immunisations($person_i
     ->fieldCondition('field_person', 'target_id', $person_id)
     ->propertyCondition('status', NODE_PUBLISHED);
 
-  $result = $query
-    ->range(0, 1)
-    ->execute();
+  $result = $query->execute();
 
   if (empty($result['node'])) {
     // No child-scoreboard participant for this person.
     return $encounters_immunisations;
   }
 
-  $participant_id = key($result['node']);
-  // Load all encounters of current participant.
+  $participant_ids = array_keys($result['node']);
+  // Load all encounters of those participants.
   $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'child_scoreboard_encounter')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_individual_participant', 'target_id', $participant_id)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant_ids, 'IN')
     ->propertyOrderBy('nid')
     ->execute();
 
@@ -6498,12 +6492,8 @@ function hedley_reports_child_scoreboard_get_expected_immunisation_activities(ar
 /**
  * Loads well-child immunisation history for a person.
  *
- * Performs the database work that
- * hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_well_child()
- * used to repeat for every child-scoreboard encounter: resolves the well-child
- * participant, loads all its encounters and their immunisation measurements,
- * and returns the raw doses and dates per encounter, tagged with the encounter
- * start date. Callers filter this in memory by date cutoff.
+ * Covers all of the person's well-child participants. Returns the doses and
+ * dates of each encounter; callers filter them by date.
  *
  * @param int $person_id
  *   The ID of the person (child) whose well-child data is being loaded.
@@ -6528,23 +6518,21 @@ function hedley_reports_child_scoreboard_load_well_child_immunisations($person_i
     ->fieldCondition('field_person', 'target_id', $person_id)
     ->propertyCondition('status', NODE_PUBLISHED);
 
-  $result = $query
-    ->range(0, 1)
-    ->execute();
+  $result = $query->execute();
 
   if (empty($result['node'])) {
     // No well-child participant for this person.
     return $encounters_immunisations;
   }
 
-  $participant_id = key($result['node']);
-  // Load all encounters of current participant.
+  $participant_ids = array_keys($result['node']);
+  // Load all encounters of those participants.
   $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'well_child_encounter')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_individual_participant', 'target_id', $participant_id)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant_ids, 'IN')
     ->propertyOrderBy('nid')
     ->execute();
 

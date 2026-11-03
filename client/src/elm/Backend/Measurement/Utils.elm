@@ -19,15 +19,18 @@ import SyncManager.Model exposing (Site(..), SiteFeature)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
+{-| Measurements of the encounters of given participants, most recent first.
+Pass a participant together with its duplicates, so the history is whole.
+-}
 generatePreviousMeasurements :
     (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
     -> (ModelIndexedDb -> Dict encounterId (WebData measurements))
     -> Maybe encounterId
-    -> IndividualEncounterParticipantId
+    -> List IndividualEncounterParticipantId
     -> ModelIndexedDb
     -> List ( NominalDate, ( encounterId, measurements ) )
-generatePreviousMeasurements encountersByParticipantFunc measurementsByEncouterFunc currentEncounterId participantId db =
-    encountersByParticipantFunc db participantId
+generatePreviousMeasurements encountersByParticipantFunc measurementsByEncouterFunc currentEncounterId participantsIds db =
+    List.concatMap (encountersByParticipantFunc db) participantsIds
         |> List.filterMap
             (\( encounterId, encounter ) ->
                 -- We do not want to get data of current encounter.

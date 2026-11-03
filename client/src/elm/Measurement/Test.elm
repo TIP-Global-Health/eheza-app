@@ -1,9 +1,13 @@
 module Measurement.Test exposing (all)
 
 import AssocList as Dict
+import Backend.ChildScoreboardEncounter.Model exposing (emptyChildScoreboardEncounter)
+import Backend.Entities exposing (IndividualEncounterParticipantId, PersonId)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.Measurement.Model
     exposing
-        ( BloodSmearResult(..)
+        ( AdministrationNote(..)
+        , BloodSmearResult(..)
         , ChildNutritionSign(..)
         , ColorAlertIndication(..)
         , CreatinineTestValue
@@ -24,7 +28,8 @@ import Backend.Measurement.Model
         , WeightInKg(..)
         , WellChildVaccineType(..)
         )
-import Date exposing (Unit(..))
+import Backend.Model exposing (ModelIndexedDb, emptyModelIndexedDb)
+import Date exposing (Date, Unit(..))
 import EverySet
 import Expect
 import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm)
@@ -36,6 +41,7 @@ import Measurement.Utils
         , bornUnderweightByBirthWeight
         , creatinineResultFormWithDefault
         , generateIndividualNutritionAssessmentEntries
+        , generateVaccinationProgressDictByChildScoreboard
         , getAllDosesForVaccine
         , getInputConstraintsHeight
         , getInputConstraintsMuac
@@ -70,6 +76,8 @@ import Measurement.Utils
         , toRandomBloodSugarTestValueUniversalWithDefault
         )
 import Measurement.View exposing (viewColorAlertIndication)
+import RemoteData exposing (RemoteData(..))
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
@@ -1125,6 +1133,106 @@ generateIndividualNutritionAssessmentEntriesTest =
         ]
 
 
+{-| A child should have one Child Scoreboard participant, but some have two.
+A dose recorded under either one must count, or it is offered again.
+-}
+vaccinationProgressAcrossDuplicateParticipantsTest : Test
+vaccinationProgressAcrossDuplicateParticipantsTest =
+    let
+        childId : PersonId
+        childId =
+            toEntityUuid "child"
+
+        -- The first OPV dose was given under one participant, the second
+        -- under the other.
+        doses : List ( IndividualEncounterParticipantId, VaccineDose, Date )
+        doses =
+            [ ( toEntityUuid "participant-a", VaccineDoseFirst, Date.fromCalendarDate 2020 Jan 10 )
+            , ( toEntityUuid "participant-b", VaccineDoseSecond, Date.fromCalendarDate 2020 Feb 10 )
+            ]
+
+        encounterId participantId =
+            toEntityUuid ("encounter-" ++ fromEntityUuid participantId)
+
+        measurementsWithOPV participantId dose date =
+            { ncda = Nothing
+            , bcgImmunisation = Nothing
+            , dtpImmunisation = Nothing
+            , dtpStandaloneImmunisation = Nothing
+            , ipvImmunisation = Nothing
+            , mrImmunisation = Nothing
+            , opvImmunisation =
+                Just
+                    ( toEntityUuid ("opv-" ++ fromEntityUuid participantId)
+                    , { dateMeasured = date
+                      , nurse = Nothing
+                      , healthCenter = Nothing
+                      , participantId = childId
+                      , deleted = False
+                      , encounterId = Just (encounterId participantId)
+                      , value =
+                            { administeredDoses = EverySet.singleton dose
+                            , administrationDates = EverySet.singleton date
+                            , administrationNote = AdministeredToday
+                            }
+                      }
+                    )
+            , pcv13Immunisation = Nothing
+            , rotarixImmunisation = Nothing
+            }
+
+        db : ModelIndexedDb
+        db =
+            { emptyModelIndexedDb
+                | individualParticipantsByPerson =
+                    Dict.singleton childId
+                        (Success <|
+                            Dict.fromList <|
+                                List.map
+                                    (\( participantId, _, date ) ->
+                                        ( participantId
+                                        , emptyIndividualEncounterParticipant date childId ChildScoreboardEncounter (toEntityUuid "health-center")
+                                        )
+                                    )
+                                    doses
+                        )
+                , childScoreboardEncountersByParticipant =
+                    Dict.fromList <|
+                        List.map
+                            (\( participantId, _, date ) ->
+                                ( participantId
+                                , Success <| Dict.singleton (encounterId participantId) (emptyChildScoreboardEncounter participantId date Nothing)
+                                )
+                            )
+                            doses
+                , childScoreboardMeasurements =
+                    Dict.fromList <|
+                        List.map
+                            (\( participantId, dose, date ) ->
+                                ( encounterId participantId, Success <| measurementsWithOPV participantId dose date )
+                            )
+                            doses
+            }
+    in
+    describe "Child Scoreboard doses of a child with two participants"
+        [ test "both OPV doses count, whichever participant holds them" <|
+            \_ ->
+                generateVaccinationProgressDictByChildScoreboard SiteRwanda db childId
+                    |> Dict.get VaccineOPV
+                    |> Maybe.map Dict.toList
+                    |> Expect.equal
+                        (Just
+                            [ ( VaccineDoseFirst, Date.fromCalendarDate 2020 Jan 10 )
+                            , ( VaccineDoseSecond, Date.fromCalendarDate 2020 Feb 10 )
+                            ]
+                        )
+        , test "a child with no Child Scoreboard participant has no doses" <|
+            \_ ->
+                generateVaccinationProgressDictByChildScoreboard SiteRwanda emptyModelIndexedDb childId
+                    |> Expect.equal Dict.empty
+        ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
@@ -1137,6 +1245,7 @@ all =
         , getAllDosesForVaccineTest
         , initialVaccinationDateByBirthDateTest
         , mergeVaccinationProgressDictsTest
+        , vaccinationProgressAcrossDuplicateParticipantsTest
         , updateChildSetMuacTest
         , ncdaFormWithDefaultNotTakenTest
         , bloodGlucoseOutOfRangeTest
