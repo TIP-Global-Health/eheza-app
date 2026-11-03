@@ -1,11 +1,15 @@
 module ZScore.Test exposing (all, testModel)
 
 import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Person.Utils exposing (graduatingAgeInMonth)
+import Date
 import Expect exposing (Expectation, FloatingPointTolerance(..))
+import Gizra.NominalDate exposing (diffMonths)
 import Http
 import Json.Decode exposing (Decoder, decodeString)
 import RemoteData exposing (RemoteData(..), WebData)
 import Test exposing (Test, describe, test)
+import Time exposing (Month(..))
 import Utils.AllDict exposing (AllDict)
 import ZScore.Decoder exposing (decodeForAge, decodeForCentimetres)
 import ZScore.Fixture.Bfawho2007
@@ -18,7 +22,7 @@ import ZScore.Fixture.Wfhanthro
 import ZScore.Fixture.Wflanthro
 import ZScore.Model exposing (BMI(..), ByDaysAndMonths, Centimetres(..), Days(..), Height(..), Kilograms(..), Length(..), MaleAndFemale, Model, Months(..), ZScore, ZScoreEntry)
 import ZScore.Utils exposing (zScoreBmiForAge, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
-import ZScore.View exposing (PlotConfig, heightForAgeConfig, plotPoints, weightForAgeConfig, weightForHeight0To5Config, weightForHeightConfig, yAxisLines)
+import ZScore.View exposing (PlotConfig, headCircumferenceForAge0To2Config, heightForAgeConfig, plotPoints, weightForAgeConfig, weightForHeight0To5Config, weightForHeightConfig, yAxisLines)
 
 
 type alias MonthsAndDays a =
@@ -2686,6 +2690,43 @@ all =
     describe "ZScore"
         [ calculateZScoreTest
         , yAxisLinesTest
+        , zeroToTwoChartsTest
+        ]
+
+
+zeroToTwoChartsTest : Test
+zeroToTwoChartsTest =
+    let
+        -- For each birth date in four years, the oldest age in days at which the child is still
+        -- under the graduating age, so still shown the 0-2 charts.
+        oldestAgeInDays =
+            List.range 0 (4 * 365)
+                |> List.filterMap
+                    (\offset ->
+                        let
+                            birthDate =
+                                Date.add Date.Days offset (Date.fromCalendarDate 2020 Jan 1)
+                        in
+                        List.range 760 820
+                            |> List.filter (\days -> diffMonths birthDate (Date.add Date.Days days birthDate) < graduatingAgeInMonth)
+                            |> List.maximum
+                    )
+                |> List.maximum
+                |> Maybe.withDefault 0
+                |> toFloat
+    in
+    describe "0-2 charts"
+        [ test "length-for-age 0-2 ends at the oldest age of a child not yet graduated" <|
+            \_ -> Expect.within (Absolute 0) oldestAgeInDays heightForAgeConfig.input.maxX
+        , test "weight-for-age 0-2 ends at the oldest age of a child not yet graduated" <|
+            \_ -> Expect.within (Absolute 0) oldestAgeInDays weightForAgeConfig.input.maxX
+        , test "head circumference 0-2 ends at the oldest age of a child not yet graduated" <|
+            \_ -> Expect.within (Absolute 0) oldestAgeInDays headCircumferenceForAge0To2Config.input.maxX
+        , test "length-for-age 0-2: the year lines are 365 days of the frame apart" <|
+            \_ ->
+                (heightForAgeConfig.xAxis.width / toFloat (heightForAgeConfig.xAxis.maxAgeUnit - heightForAgeConfig.xAxis.minAgeUnit + 1))
+                    |> Expect.within (Absolute 0.000001)
+                        ((heightForAgeConfig.output.maxX - heightForAgeConfig.output.minX) * 365 / heightForAgeConfig.input.maxX)
         ]
 
 
