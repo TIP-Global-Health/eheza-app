@@ -1,6 +1,6 @@
 module Pages.Session.Fetch exposing (fetch)
 
-import Activity.Model exposing (Activity(..), ChildActivity(..))
+import Activity.Model exposing (Activity(..))
 import Activity.Utils
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -12,6 +12,8 @@ import Gizra.NominalDate exposing (NominalDate)
 import LocalData
 import Pages.Activities.Fetch
 import Pages.Activity.Fetch
+import Pages.Activity.Model
+import Pages.Activity.Utils
 import Pages.Attendance.Fetch
 import Pages.Page exposing (SessionPage(..))
 import Pages.Participant.Fetch
@@ -43,51 +45,35 @@ fetch currentDate zscores features sessionId sessionPage db =
             case sessionPage of
                 ActivityPage activity ->
                     let
-                        maybeChildActivity =
+                        childToLoad =
                             case activity of
-                                ChildActivity Height ->
-                                    Just Height
-
-                                ChildActivity Muac ->
-                                    Just Muac
-
-                                ChildActivity Weight ->
-                                    Just Weight
+                                ChildActivity childActivity ->
+                                    Dict.get sessionId db.editableSessions
+                                        |> Maybe.withDefault NotAsked
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.andThen
+                                            (\editableSession ->
+                                                editableSession.checkedIn
+                                                    |> LocalData.unwrap
+                                                        { completed = Dict.empty
+                                                        , pending = Dict.empty
+                                                        }
+                                                        (Activity.Utils.summarizeChildActivity currentDate
+                                                            zscores
+                                                            features
+                                                            childActivity
+                                                            editableSession.offlineSession
+                                                            False
+                                                            db
+                                                        )
+                                                    |> Pages.Activity.Utils.resolveChildToLoad childActivity Pages.Activity.Model.emptyModel
+                                            )
 
                                 _ ->
                                     Nothing
 
-                        firstPendingParticipant =
-                            maybeChildActivity
-                                |> Maybe.andThen
-                                    (\childActivity ->
-                                        Dict.get sessionId db.editableSessions
-                                            |> Maybe.withDefault NotAsked
-                                            |> RemoteData.toMaybe
-                                            |> Maybe.andThen
-                                                (\ediatbleSession ->
-                                                    ediatbleSession.checkedIn
-                                                        |> LocalData.unwrap
-                                                            { completed = Dict.empty
-                                                            , pending = Dict.empty
-                                                            }
-                                                            (Activity.Utils.summarizeChildActivity currentDate
-                                                                zscores
-                                                                features
-                                                                childActivity
-                                                                ediatbleSession.offlineSession
-                                                                False
-                                                                db
-                                                            )
-                                                        |> .pending
-                                                        |> Dict.toList
-                                                        |> List.head
-                                                        |> Maybe.map Tuple.first
-                                                )
-                                    )
-
                         fetchIndividualDataMsgs =
-                            firstPendingParticipant
+                            childToLoad
                                 |> Maybe.map (\childId -> Backend.NutritionEncounter.Fetch.fetch childId db)
                                 |> Maybe.withDefault []
 

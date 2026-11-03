@@ -1,9 +1,11 @@
-module Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
+module Pages.Activity.Utils exposing (resolveChildToLoad, viewChildMeasurements, viewMotherMeasurements)
 
-import Activity.Model exposing (ChildActivity, MotherActivity)
+import Activity.Model exposing (ChildActivity(..), CompletedAndPending, MotherActivity)
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
+import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getMother, getMotherMeasurementData)
 import Gizra.Html exposing (emptyNode)
@@ -13,7 +15,7 @@ import LocalData
 import Measurement.Model
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
-import Pages.Activity.Model exposing (Msg(..))
+import Pages.Activity.Model exposing (Model, Msg(..))
 import Pages.Session.Model
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language)
@@ -74,3 +76,16 @@ viewMotherMeasurements language motherId activity pages session =
                         )
                     |> Maybe.withDefault emptyNode
             )
+
+
+{-| The child whose individual data the session fetch loads on a child
+activity page. `children` are the activity's children, before the name filter.
+-}
+resolveChildToLoad : ChildActivity -> Model PersonId -> CompletedAndPending (Dict PersonId Person) -> Maybe PersonId
+resolveChildToLoad activity _ children =
+    if List.member activity [ Height, Muac, Weight ] then
+        Dict.keys children.pending
+            |> List.head
+
+    else
+        Nothing
