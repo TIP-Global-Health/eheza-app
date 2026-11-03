@@ -287,7 +287,6 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Wrong conclusion:** the button is off, so its Save "doing nothing" is expected.
 - **Rule:** `qa.form()` reads `active` as enabled and anything else as disabled. `viewEncounterActionButton` sets neither class when allowed. Check for the `disabled` class, and look at the screenshot.
 
-<<<<<<< HEAD
 ## Opening a To Do activity after coming back from the Completed tab
 
 - **Symptom:** `completePregnancyDating` failed waiting for `.icon-task-pregnancy-dating`, though Pregnancy Dating was still to do.
@@ -516,12 +515,6 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after a scripted read of both encounter tabs, `completeDangerSigns` failed waiting for `.icon-task-danger-signs`; a second take of the preparation video was needed.
 - **Wrong conclusion:** Danger Signs was not offered.
 - **Rule:** the same pit as "Opening a To Do activity after coming back from the Completed tab", met again by a reader script. Any script that clicks `#completed-tab` ends by clicking `#pending-tab`.
-=======
-## `page.reload()` keeps the current screen
-
-- **Symptom:** after `page.reload()` on Device Status, waiting for `.wrap-cards` timed out after 60 s.
-- **Wrong conclusion:** the app did not load.
-- **Rule:** a reload keeps the URL's hash, so the app reopens the same screen. Follow it with `page.goto('/')` before waiting for the main menu.
 
 ## A screen that looks the same with no data at all
 
@@ -540,4 +533,3 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** "wait for the copy to answer" matched an authority reply from before the hold was set, so the next hold caught the wrong request.
 - **Wrong conclusion:** the scenario ran as planned.
 - **Rule:** when waiting for an event in a log, require it to come after the step that should cause it (compare timestamps or ids).
->>>>>>> 5148ea2f42282e18a66f28294e66a7281b56617e
