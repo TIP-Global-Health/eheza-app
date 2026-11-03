@@ -63,6 +63,10 @@ in the bookkeeping record (step 7).
 5. **Go green.** Edit a blind test only for a compile error against final signatures, and list each
    such edit in the bookkeeping record. Changing what a test asserts is not allowed: if one is
    wrong, the criterion is wrong, and that goes back to the user.
+   ⛔ An input removed from the seam takes its tests' coverage with it. Either the input stays, or
+   the dimension leaves the code too. Never move the decision it carried to a caller outside the
+   seam — a gate relocated there is one no blind test reaches (B-548 round 1 did exactly this with
+   the activity list, the shape of the original defect).
 6. **Gate.** `.claude/scripts/fail-first.sh S` from the fix worktree. It runs this tree's test
    files against S in a throwaway worktree and passes only when they fail there.
 
@@ -136,6 +140,10 @@ and warns instead when the tree is not on `develop`. It is a backstop for a miss
 its generated message says far less than one written here.
 
 ## Traps that have cost a cycle
+
+- **Review rounds can undo the seam.** A round-1 fix that reintroduces an input the fix removed
+  belongs inside the seam function, so the blind tests see it; placed in the caller it is
+  unpinned, and the activity-dimension tests silently become same-activity twins (B-548).
 
 - **SimpleTest fixtures**: some bundles need their fields **at create**, not after — insert hooks
   read `field_person` / `field_adult` / `field_clinic` as they run, and a later `->set()` throws
