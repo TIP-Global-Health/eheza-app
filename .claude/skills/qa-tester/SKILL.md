@@ -330,7 +330,10 @@ First decide which case you are in:
    does the behaviour enter the ledger as verified. The PR must not merge while a QA FAIL
    comment is open.
 2. **A pre-existing bug found incidentally** (the diff never touched it). Never block the
-   PR with it. Draft a new issue following the repo conventions: title
+   PR with it. First grep `.claude/backlog/items/` for the symptom's words: the field, the
+   node type, the screen, the message. A matching item gets this run's example appended,
+   with the recording's path, and the report names the item instead of a new issue.
+   Otherwise draft a new issue following the repo conventions: title
    `<Feature area>: <defect from the reader's side>`, body saying what is wrong and how to
    see it, with your repro steps. Do not fix it in this run.
 3. **Not sure it is a bug.** Reproduce it a second time and rule out your own environment
