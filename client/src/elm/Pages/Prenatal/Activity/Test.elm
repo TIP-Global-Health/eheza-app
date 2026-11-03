@@ -13,11 +13,13 @@ import Backend.Measurement.Model
         , FollowUpOption(..)
         , HIVPCRTestValue
         , HIVTestValue
+        , HeightInCm(..)
         , HemoglobinTestValue
         , HepatitisBTestValue
         , LungsCPESign
         , MalariaTestValue
         , Measurement
+        , MuacInCm(..)
         , ObstetricHistoryStep2Sign(..)
         , PartnerHIVTestValue
         , PrenatalAssesment(..)
@@ -40,6 +42,7 @@ import Backend.Measurement.Model
         , UrineDipstickTestValue
         , ViralLoadStatus(..)
         , VitalsValue
+        , WeightInKg(..)
         , emptyPrenatalMeasurements
         )
 import Backend.Model exposing (emptyModelIndexedDb)
@@ -57,9 +60,9 @@ import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateH
 import Pages.Prenatal.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, resolveNextStepsTasks, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveNextStepsTasks, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, skipObstetricHistorySecondStep)
-import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), emptyHealthEducationForm)
+import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), PreviousEncounterData, emptyHealthEducationForm)
 import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedPreviouslyAnyOf, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
 import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
@@ -190,6 +193,451 @@ resolveGWGClassificationForHealthyStartTest =
                                 /= Just GWGAdequate
                         )
                     |> Expect.equal []
+        ]
+
+
+
+-- HEALTHY START WEIGHT GAIN SINCE THE PREVIOUS VISIT
+--
+-- The observation period runs from the date of the previous nurse visit where
+-- weight was recorded to the date of the current visit. Two other dates are
+-- carried on purpose and must not move the period:
+--   * the day the previous weight record was last saved (`dateMeasured`), which
+--     every re-save or edit restamps;
+--   * the day the current form is filled (`filledOn`), later than the visit
+--     when the encounter is reopened.
+-- The current visit's date lives on the current encounter (`startDate`), the
+-- previous visit's date on `PreviousEncounterData.startDate`.
+--
+-- Rates (the Healthy Start protocol, as in the block above): 23.5 g per day
+-- before 13 weeks from LMP, 60 g per day from 13 weeks onward, 73 g per day
+-- from 13 weeks onward for a woman severely undernourished at booking.
+--
+-- Main example: previous visit 1 June 2020 at 60.0 kg, current visit 13 July
+-- 2020, 42 days apart, both well past 13 weeks (LMP 1 February 2020, so 13
+-- weeks falls on 2 May). Expected gain 42 x 0.06 = 2.52 kg.
+
+
+{-| LMP for the main example: 13 weeks falls on 2 May 2020, before every
+visit date used with it.
+-}
+hsExampleLmp : NominalDate
+hsExampleLmp =
+    Date.fromCalendarDate 2020 Time.Feb 1
+
+
+hsMay1 : NominalDate
+hsMay1 =
+    Date.fromCalendarDate 2020 Time.May 1
+
+
+hsJune1 : NominalDate
+hsJune1 =
+    Date.fromCalendarDate 2020 Time.Jun 1
+
+
+hsJune11 : NominalDate
+hsJune11 =
+    Date.fromCalendarDate 2020 Time.Jun 11
+
+
+hsJune20 : NominalDate
+hsJune20 =
+    Date.fromCalendarDate 2020 Time.Jun 20
+
+
+hsJune22 : NominalDate
+hsJune22 =
+    Date.fromCalendarDate 2020 Time.Jun 22
+
+
+hsJune25 : NominalDate
+hsJune25 =
+    Date.fromCalendarDate 2020 Time.Jun 25
+
+
+hsJune29 : NominalDate
+hsJune29 =
+    Date.fromCalendarDate 2020 Time.Jun 29
+
+
+hsJuly13 : NominalDate
+hsJuly13 =
+    Date.fromCalendarDate 2020 Time.Jul 13
+
+
+hsJuly20 : NominalDate
+hsJuly20 =
+    Date.fromCalendarDate 2020 Time.Jul 20
+
+
+{-| Nutrition measurements holding `weight`, as saved on `savedOn`.
+-}
+hsNutritionWithWeight : NominalDate -> Float -> PrenatalMeasurements
+hsNutritionWithWeight savedOn weight =
+    { emptyPrenatalMeasurements
+        | nutrition =
+            TestFixtures.wrapMeasurement savedOn
+                { height = HeightInCm 160
+                , weight = WeightInKg weight
+                , muac = MuacInCm 25
+                }
+    }
+
+
+{-| A previous nurse visit held on `visitDate`, whose weight record was last
+saved on `savedOn`.
+-}
+hsPreviousVisitWithWeight : NominalDate -> NominalDate -> Float -> PreviousEncounterData
+hsPreviousVisitWithWeight visitDate savedOn weight =
+    { startDate = visitDate
+    , diagnoses = EverySet.empty
+    , pastDiagnoses = EverySet.empty
+    , measurements = hsNutritionWithWeight savedOn weight
+    }
+
+
+{-| A previous nurse visit held on `visitDate` where no weight was recorded:
+no Nutrition measurement at all.
+-}
+hsPreviousVisitWithoutWeight : NominalDate -> PreviousEncounterData
+hsPreviousVisitWithoutWeight visitDate =
+    { startDate = visitDate
+    , diagnoses = EverySet.empty
+    , pastDiagnoses = EverySet.empty
+    , measurements = emptyPrenatalMeasurements
+    }
+
+
+{-| The current nurse visit, held on `visitDate`, with the given LMP and
+previous nurse visits (oldest first, as `generateAssembledData` builds them).
+-}
+hsCurrentVisit : NominalDate -> NominalDate -> List PreviousEncounterData -> AssembledData
+hsCurrentVisit lmp visitDate previousVisits =
+    let
+        base =
+            testAssembled emptyPrenatalMeasurements
+
+        encounter =
+            base.encounter
+    in
+    { base
+        | encounter = { encounter | startDate = visitDate }
+        , globalLmpDate = Just lmp
+        , nursePreviousEncountersData = previousVisits
+    }
+
+
+{-| The main example's current visit (13 July), after one previous visit on
+1 June at 60.0 kg whose weight record was last saved on `savedOn`.
+-}
+hsExampleVisit : NominalDate -> AssembledData
+hsExampleVisit savedOn =
+    hsCurrentVisit hsExampleLmp hsJuly13 [ hsPreviousVisitWithWeight hsJune1 savedOn 60.0 ]
+
+
+{-| The verdict when the current visit's weight, `currentWeight`, is saved on
+`filledOn`. This is the only call of the function under test.
+-}
+hsVerdict : PrePregnancyClassification -> NominalDate -> AssembledData -> Float -> Maybe GWGClassification
+hsVerdict prePregnancyClassification filledOn assembled currentWeight =
+    resolveGWGClassificationSincePreviousVisit filledOn prePregnancyClassification currentWeight assembled
+
+
+{-| Day `n` counted from `hsSplitLmp`. Day 91 is exactly 13 weeks.
+-}
+hsSplitDay : Int -> NominalDate
+hsSplitDay n =
+    Date.add Date.Days n hsSplitLmp
+
+
+{-| LMP for the 13-week split scenarios.
+-}
+hsSplitLmp : NominalDate
+hsSplitLmp =
+    Date.fromCalendarDate 2020 Time.Mar 2
+
+
+resolveGWGClassificationSincePreviousVisitTest : Test
+resolveGWGClassificationSincePreviousVisitTest =
+    describe "resolveGWGClassificationSincePreviousVisit (Healthy Start observation period)"
+        [ test "At a Healthy Start visit, weight gain is judged over the days from the previous nurse visit where weight was recorded to the date of the current visit" <|
+            \_ ->
+                -- Previous visit 1 June, its weight record last saved 11 June;
+                -- current visit 13 July, form filled 20 July. The period is
+                -- still 1 June to 13 July, 42 days, expecting 2.52 kg: a gain
+                -- of 2.52 kg is adequate, a gain of 2.4 kg is not.
+                let
+                    assembled =
+                        hsExampleVisit hsJune11
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.4 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "Re-saving or editing the previous visit's weight on a later day does not change the period used at the next visit" <|
+            \_ ->
+                -- The 1 June weight was saved again, unchanged, on 29 June.
+                -- The period stays 42 days (2.52 kg expected), so 1.0 kg is
+                -- not adequate; a 14-day period would have expected 0.84 kg.
+                hsVerdict PrePregnancyNormal hsJuly13 (hsExampleVisit hsJune29) 61.0
+                    |> Expect.equal (Just GWGInadequate)
+        , test "previous weight edited on a later day: the edited weight is measured over the period from the previous visit date" <|
+            \_ ->
+                -- The 1 June weight was corrected to 60.5 kg on 29 June. Over
+                -- 42 days 2.52 kg is expected: 63.0 kg (2.5 kg gained) falls
+                -- short, 63.1 kg (2.6 kg gained) meets it.
+                let
+                    assembled =
+                        hsCurrentVisit hsExampleLmp hsJuly13 [ hsPreviousVisitWithWeight hsJune1 hsJune29 60.5 ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 63.0 |> Expect.equal (Just GWGInadequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 63.1 |> Expect.equal (Just GWGAdequate)
+                    ]
+                    ()
+        , test "previous weight re-saved after the current visit's date does not change the period" <|
+            \_ ->
+                -- The 1 June weight was saved again on 20 July, a week after
+                -- the current visit of 13 July began. The period is still
+                -- 1 June to 13 July.
+                hsVerdict PrePregnancyNormal hsJuly13 (hsExampleVisit hsJuly20) 61.0
+                    |> Expect.equal (Just GWGInadequate)
+        , test "Reopening the current visit on a later day and saving its weight gives the same verdict as saving it on the visit day" <|
+            \_ ->
+                -- A gain of exactly the expected 2.52 kg, saved on the visit
+                -- day (13 July) and again after reopening on 20 July.
+                let
+                    assembled =
+                        hsExampleVisit hsJune1
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    ]
+                    ()
+        , test "current visit ended on the visit day, reopened and its weight saved a week later: same verdict as on the visit day" <|
+            \_ ->
+                let
+                    base =
+                        hsExampleVisit hsJune1
+
+                    encounter =
+                        base.encounter
+
+                    assembled =
+                        { base | encounter = { encounter | endDate = Just hsJuly13 } }
+                in
+                hsVerdict PrePregnancyNormal hsJuly20 assembled 62.52
+                    |> Expect.equal (Just GWGAdequate)
+        , test "Earlier visits with no weight recorded are skipped; the period starts at the most recent earlier visit that has one" <|
+            \_ ->
+                -- Visits on 1 May (58.0 kg) and 1 June (60.0 kg), then 22 June
+                -- with no weight. The period starts on 1 June at 60.0 kg:
+                -- 42 days, 2.52 kg expected.
+                let
+                    assembled =
+                        hsCurrentVisit hsExampleLmp
+                            hsJuly13
+                            [ hsPreviousVisitWithWeight hsMay1 hsMay1 58.0
+                            , hsPreviousVisitWithWeight hsJune1 hsJune1 60.0
+                            , hsPreviousVisitWithoutWeight hsJune22
+                            ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.4 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "visit without weight skipped, and the weighed visit's record was re-saved after it: period still starts on the weighed visit's date" <|
+            \_ ->
+                -- As above, but the 1 June weight record was last saved on
+                -- 25 June, after the unweighed 22 June visit.
+                let
+                    assembled =
+                        hsCurrentVisit hsExampleLmp
+                            hsJuly13
+                            [ hsPreviousVisitWithWeight hsJune1 hsJune25 60.0
+                            , hsPreviousVisitWithoutWeight hsJune22
+                            ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.4 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "the most recent weighed visit is chosen by visit date, even when an older visit's weight was re-saved later" <|
+            \_ ->
+                -- The 1 May weight (58.0 kg) was re-saved on 20 June, after
+                -- the 1 June visit (60.0 kg). The period still starts on
+                -- 1 June at 60.0 kg.
+                let
+                    assembled =
+                        hsCurrentVisit hsExampleLmp
+                            hsJuly13
+                            [ hsPreviousVisitWithWeight hsMay1 hsJune20 58.0
+                            , hsPreviousVisitWithWeight hsJune1 hsJune1 60.0
+                            ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.4 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "earlier nurse visits exist but none recorded a weight -> no verdict" <|
+            \_ ->
+                hsVerdict PrePregnancyNormal
+                    hsJuly13
+                    (hsCurrentVisit hsExampleLmp hsJuly13 [ hsPreviousVisitWithoutWeight hsJune1, hsPreviousVisitWithoutWeight hsJune22 ])
+                    61.0
+                    |> Expect.equal Nothing
+        , test "a weight recorded at an earlier CHW visit does not start the period; it starts at the previous nurse visit" <|
+            \_ ->
+                -- A CHW visit on 29 June recorded 61.0 kg. The period still
+                -- runs from the 1 June nurse visit at 60.0 kg.
+                let
+                    base =
+                        hsExampleVisit hsJune1
+
+                    assembled =
+                        { base | chwPreviousMeasurementsWithDates = [ ( hsJune29, ChwFirstEncounter, hsNutritionWithWeight hsJune29 61.0 ) ] }
+                in
+                hsVerdict PrePregnancyNormal hsJuly13 assembled 62.4
+                    |> Expect.equal (Just GWGInadequate)
+        , test "The 13-week split follows the visit dates: days before 13 weeks use the early-pregnancy rate, days from 13 weeks onward the later rate, even when the form is filled after 13 weeks" <|
+            \_ ->
+                -- Previous visit at 11 weeks (day 77, 55.0 kg), current visit
+                -- at 15 weeks (day 105), form filled at 17 weeks (day 119).
+                -- 14 days x 0.0235 + 14 days x 0.06 = 1.169 kg expected:
+                -- 1.2 kg gained is adequate, 1.1 kg is not.
+                let
+                    assembled =
+                        hsCurrentVisit hsSplitLmp (hsSplitDay 105) [ hsPreviousVisitWithWeight (hsSplitDay 77) (hsSplitDay 77) 55.0 ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 119) assembled 56.2 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 119) assembled 56.1 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "both visits before 13 weeks, form filled after 13 weeks: only the early-pregnancy rate applies" <|
+            \_ ->
+                -- Previous visit at 9 weeks (day 63, 55.0 kg), current visit at
+                -- 12 weeks (day 84), form filled at 14 weeks (day 98).
+                -- 21 days x 0.0235 = 0.4935 kg expected: 0.5 kg gained is
+                -- adequate, 0.4 kg is not.
+                let
+                    assembled =
+                        hsCurrentVisit hsSplitLmp (hsSplitDay 84) [ hsPreviousVisitWithWeight (hsSplitDay 63) (hsSplitDay 63) 55.0 ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 98) assembled 55.5 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 98) assembled 55.4 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "current visit exactly at 13 weeks, form filled 3 days later: every day of the period is before 13 weeks" <|
+            \_ ->
+                -- Previous visit at 10 weeks (day 70, 55.0 kg), current visit
+                -- on day 91 (13 weeks), form filled on day 94. 21 days x
+                -- 0.0235 = 0.4935 kg expected: 0.5 kg gained is adequate.
+                hsVerdict PrePregnancyNormal
+                    (hsSplitDay 94)
+                    (hsCurrentVisit hsSplitLmp (hsSplitDay 91) [ hsPreviousVisitWithWeight (hsSplitDay 70) (hsSplitDay 70) 55.0 ])
+                    55.5
+                    |> Expect.equal (Just GWGAdequate)
+        , test "previous visit exactly at 13 weeks: every day of the period uses the later rate" <|
+            \_ ->
+                -- Previous visit on day 91 (55.0 kg), current visit on day 112.
+                -- 21 days x 0.06 = 1.26 kg expected: 1.3 kg gained is
+                -- adequate, 1.2 kg is not.
+                let
+                    assembled =
+                        hsCurrentVisit hsSplitLmp (hsSplitDay 112) [ hsPreviousVisitWithWeight (hsSplitDay 91) (hsSplitDay 91) 55.0 ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 112) assembled 56.3 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 112) assembled 56.2 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "previous visit before 13 weeks, its weight re-saved after 13 weeks: the split still follows the previous visit's date" <|
+            \_ ->
+                -- Previous visit at 11 weeks (day 77, 55.0 kg), its weight
+                -- re-saved on day 98; current visit on day 105. As in the
+                -- split test, 1.169 kg is expected, so 1.1 kg gained falls
+                -- short.
+                hsVerdict PrePregnancyNormal
+                    (hsSplitDay 105)
+                    (hsCurrentVisit hsSplitLmp (hsSplitDay 105) [ hsPreviousVisitWithWeight (hsSplitDay 77) (hsSplitDay 98) 55.0 ])
+                    56.1
+                    |> Expect.equal (Just GWGInadequate)
+        , test "Example: previous visit 1 June at 60.0 kg, current visit 13 July, 61.0 kg is not adequate, even if the 1 June weight was re-saved on 29 June or the current weight was entered on 20 July" <|
+            \_ ->
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 (hsExampleVisit hsJune1) 61.0 |> Expect.equal (Just GWGInadequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 (hsExampleVisit hsJune29) 61.0 |> Expect.equal (Just GWGInadequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 (hsExampleVisit hsJune1) 61.0 |> Expect.equal (Just GWGInadequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 (hsExampleVisit hsJune29) 61.0 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "Example: the expected gain over 1 June to 13 July is 2.52 kg, also when the 1 June weight was re-saved on 29 June and the current weight entered on 20 July" <|
+            \_ ->
+                -- 2.52 kg gained meets the expected gain; 2.51 kg falls short.
+                let
+                    assembled =
+                        hsExampleVisit hsJune29
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.51 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "severely undernourished at booking: over 1 June to 13 July 3.066 kg is expected, also when the 1 June weight was re-saved on 29 June" <|
+            \_ ->
+                -- 42 days x 0.073 = 3.066 kg: 3.1 kg gained is adequate,
+                -- 3.0 kg is not. A 14-day period would expect only 1.022 kg.
+                let
+                    assembled =
+                        hsExampleVisit hsJune29
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyUnderWeight hsJuly13 assembled 63.1 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyUnderWeight hsJuly13 assembled 63.0 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "Gain is adequate when the actual gain is equal to or greater than the expected gain" <|
+            \_ ->
+                -- Over 1 June to 13 July, 2.52 kg is expected. Equal, greater
+                -- and far greater gains are adequate (Healthy Start has no
+                -- "excessive" verdict); 10 g short is not.
+                let
+                    assembled =
+                        hsExampleVisit hsJune1
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 63.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 66.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.51 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "The first visit of a pregnancy shows no weight-gain verdict" <|
+            \_ ->
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 (hsCurrentVisit hsExampleLmp hsJuly13 []) 61.0 |> Expect.equal Nothing
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 (hsCurrentVisit hsExampleLmp hsJuly13 []) 61.0 |> Expect.equal Nothing
+                    ]
+                    ()
+        , test "first nurse visit after CHW visits that recorded a weight: no weight-gain verdict" <|
+            \_ ->
+                let
+                    base =
+                        hsCurrentVisit hsExampleLmp hsJuly13 []
+
+                    assembled =
+                        { base | chwPreviousMeasurementsWithDates = [ ( hsJune1, ChwFirstEncounter, hsNutritionWithWeight hsJune1 60.0 ) ] }
+                in
+                hsVerdict PrePregnancyNormal hsJuly13 assembled 61.0
+                    |> Expect.equal Nothing
         ]
 
 
@@ -2340,6 +2788,7 @@ all =
         , bmiToPrePregnancyClassificationTest
         , zscoreToPrePregnancyClassificationTest
         , resolveGWGClassificationForHealthyStartTest
+        , resolveGWGClassificationSincePreviousVisitTest
         , generatePrenatalDiagnosesForNurseLabsTest
         , generatePrenatalDiagnosesForNurseRecurrentLabsTest
         , generatePrenatalAssesmentForChwTest
