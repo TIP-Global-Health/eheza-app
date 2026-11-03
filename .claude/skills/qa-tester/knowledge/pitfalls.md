@@ -533,3 +533,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** "wait for the copy to answer" matched an authority reply from before the hold was set, so the next hold caught the wrong request.
 - **Wrong conclusion:** the scenario ran as planned.
 - **Rule:** when waiting for an event in a log, require it to come after the step that should cause it (compare timestamps or ids).
+
+## Planning a reproduction from the entry's mechanism alone
+
+- **Symptom:** a B-548 scenario built on "only the first pending child is loaded" saw the correct behaviour: tapping a child loads that child's data through `Pages/Activity/Update.elm` (`SetSelectedParticipant`), which the entry never read.
+- **Wrong conclusion:** the reproduction failed, so the defect is not real. A narrower case (child shown without a tap) did reproduce.
+- **Rule:** before planning, read every path that can load the data — the page's `Fetch.elm` and the out-messages of its `Update.elm` — and aim the defect scenario at the case none of them covers.
