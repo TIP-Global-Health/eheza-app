@@ -533,3 +533,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** "wait for the copy to answer" matched an authority reply from before the hold was set, so the next hold caught the wrong request.
 - **Wrong conclusion:** the scenario ran as planned.
 - **Rule:** when waiting for an event in a log, require it to come after the step that should cause it (compare timestamps or ids).
+
+## Taking "the week 20 line" as one comparison
+
+- **Symptom:** a diabetes control entered a sugar result at 20 w 1 d for a 19 w 5 d visit, and develop stored `diabetes`, the same as the PR would.
+- **Wrong conclusion:** develop does not show the defect for diabetes.
+- **Rule:** the lines differ: hypertension splits at `< 20` / `>= 20`, diabetes at `<= 20` / `> 20`. Read each rule's comparison and put the entry day past it (21 w 1 d). A shifted clock can place the visit itself on any day.
+
+## Building a fixture's dates from Node while the page clock is shifted
+
+- **Symptom:** none here; a visit created at a +3-day page offset would have read 3 days older than planned.
+- **Wrong conclusion:** `Date.now() - n days` in a driver script is the page's today.
+- **Rule:** driver scripts run on the real clock. With `qaDateOffset` set, add the offset (read it from the page's localStorage) to any date a form is given.
+
+## Pairing videos with captions by hand (met again)
+
+- **Symptom:** two preparation captions in the drafted recordings comment named each other's videos.
+- **Wrong conclusion:** none: the numbered listing of attached files caught it before posting.
+- **Rule:** keep running that listing; when develop and PR fixtures share a name pattern, the numbers in the file names do not follow the caption order.

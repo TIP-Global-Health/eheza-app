@@ -259,7 +259,9 @@ flag simply does not appear.
   No shows the input `.form-input.measurement.hiv-viral-load`. Partner HIV, HIV and HIV PCR tabs share
   one icon, so pick tabs by text. A sample sent to the Lab makes Next Steps end with Wait → Pause
   Encounter, back on the main menu.
-- Labs history rows are `.history-entry` (name, date, and an `.action` reading UPDATE).
+- Labs history rows are `.history-entry` (name, date, and an `.action` reading UPDATE). Random Blood Sugar is listed
+  as "Blood Sugar". A result entered there is reported to the current visit's `past_prenatal_diagnoses`, and its report
+  reads "<diagnosis> - diagnosed on <date> as a result of entering lab results from past encounter".
 - A Pregnancy Dating save sends two requests together: the LMP (POST, PATCH when corrected) and a PATCH of the
   pregnancy (`individual_participant`) setting its EDD. The visit header shows EDD and EGA; reopen the form from
   Completed to correct it, which sends both again. Backend EDD: `h.common.queryPregnancyEdd(name)`.
@@ -278,12 +280,23 @@ flag simply does not appear.
   Photo and Ultrasound is saved. `completeHistory` overwrites obstetric counts, so a first pregnancy
   needs Obstetric (all 0) and Medical filled by hand. Medication's Calcium tab starts at 14 weeks.
   The full first-visit helper chain needs EGA ≥ 28 weeks: `completeMentalHealth` waits for a card shown only then.
+  Below 28 weeks, leave `completeMentalHealth` out and the rest of the chain runs (19, 20 and 25 weeks tried).
+- With labs sent to the lab, Next Steps ends on Wait → Pause Encounter, which ENDS the visit (`scheduled_date.value2` = that day)
+  and lands on `#pincode` drawing the main menu. A later day's results go in through Case Management › ANC Labs.
+- BP 165/100 at 19 w 5 d gives `chronic-hypertension-immediate` + `high-risk-of-preeclampsia-initial`; at 36 w 5 d
+  `gestational-hypertension-immediate`. Next Steps then has Medication Distribution, which `completeNextSteps` fills.
+- EGA lines are not all "≥": diabetes vs gestational diabetes splits at `egaWeeks > 20`, so 20 w 1 d is still diabetes.
+  Read the comparison in `Pages/Prenatal/Activity/Utils.elm` before choosing a fixture's weeks.
 - With Healthy Start on, a nurse visit has an Ultrasound activity: viable, fetuses, location, the scan
   date, and weeks + days by scan. Saving it re-dates the pregnancy from the scan. The scan date is
   `field_execution_date` on `prenatal_ultrasound`.
 - Healthy Start GWG: the Nutrition Assessment form of a later visit shows "GWG Classification:
   Inadequate" when the gain since the previous weight falls short. Move the earlier visit and its
   measurements first (pitfalls, backdating).
+- Progress report panes: chronic hypertension and diabetes are under `.medical-diagnosis`; gestational hypertension
+  ("Pregnancy-induced hypertension"), gestational diabetes and preeclampsia under `.obstetric-diagnosis`.
+- An ended visit's progress report: Participant Directory → `span.patient-record` → `.pane.progress-reports` button
+  Antenatal Care → `.entry.antenatal .icon-forward` (one row per pregnancy). It writes nothing.
 - Prenatal progress report: Reports tab → Clinical Progress Report (`h.progressReport.openReport(page,
   'prenatal')`). The Obstetric History pane is the first `.risk-factors`; diagnoses are under
   OBSTETRIC DIAGNOSIS. The encounter page's red `div.alerts` icon opens `.alerts-dialog` (High Risk
@@ -419,8 +432,9 @@ flag simply does not appear.
   Hepatitis B / Malaria / Blood Group / Urine Dipstick / Hemoglobin / Random Blood Sugar.
 - Pane filter buttons are `div.ui.segment.filters button`; an entry's tap target is
   `div.icon-forward`.
-- **Nurse after the lab technician**: once every ordered test is answered, the nurse's ANC Labs entry opens the
-  progress report (`openLabsResultsReviewFromCaseManagement`), and "Review & Accept" opens the recurrent encounter.
+- **Nurse after the lab technician**: once every ordered test is answered, the nurse's ANC Labs entry opens a
+  "LAB RESULTS" page (`div.page-report.clinical`: patient info, a results table, REVIEW & ACCEPT), not the diagnoses
+  (`openLabsResultsReviewFromCaseManagement`). "Review & Accept" opens the recurrent encounter; its Reports tab has the diagnoses.
   The entry stays listed as reviewed and then opens the encounter directly; Lab Results sits under Completed.
 - Lab technician and nurse share one tablet: `qa.signIn('3333', 'Nyange')`, then `qa.signIn('1234', 'Nyange')`.
 - The lab technician's "Will this test be performed today?" No offers Lack of Reagents, Lack of Other Supplies,
