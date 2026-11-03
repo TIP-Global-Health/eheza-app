@@ -44,6 +44,13 @@ in the bookkeeping record (step 7).
 1. **Seam.** Extract or name the pure function the fix will live in, in the owning
    `Pages/<program>/…/Utils.elm` (never `Backend.Update` — a test importing it OOM-kills CI), with
    behaviour unchanged. Commit it alone as `Seam: <function>` and push the branch. Note its sha, S.
+   Naming an existing function is a seam only while the fix keeps its signature. When the fix will
+   remove an input (B-552 dropped today's date), no seam commit can keep the old behaviour under the
+   new signature: S is develop, the author writes against today's signature, the gate runs before
+   the fix, and call-site edits after it are expected — list them. Tell the author which input will
+   disappear, so it carries that dimension in data the function keeps seeing (the encounter's end
+   date, not a date argument), and record that the removed input is enforced by the type, not the
+   tests.
 2. **Blind author.** `.claude/scripts/new-worktree.sh <id>-tests S`, then start the
    `blind-test-author` agent (`Agent`, `subagent_type: blind-test-author`) with exactly this: the
    issue URL, the `## Expected behaviour` block pasted, the seam module and signatures, and the

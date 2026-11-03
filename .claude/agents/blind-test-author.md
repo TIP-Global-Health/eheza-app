@@ -34,6 +34,9 @@ app is supposed to do rather than what the implementer believed.
   the empty collection, the first encounter versus a subsequent one, the stored shape that means
   "no answer", the site that is not Rwanda when `EHEZA_SITE` matters. These are where fixes have
   been wrong before.
+- When the prompt says an input of the seam will disappear with the fix, carry that dimension in
+  data the function will keep seeing — the encounter's end date rather than a date argument — so
+  your tests still exercise it after the change instead of collapsing into same-day twins.
 - Put them in the program's existing `Pages/<program>/…/Test.elm` (add to `all`), or a new
   `Test.elm` beside the seam module exposing `all`. Shared fixtures live in `TestFixtures.elm`.
 - Elm rules that CI enforces: alphabetical order of variants and case branches, `elm-format`, no
