@@ -234,12 +234,19 @@ test('qa driver', async () => {
 
   let page = context.pages()[0] ?? (await context.newPage());
   // Each distinct error once, with how often it came, so repeats do not bury the rest.
+  // Failed requests and error responses count too: a dropped save is a bug nobody sees.
   let consoleErrors = new Map<string, number>();
   const noteError = (message: string) =>
     consoleErrors.set(message.slice(0, 200), (consoleErrors.get(message.slice(0, 200)) ?? 0) + 1);
   const watch = (p: Page) => {
     p.on('console', (m) => m.type() === 'error' && noteError(`${m.text()} ${m.location().url}`));
     p.on('pageerror', (e) => noteError(String(e)));
+    // ERR_ABORTED is the browser cancelling a request on navigation, not a failure.
+    p.on('requestfailed', (r) => {
+      const why = r.failure()?.errorText ?? '';
+      if (why !== 'net::ERR_ABORTED') noteError(`request failed ${why} ${r.method()} ${r.url()}`);
+    });
+    p.on('response', (r) => r.status() >= 400 && noteError(`HTTP ${r.status()} ${r.request().method()} ${r.url()}`));
   };
   watch(page);
   // Reopen where the last driver left off; the app restores a page from its URL.

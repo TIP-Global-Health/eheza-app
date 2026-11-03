@@ -545,7 +545,7 @@ B-544	4	READY	LOW			49	Person registration, person edit, Relationship and Receiv
 B-545	4	READY	LOW			49	Relationship page: a failed save of A→B keeps showing "Backend error" on A→C and every later relationship page of A, bec
 B-546	3	READY	MED-LOW			49	Case Management Nutrition pane: a follow-up the CHW never answered with a home visit stays listed for years, and a later
 B-547	3	READY	MED-LOW			49	Malnutrition assessment (individual Nutrition encounter and group session): the weight-history rules deliberately skip W
-B-548	1	READY	MED			49	Group session, activity-first flow: the child's individual Nutrition data is fetched only for the FIRST pending child of
+B-548	2	IMPLEMENTED	MED	2464	2465	49	Group session, activity-first flow: the child's individual Nutrition data is fetched only for the FIRST pending child of
 B-549	3	READY	MED-LOW			49	Aggregated NCDA scoreboard (server): the weight a CHW records on the Child Scoreboard questionnaire never reaches the Un
 B-550	4	READY	LOW			50	Nurse record: a device's reminder / message / survey action PATCHes its WHOLE copy of the nurse back, `pin_code` and `ro
 B-551	4	READY	LOW			50	CHW location: the health centre is derived from the chosen village once, at selection, and cached; a village moved to an
