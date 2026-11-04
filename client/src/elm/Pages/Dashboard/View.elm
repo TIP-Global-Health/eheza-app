@@ -42,7 +42,6 @@ import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), hasWarni
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
 import EverySet exposing (EverySet)
-import GeoLocation.Utils exposing (resolveGeoSructureLabelLevel5)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, isDiffTruthy, toLastDayOfMonth)
 import Html exposing (..)
@@ -209,7 +208,7 @@ view language page currentDate site features healthCenterId isChw nurse model db
                                 |> showIf (isNothing model.educationSessionDrillIn)
                             )
                                 :: pageContent
-                                ++ [ viewCustomModal language site page isChw nurse assembled db model
+                                ++ [ viewCustomModal language page isChw nurse assembled db model
                                    , div [ class "timestamp" ]
                                         [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ assembled.stats.timestamp ++ " UTC" ]
                                    ]
@@ -2333,8 +2332,8 @@ viewPieChartLegend language translateFunc colorFunc signs =
         )
 
 
-viewCustomModal : Language -> Site -> DashboardPage -> Bool -> Nurse -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
-viewCustomModal language site page isChw nurse assembled db model =
+viewCustomModal : Language -> DashboardPage -> Bool -> Nurse -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
+viewCustomModal language page isChw nurse assembled db model =
     model.modalState
         |> Maybe.map
             (\state ->
@@ -2343,7 +2342,7 @@ viewCustomModal language site page isChw nurse assembled db model =
                         viewStatsTableModal language title assembled.patientsDetails data
 
                     FiltersModal ->
-                        viewFiltersModal language site page isChw nurse assembled.healthCenterVillages db model
+                        viewFiltersModal language page isChw nurse assembled.healthCenterVillages db model
             )
         |> viewModal
 
@@ -2377,8 +2376,8 @@ viewStatsTableModal language title patientsDetails data =
         ]
 
 
-viewFiltersModal : Language -> Site -> DashboardPage -> Bool -> Nurse -> List VillageId -> ModelIndexedDb -> Model -> Html Msg
-viewFiltersModal language site page isChw nurse healthCenterVillages db model =
+viewFiltersModal : Language -> DashboardPage -> Bool -> Nurse -> List VillageId -> ModelIndexedDb -> Model -> Html Msg
+viewFiltersModal language page isChw nurse healthCenterVillages db model =
     let
         programTypeFilterInputSection =
             if isChw then
@@ -2469,7 +2468,7 @@ viewFiltersModal language site page isChw nurse healthCenterVillages db model =
                                         ]
                                         allOptions
                             in
-                            [ div [ class "helper" ] [ text <| translate language (resolveGeoSructureLabelLevel5 site) ]
+                            [ div [ class "helper" ] [ text <| translate language Translate.Village ]
                             , villageInput
                             ]
                         )

@@ -400,7 +400,6 @@ viewConfiguredModel model configured =
                     model.zone
                     model.currentTime
                     features
-                    model.syncManager.syncInfoGeneral.site
                     model.activePage
                     (RemoteData.map .nurse configured.loggedIn)
                     ( model.healthCenterId, model.villageId )
@@ -1279,7 +1278,6 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                     model.zone
                     model.currentTime
                     features
-                    site
                     model.activePage
                     (Success loggedInModel.nurse)
                     ( model.healthCenterId, model.villageId )
@@ -1294,7 +1292,6 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                 model.zone
                 model.currentTime
                 features
-                site
                 model.activePage
                 (RemoteData.map .nurse configured.loggedIn)
                 ( model.healthCenterId, model.villageId )
