@@ -3547,10 +3547,6 @@ ancVisitsInpustAndTasks language personId person config form db =
                                                 -- pregnancy was complete (lasted 9 months).
                                                 (eddToLmpDate birthDate)
 
-                                    encountersMonthsFromANCData =
-                                        EverySet.toList encountersDatesFromANCData
-                                            |> List.map (pregnancyMonthOfDate pregnancyStartDate)
-
                                     encountersMonthsFromForm =
                                         EverySet.toList encountersDatesFromForm
                                             |> List.map (pregnancyMonthOfDate pregnancyStartDate)
@@ -3581,17 +3577,18 @@ ancVisitsInpustAndTasks language personId person config form db =
 
                                     viewRadioButton monthNumber =
                                         let
-                                            isChecked =
-                                                List.member monthNumber encountersMonthsFromANCData
-                                                    || List.member monthNumber encountersMonthsFromForm
+                                            toggleDate =
+                                                ancVisitDateForMonth pregnancyStartDate encountersDatesFromANCData monthNumber
 
+                                            -- A month with a recorded visit offers no date to toggle.
                                             disabled =
-                                                List.member monthNumber encountersMonthsFromANCData
+                                                Maybe.Extra.isNothing toggleDate
+
+                                            isChecked =
+                                                disabled || List.member monthNumber encountersMonthsFromForm
 
                                             toggleAction =
-                                                ancVisitDateForMonth pregnancyStartDate encountersDatesFromANCData monthNumber
-                                                    |> Maybe.map (\date -> [ onClick <| config.toggleANCVisitDateMsg date ])
-                                                    |> Maybe.withDefault []
+                                                Maybe.Extra.unwrap [] (\date -> [ onClick <| config.toggleANCVisitDateMsg date ]) toggleDate
                                         in
                                         div [ class "month-radio" ]
                                             [ input
