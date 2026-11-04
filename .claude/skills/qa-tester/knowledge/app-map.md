@@ -416,6 +416,17 @@ flag simply does not appear.
   minute. Reach the visit through its participant page.
 - Child Scorecard offers Vaccination History only after NCDA is saved
   (`h.childScoreboard.completeNCDA`), and only while the history shows the child behind.
+- **NCDA Antenatal Care step with recorded visits** needs a child linked to a pregnancy (`field_newborn`) that has prenatal
+  encounters. CHW at Akanduga: register the mother, First Antenatal Visit with Pregnancy Dating only, leave; sync, set the
+  encounter's `field_scheduled_date` value and value2 to a past day (ends it), sync, reload; Subsequent Antenatal is offered
+  again, twice; then Postpartum → `completeChwPostpartumVisit` enrols the newborn. About 1 minute in all.
+- The step shows the visits' start dates and, on Yes to "not recorded above", a 9-month grid (`.form-input.anc-months .item`:
+  `.month-number`, `input` classes `checked`/`disabled`, tap target `.month-radio label`). Month = `Date.diff Months` from LMP
+  (EDD − 280 days, or birth − 280 days without a pregnancy) + 1; a picked month stores LMP + N−1 months + 14 days. The counseling
+  message is `.label.counseling`, shown while recorded visits + picked months < 4.
+- The step is asked only while the child has no NCDA from any host (Child Scorecard, Nutrition, Well Child, group). Marking
+  the saved NCDA node `field_deleted` 1 and syncing asks it again, so one fixture child serves several hosts.
+- Nutrition NCDA (nurse at the health centre) opens behind a "proceed?" modal and has no Nutrition Assessment step.
 - An activity with several tabs stays under To Do until every tab is saved.
 - Well Child Nutrition Assessment: Height / MUAC / Nutrition / Weight tabs, each with its own
   Save; the Rwanda ranges are printed above the inputs (height 25–250 cm, MUAC 5–99 cm,
