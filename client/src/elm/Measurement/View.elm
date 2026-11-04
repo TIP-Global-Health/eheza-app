@@ -47,7 +47,7 @@ import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, FamilyPlanningForm, FbfForm, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, RangedMeasurement(..), SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
-import Measurement.Utils exposing (bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, measurementConstraints, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nutritionFollowUpFormWithDefault, outOfRangeAsEntered, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault)
+import Measurement.Utils exposing (ancVisitDateForMonth, bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, measurementConstraints, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nutritionFollowUpFormWithDefault, outOfRangeAsEntered, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault)
 import Pages.Utils
     exposing
         ( concatInputsAndTasksSections
@@ -3594,9 +3594,10 @@ ancVisitsInpustAndTasks language personId person config form db =
                                             disabled =
                                                 List.member monthNumber encountersMonthsFromANCData
 
-                                            dateForMonth =
-                                                Date.add Date.Months (monthNumber - 1) pregnancyStartDate
-                                                    |> Date.add Date.Days 14
+                                            toggleAction =
+                                                ancVisitDateForMonth pregnancyStartDate encountersDatesFromANCData monthNumber
+                                                    |> Maybe.map (\date -> [ onClick <| config.toggleANCVisitDateMsg date ])
+                                                    |> Maybe.withDefault []
                                         in
                                         div [ class "month-radio" ]
                                             [ input
@@ -3608,7 +3609,7 @@ ancVisitsInpustAndTasks language personId person config form db =
                                                     ]
                                                 ]
                                                 []
-                                            , label [ onClick <| config.toggleANCVisitDateMsg dateForMonth ] [ text "" ]
+                                            , label toggleAction [ text "" ]
                                             ]
                                 in
                                 ( [ viewLabel language Translate.ANCIndicateVisitsMonthsPhrase
