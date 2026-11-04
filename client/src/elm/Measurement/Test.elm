@@ -29,14 +29,19 @@ import Backend.Measurement.Model
         , WellChildVaccineType(..)
         )
 import Backend.Model exposing (ModelIndexedDb, emptyModelIndexedDb)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), emptyPrenatalEncounter)
+import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date exposing (Date, Unit(..))
-import EverySet
+import EverySet exposing (EverySet)
 import Expect
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm)
+import Gizra.NominalDate exposing (NominalDate)
+import Html exposing (div)
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), OutMsgChild(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
-        ( birthWeightOutsideConstraints
+        ( ancVisitDateForMonth
+        , birthWeightOutsideConstraints
         , bloodGlucoseOutOfRange
         , bornUnderweightByBirthWeight
         , creatinineResultFormWithDefault
@@ -75,13 +80,15 @@ import Measurement.Utils
         , toPregnancyTestValueWithDefault
         , toRandomBloodSugarTestValueUniversalWithDefault
         )
-import Measurement.View exposing (viewColorAlertIndication)
+import Measurement.View exposing (viewColorAlertIndication, viewNCDAContent)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
+import Test.Html.Event as Event
 import Test.Html.Query as Query
-import Test.Html.Selector exposing (classes, text)
+import Test.Html.Selector exposing (class, classes, tag, text)
+import TestFixtures exposing (testChild, testParticipant)
 import Time exposing (Month(..))
 import Translate.Model exposing (Language(..))
 
@@ -1268,6 +1275,9 @@ all =
         , knownAsPositiveSavesNoPrerequisitesTest
         , knownAsPositiveUpdateTest
         , withdrawnTestResultTest
+        , ancVisitDateForMonthTest
+        , ncdaAncMonthTapsTest
+        , ncdaAncMonthsViewTest
         ]
 
 
@@ -1801,4 +1811,412 @@ withdrawnTestResultTest =
                 toHIVTestValueWithDefault (Just savedNegativeHIV) emptyHIVTestForm
                     |> Maybe.map .testResult
                     |> Expect.equal (Just (Just TestNegative))
+        ]
+
+
+{-| NCDA Antenatal Care step: the nine pregnancy months, where the months that
+already hold a recorded antenatal visit are shown checked and greyed out.
+
+The pregnancy in these tests starts on 10 January 2025. Its recorded visits
+sit in month 2 (in the middle of it), month 4 (on its very first day, 10 April)
+and month 6 (on its very last day, 9 July), so a month computed one off on
+either side of a recorded visit shows up as a wrong answer. A month is the
+number of whole months from the pregnancy start to the date, plus 1.
+
+A picked month N is stored as pregnancy start + (N - 1) months + 14 days.
+
+-}
+ancPregnancyStart : NominalDate
+ancPregnancyStart =
+    Date.fromCalendarDate 2025 Jan 10
+
+
+{-| What a pick of month N stores: 14 days into that pregnancy month.
+-}
+ancPickedDate : Int -> NominalDate
+ancPickedDate monthNumber =
+    Date.add Months (monthNumber - 1) ancPregnancyStart
+        |> Date.add Days 14
+
+
+ancRecordedMonth2 : NominalDate
+ancRecordedMonth2 =
+    Date.fromCalendarDate 2025 Feb 15
+
+
+ancRecordedMonth4FirstDay : NominalDate
+ancRecordedMonth4FirstDay =
+    Date.fromCalendarDate 2025 Apr 10
+
+
+ancRecordedMonth6LastDay : NominalDate
+ancRecordedMonth6LastDay =
+    Date.fromCalendarDate 2025 Jul 9
+
+
+ancRecordedVisits : EverySet NominalDate
+ancRecordedVisits =
+    EverySet.fromList [ ancRecordedMonth2, ancRecordedMonth4FirstDay, ancRecordedMonth6LastDay ]
+
+
+ancVisitDateForMonthTest : Test
+ancVisitDateForMonthTest =
+    let
+        tap =
+            ancVisitDateForMonth ancPregnancyStart ancRecordedVisits
+
+        monthOf date =
+            Date.diff Months ancPregnancyStart date + 1
+    in
+    describe "ancVisitDateForMonth (what a tap on an NCDA ANC pregnancy month adds)"
+        [ describe "A month that already shows a recorded antenatal visit does not change when tapped, and tapping it adds no visit to the questionnaire"
+            [ test "a visit recorded in the middle of month 2: tapping month 2 adds no visit" <|
+                \_ ->
+                    tap 2 |> Expect.equal Nothing
+            , test "a visit recorded on the first day of month 4: tapping month 4 adds no visit" <|
+                \_ ->
+                    tap 4 |> Expect.equal Nothing
+            , test "a visit recorded on the last day of month 6: tapping month 6 adds no visit" <|
+                \_ ->
+                    tap 6 |> Expect.equal Nothing
+            , test "two visits recorded in the same month: tapping that month adds no visit" <|
+                \_ ->
+                    ancVisitDateForMonth ancPregnancyStart
+                        (EverySet.fromList [ Date.fromCalendarDate 2025 Mar 12, Date.fromCalendarDate 2025 Apr 2 ])
+                        3
+                        |> Expect.equal Nothing
+            ]
+        , describe "A month with no recorded visit still adds its date when tapped"
+            [ -- Months 3, 5 and 7 border the recorded visits on the first
+              -- day of month 4 and the last day of month 6. A month computed
+              -- one off would block one of them.
+              test "months 1, 3, 5, 7, 8 and 9, beside the recorded months, each add their date" <|
+                \_ ->
+                    [ 1, 3, 5, 7, 8, 9 ]
+                        |> List.map tap
+                        |> Expect.equal (List.map (ancPickedDate >> Just) [ 1, 3, 5, 7, 8, 9 ])
+            , test "with no recorded visits at all, every month 1 to 9 adds its date" <|
+                \_ ->
+                    List.range 1 9
+                        |> List.map (ancVisitDateForMonth ancPregnancyStart EverySet.empty)
+                        |> Expect.equal (List.map (ancPickedDate >> Just) (List.range 1 9))
+            , -- A visit recorded after the ninth month (a late, post-term
+              -- encounter) falls in no month on the grid, so it blocks none.
+              test "a visit recorded in month 10 blocks none of months 1 to 9" <|
+                \_ ->
+                    List.range 1 9
+                        |> List.map
+                            (ancVisitDateForMonth ancPregnancyStart
+                                (EverySet.singleton (Date.fromCalendarDate 2025 Oct 13))
+                            )
+                        |> Expect.equal (List.map (ancPickedDate >> Just) (List.range 1 9))
+            ]
+        , describe "A picked month N is stored as the date 14 days into that pregnancy month (pregnancy start + N-1 months + 14 days)"
+            [ test "month 1 is stored as 24 January 2025" <|
+                \_ ->
+                    tap 1 |> Expect.equal (Just (Date.fromCalendarDate 2025 Jan 24))
+            , test "month 9 is stored as 24 September 2025" <|
+                \_ ->
+                    tap 9 |> Expect.equal (Just (Date.fromCalendarDate 2025 Sep 24))
+            , -- The months are added before the 14 days, so a pregnancy that
+              -- starts on 31 January has month 2 start on 28 February, and
+              -- month 2 is stored as 14 March.
+              test "a pregnancy starting on 31 January stores month 2 as 14 March" <|
+                \_ ->
+                    ancVisitDateForMonth (Date.fromCalendarDate 2025 Jan 31) EverySet.empty 2
+                        |> Expect.equal (Just (Date.fromCalendarDate 2025 Mar 14))
+            , -- The stored date must fall in the month that was tapped, or the
+              -- grid would show a different month checked than the one picked.
+              test "the date stored for each month 1 to 9 falls in that month" <|
+                \_ ->
+                    List.range 1 9
+                        |> List.map (ancVisitDateForMonth ancPregnancyStart EverySet.empty >> Maybe.map monthOf)
+                        |> Expect.equal (List.map Just (List.range 1 9))
+            ]
+        ]
+
+
+{-| A tap on a month, as the questionnaire handles it: the view turns the tap
+into the date `ancVisitDateForMonth` gives, and a date toggles it on the form.
+A tap that gives no date sends nothing.
+
+The group session handles the toggle in `updateChild`. Nutrition, Well Child
+and Child Scoreboard have their own toggle handlers, but every one of them
+receives its date from the same shared NCDA view and its call to
+`ancVisitDateForMonth`.
+
+The questionnaire starts after the nurse answered "Yes" to unrecorded ANC
+visits, which leaves the form with an empty set of picked months.
+
+-}
+ncdaAncMonthTapsTest : Test
+ncdaAncMonthTapsTest =
+    let
+        answeredYes recorded =
+            ( recorded
+            , updateChild SiteRwanda (SetUpdateANCVisits True) emptyModelChild
+                |> (\( model, _, _ ) -> model)
+            )
+
+        tapMonth monthNumber ( recorded, model ) =
+            ( recorded
+            , ancVisitDateForMonth ancPregnancyStart recorded monthNumber
+                |> Maybe.map
+                    (\date ->
+                        updateChild SiteRwanda (ToggleANCVisitDate date) model
+                            |> (\( updated, _, _ ) -> updated)
+                    )
+                |> Maybe.withDefault model
+            )
+
+        pickedOnForm ( _, model ) =
+            Maybe.withDefault EverySet.empty model.ncdaData.form.ancVisitsDates
+
+        -- The NCDA activity saved before, with every other answer given, so
+        -- the save produces a value and the ANC dates come from the form.
+        savedBefore =
+            { signs = EverySet.empty
+            , birthWeight = Nothing
+            , ancVisitsDates = EverySet.empty
+            , receivesVitaminA = Nothing
+            , stuntingLevel = Nothing
+            , weight = Nothing
+            , muac = Nothing
+            }
+
+        savedDates ( _, model ) =
+            toNCDAValueWithDefault (Just savedBefore) model.ncdaData.form
+                |> Maybe.map .ancVisitsDates
+
+        -- The rule the shared view applies to show the counseling message:
+        -- recorded visits plus picked months fewer than 4.
+        counselingShown (( recorded, _ ) as state) =
+            EverySet.size recorded + EverySet.size (pickedOnForm state) < 4
+    in
+    describe "NCDA ANC month taps on the questionnaire"
+        [ describe "After tapping such months and saving, the questionnaire holds only the months the user picked that had no recorded visit"
+            [ test "tapping recorded months 2, 4 and 6 between picks of months 3 and 8 saves only months 3 and 8" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 2
+                        |> tapMonth 3
+                        |> tapMonth 4
+                        |> tapMonth 8
+                        |> tapMonth 6
+                        |> savedDates
+                        |> Expect.equal (Just (EverySet.fromList [ ancPickedDate 3, ancPickedDate 8 ]))
+            , test "tapping only recorded months saves no visit dates" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 2
+                        |> tapMonth 4
+                        |> tapMonth 6
+                        |> savedDates
+                        |> Expect.equal (Just EverySet.empty)
+            ]
+        , describe "A month with no recorded visit is picked by a tap and un-picked by a second tap, as today"
+            [ test "one tap on month 3 picks it" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 3
+                        |> pickedOnForm
+                        |> Expect.equal (EverySet.singleton (ancPickedDate 3))
+            , test "a second tap on month 3 un-picks it" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 3
+                        |> tapMonth 3
+                        |> pickedOnForm
+                        |> Expect.equal EverySet.empty
+            , test "a tap on recorded month 4 between the two taps on month 3 leaves nothing picked" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 3
+                        |> tapMonth 4
+                        |> tapMonth 3
+                        |> pickedOnForm
+                        |> Expect.equal EverySet.empty
+            , test "with no recorded visits, a tap on month 2 picks it and a second tap un-picks it" <|
+                \_ ->
+                    let
+                        picked =
+                            answeredYes EverySet.empty |> tapMonth 2
+                    in
+                    ( pickedOnForm picked, pickedOnForm (tapMonth 2 picked) )
+                        |> Expect.equal ( EverySet.singleton (ancPickedDate 2), EverySet.empty )
+            ]
+        , describe "The \"fewer than 4 ANC visits\" counseling message shows when recorded visits plus picked months are fewer than 4; tapping a recorded month does not change it"
+            [ test "3 recorded visits, nothing picked: the message shows" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> counselingShown
+                        |> Expect.equal True
+            , test "3 recorded visits, recorded month 4 tapped: the message still shows" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 4
+                        |> counselingShown
+                        |> Expect.equal True
+            , test "3 recorded visits, month 3 picked: the message is gone" <|
+                \_ ->
+                    answeredYes ancRecordedVisits
+                        |> tapMonth 3
+                        |> counselingShown
+                        |> Expect.equal False
+            , -- Visits are counted, not months: two visits recorded in month 3
+              -- and one in month 5 are 3 visits, and tapping month 3 adds none.
+              test "2 visits recorded in month 3 and 1 in month 5, month 3 tapped: the message still shows" <|
+                \_ ->
+                    answeredYes
+                        (EverySet.fromList
+                            [ Date.fromCalendarDate 2025 Mar 12
+                            , Date.fromCalendarDate 2025 Apr 2
+                            , Date.fromCalendarDate 2025 May 20
+                            ]
+                        )
+                        |> tapMonth 3
+                        |> counselingShown
+                        |> Expect.equal True
+            ]
+        ]
+
+
+{-| The NCDA Antenatal Care step as the shared view renders it. The group
+session, Nutrition, Well Child and Child Scoreboard all render this one view,
+each passing its own toggle message; the group session's is used here.
+
+The child's mother has a pregnancy whose EDD puts its start on 10 January
+2025, with nurse prenatal encounters on the three recorded visit dates. A
+postpartum encounter is not an antenatal visit and blocks no month.
+
+-}
+ncdaAncMonthsViewTest : Test
+ncdaAncMonthsViewTest =
+    let
+        childId =
+            toEntityUuid "ncda-child"
+
+        participantId =
+            toEntityUuid "ncda-pregnancy"
+
+        birthDate =
+            Date.fromCalendarDate 2025 Oct 17
+
+        pregnancy =
+            let
+                participant =
+                    testParticipant ancPregnancyStart AntenatalEncounter
+            in
+            { participant | eddDate = Just (lmpToEDDDate ancPregnancyStart) }
+
+        encounters =
+            [ ( "enc-1", emptyPrenatalEncounter participantId ancRecordedMonth2 NurseEncounter Nothing )
+            , ( "enc-2", emptyPrenatalEncounter participantId ancRecordedMonth4FirstDay NurseEncounter Nothing )
+            , ( "enc-3", emptyPrenatalEncounter participantId ancRecordedMonth6LastDay NurseEncounter Nothing )
+            , ( "enc-4", emptyPrenatalEncounter participantId birthDate NursePostpartumEncounter Nothing )
+            ]
+                |> List.map (\( id, encounter ) -> ( toEntityUuid id, encounter ))
+                |> Dict.fromList
+
+        db =
+            { emptyModelIndexedDb
+                | pregnancyByNewborn = Dict.singleton childId (Success (Just ( participantId, pregnancy )))
+                , prenatalEncountersByParticipant = Dict.singleton participantId (Success encounters)
+            }
+
+        config =
+            { atHealthCenter = True
+            , showTasksTray = False
+            , pregnancySummary = Nothing
+            , ncdaNeverFilled = True
+            , ncdaNotFilledAfterAgeOfSixMonths = True
+            , setUpdateANCVisitsMsg = SetUpdateANCVisits
+            , toggleANCVisitDateMsg = ToggleANCVisitDate
+            , setBoolInputMsg = SetNCDABoolInput
+            , setBirthWeightMsg = SetBirthWeight
+            , setChildReceivesVitaminAMsg = SetChildReceivesVitaminA
+            , setStuntingLevelMsg = SetStuntingLevel
+            , setWeightMsg = SetWeight
+            , setMuacMsg = SetMuac
+            , setStepMsg = SetNCDAFormStep
+            , setHelperStateMsg = SetNCDAHelperState
+            , setMeasurementOutOfRangePopupMsg = SetMeasurementOutOfRangePopup
+            , saveMsg = SendOutMsgChild NoOp
+            }
+
+        form =
+            { emptyNCDAForm
+                | step = Just NCDAStepAntenatalCare
+                , updateANCVisits = Just True
+                , ancVisitsDates = Just EverySet.empty
+            }
+
+        rendered =
+            viewNCDAContent English
+                (Date.fromCalendarDate 2026 Jan 15)
+                SiteRwanda
+                childId
+                (testChild birthDate)
+                config
+                Nothing
+                False
+                form
+                db
+                |> div []
+                |> Query.fromHtml
+
+        monthRadio monthNumber =
+            rendered
+                |> Query.findAll [ class "month-radio" ]
+                |> Query.index (monthNumber - 1)
+
+        tapMonth monthNumber =
+            monthRadio monthNumber
+                |> Query.find [ tag "label" ]
+                |> Event.simulate Event.click
+    in
+    describe "NCDA ANC months, as the shared view renders them"
+        [ describe "A month that already shows a recorded antenatal visit does not change when tapped, and tapping it adds no visit to the questionnaire"
+            [ test "recorded months 2, 4 and 6 are shown checked and greyed out" <|
+                \_ ->
+                    Expect.all
+                        (List.map
+                            (\monthNumber _ ->
+                                monthRadio monthNumber
+                                    |> Query.find [ tag "input" ]
+                                    |> Query.has [ classes [ "checked", "disabled" ] ]
+                            )
+                            [ 2, 4, 6 ]
+                        )
+                        ()
+            , test "tapping recorded month 2 sends no message" <|
+                \_ ->
+                    tapMonth 2 |> Event.toResult |> Expect.err
+            , test "tapping recorded month 4 sends no message" <|
+                \_ ->
+                    tapMonth 4 |> Event.toResult |> Expect.err
+            , test "tapping recorded month 6 sends no message" <|
+                \_ ->
+                    tapMonth 6 |> Event.toResult |> Expect.err
+            ]
+        , describe "A month with no recorded visit is picked by a tap, with the date 14 days into that month"
+            [ test "tapping month 3 toggles 24 March 2025" <|
+                \_ ->
+                    tapMonth 3 |> Event.expect (ToggleANCVisitDate (ancPickedDate 3))
+            , test "tapping month 7 toggles 24 July 2025" <|
+                \_ ->
+                    tapMonth 7 |> Event.expect (ToggleANCVisitDate (ancPickedDate 7))
+            , test "month 3 is shown neither checked nor greyed out" <|
+                \_ ->
+                    monthRadio 3
+                        |> Query.find [ tag "input" ]
+                        |> Expect.all
+                            [ Query.hasNot [ class "checked" ]
+                            , Query.hasNot [ class "disabled" ]
+                            ]
+            ]
+        , test "3 recorded visits and nothing picked: the \"fewer than 4 ANC visits\" counseling message shows" <|
+            \_ ->
+                rendered
+                    |> Query.has [ classes [ "label", "counseling" ] ]
         ]
