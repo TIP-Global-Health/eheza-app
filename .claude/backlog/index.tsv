@@ -44,7 +44,7 @@ B-043	3	IMPLEMENTED		2092	2093	11	Acute-illness fever + prenatal MUAC read a GRO
 B-044	2	IMPLEMENTED		1910	1911	11	Villages without a health center are silently dropped from the all-devices sync feed (innerJoin field_uuid via optional 
 B-045	2	IMPLEMENTED		1914	1915	11	Five photo classes + 2 single-ref classes inner-join on an OPTIONAL field → rows silently dropped from sync (exact sibli
 B-046	2	IMPLEMENTED		1939	1940	11	`explode(',', NULL)` on empty multi-value fields emits `[""]` → phantom empty participant UUID
-B-047	4	READY				11	Revoked/deleted nurse's PIN keeps working forever: client drops the `deleted`/`status` tombstone and re-saves the nurse 
+B-047	4	CLOSED				11	Revoked/deleted nurse's PIN keeps working forever: client drops the `deleted`/`status` tombstone and re-saves the nurse 
 B-048	2	IMPLEMENTED		1919	1920	11	CHW village authorization is enforced only on the PinCode page; every UserPage checks the HC but never the village → rea
 B-049	2	PARKED				11	"Stop Syncing" a health center silently strands its queued unsynced measurements; the pending-upload counter vanishes wi
 B-050	3	IMPLEMENTED		1955	1956	11	Background catch-up sync (>45s) force-reloads the page mid-workflow, discarding a nurse's in-progress form entries
