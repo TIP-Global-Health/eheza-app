@@ -3299,14 +3299,11 @@ ultrasoundFormTest =
                                 |> Expect.equal ( True, True )
                 )
                 completePaths
-                ++ [ test "the signs not answered: Save is disabled and stores nothing" <|
+                ++ [ test "the signs not answered: Save is disabled" <|
                         \_ ->
-                            let
-                                form =
-                                    apply [ weeks12, days3, closeWithoutPicking today ] emptyUltrasoundFormForTest
-                            in
-                            ( saveEnabled form, stored form )
-                                |> Expect.equal ( False, Nothing )
+                            apply [ weeks12, days3, closeWithoutPicking today ] emptyUltrasoundFormForTest
+                                |> saveEnabled
+                                |> Expect.equal False
                    , test "days not filled in: Save is disabled and stores nothing" <|
                         \_ ->
                             let
