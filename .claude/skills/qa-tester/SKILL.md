@@ -33,8 +33,10 @@ The loop paces itself, and each tick does this:
    wake again in 1800 s, `noop: true`. Its completion notice wakes the loop sooner.
 2. `bash .claude/skills/qa-tester/scripts/qa-watch.sh next`. If it prints nothing, the tick
    ends: `ScheduleWakeup` in 1200 s, `noop: true`, the same prompt.
-3. `qa-watch.sh ready`. Anything but `ready` is a station problem, not the PR's: tell the
-   user what is missing, change no label, and wake again in 1200 s with `noop: false`.
+3. `qa-watch.sh ready`, which first fast-forwards the main tree's `develop` so the run
+   uses this skill's latest version. Anything but `ready` is a station problem, not the
+   PR's: tell the user what is missing, change no label, and wake again in 1200 s with
+   `noop: false`.
    Never start or restart ddev or gulp yourself.
 4. `qa-watch.sh label <pr> running`, which also removes `Ready for QA`. Then start one
    `general-purpose` subagent with this prompt, and wake again in 1800 s:
@@ -285,7 +287,8 @@ Every reply lists `consoleErrors`: console errors, uncaught exceptions, failed r
 responses of status 400 or more since the last command. Read it after every scenario, on
 both builds. An error the PR's run shows and the `develop` run of the same scenario does
 not is a FAIL. One both builds show is a case 2 issue, drafted with the scenario that
-raised it. Never clear it unread.
+raised it. Never clear it unread. The report states what each build showed; "none on the
+PR" alone is half a reading, since `develop` is the baseline it is compared with.
 
 ### Proving the data was saved
 
@@ -317,7 +320,9 @@ open the screen that shows its data, such as the progress report.
 
 Record every test **from the moment its encounter starts** — or, outside encounters, from
 the first screen of the flow under test — through to the result, helper-driven activities
-included: `qa-<pr>-test<n>-<name>.mp4`.
+included: `qa-<pr>-test<n>-<name>.mp4`. `<n>` is the row's number in the plan table, and
+that number is frozen before the first recording: a row added later goes at the end, and
+no row is renumbered. The report, the captions and the ledger all name a video by it.
 
 **Preparation is recorded once per fixture shape, on the PR build.** Each encounter a test
 needs beforehand — the initial encounter before a recurrent one, an earlier visit, an
