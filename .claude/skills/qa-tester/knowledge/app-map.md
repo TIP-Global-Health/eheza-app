@@ -199,6 +199,12 @@ flag simply does not appear.
   `save_gps_location`, so a downloaded person always has it false.
 - A nurse's Add Child: the child form takes the parent's address. On the relationship page,
   Save stays disabled until "Add to Group..." has a value.
+- Person page: "Family Members:" lists each relative as "<name> (Child)" / "(Parent)", then "Add Child" (adult) or
+  "Add Parent or Caregiver" (child), opened by `div.add-participant-icon-wrapper`. It leads to
+  `#relations/<uuid>/<origin>`, headed "ADD FAMILY MEMBER FOR <NAME>". That search shows only the other age group
+  and leaves out people already related. Result names: `.participants-list .item .details .ui.header`.
+- A child linked to a mother on the server: `h.familyNutrition.addChildViaDrush(motherFullName, …)`. It stores
+  mode of delivery `svd`, which jams sync (pitfalls); set `svd-no-episiotomy` before the next sync.
 - WhatsApp report (flag `report_to_whatsapp`): "Send via WhatsApp" on a progress report → consent
   Yes → "Is this the correct number?" (only when the profile phone can receive a report; No) → number → Continue →
   "update the patient profile?" Yes patches the person's phone → sections → confirmation → Send →

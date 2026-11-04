@@ -593,3 +593,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the main tree's `develop` was five commits behind `origin/develop`, and two of them changed this skill (hold-row rules, the report's first line).
 - **Wrong conclusion:** the SKILL.md loaded at the start is the current one.
 - **Rule:** at Step 2, `git diff HEAD origin/develop -- .claude/skills/qa-tester/` and follow any newer rules for the run.
+
+## A server-built person the tablet cannot decode jams the whole health centre
+
+- **Symptom:** after `h.familyNutrition.addChildViaDrush`, `syncAndWait` timed out with Nyange on "Status: Downloading", Remaining 0 / 0. The same download went out every 30 s and got a 200 back.
+- **Wrong conclusion:** the server is slow, or the PR broke sync.
+- **Rule:** read Device Status › Error log first. It said `mode_of_delivery` "svd is not a recognized ModeOfDelivery": the helper writes `svd`, a value the client does not know. Every device syncing that centre stalls until the node is fixed (set `svd-no-episiotomy`, `node_save`). After any server-built record, sync once and check the Error log before going on.
