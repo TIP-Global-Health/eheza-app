@@ -66,10 +66,10 @@ type Msg
     | SavePregnancyDating IndividualEncounterParticipantId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
       -- UltrasoundMsgs
     | SetUltrasoundBoolInput (Bool -> UltrasoundForm -> UltrasoundForm) Bool
-    | SetExecutionDate (Maybe Int) (Maybe Int) Date
+    | SetExecutionDate Date
     | SetExecutionDateSelectorState (Maybe (DateSelectorConfig Msg))
-    | SetEDDWeeks (Maybe NominalDate) (Maybe Int) String
-    | SetEDDDays (Maybe NominalDate) (Maybe Int) String
+    | SetEDDWeeks String
+    | SetEDDDays String
     | SaveUltrasound IndividualEncounterParticipantId PersonId (Maybe ( PrenatalUltrasoundId, PrenatalUltrasound ))
       -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
@@ -749,7 +749,6 @@ type alias UltrasoundForm =
     , executionDate : Maybe NominalDate
     , eddWeeks : Maybe Int
     , eddDays : Maybe Int
-    , eddDate : Maybe NominalDate
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
@@ -762,7 +761,6 @@ emptyUltrasoundForm =
     , executionDate = Nothing
     , eddWeeks = Nothing
     , eddDays = Nothing
-    , eddDate = Nothing
     , dateSelectorPopupState = Nothing
     }
 

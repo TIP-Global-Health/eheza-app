@@ -3861,7 +3861,7 @@ ultrasoundFormInputsAndTasks language currentDate assembled ultrasoundForm =
         executionDateInput =
             let
                 dateSelectorConfig =
-                    { select = SetExecutionDate form.eddWeeks form.eddDays
+                    { select = SetExecutionDate
                     , close = SetExecutionDateSelectorState Nothing
                     , dateFrom = Date.add Months -9 currentDate
                     , dateTo = currentDate
@@ -3934,12 +3934,12 @@ ultrasoundFormInputsAndTasks language currentDate assembled ultrasoundForm =
       , viewQuestionLabel language Translate.UltrasoundEDDQuestion
       , viewMeasurementInput language
             (Maybe.map toFloat form.eddWeeks)
-            (SetEDDWeeks form.executionDate form.eddDays)
+            SetEDDWeeks
             "weeks"
             Translate.WeeksAbbrev
       , viewMeasurementInput language
             (Maybe.map toFloat form.eddDays)
-            (SetEDDDays form.executionDate form.eddWeeks)
+            SetEDDDays
             "days"
             Translate.DaysAbbrev
       ]
@@ -7004,29 +7004,25 @@ ultrasoundFormWithDefault form =
             , executionDate = or form.executionDate (Just value.executionDate)
             , eddWeeks = or form.eddWeeks (Just value.eddWeeks)
             , eddDays = or form.eddDays (Just value.eddDays)
-            , eddDate = or form.eddDate (Just value.eddDate)
             , dateSelectorPopupState = form.dateSelectorPopupState
             }
         )
 
 
 ultrasoundEDDDate : UltrasoundForm -> Maybe NominalDate
-ultrasoundEDDDate =
-    .eddDate
+ultrasoundEDDDate form =
+    Maybe.map3
+        (\executionDate weeks days ->
+            Date.add Days (pregnancyDurationInDays - (weeks * 7 + days)) executionDate
+        )
+        form.executionDate
+        form.eddWeeks
+        form.eddDays
 
 
 setUltrasoundExecutionDate : NominalDate -> UltrasoundForm -> UltrasoundForm
 setUltrasoundExecutionDate value form =
-    let
-        eddDate =
-            Maybe.map2
-                (\weeks days ->
-                    Date.add Days (pregnancyDurationInDays - (weeks * 7 + days)) value
-                )
-                form.eddWeeks
-                form.eddDays
-    in
-    { form | executionDate = Just value, eddDate = eddDate }
+    { form | executionDate = Just value }
 
 
 setUltrasoundExecutionDateSelectorState : Maybe (DateSelectorConfig Msg) -> UltrasoundForm -> UltrasoundForm
@@ -7040,56 +7036,26 @@ setUltrasoundExecutionDateSelectorState state form =
 
 setUltrasoundEDDWeeks : String -> UltrasoundForm -> UltrasoundForm
 setUltrasoundEDDWeeks value form =
-    if String.isEmpty value then
-        { form | eddWeeks = Nothing, eddDate = Nothing }
-
-    else
-        String.toInt value
-            |> Maybe.map
-                (\newValue ->
-                    if newValue >= 0 && newValue <= pregnancyDurationInWeeks then
-                        let
-                            eddDate =
-                                Maybe.map2
-                                    (\executionDate days ->
-                                        Date.add Days (pregnancyDurationInDays - (newValue * 7 + days)) executionDate
-                                    )
-                                    form.executionDate
-                                    form.eddDays
-                        in
-                        { form | eddWeeks = Just newValue, eddDate = eddDate }
-
-                    else
-                        form
-                )
-            |> Maybe.withDefault form
+    { form | eddWeeks = resolveUltrasoundEDDInput pregnancyDurationInWeeks form.eddWeeks value }
 
 
 setUltrasoundEDDDays : String -> UltrasoundForm -> UltrasoundForm
 setUltrasoundEDDDays value form =
+    { form | eddDays = resolveUltrasoundEDDInput 6 form.eddDays value }
+
+
+{-| An empty input clears the value. A number outside 0 to maxValue, or text
+that is not a number, keeps the current value.
+-}
+resolveUltrasoundEDDInput : Int -> Maybe Int -> String -> Maybe Int
+resolveUltrasoundEDDInput maxValue currentValue value =
     if String.isEmpty value then
-        { form | eddDays = Nothing, eddDate = Nothing }
+        Nothing
 
     else
         String.toInt value
-            |> Maybe.map
-                (\newValue ->
-                    if newValue >= 0 && newValue <= 6 then
-                        let
-                            eddDate =
-                                Maybe.map2
-                                    (\executionDate weeks ->
-                                        Date.add Days (pregnancyDurationInDays - (weeks * 7 + newValue)) executionDate
-                                    )
-                                    form.executionDate
-                                    form.eddWeeks
-                        in
-                        { form | eddDays = Just newValue, eddDate = eddDate }
-
-                    else
-                        form
-                )
-            |> Maybe.withDefault form
+            |> Maybe.Extra.filter (\newValue -> newValue >= 0 && newValue <= maxValue)
+            |> Maybe.Extra.orElse currentValue
 
 
 toUltrasoundValueWithDefault : Maybe UltrasoundValue -> UltrasoundForm -> Maybe UltrasoundValue
@@ -7110,7 +7076,7 @@ toUltrasoundValue form =
         |> andMap form.executionDate
         |> andMap form.eddWeeks
         |> andMap form.eddDays
-        |> andMap form.eddDate
+        |> andMap (ultrasoundEDDDate form)
 
 
 resolveWarningPopupContentForUrgentDiagnoses : Language -> List PrenatalDiagnosis -> ( String, String )

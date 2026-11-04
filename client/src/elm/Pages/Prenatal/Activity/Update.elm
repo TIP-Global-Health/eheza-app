@@ -356,7 +356,7 @@ update currentDate site id db msg model =
             , []
             )
 
-        SetExecutionDate _ _ value ->
+        SetExecutionDate value ->
             let
                 updatedData =
                     model.ultrasoundData
@@ -378,7 +378,7 @@ update currentDate site id db msg model =
             , []
             )
 
-        SetEDDWeeks _ _ value ->
+        SetEDDWeeks value ->
             let
                 updatedData =
                     model.ultrasoundData
@@ -389,7 +389,7 @@ update currentDate site id db msg model =
             , []
             )
 
-        SetEDDDays _ _ value ->
+        SetEDDDays value ->
             let
                 updatedData =
                     model.ultrasoundData
