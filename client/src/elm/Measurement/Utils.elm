@@ -9000,8 +9000,8 @@ fromNCDAValue saved =
     }
 
 
-{-| The date a tap on pregnancy month `monthNumber` adds to the NCDA ANC visits:
-14 days into that month. Nothing means the tap adds no visit.
+{-| The ANC visit date a tap on pregnancy month `monthNumber` toggles: 14 days into
+that month. Nothing when the month already has a recorded visit, so the tap does nothing.
 -}
 ancVisitDateForMonth : NominalDate -> EverySet NominalDate -> Int -> Maybe NominalDate
 ancVisitDateForMonth pregnancyStartDate recordedVisitDates monthNumber =
