@@ -70,7 +70,7 @@ B-069	1	IMPLEMENTED		1894	1895	15	Dashboard "Total Beneficiaries Wasting" & "# o
 B-070	3	IMPLEMENTED		1953	1954	15	AcuteIllness `fromCovidTestingValue` mis-reconstructs pregnant/positive COVID results on edit
 B-071	4	IMPLEMENTED		2126	2127	15	SyncManager General save-handler reports errors against the wrong response var (copy-paste from the authority twin) → mi
 B-072	3	IMPLEMENTED		1951	1952	15	CorePhysicalExam `heartMurmur` required by save but not counted (B-037 class, SHARED → BOTH NCD and Prenatal)
-B-073	4	READY	LOW			16	PersonsPage (relation mode): `relationshipsByPerson` never fetched → "already related" filter silently off
+B-073	4	IMPLEMENTED	LOW	2470	2471	16	PersonsPage (relation mode): `relationshipsByPerson` never fetched → "already related" filter silently off
 B-074	3	IMPLEMENTED	MED-LOW	1970	1974	16	GroupEncounterOrigin `db.sessions` reads never fetched on People / Relationship / CreatePerson pages (systemic: initiato
 B-075	4	READY				16	Elm sync-incident `incident_type` off the backend allowed-values list
 B-076	3	REFUTED				16	❌ REFUTED 2026-07-22 (traced end-to-end before implementing). ⚠ DO NOT re-pitch — the described symptom is unreachable.
