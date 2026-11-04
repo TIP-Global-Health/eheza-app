@@ -65,6 +65,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewTasksCount
         , viewTextInput
+        , viewVillageLine
         )
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site(..), SiteFeature)
@@ -1776,10 +1777,7 @@ viewTracedContact language currentDate site db finished contact =
                                 |> text
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language (resolveGeoSructureLabelLevel5 site) ++ ": " ]
-                        , span [] [ village |> Maybe.withDefault "" |> text ]
-                        ]
+                    , viewVillageLine language site village
                     , p []
                         [ label [] [ text <| translate language Translate.DateOfContact ++ ": " ]
                         , span [] [ formatDDMMYYYY contact.contactDate |> text ]
@@ -2025,10 +2023,7 @@ viewContactTracingParticipant language currentDate site person checked newFormSt
                                 |> showMaybe
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language (resolveGeoSructureLabelLevel5 site) ++ ": " ]
-                        , span [] [ text <| Maybe.withDefault "" person.village ]
-                        ]
+                    , viewVillageLine language site person.village
                     ]
                 , viewAction
                 ]

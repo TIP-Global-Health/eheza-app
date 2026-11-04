@@ -12,7 +12,6 @@ import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Components.PatientsSearchForm.Utils
 import Components.PatientsSearchForm.View
-import GeoLocation.Utils exposing (resolveGeoSructureLabelLevel5)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
@@ -21,7 +20,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing, unwrap)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Model exposing (Model, Msg(..))
-import Pages.Utils exposing (viewBySyncStatus)
+import Pages.Utils exposing (viewBySyncStatus, viewVillageLine)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Model exposing (Site)
@@ -350,10 +349,7 @@ viewParticipant language currentDate site initiator relation id person =
                                 |> showMaybe
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language (resolveGeoSructureLabelLevel5 site) ++ ": " ]
-                        , span [] [ text <| Maybe.withDefault "" person.village ]
-                        ]
+                    , viewVillageLine language site person.village
                     ]
                 , action
                 ]

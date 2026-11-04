@@ -10,7 +10,6 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship)
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (getVillageClinicId)
-import GeoLocation.Utils exposing (resolveGeoSructureLabelLevel5)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -19,7 +18,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Relationship.Model exposing (Model, Msg(..))
-import Pages.Utils exposing (emptySelectOption)
+import Pages.Utils exposing (emptySelectOption, viewVillageLine)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Model exposing (Site)
@@ -383,10 +382,7 @@ viewParticipant language currentDate site person =
                                 |> showMaybe
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language (resolveGeoSructureLabelLevel5 site) ++ ": " ]
-                        , span [] [ text <| Maybe.withDefault "" person.village ]
-                        ]
+                    , viewVillageLine language site person.village
                     ]
                 ]
     in

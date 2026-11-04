@@ -9,7 +9,6 @@ import Backend.Person.Utils exposing (defaultIconForPerson, eligibleForPrenatalE
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Components.PatientsSearchForm.Utils
 import Components.PatientsSearchForm.View
-import GeoLocation.Utils exposing (resolveGeoSructureLabelLevel5)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffYears)
 import Html exposing (..)
@@ -17,6 +16,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.IndividualEncounterParticipants.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Utils exposing (viewVillageLine)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
@@ -259,10 +259,7 @@ viewParticipant language currentDate site encounterType id person =
                                 |> showMaybe
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language (resolveGeoSructureLabelLevel5 site) ++ ": " ]
-                        , span [] [ text <| Maybe.withDefault "" person.village ]
-                        ]
+                    , viewVillageLine language site person.village
                     ]
                 , viewAction
                 ]

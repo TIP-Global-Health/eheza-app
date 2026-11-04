@@ -61,7 +61,7 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (Model, Msg(..))
-import Pages.Utils exposing (viewConfirmationDialog, viewPhotoThumb)
+import Pages.Utils exposing (viewConfirmationDialog, viewPhotoThumb, viewVillageLine)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Set
@@ -331,10 +331,7 @@ viewPerson language currentDate site initiator id person =
                                 |> showMaybe
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language (resolveGeoSructureLabelLevel5 site) ++ ": " ]
-                        , span [] [ text <| Maybe.withDefault "" person.village ]
-                        ]
+                    , viewVillageLine language site person.village
                     ]
                 , action
                 ]
@@ -474,10 +471,7 @@ viewOtherPerson language currentDate site isChw initiator db relationMainId ( ot
                                 |> showMaybe
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language (resolveGeoSructureLabelLevel5 site) ++ ": " ]
-                        , span [] [ text <| Maybe.withDefault "" person.village ]
-                        ]
+                    , viewVillageLine language site person.village
                     , groups
                     ]
                 , action
