@@ -554,6 +554,7 @@ B-553	4	READY	LOW			50	Group session child progress report: the page never reque
 B-554	4	READY	LOW			50	Well Child Next Visit: the pediatric-visit date is never re-derived when ECD or a medication answer is corrected after i
 B-555	4	READY	LOW			50	Case Management Immunization pane: a child whose overdue dose the CHW recorded at a Child Scoreboard visit stays listed 
 B-556	4	READY	LOW		2467	50	Prenatal weight gain (sites without Healthy Start): the expected gain is taken at the pregnancy week of the day the form
+B-557	4	READY	LOW		2473	50	Burundi screens still say "village" in three texts next to the Sub-Colline label
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
