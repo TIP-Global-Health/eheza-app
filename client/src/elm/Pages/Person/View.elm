@@ -73,8 +73,8 @@ import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
 
-view : Language -> NominalDate -> Bool -> Initiator -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate isChw initiator id db =
+view : Language -> NominalDate -> Site -> Bool -> Initiator -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate site isChw initiator id db =
     let
         person =
             Dict.get id db.people
@@ -90,7 +90,7 @@ view language currentDate isChw initiator id db =
         [ viewHeader initiator headerName
         , div
             [ class "ui full segment blue" ]
-            [ viewWebData language (viewParticipantDetailsForm language currentDate isChw initiator db id) identity person
+            [ viewWebData language (viewParticipantDetailsForm language currentDate site isChw initiator db id) identity person
             ]
         ]
 
@@ -130,8 +130,8 @@ type alias OtherPerson =
     }
 
 
-viewParticipantDetailsForm : Language -> NominalDate -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
-viewParticipantDetailsForm language currentDate isChw initiator db id person =
+viewParticipantDetailsForm : Language -> NominalDate -> Site -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
+viewParticipantDetailsForm language currentDate site isChw initiator db id person =
     let
         -- We re-organize our data about relatoinships and group participations
         -- so that we have one record per `OtherPerson`.
@@ -197,7 +197,7 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
                         Dict.get otherPersonId db.people
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.append db.clinics
-                            |> viewWebData language (viewOtherPerson language currentDate isChw initiator db id ( otherPersonId, otherPerson )) identity
+                            |> viewWebData language (viewOtherPerson language currentDate site isChw initiator db id ( otherPersonId, otherPerson )) identity
                     )
                 |> Dict.values
                 |> div [ class "ui unstackable items participants-list" ]
@@ -282,7 +282,7 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
             [ text <| translate language Translate.DemographicInformation ++ ": " ]
         , div
             [ class "ui unstackable items participants-list" ]
-            [ viewPerson language currentDate initiator id person ]
+            [ viewPerson language currentDate site initiator id person ]
         , h3
             [ class "ui header" ]
             [ text <| translate language Translate.FamilyMembers ++ ": " ]
@@ -293,8 +293,8 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
         ]
 
 
-viewPerson : Language -> NominalDate -> Initiator -> PersonId -> Person -> Html App.Model.Msg
-viewPerson language currentDate initiator id person =
+viewPerson : Language -> NominalDate -> Site -> Initiator -> PersonId -> Person -> Html App.Model.Msg
+viewPerson language currentDate site initiator id person =
     let
         typeForThumbnail =
             defaultIconForPerson currentDate person
@@ -332,7 +332,7 @@ viewPerson language currentDate initiator id person =
                             ]
                         ]
                     , p []
-                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                        [ label [] [ text <| translate language (resolveGeoSructureLabelLevel5 site) ++ ": " ]
                         , span [] [ text <| Maybe.withDefault "" person.village ]
                         ]
                     ]
@@ -348,8 +348,8 @@ viewPerson language currentDate initiator id person =
         ]
 
 
-viewOtherPerson : Language -> NominalDate -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
-viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
+viewOtherPerson : Language -> NominalDate -> Site -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
+viewOtherPerson language currentDate site isChw initiator db relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
             defaultIconForPerson currentDate person
@@ -475,7 +475,7 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                             ]
                         ]
                     , p []
-                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                        [ label [] [ text <| translate language (resolveGeoSructureLabelLevel5 site) ++ ": " ]
                         , span [] [ text <| Maybe.withDefault "" person.village ]
                         ]
                     , groups

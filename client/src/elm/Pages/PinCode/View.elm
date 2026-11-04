@@ -10,6 +10,7 @@ import Backend.Person.Utils exposing (getHealthCenterName)
 import Backend.Utils exposing (stockManagementHCEnabled, stockManagementVillageEnabled)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
+import GeoLocation.Utils exposing (resolveGeoSructureLabelLevel5)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
@@ -20,7 +21,7 @@ import Pages.MessagingCenter.Utils exposing (resolveNumberOfUnreadMessages)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (MainMenuActivity(..), Model, Msg(..), OutMsg(..), ResilienceReminderType(..))
 import RemoteData exposing (RemoteData(..), WebData)
-import SyncManager.Model exposing (SiteFeature)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Time exposing (posixToMillis)
 import Time.Extra
 import Translate exposing (Language, translate)
@@ -32,6 +33,7 @@ view :
     -> Time.Zone
     -> Time.Posix
     -> EverySet SiteFeature
+    -> Site
     -> Page
     -> WebData ( NurseId, Nurse )
     -> ( Maybe HealthCenterId, Maybe VillageId )
@@ -39,7 +41,7 @@ view :
     -> Model
     -> ModelIndexedDb
     -> Html Msg
-view language zone currentTime features activePage nurseData ( healthCenterId, villageId ) deviceName model db =
+view language zone currentTime features site activePage nurseData ( healthCenterId, villageId ) deviceName model db =
     let
         ( header, content ) =
             case nurseData of
@@ -51,7 +53,7 @@ view language zone currentTime features activePage nurseData ( healthCenterId, v
                         selectedAuthorizedLocation =
                             nurseAuthorizedForLocation villageId healthCenterId nurse
                     in
-                    ( viewLoggedInHeader language isChw selectedAuthorizedLocation
+                    ( viewLoggedInHeader language site isChw selectedAuthorizedLocation
                     , viewLoggedInContent language
                         zone
                         currentTime
@@ -75,8 +77,8 @@ view language zone currentTime features activePage nurseData ( healthCenterId, v
         |> div [ class "ui basic segment page-pincode" ]
 
 
-viewLoggedInHeader : Language -> Bool -> Bool -> Html Msg
-viewLoggedInHeader language isChw selectedAuthorizedLocation =
+viewLoggedInHeader : Language -> Site -> Bool -> Bool -> Html Msg
+viewLoggedInHeader language site isChw selectedAuthorizedLocation =
     if selectedAuthorizedLocation then
         viewLogo language
 
@@ -84,7 +86,7 @@ viewLoggedInHeader language isChw selectedAuthorizedLocation =
         let
             label =
                 if isChw then
-                    Translate.Village
+                    resolveGeoSructureLabelLevel5 site
 
                 else
                     Translate.HealthCenter

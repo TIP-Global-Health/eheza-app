@@ -19,6 +19,7 @@ import Backend.Session.Utils exposing (getChildren)
 import Backend.Utils exposing (reportToWhatsAppEnabled)
 import Date
 import EverySet exposing (EverySet)
+import GeoLocation.Utils exposing (resolveGeoSructureLabelLevel5)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, toLastDayOfMonth)
 import Html exposing (..)
@@ -152,8 +153,8 @@ isAboveAgeOf2Years currentDate person =
         |> Maybe.withDefault False
 
 
-viewPersonDetailsExtended : Language -> NominalDate -> Person -> List (Html any)
-viewPersonDetailsExtended language currentDate person =
+viewPersonDetailsExtended : Language -> NominalDate -> Site -> Person -> List (Html any)
+viewPersonDetailsExtended language currentDate site person =
     let
         isAdult =
             isPersonAnAdult currentDate person
@@ -197,7 +198,7 @@ viewPersonDetailsExtended language currentDate person =
             viewEntry Translate.GenderLabel (translate language <| Translate.Gender person.gender)
 
         villageEntry =
-            Maybe.map (viewEntry Translate.Village) person.village
+            Maybe.map (viewEntry (resolveGeoSructureLabelLevel5 site)) person.village
                 |> Maybe.withDefault emptyNode
 
         viewEntry labelTransId content =
@@ -1347,12 +1348,12 @@ viewPaneHeading language label =
         [ text <| translate language label ]
 
 
-viewPersonInfoPane : Language -> NominalDate -> Person -> Html any
-viewPersonInfoPane language currentDate person =
+viewPersonInfoPane : Language -> NominalDate -> Site -> Person -> Html any
+viewPersonInfoPane language currentDate site person =
     div [ class "pane person-details" ]
         [ viewPaneHeading language Translate.PatientInformation
         , div [ class "patient-info" ] <|
-            viewPersonDetailsExtended language currentDate person
+            viewPersonDetailsExtended language currentDate site person
         ]
 
 

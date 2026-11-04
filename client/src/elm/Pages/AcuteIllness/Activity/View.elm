@@ -1674,7 +1674,7 @@ viewContactsTracingForm language currentDate site geoInfo db contactsTracingFini
         content =
             case form.state of
                 ContactsTracingFormSummary ->
-                    viewContactsTracingFormSummary language currentDate db contactsTracingFinished form.contacts
+                    viewContactsTracingFormSummary language currentDate site db contactsTracingFinished form.contacts
 
                 ContactsTracingFormSearchParticipants data ->
                     let
@@ -1685,7 +1685,7 @@ viewContactsTracingForm language currentDate site geoInfo db contactsTracingFini
                     viewContactsTracingFormSearchParticipants language currentDate site db recordedContacts data
 
                 ContactsTracingFormRecordContactDetails personId data ->
-                    viewContactsTracingFormRecordContactDetails language currentDate personId db data
+                    viewContactsTracingFormRecordContactDetails language currentDate site personId db data
 
                 ContactsTracingFormRegisterContact data ->
                     viewCreateContactForm language site geoInfo db data
@@ -1694,11 +1694,11 @@ viewContactsTracingForm language currentDate site geoInfo db contactsTracingFini
         content
 
 
-viewContactsTracingFormSummary : Language -> NominalDate -> ModelIndexedDb -> Bool -> Maybe (Dict PersonId ContactTraceItem) -> List (Html Msg)
-viewContactsTracingFormSummary language currentDate db contactsTracingFinished contacts =
+viewContactsTracingFormSummary : Language -> NominalDate -> Site -> ModelIndexedDb -> Bool -> Maybe (Dict PersonId ContactTraceItem) -> List (Html Msg)
+viewContactsTracingFormSummary language currentDate site db contactsTracingFinished contacts =
     let
         contactsForView =
-            Maybe.map (Dict.values >> List.map (viewTracedContact language currentDate db contactsTracingFinished))
+            Maybe.map (Dict.values >> List.map (viewTracedContact language currentDate site db contactsTracingFinished))
                 contacts
                 |> Maybe.withDefault []
     in
@@ -1729,8 +1729,8 @@ viewContactsTracingFormSummary language currentDate db contactsTracingFinished c
     ]
 
 
-viewTracedContact : Language -> NominalDate -> ModelIndexedDb -> Bool -> ContactTraceItem -> Html Msg
-viewTracedContact language currentDate db finished contact =
+viewTracedContact : Language -> NominalDate -> Site -> ModelIndexedDb -> Bool -> ContactTraceItem -> Html Msg
+viewTracedContact language currentDate site db finished contact =
     let
         person =
             Dict.get contact.personId db.people
@@ -1777,7 +1777,7 @@ viewTracedContact language currentDate db finished contact =
                             ]
                         ]
                     , p []
-                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                        [ label [] [ text <| translate language (resolveGeoSructureLabelLevel5 site) ++ ": " ]
                         , span [] [ village |> Maybe.withDefault "" |> text ]
                         ]
                     , p []
@@ -1848,6 +1848,7 @@ viewContactsTracingFormSearchParticipants language currentDate site db existingC
         viewSearchedParticipant personId person =
             viewContactTracingParticipant language
                 currentDate
+                site
                 person
                 False
                 (ContactsTracingFormRecordContactDetails personId emptyRecordContactDetailsData)
@@ -1896,8 +1897,8 @@ viewContactsTracingFormSearchParticipants language currentDate site db existingC
            ]
 
 
-viewContactsTracingFormRecordContactDetails : Language -> NominalDate -> PersonId -> ModelIndexedDb -> RecordContactDetailsData -> List (Html Msg)
-viewContactsTracingFormRecordContactDetails language currentDate personId db data =
+viewContactsTracingFormRecordContactDetails : Language -> NominalDate -> Site -> PersonId -> ModelIndexedDb -> RecordContactDetailsData -> List (Html Msg)
+viewContactsTracingFormRecordContactDetails language currentDate site personId db data =
     Dict.get personId db.people
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map
@@ -1960,6 +1961,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                 , div [ class "ui items" ]
                     [ viewContactTracingParticipant language
                         currentDate
+                        site
                         person
                         True
                         (ContactsTracingFormSearchParticipants Components.PatientsSearchForm.Model.emptyModel)
@@ -1987,8 +1989,8 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
         |> Maybe.withDefault []
 
 
-viewContactTracingParticipant : Language -> NominalDate -> Person -> Bool -> ContactsTracingFormState -> Html Msg
-viewContactTracingParticipant language currentDate person checked newFormState =
+viewContactTracingParticipant : Language -> NominalDate -> Site -> Person -> Bool -> ContactsTracingFormState -> Html Msg
+viewContactTracingParticipant language currentDate site person checked newFormState =
     let
         viewAction =
             let
@@ -2024,7 +2026,7 @@ viewContactTracingParticipant language currentDate person checked newFormState =
                             ]
                         ]
                     , p []
-                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                        [ label [] [ text <| translate language (resolveGeoSructureLabelLevel5 site) ++ ": " ]
                         , span [] [ text <| Maybe.withDefault "" person.village ]
                         ]
                     ]

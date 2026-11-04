@@ -512,7 +512,7 @@ viewContent language currentDate zscores site initiator mandatoryNutritionAssess
         showComponent =
             Components.ReportToWhatsAppDialog.Utils.showComponent selectedComponents
     in
-    [ viewPersonInfoPane language currentDate child
+    [ viewPersonInfoPane language currentDate site child
     , viewDiagnosisPane language
         currentDate
         initiator
