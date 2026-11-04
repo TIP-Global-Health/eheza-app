@@ -82,6 +82,17 @@ import SyncManager.Model exposing (Site)
 update : NominalDate -> Site -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate site id db msg model =
     let
+        updateUltrasoundForm formUpdateFunc =
+            let
+                updatedData =
+                    model.ultrasoundData
+                        |> (\data -> { data | form = formUpdateFunc data.form })
+            in
+            ( { model | ultrasoundData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         -- A bool input decides whether a tap repeats the answer shown, so it
         -- acts on the form as the nurse sees it: merged with the saved test.
         savedLabForm getMeasurement formWithDefault form =
@@ -343,62 +354,19 @@ update currentDate site id db msg model =
             )
 
         SetUltrasoundBoolInput formUpdateFunc value ->
-            let
-                updatedForm =
-                    formUpdateFunc value model.ultrasoundData.form
-
-                updatedData =
-                    model.ultrasoundData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | ultrasoundData = updatedData }
-            , Cmd.none
-            , []
-            )
+            updateUltrasoundForm (formUpdateFunc value)
 
         SetExecutionDate value ->
-            let
-                updatedData =
-                    model.ultrasoundData
-                        |> (\data -> { data | form = setUltrasoundExecutionDate value data.form })
-            in
-            ( { model | ultrasoundData = updatedData }
-            , Cmd.none
-            , []
-            )
+            updateUltrasoundForm (setUltrasoundExecutionDate value)
 
         SetExecutionDateSelectorState state ->
-            let
-                updatedData =
-                    model.ultrasoundData
-                        |> (\data -> { data | form = setUltrasoundExecutionDateSelectorState state data.form })
-            in
-            ( { model | ultrasoundData = updatedData }
-            , Cmd.none
-            , []
-            )
+            updateUltrasoundForm (setUltrasoundExecutionDateSelectorState state)
 
         SetEDDWeeks value ->
-            let
-                updatedData =
-                    model.ultrasoundData
-                        |> (\data -> { data | form = setUltrasoundEDDWeeks value data.form })
-            in
-            ( { model | ultrasoundData = updatedData }
-            , Cmd.none
-            , []
-            )
+            updateUltrasoundForm (setUltrasoundEDDWeeks value)
 
         SetEDDDays value ->
-            let
-                updatedData =
-                    model.ultrasoundData
-                        |> (\data -> { data | form = setUltrasoundEDDDays value data.form })
-            in
-            ( { model | ultrasoundData = updatedData }
-            , Cmd.none
-            , []
-            )
+            updateUltrasoundForm (setUltrasoundEDDDays value)
 
         SaveUltrasound prenatalParticipantId personId saved ->
             let
