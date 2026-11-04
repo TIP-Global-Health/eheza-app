@@ -4,6 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (MsgIndexedDb(..))
 import Backend.Person.Model exposing (Initiator)
 import Components.PatientsSearchForm.Fetch
+import Maybe.Extra
 import Pages.People.Model exposing (Model)
 import Pages.Person.Fetch exposing (fetchSessionForInitiator)
 
@@ -13,8 +14,7 @@ fetch relation initiator model =
     let
         -- The relationships let the results leave out people already related.
         fetchRelation =
-            Maybe.map (\personId -> [ FetchPerson personId, FetchRelationshipsForPerson personId ]) relation
-                |> Maybe.withDefault []
+            Maybe.Extra.unwrap [] (\personId -> [ FetchPerson personId, FetchRelationshipsForPerson personId ]) relation
     in
     Components.PatientsSearchForm.Fetch.fetch model
         ++ fetchRelation
