@@ -54,7 +54,6 @@ far it doesn't seem to be a performance problem, so no premature optimization!
 -}
 
 import Backend.Measurement.Model exposing (Gender(..))
-import Float.Extra
 import Gizra.Html exposing (emptyNode)
 import Html exposing (Html)
 import Maybe.Extra
@@ -310,7 +309,7 @@ weightForAgeConfig =
         { yAxisIntervals = 1
         , innerLinesNumber = 4
         , spaceType = SpaceAround
-        , decimalPointsForText = 2
+        , decimalPointsForText = 0
         }
     , neg2ToNeg3Color = AreaOrange
     , abovePos3Color = AreaGreen
@@ -1604,13 +1603,16 @@ positions of the unlabelled lines between it and the next labelled value.
 yAxisLines : PlotConfig x y -> List { value : Float, position : Float, innerPositions : List Float }
 yAxisLines config =
     let
+        interval =
+            toFloat config.yAxis.yAxisIntervals
+
+        -- The two edges, and every multiple of the interval strictly between
+        -- them. For example, 1.4 to 17.8 kg by 1 gives 1.4, 2, 3 … 17, 17.8.
         values =
-            Float.Extra.range { start = config.input.minY, end = config.input.maxY, steps = round <| config.input.maxY - config.input.minY }
-                -- We only display the successive numbers of the intervals defined in the config.
-                |> List.filter
-                    (\yInput ->
-                        (yInput == config.input.minY) || (yInput == config.input.maxY) || (remainderBy config.yAxis.yAxisIntervals (round yInput) == 0)
-                    )
+            config.input.minY
+                :: List.map (\multiple -> toFloat multiple * interval)
+                    (List.range (floor (config.input.minY / interval) + 1) (ceiling (config.input.maxY / interval) - 1))
+                ++ [ config.input.maxY ]
 
         -- The value step between unlabelled lines. For example, intervals of 5
         -- with 4 inner lines give a line every 1 cm.
