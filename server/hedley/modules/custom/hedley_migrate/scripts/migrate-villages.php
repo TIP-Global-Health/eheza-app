@@ -31,6 +31,14 @@ while ($row = fgetcsv($handler)) {
   $health_center_name = $row[5];
   $village_name = $row[4];
 
+  // A village with a blank geo field is refused on save, so report the row
+  // and go on with the next one.
+  $geo_values = array_slice($row, 0, 5);
+  if (count($geo_values) < 5 || in_array('', array_map('trim', $geo_values), TRUE)) {
+    drush_print('Skipping a row with a blank geo field: ' . implode(',', $row));
+    continue;
+  }
+
   if (empty($health_centers[$health_center_name])) {
     $health_center_id = hedley_person_resolve_content_by_name('health_center', $health_center_name);
     if (empty($health_center_id)) {
