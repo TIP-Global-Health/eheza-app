@@ -518,7 +518,7 @@ B-517	4	READY	LOW		2436	45	Group session: about 20 per-person `save*Request` tra
 B-518	4	READY	LOW		2438	45	Statistical Queries per-person data: a recalculation that produces the same data still saves the person, so every device
 B-519	4	IMPLEMENTED	LOW	2445	2446	45	NCD labs: the labs entry is closed from the device's own copy, and "all completed" compares set sizes, so a copy behind 
 B-520	4	READY	LOW		2446	45	Prenatal initial phase: "second phase required" compares the sizes of the labs entry's performed and completed tests, so
-B-521	4	READY	LOW			46	Growth charts: the weight-for-age 0-2 chart labels its gridlines 1.40, 2.43, 3.45 … kg instead of whole kilograms
+B-521	4	IMPLEMENTED	LOW	2479	2482	46	Growth charts: the weight-for-age 0-2 chart labels its gridlines 1.40, 2.43, 3.45 … kg instead of whole kilograms
 B-522	3	READY	MED-LOW			47	Sync download: a soft-deleted duplicate measurement clears the KEPT sibling from the device's in-memory encounter — ever
 B-523	4	READY	LOW			47	Sync download: `HealthCenterRevision` ignores `deleted`, so a health centre soft-deleted on the server is re-inserted in
 B-524	4	READY	LOW			47	Prenatal participant and encounter: a device's whole-copy PATCH sends `null` for fields it did not change, so a second w
