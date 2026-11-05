@@ -1,4 +1,4 @@
-module Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, educationLevelFromInt, educationLevelToInt, eligibleForPrenatalEncounter, expectedAgeByPerson, genderFromString, genderToString, generateFullName, getHealthCenterName, graduatingAgeInMonth, hivStatusToString, initiatorFromUrlFragment, initiatorToUrlFragment, isAdult, isChildUnderAgeOf2, isChildUnderAgeOf5, isNewborn, isPersonAFertileWoman, isPersonAnAdult, maritalStatusFromString, maritalStatusToString, maxChildrenAtFamilyEncounter, modeOfDeliveryToString, resolveExpectedAge, ubudeheFromInt, ubudeheToInt)
+module Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, earliestChildBirthDate, educationLevelFromInt, educationLevelToInt, eligibleForPrenatalEncounter, expectedAgeByPerson, genderFromString, genderToString, generateFullName, getHealthCenterName, graduatingAgeInMonth, hivStatusToString, initiatorFromUrlFragment, initiatorToUrlFragment, isAdult, isChildUnderAgeOf2, isChildUnderAgeOf5, isNewborn, isPersonAFertileWoman, isPersonAnAdult, latestAdultBirthDate, maritalStatusFromString, maritalStatusToString, maxChildrenAtFamilyEncounter, modeOfDeliveryToString, resolveExpectedAge, ubudeheFromInt, ubudeheToInt)
 
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
@@ -31,6 +31,23 @@ ageInMonths : NominalDate -> Person -> Maybe Int
 ageInMonths currentDate person =
     person.birthDate
         |> Maybe.map (\birthDate -> diffMonths birthDate currentDate)
+
+
+{-| The earliest birth date a child-only birth-date picker offers: the day after
+the latest adult one.
+-}
+earliestChildBirthDate : NominalDate -> NominalDate
+earliestChildBirthDate currentDate =
+    latestAdultBirthDate currentDate
+        |> Date.add Date.Days 1
+
+
+{-| The latest birth date an adult-only birth-date picker offers. Born exactly
+13 years ago is an adult by `isAdult`.
+-}
+latestAdultBirthDate : NominalDate -> NominalDate
+latestAdultBirthDate currentDate =
+    Date.add Date.Years -13 currentDate
 
 
 isAdult : NominalDate -> Maybe NominalDate -> Maybe Bool
