@@ -702,22 +702,22 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                     case expectedAge of
                                         ExpectChild ->
                                             let
-                                                defaultMaximalAge =
+                                                defaultEarliestBirthDate =
                                                     earliestChildBirthDate currentDate
 
-                                                maximalAge =
+                                                earliestBirthDate =
                                                     getSession sessionId db
                                                         |> Maybe.map
                                                             (\session ->
                                                                 if List.member session.clinicType [ Sorwathe, Achi ] then
-                                                                    defaultMaximalAge
+                                                                    defaultEarliestBirthDate
 
                                                                 else
                                                                     Date.add Months (-1 * graduatingAgeInMonth) currentDate
                                                             )
-                                                        |> Maybe.withDefault defaultMaximalAge
+                                                        |> Maybe.withDefault defaultEarliestBirthDate
                                             in
-                                            ( maximalAge, currentDate )
+                                            ( earliestBirthDate, currentDate )
 
                                         ExpectAdult ->
                                             ( Date.add Years -120 currentDate, latestAdultBirthDate currentDate )
