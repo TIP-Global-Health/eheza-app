@@ -33,6 +33,7 @@ import Backend.Person.Utils
         , hivStatusToString
         , isAdult
         , isPersonAnAdult
+        , latestAdultBirthDate
         , maritalStatusToString
         , maxChildrenAtFamilyEncounter
         , modeOfDeliveryToString
@@ -583,7 +584,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                             ( earliestChildBirthDate currentDate, currentDate )
 
                                         ExpectAdult ->
-                                            ( Date.add Years -120 currentDate, Date.add Years -13 currentDate )
+                                            ( Date.add Years -120 currentDate, latestAdultBirthDate currentDate )
 
                                         ExpectAdultOrChild ->
                                             ( Date.add Years -120 currentDate, currentDate )
@@ -612,7 +613,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             , expectedAge = ExpectAdult
                             , expectedGender = ExpectFemale
                             , birthDateSelectorFrom = Date.add Years -120 today
-                            , birthDateSelectorTo = Date.add Years -13 today
+                            , birthDateSelectorTo = latestAdultBirthDate today
                             , title = Translate.People
                             }
 
@@ -719,7 +720,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                             ( maximalAge, currentDate )
 
                                         ExpectAdult ->
-                                            ( Date.add Years -120 currentDate, Date.add Years -13 currentDate )
+                                            ( Date.add Years -120 currentDate, latestAdultBirthDate currentDate )
 
                                         ExpectAdultOrChild ->
                                             ( Date.add Years -120 currentDate, currentDate )
@@ -774,7 +775,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 , expectedAge = ExpectAdult
                                 , expectedGender = ExpectFemale
                                 , birthDateSelectorFrom = Date.add Years -120 today
-                                , birthDateSelectorTo = Date.add Years -13 today
+                                , birthDateSelectorTo = latestAdultBirthDate today
                                 , title = Translate.People
                                 }
 
