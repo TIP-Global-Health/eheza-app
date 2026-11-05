@@ -25,6 +25,7 @@ import Backend.Person.Model
 import Backend.Person.Utils
     exposing
         ( defaultIconForPerson
+        , earliestChildBirthDate
         , educationLevelToInt
         , expectedAgeByPerson
         , generateFullName
@@ -579,7 +580,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 _ ->
                                     case expectedAge of
                                         ExpectChild ->
-                                            ( Date.add Years -13 currentDate, currentDate )
+                                            ( earliestChildBirthDate currentDate, currentDate )
 
                                         ExpectAdult ->
                                             ( Date.add Years -120 currentDate, Date.add Years -13 currentDate )
@@ -676,7 +677,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage WellChildEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -13 today
+                            , birthDateSelectorFrom = earliestChildBirthDate today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -701,7 +702,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                         ExpectChild ->
                                             let
                                                 defaultMaximalAge =
-                                                    Date.add Years -13 currentDate
+                                                    earliestChildBirthDate currentDate
 
                                                 maximalAge =
                                                     getSession sessionId db
