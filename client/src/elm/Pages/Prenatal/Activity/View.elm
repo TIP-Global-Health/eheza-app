@@ -1002,7 +1002,7 @@ viewExaminationContent language currentDate zscores site features assembled data
                     healthyStartEnabled features
 
                 formWithIndicator =
-                    viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site isHealthyStart assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
+                    viewNutritionAssessmentFormWithGWGIndicator language zscores site isHealthyStart assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
             in
             ( Tuple.first formWithIndicator, Tuple.second formWithIndicator )
 
@@ -3133,8 +3133,8 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewNutritionAssessmentFormWithGWGIndicator : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> ( Html Msg, Maybe Bool )
-viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site isHealthyStart assembled form previouslyMeasuredHeight prePregnancyWeight =
+viewNutritionAssessmentFormWithGWGIndicator : Language -> ZScore.Model.Model -> Site -> Bool -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> ( Html Msg, Maybe Bool )
+viewNutritionAssessmentFormWithGWGIndicator language zscores site isHealthyStart assembled form previouslyMeasuredHeight prePregnancyWeight =
     let
         hideHeightInput =
             isJust previouslyMeasuredHeight
