@@ -1814,16 +1814,13 @@ gives the same verdict.
 resolveGWGClassification : PrePregnancyClassification -> Float -> Float -> AssembledData -> Maybe GWGClassification
 resolveGWGClassification prePregnancyClassification prePregnancyWeight currentWeight assembled =
     Maybe.map
-        (\lmpDate ->
+        (\egaInWeeks ->
             let
                 actualWeightGain =
                     currentWeight - prePregnancyWeight
 
                 expectedWeightGain =
                     let
-                        egaInWeeks =
-                            calculateEGAWeeks assembled.encounter.startDate lmpDate
-
                         weeksAfterFirstTrimester =
                             egaInWeeks - 12
 
@@ -1851,7 +1848,7 @@ resolveGWGClassification prePregnancyClassification prePregnancyWeight currentWe
             else
                 GWGExcessive
         )
-        assembled.globalLmpDate
+        (encounterEGAWeeks assembled)
 
 
 {-| Healthy Start–specific variant of `resolveGWGClassification`.
