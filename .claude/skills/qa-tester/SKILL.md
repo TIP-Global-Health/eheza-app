@@ -33,8 +33,10 @@ The loop paces itself, and each tick does this:
    wake again in 1800 s, `noop: true`. Its completion notice wakes the loop sooner.
 2. `bash .claude/skills/qa-tester/scripts/qa-watch.sh next`. If it prints nothing, the tick
    ends: `ScheduleWakeup` in 1200 s, `noop: true`, the same prompt.
-3. `qa-watch.sh ready`. Anything but `ready` is a station problem, not the PR's: tell the
-   user what is missing, change no label, and wake again in 1200 s with `noop: false`.
+3. `qa-watch.sh ready`, which first fast-forwards the main tree's `develop` so the run
+   uses this skill's latest version. Anything but `ready` is a station problem, not the
+   PR's: tell the user what is missing, change no label, and wake again in 1200 s with
+   `noop: false`.
    Never start or restart ddev or gulp yourself.
 4. `qa-watch.sh label <pr> running`, which also removes `Ready for QA`. Then start one
    `general-purpose` subagent with this prompt, and wake again in 1800 s:
@@ -205,6 +207,8 @@ Every plan has three kinds of row, and each row names its kind:
 - **Hold rows**, from the blast radius: scenarios the change must not alter. Run each on
   both builds with the same data and compare the stored record and the screen. Any
   difference is a FAIL; no judgement about whether it looks right is needed or allowed.
+  The row's write-up names `develop`'s value beside the PR's, or says "same as develop".
+  A row reported from the PR side alone is a proof row, and is labelled so.
 - **Boundary rows**: the exact value of each condition the diff adds or moves. Equal to
   the threshold, the same day, the day after, an empty collection, a missing value.
 
@@ -285,7 +289,8 @@ Every reply lists `consoleErrors`: console errors, uncaught exceptions, failed r
 responses of status 400 or more since the last command. Read it after every scenario, on
 both builds. An error the PR's run shows and the `develop` run of the same scenario does
 not is a FAIL. One both builds show is a case 2 issue, drafted with the scenario that
-raised it. Never clear it unread.
+raised it. Never clear it unread. The report states what each build showed; "none on the
+PR" alone is half a reading, since `develop` is the baseline it is compared with.
 
 ### Proving the data was saved
 
@@ -317,7 +322,9 @@ open the screen that shows its data, such as the progress report.
 
 Record every test **from the moment its encounter starts** — or, outside encounters, from
 the first screen of the flow under test — through to the result, helper-driven activities
-included: `qa-<pr>-test<n>-<name>.mp4`.
+included: `qa-<pr>-test<n>-<name>.mp4`. `<n>` is the row's number in the plan table, and
+that number is frozen before the first recording: a row added later goes at the end, and
+no row is renumbered. The report, the captions and the ledger all name a video by it.
 
 **Preparation is recorded once per fixture shape, on the PR build.** Each encounter a test
 needs beforehand — the initial encounter before a recurrent one, an earlier visit, an
@@ -385,7 +392,8 @@ approval.** Its first line is exactly this, with no `>` or heading mark in front
 then a table with one row per plan row — the plain-words test from Step 3, its kind (fix,
 hold, boundary) and its result — and a short paragraph per row saying what it showed —
 including which part was set up by helpers, which was checked by hand, and which proofs
-the diff called for. Name the criteria covered by unit tests. Close with what the run did
+the diff called for. Then one sentence on what the error channel showed on each build.
+Name the criteria covered by unit tests. Close with what the run did
 **not** cover:
 blocked rows, touch-only behaviour, and sibling code paths a scenario stands in for but did
 not exercise. State a blocked row as blocked; never imply coverage the run does not have.
@@ -395,8 +403,9 @@ Describe what is now true, not which commands were run.
 bash .claude/skills/qa-tester/scripts/post-qa-report.sh <pr> <drafted-file>
 ```
 
-It refuses a file that does not open with the caption; `--update <comment-id>` replaces
-an earlier report instead of adding one. The report names no video files.
+It refuses a file that does not open with the caption, or that has no error-channel
+sentence naming both builds; `--update <comment-id>` replaces an earlier report instead
+of adding one. The report names no video files.
 
 **Then post the recordings as a separate comment**, one player per video. Preparation comes
 first, each as `**Preparation <k>:** <what is prepared, and which test needs it>`, then each

@@ -593,3 +593,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the main tree's `develop` was five commits behind `origin/develop`, and two of them changed this skill (hold-row rules, the report's first line).
 - **Wrong conclusion:** the SKILL.md loaded at the start is the current one.
 - **Rule:** at Step 2, `git diff HEAD origin/develop -- .claude/skills/qa-tester/` and follow any newer rules for the run.
+
+## A server-built person the tablet cannot decode jams the whole health centre
+
+- **Symptom:** after `h.familyNutrition.addChildViaDrush`, `syncAndWait` timed out with Nyange on "Status: Downloading", Remaining 0 / 0. The same download went out every 30 s and got a 200 back.
+- **Wrong conclusion:** the server is slow, or the PR broke sync.
+- **Rule:** read Device Status › Error log first. It said `mode_of_delivery` "svd is not a recognized ModeOfDelivery": the helper writes `svd`, a value the client does not know. Every device syncing that centre stalls until the node is fixed (set `svd-no-episiotomy`, `node_save`). After any server-built record, sync once and check the Error log before going on.
+
+## Un-picking the last NCDA ANC month answers the question No
+
+- **Symptom:** a boundary script picked month 1, un-picked it, and the next check found no month grid at all; the answer read No.
+- **Wrong conclusion:** the tap missed and hit "No", or the PR broke the grid.
+- **Rule:** every NCDA host's `ToggleANCVisitDate` sets the answer to No when the picked set becomes empty. Keep one month picked while testing pick and un-pick of others.
+
+## Tagging form inputs with ids, then clicking them after a re-render
+
+- **Symptom:** a generic NCDA filler collected every unanswered yes/no, set an id on each, and its second click waited 10 s for an id that was gone.
+- **Wrong conclusion:** the question disappeared.
+- **Rule:** an answer can reveal a question and Elm rebuilds the nodes, dropping ids it did not set. Answer one question, then scan the form again.

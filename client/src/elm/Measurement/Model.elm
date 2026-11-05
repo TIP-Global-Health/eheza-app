@@ -321,7 +321,6 @@ creating a new one.
 -}
 type OutMsgChild
     = NoOp
-    | FetchIndividualNutritionData PersonId
     | SaveHeight (Maybe HeightId) HeightInCm
     | SaveWeight (Maybe WeightId) WeightInKg
     | SaveMuac (Maybe MuacId) MuacInCm

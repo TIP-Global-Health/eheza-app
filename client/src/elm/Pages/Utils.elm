@@ -1,4 +1,4 @@
-module Pages.Utils exposing (calculatePercentage, concatInputsAndTasksSections, customButton, customPopup, dropLeadingMinus, emptySelectOption, filterDependentNoResultsMessage, filterPreviousEncountersDataToDate, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isAboveAgeOf2Years, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, muacUnitTransIdForSite, nonAdministrationReasonToSign, nonReferralReasonSection, normalizeFilter, percentageOfTotal, resolveActiveTask, resolveNextTask, resolveSelectedDateForMonthSelector, resolveTasksCompletedFromTotal, saveButton, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, syncStatusWarning, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBoolInputReverted, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxMultipleSelectSectionsInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewConfirmationDialog, viewCustomAction, viewCustomBoolInput, viewCustomLabel, viewCustomNameFilter, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPaneHeading, viewPersonDetails, viewPersonDetailsExtended, viewPersonInfoPane, viewPhotoThumb, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewPreviousMeasurementCustom, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewStartEncounterButton, viewTasksCount, viewTextInput, viewYellowAlertForSelect)
+module Pages.Utils exposing (calculatePercentage, concatInputsAndTasksSections, customButton, customPopup, dropLeadingMinus, emptySelectOption, filterDependentNoResultsMessage, filterPreviousEncountersDataToDate, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isAboveAgeOf2Years, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, muacUnitTransIdForSite, nonAdministrationReasonToSign, nonReferralReasonSection, normalizeFilter, percentageOfTotal, resolveActiveTask, resolveNextTask, resolveSelectedDateForMonthSelector, resolveTasksCompletedFromTotal, saveButton, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue, syncStatusWarning, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBoolInputReverted, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxMultipleSelectSectionsInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewConfirmationDialog, viewCustomAction, viewCustomBoolInput, viewCustomLabel, viewCustomNameFilter, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPaneHeading, viewPersonDetails, viewPersonDetailsExtended, viewPersonInfoPane, viewPhotoThumb, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewPreviousMeasurementCustom, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewStartEncounterButton, viewTasksCount, viewTextInput, viewVillageLine, viewYellowAlertForSelect)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (HealthCenterId, PersonId)
@@ -19,6 +19,7 @@ import Backend.Session.Utils exposing (getChildren)
 import Backend.Utils exposing (reportToWhatsAppEnabled)
 import Date
 import EverySet exposing (EverySet)
+import GeoLocation.Utils exposing (resolveGeoSructureLabelLevel5)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, toLastDayOfMonth)
 import Html exposing (..)
@@ -152,8 +153,8 @@ isAboveAgeOf2Years currentDate person =
         |> Maybe.withDefault False
 
 
-viewPersonDetailsExtended : Language -> NominalDate -> Person -> List (Html any)
-viewPersonDetailsExtended language currentDate person =
+viewPersonDetailsExtended : Language -> NominalDate -> Site -> Person -> List (Html any)
+viewPersonDetailsExtended language currentDate site person =
     let
         isAdult =
             isPersonAnAdult currentDate person
@@ -197,7 +198,7 @@ viewPersonDetailsExtended language currentDate person =
             viewEntry Translate.GenderLabel (translate language <| Translate.Gender person.gender)
 
         villageEntry =
-            Maybe.map (viewEntry Translate.Village) person.village
+            Maybe.map (viewEntry (resolveGeoSructureLabelLevel5 site)) person.village
                 |> Maybe.withDefault emptyNode
 
         viewEntry labelTransId content =
@@ -1347,12 +1348,22 @@ viewPaneHeading language label =
         [ text <| translate language label ]
 
 
-viewPersonInfoPane : Language -> NominalDate -> Person -> Html any
-viewPersonInfoPane language currentDate person =
+{-| A person card line with their fifth address level, labelled the way the site names it.
+-}
+viewVillageLine : Language -> Site -> Maybe String -> Html any
+viewVillageLine language site village =
+    p []
+        [ label [] [ text <| translate language (resolveGeoSructureLabelLevel5 site) ++ ": " ]
+        , span [] [ text <| Maybe.withDefault "" village ]
+        ]
+
+
+viewPersonInfoPane : Language -> NominalDate -> Site -> Person -> Html any
+viewPersonInfoPane language currentDate site person =
     div [ class "pane person-details" ]
         [ viewPaneHeading language Translate.PatientInformation
         , div [ class "patient-info" ] <|
-            viewPersonDetailsExtended language currentDate person
+            viewPersonDetailsExtended language currentDate site person
         ]
 
 

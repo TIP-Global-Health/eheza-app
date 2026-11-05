@@ -1,6 +1,7 @@
 module Pages.Prenatal.Activity.Test exposing (all)
 
 import AssocList as Dict
+import Backend.Entities exposing (PrenatalEncounterId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model
     exposing
@@ -13,11 +14,13 @@ import Backend.Measurement.Model
         , FollowUpOption(..)
         , HIVPCRTestValue
         , HIVTestValue
+        , HeightInCm(..)
         , HemoglobinTestValue
         , HepatitisBTestValue
         , LungsCPESign
         , MalariaTestValue
         , Measurement
+        , MuacInCm(..)
         , ObstetricHistoryStep2Sign(..)
         , PartnerHIVTestValue
         , PregnancySign(..)
@@ -41,6 +44,7 @@ import Backend.Measurement.Model
         , UrineDipstickTestValue
         , ViralLoadStatus(..)
         , VitalsValue
+        , WeightInKg(..)
         , emptyPrenatalMeasurements
         )
 import Backend.Model exposing (emptyModelIndexedDb)
@@ -58,9 +62,9 @@ import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateH
 import Pages.Prenatal.Activity.Model exposing (Msg(..), UltrasoundForm, emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, resolveNextStepsTasks, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, suicideRiskDiagnosedBySigns, toUltrasoundValueWithDefault, ultrasoundEDDDate, ultrasoundFormWithDefault, ultrasoundTasks, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveNextStepsTasks, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, suicideRiskDiagnosedBySigns, toUltrasoundValueWithDefault, ultrasoundEDDDate, ultrasoundFormWithDefault, ultrasoundTasks, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, skipObstetricHistorySecondStep)
-import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), emptyHealthEducationForm)
+import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), PreviousEncounterData, emptyHealthEducationForm)
 import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedPreviouslyAnyOf, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
 import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
@@ -191,6 +195,467 @@ resolveGWGClassificationForHealthyStartTest =
                                 /= Just GWGAdequate
                         )
                     |> Expect.equal []
+        ]
+
+
+
+-- HEALTHY START WEIGHT GAIN SINCE THE PREVIOUS VISIT
+--
+-- The observation period runs from the date of the previous nurse visit where
+-- weight was recorded to the date of the current visit. Two other dates are
+-- carried on purpose and must not move the period:
+--   * the day the previous weight record was last saved (`dateMeasured`), which
+--     every re-save or edit restamps;
+--   * the day the current visit's weight is saved (`filledOn`), later than
+--     the visit when the encounter is reopened. `hsVerdict` stores it as the
+--     `dateMeasured` of the current visit's own Nutrition measurement, which
+--     holds the weight being entered.
+--     Tests about a reopened visit also set the current encounter's `endDate`.
+-- The current visit's date lives on the current encounter (`startDate`), the
+-- previous visit's date on `PreviousEncounterData.startDate`.
+--
+-- Rates (the Healthy Start protocol, as in the block above): 23.5 g per day
+-- before 13 weeks from LMP, 60 g per day from 13 weeks onward, 73 g per day
+-- from 13 weeks onward for a woman severely undernourished at booking.
+--
+-- Main example: previous visit 1 June 2020 at 60.0 kg, current visit 13 July
+-- 2020, 42 days apart, both well past 13 weeks (LMP 1 February 2020, so 13
+-- weeks falls on 2 May). Expected gain 42 x 0.06 = 2.52 kg.
+
+
+{-| LMP for the main example: 13 weeks falls on 2 May 2020, before every
+visit date used with it.
+-}
+hsExampleLmp : NominalDate
+hsExampleLmp =
+    Date.fromCalendarDate 2020 Time.Feb 1
+
+
+hsMay1 : NominalDate
+hsMay1 =
+    Date.fromCalendarDate 2020 Time.May 1
+
+
+hsJune1 : NominalDate
+hsJune1 =
+    Date.fromCalendarDate 2020 Time.Jun 1
+
+
+hsJune11 : NominalDate
+hsJune11 =
+    Date.fromCalendarDate 2020 Time.Jun 11
+
+
+hsJune20 : NominalDate
+hsJune20 =
+    Date.fromCalendarDate 2020 Time.Jun 20
+
+
+hsJune22 : NominalDate
+hsJune22 =
+    Date.fromCalendarDate 2020 Time.Jun 22
+
+
+hsJune25 : NominalDate
+hsJune25 =
+    Date.fromCalendarDate 2020 Time.Jun 25
+
+
+hsJune29 : NominalDate
+hsJune29 =
+    Date.fromCalendarDate 2020 Time.Jun 29
+
+
+hsJuly13 : NominalDate
+hsJuly13 =
+    Date.fromCalendarDate 2020 Time.Jul 13
+
+
+hsJuly20 : NominalDate
+hsJuly20 =
+    Date.fromCalendarDate 2020 Time.Jul 20
+
+
+{-| Nutrition measurements holding `weight`, as saved on `savedOn`.
+-}
+hsNutritionWithWeight : NominalDate -> Float -> PrenatalMeasurements
+hsNutritionWithWeight savedOn weight =
+    { emptyPrenatalMeasurements
+        | nutrition =
+            TestFixtures.wrapMeasurement savedOn
+                { height = HeightInCm 160
+                , weight = WeightInKg weight
+                , muac = MuacInCm 25
+                }
+    }
+
+
+{-| A previous nurse visit held on `visitDate`, whose weight record was last
+saved on `savedOn`.
+-}
+hsPreviousVisitWithWeight : NominalDate -> NominalDate -> Float -> PreviousEncounterData
+hsPreviousVisitWithWeight visitDate savedOn weight =
+    { startDate = visitDate
+    , diagnoses = EverySet.empty
+    , pastDiagnoses = EverySet.empty
+    , measurements = hsNutritionWithWeight savedOn weight
+    }
+
+
+{-| A previous nurse visit held on `visitDate` where no weight was recorded:
+no Nutrition measurement at all.
+-}
+hsPreviousVisitWithoutWeight : NominalDate -> PreviousEncounterData
+hsPreviousVisitWithoutWeight visitDate =
+    { startDate = visitDate
+    , diagnoses = EverySet.empty
+    , pastDiagnoses = EverySet.empty
+    , measurements = emptyPrenatalMeasurements
+    }
+
+
+{-| The current nurse visit, held on `visitDate`, with the given LMP and
+previous nurse visits (oldest first, as `generateAssembledData` builds them).
+-}
+hsCurrentVisit : NominalDate -> NominalDate -> List PreviousEncounterData -> AssembledData
+hsCurrentVisit lmp visitDate previousVisits =
+    let
+        base =
+            testAssembled emptyPrenatalMeasurements
+
+        encounter =
+            base.encounter
+    in
+    { base
+        | encounter = { encounter | startDate = visitDate }
+        , globalLmpDate = Just lmp
+        , nursePreviousEncountersData = previousVisits
+    }
+
+
+{-| The main example's current visit (13 July), after one previous visit on
+1 June at 60.0 kg whose weight record was last saved on `savedOn`.
+-}
+hsExampleVisit : NominalDate -> AssembledData
+hsExampleVisit savedOn =
+    hsCurrentVisit hsExampleLmp hsJuly13 [ hsPreviousVisitWithWeight hsJune1 savedOn 60.0 ]
+
+
+{-| The verdict when the current visit's weight, `currentWeight`, is saved on
+`filledOn`. The save is recorded as the current visit's own Nutrition
+measurement, dated `filledOn`. This is the only call of the function under test.
+-}
+hsVerdict : PrePregnancyClassification -> NominalDate -> AssembledData -> Float -> Maybe GWGClassification
+hsVerdict prePregnancyClassification filledOn assembled currentWeight =
+    let
+        measurements =
+            assembled.measurements
+
+        withCurrentWeight =
+            { assembled
+                | measurements =
+                    { measurements | nutrition = (hsNutritionWithWeight filledOn currentWeight).nutrition }
+            }
+    in
+    resolveGWGClassificationSincePreviousVisit prePregnancyClassification currentWeight withCurrentWeight
+
+
+{-| The current visit, reopened and ended again on `endDate`.
+-}
+hsEndedOn : NominalDate -> AssembledData -> AssembledData
+hsEndedOn endDate assembled =
+    let
+        encounter =
+            assembled.encounter
+    in
+    { assembled | encounter = { encounter | endDate = Just endDate } }
+
+
+{-| Day `n` counted from `hsSplitLmp`. Day 91 is exactly 13 weeks.
+-}
+hsSplitDay : Int -> NominalDate
+hsSplitDay n =
+    Date.add Date.Days n hsSplitLmp
+
+
+{-| LMP for the 13-week split scenarios.
+-}
+hsSplitLmp : NominalDate
+hsSplitLmp =
+    Date.fromCalendarDate 2020 Time.Mar 2
+
+
+resolveGWGClassificationSincePreviousVisitTest : Test
+resolveGWGClassificationSincePreviousVisitTest =
+    describe "resolveGWGClassificationSincePreviousVisit (Healthy Start observation period)"
+        [ test "At a Healthy Start visit, weight gain is judged over the days from the previous nurse visit where weight was recorded to the date of the current visit" <|
+            \_ ->
+                -- Previous visit 1 June, its weight record last saved 11 June;
+                -- current visit 13 July, form filled 20 July. The period is
+                -- still 1 June to 13 July, 42 days, expecting 2.52 kg: a gain
+                -- of 2.52 kg is adequate, a gain of 2.4 kg is not.
+                let
+                    assembled =
+                        hsExampleVisit hsJune11
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.4 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "Re-saving or editing the previous visit's weight on a later day does not change the period used at the next visit" <|
+            \_ ->
+                -- The 1 June weight was saved again, unchanged, on 29 June.
+                -- The period stays 42 days (2.52 kg expected), so 1.0 kg is
+                -- not adequate; a 14-day period would have expected 0.84 kg.
+                hsVerdict PrePregnancyNormal hsJuly13 (hsExampleVisit hsJune29) 61.0
+                    |> Expect.equal (Just GWGInadequate)
+        , test "previous weight edited on a later day: the edited weight is measured over the period from the previous visit date" <|
+            \_ ->
+                -- The 1 June weight was corrected to 60.5 kg on 29 June. Over
+                -- 42 days 2.52 kg is expected: 63.0 kg (2.5 kg gained) falls
+                -- short, 63.1 kg (2.6 kg gained) meets it.
+                let
+                    assembled =
+                        hsCurrentVisit hsExampleLmp hsJuly13 [ hsPreviousVisitWithWeight hsJune1 hsJune29 60.5 ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 63.0 |> Expect.equal (Just GWGInadequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 63.1 |> Expect.equal (Just GWGAdequate)
+                    ]
+                    ()
+        , test "previous weight re-saved after the current visit's date does not change the period" <|
+            \_ ->
+                -- The 1 June weight was saved again on 20 July, a week after
+                -- the current visit of 13 July began. The period is still
+                -- 1 June to 13 July.
+                hsVerdict PrePregnancyNormal hsJuly13 (hsExampleVisit hsJuly20) 61.0
+                    |> Expect.equal (Just GWGInadequate)
+        , test "Reopening the current visit on a later day and saving its weight gives the same verdict as saving it on the visit day" <|
+            \_ ->
+                -- A gain of exactly the expected 2.52 kg, saved on the visit
+                -- day (13 July), and saved on 20 July after reopening, the
+                -- visit then ended again that day.
+                let
+                    assembled =
+                        hsExampleVisit hsJune1
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 (hsEndedOn hsJuly20 assembled) 62.52 |> Expect.equal (Just GWGAdequate)
+                    ]
+                    ()
+        , test "current visit ended on the visit day, reopened and its weight saved a week later: same verdict as on the visit day" <|
+            \_ ->
+                hsVerdict PrePregnancyNormal hsJuly20 (hsEndedOn hsJuly13 (hsExampleVisit hsJune1)) 62.52
+                    |> Expect.equal (Just GWGAdequate)
+        , test "Earlier visits with no weight recorded are skipped; the period starts at the most recent earlier visit that has one" <|
+            \_ ->
+                -- Visits on 1 May (58.0 kg) and 1 June (60.0 kg), then 22 June
+                -- with no weight. The period starts on 1 June at 60.0 kg:
+                -- 42 days, 2.52 kg expected.
+                let
+                    assembled =
+                        hsCurrentVisit hsExampleLmp
+                            hsJuly13
+                            [ hsPreviousVisitWithWeight hsMay1 hsMay1 58.0
+                            , hsPreviousVisitWithWeight hsJune1 hsJune1 60.0
+                            , hsPreviousVisitWithoutWeight hsJune22
+                            ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.4 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "visit without weight skipped, and the weighed visit's record was re-saved after it: period still starts on the weighed visit's date" <|
+            \_ ->
+                -- As above, but the 1 June weight record was last saved on
+                -- 25 June, after the unweighed 22 June visit.
+                let
+                    assembled =
+                        hsCurrentVisit hsExampleLmp
+                            hsJuly13
+                            [ hsPreviousVisitWithWeight hsJune1 hsJune25 60.0
+                            , hsPreviousVisitWithoutWeight hsJune22
+                            ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.4 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "the most recent weighed visit is chosen by visit date, even when an older visit's weight was re-saved later" <|
+            \_ ->
+                -- The 1 May weight (58.0 kg) was re-saved on 20 June, after
+                -- the 1 June visit (60.0 kg). The period still starts on
+                -- 1 June at 60.0 kg.
+                let
+                    assembled =
+                        hsCurrentVisit hsExampleLmp
+                            hsJuly13
+                            [ hsPreviousVisitWithWeight hsMay1 hsJune20 58.0
+                            , hsPreviousVisitWithWeight hsJune1 hsJune1 60.0
+                            ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.4 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "earlier nurse visits exist but none recorded a weight -> no verdict" <|
+            \_ ->
+                hsVerdict PrePregnancyNormal
+                    hsJuly13
+                    (hsCurrentVisit hsExampleLmp hsJuly13 [ hsPreviousVisitWithoutWeight hsJune1, hsPreviousVisitWithoutWeight hsJune22 ])
+                    61.0
+                    |> Expect.equal Nothing
+        , test "a weight recorded at an earlier CHW visit does not start the period; it starts at the previous nurse visit" <|
+            \_ ->
+                -- A CHW visit on 29 June recorded 61.0 kg. The period still
+                -- runs from the 1 June nurse visit at 60.0 kg.
+                let
+                    base =
+                        hsExampleVisit hsJune1
+
+                    assembled =
+                        { base | chwPreviousMeasurementsWithDates = [ ( hsJune29, ChwFirstEncounter, hsNutritionWithWeight hsJune29 61.0 ) ] }
+                in
+                hsVerdict PrePregnancyNormal hsJuly13 assembled 62.4
+                    |> Expect.equal (Just GWGInadequate)
+        , test "The 13-week split follows the visit dates: days before 13 weeks use the early-pregnancy rate, days from 13 weeks onward the later rate, even when the form is filled after 13 weeks" <|
+            \_ ->
+                -- Previous visit at 11 weeks (day 77, 55.0 kg), current visit
+                -- at 15 weeks (day 105), form filled at 17 weeks (day 119).
+                -- 14 days x 0.0235 + 14 days x 0.06 = 1.169 kg expected:
+                -- 1.2 kg gained is adequate, 1.1 kg is not.
+                let
+                    assembled =
+                        hsCurrentVisit hsSplitLmp (hsSplitDay 105) [ hsPreviousVisitWithWeight (hsSplitDay 77) (hsSplitDay 77) 55.0 ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 119) assembled 56.2 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 119) assembled 56.1 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "both visits before 13 weeks, form filled after 13 weeks: only the early-pregnancy rate applies" <|
+            \_ ->
+                -- Previous visit at 9 weeks (day 63, 55.0 kg), current visit at
+                -- 12 weeks (day 84), form filled at 14 weeks (day 98).
+                -- 21 days x 0.0235 = 0.4935 kg expected: 0.5 kg gained is
+                -- adequate, 0.4 kg is not.
+                let
+                    assembled =
+                        hsCurrentVisit hsSplitLmp (hsSplitDay 84) [ hsPreviousVisitWithWeight (hsSplitDay 63) (hsSplitDay 63) 55.0 ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 98) assembled 55.5 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 98) assembled 55.4 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "current visit exactly at 13 weeks, form filled 3 days later: every day of the period is before 13 weeks" <|
+            \_ ->
+                -- Previous visit at 10 weeks (day 70, 55.0 kg), current visit
+                -- on day 91 (13 weeks), form filled on day 94. 21 days x
+                -- 0.0235 = 0.4935 kg expected: 0.5 kg gained is adequate.
+                hsVerdict PrePregnancyNormal
+                    (hsSplitDay 94)
+                    (hsCurrentVisit hsSplitLmp (hsSplitDay 91) [ hsPreviousVisitWithWeight (hsSplitDay 70) (hsSplitDay 70) 55.0 ])
+                    55.5
+                    |> Expect.equal (Just GWGAdequate)
+        , test "previous visit exactly at 13 weeks: every day of the period uses the later rate" <|
+            \_ ->
+                -- Previous visit on day 91 (55.0 kg), current visit on day 112.
+                -- 21 days x 0.06 = 1.26 kg expected: 1.3 kg gained is
+                -- adequate, 1.2 kg is not.
+                let
+                    assembled =
+                        hsCurrentVisit hsSplitLmp (hsSplitDay 112) [ hsPreviousVisitWithWeight (hsSplitDay 91) (hsSplitDay 91) 55.0 ]
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 112) assembled 56.3 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal (hsSplitDay 112) assembled 56.2 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "previous visit before 13 weeks, its weight re-saved after 13 weeks: the split still follows the previous visit's date" <|
+            \_ ->
+                -- Previous visit at 11 weeks (day 77, 55.0 kg), its weight
+                -- re-saved on day 98; current visit on day 105. As in the
+                -- split test, 1.169 kg is expected, so 1.1 kg gained falls
+                -- short.
+                hsVerdict PrePregnancyNormal
+                    (hsSplitDay 105)
+                    (hsCurrentVisit hsSplitLmp (hsSplitDay 105) [ hsPreviousVisitWithWeight (hsSplitDay 77) (hsSplitDay 98) 55.0 ])
+                    56.1
+                    |> Expect.equal (Just GWGInadequate)
+        , test "Example: previous visit 1 June at 60.0 kg, current visit 13 July, 61.0 kg is not adequate, even if the 1 June weight was re-saved on 29 June or the current weight was entered on 20 July" <|
+            \_ ->
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 (hsExampleVisit hsJune1) 61.0 |> Expect.equal (Just GWGInadequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 (hsExampleVisit hsJune29) 61.0 |> Expect.equal (Just GWGInadequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 (hsExampleVisit hsJune1) 61.0 |> Expect.equal (Just GWGInadequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 (hsExampleVisit hsJune29) 61.0 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "Example: the expected gain over 1 June to 13 July is 2.52 kg, also when the 1 June weight was re-saved on 29 June and the current weight entered on 20 July" <|
+            \_ ->
+                -- 2.52 kg gained meets the expected gain; 2.51 kg falls short.
+                let
+                    assembled =
+                        hsExampleVisit hsJune29
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 assembled 62.51 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "severely undernourished at booking: over 1 June to 13 July 3.066 kg is expected, also when the 1 June weight was re-saved on 29 June" <|
+            \_ ->
+                -- 42 days x 0.073 = 3.066 kg: 3.1 kg gained is adequate,
+                -- 3.0 kg is not. A 14-day period would expect only 1.022 kg.
+                let
+                    assembled =
+                        hsExampleVisit hsJune29
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyUnderWeight hsJuly13 assembled 63.1 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyUnderWeight hsJuly13 assembled 63.0 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "Gain is adequate when the actual gain is equal to or greater than the expected gain" <|
+            \_ ->
+                -- Over 1 June to 13 July, 2.52 kg is expected. Equal, greater
+                -- and far greater gains are adequate (Healthy Start has no
+                -- "excessive" verdict); 10 g short is not.
+                let
+                    assembled =
+                        hsExampleVisit hsJune1
+                in
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 63.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 66.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly13 assembled 62.51 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
+        , test "The first visit of a pregnancy shows no weight-gain verdict" <|
+            \_ ->
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly13 (hsCurrentVisit hsExampleLmp hsJuly13 []) 61.0 |> Expect.equal Nothing
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 (hsCurrentVisit hsExampleLmp hsJuly13 []) 61.0 |> Expect.equal Nothing
+                    ]
+                    ()
+        , test "first nurse visit after CHW visits that recorded a weight: no weight-gain verdict" <|
+            \_ ->
+                let
+                    base =
+                        hsCurrentVisit hsExampleLmp hsJuly13 []
+
+                    assembled =
+                        { base | chwPreviousMeasurementsWithDates = [ ( hsJune1, ChwFirstEncounter, hsNutritionWithWeight hsJune1 60.0 ) ] }
+                in
+                hsVerdict PrePregnancyNormal hsJuly13 assembled 61.0
+                    |> Expect.equal Nothing
         ]
 
 
@@ -871,7 +1336,7 @@ the plain (non-anemia) variant.
 -}
 diagnoseNurse : PrenatalMeasurements -> EverySet PrenatalDiagnosis
 diagnoseNurse measurements =
-    generatePrenatalDiagnosesForNurse currentDate (testAssembled measurements)
+    generatePrenatalDiagnosesForNurse (testAssembled measurements)
 
 
 {-| Like `diagnoseNurse`, after one earlier nurse encounter, four weeks back,
@@ -890,7 +1355,7 @@ diagnoseNurseAfter previousDiagnoses previousMeasurements measurements =
             , measurements = previousMeasurements
             }
     in
-    generatePrenatalDiagnosesForNurse currentDate
+    generatePrenatalDiagnosesForNurse
         { assembled | nursePreviousEncountersData = [ previousEncounter ] }
 
 
@@ -1124,21 +1589,21 @@ generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest =
 
 diagnoseNurse28Weeks : PrenatalMeasurements -> EverySet PrenatalDiagnosis
 diagnoseNurse28Weeks measurements =
-    generatePrenatalDiagnosesForNurse currentDate (testAssembled28Weeks measurements)
+    generatePrenatalDiagnosesForNurse (testAssembled28Weeks measurements)
 
 
 {-| Run the function under test at EGA ~16 weeks (< 20).
 -}
 diagnoseNurse16Weeks : PrenatalMeasurements -> EverySet PrenatalDiagnosis
 diagnoseNurse16Weeks measurements =
-    generatePrenatalDiagnosesForNurse currentDate (testAssembled16Weeks measurements)
+    generatePrenatalDiagnosesForNurse (testAssembled16Weeks measurements)
 
 
 {-| Run the function under test at EGA ~38 weeks (>= 37).
 -}
 diagnoseNurse38Weeks : PrenatalMeasurements -> EverySet PrenatalDiagnosis
 diagnoseNurse38Weeks measurements =
-    generatePrenatalDiagnosesForNurse currentDate (testAssembled38Weeks measurements)
+    generatePrenatalDiagnosesForNurse (testAssembled38Weeks measurements)
 
 
 generatePrenatalDiagnosesForNurseModeratePreeclampsiaTest : Test
@@ -2115,7 +2580,7 @@ historyBeforeEncounterTest =
 
         diagnosesOf encounterId storedEncounters =
             assembledFromDb encounterId storedEncounters
-                |> Maybe.map (generatePrenatalDiagnosesForNurse currentDate >> EverySet.toList)
+                |> Maybe.map (generatePrenatalDiagnosesForNurse >> EverySet.toList)
 
         hasDiagnosis diagnosis encounterId storedEncounters =
             diagnosesOf encounterId storedEncounters
@@ -2341,6 +2806,7 @@ all =
         , bmiToPrePregnancyClassificationTest
         , zscoreToPrePregnancyClassificationTest
         , resolveGWGClassificationForHealthyStartTest
+        , resolveGWGClassificationSincePreviousVisitTest
         , generatePrenatalDiagnosesForNurseLabsTest
         , generatePrenatalDiagnosesForNurseRecurrentLabsTest
         , generatePrenatalAssesmentForChwTest
@@ -2367,6 +2833,14 @@ all =
         , diagnosisKnownAnyOfTest
         , obstetricHistoryFirstPregnancyTest
         , nextVisitTaskTest
+        , lateLabResultSameDayTest
+        , lateLabResultHypertensionTest
+        , lateLabResultDiabetesTest
+        , lateLabResultModeratePreeclampsiaTest
+        , lateLabResultHyperemesisTest
+        , lateLabResultAddsNothingTest
+        , lateLabResultPreeclampsiaRiskTest
+        , lateLabResultLabTechAndHistoryTest
         , ultrasoundFormTest
         ]
 
@@ -2850,6 +3324,715 @@ obstetricHistoryFirstPregnancyTest =
                                 /= (generateGravida value == "01" && generatePara value == "0000")
                         )
                     |> Expect.equal []
+        ]
+
+
+
+-- LATE LAB RESULTS: DIAGNOSES FOLLOW THE VISIT'S PREGNANCY WEEK
+--
+-- A nurse visit sends a test to the lab; its result is entered on a later
+-- day, from the encounter's Lab results page (Case Management), by a lab
+-- technician, or from a later visit's lab history. Every time a result is
+-- saved, the app reassesses the whole encounter with
+-- `generatePrenatalDiagnosesForNurse <the visit's assembled data>`
+-- and stores the outcome; the diagnoses it adds over the stored set decide
+-- the emergency-referral warning and the recurrent Next Steps.
+--
+-- Oracle (issue "Expected behaviour"): every week-dependent line is graded
+-- at the pregnancy week of the VISIT (`assembled.encounter.startDate`), never
+-- at the week of the day the result is entered. The week lines are:
+--   * chronic (< 20) vs gestational (>= 20) hypertension;
+--   * diabetes (<= 20) vs gestational diabetes (> 20);
+--   * moderate preeclampsia [20, 37) vs its emergency EGA37+ variant;
+--   * hyperemesis gravidum (< 20) vs severe vomiting (>= 20);
+--   * the emergency lines at 22 and 37 weeks;
+--   * the preeclampsia risk diagnoses, offered from week 12.
+--
+-- Each scenario is built the way the app builds it: the visit's measurements
+-- are first assessed on the visit day (the set the nurse's device stores when
+-- the encounter is completed), then the result is entered into the pending
+-- test, the visit-day set is stored on the encounter, the encounter is
+-- closed on the visit day, and the encounter is assessed again after the
+-- entry. Ages are written as (weeks, days) of EGA on the visit day.
+
+
+{-| The visit day of every late-result scenario.
+-}
+visitDay : NominalDate
+visitDay =
+    currentDate
+
+
+{-| The LMP that puts `visitDay` at the given EGA (weeks, days).
+-}
+lmpForVisitAt : ( Int, Int ) -> NominalDate
+lmpForVisitAt ( weeks, days ) =
+    Date.add Date.Days -(weeks * 7 + days) visitDay
+
+
+{-| A nurse encounter started on `visitDay` at the given EGA, after the given
+earlier nurse visits, with the given diagnoses stored on it.
+-}
+visitAssembled : ( Int, Int ) -> List PreviousEncounterData -> EverySet PrenatalDiagnosis -> PrenatalMeasurements -> AssembledData
+visitAssembled ega previousEncounters storedDiagnoses measurements =
+    let
+        base =
+            testAssembled measurements
+
+        encounter =
+            base.encounter
+    in
+    { base
+        | encounter = { encounter | startDate = visitDay, diagnoses = storedDiagnoses }
+        , globalLmpDate = Just (lmpForVisitAt ega)
+        , nursePreviousEncountersData = previousEncounters
+    }
+
+
+type alias LateResult =
+    { visitDayDiagnoses : EverySet PrenatalDiagnosis
+    , afterEntry : EverySet PrenatalDiagnosis
+    }
+
+
+{-| A visit at `ega`, after `previousEncounters`, with `visitMeasurements`
+recorded (the lab test still pending). `enterResult` fills in the pending
+result, and the encounter is reassessed with the visit-day diagnoses stored on
+it. The days-later argument names when the result is entered; the assessment
+reads no entry date.
+-}
+enterResultLaterAfter : List PreviousEncounterData -> ( Int, Int ) -> Int -> (PrenatalMeasurements -> PrenatalMeasurements) -> PrenatalMeasurements -> LateResult
+enterResultLaterAfter previousEncounters ega _ enterResult visitMeasurements =
+    let
+        stored =
+            generatePrenatalDiagnosesForNurse
+                (visitAssembled ega previousEncounters EverySet.empty visitMeasurements)
+
+        assembled =
+            visitAssembled ega previousEncounters stored (enterResult visitMeasurements)
+
+        encounter =
+            assembled.encounter
+    in
+    { visitDayDiagnoses = stored
+    , afterEntry =
+        generatePrenatalDiagnosesForNurse
+            { assembled | encounter = { encounter | endDate = Just visitDay } }
+    }
+
+
+{-| `enterResultLaterAfter` for a first visit.
+-}
+enterResultLater : ( Int, Int ) -> Int -> (PrenatalMeasurements -> PrenatalMeasurements) -> PrenatalMeasurements -> LateResult
+enterResultLater =
+    enterResultLaterAfter []
+
+
+{-| The diagnoses the late result added over the stored visit-day set: the
+ones that bring up the emergency-referral warning and recurrent Next Steps.
+-}
+addedByLateResult : LateResult -> List PrenatalDiagnosis
+addedByLateResult result =
+    EverySet.diff result.afterEntry result.visitDayDiagnoses
+        |> EverySet.toList
+
+
+{-| Membership of each given diagnosis in a diagnosis set.
+-}
+membership : List PrenatalDiagnosis -> EverySet PrenatalDiagnosis -> List ( PrenatalDiagnosis, Bool )
+membership diagnoses set =
+    List.map (\diagnosis -> ( diagnosis, EverySet.member diagnosis set )) diagnoses
+
+
+
+-- Pending tests and the results entered into them later. A test sent to the
+-- lab is "run today" on the visit day, with no result and without the
+-- immediate-result prerequisite.
+
+
+pendingHemoglobinValue : HemoglobinTestValue
+pendingHemoglobinValue =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just visitDay
+    , testPrerequisites = Nothing
+    , hemoglobinCount = Nothing
+    }
+
+
+withPendingHemoglobin : PrenatalMeasurements -> PrenatalMeasurements
+withPendingHemoglobin measurements =
+    { measurements | hemoglobinTest = TestFixtures.wrapMeasurement visitDay pendingHemoglobinValue }
+
+
+{-| A nurse enters the hemoglobin count on the encounter's Lab results page.
+-}
+enterHemoglobin : Float -> PrenatalMeasurements -> PrenatalMeasurements
+enterHemoglobin count measurements =
+    { measurements
+        | hemoglobinTest =
+            TestFixtures.wrapMeasurement visitDay { pendingHemoglobinValue | hemoglobinCount = Just count }
+    }
+
+
+{-| A lab technician enters the hemoglobin count, confirming the test was run.
+-}
+enterHemoglobinByLabTech : Float -> PrenatalMeasurements -> PrenatalMeasurements
+enterHemoglobinByLabTech count measurements =
+    { measurements
+        | hemoglobinTest =
+            TestFixtures.wrapMeasurement visitDay
+                { pendingHemoglobinValue
+                    | executionNote = TestNoteRunConfirmedByLabTech
+                    , hemoglobinCount = Just count
+                }
+    }
+
+
+{-| Fasting random blood sugar, sent to the lab: above 126 means diabetes.
+-}
+pendingRandomBloodSugarValue : RandomBloodSugarTestValue PrenatalEncounterId
+pendingRandomBloodSugarValue =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just visitDay
+    , testPrerequisites = Just (EverySet.singleton PrerequisiteFastFor12h)
+    , sugarCount = Nothing
+    , originatingEncounter = Nothing
+    }
+
+
+withPendingRandomBloodSugar : PrenatalMeasurements -> PrenatalMeasurements
+withPendingRandomBloodSugar measurements =
+    { measurements | randomBloodSugarTest = TestFixtures.wrapMeasurement visitDay pendingRandomBloodSugarValue }
+
+
+enterRandomBloodSugar : Float -> PrenatalMeasurements -> PrenatalMeasurements
+enterRandomBloodSugar count measurements =
+    { measurements
+        | randomBloodSugarTest =
+            TestFixtures.wrapMeasurement visitDay { pendingRandomBloodSugarValue | sugarCount = Just count }
+    }
+
+
+{-| The result is entered from a later visit's lab history: it is saved on
+the visit's own test, naming the later visit as the one it came from.
+-}
+enterRandomBloodSugarFromLaterVisit : Float -> PrenatalMeasurements -> PrenatalMeasurements
+enterRandomBloodSugarFromLaterVisit count measurements =
+    { measurements
+        | randomBloodSugarTest =
+            TestFixtures.wrapMeasurement visitDay
+                { pendingRandomBloodSugarValue
+                    | sugarCount = Just count
+                    , originatingEncounter = Just (toEntityUuid "later-visit")
+                }
+    }
+
+
+pendingUrineDipstickValue : UrineDipstickTestValue
+pendingUrineDipstickValue =
+    let
+        immediate =
+            urineDipstickValueWith ProteinPlus1
+    in
+    { immediate | testPrerequisites = Nothing, protein = Nothing }
+
+
+withPendingUrineDipstick : PrenatalMeasurements -> PrenatalMeasurements
+withPendingUrineDipstick measurements =
+    { measurements | urineDipstickTest = TestFixtures.wrapMeasurement visitDay pendingUrineDipstickValue }
+
+
+enterUrineProtein : ProteinValue -> PrenatalMeasurements -> PrenatalMeasurements
+enterUrineProtein protein measurements =
+    { measurements
+        | urineDipstickTest =
+            TestFixtures.wrapMeasurement visitDay { pendingUrineDipstickValue | protein = Just protein }
+    }
+
+
+{-| Visit measurements: high blood pressure (165/115) and a hemoglobin test
+sent to the lab.
+-}
+highBloodPressureVisit : PrenatalMeasurements
+highBloodPressureVisit =
+    emptyPrenatalMeasurements
+        |> withVitals 165 115
+        |> withPendingHemoglobin
+
+
+{-| Visit measurements: a danger sign and a hemoglobin test sent to the lab.
+-}
+dangerSignVisit : DangerSign -> PrenatalMeasurements
+dangerSignVisit sign =
+    emptyPrenatalMeasurements
+        |> withDangerSigns (EverySet.singleton sign)
+        |> withPendingHemoglobin
+
+
+{-| Visit measurements: moderate preeclampsia found at the visit (high blood
+pressure with urine protein +1, read at the visit) and a hemoglobin test
+sent to the lab.
+-}
+moderatePreeclampsiaVisit : PrenatalMeasurements
+moderatePreeclampsiaVisit =
+    emptyPrenatalMeasurements
+        |> withVitals 165 115
+        |> withUrineProtein ProteinPlus1
+        |> withPendingHemoglobin
+
+
+{-| Obstetric history of a second pregnancy whose step 2 carries the given
+sign and delivery period: preeclampsia at a previous pregnancy gives HIGH
+risk of preeclampsia, more than 10 years since delivery gives MODERATE risk.
+-}
+withPreeclampsiaRiskHistory : ObstetricHistoryStep2Sign -> PreviousDeliveryPeriod -> PrenatalMeasurements -> PrenatalMeasurements
+withPreeclampsiaRiskHistory sign period measurements =
+    { measurements
+        | obstetricHistory =
+            wrapMeasurement
+                { currentlyPregnant = True
+                , termPregnancy = 1
+                , preTermPregnancy = 0
+                , stillbirthsAtTerm = 0
+                , stillbirthsPreTerm = 0
+                , abortions = 0
+                , liveChildren = 1
+                }
+        , obstetricHistoryStep2 =
+            wrapMeasurement
+                { cSections = 0
+                , cSectionReason = Nothing
+                , previousDelivery = EverySet.singleton NoPreviousDeliverySign
+                , previousDeliveryPeriod = EverySet.singleton period
+                , signs = EverySet.singleton sign
+                }
+    }
+
+
+highRiskOfPreeclampsiaVisit : PrenatalMeasurements
+highRiskOfPreeclampsiaVisit =
+    emptyPrenatalMeasurements
+        |> withPreeclampsiaRiskHistory ObstetricHistoryPreeclampsiaPreviousPregnancy Neither
+        |> withPendingHemoglobin
+
+
+moderateRiskOfPreeclampsiaVisit : PrenatalMeasurements
+moderateRiskOfPreeclampsiaVisit =
+    emptyPrenatalMeasurements
+        |> withPreeclampsiaRiskHistory NoObstetricHistoryStep2Sign MoreThan10Years
+        |> withPendingHemoglobin
+
+
+preeclampsiaRiskDiagnoses : List PrenatalDiagnosis
+preeclampsiaRiskDiagnoses =
+    [ DiagnosisHighRiskOfPreeclampsiaInitialPhase
+    , DiagnosisHighRiskOfPreeclampsiaRecurrentPhase
+    , DiagnosisModerateRiskOfPreeclampsia
+    ]
+
+
+lateLabResultSameDayTest : Test
+lateLabResultSameDayTest =
+    describe "late lab result: A lab result entered on the visit day gives the same diagnoses as it does today"
+        [ test "high blood pressure at 19 weeks 5 days, result entered the same day: chronic hypertension, not gestational" <|
+            \_ ->
+                enterResultLater ( 19, 5 ) 0 (enterHemoglobin 12) highBloodPressureVisit
+                    |> .afterEntry
+                    |> membership [ DiagnosisChronicHypertensionImmediate, DiagnosisGestationalHypertensionImmediate ]
+                    |> Expect.equal [ ( DiagnosisChronicHypertensionImmediate, True ), ( DiagnosisGestationalHypertensionImmediate, False ) ]
+        , test "high blood pressure at 20 weeks 0 days, result entered the same day: gestational hypertension, not chronic" <|
+            \_ ->
+                enterResultLater ( 20, 0 ) 0 (enterHemoglobin 12) highBloodPressureVisit
+                    |> .afterEntry
+                    |> membership [ DiagnosisChronicHypertensionImmediate, DiagnosisGestationalHypertensionImmediate ]
+                    |> Expect.equal [ ( DiagnosisChronicHypertensionImmediate, False ), ( DiagnosisGestationalHypertensionImmediate, True ) ]
+        , test "high blood sugar from a visit at 20 weeks 6 days, entered the same day: diabetes, not gestational diabetes" <|
+            \_ ->
+                enterResultLater ( 20, 6 ) 0 (enterRandomBloodSugar 130) withPendingRandomBloodSugar_
+                    |> .afterEntry
+                    |> membership [ DiagnosisDiabetesRecurrentPhase, DiagnosisGestationalDiabetesRecurrentPhase ]
+                    |> Expect.equal [ ( DiagnosisDiabetesRecurrentPhase, True ), ( DiagnosisGestationalDiabetesRecurrentPhase, False ) ]
+        , test "high blood sugar from a visit at 21 weeks 0 days, entered the same day: gestational diabetes, not diabetes" <|
+            \_ ->
+                enterResultLater ( 21, 0 ) 0 (enterRandomBloodSugar 130) withPendingRandomBloodSugar_
+                    |> .afterEntry
+                    |> membership [ DiagnosisDiabetesRecurrentPhase, DiagnosisGestationalDiabetesRecurrentPhase ]
+                    |> Expect.equal [ ( DiagnosisDiabetesRecurrentPhase, False ), ( DiagnosisGestationalDiabetesRecurrentPhase, True ) ]
+        , test "moderate preeclampsia at 36 weeks 6 days, result entered the same day: moderate preeclampsia, not the EGA 37+ emergency" <|
+            \_ ->
+                enterResultLater ( 36, 6 ) 0 (enterHemoglobin 12) moderatePreeclampsiaVisit
+                    |> .afterEntry
+                    |> membership [ DiagnosisModeratePreeclampsiaInitialPhase, DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ]
+                    |> Expect.equal [ ( DiagnosisModeratePreeclampsiaInitialPhase, True ), ( DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus, False ) ]
+        , test "moderate preeclampsia at 37 weeks 0 days, result entered the same day: the EGA 37+ emergency" <|
+            \_ ->
+                enterResultLater ( 37, 0 ) 0 (enterHemoglobin 12) moderatePreeclampsiaVisit
+                    |> .afterEntry
+                    |> membership [ DiagnosisModeratePreeclampsiaInitialPhase, DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ]
+                    |> Expect.equal [ ( DiagnosisModeratePreeclampsiaInitialPhase, False ), ( DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus, True ) ]
+        , test "severe vomiting at 19 weeks 6 days, result entered the same day: hyperemesis gravidum" <|
+            \_ ->
+                enterResultLater ( 19, 6 ) 0 (enterHemoglobin 12) (dangerSignVisit SevereVomiting)
+                    |> .afterEntry
+                    |> membership [ DiagnosisHyperemesisGravidum, DiagnosisSevereVomiting ]
+                    |> Expect.equal [ ( DiagnosisHyperemesisGravidum, True ), ( DiagnosisSevereVomiting, False ) ]
+        , test "severe vomiting at 20 weeks 0 days, result entered the same day: severe vomiting" <|
+            \_ ->
+                enterResultLater ( 20, 0 ) 0 (enterHemoglobin 12) (dangerSignVisit SevereVomiting)
+                    |> .afterEntry
+                    |> membership [ DiagnosisHyperemesisGravidum, DiagnosisSevereVomiting ]
+                    |> Expect.equal [ ( DiagnosisHyperemesisGravidum, False ), ( DiagnosisSevereVomiting, True ) ]
+        , test "a normal result entered the same day adds nothing to the stored diagnoses" <|
+            \_ ->
+                enterResultLater ( 19, 5 ) 0 (enterHemoglobin 12) highBloodPressureVisit
+                    |> addedByLateResult
+                    |> Expect.equal []
+        , test "a low hemoglobin entered the same day adds only moderate anemia" <|
+            \_ ->
+                enterResultLater ( 19, 5 ) 0 (enterHemoglobin 9) highBloodPressureVisit
+                    |> addedByLateResult
+                    |> Expect.equal [ DiagnosisModerateAnemiaRecurrentPhase ]
+        , test "a pregnancy with no LMP: a high blood pressure gets no week-graded diagnosis on any day" <|
+            \_ ->
+                let
+                    assembled =
+                        visitAssembled ( 19, 5 ) [] EverySet.empty (enterHemoglobin 12 highBloodPressureVisit)
+
+                    undated =
+                        { assembled | globalLmpDate = Nothing }
+                in
+                [ visitDay, Date.add Date.Days 3 visitDay ]
+                    |> List.map
+                        (\_ ->
+                            generatePrenatalDiagnosesForNurse undated
+                                |> EverySet.toList
+                                |> List.filter (\diagnosis -> List.member diagnosis [ DiagnosisChronicHypertensionImmediate, DiagnosisGestationalHypertensionImmediate ])
+                        )
+                    |> Expect.equal [ [], [] ]
+        ]
+
+
+{-| A random blood sugar test sent to the lab, and nothing else.
+-}
+withPendingRandomBloodSugar_ : PrenatalMeasurements
+withPendingRandomBloodSugar_ =
+    withPendingRandomBloodSugar emptyPrenatalMeasurements
+
+
+lateLabResultHypertensionTest : Test
+lateLabResultHypertensionTest =
+    let
+        chronicNotGestational =
+            [ ( DiagnosisChronicHypertensionImmediate, True ), ( DiagnosisGestationalHypertensionImmediate, False ) ]
+
+        hypertension =
+            membership [ DiagnosisChronicHypertensionImmediate, DiagnosisGestationalHypertensionImmediate ]
+    in
+    describe "late lab result: chronic vs gestational hypertension"
+        [ test "High blood pressure measured before week 20 stays chronic hypertension when a lab result for that visit is entered after week 20" <|
+            -- The issue's own scenario: 19 weeks 5 days, result three days
+            -- later at 20 weeks 1 day.
+            \_ ->
+                enterResultLater ( 19, 5 ) 3 (enterHemoglobin 12) highBloodPressureVisit
+                    |> .afterEntry
+                    |> hypertension
+                    |> Expect.equal chronicNotGestational
+        , test "visit at 19 weeks 6 days, result entered the next day at 20 weeks 0 days: chronic hypertension stays" <|
+            \_ ->
+                enterResultLater ( 19, 6 ) 1 (enterHemoglobin 12) highBloodPressureVisit
+                    |> .afterEntry
+                    |> hypertension
+                    |> Expect.equal chronicNotGestational
+        , test "visit at 16 weeks, result entered ten weeks later: chronic hypertension stays" <|
+            \_ ->
+                enterResultLater ( 16, 0 ) 70 (enterHemoglobin 12) highBloodPressureVisit
+                    |> .afterEntry
+                    |> hypertension
+                    |> Expect.equal chronicNotGestational
+        , test "marginal blood pressure confirmed on recheck at 19 weeks 5 days stays chronic hypertension after recheck when a result is entered at 20 weeks 1 day" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitalsRepeated 145 95
+                    |> withPendingHemoglobin
+                    |> enterResultLater ( 19, 5 ) 3 (enterHemoglobin 12)
+                    |> .afterEntry
+                    |> membership [ DiagnosisChronicHypertensionAfterRecheck, DiagnosisGestationalHypertensionAfterRecheck ]
+                    |> Expect.equal [ ( DiagnosisChronicHypertensionAfterRecheck, True ), ( DiagnosisGestationalHypertensionAfterRecheck, False ) ]
+        , test "a second visit at 19 weeks 5 days (first visit at 15 weeks, no hypertension then): chronic hypertension stays after a result at 20 weeks 1 day" <|
+            \_ ->
+                let
+                    firstVisit =
+                        { startDate = Date.add Date.Weeks -4 visitDay
+                        , diagnoses = EverySet.empty
+                        , pastDiagnoses = EverySet.empty
+                        , measurements = emptyPrenatalMeasurements
+                        }
+                in
+                enterResultLaterAfter [ firstVisit ] ( 19, 5 ) 3 (enterHemoglobin 12) highBloodPressureVisit
+                    |> .afterEntry
+                    |> hypertension
+                    |> Expect.equal chronicNotGestational
+        , test "guard: high blood pressure at 20 weeks 1 day is gestational hypertension, also when the result is entered later" <|
+            \_ ->
+                enterResultLater ( 20, 1 ) 3 (enterHemoglobin 12) highBloodPressureVisit
+                    |> .afterEntry
+                    |> hypertension
+                    |> Expect.equal [ ( DiagnosisChronicHypertensionImmediate, False ), ( DiagnosisGestationalHypertensionImmediate, True ) ]
+        ]
+
+
+lateLabResultDiabetesTest : Test
+lateLabResultDiabetesTest =
+    let
+        diabetes =
+            membership [ DiagnosisDiabetesRecurrentPhase, DiagnosisGestationalDiabetesRecurrentPhase ]
+
+        diabetesNotGestational =
+            [ ( DiagnosisDiabetesRecurrentPhase, True ), ( DiagnosisGestationalDiabetesRecurrentPhase, False ) ]
+    in
+    describe "late lab result: diabetes vs gestational diabetes"
+        [ test "A high blood sugar result from a visit at week 20 or earlier is diagnosed as diabetes, not gestational diabetes, even when it is entered after week 20" <|
+            -- Visit at 20 weeks 6 days (still week 20), result entered at
+            -- 21 weeks 2 days.
+            \_ ->
+                enterResultLater ( 20, 6 ) 3 (enterRandomBloodSugar 130) withPendingRandomBloodSugar_
+                    |> .afterEntry
+                    |> diabetes
+                    |> Expect.equal diabetesNotGestational
+        , test "visit at 20 weeks 6 days, result entered the next day at 21 weeks 0 days: diabetes" <|
+            \_ ->
+                enterResultLater ( 20, 6 ) 1 (enterRandomBloodSugar 130) withPendingRandomBloodSugar_
+                    |> .afterEntry
+                    |> diabetes
+                    |> Expect.equal diabetesNotGestational
+        , test "visit at 14 weeks, result entered eight weeks later at 22 weeks: diabetes" <|
+            \_ ->
+                enterResultLater ( 14, 0 ) 56 (enterRandomBloodSugar 130) withPendingRandomBloodSugar_
+                    |> .afterEntry
+                    |> diabetes
+                    |> Expect.equal diabetesNotGestational
+        , test "guard: a high blood sugar from a visit at 21 weeks 0 days is gestational diabetes when entered later" <|
+            \_ ->
+                enterResultLater ( 21, 0 ) 3 (enterRandomBloodSugar 130) withPendingRandomBloodSugar_
+                    |> .afterEntry
+                    |> diabetes
+                    |> Expect.equal [ ( DiagnosisDiabetesRecurrentPhase, False ), ( DiagnosisGestationalDiabetesRecurrentPhase, True ) ]
+        , test "guard: a normal blood sugar from a visit at week 20 entered after week 20 gives neither diabetes" <|
+            \_ ->
+                enterResultLater ( 20, 6 ) 3 (enterRandomBloodSugar 90) withPendingRandomBloodSugar_
+                    |> .afterEntry
+                    |> diabetes
+                    |> Expect.equal [ ( DiagnosisDiabetesRecurrentPhase, False ), ( DiagnosisGestationalDiabetesRecurrentPhase, False ) ]
+        ]
+
+
+lateLabResultModeratePreeclampsiaTest : Test
+lateLabResultModeratePreeclampsiaTest =
+    describe "late lab result: moderate preeclampsia before week 37"
+        [ test "Moderate preeclampsia found at a visit before week 37 is still diagnosed when a lab result for that visit is entered at week 37 or later" <|
+            -- Visit at 36 weeks 5 days, result entered at 37 weeks 1 day.
+            \_ ->
+                enterResultLater ( 36, 5 ) 3 (enterHemoglobin 12) moderatePreeclampsiaVisit
+                    |> .afterEntry
+                    |> EverySet.member DiagnosisModeratePreeclampsiaInitialPhase
+                    |> Expect.equal True
+        , test "visit at 36 weeks 6 days, result entered the next day at 37 weeks 0 days: moderate preeclampsia, and not its EGA 37+ emergency variant" <|
+            \_ ->
+                enterResultLater ( 36, 6 ) 1 (enterHemoglobin 12) moderatePreeclampsiaVisit
+                    |> .afterEntry
+                    |> membership [ DiagnosisModeratePreeclampsiaInitialPhase, DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ]
+                    |> Expect.equal [ ( DiagnosisModeratePreeclampsiaInitialPhase, True ), ( DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus, False ) ]
+
+        -- The visit records high blood pressure and sends urine to the lab;
+        -- the protein result entered at 37 weeks 1 day completes moderate
+        -- preeclampsia. The visit was at week 36, so it is the [20, 37)
+        -- diagnosis, not the EGA 37+ emergency one.
+        , test "high blood pressure at 36 weeks 5 days with urine protein +1 entered at 37 weeks 1 day: moderate preeclampsia, not the EGA 37+ emergency" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 165 115
+                    |> withPendingUrineDipstick
+                    |> enterResultLater ( 36, 5 ) 3 (enterUrineProtein ProteinPlus1)
+                    |> .afterEntry
+                    |> membership [ DiagnosisModeratePreeclampsiaRecurrentPhase, DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ]
+                    |> Expect.equal [ ( DiagnosisModeratePreeclampsiaRecurrentPhase, True ), ( DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus, False ) ]
+        , test "guard: moderate preeclampsia at 37 weeks 0 days stays the EGA 37+ emergency when a result is entered later" <|
+            \_ ->
+                enterResultLater ( 37, 0 ) 3 (enterHemoglobin 12) moderatePreeclampsiaVisit
+                    |> .afterEntry
+                    |> membership [ DiagnosisModeratePreeclampsiaInitialPhase, DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ]
+                    |> Expect.equal [ ( DiagnosisModeratePreeclampsiaInitialPhase, False ), ( DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus, True ) ]
+        ]
+
+
+lateLabResultHyperemesisTest : Test
+lateLabResultHyperemesisTest =
+    let
+        vomiting =
+            membership [ DiagnosisHyperemesisGravidum, DiagnosisSevereVomiting ]
+    in
+    describe "late lab result: hyperemesis gravidum vs severe vomiting"
+        [ test "A severe-vomiting danger sign at a visit before week 20 stays hyperemesis gravidum, not severe vomiting, when a lab result for that visit is entered after week 20" <|
+            \_ ->
+                enterResultLater ( 19, 5 ) 3 (enterHemoglobin 12) (dangerSignVisit SevereVomiting)
+                    |> .afterEntry
+                    |> vomiting
+                    |> Expect.equal [ ( DiagnosisHyperemesisGravidum, True ), ( DiagnosisSevereVomiting, False ) ]
+        , test "visit at 19 weeks 6 days, result entered the next day at 20 weeks 0 days: hyperemesis gravidum stays" <|
+            \_ ->
+                enterResultLater ( 19, 6 ) 1 (enterHemoglobin 12) (dangerSignVisit SevereVomiting)
+                    |> .afterEntry
+                    |> vomiting
+                    |> Expect.equal [ ( DiagnosisHyperemesisGravidum, True ), ( DiagnosisSevereVomiting, False ) ]
+        , test "guard: severe vomiting at 20 weeks 0 days stays severe vomiting when a result is entered later" <|
+            \_ ->
+                enterResultLater ( 20, 0 ) 3 (enterHemoglobin 12) (dangerSignVisit SevereVomiting)
+                    |> .afterEntry
+                    |> vomiting
+                    |> Expect.equal [ ( DiagnosisHyperemesisGravidum, False ), ( DiagnosisSevereVomiting, True ) ]
+        ]
+
+
+{-| Every scenario here crosses one week line between the visit and the entry
+day, and enters a normal hemoglobin (12), which by itself diagnoses nothing.
+So whatever the reassessment adds over the stored visit-day set could only
+come from the later week, and must be nothing: an added diagnosis is what
+brings up the emergency-referral warning and recurrent Next Steps.
+-}
+lateLabResultAddsNothingTest : Test
+lateLabResultAddsNothingTest =
+    let
+        addsNothing ega daysLater visitMeasurements =
+            enterResultLater ega daysLater (enterHemoglobin 12) visitMeasurements
+                |> addedByLateResult
+                |> Expect.equal []
+    in
+    describe "late lab result: diagnoses added over the stored set"
+        [ test "Entering a late lab result never brings up an emergency-referral warning, or recurrent Next Steps, for a diagnosis that only the later week would produce" <|
+            -- Severe vomiting at 19 weeks 5 days, result at 20 weeks 1 day:
+            -- the severe-vomiting emergency must not be added.
+            \_ ->
+                addsNothing ( 19, 5 ) 3 (dangerSignVisit SevereVomiting)
+        , test "high blood pressure at 19 weeks 5 days, result at 20 weeks 1 day: no gestational hypertension added" <|
+            \_ ->
+                addsNothing ( 19, 5 ) 3 highBloodPressureVisit
+        , test "moderate preeclampsia at 36 weeks 5 days, result at 37 weeks 1 day: no EGA 37+ emergency added" <|
+            \_ ->
+                addsNothing ( 36, 5 ) 3 moderatePreeclampsiaVisit
+        , test "headache with blurred vision at 36 weeks 5 days, result at 37 weeks 1 day: no EGA 37+ severe preeclampsia emergency added" <|
+            \_ ->
+                addsNothing ( 36, 5 ) 3 (dangerSignVisit HeadacheBlurredVision)
+        , test "vaginal bleeding at 22 weeks 5 days, result at 23 weeks 1 day: no placenta previa, abruption or uterine rupture added" <|
+            \_ ->
+                addsNothing ( 22, 5 ) 3 (dangerSignVisit VaginalBleeding)
+        , test "abdominal pain at 21 weeks 5 days, result at 22 weeks 1 day: no obstructed labor or its follow-ons added" <|
+            \_ ->
+                addsNothing ( 21, 5 ) 3 (dangerSignVisit AbdominalPain)
+        , test "leaking vaginal fluid at 37 weeks 5 days, result at 38 weeks 1 day: no PROM added" <|
+            \_ ->
+                addsNothing ( 37, 5 ) 3 (dangerSignVisit GushLeakingVaginalFluid)
+        , test "a low hemoglobin entered at 20 weeks 1 day for high blood pressure at 19 weeks 5 days adds only moderate anemia" <|
+            \_ ->
+                enterResultLater ( 19, 5 ) 3 (enterHemoglobin 9) highBloodPressureVisit
+                    |> addedByLateResult
+                    |> Expect.equal [ DiagnosisModerateAnemiaRecurrentPhase ]
+        , test "the reassessment keeps the stored week-graded emergency: severe vomiting at 19 weeks 5 days keeps hyperemesis gravidum at 20 weeks 1 day" <|
+            \_ ->
+                enterResultLater ( 19, 5 ) 3 (enterHemoglobin 12) (dangerSignVisit SevereVomiting)
+                    |> (\result -> EverySet.diff result.visitDayDiagnoses result.afterEntry |> EverySet.toList)
+                    |> Expect.equal []
+        ]
+
+
+lateLabResultPreeclampsiaRiskTest : Test
+lateLabResultPreeclampsiaRiskTest =
+    let
+        risks =
+            membership preeclampsiaRiskDiagnoses
+    in
+    describe "late lab result: preeclampsia risk from week 12"
+        [ test "The preeclampsia risk diagnoses, which start at week 12, follow the visit's week, not the entry day's" <|
+            -- Previous-pregnancy preeclampsia (high risk) at a visit at 11
+            -- weeks 5 days; result entered at 12 weeks 1 day.
+            \_ ->
+                enterResultLater ( 11, 5 ) 3 (enterHemoglobin 12) highRiskOfPreeclampsiaVisit
+                    |> .afterEntry
+                    |> risks
+                    |> List.filter Tuple.second
+                    |> Expect.equal []
+        , test "moderate risk (more than 10 years since delivery) at 11 weeks 6 days, result at 12 weeks 0 days: no risk diagnosis" <|
+            \_ ->
+                enterResultLater ( 11, 6 ) 1 (enterHemoglobin 12) moderateRiskOfPreeclampsiaVisit
+                    |> .afterEntry
+                    |> risks
+                    |> List.filter Tuple.second
+                    |> Expect.equal []
+        , test "high blood pressure at 11 weeks 5 days, result at 12 weeks 1 day: chronic hypertension stays, and no high risk of preeclampsia is added" <|
+            \_ ->
+                enterResultLater ( 11, 5 ) 3 (enterHemoglobin 12) highBloodPressureVisit
+                    |> addedByLateResult
+                    |> Expect.equal []
+        , test "guard: previous-pregnancy preeclampsia at 12 weeks 0 days gives high risk, also when the result is entered later" <|
+            \_ ->
+                enterResultLater ( 12, 0 ) 3 (enterHemoglobin 12) highRiskOfPreeclampsiaVisit
+                    |> .afterEntry
+                    |> EverySet.member DiagnosisHighRiskOfPreeclampsiaInitialPhase
+                    |> Expect.equal True
+        , test "guard: more than 10 years since delivery at 12 weeks 0 days gives moderate risk, also when the result is entered later" <|
+            \_ ->
+                enterResultLater ( 12, 0 ) 3 (enterHemoglobin 12) moderateRiskOfPreeclampsiaVisit
+                    |> .afterEntry
+                    |> EverySet.member DiagnosisModerateRiskOfPreeclampsia
+                    |> Expect.equal True
+        ]
+
+
+{-| The lab technician's device and a later visit's lab history run the same
+reassessment on the visit's encounter; only the stored result differs in
+shape (a lab technician's confirmation note, or the later visit named as the
+result's origin).
+-}
+lateLabResultLabTechAndHistoryTest : Test
+lateLabResultLabTechAndHistoryTest =
+    describe "late lab result: lab technician and later visit's lab history"
+        [ test "The same holds when the result is entered by a lab technician, and when it is entered from a later visit's lab history" <|
+            -- Lab technician: hemoglobin for high blood pressure at 19 weeks
+            -- 5 days, entered at 20 weeks 1 day.
+            \_ ->
+                enterResultLater ( 19, 5 ) 3 (enterHemoglobinByLabTech 12) highBloodPressureVisit
+                    |> .afterEntry
+                    |> membership [ DiagnosisChronicHypertensionImmediate, DiagnosisGestationalHypertensionImmediate ]
+                    |> Expect.equal [ ( DiagnosisChronicHypertensionImmediate, True ), ( DiagnosisGestationalHypertensionImmediate, False ) ]
+        , test "lab technician: severe vomiting at 19 weeks 5 days with a result at 20 weeks 1 day adds nothing" <|
+            \_ ->
+                enterResultLater ( 19, 5 ) 3 (enterHemoglobinByLabTech 12) (dangerSignVisit SevereVomiting)
+                    |> addedByLateResult
+                    |> Expect.equal []
+        , test "lab technician: moderate preeclampsia at 36 weeks 5 days stays after a result at 37 weeks 1 day" <|
+            \_ ->
+                enterResultLater ( 36, 5 ) 3 (enterHemoglobinByLabTech 12) moderatePreeclampsiaVisit
+                    |> .afterEntry
+                    |> membership [ DiagnosisModeratePreeclampsiaInitialPhase, DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ]
+                    |> Expect.equal [ ( DiagnosisModeratePreeclampsiaInitialPhase, True ), ( DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus, False ) ]
+        , test "lab history: a high blood sugar from a visit at 18 weeks entered at the next visit at 22 weeks is diabetes, not gestational diabetes" <|
+            \_ ->
+                enterResultLater ( 18, 0 ) 28 (enterRandomBloodSugarFromLaterVisit 130) withPendingRandomBloodSugar_
+                    |> .afterEntry
+                    |> membership [ DiagnosisDiabetesRecurrentPhase, DiagnosisGestationalDiabetesRecurrentPhase ]
+                    |> Expect.equal [ ( DiagnosisDiabetesRecurrentPhase, True ), ( DiagnosisGestationalDiabetesRecurrentPhase, False ) ]
+        , test "lab history: a normal blood sugar for high blood pressure at 19 weeks 5 days, entered at the next visit at 23 weeks 5 days, keeps chronic hypertension and adds nothing" <|
+            \_ ->
+                let
+                    result =
+                        emptyPrenatalMeasurements
+                            |> withVitals 165 115
+                            |> withPendingRandomBloodSugar
+                            |> enterResultLater ( 19, 5 ) 28 (enterRandomBloodSugarFromLaterVisit 90)
+                in
+                ( EverySet.member DiagnosisChronicHypertensionImmediate result.afterEntry
+                , addedByLateResult result
+                )
+                    |> Expect.equal ( True, [] )
         ]
 
 

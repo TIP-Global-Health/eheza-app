@@ -16,7 +16,9 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.FamilyEncounterParticipants.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Utils exposing (viewVillageLine)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
@@ -32,8 +34,8 @@ import Utils.WebData exposing (viewWebData)
     family member for that person, either child, parent, etc.
 
 -}
-view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> FamilyEncounterType -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
+view : Language -> NominalDate -> Site -> ( HealthCenterId, Maybe VillageId ) -> Bool -> FamilyEncounterType -> Model -> ModelIndexedDb -> Html Msg
+view language currentDate site ( healthCenterId, maybeVillageId ) isChw encounterType model db =
     let
         title =
             translate language Translate.SearchExistingParticipants
@@ -41,7 +43,7 @@ view language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType
     div
         [ class "wrap wrap-alt-2 page-participants" ]
         [ viewHeader title
-        , viewBody language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db
+        , viewBody language currentDate site ( healthCenterId, maybeVillageId ) isChw encounterType model db
         ]
 
 
@@ -61,18 +63,18 @@ viewHeader title =
         ]
 
 
-viewBody : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> FamilyEncounterType -> Model -> ModelIndexedDb -> Html Msg
-viewBody language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
+viewBody : Language -> NominalDate -> Site -> ( HealthCenterId, Maybe VillageId ) -> Bool -> FamilyEncounterType -> Model -> ModelIndexedDb -> Html Msg
+viewBody language currentDate site ( healthCenterId, maybeVillageId ) isChw encounterType model db =
     div
         [ class "search-wrapper" ]
         [ div
             [ class "ui full segment" ]
-            [ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db ]
+            [ viewSearchForm language currentDate site ( healthCenterId, maybeVillageId ) isChw encounterType model db ]
         ]
 
 
-viewSearchForm : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> FamilyEncounterType -> Model -> ModelIndexedDb -> Html Msg
-viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
+viewSearchForm : Language -> NominalDate -> Site -> ( HealthCenterId, Maybe VillageId ) -> Bool -> FamilyEncounterType -> Model -> ModelIndexedDb -> Html Msg
+viewSearchForm language currentDate site ( healthCenterId, maybeVillageId ) isChw encounterType model db =
     let
         searchForm =
             Components.PatientsSearchForm.View.view language model
@@ -128,7 +130,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
             results
                 |> Maybe.withDefault (Success Dict.empty)
                 |> RemoteData.withDefault Dict.empty
-                |> Dict.map (viewParticipant language currentDate encounterType)
+                |> Dict.map (viewParticipant language currentDate site encounterType)
                 |> Dict.values
 
         searchHelper =
@@ -168,8 +170,8 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
         ]
 
 
-viewParticipant : Language -> NominalDate -> FamilyEncounterType -> PersonId -> Person -> Html Msg
-viewParticipant language currentDate encounterType id person =
+viewParticipant : Language -> NominalDate -> Site -> FamilyEncounterType -> PersonId -> Person -> Html Msg
+viewParticipant language currentDate site encounterType id person =
     let
         action =
             case encounterType of
@@ -204,10 +206,7 @@ viewParticipant language currentDate encounterType id person =
                                 |> showMaybe
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ text <| Maybe.withDefault "" person.village ]
-                        ]
+                    , viewVillageLine language site person.village
                     ]
                 , viewAction
                 ]

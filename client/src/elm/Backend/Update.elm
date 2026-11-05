@@ -4129,7 +4129,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> Maybe.withDefault Backend.Session.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.Session.Update.update currentDate nurseId sessionId session model subMsg requests
+                    Backend.Session.Update.update currentDate nurseId sessionId session subMsg requests
             in
             ( { model | sessionRequests = Dict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
@@ -8851,7 +8851,7 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                         assembledAfter.encounter.diagnoses
 
                     diagnosesAfter =
-                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
+                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembledAfter
                 in
                 if storedDiagnosesEqual NoPrenatalDiagnosis diagnosesBefore diagnosesAfter then
                     []
@@ -9158,7 +9158,7 @@ generatePrenatalInitialPhaseCompletedMsgs currentDate site features after id =
                         (\encounter ->
                             { encounter
                                 | diagnoses =
-                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembled_
                             }
                         )
                             assembled_.encounter
@@ -9208,7 +9208,7 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                             (\encounter ->
                                 { encounter
                                     | diagnoses =
-                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembled_
                                 }
                             )
                                 assembled_.encounter

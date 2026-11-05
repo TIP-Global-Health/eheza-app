@@ -44,7 +44,7 @@ B-043	3	IMPLEMENTED		2092	2093	11	Acute-illness fever + prenatal MUAC read a GRO
 B-044	2	IMPLEMENTED		1910	1911	11	Villages without a health center are silently dropped from the all-devices sync feed (innerJoin field_uuid via optional 
 B-045	2	IMPLEMENTED		1914	1915	11	Five photo classes + 2 single-ref classes inner-join on an OPTIONAL field → rows silently dropped from sync (exact sibli
 B-046	2	IMPLEMENTED		1939	1940	11	`explode(',', NULL)` on empty multi-value fields emits `[""]` → phantom empty participant UUID
-B-047		READY				11	Revoked/deleted nurse's PIN keeps working forever: client drops the `deleted`/`status` tombstone and re-saves the nurse 
+B-047	4	CLOSED				11	Revoked/deleted nurse's PIN keeps working forever: client drops the `deleted`/`status` tombstone and re-saves the nurse 
 B-048	2	IMPLEMENTED		1919	1920	11	CHW village authorization is enforced only on the PinCode page; every UserPage checks the HC but never the village → rea
 B-049	2	PARKED				11	"Stop Syncing" a health center silently strands its queued unsynced measurements; the pending-upload counter vanishes wi
 B-050	3	IMPLEMENTED		1955	1956	11	Background catch-up sync (>45s) force-reloads the page mid-workflow, discarding a nurse's in-progress form entries
@@ -70,7 +70,7 @@ B-069	1	IMPLEMENTED		1894	1895	15	Dashboard "Total Beneficiaries Wasting" & "# o
 B-070	3	IMPLEMENTED		1953	1954	15	AcuteIllness `fromCovidTestingValue` mis-reconstructs pregnant/positive COVID results on edit
 B-071	4	IMPLEMENTED		2126	2127	15	SyncManager General save-handler reports errors against the wrong response var (copy-paste from the authority twin) → mi
 B-072	3	IMPLEMENTED		1951	1952	15	CorePhysicalExam `heartMurmur` required by save but not counted (B-037 class, SHARED → BOTH NCD and Prenatal)
-B-073	4	READY	LOW			16	PersonsPage (relation mode): `relationshipsByPerson` never fetched → "already related" filter silently off
+B-073	4	IMPLEMENTED	LOW	2470	2471	16	PersonsPage (relation mode): `relationshipsByPerson` never fetched → "already related" filter silently off
 B-074	3	IMPLEMENTED	MED-LOW	1970	1974	16	GroupEncounterOrigin `db.sessions` reads never fetched on People / Relationship / CreatePerson pages (systemic: initiato
 B-075	4	READY				16	Elm sync-incident `incident_type` off the backend allowed-values list
 B-076	3	REFUTED				16	❌ REFUTED 2026-07-22 (traced end-to-end before implementing). ⚠ DO NOT re-pitch — the described symptom is unreachable.
@@ -235,7 +235,7 @@ B-234	4	READY	MED-LOW			24	Case Management (CHW): village scoping skips the TB a
 B-235	2	IMPLEMENTED	HIGH			25	Prenatal nutrition (Healthy Start): the gestational weight-gain verdict is inverted, so a woman gaining too little is to
 B-236	1	IMPLEMENTED	MED-HIGH	2194	2195	25	Prenatal symptoms: whether vaginal discharge counts as "continued" is decided by the patient's **gonorrhea** history, so
 B-237	1	IMPLEMENTED	MED	2205	2206	25	Prenatal HIV: a discordant partnership found from the **partner's** lab result is filed as initial-phase because the pha
-B-238	4	READY	LOW			25	Prenatal ultrasound: opening the execution-date calendar and closing it without picking a day counts the form 6/6 and en
+B-238	4	IMPLEMENTED	LOW	2468	2469	25	Prenatal ultrasound: opening the execution-date calendar and closing it without picking a day counts the form 6/6 and en
 B-239	3	IMPLEMENTED	MED-HIGH			25	Prenatal recurrent labs: the Partner HIV follow-up form has no Save button, so the answers can never be recorded and the
 B-240	1	IMPLEMENTED	MED	2207	2208	25	Prenatal recurrent labs: an operator-precedence slip makes a **positive** lab HIV result suppress the HIV follow-up, so 
 B-241	3	IMPLEMENTED	MED	2284	2285	25	Prenatal recurrent Next Steps: choosing a hypertension treatment other than the recommended one raises an unanswerable q
@@ -288,7 +288,7 @@ B-287	3	READY	MED-LOW			26	NCD labs Case Management entry is closed by the final
 B-288	1	IMPLEMENTED	MED	2219	2220	26	NCD: diabetes found from a point-of-care blood-sugar reading at the initial phase gets no medication or referral task, b
 B-289	1	IMPLEMENTED	MED	2221	2222	26	NCD: a pregnancy found by test at the first encounter is forgotten at every later encounter — the full antihypertensive 
 B-290	3	IMPLEMENTED	MED			26	NCD Social History: the drinks-per-week answer is never saved — the encoder writes the cigarettes count into the `bevera
-B-291	3	READY	MED-LOW			27	NCDA Antenatal Care step (all four hosts): tapping an already-recorded ANC month silently stores a phantom ANC visit dat
+B-291	3	IMPLEMENTED	MED-LOW	2474	2475	27	NCDA Antenatal Care step (all four hosts): tapping an already-recorded ANC month silently stores a phantom ANC visit dat
 B-292	2	IMPLEMENTED	MED	2348	2349	27	Immunisation (Well Child + Child Scoreboard): for a child followed by BOTH programs, the form derives the interval gate 
 B-293	4	IMPLEMENTED	LOW	2199	2201	27	Dashboard immunization donut + NCDA scorecard row: a dose administered ON the reference day is read as not given, so the
 B-294	3	READY	MED			27	Nutrition (individual): the assessment stored on the `nutrition_nutrition` measurement goes stale when signs are saved b
@@ -388,7 +388,7 @@ B-387	4	READY	LOW			33	The new duplicate-English check documents a guarantee it 
 B-388	3	READY	MED			33	A village saved with any geo field blank makes the general sync batch undecodable, stopping ALL sync for every device on
 B-389	4	READY	LOW			33	A live uvl village carries a sector name that is not in the geo table, and nothing validates it: a CHW assigned there co
 B-390	2	IMPLEMENTED	MED	2358	2359	33	A failed GPS capture sends no reply and never clears the last reading, so one household's coordinates are shown and save
-B-391	4	READY	LOW			33	Eleven views label the level-5 address "Village" regardless of site, so Burundi reads "Village" where the unit's own res
+B-391	4	IMPLEMENTED	LOW	2472	2473	33	Eleven views label the level-5 address "Village" regardless of site, so Burundi reads "Village" where the unit's own res
 B-392	1	IMPLEMENTED	MED	2272	2273	33	The duplicate-referral guard now reads a history that cannot contain the encounter it reports to, so a rhesus-negative o
 B-393	3	IMPLEMENTED	MED	2309	2310	34	E2E suite: the Nutrition NCDA test has run in no CI job since 2026-03-15, because the job-1 exclusion `NCD` matches insi
 B-394	4	READY	MED			34	`healthy_start` is on in Rwanda production and is the one site feature no local or CI environment ever enables, so nothi
@@ -554,6 +554,7 @@ B-553	4	READY	LOW			50	Group session child progress report: the page never reque
 B-554	4	READY	LOW			50	Well Child Next Visit: the pediatric-visit date is never re-derived when ECD or a medication answer is corrected after i
 B-555	4	READY	LOW			50	Case Management Immunization pane: a child whose overdue dose the CHW recorded at a Child Scoreboard visit stays listed 
 B-556	4	READY	LOW		2467	50	Prenatal weight gain (sites without Healthy Start): the expected gain is taken at the pregnancy week of the day the form
+B-557	4	READY	LOW		2473	50	Burundi screens still say "village" in three texts next to the Sub-Colline label
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

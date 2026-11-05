@@ -128,7 +128,7 @@ viewContent language currentDate site features id isChw initiator model assemble
             [ class "ui report unstackable items"
             , Html.Attributes.id "report-content"
             ]
-            [ viewPersonInfoPane language currentDate assembled.person
+            [ viewPersonInfoPane language currentDate site assembled.person
             , viewAssessmentPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled
             , viewSymptomsPane language firstInitialWithSubsequent secondInitialWithSubsequent
             , viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled

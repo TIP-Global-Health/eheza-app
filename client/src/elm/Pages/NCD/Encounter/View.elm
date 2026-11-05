@@ -16,28 +16,29 @@ import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterButton, viewPersonDetailsExtended, viewReportLink)
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> NCDEncounterId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> Site -> NCDEncounterId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site id db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site model assembled =
     let
         header =
             viewHeader language assembled
 
         content =
-            viewContent language currentDate model assembled
+            viewContent language currentDate site model assembled
 
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -79,9 +80,9 @@ viewHeader language assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
-viewContent language currentDate model assembled =
-    ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
+viewContent : Language -> NominalDate -> Site -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site model assembled =
+    ((viewPersonDetailsExtended language currentDate site assembled.person |> div [ class "item" ])
         :: viewMainPageContent language currentDate assembled model
     )
         |> div [ class "ui unstackable items" ]

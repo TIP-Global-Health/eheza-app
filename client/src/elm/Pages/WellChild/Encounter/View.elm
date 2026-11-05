@@ -119,7 +119,7 @@ viewContent :
     -> AssembledData
     -> Html Msg
 viewContent language currentDate zscores site features id isChw db model assembled =
-    ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
+    ((viewPersonDetailsExtended language currentDate site assembled.person |> div [ class "item" ])
         :: viewMainPageContent language currentDate zscores site features id isChw db assembled model
     )
         |> div [ class "ui unstackable items" ]
