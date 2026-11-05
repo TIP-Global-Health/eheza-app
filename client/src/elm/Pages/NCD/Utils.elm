@@ -7,6 +7,7 @@ import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrine
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
+import Backend.Utils exposing (resolveIndividualParticipantWithDuplicates)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
@@ -84,7 +85,8 @@ generateAssembledData id db =
 
 generatePreviousEncountersData : Maybe NCDEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List PreviousEncounterData
 generatePreviousEncountersData currentEncounterId participantId db =
-    getNCDEncountersForParticipant db participantId
+    resolveIndividualParticipantWithDuplicates participantId db
+        |> List.concatMap (getNCDEncountersForParticipant db)
         |> List.filterMap
             (\( encounterId, encounter ) ->
                 -- If the ID of current encounter was provided,

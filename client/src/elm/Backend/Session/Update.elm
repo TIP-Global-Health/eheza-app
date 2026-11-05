@@ -6,8 +6,6 @@ import App.Utils exposing (triggerRollbarOnFailure)
 import AssocList as Dict
 import Backend.Endpoints exposing (attendanceEndpoint, childFbfEndpoint, contributingFactorsEndpoint, counselingSessionEndpoint, familyPlanningEndpoint, followUpEndpoint, groupHealthEducationEndpoint, groupNCDAEndpoint, groupSendToHCEndpoint, heightEndpoint, lactationEndpoint, motherFbfEndpoint, muacEndpoint, nutritionEndpoint, participantConsentEndpoint, photoEndpoint, sessionEndpoint, weightEndpoint)
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Fetch
 import Backend.Session.Model exposing (Model, Msg(..), Session)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate)
@@ -17,8 +15,8 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (toCmd, withoutDecoder)
 
 
-update : NominalDate -> Maybe NurseId -> SessionId -> Maybe Session -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate nurseId sessionId maybeSession db msg model =
+update : NominalDate -> Maybe NurseId -> SessionId -> Maybe Session -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate nurseId sessionId maybeSession msg model =
     case msg of
         CloseSession ->
             unwrap
@@ -44,14 +42,6 @@ update currentDate nurseId sessionId maybeSession db msg model =
             case subMsg of
                 NoOp ->
                     ( model, Cmd.none, [] )
-
-                FetchIndividualNutritionData id ->
-                    let
-                        appMsgs =
-                            Backend.NutritionEncounter.Fetch.fetch id db
-                                |> List.map App.Model.MsgIndexedDb
-                    in
-                    ( model, Cmd.none, appMsgs )
 
                 SaveHeight valueId value ->
                     ( { model | saveHeightRequest = Dict.insert personId Loading model.saveHeightRequest }
@@ -150,7 +140,7 @@ update currentDate nurseId sessionId maybeSession db msg model =
                     )
 
                 SaveMotherFbf valueId value ->
-                    ( { model | saveFbfRequest = Dict.insert personId Loading model.saveLactationRequest }
+                    ( { model | saveFbfRequest = Dict.insert personId Loading model.saveFbfRequest }
                     , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value motherFbfEndpoint (HandleSaveFbf personId)
                     , []
                     )

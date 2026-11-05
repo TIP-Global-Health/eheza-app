@@ -51,7 +51,6 @@ import Backend.Measurement.Utils
         , testPerformedByExecutionNote
         )
 import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..), RevisionsOrigin(..))
-import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NCDEncounter.Update
@@ -4130,7 +4129,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> Maybe.withDefault Backend.Session.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.Session.Update.update currentDate nurseId sessionId session model subMsg requests
+                    Backend.Session.Update.update currentDate nurseId sessionId session subMsg requests
             in
             ( { model | sessionRequests = Dict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
@@ -8852,7 +8851,7 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                         assembledAfter.encounter.diagnoses
 
                     diagnosesAfter =
-                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
+                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembledAfter
                 in
                 if storedDiagnosesEqual NoPrenatalDiagnosis diagnosesBefore diagnosesAfter then
                     []
@@ -9073,7 +9072,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
                     (\( resultsId, results ) ->
                         let
                             ( performedTests, completedTests ) =
-                                Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
+                                Pages.Prenatal.RecurrentActivity.Utils.labsResultsTests currentDate assembled results
 
                             updatedValue =
                                 (\value ->
@@ -9089,7 +9088,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
                                             EverySet.insert test completedTests
 
                                         allLabsCompleted =
-                                            EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests
+                                            Pages.GlobalCaseManagement.Utils.allLabsCompleted updatedPerformedTests updatedCompletedTests
 
                                         updatedTestsWithFollowUp =
                                             -- Mark tests which results were entered by Lab Tech, and got
@@ -9159,7 +9158,7 @@ generatePrenatalInitialPhaseCompletedMsgs currentDate site features after id =
                         (\encounter ->
                             { encounter
                                 | diagnoses =
-                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembled_
                             }
                         )
                             assembled_.encounter
@@ -9209,7 +9208,7 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                             (\encounter ->
                                 { encounter
                                     | diagnoses =
-                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembled_
                                 }
                             )
                                 assembled_.encounter
@@ -9225,14 +9224,10 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                     if List.isEmpty pendingActivities then
                         Maybe.map
                             (\( resultsId, results ) ->
-                                let
-                                    value =
-                                        results.value
-                                in
                                 [ savePrenatalLabsResultsMsg id
                                     assembled.participant.person
                                     (Just resultsId)
-                                    { value | resolutionDate = currentDate }
+                                    (Pages.Prenatal.RecurrentActivity.Utils.concludedLabsResultsValue currentDate assembled results)
                                 , App.Model.SetActivePage <|
                                     UserPage <|
                                         ClinicalProgressReportPage
@@ -9347,60 +9342,14 @@ generateNCDLabsResultsAddedMsgs currentDate after test id =
         |> RemoteData.toMaybe
         |> Maybe.andThen
             (\assembled ->
-                Maybe.map
+                Maybe.andThen
                     (\( resultsId, results ) ->
-                        if
-                            EverySet.member test results.value.completedTests
-                                && EverySet.member test results.value.performedTests
-                        then
-                            -- Do not update value if we have it set up properly already.
-                            []
-
-                        else
-                            let
-                                ( performedTests, completedTests ) =
-                                    Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
-
-                                updatedValue =
-                                    (\value ->
-                                        let
-                                            -- Since lab results can be entered right away (at poit of care),
-                                            -- or at latter stage (after test was ordered at lab), we
-                                            -- update both performed and completed tests.
-                                            -- Since data structure is EverySet, it will not create duplicacies.
-                                            updatedPerformedTests =
-                                                EverySet.insert test performedTests
-
-                                            updatedCompletedTests =
-                                                EverySet.insert test completedTests
-
-                                            resolutionDate =
-                                                -- When all performed tests are completed, and Next Steps are either
-                                                -- completed, or not required, setting today as resolution date.
-                                                if
-                                                    (EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests)
-                                                        && Pages.NCD.RecurrentActivity.Utils.activityCompleted
-                                                            assembled
-                                                            Backend.NCDActivity.Model.RecurrentNextSteps
-                                                then
-                                                    currentDate
-
-                                                else
-                                                    value.resolutionDate
-                                        in
-                                        { value
-                                            | performedTests = updatedPerformedTests
-                                            , completedTests = updatedCompletedTests
-                                            , resolutionDate = resolutionDate
-                                        }
-                                    )
-                                        results.value
-                            in
-                            [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                        Pages.NCD.RecurrentActivity.Utils.labsResultsValueWithResult currentDate assembled test results.value
+                            |> Maybe.map (saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId))
                     )
                     assembled.measurements.labsResults
             )
-        |> Maybe.withDefault []
+        |> Maybe.Extra.toList
 
 
 saveNCDLabsResultsMsg :

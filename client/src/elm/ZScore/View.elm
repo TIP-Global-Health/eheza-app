@@ -7,6 +7,9 @@ module ZScore.View exposing
     , XAxisTypes
     , YAxisConfig
     , YAxisSpaceType
+    , headCircumferenceForAge0To2Config
+    , heightForAgeConfig
+    , plotPoints
     , viewHeadCircumferenceForAge0To13WeeksBoys
     , viewHeadCircumferenceForAge0To13WeeksGirls
     , viewHeadCircumferenceForAge0To2Boys
@@ -30,6 +33,10 @@ module ZScore.View exposing
     , viewWeightForHeight0To5Girls
     , viewWeightForHeightBoys
     , viewWeightForHeightGirls
+    , weightForAgeConfig
+    , weightForHeight0To5Config
+    , weightForHeightConfig
+    , yAxisLines
     )
 
 {-| Ultimately, the idea is that we've got information in the `Model` that we
@@ -187,24 +194,40 @@ areaColorToClass areaColor =
             "red"
 
 
+{-| The 0-2 charts are shown until a child graduates at 26 months, so they run
+to the oldest age in days a child under 26 months can have.
+-}
+zeroToTwoChartsMaxDays : Float
+zeroToTwoChartsMaxDays =
+    792
+
+
+{-| The x-axis of the 0-2 charts: years, with a line for each month, up to
+two years and two months.
+-}
+zeroToTwoChartsXAxis : XAxisConfig
+zeroToTwoChartsXAxis =
+    -- Each of the three year lines is 365 days of the frame apart.
+    { width = 3 * 365 * (715.4 - 110.9) / zeroToTwoChartsMaxDays
+    , minAgeUnit = 0
+    , maxAgeUnit = 2
+    , ageUnitBreakdown = List.range 1 11
+    , innerLinesNumber = 0
+    , minLength = 0
+    , maxLength = 0
+    , xAxisType = AgeYears
+    }
+
+
 heightForAgeConfig : PlotConfig Days Centimetres
 heightForAgeConfig =
     { toFloatX = \(ZScore.Model.Days days) -> toFloat days
     , toFloatY = \(Centimetres cm) -> cm
-    , input = { minY = 42, maxY = 99, minX = 0, maxX = 365 * 2 }
+    , input = { minY = 42, maxY = 99, minX = 0, maxX = zeroToTwoChartsMaxDays }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = False
     , paintLevels = True
-    , xAxis =
-        { width = 908
-        , minAgeUnit = 0
-        , maxAgeUnit = 2
-        , ageUnitBreakdown = List.range 1 11
-        , innerLinesNumber = 0
-        , minLength = 0
-        , maxLength = 0
-        , xAxisType = AgeYears
-        }
+    , xAxis = zeroToTwoChartsXAxis
     , yAxis =
         { yAxisIntervals = 5
         , innerLinesNumber = 4
@@ -278,20 +301,11 @@ weightForAgeConfig : PlotConfig Days Kilograms
 weightForAgeConfig =
     { toFloatX = \(ZScore.Model.Days days) -> toFloat days
     , toFloatY = \(Kilograms kg) -> kg
-    , input = { minY = 1.4, maxY = 17.8, minX = 0, maxX = 365 * 2 }
+    , input = { minY = 1.4, maxY = 17.8, minX = 0, maxX = zeroToTwoChartsMaxDays }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = False
     , paintLevels = True
-    , xAxis =
-        { width = 908
-        , minAgeUnit = 0
-        , maxAgeUnit = 2
-        , ageUnitBreakdown = List.range 1 11
-        , innerLinesNumber = 0
-        , minLength = 0
-        , maxLength = 0
-        , xAxisType = AgeYears
-        }
+    , xAxis = zeroToTwoChartsXAxis
     , yAxis =
         { yAxisIntervals = 1
         , innerLinesNumber = 4
@@ -452,20 +466,11 @@ headCircumferenceForAge0To2Config : PlotConfig Days Centimetres
 headCircumferenceForAge0To2Config =
     { toFloatX = \(ZScore.Model.Days days) -> toFloat days
     , toFloatY = \(Centimetres cm) -> cm
-    , input = { minY = 25, maxY = 55, minX = 0, maxX = 365 * 2 }
+    , input = { minY = 25, maxY = 55, minX = 0, maxX = zeroToTwoChartsMaxDays }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = True
     , paintLevels = True
-    , xAxis =
-        { width = 908
-        , minAgeUnit = 0
-        , maxAgeUnit = 2
-        , ageUnitBreakdown = List.range 1 11
-        , innerLinesNumber = 0
-        , minLength = 0
-        , maxLength = 0
-        , xAxisType = AgeYears
-        }
+    , xAxis = zeroToTwoChartsXAxis
     , yAxis =
         { yAxisIntervals = 1
         , innerLinesNumber = 29
@@ -583,25 +588,35 @@ plotPoints config =
             (config.output.maxX - config.output.minX)
                 / (config.input.maxX - config.input.minX)
 
-        scaleY =
-            (config.output.maxY - config.output.minY)
-                / (config.input.maxY - config.input.minY)
-
         plotX x =
             config.output.minX
                 + ((x - config.input.minX) * scaleX)
                 |> clamp config.output.minX config.output.maxX
 
-        plotY y =
-            -- Y is a bit different, because SVG has its origin at the top
-            config.output.maxY
-                - ((y - config.input.minY) * scaleY)
-                |> clamp config.output.minY config.output.maxY
+        plotY =
+            valuePositionY config
     in
     List.map
         (\{ x, y } ->
             ( plotX x, plotY y )
         )
+
+
+{-| Where a value is drawn on the y-axis. The plotted points and the y-axis
+gridlines both use it, so a gridline labelled 45 sits where 45 is plotted.
+-}
+valuePositionY : PlotConfig x y -> Float -> Float
+valuePositionY config =
+    let
+        scaleY =
+            (config.output.maxY - config.output.minY)
+                / (config.input.maxY - config.input.minY)
+    in
+    \y ->
+        -- Y is a bit different, because SVG has its origin at the top
+        config.output.maxY
+            - ((y - config.input.minY) * scaleY)
+            |> clamp config.output.minY config.output.maxY
 
 
 plotReferenceData : PlotConfig x y -> List ( x, ZScoreEntry y ) -> Svg any
@@ -1218,11 +1233,11 @@ zScoreLabelsHeightForAgeBoys : Svg any
 zScoreLabelsHeightForAgeBoys =
     g
         []
-        [ text_ [ transform "matrix(1 0 0 1 720.9237 240.2482)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 720.7001 260.0353)", class "z-score-semibold st23" ] [ text "-3" ]
-        , text_ [ transform "matrix(1 0 0 1 722.0057 141.1564)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 722.4686 200.841)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 722.0448 161.738)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        [ text_ [ transform "matrix(1 0 0 1 720.9237 234.9794)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7001 255.5984)", class "z-score-semibold st23" ] [ text "-3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0057 131.7282)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.4686 193.9085)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0448 153.1417)", class "two-line z-score-semibold st23" ] [ text "2" ]
         ]
 
 
@@ -1281,11 +1296,11 @@ zScoreLabelsHeightForAgeGirls5To19 =
 zScoreLabelsWeightForAgeBoys : Svg any
 zScoreLabelsWeightForAgeBoys =
     g []
-        [ text_ [ transform "matrix(1 0 0 1 719.923 315.5098)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 719.6994 339.3469)", class "z-score-semibold st23" ] [ text "-3" ]
-        , text_ [ transform "matrix(1 0 0 1 721.6105 182.8234)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 722.4973 254.3636)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 722.1398 136.3553)", class "z-score-semibold st23" ] [ text "3" ]
+        [ text_ [ transform "matrix(1 0 0 1 719.923 308.4527)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 719.6994 333.2261)", class "z-score-semibold st23" ] [ text "-3" ]
+        , text_ [ transform "matrix(1 0 0 1 721.6105 169.89)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 722.4973 244.8728)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 722.1398 130.1)", class "z-score-semibold st23" ] [ text "3" ]
         ]
 
 
@@ -1317,11 +1332,11 @@ zScoreLabelsHeightForAgeGirls : Svg any
 zScoreLabelsHeightForAgeGirls =
     g
         []
-        [ text_ [ transform "matrix(1 0 0 1 720.9238 251.8845)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 720.7002 273.9982)", class "z-score-semibold st23" ] [ text "-3" ]
-        , text_ [ transform "matrix(1 0 0 1 722.29 142.5744)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 722.4688 208.1066)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 722.0449 165.1994)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        [ text_ [ transform "matrix(1 0 0 1 720.9238 246.113)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7002 268.947)", class "z-score-semibold st23" ] [ text "-3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.29 133.2014)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.4688 200.8945)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0449 156.5467)", class "two-line z-score-semibold st23" ] [ text "2" ]
         ]
 
 
@@ -1329,11 +1344,11 @@ zScoreLabelsWeightForAgeGirls : Svg any
 zScoreLabelsWeightForAgeGirls =
     g
         []
-        [ text_ [ transform "matrix(1 0 0 1 720.9238 329.1916)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 720.7002 351.9709)", class "z-score-semibold st23" ] [ text "-3" ]
-        , text_ [ transform "matrix(1 0 0 1 723.707 141.6711)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 723.4619 190.8845)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 723.498 272.1838)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        [ text_ [ transform "matrix(1 0 0 1 720.9238 321.475)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7002 345.1266)", class "z-score-semibold st23" ] [ text "-3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.707 130.1)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.4619 177.4332)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 723.498 262.1624)", class "zero-line z-score-semibold st23" ] [ text "0" ]
         ]
 
 
@@ -1371,7 +1386,7 @@ zScoreLabelsHeadCircumferenceForAge0To13WeeksBoys =
 
 zScoreLabelsHeadCircumferenceForAge0To2Boys : Svg any
 zScoreLabelsHeadCircumferenceForAge0To2Boys =
-    ZScoreValues 263.1 245.5 228 210.4 192.9 175.3 157.8
+    ZScoreValues 260.3 242.5 224.9 207.2 189.5 171.8 154.1
         |> zScoreValuesLabel
 
 
@@ -1389,7 +1404,7 @@ zScoreLabelsHeadCircumferenceForAge0To13WeeksGirls =
 
 zScoreLabelsHeadCircumferenceForAge0To2Girls : Svg any
 zScoreLabelsHeadCircumferenceForAge0To2Girls =
-    ZScoreValues 278.2 260.2 242.2 224.2 206.9 188.2 170.2
+    ZScoreValues 274.8 256.7 238.7 220.6 203.3 184.5 166.5
         |> zScoreValuesLabel
 
 
@@ -1507,14 +1522,14 @@ xAxisLinesAndText config =
                             if breakdownLines then
                                 List.indexedMap
                                     (\ii unitBreakdown ->
-                                        if unit < config.xAxis.maxAgeUnit then
+                                        let
+                                            innerMargin =
+                                                linesMargin + (spaceBetweenInnerLines * (toFloat ii + 1))
+                                        in
+                                        -- A breakdown line is drawn where it falls inside the frame. The 0-2
+                                        -- charts show two months past their last year.
+                                        if innerMargin <= config.output.maxX then
                                             let
-                                                innerIndex =
-                                                    toFloat ii
-
-                                                innerMargin =
-                                                    linesMargin + (spaceBetweenInnerLines * (innerIndex + 1))
-
                                                 innerLinePosition =
                                                     Round.round 4 innerMargin
 
@@ -1583,10 +1598,13 @@ xAxisLinesAndText config =
         lines
 
 
-yAxisLinesAndText : PlotConfig x y -> Svg any
-yAxisLinesAndText config =
+{-| The y-axis gridlines: each labelled value with its position, and the
+positions of the unlabelled lines between it and the next labelled value.
+-}
+yAxisLines : PlotConfig x y -> List { value : Float, position : Float, innerPositions : List Float }
+yAxisLines config =
     let
-        yAxisList =
+        values =
             Float.Extra.range { start = config.input.minY, end = config.input.maxY, steps = round <| config.input.maxY - config.input.minY }
                 -- We only display the successive numbers of the intervals defined in the config.
                 |> List.filter
@@ -1594,103 +1612,105 @@ yAxisLinesAndText config =
                         (yInput == config.input.minY) || (yInput == config.input.maxY) || (remainderBy config.yAxis.yAxisIntervals (round yInput) == 0)
                     )
 
-        height =
-            config.output.maxY - config.output.minY
+        -- The value step between unlabelled lines. For example, intervals of 5
+        -- with 4 inner lines give a line every 1 cm.
+        innerStep =
+            toFloat config.yAxis.yAxisIntervals / toFloat (config.yAxis.innerLinesNumber + 1)
 
-        listCount =
-            List.length yAxisList
+        plotY =
+            valuePositionY config
+    in
+    List.map2
+        (\value next ->
+            { value = value
+            , position = plotY value
+            , innerPositions =
+                Maybe.map
+                    (\nextValue ->
+                        let
+                            gap =
+                                nextValue - value
 
-        spaceBetweenLines =
-            height / toFloat (listCount - 1)
+                            parts =
+                                round (gap / innerStep)
+                        in
+                        List.range 1 (parts - 1)
+                            |> List.map (\part -> plotY (value + gap * toFloat part / toFloat parts))
+                    )
+                    next
+                    |> Maybe.withDefault []
+            }
+        )
+        values
+        (List.map Just (List.drop 1 values) ++ [ Nothing ])
 
-        spaceBetweenInnerLines =
-            spaceBetweenLines / (toFloat config.yAxis.innerLinesNumber + 1)
 
-        -- Here we can define the lines as we want.
+yAxisLinesAndText : PlotConfig x y -> Svg any
+yAxisLinesAndText config =
+    let
         lines =
-            List.indexedMap
-                (\i lineText ->
-                    let
-                        index =
-                            toFloat i
+            yAxisLines config
+                |> List.concatMap
+                    (\{ value, position, innerPositions } ->
+                        let
+                            lineTextPosition =
+                                (position + 2)
+                                    |> Round.round 2
 
-                        linesMargin =
-                            if index == 0 then
-                                config.output.maxY
+                            linePosition =
+                                Round.round 4 position
 
-                            else
-                                config.output.maxY - (spaceBetweenLines * index)
+                            innerLines =
+                                List.map
+                                    (\innerPosition ->
+                                        let
+                                            innerLinePosition =
+                                                Round.round 4 innerPosition
+                                        in
+                                        line [ class "st19", x1 "110.8", y1 innerLinePosition, x2 "715.4", y2 innerLinePosition ] []
+                                    )
+                                    innerPositions
 
-                        lineTextPosition =
-                            (linesMargin + 2)
-                                |> Round.round 2
+                            leftTextVerticalPosition =
+                                if config.yAxis.decimalPointsForText > 0 then
+                                    "88.4252"
 
-                        linePosition =
-                            linesMargin
-                                |> Round.round 4
+                                else
+                                    "95.4252"
 
-                        innerLines =
-                            if lineText /= config.input.maxY then
-                                List.range 1 config.yAxis.innerLinesNumber
-                                    |> List.map
-                                        (\innerLine ->
-                                            let
-                                                innerIndex =
-                                                    toFloat innerLine
+                            ( beginningText, endText ) =
+                                ( text_ [ transform <| "matrix(1 0 0 1 " ++ leftTextVerticalPosition ++ " " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| Round.round config.yAxis.decimalPointsForText value ]
+                                , text_ [ transform <| "matrix(1 0 0 1 745.0155 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| Round.round config.yAxis.decimalPointsForText value ]
+                                )
 
-                                                innerLinePosition =
-                                                    linesMargin
-                                                        - (spaceBetweenInnerLines * innerIndex)
-                                                        |> Round.round 4
-                                            in
-                                            line [ class "st19", x1 "110.8", y1 innerLinePosition, x2 "715.4", y2 innerLinePosition ] []
-                                        )
+                            ( beginningTextConditional, endTextConditional ) =
+                                -- There're multiple types of showing the text for each graph, in some of them, we don't
+                                -- need to show the text on the first line, some on the last and some we don't want to show
+                                -- on either side.
+                                case config.yAxis.spaceType of
+                                    SpaceAround ->
+                                        if value == config.input.minY || value == config.input.maxY then
+                                            ( emptyNode, emptyNode )
 
-                            else
-                                []
+                                        else
+                                            ( beginningText, endText )
 
-                        leftTextVerticalPosition =
-                            if config.yAxis.decimalPointsForText > 0 then
-                                "88.4252"
+                                    SpaceBelow ->
+                                        if value == config.input.minY then
+                                            ( emptyNode, emptyNode )
 
-                            else
-                                "95.4252"
+                                        else
+                                            ( beginningText, endText )
 
-                        ( beginningText, endText ) =
-                            ( text_ [ transform <| "matrix(1 0 0 1 " ++ leftTextVerticalPosition ++ " " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| Round.round config.yAxis.decimalPointsForText lineText ]
-                            , text_ [ transform <| "matrix(1 0 0 1 745.0155 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| Round.round config.yAxis.decimalPointsForText lineText ]
-                            )
-
-                        ( beginningTextConditional, endTextConditional ) =
-                            -- There're multiple types of showing the text for each graph, in some of them, we don't
-                            -- need to show the text on the first line, some on the last and some we don't want to show
-                            -- on either side.
-                            case config.yAxis.spaceType of
-                                SpaceAround ->
-                                    if lineText == config.input.minY || lineText == config.input.maxY then
-                                        ( emptyNode, emptyNode )
-
-                                    else
+                                    NoSpace ->
                                         ( beginningText, endText )
-
-                                SpaceBelow ->
-                                    if lineText == config.input.minY then
-                                        ( emptyNode, emptyNode )
-
-                                    else
-                                        ( beginningText, endText )
-
-                                NoSpace ->
-                                    ( beginningText, endText )
-                    in
-                    [ line [ class "st18", x1 "110.8", y1 linePosition, x2 "737.6", y2 linePosition ] []
-                    , beginningTextConditional
-                    , endTextConditional
-                    ]
-                        |> List.append innerLines
-                )
-                yAxisList
-                |> List.concat
+                        in
+                        [ line [ class "st18", x1 "110.8", y1 linePosition, x2 "737.6", y2 linePosition ] []
+                        , beginningTextConditional
+                        , endTextConditional
+                        ]
+                            |> List.append innerLines
+                    )
     in
     g []
         lines

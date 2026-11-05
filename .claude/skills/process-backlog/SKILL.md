@@ -113,8 +113,9 @@ On **park**: write `🅿 PARKED` into the entry *and* the tier line with the use
 and the date, before moving on.
 
 ### 4. Build
-Follow `knowledge/runbook.md` exactly — worktree per finding, verification gates per change type,
-issue → PR → review request.
+Follow `knowledge/runbook.md` exactly — worktree per finding, issue with acceptance criteria
+before any code, seam commit and blind tests for logic defects, verification gates per change
+type, PR → review request.
 
 ### 5. Record
 Immediately, before the next item and before anything can be compacted away: entry status, PR
@@ -141,6 +142,11 @@ number, tier line, and any side-findings noticed while building appended as new 
   running. **Round 1:** fix or decline as you judge, push; post nothing to the PR, ask no approval.
   **Round 2:** run it on the pushed head; the rules below apply to it. Never self-run `high` or
   above. Mechanics in `pr-first-review-workflow` in memory.
+- ⛔ **Criteria before code; blind tests for logic defects.** The issue, with its
+  `## Expected behaviour` block approved by the user, exists before the first line of the fix.
+  For a logic defect the tests come from the `blind-test-author` agent, started from the seam
+  commit with the issue and the criteria only, and must fail there (`fail-first.sh`). The
+  implementer never changes what a blind test asserts. Runbook steps 2a–2b.
 - **After round 2 is addressed, suggest whether a `qa-tester` run is worth it** — one line with the
   reason (visible on screen or in stored data, not covered by e2e). Suggest only; never start it.
   In the same message, ask whether to move the PR to QA; only on approval add the `Ready for QA` label.

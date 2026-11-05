@@ -1,7 +1,10 @@
 #!/bin/bash
 # Create a durable worktree for one backlog item.
 #
-#   .claude/scripts/new-worktree.sh <branch-name>
+#   .claude/scripts/new-worktree.sh <branch-name> [base-ref]
+#
+# The branch starts from origin/develop, or from <base-ref> when given: the
+# blind test author starts from the seam commit of the fix branch.
 #
 # Sessions run in parallel, so worktrees live outside any session's scratchpad.
 # A worktree lasts one round of work: release it once the work is pushed and
@@ -12,12 +15,13 @@ set -eu
 
 # Derived, not hardcoded: this script is tracked and travels between stations.
 # It must be run from a checkout of the repo (the main tree or any worktree).
-MAIN=$(git -C "$(dirname "$0")" rev-parse --path-format=absolute --show-toplevel)
+MAIN=$(dirname "$(git -C "$(dirname "$0")" rev-parse --path-format=absolute --git-common-dir)")
 ROOT="$MAIN-wt"
 
 branch=${1:-}
+base=${2:-}
 if [ -z "$branch" ]; then
-  echo "usage: $0 <branch-name>" >&2
+  echo "usage: $0 <branch-name> [base-ref]" >&2
   exit 1
 fi
 wt="$ROOT/$branch"
@@ -31,14 +35,19 @@ if git worktree list --porcelain | grep -qx "branch refs/heads/$branch"; then
 fi
 [ -e "$wt" ] && { echo "$wt already exists." >&2; exit 1; }
 
-git fetch -q origin develop
+if [ -n "$base" ]; then
+  git fetch -q origin
+else
+  git fetch -q origin develop
+  base=origin/develop
+fi
 mkdir -p "$ROOT"
 # A released worktree leaves its branch behind; re-attach to it rather than
 # failing on `-b`, so a second round of work on the same branch is one command.
 if git show-ref --verify --quiet "refs/heads/$branch"; then
   git worktree add "$wt" "$branch"
 else
-  git worktree add "$wt" -b "$branch" origin/develop
+  git worktree add "$wt" -b "$branch" "$base"
 fi
 
 # Build inputs the main tree already has. elm-stuff is deliberately NOT
@@ -53,5 +62,5 @@ mkdir -p "$wt/client/elm-stuff"
 
 echo
 echo "worktree: $wt"
-echo "branch:   $branch (origin/develop is at $(git rev-parse --short origin/develop))"
+echo "branch:   $branch (from $base at $(git rev-parse --short "$base"))"
 echo "release it once the work is pushed:  git worktree remove $wt"

@@ -3,7 +3,7 @@ module Pages.GlobalCaseManagement.Test exposing (all)
 import AssocList as Dict
 import Backend.IndividualEncounterParticipant.Model as IndividualEncounterParticipant exposing (emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (resolveOpenParticipant)
-import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, Gender(..))
+import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, Gender(..), LaboratoryTest(..))
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..), emptyWellChildEncounter)
@@ -11,7 +11,7 @@ import Date
 import EverySet
 import Expect
 import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpItem, EncounterStartedToday(..), ImmunizationFollowUpItem)
-import Pages.GlobalCaseManagement.Utils exposing (filterFollowUpsOfChasedChildren, filterResolvedFollowUps, generateTuberculosisFollowUps, resolveEncounterStartedToday)
+import Pages.GlobalCaseManagement.Utils exposing (allLabsCompleted, filterFollowUpsOfChasedChildren, filterResolvedFollowUps, generateTuberculosisFollowUps, resolveEncounterStartedToday)
 import Pages.GlobalCaseManagement.View exposing (generateImmunizationFollowUpEntries)
 import RemoteData
 import Restful.Endpoint exposing (toEntityUuid)
@@ -24,13 +24,28 @@ import Time
 all : Test
 all =
     describe "Pages.GlobalCaseManagement"
-        [ filterFollowUpsOfChasedChildrenTests
+        [ allLabsCompletedTest
+        , filterFollowUpsOfChasedChildrenTests
         , filterResolvedFollowUpsTests
         , generateImmunizationFollowUpEntriesTests
         , generateTuberculosisFollowUpsTests
         , resolveEncounterStartedTodayTests
         , resolveOpenParticipantTests
         , tuberculosisSuspectEntryTests
+        ]
+
+
+allLabsCompletedTest : Test
+allLabsCompletedTest =
+    describe "allLabsCompleted"
+        [ test "a completed test that is no longer performed does not stand in for a pending one" <|
+            \_ ->
+                allLabsCompleted (EverySet.fromList [ TestHIV, TestHemoglobin ]) (EverySet.fromList [ TestVitalsRecheck, TestHIV ])
+                    |> Expect.equal False
+        , test "every performed test completed" <|
+            \_ ->
+                allLabsCompleted (EverySet.fromList [ TestHIV ]) (EverySet.fromList [ TestHIV, TestVitalsRecheck ])
+                    |> Expect.equal True
         ]
 
 

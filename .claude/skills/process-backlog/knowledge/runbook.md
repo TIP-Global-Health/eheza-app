@@ -25,6 +25,51 @@ tree's `client/`: `node_modules`, `src/generated`, `src/elm/LocalConfig.elm`.
 relative source-directories resolve *through* the symlink into the main tree, so it silently
 compiles and tests the main tree's sources and every pass is vacuous. Cold compile ~1–2 min.
 
+**2a. Issue with acceptance criteria — before any code.** `gh issue create` now, not at ship
+time: mechanism and impact as the entry gives them, no fix. End the body with an
+`## Expected behaviour` block of five to ten lines, each a behaviour a tester could check, in the
+app's own terms — no mechanism, no function names. Draft it from the issue trail and the entry,
+show it to the user, and **wait for approval or edits**. This block is the contract the blind test
+author and qa-tester read; approving it is the user's gate, in place of reading the diff.
+
+    ## Expected behaviour
+    - A pregnancy whose diagnosis is reconfirmed as `-continued` counts that diagnosis once.
+    - Phase variants of one diagnosis collapse to one code.
+    - A pregnancy with two different diagnoses counts two.
+
+**2b. Seam commit, then blind tests.** Mandatory when the defect is in logic — a verdict, a
+threshold, a meaning, a count. Skip it for mechanical one-liners, pure moves and config, and say so
+in the bookkeeping record (step 7).
+
+1. **Seam.** Extract or name the pure function the fix will live in, in the owning
+   `Pages/<program>/…/Utils.elm` (never `Backend.Update` — a test importing it OOM-kills CI), with
+   behaviour unchanged. Commit it alone as `Seam: <function>` and push the branch. Note its sha, S.
+   Naming an existing function is a seam only while the fix keeps its signature. When the fix will
+   remove an input (B-552 dropped today's date), no seam commit can keep the old behaviour under the
+   new signature: S is develop, the author writes against today's signature, the gate runs before
+   the fix, and call-site edits after it are expected — list them. Tell the author which input will
+   disappear, so it carries that dimension in data the function keeps seeing (the encounter's end
+   date, not a date argument), and record that the removed input is enforced by the type, not the
+   tests.
+2. **Blind author.** `.claude/scripts/new-worktree.sh <id>-tests S`, then start the
+   `blind-test-author` agent (`Agent`, `subagent_type: blind-test-author`) with exactly this: the
+   issue URL, the `## Expected behaviour` block pasted, the seam module and signatures, and the
+   worktree path. Nothing else — not the entry, not the fix idea, not a diff.
+3. **Build the fix meanwhile**, locally. Do not push it until the tests are merged, so there is
+   nothing for the author to see.
+4. **Merge.** When the author returns, `git merge origin/<id>-tests`. Read its table: every
+   criterion row should be FAIL on S. A PASS row that is not a labelled guard means the criterion
+   does not pin the defect — fix the criterion with the user and send the author that row again.
+5. **Go green.** Edit a blind test only for a compile error against final signatures, and list each
+   such edit in the bookkeeping record. Changing what a test asserts is not allowed: if one is
+   wrong, the criterion is wrong, and that goes back to the user.
+   ⛔ An input removed from the seam takes its tests' coverage with it. Either the input stays, or
+   the dimension leaves the code too. Never move the decision it carried to a caller outside the
+   seam — a gate relocated there is one no blind test reaches (B-548 round 1 did exactly this with
+   the activity list, the shape of the original defect).
+6. **Gate.** `.claude/scripts/fail-first.sh S` from the fix worktree. It runs this tree's test
+   files against S in a throwaway worktree and passes only when they fail there.
+
 **3. Verify by change type.**
 
 - **Elm** — `elm-format --yes` the touched files; `elm make src/elm/Main.elm --output=/dev/null`
@@ -42,7 +87,8 @@ compiles and tests the main tree's sources and every pass is vacuous. Cold compi
   full CI extension list** (`--extensions=php,module,inc,install,test,profile,theme,css,info,txt,md`);
   bare phpcs silently skips `.module`.
 - **Discrimination test** — required for subtle logic: prove the test FAILS against pre-fix code
-  (stash or revert the fix), then restore. For mechanical one-liners, compile + suite is enough;
+  (stash or revert the fix), then restore. For a blind-tested item the gate in step 2b is that
+  proof. For mechanical one-liners, compile + suite is enough;
   don't build heavy fixtures to test a sign flip.
 
 **4. Remove the worktree once the work is pushed.** `git worktree remove <path>` once
@@ -50,7 +96,7 @@ compiles and tests the main tree's sources and every pass is vacuous. Cold compi
 recreate it with `.claude/scripts/new-worktree.sh <branch>`; the branch lives on `origin`, not in
 the directory.
 
-**5. Ship.** `gh issue create` (mechanism / impact / fix) → commit `Fixes #N` with the
+**5. Ship.** Commit `Fixes #N` against the issue from step 2a, with the
 `Co-Authored-By` trailer and **no `[ci skip]`** → `git push -u` → `gh pr create --base develop`.
 Then run the medium review yourself — `Skill({skill: "code-review", args: "medium <branch>"})` — always,
 in two rounds (step 6). Watch CI in the background:
@@ -63,7 +109,10 @@ re-check afterwards.
 **6. Reviews.** Two medium rounds. Round 1: fix or decline as you judge, push; nothing on the PR.
 Round 2, on the pushed head: post inline, present, wait for approval, then fix.
 Verify every claim against the code before acting — review bots are sometimes
-exactly right and sometimes overstated. Reply per thread with the fixing commit or the reason it
+exactly right and sometimes overstated. In the round-2 analysis also answer two fixed questions
+yourself: does every `## Expected behaviour` line have a test, and was any blind test edited after
+the fix. Note whether round 2 found anything the blind tests missed — that is the measure deciding
+whether round 2 stays. Reply per thread with the fixing commit or the reason it
 was declined, then resolve the thread (mutation in step 7).
 
 **6a. Suggest QA.** Once round 2 is addressed, say whether a `qa-tester` run is worth it, and why:
@@ -74,7 +123,8 @@ In the same message, ask whether to move the PR to QA. Only when the user approv
 `gh api repos/TIP-Global-Health/eheza-app/issues/<N>/labels -f 'labels[]=Ready for QA'`
 
 **7. Bookkeep immediately** (compaction-safe): entry status → `✅ IMPLEMENTED (issue #, PR #,
-branch, base sha, what was verified)`, update the tier line, append side-findings as new minors,
+branch, base sha, what was verified, blind tests: <criteria>/<failed first>, edits after fix:
+none|<list>, round 2 beyond the tests: none|<what>)` — or `blind tests: skipped (<why>)`, update the tier line, append side-findings as new minors,
 run `reindex.py`, **then commit and push those files on `develop`** with `[ci skip]` — staging the
 paths explicitly, never `git add -A` (`server/.pantheon-*` are untracked and not gitignored). A
 record that exists only in the working tree is not a record.
@@ -90,6 +140,10 @@ and warns instead when the tree is not on `develop`. It is a backstop for a miss
 its generated message says far less than one written here.
 
 ## Traps that have cost a cycle
+
+- **Review rounds can undo the seam.** A round-1 fix that reintroduces an input the fix removed
+  belongs inside the seam function, so the blind tests see it; placed in the caller it is
+  unpinned, and the activity-dimension tests silently become same-activity twins (B-548).
 
 - **SimpleTest fixtures**: some bundles need their fields **at create**, not after — insert hooks
   read `field_person` / `field_adult` / `field_clinic` as they run, and a later `->set()` throws

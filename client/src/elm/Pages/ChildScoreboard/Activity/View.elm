@@ -96,7 +96,7 @@ viewHeader language id activity =
 viewContent : Language -> NominalDate -> Site -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate site activity db model assembled =
     div [ class "ui unstackable items" ]
-        ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
+        ((viewPersonDetailsExtended language currentDate site assembled.person |> div [ class "item" ])
             :: viewActivity language currentDate site activity assembled db model
         )
 

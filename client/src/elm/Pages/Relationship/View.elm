@@ -18,9 +18,10 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Relationship.Model exposing (Model, Msg(..))
-import Pages.Utils exposing (emptySelectOption)
+import Pages.Utils exposing (emptySelectOption, viewVillageLine)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
@@ -30,14 +31,14 @@ import Utils.WebData exposing (viewError, viewWebData)
 {-| Offer to edit the relationship between these persons, from the point of
 view of the first person.
 -}
-view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> Initiator -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model =
+view : Language -> NominalDate -> Site -> ( HealthCenterId, Maybe VillageId ) -> Bool -> Initiator -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model =
     div
         [ class "page-relationship" ]
         [ viewHeader language initiator id1
         , div
             [ class "ui full segment blue" ]
-            [ viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model ]
+            [ viewContent language currentDate site ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model ]
         ]
 
 
@@ -61,8 +62,8 @@ viewHeader language initiator id1 =
         ]
 
 
-viewContent : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> Initiator -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
-viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model =
+viewContent : Language -> NominalDate -> Site -> ( HealthCenterId, Maybe VillageId ) -> Bool -> Initiator -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+viewContent language currentDate site ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model =
     let
         person1 =
             Dict.get id1 db.people
@@ -98,7 +99,7 @@ viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw initia
             maybeVillageId
                 |> Maybe.andThen (\villageId -> getVillageClinicId villageId db)
     in
-    viewWebData language (viewFetchedContent language currentDate healthCenterId maybeVillageGroupId isChw initiator id1 id2 model request db) identity fetched
+    viewWebData language (viewFetchedContent language currentDate site healthCenterId maybeVillageGroupId isChw initiator id1 id2 model request db) identity fetched
 
 
 type alias FetchedData =
@@ -110,8 +111,8 @@ type alias FetchedData =
     }
 
 
-viewFetchedContent : Language -> NominalDate -> HealthCenterId -> Maybe ClinicId -> Bool -> Initiator -> PersonId -> PersonId -> Model -> WebData MyRelationship -> ModelIndexedDb -> FetchedData -> Html Msg
-viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId isChw initiator id1 id2 model request db data =
+viewFetchedContent : Language -> NominalDate -> Site -> HealthCenterId -> Maybe ClinicId -> Bool -> Initiator -> PersonId -> PersonId -> Model -> WebData MyRelationship -> ModelIndexedDb -> FetchedData -> Html Msg
+viewFetchedContent language currentDate site selectedHealthCenter maybeVillageGroupId isChw initiator id1 id2 model request db data =
     let
         savedRelationship =
             data.relationships
@@ -349,19 +350,19 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
     div [ class "registration-page view" ]
         [ div
             [ class "ui unstackable items participants-list" ]
-            [ viewParticipant language currentDate data.person1 ]
+            [ viewParticipant language currentDate site data.person1 ]
         , relationshipSelector
         , div
             [ class "ui unstackable items participants-list" ]
-            [ viewParticipant language currentDate data.person2 ]
+            [ viewParticipant language currentDate site data.person2 ]
         , viewGroupSection
         , requestStatus
         , buttons
         ]
 
 
-viewParticipant : Language -> NominalDate -> Person -> Html Msg
-viewParticipant language currentDate person =
+viewParticipant : Language -> NominalDate -> Site -> Person -> Html Msg
+viewParticipant language currentDate site person =
     let
         typeForThumbnail =
             defaultIconForPerson currentDate person
@@ -381,10 +382,7 @@ viewParticipant language currentDate person =
                                 |> showMaybe
                             ]
                         ]
-                    , p []
-                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ text <| Maybe.withDefault "" person.village ]
-                        ]
+                    , viewVillageLine language site person.village
                     ]
                 ]
     in

@@ -25,7 +25,6 @@ emptyModel =
 type Tab
     = Completed
     | Pending
-    | Reports
 
 
 type alias AssembledData =
