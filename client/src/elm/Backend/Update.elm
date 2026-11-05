@@ -8851,7 +8851,7 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                         assembledAfter.encounter.diagnoses
 
                     diagnosesAfter =
-                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
+                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembledAfter
                 in
                 if storedDiagnosesEqual NoPrenatalDiagnosis diagnosesBefore diagnosesAfter then
                     []
@@ -9158,7 +9158,7 @@ generatePrenatalInitialPhaseCompletedMsgs currentDate site features after id =
                         (\encounter ->
                             { encounter
                                 | diagnoses =
-                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembled_
                             }
                         )
                             assembled_.encounter
@@ -9208,7 +9208,7 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                             (\encounter ->
                                 { encounter
                                     | diagnoses =
-                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse assembled_
                                 }
                             )
                                 assembled_.encounter

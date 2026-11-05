@@ -575,7 +575,7 @@ expectNextStepsTask currentDate assembled task =
 
 resolveNextVisitDate : AssembledData -> Maybe NominalDate
 resolveNextVisitDate assembled =
-    Maybe.map (calculateEGAWeeks assembled.encounter.startDate) assembled.globalLmpDate
+    encounterEGAWeeks assembled
         |> Maybe.map
             (\egaWeekCurrent ->
                 let
@@ -1961,13 +1961,21 @@ generatePrenatalAssesmentForChw assembled =
         AssesmentHighRiskPregnancy
 
 
-generatePrenatalDiagnosesForNurse : NominalDate -> AssembledData -> EverySet PrenatalDiagnosis
-generatePrenatalDiagnosesForNurse currentDate assembled =
+{-| EGA in weeks on the encounter's start date.
+-}
+encounterEGAWeeks : AssembledData -> Maybe Int
+encounterEGAWeeks assembled =
+    Maybe.map (calculateEGAWeeks assembled.encounter.startDate) assembled.globalLmpDate
+
+
+{-| EGA is taken on the encounter's start date, so a lab result entered on
+a later day grades the visit's findings at the visit's week.
+-}
+generatePrenatalDiagnosesForNurse : AssembledData -> EverySet PrenatalDiagnosis
+generatePrenatalDiagnosesForNurse assembled =
     let
         egaInWeeks =
-            Maybe.map
-                (calculateEGAWeeks currentDate)
-                assembled.globalLmpDate
+            encounterEGAWeeks assembled
 
         dangerSignsList =
             generateDangerSignsListForNurse assembled
@@ -1988,7 +1996,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                     |> EverySet.fromList
 
         diagnosesByLabResultsAndExamination =
-            resolveLabResultsAndExaminationDiagnoses currentDate assembled
+            resolveLabResultsAndExaminationDiagnoses egaInWeeks assembled
                 |> List.filter (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSignsList assembled)
                 |> EverySet.fromList
 
@@ -3537,8 +3545,8 @@ emergencyObstetricCareServicesDiagnoses =
     ]
 
 
-resolveLabResultsAndExaminationDiagnoses : NominalDate -> AssembledData -> List PrenatalDiagnosis
-resolveLabResultsAndExaminationDiagnoses currentDate assembled =
+resolveLabResultsAndExaminationDiagnoses : Maybe Int -> AssembledData -> List PrenatalDiagnosis
+resolveLabResultsAndExaminationDiagnoses egaInWeeks assembled =
     case assembled.encounter.encounterType of
         NursePostpartumEncounter ->
             [ DiagnosisPostpartumEarlyMastitisOrEngorgment
@@ -3551,12 +3559,8 @@ resolveLabResultsAndExaminationDiagnoses currentDate assembled =
             let
                 preeclampsiaRiskDiagnoses =
                     Maybe.map
-                        (\lmpDate ->
-                            let
-                                egaInWeeks =
-                                    calculateEGAWeeks currentDate lmpDate
-                            in
-                            if egaInWeeks >= 12 then
+                        (\egaWeeks ->
+                            if egaWeeks >= 12 then
                                 -- Preeclampsia risk diagnoses appear from EGA week 12.
                                 [ DiagnosisModerateRiskOfPreeclampsia
                                 , DiagnosisHighRiskOfPreeclampsiaInitialPhase
@@ -3566,7 +3570,7 @@ resolveLabResultsAndExaminationDiagnoses currentDate assembled =
                             else
                                 []
                         )
-                        assembled.globalLmpDate
+                        egaInWeeks
                         |> Maybe.withDefault []
             in
             preeclampsiaRiskDiagnoses
