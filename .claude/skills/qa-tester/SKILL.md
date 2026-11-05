@@ -207,6 +207,8 @@ Every plan has three kinds of row, and each row names its kind:
 - **Hold rows**, from the blast radius: scenarios the change must not alter. Run each on
   both builds with the same data and compare the stored record and the screen. Any
   difference is a FAIL; no judgement about whether it looks right is needed or allowed.
+  The row's write-up names `develop`'s value beside the PR's, or says "same as develop".
+  A row reported from the PR side alone is a proof row, and is labelled so.
 - **Boundary rows**: the exact value of each condition the diff adds or moves. Equal to
   the threshold, the same day, the day after, an empty collection, a missing value.
 
@@ -390,7 +392,8 @@ approval.** Its first line is exactly this, with no `>` or heading mark in front
 then a table with one row per plan row — the plain-words test from Step 3, its kind (fix,
 hold, boundary) and its result — and a short paragraph per row saying what it showed —
 including which part was set up by helpers, which was checked by hand, and which proofs
-the diff called for. Name the criteria covered by unit tests. Close with what the run did
+the diff called for. Then one sentence on what the error channel showed on each build.
+Name the criteria covered by unit tests. Close with what the run did
 **not** cover:
 blocked rows, touch-only behaviour, and sibling code paths a scenario stands in for but did
 not exercise. State a blocked row as blocked; never imply coverage the run does not have.
@@ -400,8 +403,9 @@ Describe what is now true, not which commands were run.
 bash .claude/skills/qa-tester/scripts/post-qa-report.sh <pr> <drafted-file>
 ```
 
-It refuses a file that does not open with the caption; `--update <comment-id>` replaces
-an earlier report instead of adding one. The report names no video files.
+It refuses a file that does not open with the caption, or that has no error-channel
+sentence naming both builds; `--update <comment-id>` replaces an earlier report instead
+of adding one. The report names no video files.
 
 **Then post the recordings as a separate comment**, one player per video. Preparation comes
 first, each as `**Preparation <k>:** <what is prepared, and which test needs it>`, then each
