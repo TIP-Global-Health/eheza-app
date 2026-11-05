@@ -1808,8 +1808,11 @@ resolvePrePregnancyClassification zscores isHealthyStart assembled baselineBmi =
             assembled.person.birthDate
 
 
-resolveGWGClassification : NominalDate -> PrePregnancyClassification -> Float -> Float -> AssembledData -> Maybe GWGClassification
-resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeight currentWeight assembled =
+{-| Graded at the visit's pregnancy week, so reopening the visit on a later day
+gives the same verdict.
+-}
+resolveGWGClassification : PrePregnancyClassification -> Float -> Float -> AssembledData -> Maybe GWGClassification
+resolveGWGClassification prePregnancyClassification prePregnancyWeight currentWeight assembled =
     Maybe.map
         (\lmpDate ->
             let
@@ -1819,7 +1822,7 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
                 expectedWeightGain =
                     let
                         egaInWeeks =
-                            calculateEGAWeeks currentDate lmpDate
+                            calculateEGAWeeks assembled.encounter.startDate lmpDate
 
                         weeksAfterFirstTrimester =
                             egaInWeeks - 12

@@ -3251,7 +3251,7 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site is
             else
                 Maybe.Extra.andThen3
                     (\prePregnancyClassification baselineWeight currentWeight ->
-                        resolveGWGClassification currentDate prePregnancyClassification baselineWeight currentWeight assembled
+                        resolveGWGClassification prePregnancyClassification baselineWeight currentWeight assembled
                             |> Maybe.map
                                 (\classification ->
                                     let

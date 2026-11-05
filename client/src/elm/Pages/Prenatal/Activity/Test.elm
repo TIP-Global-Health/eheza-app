@@ -719,7 +719,7 @@ gwgVerdict prePregnancyClassification filledOn assembled currentWeight =
                     { measurements | nutrition = (hsNutritionWithWeight filledOn currentWeight).nutrition }
             }
     in
-    resolveGWGClassification filledOn prePregnancyClassification gwgPrePregnancyWeight currentWeight withCurrentWeight
+    resolveGWGClassification prePregnancyClassification gwgPrePregnancyWeight currentWeight withCurrentWeight
 
 
 resolveGWGClassificationTest : Test
