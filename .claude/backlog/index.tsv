@@ -253,7 +253,7 @@ B-252	4	IMPLEMENTED	LOW	2198	2200	25	NCD progress report: the Partner HIV lab ro
 B-253	4	IMPLEMENTED	LOW			25	Pregnancy Outcome page reads an arbitrary encounter instead of the latest, so Gravida and Para can render as `----`
 B-254	4	IMPLEMENTED	LOW	2408	2409	25	Prenatal participant page picks an arbitrary pregnancy when a person has two active ones, so encounters can land on the 
 B-255	4	READY	LOW			25	CHW progress report: the breech/transverse alert re-grades a stale exam against TODAY's gestational age, so a normal EGA
-B-256	4	READY	MED-LOW			25	Well-child registration: a birth date exactly 13 years back is offered, and then the form demands two fields it never re
+B-256	4	IMPLEMENTED	MED-LOW	2478	2483	25	Well-child registration: a birth date exactly 13 years back is offered, and then the form demands two fields it never re
 B-257	4	READY	LOW			25	Duplicate-patient lookup is triggered by any text field over 13 characters and sized to Rwanda's ID, so the duplicate wa
 B-258	4	READY	LOW			25	Person edit page never fetches relationships, so after a page reload an address change silently skips the children
 B-259	4	IMPLEMENTED	LOW	2267	2269	25	A freshly opened person form greets the nurse with "Person has been saved"
