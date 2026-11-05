@@ -1617,7 +1617,7 @@ yAxisLines config =
         -- The value step between unlabelled lines. For example, intervals of 5
         -- with 4 inner lines give a line every 1 cm.
         innerStep =
-            toFloat config.yAxis.yAxisIntervals / toFloat (config.yAxis.innerLinesNumber + 1)
+            interval / toFloat (config.yAxis.innerLinesNumber + 1)
 
         plotY =
             valuePositionY config
