@@ -379,6 +379,9 @@ flag simply does not appear.
   set; older, Height-for-age 5–19, Weight-for-age 5–10, HC 0–5. Read geometry from the SVG: labelled lines `line.st18`,
   inner `line.st19`, left labels `text.st16` at x 95.4252/88.4252 (y = transform y − 2), the child's dots are circles
   filled `#06B9FF`; the plot runs y 506.7 (minY) to 119.9 (maxY) in `ZScore/View.elm`'s configs.
+- The first `svg` in `.growth-charts` is the 0×0 markers element (`viewMarkers`): waiting for it to be visible times out. Wait for
+  `.growth-charts svg line.st18` attached, and count charts from index 1. Gridlines and labels come from the config alone, not the child's data.
+  `text.st16` also holds the x-axis month numbers: take y-axis labels by x (95.4252, 88.4252 or 745.0155 on the right).
 - Chart SVG for geometry checks: the child's dots are `circle` without a class (`circle.z-score-white` are label
   backgrounds), joined by `polyline.child-data`; reference curves are `polyline.*-line-new` in the order −3, −2, (−1), 0,
   (+1), +2, +3; x-axis `line.unit-line` (labels `text.st20`) and `line.unit-breakdown-line` (labels at y 516.5436);

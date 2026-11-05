@@ -611,3 +611,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a generic NCDA filler collected every unanswered yes/no, set an id on each, and its second click waited 10 s for an id that was gone.
 - **Wrong conclusion:** the question disappeared.
 - **Rule:** an answer can reveal a question and Elm rebuilds the nodes, dropping ids it did not set. Answer one question, then scan the form again.
+
+## Looping over a fixed number of growth charts
+
+- **Symptom:** a recorded loop over charts 1–4 timed out for a 6½-year-old, leaving a dead 10 s tail; the child had to be registered again and re-recorded.
+- **Wrong conclusion:** the report failed to draw a chart.
+- **Rule:** the chart count depends on age: four under 60 months, three after (app-map). Loop over the `svg` elements that hold `line.st18`, not a fixed list of indexes.
