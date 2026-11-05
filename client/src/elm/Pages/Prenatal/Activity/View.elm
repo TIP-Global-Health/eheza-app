@@ -995,7 +995,7 @@ viewExaminationContent language currentDate zscores site features assembled data
                         |> Maybe.withDefault form
 
                 prePregnancyWeight =
-                    resolvePrePregnancyWeight currentDate assembled
+                    resolvePrePregnancyWeight assembled
                         |> Maybe.map weightValueFunc
 
                 isHealthyStart =

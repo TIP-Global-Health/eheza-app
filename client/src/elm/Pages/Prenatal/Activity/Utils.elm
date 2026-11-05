@@ -1566,8 +1566,8 @@ resolvePreviouslyMeasuredHeight assembled =
     Maybe.Extra.or heightMeasuredByNurse heightMeasuredByCHW
 
 
-resolvePrePregnancyWeight : NominalDate -> AssembledData -> Maybe WeightInKg
-resolvePrePregnancyWeight currentDate assembled =
+resolvePrePregnancyWeight : AssembledData -> Maybe WeightInKg
+resolvePrePregnancyWeight assembled =
     let
         resolveWeight measurements =
             getMeasurementValueFunc measurements.lastMenstrualPeriod
@@ -1594,7 +1594,7 @@ resolvePrePregnancyWeight currentDate assembled =
         byNutritionAssessmentWeight =
             let
                 current =
-                    Maybe.map (\nutrition -> [ ( currentDate, nutrition ) ])
+                    Maybe.map (\nutrition -> [ ( assembled.encounter.startDate, nutrition ) ])
                         assembled.measurements.nutrition
                         |> Maybe.withDefault []
 

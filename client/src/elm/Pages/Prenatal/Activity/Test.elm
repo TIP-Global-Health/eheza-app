@@ -671,8 +671,8 @@ resolveGWGClassificationSincePreviousVisitTest =
 --
 -- Every scenario here holds the visit on one day and opens or saves its
 -- Nutrition Assessment on a later one. The visit's date is the encounter's
--- start date. The later day is both the date passed to the function and the
--- date of the visit's own Nutrition measurement, as a re-save records it.
+-- start date. The later day is the date of the visit's own Nutrition
+-- measurement, as a re-save records it.
 -- The verdict must follow the visit's date, not the later day.
 
 
