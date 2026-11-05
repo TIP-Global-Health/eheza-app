@@ -28,19 +28,28 @@ function hedley_chw_node_presave($node) {
   // A blank geo field reaches devices as NULL. The client cannot decode it,
   // so the whole general sync batch fails and every device of the site stops
   // syncing.
-  $geo_fields = [
+  foreach (hedley_chw_village_geo_fields() as $field_name) {
+    $items = field_get_items('node', $node, $field_name);
+    if (empty($items) || trim((string) $items[0]['value']) === '') {
+      throw new Exception("A village must have a value for $field_name.");
+    }
+  }
+}
+
+/**
+ * The geo fields of a village, from province down to village.
+ *
+ * @return string[]
+ *   The field names.
+ */
+function hedley_chw_village_geo_fields() {
+  return [
     'field_province',
     'field_district',
     'field_sector',
     'field_cell',
     'field_village',
   ];
-  foreach ($geo_fields as $field_name) {
-    $items = field_get_items('node', $node, $field_name);
-    if (empty($items) || trim((string) $items[0]['value']) === '') {
-      throw new Exception("A village must have a value for $field_name.");
-    }
-  }
 }
 
 /**
@@ -234,25 +243,19 @@ function hedley_chw_process_new_participation($node) {
  */
 function hedley_chw_find_person_village($person_id) {
   $wrapper = entity_metadata_wrapper('node', $person_id);
-  $province = $wrapper->field_province->value();
-  $district = $wrapper->field_district->value();
-  $sector = $wrapper->field_sector->value();
-  $cell = $wrapper->field_cell->value();
-  $village = $wrapper->field_village->value();
 
   $query = hedley_general_create_entity_field_query_excluding_deleted();
-
-  $result = $query
+  $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'village')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_province', 'value', $province)
-    ->fieldCondition('field_district', 'value', $district)
-    ->fieldCondition('field_sector', 'value', $sector)
-    ->fieldCondition('field_cell', 'value', $cell)
-    ->fieldCondition('field_village', 'value', $village)
-    ->range(0, 1)
-    ->execute();
+    ->range(0, 1);
+
+  foreach (hedley_chw_village_geo_fields() as $field_name) {
+    $query->fieldCondition($field_name, 'value', $wrapper->{$field_name}->value());
+  }
+
+  $result = $query->execute();
 
   return empty($result['node']) ? FALSE : key($result['node']);
 }

@@ -28,16 +28,13 @@ $handler = fopen($source_file, 'r');
 $health_centers = [];
 
 while ($row = fgetcsv($handler)) {
-  $health_center_name = $row[5];
-  $village_name = $row[4];
-
-  // A village with a blank geo field is refused on save, so report the row
-  // and go on with the next one.
-  $geo_values = array_slice($row, 0, 5);
-  if (count($geo_values) < 5 || in_array('', array_map('trim', $geo_values), TRUE)) {
-    drush_print('Skipping a row with a blank geo field: ' . implode(',', $row));
+  if (count($row) < 6) {
+    drush_print('Skipping a row with fewer than six columns: ' . implode(',', $row));
     continue;
   }
+
+  $health_center_name = $row[5];
+  $village_name = $row[4];
 
   if (empty($health_centers[$health_center_name])) {
     $health_center_id = hedley_person_resolve_content_by_name('health_center', $health_center_name);
@@ -62,7 +59,16 @@ while ($row = fgetcsv($handler)) {
   $wrapper->field_cell->set($row[3]);
   $wrapper->field_village->set($village_name);
   $wrapper->field_health_center->set($health_centers[$health_center_name]);
-  $wrapper->save();
+
+  // A refused save, such as a blank geo field, skips the row and the import
+  // goes on with the next one.
+  try {
+    $wrapper->save();
+  }
+  catch (Exception $e) {
+    drush_print("Skipping creation of $village_name village: " . $e->getMessage());
+    continue;
+  }
 
   drush_print("$village_name village created");
 }
