@@ -4129,7 +4129,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> Maybe.withDefault Backend.Session.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.Session.Update.update currentDate nurseId sessionId session model subMsg requests
+                    Backend.Session.Update.update currentDate nurseId sessionId session subMsg requests
             in
             ( { model | sessionRequests = Dict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
