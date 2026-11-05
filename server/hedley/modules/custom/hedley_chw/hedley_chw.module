@@ -30,6 +30,23 @@ function hedley_chw_node_presave($node) {
   if (empty($items) || empty($items[0]['target_id'])) {
     throw new Exception('A village must be assigned a health center.');
   }
+
+  // A blank geo field reaches devices as NULL. The client cannot decode it,
+  // so the whole general sync batch fails and every device of the site stops
+  // syncing.
+  $geo_fields = [
+    'field_province',
+    'field_district',
+    'field_sector',
+    'field_cell',
+    'field_village',
+  ];
+  foreach ($geo_fields as $field_name) {
+    $items = field_get_items('node', $node, $field_name);
+    if (empty($items) || trim((string) $items[0]['value']) === '') {
+      throw new Exception("A village must have a value for $field_name.");
+    }
+  }
 }
 
 /**
