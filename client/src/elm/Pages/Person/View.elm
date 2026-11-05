@@ -659,7 +659,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage NutritionEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -13 today |> Date.add Days 1
+                            , birthDateSelectorFrom = earliestChildBirthDate today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -763,7 +763,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 { goBackPage = UserPage (PersonsPage maybeRelatedPersonId initiator)
                                 , expectedAge = ExpectChild
                                 , expectedGender = ExpectMaleOrFemale
-                                , birthDateSelectorFrom = Date.add Years -13 today |> Date.add Days 1
+                                , birthDateSelectorFrom = earliestChildBirthDate today
                                 , birthDateSelectorTo = today
                                 , title = Translate.People
                                 }

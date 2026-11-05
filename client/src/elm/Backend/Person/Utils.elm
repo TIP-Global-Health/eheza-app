@@ -33,11 +33,13 @@ ageInMonths currentDate person =
         |> Maybe.map (\birthDate -> diffMonths birthDate currentDate)
 
 
-{-| The earliest birth date a child-only birth-date picker offers.
+{-| The earliest birth date a child-only birth-date picker offers. Born exactly
+13 years ago is an adult by `isAdult`, so children start the day after.
 -}
 earliestChildBirthDate : NominalDate -> NominalDate
 earliestChildBirthDate currentDate =
     Date.add Date.Years -13 currentDate
+        |> Date.add Date.Days 1
 
 
 isAdult : NominalDate -> Maybe NominalDate -> Maybe Bool
