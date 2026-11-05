@@ -62,7 +62,7 @@ import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateH
 import Pages.Prenatal.Activity.Model exposing (Msg(..), UltrasoundForm, emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveNextStepsTasks, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, suicideRiskDiagnosedBySigns, toUltrasoundValueWithDefault, ultrasoundEDDDate, ultrasoundFormWithDefault, ultrasoundTasks, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveNextStepsTasks, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, suicideRiskDiagnosedBySigns, toUltrasoundValueWithDefault, ultrasoundEDDDate, ultrasoundFormWithDefault, ultrasoundTasks, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), PreviousEncounterData, emptyHealthEducationForm)
 import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedPreviouslyAnyOf, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
@@ -656,6 +656,216 @@ resolveGWGClassificationSincePreviousVisitTest =
                 in
                 hsVerdict PrePregnancyNormal hsJuly13 assembled 61.0
                     |> Expect.equal Nothing
+        ]
+
+
+
+-- GESTATIONAL WEIGHT GAIN ON SITES WITHOUT HEALTHY START
+--
+-- The verdict compares the gain since before pregnancy with the gain expected
+-- at the visit's pregnancy week: a first-trimester amount up to week 12, then
+-- a weekly amount for every week after 12. For a normal pre-pregnancy BMI that
+-- is 1 kg, then 0.42 kg per week. The ratio gain / expected grades it:
+-- below 0.7 severely inadequate, below 0.9 inadequate, up to 1.25 adequate,
+-- above that excessive.
+--
+-- Every scenario here holds the visit on one day and opens or saves its
+-- Nutrition Assessment on a later one. The visit's date is the encounter's
+-- start date. The later day is both the date passed to the function and the
+-- date of the visit's own Nutrition measurement, as a re-save records it.
+-- The verdict must follow the visit's date, not the later day.
+
+
+{-| LMP for these scenarios. `gwgWeek 20` is exactly 20 weeks after it.
+-}
+gwgLmp : NominalDate
+gwgLmp =
+    Date.fromCalendarDate 2020 Time.Jan 6
+
+
+gwgWeek : Int -> NominalDate
+gwgWeek weeks =
+    Date.add Date.Weeks weeks gwgLmp
+
+
+{-| Pre-pregnancy weight used throughout: a current weight of 64.0 kg is a
+gain of 4.0 kg.
+-}
+gwgPrePregnancyWeight : Float
+gwgPrePregnancyWeight =
+    60.0
+
+
+{-| A nurse visit held on `visitDate`, with no earlier visits.
+-}
+gwgVisit : NominalDate -> AssembledData
+gwgVisit visitDate =
+    hsCurrentVisit gwgLmp visitDate []
+
+
+{-| The verdict when the visit's weight, `currentWeight`, is entered on
+`filledOn`. The entry is recorded as the visit's own Nutrition measurement,
+dated `filledOn`. This is the only call of the function under test.
+-}
+gwgVerdict : PrePregnancyClassification -> NominalDate -> AssembledData -> Float -> Maybe GWGClassification
+gwgVerdict prePregnancyClassification filledOn assembled currentWeight =
+    let
+        measurements =
+            assembled.measurements
+
+        withCurrentWeight =
+            { assembled
+                | measurements =
+                    { measurements | nutrition = (hsNutritionWithWeight filledOn currentWeight).nutrition }
+            }
+    in
+    resolveGWGClassification filledOn prePregnancyClassification gwgPrePregnancyWeight currentWeight withCurrentWeight
+
+
+resolveGWGClassificationTest : Test
+resolveGWGClassificationTest =
+    describe "resolveGWGClassification (sites without Healthy Start: gain since before pregnancy)"
+        [ test "On a site without Healthy Start, the weight-gain verdict for a visit is graded at the pregnancy week of the visit's date, not of the day the form is opened or saved" <|
+            \_ ->
+                -- Normal BMI, visit at week 20, form opened at week 24.
+                -- Week 20 expects 1 + 8 x 0.42 = 4.36 kg; week 24 would
+                -- expect 6.04 kg. 6.0 kg gained is 1.38 of the week-20
+                -- target: excessive. Against week 24 it would read adequate.
+                gwgVerdict PrePregnancyNormal (gwgWeek 24) (gwgVisit (gwgWeek 20)) 66.0
+                    |> Expect.equal (Just GWGExcessive)
+        , test "Opening or re-saving an earlier visit's Nutrition Assessment, with the weights unchanged, gives the same verdict as on the visit day" <|
+            \_ ->
+                -- The same visit at week 20 with 4.0 kg gained, filled on the
+                -- visit day and on four later days.
+                let
+                    assembled =
+                        gwgVisit (gwgWeek 20)
+
+                    onVisitDay =
+                        gwgVerdict PrePregnancyNormal (gwgWeek 20) assembled 64.0
+                in
+                Expect.all
+                    [ \_ -> onVisitDay |> Expect.equal (Just GWGAdequate)
+                    , \_ -> gwgVerdict PrePregnancyNormal (Date.add Date.Days 1 (gwgWeek 20)) assembled 64.0 |> Expect.equal onVisitDay
+                    , \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 22) assembled 64.0 |> Expect.equal onVisitDay
+                    , \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 30) assembled 64.0 |> Expect.equal onVisitDay
+                    , \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 40) assembled 64.0 |> Expect.equal onVisitDay
+                    ]
+                    ()
+        , test "Example: normal pre-pregnancy BMI, visit at week 20, 4.0 kg gained: Adequate, whether saved on the visit day or 4 weeks later" <|
+            \_ ->
+                -- 4.0 / 4.36 = 0.92: adequate. Against the week-24 target of
+                -- 6.04 kg it would be 0.66: severely inadequate.
+                let
+                    assembled =
+                        gwgVisit (gwgWeek 20)
+                in
+                Expect.all
+                    [ \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 20) assembled 64.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 24) assembled 64.0 |> Expect.equal (Just GWGAdequate)
+                    ]
+                    ()
+        , test "A visit in the first trimester (week 12 or earlier) is graded against the first-trimester target, even when re-saved after week 12" <|
+            \_ ->
+                -- Normal BMI: the first-trimester target is 1 kg, so 1.0 kg
+                -- gained is adequate. Re-saved at week 16 the target would be
+                -- 2.68 kg, at week 14 it would be 1.84 kg.
+                Expect.all
+                    [ \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 10) (gwgVisit (gwgWeek 10)) 61.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 16) (gwgVisit (gwgWeek 10)) 61.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 12) (gwgVisit (gwgWeek 12)) 61.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 14) (gwgVisit (gwgWeek 12)) 61.0 |> Expect.equal (Just GWGAdequate)
+                    ]
+                    ()
+        , test "a visit at week 13, re-saved at week 17, is graded against the week-13 target, not the first-trimester one" <|
+            \_ ->
+                -- Week 13 expects 1.42 kg: 1.0 kg gained is 0.70, inadequate.
+                -- The first-trimester target (1 kg) would make it adequate;
+                -- the week-17 target (3.1 kg) severely inadequate.
+                gwgVerdict PrePregnancyNormal (gwgWeek 17) (gwgVisit (gwgWeek 13)) 61.0
+                    |> Expect.equal (Just GWGInadequate)
+        , test "Changing the weight on the form still changes the verdict" <|
+            \_ ->
+                -- Visit at week 20 (4.36 kg expected), filled at week 24.
+                let
+                    assembled =
+                        gwgVisit (gwgWeek 20)
+                in
+                Expect.all
+                    [ \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 24) assembled 62.5 |> Expect.equal (Just GWGSeverelyInadequate)
+                    , \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 24) assembled 63.5 |> Expect.equal (Just GWGInadequate)
+                    , \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 24) assembled 64.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 24) assembled 66.0 |> Expect.equal (Just GWGExcessive)
+                    ]
+                    ()
+        , test "The verdict stored on the visit, which the reports read, is the one shown on the form" <|
+            \_ ->
+                -- Saving stores whether the verdict shown is adequate. Saved
+                -- at week 24 for a week-20 visit with 4.0 kg gained, that is
+                -- the visit-day verdict, adequate, so the stored indicator
+                -- reads adequate as it did on the visit day.
+                let
+                    assembled =
+                        gwgVisit (gwgWeek 20)
+
+                    storedAsAdequate filledOn =
+                        gwgVerdict PrePregnancyNormal filledOn assembled 64.0
+                            |> Maybe.map ((==) GWGAdequate)
+                in
+                Expect.all
+                    [ \_ -> storedAsAdequate (gwgWeek 20) |> Expect.equal (Just True)
+                    , \_ -> storedAsAdequate (gwgWeek 24) |> Expect.equal (Just True)
+                    ]
+                    ()
+        , test "every pre-pregnancy classification: re-saved 4 weeks later, the verdict is the visit day's" <|
+            \_ ->
+                -- Visit at week 20, filled at week 24. Expected at week 20:
+                -- underweight 2 + 8 x 0.51 = 6.08 kg, overweight 1 + 8 x 0.28
+                -- = 3.24 kg, obese 0.5 + 8 x 0.22 = 2.26 kg. Each gain below
+                -- is adequate there, and falls short of the week-24 target.
+                let
+                    assembled =
+                        gwgVisit (gwgWeek 20)
+                in
+                Expect.all
+                    [ \_ -> gwgVerdict PrePregnancyUnderWeight (gwgWeek 24) assembled 66.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> gwgVerdict PrePregnancyOverweight (gwgWeek 24) assembled 63.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> gwgVerdict PrePregnancyObesity (gwgWeek 24) assembled 62.5 |> Expect.equal (Just GWGAdequate)
+                    ]
+                    ()
+        , test "visit reopened and ended again on a later day: still graded at the week of the visit's start date" <|
+            \_ ->
+                -- Visit started at week 20, ended again at week 24, form
+                -- filled at week 26.
+                gwgVerdict PrePregnancyNormal (gwgWeek 26) (hsEndedOn (gwgWeek 24) (gwgVisit (gwgWeek 20))) 64.0
+                    |> Expect.equal (Just GWGAdequate)
+        , test "form filled on the visit day: graded at the visit's week" <|
+            \_ ->
+                -- 4.0 kg at week 20: adequate; at week 24 the same gain on a
+                -- week-24 visit is severely inadequate.
+                Expect.all
+                    [ \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 20) (gwgVisit (gwgWeek 20)) 64.0 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> gwgVerdict PrePregnancyNormal (gwgWeek 24) (gwgVisit (gwgWeek 24)) 64.0 |> Expect.equal (Just GWGSeverelyInadequate)
+                    ]
+                    ()
+        , test "pregnancy with no LMP: no verdict" <|
+            \_ ->
+                let
+                    base =
+                        gwgVisit (gwgWeek 20)
+                in
+                gwgVerdict PrePregnancyNormal (gwgWeek 24) { base | globalLmpDate = Nothing } 64.0
+                    |> Expect.equal Nothing
+        , test "Sites with Healthy Start are unchanged" <|
+            \_ ->
+                -- Healthy Start grades the gain since the previous visit: from
+                -- 1 June (60.0 kg) to 13 July, 42 days, 2.52 kg expected, also
+                -- when the weight is entered on 20 July.
+                Expect.all
+                    [ \_ -> hsVerdict PrePregnancyNormal hsJuly20 (hsExampleVisit hsJune1) 62.52 |> Expect.equal (Just GWGAdequate)
+                    , \_ -> hsVerdict PrePregnancyNormal hsJuly20 (hsExampleVisit hsJune1) 62.4 |> Expect.equal (Just GWGInadequate)
+                    ]
+                    ()
         ]
 
 
@@ -2807,6 +3017,7 @@ all =
         , zscoreToPrePregnancyClassificationTest
         , resolveGWGClassificationForHealthyStartTest
         , resolveGWGClassificationSincePreviousVisitTest
+        , resolveGWGClassificationTest
         , generatePrenatalDiagnosesForNurseLabsTest
         , generatePrenatalDiagnosesForNurseRecurrentLabsTest
         , generatePrenatalAssesmentForChwTest
