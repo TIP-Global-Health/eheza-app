@@ -406,37 +406,6 @@ function hedley_patient_consolidate_patients() {
 }
 
 /**
- * Explains why an ID cannot be used for a patient of a consolidation.
- *
- * @param mixed $nid
- *   The ID, as it was entered.
- * @param string $label
- *   The patient's role, 'Original' or 'Duplicate', for the message.
- *
- * @return string
- *   The error message, or an empty string when the ID can be used.
- *
- * @throws \EntityMetadataWrapperException
- */
-function _consolidate_patients_id_error($nid, $label) {
-  $node = ctype_digit((string) $nid) ? node_load($nid) : FALSE;
-  if (empty($node)) {
-    return "ERROR! $label patient ID does not match any content. Please fix and try again.";
-  }
-
-  if ($node->type !== 'person') {
-    return "ERROR! $label patient node type is not of a person. Please fix and try again.";
-  }
-
-  $deleted = entity_metadata_wrapper('node', $node)->field_deleted->value();
-  if (!empty($deleted)) {
-    return "ERROR! $label patient is already deleted. Please fix and try again.";
-  }
-
-  return '';
-}
-
-/**
  * Runs validations before executing consolidation process.
  *
  * @return array
@@ -450,10 +419,23 @@ function _consolidate_patients_validate($original, $duplicate) {
     'messages' => [],
   ];
 
+  $wrappers = [];
   foreach (['Original' => $original, 'Duplicate' => $duplicate] as $label => $nid) {
-    $error = _consolidate_patients_id_error($nid, $label);
-    if (!empty($error)) {
-      $return['messages'][] = $error;
+    $node = ctype_digit((string) $nid) ? node_load($nid) : FALSE;
+    if (empty($node)) {
+      $return['messages'][] = "ERROR! $label patient ID does not match any content. Please fix and try again.";
+      return $return;
+    }
+
+    if ($node->type !== 'person') {
+      $return['messages'][] = "ERROR! $label patient node type is not of a person. Please fix and try again.";
+      return $return;
+    }
+
+    $wrappers[$label] = entity_metadata_wrapper('node', $node);
+    $deleted = $wrappers[$label]->field_deleted->value();
+    if (!empty($deleted)) {
+      $return['messages'][] = "ERROR! $label patient is already deleted. Please fix and try again.";
       return $return;
     }
   }
@@ -463,11 +445,8 @@ function _consolidate_patients_validate($original, $duplicate) {
     return $return;
   }
 
-  $wrapper_original = entity_metadata_wrapper('node', $original);
-  $wrapper_duplicate = entity_metadata_wrapper('node', $duplicate);
-
-  $health_center_original = $wrapper_original->field_health_center->getIdentifier();
-  $health_center_duplicate = $wrapper_duplicate->field_health_center->getIdentifier();
+  $health_center_original = $wrappers['Original']->field_health_center->getIdentifier();
+  $health_center_duplicate = $wrappers['Duplicate']->field_health_center->getIdentifier();
   // Do not allow consolidation, if patients are assigned to
   // different health centers.
   if ($health_center_original !== $health_center_duplicate) {

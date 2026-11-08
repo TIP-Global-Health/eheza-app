@@ -799,7 +799,8 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     // 20. A patient cannot be merged with themselves.
     $person = $this->createPerson('SameOnBothSides');
     $this->assertValidationRefused($person, $person, 'same person', 'The same ID on both sides is refused.');
-    $this->assertTrue($this->isLive($person), 'The patient refused as their own duplicate stays live.');
+    // The form and drush pass strings, which need not be written the same way.
+    $this->assertValidationRefused((string) $person, '0' . $person, 'same person', 'The same ID written differently is refused.');
 
     // 21-22. An ID that matches nothing, or is no number, gets a message.
     $person = $this->createPerson('MissingCounterpart');
