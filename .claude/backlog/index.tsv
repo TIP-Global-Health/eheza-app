@@ -214,7 +214,7 @@ B-213	2	IMPLEMENTED	HIGH	2188	2189	23	NCDA scorecard "Fill the Blanks": every pa
 B-214	3	IMPLEMENTED	MED			23	Child progress report: "the last Well Child encounter" is whichever sorts first by UUID, so the Next Appointment pane ca
 B-215	3	IMPLEMENTED	MED	2196	2197	23	Patient Record (adult): the Acute Illness pane — the DEFAULT filter — never fetches its encounters, so an adult's illnes
 B-216	2	IMPLEMENTED	MED-HIGH	2288	2289	23	Person: correcting an ADULT's birth date rewrites the enrolment/graduation dates of every child they bring to a group
-B-217	3	READY	MED			23	Patient consolidation: the tool accepts original == duplicate (and unloadable / already-deleted ids) and then soft-delet
+B-217	3	IMPLEMENTED	MED	2484	2488	23	Patient consolidation: the tool accepts original == duplicate (and unloadable / already-deleted ids) and then soft-delet
 B-218	4	READY	MED-LOW			23	Person: un-deleting a person does not un-delete what its deletion cascaded (relationships, group enrolments, pregnancies
 B-219	4	READY	LOW			23	Patient consolidation: moved measurements/encounters/participants keep the DUPLICATE's shards, so transferred history ca
 B-220	2	IMPLEMENTED	HIGH	2143	2144	23	Acute Illness progress report: the encounter it was opened for is never rendered — a first visit's report shows no diagn
@@ -369,7 +369,7 @@ B-368	4	READY	LOW			31	Dashboard minors ×3: nurse "Total High Risk Pregnancies"
 B-369	4	CLOSED	LOW		2409	32	Prenatal participant (mixed fleet, release #2128): once a new device opens a fresh pregnancy over an expired undated one
 B-370	4	IMPLEMENTED	LOW	2364	2365	32	Login location selection: an assignment added to a nurse or CHW on the server never reaches the health-centre / village 
 B-371	2	IMPLEMENTED	MED	2352	2353	32	Prenatal CHW visits 2 and 3 on an undated pregnancy can never be ended: Next Visit is required but its Save does nothing
-B-372	4	READY	LOW			32	Well Child next pediatric visit: on a month-end clamp day the "next" ECD / medication visit date is today, because the a
+B-372	4	IMPLEMENTED	LOW	2486	2490	32	Well Child next pediatric visit: on a month-end clamp day the "next" ECD / medication visit date is today, because the a
 B-373	2	IMPLEMENTED	MED	2336	2337	32	Prenatal postpartum visit: recording the Pregnancy Outcome (the visit's first activity) closes the pregnancy at once, so
 B-374	3	READY	LOW			32	Case Management Antenatal pane: follow-up entries of an EXPIRED pregnancy (past EDD + 92 days, or the B-194 no-EDD rule)
 B-375	3	IMPLEMENTED	MED	2263	2264	32	Patient merge: the acute-illness step looks participants up by `'acute_illness'` while the stored value is `'acute-illne
@@ -474,7 +474,7 @@ B-473	4	READY	LOW			41	Acute Illness progress report › Actions Taken: a low-ri
 B-474	4	READY	LOW			41	NCD progress report: an HbA1c result entered with a test date six or more months old is plotted on the HbA1c chart but m
 B-475	4	IMPLEMENTED	LOW	2346	2347	41	Tuberculosis progress report › Adverse Events: every visit without side effects adds a row reading "None of the above"
 B-476	3	READY	LOW			41	Completion report (Nutrition individual + Well Child, CHW): a height or weight the CHW marked "unable to take" is charge
-B-477	4	READY	LOW			41	Prenatal completion (CHW visit 1): the mandatory-activities gate has the danger-signs condition inverted relative to vis
+B-477	4	IMPLEMENTED	LOW	2485	2489	41	Prenatal completion (CHW visit 1): the mandatory-activities gate has the danger-signs condition inverted relative to vis
 B-478	3	READY			2345	19	Service worker: a change is stored on the device before its upload row, so when the row fails the device keeps a change 
 B-479	4	READY			2349	27	Immunisation (Burundi, child in Well Child AND Child Scoreboard): the DTP standalone dose is dropped when the three DTP 
 B-480	4	READY			2355	38	Statistical Queries › Prenatal (ANC): the outcomes and delivery-location tables count a delivery from before the FROM da
@@ -561,6 +561,7 @@ B-560	4	READY	LOW			50	Child registration: the earliest birth date the FBF-group
 B-561	4	READY	LOW		2450	51	National-ID search (Burundi, Somalia): an ID registered with a leading space is never found, because the search trims it
 B-562	4	READY	LOW		2442	51	Prenatal and NCD labs entry: ordering a test, declining a pending test, Wait and review still write the entry whole from
 B-563	3	READY	MED		2465	51	Group session: a child whose page or activity row was shown more than five minutes ago is dropped from the open session 
+B-564	4	READY	LOW			51	Group enrolment: the same child is enrolled two or three times in the same group within seconds, and the extra enrolment
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
