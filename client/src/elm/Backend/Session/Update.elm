@@ -18,6 +18,13 @@ import Restful.Endpoint exposing (toCmd, withoutDecoder)
 
 update : NominalDate -> Maybe NurseId -> SessionId -> Maybe Session -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate nurseId sessionId maybeSession msg model =
+    let
+        saveFollowUpCmd personId valueId value =
+            saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value followUpEndpoint (HandleSaveFollowUp personId)
+
+        saveNutritionCmd personId valueId value =
+            saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value nutritionEndpoint (HandleSaveNutrition personId)
+    in
     case msg of
         CloseSession ->
             unwrap
@@ -57,7 +64,7 @@ update currentDate nurseId sessionId maybeSession msg model =
                     startSave personId valueId .saveCounselingSessionRequest (\requests -> { model | saveCounselingSessionRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId ( timing, topics ) counselingSessionEndpoint (HandleSaveCounselingSession personId)) model
 
                 SaveNutrition valueId value ->
-                    startSave personId valueId .saveNutritionRequest (\requests -> { model | saveNutritionRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value nutritionEndpoint (HandleSaveNutrition personId)) model
+                    startSave personId valueId .saveNutritionRequest (\requests -> { model | saveNutritionRequest = requests }) (saveNutritionCmd personId valueId value) model
 
                 SavePhoto valueId value ->
                     startSave personId valueId .savePhotoRequest (\requests -> { model | savePhotoRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value photoEndpoint (HandleSavePhoto personId)) model
@@ -69,7 +76,7 @@ update currentDate nurseId sessionId maybeSession msg model =
                     startSave personId valueId .saveContributingFactorsRequest (\requests -> { model | saveContributingFactorsRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value contributingFactorsEndpoint (HandleSaveContributingFactors personId)) model
 
                 SaveFollowUp valueId value ->
-                    startSave personId valueId .saveFollowUpRequest (\requests -> { model | saveFollowUpRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value followUpEndpoint (HandleSaveFollowUp personId)) model
+                    startSave personId valueId .saveFollowUpRequest (\requests -> { model | saveFollowUpRequest = requests }) (saveFollowUpCmd personId valueId value) model
 
                 SaveHealthEducation valueId value ->
                     startSave personId valueId .saveHealthEducationRequest (\requests -> { model | saveHealthEducationRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value groupHealthEducationEndpoint (HandleSaveHealthEducation personId)) model
@@ -207,6 +214,18 @@ update currentDate nurseId sessionId maybeSession msg model =
             ( { model | saveNCDARequest = Dict.insert personId data model.saveNCDARequest }
             , bindDropZone ()
             , triggerRollbarOnFailure data
+            )
+
+        UpdateFollowUpAssessment personId valueId value ->
+            ( { model | saveFollowUpRequest = Dict.insert personId Loading model.saveFollowUpRequest }
+            , saveFollowUpCmd personId valueId value
+            , []
+            )
+
+        UpdateNutritionAssessment personId valueId value ->
+            ( { model | saveNutritionRequest = Dict.insert personId Loading model.saveNutritionRequest }
+            , saveNutritionCmd personId valueId value
+            , []
             )
 
 

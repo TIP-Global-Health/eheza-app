@@ -187,6 +187,9 @@ type Msg
     | HandleSaveHealthEducation PersonId (WebData ())
     | HandleSaveSendToHC PersonId (WebData ())
     | HandleSaveNCDA PersonId (WebData ())
+      -- The app's own saves of a new assessment. A nurse's Save in progress must not hold them back.
+    | UpdateFollowUpAssessment PersonId (Maybe FollowUpId) NutritionFollowUpValue
+    | UpdateNutritionAssessment PersonId (Maybe ChildNutritionId) NutritionValue
 
 
 batchSize : Int

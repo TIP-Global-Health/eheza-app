@@ -9557,8 +9557,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores features isChw childId 
                                                                 updatedValue =
                                                                     { value | assesment = assessmentForBackend }
                                                             in
-                                                            Measurement.Model.SaveFollowUp followUpId updatedValue
-                                                                |> Backend.Session.Model.MeasurementOutMsgChild childId
+                                                            Backend.Session.Model.UpdateFollowUpAssessment childId followUpId updatedValue
                                                                 |> Backend.Model.MsgSession sessionId
                                                                 |> App.Model.MsgIndexedDb
                                                                 |> List.singleton
@@ -9589,8 +9588,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores features isChw childId 
                                                                 updatedValue =
                                                                     { value | assesment = assessmentForBackend }
                                                             in
-                                                            Measurement.Model.SaveNutrition nutritionId updatedValue
-                                                                |> Backend.Session.Model.MeasurementOutMsgChild childId
+                                                            Backend.Session.Model.UpdateNutritionAssessment childId nutritionId updatedValue
                                                                 |> Backend.Model.MsgSession sessionId
                                                                 |> App.Model.MsgIndexedDb
                                                                 |> List.singleton
