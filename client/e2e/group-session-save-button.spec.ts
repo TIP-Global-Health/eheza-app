@@ -250,6 +250,12 @@ test.describe('Group Nutrition: Save button on measurement forms', () => {
     await page.waitForTimeout(WAIT.formInteraction);
     await click(page.locator('#save-form'), page);
 
+    // The activity cards move when Height leaves the list, so a tap can land
+    // on the wrong card. The first try is still immediate.
+    await expect(async () => {
+      await openActivity(page, 'Weight');
+      await page.locator('input[type="number"][name="weight"]').waitFor({ timeout: 2000 });
+    }).toPass({ timeout: 20000 });
     await completeWeight(page, '8.5');
 
     await expect.poll(async () => (await storedRecords(page, 'height')).length).toBe(1);

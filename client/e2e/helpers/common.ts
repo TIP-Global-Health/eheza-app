@@ -1218,8 +1218,9 @@ export async function fillChildRegistrationFields(
  * Upload a minimal test image through the photo form's dropzone.
  */
 export async function uploadTestPhoto(page: Page) {
-  // The photo form uses Dropzone.js with a hidden file input.
-  const fileInput = page.locator('div#dropzone input[type="file"]');
+  // Dropzone.js adds its hidden file input to the end of the page body, not
+  // inside the dropzone. It replaces the input after each file.
+  const fileInput = page.locator('input.dz-hidden-input').last();
 
   // A minimal 1x1 PNG.
   const pngBase64 =

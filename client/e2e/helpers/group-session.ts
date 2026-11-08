@@ -638,6 +638,8 @@ export async function completeNutritionSigns(page: Page) {
 export async function completePhoto(page: Page) {
   await openActivity(page, 'Photo');
   await uploadTestPhoto(page);
+  // Save stays disabled until the app has received the uploaded photo.
+  await page.locator('#save-form:not(.disabled)').waitFor({ timeout: 15000 });
   await saveActivity(page);
 }
 
