@@ -4130,7 +4130,13 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 ( subModel, subCmd, appMsgs ) =
                     Backend.Session.Update.update currentDate nurseId sessionId session subMsg requests
             in
-            ( { model | sessionRequests = Dict.insert sessionId subModel model.sessionRequests }
+            ( { model
+                | sessionRequests = Dict.insert sessionId subModel model.sessionRequests
+                , editableSessions =
+                    Dict.update sessionId
+                        (Maybe.map (RemoteData.map (\editable -> { editable | saveRequests = subModel })))
+                        model.editableSessions
+              }
             , Cmd.map (MsgSession sessionId) subCmd
             , appMsgs
             )

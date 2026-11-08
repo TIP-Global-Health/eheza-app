@@ -1,6 +1,6 @@
-module Backend.Session.Utils exposing (childActivitySaveRequest, emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother, getSession, isClosed, isSaveAllowed, motherActivitySaveRequest)
+module Backend.Session.Utils exposing (childActivitySaveRequest, emptyMotherMeasurementData, getChild, getChildActivityMeasurementData, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherActivityMeasurementData, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother, getSession, isClosed, isSaveAllowed, motherActivitySaveRequest, saveRequestOf)
 
-import Activity.Model exposing (ChildActivity, MotherActivity)
+import Activity.Model exposing (ChildActivity(..), MotherActivity(..))
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -10,6 +10,7 @@ import Backend.Session.Model exposing (EditableSession, Model, OfflineSession, S
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import LocalData exposing (LocalData)
+import Maybe.Extra exposing (isJust)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -165,20 +166,104 @@ getSession sessionId db =
 {-| The state of the latest save of a child's activity.
 -}
 childActivitySaveRequest : ChildActivity -> PersonId -> Model -> WebData ()
-childActivitySaveRequest _ _ _ =
-    NotAsked
+childActivitySaveRequest activity personId model =
+    let
+        requests =
+            case activity of
+                ChildFbf ->
+                    model.saveFbfRequest
+
+                ChildPicture ->
+                    model.savePhotoRequest
+
+                ContributingFactors ->
+                    model.saveContributingFactorsRequest
+
+                FollowUp ->
+                    model.saveFollowUpRequest
+
+                Activity.Model.HealthEducation ->
+                    model.saveHealthEducationRequest
+
+                Height ->
+                    model.saveHeightRequest
+
+                Muac ->
+                    model.saveMuacRequest
+
+                NCDA ->
+                    model.saveNCDARequest
+
+                NutritionSigns ->
+                    model.saveNutritionRequest
+
+                Activity.Model.SendToHC ->
+                    model.saveSendToHCRequest
+
+                Weight ->
+                    model.saveWeightRequest
+    in
+    saveRequestOf personId requests
 
 
 {-| The state of the latest save of a mother's activity.
 -}
 motherActivitySaveRequest : MotherActivity -> PersonId -> Model -> WebData ()
-motherActivitySaveRequest _ _ _ =
-    NotAsked
+motherActivitySaveRequest activity personId model =
+    let
+        requests =
+            case activity of
+                FamilyPlanning ->
+                    model.saveFamilyPlanningRequest
+
+                Lactation ->
+                    model.saveLactationRequest
+
+                MotherFbf ->
+                    model.saveFbfRequest
+
+                ParticipantConsent ->
+                    model.saveParticipantConsentRequest
+    in
+    saveRequestOf personId requests
+
+
+{-| The state of the latest save for a person, in one of the request trackers.
+-}
+saveRequestOf : PersonId -> Dict.Dict PersonId (WebData ()) -> WebData ()
+saveRequestOf personId requests =
+    Dict.get personId requests
+        |> Maybe.withDefault NotAsked
 
 
 {-| Whether a Save may go ahead, given the ID of the saved record (if the
-device has one) and the state of the latest save.
+device has one) and the state of the latest save. The ID arrives shortly after
+a first save succeeds, so a tap in between would create a second record.
 -}
 isSaveAllowed : Maybe valueId -> WebData () -> Bool
-isSaveAllowed _ _ =
-    True
+isSaveAllowed valueId request =
+    case request of
+        Loading ->
+            False
+
+        Success _ ->
+            isJust valueId
+
+        _ ->
+            True
+
+
+{-| Measurement data for one activity's form, carrying that activity's save state.
+-}
+getChildActivityMeasurementData : ChildActivity -> PersonId -> EditableSession -> LocalData (MeasurementData ChildMeasurements)
+getChildActivityMeasurementData activity childId session =
+    getChildMeasurementData childId session
+        |> LocalData.map (\data -> { data | update = childActivitySaveRequest activity childId session.saveRequests })
+
+
+{-| Measurement data for one activity's form, carrying that activity's save state.
+-}
+getMotherActivityMeasurementData : MotherActivity -> PersonId -> EditableSession -> LocalData (MeasurementData MotherMeasurements)
+getMotherActivityMeasurementData activity motherId session =
+    getMotherMeasurementData motherId session
+        |> LocalData.map (\data -> { data | update = motherActivitySaveRequest activity motherId session.saveRequests })
