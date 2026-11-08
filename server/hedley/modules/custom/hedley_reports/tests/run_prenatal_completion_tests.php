@@ -9,6 +9,9 @@
 
 define('LANGUAGE_NONE', 'und');
 
+// The rules read a missing danger signs record as an undefined index.
+error_reporting(E_ALL & ~E_NOTICE);
+
 require_once dirname(__DIR__) . '/hedley_reports.module';
 require_once __DIR__ . '/assertions.inc';
 
@@ -35,12 +38,14 @@ function danger_signs(array $signs) {
  *   The activities recorded at the encounter, keyed by name.
  * @param array $expected
  *   The activities expected before Health Education and Next Steps are added.
+ * @param array $previous_nurse_encounters
+ *   The nurse encounters before this one.
  */
-function chw_expected($type, array $activities, array $expected = ['danger_signs']) {
+function chw_expected($type, array $activities, array $expected = ['danger_signs'], array $previous_nurse_encounters = []) {
   $encounter_data = [
     'encounter_type' => $type,
     'measurements_by_type' => $activities,
-    'previous_nurse_encounters_data' => [],
+    'previous_nurse_encounters_data' => $previous_nurse_encounters,
     'start_date_obj' => new DateTime('2026-01-01'),
   ];
   hedley_reports_prenatal_add_health_education_activity_for_chw($encounter_data, $expected);
@@ -110,9 +115,34 @@ assert_same(
   $failed
 );
 
+assert_same(
+  expected_among(chw_expected('chw-1', [
+    'danger_signs' => $no_signs,
+    'prenatal_health_education' => $recorded,
+  ], ['danger_signs', 'last_menstrual_period', 'pregnancy_testing'], [['id' => 1]]), $next_steps),
+  ['appointment_confirmation', 'prenatal_follow_up'],
+  'chw-1 after a nurse visit: LMP and pregnancy testing do not hold Next Steps back',
+  $passed,
+  $failed
+);
+
+assert_same(
+  expected_among(chw_expected('chw-2', [
+    'danger_signs' => $no_signs,
+    'prenatal_health_education' => $recorded,
+  ], ['danger_signs', 'birth_plan']), $next_steps),
+  [],
+  'chw-2, no danger signs, no Birth Plan: no Next Steps',
+  $passed,
+  $failed
+);
+
 foreach (['chw-2', 'chw-3'] as $type) {
+  $base_expected = $type == 'chw-2' ? ['danger_signs', 'birth_plan'] : ['danger_signs'];
+  $base_activities = $type == 'chw-2' ? ['birth_plan' => $recorded] : [];
+
   assert_same(
-    expected_among(chw_expected($type, ['danger_signs' => $no_signs]), $next_steps),
+    expected_among(chw_expected($type, $base_activities + ['danger_signs' => $no_signs], $base_expected), $next_steps),
     [],
     "$type, no danger signs, no Health Education: no Next Steps",
     $passed,
@@ -120,10 +150,10 @@ foreach (['chw-2', 'chw-3'] as $type) {
   );
 
   assert_same(
-    expected_among(chw_expected($type, [
+    expected_among(chw_expected($type, $base_activities + [
       'danger_signs' => $no_signs,
       'prenatal_health_education' => $recorded,
-    ]), $next_steps),
+    ], $base_expected), $next_steps),
     ['appointment_confirmation', 'prenatal_follow_up'],
     "$type, no danger signs, Health Education done: Appointment Confirmation and Follow Up",
     $passed,
@@ -131,7 +161,7 @@ foreach (['chw-2', 'chw-3'] as $type) {
   );
 
   assert_same(
-    expected_among(chw_expected($type, ['danger_signs' => $with_signs]), $next_steps),
+    expected_among(chw_expected($type, ['danger_signs' => $with_signs], $base_expected), $next_steps),
     ['prenatal_send_to_hc', 'prenatal_follow_up'],
     "$type, danger signs: Send to HC and Follow Up",
     $passed,
