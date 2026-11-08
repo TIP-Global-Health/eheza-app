@@ -421,7 +421,7 @@ function _consolidate_patients_validate($original, $duplicate) {
 
   $wrappers = [];
   foreach (['Original' => $original, 'Duplicate' => $duplicate] as $label => $nid) {
-    $node = ctype_digit((string) $nid) ? node_load($nid) : FALSE;
+    $node = (string) (int) $nid === (string) $nid ? node_load($nid) : FALSE;
     if (empty($node)) {
       $return['messages'][] = "ERROR! $label patient ID does not match any content. Please fix and try again.";
       return $return;
@@ -482,7 +482,7 @@ function _consolidate_patients_validate($original, $duplicate) {
     // If consolidation failed, we make no changes, so that a fix could be
     // applied, and command could be executed again.
     if (!$function_result['success']) {
-      $return['messages'] = array_merge($return['messages'], $function_result['message']);
+      $return['messages'] = array_merge($return['messages'], $function_result['messages']);
       return $return;
     }
   }

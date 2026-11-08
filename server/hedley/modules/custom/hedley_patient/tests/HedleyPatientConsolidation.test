@@ -275,7 +275,7 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
    * pregnancy->newborn link (cases 10-11), WhatsApp records (cases 12-13), the
    * second person reference on a trace contact (cases 14-15), the adult who
    * brings a child to a group (cases 16-18), an acute-illness participant
-   * with its encounter (case 19) and the IDs validation refuses (cases 20-26).
+   * with its encounter (case 19) and the IDs validation refuses (cases 20-28).
    * All cases operate on disjoint people, so bundling them under one test
    * method keeps the hedley-profile install (~5 min in CI) paid once.
    */
@@ -799,8 +799,9 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     // 20. A patient cannot be merged with themselves.
     $person = $this->createPerson('SameOnBothSides');
     $this->assertValidationRefused($person, $person, 'same person', 'The same ID on both sides is refused.');
-    // The form and drush pass strings, which need not be written the same way.
-    $this->assertValidationRefused((string) $person, '0' . $person, 'same person', 'The same ID written differently is refused.');
+    // The form and drush pass strings.
+    $this->assertValidationRefused((string) $person, $person, 'same person', 'The same ID as a string is refused.');
+    $this->assertValidationRefused($person, '0' . $person, 'does not match', 'A zero-padded ID is refused.');
 
     // 21-22. An ID that matches nothing, or is no number, gets a message.
     $person = $this->createPerson('MissingCounterpart');
@@ -824,6 +825,21 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
     $other = $this->createPerson('OtherLivePatient');
     $result = _consolidate_patients_validate($live, $other);
     $this->assertTrue($result['success'], 'Two different live people pass validation.');
+
+    // 27. Confirm re-checks: a patient deleted since validation is not merged.
+    $form_state = ['storage' => ['original' => $live, 'duplicate' => $deleted]];
+    hedley_patient_consolidate_patients_execute([], $form_state);
+    $this->assertTrue(strpos(implode(' ', $form_state['storage']['messages']), 'already deleted') !== FALSE, 'Confirm refuses a patient deleted since validation.');
+
+    // 28. The admin form accepts IDs pasted with spaces around them.
+    $form = [
+      'original' => ['#value' => " $live "],
+      'duplicate' => ['#value' => "$other\n"],
+    ];
+    $form_state = [];
+    hedley_patient_consolidate_patients_validate($form, $form_state);
+    $this->assertEqual($form_state['storage']['original'], (string) $live, 'The ID is stored without its spaces.');
+    $this->assertEqual($form_state['storage']['step'], 'confirmation', 'IDs with spaces reach the confirmation step.');
   }
 
   /**
