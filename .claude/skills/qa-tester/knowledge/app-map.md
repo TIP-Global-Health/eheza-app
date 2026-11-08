@@ -185,6 +185,8 @@ flag simply does not appear.
   …" (CANCEL / CONTINUE) when a stored ID starts with it.
 - Burundi registration: Second Name comes first; the address is Province → Commune → Zone → Colline → Sub-Colline. A
   CHW's registration fails there ("cell/district/… is a required field"): the local villages are Rwandan. Use the nurse.
+  `registerChild` and `createChildAndStartWellChildEncounter` select the Rwandan labels (District, Sector, …), so walk the Burundi
+  labels with `h.common.selectByLabel(page, label, 1)`; the first option at each level saves. "Health Center:" still lists Nyange.
 - An address edit propagates to children only if each child is loaded: open the child's own
   person page first, then go back and edit the parent.
 - Saving a photo measurement also sets the **person's** photo, server-side

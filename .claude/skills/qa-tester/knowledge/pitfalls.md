@@ -622,7 +622,7 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 
 - **Symptom:** `ddev drush vset hedley_general_site_name burundi` was refused as a change to a shared resource, and setting `site` in the test browser's `syncInfoGeneral` (directly, then from an init script) still read `rwanda` after the reload.
 - **Wrong conclusion:** a device-only edit stands in for the server setting.
-- **Rule:** the running app writes `syncInfoGeneral` back, so the site follows the server. A watch run that needs Burundi reports the row as blocked; do not fake the sync reply to get past it.
+- **Rule:** the running app writes `syncInfoGeneral` back, so the site follows the server. A watch run that needs Burundi reports the row as blocked, unless whoever started it already set the server variable, with approval (`drush vget` reads `burundi`, and the device's `syncInfoGeneral.site` confirms it after a fresh pairing). Do not fake the sync reply to get past it.
 
 ## An attachment upload that fails part-way leaves a posted comment
 
