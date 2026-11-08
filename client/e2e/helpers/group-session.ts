@@ -512,7 +512,7 @@ export async function navigateBackToAttendance(page: Page) {
  * Activities are rendered as clickable divs in a grid, each with
  * the activity name as text (e.g., "Height", "MUAC", "Weight").
  */
-async function openActivity(page: Page, activityName: string) {
+export async function openActivity(page: Page, activityName: string) {
   // Dismiss any overlay that might be blocking (e.g., nutrition warning).
   await dismissOverlay(page);
 
@@ -628,6 +628,31 @@ export async function completeNutritionSigns(page: Page) {
   await label.scrollIntoViewIfNeeded();
   await label.click({ force: true });
   await page.waitForTimeout(WAIT.formInteraction);
+  await saveActivity(page);
+}
+
+/**
+ * Complete the Photo activity for a child.
+ * Uploads a minimal test image via the dropzone.
+ */
+export async function completePhoto(page: Page) {
+  await openActivity(page, 'Photo');
+
+  const fileInput = page.locator('div#dropzone input[type="file"]');
+
+  // A minimal 1x1 PNG.
+  const pngBase64 =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+  await fileInput.setInputFiles({
+    name: 'test-photo.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(pngBase64, 'base64'),
+  });
+
+  // Wait for the dropzone to process the upload.
+  await page.waitForTimeout(WAIT.pageNavigation);
+
   await saveActivity(page);
 }
 
