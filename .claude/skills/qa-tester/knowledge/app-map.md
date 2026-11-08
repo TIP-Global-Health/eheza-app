@@ -388,6 +388,7 @@ flag simply does not appear.
   z-score labels are `text.st23`. The plot runs x 110.9 to 715.4; a point outside the age range is drawn on that edge.
 - Age-chart fixtures: register with the exact birth date by hand (`h.common.setDate` on `.date-input`); the helpers take
   whole months only. WHO −2 SD values come from `client/src/assets/z-score/*anthro.txt` (M·(1+L·S·z)^(1/L)).
+- Well Child Next Visit shows the earlier of the ECD date and the medication date. From 6 months Vitamin A puts the medication date six months on, so the ECD date shows only where it comes first (the 15-month rung).
 - `h.wellChild.createChildAndStartWellChildEncounter` always starts the visit. To stop on the
   participant page, register by its steps up to `div.page-participant.individual.well-child`.
 - On the device, IndexedDB `sync` → `shards` holds each measurement with `type`, `person` (uuid),
@@ -646,6 +647,7 @@ flag simply does not appear.
   to `new Date()`. Set the offset, then `page.goto('/')` plus `page.reload()`, since a hash-only
   goto does not reload. Measurements and visits then carry that date, and the backend stores
   it. The service worker keeps the real date (see pitfalls); `page.clock` must not be used.
+  A shift of more than a year into the past works. Queued saves still upload once the offset is back to 0.
 - The main tree starts a run on `develop`, so a develop control is cheapest before the overlay:
   record it on the served build, then overlay and wait for gulp once.
 - After an overlay, gulp copies `app.js` at once, but `Main.js` takes about 2.5 minutes to rebuild. Wait until

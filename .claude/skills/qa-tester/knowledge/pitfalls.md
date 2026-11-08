@@ -617,3 +617,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a recorded loop over charts 1–4 timed out for a 6½-year-old, leaving a dead 10 s tail; the child had to be registered again and re-recorded.
 - **Wrong conclusion:** the report failed to draw a chart.
 - **Rule:** the chart count depends on age: four under 60 months, three after (app-map). Loop over the `svg` elements that hold `line.st18`, not a fixed list of indexes.
+
+## Planning a Burundi row in an unattended run
+
+- **Symptom:** `ddev drush vset hedley_general_site_name burundi` was refused as a change to a shared resource, and setting `site` in the test browser's `syncInfoGeneral` (directly, then from an init script) still read `rwanda` after the reload.
+- **Wrong conclusion:** a device-only edit stands in for the server setting.
+- **Rule:** the running app writes `syncInfoGeneral` back, so the site follows the server. A watch run that needs Burundi reports the row as blocked; do not fake the sync reply to get past it.
+
+## An attachment upload that fails part-way leaves a posted comment
+
+- **Symptom:** `gh pr comment --attach` ended with HTTP 408 on one video, yet the comment existed, with one player and raw `client/qa-recordings/…` paths for the rest.
+- **Wrong conclusion:** a failed command posted nothing.
+- **Rule:** after a failure, read the PR's comments. Post again in full, check every video has its `<video`, then delete only the partial comment your own command made.
