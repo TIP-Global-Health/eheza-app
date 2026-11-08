@@ -1,4 +1,4 @@
-module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, headCircumferenceOutOfRange, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, pregnancySummaryMeasurementsOutOfRange, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNutritionAssessmentTasks, resolvePreviousMaybeValue, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
+module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, headCircumferenceOutOfRange, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, pregnancySummaryMeasurementsOutOfRange, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNextDateForMedicationVisitUnderSixMonths, resolveNutritionAssessmentTasks, resolvePreviousMaybeValue, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -2018,44 +2018,51 @@ generateNextDateForMedicationVisit currentDate site assembled =
     assembled.person.birthDate
         |> Maybe.andThen
             (\birthDate ->
-                let
-                    ageMonths =
-                        Date.diff Months birthDate currentDate
-                in
-                -- When younger than 6 months, set visit date to
-                -- age of 6 months.
-                if ageMonths < 6 then
-                    Just <| Date.add Months 6 birthDate
+                case resolveNextDateForMedicationVisitUnderSixMonths currentDate birthDate of
+                    Just date ->
+                        Just date
 
-                else
-                    let
-                        measurements =
-                            assembled.measurements :: getPreviousMeasurements assembled.previousMeasurementsWithDates
+                    Nothing ->
+                        let
+                            measurements =
+                                assembled.measurements :: getPreviousMeasurements assembled.previousMeasurementsWithDates
 
-                        nextDate =
-                            nextMedicationAdmnistrationData currentDate site assembled.person measurements
-                                |> Dict.values
-                                |> List.sortWith Date.compare
-                                |> List.reverse
-                                |> List.head
-                    in
-                    Maybe.map
-                        (\date ->
-                            let
-                                compared =
-                                    Date.compare date currentDate
-                            in
-                            if compared == LT || compared == EQ then
-                                -- Next date already passed, or, it's due today.
-                                -- Per requirements, we schedule next date as if medication
-                                -- was administered today.
-                                Date.add Months 6 currentDate
+                            nextDate =
+                                nextMedicationAdmnistrationData currentDate site assembled.person measurements
+                                    |> Dict.values
+                                    |> List.sortWith Date.compare
+                                    |> List.reverse
+                                    |> List.head
+                        in
+                        Maybe.map
+                            (\date ->
+                                let
+                                    compared =
+                                        Date.compare date currentDate
+                                in
+                                if compared == LT || compared == EQ then
+                                    -- Next date already passed, or, it's due today.
+                                    -- Per requirements, we schedule next date as if medication
+                                    -- was administered today.
+                                    Date.add Months 6 currentDate
 
-                            else
-                                date
-                        )
-                        nextDate
+                                else
+                                    date
+                            )
+                            nextDate
             )
+
+
+{-| When a child is younger than 6 months, the visit is set to the age of
+6 months. Nothing means the child has reached that age.
+-}
+resolveNextDateForMedicationVisitUnderSixMonths : NominalDate -> NominalDate -> Maybe NominalDate
+resolveNextDateForMedicationVisitUnderSixMonths currentDate birthDate =
+    if Date.diff Months birthDate currentDate < 6 then
+        Just <| Date.add Months 6 birthDate
+
+    else
+        Nothing
 
 
 generateNextDateForImmunisationVisit : NominalDate -> Site -> AssembledData -> Maybe NominalDate
