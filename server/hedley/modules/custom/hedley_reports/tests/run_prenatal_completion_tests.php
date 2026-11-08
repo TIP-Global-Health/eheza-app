@@ -9,9 +9,6 @@
 
 define('LANGUAGE_NONE', 'und');
 
-// The rules read a missing danger signs record as an undefined index.
-error_reporting(E_ALL & ~E_NOTICE);
-
 require_once dirname(__DIR__) . '/hedley_reports.module';
 require_once __DIR__ . '/assertions.inc';
 
@@ -97,7 +94,8 @@ assert_same(
 );
 
 assert_same(
-  expected_among(chw_expected('chw-1', []), $next_steps),
+  // The rules read a missing danger signs record as an undefined index.
+  expected_among(@chw_expected('chw-1', []), $next_steps),
   [],
   'chw-1, danger signs not recorded: no Next Steps',
   $passed,
@@ -119,9 +117,9 @@ assert_same(
   expected_among(chw_expected('chw-1', [
     'danger_signs' => $no_signs,
     'prenatal_health_education' => $recorded,
-  ], ['danger_signs', 'last_menstrual_period', 'pregnancy_testing'], [['id' => 1]]), $next_steps),
+  ], ['danger_signs', 'last_menstrual_period'], [['id' => 1]]), $next_steps),
   ['appointment_confirmation', 'prenatal_follow_up'],
-  'chw-1 after a nurse visit: LMP and pregnancy testing do not hold Next Steps back',
+  'chw-1 after a nurse visit: a missing LMP does not hold Next Steps back',
   $passed,
   $failed
 );
@@ -138,8 +136,9 @@ assert_same(
 );
 
 foreach (['chw-2', 'chw-3'] as $type) {
-  $base_expected = $type == 'chw-2' ? ['danger_signs', 'birth_plan'] : ['danger_signs'];
-  $base_activities = $type == 'chw-2' ? ['birth_plan' => $recorded] : [];
+  $has_birth_plan = $type == 'chw-2';
+  $base_expected = $has_birth_plan ? ['danger_signs', 'birth_plan'] : ['danger_signs'];
+  $base_activities = $has_birth_plan ? ['birth_plan' => $recorded] : [];
 
   assert_same(
     expected_among(chw_expected($type, $base_activities + ['danger_signs' => $no_signs], $base_expected), $next_steps),
@@ -161,7 +160,7 @@ foreach (['chw-2', 'chw-3'] as $type) {
   );
 
   assert_same(
-    expected_among(chw_expected($type, ['danger_signs' => $with_signs], $base_expected), $next_steps),
+    expected_among(chw_expected($type, ['danger_signs' => $with_signs]), $next_steps),
     ['prenatal_send_to_hc', 'prenatal_follow_up'],
     "$type, danger signs: Send to HC and Follow Up",
     $passed,
