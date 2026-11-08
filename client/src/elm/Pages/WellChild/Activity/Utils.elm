@@ -1980,37 +1980,30 @@ resolveNextDateForECDVisit currentDate birthDate noRemainingSigns =
 
     else
         let
-            ageMonths =
-                Date.diff Months birthDate currentDate
+            afterLastMilestone =
+                if noRemainingSigns then
+                    Nothing
+
+                else
+                    Just <| Date.add Months 6 currentDate
         in
-        if ageMonths < 6 then
-            Just <| Date.add Months 6 birthDate
+        [ Date.add Months 6 birthDate
+        , Date.add Months 15 birthDate
+        , Date.add Months 18 birthDate
+        , Date.add Years 2 birthDate
+        , Date.add Years 3 birthDate
+        , Date.add Years 4 birthDate
+        ]
+            |> List.Extra.find (isBeforeMilestone currentDate)
+            |> Maybe.Extra.orElse afterLastMilestone
 
-        else if ageMonths < 15 then
-            Just <| Date.add Months 15 birthDate
 
-        else if ageMonths < 18 then
-            Just <| Date.add Months 18 birthDate
-
-        else
-            let
-                ageYears =
-                    Date.diff Years birthDate currentDate
-            in
-            if ageYears < 2 then
-                Just <| Date.add Years 2 birthDate
-
-            else if ageYears < 3 then
-                Just <| Date.add Years 3 birthDate
-
-            else if ageYears < 4 then
-                Just <| Date.add Years 4 birthDate
-
-            else if not noRemainingSigns then
-                Just <| Date.add Months 6 currentDate
-
-            else
-                Nothing
+{-| Compares dates rather than ages. On a month-end day a child can reach a
+milestone while their age, counted in whole months, is still one short.
+-}
+isBeforeMilestone : NominalDate -> NominalDate -> Bool
+isBeforeMilestone currentDate milestone =
+    Date.compare currentDate milestone == LT
 
 
 generateNextDateForMedicationVisit : NominalDate -> Site -> AssembledData -> Maybe NominalDate
@@ -2058,8 +2051,12 @@ generateNextDateForMedicationVisit currentDate site assembled =
 -}
 resolveNextDateForMedicationVisitUnderSixMonths : NominalDate -> NominalDate -> Maybe NominalDate
 resolveNextDateForMedicationVisitUnderSixMonths currentDate birthDate =
-    if Date.diff Months birthDate currentDate < 6 then
-        Just <| Date.add Months 6 birthDate
+    let
+        sixMonths =
+            Date.add Months 6 birthDate
+    in
+    if isBeforeMilestone currentDate sixMonths then
+        Just sixMonths
 
     else
         Nothing
