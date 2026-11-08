@@ -558,6 +558,8 @@ B-557	4	READY	LOW		2473	50	Burundi screens still say "village" in three texts ne
 B-558	4	READY	LOW			50	Prenatal activity page: the rest of the pregnancy-week maths still uses the day the page is opened, so a visit reopened 
 B-559	4	READY	LOW			50	Prenatal Nutrition Assessment (sites without Healthy Start): re-saving the pregnancy's first weight compares it with its
 B-560	4	READY	LOW			50	Child registration: the earliest birth date the FBF-group picker (26 months back) and the Child Scoreboard picker (2 yea
+B-561	4	READY	LOW		2450	51	National-ID search (Burundi, Somalia): an ID registered with a leading space is never found, because the search trims it
+B-562	4	READY	LOW		2442	51	Prenatal and NCD labs entry: ordering a test, declining a pending test, Wait and review still write the entry whole from
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
