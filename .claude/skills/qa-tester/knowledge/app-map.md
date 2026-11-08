@@ -449,10 +449,16 @@ flag simply does not appear.
   The activities page keeps its tab, and an activity everyone finished moves to its Completed tab.
 - Weight's form prints "Previous measurement: <kg>" from the child's individual history: the visible sign the child's
   data is loaded. On develop, a tap, filter or tab switch loads one level only, so it shows only for the default child.
-- A group Nutrition save that assesses opens Next Steps behind a `.diagnosis-popup`. That page has no back link: each task
-  saves with `div.actions.next-steps button`, and the last returns to the activity page. The assessment is kept on the
-  `follow_up` node; the `nutrition` node's own `field_nutrition_assesment` stays empty when the Nutrition save completes
-  the set for a child whose history was already loaded.
+- A group Nutrition save that assesses opens Next Steps behind a `.diagnosis-popup` (CONTINUE). From the Activities page that page has no back link:
+  each task saves with `div.actions.next-steps button`, and the last returns to the activity page. On a child's own page the same tasks are
+  tabs on that page (Contributing Factors, Health Education, Send to Health Center, Follow Up), each saving with `#save-form`.
+  The assessment is kept on the `follow_up` node; the `nutrition` node's own `field_nutrition_assesment` stays empty when the Nutrition
+  save completes the set for a child whose history was already loaded.
+- A mother's FBF Mother tab shows only after Lactation is answered Yes. Tabs reachable: Family Planning, Lactation, then FBF Mother.
+- `ul.links-head` (attendance, participants, activities icons) is on the Attendance, Participants and Activities pages only, not on a child's or mother's page: press `.link-back` first.
+- Attendance row: `.item` with the mother's name; `.icon-checked-in` (checked in, tap to check out) or `.link-check-in` (not checked in). The mother leaves Participants when checked out.
+- Hold or fail a group save without the server: wrap `XMLHttpRequest.prototype.send` in the page for POST/PATCH `/sw/nodes/<type>` (those go through the service worker, so `page.route` misses them); `client/e2e/group-session-save-button.spec.ts` has `installSaveControls`.
+- Registering a mother and child for a group session (`createMotherOnAttendancePage` + `addChildToMother`) takes about 15 s and reloads the page.
 - The child-data load for one child requests `/sw/nodes/pregnancy-by-newborn/<child uuid>` (`context.on('request')` sees it).
 
 ## Patient Record

@@ -629,3 +629,16 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** `gh pr comment --attach` ended with HTTP 408 on one video, yet the comment existed, with one player and raw `client/qa-recordings/…` paths for the rest.
 - **Wrong conclusion:** a failed command posted nothing.
 - **Rule:** after a failure, read the PR's comments. Post again in full, check every video has its `<video`, then delete only the partial comment your own command made.
+
+## Installing a page hook before the fixture finishes
+
+- **Symptom:** a request-watching hook set with `page.evaluate` read as undefined a step later: `Cannot set properties of undefined`.
+- **Wrong conclusion:** the evaluate call failed, or the app removed the global.
+- **Rule:** registering a family reloads the page (the attendance and relationship pages navigate away), and a reload wipes `window`. Install page hooks after the last fixture step, right before the scenario.
+
+## Repeating a tap inside a multi-step form
+
+- **Symptom:** the group NCDA has six steps, and repeating every Save tap would have advanced two steps at once and skipped a step.
+- **Wrong conclusion:** the double-tap scenario cannot be run on that form.
+- **Rule:** repeat the tap when the save's request leaves, not on every click: in the `XMLHttpRequest.send` wrapper, on the POST of the type under test, click the last clicked button once.
+
