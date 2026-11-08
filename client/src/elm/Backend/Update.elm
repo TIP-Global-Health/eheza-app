@@ -2587,8 +2587,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                                         updatedEditable =
                                                                             Success
                                                                                 { editableSession
-                                                                                    | update = NotAsked
-                                                                                    , offlineSession = updatedOffline
+                                                                                    | offlineSession = updatedOffline
                                                                                     , checkedIn = LocalData.setRecalculate editableSession.checkedIn
                                                                                     , summaryByParticipant = LocalData.setRecalculate editableSession.summaryByParticipant
                                                                                     , summaryByActivity = LocalData.setRecalculate editableSession.summaryByActivity
@@ -10082,7 +10081,9 @@ makeEditableSession sessionId db =
         RemoteData.map
             (\offline ->
                 { offlineSession = offline
-                , update = NotAsked
+                , saveRequests =
+                    Dict.get sessionId db.sessionRequests
+                        |> Maybe.withDefault Backend.Session.Model.emptyModel
                 , checkedIn = previousCheckedIn
                 , summaryByParticipant = previousSummaryByParticipant
                 , summaryByActivity = previousSummaryByActivity

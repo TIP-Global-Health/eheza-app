@@ -1,15 +1,16 @@
-module Backend.Session.Utils exposing (emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother, getSession, isClosed)
+module Backend.Session.Utils exposing (childActivitySaveRequest, emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother, getSession, isClosed, isSaveAllowed, motherActivitySaveRequest)
 
+import Activity.Model exposing (ChildActivity, MotherActivity)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
+import Backend.Session.Model exposing (EditableSession, Model, OfflineSession, Session)
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import LocalData exposing (LocalData)
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 
 
 {-| Given a mother's id, get all her children from the offline session.
@@ -73,7 +74,7 @@ getChildMeasurementData childId session =
             , previous =
                 Dict.get childId measurements.previous.children
                     |> Maybe.withDefault emptyChildMeasurements
-            , update = session.update
+            , update = NotAsked
             }
         )
         session.offlineSession.measurements
@@ -107,7 +108,7 @@ getMotherMeasurementData motherId session =
             , previous =
                 Dict.get motherId measurements.previous.mothers
                     |> Maybe.withDefault emptyMotherMeasurements
-            , update = session.update
+            , update = NotAsked
             }
         )
         session.offlineSession.measurements
@@ -133,7 +134,7 @@ emptyMotherMeasurementData : EditableSession -> MeasurementData MotherMeasuremen
 emptyMotherMeasurementData session =
     { current = emptyMotherMeasurements
     , previous = emptyMotherMeasurements
-    , update = session.update
+    , update = NotAsked
     }
 
 
@@ -159,3 +160,25 @@ getSession sessionId db =
     Dict.get sessionId db.sessions
         |> Maybe.withDefault NotAsked
         |> RemoteData.toMaybe
+
+
+{-| The state of the latest save of a child's activity.
+-}
+childActivitySaveRequest : ChildActivity -> PersonId -> Model -> WebData ()
+childActivitySaveRequest _ _ _ =
+    NotAsked
+
+
+{-| The state of the latest save of a mother's activity.
+-}
+motherActivitySaveRequest : MotherActivity -> PersonId -> Model -> WebData ()
+motherActivitySaveRequest _ _ _ =
+    NotAsked
+
+
+{-| Whether a Save may go ahead, given the ID of the saved record (if the
+device has one) and the state of the latest save.
+-}
+isSaveAllowed : Maybe valueId -> WebData () -> Bool
+isSaveAllowed _ _ =
+    True

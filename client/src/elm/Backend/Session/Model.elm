@@ -113,7 +113,7 @@ type alias OfflineSession =
 -}
 type alias EditableSession =
     { offlineSession : OfflineSession
-    , update : WebData ()
+    , saveRequests : Model
     , checkedIn : LocalData CheckedIn
     , summaryByParticipant : LocalData SummaryByParticipant
     , summaryByActivity : LocalData SummaryByActivity
