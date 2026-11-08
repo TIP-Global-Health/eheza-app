@@ -52,7 +52,7 @@ B-051	4	READY	LOW			11	PIN cached before validation + non-logout session end lea
 B-052	1	IMPLEMENTED		1896	1897	11	WellChild immunisation "next visit" date returns Nothing for on-schedule children: the 6-month long-interval branch is d
 B-053	3	IMPLEMENTED		1961	1962	11	WellChild ECD next-visit ladder skips the 18-month rung → 18-month developmental screening late
 B-054	2	IMPLEMENTED		1904	1905	11	`filterResolvedFollowUps` comparison is INVERTED: keeps already-resolved follow-ups, drops still-open ones (same class a
-B-055		IMPLEMENTED		2050	2051	11	✅ **CLINICIAN GATE LIFTED 2026-08-06 — the requirement is written down and says DTP.** Traced `29a578fde` ("Logic for su
+B-055	1	IMPLEMENTED		2050	2051	11	✅ **CLINICIAN GATE LIFTED 2026-08-06 — the requirement is written down and says DTP.** Traced `29a578fde` ("Logic for su
 B-056	4	WONTFIX				12	NCD isolated diabetes is medicated but never referred: `referForDiabetes` requires coexisting hypertension, `medicateFor
 B-057	3	IMPLEMENTED		1963	1964	12	pmtct_participant / relationship shards: post-insert recalc SETs one person's shards, clobbering the presave two-person 
 B-058	2	SPLIT				12	Cross-worker lost update (NCDA + Reports workers full-node_save the same person)
