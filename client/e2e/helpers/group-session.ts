@@ -2,7 +2,7 @@ import { Page, expect } from '@playwright/test';
 import { execSync } from 'child_process';
 import { click } from './auth';
 import { drushEnv } from './device';
-import { WAIT, formInput, selectByLabel, setDate } from './common';
+import { WAIT, formInput, selectByLabel, setDate, uploadTestPhoto } from './common';
 
 // ---------------------------------------------------------------------------
 // Navigation
@@ -637,22 +637,7 @@ export async function completeNutritionSigns(page: Page) {
  */
 export async function completePhoto(page: Page) {
   await openActivity(page, 'Photo');
-
-  const fileInput = page.locator('div#dropzone input[type="file"]');
-
-  // A minimal 1x1 PNG.
-  const pngBase64 =
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-
-  await fileInput.setInputFiles({
-    name: 'test-photo.png',
-    mimeType: 'image/png',
-    buffer: Buffer.from(pngBase64, 'base64'),
-  });
-
-  // Wait for the dropzone to process the upload.
-  await page.waitForTimeout(WAIT.pageNavigation);
-
+  await uploadTestPhoto(page);
   await saveActivity(page);
 }
 
