@@ -35,7 +35,7 @@ function hedley_chw_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_cell',
     'label' => 'Cell',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
       'text_processing' => 0,
       'user_register_form' => FALSE,
@@ -75,7 +75,7 @@ function hedley_chw_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_district',
     'label' => 'District',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
       'text_processing' => 0,
       'user_register_form' => FALSE,
@@ -160,7 +160,7 @@ function hedley_chw_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_province',
     'label' => 'Province',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
       'text_processing' => 0,
       'user_register_form' => FALSE,
@@ -200,7 +200,7 @@ function hedley_chw_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_sector',
     'label' => 'Sector',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
       'text_processing' => 0,
       'user_register_form' => FALSE,
@@ -280,7 +280,7 @@ function hedley_chw_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_village',
     'label' => 'Village',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
       'text_processing' => 0,
       'user_register_form' => FALSE,

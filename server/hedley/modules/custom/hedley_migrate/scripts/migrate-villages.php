@@ -28,6 +28,11 @@ $handler = fopen($source_file, 'r');
 $health_centers = [];
 
 while ($row = fgetcsv($handler)) {
+  if (count($row) < 6) {
+    drush_print('Skipping a row with fewer than six columns: ' . implode(',', $row));
+    continue;
+  }
+
   $health_center_name = $row[5];
   $village_name = $row[4];
 
@@ -54,7 +59,16 @@ while ($row = fgetcsv($handler)) {
   $wrapper->field_cell->set($row[3]);
   $wrapper->field_village->set($village_name);
   $wrapper->field_health_center->set($health_centers[$health_center_name]);
-  $wrapper->save();
+
+  // A refused save, such as a blank geo field, skips the row and the import
+  // goes on with the next one.
+  try {
+    $wrapper->save();
+  }
+  catch (Exception $e) {
+    drush_print("Skipping creation of $village_name village: " . $e->getMessage());
+    continue;
+  }
 
   drush_print("$village_name village created");
 }

@@ -10,26 +10,46 @@ include_once 'hedley_chw.features.inc';
 /**
  * Implements hook_node_presave().
  *
- * Enforce that every village is assigned a health center.
- *
- * A village saved without one is silently dropped from the all-devices sync
- * feed - HedleyRestfulVillages inner-joins the health center UUID, so a NULL
- * target matches no row - while still counting toward the feed's revision
- * count, and it spawns an unreachable, shard-less CHW clinic
- * (hedley_chw_process_new_village reads the health center from the village).
- * The field is required on the node form, but programmatic saves (migration,
- * API) bypass form validation, so the invariant is enforced here for every
- * save path.
+ * Refuses a village without a health center or with a blank geo field. The
+ * form requires them too, but scripts and migrations skip form validation.
  */
 function hedley_chw_node_presave($node) {
   if ($node->type != 'village') {
     return;
   }
 
+  // Without one, the village drops out of the sync feed, which inner-joins the
+  // health center UUID, and its CHW group gets no health center.
   $items = field_get_items('node', $node, 'field_health_center');
   if (empty($items) || empty($items[0]['target_id'])) {
     throw new Exception('A village must be assigned a health center.');
   }
+
+  // A blank geo field reaches devices as NULL. The client cannot decode it,
+  // so the whole general sync batch fails and every device of the site stops
+  // syncing.
+  foreach (hedley_chw_village_geo_fields() as $field_name) {
+    $items = field_get_items('node', $node, $field_name);
+    if (empty($items) || trim((string) $items[0]['value']) === '') {
+      throw new Exception("A village must have a value for $field_name.");
+    }
+  }
+}
+
+/**
+ * The geo fields of a village, from province down to village.
+ *
+ * @return string[]
+ *   The field names.
+ */
+function hedley_chw_village_geo_fields() {
+  return [
+    'field_province',
+    'field_district',
+    'field_sector',
+    'field_cell',
+    'field_village',
+  ];
 }
 
 /**
@@ -223,25 +243,19 @@ function hedley_chw_process_new_participation($node) {
  */
 function hedley_chw_find_person_village($person_id) {
   $wrapper = entity_metadata_wrapper('node', $person_id);
-  $province = $wrapper->field_province->value();
-  $district = $wrapper->field_district->value();
-  $sector = $wrapper->field_sector->value();
-  $cell = $wrapper->field_cell->value();
-  $village = $wrapper->field_village->value();
 
   $query = hedley_general_create_entity_field_query_excluding_deleted();
-
-  $result = $query
+  $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'village')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_province', 'value', $province)
-    ->fieldCondition('field_district', 'value', $district)
-    ->fieldCondition('field_sector', 'value', $sector)
-    ->fieldCondition('field_cell', 'value', $cell)
-    ->fieldCondition('field_village', 'value', $village)
-    ->range(0, 1)
-    ->execute();
+    ->range(0, 1);
+
+  foreach (hedley_chw_village_geo_fields() as $field_name) {
+    $query->fieldCondition($field_name, 'value', $wrapper->{$field_name}->value());
+  }
+
+  $result = $query->execute();
 
   return empty($result['node']) ? FALSE : key($result['node']);
 }
