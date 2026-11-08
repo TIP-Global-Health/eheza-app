@@ -1,4 +1,4 @@
-module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, headCircumferenceOutOfRange, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, pregnancySummaryMeasurementsOutOfRange, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNextDateForMedicationVisitUnderSixMonths, resolveNutritionAssessmentTasks, resolvePreviousMaybeValue, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
+module Pages.WellChild.Activity.Utils exposing (activityCompleted, ageInMonthsReached, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationByAge, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, headCircumferenceOutOfRange, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, pregnancySummaryMeasurementsOutOfRange, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNextDateForMedicationVisitUnderSixMonths, resolveNutritionAssessmentTasks, resolvePreviousMaybeValue, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -1086,7 +1086,7 @@ expectedECDSignsByAge currentDate assembled =
                         Date.diff Weeks birthDate currentDate
 
                     ageMonths =
-                        Date.diff Months birthDate currentDate
+                        ageInMonthsReached currentDate birthDate
 
                     groupedSigns =
                         ageInMonthsAtLastAssessment assembled
@@ -1398,7 +1398,8 @@ nextMedicationAdmnistrationData currentDate site person measurements =
 
 expectMedicationByAge : NominalDate -> Site -> Person -> MedicationTask -> Bool
 expectMedicationByAge currentDate site person task =
-    ageInMonths currentDate person
+    person.birthDate
+        |> Maybe.map (ageInMonthsReached currentDate)
         |> Maybe.map
             (\ageMonths ->
                 case site of
@@ -1967,35 +1968,40 @@ resolveNextDateForECDVisit currentDate birthDate noRemainingSigns =
         else
             Just <| Date.add Weeks 6 birthDate
 
-    else if ageWeeks < 14 then
-        -- Since 14 weeks question appear from age of 13 weeks,
-        -- we check if they were completed then.
-        -- If so, we schedule next ECD visit to following
-        -- milestone, which is at 6 months.
-        if ageWeeks == 13 && noRemainingSigns then
-            Just <| Date.add Months 6 birthDate
-
-        else
-            Just <| Date.add Weeks 14 birthDate
-
     else
         let
-            afterLastMilestone =
-                if noRemainingSigns then
-                    Nothing
-
-                else
-                    Just <| Date.add Months 6 currentDate
+            sixMonths =
+                Date.add Months 6 birthDate
         in
-        [ Date.add Months 6 birthDate
-        , Date.add Months 15 birthDate
-        , Date.add Months 18 birthDate
-        , Date.add Years 2 birthDate
-        , Date.add Years 3 birthDate
-        , Date.add Years 4 birthDate
-        ]
-            |> List.Extra.find (isBeforeMilestone currentDate)
-            |> Maybe.Extra.orElse afterLastMilestone
+        if ageWeeks < 14 then
+            -- Since 14 weeks question appear from age of 13 weeks,
+            -- we check if they were completed then.
+            -- If so, we schedule next ECD visit to following
+            -- milestone, which is at 6 months.
+            if ageWeeks == 13 && noRemainingSigns then
+                Just sixMonths
+
+            else
+                Just <| Date.add Weeks 14 birthDate
+
+        else
+            let
+                afterLastMilestone =
+                    if noRemainingSigns then
+                        Nothing
+
+                    else
+                        Just <| Date.add Months 6 currentDate
+            in
+            [ sixMonths
+            , Date.add Months 15 birthDate
+            , Date.add Months 18 birthDate
+            , Date.add Years 2 birthDate
+            , Date.add Years 3 birthDate
+            , Date.add Years 4 birthDate
+            ]
+                |> List.Extra.find (isBeforeMilestone currentDate)
+                |> Maybe.Extra.orElse afterLastMilestone
 
 
 {-| Compares dates rather than ages. On a month-end day a child can reach a
@@ -2006,43 +2012,58 @@ isBeforeMilestone currentDate milestone =
     Date.compare currentDate milestone == LT
 
 
+{-| Whole months of age, counting a month as complete on the month-end day its
+date falls on. Born 31 March, on 30 September the child is 6 months old.
+-}
+ageInMonthsReached : NominalDate -> NominalDate -> Int
+ageInMonthsReached currentDate birthDate =
+    let
+        wholeMonths =
+            Date.diff Months birthDate currentDate
+    in
+    if Date.compare (Date.add Months (wholeMonths + 1) birthDate) currentDate == EQ then
+        wholeMonths + 1
+
+    else
+        wholeMonths
+
+
 generateNextDateForMedicationVisit : NominalDate -> Site -> AssembledData -> Maybe NominalDate
 generateNextDateForMedicationVisit currentDate site assembled =
     assembled.person.birthDate
         |> Maybe.andThen
             (\birthDate ->
-                case resolveNextDateForMedicationVisitUnderSixMonths currentDate birthDate of
-                    Just date ->
-                        Just date
+                resolveNextDateForMedicationVisitUnderSixMonths currentDate birthDate
+                    |> Maybe.Extra.orElseLazy
+                        (\() ->
+                            let
+                                measurements =
+                                    assembled.measurements :: getPreviousMeasurements assembled.previousMeasurementsWithDates
 
-                    Nothing ->
-                        let
-                            measurements =
-                                assembled.measurements :: getPreviousMeasurements assembled.previousMeasurementsWithDates
+                                nextDate =
+                                    nextMedicationAdmnistrationData currentDate site assembled.person measurements
+                                        |> Dict.values
+                                        |> List.sortWith Date.compare
+                                        |> List.reverse
+                                        |> List.head
+                            in
+                            Maybe.map
+                                (\date ->
+                                    let
+                                        compared =
+                                            Date.compare date currentDate
+                                    in
+                                    if compared == LT || compared == EQ then
+                                        -- Next date already passed, or, it's due today.
+                                        -- Per requirements, we schedule next date as if medication
+                                        -- was administered today.
+                                        Date.add Months 6 currentDate
 
-                            nextDate =
-                                nextMedicationAdmnistrationData currentDate site assembled.person measurements
-                                    |> Dict.values
-                                    |> List.sortWith Date.compare
-                                    |> List.reverse
-                                    |> List.head
-                        in
-                        Maybe.map
-                            (\date ->
-                                let
-                                    compared =
-                                        Date.compare date currentDate
-                                in
-                                if compared == LT || compared == EQ then
-                                    -- Next date already passed, or, it's due today.
-                                    -- Per requirements, we schedule next date as if medication
-                                    -- was administered today.
-                                    Date.add Months 6 currentDate
-
-                                else
-                                    date
-                            )
-                            nextDate
+                                    else
+                                        date
+                                )
+                                nextDate
+                        )
             )
 
 

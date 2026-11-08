@@ -24,10 +24,13 @@ import EverySet
 import Expect
 import Measurement.Model exposing (RangedMeasurement(..), emptyHeightForm, emptyMuacForm, emptyVaccinationForm, emptyWeightForm)
 import Pages.WellChild.Activity.Model exposing (Msg(..), WarningPopupType(..), emptyModel, emptyPregnancySummaryForm)
+import Pages.WellChild.Activity.Types exposing (MedicationTask(..))
 import Pages.WellChild.Activity.Update exposing (update)
 import Pages.WellChild.Activity.Utils
     exposing
-        ( pregnancySummaryFormWithDefault
+        ( ageInMonthsReached
+        , expectMedicationByAge
+        , pregnancySummaryFormWithDefault
         , pregnancySummaryMeasurementsOutOfRange
         , resolveFirstEncounterDateAfterMilestone
         , resolveNextDateForECDVisit
@@ -45,7 +48,8 @@ import Time
 all : Test
 all =
     describe "Pages.WellChild.Activity"
-        [ resolveFirstEncounterDateAfterMilestoneTests
+        [ ageInMonthsReachedTests
+        , resolveFirstEncounterDateAfterMilestoneTests
         , resolveNextDateForECDVisitTests
         , nextECDVisitOnMonthEndTests
         , nextECDVisitWeekMilestonesTests
@@ -1160,4 +1164,42 @@ dtpStandaloneSaveTests =
                         [ expectedSaveMsg (Just measurementId)
                             (VaccinationValue savedDoses savedDates AdministeredToday)
                         ]
+        ]
+
+
+ageInMonthsReachedTests : Test
+ageInMonthsReachedTests =
+    let
+        march31 =
+            Date.fromCalendarDate 2025 Time.Mar 31
+
+        sep30 =
+            Date.fromCalendarDate 2025 Time.Sep 30
+
+        child =
+            { testPerson | birthDate = Just march31 }
+
+        expectVitaminA date =
+            expectMedicationByAge date SiteRwanda child TaskVitaminA
+    in
+    describe "ageInMonthsReached"
+        [ test "a month-end day that a milestone falls on completes the month" <|
+            \_ ->
+                ageInMonthsReached sep30 march31 |> Expect.equal 6
+        , test "the day before stays one month short" <|
+            \_ ->
+                ageInMonthsReached (Date.fromCalendarDate 2025 Time.Sep 29) march31 |> Expect.equal 5
+        , test "a mid-month birthday counts as usual" <|
+            \_ ->
+                ageInMonthsReached (Date.fromCalendarDate 2025 Time.Sep 15) (Date.fromCalendarDate 2025 Time.Mar 15)
+                    |> Expect.equal 6
+        , test "a month-end day of a birthday that exists in that month is not bumped" <|
+            \_ ->
+                ageInMonthsReached (Date.fromCalendarDate 2025 Time.Aug 31) march31 |> Expect.equal 5
+        , test "Vitamin A is offered on the month-end day the child reaches 6 months" <|
+            \_ ->
+                expectVitaminA sep30 |> Expect.equal True
+        , test "Vitamin A is not offered the day before" <|
+            \_ ->
+                expectVitaminA (Date.fromCalendarDate 2025 Time.Sep 29) |> Expect.equal False
         ]
