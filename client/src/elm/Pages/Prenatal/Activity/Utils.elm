@@ -1566,8 +1566,8 @@ resolvePreviouslyMeasuredHeight assembled =
     Maybe.Extra.or heightMeasuredByNurse heightMeasuredByCHW
 
 
-resolvePrePregnancyWeight : NominalDate -> AssembledData -> Maybe WeightInKg
-resolvePrePregnancyWeight currentDate assembled =
+resolvePrePregnancyWeight : AssembledData -> Maybe WeightInKg
+resolvePrePregnancyWeight assembled =
     let
         resolveWeight measurements =
             getMeasurementValueFunc measurements.lastMenstrualPeriod
@@ -1594,7 +1594,7 @@ resolvePrePregnancyWeight currentDate assembled =
         byNutritionAssessmentWeight =
             let
                 current =
-                    Maybe.map (\nutrition -> [ ( currentDate, nutrition ) ])
+                    Maybe.map (\nutrition -> [ ( assembled.encounter.startDate, nutrition ) ])
                         assembled.measurements.nutrition
                         |> Maybe.withDefault []
 
@@ -1808,19 +1808,19 @@ resolvePrePregnancyClassification zscores isHealthyStart assembled baselineBmi =
             assembled.person.birthDate
 
 
-resolveGWGClassification : NominalDate -> PrePregnancyClassification -> Float -> Float -> AssembledData -> Maybe GWGClassification
-resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeight currentWeight assembled =
+{-| Graded at the visit's pregnancy week, so reopening the visit on a later day
+gives the same verdict.
+-}
+resolveGWGClassification : PrePregnancyClassification -> Float -> Float -> AssembledData -> Maybe GWGClassification
+resolveGWGClassification prePregnancyClassification prePregnancyWeight currentWeight assembled =
     Maybe.map
-        (\lmpDate ->
+        (\egaInWeeks ->
             let
                 actualWeightGain =
                     currentWeight - prePregnancyWeight
 
                 expectedWeightGain =
                     let
-                        egaInWeeks =
-                            calculateEGAWeeks currentDate lmpDate
-
                         weeksAfterFirstTrimester =
                             egaInWeeks - 12
 
@@ -1848,7 +1848,7 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
             else
                 GWGExcessive
         )
-        assembled.globalLmpDate
+        (encounterEGAWeeks assembled)
 
 
 {-| Healthy Start–specific variant of `resolveGWGClassification`.

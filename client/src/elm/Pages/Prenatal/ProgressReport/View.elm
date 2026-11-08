@@ -1718,7 +1718,7 @@ viewPatientProgressPane language currentDate zscores features isChw globalLmpVal
         weightGainForEGAChart =
             let
                 prePregnancyWeight =
-                    resolvePrePregnancyWeight currentDate assembled
+                    resolvePrePregnancyWeight assembled
                         |> Maybe.map weightValueFunc
 
                 height =
