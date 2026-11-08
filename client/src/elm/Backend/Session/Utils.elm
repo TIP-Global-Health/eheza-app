@@ -1,7 +1,7 @@
 module Backend.Session.Utils exposing (childActivitySaveRequest, emptyMotherMeasurementData, getChild, getChildActivityMeasurementData, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherActivityMeasurementData, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother, getSession, isClosed, isSaveAllowed, motherActivitySaveRequest, saveRequestOf)
 
 import Activity.Model exposing (ChildActivity(..), MotherActivity(..))
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -131,8 +131,8 @@ getMotherMeasurementData2 motherId session =
         session.measurements
 
 
-emptyMotherMeasurementData : EditableSession -> MeasurementData MotherMeasurements
-emptyMotherMeasurementData session =
+emptyMotherMeasurementData : MeasurementData MotherMeasurements
+emptyMotherMeasurementData =
     { current = emptyMotherMeasurements
     , previous = emptyMotherMeasurements
     , update = NotAsked
@@ -230,15 +230,14 @@ motherActivitySaveRequest activity personId model =
 
 {-| The state of the latest save for a person, in one of the request trackers.
 -}
-saveRequestOf : PersonId -> Dict.Dict PersonId (WebData ()) -> WebData ()
+saveRequestOf : PersonId -> Dict PersonId (WebData ()) -> WebData ()
 saveRequestOf personId requests =
     Dict.get personId requests
         |> Maybe.withDefault NotAsked
 
 
-{-| Whether a Save may go ahead, given the ID of the saved record (if the
-device has one) and the state of the latest save. The ID arrives shortly after
-a first save succeeds, so a tap in between would create a second record.
+{-| Whether a Save may go ahead. The saved record's ID arrives shortly after a
+first save succeeds, and a tap in between would create a second record.
 -}
 isSaveAllowed : Maybe valueId -> WebData () -> Bool
 isSaveAllowed valueId request =
