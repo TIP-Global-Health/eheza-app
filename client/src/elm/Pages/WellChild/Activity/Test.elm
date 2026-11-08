@@ -18,6 +18,7 @@ import Backend.Measurement.Model
         )
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
+import Backend.Person.Utils exposing (ageInMonthsReached)
 import Backend.WellChildEncounter.Model
 import Date exposing (Date)
 import EverySet
@@ -28,8 +29,8 @@ import Pages.WellChild.Activity.Types exposing (MedicationTask(..))
 import Pages.WellChild.Activity.Update exposing (update)
 import Pages.WellChild.Activity.Utils
     exposing
-        ( ageInMonthsReached
-        , expectMedicationByAge
+        ( expectMedicationByAge
+        , expectedECDSignsOnMilestone
         , pregnancySummaryFormWithDefault
         , pregnancySummaryMeasurementsOutOfRange
         , resolveFirstEncounterDateAfterMilestone
@@ -1185,20 +1186,29 @@ ageInMonthsReachedTests =
     describe "ageInMonthsReached"
         [ test "a month-end day that a milestone falls on completes the month" <|
             \_ ->
-                ageInMonthsReached sep30 march31 |> Expect.equal 6
+                ageInMonthsReached march31 sep30 |> Expect.equal 6
         , test "the day before stays one month short" <|
             \_ ->
-                ageInMonthsReached (Date.fromCalendarDate 2025 Time.Sep 29) march31 |> Expect.equal 5
+                ageInMonthsReached march31 (Date.fromCalendarDate 2025 Time.Sep 29) |> Expect.equal 5
         , test "a mid-month birthday counts as usual" <|
             \_ ->
-                ageInMonthsReached (Date.fromCalendarDate 2025 Time.Sep 15) (Date.fromCalendarDate 2025 Time.Mar 15)
+                ageInMonthsReached (Date.fromCalendarDate 2025 Time.Mar 15) (Date.fromCalendarDate 2025 Time.Sep 15)
                     |> Expect.equal 6
         , test "a month-end day of a birthday that exists in that month is not bumped" <|
             \_ ->
-                ageInMonthsReached (Date.fromCalendarDate 2025 Time.Aug 31) march31 |> Expect.equal 5
+                ageInMonthsReached march31 (Date.fromCalendarDate 2025 Time.Aug 31) |> Expect.equal 5
         , test "Vitamin A is offered on the month-end day the child reaches 6 months" <|
             \_ ->
                 expectVitaminA sep30 |> Expect.equal True
+        , test "the signs of a milestone that falls on a month-end day are those of that age" <|
+            \_ ->
+                expectedECDSignsOnMilestone march31 sep30 Nothing
+                    |> Expect.equal
+                        (expectedECDSignsOnMilestone
+                            (Date.fromCalendarDate 2025 Time.Mar 15)
+                            (Date.fromCalendarDate 2025 Time.Sep 15)
+                            Nothing
+                        )
         , test "Vitamin A is not offered the day before" <|
             \_ ->
                 expectVitaminA (Date.fromCalendarDate 2025 Time.Sep 29) |> Expect.equal False

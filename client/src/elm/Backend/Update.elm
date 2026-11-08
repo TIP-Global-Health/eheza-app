@@ -61,7 +61,7 @@ import Backend.NutritionEncounter.Model exposing (emptyNutritionEncounter)
 import Backend.NutritionEncounter.Update
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
 import Backend.Person.Model exposing (Initiator(..), PatchPersonInitator(..), Person)
-import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
+import Backend.Person.Utils exposing (ageInMonths, ageInMonthsReached, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model
@@ -2384,7 +2384,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                                         Date.diff Weeks birthDate currentDate
 
                                                                     ageMonths =
-                                                                        Date.diff Months birthDate currentDate
+                                                                        ageInMonthsReached birthDate currentDate
                                                                 in
                                                                 Pages.WellChild.Activity.Utils.generateRemianingECDSignsAfterCurrentEncounter currentDate assembledAfter
                                                                     |> List.filterMap

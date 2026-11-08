@@ -1,4 +1,4 @@
-module Pages.WellChild.Activity.Utils exposing (activityCompleted, ageInMonthsReached, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationByAge, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, headCircumferenceOutOfRange, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, pregnancySummaryMeasurementsOutOfRange, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNextDateForMedicationVisitUnderSixMonths, resolveNutritionAssessmentTasks, resolvePreviousMaybeValue, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
+module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationByAge, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, headCircumferenceOutOfRange, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, pregnancySummaryMeasurementsOutOfRange, resolveFirstEncounterDateAfterMilestone, resolveNextDateForECDVisit, resolveNextDateForImmunisationVisit, resolveNextDateForMedicationVisitUnderSixMonths, resolveNutritionAssessmentTasks, resolvePreviousMaybeValue, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -13,7 +13,7 @@ import Backend.Measurement.Utils
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths)
+import Backend.Person.Utils exposing (ageInMonthsReached, personAgeInMonthsReached)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
@@ -399,13 +399,13 @@ expectNutritionAssessmentTask currentDate assembled task =
     case task of
         -- Show for children that are up to 3 years old.
         TaskHeadCircumference ->
-            ageInMonths currentDate assembled.person
+            personAgeInMonthsReached currentDate assembled.person
                 |> Maybe.map (\ageMonths -> ageMonths < 36)
                 |> Maybe.withDefault False
 
         -- Show for children that are at least 6 month old.
         TaskMuac ->
-            ageInMonths currentDate assembled.person
+            personAgeInMonthsReached currentDate assembled.person
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
 
@@ -1086,7 +1086,7 @@ expectedECDSignsByAge currentDate assembled =
                         Date.diff Weeks birthDate currentDate
 
                     ageMonths =
-                        ageInMonthsReached currentDate birthDate
+                        ageInMonthsReached birthDate currentDate
 
                     groupedSigns =
                         ageInMonthsAtLastAssessment assembled
@@ -1116,10 +1116,10 @@ expectedECDSignsOnMilestone birthDate milestoneDate firstEncounterDateAfterMiles
             Date.diff Weeks birthDate milestoneDate
 
         ageMonths =
-            Date.diff Months birthDate milestoneDate
+            ageInMonthsReached birthDate milestoneDate
 
         groupedSigns =
-            Maybe.map (Date.diff Months birthDate) firstEncounterDateAfterMilestone
+            Maybe.map (ageInMonthsReached birthDate) firstEncounterDateAfterMilestone
                 |> groupedECDSigns ageMonths
     in
     ecdSignsFromGroupedSignsByAge ageWeeks ageMonths groupedSigns
@@ -1239,7 +1239,7 @@ ageInMonthsAtLastAssessment assembled =
                             |> List.head
                 in
                 Maybe.map
-                    (Date.diff Months birthDate)
+                    (ageInMonthsReached birthDate)
                     lastECDAssessmentDate
             )
 
@@ -1398,8 +1398,7 @@ nextMedicationAdmnistrationData currentDate site person measurements =
 
 expectMedicationByAge : NominalDate -> Site -> Person -> MedicationTask -> Bool
 expectMedicationByAge currentDate site person task =
-    person.birthDate
-        |> Maybe.map (ageInMonthsReached currentDate)
+    personAgeInMonthsReached currentDate person
         |> Maybe.map
             (\ageMonths ->
                 case site of
@@ -1520,7 +1519,7 @@ resolveAlbendazoleDosageAndIcon site language currentDate person =
     in
     case site of
         SiteBurundi ->
-            ageInMonths currentDate person
+            personAgeInMonthsReached currentDate person
                 |> Maybe.map
                     (\ageMonths ->
                         if ageMonths < 24 then
@@ -1546,7 +1545,7 @@ resolveMebendezoleDosageAndIcon site language _ _ =
 
 resolveVitaminADosageAndIcon : Site -> Language -> NominalDate -> Person -> Maybe ( String, String, String )
 resolveVitaminADosageAndIcon site language currentDate person =
-    ageInMonths currentDate person
+    personAgeInMonthsReached currentDate person
         |> Maybe.map
             (\ageMonths ->
                 let
@@ -2010,22 +2009,6 @@ milestone while their age, counted in whole months, is still one short.
 isBeforeMilestone : NominalDate -> NominalDate -> Bool
 isBeforeMilestone currentDate milestone =
     Date.compare currentDate milestone == LT
-
-
-{-| Whole months of age, counting a month as complete on the month-end day its
-date falls on. Born 31 March, on 30 September the child is 6 months old.
--}
-ageInMonthsReached : NominalDate -> NominalDate -> Int
-ageInMonthsReached currentDate birthDate =
-    let
-        wholeMonths =
-            Date.diff Months birthDate currentDate
-    in
-    if Date.compare (Date.add Months (wholeMonths + 1) birthDate) currentDate == EQ then
-        wholeMonths + 1
-
-    else
-        wholeMonths
 
 
 generateNextDateForMedicationVisit : NominalDate -> Site -> AssembledData -> Maybe NominalDate
