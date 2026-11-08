@@ -25,6 +25,7 @@ import Backend.Person.Model
 import Backend.Person.Utils
     exposing
         ( defaultIconForPerson
+        , earliestChildBirthDate
         , educationLevelToInt
         , expectedAgeByPerson
         , generateFullName
@@ -32,6 +33,7 @@ import Backend.Person.Utils
         , hivStatusToString
         , isAdult
         , isPersonAnAdult
+        , latestAdultBirthDate
         , maritalStatusToString
         , maxChildrenAtFamilyEncounter
         , modeOfDeliveryToString
@@ -579,10 +581,10 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 _ ->
                                     case expectedAge of
                                         ExpectChild ->
-                                            ( Date.add Years -13 currentDate, currentDate )
+                                            ( earliestChildBirthDate currentDate, currentDate )
 
                                         ExpectAdult ->
-                                            ( Date.add Years -120 currentDate, Date.add Years -13 currentDate )
+                                            ( Date.add Years -120 currentDate, latestAdultBirthDate currentDate )
 
                                         ExpectAdultOrChild ->
                                             ( Date.add Years -120 currentDate, currentDate )
@@ -611,7 +613,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             , expectedAge = ExpectAdult
                             , expectedGender = ExpectFemale
                             , birthDateSelectorFrom = Date.add Years -120 today
-                            , birthDateSelectorTo = Date.add Years -13 today
+                            , birthDateSelectorTo = latestAdultBirthDate today
                             , title = Translate.People
                             }
 
@@ -658,7 +660,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage NutritionEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -13 today |> Date.add Days 1
+                            , birthDateSelectorFrom = earliestChildBirthDate today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -676,7 +678,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage WellChildEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -13 today
+                            , birthDateSelectorFrom = earliestChildBirthDate today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -700,25 +702,25 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                     case expectedAge of
                                         ExpectChild ->
                                             let
-                                                defaultMaximalAge =
-                                                    Date.add Years -13 currentDate
+                                                defaultEarliestBirthDate =
+                                                    earliestChildBirthDate currentDate
 
-                                                maximalAge =
+                                                earliestBirthDate =
                                                     getSession sessionId db
                                                         |> Maybe.map
                                                             (\session ->
                                                                 if List.member session.clinicType [ Sorwathe, Achi ] then
-                                                                    defaultMaximalAge
+                                                                    defaultEarliestBirthDate
 
                                                                 else
                                                                     Date.add Months (-1 * graduatingAgeInMonth) currentDate
                                                             )
-                                                        |> Maybe.withDefault defaultMaximalAge
+                                                        |> Maybe.withDefault defaultEarliestBirthDate
                                             in
-                                            ( maximalAge, currentDate )
+                                            ( earliestBirthDate, currentDate )
 
                                         ExpectAdult ->
-                                            ( Date.add Years -120 currentDate, Date.add Years -13 currentDate )
+                                            ( Date.add Years -120 currentDate, latestAdultBirthDate currentDate )
 
                                         ExpectAdultOrChild ->
                                             ( Date.add Years -120 currentDate, currentDate )
@@ -762,7 +764,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 { goBackPage = UserPage (PersonsPage maybeRelatedPersonId initiator)
                                 , expectedAge = ExpectChild
                                 , expectedGender = ExpectMaleOrFemale
-                                , birthDateSelectorFrom = Date.add Years -13 today |> Date.add Days 1
+                                , birthDateSelectorFrom = earliestChildBirthDate today
                                 , birthDateSelectorTo = today
                                 , title = Translate.People
                                 }
@@ -773,7 +775,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 , expectedAge = ExpectAdult
                                 , expectedGender = ExpectFemale
                                 , birthDateSelectorFrom = Date.add Years -120 today
-                                , birthDateSelectorTo = Date.add Years -13 today
+                                , birthDateSelectorTo = latestAdultBirthDate today
                                 , title = Translate.People
                                 }
 
