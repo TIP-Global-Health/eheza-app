@@ -561,14 +561,13 @@ function hedley_case_management_limit_to_follow_ups_closed_by($query, $node) {
   $query->propertyCondition('nid', $node->nid, '<');
 
   // Encounters are dated by their scheduled date, follow-ups by date measured.
-  foreach (['field_scheduled_date', 'field_date_measured'] as $field) {
-    $date = $node->{$field}[LANGUAGE_NONE][0]['value'] ?? NULL;
-    if (!empty($date)) {
-      $day = hedley_restful_timestamp_only_date($date);
-      $query->fieldCondition('field_date_measured', 'value', $day . ' 23:59:59', '<=');
-      return;
-    }
+  $date = $node->field_scheduled_date[LANGUAGE_NONE][0]['value'] ?? $node->field_date_measured[LANGUAGE_NONE][0]['value'] ?? NULL;
+  if (empty($date)) {
+    return;
   }
+
+  $day = hedley_restful_timestamp_only_date($date);
+  $query->fieldCondition('field_date_measured', 'value', $day . ' 23:59:59', '<=');
 }
 
 /**
