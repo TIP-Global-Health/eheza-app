@@ -647,3 +647,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a server edit did not change an open page in over three minutes, against the backlog entry's prediction.
 - **Wrong conclusion:** a download does not cause the defect.
 - **Rule:** the default loop runs every 10 minutes. Set `syncSpeed` idle 3000 first, and check the device's `shards` row and `lastFetchedRevisionId` before reading the result.
+
+## Expecting a diagnosis's name to show every part of its meaning
+
+- **Symptom:** a check that a positive-and-pregnant follow-up's popup names pregnancy failed, on the right build with the right data.
+- **Wrong conclusion:** the PR shows the wrong diagnosis.
+- **Rule:** the English label of `DiagnosisMalariaUncomplicatedAndPregnant` is the same as plain uncomplicated malaria. The stored `acute_illness_diagnosis` tells them apart; read `Translate.elm` before writing a check on a label, and prefer the stored value.
+
+## Assuming a child's first visit goes the way an adult's does
+
+- **Symptom:** `completePriorTreatment` timed out waiting for the encounter page on a nurse's 5-month-old with a cold.
+- **Wrong conclusion:** the helper is broken, or the page did not save.
+- **Rule:** when the diagnosis brings a next step, the save that completes it opens Next Steps behind the popup, before Prior Treatment is done. Do Next Steps first and read `Pages/AcuteIllness/Activity/Utils.elm`'s first-encounter order before chaining helpers.
+
+## A substring that also matches longer names, and a name below the fold
+
+- **Symptom:** `.follow-up-entry` picked with "Qa2493P1" matched P10–P12 in a list of a dozen entries, and the entries asked about sat below the 1024 px view of the video.
+- **Wrong conclusion:** the recording shows the entries it reads.
+- **Rule:** match with a regex that ends the name (`/Qa2493P1(?!\d)/`) and scroll the list before the frame you rely on.
