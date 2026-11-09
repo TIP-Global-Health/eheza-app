@@ -879,7 +879,19 @@ generatePartitionedWarningEntries encounters maybeAssembled =
                     dateOfLastEncounterWithWarningFrom ecdMilestoneWarnings
 
                 lastHeadCircumferenceActivityDate =
-                    dateOfLastEncounterWithWarningFrom headCircumferenceWarnings
+                    -- A reading within range stores no warning, so readings count too.
+                    Maybe.Extra.toList (dateOfLastEncounterWithWarningFrom headCircumferenceWarnings)
+                        ++ datesOfHeadCircumferenceReadings
+                        |> List.sortWith sortDatesDesc
+                        |> List.head
+
+                datesOfHeadCircumferenceReadings =
+                    ( assembled.encounter.startDate, assembled.measurements )
+                        :: List.map (Tuple.mapSecond Tuple.second) assembled.previousMeasurementsWithDates
+                        |> List.filterMap
+                            (\( date, measurements ) ->
+                                Maybe.map (always date) measurements.headCircumference
+                            )
 
                 dateOfLastEncounterWithWarningFrom warningsSet =
                     List.filterMap
