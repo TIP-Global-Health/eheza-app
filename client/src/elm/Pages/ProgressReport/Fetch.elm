@@ -6,8 +6,8 @@ import Backend.NutritionEncounter.Fetch
 import Pages.AcuteIllness.Participant.Fetch
 
 
-fetch : PersonId -> ModelIndexedDb -> ( List MsgIndexedDb, List MsgIndexedDb )
-fetch childId db =
+fetch : SessionId -> PersonId -> ModelIndexedDb -> ( List MsgIndexedDb, List MsgIndexedDb )
+fetch sessionId childId db =
     -- See Pages.Nutrition.ProgressReport.Fetch: the Next Appointment pane needs
     -- the health centers, and nothing else on this page fetches them.
     ( (FetchHealthCenters
@@ -15,5 +15,6 @@ fetch childId db =
         :: Backend.NutritionEncounter.Fetch.fetch childId db
       )
         ++ Pages.AcuteIllness.Participant.Fetch.fetch childId db
-    , []
+    , -- Without it, today's assessment reads as not done, and shows as resolved.
+      [ FetchEditableSessionMeasurements sessionId ]
     )

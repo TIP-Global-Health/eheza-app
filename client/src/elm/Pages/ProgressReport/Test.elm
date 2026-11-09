@@ -23,8 +23,8 @@ Only the WellChild variant used to fetch them. These pin that every page which
 renders the report asks for them.
 
 -}
-all : Test
-all =
+healthCenterFetchTests : Test
+healthCenterFetchTests =
     let
         db : ModelIndexedDb
         db =
@@ -54,7 +54,7 @@ all =
                     |> Expect.equal True
         , test "Group (Pages.ProgressReport)" <|
             \_ ->
-                Pages.ProgressReport.Fetch.fetch (toEntityUuid "child") db
+                Pages.ProgressReport.Fetch.fetch (toEntityUuid "session") (toEntityUuid "child") db
                     |> Tuple.first
                     |> asks
                     |> Expect.equal True
@@ -63,4 +63,29 @@ all =
                 Pages.PatientRecord.Fetch.fetch currentDate (toEntityUuid "person") db
                     |> asks
                     |> Expect.equal True
+        ]
+
+
+{-| The group report reads whether today's activities are complete from the
+session's measurements. After a reload or a sync download nothing else on the
+page asks for them, and today's assessment shows as resolved.
+-}
+sessionMeasurementsFetchTest : Test
+sessionMeasurementsFetchTest =
+    test "the group report asks for the session's measurements" <|
+        \_ ->
+            let
+                sessionId =
+                    toEntityUuid "session"
+            in
+            Pages.ProgressReport.Fetch.fetch sessionId (toEntityUuid "child") emptyModelIndexedDb
+                |> Tuple.second
+                |> Expect.equal [ FetchEditableSessionMeasurements sessionId ]
+
+
+all : Test
+all =
+    describe "progress report pages"
+        [ healthCenterFetchTests
+        , sessionMeasurementsFetchTest
         ]
