@@ -2587,8 +2587,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                                         updatedEditable =
                                                                             Success
                                                                                 { editableSession
-                                                                                    | update = NotAsked
-                                                                                    , offlineSession = updatedOffline
+                                                                                    | offlineSession = updatedOffline
                                                                                     , checkedIn = LocalData.setRecalculate editableSession.checkedIn
                                                                                     , summaryByParticipant = LocalData.setRecalculate editableSession.summaryByParticipant
                                                                                     , summaryByActivity = LocalData.setRecalculate editableSession.summaryByActivity
@@ -4131,7 +4130,13 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 ( subModel, subCmd, appMsgs ) =
                     Backend.Session.Update.update currentDate nurseId sessionId session subMsg requests
             in
-            ( { model | sessionRequests = Dict.insert sessionId subModel model.sessionRequests }
+            ( { model
+                | sessionRequests = Dict.insert sessionId subModel model.sessionRequests
+                , editableSessions =
+                    Dict.update sessionId
+                        (Maybe.map (RemoteData.map (\editable -> { editable | saveRequests = subModel })))
+                        model.editableSessions
+              }
             , Cmd.map (MsgSession sessionId) subCmd
             , appMsgs
             )
@@ -9552,8 +9557,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores features isChw childId 
                                                                 updatedValue =
                                                                     { value | assesment = assessmentForBackend }
                                                             in
-                                                            Measurement.Model.SaveFollowUp followUpId updatedValue
-                                                                |> Backend.Session.Model.MeasurementOutMsgChild childId
+                                                            Backend.Session.Model.UpdateFollowUpAssessment childId followUpId updatedValue
                                                                 |> Backend.Model.MsgSession sessionId
                                                                 |> App.Model.MsgIndexedDb
                                                                 |> List.singleton
@@ -9584,8 +9588,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores features isChw childId 
                                                                 updatedValue =
                                                                     { value | assesment = assessmentForBackend }
                                                             in
-                                                            Measurement.Model.SaveNutrition nutritionId updatedValue
-                                                                |> Backend.Session.Model.MeasurementOutMsgChild childId
+                                                            Backend.Session.Model.UpdateNutritionAssessment childId nutritionId updatedValue
                                                                 |> Backend.Model.MsgSession sessionId
                                                                 |> App.Model.MsgIndexedDb
                                                                 |> List.singleton
@@ -10082,7 +10085,9 @@ makeEditableSession sessionId db =
         RemoteData.map
             (\offline ->
                 { offlineSession = offline
-                , update = NotAsked
+                , saveRequests =
+                    Dict.get sessionId db.sessionRequests
+                        |> Maybe.withDefault Backend.Session.Model.emptyModel
                 , checkedIn = previousCheckedIn
                 , summaryByParticipant = previousSummaryByParticipant
                 , summaryByActivity = previousSummaryByActivity

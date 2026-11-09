@@ -142,7 +142,7 @@ updateFoundSession site sessionId session msg model =
                 measurements =
                     maybeMotherId
                         |> Maybe.andThen (\motherId -> LocalData.toMaybe <| getMotherMeasurementData motherId session)
-                        |> Maybe.withDefault (emptyMotherMeasurementData session)
+                        |> Maybe.withDefault emptyMotherMeasurementData
 
                 updateReturns =
                     Pages.Activity.Update.updateMother subMsg activityPage motherForm measurements
