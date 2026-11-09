@@ -102,6 +102,9 @@ jobs:
       - run:
           name: Run standalone Prenatal completion tests
           command: php server/hedley/modules/custom/hedley_reports/tests/run_prenatal_completion_tests.php
+      - run:
+          name: Run standalone follow-up resolution tests
+          command: php server/hedley/modules/custom/hedley_case_management/tests/run_follow_up_resolution_tests.php
   test_elm:
     docker:
       - image: cimg/node:18.20
