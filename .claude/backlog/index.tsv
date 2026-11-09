@@ -572,6 +572,7 @@ B-571	4	READY	LOW			53	Completion report (Well Child): the server still counts a
 B-572	4	READY	LOW			53	HIV encounter: the Prescribed Medication form cannot be saved without at least one antiretroviral, so a positive patient
 B-573	4	READY	LOW			53	NCD initial phase: the Referral task counts as done when ANY referral record exists, so a hospital referral saved first 
 B-574	3	READY	MED			54	Prenatal (CHW): a postpartum visit left unfinished on an earlier day locks the woman's Antenatal page — First, Subsequen
+B-575	4	READY	LOW			54	Prenatal labs history: saving an EARLIER visit's pending lab result from today's Laboratory page can throw the nurse ont
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
