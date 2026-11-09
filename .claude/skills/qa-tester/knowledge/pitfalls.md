@@ -642,3 +642,8 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Wrong conclusion:** the double-tap scenario cannot be run on that form.
 - **Rule:** repeat the tap when the save's request leaves, not on every click: in the `XMLHttpRequest.send` wrapper, on the POST of the type under test, click the last clicked button once.
 
+## Waiting for a download at the default sync speed
+
+- **Symptom:** a server edit did not change an open page in over three minutes, against the backlog entry's prediction.
+- **Wrong conclusion:** a download does not cause the defect.
+- **Rule:** the default loop runs every 10 minutes. Set `syncSpeed` idle 3000 first, and check the device's `shards` row and `lastFetchedRevisionId` before reading the result.

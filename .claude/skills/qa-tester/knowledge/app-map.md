@@ -457,6 +457,7 @@ flag simply does not appear.
   The assessment is kept on the `follow_up` node; the `nutrition` node's own `field_nutrition_assesment` stays empty when the Nutrition
   save completes the set for a child whose history was already loaded.
 - A mother's FBF Mother tab shows only after Lactation is answered Yes. Tabs reachable: Family Planning, Lactation, then FBF Mother.
+- A child's group Progress Report: the child's page → `Progress Report` tab → `a:has(.icon-progress-report)`. Attendance lists mothers only after "Display all mothers / caregivers" or a filter.
 - `ul.links-head` (attendance, participants, activities icons) is on the Attendance, Participants and Activities pages only, not on a child's or mother's page: press `.link-back` first.
 - Attendance row: `.item` with the mother's name; `.icon-checked-in` (checked in, tap to check out) or `.link-check-in` (not checked in). The mother leaves Participants when checked out.
 - Hold or fail a group save without the server: wrap `XMLHttpRequest.prototype.send` in the page for POST/PATCH `/sw/nodes/<type>` (those go through the service worker, so `page.route` misses them); `client/e2e/group-session-save-button.spec.ts` has `installSaveControls`.
