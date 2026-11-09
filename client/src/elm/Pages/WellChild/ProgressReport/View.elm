@@ -1,5 +1,6 @@
 module Pages.WellChild.ProgressReport.View exposing
     ( distributeByListIndex
+    , generatePartitionedWarningEntries
     , generateUniversalInterventionsValues
     , heightCellValuesByAgeInMonths
     , malnutritionTreatmentsByAgeInMonthsFromQuestionnaires
