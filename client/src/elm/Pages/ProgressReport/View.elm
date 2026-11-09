@@ -41,9 +41,7 @@ view language currentDate zscores site features isChw childId ( sessionId, sessi
             InitiatorNutritionGroup sessionId childId
 
         mandatoryNutritionAssessmentMeasurementsTaken =
-            -- A session held on another day holds no assessment of today.
-            (session.offlineSession.session.startDate == currentDate)
-                && mandatoryActivitiesCompleted currentDate zscores features session.offlineSession childId isChw db
+            mandatoryActivitiesCompleted currentDate zscores features session.offlineSession childId isChw db
 
         componentsConfig =
             Just { setReportComponentsMsg = SetReportComponents }

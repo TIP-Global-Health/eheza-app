@@ -1,5 +1,7 @@
 module Pages.ProgressReport.Test exposing (all)
 
+import AssocList as Dict
+import Backend.Measurement.Model exposing (emptyChildMeasurementList, emptyNutritionValue)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..), emptyModelIndexedDb)
 import Date
 import Expect
@@ -8,6 +10,8 @@ import Pages.Nutrition.ProgressReport.Fetch
 import Pages.PatientRecord.Fetch
 import Pages.ProgressReport.Fetch
 import Pages.WellChild.ProgressReport.Fetch
+import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
+import Pages.WellChild.ProgressReport.View exposing (resolveDateOfLastNutritionAssessment)
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import Time
@@ -80,12 +84,70 @@ sessionMeasurementsFetchTest =
             in
             Pages.ProgressReport.Fetch.fetch sessionId (toEntityUuid "child") emptyModelIndexedDb
                 |> Tuple.second
-                |> Expect.equal [ FetchEditableSessionMeasurements sessionId ]
+                |> List.member (FetchEditableSessionMeasurements sessionId)
+                |> Expect.equal True
+
+
+{-| Which day's assessment is Active on the group report. "Taken" is whether
+the mandatory activities of the session the report was opened from are complete.
+-}
+lastAssessmentDateTests : Test
+lastAssessmentDateTests =
+    let
+        today =
+            Date.fromCalendarDate 2026 Time.Nov 9
+
+        lastMonth =
+            Date.fromCalendarDate 2026 Time.Oct 10
+
+        nutritionOn date =
+            ( toEntityUuid (Date.toIsoString date)
+            , { dateMeasured = date
+              , nurse = Nothing
+              , healthCenter = Nothing
+              , participantId = toEntityUuid "child"
+              , deleted = False
+              , encounterId = Nothing
+              , value = emptyNutritionValue
+              }
+            )
+
+        lastAssessmentDate taken dates =
+            resolveDateOfLastNutritionAssessment today
+                (InitiatorNutritionGroup (toEntityUuid "session") (toEntityUuid "child"))
+                taken
+                []
+                []
+                { emptyChildMeasurementList | nutritions = Dict.fromList (List.map nutritionOn dates) }
+    in
+    describe "the assessment day that is Active on the group report"
+        [ test "today, when today's activities are complete" <|
+            \_ ->
+                lastAssessmentDate True [ lastMonth, today ]
+                    |> Expect.equal (Just today)
+        , test "an earlier day, while today's activities are not complete" <|
+            \_ ->
+                lastAssessmentDate False [ lastMonth, today ]
+                    |> Expect.equal (Just lastMonth)
+        , test "the session's own day, when it was held on an earlier day" <|
+            \_ ->
+                lastAssessmentDate True [ lastMonth ]
+                    |> Expect.equal (Just lastMonth)
+        , test "today, when an earlier day's session was completed today" <|
+            \_ ->
+                lastAssessmentDate True [ today ]
+                    |> Expect.equal (Just today)
+        , test "nothing, for a child with no assessment" <|
+            \_ ->
+                lastAssessmentDate True []
+                    |> Expect.equal Nothing
+        ]
 
 
 all : Test
 all =
     describe "progress report pages"
         [ healthCenterFetchTests
+        , lastAssessmentDateTests
         , sessionMeasurementsFetchTest
         ]

@@ -3,6 +3,7 @@ module Pages.WellChild.ProgressReport.View exposing
     , generateUniversalInterventionsValues
     , heightCellValuesByAgeInMonths
     , malnutritionTreatmentsByAgeInMonthsFromQuestionnaires
+    , resolveDateOfLastNutritionAssessment
     , resolveLastDayForMonthX
     , view
     , viewNutritionSigns
@@ -760,7 +761,18 @@ resolveDateOfLastNutritionAssessment :
     -> ChildMeasurementList
     -> Maybe NominalDate
 resolveDateOfLastNutritionAssessment currentDate initiator mandatoryNutritionAssessmentMeasurementsTaken nutritionEncounters wellChildEncounters groupNutritionMeasurements =
-    if mandatoryNutritionAssessmentMeasurementsTaken then
+    let
+        assessedToday =
+            case initiator of
+                InitiatorNutritionGroup _ _ ->
+                    -- The session the report was opened from may be an earlier day's.
+                    Dict.values groupNutritionMeasurements.nutritions
+                        |> List.any (.dateMeasured >> (==) currentDate)
+
+                _ ->
+                    True
+    in
+    if mandatoryNutritionAssessmentMeasurementsTaken && assessedToday then
         Just currentDate
 
     else
