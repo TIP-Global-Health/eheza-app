@@ -378,7 +378,12 @@ flag simply does not appear.
   on ECD milestones…", CONTINUE) and the warning `warning-ecd-milestone-refer-to-specialist`.
 - Well Child progress report (`#reports-tab`): Active Diagnosis lists the visit warnings as
   `.entry.diagnosis` — "Microcephaly ONGOING 14/10/2026", "Missed ECD Milestone - 24 Mo …" — or
-  "No matches found". REVIEW PRIOR DIAGNOSIS swaps in the Prior Diagnosis pane.
+  "No matches found". REVIEW PRIOR DIAGNOSIS swaps in the Prior Diagnosis pane (`.pane.diagnosis button`); its back arrow
+  (`.head .link-back`) returns to Active. A child's Patient Record draws the same report (`div.page-report.well-child`), on
+  a full load too, so it is the way to read a child with no open visit.
+- A nurse visit where only head circumference is saved can be left open; a later day's "Standard Pediatric Visit Encounter" starts
+  a new visit. To put an earlier visit in the past, set the visit's `field_scheduled_date` value and value2 and each measurement's
+  `field_date_measured` (`field_well_child_encounter`) by drush, after upload; `drush eval "eval(base64_decode('…'));"` keeps the php quoting simple.
 - Well Child progress report growth charts (`.growth-charts svg`, title `text.gender`): under 26 months Length-for-age,
   Weight-for-age, Weight-for-length 0–2 and head circumference (0–13 weeks below 13 weeks); under 60 months the 0–5
   set; older, Height-for-age 5–19, Weight-for-age 5–10, HC 0–5. Read geometry from the SVG: labelled lines `line.st18`,
@@ -661,7 +666,8 @@ flag simply does not appear.
   it. The service worker keeps the real date (see pitfalls); `page.clock` must not be used.
   A shift of more than a year into the past works. Queued saves still upload once the offset is back to 0.
 - The main tree starts a run on `develop`, so a develop control is cheapest before the overlay:
-  record it on the served build, then overlay and wait for gulp once.
+  record it on the served build, then overlay and wait for gulp once. For a change only to what a page shows, one fixture can
+  serve both builds: overlay, build and read on the PR, restore the files (needed anyway), wait for gulp, activate the update in the same driver, read again.
 - After an overlay, gulp copies `app.js` at once, but `Main.js` takes about 2.5 minutes to rebuild. Wait until
   `grep -F` finds a name from the overlay in `client/serve/Main.js`.
 - Only a caller that can read `.driver/token` (owner-only, new each start) can send commands;

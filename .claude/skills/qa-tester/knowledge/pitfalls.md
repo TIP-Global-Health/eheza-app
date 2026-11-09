@@ -665,3 +665,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** `.follow-up-entry` picked with "Qa2493P1" matched P10–P12 in a list of a dozen entries, and the entries asked about sat below the 1024 px view of the video.
 - **Wrong conclusion:** the recording shows the entries it reads.
 - **Rule:** match with a regex that ends the name (`/Qa2493P1(?!\d)/`) and scroll the list before the frame you rely on.
+
+## A long chain of driver commands in one Bash call
+
+- **Symptom:** a shell call chaining three recorded controls and two capture loops returned "moved to the background after 180s", with its output cut off.
+- **Wrong conclusion:** the driver hung, or the rest of the chain did not run. It kept running.
+- **Rule:** keep each Bash call under three minutes, or write every result to a file (`> res-<name>.json`) and read those files; never rely on the printed output of a long chain.
