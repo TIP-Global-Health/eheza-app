@@ -553,7 +553,7 @@ function hedley_case_management_handle_update_trigger($node) {
  *   The created node. Empty when nothing limits the query, as when an illness
  *   or pregnancy is concluded.
  */
-function hedley_case_management_limit_to_follow_ups_closed_by($query, $node = NULL) {
+function hedley_case_management_limit_to_follow_ups_closed_by($query, $node) {
   if (empty($node)) {
     return;
   }
@@ -562,8 +562,9 @@ function hedley_case_management_limit_to_follow_ups_closed_by($query, $node = NU
 
   // Encounters are dated by their scheduled date, follow-ups by date measured.
   foreach (['field_scheduled_date', 'field_date_measured'] as $field) {
-    if (!empty($node->{$field}[LANGUAGE_NONE][0]['value'])) {
-      $day = substr($node->{$field}[LANGUAGE_NONE][0]['value'], 0, 10);
+    $date = $node->{$field}[LANGUAGE_NONE][0]['value'] ?? NULL;
+    if (!empty($date)) {
+      $day = hedley_restful_timestamp_only_date($date);
       $query->fieldCondition('field_date_measured', 'value', $day . ' 23:59:59', '<=');
       return;
     }

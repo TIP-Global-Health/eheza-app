@@ -238,6 +238,13 @@ function hedley_general_create_entity_field_query_excluding_deleted() {
 }
 
 /**
+ * Stands in for the helper that cuts a stored date down to its day.
+ */
+function hedley_restful_timestamp_only_date($value) {
+  return explode(' ', $value)[0];
+}
+
+/**
  * Stands in for the entity API's wrapper factory.
  */
 function entity_metadata_wrapper($type, $node) {
@@ -335,10 +342,8 @@ function set_up_patient(array $list) {
 }
 
 /**
- * Uploads a follow-up of a list, dated on a day.
+ * Uploads a follow-up, dated on a day.
  *
- * @param array $list
- *   The list, from follow_up_lists().
  * @param string $bundle
  *   The follow-up bundle.
  * @param array $patient
@@ -349,7 +354,7 @@ function set_up_patient(array $list) {
  * @return object
  *   The follow-up node.
  */
-function upload_follow_up(array $list, $bundle, array $patient, $day) {
+function upload_follow_up($bundle, array $patient, $day) {
   $references = ['field_person' => $patient['person']];
   $values = ['field_date_measured' => stored_date($day)];
   if ($bundle === 'acute_illness_follow_up') {
@@ -446,36 +451,36 @@ foreach (follow_up_lists() as $name => $list) {
     ];
     if ($list['closing_follow_up']) {
       $closers['follow-up'] = function ($patient, $day) use ($list, $bundle) {
-        return upload_follow_up($list, $bundle, $patient, $day);
+        return upload_follow_up($bundle, $patient, $day);
       };
     }
 
     foreach ($closers as $kind => $upload_closer) {
       $patient = set_up_patient($list);
-      $follow_up = upload_follow_up($list, $bundle, $patient, $newer);
+      $follow_up = upload_follow_up($bundle, $patient, $newer);
       $upload_closer($patient, $older);
       assert_same(is_closed($follow_up), FALSE, "$label: a late $kind dated earlier leaves the newer follow-up open", $passed, $failed);
 
       $patient = set_up_patient($list);
-      $follow_up = upload_follow_up($list, $bundle, $patient, $newer);
+      $follow_up = upload_follow_up($bundle, $patient, $newer);
       $upload_closer($patient, $newer);
       assert_same(is_closed($follow_up), TRUE, "$label: a $kind dated the same day closes the follow-up", $passed, $failed);
 
       $patient = set_up_patient($list);
-      $follow_up = upload_follow_up($list, $bundle, $patient, $newer);
+      $follow_up = upload_follow_up($bundle, $patient, $newer);
       $upload_closer($patient, $later);
       assert_same(is_closed($follow_up), TRUE, "$label: a $kind dated later closes the follow-up", $passed, $failed);
 
       $patient = set_up_patient($list);
       $upload_closer($patient, $older);
-      $follow_up = upload_follow_up($list, $bundle, $patient, $newer);
+      $follow_up = upload_follow_up($bundle, $patient, $newer);
       assert_same(is_closed($follow_up), FALSE, "$label: a follow-up reaching the server after the $kind stays open", $passed, $failed);
 
       // The late record and its own follow-up arrive after the newer one.
       $patient = set_up_patient($list);
-      $newer_follow_up = upload_follow_up($list, $bundle, $patient, $newer);
+      $newer_follow_up = upload_follow_up($bundle, $patient, $newer);
       $upload_closer($patient, $older);
-      $late_follow_up = upload_follow_up($list, $bundle, $patient, $older);
+      $late_follow_up = upload_follow_up($bundle, $patient, $older);
       $upload_closer($patient, $later);
       assert_same(is_closed($newer_follow_up), TRUE, "$label: a later $kind closes the newer follow-up", $passed, $failed);
       assert_same(is_closed($late_follow_up), TRUE, "$label: a later $kind closes the follow-up of the late upload", $passed, $failed);
@@ -483,11 +488,20 @@ foreach (follow_up_lists() as $name => $list) {
   }
 }
 
+// Devices upload encounters with a date and no time.
+$list = follow_up_lists()['Immunization'];
+$patient = set_up_patient($list);
+$follow_up = upload_follow_up('well_child_next_visit', $patient, $newer);
+upload_node($list['encounter'], ['field_individual_participant' => $patient['participant']], $list['encounter_values'] + ['field_scheduled_date' => $older]);
+assert_same(is_closed($follow_up), FALSE, 'A late encounter uploaded with no time leaves the newer follow-up open', $passed, $failed);
+upload_node($list['encounter'], ['field_individual_participant' => $patient['participant']], $list['encounter_values'] + ['field_scheduled_date' => $newer]);
+assert_same(is_closed($follow_up), TRUE, 'An encounter uploaded with no time, dated the same day, closes the follow-up', $passed, $failed);
+
 // Another person's follow-up is never closed.
 $list = follow_up_lists()['Immunization'];
 $patient = set_up_patient($list);
 $other = set_up_patient($list);
-$follow_up = upload_follow_up($list, 'well_child_next_visit', $other, $newer);
+$follow_up = upload_follow_up('well_child_next_visit', $other, $newer);
 upload_encounter($list, $patient, $later);
 assert_same(is_closed($follow_up), FALSE, "Another person's follow-up stays open", $passed, $failed);
 
@@ -496,7 +510,7 @@ $list = follow_up_lists()['Acute Illness'];
 $patient = set_up_patient($list);
 $other_illness = store_node('individual_participant', ['field_person' => $patient['person']]);
 $other_encounter = store_node('acute_illness_encounter', ['field_individual_participant' => $other_illness->nid], ['field_scheduled_date' => stored_date('2026-01-01')]);
-$follow_up = upload_follow_up($list, 'acute_illness_follow_up', ['encounter' => $other_encounter->nid] + $patient, $newer);
+$follow_up = upload_follow_up('acute_illness_follow_up', ['encounter' => $other_encounter->nid] + $patient, $newer);
 upload_encounter($list, $patient, $later);
 assert_same(is_closed($follow_up), FALSE, 'A later encounter of another illness leaves the follow-up open', $passed, $failed);
 
@@ -523,7 +537,7 @@ foreach ($tb_cases as [$day, $closed, $outcome]) {
 // Encounters that close nothing.
 $list = follow_up_lists()['Antenatal'];
 $patient = set_up_patient($list);
-$follow_up = upload_follow_up($list, 'prenatal_follow_up', $patient, $newer);
+$follow_up = upload_follow_up('prenatal_follow_up', $patient, $newer);
 upload_node('prenatal_encounter', ['field_individual_participant' => $patient['participant']], [
   'field_prenatal_encounter_type' => 'nurse',
   'field_scheduled_date' => stored_date($later),
@@ -532,7 +546,7 @@ assert_same(is_closed($follow_up), FALSE, 'A nurse antenatal encounter closes no
 
 $list = follow_up_lists()['Immunization'];
 $patient = set_up_patient($list);
-$follow_up = upload_follow_up($list, 'well_child_next_visit', $patient, $newer);
+$follow_up = upload_follow_up('well_child_next_visit', $patient, $newer);
 upload_node('well_child_encounter', ['field_individual_participant' => $patient['participant']], [
   'field_well_child_encounter_type' => 'newborn-exam',
   'field_scheduled_date' => stored_date($later),
@@ -541,7 +555,7 @@ assert_same(is_closed($follow_up), FALSE, 'A newborn exam closes nothing', $pass
 
 // A follow-up already closed stays closed, with its closing date.
 $patient = set_up_patient($list);
-$follow_up = upload_follow_up($list, 'well_child_next_visit', $patient, $newer);
+$follow_up = upload_follow_up('well_child_next_visit', $patient, $newer);
 $follow_up->field_date_concluded[LANGUAGE_NONE][0]['value'] = 'closed earlier';
 upload_encounter($list, $patient, $older);
 upload_encounter($list, $patient, $later);
@@ -557,7 +571,7 @@ $outcomes = [
 foreach ($outcomes as $encounter_type => [$name, $bundle]) {
   $list = follow_up_lists()[$name];
   $patient = set_up_patient($list);
-  $follow_up = upload_follow_up($list, $bundle, $patient, '2027-01-01');
+  $follow_up = upload_follow_up($bundle, $patient, '2027-01-01');
 
   $participant = $GLOBALS['nodes'][$patient['participant']];
   $participant->field_encounter_type[LANGUAGE_NONE][0]['value'] = $encounter_type;
