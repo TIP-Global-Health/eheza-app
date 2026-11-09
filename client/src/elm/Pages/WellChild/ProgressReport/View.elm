@@ -889,7 +889,9 @@ generatePartitionedWarningEntries encounters maybeAssembled =
                     measurementsOfAllVisits assembled
                         |> List.filterMap
                             (\( date, ( _, measurements ) ) ->
-                                Maybe.map (always date) measurements.headCircumference
+                                getMeasurementValueFunc measurements.headCircumference
+                                    |> Maybe.andThen headCircumferenceTakenValue
+                                    |> Maybe.map (always date)
                             )
 
                 dateOfLastEncounterWithWarningFrom warningsSet =
