@@ -12,6 +12,8 @@ metadata:
 
 📊 **Completion-usage gate answered 2026-11-08 (user: "Completion report still in use").** The Completion items that waited on "is the report used?" are no longer held by that question; B-284 still needs its own answer on how a negative screening should be reported.
 
+🟡 **Open PRs 2026-11-09, awaiting CI and the user's QA call:** #2497 (B-553), #2498 (B-481), #2499 (B-353). All review threads resolved. Filed B-570 (dashboard cephaly count).
+
 ✅ **Merged 2026-11-09 (user: "all PRs opened yesterday ready for merge? If so, merge."), merge commits, branches deleted:** #2488 `94c7d8468` (B-217), #2489 `7e9d38713` (B-477), #2490 `a89a5ba60` (B-372, Approved by QA), #2491 `031b013ad` (B-298, Approved by QA). #2488 and #2489 merged without a QA run, by the user's call. ⚠ **Open: add #2489 to the `#2415, #2419` completion-rerun line in release #2417** (the edit was blocked; the prenatal script is already listed).
 
 🔧 **PR #2493 open 2026-11-09 (B-567, tier 1, issue #2492)**: Acute Illness follow-up, a positive malaria test now sets the visit's diagnosis on screen. One line plus blind tests; two review rounds done, all nine round-2 findings declined with the user's approval (2026-11-09), threads resolved; worktree released. 🏷 `Ready for QA` added 2026-11-09 (user: "qa"). Waiting: the QA run and CI on `ff48cce9c` (empty commit, CircleCI missed the previous push). Sized: 1 visit on ihangane, 0 on vhw. Side-finding: B-569 (needs a clinical answer).

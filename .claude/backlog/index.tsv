@@ -350,7 +350,7 @@ B-349	3	READY	MED-LOW			30	WhatsApp report on vhw and uvl: the feature is switch
 B-350	4	READY	LOW			30	Rollbar (client): sync errors raised before Rollbar is initialised are recorded as "already sent" and never reported — a
 B-351	3	READY	LOW			30	People search (offline): a common single-word name returns an ARBITRARY 500 of the health centre's matches, and only the
 B-352	3	READY	LOW			30	People in village (offline): a person registered or edited on the device is missing from "people in village" lists until
-B-353	4	READY	LOW			30	Case management (server): an encounter uploaded late closes the patient's NEWER follow-ups — resolution picks every open
+B-353	4	IMPLEMENTED	LOW	2496	2499	30	Case management (server): an encounter uploaded late closes the patient's NEWER follow-ups — resolution picks every open
 B-354	4	READY	LOW			30	Family Nutrition (server): two person-content walks skip `family_participant` — deleting a person leaves their family pa
 B-355	4	READY	LOW			30	Dashboard statistics: some changes never clear the health centre's stats cache, so the dashboard keeps the old figures u
 B-356	3	READY	MED-LOW			31	Lab results pane (Prenatal + NCD progress report): a urine dipstick or lipid panel still waiting for results shows a red
@@ -478,7 +478,7 @@ B-477	4	IMPLEMENTED	LOW	2485	2489	41	Prenatal completion (CHW visit 1): the mand
 B-478	3	READY			2345	19	Service worker: a change is stored on the device before its upload row, so when the row fails the device keeps a change 
 B-479	4	READY			2349	27	Immunisation (Burundi, child in Well Child AND Child Scoreboard): the DTP standalone dose is dropped when the three DTP 
 B-480	4	READY			2355	38	Statistical Queries › Prenatal (ANC): the outcomes and delivery-location tables count a delivery from before the FROM da
-B-481	4	READY			2357	26	Well Child progress report: a normal head circumference never ends an earlier cephaly warning, so a child whose head is 
+B-481	4	IMPLEMENTED		2495	2498	26	Well Child progress report: a normal head circumference never ends an earlier cephaly warning, so a child whose head is 
 B-482	4	IMPLEMENTED	LOW	2366	2367	42	Case Management Prenatal Labs: an entry whose last lab test is withdrawn stays listed for 35 days with nothing to record
 B-483	3	IMPLEMENTED	MED	2390	2391	42	Statistical Queries › Nutrition report: the under-six gate is evaluated at generation time, so every historical column l
 B-484	4	READY	LOW			42	Dashboard › Beneficiaries table, "Last month": the 0–5 / 6–8 / 9–11 / 12+ month bands are cut at the child's age TODAY w
@@ -550,7 +550,7 @@ B-549	3	READY	MED-LOW			49	Aggregated NCDA scoreboard (server): the weight a CHW
 B-550	4	READY	LOW			50	Nurse record: a device's reminder / message / survey action PATCHes its WHOLE copy of the nurse back, `pin_code` and `ro
 B-551	4	READY	LOW			50	CHW location: the health centre is derived from the chosen village once, at selection, and cached; a village moved to an
 B-552	1	IMPLEMENTED	MED	2462	2463	50	Prenatal diagnoses: a lab result entered on a LATER day rebuilds the encounter's whole diagnosis set at the entry day's 
-B-553	4	READY	LOW			50	Group session child progress report: the page never requests the session's measurement calculation, so after any sync do
+B-553	4	IMPLEMENTED	LOW	2494	2497	50	Group session child progress report: the page never requests the session's measurement calculation, so after any sync do
 B-554	4	READY	LOW			50	Well Child Next Visit: the pediatric-visit date is never re-derived when ECD or a medication answer is corrected after i
 B-555	4	READY	LOW			50	Case Management Immunization pane: a child whose overdue dose the CHW recorded at a Child Scoreboard visit stays listed 
 B-556	4	IMPLEMENTED	LOW	2477	2481	50	Prenatal weight gain (sites without Healthy Start): the expected gain is taken at the pregnancy week of the day the form
@@ -567,6 +567,7 @@ B-566	4	READY	LOW			52	Nutrition (individual, CHW): reopening a Height or Weight
 B-567	1	IMPLEMENTED	MED-HIGH	2492	2493	52	Acute Illness subsequent visit: the page's diagnosis is computed as if the visit were the first one, so a positive malar
 B-568	4	READY	LOW			52	Acute Illness outcome page: the diagnosis label under the patient's name is recomputed against TODAY's age, not the enco
 B-569	3	READY	LOW		2493	52	Acute Illness follow-up: with a positive malaria test, Send to Health Centre stops looking at every other referral reaso
+B-570	4	READY	LOW		2498	0	Dashboard "Number of Cephaly": a later in-range head circumference does not end an earlier macrocephaly or microcephaly 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
