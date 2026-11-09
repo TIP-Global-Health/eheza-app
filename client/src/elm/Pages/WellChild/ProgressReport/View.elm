@@ -401,12 +401,7 @@ assembleProgresReportData site childId db =
     , individualNutritionMeasurementsWithDates = generateIndividualNutritionMeasurementsForChild childId db
     , wellChildEncounters = wellChildEncounters
     , individualWellChildMeasurementsWithDates =
-        Maybe.map
-            (\assembled ->
-                ( assembled.encounter.startDate, ( assembled.id, assembled.measurements ) )
-                    :: assembled.previousMeasurementsWithDates
-            )
-            maybeAssembled
+        Maybe.map measurementsOfAllVisits maybeAssembled
             |> Maybe.withDefault []
     , individualChildScoreboardMeasurementsWithDates =
         generateIndividualChildScoreboardMeasurementsForChild childId db
@@ -825,6 +820,12 @@ resolveDateOfLastNutritionAssessment currentDate initiator mandatoryNutritionAss
             |> List.head
 
 
+measurementsOfAllVisits : AssembledData -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+measurementsOfAllVisits assembled =
+    ( assembled.encounter.startDate, ( assembled.id, assembled.measurements ) )
+        :: assembled.previousMeasurementsWithDates
+
+
 generatePartitionedWarningEntries :
     List ( WellChildEncounterId, WellChildEncounter )
     -> Maybe AssembledData
@@ -882,14 +883,12 @@ generatePartitionedWarningEntries encounters maybeAssembled =
                     -- A reading within range stores no warning, so readings count too.
                     Maybe.Extra.toList (dateOfLastEncounterWithWarningFrom headCircumferenceWarnings)
                         ++ datesOfHeadCircumferenceReadings
-                        |> List.sortWith sortDatesDesc
-                        |> List.head
+                        |> List.Extra.maximumBy Date.toRataDie
 
                 datesOfHeadCircumferenceReadings =
-                    ( assembled.encounter.startDate, assembled.measurements )
-                        :: List.map (Tuple.mapSecond Tuple.second) assembled.previousMeasurementsWithDates
+                    measurementsOfAllVisits assembled
                         |> List.filterMap
-                            (\( date, measurements ) ->
+                            (\( date, ( _, measurements ) ) ->
                                 Maybe.map (always date) measurements.headCircumference
                             )
 
