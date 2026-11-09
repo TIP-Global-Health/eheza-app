@@ -101,7 +101,7 @@ generateAssembledData currentDate features id isChw db =
                         getAcuteIllnessDiagnosisForEncounters previousEncounters
 
                 diagnosisByCurrentEncounterMeasurements =
-                    resolveAcuteIllnessDiagnosis currentDate features isChw data
+                    resolveAcuteIllnessDiagnosis currentDate features isChw { data | initialEncounter = initialEncounter }
                         |> Maybe.map (\diagnosis -> ( currentDate, diagnosis ))
 
                 ( previousFirstInitialWithSubsequent, previousSecondInitialWithSubsequent ) =
