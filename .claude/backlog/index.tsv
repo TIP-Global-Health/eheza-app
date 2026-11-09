@@ -566,6 +566,7 @@ B-565	4	READY	LOW			52	Immunisation form, the day a dose falls due: "administere
 B-566	4	READY	LOW			52	Nutrition (individual, CHW): reopening a Height or Weight already marked "unable to take" after a reload shows the box t
 B-567	1	IMPLEMENTED	MED-HIGH	2492	2493	52	Acute Illness subsequent visit: the page's diagnosis is computed as if the visit were the first one, so a positive malar
 B-568	4	READY	LOW			52	Acute Illness outcome page: the diagnosis label under the patient's name is recomputed against TODAY's age, not the enco
+B-569	3	READY	LOW		2493	52	Acute Illness follow-up: with a positive malaria test, Send to Health Centre stops looking at every other referral reaso
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
