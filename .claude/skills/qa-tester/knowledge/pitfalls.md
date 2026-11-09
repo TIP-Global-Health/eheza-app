@@ -671,3 +671,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a shell call chaining three recorded controls and two capture loops returned "moved to the background after 180s", with its output cut off.
 - **Wrong conclusion:** the driver hung, or the rest of the chain did not run. It kept running.
 - **Rule:** keep each Bash call under three minutes, or write every result to a file (`> res-<name>.json`) and read those files; never rely on the printed output of a long chain.
+
+## Ending a recording on a long Case Management list
+
+- **Symptom:** every recorded row ended with the filter just pressed, and the checked name sat far below the 1024 px view in the Home Visit list (16 QA entries in front of it).
+- **Wrong conclusion:** a passing `qa.check` makes the video the evidence for that row. It showed only other people's entries.
+- **Rule:** finish a recorded list check by scrolling the entry into view and holding a second or two, and look at the last frame before the next fixture. Case Management lists keep every past run's entries, so the row under test is rarely above the fold.

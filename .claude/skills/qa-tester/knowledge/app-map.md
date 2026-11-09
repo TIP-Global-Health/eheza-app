@@ -399,7 +399,7 @@ flag simply does not appear.
 - Age-chart fixtures: register with the exact birth date by hand (`h.common.setDate` on `.date-input`); the helpers take
   whole months only. WHO −2 SD values come from `client/src/assets/z-score/*anthro.txt` (M·(1+L·S·z)^(1/L)).
 - Well Child Next Visit shows the earlier of the ECD date and the medication date. From 6 months Vitamin A puts the medication date six months on, so the ECD date shows only where it comes first (the 15-month rung).
-- `h.wellChild.createChildAndStartWellChildEncounter` always starts the visit. To stop on the
+- `h.wellChild.createChildAndStartWellChildEncounter` always starts the visit; `h.common.registerChild(page, 'Well Child Visit', 'well-child', …)` stops on the participant page. To stop on the
   participant page, register by its steps up to `div.page-participant.individual.well-child`.
 - On the device, IndexedDB `sync` → `shards` holds each measurement with `type`, `person` (uuid),
   `date_measured`, `uuid`, `vid` and its own fields under the server names (`test_execution_note`,
@@ -506,6 +506,7 @@ flag simply does not appear.
 - On the device, `shards` rows `prenatal_labs_results` / `ncd_labs_results` carry `performed_tests`,
   `completed_tests` and `date_concluded`; the server fields are `field_performed_tests` and
   `field_date_concluded`.
+- Record Acute Illness Outcome: Existing Acute Illness → Record Acute Illness Outcome → the illness's button (its diagnosis) → outcome `select` → Save.
 - Withdrawing a test: reopen Laboratory, its tab, "performed today?" No, tick a `.why-not` reason,
   Save. `completeLaboratoryNurseForLab(page, { onlyTabs: ['HIV', 'Syphilis - RPR'] })` orders
   only those tabs, by their label text, and leaves the rest unanswered on the activity. To finish the visit,
@@ -536,7 +537,7 @@ flag simply does not appear.
   |---|---|---|
   | Child Nutrition (Home Visit) | `currentDate + 1` | **yes**, at once |
   | Acute Illness | `currentDate + 1` | no; the follow-up must belong to the illness's LAST encounter, with a diagnosis |
-  | Immunization (Well Child) | `currentDate` | **no** — the only pane where "an encounter took place today" is reachable |
+  | Immunization (Well Child) | `currentDate + 1` | **no** — only a Well Child encounter started after the entry's date clears it, so the visit that scheduled it does not |
   | Prenatal | `currentDate + 1` | as Acute Illness |
 
   In practice the Immunization entry is visible only on the day its Well Child encounter
@@ -552,12 +553,13 @@ flag simply does not appear.
     Follow Up in Next Steps. A danger sign makes Danger Signs' Save open Next Steps with a
     "refer to health center" warning: Send to Health Center, CHW Follow Up, Next ANC Visit, and
     no Health Education.
-  - **Well Child (CHW) → Immunization pane.** Danger Signs, Nutrition Assessment, then
+  - **Well Child (CHW) → Immunization pane.** The child must be under two (`expectImmunizationFollowUp`), so a 2-year-old never lists. Danger Signs, Nutrition Assessment, then
     Immunizations answering **No** to each vaccine — `h.wellChild.completeImmunisation(page,
     { isChw: true })`; without `isChw` it answers Yes and gives the vaccines. Leave them
     unadministered: a child given everything gets a future date and **no entry**. "BEHIND" on the progress report means the
     entry will show. The entry is the `well_child_next_visit` that Next Steps saves
     (`h.wellChild.completeNextSteps`); without Next Steps there is none.
+  - **A record that reaches the server late** (a CHW device, one fixture): upload a follow-up today, set `qaDateOffset` to −5 days, open the participant page (Home Visit, Well Child Visit, Subsequent Antenatal, Existing Acute Illness → Subsequent, TB/HIV Encounter all offered), start the encounter, set the offset back to 0, sync. The server gets a higher nid with an earlier date, as from an offline device.
   - Tapping YES on an entry sets that follow-up's `field_date_concluded`, which takes the entry off
     the pane. Clearing it on the server and syncing lists the entry again.
   - **Acute Illness (CHW, adult) → Acute Illness pane.** Fever + Chills; temperature 38.5;
