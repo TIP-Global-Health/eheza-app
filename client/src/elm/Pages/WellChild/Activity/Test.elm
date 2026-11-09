@@ -18,19 +18,24 @@ import Backend.Measurement.Model
         )
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
+import Backend.Person.Utils exposing (ageInMonthsReached)
 import Backend.WellChildEncounter.Model
-import Date
+import Date exposing (Date)
 import EverySet
 import Expect
 import Measurement.Model exposing (RangedMeasurement(..), emptyHeightForm, emptyMuacForm, emptyVaccinationForm, emptyWeightForm)
 import Pages.WellChild.Activity.Model exposing (Msg(..), WarningPopupType(..), emptyModel, emptyPregnancySummaryForm)
+import Pages.WellChild.Activity.Types exposing (MedicationTask(..))
 import Pages.WellChild.Activity.Update exposing (update)
 import Pages.WellChild.Activity.Utils
     exposing
-        ( pregnancySummaryFormWithDefault
+        ( expectMedicationByAge
+        , expectedECDSignsOnMilestone
+        , pregnancySummaryFormWithDefault
         , pregnancySummaryMeasurementsOutOfRange
         , resolveFirstEncounterDateAfterMilestone
         , resolveNextDateForECDVisit
+        , resolveNextDateForMedicationVisitUnderSixMonths
         , resolvePreviousMaybeValue
         )
 import RemoteData exposing (RemoteData(..))
@@ -44,8 +49,12 @@ import Time
 all : Test
 all =
     describe "Pages.WellChild.Activity"
-        [ resolveFirstEncounterDateAfterMilestoneTests
+        [ ageInMonthsReachedTests
+        , resolveFirstEncounterDateAfterMilestoneTests
         , resolveNextDateForECDVisitTests
+        , nextECDVisitOnMonthEndTests
+        , nextECDVisitWeekMilestonesTests
+        , resolveNextDateForMedicationVisitUnderSixMonthsTests
         , pregnancySummaryFormWithDefaultTests
         , pregnancySummaryMeasurementsOutOfRangeTests
         , nutritionAssessmentGateTests
@@ -566,6 +575,360 @@ resolveNextDateForECDVisitTests =
         ]
 
 
+dateOn : Int -> Time.Month -> Int -> Date
+dateOn year month day =
+    Date.fromCalendarDate year month day
+
+
+{-| A child born late in a month has a milestone that falls on the last day of
+a shorter month: born 31 March, the 6-month date is 30 September. On that day
+the child has reached the milestone, so the next visit is the following rung.
+The next visit must never be the day of the visit itself.
+
+From 6 months up the ladder does not look at whether the current signs are
+done, so every case here is checked with both answers.
+
+-}
+nextECDVisitOnMonthEndTests : Test
+nextECDVisitOnMonthEndTests =
+    let
+        expectNext name bornOn seenOn expected =
+            test name <|
+                \_ ->
+                    List.map (resolveNextDateForECDVisit seenOn bornOn) [ True, False ]
+                        |> Expect.equal [ Just expected, Just expected ]
+    in
+    describe "resolveNextDateForECDVisit around month-end"
+        [ describe "a milestone on a shorter month's last day counts as reached that day"
+            [ expectNext "Born 31 Mar 2025, seen 30 Sep 2025: the next ECD visit is the 15-month date, 30 Jun 2026"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Sep 30)
+                (dateOn 2026 Time.Jun 30)
+            , expectNext "Born 31 Aug 2025, seen 28 Feb 2026: the next ECD visit is 30 Nov 2026"
+                (dateOn 2025 Time.Aug 31)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2026 Time.Nov 30)
+            , expectNext "Born 30 Nov 2024, seen 28 Feb 2026: the next ECD visit is the 18-month date, 30 May 2026"
+                (dateOn 2024 Time.Nov 30)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2026 Time.May 30)
+            , expectNext "Born 29 Feb 2024, seen 28 Feb 2026: the next ECD visit is the 3-year date, 28 Feb 2027"
+                (dateOn 2024 Time.Feb 29)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2027 Time.Feb 28)
+            , expectNext "6-month date on the 29th of a leap February moves on to the 15-month date"
+                (dateOn 2023 Time.Aug 31)
+                (dateOn 2024 Time.Feb 29)
+                (dateOn 2024 Time.Nov 30)
+            , expectNext "born on the 30th, 6-month date on 28 Feb moves on to the 15-month date"
+                (dateOn 2025 Time.Aug 30)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2026 Time.Nov 30)
+            , expectNext "born on the 29th, 6-month date on 28 Feb moves on to the 15-month date"
+                (dateOn 2025 Time.Aug 29)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2026 Time.Nov 29)
+            , expectNext "15-month date on the 30th moves on to the 18-month date"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2026 Time.Jun 30)
+                (dateOn 2026 Time.Sep 30)
+            , expectNext "18-month date on 28 Feb moves on to the 2-year date"
+                (dateOn 2024 Time.Aug 31)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2026 Time.Aug 31)
+            , expectNext "3-year date on 28 Feb moves on to the 4-year date"
+                (dateOn 2024 Time.Feb 29)
+                (dateOn 2027 Time.Feb 28)
+                (dateOn 2028 Time.Feb 29)
+            ]
+        , describe "the day before a milestone still schedules that milestone"
+            [ expectNext "Born 15 Mar 2025, seen 14 Sep 2025 (one day before the milestone): still 15 Sep 2025"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2025 Time.Sep 14)
+                (dateOn 2025 Time.Sep 15)
+
+            -- The visit is on a month's last day, but the milestone is tomorrow.
+            , expectNext "born on the 1st, seen on the last day of the month before the 6-month date"
+                (dateOn 2025 Time.Apr 1)
+                (dateOn 2025 Time.Sep 30)
+                (dateOn 2025 Time.Oct 1)
+            , expectNext "born on the 31st, seen the day before a 6-month date on the 30th"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Sep 29)
+                (dateOn 2025 Time.Sep 30)
+            , expectNext "born on the 31st, seen the day before a 6-month date on 28 Feb"
+                (dateOn 2025 Time.Aug 31)
+                (dateOn 2026 Time.Feb 27)
+                (dateOn 2026 Time.Feb 28)
+
+            -- In a leap year 28 February is not the last day of the month.
+            , expectNext "28 Feb of a leap year is the day before a 6-month date on the 29th"
+                (dateOn 2023 Time.Aug 31)
+                (dateOn 2024 Time.Feb 28)
+                (dateOn 2024 Time.Feb 29)
+            , expectNext "born on the 30th, seen the day before a 15-month date on 28 Feb"
+                (dateOn 2024 Time.Nov 30)
+                (dateOn 2026 Time.Feb 27)
+                (dateOn 2026 Time.Feb 28)
+            , expectNext "born 29 Feb, seen the day before a 2-year date on 28 Feb"
+                (dateOn 2024 Time.Feb 29)
+                (dateOn 2026 Time.Feb 27)
+                (dateOn 2026 Time.Feb 28)
+            , expectNext "born 29 Feb, seen the day before the 4-year date on 29 Feb"
+                (dateOn 2024 Time.Feb 29)
+                (dateOn 2028 Time.Feb 28)
+                (dateOn 2028 Time.Feb 29)
+            ]
+        , describe "month-end days that are not such a milestone are unchanged"
+            [ expectNext "the day after a 6-month date on the 30th moves on to the 15-month date"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Oct 1)
+                (dateOn 2026 Time.Jun 30)
+
+            -- The birth day exists in the milestone month, so the milestone
+            -- date is the true anniversary and was always counted as reached.
+            , expectNext "born on the 30th, seen on a 6-month date that is the 30th"
+                (dateOn 2025 Time.Mar 30)
+                (dateOn 2025 Time.Sep 30)
+                (dateOn 2026 Time.Jun 30)
+            , expectNext "born on the 28th, seen on a 6-month date that is 28 Feb"
+                (dateOn 2025 Time.Aug 28)
+                (dateOn 2026 Time.Feb 28)
+                (dateOn 2026 Time.Nov 28)
+
+            -- 5, 8 and 13 months are not rungs of the ladder, so reaching them
+            -- on a month's last day does not move the child on.
+            , expectNext "reaching 5 months on a month's last day still schedules the 6-month date"
+                (dateOn 2025 Time.Jan 31)
+                (dateOn 2025 Time.Jun 30)
+                (dateOn 2025 Time.Jul 31)
+            , expectNext "reaching 8 months on a month's last day still schedules the 15-month date"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Nov 30)
+                (dateOn 2026 Time.Jun 30)
+            , expectNext "reaching 13 months on a month's last day still schedules the 15-month date"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2026 Time.Apr 30)
+                (dateOn 2026 Time.Jun 30)
+            ]
+        , describe "Visits away from month-end are unchanged"
+            [ expectNext "Visits away from month-end: before 6 months schedules the 6-month date"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2025 Time.Aug 10)
+                (dateOn 2025 Time.Sep 15)
+            , expectNext "Visits away from month-end: on the 6-month date schedules the 15-month date"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2025 Time.Sep 15)
+                (dateOn 2026 Time.Jun 15)
+            , expectNext "Visits away from month-end: the day before the 15-month date schedules it"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2026 Time.Jun 14)
+                (dateOn 2026 Time.Jun 15)
+            ]
+        , describe "past the 4-year date the signs decide"
+            -- The 4-year rung is the last one, so this is the only place from
+            -- 6 months up where the answer depends on the signs.
+            [ test "signs done on the 4-year date: no further ECD visit" <|
+                \_ ->
+                    resolveNextDateForECDVisit (dateOn 2028 Time.Feb 29) (dateOn 2024 Time.Feb 29) True
+                        |> Expect.equal Nothing
+            , test "signs outstanding on the 4-year date: 6 months from the visit" <|
+                \_ ->
+                    resolveNextDateForECDVisit (dateOn 2028 Time.Feb 29) (dateOn 2024 Time.Feb 29) False
+                        |> Expect.equal (Just (dateOn 2028 Time.Aug 29))
+            ]
+        ]
+
+
+{-| The 6-week and 14-week milestones count whole weeks, so they do not depend
+on the length of any month. Signs for each appear one week early, which is why
+5 and 13 weeks depend on whether the signs are done.
+
+The month-end cases pin that a visit on a month's last day is not treated as
+having reached a week milestone that is still a day away.
+
+-}
+nextECDVisitWeekMilestonesTests : Test
+nextECDVisitWeekMilestonesTests =
+    let
+        expectNext name bornOn seenOn signsDone expected =
+            test name <|
+                \_ ->
+                    resolveNextDateForECDVisit seenOn bornOn signsDone
+                        |> Expect.equal (Just expected)
+
+        bornJan1 =
+            dateOn 2025 Time.Jan 1
+
+        sixWeeks =
+            dateOn 2025 Time.Feb 12
+
+        fourteenWeeks =
+            dateOn 2025 Time.Apr 9
+
+        sixMonths =
+            dateOn 2025 Time.Jul 1
+    in
+    describe "resolveNextDateForECDVisit: the 6-week and 14-week milestones are unchanged"
+        [ expectNext "4 weeks old with signs done schedules the 6-week date"
+            bornJan1
+            (dateOn 2025 Time.Feb 4)
+            True
+            sixWeeks
+        , expectNext "5 weeks old with signs done schedules the 14-week date"
+            bornJan1
+            (dateOn 2025 Time.Feb 5)
+            True
+            fourteenWeeks
+        , expectNext "5 weeks old with signs outstanding schedules the 6-week date"
+            bornJan1
+            (dateOn 2025 Time.Feb 5)
+            False
+            sixWeeks
+        , expectNext "on the 6-week date schedules the 14-week date"
+            bornJan1
+            sixWeeks
+            False
+            fourteenWeeks
+        , expectNext "13 weeks old with signs done schedules the 6-month date"
+            bornJan1
+            (dateOn 2025 Time.Apr 8)
+            True
+            sixMonths
+        , expectNext "13 weeks old with signs outstanding schedules the 14-week date"
+            bornJan1
+            (dateOn 2025 Time.Apr 8)
+            False
+            fourteenWeeks
+        , expectNext "on the 14-week date schedules the 6-month date"
+            bornJan1
+            fourteenWeeks
+            False
+            sixMonths
+        , describe "visits on a month's last day"
+            [ expectNext "exactly 6 weeks old on the 30th schedules the 14-week date"
+                (dateOn 2025 Time.Aug 19)
+                (dateOn 2025 Time.Sep 30)
+                False
+                (dateOn 2025 Time.Nov 25)
+            , expectNext "a day under 6 weeks on the 30th, signs outstanding, schedules the 6-week date"
+                (dateOn 2025 Time.Aug 20)
+                (dateOn 2025 Time.Sep 30)
+                False
+                (dateOn 2025 Time.Oct 1)
+            , expectNext "a day under 6 weeks on the 30th, signs done, schedules the 14-week date"
+                (dateOn 2025 Time.Aug 20)
+                (dateOn 2025 Time.Sep 30)
+                True
+                (dateOn 2025 Time.Nov 26)
+            , expectNext "exactly 14 weeks old on the 30th schedules the 6-month date"
+                (dateOn 2025 Time.Jun 24)
+                (dateOn 2025 Time.Sep 30)
+                False
+                (dateOn 2025 Time.Dec 24)
+            , expectNext "a day under 14 weeks on the 30th, signs outstanding, schedules the 14-week date"
+                (dateOn 2025 Time.Jun 25)
+                (dateOn 2025 Time.Sep 30)
+                False
+                (dateOn 2025 Time.Oct 1)
+            , expectNext "a day under 14 weeks on the 30th, signs done, schedules the 6-month date"
+                (dateOn 2025 Time.Jun 25)
+                (dateOn 2025 Time.Sep 30)
+                True
+                (dateOn 2025 Time.Dec 25)
+
+            -- Reaching 3 months on a month's last day is 13 weeks, and 3
+            -- months is not a rung.
+            , expectNext "13 weeks old on a month-end 3-month date, signs outstanding, schedules the 14-week date"
+                (dateOn 2025 Time.Aug 31)
+                (dateOn 2025 Time.Nov 30)
+                False
+                (dateOn 2025 Time.Dec 7)
+            , expectNext "13 weeks old on a month-end 3-month date, signs done, schedules the 6-month date"
+                (dateOn 2025 Time.Aug 31)
+                (dateOn 2025 Time.Nov 30)
+                True
+                (dateOn 2026 Time.Feb 28)
+            ]
+        ]
+
+
+{-| Under 6 months the medication visit is set to the 6-month date. On a 6-month
+date that is the last day of a shorter month the child has reached it, so the
+result is Nothing and the regular medication schedule takes over; otherwise
+Next Visit would show the day of the visit.
+-}
+resolveNextDateForMedicationVisitUnderSixMonthsTests : Test
+resolveNextDateForMedicationVisitUnderSixMonthsTests =
+    let
+        expectResult name bornOn seenOn expected =
+            test name <|
+                \_ ->
+                    resolveNextDateForMedicationVisitUnderSixMonths seenOn bornOn
+                        |> Expect.equal expected
+    in
+    describe "resolveNextDateForMedicationVisitUnderSixMonths"
+        [ describe "On such a day a child under the 6-month medication date is treated as having reached it, so Next Visit doesn't show today"
+            [ expectResult "born 31 Mar 2025, seen 30 Sep 2025"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Sep 30)
+                Nothing
+            , expectResult "born 31 Aug 2025, seen 28 Feb 2026"
+                (dateOn 2025 Time.Aug 31)
+                (dateOn 2026 Time.Feb 28)
+                Nothing
+            , expectResult "born 30 Aug 2025, seen 28 Feb 2026"
+                (dateOn 2025 Time.Aug 30)
+                (dateOn 2026 Time.Feb 28)
+                Nothing
+            , expectResult "born 31 Aug 2023, seen 29 Feb 2024 of a leap year"
+                (dateOn 2023 Time.Aug 31)
+                (dateOn 2024 Time.Feb 29)
+                Nothing
+            ]
+        , describe "a child who has not reached the 6-month date is scheduled for it"
+            [ expectResult "born 15 Mar 2025, seen 14 Sep 2025 (one day before)"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2025 Time.Sep 14)
+                (Just (dateOn 2025 Time.Sep 15))
+            , expectResult "born on the 1st, seen on the last day of the month before the 6-month date"
+                (dateOn 2025 Time.Apr 1)
+                (dateOn 2025 Time.Sep 30)
+                (Just (dateOn 2025 Time.Oct 1))
+            , expectResult "born on the 31st, seen the day before a 6-month date on the 30th"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Sep 29)
+                (Just (dateOn 2025 Time.Sep 30))
+            , expectResult "28 Feb of a leap year is the day before a 6-month date on the 29th"
+                (dateOn 2023 Time.Aug 31)
+                (dateOn 2024 Time.Feb 28)
+                (Just (dateOn 2024 Time.Feb 29))
+            , expectResult "seen on the day of birth"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2025 Time.Mar 15)
+                (Just (dateOn 2025 Time.Sep 15))
+            ]
+        , describe "a child who has reached the 6-month date is unchanged"
+            [ expectResult "seen on a mid-month 6-month date"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2025 Time.Sep 15)
+                Nothing
+            , expectResult "born on the 28th, seen on a 6-month date that is 28 Feb"
+                (dateOn 2025 Time.Aug 28)
+                (dateOn 2026 Time.Feb 28)
+                Nothing
+            , expectResult "the day after a 6-month date on the 30th"
+                (dateOn 2025 Time.Mar 31)
+                (dateOn 2025 Time.Oct 1)
+                Nothing
+            , expectResult "well past 6 months"
+                (dateOn 2025 Time.Mar 15)
+                (dateOn 2026 Time.Mar 15)
+                Nothing
+            ]
+        ]
+
+
 {-| A saved Pregnancy Summary with every numeric filled in, so the tests can
 check what happens when the nurse clears one and re-opens the encounter.
 -}
@@ -802,4 +1165,51 @@ dtpStandaloneSaveTests =
                         [ expectedSaveMsg (Just measurementId)
                             (VaccinationValue savedDoses savedDates AdministeredToday)
                         ]
+        ]
+
+
+ageInMonthsReachedTests : Test
+ageInMonthsReachedTests =
+    let
+        march31 =
+            Date.fromCalendarDate 2025 Time.Mar 31
+
+        sep30 =
+            Date.fromCalendarDate 2025 Time.Sep 30
+
+        child =
+            { testPerson | birthDate = Just march31 }
+
+        expectVitaminA date =
+            expectMedicationByAge date SiteRwanda child TaskVitaminA
+    in
+    describe "ageInMonthsReached"
+        [ test "a month-end day that a milestone falls on completes the month" <|
+            \_ ->
+                ageInMonthsReached march31 sep30 |> Expect.equal 6
+        , test "the day before stays one month short" <|
+            \_ ->
+                ageInMonthsReached march31 (Date.fromCalendarDate 2025 Time.Sep 29) |> Expect.equal 5
+        , test "a mid-month birthday counts as usual" <|
+            \_ ->
+                ageInMonthsReached (Date.fromCalendarDate 2025 Time.Mar 15) (Date.fromCalendarDate 2025 Time.Sep 15)
+                    |> Expect.equal 6
+        , test "a month-end day of a birthday that exists in that month is not bumped" <|
+            \_ ->
+                ageInMonthsReached march31 (Date.fromCalendarDate 2025 Time.Aug 31) |> Expect.equal 5
+        , test "Vitamin A is offered on the month-end day the child reaches 6 months" <|
+            \_ ->
+                expectVitaminA sep30 |> Expect.equal True
+        , test "the signs of a milestone that falls on a month-end day are those of that age" <|
+            \_ ->
+                expectedECDSignsOnMilestone march31 sep30 Nothing
+                    |> Expect.equal
+                        (expectedECDSignsOnMilestone
+                            (Date.fromCalendarDate 2025 Time.Mar 15)
+                            (Date.fromCalendarDate 2025 Time.Sep 15)
+                            Nothing
+                        )
+        , test "Vitamin A is not offered the day before" <|
+            \_ ->
+                expectVitaminA (Date.fromCalendarDate 2025 Time.Sep 29) |> Expect.equal False
         ]
