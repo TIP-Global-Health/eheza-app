@@ -274,10 +274,10 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
    * relationships (cases 1-6), education-session attendance (cases 7-9), the
    * pregnancy->newborn link (cases 10-11), WhatsApp records (cases 12-13), the
    * second person reference on a trace contact (cases 14-15), the adult who
-   * brings a child to a group (cases 16-18) and an acute-illness participant
-   * with its encounter (case 19). All cases operate on disjoint people, so
-   * bundling them under one test method keeps the hedley-profile install
-   * (~5 min in CI) paid once.
+   * brings a child to a group (cases 16-18), an acute-illness participant
+   * with its encounter (case 19) and the IDs validation refuses (cases 20-28).
+   * All cases operate on disjoint people, so bundling them under one test
+   * method keeps the hedley-profile install (~5 min in CI) paid once.
    */
   public function testContentIsTransferredOnMerge() {
     // 1. A duplicate child's link to its mother moves to the original child.
@@ -795,6 +795,69 @@ class HedleyPatientConsolidation extends HedleyWebTestBase {
       $this->photoFid(node_load($person, NULL, TRUE)),
       'An edit carrying a new photo replaces the stored one.'
     );
+
+    // 20. A patient cannot be merged with themselves.
+    $person = $this->createPerson('SameOnBothSides');
+    $this->assertValidationRefused($person, $person, 'same person', 'The same ID on both sides is refused.');
+    // The form and drush pass strings.
+    $this->assertValidationRefused((string) $person, $person, 'same person', 'The same ID as a string is refused.');
+    $this->assertValidationRefused($person, '0' . $person, 'does not match', 'A zero-padded ID is refused.');
+
+    // 21-22. An ID that matches nothing, or is no number, gets a message.
+    $person = $this->createPerson('MissingCounterpart');
+    $this->assertValidationRefused($person, 999999999, 'does not match', 'An ID that matches nothing is refused.');
+    $this->assertValidationRefused('not-a-number', $person, 'does not match', 'An ID that is not a number is refused.');
+
+    // 23. An ID that is not a person is refused.
+    $healthCenter = $this->createHealthCenter();
+    $this->assertValidationRefused($person, $healthCenter, 'not of a person', 'A node that is no person is refused.');
+
+    // 24-25. A patient who is already deleted is refused on either side.
+    $live = $this->createPerson('LivePatient');
+    $deleted = $this->createPerson('DeletedPatient');
+    $wrapper = entity_metadata_wrapper('node', $deleted);
+    $wrapper->field_deleted->set(TRUE);
+    $wrapper->save();
+    $this->assertValidationRefused($deleted, $live, 'already deleted', 'A deleted original is refused.');
+    $this->assertValidationRefused($live, $deleted, 'already deleted', 'A deleted duplicate is refused.');
+
+    // 26. Two different, live people pass.
+    $other = $this->createPerson('OtherLivePatient');
+    $result = _consolidate_patients_validate($live, $other);
+    $this->assertTrue($result['success'], 'Two different live people pass validation.');
+
+    // 27. Confirm re-checks: a patient deleted since validation is not merged.
+    $form_state = ['storage' => ['original' => $live, 'duplicate' => $deleted]];
+    hedley_patient_consolidate_patients_execute([], $form_state);
+    $this->assertTrue(strpos(implode(' ', $form_state['storage']['messages']), 'already deleted') !== FALSE, 'Confirm refuses a patient deleted since validation.');
+
+    // 28. The admin form accepts IDs pasted with spaces around them.
+    $form = [
+      'original' => ['#value' => " $live "],
+      'duplicate' => ['#value' => "$other\n"],
+    ];
+    $form_state = [];
+    hedley_patient_consolidate_patients_validate($form, $form_state);
+    $this->assertEqual($form_state['storage']['original'], (string) $live, 'The ID is stored without its spaces.');
+    $this->assertEqual($form_state['storage']['step'], 'confirmation', 'IDs with spaces reach the confirmation step.');
+  }
+
+  /**
+   * Asserts that validation refuses a pair of IDs, with the expected message.
+   *
+   * @param mixed $original
+   *   The original patient ID.
+   * @param mixed $duplicate
+   *   The duplicate patient ID.
+   * @param string $expected_text
+   *   Text the message must contain.
+   * @param string $message
+   *   The assertion message.
+   */
+  protected function assertValidationRefused($original, $duplicate, $expected_text, $message) {
+    $result = _consolidate_patients_validate($original, $duplicate);
+    $this->assertFalse($result['success'], $message);
+    $this->assertTrue(strpos(implode(' ', $result['messages']), $expected_text) !== FALSE, $message . ' The message says why.');
   }
 
   /**

@@ -419,21 +419,34 @@ function _consolidate_patients_validate($original, $duplicate) {
     'messages' => [],
   ];
 
-  $wrapper_original = entity_metadata_wrapper('node', $original);
-  $wrapper_duplicate = entity_metadata_wrapper('node', $duplicate);
+  $wrappers = [];
+  foreach (['Original' => $original, 'Duplicate' => $duplicate] as $label => $nid) {
+    $node = (string) (int) $nid === (string) $nid ? node_load($nid) : FALSE;
+    if (empty($node)) {
+      $return['messages'][] = "ERROR! $label patient ID does not match any content. Please fix and try again.";
+      return $return;
+    }
 
-  if ($wrapper_original->getBundle() !== 'person') {
-    $return['messages'][] = 'ERROR! Original patient node type is not of a person. Please fix and try again.';
+    if ($node->type !== 'person') {
+      $return['messages'][] = "ERROR! $label patient node type is not of a person. Please fix and try again.";
+      return $return;
+    }
+
+    $wrappers[$label] = entity_metadata_wrapper('node', $node);
+    $deleted = $wrappers[$label]->field_deleted->value();
+    if (!empty($deleted)) {
+      $return['messages'][] = "ERROR! $label patient is already deleted. Please fix and try again.";
+      return $return;
+    }
+  }
+
+  if ((int) $original === (int) $duplicate) {
+    $return['messages'][] = 'ERROR! Original and duplicate patient are the same person. Please fix and try again.';
     return $return;
   }
 
-  if ($wrapper_duplicate->getBundle() !== 'person') {
-    $return['messages'][] = 'ERROR! Duplicate patient node type is not of a person. Please fix and try again.';
-    return $return;
-  }
-
-  $health_center_original = $wrapper_original->field_health_center->getIdentifier();
-  $health_center_duplicate = $wrapper_duplicate->field_health_center->getIdentifier();
+  $health_center_original = $wrappers['Original']->field_health_center->getIdentifier();
+  $health_center_duplicate = $wrappers['Duplicate']->field_health_center->getIdentifier();
   // Do not allow consolidation, if patients are assigned to
   // different health centers.
   if ($health_center_original !== $health_center_duplicate) {
@@ -469,7 +482,7 @@ function _consolidate_patients_validate($original, $duplicate) {
     // If consolidation failed, we make no changes, so that a fix could be
     // applied, and command could be executed again.
     if (!$function_result['success']) {
-      $return['messages'] = array_merge($return['messages'], $function_result['message']);
+      $return['messages'] = array_merge($return['messages'], $function_result['messages']);
       return $return;
     }
   }
