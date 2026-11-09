@@ -101,18 +101,20 @@ generateAssembledData currentDate features id isChw db =
                         getAcuteIllnessDiagnosisForEncounters previousEncounters
 
                 diagnosisByCurrentEncounterMeasurements =
-                    resolveAcuteIllnessDiagnosis currentDate features isChw { data | initialEncounter = initialEncounter }
+                    resolveAcuteIllnessDiagnosis currentDate features isChw dataWithoutDiagnosis
                         |> Maybe.map (\diagnosis -> ( currentDate, diagnosis ))
 
                 ( previousFirstInitialWithSubsequent, previousSecondInitialWithSubsequent ) =
                     splitByInitialNurseEncounter data.previousEncountersData
+
+                dataWithoutDiagnosis =
+                    { data
+                        | initialEncounter = initialEncounter
+                        , previousFirstInitialWithSubsequent = previousFirstInitialWithSubsequent
+                        , previousSecondInitialWithSubsequent = previousSecondInitialWithSubsequent
+                    }
             in
-            { data
-                | initialEncounter = initialEncounter
-                , diagnosis = currentDiagnosis
-                , previousFirstInitialWithSubsequent = previousFirstInitialWithSubsequent
-                , previousSecondInitialWithSubsequent = previousSecondInitialWithSubsequent
-            }
+            { dataWithoutDiagnosis | diagnosis = currentDiagnosis }
         )
         assembled
 
