@@ -10232,7 +10232,7 @@ function hedley_reports_prenatal_manadatory_activities_for_next_steps_completed(
         $mandatory_activities[] = 'last_menstrual_period';
         $mandatory_activities[] = 'pregnancy_testing';
       }
-      if (hedley_reports_prenatal_danger_signs_recorded($encounter_data)) {
+      if (!hedley_reports_prenatal_danger_signs_recorded($encounter_data)) {
         $mandatory_activities[] = 'prenatal_health_education';
       }
       break;
