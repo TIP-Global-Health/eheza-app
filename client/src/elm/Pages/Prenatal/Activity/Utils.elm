@@ -2610,6 +2610,13 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         diagnosedAtInitalPhase =
             matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled
+
+        -- A function, so that it runs only in the branches that call it.
+        -- As a value, it would call this matcher again for every diagnosis.
+        preeclampsiaDiagnosedAtCurrentEncounter () =
+            List.any diagnosedAtInitalPhase preeclampsiaDiagnoses
+                || List.any (matchEmergencyReferalPrenatalDiagnosis egaInWeeks dangerSigns assembled)
+                    (DiagnosisEclampsia :: preeclampsiaDiagnoses)
     in
     case diagnosis of
         DiagnosisModerateRiskOfPreeclampsia ->
@@ -2704,10 +2711,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                             (DiagnosisEclampsia :: preeclampsiaDiagnoses)
                             assembled
                    )
-                && (not <|
-                        List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
-                            preeclampsiaDiagnoses
-                   )
+                && (not <| preeclampsiaDiagnosedAtCurrentEncounter ())
 
         DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
             (highRiskPreeclampsiaDiagnosedBySignsAndPreviousDiagnoses
@@ -2723,10 +2727,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                             (DiagnosisEclampsia :: preeclampsiaDiagnoses)
                             assembled
                    )
-                && (not <|
-                        List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
-                            preeclampsiaDiagnoses
-                   )
+                && (not <| preeclampsiaDiagnosedAtCurrentEncounter ())
 
         DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
             (not <| diagnosedAtInitalPhase DiagnosisHighRiskOfPreeclampsiaInitialPhase)
@@ -2743,10 +2744,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                             (DiagnosisEclampsia :: preeclampsiaDiagnoses)
                             assembled
                    )
-                && (not <|
-                        List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
-                            preeclampsiaDiagnoses
-                   )
+                && (not <| preeclampsiaDiagnosedAtCurrentEncounter ())
 
         DiagnosisChronicHypertensionImmediate ->
             -- Hypertension is a chronic diagnosis for whole duration
