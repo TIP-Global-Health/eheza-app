@@ -5332,7 +5332,7 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
   }
   // Nurse SPV encounters.
   else {
-    if (hedley_reports_ncda_expected($encounter_data['age_in_months_for_ncda'] ?? NULL, $start_date_obj)) {
+    if (hedley_reports_ncda_expected($encounter_data['age_in_months_for_ncda'], $start_date_obj)) {
       $expected[] = 'well_child_ncda';
     }
   }
