@@ -10711,10 +10711,10 @@ function hedley_reports_recurrent_test_required($last_date, DateTime $encounter_
 }
 
 /**
- * Whole months from a birth date to a date, as the Well Child app counts them.
+ * Whole months from birth, as the Well Child app counts them.
  *
- * A month is complete on the month-end day its date falls on: born 31 March,
- * on 30 September the child is 6 months old.
+ * A month is reached on its month-end day: born 31 March,
+ * 6 months on 30 September.
  *
  * @param DateTime $birth_date_obj
  *   The birth date.
