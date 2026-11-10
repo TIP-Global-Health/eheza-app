@@ -16,11 +16,10 @@ metadata:
 
 📊 **Completion-usage gate answered 2026-11-08 (user: "Completion report still in use").** The Completion items that waited on "is the report used?" are no longer held by that question; B-284 still needs its own answer on how a negative screening should be reported.
 
-🟡 **Open PRs 2026-11-09, awaiting CI and the user's QA call:** #2497 (B-553), #2498 (B-481), #2499 (B-353). All review threads resolved. Filed B-570 (dashboard cephaly count).
+✅ **Merged 2026-11-10 (user: "merge"), branches deleted:** #2493 (B-567) `e55748dea`, #2497 (B-553) `5d988ea6f`, #2498 (B-481) `7c8dc033a`, #2499 (B-353) `68eaa7666`. QA approved #2493, #2498, #2499; #2497 needed none. Issues #2492, #2494–#2496 stay open until the release sweep. B-570 (dashboard cephaly count) filed.
 
 ✅ **Merged 2026-11-09 (user: "all PRs opened yesterday ready for merge? If so, merge."), merge commits, branches deleted:** #2488 `94c7d8468` (B-217), #2489 `7e9d38713` (B-477), #2490 `a89a5ba60` (B-372, Approved by QA), #2491 `031b013ad` (B-298, Approved by QA). #2488 and #2489 merged without a QA run, by the user's call. ⚠ **Open: add #2489 to the `#2415, #2419` completion-rerun line in release #2417** (the edit was blocked; the prenatal script is already listed).
 
-🔧 **PR #2493 open 2026-11-09 (B-567, tier 1, issue #2492)**: Acute Illness follow-up, a positive malaria test now sets the visit's diagnosis on screen. One line plus blind tests; two review rounds done, all nine round-2 findings declined with the user's approval (2026-11-09), threads resolved; worktree released. 🏷 `Ready for QA` added 2026-11-09 (user: "qa"). Waiting: the QA run and CI on `ff48cce9c` (empty commit, CircleCI missed the previous push). Sized: 1 visit on ihangane, 0 on vhw. Side-finding: B-569 (needs a clinical answer).
 
 ✅ **Merged 2026-11-08 (user: "Merge the 4." — the PRs opened 2026-11-05), merge commits, branches deleted, CI green:** #2480 `d1d6bb9b8` (B-388), #2481 `109dadcaf` (B-556), #2482 `5eebf1484` (B-521, Approved by QA), #2483 `27f21d9d7` (B-256). #2480, #2481 and #2483 merged without a QA run. Issues #2476–#2479 stay open until the release sweep. Side-findings still READY: B-558, B-559, B-560.
 
