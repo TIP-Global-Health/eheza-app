@@ -1,6 +1,7 @@
 module TestFixtures exposing
     ( emptyAcuteIllnessMeasurements
     , emptyTuberculosisMeasurements
+    , emptyWellChildMeasurements
     , labsEntry
     , testChild
     , testParticipant
@@ -27,6 +28,7 @@ import Backend.Measurement.Model
         , TuberculosisMeasurements
         , UrineDipstickTestValue
         , VitalsValue
+        , WellChildMeasurements
         )
 import Backend.Person.Model exposing (Person)
 import Date
@@ -200,6 +202,43 @@ emptyTuberculosisMeasurements =
     , referral = Nothing
     , symptomReview = Nothing
     , treatmentReview = Nothing
+    }
+
+
+emptyWellChildMeasurements : WellChildMeasurements
+emptyWellChildMeasurements =
+    { pregnancySummary = Nothing
+    , symptomsReview = Nothing
+    , vitals = Nothing
+    , height = Nothing
+    , muac = Nothing
+    , nutrition = Nothing
+    , photo = Nothing
+    , weight = Nothing
+    , contributingFactors = Nothing
+    , healthEducation = Nothing
+    , followUp = Nothing
+    , sendToHC = Nothing
+    , headCircumference = Nothing
+    , ecd = Nothing
+    , albendazole = Nothing
+    , mebendezole = Nothing
+    , vitaminA = Nothing
+    , nextVisit = Nothing
+    , bcgImmunisation = Nothing
+    , dtpImmunisation = Nothing
+    , dtpStandaloneImmunisation = Nothing
+    , hpvImmunisation = Nothing
+    , ipvImmunisation = Nothing
+    , mrImmunisation = Nothing
+    , opvImmunisation = Nothing
+    , pcv13Immunisation = Nothing
+    , rotarixImmunisation = Nothing
+    , ncda = Nothing
+    , feeding = Nothing
+    , hygiene = Nothing
+    , foodSecurity = Nothing
+    , caring = Nothing
     }
 
 

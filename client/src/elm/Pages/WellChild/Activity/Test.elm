@@ -14,7 +14,6 @@ import Backend.Measurement.Model
         , VaccinationValue
         , VaccineDose(..)
         , WeightInGrm(..)
-        , WellChildMeasurements
         )
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
@@ -42,7 +41,7 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
-import TestFixtures exposing (testParticipant, testPerson, vitalsValueWith, wrapMeasurement)
+import TestFixtures exposing (emptyWellChildMeasurements, testParticipant, testPerson, vitalsValueWith, wrapMeasurement)
 import Time
 
 
@@ -62,43 +61,6 @@ all =
         , resolvePreviousMaybeValueTests
         , previousHeadCircumferenceTests
         ]
-
-
-emptyWellChildMeasurements : WellChildMeasurements
-emptyWellChildMeasurements =
-    { pregnancySummary = Nothing
-    , symptomsReview = Nothing
-    , vitals = Nothing
-    , height = Nothing
-    , muac = Nothing
-    , nutrition = Nothing
-    , photo = Nothing
-    , weight = Nothing
-    , contributingFactors = Nothing
-    , healthEducation = Nothing
-    , followUp = Nothing
-    , sendToHC = Nothing
-    , headCircumference = Nothing
-    , ecd = Nothing
-    , albendazole = Nothing
-    , mebendezole = Nothing
-    , vitaminA = Nothing
-    , nextVisit = Nothing
-    , bcgImmunisation = Nothing
-    , dtpImmunisation = Nothing
-    , dtpStandaloneImmunisation = Nothing
-    , hpvImmunisation = Nothing
-    , ipvImmunisation = Nothing
-    , mrImmunisation = Nothing
-    , opvImmunisation = Nothing
-    , pcv13Immunisation = Nothing
-    , rotarixImmunisation = Nothing
-    , ncda = Nothing
-    , feeding = Nothing
-    , hygiene = Nothing
-    , foodSecurity = Nothing
-    , caring = Nothing
-    }
 
 
 {-| The head circumference form shows the child's last measured value. A

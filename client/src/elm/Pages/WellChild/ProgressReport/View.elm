@@ -1,5 +1,6 @@
 module Pages.WellChild.ProgressReport.View exposing
     ( distributeByListIndex
+    , generatePartitionedWarningEntries
     , generateUniversalInterventionsValues
     , heightCellValuesByAgeInMonths
     , malnutritionTreatmentsByAgeInMonthsFromQuestionnaires
@@ -401,12 +402,7 @@ assembleProgresReportData site childId db =
     , individualNutritionMeasurementsWithDates = generateIndividualNutritionMeasurementsForChild childId db
     , wellChildEncounters = wellChildEncounters
     , individualWellChildMeasurementsWithDates =
-        Maybe.map
-            (\assembled ->
-                ( assembled.encounter.startDate, ( assembled.id, assembled.measurements ) )
-                    :: assembled.previousMeasurementsWithDates
-            )
-            maybeAssembled
+        Maybe.map measurementsOfAllVisits maybeAssembled
             |> Maybe.withDefault []
     , individualChildScoreboardMeasurementsWithDates =
         generateIndividualChildScoreboardMeasurementsForChild childId db
@@ -836,6 +832,12 @@ resolveDateOfLastNutritionAssessment currentDate initiator mandatoryNutritionAss
             |> List.head
 
 
+measurementsOfAllVisits : AssembledData -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+measurementsOfAllVisits assembled =
+    ( assembled.encounter.startDate, ( assembled.id, assembled.measurements ) )
+        :: assembled.previousMeasurementsWithDates
+
+
 generatePartitionedWarningEntries :
     List ( WellChildEncounterId, WellChildEncounter )
     -> Maybe AssembledData
@@ -890,7 +892,19 @@ generatePartitionedWarningEntries encounters maybeAssembled =
                     dateOfLastEncounterWithWarningFrom ecdMilestoneWarnings
 
                 lastHeadCircumferenceActivityDate =
-                    dateOfLastEncounterWithWarningFrom headCircumferenceWarnings
+                    -- A reading within range stores no warning, so readings count too.
+                    Maybe.Extra.toList (dateOfLastEncounterWithWarningFrom headCircumferenceWarnings)
+                        ++ datesOfHeadCircumferenceReadings
+                        |> List.Extra.maximumBy Date.toRataDie
+
+                datesOfHeadCircumferenceReadings =
+                    measurementsOfAllVisits assembled
+                        |> List.filterMap
+                            (\( date, ( _, measurements ) ) ->
+                                getMeasurementValueFunc measurements.headCircumference
+                                    |> Maybe.andThen headCircumferenceTakenValue
+                                    |> Maybe.map (always date)
+                            )
 
                 dateOfLastEncounterWithWarningFrom warningsSet =
                     List.filterMap
