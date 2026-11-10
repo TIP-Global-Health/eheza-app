@@ -701,3 +701,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a filler that chose "+1" in every select holding a "+1" option also set glucose to +1.
 - **Wrong conclusion:** none here; the diagnoses happened not to depend on it, but the control did not match the PR fixture.
 - **Rule:** prenatal Urine Dipstick protein and glucose selects have the same options (0, +1 … +4). Pick each select by its position (protein, pH, glucose) or its label.
+
+## Reading the service worker's cache by a bare path
+
+- **Symptom:** a check that the browser runs the PR build read `caches.match('/Main.js')` and got "no cache entry".
+- **Wrong conclusion:** the page is not running a cached build, or the overlay never reached the browser.
+- **Rule:** the precache key carries `?__WB_REVISION__=<hash>`. Walk every cache's keys for `Main.js` and test that body for the overlay's name.
+
+## Waiting on a result file inside one long Bash call (met again)
+
+- **Symptom:** a `timeout 600 … until [ -s file ]` wait was moved to the background after 180 s, its summary lost.
+- **Wrong conclusion:** none here, but the same pit as "A long chain of driver commands in one Bash call".
+- **Rule:** cap each wait at about 175 s and repeat it, or rely on the background task's completion notice.

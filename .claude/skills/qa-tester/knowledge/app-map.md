@@ -304,6 +304,13 @@ flag simply does not appear.
 - Prenatal Urine Dipstick tab: performed Yes → `immediate-result` (first label Point of Care, or Lab) → Short Dip. Point of Care
   shows three selects: protein, pH, glucose; protein and glucose share the options 0, +1 … +4. Lab Results shows the same selects.
   At 37 w+ a point-of-care result that diagnoses an emergency jumps to Next Steps behind the warning, leaving the other lab tabs unasked.
+- Eclampsia fixture: Dating, History, Examination, then Danger Signs "Convulsions" (no other activity needed). After 165/115 it also gives high risk
+  of preeclampsia on develop; gestational hypertension is not stored beside eclampsia.
+- Moderate risk of preeclampsia from BMI: reopen Examination from Completed → Nutrition Assessment → weight 80 (height 160 from the helper) → Save.
+  BMI 31 gives moderate risk on its own; with 165/115 only high risk is stored.
+- Vitals recheck at 38 w: visit 145/95 with protein +1 at the visit stores only `depression-not-likely`; Next Steps is Health Education, Next ANC
+  Visit, Wait. ANC Labs lists "Pending Vitals Recheck"; the recurrent Examination recheck 145/95 gives `moderate-preeclampsia-recurrent-ega-37+`,
+  the immediate-delivery warning and Next Steps › Referral only.
 - A hospital referral in the visit's Next Steps comes without a Wait task even while labs are pending: the encounter page then shows
   PAUSE ENCOUNTER enabled, which ends the visit and keeps the ANC Labs entry.
 - EGA lines are not all "≥": diabetes vs gestational diabetes splits at `egaWeeks > 20`, so 20 w 1 d is still diabetes.
@@ -680,8 +687,10 @@ flag simply does not appear.
 - The main tree starts a run on `develop`, so a develop control is cheapest before the overlay:
   record it on the served build, then overlay and wait for gulp once. For a change only to what a page shows, one fixture can
   serve both builds: overlay, build and read on the PR, restore the files (needed anyway), wait for gulp, activate the update in the same driver, read again.
-- After an overlay, gulp copies `app.js` at once, but `Main.js` takes about 2.5 minutes to rebuild. Wait until
-  `grep -F` finds a name from the overlay in `client/serve/Main.js`.
+- After an overlay, gulp copies `app.js` at once, but `Main.js` takes about 2.5 minutes to rebuild (a three-file Elm change once took
+  seconds). Wait until `grep -F` finds a name from the overlay in `client/serve/Main.js`.
+- The service worker precaches the bundle as `Main.js?__WB_REVISION__=<hash>`, so `caches.match('/Main.js')` finds nothing. To read the
+  browser's cached build, walk `caches.keys()` and each cache's `keys()` for a URL matching `Main.js`.
 - Only a caller that can read `.driver/token` (owner-only, new each start) can send commands;
   requests from a browser page are refused.
 - `qa.freshDevice()` can fail once with "Navigation … interrupted by another navigation" on a fresh
