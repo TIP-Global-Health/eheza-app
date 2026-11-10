@@ -10713,6 +10713,9 @@ function hedley_reports_recurrent_test_required($last_date, DateTime $encounter_
 /**
  * Whole months from a birth date to a date, as the Well Child app counts them.
  *
+ * A month is complete on the month-end day its date falls on: born 31 March,
+ * on 30 September the child is 6 months old.
+ *
  * @param DateTime $birth_date_obj
  *   The birth date.
  * @param DateTime $date_obj
@@ -10722,9 +10725,18 @@ function hedley_reports_recurrent_test_required($last_date, DateTime $encounter_
  *   The age in months.
  */
 function hedley_reports_age_in_months_reached(DateTime $birth_date_obj, DateTime $date_obj) {
-  $interval = $date_obj->diff($birth_date_obj, TRUE);
+  [$birth_year, $birth_month, $birth_day] = array_map('intval', explode('-', $birth_date_obj->format('Y-n-j')));
+  [$year, $month, $day] = array_map('intval', explode('-', $date_obj->format('Y-n-j')));
 
-  return ($interval->y * 12) + $interval->m;
+  $whole_months = ($year - $birth_year) * 12 + $month - $birth_month - ($day < $birth_day ? 1 : 0);
+
+  // The next monthly anniversary, moved back to its month's last day when
+  // that month is shorter.
+  $next_month_index = $birth_year * 12 + $birth_month + $whole_months;
+  $next_month_start = new DateTime(sprintf('%04d-%02d-01', intdiv($next_month_index, 12), $next_month_index % 12 + 1));
+  $next_anniversary = $next_month_start->format('Y-m-') . sprintf('%02d', min($birth_day, (int) $next_month_start->format('t')));
+
+  return $next_anniversary === $date_obj->format('Y-m-d') ? $whole_months + 1 : $whole_months;
 }
 
 /**
