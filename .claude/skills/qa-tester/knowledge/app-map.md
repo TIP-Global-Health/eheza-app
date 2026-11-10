@@ -298,6 +298,14 @@ flag simply does not appear.
   and lands on `#pincode` drawing the main menu. A later day's results go in through Case Management › ANC Labs.
 - BP 165/100 at 19 w 5 d gives `chronic-hypertension-immediate` + `high-risk-of-preeclampsia-initial`; at 36 w 5 d
   `gestational-hypertension-immediate`. Next Steps then has Medication Distribution, which `completeNextSteps` fills.
+- Severe preeclampsia fixture: `completeExamination(page, { vitals: { sys: '165', dia: '115' } })`, then reopen Examination from Completed →
+  Core Physical Exam → "Tender to Palpation right upper" (ticking it unticks Normal) → Save. At 28 w and at 37 w that visit stores
+  `gestational-hypertension-immediate` + `high-risk-of-preeclampsia-initial` until a protein result arrives.
+- Prenatal Urine Dipstick tab: performed Yes → `immediate-result` (first label Point of Care, or Lab) → Short Dip. Point of Care
+  shows three selects: protein, pH, glucose; protein and glucose share the options 0, +1 … +4. Lab Results shows the same selects.
+  At 37 w+ a point-of-care result that diagnoses an emergency jumps to Next Steps behind the warning, leaving the other lab tabs unasked.
+- A hospital referral in the visit's Next Steps comes without a Wait task even while labs are pending: the encounter page then shows
+  PAUSE ENCOUNTER enabled, which ends the visit and keeps the ANC Labs entry.
 - EGA lines are not all "≥": diabetes vs gestational diabetes splits at `egaWeeks > 20`, so 20 w 1 d is still diabetes.
   Read the comparison in `Pages/Prenatal/Activity/Utils.elm` before choosing a fixture's weeks.
 - With Healthy Start on, a nurse visit has an Ultrasound activity: viable, fetuses, location, the scan
@@ -494,6 +502,8 @@ flag simply does not appear.
   "LAB RESULTS" page (`div.page-report.clinical`: patient info, a results table, REVIEW & ACCEPT), not the diagnoses
   (`openLabsResultsReviewFromCaseManagement`). "Review & Accept" opens the recurrent encounter; its Reports tab has the diagnoses.
   The entry stays listed as reviewed and then opens the encounter directly; Lab Results sits under Completed.
+  With only the Urine Dipstick ordered and an emergency diagnosis (severe preeclampsia at 37 w), the nurse's entry opened Lab
+  Results' Next Steps directly, behind the warning, with no LAB RESULTS review page.
 - Lab technician and nurse share one tablet: `qa.signIn('3333', 'Nyange')`, then `qa.signIn('1234', 'Nyange')`.
 - The lab technician's "Will this test be performed today?" No offers Lack of Reagents, Lack of Other Supplies,
   Broken Equipment, No Equipment, Not Indicated, and for Partner HIV also Not Present. Any lab technician save on
