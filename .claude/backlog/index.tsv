@@ -573,13 +573,14 @@ B-572	4	READY	LOW			53	HIV encounter: the Prescribed Medication form cannot be s
 B-573	4	READY	LOW			53	NCD initial phase: the Referral task counts as done when ANY referral record exists, so a hospital referral saved first 
 B-574	3	READY	MED			54	Prenatal (CHW): a postpartum visit left unfinished on an earlier day locks the woman's Antenatal page — First, Subsequen
 B-575	4	READY	LOW			54	Prenatal labs history: saving an EARLIER visit's pending lab result from today's Laboratory page can throw the nurse ont
-B-576	1	READY	MED-HIGH			54	Prenatal: severe preeclampsia confirmed by a urine protein result that arrives LATER (dipstick sent to the lab) is filed
+B-576	1	IMPLEMENTED	MED-HIGH			54	Prenatal: severe preeclampsia confirmed by a urine protein result that arrives LATER (dipstick sent to the lab) is filed
 B-577	1	READY	MED-HIGH			54	Prenatal: "high risk of preeclampsia" found in the recurrent phase (hypertension after the blood-pressure recheck, or di
 B-578	1	READY	MED-HIGH			54	Prenatal: a pregnancy whose FIRST nurse encounter was ended without an LMP can never be dated at a later nurse visit, so
 B-579	2	READY	MED-HIGH			54	Prenatal (nurse): the Medication activity (calcium, MMS, Fefol / iron / folate, Mebendazole) is listed only at the FIRST
 B-580	3	READY	MED			54	Prenatal (CHW): the referral task's completion is decided by the NURSE's facility list — on a CHW visit with danger sign
 B-581	1	READY	MED-HIGH			54	Prenatal: hypertension diagnosed at an earlier visit with NO treatment record gets no hypertension pathway at later visi
 B-582	3	READY	MED-LOW			54	Prenatal recurrent phase: the hospital-referral task for a diagnosis found by a lab result reads complete from the refer
+B-583	4	READY	LOW			54	Prenatal (nurse): "high risk of preeclampsia" is stored beside severe or moderate preeclampsia, or eclampsia, found at 3
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
