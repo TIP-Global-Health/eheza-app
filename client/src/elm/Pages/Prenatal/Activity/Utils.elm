@@ -786,6 +786,7 @@ continuousHypertensionTreatmentRequired assembled =
                 diagnosedAnyOf
                     [ DiagnosisModeratePreeclampsiaInitialPhase
                     , DiagnosisSeverePreeclampsiaInitialPhase
+                    , DiagnosisSeverePreeclampsiaRecurrentPhase
                     ]
                     assembled
            )
