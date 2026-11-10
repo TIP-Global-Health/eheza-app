@@ -1394,8 +1394,13 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
             dosesFromPreviousEncountersData
                 ++ dosesFromCurrentEncounterData
 
+        -- A dose recorded as given previously is not given today, even
+        -- when it is dated today.
+        isGivenToday ( _, date ) =
+            date == currentDate && form.willReceiveVaccineToday == Just True
+
         lastDoseData =
-            List.filter (\( _, date ) -> date /= currentDate)
+            List.filter (not << isGivenToday)
                 allDosesGivenData
                 |> List.reverse
                 |> List.head
@@ -1405,18 +1410,10 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
                 ViewModeInitial ->
                     let
                         noDoseGivenToday =
-                            List.filter
-                                (\( _, date ) ->
-                                    date == currentDate
-                                )
-                                dosesFromCurrentEncounterData
-                                |> List.isEmpty
+                            not <| List.any isGivenToday dosesFromCurrentEncounterData
 
                         doseAllowedForDeletion =
-                            List.filter
-                                (\( _, date ) ->
-                                    date /= currentDate
-                                )
+                            List.filter (not << isGivenToday)
                                 dosesFromCurrentEncounterData
                                 |> List.reverse
                                 |> List.head
@@ -1496,11 +1493,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
                             List.map Tuple.first allDosesGivenData
 
                         doseGivenToday =
-                            List.filter
-                                (\( _, date ) ->
-                                    date == currentDate
-                                )
-                                dosesFromCurrentEncounterData
+                            List.filter isGivenToday dosesFromCurrentEncounterData
                                 |> List.head
                                 |> Maybe.map Tuple.first
 
