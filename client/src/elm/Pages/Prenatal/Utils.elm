@@ -3902,8 +3902,7 @@ applyPreeclampsiaRiskDiagnosesHierarchy diagnoses =
     in
     if diagnosedAny (DiagnosisEclampsia :: preeclampsiaDiagnoses) then
         -- Preeclampsia or Eclampsia is diagnosed, so there is no risk of it.
-        EverySet.diff diagnoses
-            (EverySet.fromList (DiagnosisModerateRiskOfPreeclampsia :: highRiskOfPreeclampsiaDiagnoses))
+        EverySet.diff diagnoses (EverySet.fromList riskOfPreeclampsiaDiagnoses)
 
     else if diagnosedAny highRiskOfPreeclampsiaDiagnoses then
         -- High risk of Preeclampsia replaces the moderate risk.
