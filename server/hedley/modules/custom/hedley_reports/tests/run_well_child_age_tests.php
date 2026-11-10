@@ -138,13 +138,15 @@ function no_vaccinations() {
 /**
  * Builds the encounter data the Well Child builder makes for a visit.
  *
- * The age comes from the same call the builder makes, so a case reads the
- * age the report counts for that visit.
+ * The ages come from the same calls the builder makes, so a case reads the
+ * ages the report counts for that visit: the Well Child age, and the age
+ * the NCDA check reads, which keeps the count of the individual encounters.
  */
 function well_child_encounter($birth_date, $visit_date, array $previous_encounters = [], array $vaccinations = NULL, $encounter_type = 'pediatric-care') {
   $vaccinations = $vaccinations ?? no_vaccinations();
   return [
     'age_in_months' => well_child_age($birth_date, $visit_date),
+    'age_in_months_for_ncda' => individual_encounter_age($birth_date, $visit_date),
     'encounter_type' => $encounter_type,
     'measurements_by_type' => [],
     'previous_encounters_data' => $previous_encounters,
@@ -310,14 +312,27 @@ assert_same(well_child_age('2024-02-29', '2028-02-29'), 48, 'A child born 29 Feb
 assert_same(expects(['well_child_mebendezole'], '2024-02-29', '2025-02-28'), [
   'well_child_mebendezole' => TRUE,
 ], 'A child born 29 February 2024, seen on 28 February 2025: Mebendazole is expected (Rwanda)', $passed, $failed);
-// NCDA is expected under 24 months, so not on the second birthday counted on
-// 28 February 2026.
+// NCDA keeps today's count, as the app asks it then. NCDA is expected under
+// 24 months: a child born 29 February 2024 is still 23 months old for NCDA
+// on 28 February 2026, though 24 months for the rest of the row, and turns
+// 24 for NCDA on 1 March 2026.
 assert_same(expects(['well_child_ncda'], '2024-02-29', '2026-02-28'), [
-  'well_child_ncda' => FALSE,
-], 'A child born 29 February 2024, seen on 28 February 2026: NCDA is not expected', $passed, $failed);
+  'well_child_ncda' => TRUE,
+], 'NCDA keeps today\'s count: a child born 29 February 2024, seen on 28 February 2026, still has NCDA expected', $passed, $failed);
+// The rest of that row counts 24 months, so the ECD signs from 2 years are
+// expected at the same visit that still expects NCDA.
+assert_same(expects_ecd_signs(['use-short-phrases'], '2024-02-29', '2026-02-28'), [
+  'use-short-phrases' => TRUE,
+], 'A child born 29 February 2024, seen on 28 February 2026: the ECD signs from 2 years are expected', $passed, $failed);
 assert_same(expects(['well_child_ncda'], '2024-02-29', '2026-02-27'), [
   'well_child_ncda' => TRUE,
 ], 'A child born 29 February 2024, seen on 27 February 2026: NCDA is expected', $passed, $failed);
+assert_same(expects(['well_child_ncda'], '2024-02-29', '2026-03-01'), [
+  'well_child_ncda' => FALSE,
+], 'A child born 29 February 2024, seen on 1 March 2026: NCDA is not expected', $passed, $failed);
+assert_same(expects(['well_child_ncda'], '2024-02-29', '2026-02-28', [], NULL, 'pediatric-care-chw'), [
+  'well_child_ncda' => FALSE,
+], 'A CHW visit on 28 February 2026 for a child born 29 February 2024: NCDA is not expected', $passed, $failed);
 
 // Criterion 3: the same child seen on 28 February 2030 counts as 72 months:
 // on Rwanda, Vitamin A and Mebendazole are not expected, and Albendazole is.
