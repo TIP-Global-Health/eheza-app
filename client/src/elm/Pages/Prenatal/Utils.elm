@@ -3896,12 +3896,17 @@ applyAnemiaDiagnosesHierarchy diagnoses =
 
 applyPreeclampsiaRiskDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyPreeclampsiaRiskDiagnosesHierarchy diagnoses =
-    -- When Severe Anamia with compliations is diagnosed, we eliminate
-    -- Severe Anamia standalone diagnosis.
-    if
-        List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
-            [ DiagnosisHighRiskOfPreeclampsiaInitialPhase, DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ]
-    then
+    let
+        diagnosedAny =
+            List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
+    in
+    if diagnosedAny (DiagnosisEclampsia :: preeclampsiaDiagnoses) then
+        -- Preeclampsia or Eclampsia is diagnosed, so there is no risk of it.
+        EverySet.diff diagnoses
+            (EverySet.fromList (DiagnosisModerateRiskOfPreeclampsia :: highRiskOfPreeclampsiaDiagnoses))
+
+    else if diagnosedAny highRiskOfPreeclampsiaDiagnoses then
+        -- High risk of Preeclampsia replaces the moderate risk.
         EverySet.remove DiagnosisModerateRiskOfPreeclampsia diagnoses
 
     else
