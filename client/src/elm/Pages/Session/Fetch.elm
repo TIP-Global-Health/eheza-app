@@ -94,7 +94,7 @@ fetch currentDate zscores features isChw sessionId sessionPage pages db =
                     Pages.Participants.Fetch.fetch sessionId
 
                 ProgressReportPage childId ->
-                    Pages.ProgressReport.Fetch.fetch childId db
+                    Pages.ProgressReport.Fetch.fetch sessionId childId db
 
         -- We gather all the msgs needed to construct an editable session, and
         -- also the message that indicates that we want the EditableSession
