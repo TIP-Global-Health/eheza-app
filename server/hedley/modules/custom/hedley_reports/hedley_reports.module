@@ -6470,7 +6470,7 @@ function hedley_reports_child_scoreboard_get_expected_immunisation_activities(ar
     // All 3 doses of DTP were given, it has passed at least 28 days since
     // third dose, and, child is at last 18 months old.
     if (!empty($vaccination_progress['dtp']['dose-3'])) {
-      $age_in_months = ($interval->y * 12) + $interval->m;
+      $age_in_months = hedley_reports_age_in_months_reached($birth_date_obj, $start_date_obj);
       $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
       $interval = $start_date_obj->diff($third_dose_date_obj, TRUE);
       $days_since_third_dose = $interval->days;
@@ -10711,7 +10711,7 @@ function hedley_reports_recurrent_test_required($last_date, DateTime $encounter_
 }
 
 /**
- * Whole months from birth, as the Well Child app counts them.
+ * Whole months from birth, as the app's age checks count them.
  *
  * A month is reached on its month-end day: born 31 March,
  * 6 months on 30 September.
