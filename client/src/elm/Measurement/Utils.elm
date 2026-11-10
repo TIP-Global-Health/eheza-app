@@ -1394,14 +1394,22 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
             dosesFromPreviousEncountersData
                 ++ dosesFromCurrentEncounterData
 
-        -- A dose recorded as given previously is not given today, even
-        -- when it is dated today.
-        isGivenToday ( _, date ) =
-            date == currentDate && form.willReceiveVaccineToday == Just True
+        -- Only a dose of this encounter can be given today. One recorded
+        -- as given previously is not, even when it is dated today.
+        ( dosesGivenToday, dosesFromCurrentEncounterNotGivenToday ) =
+            List.partition
+                (\( _, date ) ->
+                    date == currentDate && form.administrationNote == Just AdministeredToday
+                )
+                dosesFromCurrentEncounterData
+
+        doseGivenToday =
+            List.head dosesGivenToday
+                |> Maybe.map Tuple.first
 
         lastDoseData =
-            List.filter (not << isGivenToday)
-                allDosesGivenData
+            dosesFromPreviousEncountersData
+                ++ dosesFromCurrentEncounterNotGivenToday
                 |> List.reverse
                 |> List.head
 
@@ -1409,12 +1417,8 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
             case form.viewMode of
                 ViewModeInitial ->
                     let
-                        noDoseGivenToday =
-                            not <| List.any isGivenToday dosesFromCurrentEncounterData
-
                         doseAllowedForDeletion =
-                            List.filter (not << isGivenToday)
-                                dosesFromCurrentEncounterData
+                            dosesFromCurrentEncounterNotGivenToday
                                 |> List.reverse
                                 |> List.head
                                 |> Maybe.map Tuple.first
@@ -1428,7 +1432,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
                                 (\( dose, date ) ->
                                     let
                                         allowDelete =
-                                            noDoseGivenToday
+                                            isNothing doseGivenToday
                                                 && (doseAllowedForDeletion == Just dose)
                                     in
                                     viewHistoryEntry dose (Just date) False allowDelete
@@ -1491,11 +1495,6 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
                     let
                         allDosesGiven =
                             List.map Tuple.first allDosesGivenData
-
-                        doseGivenToday =
-                            List.filter isGivenToday dosesFromCurrentEncounterData
-                                |> List.head
-                                |> Maybe.map Tuple.first
 
                         dosesMissing =
                             List.filter (\dose -> not <| List.member dose allDosesGiven)
