@@ -1390,10 +1390,6 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
         dosesFromCurrentEncounterData =
             config.dosesFromCurrentEncounterData
 
-        allDosesGivenData =
-            dosesFromPreviousEncountersData
-                ++ dosesFromCurrentEncounterData
-
         -- Only a dose of this encounter can be given today. One recorded
         -- as given previously is not, even when it is dated today.
         ( dosesGivenToday, dosesFromCurrentEncounterNotGivenToday ) =
@@ -1494,7 +1490,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
                 ViewModeInitial ->
                     let
                         allDosesGiven =
-                            List.map Tuple.first allDosesGivenData
+                            List.map Tuple.first (dosesFromPreviousEncountersData ++ dosesFromCurrentEncounterData)
 
                         dosesMissing =
                             List.filter (\dose -> not <| List.member dose allDosesGiven)
