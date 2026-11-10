@@ -1392,11 +1392,12 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
 
         -- Only a dose of this encounter can be given today. One recorded
         -- as given previously is not, even when it is dated today.
+        administeredToday =
+            form.administrationNote == Just AdministeredToday
+
         ( dosesGivenToday, dosesFromCurrentEncounterNotGivenToday ) =
             List.partition
-                (\( _, date ) ->
-                    date == currentDate && form.administrationNote == Just AdministeredToday
-                )
+                (\( _, date ) -> administeredToday && date == currentDate)
                 dosesFromCurrentEncounterData
 
         doseGivenToday =
