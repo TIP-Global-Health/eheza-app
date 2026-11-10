@@ -568,7 +568,7 @@ B-567	1	IMPLEMENTED	MED-HIGH	2492	2493	52	Acute Illness subsequent visit: the pa
 B-568	4	READY	LOW			52	Acute Illness outcome page: the diagnosis label under the patient's name is recomputed against TODAY's age, not the enco
 B-569	3	READY	LOW		2493	52	Acute Illness follow-up: with a positive malaria test, Send to Health Centre stops looking at every other referral reaso
 B-570	4	READY	LOW		2498	0	Dashboard "Number of Cephaly": a later in-range head circumference does not end an earlier macrocephaly or microcephaly 
-B-571	4	READY	LOW			53	Completion report (Well Child): the server still counts a child's age in whole months by flooring, while the app since #
+B-571	4	IMPLEMENTED	LOW	2503	2507	53	Completion report (Well Child): the server still counts a child's age in whole months by flooring, while the app since #
 B-572	4	READY	LOW			53	HIV encounter: the Prescribed Medication form cannot be saved without at least one antiretroviral, so a positive patient
 B-573	4	READY	LOW			53	NCD initial phase: the Referral task counts as done when ANY referral record exists, so a hospital referral saved first 
 B-574	3	READY	MED			54	Prenatal (CHW): a postpartum visit left unfinished on an earlier day locks the woman's Antenatal page — First, Subsequen
