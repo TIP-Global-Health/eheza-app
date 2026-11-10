@@ -140,8 +140,10 @@ number, tier line, and any side-findings noticed while building appended as new 
 - ⛔ **Two medium review rounds, run yourself, every time.** Right after opening a PR, invoke
   `Skill({skill: "code-review", args: "medium <branch>"})` and say in the announcement that it is
   running. **Round 1:** fix or decline as you judge, push; post nothing to the PR, ask no approval.
-  **Round 2:** run it on the pushed head; the rules below apply to it. Never self-run `high` or
-  above. Mechanics in `pr-first-review-workflow` in memory.
+  **Round 2:** run it on the pushed head, post its findings (rules below), then fix or decline as
+  you judge, push, and present what you did — no approval wait. Ask first only when a fix would
+  change intended behaviour, needs a clinician, or grows the diff beyond the problem. Never self-run
+  `high` or above. Mechanics in `pr-first-review-workflow` in memory.
 - ⛔ **Criteria before code; blind tests for logic defects.** The issue, with its
   `## Expected behaviour` block approved by the user, exists before the first line of the fix.
   For a logic defect the tests come from the `blind-test-author` agent, started from the seam

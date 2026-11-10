@@ -107,7 +107,9 @@ re-check afterwards.
 `gh api repos/TIP-Global-Health/eheza-app/pulls/N -X PATCH -f title="…"`.
 
 **6. Reviews.** Two medium rounds. Round 1: fix or decline as you judge, push; nothing on the PR.
-Round 2, on the pushed head: post inline, present, wait for approval, then fix.
+Round 2, on the pushed head: post inline, fix or decline as you judge, push, then present the
+analysis — no approval wait. Ask first only for a fix that changes intended behaviour, needs a
+clinician, or grows the diff beyond the problem.
 Verify every claim against the code before acting — review bots are sometimes
 exactly right and sometimes overstated. In the round-2 analysis also answer two fixed questions
 yourself: does every `## Expected behaviour` line have a test, and was any blind test edited after
