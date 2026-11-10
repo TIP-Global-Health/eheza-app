@@ -713,3 +713,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a `timeout 600 … until [ -s file ]` wait was moved to the background after 180 s, its summary lost.
 - **Wrong conclusion:** none here, but the same pit as "A long chain of driver commands in one Bash call".
 - **Rule:** cap each wait at about 175 s and repeat it, or rely on the background task's completion notice.
+
+## Expecting both immunisation answers to stay on screen after "will receive today? Yes"
+
+- **Symptom:** a develop control's check that DTP showed "prior to today? No" and "today? Yes" failed: only the today question was left.
+- **Wrong conclusion:** develop dropped the first answer.
+- **Rule:** the form hides "prior to today?" once "will receive today?" is Yes. Read the form builder's conditions before scripting a check; also, `qa.form().save` reads `enabled` / `disabled`, not `active`.
+
+## A compound shell loop refused by the safety check
+
+- **Symptom:** one Bash call that registered a fixture and ran three recorded tests in a `for` loop with nested `$( … )` was refused as an unreadable `rm` command, though it held no `rm`.
+- **Wrong conclusion:** the command ran, or a workaround is needed.
+- **Rule:** keep driver calls plain: write small runner scripts (`run.sh <name> <prelude> <files…>`) into the scratchpad once, then call them one test per Bash call.

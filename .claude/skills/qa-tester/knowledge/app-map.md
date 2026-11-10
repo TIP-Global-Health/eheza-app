@@ -430,6 +430,14 @@ flag simply does not appear.
   again while another dose is due. Answer No to stop. A CHW Well Child visit asks only about earlier
   doses; the nurse's also asks about today. OPV dose 1 within 14 days of birth makes OPV four doses,
   so record a first dose later than that for three.
+- Immunisation form controls: tab `#tasks-bar .link-section:has(.icon-<bcg|opv|dtp|pcv13|rotarix|tetanus>-vaccine)`;
+  form `.ui.form.vaccination`; history rows `.history-entry` (`.dose`, `.date`, `.delete` only on this visit's latest
+  dose). The date field `.form-input.date` opens the calendar; its SAVE, then `.update.actions` Save, record the dose.
+  "Will receive today? Yes" hides the "prior to today?" question. A tab with nothing left to ask reads "0/0 Tasks
+  Completed" with Save on. Prenatal Tetanus dose 1's range starts at the mother's birth date: pick the year and month first.
+- A child exactly 70 days old (born 10 weeks ago) gets DTP, PCV 13 and Rotarix dose 2 due today once dose 1 is dated
+  on day 42; a CHW sees a Well Child Visit at that age (not the newborn exam). `completeNCDA` works for such a
+  Child Scorecard child, which is then offered Vaccination History alone.
 - **A child followed by both Well Child and Child Scorecard**: the CHW registers the child under
   Child Scorecard, at Akanduga, and the nurse finds the child at Nyange. A nurse's Standard Pediatric
   Visit creates the Well Child participant. Both forms read one combined history of the two
