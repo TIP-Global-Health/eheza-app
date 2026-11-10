@@ -4814,6 +4814,8 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
 
     // Try to resolve age in months at a time encounter was performed.
     $encounter_data['age_in_months'] = $birth_date_obj ? hedley_reports_age_in_months_reached($birth_date_obj, $start_date_obj) : NULL;
+    // The app's NCDA check counts whole months without the month-end rule.
+    $encounter_data['age_in_months_for_ncda'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
     $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
 
     [$encounter_data['vaccination_history'], $encounter_data['vaccination_progress']] = hedley_reports_well_child_generate_vaccination_progress_data($scoreboard_immunisations, $encounter_data);
@@ -5330,7 +5332,7 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
   }
   // Nurse SPV encounters.
   else {
-    if (hedley_reports_ncda_expected($age_in_months, $start_date_obj)) {
+    if (hedley_reports_ncda_expected($encounter_data['age_in_months_for_ncda'] ?? NULL, $start_date_obj)) {
       $expected[] = 'well_child_ncda';
     }
   }
