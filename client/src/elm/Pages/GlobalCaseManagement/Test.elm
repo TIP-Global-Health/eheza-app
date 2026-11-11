@@ -528,7 +528,7 @@ filterFollowUpsOfResidentsTests =
                         |> List.sort
                         |> Expect.equal [ "participant-resident", "participant-second-resident" ]
             ]
-        , describe "The Acute Illness, Antenatal, Nutrition and Immunization panes keep listing residents only, as today"
+        , describe "The Acute Illness, Antenatal, Nutrition and Immunization panes list residents only"
             [ test "Acute Illness" <|
                 \_ ->
                     patientsOf filtered.acuteIllness
