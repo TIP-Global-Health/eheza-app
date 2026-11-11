@@ -14,6 +14,7 @@ import Backend.Measurement.Model
         , FollowUpOption(..)
         , HIVPCRTestValue
         , HIVTestValue
+        , HandsCPESign(..)
         , HeightInCm(..)
         , HemoglobinTestValue
         , HepatitisBTestValue
@@ -3056,6 +3057,13 @@ all =
         , lateLabResultLabTechAndHistoryTest
         , lateUrineProteinSeverePreeclampsiaTest
         , ultrasoundFormTest
+        , preeclampsiaRiskSevereAt37PlusTest
+        , preeclampsiaRiskModerateAt37PlusTest
+        , preeclampsiaRiskEclampsiaTest
+        , preeclampsiaRiskLabResultsAt37PlusTest
+        , preeclampsiaRiskBefore37Test
+        , preeclampsiaRiskHypertensionAt37PlusTest
+        , preeclampsiaRiskReferralUnchangedTest
         ]
 
 
@@ -5308,4 +5316,646 @@ ultrasoundFormTest =
                 )
                 completePaths
             )
+        ]
+
+
+
+-- PREECLAMPSIA RISK NEXT TO PREECLAMPSIA AND ECLAMPSIA
+--
+-- Oracle (issue "Expected behaviour"): "high risk of preeclampsia" and
+-- "moderate risk of preeclampsia" are not diagnosed beside preeclampsia found
+-- at the same encounter, nor beside eclampsia. At 37 weeks or later the visit
+-- grades preeclampsia as its emergency EGA 37+ variants; those, and eclampsia
+-- at any week, must keep the risk diagnoses off just as the plain [20, 37)
+-- preeclampsia diagnoses already do.
+--
+-- Each risk diagnosis is reached three ways, so a fix that covers one route
+-- and not another shows up:
+--   * high risk from high blood pressure (gestational hypertension at the
+--     visit, or after the blood pressure recheck);
+--   * high risk from history (preeclampsia at a previous pregnancy);
+--   * moderate risk from history (more than 10 years since the last delivery),
+--     which is only visible when nothing gives high risk, because high risk
+--     replaces moderate risk.
+--
+-- "Found in Lab Results" is modelled the way the app runs it: the visit is
+-- assessed on the visit day, the result (a urine protein entered after the
+-- visit, or the repeated blood pressure) is then entered, and the encounter is
+-- reassessed with the visit-day set stored on it (`enterResultLater`).
+-- Visits are written as (weeks, days) of EGA on the visit day.
+
+
+{-| Run the function under test on a first nurse visit at the given EGA.
+-}
+diagnoseVisitAt : ( Int, Int ) -> PrenatalMeasurements -> EverySet PrenatalDiagnosis
+diagnoseVisitAt ega measurements =
+    generatePrenatalDiagnosesForNurse (visitAssembled ega [] EverySet.empty measurements)
+
+
+{-| Every preeclampsia diagnosis, in the order the tests list them.
+-}
+allPreeclampsiaDiagnoses : List PrenatalDiagnosis
+allPreeclampsiaDiagnoses =
+    [ DiagnosisModeratePreeclampsiaInitialPhase
+    , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaRecurrentPhase
+    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaInitialPhase
+    , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaRecurrentPhase
+    , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+    ]
+
+
+{-| The members of a diagnosis set out of the given list, in list order.
+-}
+presentOf : List PrenatalDiagnosis -> EverySet PrenatalDiagnosis -> List PrenatalDiagnosis
+presentOf diagnoses set =
+    List.filter (\diagnosis -> EverySet.member diagnosis set) diagnoses
+
+
+{-| The preeclampsia diagnoses in a set, and its preeclampsia risk diagnoses.
+-}
+preeclampsiaAndRisks : EverySet PrenatalDiagnosis -> ( List PrenatalDiagnosis, List PrenatalDiagnosis )
+preeclampsiaAndRisks set =
+    ( presentOf allPreeclampsiaDiagnoses set, presentOf preeclampsiaRiskDiagnoses set )
+
+
+{-| Whether a set holds any preeclampsia diagnosis, and its preeclampsia risk
+diagnoses. Used where the preeclampsia variant is not what is under test.
+-}
+preeclampsiaFoundAndRisks : EverySet PrenatalDiagnosis -> ( Bool, List PrenatalDiagnosis )
+preeclampsiaFoundAndRisks set =
+    ( not <| List.isEmpty (presentOf allPreeclampsiaDiagnoses set), presentOf preeclampsiaRiskDiagnoses set )
+
+
+{-| Preeclampsia at a previous pregnancy: high risk of preeclampsia.
+-}
+withHighRiskHistory : PrenatalMeasurements -> PrenatalMeasurements
+withHighRiskHistory =
+    withPreeclampsiaRiskHistory ObstetricHistoryPreeclampsiaPreviousPregnancy Neither
+
+
+{-| More than 10 years since the last delivery: moderate risk of preeclampsia.
+-}
+withModerateRiskHistory : PrenatalMeasurements -> PrenatalMeasurements
+withModerateRiskHistory =
+    withPreeclampsiaRiskHistory NoObstetricHistoryStep2Sign MoreThan10Years
+
+
+{-| Edema on the hands in the physical exam, with no severe preeclampsia sign.
+-}
+withHandsEdema : PrenatalMeasurements -> PrenatalMeasurements
+withHandsEdema measurements =
+    let
+        exam =
+            corePhysicalExamValueWith EverySet.empty EverySet.empty
+    in
+    { measurements | corePhysicalExam = wrapMeasurement { exam | hands = EverySet.singleton EdemaHands } }
+
+
+{-| A marginal blood pressure at the visit (145/95): high enough to ask for the
+recheck on the Lab Results page, not high enough for hypertension by itself.
+-}
+withMarginalVitals : PrenatalMeasurements -> PrenatalMeasurements
+withMarginalVitals =
+    withVitals 145 95
+
+
+{-| The repeated blood pressure, entered on the Lab Results page after a
+marginal visit reading.
+-}
+enterRecheck : Float -> Float -> PrenatalMeasurements -> PrenatalMeasurements
+enterRecheck sysRepeated diaRepeated measurements =
+    let
+        marginal =
+            TestFixtures.vitalsValueWith 145 95
+    in
+    { measurements
+        | vitals =
+            TestFixtures.wrapMeasurement visitDay
+                { marginal | sysRepeated = Just sysRepeated, diaRepeated = Just diaRepeated }
+    }
+
+
+{-| The issue's example visit: blood pressure 165/115, right upper quadrant
+tenderness, and an immediate urine dipstick with protein +1.
+-}
+severePreeclampsiaVisit : PrenatalMeasurements
+severePreeclampsiaVisit =
+    emptyPrenatalMeasurements
+        |> withVitals 165 115
+        |> withSeverePreeclampsiaSigns
+        |> withUrineProtein ProteinPlus1
+
+
+{-| Blood pressure 165/115 and an immediate urine dipstick with protein +1.
+-}
+moderatePreeclampsiaByProteinVisit : PrenatalMeasurements
+moderatePreeclampsiaByProteinVisit =
+    emptyPrenatalMeasurements
+        |> withVitals 165 115
+        |> withUrineProtein ProteinPlus1
+
+
+preeclampsiaRiskSevereAt37PlusTest : Test
+preeclampsiaRiskSevereAt37PlusTest =
+    describe "preeclampsia risk: severe preeclampsia at 37 weeks or later"
+        [ test "At 37 weeks or later, a visit that finds severe preeclampsia does not also give high or moderate risk of preeclampsia" <|
+            -- The issue's steps: 38 weeks, 165/115, right upper quadrant
+            -- tenderness, urine protein +1 with an immediate result.
+            \_ ->
+                diagnoseVisitAt ( 38, 0 ) severePreeclampsiaVisit
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ], [] )
+        , test "severe preeclampsia at exactly 37 weeks 0 days: no risk of preeclampsia" <|
+            \_ ->
+                diagnoseVisitAt ( 37, 0 ) severePreeclampsiaVisit
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ], [] )
+        , test "severe preeclampsia at 38 weeks, with preeclampsia at a previous pregnancy: no high risk of preeclampsia" <|
+            \_ ->
+                severePreeclampsiaVisit
+                    |> withHighRiskHistory
+                    |> diagnoseVisitAt ( 38, 0 )
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ], [] )
+
+        -- Headache with blurred vision alone is severe preeclampsia, with no
+        -- blood pressure, so no hypertension: the risk can only come from
+        -- history here.
+        , test "headache with blurred vision at 38 weeks, with preeclampsia at a previous pregnancy: severe preeclampsia, no high risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withDangerSigns (EverySet.singleton HeadacheBlurredVision)
+                    |> withHighRiskHistory
+                    |> diagnoseVisitAt ( 38, 0 )
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ], [] )
+        , test "headache with blurred vision at 38 weeks, more than 10 years since the last delivery: severe preeclampsia, no moderate risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withDangerSigns (EverySet.singleton HeadacheBlurredVision)
+                    |> withModerateRiskHistory
+                    |> diagnoseVisitAt ( 38, 0 )
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ], [] )
+        ]
+
+
+preeclampsiaRiskModerateAt37PlusTest : Test
+preeclampsiaRiskModerateAt37PlusTest =
+    describe "preeclampsia risk: moderate preeclampsia at 37 weeks or later"
+        [ test "At 37 weeks or later, a visit that finds moderate preeclampsia does not also give high or moderate risk of preeclampsia" <|
+            \_ ->
+                diagnoseVisitAt ( 38, 0 ) moderatePreeclampsiaByProteinVisit
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ], [] )
+        , test "moderate preeclampsia at exactly 37 weeks 0 days: no risk of preeclampsia" <|
+            \_ ->
+                diagnoseVisitAt ( 37, 0 ) moderatePreeclampsiaByProteinVisit
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ], [] )
+        , test "moderate preeclampsia by edema (165/115 and edema on the hands) at 38 weeks: no risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 165 115
+                    |> withHandsEdema
+                    |> diagnoseVisitAt ( 38, 0 )
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ], [] )
+        , test "moderate preeclampsia at 38 weeks, with preeclampsia at a previous pregnancy: no high risk of preeclampsia" <|
+            \_ ->
+                moderatePreeclampsiaByProteinVisit
+                    |> withHighRiskHistory
+                    |> diagnoseVisitAt ( 38, 0 )
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ], [] )
+
+        -- The 165/115 also gives hypertension, so today high risk shows and
+        -- hides the moderate risk from history; neither may be left.
+        , test "moderate preeclampsia at 38 weeks, more than 10 years since the last delivery: no moderate risk of preeclampsia" <|
+            \_ ->
+                moderatePreeclampsiaByProteinVisit
+                    |> withModerateRiskHistory
+                    |> diagnoseVisitAt ( 38, 0 )
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ], [] )
+        ]
+
+
+preeclampsiaRiskEclampsiaTest : Test
+preeclampsiaRiskEclampsiaTest =
+    let
+        eclampsiaAndRisks set =
+            ( EverySet.member DiagnosisEclampsia set, presentOf preeclampsiaRiskDiagnoses set )
+
+        convulsions =
+            withDangerSigns (EverySet.singleton Convulsions)
+    in
+    describe "preeclampsia risk: eclampsia at any week"
+        [ test "At any week, a visit that finds eclampsia does not also give high or moderate risk of preeclampsia" <|
+            -- Convulsions and 165/115 at 28 weeks: the blood pressure alone
+            -- would give gestational hypertension and high risk.
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> convulsions
+                    |> withVitals 165 115
+                    |> diagnoseVisitAt ( 28, 0 )
+                    |> eclampsiaAndRisks
+                    |> Expect.equal ( True, [] )
+        , test "convulsions at 28 weeks, with preeclampsia at a previous pregnancy: eclampsia, no high risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> convulsions
+                    |> withHighRiskHistory
+                    |> diagnoseVisitAt ( 28, 0 )
+                    |> eclampsiaAndRisks
+                    |> Expect.equal ( True, [] )
+        , test "convulsions at 28 weeks, more than 10 years since the last delivery: eclampsia, no moderate risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> convulsions
+                    |> withModerateRiskHistory
+                    |> diagnoseVisitAt ( 28, 0 )
+                    |> eclampsiaAndRisks
+                    |> Expect.equal ( True, [] )
+
+        -- Before week 20 high blood pressure is chronic hypertension, which
+        -- gives high risk just as gestational hypertension does.
+        , test "convulsions and 165/115 at 14 weeks (risk diagnoses start at week 12): eclampsia, no risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> convulsions
+                    |> withVitals 165 115
+                    |> withHighRiskHistory
+                    |> diagnoseVisitAt ( 14, 0 )
+                    |> eclampsiaAndRisks
+                    |> Expect.equal ( True, [] )
+        , test "convulsions and 165/115 at 36 weeks 6 days: eclampsia, no risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> convulsions
+                    |> withVitals 165 115
+                    |> diagnoseVisitAt ( 36, 6 )
+                    |> eclampsiaAndRisks
+                    |> Expect.equal ( True, [] )
+        , test "convulsions and 165/115 at 38 weeks, with preeclampsia at a previous pregnancy: eclampsia, no risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> convulsions
+                    |> withVitals 165 115
+                    |> withHighRiskHistory
+                    |> diagnoseVisitAt ( 38, 0 )
+                    |> eclampsiaAndRisks
+                    |> Expect.equal ( True, [] )
+
+        -- Eclampsia together with the measurements of severe preeclampsia:
+        -- the blood pressure hierarchy keeps eclampsia alone, and the risk
+        -- must not survive it either.
+        , test "convulsions on the issue's severe preeclampsia visit at 38 weeks: eclampsia, no risk of preeclampsia" <|
+            \_ ->
+                severePreeclampsiaVisit
+                    |> convulsions
+                    |> diagnoseVisitAt ( 38, 0 )
+                    |> eclampsiaAndRisks
+                    |> Expect.equal ( True, [] )
+        ]
+
+
+preeclampsiaRiskLabResultsAt37PlusTest : Test
+preeclampsiaRiskLabResultsAt37PlusTest =
+    describe "preeclampsia risk: preeclampsia found in Lab Results at 37 weeks or later"
+        [ test "At 37 weeks or later, when preeclampsia is found in Lab Results (a later urine result, or the blood pressure recheck), no high or moderate risk of preeclampsia stays beside it" <|
+            -- 165/115 at 38 weeks with the urine sent to the lab: the visit
+            -- day gives gestational hypertension and high risk. Protein +1
+            -- entered later makes it moderate preeclampsia.
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 165 115
+                    |> withPendingUrineDipstick
+                    |> enterResultLater ( 38, 0 ) 3 (enterUrineProtein ProteinPlus1)
+                    |> .afterEntry
+                    |> preeclampsiaFoundAndRisks
+                    |> Expect.equal ( True, [] )
+        , test "later urine result at 37 weeks 0 days: preeclampsia, no risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 165 115
+                    |> withPendingUrineDipstick
+                    |> enterResultLater ( 37, 0 ) 3 (enterUrineProtein ProteinPlus1)
+                    |> .afterEntry
+                    |> preeclampsiaFoundAndRisks
+                    |> Expect.equal ( True, [] )
+        , test "later urine result completing severe preeclampsia (165/115 and right upper quadrant tenderness at the visit) at 38 weeks: no risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 165 115
+                    |> withSeverePreeclampsiaSigns
+                    |> withPendingUrineDipstick
+                    |> enterResultLater ( 38, 0 ) 3 (enterUrineProtein ProteinPlus1)
+                    |> .afterEntry
+                    |> preeclampsiaFoundAndRisks
+                    |> Expect.equal ( True, [] )
+        , test "later urine result at 38 weeks, with preeclampsia at a previous pregnancy: the visit-day high risk does not stay beside preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 165 115
+                    |> withPendingUrineDipstick
+                    |> withHighRiskHistory
+                    |> enterResultLater ( 38, 0 ) 3 (enterUrineProtein ProteinPlus1)
+                    |> .afterEntry
+                    |> preeclampsiaFoundAndRisks
+                    |> Expect.equal ( True, [] )
+
+        -- Marginal 145/95 at the visit with protein +1 read immediately; the
+        -- recheck 150/95 on the Lab Results page gives hypertension after
+        -- recheck, and with the protein, moderate preeclampsia.
+        , test "blood pressure recheck at 38 weeks finding moderate preeclampsia: no risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withMarginalVitals
+                    |> withUrineProtein ProteinPlus1
+                    |> enterResultLater ( 38, 0 ) 0 (enterRecheck 150 95)
+                    |> .afterEntry
+                    |> preeclampsiaFoundAndRisks
+                    |> Expect.equal ( True, [] )
+        , test "blood pressure recheck at 38 weeks finding severe preeclampsia (recheck 165/115, protein +1, right upper quadrant tenderness): no risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withMarginalVitals
+                    |> withUrineProtein ProteinPlus1
+                    |> withSeverePreeclampsiaSigns
+                    |> enterResultLater ( 38, 0 ) 0 (enterRecheck 165 115)
+                    |> .afterEntry
+                    |> preeclampsiaFoundAndRisks
+                    |> Expect.equal ( True, [] )
+
+        -- The recheck also gives hypertension, so today high risk shows and
+        -- hides the moderate risk from history. Taking high risk away must
+        -- not let the moderate risk surface in its place.
+        , test "blood pressure recheck at 38 weeks finding moderate preeclampsia, more than 10 years since the last delivery: neither high nor moderate risk stays beside preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withMarginalVitals
+                    |> withUrineProtein ProteinPlus1
+                    |> withModerateRiskHistory
+                    |> enterResultLater ( 38, 0 ) 0 (enterRecheck 150 95)
+                    |> .afterEntry
+                    |> preeclampsiaFoundAndRisks
+                    |> Expect.equal ( True, [] )
+        ]
+
+
+{-| Today's behaviour before week 37, pinned: the [20, 37) preeclampsia
+diagnoses already keep the risk diagnoses off, and hypertension or history
+alone still give them.
+-}
+preeclampsiaRiskBefore37Test : Test
+preeclampsiaRiskBefore37Test =
+    describe "preeclampsia risk: before 37 weeks"
+        [ test "Before 37 weeks, preeclampsia and the risk diagnoses behave as today" <|
+            -- Moderate preeclampsia at 36 weeks 6 days, the last day before
+            -- the EGA 37+ variants, with preeclampsia at a previous pregnancy.
+            \_ ->
+                moderatePreeclampsiaByProteinVisit
+                    |> withHighRiskHistory
+                    |> diagnoseVisitAt ( 36, 6 )
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisModeratePreeclampsiaInitialPhase ], [] )
+        , test "guard: the issue's severe preeclampsia visit at 28 weeks gives severe preeclampsia and no risk" <|
+            \_ ->
+                diagnoseVisitAt ( 28, 0 ) severePreeclampsiaVisit
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisSeverePreeclampsiaInitialPhase ], [] )
+        , test "guard: headache with blurred vision at 28 weeks, more than 10 years since the last delivery, gives severe preeclampsia and no moderate risk" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withDangerSigns (EverySet.singleton HeadacheBlurredVision)
+                    |> withModerateRiskHistory
+                    |> diagnoseVisitAt ( 28, 0 )
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisSeverePreeclampsiaInitialPhase ], [] )
+        , test "guard: a later urine result completing moderate preeclampsia at 36 weeks 6 days leaves no risk beside it" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 165 115
+                    |> withPendingUrineDipstick
+                    |> enterResultLater ( 36, 6 ) 0 (enterUrineProtein ProteinPlus1)
+                    |> .afterEntry
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisModeratePreeclampsiaRecurrentPhase ], [] )
+        , test "guard: a blood pressure recheck finding moderate preeclampsia at 28 weeks leaves no risk beside it" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withMarginalVitals
+                    |> withUrineProtein ProteinPlus1
+                    |> enterResultLater ( 28, 0 ) 0 (enterRecheck 150 95)
+                    |> .afterEntry
+                    |> preeclampsiaAndRisks
+                    |> Expect.equal ( [ DiagnosisModeratePreeclampsiaRecurrentPhase ], [] )
+        , test "guard: 165/115 alone at 36 weeks 6 days gives gestational hypertension and high risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 165 115
+                    |> diagnoseVisitAt ( 36, 6 )
+                    |> membership [ DiagnosisGestationalHypertensionImmediate, DiagnosisHighRiskOfPreeclampsiaInitialPhase ]
+                    |> Expect.equal [ ( DiagnosisGestationalHypertensionImmediate, True ), ( DiagnosisHighRiskOfPreeclampsiaInitialPhase, True ) ]
+        , test "guard: more than 10 years since the last delivery at 28 weeks gives moderate risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withModerateRiskHistory
+                    |> diagnoseVisitAt ( 28, 0 )
+                    |> presentOf preeclampsiaRiskDiagnoses
+                    |> Expect.equal [ DiagnosisModerateRiskOfPreeclampsia ]
+        ]
+
+
+preeclampsiaRiskHypertensionAt37PlusTest : Test
+preeclampsiaRiskHypertensionAt37PlusTest =
+    let
+        highRisk set =
+            not <|
+                List.isEmpty
+                    (presentOf [ DiagnosisHighRiskOfPreeclampsiaInitialPhase, DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ] set)
+    in
+    describe "preeclampsia risk: high blood pressure without preeclampsia at 37 weeks or later"
+        [ test "At 37 weeks or later, high blood pressure without preeclampsia or eclampsia still gives high risk of preeclampsia, as today" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 165 115
+                    |> diagnoseVisitAt ( 38, 0 )
+                    |> membership [ DiagnosisGestationalHypertensionImmediate, DiagnosisHighRiskOfPreeclampsiaInitialPhase ]
+                    |> Expect.equal [ ( DiagnosisGestationalHypertensionImmediate, True ), ( DiagnosisHighRiskOfPreeclampsiaInitialPhase, True ) ]
+        , test "165/115 at exactly 37 weeks 0 days: high risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 165 115
+                    |> diagnoseVisitAt ( 37, 0 )
+                    |> highRisk
+                    |> Expect.equal True
+
+        -- Protein 0 is a urine result that rules preeclampsia out; it must
+        -- not be read as preeclampsia found.
+        , test "165/115 at 38 weeks with urine protein 0 (immediate result): high risk of preeclampsia, no preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 165 115
+                    |> withUrineProtein Protein0
+                    |> diagnoseVisitAt ( 38, 0 )
+                    |> (\set -> ( presentOf allPreeclampsiaDiagnoses set, highRisk set ))
+                    |> Expect.equal ( [], True )
+
+        -- The urine is sent to the lab and no result is in yet: nothing has
+        -- found preeclampsia, so the high risk stands.
+        , test "165/115 at 38 weeks with the urine result still pending: high risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 165 115
+                    |> withPendingUrineDipstick
+                    |> diagnoseVisitAt ( 38, 0 )
+                    |> highRisk
+                    |> Expect.equal True
+        , test "a later urine result of protein 0 at 38 weeks: the high risk from 165/115 stays" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 165 115
+                    |> withPendingUrineDipstick
+                    |> enterResultLater ( 38, 0 ) 3 (enterUrineProtein Protein0)
+                    |> .afterEntry
+                    |> highRisk
+                    |> Expect.equal True
+        , test "a blood pressure recheck of 150/95 at 38 weeks with no protein or edema: high risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withMarginalVitals
+                    |> enterResultLater ( 38, 0 ) 0 (enterRecheck 150 95)
+                    |> .afterEntry
+                    |> highRisk
+                    |> Expect.equal True
+        , test "guard: preeclampsia at a previous pregnancy at 38 weeks, normal blood pressure: high risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 120 80
+                    |> withHighRiskHistory
+                    |> diagnoseVisitAt ( 38, 0 )
+                    |> highRisk
+                    |> Expect.equal True
+        , test "guard: more than 10 years since the last delivery at 38 weeks, normal blood pressure: moderate risk of preeclampsia" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 120 80
+                    |> withModerateRiskHistory
+                    |> diagnoseVisitAt ( 38, 0 )
+                    |> presentOf preeclampsiaRiskDiagnoses
+                    |> Expect.equal [ DiagnosisModerateRiskOfPreeclampsia ]
+        ]
+
+
+{-| The emergency warning lists the diagnoses a save added that require an
+emergency referral: at the visit, `Pages.Prenatal.Encounter.Utils`' list; on
+the Lab Results page, `Pages.Prenatal.RecurrentActivity.Utils`'. The hospital
+referral reads the diagnoses stored on the encounter. Both are pinned to what
+they show today.
+-}
+preeclampsiaRiskReferralUnchangedTest : Test
+preeclampsiaRiskReferralUnchangedTest =
+    let
+        -- A first visit's save adds its whole diagnosis set.
+        riskVisitWarning ega measurements =
+            diagnoseVisitAt ega measurements
+                |> EverySet.toList
+                |> List.filter Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferal
+
+        visitReferral ega measurements =
+            let
+                stored =
+                    diagnoseVisitAt ega measurements
+            in
+            visitAssembled ega [] stored measurements
+                |> diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial
+                |> EverySet.toList
+
+        riskLabResultsWarning result =
+            addedByLateResult result
+                |> List.filter Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal
+
+        labResultsReferral ega measurementsAfterEntry result =
+            visitAssembled ega [] result.afterEntry measurementsAfterEntry
+                |> diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseRecurrent
+                |> EverySet.toList
+
+        laterUrineVisit =
+            emptyPrenatalMeasurements
+                |> withVitals 165 115
+                |> withPendingUrineDipstick
+
+        recheckVisit =
+            emptyPrenatalMeasurements
+                |> withMarginalVitals
+                |> withUrineProtein ProteinPlus1
+                |> withSeverePreeclampsiaSigns
+    in
+    describe "preeclampsia risk: emergency warning and hospital referral"
+        [ test "The emergency warning and the hospital referral are the same as today" <|
+            -- The issue's visit: the warning names severe preeclampsia only,
+            -- and Next Steps refers to hospital for it.
+            \_ ->
+                ( riskVisitWarning ( 38, 0 ) severePreeclampsiaVisit, visitReferral ( 38, 0 ) severePreeclampsiaVisit )
+                    |> Expect.equal
+                        ( [ DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ]
+                        , [ DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ]
+                        )
+        , test "moderate preeclampsia at 38 weeks: warning and referral name moderate preeclampsia" <|
+            \_ ->
+                ( riskVisitWarning ( 38, 0 ) moderatePreeclampsiaByProteinVisit, visitReferral ( 38, 0 ) moderatePreeclampsiaByProteinVisit )
+                    |> Expect.equal
+                        ( [ DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ]
+                        , [ DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ]
+                        )
+        , test "convulsions and 165/115 at 28 weeks: warning and referral name eclampsia" <|
+            \_ ->
+                let
+                    visit =
+                        emptyPrenatalMeasurements
+                            |> withDangerSigns (EverySet.singleton Convulsions)
+                            |> withVitals 165 115
+                in
+                ( riskVisitWarning ( 28, 0 ) visit, visitReferral ( 28, 0 ) visit )
+                    |> Expect.equal ( [ DiagnosisEclampsia ], [ DiagnosisEclampsia ] )
+        , test "later urine result at 38 weeks: the Lab Results warning and referral name moderate preeclampsia" <|
+            \_ ->
+                let
+                    result =
+                        enterResultLater ( 38, 0 ) 3 (enterUrineProtein ProteinPlus1) laterUrineVisit
+                in
+                ( riskLabResultsWarning result
+                , labResultsReferral ( 38, 0 ) (enterUrineProtein ProteinPlus1 laterUrineVisit) result
+                )
+                    |> Expect.equal
+                        ( [ DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ]
+                        , [ DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ]
+                        )
+        , test "blood pressure recheck at 38 weeks finding severe preeclampsia: the Lab Results warning and referral name severe preeclampsia" <|
+            \_ ->
+                let
+                    result =
+                        enterResultLater ( 38, 0 ) 0 (enterRecheck 165 115) recheckVisit
+                in
+                ( riskLabResultsWarning result
+                , labResultsReferral ( 38, 0 ) (enterRecheck 165 115 recheckVisit) result
+                )
+                    |> Expect.equal
+                        ( [ DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ]
+                        , [ DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ]
+                        )
+        , test "guard: no preeclampsia risk diagnosis brings up the emergency warning, at the visit or on the Lab Results page" <|
+            \_ ->
+                List.filter
+                    (\diagnosis ->
+                        Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferal diagnosis
+                            || Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal diagnosis
+                    )
+                    preeclampsiaRiskDiagnoses
+                    |> Expect.equal []
         ]
