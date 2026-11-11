@@ -151,10 +151,10 @@ all =
 
 
 {-| What the form saves as the national ID for the text typed into the field:
-`Err` when the form refuses it. The form is filled for an adult; `person` is
+`Err` with the refused fields when the form does not save. The form is filled for an adult; `person` is
 the one it takes the address and health centre from.
 -}
-savedNationalIdOn : ParticipantDirectoryOperation -> Person -> Site -> String -> Result () (Maybe String)
+savedNationalIdOn : ParticipantDirectoryOperation -> Person -> Site -> String -> Result (List String) (Maybe String)
 savedNationalIdOn operation person site typed =
     let
         related =
@@ -177,21 +177,23 @@ savedNationalIdOn operation person site typed =
         , ( Backend.Person.Form.nationalIdNumber, Form.Field.string typed )
         ]
         (validatePerson site (Just related) operation (Just (date 2026 Nov 5)))
-        |> Form.getOutput
-        |> Maybe.map .nationalIdNumber
-        |> Result.fromMaybe ()
+        |> (\form ->
+                Form.getOutput form
+                    |> Maybe.map .nationalIdNumber
+                    |> Result.fromMaybe (fieldsWithErrors form)
+           )
 
 
 {-| Registering an adult for a child.
 -}
-savedNationalId : Site -> String -> Result () (Maybe String)
+savedNationalId : Site -> String -> Result (List String) (Maybe String)
 savedNationalId =
     savedNationalIdOn (CreatePerson (Just (toEntityUuid "related-person"))) relatedChild
 
 
 {-| Editing an adult.
 -}
-savedNationalIdOnEdit : Site -> String -> Result () (Maybe String)
+savedNationalIdOnEdit : Site -> String -> Result (List String) (Maybe String)
 savedNationalIdOnEdit =
     savedNationalIdOn (EditPerson (toEntityUuid "edited-person")) relatedAdult
 
@@ -244,11 +246,23 @@ nationalIdNumberSaved =
               , test "Rwanda: 15 digits are refused" <|
                     \_ ->
                         savedNationalId SiteRwanda "119908001234567"
-                            |> Expect.equal (Err ())
+                            |> Expect.equal (Err [ Backend.Person.Form.nationalIdNumber ])
               , test "Rwanda: free text is refused" <|
                     \_ ->
                         savedNationalId SiteRwanda "12/345"
-                            |> Expect.equal (Err ())
+                            |> Expect.equal (Err [ Backend.Person.Form.nationalIdNumber ])
+              , test "Rwanda: a field holding only spaces saves no ID" <|
+                    \_ ->
+                        savedNationalId SiteRwanda "   "
+                            |> Expect.equal (Ok Nothing)
+              , test "Rwanda: editing a person saves 16 digits without the spaces around them" <|
+                    \_ ->
+                        savedNationalIdOnEdit SiteRwanda " 1199080012345678 "
+                            |> Expect.equal (Ok (Just "1199080012345678"))
+              , test "Rwanda: editing a person refuses 15 digits" <|
+                    \_ ->
+                        savedNationalIdOnEdit SiteRwanda "119908001234567"
+                            |> Expect.equal (Err [ Backend.Person.Form.nationalIdNumber ])
               , test "Rwanda: an empty field saves no ID" <|
                     \_ ->
                         savedNationalId SiteRwanda ""

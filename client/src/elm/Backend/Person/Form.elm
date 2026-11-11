@@ -514,7 +514,8 @@ validateContact site =
     andThen withFirstName (field firstName (oneOf [ string, emptyString ]))
 
 
-{-| A text value without the spaces around it.
+{-| A text value without the spaces around it. Text of spaces only gives an
+empty string, so use it under `nullable`, which turns that into no value.
 -}
 trimmedString : Validation e String
 trimmedString =
