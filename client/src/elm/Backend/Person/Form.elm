@@ -1,4 +1,4 @@
-module Backend.Person.Form exposing (ContactForm, PersonForm, applyDefaultValuesForPerson, birthDate, birthDateEstimated, cell, district, educationLevel, emptyContactForm, emptyCreateForm, emptyEditForm, expectedAgeByForm, firstName, gender, healthCenter, hivStatus, hmisNumber, maritalStatus, modeOfDelivery, nationalIdNumber, nextOfKinName, nextOfKinPhoneNumber, phoneNumber, photo, province, saveGPSLocation, secondName, sector, spouseName, spousePhoneNumber, ubudehe, validateContact, validatePerson, village)
+module Backend.Person.Form exposing (ContactForm, PersonForm, applyDefaultValuesForPerson, birthDate, birthDateEstimated, cell, district, educationLevel, emptyContactForm, emptyCreateForm, emptyEditForm, expectedAgeByForm, firstName, gender, healthCenter, hivStatus, hmisNumber, maritalStatus, modeOfDelivery, nationalIdNumber, nextOfKinName, nextOfKinPhoneNumber, phoneNumber, photo, province, saveGPSLocation, secondName, sector, spouseName, spousePhoneNumber, ubudehe, validateContact, validateNationalIdNumberForSite, validatePerson, village)
 
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
@@ -415,24 +415,12 @@ validatePerson site maybeRelated operation maybeCurrentDate =
                                             Nothing ->
                                                 ExpectAdultOrChild
                                    )
-
-                nationalIdNumberValidator =
-                    case site of
-                        SiteBurundi ->
-                            nullable string
-
-                        -- @todo - needs validation?
-                        SiteSomalia ->
-                            nullable string
-
-                        _ ->
-                            validateNationalIdNumber
             in
             succeed Person
                 |> andMap (succeed (generateFullName firstNameValue secondNameValue))
                 |> andMap (succeed <| String.trim firstNameValue)
                 |> andMap (succeed <| String.trim secondNameValue)
-                |> andMap (field nationalIdNumber nationalIdNumberValidator)
+                |> andMap (field nationalIdNumber (validateNationalIdNumberForSite site))
                 |> andMap (field hmisNumber validateHmisNumber)
                 |> andMap (field photo <| nullable string)
                 |> andMap (succeed birthDate_)
@@ -508,6 +496,26 @@ validateContact site =
                 |> andMap (succeed Nothing)
     in
     andThen withFirstName (field firstName (oneOf [ string, emptyString ]))
+
+
+{-| Burundi and Somalia take any text as the ID, saved without the spaces
+around it. Other sites require 16 digits.
+-}
+validateNationalIdNumberForSite : Site -> Validation ValidationError (Maybe String)
+validateNationalIdNumberForSite site =
+    let
+        freeText =
+            nullable (Form.Validate.map String.trim string)
+    in
+    case site of
+        SiteBurundi ->
+            freeText
+
+        SiteSomalia ->
+            freeText
+
+        _ ->
+            validateNationalIdNumber
 
 
 validateNationalIdNumber : Validation ValidationError (Maybe String)

@@ -16,6 +16,7 @@ import Backend.Person.Form
         ( birthDate
         , educationLevel
         , maritalStatus
+        , validateNationalIdNumberForSite
         , validatePerson
         )
 import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), Person)
@@ -137,13 +138,78 @@ relatedChild =
 
 all : Test
 all =
-    describe "Child birth-date range"
-        [ wellChildEarliestDate
-        , sameRangeForEveryChildPicker
-        , everyOfferedDateSavesAsChild
-        , exactThirteenYearsSavesAsAdult
-        , graduatingAgeUnchanged
+    describe "Person registration"
+        [ describe "Child birth-date range"
+            [ wellChildEarliestDate
+            , sameRangeForEveryChildPicker
+            , everyOfferedDateSavesAsChild
+            , exactThirteenYearsSavesAsAdult
+            , graduatingAgeUnchanged
+            ]
+        , nationalIdNumberSaved
         ]
+
+
+{-| What the registration and edit forms save as the national ID, for the
+text typed into the field.
+-}
+savedNationalId : Site -> String -> Result () (Maybe String)
+savedNationalId site typed =
+    validateNationalIdNumberForSite site (Form.Field.string typed)
+        |> Result.mapError (always ())
+
+
+{-| Burundi and Somalia take any text as the ID. The spaces around it are
+not saved, because the ID search matches from the start of the saved value.
+Rwanda requires exactly 16 digits.
+-}
+nationalIdNumberSaved : Test
+nationalIdNumberSaved =
+    let
+        freeTextSites =
+            [ ( "Burundi", SiteBurundi ), ( "Somalia", SiteSomalia ) ]
+
+        onFreeTextSites description typed expected =
+            List.map
+                (\( name, site ) ->
+                    test (name ++ ": " ++ description) <|
+                        \_ ->
+                            savedNationalId site typed
+                                |> Expect.equal (Ok expected)
+                )
+                freeTextSites
+    in
+    describe "the national ID saved" <|
+        List.concat
+            [ onFreeTextSites "a leading space is not saved" " 12/345" (Just "12/345")
+            , onFreeTextSites "a trailing space is not saved" "12/345 " (Just "12/345")
+            , onFreeTextSites "spaces at both ends, tabs and line breaks are not saved" " \t12/345 \n" (Just "12/345")
+            , onFreeTextSites "spaces inside the ID are kept" " 12 345/A " (Just "12 345/A")
+            , onFreeTextSites "an ID without outer spaces is saved as typed" "12/345" (Just "12/345")
+            , onFreeTextSites "a field holding only spaces saves no ID" "   " Nothing
+            , onFreeTextSites "an empty field saves no ID" "" Nothing
+            , [ test "Rwanda: 16 digits are saved" <|
+                    \_ ->
+                        savedNationalId SiteRwanda "1199080012345678"
+                            |> Expect.equal (Ok (Just "1199080012345678"))
+              , test "Rwanda: 16 digits with spaces around them are saved without the spaces" <|
+                    \_ ->
+                        savedNationalId SiteRwanda " 1199080012345678 "
+                            |> Expect.equal (Ok (Just "1199080012345678"))
+              , test "Rwanda: 15 digits are refused" <|
+                    \_ ->
+                        savedNationalId SiteRwanda "119908001234567"
+                            |> Expect.equal (Err ())
+              , test "Rwanda: free text is refused" <|
+                    \_ ->
+                        savedNationalId SiteRwanda "12/345"
+                            |> Expect.equal (Err ())
+              , test "Rwanda: an empty field saves no ID" <|
+                    \_ ->
+                        savedNationalId SiteRwanda ""
+                            |> Expect.equal (Ok Nothing)
+              ]
+            ]
 
 
 {-| Criterion: when registering a child for Well Child, the earliest birth
