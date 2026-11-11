@@ -737,3 +737,33 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** while a recorded visit ran in the background, two `until … grep` waiters each hit the Bash limit and became background tasks of their own.
 - **Wrong conclusion:** waiting in a foreground loop is how to get the result.
 - **Rule:** the same pit as "A long chain of driver commands in one Bash call". A run started with `run_in_background` sends its own notice; wait for it and start no waiter.
+
+## Overlaying a stacked PR's files onto a develop that moved on
+
+- **Symptom:** the PR's branch was cut before develop merged another PR that changed the same two Elm files.
+- **Wrong conclusion:** checking the PR's files out over develop gives the PR's build, and develop is its control.
+- **Rule:** build both trees with `git merge-tree --write-tree origin/develop origin/<branch>` (and the parent branch for a stacked PR), check the files out from those trees, and use develop plus the parent as the control.
+
+## `endPrenatalEncounter` returning on a disabled End Encounter
+
+- **Symptom:** the next day's Subsequent Antenatal button stayed disabled; the earlier visit's `field_scheduled_date` end was still NULL.
+- **Wrong conclusion:** the helper ended the visit, so the later visit can start.
+- **Rule:** the helper force-clicks End Encounter, so a disabled button passes silently. Check the stored end; end a fixture visit with `backdatePrenatalEncounter(name, days)` after upload.
+
+## `completeTreatmentReview` answers Yes to missed doses and adverse events
+
+- **Symptom:** on a later visit's Hypertension Medication tab, a hospital-referral question appeared and Save stayed off; the helper timed out.
+- **Wrong conclusion:** Treatment Review is broken.
+- **Rule:** the helper says Yes to every question. Answer `missed-doses` and `adverse-events` No by hand, and re-scan the form after each answer.
+
+## Reading a checkbox's state from the wrapper class
+
+- **Symptom:** a check that "Hypertension before pregnancy" was ticked failed, though the screen showed it ticked.
+- **Wrong conclusion:** the click missed.
+- **Rule:** Medical History's `.ui.checkbox` wrapper carries no `checked` class. Read `qa.state().choices` (`(x) …`).
+
+## Giving `qa.sh record start` a name with the prefix
+
+- **Symptom:** the video came out as `qa-2511-qa-2511-test1-….mp4`.
+- **Wrong conclusion:** none; the file had to be renamed.
+- **Rule:** the driver adds `qa-<pr>-` itself; pass only `test<n>-<name>`.

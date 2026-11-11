@@ -300,14 +300,24 @@ flag simply does not appear.
   `gestational-hypertension-immediate`. Next Steps then has Medication Distribution, which `completeNextSteps` fills.
 - Severe preeclampsia fixture: `completeExamination(page, { vitals: { sys: '165', dia: '115' } })`, then reopen Examination from Completed →
   Core Physical Exam → "Tender to Palpation right upper" (ticking it unticks Normal) → Save. At 28 w and at 37 w that visit stores
-  `gestational-hypertension-immediate` + `high-risk-of-preeclampsia-initial` until a protein result arrives.
+  `gestational-hypertension-immediate` until a protein result arrives (before #2511 also `high-risk-of-preeclampsia-initial`).
+- High risk of preeclampsia comes from chronic hypertension only (before 20 w, at the visit, the recheck or an earlier visit) since #2511;
+  gestational hypertension alone gives none. "Hypertension before pregnancy" in Medical History, twins, diabetes and previous preeclampsia still do.
+  Medication Distribution's hypertension header reads "Chronic hypertension" or "Pregnancy-Induced hypertension".
 - Prenatal Urine Dipstick tab: performed Yes → `immediate-result` (first label Point of Care, or Lab) → Short Dip. Point of Care
   shows three selects: protein, pH, glucose; protein and glucose share the options 0, +1 … +4. Lab Results shows the same selects.
   At 37 w+ a point-of-care result that diagnoses an emergency jumps to Next Steps behind the warning, leaving the other lab tabs unasked.
 - Eclampsia fixture: Dating, History, Examination, then Danger Signs "Convulsions" (no other activity needed). After 165/115 it also gives high risk
   of preeclampsia on develop; gestational hypertension is not stored beside eclampsia.
 - Moderate risk of preeclampsia from BMI: reopen Examination from Completed → Nutrition Assessment → weight 80 (height 160 from the helper) → Save.
-  BMI 31 gives moderate risk on its own; with 165/115 only high risk is stored.
+  BMI 31 gives moderate risk on its own, also beside gestational hypertension at 28 w (since #2511), with Aspirin. Beside chronic hypertension only high risk is stored.
+- "Hypertension before pregnancy": after `completeHistory`, reopen History from Completed → Medical History tab → tick it (it unticks that group's
+  None of the above) → Save. `.ui.checkbox` wrappers carry no `checked` class; read `qa.state().choices`.
+- Two-visit fixture: earlier visit on a page clock 14 days back, upload, `backdatePrenatalEncounter(name, 14)` to end it, sync, reload, then
+  Subsequent Antenatal today. A later visit after hypertension has Treatment Review (Prenatal Medication, Hypertension Medication: still taking,
+  missed doses, adverse events; adverse Yes adds a hospital-referral question). Its Medication Distribution reads "previously diagnosed with
+  Hypertension … remain unchanged" and lists Carvedilol/Amlodipine steps; the report adds "(continued)".
+- With Healthy Start on, End Encounter stayed disabled after the full first-visit helper chain (Ultrasound, Malaria Prevention, Photo left in To Do).
 - Same-day vitals recheck: visit 145/95, Next Steps ends on Wait › Pause; then Case Management › ANC Labs › the entry › Examination
   (`completeRecurrentExamination(page, { sys, dia })`). Recheck 145/95 stores `gestational-hypertension-recheck` at 20 w+, `chronic-hypertension-recheck`
   below; Next Steps › Medication Distribution offers Methyldopa. 165/100 schedules no recheck.
@@ -701,6 +711,8 @@ flag simply does not appear.
   goto does not reload. Measurements and visits then carry that date, and the backend stores
   it. The service worker keeps the real date (see pitfalls); `page.clock` must not be used.
   A shift of more than a year into the past works. Queued saves still upload once the offset is back to 0.
+- A PR whose branch is behind develop, or stacked on another PR: build its tree with `git merge-tree --write-tree origin/develop origin/<branch>`
+  and `git checkout <tree> -- <files>`; the control tree merges develop with the parent branch.
 - The main tree starts a run on `develop`, so a develop control is cheapest before the overlay:
   record it on the served build, then overlay and wait for gulp once. For a change only to what a page shows, one fixture can
   serve both builds: overlay, build and read on the PR, restore the files (needed anyway), wait for gulp, activate the update in the same driver, read again.
