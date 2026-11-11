@@ -4813,7 +4813,9 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     $start_date_obj = $encounter_data['start_date_obj'];
 
     // Try to resolve age in months at a time encounter was performed.
-    $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
+    $encounter_data['age_in_months'] = $birth_date_obj ? hedley_reports_age_in_months_reached($birth_date_obj, $start_date_obj) : NULL;
+    // The app's NCDA check counts whole months without the month-end rule.
+    $encounter_data['age_in_months_for_ncda'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
     $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
 
     [$encounter_data['vaccination_history'], $encounter_data['vaccination_progress']] = hedley_reports_well_child_generate_vaccination_progress_data($scoreboard_immunisations, $encounter_data);
@@ -5330,7 +5332,7 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
   }
   // Nurse SPV encounters.
   else {
-    if (hedley_reports_ncda_expected($age_in_months, $start_date_obj)) {
+    if (hedley_reports_ncda_expected($encounter_data['age_in_months_for_ncda'], $start_date_obj)) {
       $expected[] = 'well_child_ncda';
     }
   }
@@ -5435,7 +5437,7 @@ function hedley_reports_well_child_generate_expected_ecd_signs(array $encounter_
     return [];
   }
 
-  $age_in_months = ($interval->y * 12) + $interval->m;
+  $age_in_months = hedley_reports_age_in_months_reached($birth_date_obj, $start_date_obj);
 
   $last_ecd_assessment_date = NULL;
   $previous_encounters_data = array_reverse($encounter_data['previous_encounters_data']);
@@ -5450,8 +5452,7 @@ function hedley_reports_well_child_generate_expected_ecd_signs(array $encounter_
   $age_in_months_at_last_assessment = NULL;
   if (!empty($last_ecd_assessment_date)) {
     $last_ecd_assessment_date_obj = new DateTime($last_ecd_assessment_date);
-    $interval = $last_ecd_assessment_date_obj->diff($birth_date_obj, TRUE);
-    $age_in_months_at_last_assessment = ($interval->y * 12) + $interval->m;
+    $age_in_months_at_last_assessment = hedley_reports_age_in_months_reached($birth_date_obj, $last_ecd_assessment_date_obj);
   }
 
   $grouped_ecd_signs = hedley_reports_well_child_generate_grouped_ecd_signs($age_in_months, $age_in_months_at_last_assessment);
@@ -5753,7 +5754,7 @@ function hedley_reports_well_child_get_expected_immunisation_activities(array $e
       // All 3 doses of DTP were given, it has passed at least 28 days since
       // third dose, and, child is at last 18 months old.
       if (!empty($vaccination_progress['dtp']['dose-3'])) {
-        $age_in_months = ($interval->y * 12) + $interval->m;
+        $age_in_months = hedley_reports_age_in_months_reached($birth_date_obj, $start_date_obj);
         $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
         $interval = $start_date_obj->diff($third_dose_date_obj, TRUE);
         $days_since_third_dose = $interval->days;
@@ -6469,7 +6470,7 @@ function hedley_reports_child_scoreboard_get_expected_immunisation_activities(ar
     // All 3 doses of DTP were given, it has passed at least 28 days since
     // third dose, and, child is at last 18 months old.
     if (!empty($vaccination_progress['dtp']['dose-3'])) {
-      $age_in_months = ($interval->y * 12) + $interval->m;
+      $age_in_months = hedley_reports_age_in_months_reached($birth_date_obj, $start_date_obj);
       $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
       $interval = $start_date_obj->diff($third_dose_date_obj, TRUE);
       $days_since_third_dose = $interval->days;
@@ -10707,6 +10708,35 @@ function hedley_reports_recurrent_test_required($last_date, DateTime $encounter_
   $diff_months = ($interval->y * 12) + $interval->m;
 
   return $diff_months >= $period_between_tests;
+}
+
+/**
+ * Whole months from birth, as the app's age checks count them.
+ *
+ * A month is reached on its month-end day: born 31 March,
+ * 6 months on 30 September.
+ *
+ * @param DateTime $birth_date_obj
+ *   The birth date.
+ * @param DateTime $date_obj
+ *   The date to count to.
+ *
+ * @return int
+ *   The age in months.
+ */
+function hedley_reports_age_in_months_reached(DateTime $birth_date_obj, DateTime $date_obj) {
+  [$birth_year, $birth_month, $birth_day] = array_map('intval', explode('-', $birth_date_obj->format('Y-n-j')));
+  [$year, $month, $day] = array_map('intval', explode('-', $date_obj->format('Y-n-j')));
+
+  $whole_months = ($year - $birth_year) * 12 + $month - $birth_month - ($day < $birth_day ? 1 : 0);
+
+  // The next monthly anniversary, moved back to its month's last day when
+  // that month is shorter.
+  $next_month_index = $birth_year * 12 + $birth_month + $whole_months;
+  $next_month_start = new DateTime(sprintf('%04d-%02d-01', intdiv($next_month_index, 12), $next_month_index % 12 + 1));
+  $next_anniversary = $next_month_start->format('Y-m-') . sprintf('%02d', min($birth_day, (int) $next_month_start->format('t')));
+
+  return $next_anniversary === $date_obj->format('Y-m-d') ? $whole_months + 1 : $whole_months;
 }
 
 /**

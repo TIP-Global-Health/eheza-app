@@ -677,3 +677,51 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** every recorded row ended with the filter just pressed, and the checked name sat far below the 1024 px view in the Home Visit list (16 QA entries in front of it).
 - **Wrong conclusion:** a passing `qa.check` makes the video the evidence for that row. It showed only other people's entries.
 - **Rule:** finish a recorded list check by scrolling the entry into view and holding a second or two, and look at the last frame before the next fixture. Case Management lists keep every past run's entries, so the row under test is rarely above the fold.
+
+## Restarting the driver fresh before the develop fixtures uploaded
+
+- **Symptom:** a develop control (37 weeks, dipstick read at the visit) was missing from the server's diagnoses query; the other controls were there.
+- **Wrong conclusion:** the save failed, or develop drops the encounter.
+- **Rule:** `qa.sh start --fresh` throws the old profile away, queued uploads included. Before restarting to load the PR build, `syncAndWait` and confirm Remaining for Upload: 0.
+
+## A Next Steps page that opens behind a diagnosis popup
+
+- **Symptom:** `qa.click('.icon-back')` on prenatal Next Steps timed out: "`<div class="overlay">` intercepts pointer events".
+- **Wrong conclusion:** the page hung, or the save broke.
+- **Rule:** prenatal Next Steps (visit and Lab Results) opens behind a "Patient shows signs of …" popup whenever a diagnosis is made, emergency or not. Press its CONTINUE before any other click.
+
+## Taking "the last row of a type" as the fixture's record
+
+- **Symptom:** a probe of the newest `core_physical_exam` and `vitals` rows showed a normal abdomen and 120/80, against a fixture saved with tenderness and 165/115.
+- **Wrong conclusion:** the form did not save what was entered.
+- **Rule:** `shards` holds every Nyange patient, in no useful order. Find the person by label, then filter rows by `person`.
+
+## Filling the dipstick result by its option labels
+
+- **Symptom:** a filler that chose "+1" in every select holding a "+1" option also set glucose to +1.
+- **Wrong conclusion:** none here; the diagnoses happened not to depend on it, but the control did not match the PR fixture.
+- **Rule:** prenatal Urine Dipstick protein and glucose selects have the same options (0, +1 … +4). Pick each select by its position (protein, pH, glucose) or its label.
+
+## Reading the service worker's cache by a bare path
+
+- **Symptom:** a check that the browser runs the PR build read `caches.match('/Main.js')` and got "no cache entry".
+- **Wrong conclusion:** the page is not running a cached build, or the overlay never reached the browser.
+- **Rule:** the precache key carries `?__WB_REVISION__=<hash>`. Walk every cache's keys for `Main.js` and test that body for the overlay's name.
+
+## Waiting on a result file inside one long Bash call (met again)
+
+- **Symptom:** a `timeout 600 … until [ -s file ]` wait was moved to the background after 180 s, its summary lost.
+- **Wrong conclusion:** none here, but the same pit as "A long chain of driver commands in one Bash call".
+- **Rule:** cap each wait at about 175 s and repeat it, or rely on the background task's completion notice.
+
+## Expecting both immunisation answers to stay on screen after "will receive today? Yes"
+
+- **Symptom:** a develop control's check that DTP showed "prior to today? No" and "today? Yes" failed: only the today question was left.
+- **Wrong conclusion:** develop dropped the first answer.
+- **Rule:** the form hides "prior to today?" once "will receive today?" is Yes. Read the form builder's conditions before scripting a check; also, `qa.form().save` reads `enabled` / `disabled`, not `active`.
+
+## A compound shell loop refused by the safety check
+
+- **Symptom:** one Bash call that registered a fixture and ran three recorded tests in a `for` loop with nested `$( … )` was refused as an unreadable `rm` command, though it held no `rm`.
+- **Wrong conclusion:** the command ran, or a workaround is needed.
+- **Rule:** keep driver calls plain: write small runner scripts (`run.sh <name> <prelude> <files…>`) into the scratchpad once, then call them one test per Bash call.
