@@ -10,7 +10,7 @@ metadata:
 
 ⏰ **Monitoring due — raise at the start of the survey on or after the date:** **B-514** 2026-11-19 (rerun the recurrence query in the entry on ihangane + vhw; user 2026-10-29: mention it when process-backlog runs that day) · **B-499** 2026-11-24 (second restore pass; harness lost, rebuild first).
 
-✅ **Merged 2026-11-11 08:49 (by the user), branches deleted:** #2501 (B-576, issue #2500) `b62b080eb` and #2507 (B-571, issue #2503) `22127d310`. Issues stay open until the release sweep. ✅ **#2505 (B-583) merged 2026-11-11 11:32 as `cb63cd4b3`.** ⏳ **#2506 (B-565), `Approved by QA`: develop merged in as `a0ed72653` (11:33), mergeable — merge once its e2e / simpletest CI is green and the user says so.**
+✅ **Merged 2026-11-11 08:49 (user: "merge all the way you see fit"), branches deleted:** #2501 (B-576, issue #2500) `b62b080eb` and #2507 (B-571, issue #2503) `22127d310`. Issues stay open until the release sweep. ✅ **#2505 (B-583) merged 2026-11-11 11:32 as `cb63cd4b3`.** ✅ **#2506 (B-565, issue #2504) merged 2026-11-11 as `086399597`** after CI went green on `a0ed72653`.
 
 🔧 **PR #2511 open 2026-11-11 (B-586, tier 1, issue #2510), STACKED on #2509** (base `B-577-preeclampsia-risk-recurrent`): Prenatal, only chronic hypertension gives high risk of preeclampsia; gestational hypertension no longer does (user decided from the #1529 commit trail; forward only). 26 blind tests failed first. ⏳ Review rounds 1 and 2 owed. ⚠ Reverses #2509's QA scenario "145/95 recheck at 28 weeks → Aspirin". Merge #2509 WITHOUT `--delete-branch`, PATCH #2511 `base=develop`, merge it, then delete the parent branch. Worktrees `B-586-gestational-hypertension-high-risk` and `B-586-tests` held.
 
