@@ -5077,7 +5077,7 @@ present =
 
 preeclampsiaRiskAfterTheVisitTest : Test
 preeclampsiaRiskAfterTheVisitTest =
-    describe "preeclampsia risk found at the recheck or from a later result: Aspirin"
+    describe "preeclampsia risk found at the recheck or from a later result"
         [ riskAtRecheckFrom20WeeksTest
         , riskAtRecheckFrom12To19WeeksTest
         , riskFromLaterResultTest
@@ -5112,7 +5112,7 @@ riskAtRecheckFrom20WeeksTest =
             ( missing (hypertension result), present (risk result) )
     in
     describe "recheck from week 20"
-        [ test "The same holds when gestational hypertension is found at the blood-pressure recheck: no \"high risk of preeclampsia\" and no Aspirin." <|
+        [ test "Gestational hypertension found at the blood-pressure recheck gives no \"high risk of preeclampsia\" and no Aspirin." <|
             -- The issue's reading: 145/95 at a visit at 28 weeks, and again
             -- at the recheck. Nothing else is recorded. The hypertension
             -- itself is still diagnosed and treated.
