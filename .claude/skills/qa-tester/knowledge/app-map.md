@@ -63,6 +63,8 @@ flag simply does not appear.
   Every one holds both centres (`field_health_centers` 4 Nyange, 5 Muhondo); the CHWs hold
   `field_villages` 140 Akanduga and 165 Busake; 163 Buhara and 188 Gahama are unassigned.
   An `entity_metadata_wrapper` save makes a new vid, which the device downloads.
+- Villages by health centre: Akanduga 140 and Buhara 163 are at Nyange (4); Busake 165 and Gahama 188 at Muhondo (5).
+  For two villages of one centre, add 163 to Jojo's `field_villages` (wrapper save, sync), then set back to 140, 165.
 - On the device a nurse is a `nodes` row with `type: 'nurse'`, `label`, `vid`,
   `health_centers` and `villages` (uuids). The location picker lists `p.select-location ~ button.ui.primary.button`.
 - Switching account keeps the device paired: `qa.signIn(pin, location)` goes to the main
@@ -225,7 +227,8 @@ flag simply does not appear.
   Creatinine, Urine Dipstick, HIV, Liver Function, Lipid Panel, HBA1C. Its Random Blood Sugar
   asks performed (`test-performed`) → `immediate-result` (Point of Care / Lab) →
   `patient-fasted` → `test-performed-today`; Lab ends on "update test results via case
-  management". Creatinine: performed → performed today, always to the lab. Urine Dipstick: performed →
+  management". NCD HIV: known positive No → performed Yes → performed today Yes → result select; Positive adds `hiv-program` (5 tasks).
+  Creatinine: performed → performed today, always to the lab. Urine Dipstick: performed →
   performed today → Short Dip / Long Dip. No reveals five why-not reasons. `completeLaboratory` answers
   every tab; to send only some tests, drive their tabs by hand and leave the rest unanswered.
 - NCD recurrent Lab Results: Random Blood Sugar `.form-input.measurement.sugar-count`; Creatinine
@@ -513,6 +516,8 @@ flag simply does not appear.
 - Hold or fail a group save without the server: wrap `XMLHttpRequest.prototype.send` in the page for POST/PATCH `/sw/nodes/<type>` (those go through the service worker, so `page.route` misses them); `client/e2e/group-session-save-button.spec.ts` has `installSaveControls`.
 - Registering a mother and child for a group session (`createMotherOnAttendancePage` + `addChildToMother`) takes about 15 s and reloads the page.
 - The child-data load for one child requests `/sw/nodes/pregnancy-by-newborn/<child uuid>` (`context.on('request')` sees it).
+- CHW TB visit with a follow-up: `startTBEncounter`, `completeDiagnostics` `positive-pulmonary`, `completeMedication`, `completeNextSteps`, `closeReport` if open, `endTBEncounter`.
+  About 40 s, ending on the main menu. HIV is the same chain with `positive-reported`. Both start from the participant page.
 
 ## Patient Record
 
@@ -573,6 +578,11 @@ flag simply does not appear.
 - Listing rows are `.follow-up-entry .name` under the NCD Labs filter. An entry edited on the server
   (performed, completed, `field_date_concluded`) reaches the tablet's `shards` row within seconds
   at syncSpeed idle 5 s; a concluded date 35 days out lists a closed entry again.
+- **CHW panes list residents of the chosen village only**, by its roster (people whose five address fields match). Switching village
+  with `qa.signIn` keeps the in-memory data, so the previous village's people stay loaded: the way to have a non-resident "loaded on the device".
+- CHW Tuberculosis and HIV panes: a TB or HIV encounter's Next Steps Follow Up makes the entry ("Tuberculosis Follow up" / "HIV Follow up").
+  A positive `ncd_hiv_test` or `prenatal_hiv_test` makes an HIV entry too, unless the person has an HIV follow-up (the service worker adds it, `src/js/nodes.js`).
+- Case Management's loads list uuids in the path (`/sw/nodes/tuberculosis_encounter/<uuid>,<uuid>`); `context.on('request')` shows whose data a page asks for.
 - **Each pane decides for itself whether an encounter clears its entry** — read its
   `generate<Type>FollowUpEntryData` and the `limitDate` its view passes
   (`Pages/GlobalCaseManagement/View.elm`) before choosing a pane for a scenario:

@@ -767,3 +767,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the video came out as `qa-2511-qa-2511-test1-….mp4`.
 - **Wrong conclusion:** none; the file had to be renamed.
 - **Rule:** the driver adds `qa-<pr>-` itself; pass only `test<n>-<name>`.
+
+## A name regex that ends with `(?!\w)` on a Case Management entry
+
+- **Symptom:** "Buhara TB pane lists X" failed, though the logged entry read "E2ETest Qa2515XThis monthTuberculosis Follow up".
+- **Wrong conclusion:** the pane does not list X.
+- **Rule:** an entry's `textContent` runs the name straight into the next cell ("…XThis month"). End a name match with `(?!\d)`, as "A substring that also matches longer names" says, not `(?!\w)`.
+
+## A control script that assumes the role an earlier script left
+
+- **Symptom:** the develop control for the CHW's Case Management requests ran as the nurse, and every pane differed from the PR's.
+- **Wrong conclusion:** develop's panes differ from the PR's.
+- **Rule:** the last PR script signed in the nurse, and the build update kept that session. Start every control script with its own `qa.signIn`, and read `session` in the reply before comparing.
+
+## Opening the CHW Dashboard without server statistics
+
+- **Symptom:** a recorded dashboard row waited 60 s on "CHW SNAPSHOT" with a spinner, leaving a dead video.
+- **Wrong conclusion:** the dashboard is broken on this build.
+- **Rule:** app-map already says it needs the health centre's statistics. Before recording, run `hedley_stats_calculate_stats_for_health_center(4)`, sync, and reload.
