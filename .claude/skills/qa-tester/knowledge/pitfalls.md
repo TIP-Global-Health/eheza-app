@@ -725,3 +725,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** one Bash call that registered a fixture and ran three recorded tests in a `for` loop with nested `$( … )` was refused as an unreadable `rm` command, though it held no `rm`.
 - **Wrong conclusion:** the command ran, or a workaround is needed.
 - **Rule:** keep driver calls plain: write small runner scripts (`run.sh <name> <prelude> <files…>`) into the scratchpad once, then call them one test per Bash call.
+
+## Picking a Next Steps tab by its icon
+
+- **Symptom:** a develop control's reader found no Medication Distribution tab after the recheck, so the helper saved the form before its text was read.
+- **Wrong conclusion:** develop offers no medication there. It offered Methyldopa; reopening the saved form from Completed showed it.
+- **Rule:** the recurrent Medication Distribution tab carries no `icon-next-steps-treatment`. Pick Next Steps tabs by label text, and read a form before the step that saves it.
+
+## Starting a waiter on a background driver run
+
+- **Symptom:** while a recorded visit ran in the background, two `until … grep` waiters each hit the Bash limit and became background tasks of their own.
+- **Wrong conclusion:** waiting in a foreground loop is how to get the result.
+- **Rule:** the same pit as "A long chain of driver commands in one Bash call". A run started with `run_in_background` sends its own notice; wait for it and start no waiter.

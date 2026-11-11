@@ -308,6 +308,15 @@ flag simply does not appear.
   of preeclampsia on develop; gestational hypertension is not stored beside eclampsia.
 - Moderate risk of preeclampsia from BMI: reopen Examination from Completed → Nutrition Assessment → weight 80 (height 160 from the helper) → Save.
   BMI 31 gives moderate risk on its own; with 165/115 only high risk is stored.
+- Same-day vitals recheck: visit 145/95, Next Steps ends on Wait › Pause; then Case Management › ANC Labs › the entry › Examination
+  (`completeRecurrentExamination(page, { sys, dia })`). Recheck 145/95 stores `gestational-hypertension-recheck` at 20 w+, `chronic-hypertension-recheck`
+  below; Next Steps › Medication Distribution offers Methyldopa. 165/100 schedules no recheck.
+- Later lab result, one test only: `completeLaboratoryNurseForLab(page, { onlyTabs: ['Random Blood Sugar'] })`, press `.icon-back`, then
+  `completeLaboratoryNurse` answers the other tabs No. A non-emergency Lab Results save returns to the recurrent encounter page, not Next Steps.
+- Recurrent Next Steps: the Medication Distribution tab is found by its label, not `icon-next-steps-treatment`. After its last save the page
+  returns to the recurrent encounter; the report is under its Reports tab.
+- Medication record: server `prenatal_medication_distribution`, `field_prescribed_medication` (`aspirin`, `none-recurrent`) and
+  `field_recommended_treatment` (`methyldopa-2`). The visit and its recheck share one record.
 - Vitals recheck at 38 w: visit 145/95 with protein +1 at the visit stores only `depression-not-likely`; Next Steps is Health Education, Next ANC
   Visit, Wait. ANC Labs lists "Pending Vitals Recheck"; the recurrent Examination recheck 145/95 gives `moderate-preeclampsia-recurrent-ega-37+`,
   the immediate-delivery warning and Next Steps › Referral only.
