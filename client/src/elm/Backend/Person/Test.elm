@@ -1,7 +1,8 @@
 module Backend.Person.Test exposing (all)
 
-{-| The birth-date range offered when registering a child, and the age rule
-the save applies to the date picked.
+{-| What the person form offers and saves: the birth-date range offered when
+registering a child, the age rule the save applies to the date picked, and
+the national ID saved for the text typed.
 
 A child-only birth-date picker offers `earliestChildBirthDate currentDate` up
 to `currentDate`, both ends selectable. An adult-only picker offers dates up
@@ -16,7 +17,6 @@ import Backend.Person.Form
         ( birthDate
         , educationLevel
         , maritalStatus
-        , validateNationalIdNumberForSite
         , validatePerson
         )
 import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), Person)
@@ -150,13 +150,50 @@ all =
         ]
 
 
-{-| What the registration and edit forms save as the national ID, for the
-text typed into the field.
+{-| What the form saves as the national ID for the text typed into the field:
+`Err` when the form refuses it. The form is filled for an adult; `person` is
+the one it takes the address and health centre from.
+-}
+savedNationalIdOn : ParticipantDirectoryOperation -> Person -> Site -> String -> Result () (Maybe String)
+savedNationalIdOn operation person site typed =
+    let
+        related =
+            { person
+                | province = Just "Province"
+                , district = Just "District"
+                , sector = Just "Sector"
+                , cell = Just "Cell"
+                , village = Just "Village"
+                , healthCenterId = Just (toEntityUuid "health-center")
+            }
+    in
+    Form.initial
+        [ ( Backend.Person.Form.firstName, Form.Field.string "Test" )
+        , ( Backend.Person.Form.secondName, Form.Field.string "Person" )
+        , ( birthDate, Form.Field.string "1990-06-15" )
+        , ( Backend.Person.Form.gender, Form.Field.string "female" )
+        , ( educationLevel, Form.Field.string "0" )
+        , ( maritalStatus, Form.Field.string "single" )
+        , ( Backend.Person.Form.nationalIdNumber, Form.Field.string typed )
+        ]
+        (validatePerson site (Just related) operation (Just (date 2026 Nov 5)))
+        |> Form.getOutput
+        |> Maybe.map .nationalIdNumber
+        |> Result.fromMaybe ()
+
+
+{-| Registering an adult for a child.
 -}
 savedNationalId : Site -> String -> Result () (Maybe String)
-savedNationalId site typed =
-    validateNationalIdNumberForSite site (Form.Field.string typed)
-        |> Result.mapError (always ())
+savedNationalId =
+    savedNationalIdOn (CreatePerson (Just (toEntityUuid "related-person"))) relatedChild
+
+
+{-| Editing an adult.
+-}
+savedNationalIdOnEdit : Site -> String -> Result () (Maybe String)
+savedNationalIdOnEdit =
+    savedNationalIdOn (EditPerson (toEntityUuid "edited-person")) relatedAdult
 
 
 {-| Burundi and Somalia take any text as the ID. The spaces around it are
@@ -188,6 +225,14 @@ nationalIdNumberSaved =
             , onFreeTextSites "an ID without outer spaces is saved as typed" "12/345" (Just "12/345")
             , onFreeTextSites "a field holding only spaces saves no ID" "   " Nothing
             , onFreeTextSites "an empty field saves no ID" "" Nothing
+            , List.map
+                (\( name, site ) ->
+                    test (name ++ ": editing a person saves the ID without outer spaces too") <|
+                        \_ ->
+                            savedNationalIdOnEdit site " 12/345 "
+                                |> Expect.equal (Ok (Just "12/345"))
+                )
+                freeTextSites
             , [ test "Rwanda: 16 digits are saved" <|
                     \_ ->
                         savedNationalId SiteRwanda "1199080012345678"
