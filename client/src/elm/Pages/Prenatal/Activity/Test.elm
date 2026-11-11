@@ -32,6 +32,7 @@ import Backend.Measurement.Model
         , PrenatalMentalHealthQuestionOption(..)
         , PrenatalSymptom(..)
         , PrenatalSymptomQuestion(..)
+        , PrenatalVaccineType(..)
         , PreviousDeliveryPeriod(..)
         , PreviousDeliverySign(..)
         , ProteinValue(..)
@@ -43,6 +44,7 @@ import Backend.Measurement.Model
         , TestPrerequisite(..)
         , TestResult(..)
         , UrineDipstickTestValue
+        , VaccineDose(..)
         , ViralLoadStatus(..)
         , VitalsValue
         , WeightInKg(..)
@@ -58,12 +60,13 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (RangedMeasurement(..), emptyHIVPCRResultForm)
-import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault)
+import Html exposing (div)
+import Measurement.Model exposing (RangedMeasurement(..), emptyHIVPCRResultForm, emptyVaccinationForm)
+import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault, toVaccinationValueWithDefault, vaccinationFormWithDefault)
 import Pages.Prenatal.Activity.Model exposing (Msg(..), UltrasoundForm, emptyModel)
-import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
+import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), ImmunisationTask(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveNextStepsTasks, resolveWarningPopupContentForUrgentDiagnoses, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, suicideRiskDiagnosedBySigns, toUltrasoundValueWithDefault, ultrasoundEDDDate, ultrasoundFormWithDefault, ultrasoundTasks, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, immunisationTasksCompletedFromTotal, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveNextStepsTasks, resolveWarningPopupContentForUrgentDiagnoses, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, suicideRiskDiagnosedBySigns, toUltrasoundValueWithDefault, ultrasoundEDDDate, ultrasoundFormWithDefault, ultrasoundTasks, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), PreviousEncounterData, emptyHealthEducationForm)
 import Pages.Prenatal.ProgressReport.Model exposing (obstetricalDiagnoses)
@@ -73,6 +76,8 @@ import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
+import Test.Html.Query as Query
+import Test.Html.Selector exposing (class, text)
 import TestFixtures
 import Time
 import Translate
@@ -3064,6 +3069,7 @@ all =
         , preeclampsiaRiskBefore37Test
         , preeclampsiaRiskHypertensionAt37PlusTest
         , preeclampsiaRiskReferralUnchangedTest
+        , tetanusDoseFallingDueTodayTest
         ]
 
 
@@ -5958,4 +5964,264 @@ preeclampsiaRiskReferralUnchangedTest =
                     )
                     preeclampsiaRiskDiagnoses
                     |> Expect.equal []
+        ]
+
+
+{-| The tetanus immunisation form on the day a dose falls due.
+
+The scenarios drive the form through the page's own `update`, with the
+messages a tap sends, and then read it through the same function the page
+and the encounter's task count use. Save is enabled when the form's tasks
+completed equal its tasks active. The nurse is asked "will receive today?".
+
+  - Dose 1 was given four weeks ago, in an earlier encounter: dose 2 falls
+    due today, four weeks later. Dose 3 is due six months after dose 2.
+  - Doses 1 and 2 were given before this pregnancy (30 weeks ago, at EGA 20
+    weeks): dose 3 falls due today, because a woman who had no dose during
+    this pregnancy gets the next one right away. Dose 4 is due a year after
+    dose 3.
+
+"Recorded as given previously with today's date" is: "Administered
+previously?" Yes, pick today in the date picker (the only day it offers for
+a dose that falls due today), save the date.
+
+-}
+tetanusDoseFallingDueTodayTest : Test
+tetanusDoseFallingDueTodayTest =
+    let
+        encounterId =
+            toEntityUuid "dummy-encounter"
+
+        -- The page model after the given taps, starting from a fresh page.
+        afterTaps msgs =
+            List.foldl
+                (\msg model ->
+                    let
+                        ( updated, _, _ ) =
+                            update currentDate SiteRwanda encounterId emptyModelIndexedDb msg model
+                    in
+                    updated
+                )
+                emptyModel
+                msgs
+                |> .immunisationData
+                |> .tetanusForm
+
+        assembledWith history measurements =
+            let
+                base =
+                    testAssembled measurements
+            in
+            { base | vaccinationHistory = Dict.singleton VaccineTetanus history, vaccinationProgress = Dict.singleton VaccineTetanus history }
+
+        formOf history form =
+            Pages.Prenatal.Activity.Utils.vaccinationFormDynamicContentAndTasks English
+                currentDate
+                SiteRwanda
+                (assembledWith history emptyPrenatalMeasurements)
+                VaccineTetanus
+                form
+
+        inputsOf ( inputs, _, _ ) =
+            inputs
+
+        asQuery inputs =
+            Query.fromHtml (div [] inputs)
+
+        notAskedAbout inputs =
+            asQuery inputs
+                |> Expect.all
+                    [ Query.hasNot [ text TestFixtures.vaccinationQuestionPrevious ]
+                    , Query.hasNot [ text TestFixtures.vaccinationQuestionToday ]
+                    ]
+
+        askedAbout question inputs =
+            asQuery inputs
+                |> Query.has [ text question ]
+
+        -- What the page saves for the form, as Save does on a new measurement.
+        savedValue form =
+            toVaccinationValueWithDefault Nothing form
+
+        recordedPreviouslyOn date dose =
+            afterTaps
+                [ SetUpdatePreviousVaccines VaccineTetanus dose True
+                , SetVaccinationUpdateDate VaccineTetanus date
+                , SaveVaccinationUpdateDate VaccineTetanus dose
+                ]
+
+        -- Dose 1 four weeks ago: dose 2 due today.
+        firstDoseDate =
+            Date.add Date.Weeks -4 currentDate
+
+        dose2DueToday =
+            Dict.singleton VaccineDoseFirst firstDoseDate
+
+        dose2RecordedPreviouslyToday =
+            recordedPreviouslyOn currentDate VaccineDoseSecond
+
+        dose2GivenToday =
+            afterTaps
+                [ SetUpdatePreviousVaccines VaccineTetanus VaccineDoseSecond False
+                , SetWillReceiveVaccineToday VaccineTetanus VaccineDoseSecond True
+                ]
+
+        -- Doses 1 and 2 before this pregnancy: dose 3 due today.
+        dose3DueToday =
+            Dict.fromList
+                [ ( VaccineDoseFirst, Date.add Date.Weeks -34 currentDate )
+                , ( VaccineDoseSecond, Date.add Date.Weeks -30 currentDate )
+                ]
+    in
+    describe "Tetanus immunisation form, a dose that falls due today"
+        [ describe "A dose that falls due today, recorded as given previously with today's date, shows in the dose history and is not asked about again"
+            [ test "on the form, once the date is saved" <|
+                \_ ->
+                    formOf dose2DueToday dose2RecordedPreviouslyToday
+                        |> inputsOf
+                        |> Expect.all
+                            [ TestFixtures.expectDoseInHistory 1 firstDoseDate
+                            , TestFixtures.expectDoseInHistory 2 currentDate
+                            , notAskedAbout
+                            ]
+            , test "once the measurement is saved and the form is opened again" <|
+                \_ ->
+                    vaccinationFormWithDefault emptyVaccinationForm (savedValue dose2RecordedPreviouslyToday)
+                        |> formOf dose2DueToday
+                        |> inputsOf
+                        |> Expect.all
+                            [ TestFixtures.expectDoseInHistory 2 currentDate
+                            , notAskedAbout
+                            ]
+            , test "once the measurement is saved and the form is revisited in the same session" <|
+                \_ ->
+                    vaccinationFormWithDefault dose2RecordedPreviouslyToday (savedValue dose2RecordedPreviouslyToday)
+                        |> formOf dose2DueToday
+                        |> Expect.all
+                            [ inputsOf >> TestFixtures.expectDoseInHistory 2 currentDate
+                            , inputsOf >> notAskedAbout
+                            , TestFixtures.expectSaveEnabled
+                            ]
+            , test "for a dose due today because the last one was before this pregnancy" <|
+                \_ ->
+                    recordedPreviouslyOn currentDate VaccineDoseThird
+                        |> formOf dose3DueToday
+                        |> inputsOf
+                        |> Expect.all
+                            [ TestFixtures.expectDoseInHistory 3 currentDate
+                            , notAskedAbout
+                            ]
+            , test "the encounter counts the saved immunisation task as completed" <|
+                \_ ->
+                    let
+                        measurements =
+                            { emptyPrenatalMeasurements
+                                | tetanusImmunisation =
+                                    savedValue dose2RecordedPreviouslyToday
+                                        |> Maybe.andThen wrapMeasurement
+                            }
+
+                        ( completed, active ) =
+                            immunisationTasksCompletedFromTotal English
+                                currentDate
+                                SiteRwanda
+                                (assembledWith dose2DueToday measurements)
+                                emptyModel.immunisationData
+                                TaskTetanus
+                    in
+                    Expect.equal active completed
+            ]
+        , describe "After saving that date, the next dose is not asked about (it is not due yet), and Save is enabled"
+            [ test "dose 3 is due six months after dose 2" <|
+                \_ ->
+                    formOf dose2DueToday dose2RecordedPreviouslyToday
+                        |> Expect.all
+                            [ inputsOf >> notAskedAbout
+                            , TestFixtures.expectSaveEnabled
+                            ]
+            , test "dose 4 is due a year after dose 3, recorded on a day it fell due because of the pregnancy" <|
+                \_ ->
+                    recordedPreviouslyOn currentDate VaccineDoseThird
+                        |> formOf dose3DueToday
+                        |> Expect.all
+                            [ inputsOf >> notAskedAbout
+                            , TestFixtures.expectSaveEnabled
+                            ]
+            , test "once the measurement is saved and the form is opened again" <|
+                \_ ->
+                    vaccinationFormWithDefault emptyVaccinationForm (savedValue dose2RecordedPreviouslyToday)
+                        |> formOf dose2DueToday
+                        |> Expect.all
+                            [ inputsOf >> notAskedAbout
+                            , TestFixtures.expectSaveEnabled
+                            ]
+            ]
+        , describe "A dose given today (\"will receive today: Yes\") keeps its questions on the form, answered, and Save is enabled, as today"
+            [ test "on the form, the question is about the dose given today" <|
+                \_ ->
+                    formOf dose2DueToday dose2GivenToday
+                        |> Expect.all
+                            [ inputsOf >> TestFixtures.expectDoseInHistory 2 currentDate
+                            , inputsOf >> askedAbout TestFixtures.vaccinationQuestionToday
+                            , inputsOf >> TestFixtures.expectYesAnswerSends 0 (SetWillReceiveVaccineToday VaccineTetanus VaccineDoseSecond True)
+                            , TestFixtures.expectSaveEnabled
+                            , \( _, _, active ) -> Expect.atLeast 1 active
+                            ]
+            , test "once the measurement is saved and the form is opened again" <|
+                \_ ->
+                    vaccinationFormWithDefault emptyVaccinationForm (savedValue dose2GivenToday)
+                        |> formOf dose2DueToday
+                        |> Expect.all
+                            [ inputsOf >> TestFixtures.expectDoseInHistory 2 currentDate
+                            , inputsOf >> askedAbout TestFixtures.vaccinationQuestionToday
+                            , TestFixtures.expectSaveEnabled
+                            , \( _, _, active ) -> Expect.atLeast 1 active
+                            ]
+            ]
+        , describe "A dose that falls due today and has not been recorded is still asked about"
+            [ test "\"administered previously?\", about that dose, with Save disabled until it is answered" <|
+                \_ ->
+                    formOf dose2DueToday emptyVaccinationForm
+                        |> Expect.all
+                            [ inputsOf >> askedAbout TestFixtures.vaccinationQuestionPrevious
+                            , inputsOf >> TestFixtures.expectYesAnswerSends 0 (SetUpdatePreviousVaccines VaccineTetanus VaccineDoseSecond True)
+                            , \( _, completed, active ) -> Expect.notEqual active completed
+                            ]
+            , test "for a nurse, \"will receive today?\" once \"administered previously?\" is answered No" <|
+                \_ ->
+                    afterTaps [ SetUpdatePreviousVaccines VaccineTetanus VaccineDoseSecond False ]
+                        |> formOf dose2DueToday
+                        |> inputsOf
+                        |> Expect.all
+                            [ askedAbout TestFixtures.vaccinationQuestionToday
+                            , TestFixtures.expectYesAnswerSends 1 (SetWillReceiveVaccineToday VaccineTetanus VaccineDoseSecond True)
+                            ]
+            , test "\"administered previously?\", for a dose due today because the last one was before this pregnancy" <|
+                \_ ->
+                    formOf dose3DueToday emptyVaccinationForm
+                        |> inputsOf
+                        |> Expect.all
+                            [ askedAbout TestFixtures.vaccinationQuestionPrevious
+                            , TestFixtures.expectYesAnswerSends 0 (SetUpdatePreviousVaccines VaccineTetanus VaccineDoseThird True)
+                            ]
+            ]
+        , describe "A dose given previously on an earlier day behaves as today"
+            [ test "dose 2 recorded five weeks ago: in the history, deletable, the next dose not asked about, Save enabled" <|
+                \_ ->
+                    let
+                        history =
+                            Dict.singleton VaccineDoseFirst (Date.add Date.Weeks -10 currentDate)
+
+                        secondDoseDate =
+                            Date.add Date.Weeks -5 currentDate
+                    in
+                    recordedPreviouslyOn secondDoseDate VaccineDoseSecond
+                        |> formOf history
+                        |> Expect.all
+                            [ inputsOf >> TestFixtures.expectDoseInHistory 2 secondDoseDate
+                            , inputsOf >> asQuery >> Query.find [ class "history" ] >> Query.has [ class "delete" ]
+                            , inputsOf >> notAskedAbout
+                            , TestFixtures.expectSaveEnabled
+                            ]
+            ]
         ]
