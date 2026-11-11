@@ -2576,8 +2576,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                             )
                         |> Maybe.withDefault False
 
-                -- Gestational hypertension is not a high risk condition.
-                byPreviousHypertensionDiagnoses =
+                byPreviousChronicHypertension =
                     diagnosedPreviouslyAnyOf chronicHypertensionDiagnoses assembled
 
                 byPreviousDiabetesDiagnoses =
@@ -2586,7 +2585,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             byPreviousPreeclampsia
                 || byFetalPresentation
                 || byMedicalHistorySigns
-                || byPreviousHypertensionDiagnoses
+                || byPreviousChronicHypertension
                 || byPreviousDiabetesDiagnoses
 
         allMeasurements =
