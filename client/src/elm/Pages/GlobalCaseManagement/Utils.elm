@@ -740,6 +740,8 @@ filterFollowUpsOfResidents residents followUps =
         , wellChild = filterByParticipant residents followUps.wellChild
         , acuteIllness = filterByParticipant residents followUps.acuteIllness
         , prenatal = filterByParticipant residents followUps.prenatal
+        , tuberculosis = filterByParticipant residents followUps.tuberculosis
+        , hiv = filterByParticipant residents followUps.hiv
         , nextVisit = filterByParticipant residents followUps.nextVisit
     }
 
