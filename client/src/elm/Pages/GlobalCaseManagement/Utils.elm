@@ -734,15 +734,20 @@ resolveUniquePatientsFromFollowUps limitDate followUps =
 
 filterFollowUpsOfResidents : List PersonId -> FollowUpMeasurements -> FollowUpMeasurements
 filterFollowUpsOfResidents residents followUps =
-    { followUps
-        | nutritionGroup = filterByParticipant residents followUps.nutritionGroup
-        , nutritionIndividual = filterByParticipant residents followUps.nutritionIndividual
-        , wellChild = filterByParticipant residents followUps.wellChild
-        , acuteIllness = filterByParticipant residents followUps.acuteIllness
-        , prenatal = filterByParticipant residents followUps.prenatal
-        , tuberculosis = filterByParticipant residents followUps.tuberculosis
-        , hiv = filterByParticipant residents followUps.hiv
-        , nextVisit = filterByParticipant residents followUps.nextVisit
+    -- Every field is listed, so a new kind of follow up must be placed here.
+    { nutritionGroup = filterByParticipant residents followUps.nutritionGroup
+    , nutritionIndividual = filterByParticipant residents followUps.nutritionIndividual
+    , acuteIllness = filterByParticipant residents followUps.acuteIllness
+    , prenatal = filterByParticipant residents followUps.prenatal
+    , wellChild = filterByParticipant residents followUps.wellChild
+    , tuberculosis = filterByParticipant residents followUps.tuberculosis
+    , hiv = filterByParticipant residents followUps.hiv
+    , nextVisit = filterByParticipant residents followUps.nextVisit
+
+    -- Shown to nurses and lab technicians only, who are not bound to a village.
+    , traceContacts = followUps.traceContacts
+    , prenatalLabs = followUps.prenatalLabs
+    , ncdLabs = followUps.ncdLabs
     }
 
 
