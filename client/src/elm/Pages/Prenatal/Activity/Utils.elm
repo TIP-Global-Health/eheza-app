@@ -3373,7 +3373,7 @@ severePreeclampsiaInitialPhase dangerSigns measurements =
     in
     List.member HeadacheBlurredVision dangerSigns
         || (byBloodPressure
-                && highUrineProtein measurements
+                && highUrineProteinInitialPhase measurements
                 && severePreeclampsiaSigns measurements
            )
 

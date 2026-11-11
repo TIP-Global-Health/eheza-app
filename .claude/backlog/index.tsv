@@ -562,13 +562,13 @@ B-561	4	READY	LOW		2450	51	National-ID search (Burundi, Somalia): an ID register
 B-562	4	READY	LOW		2442	51	Prenatal and NCD labs entry: ordering a test, declining a pending test, Wait and review still write the entry whole from
 B-563	3	READY	MED-HIGH		2465	51	Group session: a family whose child's page or activity row was shown more than five minutes ago is dropped from the open
 B-564	4	READY	LOW			51	Group enrolment: the same child is enrolled two or three times in the same group within seconds, and the extra enrolment
-B-565	4	READY	LOW			52	Immunisation form, the day a dose falls due: "administered previously" can only be dated today, and the form then re-ask
+B-565	4	IMPLEMENTED	LOW	2504	2506	52	Immunisation form, the day a dose falls due: "administered previously" can only be dated today, and the form then re-ask
 B-566	4	READY	LOW			52	Nutrition (individual, CHW): reopening a Height or Weight already marked "unable to take" after a reload shows the box t
 B-567	1	IMPLEMENTED	MED-HIGH	2492	2493	52	Acute Illness subsequent visit: the page's diagnosis is computed as if the visit were the first one, so a positive malar
 B-568	4	READY	LOW			52	Acute Illness outcome page: the diagnosis label under the patient's name is recomputed against TODAY's age, not the enco
 B-569	3	READY	LOW		2493	52	Acute Illness follow-up: with a positive malaria test, Send to Health Centre stops looking at every other referral reaso
 B-570	4	READY	LOW		2498	0	Dashboard "Number of Cephaly": a later in-range head circumference does not end an earlier macrocephaly or microcephaly 
-B-571	4	READY	LOW			53	Completion report (Well Child): the server still counts a child's age in whole months by flooring, while the app since #
+B-571	4	IMPLEMENTED	LOW	2503	2507	53	Completion report (Well Child): the server still counts a child's age in whole months by flooring, while the app since #
 B-572	4	READY	LOW			53	HIV encounter: the Prescribed Medication form cannot be saved without at least one antiretroviral, so a positive patient
 B-573	4	READY	LOW			53	NCD initial phase: the Referral task counts as done when ANY referral record exists, so a hospital referral saved first 
 B-574	3	READY	MED			54	Prenatal (CHW): a postpartum visit left unfinished on an earlier day locks the woman's Antenatal page — First, Subsequen
@@ -580,7 +580,8 @@ B-579	2	READY	MED-HIGH			54	Prenatal (nurse): the Medication activity (calcium, 
 B-580	3	READY	MED			54	Prenatal (CHW): the referral task's completion is decided by the NURSE's facility list — on a CHW visit with danger sign
 B-581	1	READY	MED-HIGH			54	Prenatal: hypertension diagnosed at an earlier visit with NO treatment record gets no hypertension pathway at later visi
 B-582	3	READY	MED-LOW			54	Prenatal recurrent phase: the hospital-referral task for a diagnosis found by a lab result reads complete from the refer
-B-583	4	READY	LOW			54	Prenatal (nurse): "high risk of preeclampsia" is stored beside severe or moderate preeclampsia, or eclampsia, found at 3
+B-583	4	IMPLEMENTED	LOW			54	Prenatal (nurse): "high risk of preeclampsia" is stored beside severe or moderate preeclampsia, or eclampsia, found at 3
+B-584	4	READY	LOW		2507	54	Completion report: a next medication or vaccine dose that falls 6, 9 or 12 months after a dose given on the 29th–31st is
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

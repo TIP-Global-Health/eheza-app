@@ -298,6 +298,21 @@ flag simply does not appear.
   and lands on `#pincode` drawing the main menu. A later day's results go in through Case Management › ANC Labs.
 - BP 165/100 at 19 w 5 d gives `chronic-hypertension-immediate` + `high-risk-of-preeclampsia-initial`; at 36 w 5 d
   `gestational-hypertension-immediate`. Next Steps then has Medication Distribution, which `completeNextSteps` fills.
+- Severe preeclampsia fixture: `completeExamination(page, { vitals: { sys: '165', dia: '115' } })`, then reopen Examination from Completed →
+  Core Physical Exam → "Tender to Palpation right upper" (ticking it unticks Normal) → Save. At 28 w and at 37 w that visit stores
+  `gestational-hypertension-immediate` + `high-risk-of-preeclampsia-initial` until a protein result arrives.
+- Prenatal Urine Dipstick tab: performed Yes → `immediate-result` (first label Point of Care, or Lab) → Short Dip. Point of Care
+  shows three selects: protein, pH, glucose; protein and glucose share the options 0, +1 … +4. Lab Results shows the same selects.
+  At 37 w+ a point-of-care result that diagnoses an emergency jumps to Next Steps behind the warning, leaving the other lab tabs unasked.
+- Eclampsia fixture: Dating, History, Examination, then Danger Signs "Convulsions" (no other activity needed). After 165/115 it also gives high risk
+  of preeclampsia on develop; gestational hypertension is not stored beside eclampsia.
+- Moderate risk of preeclampsia from BMI: reopen Examination from Completed → Nutrition Assessment → weight 80 (height 160 from the helper) → Save.
+  BMI 31 gives moderate risk on its own; with 165/115 only high risk is stored.
+- Vitals recheck at 38 w: visit 145/95 with protein +1 at the visit stores only `depression-not-likely`; Next Steps is Health Education, Next ANC
+  Visit, Wait. ANC Labs lists "Pending Vitals Recheck"; the recurrent Examination recheck 145/95 gives `moderate-preeclampsia-recurrent-ega-37+`,
+  the immediate-delivery warning and Next Steps › Referral only.
+- A hospital referral in the visit's Next Steps comes without a Wait task even while labs are pending: the encounter page then shows
+  PAUSE ENCOUNTER enabled, which ends the visit and keeps the ANC Labs entry.
 - EGA lines are not all "≥": diabetes vs gestational diabetes splits at `egaWeeks > 20`, so 20 w 1 d is still diabetes.
   Read the comparison in `Pages/Prenatal/Activity/Utils.elm` before choosing a fixture's weeks.
 - With Healthy Start on, a nurse visit has an Ultrasound activity: viable, fetuses, location, the scan
@@ -415,6 +430,14 @@ flag simply does not appear.
   again while another dose is due. Answer No to stop. A CHW Well Child visit asks only about earlier
   doses; the nurse's also asks about today. OPV dose 1 within 14 days of birth makes OPV four doses,
   so record a first dose later than that for three.
+- Immunisation form controls: tab `#tasks-bar .link-section:has(.icon-<bcg|opv|dtp|pcv13|rotarix|tetanus>-vaccine)`;
+  form `.ui.form.vaccination`; history rows `.history-entry` (`.dose`, `.date`, `.delete` only on this visit's latest
+  dose). The date field `.form-input.date` opens the calendar; its SAVE, then `.update.actions` Save, record the dose.
+  "Will receive today? Yes" hides the "prior to today?" question. A tab with nothing left to ask reads "0/0 Tasks
+  Completed" with Save on. Prenatal Tetanus dose 1's range starts at the mother's birth date: pick the year and month first.
+- A child exactly 70 days old (born 10 weeks ago) gets DTP, PCV 13 and Rotarix dose 2 due today once dose 1 is dated
+  on day 42; a CHW sees a Well Child Visit at that age (not the newborn exam). `completeNCDA` works for such a
+  Child Scorecard child, which is then offered Vaccination History alone.
 - **A child followed by both Well Child and Child Scorecard**: the CHW registers the child under
   Child Scorecard, at Akanduga, and the nurse finds the child at Nyange. A nurse's Standard Pediatric
   Visit creates the Well Child participant. Both forms read one combined history of the two
@@ -494,6 +517,8 @@ flag simply does not appear.
   "LAB RESULTS" page (`div.page-report.clinical`: patient info, a results table, REVIEW & ACCEPT), not the diagnoses
   (`openLabsResultsReviewFromCaseManagement`). "Review & Accept" opens the recurrent encounter; its Reports tab has the diagnoses.
   The entry stays listed as reviewed and then opens the encounter directly; Lab Results sits under Completed.
+  With only the Urine Dipstick ordered and an emergency diagnosis (severe preeclampsia at 37 w), the nurse's entry opened Lab
+  Results' Next Steps directly, behind the warning, with no LAB RESULTS review page.
 - Lab technician and nurse share one tablet: `qa.signIn('3333', 'Nyange')`, then `qa.signIn('1234', 'Nyange')`.
 - The lab technician's "Will this test be performed today?" No offers Lack of Reagents, Lack of Other Supplies,
   Broken Equipment, No Equipment, Not Indicated, and for Partner HIV also Not Present. Any lab technician save on
@@ -670,8 +695,10 @@ flag simply does not appear.
 - The main tree starts a run on `develop`, so a develop control is cheapest before the overlay:
   record it on the served build, then overlay and wait for gulp once. For a change only to what a page shows, one fixture can
   serve both builds: overlay, build and read on the PR, restore the files (needed anyway), wait for gulp, activate the update in the same driver, read again.
-- After an overlay, gulp copies `app.js` at once, but `Main.js` takes about 2.5 minutes to rebuild. Wait until
-  `grep -F` finds a name from the overlay in `client/serve/Main.js`.
+- After an overlay, gulp copies `app.js` at once, but `Main.js` takes about 2.5 minutes to rebuild (a three-file Elm change once took
+  seconds). Wait until `grep -F` finds a name from the overlay in `client/serve/Main.js`.
+- The service worker precaches the bundle as `Main.js?__WB_REVISION__=<hash>`, so `caches.match('/Main.js')` finds nothing. To read the
+  browser's cached build, walk `caches.keys()` and each cache's `keys()` for a URL matching `Main.js`.
 - Only a caller that can read `.driver/token` (owner-only, new each start) can send commands;
   requests from a browser page are refused.
 - `qa.freshDevice()` can fail once with "Navigation … interrupted by another navigation" on a fresh
