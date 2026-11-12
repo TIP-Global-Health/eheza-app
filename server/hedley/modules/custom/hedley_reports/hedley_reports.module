@@ -8073,9 +8073,12 @@ function hedley_reports_prenatal_add_medication_activities(array $encounter_data
           $expected_activities[] = 'prenatal_calcium';
         }
 
+        $measurements_by_type = $encounter_data['measurements_by_type'];
         if (
           ($ega_in_weeks >= 24) &&
-          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_mebendazole')
+          !hedley_reports_prenatal_mebendazole_given_previously($encounter_data) &&
+          !hedley_reports_prenatal_mebendazole_distributed($measurements_by_type) &&
+          !hedley_reports_prenatal_mebendazole_reported($measurements_by_type)
         ) {
           $expected_activities[] = 'prenatal_mebendazole';
         }
@@ -9479,66 +9482,27 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
       $start_date_obj = $encounter_data['start_date_obj'];
       $lmp_date_obj = new DateTime($lmp_date);
       $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $start_date_obj);
-      if ($ega_in_weeks >= 24) {
-        $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
-        $prescribed = FALSE;
-        foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
-          // First option.
-          $medication_measurement = $previous_encounter_data['measurements_by_type']['medication'];
-          if (!empty($medication_measurement)) {
-            $medications = $medication_measurement->field_medication[LANGUAGE_NONE];
-            if (!empty($medications)) {
-              foreach ($medications as $sign) {
-                if ($sign['value'] == 'deworming-pill') {
-                  $prescribed = TRUE;
-                  break;
-                }
-              }
-            }
-          }
-
-          if (!$prescribed) {
-            // Second option - only check if not prescribed by first option.
-            $medication_distribution_measurement = $previous_encounter_data['measurements_by_type']['prenatal_medication_distribution'];
-            if (!empty($medication_distribution_measurement)) {
-              $prescribed_medications = $medication_distribution_measurement->field_prescribed_medication[LANGUAGE_NONE];
-              if (!empty($prescribed_medications)) {
-                foreach ($prescribed_medications as $prescribed_medication) {
-                  if ($prescribed_medication['value'] == 'mebendezole') {
-                    $prescribed = TRUE;
-                    break;
-                  }
-                }
-              }
-            }
-          }
-
-          // If prescribed by first or second option, no point of checking
-          // additional encounters.
-          if ($prescribed) {
-            break;
-          }
-        }
-
-        // Now we check that Mebendazole was prescribed at current encounter.
-        if (!$prescribed) {
-          $medication_measurement = $encounter_data['measurements_by_type']['medication'];
-          if (!empty($medication_measurement)) {
-            $medications = $medication_measurement->field_medication[LANGUAGE_NONE];
-            if (!empty($medications)) {
-              foreach ($medications as $sign) {
-                if ($sign['value'] == 'mebendezole') {
-                  $prescribed = TRUE;
-                  break;
-                }
+      if (
+        $ega_in_weeks >= 24 &&
+        !hedley_reports_prenatal_mebendazole_given_previously($encounter_data) &&
+        !hedley_reports_prenatal_mebendazole_administered($encounter_data['measurements_by_type'])
+      ) {
+        // Required, unless at this visit the patient reported receiving it.
+        $received = FALSE;
+        $medication_measurement = $encounter_data['measurements_by_type']['medication'];
+        if (!empty($medication_measurement)) {
+          $medications = $medication_measurement->field_medication[LANGUAGE_NONE];
+          if (!empty($medications)) {
+            foreach ($medications as $sign) {
+              if ($sign['value'] == 'mebendezole') {
+                $received = TRUE;
+                break;
               }
             }
           }
         }
 
-        // Finally, since Mebendazole was not prescribed at current,
-        // we know it's required.
-        if (!$prescribed) {
+        if (!$received) {
           return TRUE;
         }
       }
@@ -10048,6 +10012,97 @@ function hedley_reports_prenatal_symptom_recorded_previously(array $encounter_da
       if ($symptom['value'] === $symptom_value) {
         return TRUE;
       }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if Mebendazole was given, or reported received, at an earlier visit.
+ *
+ * Given through the Medication activity or from the Next Steps medication
+ * distribution, or reported in Treatment Review as Mebendazole or a deworming
+ * pill.
+ *
+ * @param array $encounter_data
+ *   The encounter data.
+ *
+ * @return bool
+ *   TRUE if so at any earlier nurse encounter; FALSE otherwise.
+ */
+function hedley_reports_prenatal_mebendazole_given_previously(array $encounter_data) {
+  foreach ($encounter_data['previous_nurse_encounters_data'] as $previous_encounter_data) {
+    $measurements_by_type = $previous_encounter_data['measurements_by_type'];
+    if (
+      hedley_reports_prenatal_mebendazole_administered($measurements_by_type) ||
+      hedley_reports_prenatal_mebendazole_distributed($measurements_by_type) ||
+      hedley_reports_prenatal_mebendazole_reported($measurements_by_type)
+    ) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if the Medication activity of a visit handed over Mebendazole.
+ *
+ * @param array $measurements_by_type
+ *   The measurements of the visit, keyed by type.
+ *
+ * @return bool
+ *   TRUE if Mebendazole was administered; FALSE otherwise.
+ */
+function hedley_reports_prenatal_mebendazole_administered(array $measurements_by_type) {
+  return hedley_reports_prenatal_medication_distributed_today(['measurements_by_type' => $measurements_by_type], 'prenatal_mebendazole');
+}
+
+/**
+ * Checks if Next Steps medication distribution of a visit gave Mebendazole.
+ *
+ * @param array $measurements_by_type
+ *   The measurements of the visit, keyed by type.
+ *
+ * @return bool
+ *   TRUE if Mebendazole was distributed; FALSE otherwise.
+ */
+function hedley_reports_prenatal_mebendazole_distributed(array $measurements_by_type) {
+  $measurement = $measurements_by_type['prenatal_medication_distribution'];
+  if (empty($measurement) || empty($measurement->field_prescribed_medication[LANGUAGE_NONE])) {
+    return FALSE;
+  }
+
+  foreach ($measurement->field_prescribed_medication[LANGUAGE_NONE] as $medication) {
+    if ($medication['value'] == 'mebendezole') {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if, in Treatment Review of a visit, Mebendazole was reported received.
+ *
+ * A deworming pill, asked about by an older version of the question, counts.
+ *
+ * @param array $measurements_by_type
+ *   The measurements of the visit, keyed by type.
+ *
+ * @return bool
+ *   TRUE if Mebendazole or a deworming pill was reported; FALSE otherwise.
+ */
+function hedley_reports_prenatal_mebendazole_reported(array $measurements_by_type) {
+  $measurement = $measurements_by_type['medication'];
+  if (empty($measurement) || empty($measurement->field_medication[LANGUAGE_NONE])) {
+    return FALSE;
+  }
+
+  foreach ($measurement->field_medication[LANGUAGE_NONE] as $sign) {
+    if (in_array($sign['value'], ['mebendezole', 'deworming-pill'])) {
+      return TRUE;
     }
   }
 

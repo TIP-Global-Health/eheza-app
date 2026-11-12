@@ -1,4 +1,4 @@
-module Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, applyHypertensionlikeDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGADays, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, emergencyReferralDiagnosesInitial, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, filterNonUrgentDiagnoses, generateVaccinationProgress, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, labTestWithImmediateResult, malariaPreventionFormWithDefault, marginalBloodPressureCondition, mebendazoleDistributed, mebendazoleGivenPreviously, medicationAdministered, medicationAdministeredPreviously, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionFormWithDefaultRecurrentPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, outsideCareAnemiaDiagnoses, outsideCareDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveDiscordantCoupleStatus, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, resolvePreviousHypertensionDiagnosis, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, severeAnemiaDiagnoses, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnoses, syphilisDiagnosesIncludingNeurosyphilis, syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault, undeterminedPostpartumDiagnoses, updateHypertensionTreatmentWithMedication)
+module Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, applyHypertensionlikeDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGADays, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, emergencyReferralDiagnosesInitial, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, filterNonUrgentDiagnoses, generateVaccinationProgress, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, labTestWithImmediateResult, malariaPreventionFormWithDefault, marginalBloodPressureCondition, mebendazoleDistributed, mebendazoleGivenPreviously, mebendazoleReported, medicationAdministered, medicationAdministeredPreviously, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionFormWithDefaultRecurrentPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, outsideCareAnemiaDiagnoses, outsideCareDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveDiscordantCoupleStatus, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, resolvePreviousHypertensionDiagnosis, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, severeAnemiaDiagnoses, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnoses, syphilisDiagnosesIncludingNeurosyphilis, syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault, undeterminedPostpartumDiagnoses, updateHypertensionTreatmentWithMedication)
 
 import AssocList as Dict
 import Backend.Measurement.Model exposing (..)
@@ -2107,39 +2107,37 @@ showMebendazoleQuestion currentDate assembled =
                 let
                     egaInWeeks =
                         calculateEGAWeeks currentDate lmpDate
-
-                    dewormingPillNotGiven =
-                        List.filter
-                            (.measurements
-                                >> .medication
-                                >> getMeasurementValueFunc
-                                >> Maybe.andThen .signs
-                                >> Maybe.map (EverySet.member DewormingPill)
-                                >> Maybe.withDefault False
-                            )
-                            assembled.nursePreviousEncountersData
-                            |> List.isEmpty
                 in
                 -- Starting EGA week 24.
                 (egaInWeeks >= 24)
-                    && -- Previous variation had a question about deworming pill,
-                       -- which is actually Menendazole, or something similar.
-                       -- If somewhere during previous encounters patient stated that
-                       -- deworming pill was given, we do not ask about Mebendazole.
-                       dewormingPillNotGiven
-                    && -- Mebendazole was not given at an earlier visit of this pregnancy.
-                       not (mebendazoleGivenPreviously assembled)
+                    && not (mebendazoleGivenPreviously assembled)
             )
         |> Maybe.withDefault False
 
 
-{-| Mebendazole was handed over at an earlier nurse visit, either through
-the Medication activity or from the Next Steps medication distribution.
+{-| At an earlier nurse visit, Mebendazole was handed over through Medication
+or from Next Steps, or the woman said she had received it or a deworming pill.
 -}
 mebendazoleGivenPreviously : AssembledData -> Bool
 mebendazoleGivenPreviously assembled =
-    medicationAdministeredPreviously .mebendazole assembled
-        || List.any (.measurements >> mebendazoleDistributed) assembled.nursePreviousEncountersData
+    List.any
+        (\{ measurements } ->
+            medicationAdministered measurements.mebendazole
+                || mebendazoleDistributed measurements
+                || mebendazoleReported measurements
+        )
+        assembled.nursePreviousEncountersData
+
+
+{-| In Treatment Review of that visit, the woman said she had received
+Mebendazole, or a deworming pill.
+-}
+mebendazoleReported : PrenatalMeasurements -> Bool
+mebendazoleReported measurements =
+    getMeasurementValueFunc measurements.medication
+        |> Maybe.andThen .signs
+        |> Maybe.map (\signs -> EverySet.member Mebendazole signs || EverySet.member DewormingPill signs)
+        |> Maybe.withDefault False
 
 
 {-| The Next Steps medication distribution of that visit handed over Mebendazole.
