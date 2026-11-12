@@ -974,15 +974,21 @@ toNutritionFollowUpValue form =
 
 fromHealthEducationValue : Maybe HealthEducationValue -> HealthEducationForm
 fromHealthEducationValue saved =
-    { educationForDiagnosis = Maybe.map (.signs >> EverySet.member MalariaPrevention) saved
+    let
+        educationForDiagnosis =
+            Maybe.map (.signs >> EverySet.member MalariaPrevention) saved
+    in
+    { educationForDiagnosis = educationForDiagnosis
     , reasonForNotProvidingHealthEducation =
-        Maybe.andThen
-            (\value ->
-                whyNotAnswer (EverySet.member MalariaPrevention value.signs)
+        Maybe.map2
+            (\provided value ->
+                savedFollowUp (not provided)
                     NoReasonForNotProvidingHealthEducation
                     value.reasonForNotProvidingHealthEducation
             )
+            educationForDiagnosis
             saved
+            |> Maybe.Extra.join
     }
 
 
@@ -1002,16 +1008,16 @@ healthEducationFormWithDefault form saved =
     }
 
 
-{-| The saved "Why not?" answer. A record answered Yes has none, and so
-does one that stores the "no reason" value.
+{-| The saved answer to a follow-up question, such as "Why not?". There is
+none when the question was not asked, or when the record stores the "no answer" value.
 -}
-whyNotAnswer : Bool -> reason -> reason -> Maybe reason
-whyNotAnswer answeredYes noReason reason =
-    if answeredYes || reason == noReason then
-        Nothing
+savedFollowUp : Bool -> answer -> answer -> Maybe answer
+savedFollowUp asked noAnswer answer =
+    if asked && answer /= noAnswer then
+        Just answer
 
     else
-        Just reason
+        Nothing
 
 
 {-| "Why not?" is asked only after a No, so any other answer leaves it unanswered.
@@ -1050,19 +1056,23 @@ toHealthEducationValue form =
 
 fromSendToHCValue : Maybe SendToHCValue -> SendToHCForm
 fromSendToHCValue saved =
+    let
+        referToHealthCenter =
+            Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
+    in
     { handReferralForm = Maybe.map (.signs >> EverySet.member HandReferrerForm) saved
-    , referToHealthCenter = Maybe.map (.signs >> EverySet.member ReferToHealthCenter) saved
+    , referToHealthCenter = referToHealthCenter
     , accompanyToHealthCenter = Maybe.map (.signs >> EverySet.member PrenatalAccompanyToHC) saved
     , enrollToNutritionProgram = Maybe.map (.signs >> EverySet.member EnrollToNutritionProgram) saved
     , referToNutritionProgram = Maybe.map (.signs >> EverySet.member ReferToNutritionProgram) saved
     , reasonForNotSendingToHC =
-        Maybe.andThen
-            (\value ->
-                whyNotAnswer (EverySet.member ReferToHealthCenter value.signs)
-                    NoReasonForNonReferral
-                    value.reasonForNotSendingToHC
+        Maybe.map2
+            (\referred value ->
+                savedFollowUp (not referred) NoReasonForNonReferral value.reasonForNotSendingToHC
             )
+            referToHealthCenter
             saved
+            |> Maybe.Extra.join
     }
 
 
@@ -10985,20 +10995,46 @@ ongoingTreatmentReviewFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { takenAsPrescribed = or form.takenAsPrescribed (EverySet.member TakenAsPrescribed value.signs |> Just)
-                , missedDoses = or form.missedDoses (EverySet.member MissedDoses value.signs |> Just)
+                let
+                    takenAsPrescribed =
+                        EverySet.member TakenAsPrescribed value.signs
+
+                    missedDoses =
+                        EverySet.member MissedDoses value.signs
+
+                    sideEffects =
+                        EverySet.member SideEffects value.signs
+
+                    -- "Which ones?" is asked only when there were side effects, and "none" is not an answer to it.
+                    savedAdverseEvents =
+                        if sideEffects then
+                            EverySet.toList value.adverseEvents
+                                |> List.filter ((/=) NoAdverseEvent)
+                                |> (\events ->
+                                        if List.isEmpty events then
+                                            Nothing
+
+                                        else
+                                            Just events
+                                   )
+
+                        else
+                            Nothing
+                in
+                { takenAsPrescribed = or form.takenAsPrescribed (Just takenAsPrescribed)
+                , missedDoses = or form.missedDoses (Just missedDoses)
                 , feelingBetter = or form.feelingBetter (EverySet.member FeelingBetter value.signs |> Just)
-                , sideEffects = or form.sideEffects (EverySet.member SideEffects value.signs |> Just)
+                , sideEffects = or form.sideEffects (Just sideEffects)
                 , reasonForNotTaking =
-                    whyNotAnswer (EverySet.member TakenAsPrescribed value.signs) NoReasonForNotTakingSign value.reasonForNotTaking
+                    savedFollowUp (not takenAsPrescribed) NoReasonForNotTakingSign value.reasonForNotTaking
                         |> maybeValueConsideringIsDirtyField form.reasonForNotTakingDirty form.reasonForNotTaking
                 , reasonForNotTakingDirty = form.reasonForNotTakingDirty
                 , totalMissedDoses =
                     -- "How many doses?" is asked only when doses were missed, and zero is not an answer to it.
-                    whyNotAnswer (not (EverySet.member MissedDoses value.signs)) 0 value.missedDoses
+                    savedFollowUp missedDoses 0 value.missedDoses
                         |> maybeValueConsideringIsDirtyField form.totalMissedDosesDirty form.totalMissedDoses
                 , totalMissedDosesDirty = form.totalMissedDosesDirty
-                , adverseEvents = maybeValueConsideringIsDirtyField form.adverseEventsDirty form.adverseEvents (value.adverseEvents |> EverySet.toList |> Just)
+                , adverseEvents = maybeValueConsideringIsDirtyField form.adverseEventsDirty form.adverseEvents savedAdverseEvents
                 , adverseEventsDirty = form.adverseEventsDirty
                 }
             )

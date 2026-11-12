@@ -1628,19 +1628,17 @@ treatmentReviewFormWithDefault form saved =
                     -- "Did it help?" is asked only when the medication was taken, so any other answer leaves it unanswered.
                     takenAndHelped formTaken formHelped takenSign helpedSign =
                         let
-                            taken =
-                                or formTaken (EverySet.member takenSign value |> Just)
-                        in
-                        if taken == Just True then
-                            let
-                                savedHelped =
-                                    if EverySet.member takenSign value then
-                                        Just (EverySet.member helpedSign value)
+                            savedTaken =
+                                EverySet.member takenSign value
 
-                                    else
-                                        Nothing
-                            in
-                            ( taken, or formHelped savedHelped )
+                            taken =
+                                or formTaken (Just savedTaken)
+                        in
+                        if taken == Just True && savedTaken then
+                            ( taken, or formHelped (EverySet.member helpedSign value |> Just) )
+
+                        else if taken == Just True then
+                            ( taken, formHelped )
 
                         else
                             ( taken, Nothing )
