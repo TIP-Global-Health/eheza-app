@@ -3072,6 +3072,7 @@ all =
         , lateLabResultLabTechAndHistoryTest
         , lateUrineProteinSeverePreeclampsiaTest
         , preeclampsiaRiskAfterTheVisitTest
+        , gestationalHypertensionAndPreeclampsiaRiskTest
         , ultrasoundFormTest
         , preeclampsiaRiskSevereAt37PlusTest
         , preeclampsiaRiskModerateAt37PlusTest
@@ -5090,7 +5091,7 @@ present =
 
 preeclampsiaRiskAfterTheVisitTest : Test
 preeclampsiaRiskAfterTheVisitTest =
-    describe "preeclampsia risk found at the recheck or from a later result: Aspirin"
+    describe "preeclampsia risk found at the recheck or from a later result"
         [ riskAtRecheckFrom20WeeksTest
         , riskAtRecheckFrom12To19WeeksTest
         , riskFromLaterResultTest
@@ -5107,52 +5108,62 @@ riskAtRecheckFrom20WeeksTest =
     let
         -- What the recheck should bring, each named, so a failure lists the
         -- missing ones.
-        outcome result =
+        hypertension result =
             [ ( "gestational hypertension", EverySet.member DiagnosisGestationalHypertensionAfterRecheck result.afterEntry )
-            , ( "high risk of preeclampsia", highRiskOfPreeclampsiaIn result.afterEntry )
-            , ( "Aspirin after the recheck", aspirinAfterRecheckOrResult result )
             , ( "hypertension treatment after the recheck", diagnosedHypertension PrenatalEncounterPhaseRecurrent result.saved )
             ]
+
+        -- What the recheck should not bring, each named, so a failure lists
+        -- the ones that showed up.
+        risk result =
+            [ ( "high risk of preeclampsia", highRiskOfPreeclampsiaIn result.afterEntry )
+            , ( "moderate risk of preeclampsia", EverySet.member DiagnosisModerateRiskOfPreeclampsia result.afterEntry )
+            , ( "Aspirin after the recheck", aspirinAfterRecheckOrResult result )
+            ]
+
+        -- (expected findings that are missing, unexpected findings present)
+        outcome result =
+            ( missing (hypertension result), present (risk result) )
     in
     describe "recheck from week 20"
-        [ test "At 20 weeks or later, a borderline blood pressure (140–159 / 90–109) confirmed at the recheck gives gestational hypertension and high risk of preeclampsia. The Next Steps after the recheck offer Aspirin, alongside the hypertension treatment." <|
-            -- The issue's scenario: 145/95 at a visit at 28 weeks, and again
-            -- at the recheck.
+        [ test "Gestational hypertension found at the blood-pressure recheck gives no \"high risk of preeclampsia\" and no Aspirin." <|
+            -- The issue's reading: 145/95 at a visit at 28 weeks, and again
+            -- at the recheck. Nothing else is recorded. The hypertension
+            -- itself is still diagnosed and treated.
             \_ ->
                 recheckConfirms145Over95At ( 28, 0 )
                     |> outcome
-                    |> missing
-                    |> Expect.equal []
-        , test "recheck at 20 weeks 0 days: gestational hypertension, high risk, Aspirin after the recheck" <|
+                    |> Expect.equal ( [], [] )
+        , test "recheck at 20 weeks 0 days: gestational hypertension, no risk, no Aspirin after the recheck" <|
             \_ ->
                 recheckConfirms145Over95At ( 20, 0 )
                     |> outcome
-                    |> missing
-                    |> Expect.equal []
-        , test "recheck at 38 weeks: gestational hypertension, high risk, Aspirin after the recheck" <|
+                    |> Expect.equal ( [], [] )
+        , test "recheck at 38 weeks: gestational hypertension, no risk, no Aspirin after the recheck" <|
             \_ ->
                 recheckConfirms145Over95At ( 38, 0 )
                     |> outcome
-                    |> missing
-                    |> Expect.equal []
-        , test "lowest borderline systolic (140/85 at visit and recheck) at 28 weeks: Aspirin after the recheck" <|
+                    |> Expect.equal ( [], [] )
+        , test "lowest borderline systolic (140/85 at visit and recheck) at 28 weeks: no risk, no Aspirin after the recheck" <|
             \_ ->
                 recheckConfirmsAt ( 28, 0 ) ( 140, 85 ) emptyPrenatalMeasurements
                     |> outcome
-                    |> missing
-                    |> Expect.equal []
-        , test "lowest borderline diastolic (130/90 at visit and recheck) at 28 weeks: Aspirin after the recheck" <|
+                    |> Expect.equal ( [], [] )
+        , test "lowest borderline diastolic (130/90 at visit and recheck) at 28 weeks: no risk, no Aspirin after the recheck" <|
             \_ ->
                 recheckConfirmsAt ( 28, 0 ) ( 130, 90 ) emptyPrenatalMeasurements
                     |> outcome
-                    |> missing
-                    |> Expect.equal []
-        , test "highest borderline reading (159/109 at visit and recheck) at 28 weeks: Aspirin after the recheck" <|
+                    |> Expect.equal ( [], [] )
+        , test "highest borderline reading (159/109 at visit and recheck) at 28 weeks: no risk, no Aspirin after the recheck" <|
             \_ ->
                 recheckConfirmsAt ( 28, 0 ) ( 159, 109 ) emptyPrenatalMeasurements
                     |> outcome
-                    |> missing
-                    |> Expect.equal []
+                    |> Expect.equal ( [], [] )
+        , test "a normal visit reading (120/80) and 145/80 at the recheck at 28 weeks: gestational hypertension, no risk, no Aspirin after the recheck" <|
+            \_ ->
+                recheckReadsAt ( 28, 0 ) ( 120, 80 ) ( 145, 80 ) emptyPrenatalMeasurements
+                    |> outcome
+                    |> Expect.equal ( [], [] )
         , test "the borderline visit reading alone gives no risk and no Aspirin at the visit: the recheck is still to come" <|
             \_ ->
                 let
@@ -5167,8 +5178,8 @@ riskAtRecheckFrom20WeeksTest =
                     result =
                         recheckReadsAt ( 28, 0 ) ( 145, 95 ) ( 135, 85 ) emptyPrenatalMeasurements
                 in
-                ( present (outcome result), preeclampsiaRiskIn result.afterEntry )
-                    |> Expect.equal ( [], False )
+                ( present (hypertension result), present (risk result) )
+                    |> Expect.equal ( [], [] )
         ]
 
 
@@ -5337,20 +5348,21 @@ riskAtVisitAsTodayTest =
             )
     in
     describe "risk found at the visit"
-        [ test "A blood pressure of 160/110 or more at the visit, or a blood sugar result read at the visit that shows diabetes, still gives high risk of preeclampsia at the visit, with Aspirin in the visit's Next Steps, as today." <|
-            -- 165/115 at 28 weeks and at 16 weeks; fasting blood sugar 130
-            -- read at the visit at 28 weeks. A hemoglobin test goes to the
-            -- lab so a result can be entered later.
+        [ test "A blood pressure of 160/110 or more at a visit before 20 weeks (chronic hypertension), or a blood sugar result read at the visit that shows diabetes, still gives high risk of preeclampsia at the visit, with Aspirin in the visit's Next Steps, as today." <|
+            -- 165/115 at 16 weeks; fasting blood sugar 130 read at the visit
+            -- at 28 weeks. A hemoglobin test goes to the lab so a result can
+            -- be entered later. The same blood pressure from 20 weeks on is
+            -- gestational hypertension, covered by
+            -- `gestationalHypertensionAndPreeclampsiaRiskTest`.
             \_ ->
-                [ enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12) highBloodPressureVisit
-                , enterResultLater ( 16, 0 ) 3 (enterHemoglobin 12) highBloodPressureVisit
+                [ enterResultLater ( 16, 0 ) 3 (enterHemoglobin 12) highBloodPressureVisit
                 , enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12) (withImmediateRandomBloodSugar 130 (withPendingHemoglobin emptyPrenatalMeasurements))
                 ]
                     |> List.map atVisit
-                    |> Expect.equal (List.repeat 3 ( True, True ))
-        , test "160/110 at the visit at 28 weeks, a later hemoglobin result: Lab Results' Next Steps do not offer Aspirin a second time" <|
+                    |> Expect.equal (List.repeat 2 ( True, True ))
+        , test "160/110 at the visit at 16 weeks, a later hemoglobin result: Lab Results' Next Steps do not offer Aspirin a second time" <|
             \_ ->
-                enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12) highBloodPressureVisit
+                enterResultLater ( 16, 0 ) 3 (enterHemoglobin 12) highBloodPressureVisit
                     |> aspirinAfterRecheckOrResult
                     |> Expect.equal False
         , test "blood sugar read at the visit at 28 weeks shows diabetes, a later hemoglobin result: Lab Results' Next Steps do not offer Aspirin a second time" <|
@@ -5479,20 +5491,727 @@ preeclampsiaRiskProgressReportTest =
     in
     describe "progress report"
         [ test "The progress report shows \"High Risk of Preeclampsia\" with the same wording in all these cases." <|
-            -- Recheck at 28 and at 16 weeks; blood sugar and urine glucose
-            -- entered later; 160/110 and blood sugar read at the visit;
+            -- Recheck at 16 weeks; blood sugar and urine glucose entered
+            -- later; 160/110 at 16 weeks and blood sugar read at the visit;
             -- history at the visit followed by the recheck.
             \_ ->
-                [ recheckConfirms145Over95At ( 28, 0 )
-                , recheckConfirms145Over95At ( 16, 0 )
+                [ recheckConfirms145Over95At ( 16, 0 )
                 , bloodSugarResultLaterAt ( 28, 0 ) 130 emptyPrenatalMeasurements
                 , urineGlucoseResultLaterAt ( 28, 0 ) withRandomBloodSugarNotDone GlucosePlus2
-                , enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12) highBloodPressureVisit
+                , enterResultLater ( 16, 0 ) 3 (enterHemoglobin 12) highBloodPressureVisit
                 , enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12) (withImmediateRandomBloodSugar 130 (withPendingHemoglobin emptyPrenatalMeasurements))
                 , recheckConfirmsAt ( 28, 0 ) ( 145, 95 ) (withTwins emptyPrenatalMeasurements)
                 ]
                     |> List.map labelsShown
-                    |> Expect.equal (List.repeat 7 [ label ])
+                    |> Expect.equal (List.repeat 6 [ label ])
+        , test "gestational hypertension alone, at the visit or at the recheck, shows no \"High Risk of Preeclampsia\" on the progress report" <|
+            -- 165/115 at a visit at 28 weeks; 145/95 confirmed at the recheck
+            -- at 28 weeks.
+            \_ ->
+                [ enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12) highBloodPressureVisit
+                , recheckConfirms145Over95At ( 28, 0 )
+                ]
+                    |> List.map labelsShown
+                    |> Expect.equal [ [], [] ]
+        ]
+
+
+
+-- GESTATIONAL HYPERTENSION AND THE RISK OF PREECLAMPSIA
+--
+-- High risk of preeclampsia comes from chronic hypertension only:
+-- "Hypertension before pregnancy" in Medical History, or high blood pressure
+-- found before 20 weeks. High blood pressure first found at 20 weeks or later
+-- is gestational hypertension, which is no high-risk condition by itself.
+--
+-- A blood pressure of 160/110 or more is hypertension at the visit; a
+-- borderline one (140-159 / 90-109) is hypertension once the recheck confirms
+-- it. Ages are (weeks, days) of EGA on the visit day. The risk diagnoses start
+-- at week 12.
+--
+-- Each scenario reads the risk twice: among the visit-day diagnoses, with the
+-- Aspirin of the visit's Next Steps, and among the diagnoses after the recheck
+-- or the later result, with the Aspirin of the Next Steps that follow it.
+
+
+{-| The preeclampsia risk a diagnosis set holds: "high", "moderate", "none",
+or "high and moderate" (which the app never shows together).
+-}
+preeclampsiaRiskLevel : EverySet PrenatalDiagnosis -> String
+preeclampsiaRiskLevel diagnoses =
+    let
+        moderate =
+            EverySet.member DiagnosisModerateRiskOfPreeclampsia diagnoses
+    in
+    if highRiskOfPreeclampsiaIn diagnoses then
+        if moderate then
+            "high and moderate"
+
+        else
+            "high"
+
+    else if moderate then
+        "moderate"
+
+    else
+        "none"
+
+
+{-| (risk among the visit-day diagnoses, Aspirin in the visit's Next Steps)
+-}
+riskAtVisit : LateResult -> ( String, Bool )
+riskAtVisit result =
+    ( preeclampsiaRiskLevel result.visitDayDiagnoses, aspirinAtVisit result )
+
+
+{-| (risk after the recheck or the later result, Aspirin in the Next Steps
+that follow it). A risk found at the visit stays the visit's diagnosis, so
+its Aspirin is not offered here a second time.
+-}
+riskAfterwards : LateResult -> ( String, Bool )
+riskAfterwards result =
+    ( preeclampsiaRiskLevel result.afterEntry, aspirinAfterRecheckOrResult result )
+
+
+{-| A visit at `ega` reading 165/115, with the other given findings; a
+hemoglobin result is entered later.
+-}
+highBloodPressureAt : ( Int, Int ) -> (PrenatalMeasurements -> PrenatalMeasurements) -> LateResult
+highBloodPressureAt ega withOtherFindings =
+    enterResultLater ega 3 (enterHemoglobin 12) (withOtherFindings highBloodPressureVisit)
+
+
+{-| An earlier nurse visit of the pregnancy, the given number of weeks before
+`visitDay`, that stored the given diagnoses and recorded the given
+measurements.
+-}
+earlierVisit : Int -> List PrenatalDiagnosis -> PrenatalMeasurements -> PreviousEncounterData
+earlierVisit weeksEarlier diagnoses measurements =
+    { startDate = Date.add Date.Weeks -weeksEarlier visitDay
+    , diagnoses = EverySet.fromList diagnoses
+    , pastDiagnoses = EverySet.empty
+    , measurements = measurements
+    }
+
+
+{-| A visit at `ega` with the given findings, eight weeks after an earlier
+visit that stored the given diagnoses. A hemoglobin result is entered later.
+-}
+laterVisitAt : ( Int, Int ) -> List PrenatalDiagnosis -> (PrenatalMeasurements -> PrenatalMeasurements) -> LateResult
+laterVisitAt ega earlierDiagnoses withFindings =
+    emptyPrenatalMeasurements
+        |> withFindings
+        |> withPendingHemoglobin
+        |> enterResultLaterAfter [ earlierVisit 8 earlierDiagnoses emptyPrenatalMeasurements ] ega 3 (enterHemoglobin 12)
+
+
+{-| A visit at `ega`, eight weeks after an earlier visit that stored the given
+diagnoses, reading 145/95 at the visit and again at the recheck.
+-}
+laterVisitRecheckAt : ( Int, Int ) -> List PrenatalDiagnosis -> (PrenatalMeasurements -> PrenatalMeasurements) -> LateResult
+laterVisitRecheckAt ega earlierDiagnoses withFindings =
+    emptyPrenatalMeasurements
+        |> withFindings
+        |> withBloodPressures ( 145, 95 ) Nothing
+        |> enterResultLaterAfter [ earlierVisit 8 earlierDiagnoses emptyPrenatalMeasurements ] ega 0 (withBloodPressures ( 145, 95 ) (Just ( 145, 95 )))
+
+
+gestationalHypertensionDiagnoses : List PrenatalDiagnosis
+gestationalHypertensionDiagnoses =
+    [ DiagnosisGestationalHypertensionImmediate
+    , DiagnosisGestationalHypertensionAfterRecheck
+    ]
+
+
+chronicHypertensionDiagnoses : List PrenatalDiagnosis
+chronicHypertensionDiagnoses =
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    ]
+
+
+{-| A medical history with no sign of its own and preeclampsia in the family:
+a moderate-risk condition.
+-}
+withPreeclampsiaInFamily : PrenatalMeasurements -> PrenatalMeasurements
+withPreeclampsiaInFamily measurements =
+    { measurements
+        | medicalHistory =
+            wrapMeasurement
+                { signs = EverySet.singleton NoMedicalHistorySigns
+                , physicalConditions = EverySet.singleton NoMedicalHistoryPhysicalCondition
+                , infectiousDiseases = EverySet.singleton NoMedicalHistoryInfectiousDisease
+                , mentalHealthIssues = EverySet.singleton NoMedicalHistoryMentalHealthIssue
+                , preeclampsiaInFamily = DoesOccur
+                }
+    }
+
+
+{-| The high-risk conditions other than hypertension that a history or an exam
+records, by name.
+-}
+otherHighRiskConditions : List ( String, PrenatalMeasurements -> PrenatalMeasurements )
+otherHighRiskConditions =
+    [ ( "preeclampsia in a previous pregnancy", withPreeclampsiaRiskHistory ObstetricHistoryPreeclampsiaPreviousPregnancy Neither )
+    , ( "twins", withTwins )
+    , ( "diabetes before pregnancy", withMedicalHistorySign Diabetes )
+    , ( "renal disease", withMedicalHistorySign RenalDisease )
+    , ( "autoimmune disease", withMedicalHistorySign AutoimmuneDisease )
+    ]
+
+
+{-| The conditions that give only moderate risk of preeclampsia, by name.
+-}
+moderateRiskConditions : List ( String, PrenatalMeasurements -> PrenatalMeasurements )
+moderateRiskConditions =
+    [ ( "more than 10 years since the previous delivery", withPreeclampsiaRiskHistory NoObstetricHistoryStep2Sign MoreThan10Years )
+    , ( "low birth weight child at the previous delivery", withPreeclampsiaRiskHistory ObstetricHistoryChildWithLowBirthweightPreviousDelivery Neither )
+    , ( "preeclampsia in the family", withPreeclampsiaInFamily )
+    ]
+
+
+{-| Runs each forEachNamed scenario and pairs the name with what it gives.
+-}
+forEachNamed : (a -> b) -> List ( String, a ) -> List ( String, b )
+forEachNamed func =
+    List.map (Tuple.mapSecond func)
+
+
+{-| The same forEachNamed scenarios, each expected to give `expected`.
+-}
+allGive : b -> List ( String, a ) -> List ( String, b )
+allGive expected =
+    List.map (Tuple.mapSecond (always expected))
+
+
+gestationalHypertensionAndPreeclampsiaRiskTest : Test
+gestationalHypertensionAndPreeclampsiaRiskTest =
+    describe "gestational hypertension and the risk of preeclampsia"
+        [ gestationalHypertensionAloneTest
+        , gestationalHypertensionAtEarlierVisitTest
+        , chronicHypertensionStillHighRiskTest
+        , chronicHypertensionAtEarlierVisitTest
+        , hypertensionBeforePregnancyTest
+        , gestationalHypertensionWithHighRiskConditionTest
+        , gestationalHypertensionWithModerateRiskConditionTest
+        , diabetesCountsAsBeforeTest
+        ]
+
+
+gestationalHypertensionAloneTest : Test
+gestationalHypertensionAloneTest =
+    let
+        -- (gestational hypertension diagnosed at the visit, risk and Aspirin
+        -- at the visit, risk and Aspirin after the later result)
+        outcome result =
+            ( EverySet.member DiagnosisGestationalHypertensionImmediate result.visitDayDiagnoses
+            , riskAtVisit result
+            , riskAfterwards result
+            )
+
+        noRisk =
+            ( True, ( "none", False ), ( "none", False ) )
+    in
+    describe "gestational hypertension alone"
+        [ test "High blood pressure first found at 20 weeks or later (gestational hypertension), with no other high-risk condition, gives no \"high risk of preeclampsia\" and no Aspirin." <|
+            -- 165/115 at a first visit at 28 weeks, nothing in the histories.
+            \_ ->
+                highBloodPressureAt ( 28, 0 ) identity
+                    |> outcome
+                    |> Expect.equal noRisk
+        , test "165/115 at 20 weeks 0 days, the first day of gestational hypertension: no risk, no Aspirin" <|
+            \_ ->
+                highBloodPressureAt ( 20, 0 ) identity
+                    |> outcome
+                    |> Expect.equal noRisk
+        , test "165/115 at 38 weeks: no risk, no Aspirin" <|
+            \_ ->
+                highBloodPressureAt ( 38, 0 ) identity
+                    |> outcome
+                    |> Expect.equal noRisk
+        , test "the lowest reading that is hypertension at the visit (160/110) at 28 weeks: no risk, no Aspirin" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 160 110
+                    |> withPendingHemoglobin
+                    |> enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12)
+                    |> outcome
+                    |> Expect.equal noRisk
+        , test "165/115 at 28 weeks with histories filled in and holding no risk condition: no risk, no Aspirin" <|
+            -- The other shape of "nothing in the histories": a medical
+            -- history answered with no sign, and a second pregnancy whose
+            -- obstetric history carries no sign.
+            \_ ->
+                highBloodPressureAt ( 28, 0 )
+                    (withMedicalHistorySign NoMedicalHistorySigns
+                        >> withPreeclampsiaRiskHistory NoObstetricHistoryStep2Sign Neither
+                    )
+                    |> outcome
+                    |> Expect.equal noRisk
+        , test "165/115 at a second visit at 28 weeks, after a visit that diagnosed nothing: no risk, no Aspirin" <|
+            \_ ->
+                laterVisitAt ( 28, 0 ) [] (withVitals 165 115)
+                    |> outcome
+                    |> Expect.equal noRisk
+        , test "guard: gestational hypertension found at the visit at 28 weeks is still treated as hypertension" <|
+            \_ ->
+                highBloodPressureAt ( 28, 0 ) identity
+                    |> .visit
+                    |> diagnosedHypertension PrenatalEncounterPhaseInitial
+                    |> Expect.equal True
+        ]
+
+
+gestationalHypertensionAtEarlierVisitTest : Test
+gestationalHypertensionAtEarlierVisitTest =
+    let
+        -- Each gestational hypertension diagnosis, stored at a visit eight
+        -- weeks before this one.
+        afterEach scenario =
+            List.map (\diagnosis -> scenario [ diagnosis ]) gestationalHypertensionDiagnoses
+
+        -- (risk and Aspirin at the visit, risk and Aspirin afterwards)
+        outcome result =
+            ( riskAtVisit result, riskAfterwards result )
+
+        noRisk =
+            ( ( "none", False ), ( "none", False ) )
+    in
+    describe "gestational hypertension diagnosed at an earlier visit"
+        [ test "Gestational hypertension diagnosed at an earlier visit, with nothing else, gives no high risk at later visits." <|
+            -- Diagnosed at 20 weeks (at the visit, or at its recheck); this
+            -- visit at 28 weeks records nothing but a pending lab test.
+            \_ ->
+                afterEach (\earlier -> laterVisitAt ( 28, 0 ) earlier identity)
+                    |> List.map outcome
+                    |> Expect.equal [ noRisk, noRisk ]
+        , test "diagnosed at 30 weeks, a later visit at 38 weeks: no risk, no Aspirin" <|
+            \_ ->
+                afterEach (\earlier -> laterVisitAt ( 38, 0 ) earlier identity)
+                    |> List.map outcome
+                    |> Expect.equal [ noRisk, noRisk ]
+        , test "the blood pressure is high again (165/115) at the later visit: no risk, no Aspirin" <|
+            \_ ->
+                afterEach (\earlier -> laterVisitAt ( 28, 0 ) earlier (withVitals 165 115))
+                    |> List.map outcome
+                    |> Expect.equal [ noRisk, noRisk ]
+        , test "the later visit's recheck confirms 145/95: no risk, no Aspirin after the recheck" <|
+            \_ ->
+                afterEach (\earlier -> laterVisitRecheckAt ( 28, 0 ) earlier identity)
+                    |> List.map outcome
+                    |> Expect.equal [ noRisk, noRisk ]
+        , test "two earlier visits, gestational hypertension at the first and nothing at the second: no risk at the third" <|
+            \_ ->
+                afterEach
+                    (\earlier ->
+                        emptyPrenatalMeasurements
+                            |> withPendingHemoglobin
+                            |> enterResultLaterAfter
+                                [ earlierVisit 8 earlier emptyPrenatalMeasurements
+                                , earlierVisit 4 [] emptyPrenatalMeasurements
+                                ]
+                                ( 30, 0 )
+                                3
+                                (enterHemoglobin 12)
+                    )
+                    |> List.map outcome
+                    |> Expect.equal [ noRisk, noRisk ]
+        , test "guard: an earlier visit that stored gestational hypertension together with high risk: the stored risk is not diagnosed again" <|
+            -- Diagnoses already stored stay as they are; the later visit adds
+            -- no second risk diagnosis, whichever high risk variant is stored.
+            \_ ->
+                List.concatMap
+                    (\highRisk ->
+                        afterEach (\earlier -> laterVisitAt ( 28, 0 ) (highRisk :: earlier) identity)
+                    )
+                    highRiskOfPreeclampsiaVariants
+                    |> List.map outcome
+                    |> Expect.equal (List.repeat 4 noRisk)
+        ]
+
+
+chronicHypertensionStillHighRiskTest : Test
+chronicHypertensionStillHighRiskTest =
+    describe "chronic hypertension found at this visit"
+        [ test "High blood pressure found before 20 weeks (chronic hypertension), at the visit or at the recheck, still gives high risk and Aspirin." <|
+            -- At 16 weeks: 165/115 at the visit gives the risk and Aspirin at
+            -- the visit; 145/95 confirmed at the recheck gives them after the
+            -- recheck.
+            \_ ->
+                let
+                    atVisit =
+                        highBloodPressureAt ( 16, 0 ) identity
+
+                    atRecheck =
+                        recheckConfirms145Over95At ( 16, 0 )
+                in
+                ( ( EverySet.member DiagnosisChronicHypertensionImmediate atVisit.visitDayDiagnoses, riskAtVisit atVisit )
+                , ( EverySet.member DiagnosisChronicHypertensionAfterRecheck atRecheck.afterEntry, riskAfterwards atRecheck )
+                )
+                    |> Expect.equal ( ( True, ( "high", True ) ), ( True, ( "high", True ) ) )
+        , test "19 weeks 6 days, the last day of chronic hypertension: high risk and Aspirin at the visit and at the recheck" <|
+            \_ ->
+                ( riskAtVisit (highBloodPressureAt ( 19, 6 ) identity)
+                , riskAfterwards (recheckConfirms145Over95At ( 19, 6 ))
+                )
+                    |> Expect.equal ( ( "high", True ), ( "high", True ) )
+        , test "one day later, at 20 weeks 0 days, the same readings are gestational hypertension: no risk and no Aspirin at the visit or at the recheck" <|
+            \_ ->
+                ( riskAtVisit (highBloodPressureAt ( 20, 0 ) identity)
+                , riskAfterwards (recheckConfirms145Over95At ( 20, 0 ))
+                )
+                    |> Expect.equal ( ( "none", False ), ( "none", False ) )
+        , test "12 weeks 0 days, the first day a risk is diagnosed: high risk and Aspirin at the visit and at the recheck" <|
+            \_ ->
+                ( riskAtVisit (highBloodPressureAt ( 12, 0 ) identity)
+                , riskAfterwards (recheckConfirms145Over95At ( 12, 0 ))
+                )
+                    |> Expect.equal ( ( "high", True ), ( "high", True ) )
+        , test "chronic hypertension found at the visit at 16 weeks: the later result does not offer Aspirin a second time, and the risk stays" <|
+            \_ ->
+                highBloodPressureAt ( 16, 0 ) identity
+                    |> riskAfterwards
+                    |> Expect.equal ( "high", False )
+        , test "chronic hypertension at 16 weeks together with a moderate-risk condition: high risk, not moderate" <|
+            \_ ->
+                moderateRiskConditions
+                    |> forEachNamed (highBloodPressureAt ( 16, 0 ) >> riskAtVisit)
+                    |> Expect.equal (allGive ( "high", True ) moderateRiskConditions)
+        ]
+
+
+chronicHypertensionAtEarlierVisitTest : Test
+chronicHypertensionAtEarlierVisitTest =
+    let
+        afterEach scenario =
+            List.map (\diagnosis -> scenario [ diagnosis ]) chronicHypertensionDiagnoses
+    in
+    describe "chronic hypertension diagnosed at an earlier visit"
+        [ test "Chronic hypertension diagnosed at an earlier visit still gives high risk at a later visit that has none yet." <|
+            -- Diagnosed at 10 weeks (at the visit, or at its recheck), before
+            -- any risk is diagnosed; this visit, at 18 weeks, is the first
+            -- from week 12 on.
+            \_ ->
+                afterEach (\earlier -> laterVisitAt ( 18, 0 ) earlier identity)
+                    |> List.map riskAtVisit
+                    |> Expect.equal [ ( "high", True ), ( "high", True ) ]
+        , test "the later visit is past 20 weeks (28 weeks): the earlier chronic hypertension still gives high risk and Aspirin" <|
+            -- The week that matters is the one hypertension was found in, not
+            -- this visit's.
+            \_ ->
+                afterEach (\earlier -> laterVisitAt ( 28, 0 ) earlier identity)
+                    |> List.map riskAtVisit
+                    |> Expect.equal [ ( "high", True ), ( "high", True ) ]
+        , test "the blood pressure is high again (165/115) at the later visit at 28 weeks: still high risk and Aspirin" <|
+            \_ ->
+                afterEach (\earlier -> laterVisitAt ( 28, 0 ) earlier (withVitals 165 115))
+                    |> List.map riskAtVisit
+                    |> Expect.equal [ ( "high", True ), ( "high", True ) ]
+        , test "the risk found at the later visit stays its diagnosis after the later result, with no second Aspirin" <|
+            \_ ->
+                afterEach (\earlier -> laterVisitAt ( 28, 0 ) earlier identity)
+                    |> List.map riskAfterwards
+                    |> Expect.equal [ ( "high", False ), ( "high", False ) ]
+        , test "the later visit is before 12 weeks (11 weeks 6 days): no risk yet" <|
+            \_ ->
+                afterEach (\earlier -> laterVisitAt ( 11, 6 ) earlier identity)
+                    |> List.map riskAtVisit
+                    |> Expect.equal [ ( "none", False ), ( "none", False ) ]
+        , test "guard: an earlier visit that stored chronic hypertension together with high risk: the risk is not diagnosed again" <|
+            \_ ->
+                List.concatMap
+                    (\highRisk ->
+                        afterEach (\earlier -> laterVisitAt ( 28, 0 ) (highRisk :: earlier) identity)
+                    )
+                    highRiskOfPreeclampsiaVariants
+                    |> List.map riskAtVisit
+                    |> Expect.equal (List.repeat 4 ( "none", False ))
+        ]
+
+
+hypertensionBeforePregnancyTest : Test
+hypertensionBeforePregnancyTest =
+    let
+        withHistory =
+            withMedicalHistorySign HypertensionBeforePregnancy
+
+        visitAt ega =
+            laterResultAt ega withHistory
+
+        laterResultAt ega withFindings =
+            emptyPrenatalMeasurements
+                |> withFindings
+                |> withPendingHemoglobin
+                |> enterResultLater ega 3 (enterHemoglobin 12)
+    in
+    describe "hypertension before pregnancy in Medical History"
+        [ test "\"Hypertension before pregnancy\" in Medical History still gives high risk at any week." <|
+            -- Normal blood pressure throughout; visits from the first week a
+            -- risk is diagnosed to term, on both sides of week 20.
+            \_ ->
+                [ ( 12, 0 ), ( 16, 0 ), ( 19, 6 ), ( 20, 0 ), ( 28, 0 ), ( 38, 0 ) ]
+                    |> List.map (\ega -> ( ega, riskAtVisit (visitAt ega) ))
+                    |> Expect.equal
+                        [ ( ( 12, 0 ), ( "high", True ) )
+                        , ( ( 16, 0 ), ( "high", True ) )
+                        , ( ( 19, 6 ), ( "high", True ) )
+                        , ( ( 20, 0 ), ( "high", True ) )
+                        , ( ( 28, 0 ), ( "high", True ) )
+                        , ( ( 38, 0 ), ( "high", True ) )
+                        ]
+        , test "with 165/115 at the visit at 28 weeks (gestational hypertension by the week): still high risk and Aspirin" <|
+            \_ ->
+                highBloodPressureAt ( 28, 0 ) withHistory
+                    |> riskAtVisit
+                    |> Expect.equal ( "high", True )
+        , test "with 145/95 confirmed at the recheck at 28 weeks: the risk is the visit's, and stays after the recheck" <|
+            \_ ->
+                let
+                    result =
+                        recheckConfirmsAt ( 28, 0 ) ( 145, 95 ) (withHistory emptyPrenatalMeasurements)
+                in
+                ( riskAtVisit result, riskAfterwards result )
+                    |> Expect.equal ( ( "high", True ), ( "high", False ) )
+        , test "recorded at an earlier visit before 12 weeks: a later visit at 28 weeks, with no medical history of its own, gives high risk" <|
+            -- The medical history is taken once; later visits read the
+            -- earlier one.
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withPendingHemoglobin
+                    |> enterResultLaterAfter [ earlierVisit 18 [] (withHistory emptyPrenatalMeasurements) ] ( 28, 0 ) 3 (enterHemoglobin 12)
+                    |> riskAtVisit
+                    |> Expect.equal ( "high", True )
+        , test "recorded at this visit at 28 weeks, after an earlier visit that diagnosed gestational hypertension: high risk and Aspirin" <|
+            \_ ->
+                gestationalHypertensionDiagnoses
+                    |> List.map (\diagnosis -> riskAtVisit (laterVisitAt ( 28, 0 ) [ diagnosis ] withHistory))
+                    |> Expect.equal [ ( "high", True ), ( "high", True ) ]
+        , test "before 12 weeks (11 weeks 6 days) it gives no risk yet" <|
+            \_ ->
+                visitAt ( 11, 6 )
+                    |> riskAtVisit
+                    |> Expect.equal ( "none", False )
+        ]
+
+
+gestationalHypertensionWithHighRiskConditionTest : Test
+gestationalHypertensionWithHighRiskConditionTest =
+    let
+        -- A visit reading 145/95 that also sent a fasting blood sugar test to
+        -- the lab. The recheck confirms 145/95, and the blood sugar result
+        -- (130, diabetes) is entered.
+        recheckAndDiabetesFromLaterResult ega =
+            emptyPrenatalMeasurements
+                |> withPendingRandomBloodSugar
+                |> withBloodPressures ( 145, 95 ) Nothing
+                |> enterResultLater ega 3 (withBloodPressures ( 145, 95 ) (Just ( 145, 95 )) >> enterRandomBloodSugar 130)
+    in
+    describe "gestational hypertension with another high-risk condition"
+        [ test "Gestational hypertension together with another high-risk condition (twins, diabetes, renal disease, and so on) still gives high risk." <|
+            -- 165/115 at a visit at 28 weeks that also records the condition.
+            \_ ->
+                otherHighRiskConditions
+                    |> forEachNamed (highBloodPressureAt ( 28, 0 ) >> riskAtVisit)
+                    |> Expect.equal (allGive ( "high", True ) otherHighRiskConditions)
+        , test "gestational hypertension found at the recheck at 28 weeks, the condition recorded at the visit: the visit's high risk stays after the recheck" <|
+            \_ ->
+                otherHighRiskConditions
+                    |> forEachNamed
+                        (\withCondition ->
+                            let
+                                result =
+                                    recheckConfirmsAt ( 28, 0 ) ( 145, 95 ) (withCondition emptyPrenatalMeasurements)
+                            in
+                            ( riskAtVisit result, riskAfterwards result )
+                        )
+                    |> Expect.equal (allGive ( ( "high", True ), ( "high", False ) ) otherHighRiskConditions)
+        , test "gestational hypertension diagnosed at an earlier visit, the condition recorded at this one at 28 weeks: high risk and Aspirin" <|
+            \_ ->
+                List.concatMap
+                    (\diagnosis ->
+                        forEachNamed (laterVisitAt ( 28, 0 ) [ diagnosis ] >> riskAtVisit) otherHighRiskConditions
+                    )
+                    gestationalHypertensionDiagnoses
+                    |> Expect.equal (allGive ( "high", True ) (otherHighRiskConditions ++ otherHighRiskConditions))
+        , test "165/115 at 28 weeks with a blood sugar read at the visit that shows diabetes: high risk and Aspirin at the visit" <|
+            \_ ->
+                let
+                    result =
+                        highBloodPressureAt ( 28, 0 ) (withImmediateRandomBloodSugar 130)
+                in
+                ( EverySet.member DiagnosisGestationalHypertensionImmediate result.visitDayDiagnoses
+                , EverySet.member DiagnosisGestationalDiabetesInitialPhase result.visitDayDiagnoses
+                , riskAtVisit result
+                )
+                    |> Expect.equal ( True, True, ( "high", True ) )
+        , test "gestational hypertension at the recheck and diabetes from a later blood sugar result at 28 weeks: high risk and Aspirin afterwards" <|
+            \_ ->
+                let
+                    result =
+                        recheckAndDiabetesFromLaterResult ( 28, 0 )
+                in
+                ( EverySet.member DiagnosisGestationalHypertensionAfterRecheck result.afterEntry
+                , EverySet.member DiagnosisGestationalDiabetesRecurrentPhase result.afterEntry
+                , riskAfterwards result
+                )
+                    |> Expect.equal ( True, True, ( "high", True ) )
+        , test "165/115 at the visit at 28 weeks, diabetes from a later blood sugar result: no risk at the visit, high risk and Aspirin after the result" <|
+            \_ ->
+                let
+                    result =
+                        emptyPrenatalMeasurements
+                            |> withVitals 165 115
+                            |> withPendingRandomBloodSugar
+                            |> enterResultLater ( 28, 0 ) 3 (enterRandomBloodSugar 130)
+                in
+                ( riskAtVisit result, riskAfterwards result )
+                    |> Expect.equal ( ( "none", False ), ( "high", True ) )
+        , test "gestational hypertension and diabetes both diagnosed at an earlier visit that gave no risk: this visit at 28 weeks gives high risk" <|
+            -- Every pairing of a gestational hypertension diagnosis with a
+            -- diabetes diagnosis.
+            \_ ->
+                List.concatMap
+                    (\hypertension ->
+                        List.map
+                            (\diabetes -> riskAtVisit (laterVisitAt ( 28, 0 ) [ hypertension, diabetes ] identity))
+                            diabetesDiagnoses
+                    )
+                    gestationalHypertensionDiagnoses
+                    |> Expect.equal (List.repeat 8 ( "high", True ))
+        ]
+
+
+gestationalHypertensionWithModerateRiskConditionTest : Test
+gestationalHypertensionWithModerateRiskConditionTest =
+    describe "gestational hypertension with only a moderate-risk condition"
+        [ test "Gestational hypertension together with only a moderate-risk condition gives moderate risk." <|
+            -- 165/115 at a visit at 28 weeks that also records the condition.
+            \_ ->
+                moderateRiskConditions
+                    |> forEachNamed (highBloodPressureAt ( 28, 0 ) >> .visitDayDiagnoses >> preeclampsiaRiskLevel)
+                    |> Expect.equal (allGive "moderate" moderateRiskConditions)
+        , test "the moderate risk is still the diagnosis after a later result" <|
+            \_ ->
+                moderateRiskConditions
+                    |> forEachNamed (highBloodPressureAt ( 28, 0 ) >> riskAfterwards)
+                    |> Expect.equal (allGive ( "moderate", False ) moderateRiskConditions)
+        , test "gestational hypertension found at the recheck at 28 weeks, the moderate-risk condition recorded at the visit: moderate risk before and after the recheck, and no Aspirin for high risk after it" <|
+            \_ ->
+                moderateRiskConditions
+                    |> forEachNamed
+                        (\withCondition ->
+                            let
+                                result =
+                                    recheckConfirmsAt ( 28, 0 ) ( 145, 95 ) (withCondition emptyPrenatalMeasurements)
+                            in
+                            ( preeclampsiaRiskLevel result.visitDayDiagnoses, riskAfterwards result )
+                        )
+                    |> Expect.equal (allGive ( "moderate", ( "moderate", False ) ) moderateRiskConditions)
+        , test "gestational hypertension diagnosed at an earlier visit, the moderate-risk condition recorded at this one at 28 weeks: moderate risk" <|
+            \_ ->
+                List.concatMap
+                    (\diagnosis ->
+                        forEachNamed (laterVisitAt ( 28, 0 ) [ diagnosis ] >> .visitDayDiagnoses >> preeclampsiaRiskLevel) moderateRiskConditions
+                    )
+                    gestationalHypertensionDiagnoses
+                    |> Expect.equal (allGive "moderate" (moderateRiskConditions ++ moderateRiskConditions))
+        , test "an earlier visit stored gestational hypertension and moderate risk: a later visit with nothing new gives no risk again, and no high risk" <|
+            \_ ->
+                gestationalHypertensionDiagnoses
+                    |> List.map
+                        (\diagnosis ->
+                            laterVisitAt ( 28, 0 ) [ diagnosis, DiagnosisModerateRiskOfPreeclampsia ] identity
+                                |> .visitDayDiagnoses
+                                |> preeclampsiaRiskLevel
+                        )
+                    |> Expect.equal [ "none", "none" ]
+        , test "an earlier visit stored gestational hypertension and moderate risk, twins are found at this visit: high risk and Aspirin" <|
+            \_ ->
+                gestationalHypertensionDiagnoses
+                    |> List.map
+                        (\diagnosis ->
+                            riskAtVisit (laterVisitAt ( 28, 0 ) [ diagnosis, DiagnosisModerateRiskOfPreeclampsia ] withTwins)
+                        )
+                    |> Expect.equal [ ( "high", True ), ( "high", True ) ]
+        , test "gestational hypertension with a moderate-risk condition and twins: high risk, not moderate" <|
+            \_ ->
+                moderateRiskConditions
+                    |> forEachNamed (\withCondition -> riskAtVisit (highBloodPressureAt ( 28, 0 ) (withCondition >> withTwins)))
+                    |> Expect.equal (allGive ( "high", True ) moderateRiskConditions)
+        , test "guard: the moderate-risk condition alone, with normal blood pressure, gives moderate risk at 28 weeks" <|
+            \_ ->
+                moderateRiskConditions
+                    |> forEachNamed
+                        (\withCondition ->
+                            emptyPrenatalMeasurements
+                                |> withCondition
+                                |> withPendingHemoglobin
+                                |> enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12)
+                                |> .visitDayDiagnoses
+                                |> preeclampsiaRiskLevel
+                        )
+                    |> Expect.equal (allGive "moderate" moderateRiskConditions)
+        ]
+
+
+diabetesCountsAsBeforeTest : Test
+diabetesCountsAsBeforeTest =
+    let
+        diabetesIn diagnoses =
+            List.filter (\diagnosis -> EverySet.member diagnosis diagnoses) diabetesDiagnoses
+    in
+    describe "diabetes"
+        [ test "Diabetes, including gestational diabetes, counts as before." <|
+            -- Normal blood pressure. A fasting blood sugar of 130:
+            --   * read at the visit at 16 weeks (diabetes) and at 28 weeks
+            --     (gestational diabetes): high risk and Aspirin at the visit;
+            --   * entered later for a visit at 16 and at 28 weeks: high risk
+            --     and Aspirin after the result.
+            \_ ->
+                let
+                    readAtVisit ega =
+                        emptyPrenatalMeasurements
+                            |> withPendingHemoglobin
+                            |> withImmediateRandomBloodSugar 130
+                            |> enterResultLater ega 3 (enterHemoglobin 12)
+                            |> (\result -> ( diabetesIn result.visitDayDiagnoses, riskAtVisit result ))
+
+                    enteredLater ega =
+                        bloodSugarResultLaterAt ega 130 emptyPrenatalMeasurements
+                            |> (\result -> ( diabetesIn result.afterEntry, riskAfterwards result ))
+                in
+                [ readAtVisit ( 16, 0 ), readAtVisit ( 28, 0 ), enteredLater ( 16, 0 ), enteredLater ( 28, 0 ) ]
+                    |> Expect.equal
+                        [ ( [ DiagnosisDiabetesInitialPhase ], ( "high", True ) )
+                        , ( [ DiagnosisGestationalDiabetesInitialPhase ], ( "high", True ) )
+                        , ( [ DiagnosisDiabetesRecurrentPhase ], ( "high", True ) )
+                        , ( [ DiagnosisGestationalDiabetesRecurrentPhase ], ( "high", True ) )
+                        ]
+        , test "diabetes or gestational diabetes diagnosed at an earlier visit that gave no risk: a later visit at 28 weeks gives high risk and Aspirin" <|
+            \_ ->
+                diabetesDiagnoses
+                    |> List.map (\diagnosis -> ( diagnosis, riskAtVisit (laterVisitAt ( 28, 0 ) [ diagnosis ] identity) ))
+                    |> Expect.equal (List.map (\diagnosis -> ( diagnosis, ( "high", True ) )) diabetesDiagnoses)
+        , test "\"Diabetes\" in Medical History gives high risk and Aspirin at 16 and at 28 weeks" <|
+            \_ ->
+                [ ( 16, 0 ), ( 28, 0 ) ]
+                    |> List.map
+                        (\ega ->
+                            emptyPrenatalMeasurements
+                                |> withMedicalHistorySign Diabetes
+                                |> withPendingHemoglobin
+                                |> enterResultLater ega 3 (enterHemoglobin 12)
+                                |> riskAtVisit
+                        )
+                    |> Expect.equal [ ( "high", True ), ( "high", True ) ]
+        , test "a normal blood sugar (90) read at the visit at 28 weeks: no diabetes, no risk, no Aspirin" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withPendingHemoglobin
+                    |> withImmediateRandomBloodSugar 90
+                    |> enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12)
+                    |> (\result -> ( diabetesIn result.visitDayDiagnoses, riskAtVisit result ))
+                    |> Expect.equal ( [], ( "none", False ) )
         ]
 
 
@@ -6417,9 +7136,10 @@ preeclampsiaRiskBefore37Test =
                     |> .afterEntry
                     |> preeclampsiaAndRisks
                     |> Expect.equal ( [ DiagnosisModeratePreeclampsiaRecurrentPhase ], [] )
-        , test "guard: 165/115 alone at 36 weeks 6 days gives gestational hypertension and high risk of preeclampsia" <|
+        , test "guard: 165/115 at 36 weeks 6 days with hypertension before pregnancy gives gestational hypertension and high risk of preeclampsia" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withVitals 165 115
                     |> diagnoseVisitAt ( 36, 6 )
                     |> membership [ DiagnosisGestationalHypertensionImmediate, DiagnosisHighRiskOfPreeclampsiaInitialPhase ]
@@ -6443,16 +7163,18 @@ preeclampsiaRiskHypertensionAt37PlusTest =
                     (presentOf [ DiagnosisHighRiskOfPreeclampsiaInitialPhase, DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ] set)
     in
     describe "preeclampsia risk: high blood pressure without preeclampsia at 37 weeks or later"
-        [ test "At 37 weeks or later, high blood pressure without preeclampsia or eclampsia still gives high risk of preeclampsia, as today" <|
+        [ test "At 37 weeks or later, high blood pressure without preeclampsia or eclampsia, with hypertension before pregnancy, still gives high risk of preeclampsia" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withVitals 165 115
                     |> diagnoseVisitAt ( 38, 0 )
                     |> membership [ DiagnosisGestationalHypertensionImmediate, DiagnosisHighRiskOfPreeclampsiaInitialPhase ]
                     |> Expect.equal [ ( DiagnosisGestationalHypertensionImmediate, True ), ( DiagnosisHighRiskOfPreeclampsiaInitialPhase, True ) ]
-        , test "165/115 at exactly 37 weeks 0 days: high risk of preeclampsia" <|
+        , test "165/115 at exactly 37 weeks 0 days, hypertension before pregnancy: high risk of preeclampsia" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withVitals 165 115
                     |> diagnoseVisitAt ( 37, 0 )
                     |> highRisk
@@ -6460,9 +7182,10 @@ preeclampsiaRiskHypertensionAt37PlusTest =
 
         -- Protein 0 is a urine result that rules preeclampsia out; it must
         -- not be read as preeclampsia found.
-        , test "165/115 at 38 weeks with urine protein 0 (immediate result): high risk of preeclampsia, no preeclampsia" <|
+        , test "165/115 at 38 weeks, hypertension before pregnancy, urine protein 0 (immediate result): high risk of preeclampsia, no preeclampsia" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withVitals 165 115
                     |> withUrineProtein Protein0
                     |> diagnoseVisitAt ( 38, 0 )
@@ -6471,26 +7194,29 @@ preeclampsiaRiskHypertensionAt37PlusTest =
 
         -- The urine is sent to the lab and no result is in yet: nothing has
         -- found preeclampsia, so the high risk stands.
-        , test "165/115 at 38 weeks with the urine result still pending: high risk of preeclampsia" <|
+        , test "165/115 at 38 weeks, hypertension before pregnancy, urine result still pending: high risk of preeclampsia" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withVitals 165 115
                     |> withPendingUrineDipstick
                     |> diagnoseVisitAt ( 38, 0 )
                     |> highRisk
                     |> Expect.equal True
-        , test "a later urine result of protein 0 at 38 weeks: the high risk from 165/115 stays" <|
+        , test "a later urine result of protein 0 at 38 weeks, hypertension before pregnancy: the high risk stays" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withVitals 165 115
                     |> withPendingUrineDipstick
                     |> enterResultLater ( 38, 0 ) 3 (enterUrineProtein Protein0)
                     |> .afterEntry
                     |> highRisk
                     |> Expect.equal True
-        , test "a blood pressure recheck of 150/95 at 38 weeks with no protein or edema: high risk of preeclampsia" <|
+        , test "a blood pressure recheck of 150/95 at 38 weeks, hypertension before pregnancy, no protein or edema: high risk of preeclampsia" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withMarginalVitals
                     |> enterResultLater ( 38, 0 ) 0 (enterRecheck 150 95)
                     |> .afterEntry
