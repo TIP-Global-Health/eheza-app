@@ -10,7 +10,7 @@ metadata:
 
 ⏰ **Monitoring due — raise at the start of the survey on or after the date:** **B-514** 2026-11-19 (rerun the recurrence query in the entry on ihangane + vhw; user 2026-10-29: mention it when process-backlog runs that day) · **B-499** 2026-11-24 (second restore pass; harness lost, rebuild first).
 
-🔧 **PR #2517 open 2026-11-12 (B-585, untiered, issue #2516), on `develop`** (built on #2511's head, which merged meanwhile): Prenatal names `Prevoiusly` / `Inital` / `forModeratePreeclamsia` spelt correctly, rename only, narrow comment scope (user). Blind tests skipped. ⏳ Review round 1 running.
+🔧 **PR #2517 open 2026-11-12 (B-585, untiered, issue #2516), on `develop`** (built on #2511's head, which merged meanwhile): Prenatal names `Prevoiusly` / `Inital` / `forModeratePreeclamsia` spelt correctly, rename only, narrow comment scope (user). Blind tests skipped. Round 1: one leftover local renamed (`9f5b27c43`), four scope-widening findings declined; side-finding **B-590** (tier 4, on-screen "Preeclamsia" / "Preclampsia" text). ⏳ Round 2 running. Next free id: B-591.
 
 ✅ **Merged 2026-11-11 08:49 (user: "merge all the way you see fit"), branches deleted:** #2501 (B-576, issue #2500) `b62b080eb` and #2507 (B-571, issue #2503) `22127d310`. Issues stay open until the release sweep. ✅ **#2505 (B-583) merged 2026-11-11 11:32 as `cb63cd4b3`.** ✅ **#2506 (B-565, issue #2504) merged 2026-11-11 as `086399597`** after CI went green on `a0ed72653`.
 
