@@ -542,7 +542,7 @@ B-541	4	READY	LOW			49	Dashboard beneficiaries: a child's "join date" is the day
 B-542	4	READY	LOW			49	Completion report: every generator orders a participant's encounters by `nid` and treats the lower nids as the history, 
 B-543	4	READY	LOW			49	Photos (group Child Picture, Family Nutrition, person registration): the Dropzone completion event is delivered to which
 B-544	4	READY	LOW			49	Person registration, person edit, Relationship and Receive Stock: the on-entry form resets run only for in-app taps (`Se
-B-545	4	READY	LOW			49	Relationship page: a failed save of A→B keeps showing "Backend error" on A→C and every later relationship page of A, bec
+B-545	4	IMPLEMENTED	LOW			49	Relationship page: a failed save of A→B keeps showing "Backend error" on A→C and every later relationship page of A, bec
 B-546	3	READY	MED-LOW			49	Case Management Nutrition pane: a follow-up the CHW never answered with a home visit stays listed for years, and a later
 B-547	3	READY	MED-LOW			49	Malnutrition assessment (individual Nutrition encounter and group session): the weight-history rules deliberately skip W
 B-548	2	IMPLEMENTED	MED	2464	2465	49	Group session, activity-first flow: the child's individual Nutrition data is fetched only for the FIRST pending child of
