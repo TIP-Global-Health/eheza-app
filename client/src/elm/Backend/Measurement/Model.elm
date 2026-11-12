@@ -2536,7 +2536,7 @@ type DeliveryComplication
     = ComplicationGestationalDiabetes
     | ComplicationEmergencyCSection
     | ComplicationPreeclampsia
-    | ComplicationMaternalHemmorhage
+    | ComplicationMaternalHemorrhage
     | ComplicationHiv
     | ComplicationMaternalDeath
     | ComplicationOther

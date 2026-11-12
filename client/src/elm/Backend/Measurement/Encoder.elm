@@ -3760,7 +3760,7 @@ encodeDeliveryComplication complication =
             ComplicationPreeclampsia ->
                 "preclampsia"
 
-            ComplicationMaternalHemmorhage ->
+            ComplicationMaternalHemorrhage ->
                 "maternal-hemmorhage"
 
             ComplicationHiv ->

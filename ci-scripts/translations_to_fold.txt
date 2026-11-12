@@ -63,7 +63,7 @@ PCV 13
 Participant Directory
 Participants
 Patient Record
-Patient shows signs of Moderate Risk for Preclampsia
+Patient shows signs of Moderate Risk for Preeclampsia
 Patient shows signs of being a suicide risk
 Pentavalent
 Physical Exam

@@ -467,7 +467,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                         ( [ viewLabel language Translate.DeliveryComplicationsSelectionLabel
                           , viewCheckBoxMultipleSelectInput language
                                 [ ComplicationGestationalDiabetes, ComplicationEmergencyCSection, ComplicationPreeclampsia, ComplicationOther ]
-                                [ ComplicationMaternalHemmorhage, ComplicationHiv, ComplicationMaternalDeath ]
+                                [ ComplicationMaternalHemorrhage, ComplicationHiv, ComplicationMaternalDeath ]
                                 (form.deliveryComplications |> Maybe.withDefault [])
                                 Nothing
                                 SetDeliveryComplication

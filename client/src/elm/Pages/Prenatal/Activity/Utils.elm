@@ -2744,7 +2744,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             -- Hypertension and Moderate Preeclampsia, its higher level, are
             -- chronic for the whole pregnancy. Once either is diagnosed,
             -- Hypertension is not diagnosed again; medication is adjusted
-            -- or the patient hospitalised.
+            -- or the patient hospitalized.
             (not <| diagnosedHypertensionPreviously assembled)
                 && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen (chronicHypertensionByMeasurements measurements)
@@ -2753,7 +2753,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             -- Hypertension and Moderate Preeclampsia, its higher level, are
             -- chronic for the whole pregnancy. Once either is diagnosed,
             -- Hypertension is not diagnosed again; medication is adjusted
-            -- or the patient hospitalised.
+            -- or the patient hospitalized.
             (not <| diagnosedHypertensionPreviously assembled)
                 && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen (chronicHypertensionByMeasurementsAfterRecheck measurements)
@@ -2762,7 +2762,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             -- Hypertension and Moderate Preeclampsia, its higher level, are
             -- chronic for the whole pregnancy. Once either is diagnosed,
             -- Hypertension is not diagnosed again; medication is adjusted
-            -- or the patient hospitalised.
+            -- or the patient hospitalized.
             (not <| diagnosedHypertensionPreviously assembled)
                 && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurements measurements)
@@ -2771,7 +2771,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             -- Hypertension and Moderate Preeclampsia, its higher level, are
             -- chronic for the whole pregnancy. Once either is diagnosed,
             -- Hypertension is not diagnosed again; medication is adjusted
-            -- or the patient hospitalised.
+            -- or the patient hospitalized.
             (not <| diagnosedHypertensionPreviously assembled)
                 && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurementsAfterRecheck measurements)

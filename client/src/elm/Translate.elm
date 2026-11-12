@@ -5803,7 +5803,7 @@ translationSet trans =
                 ComplicationPreeclampsia ->
                     translationSet Preeclampsia
 
-                ComplicationMaternalHemmorhage ->
+                ComplicationMaternalHemorrhage ->
                     { english = "Maternal Hemorrhage"
                     , kinyarwanda = Just "Kuva amaraso ku mubyeyi utwite cyangwa nyuma yo kubyara"
                     , kirundi = Just "Ukuva amaraso kw'abavyeyi"
@@ -16641,7 +16641,7 @@ translationSet trans =
 
         Preeclampsia ->
             { english = "Preeclampsia"
-            , kinyarwanda = Just "Umuvuduko w'amaraso uza uje k'umugore twite (Preeclampsia)"
+            , kinyarwanda = Just "Umuvuduko w'amaraso uza uje k'umugore twite (Preclampsia)"
             , kirundi = Just "Ivuduga ry'amaraso igihe c'imbanyi"
             , somali = Just "Dhiig karka Uurka"
             }
