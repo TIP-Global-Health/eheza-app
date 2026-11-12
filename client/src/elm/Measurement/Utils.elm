@@ -975,20 +975,54 @@ toNutritionFollowUpValue form =
 fromHealthEducationValue : Maybe HealthEducationValue -> HealthEducationForm
 fromHealthEducationValue saved =
     { educationForDiagnosis = Maybe.map (.signs >> EverySet.member MalariaPrevention) saved
-    , reasonForNotProvidingHealthEducation = Maybe.map .reasonForNotProvidingHealthEducation saved
+    , reasonForNotProvidingHealthEducation =
+        Maybe.andThen
+            (\value ->
+                whyNotAnswer (EverySet.member MalariaPrevention value.signs)
+                    NoReasonForNotProvidingHealthEducation
+                    value.reasonForNotProvidingHealthEducation
+            )
+            saved
     }
 
 
 healthEducationFormWithDefault : HealthEducationForm -> Maybe HealthEducationValue -> HealthEducationForm
 healthEducationFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { educationForDiagnosis = or form.educationForDiagnosis (EverySet.member MalariaPrevention value.signs |> Just)
-                , reasonForNotProvidingHealthEducation = or form.reasonForNotProvidingHealthEducation (value.reasonForNotProvidingHealthEducation |> Just)
-                }
-            )
+    let
+        fromSaved =
+            fromHealthEducationValue saved
+
+        educationForDiagnosis =
+            or form.educationForDiagnosis fromSaved.educationForDiagnosis
+    in
+    { educationForDiagnosis = educationForDiagnosis
+    , reasonForNotProvidingHealthEducation =
+        whenAnsweredNo educationForDiagnosis
+            (or form.reasonForNotProvidingHealthEducation fromSaved.reasonForNotProvidingHealthEducation)
+    }
+
+
+{-| The saved "Why not?" answer. A record answered Yes has none, and so
+does one that stores the "no reason" value.
+-}
+whyNotAnswer : Bool -> reason -> reason -> Maybe reason
+whyNotAnswer answeredYes noReason reason =
+    if answeredYes || reason == noReason then
+        Nothing
+
+    else
+        Just reason
+
+
+{-| "Why not?" is asked only after a No, so any other answer leaves it unanswered.
+-}
+whenAnsweredNo : Maybe Bool -> Maybe reason -> Maybe reason
+whenAnsweredNo answer reason =
+    if answer == Just False then
+        reason
+
+    else
+        Nothing
 
 
 toHealthEducationValueWithDefault : Maybe HealthEducationValue -> HealthEducationForm -> Maybe HealthEducationValue
@@ -1021,24 +1055,35 @@ fromSendToHCValue saved =
     , accompanyToHealthCenter = Maybe.map (.signs >> EverySet.member PrenatalAccompanyToHC) saved
     , enrollToNutritionProgram = Maybe.map (.signs >> EverySet.member EnrollToNutritionProgram) saved
     , referToNutritionProgram = Maybe.map (.signs >> EverySet.member ReferToNutritionProgram) saved
-    , reasonForNotSendingToHC = Maybe.map .reasonForNotSendingToHC saved
+    , reasonForNotSendingToHC =
+        Maybe.andThen
+            (\value ->
+                whyNotAnswer (EverySet.member ReferToHealthCenter value.signs)
+                    NoReasonForNonReferral
+                    value.reasonForNotSendingToHC
+            )
+            saved
     }
 
 
 sendToHCFormWithDefault : SendToHCForm -> Maybe SendToHCValue -> SendToHCForm
 sendToHCFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value.signs |> Just)
-                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value.signs |> Just)
-                , accompanyToHealthCenter = or form.accompanyToHealthCenter (EverySet.member PrenatalAccompanyToHC value.signs |> Just)
-                , enrollToNutritionProgram = or form.enrollToNutritionProgram (EverySet.member EnrollToNutritionProgram value.signs |> Just)
-                , referToNutritionProgram = or form.referToNutritionProgram (EverySet.member ReferToNutritionProgram value.signs |> Just)
-                , reasonForNotSendingToHC = or form.reasonForNotSendingToHC (value.reasonForNotSendingToHC |> Just)
-                }
-            )
+    let
+        fromSaved =
+            fromSendToHCValue saved
+
+        referToHealthCenter =
+            or form.referToHealthCenter fromSaved.referToHealthCenter
+    in
+    { handReferralForm = or form.handReferralForm fromSaved.handReferralForm
+    , referToHealthCenter = referToHealthCenter
+    , accompanyToHealthCenter = or form.accompanyToHealthCenter fromSaved.accompanyToHealthCenter
+    , enrollToNutritionProgram = or form.enrollToNutritionProgram fromSaved.enrollToNutritionProgram
+    , referToNutritionProgram = or form.referToNutritionProgram fromSaved.referToNutritionProgram
+    , reasonForNotSendingToHC =
+        whenAnsweredNo referToHealthCenter
+            (or form.reasonForNotSendingToHC fromSaved.reasonForNotSendingToHC)
+    }
 
 
 toSendToHCValueWithDefault : Maybe SendToHCValue -> SendToHCForm -> Maybe SendToHCValue
@@ -10944,9 +10989,14 @@ ongoingTreatmentReviewFormWithDefault form saved =
                 , missedDoses = or form.missedDoses (EverySet.member MissedDoses value.signs |> Just)
                 , feelingBetter = or form.feelingBetter (EverySet.member FeelingBetter value.signs |> Just)
                 , sideEffects = or form.sideEffects (EverySet.member SideEffects value.signs |> Just)
-                , reasonForNotTaking = valueConsideringIsDirtyField form.reasonForNotTakingDirty form.reasonForNotTaking value.reasonForNotTaking
+                , reasonForNotTaking =
+                    whyNotAnswer (EverySet.member TakenAsPrescribed value.signs) NoReasonForNotTakingSign value.reasonForNotTaking
+                        |> maybeValueConsideringIsDirtyField form.reasonForNotTakingDirty form.reasonForNotTaking
                 , reasonForNotTakingDirty = form.reasonForNotTakingDirty
-                , totalMissedDoses = valueConsideringIsDirtyField form.totalMissedDosesDirty form.totalMissedDoses value.missedDoses
+                , totalMissedDoses =
+                    -- "How many doses?" is asked only when doses were missed, and zero is not an answer to it.
+                    whyNotAnswer (not (EverySet.member MissedDoses value.signs)) 0 value.missedDoses
+                        |> maybeValueConsideringIsDirtyField form.totalMissedDosesDirty form.totalMissedDoses
                 , totalMissedDosesDirty = form.totalMissedDosesDirty
                 , adverseEvents = maybeValueConsideringIsDirtyField form.adverseEventsDirty form.adverseEvents (value.adverseEvents |> EverySet.toList |> Just)
                 , adverseEventsDirty = form.adverseEventsDirty

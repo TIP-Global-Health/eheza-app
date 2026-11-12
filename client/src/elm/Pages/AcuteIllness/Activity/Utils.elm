@@ -1625,20 +1625,40 @@ treatmentReviewFormWithDefault form saved =
             form
             (\value ->
                 let
-                    -- "Did it help?" is asked only when the medication was taken, so other records leave it unanswered.
-                    helpedAnswer taken helped =
-                        if EverySet.member taken value then
-                            Just (EverySet.member helped value)
+                    -- "Did it help?" is asked only when the medication was taken, so any other answer leaves it unanswered.
+                    takenAndHelped formTaken formHelped takenSign helpedSign =
+                        let
+                            taken =
+                                or formTaken (EverySet.member takenSign value |> Just)
+
+                            savedHelped =
+                                if EverySet.member takenSign value then
+                                    Just (EverySet.member helpedSign value)
+
+                                else
+                                    Nothing
+                        in
+                        if taken == Just True then
+                            ( taken, or formHelped savedHelped )
 
                         else
-                            Nothing
+                            ( taken, Nothing )
+
+                    ( feverPast6Hours, feverPast6HoursHelped ) =
+                        takenAndHelped form.feverPast6Hours form.feverPast6HoursHelped FeverPast6Hours FeverPast6HoursHelped
+
+                    ( malariaToday, malariaTodayHelped ) =
+                        takenAndHelped form.malariaToday form.malariaTodayHelped MalariaToday MalariaTodayHelped
+
+                    ( malariaWithinPastMonth, malariaWithinPastMonthHelped ) =
+                        takenAndHelped form.malariaWithinPastMonth form.malariaWithinPastMonthHelped MalariaWithinPastMonth MalariaWithinPastMonthHelped
                 in
-                { feverPast6Hours = or form.feverPast6Hours (EverySet.member FeverPast6Hours value |> Just)
-                , feverPast6HoursHelped = or form.feverPast6HoursHelped (helpedAnswer FeverPast6Hours FeverPast6HoursHelped)
-                , malariaToday = or form.malariaToday (EverySet.member MalariaToday value |> Just)
-                , malariaTodayHelped = or form.malariaTodayHelped (helpedAnswer MalariaToday MalariaTodayHelped)
-                , malariaWithinPastMonth = or form.malariaWithinPastMonth (EverySet.member MalariaWithinPastMonth value |> Just)
-                , malariaWithinPastMonthHelped = or form.malariaWithinPastMonthHelped (helpedAnswer MalariaWithinPastMonth MalariaWithinPastMonthHelped)
+                { feverPast6Hours = feverPast6Hours
+                , feverPast6HoursHelped = feverPast6HoursHelped
+                , malariaToday = malariaToday
+                , malariaTodayHelped = malariaTodayHelped
+                , malariaWithinPastMonth = malariaWithinPastMonth
+                , malariaWithinPastMonthHelped = malariaWithinPastMonthHelped
                 }
             )
 
@@ -1955,11 +1975,22 @@ covidTestingFormWithDefault form saved =
                 let
                     formWithDefault =
                         fromCovidTestingValue saved
+
+                    testPerformed =
+                        or form.testPerformed formWithDefault.testPerformed
+
+                    -- The other questions depend on this answer, so their saved answers hold only while it is unchanged.
+                    followUp formAnswer savedAnswer =
+                        if testPerformed == formWithDefault.testPerformed then
+                            or formAnswer savedAnswer
+
+                        else
+                            formAnswer
                 in
-                { testPerformed = or form.testPerformed formWithDefault.testPerformed
-                , testPositive = or form.testPositive formWithDefault.testPositive
-                , isPregnant = or form.isPregnant formWithDefault.isPregnant
-                , administrationNote = or form.administrationNote formWithDefault.administrationNote
+                { testPerformed = testPerformed
+                , testPositive = followUp form.testPositive formWithDefault.testPositive
+                , isPregnant = followUp form.isPregnant formWithDefault.isPregnant
+                , administrationNote = followUp form.administrationNote formWithDefault.administrationNote
                 }
             )
 
