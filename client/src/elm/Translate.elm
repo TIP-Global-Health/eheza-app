@@ -8817,8 +8817,8 @@ translationSet trans =
             , somali = Just "Dooro dawada ugu fiican ee bukaanka hoos ku xusan"
             }
 
-        HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia ->
-            if forModeratePreeclamsia then
+        HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclampsia ->
+            if forModeratePreeclampsia then
                 { english = "This patient was previously diagnosed with Moderate Preeclamsia"
                 , kinyarwanda = Just "Mu isuzuma rishize uyu mubyeyi yagize preekalampusi"
                 , kirundi = Just "Uyu mugwayi bamutoye ubushize Umuvuduko w'amaraso uru hagati na hagati kandi afise imbanyi"
@@ -26505,10 +26505,10 @@ translationSet trans =
             else
                 translationSet EmptyString
 
-        TreatmentDetailsHypertension forModeratePreeclamsia sign ->
+        TreatmentDetailsHypertension forModeratePreeclampsia sign ->
             let
                 diagnosis =
-                    if forModeratePreeclamsia then
+                    if forModeratePreeclampsia then
                         "Moderate Preeclampsia"
 
                     else
@@ -26662,7 +26662,7 @@ translationSet trans =
             , somali = Just "Daawadan weli ma qaadataa?"
             }
 
-        TreatmentReviewTask forModeratePreeclamsia task ->
+        TreatmentReviewTask forModeratePreeclampsia task ->
             case task of
                 TreatmentReviewPrenatalMedication ->
                     { english = "Prenatal Medication"
@@ -26679,7 +26679,7 @@ translationSet trans =
                     }
 
                 TreatmentReviewHypertension ->
-                    if forModeratePreeclamsia then
+                    if forModeratePreeclampsia then
                         { english = "Moderate Preeclamsia Medication"
                         , kinyarwanda = Just "Imiti Preklampusi Yoroheje"
                         , kirundi = Just "Imiti y'ingorane y'imbanyi bisanzwe"
