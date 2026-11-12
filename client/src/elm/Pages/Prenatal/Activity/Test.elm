@@ -6,6 +6,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model
     exposing
         ( AbdomenCPESign(..)
+        , AdministrationNote(..)
         , BloodGpRsTestValue
         , BloodSmearResult(..)
         , CSectionScar(..)
@@ -29,6 +30,7 @@ import Backend.Measurement.Model
         , MedicalHistoryPhysicalCondition(..)
         , MedicalHistorySign(..)
         , MedicationDistributionSign(..)
+        , MedicationSign(..)
         , MuacInCm(..)
         , ObstetricHistoryStep2Sign(..)
         , OccursInFamilySign(..)
@@ -73,15 +75,15 @@ import Html exposing (div)
 import Measurement.Model exposing (RangedMeasurement(..), emptyHIVPCRResultForm, emptyVaccinationForm)
 import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault, toVaccinationValueWithDefault, vaccinationFormWithDefault)
 import Pages.Prenatal.Activity.Model exposing (Msg(..), UltrasoundForm, emptyModel)
-import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), ImmunisationTask(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
+import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, immunisationTasksCompletedFromTotal, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveNextStepsTasks, resolveWarningPopupContentForUrgentDiagnoses, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, suicideRiskDiagnosedBySigns, toUltrasoundValueWithDefault, ultrasoundEDDDate, ultrasoundFormWithDefault, ultrasoundTasks, zscoreToPrePregnancyClassification)
-import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, skipObstetricHistorySecondStep)
+import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, expectActivity, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, immunisationTasksCompletedFromTotal, mandatoryActivitiesForNextStepsCompleted, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveMedicationTasks, resolveNextStepsTasks, resolveWarningPopupContentForUrgentDiagnoses, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, suicideRiskDiagnosedBySigns, toUltrasoundValueWithDefault, ultrasoundEDDDate, ultrasoundFormWithDefault, ultrasoundTasks, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, getAllActivities, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), PreviousEncounterData, emptyHealthEducationForm)
 import Pages.Prenatal.ProgressReport.Model exposing (obstetricalDiagnoses)
 import Pages.Prenatal.RecurrentActivity.Types
 import Pages.Prenatal.RecurrentActivity.Utils
-import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedHypertension, diagnosedPreviouslyAnyOf, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
+import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedHypertension, diagnosedPreviouslyAnyOf, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet, showMebendazoleQuestion)
 import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
@@ -3082,6 +3084,16 @@ all =
         , preeclampsiaRiskHypertensionAt37PlusTest
         , preeclampsiaRiskReferralUnchangedTest
         , tetanusDoseFallingDueTodayTest
+        , medicationAtFollowUpVisitTest
+        , calciumAtFollowUpVisitTest
+        , mmsAtFollowUpVisitTest
+        , fefolIronFolateAtFollowUpVisitTest
+        , mebendazoleInMedicationAtFollowUpVisitTest
+        , mebendazoleQuestionInTreatmentReviewTest
+        , mebendazoleNotInNextStepsWhenGivenInMedicationTest
+        , noMedicationWhenEverySupplementGivenTest
+        , nextStepsAfterMedicationAtFollowUpVisitTest
+        , firstNurseVisitUnchangedTest
         ]
 
 
@@ -7607,4 +7619,700 @@ tetanusDoseFallingDueTodayTest =
                             , TestFixtures.expectSaveEnabled
                             ]
             ]
+        ]
+
+
+
+-- SUPPLEMENTS AT NURSE FOLLOW-UP VISITS
+--
+-- The Medication activity hands out pregnancy supplements: MMS, Fefol, iron,
+-- folate, calcium (from 14 weeks) and Mebendazole (from 24 weeks). Each one is
+-- offered at every nurse visit until it has been given, so a supplement that
+-- was not yet due, out of stock or declined at the first visit comes back at
+-- the next. Mebendazole can also be handed out from Next Steps, after
+-- Treatment Review's "received Mebendazole?" question; the two routes must
+-- see each other.
+--
+-- All scenarios happen on `currentDate`. The pregnancy's EGA is set through
+-- the LMP, and every earlier visit is dated a number of weeks before the
+-- current one, with its measurements saved on that same day.
+
+
+{-| The supplement measurement of `task`, saved on `date` with `note`.
+-}
+withSupplement : NominalDate -> ( MedicationTask, AdministrationNote ) -> PrenatalMeasurements -> PrenatalMeasurements
+withSupplement date ( task, note ) measurements =
+    case task of
+        TaskCalcium ->
+            { measurements | calcium = TestFixtures.wrapMeasurement date note }
+
+        TaskFefol ->
+            { measurements | fefol = TestFixtures.wrapMeasurement date note }
+
+        TaskFolate ->
+            { measurements | folate = TestFixtures.wrapMeasurement date note }
+
+        TaskIron ->
+            { measurements | iron = TestFixtures.wrapMeasurement date note }
+
+        TaskMMS ->
+            { measurements | mms = TestFixtures.wrapMeasurement date note }
+
+        TaskMebendazole ->
+            { measurements | mebendazole = TestFixtures.wrapMeasurement date note }
+
+
+{-| The supplements recorded on `date`, each with its note.
+-}
+withSupplements : List ( MedicationTask, AdministrationNote ) -> NominalDate -> PrenatalMeasurements -> PrenatalMeasurements
+withSupplements records date measurements =
+    List.foldl (withSupplement date) measurements records
+
+
+{-| The supplements recorded as given on `date`.
+-}
+givenSupplements : List MedicationTask -> NominalDate -> PrenatalMeasurements -> PrenatalMeasurements
+givenSupplements tasks =
+    withSupplements (List.map (\task -> ( task, AdministeredToday )) tasks)
+
+
+{-| Next Steps' medication distribution, saved on `date`, handing out
+Mebendazole.
+-}
+mebendazoleFromNextSteps : NominalDate -> PrenatalMeasurements -> PrenatalMeasurements
+mebendazoleFromNextSteps date measurements =
+    { measurements
+        | medicationDistribution =
+            TestFixtures.wrapMeasurement date
+                { distributionSigns = EverySet.singleton Mebendezole
+                , nonAdministrationSigns = EverySet.empty
+                , recommendedTreatmentSigns = Nothing
+                , avoidingGuidanceReason = Nothing
+                , reinforceTreatmentSigns = Nothing
+                }
+    }
+
+
+{-| Next Steps' medication distribution, saved on `date`, where Mebendazole was
+prescribed but not handed out, because it was out of stock.
+-}
+mebendazoleNotGivenFromNextSteps : NominalDate -> PrenatalMeasurements -> PrenatalMeasurements
+mebendazoleNotGivenFromNextSteps date measurements =
+    { measurements
+        | medicationDistribution =
+            TestFixtures.wrapMeasurement date
+                { distributionSigns = EverySet.singleton NoMedicationDistributionSigns
+                , nonAdministrationSigns = EverySet.singleton (Backend.Measurement.Model.MedicationMebendezole NonAdministrationLackOfStock)
+                , recommendedTreatmentSigns = Nothing
+                , avoidingGuidanceReason = Nothing
+                , reinforceTreatmentSigns = Nothing
+                }
+    }
+
+
+{-| Treatment Review's answer to the prenatal medication questions: `signs`
+holds what the woman says she received, `NoMedication` for "No" to all.
+-}
+withTreatmentReviewAnswer : EverySet MedicationSign -> NominalDate -> PrenatalMeasurements -> PrenatalMeasurements
+withTreatmentReviewAnswer signs date measurements =
+    { measurements
+        | medication =
+            TestFixtures.wrapMeasurement date
+                { signs = Just signs
+                , hivTreatment = Nothing
+                , hypertensionTreatment = Nothing
+                , malariaTreatment = Nothing
+                , anemiaTreatment = Nothing
+                , syphilisTreatment = Nothing
+                }
+    }
+
+
+{-| An earlier nurse visit held `weeksAgo` weeks before `currentDate`, with the
+measurements `record` saves on that day.
+-}
+supplementsEarlierVisit : Int -> List (NominalDate -> PrenatalMeasurements -> PrenatalMeasurements) -> PreviousEncounterData
+supplementsEarlierVisit weeksAgo records =
+    let
+        date =
+            Date.add Date.Weeks (negate weeksAgo) currentDate
+    in
+    { startDate = date
+    , diagnoses = EverySet.empty
+    , pastDiagnoses = EverySet.empty
+    , measurements = List.foldl (\record measurements -> record date measurements) emptyPrenatalMeasurements records
+    }
+
+
+{-| The nurse visit on `currentDate` at `egaWeeks` weeks, after the earlier
+nurse visits (oldest first), with the current visit's measurements.
+-}
+supplementsVisit : Int -> List PreviousEncounterData -> PrenatalMeasurements -> AssembledData
+supplementsVisit egaWeeks earlierVisits measurements =
+    let
+        base =
+            testAssembled measurements
+    in
+    { base
+        | nursePreviousEncountersData = earlierVisits
+        , globalLmpDate = Just (Date.add Date.Weeks (negate egaWeeks) currentDate)
+    }
+
+
+{-| The activities the encounter page lists, as it builds them.
+-}
+shownActivities : AssembledData -> List Backend.PrenatalActivity.Model.PrenatalActivity
+shownActivities assembled =
+    getAllActivities EverySet.empty assembled
+        |> List.filter (expectActivity currentDate SiteRwanda EverySet.empty assembled)
+
+
+medicationActivityShown : AssembledData -> Bool
+medicationActivityShown =
+    shownActivities >> List.member Backend.PrenatalActivity.Model.Medication
+
+
+{-| A supplement is offered when the Medication activity is listed and holds
+the supplement's task.
+-}
+expectOffered : MedicationTask -> AssembledData -> Expect.Expectation
+expectOffered task assembled =
+    ( medicationActivityShown assembled, List.member task (resolveMedicationTasks currentDate assembled) )
+        |> Expect.equal ( True, True )
+
+
+{-| A supplement is not offered when the Medication activity holds no task for
+it, whether the activity is listed or not.
+-}
+expectNotOffered : MedicationTask -> AssembledData -> Expect.Expectation
+expectNotOffered task assembled =
+    resolveMedicationTasks currentDate assembled
+        |> List.member task
+        |> Expect.equal False
+
+
+{-| Each supplement task paired with whether `tasks` holds it, so that two
+task lists compare regardless of their order.
+-}
+taskMembership : List MedicationTask -> List ( MedicationTask, Bool )
+taskMembership tasks =
+    List.map (\task -> ( task, List.member task tasks ))
+        [ TaskCalcium, TaskFefol, TaskFolate, TaskIron, TaskMebendazole, TaskMMS ]
+
+
+{-| The Medication activity is listed, holding exactly these tasks.
+-}
+expectOfferedExactly : List MedicationTask -> AssembledData -> Expect.Expectation
+expectOfferedExactly tasks assembled =
+    ( medicationActivityShown assembled, taskMembership (resolveMedicationTasks currentDate assembled) )
+        |> Expect.equal ( True, taskMembership tasks )
+
+
+{-| Whether Next Steps offers Mebendazole in its medication distribution.
+-}
+nextStepsOffersMebendazole : AssembledData -> Bool
+nextStepsOffersMebendazole assembled =
+    resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
+        |> List.concatMap (\( _, signs, _ ) -> signs)
+        |> List.member Mebendezole
+
+
+medicationAtFollowUpVisitTest : Test
+medicationAtFollowUpVisitTest =
+    describe "At a nurse follow-up visit, the Medication activity appears when a supplement is due and has not been given at an earlier nurse visit"
+        [ test "a follow-up visit after a first visit that recorded no supplements lists Medication" <|
+            \_ ->
+                supplementsVisit 20 [ supplementsEarlierVisit 4 [] ] emptyPrenatalMeasurements
+                    |> medicationActivityShown
+                    |> Expect.equal True
+        , test "a follow-up visit after a first visit where every supplement was out of stock lists Medication" <|
+            \_ ->
+                supplementsVisit 20
+                    [ supplementsEarlierVisit 4
+                        [ withSupplements
+                            (List.map (\task -> ( task, NonAdministrationLackOfStock ))
+                                [ TaskCalcium, TaskFefol, TaskMMS ]
+                            )
+                        ]
+                    ]
+                    emptyPrenatalMeasurements
+                    |> medicationActivityShown
+                    |> Expect.equal True
+        , test "a third visit lists Medication while a supplement is still missing after two earlier visits" <|
+            \_ ->
+                supplementsVisit 20
+                    [ supplementsEarlierVisit 10 [ givenSupplements [ TaskFefol ] ]
+                    , supplementsEarlierVisit 4 [ withSupplements [ ( TaskMMS, NonAdministrationPatientDeclined ) ] ]
+                    ]
+                    emptyPrenatalMeasurements
+                    |> expectOffered TaskMMS
+        , test "the activity also appears on a follow-up visit at 30 weeks, past the week-28 mental health gate" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskFefol, TaskMMS, TaskMebendazole ] ] ] emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskCalcium ]
+        ]
+
+
+calciumAtFollowUpVisitTest : Test
+calciumAtFollowUpVisitTest =
+    let
+        -- MMS and Fefol were handed out at the first visit, so calcium is
+        -- the only supplement that can be due before 24 weeks.
+        firstVisitBefore14Weeks =
+            supplementsEarlierVisit 6 [ givenSupplements [ TaskFefol, TaskMMS ] ]
+    in
+    describe "Calcium is offered at any nurse visit from 14 weeks until it has been given"
+        [ test "first seen at 10 weeks, calcium is offered at a follow-up visit at 16 weeks" <|
+            \_ ->
+                supplementsVisit 16 [ firstVisitBefore14Weeks ] emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskCalcium ]
+        , test "calcium is offered at a follow-up visit exactly at 14 weeks" <|
+            \_ ->
+                supplementsVisit 14 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskFefol, TaskMMS ] ] ] emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskCalcium ]
+        , test "guard: calcium is not offered at a follow-up visit at 13 weeks, and with nothing else due there is no Medication" <|
+            \_ ->
+                supplementsVisit 13 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskFefol, TaskMMS ] ] ] emptyPrenatalMeasurements
+                    |> Expect.all
+                        [ expectNotOffered TaskCalcium
+                        , medicationActivityShown >> Expect.equal False
+                        ]
+        , test "calcium declined at the first visit is offered again at the follow-up visit" <|
+            \_ ->
+                supplementsVisit 20
+                    [ supplementsEarlierVisit 4
+                        [ givenSupplements [ TaskFefol, TaskMMS ]
+                        , withSupplements [ ( TaskCalcium, NonAdministrationPatientDeclined ) ]
+                        ]
+                    ]
+                    emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskCalcium ]
+        , test "calcium out of stock at two earlier visits is offered at the third" <|
+            \_ ->
+                supplementsVisit 22
+                    [ supplementsEarlierVisit 6 [ givenSupplements [ TaskFefol, TaskMMS ], withSupplements [ ( TaskCalcium, NonAdministrationLackOfStock ) ] ]
+                    , supplementsEarlierVisit 2 [ withSupplements [ ( TaskCalcium, NonAdministrationLackOfStock ) ] ]
+                    ]
+                    emptyPrenatalMeasurements
+                    |> expectOffered TaskCalcium
+        , test "guard: calcium given at an earlier visit is not offered again" <|
+            \_ ->
+                supplementsVisit 20 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskCalcium ] ] ] emptyPrenatalMeasurements
+                    |> expectNotOffered TaskCalcium
+        , test "guard: calcium given at the first of two earlier visits is not offered at the third" <|
+            \_ ->
+                supplementsVisit 22 [ supplementsEarlierVisit 6 [ givenSupplements [ TaskCalcium ] ], supplementsEarlierVisit 2 [] ] emptyPrenatalMeasurements
+                    |> expectNotOffered TaskCalcium
+        ]
+
+
+mmsAtFollowUpVisitTest : Test
+mmsAtFollowUpVisitTest =
+    describe "MMS is offered at every nurse visit until it has been given"
+        [ test "MMS out of stock at the first visit is offered at the follow-up visit" <|
+            \_ ->
+                supplementsVisit 12
+                    [ supplementsEarlierVisit 4 [ givenSupplements [ TaskFefol ], withSupplements [ ( TaskMMS, NonAdministrationLackOfStock ) ] ] ]
+                    emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskMMS ]
+        , test "MMS never recorded at the first visit is offered at the follow-up visit" <|
+            \_ ->
+                supplementsVisit 12 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskFefol ] ] ] emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskMMS ]
+        , test "guard: MMS given at an earlier visit is not offered again" <|
+            \_ ->
+                supplementsVisit 12 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskMMS ] ] ] emptyPrenatalMeasurements
+                    |> expectNotOffered TaskMMS
+        , test "guard: MMS given two visits ago, and not recorded at the last visit, is not offered" <|
+            \_ ->
+                supplementsVisit 20 [ supplementsEarlierVisit 10 [ givenSupplements [ TaskMMS ] ], supplementsEarlierVisit 4 [] ] emptyPrenatalMeasurements
+                    |> expectNotOffered TaskMMS
+        ]
+
+
+fefolIronFolateAtFollowUpVisitTest : Test
+fefolIronFolateAtFollowUpVisitTest =
+    -- At 12 weeks neither calcium nor Mebendazole is due, so the tasks listed
+    -- come from MMS, Fefol, iron and folate alone.
+    describe "Fefol is offered until Fefol, iron or folate has been given. Iron and folate are each offered until that supplement or Fefol has been given. MMS does not count as either"
+        [ test "after only MMS was given, Fefol, iron and folate are all offered at the follow-up visit" <|
+            \_ ->
+                supplementsVisit 12 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskMMS ] ] ] emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskFefol, TaskFolate, TaskIron ]
+        , test "after iron was given, folate is offered and neither Fefol nor iron is" <|
+            \_ ->
+                supplementsVisit 12 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskIron, TaskMMS ] ] ] emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskFolate ]
+        , test "after folate was given, iron is offered and neither Fefol nor folate is" <|
+            \_ ->
+                supplementsVisit 12 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskFolate, TaskMMS ] ] ] emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskIron ]
+        , test "Fefol out of stock at the first visit is offered at the follow-up visit, with iron and folate" <|
+            \_ ->
+                supplementsVisit 12
+                    [ supplementsEarlierVisit 4 [ givenSupplements [ TaskMMS ], withSupplements [ ( TaskFefol, NonAdministrationLackOfStock ) ] ] ]
+                    emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskFefol, TaskFolate, TaskIron ]
+        , test "guard: after Fefol was given, none of Fefol, iron and folate is offered" <|
+            \_ ->
+                supplementsVisit 12 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskFefol ] ] ] emptyPrenatalMeasurements
+                    |> Expect.all
+                        [ expectNotOffered TaskFefol
+                        , expectNotOffered TaskIron
+                        , expectNotOffered TaskFolate
+                        ]
+        , test "guard: after iron and folate were given at two different visits, none of Fefol, iron and folate is offered" <|
+            \_ ->
+                supplementsVisit 20 [ supplementsEarlierVisit 10 [ givenSupplements [ TaskIron ] ], supplementsEarlierVisit 4 [ givenSupplements [ TaskFolate ] ] ] emptyPrenatalMeasurements
+                    |> Expect.all
+                        [ expectNotOffered TaskFefol
+                        , expectNotOffered TaskIron
+                        , expectNotOffered TaskFolate
+                        ]
+        ]
+
+
+mebendazoleInMedicationAtFollowUpVisitTest : Test
+mebendazoleInMedicationAtFollowUpVisitTest =
+    let
+        -- Everything but Mebendazole was handed out at an earlier visit.
+        otherSupplementsGiven =
+            givenSupplements [ TaskCalcium, TaskFefol, TaskMMS ]
+    in
+    describe "Mebendazole is offered in Medication at any nurse visit from 24 weeks until it has been given, either through Medication or from Next Steps, at an earlier visit"
+        [ test "first seen at 20 weeks, Mebendazole is offered in Medication at a follow-up visit exactly at 24 weeks" <|
+            \_ ->
+                supplementsVisit 24 [ supplementsEarlierVisit 4 [ otherSupplementsGiven ] ] emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskMebendazole ]
+        , test "guard: Mebendazole is not offered at a follow-up visit at 23 weeks, and with nothing else due there is no Medication" <|
+            \_ ->
+                supplementsVisit 23 [ supplementsEarlierVisit 4 [ otherSupplementsGiven ] ] emptyPrenatalMeasurements
+                    |> Expect.all
+                        [ expectNotOffered TaskMebendazole
+                        , medicationActivityShown >> Expect.equal False
+                        ]
+        , test "Mebendazole declined in Medication at an earlier visit is offered again" <|
+            \_ ->
+                supplementsVisit 30
+                    [ supplementsEarlierVisit 4 [ otherSupplementsGiven, withSupplements [ ( TaskMebendazole, NonAdministrationPatientDeclined ) ] ] ]
+                    emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskMebendazole ]
+        , test "Mebendazole prescribed but out of stock in Next Steps at an earlier visit is offered in Medication" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ otherSupplementsGiven, mebendazoleNotGivenFromNextSteps ] ] emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskMebendazole ]
+        , test "guard: Mebendazole given in Medication at an earlier visit is not offered again" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskMebendazole ] ] ] emptyPrenatalMeasurements
+                    |> expectNotOffered TaskMebendazole
+        , test "Mebendazole given from Next Steps at an earlier visit is not offered in Medication" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ mebendazoleFromNextSteps ] ] emptyPrenatalMeasurements
+                    |> expectNotOffered TaskMebendazole
+        , test "Mebendazole given from Next Steps two visits ago is not offered in Medication at the third" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 8 [ mebendazoleFromNextSteps ], supplementsEarlierVisit 4 [] ] emptyPrenatalMeasurements
+                    |> expectNotOffered TaskMebendazole
+        ]
+
+
+mebendazoleQuestionInTreatmentReviewTest : Test
+mebendazoleQuestionInTreatmentReviewTest =
+    describe "Treatment Review asks \"received Mebendazole?\" from 24 weeks only while Mebendazole has not been given at an earlier visit, through Medication or from Next Steps"
+        [ test "Mebendazole given in Medication at an earlier visit: the question is not asked" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskMebendazole ] ] ] emptyPrenatalMeasurements
+                    |> showMebendazoleQuestion currentDate
+                    |> Expect.equal False
+        , test "Mebendazole given in Medication two visits ago: the question is not asked at the third" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 8 [ givenSupplements [ TaskMebendazole ] ], supplementsEarlierVisit 4 [] ] emptyPrenatalMeasurements
+                    |> showMebendazoleQuestion currentDate
+                    |> Expect.equal False
+        , test "guard: Mebendazole given from Next Steps at an earlier visit: the question is not asked" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ mebendazoleFromNextSteps ] ] emptyPrenatalMeasurements
+                    |> showMebendazoleQuestion currentDate
+                    |> Expect.equal False
+        , test "guard: Mebendazole declined in Medication at an earlier visit: the question is asked" <|
+            \_ ->
+                supplementsVisit 30
+                    [ supplementsEarlierVisit 4 [ withSupplements [ ( TaskMebendazole, NonAdministrationPatientDeclined ) ] ] ]
+                    emptyPrenatalMeasurements
+                    |> showMebendazoleQuestion currentDate
+                    |> Expect.equal True
+        , test "guard: Mebendazole out of stock in Next Steps at an earlier visit: the question is asked" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ mebendazoleNotGivenFromNextSteps ] ] emptyPrenatalMeasurements
+                    |> showMebendazoleQuestion currentDate
+                    |> Expect.equal True
+        , test "guard: no Mebendazole at an earlier visit, at 24 weeks: the question is asked" <|
+            \_ ->
+                supplementsVisit 24 [ supplementsEarlierVisit 4 [] ] emptyPrenatalMeasurements
+                    |> showMebendazoleQuestion currentDate
+                    |> Expect.equal True
+        , test "guard: no Mebendazole at an earlier visit, at 23 weeks: the question is not asked" <|
+            \_ ->
+                supplementsVisit 23 [ supplementsEarlierVisit 4 [] ] emptyPrenatalMeasurements
+                    |> showMebendazoleQuestion currentDate
+                    |> Expect.equal False
+        ]
+
+
+mebendazoleNotInNextStepsWhenGivenInMedicationTest : Test
+mebendazoleNotInNextStepsWhenGivenInMedicationTest =
+    let
+        -- A follow-up visit at 26 weeks, with no Mebendazole at the earlier
+        -- visit: Medication offers it, and Treatment Review asks about it.
+        -- The woman answers "No" to every prenatal medication question.
+        visitWith currentRecords =
+            supplementsVisit 26
+                [ supplementsEarlierVisit 6 [ givenSupplements [ TaskCalcium, TaskFefol, TaskMMS ] ] ]
+                (List.foldl (\record measurements -> record currentDate measurements)
+                    emptyPrenatalMeasurements
+                    (withTreatmentReviewAnswer (EverySet.singleton NoMedication) :: currentRecords)
+                )
+    in
+    describe "When Mebendazole is recorded as given in Medication at the current visit, Next Steps does not offer it"
+        [ test "Mebendazole given in Medication today, \"received Mebendazole?\" answered No: Next Steps does not offer Mebendazole" <|
+            \_ ->
+                visitWith [ givenSupplements [ TaskMebendazole ] ]
+                    |> nextStepsOffersMebendazole
+                    |> Expect.equal False
+        , test "guard: \"received Mebendazole?\" answered Yes: Next Steps does not offer Mebendazole" <|
+            \_ ->
+                supplementsVisit 26
+                    [ supplementsEarlierVisit 6 [ givenSupplements [ TaskCalcium, TaskFefol, TaskMMS ] ] ]
+                    (withTreatmentReviewAnswer (EverySet.singleton Mebendazole) currentDate emptyPrenatalMeasurements)
+                    |> nextStepsOffersMebendazole
+                    |> Expect.equal False
+        ]
+
+
+noMedicationWhenEverySupplementGivenTest : Test
+noMedicationWhenEverySupplementGivenTest =
+    describe "A woman who has already been given every supplement due sees no Medication activity at a follow-up visit"
+        [ test "guard: every supplement given at one earlier visit: no Medication at 30 weeks" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskCalcium, TaskFefol, TaskMebendazole, TaskMMS ] ] ] emptyPrenatalMeasurements
+                    |> medicationActivityShown
+                    |> Expect.equal False
+        , test "guard: supplements given across two earlier visits: no Medication at 30 weeks" <|
+            \_ ->
+                supplementsVisit 30
+                    [ supplementsEarlierVisit 18 [ givenSupplements [ TaskFefol, TaskMMS ] ]
+                    , supplementsEarlierVisit 4 [ givenSupplements [ TaskCalcium, TaskMebendazole ] ]
+                    ]
+                    emptyPrenatalMeasurements
+                    |> medicationActivityShown
+                    |> Expect.equal False
+        , test "guard: iron and folate given instead of Fefol: no Medication at 12 weeks" <|
+            \_ ->
+                supplementsVisit 12 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskFolate, TaskIron, TaskMMS ] ] ] emptyPrenatalMeasurements
+                    |> medicationActivityShown
+                    |> Expect.equal False
+        , test "guard: MMS and Fefol given, calcium not yet due: no Medication at 13 weeks" <|
+            \_ ->
+                supplementsVisit 13 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskFefol, TaskMMS ] ] ] emptyPrenatalMeasurements
+                    |> medicationActivityShown
+                    |> Expect.equal False
+        , test "Mebendazole given from Next Steps and the rest through Medication: no Medication task left at 30 weeks" <|
+            \_ ->
+                supplementsVisit 30
+                    [ supplementsEarlierVisit 4 [ givenSupplements [ TaskCalcium, TaskFefol, TaskMMS ], mebendazoleFromNextSteps ] ]
+                    emptyPrenatalMeasurements
+                    |> Expect.all
+                        [ medicationActivityShown >> Expect.equal False
+                        , resolveMedicationTasks currentDate >> Expect.equal []
+                        ]
+        ]
+
+
+{-| Every activity of a nurse visit recorded on `currentDate`, except the
+supplements: danger signs, symptom review, examination, family planning, every
+laboratory test, and both histories. Treatment Review is answered "No" to
+everything. Immunisation is not due (five tetanus doses on record) and, below
+28 weeks, Maternal Mental Health is not asked.
+-}
+everyActivityButSupplements : PrenatalMeasurements
+everyActivityButSupplements =
+    { emptyPrenatalMeasurements
+        | breastExam = wrapMeasurement { exam = EverySet.singleton Backend.Measurement.Model.NormalBreast, dischargeType = Nothing, selfGuidance = True }
+        , corePhysicalExam = wrapMeasurement (corePhysicalExamValueWith (EverySet.singleton NormalLungs) (EverySet.singleton NormalAbdomen))
+        , familyPlanning = wrapMeasurement (EverySet.singleton Backend.Measurement.Model.NoFamilyPlanning)
+        , lastMenstrualPeriod =
+            wrapMeasurement
+                { date = Date.add Date.Weeks -20 currentDate
+                , prePregnancyWeight = Nothing
+                , confident = True
+                , notConfidentReason = Nothing
+                , lateFirstVisitReason = Nothing
+                , confirmation = True
+                }
+        , nutrition = wrapMeasurement { height = HeightInCm 160, weight = WeightInKg 60, muac = MuacInCm 25 }
+        , obstetricalExam =
+            wrapMeasurement
+                { fundalPalpable = True
+                , fundalHeight = Just (HeightInCm 20)
+                , fetalPresentation = Cephalic
+                , fetalMovement = True
+                , fetalHeartRate = 140
+                , cSectionScar = NoScar
+                }
+        , obstetricHistory =
+            wrapMeasurement
+                { currentlyPregnant = True
+                , termPregnancy = 0
+                , preTermPregnancy = 0
+                , stillbirthsAtTerm = 0
+                , stillbirthsPreTerm = 0
+                , abortions = 0
+                , liveChildren = 0
+                }
+        , outsideCare = wrapMeasurement { signs = EverySet.singleton Backend.Measurement.Model.NoOutsideCareSigns, diagnoses = Nothing, medications = Nothing }
+        , symptomReview = wrapMeasurement { symptoms = EverySet.singleton NoPrenatalSymptoms, symptomQuestions = EverySet.empty, flankPainSign = Nothing }
+    }
+        |> withDangerSigns (EverySet.singleton NoDangerSign)
+        |> withVitals 120 80
+        |> withMedicalHistorySign NoMedicalHistorySigns
+        |> withTreatmentReviewAnswer (EverySet.singleton NoMedication) currentDate
+        |> withHIVTest TestNegative
+        |> withSyphilisTest TestNegative
+        |> withHepatitisBTest TestNegative
+        |> withMalariaTest TestNegative
+        |> withBloodGpRsNonImmediate RhesusPositive
+        |> withUrineProtein Protein0
+        |> withHemoglobin 12
+        |> withRandomBloodSugarNonImmediate 90
+        |> withHIVPCRNonImmediate 20
+        |> withPartnerHIVTestByLabTech TestNegative EverySet.empty
+
+
+{-| `supplementsVisit` with five tetanus doses on record, so that Immunisation
+is not due.
+-}
+supplementsVisitTetanusDone : Int -> List PreviousEncounterData -> PrenatalMeasurements -> AssembledData
+supplementsVisitTetanusDone egaWeeks earlierVisits measurements =
+    let
+        base =
+            supplementsVisit egaWeeks earlierVisits measurements
+
+        tetanusDone =
+            Dict.singleton VaccineTetanus
+                (Dict.fromList
+                    [ ( VaccineDoseFirst, Date.fromCalendarDate 2010 Time.Jan 1 )
+                    , ( VaccineDoseSecond, Date.fromCalendarDate 2010 Time.Feb 1 )
+                    , ( VaccineDoseThird, Date.fromCalendarDate 2010 Time.Aug 1 )
+                    , ( VaccineDoseFourth, Date.fromCalendarDate 2011 Time.Aug 1 )
+                    , ( VaccineDoseFifth, Date.fromCalendarDate 2012 Time.Aug 1 )
+                    ]
+                )
+    in
+    { base | vaccinationHistory = tetanusDone, vaccinationProgress = tetanusDone }
+
+
+nextStepsAfterMedicationAtFollowUpVisitTest : Test
+nextStepsAfterMedicationAtFollowUpVisitTest =
+    let
+        -- A follow-up visit at 20 weeks where every activity is done. MMS and
+        -- Fefol were given at the first visit, so calcium is the only
+        -- supplement due, and Medication appears for it.
+        followUp currentSupplements =
+            supplementsVisitTetanusDone 20
+                [ supplementsEarlierVisit 8 [ givenSupplements [ TaskFefol, TaskMMS ] ] ]
+                (withSupplements currentSupplements currentDate everyActivityButSupplements)
+
+        nextStepsOpens =
+            mandatoryActivitiesForNextStepsCompleted currentDate SiteRwanda EverySet.empty
+    in
+    describe "When Medication appears at a follow-up visit, Next Steps opens only after it is completed, as at the first visit. An emergency referral still opens Next Steps straight away"
+        [ test "every other activity done, calcium not yet recorded: Next Steps does not open" <|
+            \_ ->
+                followUp []
+                    |> nextStepsOpens
+                    |> Expect.equal False
+        , test "guard: calcium recorded as given: Next Steps opens" <|
+            \_ ->
+                followUp [ ( TaskCalcium, AdministeredToday ) ]
+                    |> nextStepsOpens
+                    |> Expect.equal True
+        , test "guard: calcium recorded as out of stock: Medication is completed and Next Steps opens" <|
+            \_ ->
+                followUp [ ( TaskCalcium, NonAdministrationLackOfStock ) ]
+                    |> nextStepsOpens
+                    |> Expect.equal True
+        , test "guard: an emergency referral diagnosis opens Next Steps with calcium not recorded" <|
+            \_ ->
+                let
+                    assembled =
+                        followUp []
+                in
+                { assembled | encounter = { testEncounter | diagnoses = EverySet.singleton DiagnosisEclampsia } }
+                    |> nextStepsOpens
+                    |> Expect.equal True
+        , test "guard: no supplement due: Next Steps opens without Medication" <|
+            \_ ->
+                supplementsVisitTetanusDone 20
+                    [ supplementsEarlierVisit 8 [ givenSupplements [ TaskCalcium, TaskFefol, TaskMMS ] ] ]
+                    everyActivityButSupplements
+                    |> nextStepsOpens
+                    |> Expect.equal True
+        ]
+
+
+firstNurseVisitUnchangedTest : Test
+firstNurseVisitUnchangedTest =
+    let
+        firstVisit egaWeeks =
+            supplementsVisit egaWeeks [] emptyPrenatalMeasurements
+    in
+    describe "The first nurse visit is unchanged"
+        [ test "guard: at 10 weeks, Medication offers MMS, Fefol, iron and folate" <|
+            \_ ->
+                firstVisit 10
+                    |> expectOfferedExactly [ TaskFefol, TaskFolate, TaskIron, TaskMMS ]
+        , test "guard: at 14 weeks, Medication adds calcium" <|
+            \_ ->
+                firstVisit 14
+                    |> expectOfferedExactly [ TaskCalcium, TaskFefol, TaskFolate, TaskIron, TaskMMS ]
+        , test "guard: at 24 weeks, Medication adds Mebendazole" <|
+            \_ ->
+                firstVisit 24
+                    |> expectOfferedExactly [ TaskCalcium, TaskFefol, TaskFolate, TaskIron, TaskMebendazole, TaskMMS ]
+        , test "guard: Fefol given today removes iron and folate, and iron given today removes Fefol" <|
+            \_ ->
+                Expect.all
+                    [ \_ ->
+                        supplementsVisit 10 [] (givenSupplements [ TaskFefol ] currentDate emptyPrenatalMeasurements)
+                            |> resolveMedicationTasks currentDate
+                            |> taskMembership
+                            |> Expect.equal (taskMembership [ TaskFefol, TaskMMS ])
+                    , \_ ->
+                        supplementsVisit 10 [] (givenSupplements [ TaskIron ] currentDate emptyPrenatalMeasurements)
+                            |> resolveMedicationTasks currentDate
+                            |> taskMembership
+                            |> Expect.equal (taskMembership [ TaskFolate, TaskIron, TaskMMS ])
+                    ]
+                    ()
+        , test "guard: Treatment Review does not appear, and Next Steps does not offer Mebendazole" <|
+            \_ ->
+                firstVisit 26
+                    |> Expect.all
+                        [ shownActivities >> List.member Backend.PrenatalActivity.Model.PrenatalTreatmentReview >> Expect.equal False
+                        , nextStepsOffersMebendazole >> Expect.equal False
+                        ]
+        , test "guard: every other activity done, supplements not recorded: Next Steps does not open" <|
+            \_ ->
+                supplementsVisitTetanusDone 20 [] { everyActivityButSupplements | medication = Nothing, outsideCare = Nothing }
+                    |> mandatoryActivitiesForNextStepsCompleted currentDate SiteRwanda EverySet.empty
+                    |> Expect.equal False
+        , test "guard: every activity done, supplements recorded: Next Steps opens" <|
+            \_ ->
+                supplementsVisitTetanusDone 20
+                    []
+                    ({ everyActivityButSupplements | medication = Nothing, outsideCare = Nothing }
+                        |> givenSupplements [ TaskCalcium, TaskFefol, TaskMMS ] currentDate
+                    )
+                    |> mandatoryActivitiesForNextStepsCompleted currentDate SiteRwanda EverySet.empty
+                    |> Expect.equal True
         ]
