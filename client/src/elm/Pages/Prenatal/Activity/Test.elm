@@ -3095,6 +3095,9 @@ all =
         , nextStepsAfterMedicationAtFollowUpVisitTest
         , firstNurseVisitUnchangedTest
         , mebendazoleNotInMedicationWhenGivenFromNextStepsTodayTest
+        , mebendazoleInMedicationUntilGivenOrReceivedTest
+        , mebendazoleQuestionWhileNotGivenOrReceivedTest
+        , ironFolicAcidAnswerDoesNotStopFefolIronFolateTest
         ]
 
 
@@ -8330,4 +8333,187 @@ firstNurseVisitUnchangedTest =
                     )
                     |> mandatoryActivitiesForNextStepsCompleted currentDate SiteRwanda EverySet.empty
                     |> Expect.equal True
+        ]
+
+
+{-| Treatment Review's answer that she received Mebendazole, recorded on `date`.
+-}
+saidReceivedMebendazole : NominalDate -> PrenatalMeasurements -> PrenatalMeasurements
+saidReceivedMebendazole =
+    withTreatmentReviewAnswer (EverySet.singleton Mebendazole)
+
+
+{-| Treatment Review's answer, from the earlier variation of the question,
+that she received a deworming pill, recorded on `date`.
+-}
+saidReceivedDewormingPill : NominalDate -> PrenatalMeasurements -> PrenatalMeasurements
+saidReceivedDewormingPill =
+    withTreatmentReviewAnswer (EverySet.singleton DewormingPill)
+
+
+{-| Treatment Review answered "No" to every prenatal medication question.
+-}
+saidReceivedNothing : NominalDate -> PrenatalMeasurements -> PrenatalMeasurements
+saidReceivedNothing =
+    withTreatmentReviewAnswer (EverySet.singleton NoMedication)
+
+
+{-| The current visit's measurements, recorded on `currentDate`.
+-}
+recordedToday : List (NominalDate -> PrenatalMeasurements -> PrenatalMeasurements) -> PrenatalMeasurements
+recordedToday =
+    List.foldl (\record measurements -> record currentDate measurements) emptyPrenatalMeasurements
+
+
+mebendazoleInMedicationUntilGivenOrReceivedTest : Test
+mebendazoleInMedicationUntilGivenOrReceivedTest =
+    let
+        -- Everything but Mebendazole was handed out at an earlier visit, so
+        -- at 30 weeks Mebendazole is the only supplement that can be due.
+        otherSupplementsGiven =
+            givenSupplements [ TaskCalcium, TaskFefol, TaskMMS ]
+    in
+    describe "Mebendazole is offered in Medication from 24 weeks until it is given through Medication or from Next Steps, or the woman says in Treatment Review that she received it or a deworming pill. Next Steps or her answer at the current visit counts too"
+        [ test "she said at an earlier visit that she received Mebendazole: Mebendazole is not offered in Medication" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ saidReceivedMebendazole ] ] emptyPrenatalMeasurements
+                    |> expectNotOffered TaskMebendazole
+        , test "she said at an earlier visit that she received a deworming pill: Mebendazole is not offered in Medication" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ saidReceivedDewormingPill ] ] emptyPrenatalMeasurements
+                    |> expectNotOffered TaskMebendazole
+        , test "she said two visits ago that she received Mebendazole, and answered No at the last visit: Mebendazole is not offered at the third" <|
+            \_ ->
+                -- The "No" at the last visit answers a question about that
+                -- visit's interval; it does not undo the earlier Mebendazole.
+                supplementsVisit 30
+                    [ supplementsEarlierVisit 8 [ saidReceivedMebendazole ]
+                    , supplementsEarlierVisit 4 [ saidReceivedNothing ]
+                    ]
+                    emptyPrenatalMeasurements
+                    |> expectNotOffered TaskMebendazole
+        , test "she says at the current visit that she received Mebendazole: Mebendazole is not offered in Medication" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [] ] (recordedToday [ saidReceivedMebendazole ])
+                    |> expectNotOffered TaskMebendazole
+        , test "every other supplement given, and she said at an earlier visit that she received Mebendazole: no Medication activity at 30 weeks" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ otherSupplementsGiven, saidReceivedMebendazole ] ] emptyPrenatalMeasurements
+                    |> Expect.all
+                        [ medicationActivityShown >> Expect.equal False
+                        , resolveMedicationTasks currentDate >> Expect.equal []
+                        ]
+        , test "every other supplement given, and she says at the current visit that she received Mebendazole: no Medication activity at 30 weeks" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ otherSupplementsGiven ] ] (recordedToday [ saidReceivedMebendazole ])
+                    |> Expect.all
+                        [ medicationActivityShown >> Expect.equal False
+                        , resolveMedicationTasks currentDate >> Expect.equal []
+                        ]
+        , test "guard: she answered No at an earlier visit: Mebendazole is offered in Medication" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ otherSupplementsGiven, saidReceivedNothing ] ] emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskMebendazole ]
+        , test "guard: she said at an earlier visit that she takes iron / folic acid only: Mebendazole is offered in Medication" <|
+            \_ ->
+                supplementsVisit 30
+                    [ supplementsEarlierVisit 4 [ otherSupplementsGiven, withTreatmentReviewAnswer (EverySet.singleton IronAndFolicAcidSupplement) ] ]
+                    emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskMebendazole ]
+        , test "guard: she answers No at the current visit: Mebendazole is offered in Medication" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [ otherSupplementsGiven ] ] (recordedToday [ saidReceivedNothing ])
+                    |> expectOfferedExactly [ TaskMebendazole ]
+        , test "guard: Treatment Review not yet answered at the current visit: Mebendazole is offered in Medication" <|
+            \_ ->
+                -- The stored shape for "no answer yet" is a missing record.
+                supplementsVisit 24 [ supplementsEarlierVisit 4 [ otherSupplementsGiven ] ] emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskMebendazole ]
+        , test "guard: she said at an earlier visit that she received Mebendazole, at 23 weeks: Mebendazole is not offered" <|
+            \_ ->
+                supplementsVisit 23 [ supplementsEarlierVisit 4 [ saidReceivedMebendazole ] ] emptyPrenatalMeasurements
+                    |> expectNotOffered TaskMebendazole
+        ]
+
+
+mebendazoleQuestionWhileNotGivenOrReceivedTest : Test
+mebendazoleQuestionWhileNotGivenOrReceivedTest =
+    let
+        askedAt egaWeeks earlierVisits measurements =
+            supplementsVisit egaWeeks earlierVisits measurements
+                |> showMebendazoleQuestion currentDate
+    in
+    describe "Treatment Review asks \"received Mebendazole?\" from 24 weeks only while, at earlier visits, Mebendazole was not given through Medication or from Next Steps and she did not say she received it or a deworming pill"
+        [ test "she said at an earlier visit that she received Mebendazole: the question is not asked" <|
+            \_ ->
+                askedAt 30 [ supplementsEarlierVisit 4 [ saidReceivedMebendazole ] ] emptyPrenatalMeasurements
+                    |> Expect.equal False
+        , test "she said two visits ago that she received Mebendazole, and answered No at the last visit: the question is not asked at the third" <|
+            \_ ->
+                askedAt 30
+                    [ supplementsEarlierVisit 8 [ saidReceivedMebendazole ]
+                    , supplementsEarlierVisit 4 [ saidReceivedNothing ]
+                    ]
+                    emptyPrenatalMeasurements
+                    |> Expect.equal False
+        , test "she said at an earlier visit that she received Mebendazole, at exactly 24 weeks: the question is not asked" <|
+            \_ ->
+                askedAt 24 [ supplementsEarlierVisit 2 [ saidReceivedMebendazole ] ] emptyPrenatalMeasurements
+                    |> Expect.equal False
+        , test "guard: she said at an earlier visit that she received a deworming pill: the question is not asked" <|
+            \_ ->
+                askedAt 30 [ supplementsEarlierVisit 4 [ saidReceivedDewormingPill ] ] emptyPrenatalMeasurements
+                    |> Expect.equal False
+        , test "guard: she answered No at an earlier visit: the question is asked" <|
+            \_ ->
+                askedAt 30 [ supplementsEarlierVisit 4 [ saidReceivedNothing ] ] emptyPrenatalMeasurements
+                    |> Expect.equal True
+        , test "guard: she said at an earlier visit that she takes iron / folic acid only: the question is asked" <|
+            \_ ->
+                askedAt 30 [ supplementsEarlierVisit 4 [ withTreatmentReviewAnswer (EverySet.singleton IronAndFolicAcidSupplement) ] ] emptyPrenatalMeasurements
+                    |> Expect.equal True
+        , test "guard: her answer \"received Mebendazole\" at the current visit does not hide the question she is answering" <|
+            \_ ->
+                -- Only earlier visits decide whether the question is asked;
+                -- otherwise saving "Yes" would remove the question from the form.
+                askedAt 30 [ supplementsEarlierVisit 4 [] ] (recordedToday [ saidReceivedMebendazole ])
+                    |> Expect.equal True
+        ]
+
+
+ironFolicAcidAnswerDoesNotStopFefolIronFolateTest : Test
+ironFolicAcidAnswerDoesNotStopFefolIronFolateTest =
+    let
+        ironFolicAcid =
+            withTreatmentReviewAnswer (EverySet.singleton IronAndFolicAcidSupplement)
+    in
+    -- At 12 weeks neither calcium nor Mebendazole is due, and MMS was given at
+    -- the earlier visit, so the tasks listed come from Fefol, iron and folate.
+    describe "Saying in Treatment Review that she takes iron / folic acid does not stop Fefol, iron or folate being offered"
+        [ test "guard: she said at an earlier visit that she takes iron / folic acid: Fefol, iron and folate are offered" <|
+            \_ ->
+                supplementsVisit 12 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskMMS ], ironFolicAcid ] ] emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskFefol, TaskFolate, TaskIron ]
+        , test "guard: she says at the current visit that she takes iron / folic acid: Fefol, iron and folate are offered" <|
+            \_ ->
+                supplementsVisit 12 [ supplementsEarlierVisit 4 [ givenSupplements [ TaskMMS ] ] ] (recordedToday [ ironFolicAcid ])
+                    |> expectOfferedExactly [ TaskFefol, TaskFolate, TaskIron ]
+        , test "guard: she said iron / folic acid together with Mebendazole at an earlier visit: Fefol, iron and folate are offered" <|
+            \_ ->
+                supplementsVisit 12
+                    [ supplementsEarlierVisit 4
+                        [ givenSupplements [ TaskMMS ]
+                        , withTreatmentReviewAnswer (EverySet.fromList [ IronAndFolicAcidSupplement, Mebendazole ])
+                        ]
+                    ]
+                    emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskFefol, TaskFolate, TaskIron ]
+        , test "guard: she said at two earlier visits that she takes iron / folic acid: Fefol, iron and folate are offered at the third" <|
+            \_ ->
+                supplementsVisit 20
+                    [ supplementsEarlierVisit 10 [ givenSupplements [ TaskCalcium, TaskMMS ], ironFolicAcid ]
+                    , supplementsEarlierVisit 4 [ ironFolicAcid ]
+                    ]
+                    emptyPrenatalMeasurements
+                    |> expectOfferedExactly [ TaskFefol, TaskFolate, TaskIron ]
         ]
