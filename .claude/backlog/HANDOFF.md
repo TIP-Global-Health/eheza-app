@@ -10,7 +10,7 @@ metadata:
 
 ⏰ **Monitoring due — raise at the start of the survey on or after the date:** **B-514** 2026-11-19 (rerun the recurrence query in the entry on ihangane + vhw; user 2026-10-29: mention it when process-backlog runs that day) · **B-499** 2026-11-24 (second restore pass; harness lost, rebuild first).
 
-🔧 **PR #2523 open 2026-11-12 (B-545, tier 4, issue #2522), on `develop`**: Relationship page clears a finished save result on entry, so a failed save's "Backend error" banner no longer follows the person to other relationship pages. Blind tests skipped; in-app reproduction dropped by the user. ⏳ Review round 1 running.
+🔧 **PR #2523 open 2026-11-12 (B-545, tier 4, issue #2522), on `develop`**: Relationship page clears a finished save result on entry, so a failed save's "Backend error" banner no longer follows the person to other relationship pages. Blind tests skipped; in-app reproduction dropped by the user. Two review rounds done, threads resolved, head `9c0c8bbd5`, worktree released. Residual by decision: the Back-button route waits for B-544. ⏳ Waiting: CI, and the user's answer on QA (suggested: none).
 
 ⛔ **B-487 CLOSED by the user 2026-11-12 (verbatim: close it as "by spec")** — the Acute Illness progress report omits the "feeling better" answer by its spec (`Gizra/ihangane` #2089 lists three of the four Treatment Review questions). Do not re-pitch. 📌 Specs from 2020–21 live in the old `Gizra/ihangane` repository: `gh issue view <n> --repo Gizra/ihangane`; the branch name in the merge commit (`issue-<n>`) gives the number.
 
