@@ -60,6 +60,7 @@ getAllActivities features assembled =
                        , Examination
                        , FamilyPlanning
                        , PrenatalTreatmentReview
+                       , Medication
                        , Backend.PrenatalActivity.Model.MalariaPrevention
                        , PrenatalImmunisation
                        , Laboratory
