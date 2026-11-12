@@ -1630,15 +1630,16 @@ treatmentReviewFormWithDefault form saved =
                         let
                             taken =
                                 or formTaken (EverySet.member takenSign value |> Just)
-
-                            savedHelped =
-                                if EverySet.member takenSign value then
-                                    Just (EverySet.member helpedSign value)
-
-                                else
-                                    Nothing
                         in
                         if taken == Just True then
+                            let
+                                savedHelped =
+                                    if EverySet.member takenSign value then
+                                        Just (EverySet.member helpedSign value)
+
+                                    else
+                                        Nothing
+                            in
                             ( taken, or formHelped savedHelped )
 
                         else
