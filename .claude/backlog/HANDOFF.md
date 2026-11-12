@@ -10,9 +10,7 @@ metadata:
 
 ⏰ **Monitoring due — raise at the start of the survey on or after the date:** **B-514** 2026-11-19 (rerun the recurrence query in the entry on ihangane + vhw; user 2026-10-29: mention it when process-backlog runs that day) · **B-499** 2026-11-24 (second restore pass; harness lost, rebuild first).
 
-🔧 **PR #2519 open 2026-11-12 (B-590, tier 4, issue #2518), STACKED on #2517** (base `B-585-prenatal-misspelt-names`): on-screen "Preeclampsia" spelling in four English texts + one Kinyarwanda, and a by-pattern rename (`Preclampsia`, `Treatement`, `Doasage`, `Inuts`, `Referal`) over 28 files; blind tests skipped. Two review rounds done, threads resolved, head `d1ebed282`, worktree released; Kinyarwanda text left unchanged. ⏳ Waiting: e2e / simpletest CI on both, the user's answer on QA (suggested: none). 📌 **When #2519 merges: replace the old names quoted in READY items** (`Prevoiusly`, `Inital`, `Treatement`, `Inuts`, `Referal`, `Preclampsia` in B-581, B-588, B-274, TH-18 …) so their snippets match the code. Merge #2517 WITHOUT `--delete-branch`, PATCH #2519 `base=develop`, merge it, then delete the parent branch.
-
-🔧 **PR #2517 open 2026-11-12 (B-585, untiered, issue #2516), on `develop`** (built on #2511's head, which merged meanwhile): Prenatal names `Prevoiusly` / `Inital` / `forModeratePreeclamsia` spelt correctly, rename only, narrow comment scope (user). Blind tests skipped. Round 1: one leftover local renamed (`9f5b27c43`), four scope-widening findings declined; side-finding **B-590** (tier 4, on-screen "Preeclamsia" / "Preclampsia" text). Round 2 posted (8): PR body and issue now list the ninth name, 7 declined, threads resolved; head `9f5b27c43`; worktree released. ⏳ Waiting: e2e / simpletest CI, and the user's answer on QA (suggested: none). Next free id: B-591.
+✅ **Merged 2026-11-12 (user: "merge 2517 and 2519"), all CI green, branches deleted:** #2517 (B-585, issue #2516) `16f23f764` — Prenatal names `Prevoiusly` / `Inital` spelt correctly; #2519 (B-590, issue #2518) `79aa804d0` — on-screen "Preeclampsia" in four English texts plus a by-pattern rename over 28 files (`Treatement`, `Inuts`, `Referal`, `Preclampsia`, `Hemmorhage` in names; stored values and Kinyarwanda unchanged). Stack merged parent-plain, child retargeted to `develop`. No QA run, no post-deploy step. Old names quoted in READY items B-274, B-520, B-581, B-588, TH-18 updated. Issues stay open until the release sweep. Next free id: B-591.
 
 ✅ **Merged 2026-11-11 08:49 (user: "merge all the way you see fit"), branches deleted:** #2501 (B-576, issue #2500) `b62b080eb` and #2507 (B-571, issue #2503) `22127d310`. Issues stay open until the release sweep. ✅ **#2505 (B-583) merged 2026-11-11 11:32 as `cb63cd4b3`.** ✅ **#2506 (B-565, issue #2504) merged 2026-11-11 as `086399597`** after CI went green on `a0ed72653`.
 
@@ -35,7 +33,6 @@ metadata:
 ✅ **Merged 2026-11-10 (user: "merge"), branches deleted:** #2493 (B-567) `e55748dea`, #2497 (B-553) `5d988ea6f`, #2498 (B-481) `7c8dc033a`, #2499 (B-353) `68eaa7666`. QA approved #2493, #2498, #2499; #2497 needed none. Issues #2492, #2494–#2496 stay open until the release sweep. B-570 (dashboard cephaly count) filed.
 
 ✅ **Merged 2026-11-09 (user: "all PRs opened yesterday ready for merge? If so, merge."), merge commits, branches deleted:** #2488 `94c7d8468` (B-217), #2489 `7e9d38713` (B-477), #2490 `a89a5ba60` (B-372, Approved by QA), #2491 `031b013ad` (B-298, Approved by QA). #2488 and #2489 merged without a QA run, by the user's call. ⚠ **Open: add #2489 to the `#2415, #2419` completion-rerun line in release #2417** (the edit was blocked; the prenatal script is already listed).
-
 
 ✅ **Merged 2026-11-08 (user: "Merge the 4." — the PRs opened 2026-11-05), merge commits, branches deleted, CI green:** #2480 `d1d6bb9b8` (B-388), #2481 `109dadcaf` (B-556), #2482 `5eebf1484` (B-521, Approved by QA), #2483 `27f21d9d7` (B-256). #2480, #2481 and #2483 merged without a QA run. Issues #2476–#2479 stay open until the release sweep. Side-findings still READY: B-558, B-559, B-560.
 
@@ -202,7 +199,6 @@ What changes because of this:
 
 ⚠ **2026-10-11: the main tree was on `elm-0.19.3-upgrade` (PR #2323), not `develop`.** Bookkeeping was committed from a detached `origin/develop` worktree.
 
-
 ✅ **PR #2321 MERGED 2026-10-11 as `43f70081a` (opened 2026-10-09) (B-460, tier 2, issue #2320)** — Sync incidents: the backend now re-creates the entities a device sends after `Could not find UUID`. `list_boolean` written as 0/1, `field_deleted` skipped, absent JSON keys read without a notice. User-reported from vhw dblog 241296/241297. Verified by a local old-vs-new run; phpcs + comment check green. ⚠ Stuck users (vhw uid 234) need one account re-save after deploy, since the same details never re-trigger. **Review round 1 (medium): 8 findings, 1 fixed in `5f6bc3409`** (watchdog for an entity skipped on a missing required field), 3 refuted, 4 declined; threads resolved. Worktree released. ✅ CI fully green (all 11 checks). Awaiting merge.
 
 📌 **Merged 2026-10-10, all with `--delete-branch`:** #2306, #2308, #2310, #2312, #2315, #2317, #2319. Their issues (#2305, #2307, #2309, #2311, #2313, #2314, #2316, #2318) stay open — `develop` target; close them in the release reconciliation sweep.
@@ -327,7 +323,6 @@ fallback). An `✅ IMPLEMENTED` note added lower in the entry does not reach the
 left B-320 and B-323 with blank issue/PR columns; both headings were repaired 2026-09-08.
 
 ### The 2026-09-07 view (historical — everything in it has merged)
-
 
 **All seven PRs in the 2026-09-01 table below MERGED on 2026-09-03** (#2180, #2183, #2185, #2187, #2189, #2191, #2193; issues closed). Their worktrees (`B-272-…`, `B-303-B-304-…`, `B-280-…`, `B-299-…`, `B-213-…`, `B-307-…`) were still held on 2026-09-06 and can be removed.
 
