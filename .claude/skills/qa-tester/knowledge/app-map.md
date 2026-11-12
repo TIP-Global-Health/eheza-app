@@ -31,6 +31,9 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   entries before the script's own arguments (read from index 2).
 - A measurement node is found by its patient: join `field_data_field_person` to the person
   node and match its title (`E2ETest <firstName>`).
+- Yes/No follow-up fields on the server: `field_send_to_hc` + `field_reason_not_sent_to_hc`, `field_health_education_signs` + `field_reason_not_given_education`,
+  `field_treatment_ongoing` + `field_reason_for_not_taking` / `field_missed_doses` / `field_adverse_events`, `field_treatment_history`, `field_administration_note`.
+  The "no answer" value is stored as `none` (0 for doses).
 - A **server reinstall** (`server/install`) wipes every device, person and pairing, restores
   the migration devices (Tablet 1 `12345678`, Tablet 2 `87654321`) and turns the feature
   flags back on. A browser profile from before it holds credentials for a database that no
@@ -158,6 +161,7 @@ flag simply does not appear.
   done (`not isActive && isCompleted`); read the task counter for the open tab instead.
 - Yes/no inputs: the chosen side is `input.checked` inside `.form-input.yes-no.<name>`; the
   label never gets an `active` class.
+- The treatment review's "How many doses?" select has no `form-input` class, so `qa.form().selects` misses it: read `.ui.form select`.
 - The out-of-range warning covers the page with a dimmer; its Close button is the only
   in-app way out, while browser Back goes around it and leaves the warning standing.
 - End Encounter is `ui fluid primary button` + `disabled` until the mandatory activities are
@@ -277,6 +281,11 @@ flag simply does not appear.
 - Acute Illness Prior Treatment: yes/no inputs `fever-past-6-hours`, `malaria-today`,
   `malaria-within-past-month`. A Yes reveals "Do you feel better after taking this?" as
   `<question>-helped`.
+- Acute Illness COVID test "Why not?": the first option is Administered Previously (`administered-previously`), which `completeLaboratory(… covidTestPerformed: false)` ticks.
+  Nurse adult, Fever + Cough + Nasal Congestion, 38.5 °C, malaria Negative, COVID not performed: "COVID-19 with signs of Pneumonia", Next Steps Contact Tracing, Medication
+  Distribution, Follow Up. Changing COVID to performed Negative re-diagnoses Fever of Unknown Origin, with Next Steps Refer to Hospital only (the nurse's hospital referral form).
+- CHW follow-up after a Coartem first visit, condition not improving + Respiratory Distress, no malaria test: Treatment Review (`.icon-task-ongoing-treatment`), then Next Steps
+  Send to Health Center, Health Education, Follow Up. A page keeps a form's dirty flags after its save, so reload before reopening a saved form to see what a later visit sees.
 - A saved activity is reopened from the encounter's Completed tab (`#completed-tab`), then
   its `.icon-task-<activity>` card.
 - NCD Medical History has five tabs: Co-Morbidities, Medication History, Social History
@@ -536,6 +545,8 @@ flag simply does not appear.
 - The child-data load for one child requests `/sw/nodes/pregnancy-by-newborn/<child uuid>` (`context.on('request')` sees it).
 - CHW TB visit with a follow-up: `startTBEncounter`, `completeDiagnostics` `positive-pulmonary`, `completeMedication`, `completeNextSteps`, `closeReport` if open, `endTBEncounter`.
   About 40 s, ending on the main menu. HIV is the same chain with `positive-reported`. Both start from the participant page.
+- A TB first visit's Medication activity ends with a Treatment Review tab (`.icon-treatment-review`), so no follow-up visit is needed to reach it. The participant page's
+  Tuberculosis Encounter button reopens the open visit.
 
 ## Patient Record
 

@@ -821,3 +821,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the first plan held a hold row for reaching the Relationship page with `page.goBack()`.
 - **Wrong conclusion:** the Back route is a user path the change must not alter.
 - **Rule:** the user closed B-544 because the tablets have no Back button. Read the backlog item behind a "residual" before planning a row on it, and reach pages only through the app's own arrows and buttons.
+
+## A develop control run in the session that filled the form
+
+- **Symptom:** on develop, a Treatment Review saved Yes / No / No and changed in the same session showed "Why not?", "How many doses?" and the adverse events unanswered, Save off, as the PR should.
+- **Wrong conclusion:** develop does not have the defect. After a reload, develop showed 7/7 with Save on and stored `none` / 0 / `none`.
+- **Rule:** a page keeps its form, dirty flags included, after a save. For a fix about reopening a saved record, reload the app before reopening, on both builds, as a nurse coming back later would.
+
+## Finding the "How many doses?" select by `select.form-input`
+
+- **Symptom:** `selectOption` on `select.form-input` timed out on the treatment review, leaving a dead 10 s tail and a re-recorded video. `qa.form().selects` was empty too.
+- **Wrong conclusion:** the select was not shown.
+- **Rule:** `viewCustomSelectListInput` draws a select without the `form-input` class. Use `.ui.form select` and read its `inputValue()`.
+
+## Pressing a disabled Save inside `.actions` (met again)
+
+- **Symptom:** a develop control ended with a 10 s hover timeout on "Save", which was disabled.
+- **Wrong conclusion:** none; app-map already says `.actions` takes the pointer from a disabled button.
+- **Rule:** before a scripted save, read the button's `active` class and save only when it is there.
