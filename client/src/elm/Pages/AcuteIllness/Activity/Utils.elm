@@ -1634,11 +1634,14 @@ treatmentReviewFormWithDefault form saved =
                             taken =
                                 or formTaken (Just savedTaken)
                         in
-                        if taken == Just True && savedTaken then
-                            ( taken, or formHelped (EverySet.member helpedSign value |> Just) )
+                        if taken == Just True then
+                            ( taken
+                            , if savedTaken then
+                                or formHelped (EverySet.member helpedSign value |> Just)
 
-                        else if taken == Just True then
-                            ( taken, formHelped )
+                              else
+                                formHelped
+                            )
 
                         else
                             ( taken, Nothing )

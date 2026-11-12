@@ -11007,19 +11007,9 @@ ongoingTreatmentReviewFormWithDefault form saved =
 
                     -- "Which ones?" is asked only when there were side effects, and "none" is not an answer to it.
                     savedAdverseEvents =
-                        if sideEffects then
-                            EverySet.toList value.adverseEvents
-                                |> List.filter ((/=) NoAdverseEvent)
-                                |> (\events ->
-                                        if List.isEmpty events then
-                                            Nothing
-
-                                        else
-                                            Just events
-                                   )
-
-                        else
-                            Nothing
+                        EverySet.toList value.adverseEvents
+                            |> List.filter ((/=) NoAdverseEvent)
+                            |> savedFollowUp sideEffects []
                 in
                 { takenAsPrescribed = or form.takenAsPrescribed (Just takenAsPrescribed)
                 , missedDoses = or form.missedDoses (Just missedDoses)
