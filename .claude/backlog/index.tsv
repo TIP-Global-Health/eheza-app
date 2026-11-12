@@ -278,7 +278,7 @@ B-277	3	IMPLEMENTED	MED			26	Well Child immunisation (Burundi): the DTP-booster 
 B-278	4	IMPLEMENTED	LOW	2356	2357	26	Well Child head circumference: correcting a reading that triggered the macro/microcephaly popup leaves the warning on th
 B-279	4	READY	LOW			26	Well Child head circumference "not taken" checkbox toggles the raw form, so after a reload the first click on a saved no
 B-280	3	IMPLEMENTED	MED-LOW	2184	2185	26	Acute Illness subsequent visit: a diagnosis once written to the encounter is never corrected, even when the RDT or dange
-B-281	4	READY	LOW			26	Shared Yes/No-with-reason forms: flipping the answer back to Yes persists the stale "why not" reason alongside it, in th
+B-281	4	IMPLEMENTED	LOW	2524	2525	26	Shared Yes/No-with-reason forms: flipping the answer back to Yes persists the stale "why not" reason alongside it, in th
 B-282	4	READY	LOW			26	Acute Illness participant page: with two illnesses started today, whether "New illness" is disabled, opens the existing 
 B-283	4	READY	LOW			26	NCDA questionnaire (Child Scoreboard, Nutrition, Well Child): after a reload, switching a parent question to "No" keeps 
 B-284	4	READY	LOW			26	TB and HIV "not diagnosed": the participant is closed but the encounter is never ended, so every screening that finds no
@@ -459,7 +459,7 @@ B-458	4	READY	LOW			39	Admin content: outside super user mode, three more ways t
 B-459	1	PARKED	LOW			38	Prenatal diagnosis: a treated malaria found again at a different anemia level is filed as a new episode, and "treated" m
 B-460	2	IMPLEMENTED		2320	2321		Sync incidents: the backend cannot re-create a missing entity the device sent, because a `false` boolean is written as a
 B-461	4	READY					Client build: `client/yarn.lock` is a second lockfile nothing reads, and it has drifted from `package.json` · CONFIRMED 
-B-462	4	READY	LOW			40	Shared Yes/No-with-reason forms: editing a saved "Yes" to "No" shows the "Why not?" / "How many doses?" question with no
+B-462	4	IMPLEMENTED	LOW	2524	2525	40	Shared Yes/No-with-reason forms: editing a saved "Yes" to "No" shows the "Why not?" / "How many doses?" question with no
 B-463	3	READY	MED-LOW			40	Case Management TB pane (server): a second Acute Illness encounter of the same illness closes the TB-suspect follow-up, 
 B-464	4	READY	LOW			40	Case Management Nutrition pane: a follow-up written on the same day as an earlier home visit is hidden, and the server n
 B-465	3	IMPLEMENTED	MED-LOW	2340	2341	40	CHW Dashboard: the "Home Visit" case-management figure for a PAST month counts nutrition follow-ups created in later mon
@@ -589,6 +589,7 @@ B-588	4	READY	LOW		2511	54	Prenatal: chronic hypertension or diabetes reported t
 B-589	4	READY	LOW		2515	54	Case Management: a TB or HIV follow-up of a patient who is in no village roster is listed for nobody
 B-590	4	IMPLEMENTED	LOW	2518	2519	54	Prenatal: on-screen English text misspells "Preeclampsia" ("Preeclamsia", "Preclampsia"), and more misspelt names remain
 B-591	4	READY	LOW		2521	54	Completion report: a first nurse visit at 24 weeks or later is charged with an unfinished Next Steps medication distribu
+B-592	4	READY	LOW			26	NCD and Prenatal referral, and Outside Care medicines: changing a saved Yes/No answer keeps the follow-up answers of the
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
