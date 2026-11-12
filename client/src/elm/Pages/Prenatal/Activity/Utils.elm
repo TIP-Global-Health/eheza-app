@@ -812,41 +812,41 @@ expectMedicationTask currentDate assembled task =
                 assembled.globalLmpDate
                 |> Maybe.withDefault False
 
-        medicationNotAdministeredToday getMeasurementFunc =
-            not (medicationAdministered (getMeasurementFunc assembled.measurements))
+        administeredPreviously getMeasurementFunc =
+            medicationAdministeredPreviously getMeasurementFunc assembled
 
-        medicationNeverAdministeredPreviously getMeasurementFunc =
-            not (medicationAdministeredPreviously getMeasurementFunc assembled)
+        administeredToday getMeasurementFunc =
+            medicationAdministered (getMeasurementFunc assembled.measurements)
     in
     case task of
         TaskCalcium ->
-            medicationNeverAdministeredPreviously .calcium
-                && egaAboveOrEqualWeek 14
+            egaAboveOrEqualWeek 14
+                && not (administeredPreviously .calcium)
 
         TaskFefol ->
-            medicationNeverAdministeredPreviously .fefol
-                && medicationNeverAdministeredPreviously .iron
-                && medicationNeverAdministeredPreviously .folate
-                && medicationNotAdministeredToday .iron
-                && medicationNotAdministeredToday .folate
+            not (administeredPreviously .fefol)
+                && not (administeredPreviously .iron)
+                && not (administeredPreviously .folate)
+                && not (administeredToday .iron)
+                && not (administeredToday .folate)
 
         TaskFolate ->
-            medicationNeverAdministeredPreviously .folate
-                && medicationNeverAdministeredPreviously .fefol
-                && medicationNotAdministeredToday .fefol
+            not (administeredPreviously .folate)
+                && not (administeredPreviously .fefol)
+                && not (administeredToday .fefol)
 
         TaskIron ->
-            medicationNeverAdministeredPreviously .iron
-                && medicationNeverAdministeredPreviously .fefol
-                && medicationNotAdministeredToday .fefol
+            not (administeredPreviously .iron)
+                && not (administeredPreviously .fefol)
+                && not (administeredToday .fefol)
 
         TaskMMS ->
-            medicationNeverAdministeredPreviously .mms
+            not (administeredPreviously .mms)
 
         TaskMebendazole ->
-            not (mebendazoleGivenPreviously assembled)
+            egaAboveOrEqualWeek 24
+                && not (mebendazoleGivenPreviously assembled)
                 && not (mebendazoleDistributed assembled.measurements)
-                && egaAboveOrEqualWeek 24
 
 
 medicationTaskCompleted : AssembledData -> MedicationTask -> Bool
