@@ -143,6 +143,9 @@ flag simply does not appear.
 - Search results and Participant Directory rows open through their `span.action-icon.forward`;
   the row itself is not clickable. The edit pencil (`span.action-icon.edit`) is on the person
   page, as is "Add Child" (`div.add-participant-icon-wrapper`).
+- Participant Directory: main menu `.icon-task-participant-directory` → `#persons/directory`, `input.search-input`. The Relationship page
+  (`#relationship/<id1>/<id2>/<origin>`) has `label.relationship-selection` radios; `qa.state().choices` shows the chosen one as `(x)`.
+  `page.goBack()` is the tablet's Back button: it reaches a page through the URL, not through the in-app entry.
 - Save buttons: `button.ui.fluid.primary.button` with class `disabled` or `active`; the
   `disabled` attribute is never set, so read the class. Buttons from `viewEncounterActionButton`
   (prenatal Next Steps › Next ANC Visit) carry neither class when pressable — only `disabled` means off.

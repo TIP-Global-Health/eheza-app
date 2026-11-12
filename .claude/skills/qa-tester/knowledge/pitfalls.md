@@ -785,3 +785,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a recorded dashboard row waited 60 s on "CHW SNAPSHOT" with a spinner, leaving a dead video.
 - **Wrong conclusion:** the dashboard is broken on this build.
 - **Rule:** app-map already says it needs the health centre's statistics. Before recording, run `hedley_stats_calculate_stats_for_health_center(4)`, sync, and reload.
+
+## Clicking a main-menu card by its text
+
+- **Symptom:** `qa.click('PARTICIPANT DIRECTORY')` returned ok and the page stayed on the main menu.
+- **Wrong conclusion:** the click navigated; the next step then waits on the wrong page.
+- **Rule:** the card's handler is on its icon. Click `.icon-task-participant-directory` (as the helpers click `.icon-task-clinical`), and check the URL before going on.
