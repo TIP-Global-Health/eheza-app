@@ -56,8 +56,8 @@ isPostInFlight key dict =
         |> Maybe.withDefault False
 
 
-{-| Forget a finished create for this key, so a page opened again does
-not show its result. A create still on its way is kept: it blocks a second one.
+{-| Forget a finished save for this key, so a page opened again does
+not show its result. A save still on its way is kept: it blocks a second one.
 -}
 clearFinishedPost : k -> Dict k (RemoteData e a) -> Dict k (RemoteData e a)
 clearFinishedPost key dict =

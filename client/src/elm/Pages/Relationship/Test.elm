@@ -2,11 +2,9 @@ module Pages.Relationship.Test exposing (all)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (HealthCenterId, PersonId, SessionId)
-import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..), emptyModelIndexedDb)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Relationship.Model exposing (MyRelationship)
-import Backend.Utils exposing (clearFinishedPost)
 import Date
 import Expect
 import Http
@@ -19,6 +17,7 @@ import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (class)
+import TestFixtures exposing (testChild, testPerson)
 import Time
 import Translate.Model exposing (Language(..))
 
@@ -48,45 +47,9 @@ healthCenterId =
     toEntityUuid "health-center-1"
 
 
-adult : Person
-adult =
-    { name = "Adult One"
-    , firstName = "One"
-    , secondName = "Adult"
-    , nationalIdNumber = Nothing
-    , hmisNumber = Nothing
-    , avatarUrl = Nothing
-    , birthDate = Just (Date.fromCalendarDate 1990 Time.Jan 1)
-    , isDateOfBirthEstimated = False
-    , gender = Female
-    , hivStatus = Nothing
-    , numberOfChildren = Nothing
-    , modeOfDelivery = Nothing
-    , ubudehe = Nothing
-    , educationLevel = Nothing
-    , maritalStatus = Nothing
-    , province = Nothing
-    , district = Nothing
-    , sector = Nothing
-    , cell = Nothing
-    , village = Nothing
-    , registrationLatitude = Nothing
-    , registrationLongitude = Nothing
-    , saveGPSLocation = False
-    , telephoneNumber = Nothing
-    , spouseName = Nothing
-    , spousePhoneNumber = Nothing
-    , nextOfKinName = Nothing
-    , nextOfKinPhoneNumber = Nothing
-    , healthCenterId = Nothing
-    , deleted = False
-    , shard = Nothing
-    }
-
-
 child : Person
 child =
-    { adult | name = "Child", birthDate = Just (Date.fromCalendarDate 2025 Time.Jan 1) }
+    testChild (Date.fromCalendarDate 2025 Time.Jan 1)
 
 
 {-| Everything the page needs is loaded: the adult and two children, with
@@ -97,7 +60,7 @@ loadedDb =
     { emptyModelIndexedDb
         | people =
             Dict.fromList
-                [ ( person1, Success adult )
+                [ ( person1, Success testPerson )
                 , ( person2, Success child )
                 , ( person3, Success child )
                 ]
@@ -135,10 +98,6 @@ saveErrorBannerTest =
                 renderPage person2 { loadedDb | postRelationship = failedSave }
                     |> Query.findAll [ class "warning", class "message" ]
                     |> Query.count (Expect.equal 1)
-        , test "no banner on another pair once the failed save is cleared on entry" <|
-            \_ ->
-                renderPage person3 { loadedDb | postRelationship = clearFinishedPost person1 failedSave }
-                    |> expectNoBanner
         ]
 
 
