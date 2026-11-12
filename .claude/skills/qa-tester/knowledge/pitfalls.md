@@ -725,3 +725,63 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** one Bash call that registered a fixture and ran three recorded tests in a `for` loop with nested `$( … )` was refused as an unreadable `rm` command, though it held no `rm`.
 - **Wrong conclusion:** the command ran, or a workaround is needed.
 - **Rule:** keep driver calls plain: write small runner scripts (`run.sh <name> <prelude> <files…>`) into the scratchpad once, then call them one test per Bash call.
+
+## Picking a Next Steps tab by its icon
+
+- **Symptom:** a develop control's reader found no Medication Distribution tab after the recheck, so the helper saved the form before its text was read.
+- **Wrong conclusion:** develop offers no medication there. It offered Methyldopa; reopening the saved form from Completed showed it.
+- **Rule:** the recurrent Medication Distribution tab carries no `icon-next-steps-treatment`. Pick Next Steps tabs by label text, and read a form before the step that saves it.
+
+## Starting a waiter on a background driver run
+
+- **Symptom:** while a recorded visit ran in the background, two `until … grep` waiters each hit the Bash limit and became background tasks of their own.
+- **Wrong conclusion:** waiting in a foreground loop is how to get the result.
+- **Rule:** the same pit as "A long chain of driver commands in one Bash call". A run started with `run_in_background` sends its own notice; wait for it and start no waiter.
+
+## Overlaying a stacked PR's files onto a develop that moved on
+
+- **Symptom:** the PR's branch was cut before develop merged another PR that changed the same two Elm files.
+- **Wrong conclusion:** checking the PR's files out over develop gives the PR's build, and develop is its control.
+- **Rule:** build both trees with `git merge-tree --write-tree origin/develop origin/<branch>` (and the parent branch for a stacked PR), check the files out from those trees, and use develop plus the parent as the control.
+
+## `endPrenatalEncounter` returning on a disabled End Encounter
+
+- **Symptom:** the next day's Subsequent Antenatal button stayed disabled; the earlier visit's `field_scheduled_date` end was still NULL.
+- **Wrong conclusion:** the helper ended the visit, so the later visit can start.
+- **Rule:** the helper force-clicks End Encounter, so a disabled button passes silently. Check the stored end; end a fixture visit with `backdatePrenatalEncounter(name, days)` after upload.
+
+## `completeTreatmentReview` answers Yes to missed doses and adverse events
+
+- **Symptom:** on a later visit's Hypertension Medication tab, a hospital-referral question appeared and Save stayed off; the helper timed out.
+- **Wrong conclusion:** Treatment Review is broken.
+- **Rule:** the helper says Yes to every question. Answer `missed-doses` and `adverse-events` No by hand, and re-scan the form after each answer.
+
+## Reading a checkbox's state from the wrapper class
+
+- **Symptom:** a check that "Hypertension before pregnancy" was ticked failed, though the screen showed it ticked.
+- **Wrong conclusion:** the click missed.
+- **Rule:** Medical History's `.ui.checkbox` wrapper carries no `checked` class. Read `qa.state().choices` (`(x) …`).
+
+## Giving `qa.sh record start` a name with the prefix
+
+- **Symptom:** the video came out as `qa-2511-qa-2511-test1-….mp4`.
+- **Wrong conclusion:** none; the file had to be renamed.
+- **Rule:** the driver adds `qa-<pr>-` itself; pass only `test<n>-<name>`.
+
+## A name regex that ends with `(?!\w)` on a Case Management entry
+
+- **Symptom:** "Buhara TB pane lists X" failed, though the logged entry read "E2ETest Qa2515XThis monthTuberculosis Follow up".
+- **Wrong conclusion:** the pane does not list X.
+- **Rule:** an entry's `textContent` runs the name straight into the next cell ("…XThis month"). End a name match with `(?!\d)`, as "A substring that also matches longer names" says, not `(?!\w)`.
+
+## A control script that assumes the role an earlier script left
+
+- **Symptom:** the develop control for the CHW's Case Management requests ran as the nurse, and every pane differed from the PR's.
+- **Wrong conclusion:** develop's panes differ from the PR's.
+- **Rule:** the last PR script signed in the nurse, and the build update kept that session. Start every control script with its own `qa.signIn`, and read `session` in the reply before comparing.
+
+## Opening the CHW Dashboard without server statistics
+
+- **Symptom:** a recorded dashboard row waited 60 s on "CHW SNAPSHOT" with a spinner, leaving a dead video.
+- **Wrong conclusion:** the dashboard is broken on this build.
+- **Rule:** app-map already says it needs the health centre's statistics. Before recording, run `hedley_stats_calculate_stats_for_health_center(4)`, sync, and reload.

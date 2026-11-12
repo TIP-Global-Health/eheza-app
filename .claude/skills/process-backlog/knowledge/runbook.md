@@ -103,6 +103,9 @@ in two rounds (step 6). Watch CI in the background:
 `--watch` exits after the lint/unit tier, before the gated e2e and simpletest jobs spawn, so
 re-check afterwards.
 
+When the PR is merged, delete `<id>-tests` along with the fix branch: `git push origin --delete
+<id>-tests`. The merge in step 2b already put its commits in `develop`.
+
 ⚠ `gh pr edit` is broken on this repo (Projects-classic GraphQL). Use
 `gh api repos/TIP-Global-Health/eheza-app/pulls/N -X PATCH -f title="…"`.
 

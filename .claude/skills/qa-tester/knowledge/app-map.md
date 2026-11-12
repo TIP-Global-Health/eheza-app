@@ -63,6 +63,8 @@ flag simply does not appear.
   Every one holds both centres (`field_health_centers` 4 Nyange, 5 Muhondo); the CHWs hold
   `field_villages` 140 Akanduga and 165 Busake; 163 Buhara and 188 Gahama are unassigned.
   An `entity_metadata_wrapper` save makes a new vid, which the device downloads.
+- Villages by health centre: Akanduga 140 and Buhara 163 are at Nyange (4); Busake 165 and Gahama 188 at Muhondo (5).
+  For two villages of one centre, add 163 to Jojo's `field_villages` (wrapper save, sync), then set back to 140, 165.
 - On the device a nurse is a `nodes` row with `type: 'nurse'`, `label`, `vid`,
   `health_centers` and `villages` (uuids). The location picker lists `p.select-location ~ button.ui.primary.button`.
 - Switching account keeps the device paired: `qa.signIn(pin, location)` goes to the main
@@ -225,7 +227,8 @@ flag simply does not appear.
   Creatinine, Urine Dipstick, HIV, Liver Function, Lipid Panel, HBA1C. Its Random Blood Sugar
   asks performed (`test-performed`) → `immediate-result` (Point of Care / Lab) →
   `patient-fasted` → `test-performed-today`; Lab ends on "update test results via case
-  management". Creatinine: performed → performed today, always to the lab. Urine Dipstick: performed →
+  management". NCD HIV: known positive No → performed Yes → performed today Yes → result select; Positive adds `hiv-program` (5 tasks).
+  Creatinine: performed → performed today, always to the lab. Urine Dipstick: performed →
   performed today → Short Dip / Long Dip. No reveals five why-not reasons. `completeLaboratory` answers
   every tab; to send only some tests, drive their tabs by hand and leave the rest unanswered.
 - NCD recurrent Lab Results: Random Blood Sugar `.form-input.measurement.sugar-count`; Creatinine
@@ -300,14 +303,33 @@ flag simply does not appear.
   `gestational-hypertension-immediate`. Next Steps then has Medication Distribution, which `completeNextSteps` fills.
 - Severe preeclampsia fixture: `completeExamination(page, { vitals: { sys: '165', dia: '115' } })`, then reopen Examination from Completed →
   Core Physical Exam → "Tender to Palpation right upper" (ticking it unticks Normal) → Save. At 28 w and at 37 w that visit stores
-  `gestational-hypertension-immediate` + `high-risk-of-preeclampsia-initial` until a protein result arrives.
+  `gestational-hypertension-immediate` until a protein result arrives (before #2511 also `high-risk-of-preeclampsia-initial`).
+- High risk of preeclampsia comes from chronic hypertension only (before 20 w, at the visit, the recheck or an earlier visit) since #2511;
+  gestational hypertension alone gives none. "Hypertension before pregnancy" in Medical History, twins, diabetes and previous preeclampsia still do.
+  Medication Distribution's hypertension header reads "Chronic hypertension" or "Pregnancy-Induced hypertension".
 - Prenatal Urine Dipstick tab: performed Yes → `immediate-result` (first label Point of Care, or Lab) → Short Dip. Point of Care
   shows three selects: protein, pH, glucose; protein and glucose share the options 0, +1 … +4. Lab Results shows the same selects.
   At 37 w+ a point-of-care result that diagnoses an emergency jumps to Next Steps behind the warning, leaving the other lab tabs unasked.
 - Eclampsia fixture: Dating, History, Examination, then Danger Signs "Convulsions" (no other activity needed). After 165/115 it also gives high risk
   of preeclampsia on develop; gestational hypertension is not stored beside eclampsia.
 - Moderate risk of preeclampsia from BMI: reopen Examination from Completed → Nutrition Assessment → weight 80 (height 160 from the helper) → Save.
-  BMI 31 gives moderate risk on its own; with 165/115 only high risk is stored.
+  BMI 31 gives moderate risk on its own, also beside gestational hypertension at 28 w (since #2511), with Aspirin. Beside chronic hypertension only high risk is stored.
+- "Hypertension before pregnancy": after `completeHistory`, reopen History from Completed → Medical History tab → tick it (it unticks that group's
+  None of the above) → Save. `.ui.checkbox` wrappers carry no `checked` class; read `qa.state().choices`.
+- Two-visit fixture: earlier visit on a page clock 14 days back, upload, `backdatePrenatalEncounter(name, 14)` to end it, sync, reload, then
+  Subsequent Antenatal today. A later visit after hypertension has Treatment Review (Prenatal Medication, Hypertension Medication: still taking,
+  missed doses, adverse events; adverse Yes adds a hospital-referral question). Its Medication Distribution reads "previously diagnosed with
+  Hypertension … remain unchanged" and lists Carvedilol/Amlodipine steps; the report adds "(continued)".
+- With Healthy Start on, End Encounter stayed disabled after the full first-visit helper chain (Ultrasound, Malaria Prevention, Photo left in To Do).
+- Same-day vitals recheck: visit 145/95, Next Steps ends on Wait › Pause; then Case Management › ANC Labs › the entry › Examination
+  (`completeRecurrentExamination(page, { sys, dia })`). Recheck 145/95 stores `gestational-hypertension-recheck` at 20 w+, `chronic-hypertension-recheck`
+  below; Next Steps › Medication Distribution offers Methyldopa. 165/100 schedules no recheck.
+- Later lab result, one test only: `completeLaboratoryNurseForLab(page, { onlyTabs: ['Random Blood Sugar'] })`, press `.icon-back`, then
+  `completeLaboratoryNurse` answers the other tabs No. A non-emergency Lab Results save returns to the recurrent encounter page, not Next Steps.
+- Recurrent Next Steps: the Medication Distribution tab is found by its label, not `icon-next-steps-treatment`. After its last save the page
+  returns to the recurrent encounter; the report is under its Reports tab.
+- Medication record: server `prenatal_medication_distribution`, `field_prescribed_medication` (`aspirin`, `none-recurrent`) and
+  `field_recommended_treatment` (`methyldopa-2`). The visit and its recheck share one record.
 - Vitals recheck at 38 w: visit 145/95 with protein +1 at the visit stores only `depression-not-likely`; Next Steps is Health Education, Next ANC
   Visit, Wait. ANC Labs lists "Pending Vitals Recheck"; the recurrent Examination recheck 145/95 gives `moderate-preeclampsia-recurrent-ega-37+`,
   the immediate-delivery warning and Next Steps › Referral only.
@@ -494,6 +516,8 @@ flag simply does not appear.
 - Hold or fail a group save without the server: wrap `XMLHttpRequest.prototype.send` in the page for POST/PATCH `/sw/nodes/<type>` (those go through the service worker, so `page.route` misses them); `client/e2e/group-session-save-button.spec.ts` has `installSaveControls`.
 - Registering a mother and child for a group session (`createMotherOnAttendancePage` + `addChildToMother`) takes about 15 s and reloads the page.
 - The child-data load for one child requests `/sw/nodes/pregnancy-by-newborn/<child uuid>` (`context.on('request')` sees it).
+- CHW TB visit with a follow-up: `startTBEncounter`, `completeDiagnostics` `positive-pulmonary`, `completeMedication`, `completeNextSteps`, `closeReport` if open, `endTBEncounter`.
+  About 40 s, ending on the main menu. HIV is the same chain with `positive-reported`. Both start from the participant page.
 
 ## Patient Record
 
@@ -554,6 +578,11 @@ flag simply does not appear.
 - Listing rows are `.follow-up-entry .name` under the NCD Labs filter. An entry edited on the server
   (performed, completed, `field_date_concluded`) reaches the tablet's `shards` row within seconds
   at syncSpeed idle 5 s; a concluded date 35 days out lists a closed entry again.
+- **CHW panes list residents of the chosen village only**, by its roster (people whose five address fields match). Switching village
+  with `qa.signIn` keeps the in-memory data, so the previous village's people stay loaded: the way to have a non-resident "loaded on the device".
+- CHW Tuberculosis and HIV panes: a TB or HIV encounter's Next Steps Follow Up makes the entry ("Tuberculosis Follow up" / "HIV Follow up").
+  A positive `ncd_hiv_test` or `prenatal_hiv_test` makes an HIV entry too, unless the person has an HIV follow-up (the service worker adds it, `src/js/nodes.js`).
+- Case Management's loads list uuids in the path (`/sw/nodes/tuberculosis_encounter/<uuid>,<uuid>`); `context.on('request')` shows whose data a page asks for.
 - **Each pane decides for itself whether an encounter clears its entry** — read its
   `generate<Type>FollowUpEntryData` and the `limitDate` its view passes
   (`Pages/GlobalCaseManagement/View.elm`) before choosing a pane for a scenario:
@@ -692,6 +721,8 @@ flag simply does not appear.
   goto does not reload. Measurements and visits then carry that date, and the backend stores
   it. The service worker keeps the real date (see pitfalls); `page.clock` must not be used.
   A shift of more than a year into the past works. Queued saves still upload once the offset is back to 0.
+- A PR whose branch is behind develop, or stacked on another PR: build its tree with `git merge-tree --write-tree origin/develop origin/<branch>`
+  and `git checkout <tree> -- <files>`; the control tree merges develop with the parent branch.
 - The main tree starts a run on `develop`, so a develop control is cheapest before the overlay:
   record it on the served build, then overlay and wait for gulp once. For a change only to what a page shows, one fixture can
   serve both builds: overlay, build and read on the PR, restore the files (needed anyway), wait for gulp, activate the update in the same driver, read again.

@@ -231,7 +231,7 @@ B-230	3	IMPLEMENTED	MED			24	Prenatal diagnoses: `gonorrhea-continued` is encode
 B-231	3	IMPLEMENTED	MED-HIGH			24	Case Management TB pane: a patient with a TB follow-up newer than their acute-illness TB-suspect follow-up disappears fr
 B-232	2	IMPLEMENTED	HIGH	2190	2191	24	Case Management immunization pane: a child is listed only on the day the follow-up was scheduled, never afterwards — the
 B-233	2	IMPLEMENTED	MED	2286	2287	24	Case Management TB/HIV entries: starting an encounter from an AI-derived TB entry or a positive-test HIV entry creates a
-B-234	4	READY	MED-LOW			24	Case Management (CHW): village scoping skips the TB and HIV follow-ups, so their encounters and participants are fetched
+B-234	4	IMPLEMENTED	MED-LOW	2512	2515	24	Case Management (CHW): village scoping skips the TB and HIV follow-ups, so their encounters and participants are fetched
 B-235	2	IMPLEMENTED	HIGH			25	Prenatal nutrition (Healthy Start): the gestational weight-gain verdict is inverted, so a woman gaining too little is to
 B-236	1	IMPLEMENTED	MED-HIGH	2194	2195	25	Prenatal symptoms: whether vaginal discharge counts as "continued" is decided by the patient's **gonorrhea** history, so
 B-237	1	IMPLEMENTED	MED	2205	2206	25	Prenatal HIV: a discordant partnership found from the **partner's** lab result is filed as initial-phase because the pha
@@ -558,7 +558,7 @@ B-557	4	READY	LOW		2473	50	Burundi screens still say "village" in three texts ne
 B-558	4	READY	LOW			50	Prenatal activity page: the rest of the pregnancy-week maths still uses the day the page is opened, so a visit reopened 
 B-559	4	READY	LOW			50	Prenatal Nutrition Assessment (sites without Healthy Start): re-saving the pregnancy's first weight compares it with its
 B-560	4	READY	LOW			50	Child registration: the earliest birth date the FBF-group picker (26 months back) and the Child Scoreboard picker (2 yea
-B-561	4	READY	LOW		2450	51	National-ID search (Burundi, Somalia): an ID registered with a leading space is never found, because the search trims it
+B-561	4	IMPLEMENTED	LOW	2513	2514	51	National-ID search (Burundi, Somalia): an ID registered with a leading space is never found, because the search trims it
 B-562	4	READY	LOW		2442	51	Prenatal and NCD labs entry: ordering a test, declining a pending test, Wait and review still write the entry whole from
 B-563	3	READY	MED-HIGH		2465	51	Group session: a family whose child's page or activity row was shown more than five minutes ago is dropped from the open
 B-564	4	READY	LOW			51	Group enrolment: the same child is enrolled two or three times in the same group within seconds, and the extra enrolment
@@ -574,7 +574,7 @@ B-573	4	READY	LOW			53	NCD initial phase: the Referral task counts as done when 
 B-574	3	READY	MED			54	Prenatal (CHW): a postpartum visit left unfinished on an earlier day locks the woman's Antenatal page — First, Subsequen
 B-575	4	READY	LOW			54	Prenatal labs history: saving an EARLIER visit's pending lab result from today's Laboratory page can throw the nurse ont
 B-576	1	IMPLEMENTED	MED-HIGH			54	Prenatal: severe preeclampsia confirmed by a urine protein result that arrives LATER (dipstick sent to the lab) is filed
-B-577	1	READY	MED-HIGH			54	Prenatal: "high risk of preeclampsia" found in the recurrent phase (hypertension after the blood-pressure recheck, or di
+B-577	1	IMPLEMENTED	MED-HIGH	2508	2509	54	Prenatal: "high risk of preeclampsia" found in the recurrent phase (hypertension after the blood-pressure recheck, or di
 B-578	1	READY	MED-HIGH			54	Prenatal: a pregnancy whose FIRST nurse encounter was ended without an LMP can never be dated at a later nurse visit, so
 B-579	2	READY	MED-HIGH			54	Prenatal (nurse): the Medication activity (calcium, MMS, Fefol / iron / folate, Mebendazole) is listed only at the FIRST
 B-580	3	READY	MED			54	Prenatal (CHW): the referral task's completion is decided by the NURSE's facility list — on a CHW visit with danger sign
@@ -582,6 +582,11 @@ B-581	1	READY	MED-HIGH			54	Prenatal: hypertension diagnosed at an earlier visit
 B-582	3	READY	MED-LOW			54	Prenatal recurrent phase: the hospital-referral task for a diagnosis found by a lab result reads complete from the refer
 B-583	4	IMPLEMENTED	LOW			54	Prenatal (nurse): "high risk of preeclampsia" is stored beside severe or moderate preeclampsia, or eclampsia, found at 3
 B-584	4	READY	LOW		2507	54	Completion report: a next medication or vaccine dose that falls 6, 9 or 12 months after a dose given on the 29th–31st is
+B-585		READY				54	Prenatal: misspelt function names `…Prevoiusly…` and `…Inital…` — rename only, no logic change
+B-586	1	IMPLEMENTED	MED	2510	2511	54	Prenatal: "high risk of preeclampsia" is diagnosed from GESTATIONAL hypertension (today's or an earlier visit's), while 
+B-587	1	CLOSED	MED			54	Prenatal: Aspirin for a preeclampsia risk is offered at ONE visit only — declined, skipped or "not given" at that visit,
+B-588	4	READY	LOW		2511	54	Prenatal: chronic hypertension or diabetes reported through Outside Care at an earlier visit is not a high-risk conditio
+B-589	4	READY	LOW		2515	54	Case Management: a TB or HIV follow-up of a patient who is in no village roster is listed for nobody
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

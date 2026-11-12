@@ -180,7 +180,9 @@ number, tier line, and any side-findings noticed while building appended as new 
   ⚠ Read it before deciding the fix is a revert, too: the code before the offending commit can be
   wrong at a boundary the spec defines, so a revert can ship a second, quieter defect.
 - ⛔ **Never request Copilot without asking first.** Offer it, say what it would cover, wait.
-- CI must run on these PRs — no `[ci skip]`. **The user merges**, with `--delete-branch`.
+- CI must run on these PRs — no `[ci skip]`. **The user merges**, with `--delete-branch`. Then
+  delete the blind tests' branch too: `git push origin --delete <id>-tests`. Its commits are
+  already in `develop`.
 - Do not generate new proposals here and do not re-mine cleared areas. That is the discovery
   seat's job, and duplicating it wastes both.
 - Titles and bodies follow the repo's `CLAUDE.md` rule: the title names the defect from the

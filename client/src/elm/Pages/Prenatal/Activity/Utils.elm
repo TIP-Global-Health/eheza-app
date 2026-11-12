@@ -2698,15 +2698,12 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             moderateRiskPreeclampsiaDiagnosed
                 && (not <| diagnosedRiskOfPreeclampsiaPrevoiusly assembled)
                 -- We don't diagnose Preeclampsia RISK, if any kind of
-                -- Preeclampsia was diagnosed previously, or at current encounter.
+                -- Preeclampsia was diagnosed previously. At current encounter,
+                -- applyPreeclampsiaRiskDiagnosesHierarchy removes it.
                 && (not <|
                         diagnosedPreviouslyAnyOf
                             (DiagnosisEclampsia :: preeclampsiaDiagnoses)
                             assembled
-                   )
-                && (not <|
-                        List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
-                            preeclampsiaDiagnoses
                    )
 
         DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
@@ -2718,15 +2715,12 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             )
                 && (not <| diagnosedHighRiskOfPreeclampsiaPrevoiusly assembled)
                 -- We don't diagnose Preeclampsia RISK, if any kind of
-                -- Preeclampsia was diagnosed previously, or at current encounter.
+                -- Preeclampsia was diagnosed previously. At current encounter,
+                -- applyPreeclampsiaRiskDiagnosesHierarchy removes it.
                 && (not <|
                         diagnosedPreviouslyAnyOf
                             (DiagnosisEclampsia :: preeclampsiaDiagnoses)
                             assembled
-                   )
-                && (not <|
-                        List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
-                            preeclampsiaDiagnoses
                    )
 
         DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
@@ -2737,16 +2731,13 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                             (DiagnosisChronicHypertensionAfterRecheck :: diabetesDiagnosesRecurrentPhase)
                    )
                 -- We don't diagnose Preeclampsia RISK, if any kind of
-                -- Preeclampsia was diagnosed previously, or at current encounter.
+                -- Preeclampsia was diagnosed previously. At current encounter,
+                -- applyPreeclampsiaRiskDiagnosesHierarchy removes it.
                 && (not <| diagnosedHighRiskOfPreeclampsiaPrevoiusly assembled)
                 && (not <|
                         diagnosedPreviouslyAnyOf
                             (DiagnosisEclampsia :: preeclampsiaDiagnoses)
                             assembled
-                   )
-                && (not <|
-                        List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
-                            preeclampsiaDiagnoses
                    )
 
         DiagnosisChronicHypertensionImmediate ->
