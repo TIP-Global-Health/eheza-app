@@ -297,7 +297,11 @@ flag simply does not appear.
 - Aspirin is given in Next Steps → Medication Distribution ("Administer: Aspirin (150 mg)"), once a
   preeclampsia risk is diagnosed. Next Steps shows only after every activity but Malaria Prevention,
   Photo and Ultrasound is saved. `completeHistory` overwrites obstetric counts, so a first pregnancy
-  needs Obstetric (all 0) and Medical filled by hand. Medication's Calcium tab starts at 14 weeks.
+  needs Obstetric (all 0) and Medical filled by hand. Medication's Calcium tab starts at 14 weeks, Mebendazole at 24.
+- Medication tabs: `.link-section .icon-activity-task.icon-<mms|fefol|folate|iron|calcium|mebendezole>`, each one yes/no; No adds reasons
+  (the first is Lack of stock). Fefol given hides Iron and Folate. Since #2521 a follow-up nurse visit lists Medication while a supplement is due.
+- Follow-up Treatment Review, Prenatal Medication tab: `.form-input.yes-no.iron-folic-acid` always, and `.mebendezole` from 24 weeks while
+  Mebendazole was not given or reported at an earlier visit. A "No" there puts Mebendazole into Next Steps › Medication Distribution.
   The full first-visit helper chain needs EGA ≥ 28 weeks: `completeMentalHealth` waits for a card shown only then.
   Below 28 weeks, leave `completeMentalHealth` out and the rest of the chain runs (19, 20 and 25 weeks tried).
 - With labs sent to the lab, Next Steps ends on Wait → Pause Encounter, which ENDS the visit (`scheduled_date.value2` = that day)
@@ -680,6 +684,9 @@ flag simply does not appear.
 - Recompute one person: `hedley_reports_calculate_aggregated_data_for_person(node_load($nid, NULL, TRUE))`
   in a script run by `ddev drush scr`. The script must sit under `server/www/` (container path
   `/var/www/html/server/www/…`); delete it afterwards.
+- **Completion report**: `/admin/reports/completion/health-center/4` (`h.reports.navigateToCompletionReportPage`, then type, Taken By, dates).
+  It sums each encounter's stored `field_reports_data` (`expected|completed` codes; the mapping is in `hedley_reports_generate_completion_data_for_prenatal`).
+  Rebuild one pregnancy with that function (`node_load($participant)`, `FALSE`). A narrow date range then shows only the run's fixtures.
 - Prenatal data sits under `individual.antenatal`. Each encounter is `date|nurse|<diagnosis codes>|<indicator codes>`;
   the codes are in `hedley_reports_prenatal_*_mapping()` (for example `h` is intra-uterine death).
 
@@ -726,6 +733,8 @@ flag simply does not appear.
   A shift of more than a year into the past works. Queued saves still upload once the offset is back to 0.
 - A PR whose branch is behind develop, or stacked on another PR: build its tree with `git merge-tree --write-tree origin/develop origin/<branch>`
   and `git checkout <tree> -- <files>`; the control tree merges develop with the parent branch.
+  When that merge conflicts, overlay every `client/src` file that differs between HEAD and the PR tip (`git diff --name-only HEAD <branch>`).
+  Then restore them all; develop stays the control while its own changes since the base change no behaviour.
 - The main tree starts a run on `develop`, so a develop control is cheapest before the overlay:
   record it on the served build, then overlay and wait for gulp once. For a change only to what a page shows, one fixture can
   serve both builds: overlay, build and read on the PR, restore the files (needed anyway), wait for gulp, activate the update in the same driver, read again.

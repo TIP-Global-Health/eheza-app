@@ -791,3 +791,21 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** `qa.click('PARTICIPANT DIRECTORY')` returned ok and the page stayed on the main menu.
 - **Wrong conclusion:** the click navigated; the next step then waits on the wrong page.
 - **Rule:** the card's handler is on its icon. Click `.icon-task-participant-directory` (as the helpers click `.icon-task-clinical`), and check the URL before going on.
+
+## A form loop that picks "the first tab not completed"
+
+- **Symptom:** the Medication script saved Fefol twice and MMS twice; the log showed the same tab answered again after its save.
+- **Wrong conclusion:** the save did not take, or the app asks again.
+- **Rule:** the active tab never carries `completed` (app-map, Controls), and after some saves the app leaves a saved tab active. Track the tabs the script has saved by name, not by class.
+
+## `ddev` run from the scratchpad
+
+- **Symptom:** `ddev mysql < file.sql` failed with `unknown command "mysql" for "ddev"`.
+- **Wrong conclusion:** ddev or the database is down.
+- **Rule:** ddev finds its project from the working directory. Prefix every ddev call with `cd /var/www/html/ihangane &&`.
+
+## Logging in to Drupal a second time in one driver session
+
+- **Symptom:** a second report recording failed at once: `input[name="name"]` never appeared on `/user/login`.
+- **Wrong conclusion:** the admin site is broken.
+- **Rule:** the driver keeps the Drupal session. Open `/user/login` and call `h.reports.drupalLogin` only when the name field is visible.
