@@ -3094,6 +3094,7 @@ all =
         , noMedicationWhenEverySupplementGivenTest
         , nextStepsAfterMedicationAtFollowUpVisitTest
         , firstNurseVisitUnchangedTest
+        , mebendazoleNotInMedicationWhenGivenFromNextStepsTodayTest
         ]
 
 
@@ -8013,6 +8014,20 @@ mebendazoleInMedicationAtFollowUpVisitTest =
             \_ ->
                 supplementsVisit 30 [ supplementsEarlierVisit 8 [ mebendazoleFromNextSteps ], supplementsEarlierVisit 4 [] ] emptyPrenatalMeasurements
                     |> expectNotOffered TaskMebendazole
+        ]
+
+
+mebendazoleNotInMedicationWhenGivenFromNextStepsTodayTest : Test
+mebendazoleNotInMedicationWhenGivenFromNextStepsTodayTest =
+    describe "Mebendazole handed out from Next Steps at the current visit is not offered in Medication"
+        [ test "an emergency referral opened Next Steps first, and it handed out Mebendazole" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [] ] (mebendazoleFromNextSteps currentDate emptyPrenatalMeasurements)
+                    |> expectNotOffered TaskMebendazole
+        , test "guard: Mebendazole out of stock in Next Steps at the current visit is still offered in Medication" <|
+            \_ ->
+                supplementsVisit 30 [ supplementsEarlierVisit 4 [] ] (mebendazoleNotGivenFromNextSteps currentDate emptyPrenatalMeasurements)
+                    |> expectOffered TaskMebendazole
         ]
 
 
