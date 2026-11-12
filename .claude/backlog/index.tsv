@@ -590,6 +590,12 @@ B-589	4	READY	LOW		2515	54	Case Management: a TB or HIV follow-up of a patient w
 B-590	4	IMPLEMENTED	LOW	2518	2519	54	Prenatal: on-screen English text misspells "Preeclampsia" ("Preeclamsia", "Preclampsia"), and more misspelt names remain
 B-591	4	READY	LOW		2521	54	Completion report: a first nurse visit at 24 weeks or later is charged with an unfinished Next Steps medication distribu
 B-592	4	READY	LOW			26	NCD and Prenatal referral, and Outside Care medicines: changing a saved Yes/No answer keeps the follow-up answers of the
+B-593	1	READY	LOW			55	Prenatal: diabetes found from a blood sugar result entered through a LATER visit's lab history never gives high risk of 
+B-594	1	READY	MED-HIGH			55	Prenatal: the two-hour blood-pressure recheck is scheduled only at the FIRST nurse visit, so a borderline reading (140–1
+B-595	1	READY	LOW			55	Prenatal: a positive partner HIV result entered later by the NURSE shows "Is the partner taking ARVs?" already answered 
+B-596	4	READY	LOW			55	Prenatal postpartum nurse visit: the continued-hypertension treatment block appears in Medication Distribution only when
+B-597	4	READY	LOW			55	Home Visit › Feeding (and the Well Child CHW home-visit copy): "is water given with the food supplement" has not been as
+B-598	4	READY	LOW			55	NCDA › Antenatal Care step: "there are ANC visits not on record: Yes" with no month ticked counts as complete and saves 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
