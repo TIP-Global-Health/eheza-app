@@ -8,10 +8,13 @@ import Backend.Measurement.Model
         ( AbdomenCPESign(..)
         , BloodGpRsTestValue
         , BloodSmearResult(..)
+        , CSectionScar(..)
         , CorePhysicalExamValue
         , DangerSign(..)
         , DangerSignsValue
+        , FetalPresentation(..)
         , FollowUpOption(..)
+        , GlucoseValue(..)
         , HIVPCRTestValue
         , HIVTestValue
         , HandsCPESign(..)
@@ -21,8 +24,14 @@ import Backend.Measurement.Model
         , LungsCPESign(..)
         , MalariaTestValue
         , Measurement
+        , MedicalHistoryInfectiousDisease(..)
+        , MedicalHistoryMentalHealthIssue(..)
+        , MedicalHistoryPhysicalCondition(..)
+        , MedicalHistorySign(..)
+        , MedicationDistributionSign(..)
         , MuacInCm(..)
         , ObstetricHistoryStep2Sign(..)
+        , OccursInFamilySign(..)
         , PartnerHIVTestValue
         , PregnancySign(..)
         , PrenatalAssesment(..)
@@ -70,8 +79,9 @@ import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregna
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), PreviousEncounterData, emptyHealthEducationForm)
 import Pages.Prenatal.ProgressReport.Model exposing (obstetricalDiagnoses)
+import Pages.Prenatal.RecurrentActivity.Types
 import Pages.Prenatal.RecurrentActivity.Utils
-import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedPreviouslyAnyOf, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
+import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedHypertension, diagnosedPreviouslyAnyOf, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet)
 import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
@@ -3061,6 +3071,7 @@ all =
         , lateLabResultPreeclampsiaRiskTest
         , lateLabResultLabTechAndHistoryTest
         , lateUrineProteinSeverePreeclampsiaTest
+        , preeclampsiaRiskAfterTheVisitTest
         , ultrasoundFormTest
         , preeclampsiaRiskSevereAt37PlusTest
         , preeclampsiaRiskModerateAt37PlusTest
@@ -4836,6 +4847,652 @@ severePreeclampsiaProgressReportTest =
                         )
                     |> Expect.equal
                         (List.repeat 6 [ ( "Severe Preeclampsia", "Preklampusi Ikabije" ) ])
+        ]
+
+
+
+-- PREECLAMPSIA RISK FOUND AFTER THE VISIT: ASPIRIN
+--
+-- High risk of preeclampsia is diagnosed once per pregnancy, and Aspirin is
+-- offered in the Next Steps of the phase where it is diagnosed. Hypertension
+-- or diabetes found during the encounter gives the risk from week 12.
+--
+-- Two of those findings arrive after the visit's own activities are done:
+--   * the blood pressure recheck: a borderline reading (140-159 / 90-109) at
+--     the visit asks for a second reading, recorded in the encounter's
+--     Examination after the visit is finished; when it is borderline again,
+--     it is hypertension (chronic before week 20, gestational from week 20);
+--   * a blood sugar test sent to the lab (or urine glucose, when no blood
+--     sugar test was done), whose result is entered later in Lab Results.
+--
+-- Every save reassesses the whole encounter with
+-- `generatePrenatalDiagnosesForNurse` and stores the outcome. The Next Steps
+-- that follow the recheck or the result ask for the medications that
+-- `resolveRequiredMedicationsSet English _ PrenatalEncounterPhaseRecurrent`
+-- returns on the encounter carrying the stored outcome (`result.saved`); the
+-- visit's own Next Steps ask for what `PrenatalEncounterPhaseInitial` returns
+-- on the encounter carrying the visit-day set (`result.visit`).
+--
+-- Each scenario reuses `enterResultLater`: the visit measurements are assessed
+-- on the visit day, the recheck or result is entered, the encounter (closed on
+-- the visit day) is assessed again. A recheck is entered on the visit day.
+--
+-- Oracle: issue #2508, "Expected behaviour". A test named after a criterion
+-- carries the criterion's words; the others are boundary cases around it.
+
+
+{-| The two high risk of preeclampsia diagnoses the app knows today.
+-}
+highRiskOfPreeclampsiaVariants : List PrenatalDiagnosis
+highRiskOfPreeclampsiaVariants =
+    [ DiagnosisHighRiskOfPreeclampsiaInitialPhase
+    , DiagnosisHighRiskOfPreeclampsiaRecurrentPhase
+    ]
+
+
+highRiskOfPreeclampsiaIn : EverySet PrenatalDiagnosis -> Bool
+highRiskOfPreeclampsiaIn diagnoses =
+    List.any (\diagnosis -> EverySet.member diagnosis diagnoses) highRiskOfPreeclampsiaVariants
+
+
+{-| Any preeclampsia risk (high or moderate) in a diagnosis set.
+-}
+preeclampsiaRiskIn : EverySet PrenatalDiagnosis -> Bool
+preeclampsiaRiskIn diagnoses =
+    List.any (\diagnosis -> EverySet.member diagnosis diagnoses) preeclampsiaRiskDiagnoses
+
+
+{-| Whether the Next Steps of the given phase offer Aspirin.
+-}
+aspirinOffered : PrenatalEncounterPhase -> AssembledData -> Bool
+aspirinOffered phase assembled =
+    resolveRequiredMedicationsSet English visitDay phase assembled
+        |> List.any (\( _, medications, _ ) -> List.member Aspirin medications)
+
+
+{-| Aspirin in the visit's own Next Steps, read with the visit-day diagnoses.
+-}
+aspirinAtVisit : LateResult -> Bool
+aspirinAtVisit result =
+    aspirinOffered PrenatalEncounterPhaseInitial result.visit
+
+
+{-| Aspirin in the Next Steps that follow the recheck or Lab Results, read
+with the diagnoses stored after the reassessment.
+-}
+aspirinAfterRecheckOrResult : LateResult -> Bool
+aspirinAfterRecheckOrResult result =
+    aspirinOffered PrenatalEncounterPhaseRecurrent result.saved
+
+
+{-| Vitals holding the visit's blood pressure (sys, dia) and, once taken, the
+recheck's.
+-}
+withBloodPressures : ( Float, Float ) -> Maybe ( Float, Float ) -> PrenatalMeasurements -> PrenatalMeasurements
+withBloodPressures ( sys, dia ) recheck measurements =
+    let
+        visitReading =
+            TestFixtures.vitalsValueWith sys dia
+    in
+    { measurements
+        | vitals =
+            TestFixtures.wrapMeasurement visitDay
+                { visitReading
+                    | sysRepeated = Maybe.map Tuple.first recheck
+                    , diaRepeated = Maybe.map Tuple.second recheck
+                }
+    }
+
+
+{-| A visit at `ega` with the borderline blood pressure `visitReading` (and
+the other given measurements); after the visit, the recheck reads
+`recheckReading`.
+-}
+recheckReadsAt : ( Int, Int ) -> ( Float, Float ) -> ( Float, Float ) -> PrenatalMeasurements -> LateResult
+recheckReadsAt ega visitReading recheckReading visitMeasurements =
+    enterResultLater ega
+        0
+        (withBloodPressures visitReading (Just recheckReading))
+        (withBloodPressures visitReading Nothing visitMeasurements)
+
+
+{-| The recheck confirms the visit's borderline reading.
+-}
+recheckConfirmsAt : ( Int, Int ) -> ( Float, Float ) -> PrenatalMeasurements -> LateResult
+recheckConfirmsAt ega reading =
+    recheckReadsAt ega reading reading
+
+
+{-| The issue's reading: 145/95 at the visit and again at the recheck.
+-}
+recheckConfirms145Over95At : ( Int, Int ) -> LateResult
+recheckConfirms145Over95At ega =
+    recheckConfirmsAt ega ( 145, 95 ) emptyPrenatalMeasurements
+
+
+{-| A visit at `ega` that sent a fasting blood sugar test to the lab; the
+given count is entered later in Lab Results (above 126 is diabetes).
+-}
+bloodSugarResultLaterAt : ( Int, Int ) -> Float -> PrenatalMeasurements -> LateResult
+bloodSugarResultLaterAt ega count visitMeasurements =
+    enterResultLater ega 3 (enterRandomBloodSugar count) (withPendingRandomBloodSugar visitMeasurements)
+
+
+{-| A blood sugar test that was not done, stored with the reason.
+-}
+randomBloodSugarNotDoneValue : RandomBloodSugarTestValue PrenatalEncounterId
+randomBloodSugarNotDoneValue =
+    { executionNote = TestNoteLackOfReagents
+    , executionDate = Nothing
+    , testPrerequisites = Nothing
+    , sugarCount = Nothing
+    , originatingEncounter = Nothing
+    }
+
+
+withRandomBloodSugarNotDone : PrenatalMeasurements -> PrenatalMeasurements
+withRandomBloodSugarNotDone measurements =
+    { measurements | randomBloodSugarTest = TestFixtures.wrapMeasurement visitDay randomBloodSugarNotDoneValue }
+
+
+{-| The nurse enters the urine glucose on the encounter's Lab Results page.
+-}
+enterUrineGlucoseInLabResults : GlucoseValue -> PrenatalMeasurements -> PrenatalMeasurements
+enterUrineGlucoseInLabResults glucose measurements =
+    { measurements
+        | urineDipstickTest =
+            TestFixtures.wrapMeasurement visitDay { urineDipstickSentToLabValue | glucose = Just glucose }
+    }
+
+
+{-| A visit at `ega` that sent the urine dipstick to the lab, with the blood
+sugar test step given; the urine glucose is entered later in Lab Results.
+-}
+urineGlucoseResultLaterAt : ( Int, Int ) -> (PrenatalMeasurements -> PrenatalMeasurements) -> GlucoseValue -> LateResult
+urineGlucoseResultLaterAt ega withBloodSugarStep glucose =
+    emptyPrenatalMeasurements
+        |> withBloodSugarStep
+        |> withUrineDipstickSentToLab
+        |> enterResultLater ega 3 (enterUrineGlucoseInLabResults glucose)
+
+
+{-| A fasting blood sugar read at the visit (immediate result).
+-}
+withImmediateRandomBloodSugar : Float -> PrenatalMeasurements -> PrenatalMeasurements
+withImmediateRandomBloodSugar count measurements =
+    { measurements
+        | randomBloodSugarTest =
+            TestFixtures.wrapMeasurement visitDay
+                { pendingRandomBloodSugarValue
+                    | testPrerequisites = Just (EverySet.fromList [ PrerequisiteFastFor12h, PrerequisiteImmediateResult ])
+                    , sugarCount = Just count
+                }
+    }
+
+
+{-| An obstetrical exam finding twins.
+-}
+withTwins : PrenatalMeasurements -> PrenatalMeasurements
+withTwins measurements =
+    { measurements
+        | obstetricalExam =
+            wrapMeasurement
+                { fundalPalpable = True
+                , fundalHeight = Just (HeightInCm 30)
+                , fetalPresentation = Twins
+                , fetalMovement = True
+                , fetalHeartRate = 140
+                , cSectionScar = NoScar
+                }
+    }
+
+
+{-| A medical history carrying the given sign.
+-}
+withMedicalHistorySign : MedicalHistorySign -> PrenatalMeasurements -> PrenatalMeasurements
+withMedicalHistorySign sign measurements =
+    { measurements
+        | medicalHistory =
+            wrapMeasurement
+                { signs = EverySet.singleton sign
+                , physicalConditions = EverySet.singleton NoMedicalHistoryPhysicalCondition
+                , infectiousDiseases = EverySet.singleton NoMedicalHistoryInfectiousDisease
+                , mentalHealthIssues = EverySet.singleton NoMedicalHistoryMentalHealthIssue
+                , preeclampsiaInFamily = DoesNotOccur
+                }
+    }
+
+
+{-| The histories that give high risk of preeclampsia at the visit, by name.
+-}
+highRiskHistories : List ( String, PrenatalMeasurements -> PrenatalMeasurements )
+highRiskHistories =
+    [ ( "preeclampsia in a previous pregnancy", withPreeclampsiaRiskHistory ObstetricHistoryPreeclampsiaPreviousPregnancy Neither )
+    , ( "twins", withTwins )
+    , ( "hypertension before pregnancy", withMedicalHistorySign HypertensionBeforePregnancy )
+    , ( "diabetes before pregnancy", withMedicalHistorySign Diabetes )
+    ]
+
+
+{-| The names of the expected findings that are absent.
+-}
+missing : List ( String, Bool ) -> List String
+missing =
+    List.filter (Tuple.second >> not) >> List.map Tuple.first
+
+
+{-| The names of the findings that are present.
+-}
+present : List ( String, Bool ) -> List String
+present =
+    List.filter Tuple.second >> List.map Tuple.first
+
+
+preeclampsiaRiskAfterTheVisitTest : Test
+preeclampsiaRiskAfterTheVisitTest =
+    describe "preeclampsia risk found at the recheck or from a later result: Aspirin"
+        [ riskAtRecheckFrom20WeeksTest
+        , riskAtRecheckFrom12To19WeeksTest
+        , riskFromLaterResultTest
+        , noRiskBefore12WeeksTest
+        , riskAtVisitAsTodayTest
+        , riskFromHistoryStaysAtVisitTest
+        , preeclampsiaFoundAfterVisitTest
+        , preeclampsiaRiskProgressReportTest
+        ]
+
+
+riskAtRecheckFrom20WeeksTest : Test
+riskAtRecheckFrom20WeeksTest =
+    let
+        -- What the recheck should bring, each named, so a failure lists the
+        -- missing ones.
+        outcome result =
+            [ ( "gestational hypertension", EverySet.member DiagnosisGestationalHypertensionAfterRecheck result.afterEntry )
+            , ( "high risk of preeclampsia", highRiskOfPreeclampsiaIn result.afterEntry )
+            , ( "Aspirin after the recheck", aspirinAfterRecheckOrResult result )
+            , ( "hypertension treatment after the recheck", diagnosedHypertension PrenatalEncounterPhaseRecurrent result.saved )
+            ]
+    in
+    describe "recheck from week 20"
+        [ test "At 20 weeks or later, a borderline blood pressure (140–159 / 90–109) confirmed at the recheck gives gestational hypertension and high risk of preeclampsia. The Next Steps after the recheck offer Aspirin, alongside the hypertension treatment." <|
+            -- The issue's scenario: 145/95 at a visit at 28 weeks, and again
+            -- at the recheck.
+            \_ ->
+                recheckConfirms145Over95At ( 28, 0 )
+                    |> outcome
+                    |> missing
+                    |> Expect.equal []
+        , test "recheck at 20 weeks 0 days: gestational hypertension, high risk, Aspirin after the recheck" <|
+            \_ ->
+                recheckConfirms145Over95At ( 20, 0 )
+                    |> outcome
+                    |> missing
+                    |> Expect.equal []
+        , test "recheck at 38 weeks: gestational hypertension, high risk, Aspirin after the recheck" <|
+            \_ ->
+                recheckConfirms145Over95At ( 38, 0 )
+                    |> outcome
+                    |> missing
+                    |> Expect.equal []
+        , test "lowest borderline systolic (140/85 at visit and recheck) at 28 weeks: Aspirin after the recheck" <|
+            \_ ->
+                recheckConfirmsAt ( 28, 0 ) ( 140, 85 ) emptyPrenatalMeasurements
+                    |> outcome
+                    |> missing
+                    |> Expect.equal []
+        , test "lowest borderline diastolic (130/90 at visit and recheck) at 28 weeks: Aspirin after the recheck" <|
+            \_ ->
+                recheckConfirmsAt ( 28, 0 ) ( 130, 90 ) emptyPrenatalMeasurements
+                    |> outcome
+                    |> missing
+                    |> Expect.equal []
+        , test "highest borderline reading (159/109 at visit and recheck) at 28 weeks: Aspirin after the recheck" <|
+            \_ ->
+                recheckConfirmsAt ( 28, 0 ) ( 159, 109 ) emptyPrenatalMeasurements
+                    |> outcome
+                    |> missing
+                    |> Expect.equal []
+        , test "the borderline visit reading alone gives no risk and no Aspirin at the visit: the recheck is still to come" <|
+            \_ ->
+                let
+                    result =
+                        recheckConfirms145Over95At ( 28, 0 )
+                in
+                ( preeclampsiaRiskIn result.visitDayDiagnoses, aspirinAtVisit result )
+                    |> Expect.equal ( False, False )
+        , test "guard: a normal recheck (135/85) after 145/95 at 28 weeks gives no hypertension, no risk and no Aspirin" <|
+            \_ ->
+                let
+                    result =
+                        recheckReadsAt ( 28, 0 ) ( 145, 95 ) ( 135, 85 ) emptyPrenatalMeasurements
+                in
+                ( present (outcome result), preeclampsiaRiskIn result.afterEntry )
+                    |> Expect.equal ( [], False )
+        ]
+
+
+riskAtRecheckFrom12To19WeeksTest : Test
+riskAtRecheckFrom12To19WeeksTest =
+    let
+        -- What the recheck should bring, each named, so a failure lists the
+        -- missing ones.
+        outcome result =
+            [ ( "chronic hypertension", EverySet.member DiagnosisChronicHypertensionAfterRecheck result.afterEntry )
+            , ( "high risk of preeclampsia", highRiskOfPreeclampsiaIn result.afterEntry )
+            , ( "Aspirin after the recheck", aspirinAfterRecheckOrResult result )
+            , ( "hypertension treatment after the recheck", diagnosedHypertension PrenatalEncounterPhaseRecurrent result.saved )
+            ]
+    in
+    describe "recheck between weeks 12 and 19"
+        [ test "Between 12 and 19 weeks, the same recheck gives chronic hypertension and high risk of preeclampsia, and Aspirin is offered in the same place." <|
+            \_ ->
+                recheckConfirms145Over95At ( 16, 0 )
+                    |> outcome
+                    |> missing
+                    |> Expect.equal []
+        , test "recheck at 12 weeks 0 days: chronic hypertension, high risk, Aspirin after the recheck" <|
+            \_ ->
+                recheckConfirms145Over95At ( 12, 0 )
+                    |> outcome
+                    |> missing
+                    |> Expect.equal []
+        , test "recheck at 19 weeks 6 days: chronic hypertension, high risk, Aspirin after the recheck" <|
+            \_ ->
+                recheckConfirms145Over95At ( 19, 6 )
+                    |> outcome
+                    |> missing
+                    |> Expect.equal []
+        ]
+
+
+riskFromLaterResultTest : Test
+riskFromLaterResultTest =
+    let
+        -- (high risk of preeclampsia, Aspirin in Lab Results' Next Steps)
+        outcome result =
+            ( highRiskOfPreeclampsiaIn result.afterEntry
+            , aspirinAfterRecheckOrResult result
+            )
+    in
+    describe "later blood sugar or urine glucose result"
+        [ test "At 12 weeks or later, a blood sugar test sent for later results whose result, entered in Lab Results, shows diabetes gives diabetes and high risk of preeclampsia. Lab Results' Next Steps offer Aspirin." <|
+            -- Visit at 28 weeks; fasting blood sugar 130 entered later.
+            \_ ->
+                let
+                    result =
+                        bloodSugarResultLaterAt ( 28, 0 ) 130 emptyPrenatalMeasurements
+                in
+                ( EverySet.member DiagnosisGestationalDiabetesRecurrentPhase result.afterEntry
+                , outcome result
+                )
+                    |> Expect.equal ( True, ( True, True ) )
+        , test "The same applies to urine glucose +2 or more when no blood sugar test was done." <|
+            -- Visit at 28 weeks; the blood sugar test was not done (lack of
+            -- reagents); the urine dipstick went to the lab and urine glucose
+            -- +2 is entered later.
+            \_ ->
+                let
+                    result =
+                        urineGlucoseResultLaterAt ( 28, 0 ) withRandomBloodSugarNotDone GlucosePlus2
+                in
+                ( EverySet.member DiagnosisGestationalDiabetesRecurrentPhase result.afterEntry
+                , outcome result
+                )
+                    |> Expect.equal ( True, ( True, True ) )
+        , test "Lab Results' Next Steps show the medication task for the Aspirin a later blood sugar result calls for" <|
+            \_ ->
+                bloodSugarResultLaterAt ( 28, 0 ) 130 emptyPrenatalMeasurements
+                    |> .saved
+                    |> Pages.Prenatal.RecurrentActivity.Utils.resolveNextStepsTasks visitDay False
+                    |> List.member Pages.Prenatal.RecurrentActivity.Types.NextStepsMedicationDistribution
+                    |> Expect.equal True
+        , test "blood sugar from a visit at 14 weeks, entered later: diabetes, high risk, Aspirin in Lab Results' Next Steps" <|
+            \_ ->
+                let
+                    result =
+                        bloodSugarResultLaterAt ( 14, 0 ) 130 emptyPrenatalMeasurements
+                in
+                ( EverySet.member DiagnosisDiabetesRecurrentPhase result.afterEntry
+                , outcome result
+                )
+                    |> Expect.equal ( True, ( True, True ) )
+        , test "blood sugar from a visit at 12 weeks 0 days, entered later: high risk, Aspirin in Lab Results' Next Steps" <|
+            \_ ->
+                bloodSugarResultLaterAt ( 12, 0 ) 130 emptyPrenatalMeasurements
+                    |> outcome
+                    |> Expect.equal ( True, True )
+        , test "urine glucose +4 entered later at 28 weeks, no blood sugar test done: high risk, Aspirin in Lab Results' Next Steps" <|
+            \_ ->
+                urineGlucoseResultLaterAt ( 28, 0 ) withRandomBloodSugarNotDone GlucosePlus4
+                    |> outcome
+                    |> Expect.equal ( True, True )
+        , test "guard: urine glucose +1 entered later, no blood sugar test done: no diabetes, no risk, no Aspirin" <|
+            \_ ->
+                let
+                    result =
+                        urineGlucoseResultLaterAt ( 28, 0 ) withRandomBloodSugarNotDone GlucosePlus1
+                in
+                ( EverySet.member DiagnosisGestationalDiabetesRecurrentPhase result.afterEntry
+                , outcome result
+                )
+                    |> Expect.equal ( False, ( False, False ) )
+        , test "guard: urine glucose +2 entered later when the blood sugar test was done and normal: the blood sugar decides, no risk, no Aspirin" <|
+            \_ ->
+                urineGlucoseResultLaterAt ( 28, 0 ) (enterRandomBloodSugar 90) GlucosePlus2
+                    |> outcome
+                    |> Expect.equal ( False, False )
+        , test "guard: a normal blood sugar entered later at 28 weeks: no risk, no Aspirin" <|
+            \_ ->
+                bloodSugarResultLaterAt ( 28, 0 ) 90 emptyPrenatalMeasurements
+                    |> outcome
+                    |> Expect.equal ( False, False )
+        ]
+
+
+noRiskBefore12WeeksTest : Test
+noRiskBefore12WeeksTest =
+    let
+        -- (any preeclampsia risk, Aspirin after the recheck or result)
+        outcome result =
+            ( preeclampsiaRiskIn result.afterEntry
+            , aspirinAfterRecheckOrResult result
+            )
+    in
+    describe "before week 12"
+        [ test "Before 12 weeks, neither the recheck nor a later result gives a preeclampsia risk." <|
+            -- Recheck at 11 weeks 6 days; blood sugar and urine glucose from
+            -- a visit at 11 weeks 6 days, entered later.
+            \_ ->
+                [ recheckConfirms145Over95At ( 11, 6 )
+                , bloodSugarResultLaterAt ( 11, 6 ) 130 emptyPrenatalMeasurements
+                , urineGlucoseResultLaterAt ( 11, 6 ) withRandomBloodSugarNotDone GlucosePlus2
+                ]
+                    |> List.map outcome
+                    |> Expect.equal (List.repeat 3 ( False, False ))
+        , test "guard: recheck at 11 weeks 6 days still gives chronic hypertension" <|
+            \_ ->
+                recheckConfirms145Over95At ( 11, 6 )
+                    |> .afterEntry
+                    |> EverySet.member DiagnosisChronicHypertensionAfterRecheck
+                    |> Expect.equal True
+        , test "guard: blood sugar from a visit at 8 weeks, entered later, still gives diabetes" <|
+            \_ ->
+                let
+                    result =
+                        bloodSugarResultLaterAt ( 8, 0 ) 130 emptyPrenatalMeasurements
+                in
+                ( EverySet.member DiagnosisDiabetesRecurrentPhase result.afterEntry, outcome result )
+                    |> Expect.equal ( True, ( False, False ) )
+        ]
+
+
+riskAtVisitAsTodayTest : Test
+riskAtVisitAsTodayTest =
+    let
+        -- (high risk among the visit-day diagnoses, Aspirin at the visit)
+        atVisit result =
+            ( highRiskOfPreeclampsiaIn result.visitDayDiagnoses
+            , aspirinAtVisit result
+            )
+    in
+    describe "risk found at the visit"
+        [ test "A blood pressure of 160/110 or more at the visit, or a blood sugar result read at the visit that shows diabetes, still gives high risk of preeclampsia at the visit, with Aspirin in the visit's Next Steps, as today." <|
+            -- 165/115 at 28 weeks and at 16 weeks; fasting blood sugar 130
+            -- read at the visit at 28 weeks. A hemoglobin test goes to the
+            -- lab so a result can be entered later.
+            \_ ->
+                [ enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12) highBloodPressureVisit
+                , enterResultLater ( 16, 0 ) 3 (enterHemoglobin 12) highBloodPressureVisit
+                , enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12) (withImmediateRandomBloodSugar 130 (withPendingHemoglobin emptyPrenatalMeasurements))
+                ]
+                    |> List.map atVisit
+                    |> Expect.equal (List.repeat 3 ( True, True ))
+        , test "160/110 at the visit at 28 weeks, a later hemoglobin result: Lab Results' Next Steps do not offer Aspirin a second time" <|
+            \_ ->
+                enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12) highBloodPressureVisit
+                    |> aspirinAfterRecheckOrResult
+                    |> Expect.equal False
+        , test "blood sugar read at the visit at 28 weeks shows diabetes, a later hemoglobin result: Lab Results' Next Steps do not offer Aspirin a second time" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withPendingHemoglobin
+                    |> withImmediateRandomBloodSugar 130
+                    |> enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12)
+                    |> aspirinAfterRecheckOrResult
+                    |> Expect.equal False
+        ]
+
+
+riskFromHistoryStaysAtVisitTest : Test
+riskFromHistoryStaysAtVisitTest =
+    let
+        -- Each history at a visit at 28 weeks, followed by a borderline
+        -- reading confirmed at the recheck, or by a blood sugar result
+        -- showing diabetes entered later.
+        scenarios =
+            List.concatMap
+                (\( name, withHistory ) ->
+                    [ ( name ++ ", then the recheck", recheckConfirmsAt ( 28, 0 ) ( 145, 95 ) (withHistory emptyPrenatalMeasurements) )
+                    , ( name ++ ", then a later blood sugar result", bloodSugarResultLaterAt ( 28, 0 ) 130 (withHistory emptyPrenatalMeasurements) )
+                    ]
+                )
+                highRiskHistories
+
+        firstVisitWith diagnosis =
+            { startDate = Date.add Date.Weeks -8 visitDay
+            , diagnoses = EverySet.singleton diagnosis
+            , pastDiagnoses = EverySet.empty
+            , measurements = emptyPrenatalMeasurements
+            }
+
+        recheckAfterRiskAtFirstVisit diagnosis =
+            emptyPrenatalMeasurements
+                |> withBloodPressures ( 145, 95 ) Nothing
+                |> enterResultLaterAfter [ firstVisitWith diagnosis ] ( 28, 0 ) 0 (withBloodPressures ( 145, 95 ) (Just ( 145, 95 )))
+    in
+    describe "risk found at the visit from history"
+        [ test "A risk found at the visit from history (preeclampsia in a previous pregnancy, twins, hypertension or diabetes before pregnancy) stays a visit diagnosis. A recheck or a later result on the same day does not offer Aspirin a second time." <|
+            \_ ->
+                scenarios
+                    |> List.map (\( name, result ) -> ( name, aspirinAtVisit result, aspirinAfterRecheckOrResult result ))
+                    |> Expect.equal (List.map (\( name, _ ) -> ( name, True, False )) scenarios)
+        , test "the risk from history is still the visit's diagnosis after the recheck or the later result" <|
+            \_ ->
+                scenarios
+                    |> List.map
+                        (\( name, result ) ->
+                            ( name
+                            , EverySet.member DiagnosisHighRiskOfPreeclampsiaInitialPhase result.afterEntry
+                            , EverySet.member DiagnosisHighRiskOfPreeclampsiaRecurrentPhase result.afterEntry
+                            )
+                        )
+                    |> Expect.equal (List.map (\( name, _ ) -> ( name, True, False )) scenarios)
+        , test "guard: high risk found at an earlier visit: this visit's recheck gives no risk again and no Aspirin" <|
+            -- The earlier visit may hold either high risk diagnosis.
+            \_ ->
+                highRiskOfPreeclampsiaVariants
+                    |> List.map
+                        (recheckAfterRiskAtFirstVisit
+                            >> (\result -> ( highRiskOfPreeclampsiaIn result.afterEntry, aspirinAfterRecheckOrResult result ))
+                        )
+                    |> Expect.equal [ ( False, False ), ( False, False ) ]
+        ]
+
+
+preeclampsiaFoundAfterVisitTest : Test
+preeclampsiaFoundAfterVisitTest =
+    let
+        moderatePreeclampsiaVariants =
+            [ DiagnosisModeratePreeclampsiaInitialPhase
+            , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+            , DiagnosisModeratePreeclampsiaRecurrentPhase
+            , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+            ]
+
+        -- (moderate preeclampsia, any preeclampsia risk, Aspirin after the
+        -- recheck or result)
+        outcome result =
+            ( List.any (\diagnosis -> EverySet.member diagnosis result.afterEntry) moderatePreeclampsiaVariants
+            , preeclampsiaRiskIn result.afterEntry
+            , aspirinAfterRecheckOrResult result
+            )
+    in
+    describe "preeclampsia found at the recheck or from the later result"
+        [ test "When preeclampsia is found at the recheck or from the later result, no preeclampsia risk is given, as today." <|
+            -- At 28 weeks, 145/95 at the visit:
+            --   * urine protein +1 read at the visit, the recheck confirms;
+            --   * urine protein +1 entered in Lab Results first, the recheck
+            --     confirms afterwards;
+            --   * the recheck confirms first (its reassessment stored), then
+            --     urine protein +1 is entered in Lab Results.
+            \_ ->
+                [ recheckConfirmsAt ( 28, 0 ) ( 145, 95 ) (withUrineProtein ProteinPlus1 emptyPrenatalMeasurements)
+                , recheckConfirmsAt ( 28, 0 ) ( 145, 95 ) (enterProteinInLabResults ProteinPlus1 (withUrineDipstickSentToLab emptyPrenatalMeasurements))
+                , emptyPrenatalMeasurements
+                    |> withBloodPressures ( 145, 95 ) (Just ( 145, 95 ))
+                    |> withUrineDipstickSentToLab
+                    |> enterResultLater ( 28, 0 ) 3 (enterProteinInLabResults ProteinPlus1)
+                ]
+                    |> List.map outcome
+                    |> Expect.equal (List.repeat 3 ( True, False, False ))
+        ]
+
+
+{-| The progress report lists the encounter's diagnoses found in
+`obstetricalDiagnoses`, labelled with `PrenatalDiagnosisForProgressReport`.
+Today's label is "High Risk of Preeclampsia" (Kinyarwanda "Afite ibyago
+byinshi byo kugira Preklampusi"). The wording is matched, not the variant, so
+the test reads the label whichever diagnosis carries it.
+-}
+preeclampsiaRiskProgressReportTest : Test
+preeclampsiaRiskProgressReportTest =
+    let
+        label =
+            ( "High Risk of Preeclampsia", "Afite ibyago byinshi byo kugira Preklampusi" )
+
+        labelsShown result =
+            EverySet.toList result.afterEntry
+                |> List.filter (\diagnosis -> List.member diagnosis obstetricalDiagnoses)
+                |> List.map progressReportWording
+                |> List.filter ((==) label)
+    in
+    describe "progress report"
+        [ test "The progress report shows \"High Risk of Preeclampsia\" with the same wording in all these cases." <|
+            -- Recheck at 28 and at 16 weeks; blood sugar and urine glucose
+            -- entered later; 160/110 and blood sugar read at the visit;
+            -- history at the visit followed by the recheck.
+            \_ ->
+                [ recheckConfirms145Over95At ( 28, 0 )
+                , recheckConfirms145Over95At ( 16, 0 )
+                , bloodSugarResultLaterAt ( 28, 0 ) 130 emptyPrenatalMeasurements
+                , urineGlucoseResultLaterAt ( 28, 0 ) withRandomBloodSugarNotDone GlucosePlus2
+                , enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12) highBloodPressureVisit
+                , enterResultLater ( 28, 0 ) 3 (enterHemoglobin 12) (withImmediateRandomBloodSugar 130 (withPendingHemoglobin emptyPrenatalMeasurements))
+                , recheckConfirmsAt ( 28, 0 ) ( 145, 95 ) (withTwins emptyPrenatalMeasurements)
+                ]
+                    |> List.map labelsShown
+                    |> Expect.equal (List.repeat 7 [ label ])
         ]
 
 
