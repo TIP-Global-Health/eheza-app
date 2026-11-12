@@ -542,7 +542,7 @@ B-541	4	READY	LOW			49	Dashboard beneficiaries: a child's "join date" is the day
 B-542	4	READY	LOW			49	Completion report: every generator orders a participant's encounters by `nid` and treats the lower nids as the history, 
 B-543	4	READY	LOW			49	Photos (group Child Picture, Family Nutrition, person registration): the Dropzone completion event is delivered to which
 B-544	4	READY	LOW			49	Person registration, person edit, Relationship and Receive Stock: the on-entry form resets run only for in-app taps (`Se
-B-545	4	IMPLEMENTED	LOW			49	Relationship page: a failed save of A→B keeps showing "Backend error" on A→C and every later relationship page of A, bec
+B-545	4	IMPLEMENTED	LOW	2522	2523	49	Relationship page: a failed save of A→B keeps showing "Backend error" on A→C and every later relationship page of A, bec
 B-546	3	READY	MED-LOW			49	Case Management Nutrition pane: a follow-up the CHW never answered with a home visit stays listed for years, and a later
 B-547	3	READY	MED-LOW			49	Malnutrition assessment (individual Nutrition encounter and group session): the weight-history rules deliberately skip W
 B-548	2	IMPLEMENTED	MED	2464	2465	49	Group session, activity-first flow: the child's individual Nutrition data is fetched only for the FIRST pending child of
@@ -582,12 +582,12 @@ B-581	1	READY	MED-HIGH			54	Prenatal: hypertension diagnosed at an earlier visit
 B-582	3	READY	MED-LOW			54	Prenatal recurrent phase: the hospital-referral task for a diagnosis found by a lab result reads complete from the refer
 B-583	4	IMPLEMENTED	LOW			54	Prenatal (nurse): "high risk of preeclampsia" is stored beside severe or moderate preeclampsia, or eclampsia, found at 3
 B-584	4	READY	LOW		2507	54	Completion report: a next medication or vaccine dose that falls 6, 9 or 12 months after a dose given on the 29th–31st is
-B-585		IMPLEMENTED				54	Prenatal: misspelt function names `…Prevoiusly…` and `…Inital…` — rename only, no logic change
+B-585		IMPLEMENTED		2516	2517	54	Prenatal: misspelt function names `…Prevoiusly…` and `…Inital…` — rename only, no logic change
 B-586	1	IMPLEMENTED	MED	2510	2511	54	Prenatal: "high risk of preeclampsia" is diagnosed from GESTATIONAL hypertension (today's or an earlier visit's), while 
 B-587	1	CLOSED	MED			54	Prenatal: Aspirin for a preeclampsia risk is offered at ONE visit only — declined, skipped or "not given" at that visit,
 B-588	4	READY	LOW		2511	54	Prenatal: chronic hypertension or diabetes reported through Outside Care at an earlier visit is not a high-risk conditio
 B-589	4	READY	LOW		2515	54	Case Management: a TB or HIV follow-up of a patient who is in no village roster is listed for nobody
-B-590	4	IMPLEMENTED	LOW		2517	54	Prenatal: on-screen English text misspells "Preeclampsia" ("Preeclamsia", "Preclampsia"), and more misspelt names remain
+B-590	4	IMPLEMENTED	LOW	2518	2519	54	Prenatal: on-screen English text misspells "Preeclampsia" ("Preeclamsia", "Preclampsia"), and more misspelt names remain
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
