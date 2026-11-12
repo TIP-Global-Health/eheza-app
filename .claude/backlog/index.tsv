@@ -587,7 +587,7 @@ B-586	1	IMPLEMENTED	MED	2510	2511	54	Prenatal: "high risk of preeclampsia" is di
 B-587	1	CLOSED	MED			54	Prenatal: Aspirin for a preeclampsia risk is offered at ONE visit only — declined, skipped or "not given" at that visit,
 B-588	4	READY	LOW		2511	54	Prenatal: chronic hypertension or diabetes reported through Outside Care at an earlier visit is not a high-risk conditio
 B-589	4	READY	LOW		2515	54	Case Management: a TB or HIV follow-up of a patient who is in no village roster is listed for nobody
-B-590	4	READY	LOW		2517	54	Prenatal: on-screen English text misspells "Preeclampsia" ("Preeclamsia", "Preclampsia"), and more misspelt names remain
+B-590	4	IMPLEMENTED	LOW		2517	54	Prenatal: on-screen English text misspells "Preeclampsia" ("Preeclamsia", "Preclampsia"), and more misspelt names remain
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
