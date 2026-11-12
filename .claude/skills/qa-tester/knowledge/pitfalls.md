@@ -809,3 +809,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a second report recording failed at once: `input[name="name"]` never appeared on `/user/login`.
 - **Wrong conclusion:** the admin site is broken.
 - **Rule:** the driver keeps the Drupal session. Open `/user/login` and call `h.reports.drupalLogin` only when the name field is visible.
+
+## Waiting for an element that was already showing before the click
+
+- **Symptom:** on develop, a check that the banner came back after a second failed Save read 0, though the video showed it.
+- **Wrong conclusion:** the second save did not fail, or the banner went for good.
+- **Rule:** the stale banner was still there when `waitFor` ran, so the wait returned at once and the count fell in the Loading moment, when the banner is hidden. When the element can already be there before the action, wait for the change: pause past the request first, or wait for it to go away and then come back.
+
+## Planning a row on the browser Back button
+
+- **Symptom:** the first plan held a hold row for reaching the Relationship page with `page.goBack()`.
+- **Wrong conclusion:** the Back route is a user path the change must not alter.
+- **Rule:** the user closed B-544 because the tablets have no Back button. Read the backlog item behind a "residual" before planning a row on it, and reach pages only through the app's own arrows and buttons.

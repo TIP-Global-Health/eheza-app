@@ -145,7 +145,12 @@ flag simply does not appear.
   page, as is "Add Child" (`div.add-participant-icon-wrapper`).
 - Participant Directory: main menu `.icon-task-participant-directory` → `#persons/directory`, `input.search-input`. The Relationship page
   (`#relationship/<id1>/<id2>/<origin>`) has `label.relationship-selection` radios; `qa.state().choices` shows the chosen one as `(x)`.
-  `page.goBack()` is the tablet's Back button: it reaches a page through the URL, not through the in-app entry.
+  `page.goBack()` reaches a page through the URL, not through the in-app entry. The tablets have no Back button (user, closing B-544),
+  so a row built on `page.goBack()` tests no real path: open pages through the in-app arrow and buttons.
+- Relationship page controls: Save `.save-buttons button.ui.button.primary.fluid` (`loading disabled` while a save is on its way), Cancel beside it,
+  the failed-save banner `.ui.warning.message` ("Error contacting backend"), back arrow `.link-back` → the first person's page. The save
+  result is held per first person in memory only, so a reload clears it. A successful save goes to the first person's page even when the
+  nurse has meanwhile opened another pair.
 - Save buttons: `button.ui.fluid.primary.button` with class `disabled` or `active`; the
   `disabled` attribute is never set, so read the class. Buttons from `viewEncounterActionButton`
   (prenatal Next Steps › Next ANC Visit) carry neither class when pressable — only `disabled` means off.
@@ -205,7 +210,13 @@ flag simply does not appear.
   `shards` row, or `field_latitude` / `field_longitude` on the server. The server ignores
   `save_gps_location`, so a downloaded person always has it false.
 - A nurse's Add Child: the child form takes the parent's address. On the relationship page,
-  Save stays disabled until "Add to Group..." has a value.
+  Save stays disabled until "Add to Group..." has a value (at Nyange: Nyagne II, Nyagne III, Nyange I; from a group session only that
+  session's group, already chosen). The nurse's save POSTs `pmtct_participant` (the group membership) first, then `relationship`.
+- Linking existing people: Participant Directory → adult → `div.add-participant-icon-wrapper` → type the child's name → the result's
+  `span.action-icon.forward` opens the Relationship page. One adult and three children by the registration helpers took about 20 s.
+- Failing or holding a relationship save: wrap `XMLHttpRequest` POSTs to `/sw/nodes/<type>` (`installSaveControls` in
+  `client/e2e/group-session-save-button.spec.ts`). Fail `relationship` and `pmtct_participant` together, or each failed attempt still
+  leaves a group membership behind. The page shows the network-error banner.
 - Person page: "Family Members:" lists each relative as "<name> (Child)" / "(Parent)", then "Add Child" (adult) or
   "Add Parent or Caregiver" (child), opened by `div.add-participant-icon-wrapper`. It leads to
   `#relations/<uuid>/<origin>`, headed "ADD FAMILY MEMBER FOR <NAME>". That search shows only the other age group
