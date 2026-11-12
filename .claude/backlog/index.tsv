@@ -582,7 +582,7 @@ B-581	1	READY	MED-HIGH			54	Prenatal: hypertension diagnosed at an earlier visit
 B-582	3	READY	MED-LOW			54	Prenatal recurrent phase: the hospital-referral task for a diagnosis found by a lab result reads complete from the refer
 B-583	4	IMPLEMENTED	LOW			54	Prenatal (nurse): "high risk of preeclampsia" is stored beside severe or moderate preeclampsia, or eclampsia, found at 3
 B-584	4	READY	LOW		2507	54	Completion report: a next medication or vaccine dose that falls 6, 9 or 12 months after a dose given on the 29th–31st is
-B-585		READY				54	Prenatal: misspelt function names `…Prevoiusly…` and `…Inital…` — rename only, no logic change
+B-585		IMPLEMENTED				54	Prenatal: misspelt function names `…Prevoiusly…` and `…Inital…` — rename only, no logic change
 B-586	1	IMPLEMENTED	MED	2510	2511	54	Prenatal: "high risk of preeclampsia" is diagnosed from GESTATIONAL hypertension (today's or an earlier visit's), while 
 B-587	1	CLOSED	MED			54	Prenatal: Aspirin for a preeclampsia risk is offered at ONE visit only — declined, skipped or "not given" at that visit,
 B-588	4	READY	LOW		2511	54	Prenatal: chronic hypertension or diabetes reported through Outside Care at an earlier visit is not a high-risk conditio
