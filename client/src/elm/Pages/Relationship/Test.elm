@@ -81,9 +81,9 @@ failedSave =
     Dict.fromList [ ( person1, Failure Http.NetworkError ) ]
 
 
-expectNoBanner : Query.Single msg -> Expect.Expectation
-expectNoBanner =
-    Query.findAll [ class "warning", class "message" ] >> Query.count (Expect.equal 0)
+expectBanners : Int -> Query.Single msg -> Expect.Expectation
+expectBanners count =
+    Query.findAll [ class "warning", class "message" ] >> Query.count (Expect.equal count)
 
 
 saveErrorBannerTest : Test
@@ -92,12 +92,11 @@ saveErrorBannerTest =
         [ test "no banner when no save was attempted" <|
             \_ ->
                 renderPage person3 loadedDb
-                    |> expectNoBanner
+                    |> expectBanners 0
         , test "a failed save shows the banner" <|
             \_ ->
                 renderPage person2 { loadedDb | postRelationship = failedSave }
-                    |> Query.findAll [ class "warning", class "message" ]
-                    |> Query.count (Expect.equal 1)
+                    |> expectBanners 1
         ]
 
 
