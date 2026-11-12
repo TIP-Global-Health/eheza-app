@@ -7136,9 +7136,10 @@ preeclampsiaRiskBefore37Test =
                     |> .afterEntry
                     |> preeclampsiaAndRisks
                     |> Expect.equal ( [ DiagnosisModeratePreeclampsiaRecurrentPhase ], [] )
-        , test "guard: 165/115 alone at 36 weeks 6 days gives gestational hypertension and high risk of preeclampsia" <|
+        , test "guard: 165/115 at 36 weeks 6 days with hypertension before pregnancy gives gestational hypertension and high risk of preeclampsia" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withVitals 165 115
                     |> diagnoseVisitAt ( 36, 6 )
                     |> membership [ DiagnosisGestationalHypertensionImmediate, DiagnosisHighRiskOfPreeclampsiaInitialPhase ]
@@ -7162,16 +7163,18 @@ preeclampsiaRiskHypertensionAt37PlusTest =
                     (presentOf [ DiagnosisHighRiskOfPreeclampsiaInitialPhase, DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ] set)
     in
     describe "preeclampsia risk: high blood pressure without preeclampsia at 37 weeks or later"
-        [ test "At 37 weeks or later, high blood pressure without preeclampsia or eclampsia still gives high risk of preeclampsia, as today" <|
+        [ test "At 37 weeks or later, high blood pressure without preeclampsia or eclampsia, with hypertension before pregnancy, still gives high risk of preeclampsia" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withVitals 165 115
                     |> diagnoseVisitAt ( 38, 0 )
                     |> membership [ DiagnosisGestationalHypertensionImmediate, DiagnosisHighRiskOfPreeclampsiaInitialPhase ]
                     |> Expect.equal [ ( DiagnosisGestationalHypertensionImmediate, True ), ( DiagnosisHighRiskOfPreeclampsiaInitialPhase, True ) ]
-        , test "165/115 at exactly 37 weeks 0 days: high risk of preeclampsia" <|
+        , test "165/115 at exactly 37 weeks 0 days, hypertension before pregnancy: high risk of preeclampsia" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withVitals 165 115
                     |> diagnoseVisitAt ( 37, 0 )
                     |> highRisk
@@ -7179,9 +7182,10 @@ preeclampsiaRiskHypertensionAt37PlusTest =
 
         -- Protein 0 is a urine result that rules preeclampsia out; it must
         -- not be read as preeclampsia found.
-        , test "165/115 at 38 weeks with urine protein 0 (immediate result): high risk of preeclampsia, no preeclampsia" <|
+        , test "165/115 at 38 weeks, hypertension before pregnancy, urine protein 0 (immediate result): high risk of preeclampsia, no preeclampsia" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withVitals 165 115
                     |> withUrineProtein Protein0
                     |> diagnoseVisitAt ( 38, 0 )
@@ -7190,26 +7194,29 @@ preeclampsiaRiskHypertensionAt37PlusTest =
 
         -- The urine is sent to the lab and no result is in yet: nothing has
         -- found preeclampsia, so the high risk stands.
-        , test "165/115 at 38 weeks with the urine result still pending: high risk of preeclampsia" <|
+        , test "165/115 at 38 weeks, hypertension before pregnancy, urine result still pending: high risk of preeclampsia" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withVitals 165 115
                     |> withPendingUrineDipstick
                     |> diagnoseVisitAt ( 38, 0 )
                     |> highRisk
                     |> Expect.equal True
-        , test "a later urine result of protein 0 at 38 weeks: the high risk from 165/115 stays" <|
+        , test "a later urine result of protein 0 at 38 weeks, hypertension before pregnancy: the high risk stays" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withVitals 165 115
                     |> withPendingUrineDipstick
                     |> enterResultLater ( 38, 0 ) 3 (enterUrineProtein Protein0)
                     |> .afterEntry
                     |> highRisk
                     |> Expect.equal True
-        , test "a blood pressure recheck of 150/95 at 38 weeks with no protein or edema: high risk of preeclampsia" <|
+        , test "a blood pressure recheck of 150/95 at 38 weeks, hypertension before pregnancy, no protein or edema: high risk of preeclampsia" <|
             \_ ->
                 emptyPrenatalMeasurements
+                    |> withMedicalHistorySign HypertensionBeforePregnancy
                     |> withMarginalVitals
                     |> enterResultLater ( 38, 0 ) 0 (enterRecheck 150 95)
                     |> .afterEntry
