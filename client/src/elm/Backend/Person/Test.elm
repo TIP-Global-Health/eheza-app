@@ -1,7 +1,8 @@
 module Backend.Person.Test exposing (all)
 
-{-| The birth-date range offered when registering a child, and the age rule
-the save applies to the date picked.
+{-| What the person form offers and saves: the birth-date range offered when
+registering a child, the age rule the save applies to the date picked, and
+the national ID saved for the text typed.
 
 A child-only birth-date picker offers `earliestChildBirthDate currentDate` up
 to `currentDate`, both ends selectable. An adult-only picker offers dates up
@@ -137,13 +138,137 @@ relatedChild =
 
 all : Test
 all =
-    describe "Child birth-date range"
-        [ wellChildEarliestDate
-        , sameRangeForEveryChildPicker
-        , everyOfferedDateSavesAsChild
-        , exactThirteenYearsSavesAsAdult
-        , graduatingAgeUnchanged
+    describe "Person registration"
+        [ describe "Child birth-date range"
+            [ wellChildEarliestDate
+            , sameRangeForEveryChildPicker
+            , everyOfferedDateSavesAsChild
+            , exactThirteenYearsSavesAsAdult
+            , graduatingAgeUnchanged
+            ]
+        , nationalIdNumberSaved
         ]
+
+
+{-| What the form saves as the national ID for the text typed into the field:
+`Err` with the refused fields when the form does not save. The form is filled for an adult; `person` is
+the one it takes the address and health centre from.
+-}
+savedNationalIdOn : ParticipantDirectoryOperation -> Person -> Site -> String -> Result (List String) (Maybe String)
+savedNationalIdOn operation person site typed =
+    let
+        related =
+            { person
+                | province = Just "Province"
+                , district = Just "District"
+                , sector = Just "Sector"
+                , cell = Just "Cell"
+                , village = Just "Village"
+                , healthCenterId = Just (toEntityUuid "health-center")
+            }
+    in
+    Form.initial
+        [ ( Backend.Person.Form.firstName, Form.Field.string "Test" )
+        , ( Backend.Person.Form.secondName, Form.Field.string "Person" )
+        , ( birthDate, Form.Field.string "1990-06-15" )
+        , ( Backend.Person.Form.gender, Form.Field.string "female" )
+        , ( educationLevel, Form.Field.string "0" )
+        , ( maritalStatus, Form.Field.string "single" )
+        , ( Backend.Person.Form.nationalIdNumber, Form.Field.string typed )
+        ]
+        (validatePerson site (Just related) operation (Just (date 2026 Nov 5)))
+        |> (\form ->
+                Form.getOutput form
+                    |> Maybe.map .nationalIdNumber
+                    |> Result.fromMaybe (fieldsWithErrors form)
+           )
+
+
+{-| Registering an adult for a child.
+-}
+savedNationalId : Site -> String -> Result (List String) (Maybe String)
+savedNationalId =
+    savedNationalIdOn (CreatePerson (Just (toEntityUuid "related-person"))) relatedChild
+
+
+{-| Editing an adult.
+-}
+savedNationalIdOnEdit : Site -> String -> Result (List String) (Maybe String)
+savedNationalIdOnEdit =
+    savedNationalIdOn (EditPerson (toEntityUuid "edited-person")) relatedAdult
+
+
+{-| Burundi and Somalia take any text as the ID. The spaces around it are
+not saved, because the ID search matches from the start of the saved value.
+Rwanda requires exactly 16 digits.
+-}
+nationalIdNumberSaved : Test
+nationalIdNumberSaved =
+    let
+        freeTextSites =
+            [ ( "Burundi", SiteBurundi ), ( "Somalia", SiteSomalia ) ]
+
+        onFreeTextSites description typed expected =
+            List.map
+                (\( name, site ) ->
+                    test (name ++ ": " ++ description) <|
+                        \_ ->
+                            savedNationalId site typed
+                                |> Expect.equal (Ok expected)
+                )
+                freeTextSites
+    in
+    describe "the national ID saved" <|
+        List.concat
+            [ onFreeTextSites "a leading space is not saved" " 12/345" (Just "12/345")
+            , onFreeTextSites "a trailing space is not saved" "12/345 " (Just "12/345")
+            , onFreeTextSites "spaces at both ends, tabs and line breaks are not saved" " \t12/345 \n" (Just "12/345")
+            , onFreeTextSites "spaces inside the ID are kept" " 12 345/A " (Just "12 345/A")
+            , onFreeTextSites "an ID without outer spaces is saved as typed" "12/345" (Just "12/345")
+            , onFreeTextSites "a field holding only spaces saves no ID" "   " Nothing
+            , onFreeTextSites "an empty field saves no ID" "" Nothing
+            , List.map
+                (\( name, site ) ->
+                    test (name ++ ": editing a person saves the ID without outer spaces too") <|
+                        \_ ->
+                            savedNationalIdOnEdit site " 12/345 "
+                                |> Expect.equal (Ok (Just "12/345"))
+                )
+                freeTextSites
+            , [ test "Rwanda: 16 digits are saved" <|
+                    \_ ->
+                        savedNationalId SiteRwanda "1199080012345678"
+                            |> Expect.equal (Ok (Just "1199080012345678"))
+              , test "Rwanda: 16 digits with spaces around them are saved without the spaces" <|
+                    \_ ->
+                        savedNationalId SiteRwanda " 1199080012345678 "
+                            |> Expect.equal (Ok (Just "1199080012345678"))
+              , test "Rwanda: 15 digits are refused" <|
+                    \_ ->
+                        savedNationalId SiteRwanda "119908001234567"
+                            |> Expect.equal (Err [ Backend.Person.Form.nationalIdNumber ])
+              , test "Rwanda: free text is refused" <|
+                    \_ ->
+                        savedNationalId SiteRwanda "12/345"
+                            |> Expect.equal (Err [ Backend.Person.Form.nationalIdNumber ])
+              , test "Rwanda: a field holding only spaces saves no ID" <|
+                    \_ ->
+                        savedNationalId SiteRwanda "   "
+                            |> Expect.equal (Ok Nothing)
+              , test "Rwanda: editing a person saves 16 digits without the spaces around them" <|
+                    \_ ->
+                        savedNationalIdOnEdit SiteRwanda " 1199080012345678 "
+                            |> Expect.equal (Ok (Just "1199080012345678"))
+              , test "Rwanda: editing a person refuses 15 digits" <|
+                    \_ ->
+                        savedNationalIdOnEdit SiteRwanda "119908001234567"
+                            |> Expect.equal (Err [ Backend.Person.Form.nationalIdNumber ])
+              , test "Rwanda: an empty field saves no ID" <|
+                    \_ ->
+                        savedNationalId SiteRwanda ""
+                            |> Expect.equal (Ok Nothing)
+              ]
+            ]
 
 
 {-| Criterion: when registering a child for Well Child, the earliest birth
