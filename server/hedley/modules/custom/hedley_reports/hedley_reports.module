@@ -10021,9 +10021,7 @@ function hedley_reports_prenatal_symptom_recorded_previously(array $encounter_da
 /**
  * Checks if Mebendazole was given, or reported received, at an earlier visit.
  *
- * Given through the Medication activity or from the Next Steps medication
- * distribution, or reported in Treatment Review as Mebendazole or a deworming
- * pill.
+ * Given in Medication or Next Steps, or reported in Treatment Review.
  *
  * @param array $encounter_data
  *   The encounter data.
