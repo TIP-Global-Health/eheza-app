@@ -1170,6 +1170,7 @@ update msg model =
                                         [ Pages.Relationship.Model.Reset initiator
                                             |> MsgPageRelationship id1 id2
                                             |> MsgLoggedIn
+                                        , MsgIndexedDb (Backend.Model.ResetPostRelationshipRequest id1)
                                         ]
 
                                 clinicMsgs =

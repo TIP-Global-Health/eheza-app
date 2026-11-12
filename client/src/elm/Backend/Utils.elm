@@ -1,4 +1,4 @@
-module Backend.Utils exposing (editMeasurementCmd, everySetsEqual, familyNutritionEnabled, gpsCoordinatesEnabled, groupEducationEnabled, healthyStartEnabled, hivManagementEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, ncdaEnabled, reportToWhatsAppEnabled, resolveFamilyParticipantForPerson, resolveFamilyParticipantsForPerson, resolveIndividualParticipantForPerson, resolveIndividualParticipantWithDuplicates, resolveIndividualParticipantsForPerson, saveMeasurementCmd, stockManagementHCEnabled, stockManagementVillageEnabled, storedDiagnosesEqual, sw, tuberculosisManagementEnabled, updateVillageStockManagementCaches)
+module Backend.Utils exposing (clearFinishedPost, editMeasurementCmd, everySetsEqual, familyNutritionEnabled, gpsCoordinatesEnabled, groupEducationEnabled, healthyStartEnabled, hivManagementEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, ncdaEnabled, reportToWhatsAppEnabled, resolveFamilyParticipantForPerson, resolveFamilyParticipantsForPerson, resolveIndividualParticipantForPerson, resolveIndividualParticipantWithDuplicates, resolveIndividualParticipantsForPerson, saveMeasurementCmd, stockManagementHCEnabled, stockManagementVillageEnabled, storedDiagnosesEqual, sw, tuberculosisManagementEnabled, updateVillageStockManagementCaches)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -54,6 +54,18 @@ isPostInFlight key dict =
     Dict.get key dict
         |> Maybe.map RemoteData.isLoading
         |> Maybe.withDefault False
+
+
+{-| Forget a finished create for this key, so a page opened again does
+not show its result. A create still on its way is kept: it blocks a second one.
+-}
+clearFinishedPost : k -> Dict k (RemoteData e a) -> Dict k (RemoteData e a)
+clearFinishedPost key dict =
+    if isPostInFlight key dict then
+        dict
+
+    else
+        Dict.remove key dict
 
 
 mapChildMeasurements : PersonId -> (ChildMeasurementList -> ChildMeasurementList) -> ModelIndexedDb -> ModelIndexedDb

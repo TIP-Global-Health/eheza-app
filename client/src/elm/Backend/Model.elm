@@ -583,6 +583,7 @@ type MsgIndexedDb
     | MsgStockUpdate NurseId Backend.StockUpdate.Model.Msg
     | ResetFailedToFetchAuthorities
     | ResetPostPersonRequest
+    | ResetPostRelationshipRequest PersonId
 
 
 {-| Where revisions come from. The device's own save runs the assessments
