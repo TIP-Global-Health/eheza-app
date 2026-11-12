@@ -1,4 +1,4 @@
-module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, contributingFactorsFormInutsAndTasks, followUpFormInputsAndTasks, healthEducationFormInutsAndTasks, heightFormAndTasks, measurementOutOfRangePopup, muacFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewCorePhysicalExamForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewHeightForm, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDAContent, viewNutritionFollowUpForm, viewNutritionForm, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks)
+module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, contributingFactorsFormInputsAndTasks, followUpFormInputsAndTasks, healthEducationFormInputsAndTasks, heightFormAndTasks, measurementOutOfRangePopup, muacFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewCorePhysicalExamForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewHeightForm, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDAContent, viewNutritionFollowUpForm, viewNutritionForm, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks)
 
 {-| This module provides a form for entering measurements.
 -}
@@ -808,18 +808,18 @@ viewContributingFactorsForm :
 viewContributingFactorsForm language setContributingFactorsSignMsg form =
     let
         ( inputs, _ ) =
-            contributingFactorsFormInutsAndTasks language setContributingFactorsSignMsg form
+            contributingFactorsFormInputsAndTasks language setContributingFactorsSignMsg form
     in
     div [ class "ui form contributing-factors" ]
         inputs
 
 
-contributingFactorsFormInutsAndTasks :
+contributingFactorsFormInputsAndTasks :
     Language
     -> (ContributingFactorsSign -> msg)
     -> ContributingFactorsForm
     -> ( List (Html msg), List (Maybe Bool) )
-contributingFactorsFormInutsAndTasks language setContributingFactorsSignMsg form =
+contributingFactorsFormInputsAndTasks language setContributingFactorsSignMsg form =
     ( [ viewQuestionLabel language Translate.ContributingFactorsQuestion
       , viewCheckBoxMultipleSelectInput language
             [ FactorLackOfBreastMilk, FactorMaternalMastitis, FactorPoorSuck, FactorDiarrheaOrVomiting ]
@@ -990,19 +990,19 @@ viewHealthEducationForm :
 viewHealthEducationForm language setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
     let
         ( inputs, _ ) =
-            healthEducationFormInutsAndTasks language setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form
+            healthEducationFormInputsAndTasks language setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form
     in
     div [ class "ui form health-education" ]
         inputs
 
 
-healthEducationFormInutsAndTasks :
+healthEducationFormInputsAndTasks :
     Language
     -> (Bool -> msg)
     -> (ReasonForNotProvidingHealthEducation -> msg)
     -> HealthEducationForm
     -> ( List (Html msg), List (Maybe Bool) )
-healthEducationFormInutsAndTasks language setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
+healthEducationFormInputsAndTasks language setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
     let
         healthEducationSection =
             let

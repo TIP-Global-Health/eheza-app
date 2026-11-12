@@ -3757,7 +3757,7 @@ encodeDeliveryComplication complication =
             ComplicationEmergencyCSection ->
                 "emergency-c-section"
 
-            ComplicationPreclampsia ->
+            ComplicationPreeclampsia ->
                 "preclampsia"
 
             ComplicationMaternalHemmorhage ->

@@ -8947,7 +8947,7 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                                     let
                                         urgentDiagnoses =
                                             List.filter
-                                                Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferal
+                                                Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferral
                                                 addedDiagnoses
 
                                         additionalMsgs =
@@ -8976,7 +8976,7 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                                     let
                                         urgentDiagnoses =
                                             List.filter
-                                                Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal
+                                                Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferral
                                                 addedDiagnoses
 
                                         additionalMsgs =

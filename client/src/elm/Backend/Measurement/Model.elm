@@ -2535,7 +2535,7 @@ type PregnancySummarySign
 type DeliveryComplication
     = ComplicationGestationalDiabetes
     | ComplicationEmergencyCSection
-    | ComplicationPreclampsia
+    | ComplicationPreeclampsia
     | ComplicationMaternalHemmorhage
     | ComplicationHiv
     | ComplicationMaternalDeath

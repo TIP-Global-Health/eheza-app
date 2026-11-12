@@ -1,4 +1,4 @@
-module Pages.Prenatal.Activity.Utils exposing (activityCompleted, appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, bmiToPrePregnancyClassification, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, dangerSignsPresentAtEncounter, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectActivity, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generateDangerSignsListForChw, generateFutureVaccinationsDataByProgress, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, highBloodPressureCondition, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mandatoryActivitiesForAssessmentCompleted, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, noDangerSigns, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveHistoryTasks, resolveMeasuredHeight, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolveNextVisitDate, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, resolveWarningPopupContentForUrgentDiagnoses, respiratoryRateElevated, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundEDDDate, ultrasoundFormInputsAndTasks, ultrasoundFormWithDefault, ultrasoundTasks, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview, weightGainStandardsByPrePregnancyClassificationHealthyStart, weightGainStandardsPerPrePregnancyClassification, zscoreToPrePregnancyClassification)
+module Pages.Prenatal.Activity.Utils exposing (activityCompleted, appointmentConfirmationFormInputsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, bmiToPrePregnancyClassification, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, dangerSignsPresentAtEncounter, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectActivity, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInputsAndTasks, followUpFormWithDefault, generateDangerSignsListForChw, generateFutureVaccinationsDataByProgress, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, highBloodPressureCondition, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mandatoryActivitiesForAssessmentCompleted, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, noDangerSigns, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveHistoryTasks, resolveMeasuredHeight, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolveNextVisitDate, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, resolveWarningPopupContentForUrgentDiagnoses, respiratoryRateElevated, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundEDDDate, ultrasoundFormInputsAndTasks, ultrasoundFormWithDefault, ultrasoundTasks, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview, weightGainStandardsByPrePregnancyClassificationHealthyStart, weightGainStandardsPerPrePregnancyClassification, zscoreToPrePregnancyClassification)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PrenatalEncounterId)
@@ -58,7 +58,7 @@ import Measurement.Utils
 import Measurement.View exposing (viewActionTakenLabel, vitalsFormInputsAndTasks)
 import Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, BirthPlanForm, BreastExamForm, BreastfeedingForm, DangerSignsForm, ExaminationData, FollowUpForm, GUExamForm, ImmunisationData, MedicalHistoryForm, MedicationData, MedicationForm, MentalHealthForm, Msg(..), NextStepsData, NutritionAssessmentForm, ObstetricFormFirstStep, ObstetricFormSecondStep, ObstetricalExamForm, PregnancyDatingForm, PregnancyTestForm, PrenatalVaccinationForm, SocialHistoryForm, SpecialityCareForm, SymptomReviewForm, TreatmentReviewData, UltrasoundForm)
 import Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), SymptomReviewStep(..), TreatmentReviewTask(..))
-import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferalRequired, getAllActivities, skipObstetricHistorySecondStep)
+import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferralRequired, getAllActivities, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
 import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPreviously, diagnosedHighRiskOfPreeclampsiaPreviously, diagnosedHypertension, diagnosedHypertensionPreviously, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPreviously, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPreviously, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, labTestWithImmediateResult, medicationDistributionFormWithDefaultInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication)
 import Pages.Utils
@@ -453,7 +453,7 @@ expectNextStepsTask currentDate assembled task =
                                 ++ diabetesDiagnosesInitialPhase
                     in
                     -- Emergency referral is not required.
-                    (not <| emergencyReferalRequired assembled)
+                    (not <| emergencyReferralRequired assembled)
                         && (provideHIVEducation PrenatalEncounterPhaseInitial assembled.measurements
                                 || provideHIVPartnerPresenceEducation assembled.measurements
                                 || provideNauseaAndVomitingEducation assembled
@@ -466,7 +466,7 @@ expectNextStepsTask currentDate assembled task =
                            )
 
                 NursePostpartumEncounter ->
-                    (not <| emergencyReferalRequired assembled)
+                    (not <| emergencyReferralRequired assembled)
                         && (provideNauseaAndVomitingEducation assembled
                                 || List.any (symptomRecorded assembled.measurements)
                                     [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
@@ -499,7 +499,7 @@ expectNextStepsTask currentDate assembled task =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     -- Emergency referral is not required.
-                    (not <| emergencyReferalRequired assembled)
+                    (not <| emergencyReferralRequired assembled)
                         && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
                                 |> List.isEmpty
                                 |> not
@@ -523,7 +523,7 @@ expectNextStepsTask currentDate assembled task =
 
                 NursePostpartumEncounter ->
                     -- Emergency referral is not required.
-                    (not <| emergencyReferalRequired assembled)
+                    (not <| emergencyReferralRequired assembled)
                         && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
                                 |> List.isEmpty
                                 |> not
@@ -764,11 +764,11 @@ continuousHypertensionTreatmentRequired : AssembledData -> Bool
 continuousHypertensionTreatmentRequired assembled =
     (-- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
      (updateHypertensionTreatmentWithMedication assembled
-        && (-- Hypertension / Moderate Preeclamsia treatment
+        && (-- Hypertension / Moderate Preeclampsia treatment
             -- did not cause an adverse event.
             not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
            )
-        && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
+        && (-- Moderate Preeclampsia not diagnosed at current encounter, since it results
             -- in referral to hospital.
             not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
            )
@@ -1141,7 +1141,7 @@ latestMedicationTreatmentForHIV assembled =
         prescribedMedications
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
 latestMedicationTreatmentForHypertension : AssembledData -> Maybe Translate.TranslationId
 latestMedicationTreatmentForHypertension assembled =
@@ -2005,7 +2005,7 @@ generatePrenatalDiagnosesForNurse assembled =
 
             else
                 List.filter
-                    (matchEmergencyReferalPrenatalDiagnosis
+                    (matchEmergencyReferralPrenatalDiagnosis
                         egaInWeeks
                         dangerSignsList
                         assembled
@@ -2034,8 +2034,8 @@ generatePrenatalDiagnosesForNurse assembled =
         |> applyDiagnosesHierarchy
 
 
-matchEmergencyReferalPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
-matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
+matchEmergencyReferralPrenatalDiagnosis : Maybe Int -> List DangerSign -> AssembledData -> PrenatalDiagnosis -> Bool
+matchEmergencyReferralPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
     let
         measurements =
             assembled.measurements
@@ -2044,7 +2044,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
             resolveEGAInWeeksAndThen func egaInWeeks
 
         diagnosedAtInitialPhase =
-            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled
+            matchEmergencyReferralPrenatalDiagnosis egaInWeeks signs assembled
     in
     case diagnosis of
         DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
@@ -2107,7 +2107,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 |> Maybe.withDefault False
 
         DiagnosisMolarPregnancy ->
-            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisMiscarriage
+            matchEmergencyReferralPrenatalDiagnosis egaInWeeks signs assembled DiagnosisMiscarriage
 
         DiagnosisPlacentaPrevia ->
             Maybe.map
@@ -2118,12 +2118,12 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 |> Maybe.withDefault False
 
         DiagnosisPlacentalAbruption ->
-            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisPlacentaPrevia
-                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisObstructedLabor
+            matchEmergencyReferralPrenatalDiagnosis egaInWeeks signs assembled DiagnosisPlacentaPrevia
+                || matchEmergencyReferralPrenatalDiagnosis egaInWeeks signs assembled DiagnosisObstructedLabor
 
         DiagnosisUterineRupture ->
-            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisPlacentaPrevia
-                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisObstructedLabor
+            matchEmergencyReferralPrenatalDiagnosis egaInWeeks signs assembled DiagnosisPlacentaPrevia
+                || matchEmergencyReferralPrenatalDiagnosis egaInWeeks signs assembled DiagnosisObstructedLabor
 
         DiagnosisObstructedLabor ->
             Maybe.map
@@ -2135,10 +2135,10 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
 
         DiagnosisPostAbortionSepsis ->
             List.member AbdominalPain signs
-                || matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisMiscarriage
+                || matchEmergencyReferralPrenatalDiagnosis egaInWeeks signs assembled DiagnosisMiscarriage
 
         DiagnosisEctopicPregnancy ->
-            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled DiagnosisMiscarriage
+            matchEmergencyReferralPrenatalDiagnosis egaInWeeks signs assembled DiagnosisMiscarriage
                 || (Maybe.map
                         (\egaWeeks ->
                             (egaWeeks < 22) && List.member AbdominalPain signs
@@ -2741,53 +2741,37 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                    )
 
         DiagnosisChronicHypertensionImmediate ->
-            -- Hypertension is a chronic diagnosis for whole duration
-            -- of pregnancy.
-            -- Moderate Preeclamsia is higher level of Hypertension disease.
-            -- and a chronic diagnosis as well.
-            -- Therefore, if Hypertension or Moderate Preeclamsia were
-            -- diagnosed once, we do not need to diagnose Hypertension again.
-            -- Instead, we adjust medication, or send to hospital, depending
-            -- on current BP and previous treatment.
+            -- Hypertension and Moderate Preeclampsia, its higher level, are
+            -- chronic for the whole pregnancy. Once either is diagnosed,
+            -- Hypertension is not diagnosed again; medication is adjusted
+            -- or the patient hospitalised.
             (not <| diagnosedHypertensionPreviously assembled)
                 && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen (chronicHypertensionByMeasurements measurements)
 
         DiagnosisChronicHypertensionAfterRecheck ->
-            -- Hypertension is a chronic diagnosis for whole duration
-            -- of pregnancy.
-            -- Moderate Preeclamsia is higher level of Hypertension disease.
-            -- and a chronic diagnosis as well.
-            -- Therefore, if Hypertension or Moderate Preeclamsia were
-            -- diagnosed once, we do not need to diagnose Hypertension again.
-            -- Instead, we adjust medication, or send to hospital, depending
-            -- on current BP and previous treatment.
+            -- Hypertension and Moderate Preeclampsia, its higher level, are
+            -- chronic for the whole pregnancy. Once either is diagnosed,
+            -- Hypertension is not diagnosed again; medication is adjusted
+            -- or the patient hospitalised.
             (not <| diagnosedHypertensionPreviously assembled)
                 && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen (chronicHypertensionByMeasurementsAfterRecheck measurements)
 
         DiagnosisGestationalHypertensionImmediate ->
-            -- Hypertension is a chronic diagnosis for whole duration
-            -- of pregnancy.
-            -- Moderate Preeclamsia is higher level of Hypertension disease.
-            -- and a chronic diagnosis as well.
-            -- Therefore, if Hypertension or Moderate Preeclamsia were
-            -- diagnosed once, we do not need to diagnose Hypertension again.
-            -- Instead, we adjust medication, or send to hospital, depending
-            -- on current BP and previous treatment.
+            -- Hypertension and Moderate Preeclampsia, its higher level, are
+            -- chronic for the whole pregnancy. Once either is diagnosed,
+            -- Hypertension is not diagnosed again; medication is adjusted
+            -- or the patient hospitalised.
             (not <| diagnosedHypertensionPreviously assembled)
                 && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurements measurements)
 
         DiagnosisGestationalHypertensionAfterRecheck ->
-            -- Hypertension is a chronic diagnosis for whole duration
-            -- of pregnancy.
-            -- Moderate Preeclamsia is higher level of Hypertension disease.
-            -- and a chronic diagnosis as well.
-            -- Therefore, if Hypertension or Moderate Preeclamsia were
-            -- diagnosed once, we do not need to diagnose Hypertension again.
-            -- Instead, we adjust medication, or send to hospital, depending
-            -- on current BP and previous treatment.
+            -- Hypertension and Moderate Preeclampsia, its higher level, are
+            -- chronic for the whole pregnancy. Once either is diagnosed,
+            -- Hypertension is not diagnosed again; medication is adjusted
+            -- or the patient hospitalised.
             (not <| diagnosedHypertensionPreviously assembled)
                 && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurementsAfterRecheck measurements)
@@ -3427,10 +3411,9 @@ highBloodPressureCondition dia sys =
     dia >= 110 || sys >= 160
 
 
-{-| We measure BP again when we suspect Hypertension or Preeclamsia
-(dia between 90 and 110, and sys between 140 and 160).
-We diagnose Hypertension if repeated measurements are within
-those boundries, or exceed them.
+{-| We measure BP again when we suspect Hypertension or Preeclampsia
+(dia 90 to 110, sys 140 to 160). Hypertension is diagnosed if
+repeated measurements are within or above that range.
 -}
 repeatedTestForMarginalBloodPressure : PrenatalMeasurements -> Bool
 repeatedTestForMarginalBloodPressure measurements =
@@ -3683,7 +3666,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, tasks ) =
                     getMeasurementValueFunc assembled.measurements.appointmentConfirmation
                         |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
-                        |> appointmentConfirmationFormInutsAndTasks language currentDate
+                        |> appointmentConfirmationFormInputsAndTasks language currentDate
             in
             resolveTasksCompletedFromTotal tasks
 
@@ -3692,7 +3675,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, tasks ) =
                     getMeasurementValueFunc assembled.measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
-                        |> followUpFormInutsAndTasks language
+                        |> followUpFormInputsAndTasks language
             in
             resolveTasksCompletedFromTotal tasks
 
@@ -3779,12 +3762,12 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
             )
 
 
-appointmentConfirmationFormInutsAndTasks :
+appointmentConfirmationFormInputsAndTasks :
     Language
     -> NominalDate
     -> AppointmentConfirmationForm
     -> ( List (Html Msg), List (Maybe Bool) )
-appointmentConfirmationFormInutsAndTasks language currentDate form =
+appointmentConfirmationFormInputsAndTasks language currentDate form =
     let
         appointmentDateForView =
             Maybe.map formatDDMMYYYY form.appointmentDate
@@ -3810,8 +3793,8 @@ appointmentConfirmationFormInutsAndTasks language currentDate form =
     )
 
 
-followUpFormInutsAndTasks : Language -> FollowUpForm -> ( List (Html Msg), List (Maybe Bool) )
-followUpFormInutsAndTasks language form =
+followUpFormInputsAndTasks : Language -> FollowUpForm -> ( List (Html Msg), List (Maybe Bool) )
+followUpFormInputsAndTasks language form =
     ( [ viewLabel language Translate.FollowUpWithMotherLabel
       , viewCheckBoxSelectInput language
             [ ThreeDays

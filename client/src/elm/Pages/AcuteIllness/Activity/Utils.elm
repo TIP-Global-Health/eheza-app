@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.Activity.Utils exposing (activityCompleted, acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectActivity, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, gastrointestinalInfectionDangerSignsPresent, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaDangerSignsPresent, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, mandatoryActivitiesCompletedSubsequentVisit, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, mildGastrointestinalInfectionSymptomsPresent, muacRedOnSubsequentVisit, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nonBloodyDiarrheaAtSymptoms, nutritionFormInutsAndTasks, nutritionFormWithDefault, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByMalariaRDT, resolveAmoxicillinDosage, resolveCoartemDosage, resolveMedicationsNonAdministrationReasons, resolveNextStep, resolveNextStepsTasks, resolveORSDosage, resolvePreviousValue, resolveZincDosage, respiratoryInfectionDangerSignsPresent, respiratoryRateAbnormalForAge, respiratoryRateElevated, respiratoryRateElevatedByAge, respiratoryRateElevatedByAgeForCovid19, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, sendToHCOnSubsequentVisitByNutrition, setCovidTestPositive, subsequentEncounterDiagnosisUpdate, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, toAcuteFindingsValueWithDefault, toContactsTracingValueWithDefault, toCoreExamValueWithDefault, toCovidTestingValueWithDefault, toFollowUpValueWithDefault, toMalariaTestingValueWithDefault, toMedicationDistributionValueWithDefault, toNutritionValueWithDefault, toReviewDangerSignsValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTreatmentReviewValueWithDefault, toggleSymptomsSign, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, viewAdministeredMedicationLabel, viewAmoxicillinAdministrationInstructions, viewHCRecommendation, viewOralSolutionPrescription, viewParacetamolAdministrationInstructions, viewTabletsPrescription, vomitingAtSymptoms)
+module Pages.AcuteIllness.Activity.Utils exposing (activityCompleted, acuteFindingsFormInputsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInputsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectActivity, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInputsAndTasks, followUpFormWithDefault, gastrointestinalInfectionDangerSignsPresent, generateVitalsFormConfig, healthEducationFormInputsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaDangerSignsPresent, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, mandatoryActivitiesCompletedSubsequentVisit, medicationDistributionFormInputsAndTasks, medicationDistributionFormWithDefault, mildGastrointestinalInfectionSymptomsPresent, muacRedOnSubsequentVisit, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nonBloodyDiarrheaAtSymptoms, nutritionFormInputsAndTasks, nutritionFormWithDefault, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByMalariaRDT, resolveAmoxicillinDosage, resolveCoartemDosage, resolveMedicationsNonAdministrationReasons, resolveNextStep, resolveNextStepsTasks, resolveORSDosage, resolvePreviousValue, resolveZincDosage, respiratoryInfectionDangerSignsPresent, respiratoryRateAbnormalForAge, respiratoryRateElevated, respiratoryRateElevatedByAge, respiratoryRateElevatedByAgeForCovid19, reviewDangerSignsFormInputsAndTasks, reviewDangerSignsFormWithDefault, sendToHCOnSubsequentVisitByNutrition, setCovidTestPositive, subsequentEncounterDiagnosisUpdate, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInputsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, toAcuteFindingsValueWithDefault, toContactsTracingValueWithDefault, toCoreExamValueWithDefault, toCovidTestingValueWithDefault, toFollowUpValueWithDefault, toMalariaTestingValueWithDefault, toMedicationDistributionValueWithDefault, toNutritionValueWithDefault, toReviewDangerSignsValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTreatmentReviewValueWithDefault, toggleSymptomsSign, treatmentReviewFormInputsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, viewAdministeredMedicationLabel, viewAmoxicillinAdministrationInstructions, viewHCRecommendation, viewOralSolutionPrescription, viewParacetamolAdministrationInstructions, viewTabletsPrescription, vomitingAtSymptoms)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
@@ -341,7 +341,7 @@ physicalExamTasksCompletedFromTotal currentDate isChw assembled data task =
                 PhysicalExamCoreExam ->
                     getMeasurementValueFunc measurements.coreExam
                         |> coreExamFormWithDefault data.coreExamForm
-                        |> coreExamFormInutsAndTasks English
+                        |> coreExamFormInputsAndTasks English
 
                 PhysicalExamMuac ->
                     getMeasurementValueFunc measurements.muac
@@ -351,12 +351,12 @@ physicalExamTasksCompletedFromTotal currentDate isChw assembled data task =
                 PhysicalExamAcuteFindings ->
                     getMeasurementValueFunc measurements.acuteFindings
                         |> acuteFindingsFormWithDefault data.acuteFindingsForm
-                        |> acuteFindingsFormInutsAndTasks English
+                        |> acuteFindingsFormInputsAndTasks English
 
                 PhysicalExamNutrition ->
                     getMeasurementValueFunc measurements.nutrition
                         |> nutritionFormWithDefault data.nutritionForm
-                        |> nutritionFormInutsAndTasks English
+                        |> nutritionFormInputsAndTasks English
     in
     resolveTasksCompletedFromTotal tasks
 
@@ -389,8 +389,8 @@ generateVitalsFormConfig isChw assembled =
     }
 
 
-acuteFindingsFormInutsAndTasks : Language -> AcuteFindingsForm -> ( List (Html Msg), List (Maybe Bool) )
-acuteFindingsFormInutsAndTasks language form =
+acuteFindingsFormInputsAndTasks : Language -> AcuteFindingsForm -> ( List (Html Msg), List (Maybe Bool) )
+acuteFindingsFormInputsAndTasks language form =
     ( [ viewQuestionLabel language Translate.PatientExhibitAnyFindings
       , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
       , viewCheckBoxMultipleSelectInput language
@@ -414,8 +414,8 @@ acuteFindingsFormInutsAndTasks language form =
     )
 
 
-coreExamFormInutsAndTasks : Language -> AcuteIllnessCoreExamForm -> ( List (Html Msg), List (Maybe Bool) )
-coreExamFormInutsAndTasks language form =
+coreExamFormInputsAndTasks : Language -> AcuteIllnessCoreExamForm -> ( List (Html Msg), List (Maybe Bool) )
+coreExamFormInputsAndTasks language form =
     ( [ div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.Heart ]
@@ -453,8 +453,8 @@ coreExamFormInutsAndTasks language form =
     )
 
 
-nutritionFormInutsAndTasks : Language -> AcuteIllnessNutritionForm -> ( List (Html Msg), List (Maybe Bool) )
-nutritionFormInutsAndTasks language form =
+nutritionFormInputsAndTasks : Language -> AcuteIllnessNutritionForm -> ( List (Html Msg), List (Maybe Bool) )
+nutritionFormInputsAndTasks language form =
     ( [ p [] [ text <| translate language Translate.NutritionHelper ]
       , viewLabel language Translate.SelectAllSigns
       , viewCheckBoxMultipleSelectInput language
@@ -634,13 +634,13 @@ treatmentTasksCompletedFromTotal measurements data task =
                 ( _, tasks ) =
                     getMeasurementValueFunc measurements.treatmentReview
                         |> treatmentReviewFormWithDefault data.treatmentReviewForm
-                        |> treatmentReviewFormInutsAndTasks English
+                        |> treatmentReviewFormInputsAndTasks English
             in
             resolveTasksCompletedFromTotal tasks
 
 
-treatmentReviewFormInutsAndTasks : Language -> TreatmentReviewForm -> ( List (Html Msg), List (Maybe Bool) )
-treatmentReviewFormInutsAndTasks language form =
+treatmentReviewFormInputsAndTasks : Language -> TreatmentReviewForm -> ( List (Html Msg), List (Maybe Bool) )
+treatmentReviewFormInputsAndTasks language form =
     let
         feverPast6HoursUpdateFunc value form_ =
             if value then
@@ -807,7 +807,7 @@ nextStepsTasksCompletedFromTotal currentDate isChw person diagnosis measurements
                 NextStepsMedicationDistribution ->
                     getMeasurementValueFunc measurements.medicationDistribution
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
-                        |> medicationDistributionFormInutsAndTasks English currentDate person diagnosis
+                        |> medicationDistributionFormInputsAndTasks English currentDate person diagnosis
 
                 NextStepsSendToHC ->
                     let
@@ -830,17 +830,17 @@ nextStepsTasksCompletedFromTotal currentDate isChw person diagnosis measurements
                 NextStepsHealthEducation ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> healthEducationFormInutsAndTasks English diagnosis
+                        |> healthEducationFormInputsAndTasks English diagnosis
 
                 NextStepsSymptomsReliefGuidance ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> symptomsReliefFormInutsAndTasks English
+                        |> symptomsReliefFormInputsAndTasks English
 
                 NextStepsFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
-                        |> followUpFormInutsAndTasks English isChw
+                        |> followUpFormInputsAndTasks English isChw
 
                 NextStepsContactTracing ->
                     if data.contactsTracingForm.finished then
@@ -880,14 +880,14 @@ viewHCRecommendation language recommendation =
         ]
 
 
-medicationDistributionFormInutsAndTasks :
+medicationDistributionFormInputsAndTasks :
     Language
     -> NominalDate
     -> Person
     -> Maybe AcuteIllnessDiagnosis
     -> MedicationDistributionForm
     -> ( List (Html Msg), List (Maybe Bool) )
-medicationDistributionFormInutsAndTasks language currentDate person diagnosis form =
+medicationDistributionFormInputsAndTasks language currentDate person diagnosis form =
     let
         ( instructions, ( inputs, tasks ) ) =
             let
@@ -1195,12 +1195,12 @@ viewOralSolutionPrescription language dosage =
         ]
 
 
-healthEducationFormInutsAndTasks :
+healthEducationFormInputsAndTasks :
     Language
     -> Maybe AcuteIllnessDiagnosis
     -> HealthEducationForm
     -> ( List (Html Msg), List (Maybe Bool) )
-healthEducationFormInutsAndTasks language maybeDiagnosis form =
+healthEducationFormInputsAndTasks language maybeDiagnosis form =
     Maybe.map
         (\diagnosis ->
             let
@@ -1286,11 +1286,11 @@ viewHealthEducationLabel language actionTranslationId diagnosisTranslationId ico
     viewInstructionsLabel iconClass message
 
 
-symptomsReliefFormInutsAndTasks :
+symptomsReliefFormInputsAndTasks :
     Language
     -> HealthEducationForm
     -> ( List (Html Msg), List (Maybe Bool) )
-symptomsReliefFormInutsAndTasks language form =
+symptomsReliefFormInputsAndTasks language form =
     let
         viewSymptomRelief symptomsRelief =
             li [] [ text <| translate language <| Translate.SymptomRelief symptomsRelief ]
@@ -1318,8 +1318,8 @@ symptomsReliefFormInutsAndTasks language form =
     )
 
 
-followUpFormInutsAndTasks : Language -> Bool -> FollowUpForm -> ( List (Html Msg), List (Maybe Bool) )
-followUpFormInutsAndTasks language isChw form =
+followUpFormInputsAndTasks : Language -> Bool -> FollowUpForm -> ( List (Html Msg), List (Maybe Bool) )
+followUpFormInputsAndTasks language isChw form =
     let
         ( headerHelper, label ) =
             if isChw then
@@ -1381,13 +1381,13 @@ dangerSignsTasksCompletedFromTotal measurements data task =
                 ( _, tasks ) =
                     getMeasurementValueFunc measurements.dangerSigns
                         |> reviewDangerSignsFormWithDefault data.reviewDangerSignsForm
-                        |> reviewDangerSignsFormInutsAndTasks English
+                        |> reviewDangerSignsFormInputsAndTasks English
             in
             resolveTasksCompletedFromTotal tasks
 
 
-reviewDangerSignsFormInutsAndTasks : Language -> ReviewDangerSignsForm -> ( List (Html Msg), List (Maybe Bool) )
-reviewDangerSignsFormInutsAndTasks language form =
+reviewDangerSignsFormInputsAndTasks : Language -> ReviewDangerSignsForm -> ( List (Html Msg), List (Maybe Bool) )
+reviewDangerSignsFormInputsAndTasks language form =
     ( [ viewQuestionLabel language Translate.ConditionImprovingQuestion
       , viewBoolInput
             language

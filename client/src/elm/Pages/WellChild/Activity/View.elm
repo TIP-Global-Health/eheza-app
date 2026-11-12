@@ -466,7 +466,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                     if form.deliveryComplicationsPresent == Just True then
                         ( [ viewLabel language Translate.DeliveryComplicationsSelectionLabel
                           , viewCheckBoxMultipleSelectInput language
-                                [ ComplicationGestationalDiabetes, ComplicationEmergencyCSection, ComplicationPreclampsia, ComplicationOther ]
+                                [ ComplicationGestationalDiabetes, ComplicationEmergencyCSection, ComplicationPreeclampsia, ComplicationOther ]
                                 [ ComplicationMaternalHemmorhage, ComplicationHiv, ComplicationMaternalDeath ]
                                 (form.deliveryComplications |> Maybe.withDefault [])
                                 Nothing

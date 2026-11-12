@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, concludedLabsResultsValue, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, labsResultsTests, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault, withCompletedTestsFromMeasurements)
+module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, concludedLabsResultsValue, diagnosisRequiresEmergencyReferral, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, labsResultsTests, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault, withCompletedTestsFromMeasurements)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
@@ -576,7 +576,7 @@ expectNextStepsTask currentDate isLabTech assembled task =
 
         NextStepsMedicationDistribution ->
             -- Emergency referral is not required.
-            (not <| emergencyReferalRequired assembled)
+            (not <| emergencyReferralRequired assembled)
                 && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
                         |> List.isEmpty
                         |> not
@@ -591,7 +591,7 @@ expectNextStepsTask currentDate isLabTech assembled task =
 
         NextStepsHealthEducation ->
             -- Emergency referral is not required.
-            (not <| emergencyReferalRequired assembled)
+            (not <| emergencyReferralRequired assembled)
                 && diagnosisSourcesCompleted currentDate isLabTech assembled
                 && (provideHIVEducation PrenatalEncounterPhaseRecurrent assembled.measurements
                         || diagnosedAnyOf (DiagnosisHIVDetectableViralLoadRecurrentPhase :: diabetesDiagnosesRecurrentPhase) assembled
@@ -712,16 +712,16 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
             )
 
 
-emergencyReferalRequired : AssembledData -> Bool
-emergencyReferalRequired assembled =
+emergencyReferralRequired : AssembledData -> Bool
+emergencyReferralRequired assembled =
     EverySet.toList assembled.encounter.diagnoses
-        |> List.filter diagnosisRequiresEmergencyReferal
+        |> List.filter diagnosisRequiresEmergencyReferral
         |> List.isEmpty
         |> not
 
 
-diagnosisRequiresEmergencyReferal : PrenatalDiagnosis -> Bool
-diagnosisRequiresEmergencyReferal diagnosis =
+diagnosisRequiresEmergencyReferral : PrenatalDiagnosis -> Bool
+diagnosisRequiresEmergencyReferral diagnosis =
     List.member diagnosis emergencyReferralDiagnosesRecurrent
 
 

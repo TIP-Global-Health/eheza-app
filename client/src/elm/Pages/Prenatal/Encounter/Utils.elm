@@ -1,4 +1,4 @@
-module Pages.Prenatal.Encounter.Utils exposing (calculateBmi, diagnosisRequiresEmergencyReferal, emergencyReferalRequired, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, generatePostCreateDestination, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, getLastEncounterMeasurementsWithDate, getLmpValue, getObstetricHistoryStep2, getPrenatalEncountersForParticipantDesc, getSubsequentEncounterType, resolveGlobalLmpValue, secondPhaseRequired, skipObstetricHistorySecondStep)
+module Pages.Prenatal.Encounter.Utils exposing (calculateBmi, diagnosisRequiresEmergencyReferral, emergencyReferralRequired, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, generatePostCreateDestination, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, getLastEncounterMeasurementsWithDate, getLmpValue, getObstetricHistoryStep2, getPrenatalEncountersForParticipantDesc, getSubsequentEncounterType, resolveGlobalLmpValue, secondPhaseRequired, skipObstetricHistorySecondStep)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -1042,7 +1042,7 @@ calculateBmi maybeHeight maybeWeight =
 
 secondPhaseRequired : AssembledData -> Bool
 secondPhaseRequired assembled =
-    (not <| emergencyReferalRequired assembled)
+    (not <| emergencyReferralRequired assembled)
         && (getMeasurementValueFunc assembled.measurements.labsResults
                 |> Maybe.map
                     (\value ->
@@ -1052,14 +1052,14 @@ secondPhaseRequired assembled =
            )
 
 
-emergencyReferalRequired : AssembledData -> Bool
-emergencyReferalRequired assembled =
+emergencyReferralRequired : AssembledData -> Bool
+emergencyReferralRequired assembled =
     EverySet.toList assembled.encounter.diagnoses
-        |> List.filter diagnosisRequiresEmergencyReferal
+        |> List.filter diagnosisRequiresEmergencyReferral
         |> List.isEmpty
         |> not
 
 
-diagnosisRequiresEmergencyReferal : PrenatalDiagnosis -> Bool
-diagnosisRequiresEmergencyReferal diagnosis =
+diagnosisRequiresEmergencyReferral : PrenatalDiagnosis -> Bool
+diagnosisRequiresEmergencyReferral diagnosis =
     List.member diagnosis emergencyReferralDiagnosesInitial

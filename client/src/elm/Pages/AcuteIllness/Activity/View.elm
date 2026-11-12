@@ -44,7 +44,7 @@ import Measurement.Utils
 import Measurement.View exposing (measurementOutOfRangePopup, viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.AcuteIllness.Activity.Model exposing (AcuteFindingsForm, AcuteIllnessCoreExamForm, AcuteIllnessNutritionForm, ContactsTracingForm, ContactsTracingFormState(..), CovidTestingForm, DangerSignsData, FollowUpForm, LaboratoryData, MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, OngoingTreatmentData, PhysicalExamData, PriorTreatmentData, RecordContactDetailsData, RegisterContactData, ReviewDangerSignsForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TreatmentReviewForm, emptyRecordContactDetailsData, emptyRegisterContactData)
 import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), DangerSignsTask(..), NextStepsTask(..), OngoingTreatmentTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomsTask(..))
-import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nutritionFormInutsAndTasks, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveNextStepsTasks, resolvePreviousValue, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vomitingAtSymptoms)
+import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormInputsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInputsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInputsAndTasks, followUpFormWithDefault, generateVitalsFormConfig, healthEducationFormInputsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, medicationDistributionFormInputsAndTasks, medicationDistributionFormWithDefault, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nutritionFormInputsAndTasks, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveNextStepsTasks, resolvePreviousValue, reviewDangerSignsFormInputsAndTasks, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInputsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, treatmentReviewFormInputsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vomitingAtSymptoms)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
@@ -855,7 +855,7 @@ viewCoreExamForm : Language -> AcuteIllnessCoreExamForm -> Html Msg
 viewCoreExamForm language form =
     let
         ( inputs, _ ) =
-            coreExamFormInutsAndTasks language form
+            coreExamFormInputsAndTasks language form
     in
     div [ class "ui form physical-exam core-exam" ]
         inputs
@@ -865,7 +865,7 @@ viewAcuteFindingsForm : Language -> AcuteFindingsForm -> Html Msg
 viewAcuteFindingsForm language form =
     let
         ( inputs, _ ) =
-            acuteFindingsFormInutsAndTasks language form
+            acuteFindingsFormInputsAndTasks language form
     in
     div [ class "ui form physical-exam acute-findings" ]
         inputs
@@ -875,7 +875,7 @@ viewNutritionForm : Language -> AcuteIllnessNutritionForm -> Html Msg
 viewNutritionForm language form =
     let
         ( inputs, _ ) =
-            nutritionFormInutsAndTasks language form
+            nutritionFormInputsAndTasks language form
     in
     div [ class "ui form physical-exam nutrition" ]
         inputs
@@ -1133,7 +1133,7 @@ viewTreatmentReviewForm : Language -> TreatmentReviewForm -> Html Msg
 viewTreatmentReviewForm language form =
     let
         ( inputs, _ ) =
-            treatmentReviewFormInutsAndTasks language form
+            treatmentReviewFormInputsAndTasks language form
     in
     div [ class "ui form treatment-review" ]
         inputs
@@ -1420,7 +1420,7 @@ viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe Acut
 viewMedicationDistributionForm language currentDate person diagnosis form =
     let
         ( inputs, _ ) =
-            medicationDistributionFormInutsAndTasks language currentDate person diagnosis form
+            medicationDistributionFormInputsAndTasks language currentDate person diagnosis form
     in
     div [ class "ui form medication-distribution" ]
         inputs
@@ -1633,7 +1633,7 @@ viewReviewDangerSignsForm : Language -> ReviewDangerSignsForm -> Html Msg
 viewReviewDangerSignsForm language form =
     let
         ( inputs, _ ) =
-            reviewDangerSignsFormInutsAndTasks language form
+            reviewDangerSignsFormInputsAndTasks language form
     in
     div [ class "ui form danger-signs" ]
         inputs
@@ -1643,7 +1643,7 @@ viewHealthEducationForm : Language -> Maybe AcuteIllnessDiagnosis -> HealthEduca
 viewHealthEducationForm language maybeDiagnosis form =
     let
         ( inputs, _ ) =
-            healthEducationFormInutsAndTasks language maybeDiagnosis form
+            healthEducationFormInputsAndTasks language maybeDiagnosis form
     in
     div [ class "ui form health-education" ]
         inputs
@@ -1653,7 +1653,7 @@ viewSymptomsReliefForm : Language -> HealthEducationForm -> Html Msg
 viewSymptomsReliefForm language form =
     let
         ( inputs, _ ) =
-            symptomsReliefFormInutsAndTasks language form
+            symptomsReliefFormInputsAndTasks language form
     in
     div [ class "ui form symptoms-relief" ]
         inputs
@@ -1663,7 +1663,7 @@ viewFollowUpForm : Language -> Bool -> FollowUpForm -> Html Msg
 viewFollowUpForm language isChw form =
     let
         ( inputs, _ ) =
-            followUpFormInutsAndTasks language isChw form
+            followUpFormInputsAndTasks language isChw form
     in
     div [ class "ui form follow-up" ]
         inputs
