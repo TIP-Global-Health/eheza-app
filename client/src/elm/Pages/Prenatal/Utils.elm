@@ -1,4 +1,4 @@
-module Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, applyHypertensionlikeDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGADays, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, emergencyReferralDiagnosesInitial, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, filterNonUrgentDiagnoses, generateVaccinationProgress, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, labTestWithImmediateResult, malariaPreventionFormWithDefault, marginalBloodPressureCondition, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionFormWithDefaultRecurrentPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, outsideCareAnemiaDiagnoses, outsideCareDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveDiscordantCoupleStatus, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, resolvePreviousHypertensionDiagnosis, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, severeAnemiaDiagnoses, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnoses, syphilisDiagnosesIncludingNeurosyphilis, syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault, undeterminedPostpartumDiagnoses, updateHypertensionTreatmentWithMedication)
+module Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, applyHypertensionlikeDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGADays, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPreviously, diagnosedHighRiskOfPreeclampsiaPreviously, diagnosedHypertension, diagnosedHypertensionPreviously, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPreviously, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPreviously, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, emergencyReferralDiagnosesInitial, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, filterNonUrgentDiagnoses, generateVaccinationProgress, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, labTestWithImmediateResult, malariaPreventionFormWithDefault, marginalBloodPressureCondition, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionFormWithDefaultRecurrentPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, outsideCareAnemiaDiagnoses, outsideCareDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveDiscordantCoupleStatus, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, resolvePreviousHypertensionDiagnosis, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, severeAnemiaDiagnoses, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnoses, syphilisDiagnosesIncludingNeurosyphilis, syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultInitialPhase, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault, undeterminedPostpartumDiagnoses, updateHypertensionTreatmentWithMedication)
 
 import AssocList as Dict
 import Backend.Measurement.Model exposing (..)
@@ -782,9 +782,9 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                         -- Continued care is decided once, at initial phase. Recurrent
                         -- phase keeps that saved decision without showing it again.
                         (phase == PrenatalEncounterPhaseInitial)
-                            && (diagnosedHypertensionPrevoiusly assembled || diagnosedModeratePreeclampsiaPrevoiusly assembled)
+                            && (diagnosedHypertensionPreviously assembled || diagnosedModeratePreeclampsiaPreviously assembled)
                     then
-                        resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language
+                        resolveRecommendedTreatmentForPreviouslyDiagnosedHypertensionInputsAndTasks language
                             (setRecommendedTreatmentSignMsg recommendedTreatmentSignsForHypertension)
                             avoidingGuidanceReasonMsg
                             assembled
@@ -1013,20 +1013,20 @@ resolveRecommendedTreatmentForDiagnosedHypertensionInputsAndTasks language setRe
     )
 
 
-resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks :
+resolveRecommendedTreatmentForPreviouslyDiagnosedHypertensionInputsAndTasks :
     Language
     -> (RecommendedTreatmentSign -> msg)
     -> (AvoidingGuidanceReason -> msg)
     -> AssembledData
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-resolveRecommendedTreatmentForPrevoiuslyDiagnosedHypertensionInputsAndTasks language setRecommendedTreatmentSignMsg setAvoidingGuidanceReasonMsg assembled form =
+resolveRecommendedTreatmentForPreviouslyDiagnosedHypertensionInputsAndTasks language setRecommendedTreatmentSignMsg setAvoidingGuidanceReasonMsg assembled form =
     let
         diagnosisHeader =
-            viewCustomLabel language (Translate.HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclamsia) "." "label"
+            viewCustomLabel language (Translate.HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclampsia) "." "label"
 
-        forModeratePreeclamsia =
-            diagnosedModeratePreeclampsiaPrevoiusly assembled
+        forModeratePreeclampsia =
+            diagnosedModeratePreeclampsiaPreviously assembled
 
         currentBPLabel =
             getMeasurementValueFunc assembled.measurements.vitals
@@ -1367,7 +1367,7 @@ resolveHypertensionTreatementUpdateRecommendation assembled =
 -}
 hypertensionTreatementUpdateRecommendationByBP : AssembledData -> Maybe HypertensionTreatementUpdateOption
 hypertensionTreatementUpdateRecommendationByBP assembled =
-    if diagnosedHypertensionPrevoiusly assembled || diagnosedModeratePreeclampsiaPrevoiusly assembled then
+    if diagnosedHypertensionPreviously assembled || diagnosedModeratePreeclampsiaPreviously assembled then
         getMeasurementValueFunc assembled.measurements.vitals
             |> Maybe.andThen
                 (\value ->
@@ -1981,7 +1981,7 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                 , vitaminASet
 
                 -- Since there can be only single diagnosis for preeclampsia
-                -- risk (hight or moderarte), it's safe to use
+                -- risk (high or moderate), it's safe to use
                 -- resolvePreeclampsiaRiskSet twice.
                 , resolvePreeclampsiaRiskSet DiagnosisHighRiskOfPreeclampsiaInitialPhase
                 , resolvePreeclampsiaRiskSet DiagnosisModerateRiskOfPreeclampsia
@@ -3016,8 +3016,8 @@ diagnosedHypertension phase =
             diagnosedAnyOf hypertensionDiagnosesRecurrentPhase
 
 
-diagnosedHypertensionPrevoiusly : AssembledData -> Bool
-diagnosedHypertensionPrevoiusly assembled =
+diagnosedHypertensionPreviously : AssembledData -> Bool
+diagnosedHypertensionPreviously assembled =
     diagnosedPreviouslyAnyOf hypertensionDiagnoses assembled
 
 
@@ -3065,20 +3065,20 @@ hypertensionDiagnosesRecurrentPhase =
     ]
 
 
-diagnosedModeratePreeclampsiaPrevoiusly : AssembledData -> Bool
-diagnosedModeratePreeclampsiaPrevoiusly assembled =
+diagnosedModeratePreeclampsiaPreviously : AssembledData -> Bool
+diagnosedModeratePreeclampsiaPreviously assembled =
     diagnosedPreviouslyAnyOf moderatePreeclampsiaDiagnoses assembled
 
 
-diagnosedHighRiskOfPreeclampsiaPrevoiusly : AssembledData -> Bool
-diagnosedHighRiskOfPreeclampsiaPrevoiusly assembled =
+diagnosedHighRiskOfPreeclampsiaPreviously : AssembledData -> Bool
+diagnosedHighRiskOfPreeclampsiaPreviously assembled =
     diagnosedPreviouslyAnyOf highRiskOfPreeclampsiaDiagnoses assembled
 
 
-{-| Hight or moderate risk.
+{-| High or moderate risk.
 -}
-diagnosedRiskOfPreeclampsiaPrevoiusly : AssembledData -> Bool
-diagnosedRiskOfPreeclampsiaPrevoiusly assembled =
+diagnosedRiskOfPreeclampsiaPreviously : AssembledData -> Bool
+diagnosedRiskOfPreeclampsiaPreviously assembled =
     diagnosedPreviouslyAnyOf riskOfPreeclampsiaDiagnoses assembled
 
 
@@ -3160,8 +3160,8 @@ hypertensionlikeDiagnoses =
         ++ [ DiagnosisEclampsia ]
 
 
-diagnosedDiabetesPrevoiusly : AssembledData -> Bool
-diagnosedDiabetesPrevoiusly assembled =
+diagnosedDiabetesPreviously : AssembledData -> Bool
+diagnosedDiabetesPreviously assembled =
     diagnosedPreviouslyAnyOf diabetesDiagnoses assembled
 
 
@@ -3844,8 +3844,8 @@ applyHypertensionlikeDiagnosesHierarchy diagnoses =
 applyMalariaWithAnemiaDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyMalariaWithAnemiaDiagnosesHierarchy =
     let
-        -- When Malaria with Severe Anamia diagnosed, we eliminate
-        -- Malaria and Severe Anamia standalone diagnoses.
+        -- When Malaria with Severe Anemia diagnosed, we eliminate
+        -- Malaria and Severe Anemia standalone diagnoses.
         applyMalariaWithSeverAnemiaLogic diagnoses =
             if
                 List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
@@ -3865,8 +3865,8 @@ applyMalariaWithAnemiaDiagnosesHierarchy =
             else
                 diagnoses
 
-        -- When Malaria with Anamia is diagnosed, we eliminate
-        -- Malaria and Moderate Anamia standalone diagnoses.
+        -- When Malaria with Anemia is diagnosed, we eliminate
+        -- Malaria and Moderate Anemia standalone diagnoses.
         applyMalariaWithAnemiaLogic diagnoses =
             if
                 List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
@@ -3892,8 +3892,8 @@ applyMalariaWithAnemiaDiagnosesHierarchy =
 
 applyAnemiaDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyAnemiaDiagnosesHierarchy diagnoses =
-    -- When Severe Anamia with compliations is diagnosed, we eliminate
-    -- Severe Anamia standalone diagnosis.
+    -- When Severe Anemia with complications is diagnosed, we eliminate
+    -- Severe Anemia standalone diagnosis.
     if
         List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
             [ DiagnosisSevereAnemiaWithComplicationsInitialPhase, DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ]

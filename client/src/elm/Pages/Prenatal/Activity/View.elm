@@ -86,7 +86,7 @@ import Pages.Prenatal.Activity.Utils exposing (appointmentConfirmationFormInutsA
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, generateAssembledData, generateEDDandEGA, generateGravida, generatePara, getLmpValue, secondPhaseRequired, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
-import Pages.Prenatal.Utils exposing (calculateEGAWeeks, diagnosedModeratePreeclampsiaPrevoiusly, filterNonUrgentDiagnoses, medicationDistributionFormWithDefaultInitialPhase, outsideCareAnemiaDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, referralFormWithDefault, resolveARVReferralDiagnosis, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, undeterminedPostpartumDiagnoses)
+import Pages.Prenatal.Utils exposing (calculateEGAWeeks, diagnosedModeratePreeclampsiaPreviously, filterNonUrgentDiagnoses, medicationDistributionFormWithDefaultInitialPhase, outsideCareAnemiaDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, referralFormWithDefault, resolveARVReferralDiagnosis, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View
     exposing
         ( customWarningPopup
@@ -2377,7 +2377,7 @@ viewTreatmentReviewContent language currentDate assembled data =
             assembled.measurements
 
         moderatePreeclampsiaPreviously =
-            diagnosedModeratePreeclampsiaPrevoiusly assembled
+            diagnosedModeratePreeclampsiaPreviously assembled
 
         viewTask task =
             let

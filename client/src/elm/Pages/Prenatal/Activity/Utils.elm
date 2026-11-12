@@ -60,7 +60,7 @@ import Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, Birt
 import Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), SymptomReviewStep(..), TreatmentReviewTask(..))
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferalRequired, getAllActivities, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
-import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, labTestWithImmediateResult, medicationDistributionFormWithDefaultInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication)
+import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPreviously, diagnosedHighRiskOfPreeclampsiaPreviously, diagnosedHypertension, diagnosedHypertensionPreviously, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPreviously, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPreviously, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, labTestWithImmediateResult, medicationDistributionFormWithDefaultInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -1149,10 +1149,10 @@ latestMedicationTreatmentForHypertension assembled =
         |> Maybe.map
             (\treatment ->
                 let
-                    forModeratePreeclamsia =
-                        diagnosedModeratePreeclampsiaPrevoiusly assembled
+                    forModeratePreeclampsia =
+                        diagnosedModeratePreeclampsiaPreviously assembled
                 in
-                Translate.TreatmentDetailsHypertension forModeratePreeclamsia treatment
+                Translate.TreatmentDetailsHypertension forModeratePreeclampsia treatment
             )
 
 
@@ -2043,7 +2043,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
         resolveEGAWeeksAndThen func =
             resolveEGAInWeeksAndThen func egaInWeeks
 
-        diagnosedAtInitalPhase =
+        diagnosedAtInitialPhase =
             matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled
     in
     case diagnosis of
@@ -2053,7 +2053,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
             -- to diagnose it again.
             -- Instead, we adjust medication, or send to hospital, depending
             -- on current BP and previous treatment.
-            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+            (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         (egaWeeks >= 37)
@@ -2066,10 +2066,10 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
             -- to diagnose it again.
             -- Instead, we adjust medication, or send to hospital, depending
             -- on current BP and previous treatment.
-            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+            (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && (-- If diagnosed Moderate Preeclampsia at initial stage, we do not
                     -- need to diagnose again.
-                    not <| diagnosedAtInitalPhase DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+                    not <| diagnosedAtInitialPhase DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
                    )
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
@@ -2087,7 +2087,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
         DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
             (-- If diagnosed Severe Preeclampsia at initial stage, we do not
              -- need to diagnose again.
-             not <| diagnosedAtInitalPhase DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+             not <| diagnosedAtInitialPhase DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
             )
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
@@ -2200,7 +2200,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 && labTestWithImmediateResult .hemoglobinTest assembled.measurements
 
         DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ->
-            (not <| diagnosedAtInitalPhase DiagnosisSevereAnemiaWithComplicationsInitialPhase)
+            (not <| diagnosedAtInitialPhase DiagnosisSevereAnemiaWithComplicationsInitialPhase)
                 && severeAnemiaWithComplicationsDiagnosed signs assembled.measurements
 
         -- Non Emergency Referral diagnoses.
@@ -2580,7 +2580,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     diagnosedPreviouslyAnyOf chronicHypertensionDiagnoses assembled
 
                 byPreviousDiabetesDiagnoses =
-                    diagnosedDiabetesPrevoiusly assembled
+                    diagnosedDiabetesPreviously assembled
             in
             byPreviousPreeclampsia
                 || byFetalPresentation
@@ -2608,7 +2608,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
         resolveEGAWeeksAndThen func =
             resolveEGAInWeeksAndThen func egaInWeeks
 
-        diagnosedAtInitalPhase =
+        diagnosedAtInitialPhase =
             matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled
     in
     case diagnosis of
@@ -2696,7 +2696,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                         || byObstetricHistorySigns
             in
             moderateRiskPreeclampsiaDiagnosed
-                && (not <| diagnosedRiskOfPreeclampsiaPrevoiusly assembled)
+                && (not <| diagnosedRiskOfPreeclampsiaPreviously assembled)
                 -- We don't diagnose Preeclampsia RISK, if any kind of
                 -- Preeclampsia was diagnosed previously. At current encounter,
                 -- applyPreeclampsiaRiskDiagnosesHierarchy removes it.
@@ -2713,7 +2713,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                    List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
                     (DiagnosisChronicHypertensionImmediate :: diabetesDiagnosesInitialPhase)
             )
-                && (not <| diagnosedHighRiskOfPreeclampsiaPrevoiusly assembled)
+                && (not <| diagnosedHighRiskOfPreeclampsiaPreviously assembled)
                 -- We don't diagnose Preeclampsia RISK, if any kind of
                 -- Preeclampsia was diagnosed previously. At current encounter,
                 -- applyPreeclampsiaRiskDiagnosesHierarchy removes it.
@@ -2724,7 +2724,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                    )
 
         DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
-            (not <| diagnosedAtInitalPhase DiagnosisHighRiskOfPreeclampsiaInitialPhase)
+            (not <| diagnosedAtInitialPhase DiagnosisHighRiskOfPreeclampsiaInitialPhase)
                 && (highRiskPreeclampsiaDiagnosedBySignsAndPreviousDiagnoses
                         || -- Chronic Hypertension or Diabetes found at the recheck, or from a later lab result.
                            List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
@@ -2733,7 +2733,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 -- We don't diagnose Preeclampsia RISK, if any kind of
                 -- Preeclampsia was diagnosed previously. At current encounter,
                 -- applyPreeclampsiaRiskDiagnosesHierarchy removes it.
-                && (not <| diagnosedHighRiskOfPreeclampsiaPrevoiusly assembled)
+                && (not <| diagnosedHighRiskOfPreeclampsiaPreviously assembled)
                 && (not <|
                         diagnosedPreviouslyAnyOf
                             (DiagnosisEclampsia :: preeclampsiaDiagnoses)
@@ -2749,8 +2749,8 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             -- diagnosed once, we do not need to diagnose Hypertension again.
             -- Instead, we adjust medication, or send to hospital, depending
             -- on current BP and previous treatment.
-            (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+            (not <| diagnosedHypertensionPreviously assembled)
+                && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen (chronicHypertensionByMeasurements measurements)
 
         DiagnosisChronicHypertensionAfterRecheck ->
@@ -2762,8 +2762,8 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             -- diagnosed once, we do not need to diagnose Hypertension again.
             -- Instead, we adjust medication, or send to hospital, depending
             -- on current BP and previous treatment.
-            (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+            (not <| diagnosedHypertensionPreviously assembled)
+                && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen (chronicHypertensionByMeasurementsAfterRecheck measurements)
 
         DiagnosisGestationalHypertensionImmediate ->
@@ -2775,8 +2775,8 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             -- diagnosed once, we do not need to diagnose Hypertension again.
             -- Instead, we adjust medication, or send to hospital, depending
             -- on current BP and previous treatment.
-            (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+            (not <| diagnosedHypertensionPreviously assembled)
+                && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurements measurements)
 
         DiagnosisGestationalHypertensionAfterRecheck ->
@@ -2788,8 +2788,8 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             -- diagnosed once, we do not need to diagnose Hypertension again.
             -- Instead, we adjust medication, or send to hospital, depending
             -- on current BP and previous treatment.
-            (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+            (not <| diagnosedHypertensionPreviously assembled)
+                && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen (gestationalHypertensionByMeasurementsAfterRecheck measurements)
 
         DiagnosisModeratePreeclampsiaInitialPhase ->
@@ -2798,7 +2798,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             -- to diagnose it again.
             -- Instead, we adjust medication, or send to hospital, depending
             -- on current BP and previous treatment.
-            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+            (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         (egaWeeks >= 20)
@@ -2812,10 +2812,10 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             -- to diagnose it again.
             -- Instead, we adjust medication, or send to hospital, depending
             -- on current BP and previous treatment.
-            (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
+            (not <| diagnosedModeratePreeclampsiaPreviously assembled)
                 && -- If diagnosed Moderate Preeclampsia at initial stage, we do not
                    -- need to diagnose again.
-                   (not <| diagnosedAtInitalPhase DiagnosisModeratePreeclampsiaInitialPhase)
+                   (not <| diagnosedAtInitialPhase DiagnosisModeratePreeclampsiaInitialPhase)
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         (egaWeeks >= 20)
@@ -2833,7 +2833,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
         DiagnosisSeverePreeclampsiaRecurrentPhase ->
             (-- If diagnosed Severe Preeclampsia at initial stage, we do not
              -- need to diagnose again.
-             not <| diagnosedAtInitalPhase DiagnosisSeverePreeclampsiaInitialPhase
+             not <| diagnosedAtInitialPhase DiagnosisSeverePreeclampsiaInitialPhase
             )
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
@@ -2846,14 +2846,14 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisHIVRecurrentPhase ->
             testedPositiveAt .hivTest
-                && (not <| diagnosedAtInitalPhase DiagnosisHIVInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisHIVInitialPhase)
 
         DiagnosisHIVDetectableViralLoadInitialPhase ->
             hivDetectableViralLoadDiagnosed && immediateResult .hivPCRTest
 
         DiagnosisHIVDetectableViralLoadRecurrentPhase ->
             hivDetectableViralLoadDiagnosed
-                && (not <| diagnosedAtInitalPhase DiagnosisHIVDetectableViralLoadInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisHIVDetectableViralLoadInitialPhase)
 
         DiagnosisDiscordantPartnershipInitialPhase ->
             let
@@ -2876,35 +2876,35 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisDiscordantPartnershipRecurrentPhase ->
             (discordantPartnershipByPartnerHIVTest || discordantPartnershipByHIVTest)
-                && (not <| diagnosedAtInitalPhase DiagnosisDiscordantPartnershipInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisDiscordantPartnershipInitialPhase)
 
         DiagnosisSyphilisInitialPhase ->
             syphilisDiagnosed && immediateResult .syphilisTest
 
         DiagnosisSyphilisRecurrentPhase ->
             syphilisDiagnosed
-                && (not <| diagnosedAtInitalPhase DiagnosisSyphilisInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisSyphilisInitialPhase)
 
         DiagnosisSyphilisWithComplicationsInitialPhase ->
             syphilisWithComplicationDiagnosed && immediateResult .syphilisTest
 
         DiagnosisSyphilisWithComplicationsRecurrentPhase ->
             syphilisWithComplicationDiagnosed
-                && (not <| diagnosedAtInitalPhase DiagnosisSyphilisWithComplicationsInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisSyphilisWithComplicationsInitialPhase)
 
         DiagnosisNeurosyphilisInitialPhase ->
             neurosyphilisDiagnosed && immediateResult .syphilisTest
 
         DiagnosisNeurosyphilisRecurrentPhase ->
             neurosyphilisDiagnosed
-                && (not <| diagnosedAtInitalPhase DiagnosisNeurosyphilisInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisNeurosyphilisInitialPhase)
 
         DiagnosisHepatitisBInitialPhase ->
             testedPositiveAt .hepatitisBTest && immediateResult .hepatitisBTest
 
         DiagnosisHepatitisBRecurrentPhase ->
             testedPositiveAt .hepatitisBTest
-                && (not <| diagnosedAtInitalPhase DiagnosisHepatitisBInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisHepatitisBInitialPhase)
 
         DiagnosisMalariaInitialPhase ->
             malariaDiagnosed
@@ -2912,14 +2912,14 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisMalariaRecurrentPhase ->
             malariaDiagnosed
-                && (not <| diagnosedAtInitalPhase DiagnosisMalariaInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisMalariaInitialPhase)
 
         DiagnosisMalariaMedicatedContinuedInitialPhase ->
             malariaMedicatedContinuedDiagnosed && immediateResult .malariaTest
 
         DiagnosisMalariaMedicatedContinuedRecurrentPhase ->
             malariaMedicatedContinuedDiagnosed
-                && (not <| diagnosedAtInitalPhase DiagnosisMalariaMedicatedContinuedInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisMalariaMedicatedContinuedInitialPhase)
 
         DiagnosisMalariaWithAnemiaInitialPhase ->
             malariaWithAnemiaDiagnosed
@@ -2928,7 +2928,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisMalariaWithAnemiaRecurrentPhase ->
             malariaWithAnemiaDiagnosed
-                && (not <| diagnosedAtInitalPhase DiagnosisMalariaWithAnemiaInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisMalariaWithAnemiaInitialPhase)
 
         DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ->
             malariaWithAnemiaMedicatedContinuedDiagnosed
@@ -2937,7 +2937,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ->
             malariaWithAnemiaMedicatedContinuedDiagnosed
-                && (not <| diagnosedAtInitalPhase DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase)
 
         DiagnosisMalariaWithSevereAnemiaInitialPhase ->
             malariaWithSevereAnemiaDiagnosed
@@ -2946,21 +2946,21 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisMalariaWithSevereAnemiaRecurrentPhase ->
             malariaWithSevereAnemiaDiagnosed
-                && (not <| diagnosedAtInitalPhase DiagnosisMalariaWithSevereAnemiaInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisMalariaWithSevereAnemiaInitialPhase)
 
         DiagnosisModerateAnemiaInitialPhase ->
             moderateAnemiaDiagnosed && immediateResult .hemoglobinTest
 
         DiagnosisModerateAnemiaRecurrentPhase ->
             moderateAnemiaDiagnosed
-                && (not <| diagnosedAtInitalPhase DiagnosisModerateAnemiaInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisModerateAnemiaInitialPhase)
 
         DiagnosisSevereAnemiaInitialPhase ->
             severeAnemiaDiagnosed && immediateResult .hemoglobinTest
 
         DiagnosisSevereAnemiaRecurrentPhase ->
             severeAnemiaDiagnosed
-                && (not <| diagnosedAtInitalPhase DiagnosisSevereAnemiaInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisSevereAnemiaInitialPhase)
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase ->
             (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
@@ -2970,7 +2970,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     )
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase ->
-            (not <| diagnosedAtInitalPhase Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase)
+            (not <| diagnosedAtInitialPhase Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase)
                 && (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
@@ -2985,7 +2985,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     )
 
         Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase ->
-            (not <| diagnosedAtInitalPhase Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase)
+            (not <| diagnosedAtInitialPhase Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase)
                 && (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
@@ -2997,7 +2997,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisRhesusNegativeRecurrentPhase ->
             rhesusNegativeDiagnosed
-                && (not <| diagnosedAtInitalPhase DiagnosisRhesusNegativeInitialPhase)
+                && (not <| diagnosedAtInitialPhase DiagnosisRhesusNegativeInitialPhase)
 
         -- If criterias for DiagnosisPostpartumMastitis also matches, this
         -- diagnosis will be filtered out when applying diagnoses hierarchy.
@@ -3387,7 +3387,7 @@ severePreeclampsiaRecurrentPhase measurements =
                 |> Maybe.map
                     (\value ->
                         let
-                            byInital =
+                            byInitial =
                                 Maybe.map2
                                     (\dia sys -> dia >= 110 && sys >= 160)
                                     value.dia
@@ -3401,7 +3401,7 @@ severePreeclampsiaRecurrentPhase measurements =
                                     value.sysRepeated
                                     |> Maybe.withDefault False
                         in
-                        byInital || byRecurrent
+                        byInitial || byRecurrent
                     )
                 |> Maybe.withDefault False
     in
