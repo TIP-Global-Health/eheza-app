@@ -22,7 +22,7 @@ import Measurement.Utils
         , viewReinforceAdherenceQuestion
         )
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
-import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, HypertensionTreatementUpdateOption(..), MalariaPreventionForm, MedicationDistributionForm, PrenatalEncounterPhase(..), PreviousEncounterData, ReferralForm, VaccinationProgressDict)
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, HypertensionTreatmentUpdateOption(..), MalariaPreventionForm, MedicationDistributionForm, PrenatalEncounterPhase(..), PreviousEncounterData, ReferralForm, VaccinationProgressDict)
 import Pages.Prenatal.Types exposing (EarlyMastitisOrEngorgmentReliefMethod(..), HeartburnReliefMethod(..), LegCrampsReliefMethod(..))
 import Pages.Utils
     exposing
@@ -1072,7 +1072,7 @@ resolveRecommendedTreatmentForPreviouslyDiagnosedHypertensionInputsAndTasks lang
                                             -- currently BP is normal. Nevertheless, we still recommend starting tratement
                                             -- sinve Hypertension was diagnosed previously.
                                             (currentTreatment == NoTreatmentForHypertension)
-                                                && (recommendationDosageUpdate == TreatementUpdateMaintainCurrentDoasage)
+                                                && (recommendationDosageUpdate == TreatmentUpdateMaintainCurrentDosage)
                                         then
                                             Translate.HypertensionRecommendedTreatmentUpdateStartTreatment
 
@@ -1143,10 +1143,10 @@ resolveRecommendedTreatmentForPreviouslyDiagnosedHypertensionInputsAndTasks lang
             , active + derivedActive
             )
         )
-        (hypertensionTreatementUpdateRecommendationByBP assembled)
-        (resolveHypertensionTreatementUpdateMedication assembled)
+        (hypertensionTreatmentUpdateRecommendationByBP assembled)
+        (resolveHypertensionTreatmentUpdateMedication assembled)
         |> -- There's no treatment, and only case when this is possible,
-           -- is when Moderate Preeclamsia was diagnosed at previous encounter,
+           -- is when Moderate Preeclampsia was diagnosed at previous encounter,
            -- and patient was referred to hospital.
            Maybe.withDefault
             ( [ diagnosisHeader
@@ -1195,7 +1195,7 @@ recommendedTreatmentForHypertensionInputAndTask language options setRecommendedT
     )
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
 viewTreatmentOptionForHypertension : Language -> RecommendedTreatmentSign -> Html any
 viewTreatmentOptionForHypertension language sign =
@@ -1217,19 +1217,19 @@ viewTreatmentOptionForHypertension language sign =
             viewTreatmentOptionWithDosage language sign
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
 updateHypertensionTreatmentWithMedication : AssembledData -> Bool
 updateHypertensionTreatmentWithMedication assembled =
-    resolveHypertensionTreatementUpdateMedication assembled
+    resolveHypertensionTreatmentUpdateMedication assembled
         |> isJust
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
-resolveHypertensionTreatementUpdateMedication : AssembledData -> Maybe RecommendedTreatmentSign
-resolveHypertensionTreatementUpdateMedication assembled =
-    resolveHypertensionTreatementUpdateRecommendation assembled
+resolveHypertensionTreatmentUpdateMedication : AssembledData -> Maybe RecommendedTreatmentSign
+resolveHypertensionTreatmentUpdateMedication assembled =
+    resolveHypertensionTreatmentUpdateRecommendation assembled
         |> Maybe.andThen
             (\( medication, hospitalizationRequired ) ->
                 if hospitalizationRequired || medication == NoTreatmentForHypertension then
@@ -1240,119 +1240,119 @@ resolveHypertensionTreatementUpdateMedication assembled =
             )
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
 updateHypertensionTreatmentWithHospitalization : AssembledData -> Bool
 updateHypertensionTreatmentWithHospitalization assembled =
-    resolveHypertensionTreatementUpdateRecommendation assembled
-        |> Maybe.map ((==) hypertensionTreatementHospitalizationOption)
+    resolveHypertensionTreatmentUpdateRecommendation assembled
+        |> Maybe.map ((==) hypertensionTreatmentHospitalizationOption)
         |> Maybe.withDefault False
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
-hypertensionTreatementHospitalizationOption : ( RecommendedTreatmentSign, Bool )
-hypertensionTreatementHospitalizationOption =
+hypertensionTreatmentHospitalizationOption : ( RecommendedTreatmentSign, Bool )
+hypertensionTreatmentHospitalizationOption =
     ( NoTreatmentForHypertension, True )
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
-resolveHypertensionTreatementUpdateRecommendation : AssembledData -> Maybe ( RecommendedTreatmentSign, Bool )
-resolveHypertensionTreatementUpdateRecommendation assembled =
+resolveHypertensionTreatmentUpdateRecommendation : AssembledData -> Maybe ( RecommendedTreatmentSign, Bool )
+resolveHypertensionTreatmentUpdateRecommendation assembled =
     Maybe.map2
-        (\currentTreatment treatementUpdateByBP ->
+        (\currentTreatment treatmentUpdateByBP ->
             let
                 medicationOption medication =
                     ( medication, False )
             in
             case currentTreatment of
                 NoTreatmentForHypertension ->
-                    case treatementUpdateByBP of
-                        TreatementUpdateMaintainCurrentDoasage ->
+                    case treatmentUpdateByBP of
+                        TreatmentUpdateMaintainCurrentDosage ->
                             -- No treatment was given and BP seems normal, however,
                             -- we still recommend taking Methyldopa because Hypertension
                             -- was diagnosed previously.
                             medicationOption TreatmentMethyldopa2
 
-                        TreatementUpdateIncreaseOneDose ->
+                        TreatmentUpdateIncreaseOneDose ->
                             medicationOption TreatmentMethyldopa2
 
-                        TreatementUpdateIncreaseTwoDoses ->
+                        TreatmentUpdateIncreaseTwoDoses ->
                             medicationOption TreatmentMethyldopa3
 
-                        TreatementUpdateHospitalize ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateHospitalize ->
+                            hypertensionTreatmentHospitalizationOption
 
                 TreatmentMethyldopa2 ->
-                    case treatementUpdateByBP of
-                        TreatementUpdateMaintainCurrentDoasage ->
+                    case treatmentUpdateByBP of
+                        TreatmentUpdateMaintainCurrentDosage ->
                             medicationOption TreatmentMethyldopa2
 
-                        TreatementUpdateIncreaseOneDose ->
+                        TreatmentUpdateIncreaseOneDose ->
                             medicationOption TreatmentMethyldopa3
 
-                        TreatementUpdateIncreaseTwoDoses ->
+                        TreatmentUpdateIncreaseTwoDoses ->
                             medicationOption TreatmentMethyldopa4
 
-                        TreatementUpdateHospitalize ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateHospitalize ->
+                            hypertensionTreatmentHospitalizationOption
 
                 TreatmentMethyldopa3 ->
-                    case treatementUpdateByBP of
-                        TreatementUpdateMaintainCurrentDoasage ->
+                    case treatmentUpdateByBP of
+                        TreatmentUpdateMaintainCurrentDosage ->
                             medicationOption TreatmentMethyldopa3
 
-                        TreatementUpdateIncreaseOneDose ->
+                        TreatmentUpdateIncreaseOneDose ->
                             medicationOption TreatmentMethyldopa4
 
-                        TreatementUpdateIncreaseTwoDoses ->
+                        TreatmentUpdateIncreaseTwoDoses ->
                             medicationOption TreatmentHypertensionAddCarvedilol
 
-                        TreatementUpdateHospitalize ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateHospitalize ->
+                            hypertensionTreatmentHospitalizationOption
 
                 TreatmentMethyldopa4 ->
-                    case treatementUpdateByBP of
-                        TreatementUpdateMaintainCurrentDoasage ->
+                    case treatmentUpdateByBP of
+                        TreatmentUpdateMaintainCurrentDosage ->
                             medicationOption TreatmentMethyldopa4
 
-                        TreatementUpdateIncreaseOneDose ->
+                        TreatmentUpdateIncreaseOneDose ->
                             medicationOption TreatmentHypertensionAddCarvedilol
 
-                        TreatementUpdateIncreaseTwoDoses ->
+                        TreatmentUpdateIncreaseTwoDoses ->
                             medicationOption TreatmentHypertensionAddAmlodipine
 
-                        TreatementUpdateHospitalize ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateHospitalize ->
+                            hypertensionTreatmentHospitalizationOption
 
                 TreatmentHypertensionAddCarvedilol ->
-                    case treatementUpdateByBP of
-                        TreatementUpdateMaintainCurrentDoasage ->
+                    case treatmentUpdateByBP of
+                        TreatmentUpdateMaintainCurrentDosage ->
                             medicationOption TreatmentHypertensionAddCarvedilol
 
-                        TreatementUpdateIncreaseOneDose ->
+                        TreatmentUpdateIncreaseOneDose ->
                             medicationOption TreatmentHypertensionAddAmlodipine
 
-                        TreatementUpdateIncreaseTwoDoses ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateIncreaseTwoDoses ->
+                            hypertensionTreatmentHospitalizationOption
 
-                        TreatementUpdateHospitalize ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateHospitalize ->
+                            hypertensionTreatmentHospitalizationOption
 
                 TreatmentHypertensionAddAmlodipine ->
-                    case treatementUpdateByBP of
-                        TreatementUpdateMaintainCurrentDoasage ->
+                    case treatmentUpdateByBP of
+                        TreatmentUpdateMaintainCurrentDosage ->
                             medicationOption TreatmentHypertensionAddAmlodipine
 
-                        TreatementUpdateIncreaseOneDose ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateIncreaseOneDose ->
+                            hypertensionTreatmentHospitalizationOption
 
-                        TreatementUpdateIncreaseTwoDoses ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateIncreaseTwoDoses ->
+                            hypertensionTreatmentHospitalizationOption
 
-                        TreatementUpdateHospitalize ->
-                            hypertensionTreatementHospitalizationOption
+                        TreatmentUpdateHospitalize ->
+                            hypertensionTreatmentHospitalizationOption
 
                 -- We should never get here, since these are not
                 -- Hypertension options.
@@ -1360,13 +1360,13 @@ resolveHypertensionTreatementUpdateRecommendation assembled =
                     ( NoTreatmentForHypertension, False )
         )
         (getLatestTreatmentByTreatmentOptions recommendedTreatmentSignsForHypertension assembled)
-        (hypertensionTreatementUpdateRecommendationByBP assembled)
+        (hypertensionTreatmentUpdateRecommendationByBP assembled)
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
-hypertensionTreatementUpdateRecommendationByBP : AssembledData -> Maybe HypertensionTreatementUpdateOption
-hypertensionTreatementUpdateRecommendationByBP assembled =
+hypertensionTreatmentUpdateRecommendationByBP : AssembledData -> Maybe HypertensionTreatmentUpdateOption
+hypertensionTreatmentUpdateRecommendationByBP assembled =
     if diagnosedHypertensionPreviously assembled || diagnosedModeratePreeclampsiaPreviously assembled then
         getMeasurementValueFunc assembled.measurements.vitals
             |> Maybe.andThen
@@ -1375,12 +1375,12 @@ hypertensionTreatementUpdateRecommendationByBP assembled =
                         (\sys dia ->
                             let
                                 bySys =
-                                    hypertensionTreatementUpdateRecommendationBySys sys
+                                    hypertensionTreatmentUpdateRecommendationBySys sys
 
                                 byDia =
-                                    hypertensionTreatementUpdateRecommendationByDia dia
+                                    hypertensionTreatmentUpdateRecommendationByDia dia
                             in
-                            if hypertensionTreatementUpdateToNumber bySys < hypertensionTreatementUpdateToNumber byDia then
+                            if hypertensionTreatmentUpdateToNumber bySys < hypertensionTreatmentUpdateToNumber byDia then
                                 byDia
 
                             else
@@ -1394,53 +1394,53 @@ hypertensionTreatementUpdateRecommendationByBP assembled =
         Nothing
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
-hypertensionTreatementUpdateRecommendationBySys : Float -> HypertensionTreatementUpdateOption
-hypertensionTreatementUpdateRecommendationBySys value =
+hypertensionTreatmentUpdateRecommendationBySys : Float -> HypertensionTreatmentUpdateOption
+hypertensionTreatmentUpdateRecommendationBySys value =
     if value < 140 then
-        TreatementUpdateMaintainCurrentDoasage
+        TreatmentUpdateMaintainCurrentDosage
 
     else if value < 160 then
-        TreatementUpdateIncreaseOneDose
+        TreatmentUpdateIncreaseOneDose
 
     else if value < 180 then
-        TreatementUpdateIncreaseTwoDoses
+        TreatmentUpdateIncreaseTwoDoses
 
     else
-        TreatementUpdateHospitalize
+        TreatmentUpdateHospitalize
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
-hypertensionTreatementUpdateRecommendationByDia : Float -> HypertensionTreatementUpdateOption
-hypertensionTreatementUpdateRecommendationByDia value =
+hypertensionTreatmentUpdateRecommendationByDia : Float -> HypertensionTreatmentUpdateOption
+hypertensionTreatmentUpdateRecommendationByDia value =
     if value < 90 then
-        TreatementUpdateMaintainCurrentDoasage
+        TreatmentUpdateMaintainCurrentDosage
 
     else if value < 100 then
-        TreatementUpdateIncreaseOneDose
+        TreatmentUpdateIncreaseOneDose
 
     else if value < 110 then
-        TreatementUpdateIncreaseTwoDoses
+        TreatmentUpdateIncreaseTwoDoses
 
     else
-        TreatementUpdateHospitalize
+        TreatmentUpdateHospitalize
 
 
-hypertensionTreatementUpdateToNumber : HypertensionTreatementUpdateOption -> Int
-hypertensionTreatementUpdateToNumber value =
+hypertensionTreatmentUpdateToNumber : HypertensionTreatmentUpdateOption -> Int
+hypertensionTreatmentUpdateToNumber value =
     case value of
-        TreatementUpdateMaintainCurrentDoasage ->
+        TreatmentUpdateMaintainCurrentDosage ->
             0
 
-        TreatementUpdateIncreaseOneDose ->
+        TreatmentUpdateIncreaseOneDose ->
             1
 
-        TreatementUpdateIncreaseTwoDoses ->
+        TreatmentUpdateIncreaseTwoDoses ->
             2
 
-        TreatementUpdateHospitalize ->
+        TreatmentUpdateHospitalize ->
             3
 
 
@@ -1545,7 +1545,7 @@ resolveRecommendedTreatmentForSyphilisInputsAndTasks :
 resolveRecommendedTreatmentForSyphilisInputsAndTasks language setRecommendedTreatmentSignMsg allowedSigns form =
     let
         -- Since we may have values set for another diagnosis, or from
-        -- inital phase of encounter, we need to filter them out,
+        -- initial phase of encounter, we need to filter them out,
         -- to be able to determine the current value.
         currentValue =
             Maybe.andThen
@@ -2013,9 +2013,8 @@ diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled =
         assembled
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
-Moderate Preeclamsia logic is a higher lavel condition for Hypertension within
-identical treatement, and therefore, we do not differentiate between the 2.
+{-| Despite the name, this includes Moderate Preeclampsia: it is a higher
+level of Hypertension with identical treatment, so the two are not told apart.
 -}
 referToHospitalDueToAdverseEventForHypertensionTreatment : AssembledData -> Bool
 referToHospitalDueToAdverseEventForHypertensionTreatment =
@@ -2988,7 +2987,7 @@ recommendedTreatmentSignsForHypertensionInitial =
     ]
 
 
-{-| Note: Even though name says Hypertension, it includes Moderate Preeclamsia as well.
+{-| Note: Even though name says Hypertension, it includes Moderate Preeclampsia as well.
 -}
 recommendedTreatmentSignsForHypertension : List RecommendedTreatmentSign
 recommendedTreatmentSignsForHypertension =
@@ -3780,7 +3779,7 @@ getCurrentReasonForNonReferralByForm reasonToSignFunc form =
     getCurrentReasonForNonReferral reasonToSignFunc form.facilityNonReferralReasons
 
 
-{-| Referal to facility is completed when we mark that facility was referred to,
+{-| Referral to facility is completed when we mark that facility was referred to,
 or, reason was set for not referring to that facility.
 -}
 referralToFacilityCompleted : AssembledData -> ReferralFacility -> Bool

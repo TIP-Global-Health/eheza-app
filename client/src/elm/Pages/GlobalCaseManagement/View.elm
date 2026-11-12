@@ -1386,7 +1386,7 @@ generatePrenatalLabsEntryData language currentDate isLabTech db item =
                         |> Maybe.map
                             (.diagnoses
                                 >> EverySet.toList
-                                >> List.filter Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal
+                                >> List.filter Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferral
                             )
                         |> Maybe.withDefault []
             in

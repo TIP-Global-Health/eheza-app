@@ -45,7 +45,7 @@ import Pages.AcuteIllness.Activity.Utils
         ( covidTestingFormWithDefault
         , malariaDangerSignsPresent
         , malariaTestingFormWithDefault
-        , medicationDistributionFormInutsAndTasks
+        , medicationDistributionFormInputsAndTasks
         , mildGastrointestinalInfectionSymptomsPresent
         , nonBloodyDiarrheaAtSymptoms
         , resolveAcuteIllnessDiagnosis
@@ -1445,7 +1445,7 @@ empty, as it is the first time a health worker reaches it.
 -}
 medicationFormOf : AssembledData -> List (Html Pages.AcuteIllness.Activity.Model.Msg)
 medicationFormOf assembled =
-    medicationDistributionFormInutsAndTasks English
+    medicationDistributionFormInputsAndTasks English
         currentDate
         assembled.person
         (Maybe.map Tuple.second assembled.diagnosis)

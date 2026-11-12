@@ -4695,10 +4695,10 @@ decodeDeliveryComplication =
                         succeed ComplicationEmergencyCSection
 
                     "preclampsia" ->
-                        succeed ComplicationPreclampsia
+                        succeed ComplicationPreeclampsia
 
                     "maternal-hemmorhage" ->
-                        succeed ComplicationMaternalHemmorhage
+                        succeed ComplicationMaternalHemorrhage
 
                     "hiv" ->
                         succeed ComplicationHiv

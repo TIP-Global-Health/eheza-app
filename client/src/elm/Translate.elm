@@ -121,7 +121,7 @@ import Pages.Prenatal.Activity.Types
         , PrePregnancyClassification(..)
         , TreatmentReviewTask(..)
         )
-import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
+import Pages.Prenatal.Model exposing (HypertensionTreatmentUpdateOption(..))
 import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..))
 import Pages.Prenatal.RecurrentActivity.Types
 import Pages.Prenatal.Types
@@ -879,7 +879,7 @@ type TranslationId
     | HypertensionRecommendedTreatmentUpdateHeader Bool
     | HypertensionRecommendedTreatmentUpdateBPLabel
     | HypertensionRecommendedTreatmentUpdateCurrentTreatment
-    | HypertensionRecommendedTreatmentUpdateNewTreatment HypertensionTreatementUpdateOption
+    | HypertensionRecommendedTreatmentUpdateNewTreatment HypertensionTreatmentUpdateOption
     | HypertensionRecommendedTreatmentUpdateNoCurrentTreatment
     | HypertensionRecommendedTreatmentUpdateStartTreatment
     | HypertensionStageAndRenalComplicationsHeader Bool NCDDiagnosis
@@ -1079,7 +1079,7 @@ type TranslationId
     | Paralysis
     | ParentLabel
     | PatientDeclined
-    | PatientShowsSignsOfHighRiskForPreclampsia
+    | PatientShowsSignsOfHighRiskForPreeclampsia
     | PatientShowsSignsOfMildToModeratePreeclampsia
     | PatientShowsSignsOfSeverePreeclampsia
     | PatientTestedPositiveForSyphilis
@@ -5800,10 +5800,10 @@ translationSet trans =
                     , somali = Nothing
                     }
 
-                ComplicationPreclampsia ->
+                ComplicationPreeclampsia ->
                     translationSet Preeclampsia
 
-                ComplicationMaternalHemmorhage ->
+                ComplicationMaternalHemorrhage ->
                     { english = "Maternal Hemorrhage"
                     , kinyarwanda = Just "Kuva amaraso ku mubyeyi utwite cyangwa nyuma yo kubyara"
                     , kirundi = Just "Ukuva amaraso kw'abavyeyi"
@@ -8819,7 +8819,7 @@ translationSet trans =
 
         HypertensionRecommendedTreatmentUpdateHeader forModeratePreeclampsia ->
             if forModeratePreeclampsia then
-                { english = "This patient was previously diagnosed with Moderate Preeclamsia"
+                { english = "This patient was previously diagnosed with Moderate Preeclampsia"
                 , kinyarwanda = Just "Mu isuzuma rishize uyu mubyeyi yagize preekalampusi"
                 , kirundi = Just "Uyu mugwayi bamutoye ubushize Umuvuduko w'amaraso uru hagati na hagati kandi afise imbanyi"
                 , somali = Nothing
@@ -8848,21 +8848,21 @@ translationSet trans =
 
         HypertensionRecommendedTreatmentUpdateNewTreatment value ->
             case value of
-                TreatementUpdateMaintainCurrentDoasage ->
+                TreatmentUpdateMaintainCurrentDosage ->
                     { english = "It is recommended that the medication remain unchanged -"
                     , kinyarwanda = Just "Birasabwa ko imiti idahinduka -"
                     , kirundi = Just "Birategerezwa ko igipimo c'imiti kidahinduka -"
                     , somali = Nothing
                     }
 
-                TreatementUpdateIncreaseOneDose ->
+                TreatmentUpdateIncreaseOneDose ->
                     { english = "It is recommended that the medication is increased one dosage level to"
                     , kinyarwanda = Just "Birasabwa ko agomba kongererwa doze imwe kuri"
                     , kirundi = Just "Birategerezwa ko igipimo c'imiti congerwa urugero rumwe kuri"
                     , somali = Nothing
                     }
 
-                TreatementUpdateIncreaseTwoDoses ->
+                TreatmentUpdateIncreaseTwoDoses ->
                     { english = "It is recommended that the medication is increased two dosage levels to"
                     , kinyarwanda = Just "Birasabwa ko agomba kongererwa doze ebyiri kuri"
                     , kirundi = Just "Birategerezwa ko igipimo c'imiti congerwa ingero zibiri kuri"
@@ -8870,7 +8870,7 @@ translationSet trans =
                     }
 
                 -- We're not required to view this option.
-                TreatementUpdateHospitalize ->
+                TreatmentUpdateHospitalize ->
                     translationSet EmptyString
 
         HypertensionRecommendedTreatmentUpdateNoCurrentTreatment ->
@@ -12025,8 +12025,8 @@ translationSet trans =
             , somali = Just "Bukaanka ayaa Diiday"
             }
 
-        PatientShowsSignsOfHighRiskForPreclampsia ->
-            { english = "Patient shows signs of High Risk for Preclampsia"
+        PatientShowsSignsOfHighRiskForPreeclampsia ->
+            { english = "Patient shows signs of High Risk for Preeclampsia"
             , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso biri hejuru byo kugira Preklampusi"
             , kirundi = Nothing
             , somali = Nothing
@@ -12806,10 +12806,10 @@ translationSet trans =
             }
 
         MedicationDistributionHelperPreeclampsiaRiskHigh ->
-            translationSet PatientShowsSignsOfHighRiskForPreclampsia
+            translationSet PatientShowsSignsOfHighRiskForPreeclampsia
 
         MedicationDistributionHelperPreeclampsiaRiskModerate ->
-            { english = "Patient shows signs of Moderate Risk for Preclampsia"
+            { english = "Patient shows signs of Moderate Risk for Preeclampsia"
             , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso byoroheje byo kugira Preklampusi"
             , kirundi = Nothing
             , somali = Nothing
@@ -17802,14 +17802,14 @@ translationSet trans =
         PrenatalDiagnosisNonUrgentMessage diagnosis ->
             case diagnosis of
                 DiagnosisModerateRiskOfPreeclampsia ->
-                    { english = "Patient shows signs of Moderate Risk for Preclampsia"
+                    { english = "Patient shows signs of Moderate Risk for Preeclampsia"
                     , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso biringaniye byo kugira Preklampusi"
                     , kirundi = Nothing
                     , somali = Nothing
                     }
 
                 DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
-                    translationSet PatientShowsSignsOfHighRiskForPreclampsia
+                    translationSet PatientShowsSignsOfHighRiskForPreeclampsia
 
                 DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
                     translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisHighRiskOfPreeclampsiaInitialPhase
@@ -26680,7 +26680,7 @@ translationSet trans =
 
                 TreatmentReviewHypertension ->
                     if forModeratePreeclampsia then
-                        { english = "Moderate Preeclamsia Medication"
+                        { english = "Moderate Preeclampsia Medication"
                         , kinyarwanda = Just "Imiti Preklampusi Yoroheje"
                         , kirundi = Just "Imiti y'ingorane y'imbanyi bisanzwe"
                         , somali = Just "Dawada Dhiig karka Dhexe ee Uurka"
