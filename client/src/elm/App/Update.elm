@@ -1158,11 +1158,9 @@ update msg model =
                         DevicePage ->
                             [ MsgSyncManager SyncManager.Model.TrySyncing ]
 
-                        -- Clear the (per-pair) relationship form on genuine entry, so a
-                        -- previously abandoned, unsaved selection can't be shown as the
-                        -- current value and re-saved for the same pair (the view lets an
-                        -- unsaved relatedBy win over the DB value). In group encounter
-                        -- context we then re-select the clinic the session belongs to.
+                        -- On entry, clear the relationship form and the last save
+                        -- result, so an abandoned selection or an old error is not
+                        -- shown. In a group encounter, re-select the session's clinic.
                         UserPage (RelationshipPage id1 id2 initiator) ->
                             let
                                 resetMsgs =
@@ -1170,6 +1168,7 @@ update msg model =
                                         [ Pages.Relationship.Model.Reset initiator
                                             |> MsgPageRelationship id1 id2
                                             |> MsgLoggedIn
+                                        , MsgIndexedDb (Backend.Model.ResetPostRelationshipRequest id1)
                                         ]
 
                                 clinicMsgs =
