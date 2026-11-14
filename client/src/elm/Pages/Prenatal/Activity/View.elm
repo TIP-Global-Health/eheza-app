@@ -82,11 +82,11 @@ import Measurement.View
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, BirthPlanData, BreastExamForm, BreastfeedingData, DangerSignsData, ExaminationData, FamilyPlanningData, FollowUpForm, GUExamForm, HealthEducationData, HistoryData, ImmunisationData, LaboratoryData, LabsHistoryForm, MedicalHistoryForm, MedicationData, MedicationForm, MentalHealthData, MentalHealthStep(..), Model, Msg(..), NextStepsData, NutritionAssessmentForm, ObstetricFormFirstStep, ObstetricFormSecondStep, ObstetricalExamForm, PostpartumTreatmentReviewData, PregnancyDatingData, PrenatalPhotoData, PrenatalVaccinationForm, SocialHistoryForm, SpecialityCareData, SymptomReviewData, TreatmentReviewData, UltrasoundData)
 import Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), ObstetricHistoryStep(..), SymptomReviewStep(..), TreatmentReviewTask(..), WarningPopupType(..))
-import Pages.Prenatal.Activity.Utils exposing (appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generateVitalsFormConfig, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolveNextVisitDate, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toObstetricHistoryValue, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview)
+import Pages.Prenatal.Activity.Utils exposing (appointmentConfirmationFormInputsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInputsAndTasks, followUpFormWithDefault, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generateVitalsFormConfig, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationSincePreviousVisit, resolveHistoryTasks, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolveNextVisitDate, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toObstetricHistoryValue, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, vaccinationFormDynamicContentAndTasks, viewVaccinationOverview)
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, generateAssembledData, generateEDDandEGA, generateGravida, generatePara, getLmpValue, secondPhaseRequired, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Encounter.View exposing (generateActivityData, viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
-import Pages.Prenatal.Utils exposing (calculateEGAWeeks, diagnosedModeratePreeclampsiaPrevoiusly, filterNonUrgentDiagnoses, medicationDistributionFormWithDefaultInitialPhase, outsideCareAnemiaDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, referralFormWithDefault, resolveARVReferralDiagnosis, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, undeterminedPostpartumDiagnoses)
+import Pages.Prenatal.Utils exposing (calculateEGAWeeks, diagnosedModeratePreeclampsiaPreviously, filterNonUrgentDiagnoses, medicationDistributionFormWithDefaultInitialPhase, outsideCareAnemiaDiagnoses, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, outsideCareHIVDiagnoses, outsideCareHypertensionDiagnoses, outsideCareMalariaDiagnoses, outsideCareSyphilisDiagnoses, referralFormWithDefault, resolveARVReferralDiagnosis, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View
     exposing
         ( customWarningPopup
@@ -995,14 +995,14 @@ viewExaminationContent language currentDate zscores site features assembled data
                         |> Maybe.withDefault form
 
                 prePregnancyWeight =
-                    resolvePrePregnancyWeight currentDate assembled
+                    resolvePrePregnancyWeight assembled
                         |> Maybe.map weightValueFunc
 
                 isHealthyStart =
                     healthyStartEnabled features
 
                 formWithIndicator =
-                    viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site isHealthyStart assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
+                    viewNutritionAssessmentFormWithGWGIndicator language zscores site isHealthyStart assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
             in
             ( Tuple.first formWithIndicator, Tuple.second formWithIndicator )
 
@@ -2377,7 +2377,7 @@ viewTreatmentReviewContent language currentDate assembled data =
             assembled.measurements
 
         moderatePreeclampsiaPreviously =
-            diagnosedModeratePreeclampsiaPrevoiusly assembled
+            diagnosedModeratePreeclampsiaPreviously assembled
 
         viewTask task =
             let
@@ -3133,8 +3133,8 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewNutritionAssessmentFormWithGWGIndicator : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> ( Html Msg, Maybe Bool )
-viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site isHealthyStart assembled form previouslyMeasuredHeight prePregnancyWeight =
+viewNutritionAssessmentFormWithGWGIndicator : Language -> ZScore.Model.Model -> Site -> Bool -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> ( Html Msg, Maybe Bool )
+viewNutritionAssessmentFormWithGWGIndicator language zscores site isHealthyStart assembled form previouslyMeasuredHeight prePregnancyWeight =
     let
         hideHeightInput =
             isJust previouslyMeasuredHeight
@@ -3159,11 +3159,9 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site is
             resolvePreviousValue assembled .nutrition .height
                 |> Maybe.map getHeightValue
 
-        weightPreviousValueWithDate =
-            resolvePreviousValueWithDate assembled .nutrition .weight
-
         weightPreviousValue =
-            Maybe.map (Tuple.second >> weightValueFunc) weightPreviousValueWithDate
+            resolvePreviousValue assembled .nutrition .weight
+                |> Maybe.map weightValueFunc
 
         bmiPreviousValue =
             calculateBmi heightPreviousValue weightPreviousValue
@@ -3229,9 +3227,9 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site is
 
         gwgData =
             if isHealthyStart then
-                Maybe.Extra.andThen4
-                    (\prePregnancyClassification previousWeight previousWeightDate currentWeight ->
-                        resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification previousWeight previousWeightDate currentWeight assembled
+                Maybe.Extra.andThen2
+                    (\prePregnancyClassification currentWeight ->
+                        resolveGWGClassificationSincePreviousVisit prePregnancyClassification currentWeight assembled
                             |> Maybe.map
                                 (\classification ->
                                     let
@@ -3248,14 +3246,12 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores site is
                                 )
                     )
                     baselineClassification
-                    weightPreviousValue
-                    (Maybe.map Tuple.first weightPreviousValueWithDate)
                     form.weight
 
             else
                 Maybe.Extra.andThen3
                     (\prePregnancyClassification baselineWeight currentWeight ->
-                        resolveGWGClassification currentDate prePregnancyClassification baselineWeight currentWeight assembled
+                        resolveGWGClassification prePregnancyClassification baselineWeight currentWeight assembled
                             |> Maybe.map
                                 (\classification ->
                                     let
@@ -3746,7 +3742,7 @@ viewAppointmentConfirmationForm : Language -> NominalDate -> AppointmentConfirma
 viewAppointmentConfirmationForm language currentDate form =
     let
         ( inputs, _ ) =
-            appointmentConfirmationFormInutsAndTasks language currentDate form
+            appointmentConfirmationFormInputsAndTasks language currentDate form
     in
     div [ class "form appointment-confirmation" ]
         inputs
@@ -3756,7 +3752,7 @@ viewFollowUpForm : Language -> FollowUpForm -> Html Msg
 viewFollowUpForm language form =
     let
         ( inputs, _ ) =
-            followUpFormInutsAndTasks language form
+            followUpFormInputsAndTasks language form
     in
     div [ class "ui form follow-up" ]
         inputs

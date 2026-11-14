@@ -121,6 +121,7 @@ viewContent language currentDate site features model assembled =
                 ViewModeGlobal ->
                     viewGlobalContent language
                         currentDate
+                        site
                         allEncountersData
                         assembled
 
@@ -170,10 +171,11 @@ viewContent language currentDate site features model assembled =
 viewGlobalContent :
     Language
     -> NominalDate
+    -> Site
     -> List EncounterData
     -> AssembledData
     -> List (Html Msg)
-viewGlobalContent language currentDate allEncountersData assembled =
+viewGlobalContent language currentDate site allEncountersData assembled =
     let
         firstEncounterData =
             List.filter (.measurements >> .diagnostics >> isJust)
@@ -184,7 +186,7 @@ viewGlobalContent language currentDate allEncountersData assembled =
         initiationDate =
             Maybe.map .startDate firstEncounterData
     in
-    [ viewPersonInfoPane language currentDate assembled.person
+    [ viewPersonInfoPane language currentDate site assembled.person
     , viewSummaryPane language allEncountersData firstEncounterData initiationDate
     , viewTreatmentTimelinePane language currentDate initiationDate
     , viewAdverseEventsPane language allEncountersData

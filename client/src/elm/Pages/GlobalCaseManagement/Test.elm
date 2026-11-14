@@ -1,9 +1,11 @@
 module Pages.GlobalCaseManagement.Test exposing (all)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
+import Backend.Entities exposing (PersonId)
+import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.IndividualEncounterParticipant.Model as IndividualEncounterParticipant exposing (emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (resolveOpenParticipant)
-import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, Gender(..))
+import Backend.Measurement.Model exposing (FollowUpMeasurements, FollowUpOption(..), FollowUpValue, Gender(..), LaboratoryTest(..), PrenatalAssesment(..))
 import Backend.Model exposing (emptyModelIndexedDb)
 import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..), emptyWellChildEncounter)
@@ -11,10 +13,10 @@ import Date
 import EverySet
 import Expect
 import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpItem, EncounterStartedToday(..), ImmunizationFollowUpItem)
-import Pages.GlobalCaseManagement.Utils exposing (filterFollowUpsOfChasedChildren, filterResolvedFollowUps, generateTuberculosisFollowUps, resolveEncounterStartedToday)
+import Pages.GlobalCaseManagement.Utils exposing (allLabsCompleted, fillPersonName, filterFollowUpsOfChasedChildren, filterFollowUpsOfResidents, filterResolvedFollowUps, generateHIVFollowUps, generateHIVParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, resolveEncounterStartedToday)
 import Pages.GlobalCaseManagement.View exposing (generateImmunizationFollowUpEntries)
 import RemoteData
-import Restful.Endpoint exposing (toEntityUuid)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import TestFixtures exposing (testPerson)
@@ -24,13 +26,29 @@ import Time
 all : Test
 all =
     describe "Pages.GlobalCaseManagement"
-        [ filterFollowUpsOfChasedChildrenTests
+        [ allLabsCompletedTest
+        , filterFollowUpsOfChasedChildrenTests
+        , filterFollowUpsOfResidentsTests
         , filterResolvedFollowUpsTests
         , generateImmunizationFollowUpEntriesTests
         , generateTuberculosisFollowUpsTests
         , resolveEncounterStartedTodayTests
         , resolveOpenParticipantTests
         , tuberculosisSuspectEntryTests
+        ]
+
+
+allLabsCompletedTest : Test
+allLabsCompletedTest =
+    describe "allLabsCompleted"
+        [ test "a completed test that is no longer performed does not stand in for a pending one" <|
+            \_ ->
+                allLabsCompleted (EverySet.fromList [ TestHIV, TestHemoglobin ]) (EverySet.fromList [ TestVitalsRecheck, TestHIV ])
+                    |> Expect.equal False
+        , test "every performed test completed" <|
+            \_ ->
+                allLabsCompleted (EverySet.fromList [ TestHIV ]) (EverySet.fromList [ TestHIV, TestVitalsRecheck ])
+                    |> Expect.equal True
         ]
 
 
@@ -216,6 +234,380 @@ filterFollowUpsOfChasedChildrenTests =
                 keptIn SiteRwanda emptyModelIndexedDb
                     |> Expect.equal True
         ]
+
+
+{-| A community health worker's Case Management shows the follow ups of the
+selected village's residents only. This holds for every pane the health worker
+has, the Tuberculosis and HIV panes included: a patient of another village of
+the same health centre is not listed, also when that patient's record and
+encounter are already on the device (after a search, for example).
+
+The scenario: village residents are "resident" and "second-resident";
+"outsider" lives in another village of the same health centre. All of them
+have follow ups in the health centre's follow up measurements.
+
+-}
+filterFollowUpsOfResidentsTests : Test
+filterFollowUpsOfResidentsTests =
+    let
+        resident =
+            toEntityUuid "resident"
+
+        secondResident =
+            toEntityUuid "second-resident"
+
+        outsider =
+            toEntityUuid "outsider"
+
+        residents =
+            [ resident, secondResident ]
+
+        date =
+            Date.fromCalendarDate 2026 Time.Jun 10
+
+        limitDate =
+            Date.fromCalendarDate 2026 Time.Jun 15
+
+        measurement personId encounterId value =
+            { dateMeasured = date
+            , nurse = Nothing
+            , healthCenter = Nothing
+            , participantId = personId
+            , deleted = False
+            , encounterId = encounterId
+            , value = value
+            }
+
+        genericValue =
+            FollowUpValue (EverySet.singleton OneMonth) Nothing
+
+        nutritionValue =
+            { options = EverySet.singleton OneMonth, resolutionDate = Nothing, assesment = EverySet.empty }
+
+        acuteIllnessValue =
+            { options = EverySet.singleton OneMonth, resolutionDate = Nothing, diagnosis = Nothing }
+
+        prenatalValue =
+            { options = EverySet.singleton OneMonth, resolutionDate = Nothing, assesment = AssesmentNormalPregnancy }
+
+        nextVisitValue =
+            { immunisationDate = Just date, asapImmunisationDate = Nothing, pediatricVisitDate = Nothing, resolutionDate = Nothing }
+
+        -- One follow up per given patient. The measurement, the encounter
+        -- and the participant are named after the patient.
+        followUpsOf value patients =
+            List.map
+                (\patient ->
+                    ( toEntityUuid <| "follow-up-" ++ patient
+                    , measurement (toEntityUuid patient) (Just <| toEntityUuid <| "encounter-" ++ patient) value
+                    )
+                )
+                patients
+                |> Dict.fromList
+
+        everyone =
+            [ "resident", "second-resident", "outsider" ]
+
+        tuberculosisOf patients =
+            { noFollowUps | tuberculosis = followUpsOf genericValue patients }
+
+        hivOf patients =
+            { noFollowUps | hiv = followUpsOf genericValue patients }
+
+        -- Every pane holds follow ups of both residents and of the outsider.
+        allPanes =
+            { noFollowUps
+                | nutritionGroup = followUpsOf nutritionValue everyone
+                , nutritionIndividual = followUpsOf nutritionValue everyone
+                , acuteIllness = followUpsOf acuteIllnessValue everyone
+                , prenatal = followUpsOf prenatalValue everyone
+                , wellChild = followUpsOf nutritionValue everyone
+                , tuberculosis = followUpsOf genericValue everyone
+                , hiv = followUpsOf genericValue everyone
+                , nextVisit = followUpsOf nextVisitValue everyone
+            }
+
+        -- The device has everything loaded: the three people, and the
+        -- Tuberculosis and HIV encounters their follow ups were recorded at.
+        loadedDb =
+            { emptyModelIndexedDb
+                | people =
+                    List.map
+                        (\patient -> ( toEntityUuid patient, RemoteData.Success { testPerson | name = patient } ))
+                        everyone
+                        |> Dict.fromList
+                , tuberculosisEncounters =
+                    List.map
+                        (\patient ->
+                            ( toEntityUuid <| "encounter-" ++ patient
+                            , RemoteData.Success <|
+                                TuberculosisEncounter (toEntityUuid <| "participant-" ++ patient) date Nothing False Nothing
+                            )
+                        )
+                        everyone
+                        |> Dict.fromList
+                , hivEncounters =
+                    List.map
+                        (\patient ->
+                            ( toEntityUuid <| "encounter-" ++ patient
+                            , RemoteData.Success <|
+                                HIVEncounter (toEntityUuid <| "participant-" ++ patient) date Nothing False Nothing
+                            )
+                        )
+                        everyone
+                        |> Dict.fromList
+            }
+
+        -- The names the health worker reads in the Tuberculosis pane, built
+        -- the way the page builds it from the narrowed follow ups.
+        tuberculosisPane db followUps =
+            generateTuberculosisFollowUps limitDate db (filterFollowUpsOfResidents residents followUps) Dict.empty
+                |> Tuple.first
+                |> fillPersonName Tuple.second db
+                |> Dict.values
+                |> List.map .personName
+                |> List.sort
+
+        -- Same, for the HIV pane.
+        hivPane db followUps =
+            generateHIVFollowUps limitDate db (filterFollowUpsOfResidents residents followUps)
+                |> fillPersonName Tuple.second db
+                |> Dict.values
+                |> List.map .personName
+                |> List.sort
+
+        filtered =
+            filterFollowUpsOfResidents residents allPanes
+    in
+    describe "filterFollowUpsOfResidents"
+        [ describe "Tuberculosis"
+            [ test "A community health worker's Case Management lists TB follow-ups only for residents of the selected village" <|
+                \_ ->
+                    filterFollowUpsOfResidents residents (tuberculosisOf everyone)
+                        |> .tuberculosis
+                        |> patientsOf
+                        |> Expect.equal [ "resident", "second-resident" ]
+            , test "A TB follow-up of a patient from another village is not listed, even when that patient is already loaded on the device" <|
+                \_ ->
+                    tuberculosisPane loadedDb (tuberculosisOf [ "outsider" ])
+                        |> Expect.equal []
+            , test "A resident's TB follow-up is still listed" <|
+                \_ ->
+                    tuberculosisPane loadedDb (tuberculosisOf [ "resident" ])
+                        |> Expect.equal [ "resident" ]
+            , test "the TB pane of a device with everyone loaded names the residents and not the outsider" <|
+                \_ ->
+                    tuberculosisPane loadedDb (tuberculosisOf everyone)
+                        |> Expect.equal [ "resident", "second-resident" ]
+            , test "a TB follow-up of a patient from another village is dropped when it is the only one" <|
+                \_ ->
+                    filterFollowUpsOfResidents residents (tuberculosisOf [ "outsider" ])
+                        |> .tuberculosis
+                        |> Dict.isEmpty
+                        |> Expect.equal True
+            , test "no TB follow-up is kept for a village without residents" <|
+                \_ ->
+                    filterFollowUpsOfResidents [] (tuberculosisOf everyone)
+                        |> .tuberculosis
+                        |> Dict.isEmpty
+                        |> Expect.equal True
+            , test "every TB follow-up of a resident is kept when the resident has several" <|
+                \_ ->
+                    let
+                        followUps =
+                            { noFollowUps
+                                | tuberculosis =
+                                    Dict.fromList
+                                        [ ( toEntityUuid "first", measurement resident (Just <| toEntityUuid "encounter-a") genericValue )
+                                        , ( toEntityUuid "second", measurement resident (Just <| toEntityUuid "encounter-b") genericValue )
+                                        , ( toEntityUuid "third", measurement outsider (Just <| toEntityUuid "encounter-c") genericValue )
+                                        ]
+                            }
+                    in
+                    filterFollowUpsOfResidents residents followUps
+                        |> .tuberculosis
+                        |> patientsOf
+                        |> Expect.equal [ "resident", "resident" ]
+            , test "a resident's TB follow-up recorded without an encounter is kept, and the outsider's is dropped" <|
+                \_ ->
+                    let
+                        followUps =
+                            { noFollowUps
+                                | tuberculosis =
+                                    Dict.fromList
+                                        [ ( toEntityUuid "first", measurement resident Nothing genericValue )
+                                        , ( toEntityUuid "second", measurement outsider Nothing genericValue )
+                                        ]
+                            }
+                    in
+                    filterFollowUpsOfResidents residents followUps
+                        |> .tuberculosis
+                        |> patientsOf
+                        |> Expect.equal [ "resident" ]
+            , test "the encounters and participants to load for the TB pane are those of residents only" <|
+                \_ ->
+                    let
+                        encounters =
+                            filterFollowUpsOfResidents residents (tuberculosisOf everyone)
+                                |> generateTuberculosisEncounters
+                    in
+                    ( EverySet.toList encounters |> List.map fromEntityUuid |> List.sort
+                    , generateTuberculosisParticipants encounters loadedDb
+                        |> EverySet.toList
+                        |> List.map fromEntityUuid
+                        |> List.sort
+                    )
+                        |> Expect.equal
+                            ( [ "encounter-resident", "encounter-second-resident" ]
+                            , [ "participant-resident", "participant-second-resident" ]
+                            )
+            ]
+        , describe "HIV"
+            [ test "A community health worker's Case Management lists HIV follow-ups only for residents of the selected village" <|
+                \_ ->
+                    filterFollowUpsOfResidents residents (hivOf everyone)
+                        |> .hiv
+                        |> patientsOf
+                        |> Expect.equal [ "resident", "second-resident" ]
+            , test "An HIV follow-up of a patient from another village is not listed, even when that patient is already loaded on the device" <|
+                \_ ->
+                    hivPane loadedDb (hivOf [ "outsider" ])
+                        |> Expect.equal []
+            , test "A resident's HIV follow-up is still listed" <|
+                \_ ->
+                    hivPane loadedDb (hivOf [ "resident" ])
+                        |> Expect.equal [ "resident" ]
+            , test "the HIV pane of a device with everyone loaded names the residents and not the outsider" <|
+                \_ ->
+                    hivPane loadedDb (hivOf everyone)
+                        |> Expect.equal [ "resident", "second-resident" ]
+            , test "an HIV follow-up of a patient from another village is dropped when it is the only one" <|
+                \_ ->
+                    filterFollowUpsOfResidents residents (hivOf [ "outsider" ])
+                        |> .hiv
+                        |> Dict.isEmpty
+                        |> Expect.equal True
+            , test "no HIV follow-up is kept for a village without residents" <|
+                \_ ->
+                    filterFollowUpsOfResidents [] (hivOf everyone)
+                        |> .hiv
+                        |> Dict.isEmpty
+                        |> Expect.equal True
+
+            -- A follow up that asks for a first HIV encounter is stored
+            -- against a placeholder encounter named "dummy", and is listed
+            -- without an encounter being loaded. It is the shape that would
+            -- show an outsider even on a device that never loaded them.
+            , test "an HIV follow-up asking for a first encounter is listed for a resident and not for a patient from another village" <|
+                \_ ->
+                    let
+                        followUps =
+                            { noFollowUps
+                                | hiv =
+                                    Dict.fromList
+                                        [ ( toEntityUuid "first", measurement resident (Just <| toEntityUuid "dummy") genericValue )
+                                        , ( toEntityUuid "second", measurement outsider (Just <| toEntityUuid "dummy") genericValue )
+                                        ]
+                            }
+                    in
+                    hivPane loadedDb followUps
+                        |> Expect.equal [ "resident" ]
+            , test "the participants to load for the HIV pane are those of residents only" <|
+                \_ ->
+                    let
+                        encounters =
+                            filterFollowUpsOfResidents residents (hivOf everyone)
+                                |> .hiv
+                                |> Dict.values
+                                |> List.filterMap .encounterId
+                                |> EverySet.fromList
+                    in
+                    generateHIVParticipants encounters loadedDb
+                        |> EverySet.toList
+                        |> List.map fromEntityUuid
+                        |> List.sort
+                        |> Expect.equal [ "participant-resident", "participant-second-resident" ]
+            ]
+        , describe "The Acute Illness, Antenatal, Nutrition and Immunization panes list residents only"
+            [ test "Acute Illness" <|
+                \_ ->
+                    patientsOf filtered.acuteIllness
+                        |> Expect.equal [ "resident", "second-resident" ]
+            , test "Antenatal" <|
+                \_ ->
+                    patientsOf filtered.prenatal
+                        |> Expect.equal [ "resident", "second-resident" ]
+            , test "Nutrition, from group sessions" <|
+                \_ ->
+                    patientsOf filtered.nutritionGroup
+                        |> Expect.equal [ "resident", "second-resident" ]
+            , test "Nutrition, from Nutrition encounters" <|
+                \_ ->
+                    patientsOf filtered.nutritionIndividual
+                        |> Expect.equal [ "resident", "second-resident" ]
+            , test "Nutrition, from Well Child encounters" <|
+                \_ ->
+                    patientsOf filtered.wellChild
+                        |> Expect.equal [ "resident", "second-resident" ]
+            , test "Immunization" <|
+                \_ ->
+                    patientsOf filtered.nextVisit
+                        |> Expect.equal [ "resident", "second-resident" ]
+            ]
+        , test "all eight panes together hold residents only" <|
+            \_ ->
+                [ patientsOf filtered.acuteIllness
+                , patientsOf filtered.hiv
+                , patientsOf filtered.nextVisit
+                , patientsOf filtered.nutritionGroup
+                , patientsOf filtered.nutritionIndividual
+                , patientsOf filtered.prenatal
+                , patientsOf filtered.tuberculosis
+                , patientsOf filtered.wellChild
+                ]
+                    |> List.concat
+                    |> List.member "outsider"
+                    |> Expect.equal False
+        , test "nothing is listed when the health centre has no follow ups" <|
+            \_ ->
+                filterFollowUpsOfResidents residents noFollowUps
+                    |> Expect.equal noFollowUps
+        , test "follow ups of residents only come through unchanged" <|
+            \_ ->
+                let
+                    followUps =
+                        { noFollowUps
+                            | acuteIllness = followUpsOf acuteIllnessValue [ "resident" ]
+                            , hiv = followUpsOf genericValue [ "resident", "second-resident" ]
+                            , tuberculosis = followUpsOf genericValue [ "second-resident" ]
+                        }
+                in
+                filterFollowUpsOfResidents residents followUps
+                    |> Expect.equal followUps
+        ]
+
+
+{-| The patients the given follow ups are of, one entry per follow up, sorted.
+-}
+patientsOf : Dict id { a | participantId : PersonId } -> List String
+patientsOf =
+    Dict.values >> List.map (.participantId >> fromEntityUuid) >> List.sort
+
+
+noFollowUps : FollowUpMeasurements
+noFollowUps =
+    { nutritionGroup = Dict.empty
+    , nutritionIndividual = Dict.empty
+    , acuteIllness = Dict.empty
+    , prenatal = Dict.empty
+    , wellChild = Dict.empty
+    , tuberculosis = Dict.empty
+    , hiv = Dict.empty
+    , traceContacts = Dict.empty
+    , prenatalLabs = Dict.empty
+    , ncdLabs = Dict.empty
+    , nextVisit = Dict.empty
+    }
 
 
 {-| The Tuberculosis pane merges follow ups recorded at a Tuberculosis

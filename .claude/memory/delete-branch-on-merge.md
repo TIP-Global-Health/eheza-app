@@ -5,6 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: a701beb6-1897-4e83-82ea-7cc14d8d6294
+  modified: 2026-11-12T09:49:45.043Z
 ---
 
 When merging a PR on TIP-Global-Health/eheza-app, **delete its head branch as part of the merge** (delete-on-merge), unless told otherwise.
@@ -15,6 +16,7 @@ When merging a PR on TIP-Global-Health/eheza-app, **delete its head branch as pa
 - Prefer `gh pr merge <N> --merge --delete-branch` so the head branch is removed automatically.
 - If a PR was already merged without deleting, remove the remote head with `git push origin --delete <branch>` and verify with `git ls-remote --heads origin <branch>` (empty = gone). Drop any local copy with `git branch -D <branch>` (switch off it first).
 - Gotcha: `gh api -X DELETE repos/<owner>/<repo>/git/refs/heads/<branch>` works, but do NOT pass curl's `-w`/`--silent` flags — `gh api` rejects `-w` and the delete silently no-ops (the HTTP code comes back blank). `git push origin --delete` is the reliable path.
+- The blind tests' branch `<id>-tests` goes too, right after its fix PR merges (user, 2026-11-12: deleted 25 leftover test branches). Its commits are already in `develop`.
 - Only the merged PR's head branch — never delete a branch with other open PRs stacked on it. See [[code-review-improvement-ledger]] for the storage-pressure stack (#1818←#1820) where order/base matters.
 
 - `Bash(gh pr merge *)` is in `.claude/settings.local.json` (user, 2026-10-15). Run ONE `gh pr merge N --merge --delete-branch` per call: a loop or a raw `gh api ... /merge` PUT misses the rule and gets classifier-blocked.

@@ -1,8 +1,10 @@
 module Pages.WellChild.ProgressReport.View exposing
     ( distributeByListIndex
+    , generatePartitionedWarningEntries
     , generateUniversalInterventionsValues
     , heightCellValuesByAgeInMonths
     , malnutritionTreatmentsByAgeInMonthsFromQuestionnaires
+    , resolveDateOfLastNutritionAssessment
     , resolveLastDayForMonthX
     , view
     , viewNutritionSigns
@@ -17,12 +19,14 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, headCircumferenceTakenValue, muacIndicationForChild, nutritionAssessmentToComparable)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.NutritionEncounter.Utils
     exposing
         ( generateIndividualChildScoreboardMeasurementsForChild
+        , generateIndividualNutritionMeasurementsForChild
         , getNewbornExamPregnancySummary
-        , getNutritionEncountersForParticipant
-        , getWellChildEncountersForParticipant
+        , getNutritionEncountersForPerson
+        , getWellChildEncountersForPerson
         )
 import Backend.PatientRecord.Model
 import Backend.Person.Model exposing (Initiator(..), Person)
@@ -65,7 +69,6 @@ import Measurement.Utils
         )
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Nutrition.Activity.View exposing (translateNutritionAssement)
-import Pages.Nutrition.Encounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Report.Model exposing (DiagnosisMode(..), PaneEntryStatus(..), ReportTab(..))
 import Pages.Report.Utils
@@ -361,23 +364,14 @@ assembleProgresReportData site childId db =
                 |> Maybe.map Dict.toList
                 |> Maybe.withDefault []
 
-        individualWellChildParticipantId =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
-                )
-                individualParticipants
-                |> List.head
-                |> Maybe.map Tuple.first
+        wellChildEncounters =
+            getWellChildEncountersForPerson db childId
 
         lastWellChildEncounterId =
-            Maybe.andThen
-                (getWellChildEncountersForParticipant db
-                    -- Sort DESC
-                    >> List.sortWith sortEncounterTuplesDesc
-                    >> (List.head >> Maybe.map Tuple.first)
-                )
-                individualWellChildParticipantId
+            -- Sort DESC
+            List.sortWith sortEncounterTuplesDesc wellChildEncounters
+                |> List.head
+                |> Maybe.map Tuple.first
 
         maybeAssembled =
             Maybe.andThen
@@ -391,24 +385,6 @@ assembleProgresReportData site childId db =
             Dict.get childId db.expectedSessions
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.withDefault Dict.empty
-
-        individualNutritionParticipantId =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
-                )
-                individualParticipants
-                |> List.head
-                |> Maybe.map Tuple.first
-
-        individualChildScoreboardParticipantId =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
-                )
-                individualParticipants
-                |> List.head
-                |> Maybe.map Tuple.first
     in
     { maybeAssembled = maybeAssembled
     , expectedSessions = expectedSessions
@@ -422,32 +398,14 @@ assembleProgresReportData site childId db =
         Dict.get childId db.childMeasurements
             |> Maybe.andThen RemoteData.toMaybe
             |> Maybe.withDefault emptyChildMeasurementList
-    , individualNutritionParticipantId = individualNutritionParticipantId
-    , individualNutritionMeasurementsWithDates =
-        Maybe.map
-            (\participantId ->
-                Pages.Nutrition.Encounter.Utils.generatePreviousMeasurements Nothing participantId db
-            )
-            individualNutritionParticipantId
-            |> Maybe.withDefault []
-    , wellChildEncounters =
-        Maybe.map
-            (\participantId ->
-                getWellChildEncountersForParticipant db participantId
-            )
-            individualWellChildParticipantId
-            |> Maybe.withDefault []
+    , nutritionEncounters = getNutritionEncountersForPerson db childId
+    , individualNutritionMeasurementsWithDates = generateIndividualNutritionMeasurementsForChild childId db
+    , wellChildEncounters = wellChildEncounters
     , individualWellChildMeasurementsWithDates =
-        Maybe.map
-            (\assembled ->
-                ( assembled.encounter.startDate, ( assembled.id, assembled.measurements ) )
-                    :: assembled.previousMeasurementsWithDates
-            )
-            maybeAssembled
+        Maybe.map measurementsOfAllVisits maybeAssembled
             |> Maybe.withDefault []
     , individualChildScoreboardMeasurementsWithDates =
         generateIndividualChildScoreboardMeasurementsForChild childId db
-    , individualChildScoreboardParticipantId = individualChildScoreboardParticipantId
     }
 
 
@@ -551,13 +509,13 @@ viewContent language currentDate zscores site initiator mandatoryNutritionAssess
         showComponent =
             Components.ReportToWhatsAppDialog.Utils.showComponent selectedComponents
     in
-    [ viewPersonInfoPane language currentDate child
+    [ viewPersonInfoPane language currentDate site child
     , viewDiagnosisPane language
         currentDate
         initiator
         mandatoryNutritionAssessmentMeasurementsTaken
         reportData.acuteIllnesses
-        reportData.individualNutritionParticipantId
+        reportData.nutritionEncounters
         reportData.wellChildEncounters
         reportData.groupNutritionMeasurements
         individualNutritionMeasurements
@@ -656,7 +614,7 @@ viewDiagnosisPane :
     -> WellChildProgressReportInitiator
     -> Bool
     -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
-    -> Maybe IndividualEncounterParticipantId
+    -> List ( NutritionEncounterId, NutritionEncounter )
     -> List ( WellChildEncounterId, WellChildEncounter )
     -> ChildMeasurementList
     -> List NutritionMeasurements
@@ -668,7 +626,7 @@ viewDiagnosisPane :
     -> Bool
     -> Maybe AssembledData
     -> Html msg
-viewDiagnosisPane language currentDate initiator mandatoryNutritionAssessmentMeasurementsTaken acuteIllnesses individualNutritionParticipantId wellChildEncounters groupNutritionMeasurements individualNutritionMeasurements individualWellChildMeasurements db diagnosisMode setActivePageMsg setDiagnosisModeMsg viewForReportToWhatsApp maybeAssembled =
+viewDiagnosisPane language currentDate initiator mandatoryNutritionAssessmentMeasurementsTaken acuteIllnesses nutritionEncounters wellChildEncounters groupNutritionMeasurements individualNutritionMeasurements individualWellChildMeasurements db diagnosisMode setActivePageMsg setDiagnosisModeMsg viewForReportToWhatsApp maybeAssembled =
     let
         ( activeIllnesses, completedIllnesses ) =
             List.partition (Tuple.second >> isAcuteIllnessActive) acuteIllnesses
@@ -686,17 +644,16 @@ viewDiagnosisPane language currentDate initiator mandatoryNutritionAssessmentMea
             individualNutritionEntries ++ groupNutritionEntries ++ individuaWellChildEntries
 
         ( activeWarningEntries, completedWarningEntries ) =
-            generatePartitionedWarningEntries db maybeAssembled
+            generatePartitionedWarningEntries wellChildEncounters maybeAssembled
 
         ( activeAssessmentEntries, completedAssessmentEntries ) =
             resolveDateOfLastNutritionAssessment
                 currentDate
                 initiator
                 mandatoryNutritionAssessmentMeasurementsTaken
-                individualNutritionParticipantId
+                nutritionEncounters
                 wellChildEncounters
                 groupNutritionMeasurements
-                db
                 |> Maybe.map
                     (\lastNutritionAssessmentDate ->
                         List.partition
@@ -795,13 +752,23 @@ resolveDateOfLastNutritionAssessment :
     NominalDate
     -> WellChildProgressReportInitiator
     -> Bool
-    -> Maybe IndividualEncounterParticipantId
+    -> List ( NutritionEncounterId, NutritionEncounter )
     -> List ( WellChildEncounterId, WellChildEncounter )
     -> ChildMeasurementList
-    -> ModelIndexedDb
     -> Maybe NominalDate
-resolveDateOfLastNutritionAssessment currentDate initiator mandatoryNutritionAssessmentMeasurementsTaken individualNutritionParticipantId wellChildEncounters groupNutritionMeasurements db =
-    if mandatoryNutritionAssessmentMeasurementsTaken then
+resolveDateOfLastNutritionAssessment currentDate initiator mandatoryNutritionAssessmentMeasurementsTaken nutritionEncounters wellChildEncounters groupNutritionMeasurements =
+    let
+        assessedToday =
+            case initiator of
+                InitiatorNutritionGroup _ _ ->
+                    -- The session the report was opened from may be an earlier day's.
+                    Dict.values groupNutritionMeasurements.nutritions
+                        |> List.any (.dateMeasured >> (==) currentDate)
+
+                _ ->
+                    True
+    in
+    if mandatoryNutritionAssessmentMeasurementsTaken && assessedToday then
         Just currentDate
 
     else
@@ -839,16 +806,11 @@ resolveDateOfLastNutritionAssessment currentDate initiator mandatoryNutritionAss
                         )
 
             lastAssessmentDatePerIndividualNutrition =
-                Maybe.andThen
-                    (\participantId ->
-                        getNutritionEncountersForParticipant db participantId
-                            |> List.filter individualNutritionFilter
-                            -- Sort DESC
-                            |> List.sortWith sortEncounterTuplesDesc
-                            |> List.head
-                            |> Maybe.map (Tuple.second >> .startDate)
-                    )
-                    individualNutritionParticipantId
+                List.filter individualNutritionFilter nutritionEncounters
+                    -- Sort DESC
+                    |> List.sortWith sortEncounterTuplesDesc
+                    |> List.head
+                    |> Maybe.map (Tuple.second >> .startDate)
 
             lastAssessmentDatePerWellChild =
                 List.filter individualWellChildFilter wellChildEncounters
@@ -870,18 +832,23 @@ resolveDateOfLastNutritionAssessment currentDate initiator mandatoryNutritionAss
             |> List.head
 
 
+measurementsOfAllVisits : AssembledData -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+measurementsOfAllVisits assembled =
+    ( assembled.encounter.startDate, ( assembled.id, assembled.measurements ) )
+        :: assembled.previousMeasurementsWithDates
+
+
 generatePartitionedWarningEntries :
-    ModelIndexedDb
+    List ( WellChildEncounterId, WellChildEncounter )
     -> Maybe AssembledData
     -> ( List ( NominalDate, PediatricCareMilestone, EncounterWarning ), List ( NominalDate, PediatricCareMilestone, EncounterWarning ) )
-generatePartitionedWarningEntries db maybeAssembled =
+generatePartitionedWarningEntries encounters maybeAssembled =
     Maybe.map
         (\assembled ->
             let
                 wellChildEncounters =
-                    getWellChildEncountersForParticipant db assembled.encounter.participant
-                        -- Sort DESC
-                        |> List.sortWith sortEncounterTuplesDesc
+                    -- Sort DESC
+                    List.sortWith sortEncounterTuplesDesc encounters
 
                 allWarnings =
                     List.filterMap
@@ -925,7 +892,19 @@ generatePartitionedWarningEntries db maybeAssembled =
                     dateOfLastEncounterWithWarningFrom ecdMilestoneWarnings
 
                 lastHeadCircumferenceActivityDate =
-                    dateOfLastEncounterWithWarningFrom headCircumferenceWarnings
+                    -- A reading within range stores no warning, so readings count too.
+                    Maybe.Extra.toList (dateOfLastEncounterWithWarningFrom headCircumferenceWarnings)
+                        ++ datesOfHeadCircumferenceReadings
+                        |> List.Extra.maximumBy Date.toRataDie
+
+                datesOfHeadCircumferenceReadings =
+                    measurementsOfAllVisits assembled
+                        |> List.filterMap
+                            (\( date, ( _, measurements ) ) ->
+                                getMeasurementValueFunc measurements.headCircumference
+                                    |> Maybe.andThen headCircumferenceTakenValue
+                                    |> Maybe.map (always date)
+                            )
 
                 dateOfLastEncounterWithWarningFrom warningsSet =
                     List.filterMap
@@ -1637,12 +1616,12 @@ viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
             distributeByAgeInMonthsWithDate child chwNCDAQuestionnaires
 
         vaccinationProgressDict =
-            Maybe.Extra.or
-                (Maybe.map .vaccinationProgress reportData.maybeAssembled)
-                (Maybe.map (generateVaccinationProgressDictByChildScoreboard site db)
-                    reportData.individualChildScoreboardParticipantId
-                )
-                |> Maybe.withDefault Dict.empty
+            case reportData.maybeAssembled of
+                Just assembled ->
+                    assembled.vaccinationProgress
+
+                Nothing ->
+                    generateVaccinationProgressDictByChildScoreboard site db childId
     in
     [ viewChildIdentificationPane language site allNCDAQuestionnaires db ( childId, child )
     , viewANCNewbornPane language db childId child allNCDAQuestionnaires

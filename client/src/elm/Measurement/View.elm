@@ -1,4 +1,4 @@
-module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, contributingFactorsFormInutsAndTasks, followUpFormInputsAndTasks, healthEducationFormInutsAndTasks, heightFormAndTasks, measurementOutOfRangePopup, muacFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewCorePhysicalExamForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewHeightForm, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDAContent, viewNutritionFollowUpForm, viewNutritionForm, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks)
+module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, contributingFactorsFormInputsAndTasks, followUpFormInputsAndTasks, healthEducationFormInputsAndTasks, heightFormAndTasks, measurementOutOfRangePopup, muacFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewCorePhysicalExamForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewHeightForm, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDAContent, viewNutritionFollowUpForm, viewNutritionForm, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks)
 
 {-| This module provides a form for entering measurements.
 -}
@@ -47,7 +47,7 @@ import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, FamilyPlanningForm, FbfForm, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, RangedMeasurement(..), SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
-import Measurement.Utils exposing (bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, measurementConstraints, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nutritionFollowUpFormWithDefault, outOfRangeAsEntered, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault)
+import Measurement.Utils exposing (ancVisitDateForMonth, bornUnderweightByBirthWeight, contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, measurementConstraints, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, ncdaMeasurementsOutOfRange, ncdaMuacAsked, nutritionFollowUpFormWithDefault, outOfRangeAsEntered, pregnancyMonthOfDate, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, showNCDAQuestionsByNewbornExam, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault)
 import Pages.Utils
     exposing
         ( concatInputsAndTasksSections
@@ -808,18 +808,18 @@ viewContributingFactorsForm :
 viewContributingFactorsForm language setContributingFactorsSignMsg form =
     let
         ( inputs, _ ) =
-            contributingFactorsFormInutsAndTasks language setContributingFactorsSignMsg form
+            contributingFactorsFormInputsAndTasks language setContributingFactorsSignMsg form
     in
     div [ class "ui form contributing-factors" ]
         inputs
 
 
-contributingFactorsFormInutsAndTasks :
+contributingFactorsFormInputsAndTasks :
     Language
     -> (ContributingFactorsSign -> msg)
     -> ContributingFactorsForm
     -> ( List (Html msg), List (Maybe Bool) )
-contributingFactorsFormInutsAndTasks language setContributingFactorsSignMsg form =
+contributingFactorsFormInputsAndTasks language setContributingFactorsSignMsg form =
     ( [ viewQuestionLabel language Translate.ContributingFactorsQuestion
       , viewCheckBoxMultipleSelectInput language
             [ FactorLackOfBreastMilk, FactorMaternalMastitis, FactorPoorSuck, FactorDiarrheaOrVomiting ]
@@ -990,19 +990,19 @@ viewHealthEducationForm :
 viewHealthEducationForm language setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
     let
         ( inputs, _ ) =
-            healthEducationFormInutsAndTasks language setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form
+            healthEducationFormInputsAndTasks language setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form
     in
     div [ class "ui form health-education" ]
         inputs
 
 
-healthEducationFormInutsAndTasks :
+healthEducationFormInputsAndTasks :
     Language
     -> (Bool -> msg)
     -> (ReasonForNotProvidingHealthEducation -> msg)
     -> HealthEducationForm
     -> ( List (Html msg), List (Maybe Bool) )
-healthEducationFormInutsAndTasks language setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
+healthEducationFormInputsAndTasks language setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
     let
         healthEducationSection =
             let
@@ -3547,19 +3547,9 @@ ancVisitsInpustAndTasks language personId person config form db =
                                                 -- pregnancy was complete (lasted 9 months).
                                                 (eddToLmpDate birthDate)
 
-                                    encountersMonthsFromANCData =
-                                        EverySet.toList encountersDatesFromANCData
-                                            |> List.map
-                                                (\encounterDate ->
-                                                    Date.diff Date.Months pregnancyStartDate encounterDate + 1
-                                                )
-
                                     encountersMonthsFromForm =
                                         EverySet.toList encountersDatesFromForm
-                                            |> List.map
-                                                (\encounterDate ->
-                                                    Date.diff Date.Months pregnancyStartDate encounterDate + 1
-                                                )
+                                            |> List.map (pregnancyMonthOfDate pregnancyStartDate)
 
                                     content =
                                         List.range 1 9
@@ -3587,16 +3577,18 @@ ancVisitsInpustAndTasks language personId person config form db =
 
                                     viewRadioButton monthNumber =
                                         let
-                                            isChecked =
-                                                List.member monthNumber encountersMonthsFromANCData
-                                                    || List.member monthNumber encountersMonthsFromForm
+                                            toggleDate =
+                                                ancVisitDateForMonth pregnancyStartDate encountersDatesFromANCData monthNumber
 
+                                            -- A month with a recorded visit offers no date to toggle.
                                             disabled =
-                                                List.member monthNumber encountersMonthsFromANCData
+                                                Maybe.Extra.isNothing toggleDate
 
-                                            dateForMonth =
-                                                Date.add Date.Months (monthNumber - 1) pregnancyStartDate
-                                                    |> Date.add Date.Days 14
+                                            isChecked =
+                                                disabled || List.member monthNumber encountersMonthsFromForm
+
+                                            toggleAction =
+                                                Maybe.Extra.unwrap [] (\date -> [ onClick <| config.toggleANCVisitDateMsg date ]) toggleDate
                                         in
                                         div [ class "month-radio" ]
                                             [ input
@@ -3608,7 +3600,7 @@ ancVisitsInpustAndTasks language personId person config form db =
                                                     ]
                                                 ]
                                                 []
-                                            , label [ onClick <| config.toggleANCVisitDateMsg dateForMonth ] [ text "" ]
+                                            , label toggleAction [ text "" ]
                                             ]
                                 in
                                 ( [ viewLabel language Translate.ANCIndicateVisitsMonthsPhrase

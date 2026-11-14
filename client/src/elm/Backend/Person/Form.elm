@@ -416,14 +416,18 @@ validatePerson site maybeRelated operation maybeCurrentDate =
                                                 ExpectAdultOrChild
                                    )
 
+                -- Burundi and Somalia take any text as the ID. It is saved without
+                -- the spaces around it, since the ID search matches from its start.
+                freeTextNationalId =
+                    nullable trimmedString
+
                 nationalIdNumberValidator =
                     case site of
                         SiteBurundi ->
-                            nullable string
+                            freeTextNationalId
 
-                        -- @todo - needs validation?
                         SiteSomalia ->
-                            nullable string
+                            freeTextNationalId
 
                         _ ->
                             validateNationalIdNumber
@@ -510,15 +514,19 @@ validateContact site =
     andThen withFirstName (field firstName (oneOf [ string, emptyString ]))
 
 
+{-| A text value without the spaces around it. Text of spaces only gives an
+empty string, so use it under `nullable`, which turns that into no value.
+-}
+trimmedString : Validation e String
+trimmedString =
+    Form.Validate.map String.trim string
+
+
 validateNationalIdNumber : Validation ValidationError (Maybe String)
 validateNationalIdNumber =
-    string
+    trimmedString
         |> andThen
-            (\s ->
-                let
-                    trimmed =
-                        String.trim s
-                in
+            (\trimmed ->
                 if String.length trimmed /= 16 then
                     fail <| customError (LengthError 16)
 

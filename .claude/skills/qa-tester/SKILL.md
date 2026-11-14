@@ -33,8 +33,10 @@ The loop paces itself, and each tick does this:
    wake again in 1800 s, `noop: true`. Its completion notice wakes the loop sooner.
 2. `bash .claude/skills/qa-tester/scripts/qa-watch.sh next`. If it prints nothing, the tick
    ends: `ScheduleWakeup` in 1200 s, `noop: true`, the same prompt.
-3. `qa-watch.sh ready`. Anything but `ready` is a station problem, not the PR's: tell the
-   user what is missing, change no label, and wake again in 1200 s with `noop: false`.
+3. `qa-watch.sh ready`, which first fast-forwards the main tree's `develop` so the run
+   uses this skill's latest version. Anything but `ready` is a station problem, not the
+   PR's: tell the user what is missing, change no label, and wake again in 1200 s with
+   `noop: false`.
    Never start or restart ddev or gulp yourself.
 4. `qa-watch.sh label <pr> running`, which also removes `Ready for QA`. Then start one
    `general-purpose` subagent with this prompt, and wake again in 1800 s:
@@ -75,7 +77,10 @@ Read ALL of these before planning:
 1. `knowledge/app-map.md` — what helpers cannot hold: accounts and roles, which screen
    shows what, sync gates, environment facts, and route notes for screens no helper reaches.
 2. `knowledge/pitfalls.md` — past QA mistakes as symptom → wrong conclusion → rule. Falling
-   into a recorded pit twice is a QA failure in itself.
+   into a recorded pit twice is a QA failure in itself. Pitfalls explain a failure on one
+   build. They never explain a difference between two builds run on the same fixture in
+   the same session: the environment is held constant, so that difference is the change's
+   doing until a second fixture says otherwise.
 3. `knowledge/verified.md` — ledger of what is already verified. If the behaviour asked
    about is there, say so and stop.
 
@@ -83,7 +88,9 @@ Also list the helpers (`grep -n "^export" client/e2e/helpers/*.ts`), and use
 `../e2e-test/references/e2e-knowledge-base.md` for selectors and per-encounter mechanics.
 
 **Learning loop (mandatory, at the end of every run, after the report):**
-- Append the outcome to `knowledge/verified.md`.
+- Append the outcome to `knowledge/verified.md`: one row per behaviour, then the run's
+  summary row — how many fix, hold and boundary rows ran, and how many findings they made.
+  After ten runs those rows say whether hold rows ever fail.
 - Append any mistake you made (or nearly made) to `knowledge/pitfalls.md`.
 - Correct `knowledge/app-map.md` where reality disagreed, merging into the section the
   fact belongs to — never append a new dated section.
@@ -109,10 +116,32 @@ records what was believed when it was written; they record what was asked and sh
 
 List every user-observable behaviour the diff touches: each new or changed screen, branch,
 message, or condition. The diff — not the issue text, not the commit subjects — defines
-what must be reached (see pitfalls on reverted commits). Note what `client/e2e/` already
-covers; that needs no manual pass. Scope is what a tester does in the app — the tablet and
-the admin UI. One-off data scripts (`server/**/scripts/*.php`), migrations and update hooks
-are not tested here: leave them out of the plan and the report.
+what must be reached (see pitfalls on reverted commits). Scope is what a tester does in
+the app — the tablet and the admin UI. One-off data scripts (`server/**/scripts/*.php`),
+migrations and update hooks are not tested here: leave them out of the plan and the report.
+
+Then list what else the change can reach: every caller of each changed function
+(`grep -rn '<name>\b' client/src/elm`), and every reader of data it writes (reports,
+Case Management panes, dashboards, Statistical Queries). A caller the issue's scenario
+does not run is a hold row in Step 3. For a changed function with three callers, the
+issue usually drives one.
+
+Not every change has callers. A diff that widens a condition — three activities become
+every activity, one role becomes both — or moves a one-shot action into a fetch, a render
+or a sync cycle, is covered by what it now includes. So the plan also names every non-test
+file in the diff, with the row that exercises its change or one line saying why it needs
+none: import-only, a signature change, a removed message. A file no row reaches and no
+line excuses is a gap in the plan, not in the report.
+
+When a condition is widened, each newly included member that renders through different
+view code is a hold row. One screen stands in for another only when both render through
+the same view function, and the report says which stood in for which.
+
+Note what `client/e2e/` already covers; that needs no manual pass. The same holds for
+criteria the backlog item records as fail-first unit tests. A tested criterion needs an
+end-to-end row only once per user-visible path the diff touches, to prove the wiring:
+that each caller passes the right data and the screen shows it. The report lists the
+other criteria as covered by tests, by name.
 
 ## Step 2: Environment
 
@@ -160,10 +189,37 @@ A table, one row per behaviour from Step 1, each written as a tester's instructi
 words: where, what to do, and what to verify — "At an NCD encounter, in the Social History
 form, answer that the patient drinks and smokes, enter both counts, save, and verify that
 the drinks and cigarettes counts are stored as entered." Beside it, for your own use, how to
-reach it (the helper chain, or by hand with the route from app-map). Expected results come from the diff and the Elm view code that renders the screen —
-reading that code is part of planning, not a shortcut. Include negative cases where the diff has conditions (flag off, wrong role,
-boundary values). Present it, then go straight on to Step 4 without waiting for approval.
-The user can interrupt to change it.
+reach it (the helper chain, or by hand with the route from app-map). Include negative
+cases where the diff has conditions (flag off, wrong role). Present it, then go straight
+on to Step 4 without waiting for approval. The user can interrupt to change it.
+
+An expected result comes from one of four places: the issue's expected behaviour; `develop`
+on the same fixture, for behaviour the PR must not change; a second screen, role or the
+server showing the same data; or the exact value in a condition the diff adds. The view
+code gives the route to a screen, never the expected value: a wrong implementation yields
+a wrong expectation that the row then passes against. A row with no oracle outside the
+code under test is a smoke row, labelled so, and is not counted as coverage.
+
+Every plan has three kinds of row, and each row names its kind:
+
+- **Fix rows**, from the issue: the defect on `develop`, gone with the PR. The `develop`
+  control runs first, on the same fixture, one per fixture shape (see How to drive).
+- **Hold rows**, from the blast radius: scenarios the change must not alter. Run each on
+  both builds with the same data and compare the stored record and the screen. Any
+  difference is a FAIL; no judgement about whether it looks right is needed or allowed.
+  The row's write-up names `develop`'s value beside the PR's, or says "same as develop".
+  A row reported from the PR side alone is a proof row, and is labelled so.
+- **Boundary rows**: the exact value of each condition the diff adds or moves. Equal to
+  the threshold, the same day, the day after, an empty collection, a missing value.
+
+Hold rows are where regressions live. A diff of more than three non-test files needs at
+least three, or the plan says what was looked for and why nothing qualifies.
+
+When the diff changes what the app does rather than what it shows — work moved into a
+fetch, a render or a sync cycle — a hold row's oracle is the request count. Every reply
+carries `requests`: how many the command caused and the busiest paths. Run the same
+action on both builds and compare. A tab switch that costs three requests on `develop`
+and thirty on the PR is a FAIL the error channel cannot see.
 
 ## Step 4: Execute
 
@@ -181,8 +237,9 @@ The user can interrupt to change it.
 Every reply is JSON: the command's return value or error, its duration, and the screen it
 left — URL, build, who is signed in (main menu only), headings, open dialogs, task
 counters, tabs, buttons with `[active]` / `[completed]` / `[disabled]`, choices as
-`(x) Yes` / `( ) No`, and field values. While recording, `recordingAt` is the second of the
-video the command ended at. Read that
+`(x) Yes` / `( ) No`, and field values. `requests` is the number of requests the command
+caused, with the busiest paths (ids replaced by `<id>`). While recording, `recordingAt` is
+the second of the video the command ended at. Read that
 instead of taking a screenshot to find out where you are. In the command body, `page` is
 the Playwright page, `h` holds every helper module (`h.prenatal`, `h.common`, `h.ncd`, …),
 and `qa` has `state()`, `shot(name, { fullPage })`, `log(...)`, `click(locator | text)`,
@@ -197,6 +254,11 @@ when unanswered), select values, the task counter, and whether Save is on.
   a helper's signature and options before calling it. To stop on a form instead of
   completing it: `h.common.openActivity(page, '<encounter>', '<activity icon>')` and
   `h.common.clickSubTaskTab(page, '<tab icon>')`, with the names taken from the helpers.
+- **One develop control per fixture shape, not per row.** A control proves a row reaches
+  the defect; once it has for one row, rows that reuse that shape through another role or
+  screen run on the PR only. A new threshold with a different setup gets its own control.
+  A hold row's develop run is its oracle, so it always runs; only its stored record and
+  screen are compared, and only the PR side is recorded.
 - **The screen under test: one scripted command per scenario.** The code says which
   questions appear and when, so write the whole scenario before running it: each action,
   then `qa.check` on what the screen must show next (`qa.form()` and `qa.state()` give the
@@ -221,10 +283,22 @@ when unanswered), select values, the task counter, and whether Save is on.
 - On an unexpected failure, check pitfalls and Step 2 before concluding the code is broken,
   and say explicitly whether it is an app bug or your own mistake.
 
+### The error channel
+
+Every reply lists `consoleErrors`: console errors, uncaught exceptions, failed requests and
+responses of status 400 or more since the last command. Read it after every scenario, on
+both builds. An error the PR's run shows and the `develop` run of the same scenario does
+not is a FAIL. One both builds show is a case 2 issue, drafted with the scenario that
+raised it. Never clear it unread. The report states what each build showed; "none on the
+PR" alone is half a reading, since `develop` is the baseline it is compared with.
+
 ### Proving the data was saved
 
 Straight after Save, a form shows the clicks, not what was stored. So every test that
-saves data proves it three ways, each named in its plan row:
+saves data proves the server holds it, proof 1 below. Proof 2 is added only when the diff
+touches what the device reads back after a save: decoders, IndexedDB, the local model
+update. Proof 3 is added only when the diff touches sync, encoders, decoders or server
+code. Each plan row names the proofs the diff called for, and the report repeats them.
 
 1. **Uploaded.** Sync, then Device Status must show nothing left to upload. Only then
    query the backend, with drush or the helpers' `query*` functions:
@@ -248,12 +322,16 @@ open the screen that shows its data, such as the progress report.
 
 Record every test **from the moment its encounter starts** — or, outside encounters, from
 the first screen of the flow under test — through to the result, helper-driven activities
-included: `qa-<pr>-test<n>-<name>.mp4`.
+included: `qa-<pr>-test<n>-<name>.mp4`. `<n>` is the row's number in the plan table, and
+that number is frozen before the first recording: a row added later goes at the end, and
+no row is renumbered. The report, the captions and the ledger all name a video by it.
 
-**Preparation is recorded too, in separate videos.** Each encounter a test needs beforehand
-— the initial encounter before a recurrent one, an earlier visit, an illness the record
-should list — gets its own video from its start to its end, `qa-<pr>-prep<k>-<name>.mp4`,
-so no video runs long. Two preparation encounters make two videos. Only device setup,
+**Preparation is recorded once per fixture shape, on the PR build.** Each encounter a test
+needs beforehand — the initial encounter before a recurrent one, an earlier visit, an
+illness the record should list — gets its own video from its start to its end,
+`qa-<pr>-prep<k>-<name>.mp4`, so no video runs long. Two preparation encounters make two
+videos. A control's preparation is the same encounter on `develop`, which the diff does not
+change; it runs unrecorded. Only device setup,
 registering the patient, sync and database steps such as backdating stay off video. So
 each fixture stops on the participant page, and its recorded command starts the encounter. The video is real time, with the e2e cursor marking the pointer; while
 recording, `qa.click`, `qa.fill` and helper clicks made through `click()` hover and pause
@@ -277,12 +355,20 @@ First decide which case you are in:
    does the behaviour enter the ledger as verified. The PR must not merge while a QA FAIL
    comment is open.
 2. **A pre-existing bug found incidentally** (the diff never touched it). Never block the
-   PR with it. Draft a new issue following the repo conventions: title
+   PR with it. First grep `.claude/backlog/items/` for the symptom's words: the field, the
+   node type, the screen, the message. A matching item gets this run's example appended,
+   with the recording's path, and the report names the item instead of a new issue.
+   Otherwise draft a new issue following the repo conventions: title
    `<Feature area>: <defect from the reader's side>`, body saying what is wrong and how to
    see it, with your repro steps. Do not fix it in this run.
 3. **Not sure it is a bug.** Reproduce it a second time and rule out your own environment
    via pitfalls (stale build, flags, role, sync timing). Only a reproduced failure with the
    environment ruled out gets reported.
+
+A FAIL needs all three: reproduced on a second fresh fixture; an oracle from Step 3, not
+the tester's preference; and for a hold row, a `develop` run that differs. Wording,
+spacing, naming and file names are never a FAIL. They become a case 2 issue only when a
+sibling screen does the same thing differently, the comparison being the oracle.
 
 In all cases: a FAIL comment or a new issue is posted only after the user approves the
 drafted text. In watch mode the FAIL comment is posted without approval; a new issue still
@@ -297,13 +383,18 @@ For failures, include the drafted comment or issue and ask for approval to post 
 watch mode, the posted FAIL comment's link and any drafted issue.
 
 **Then post the QA report to the PR — every run, pass or fail, without waiting for
-approval.** It opens with the caption
+approval.** Its first line is exactly this, with no `>` or heading mark in front:
 
-> **Manual tests executed using the QA Tester skill**
+```
+**Manual tests executed using the QA Tester skill**
+```
 
-then a table with one row per plan row — the plain-words test from Step 3 and its result —
-and a short paragraph per row saying what it showed — including which part was set up by helpers
-and which was checked by hand. Close with what the run did **not** cover:
+then a table with one row per plan row — the plain-words test from Step 3, its kind (fix,
+hold, boundary) and its result — and a short paragraph per row saying what it showed —
+including which part was set up by helpers, which was checked by hand, and which proofs
+the diff called for. Then one sentence on what the error channel showed on each build.
+Name the criteria covered by unit tests. Close with what the run did
+**not** cover:
 blocked rows, touch-only behaviour, and sibling code paths a scenario stands in for but did
 not exercise. State a blocked row as blocked; never imply coverage the run does not have.
 Describe what is now true, not which commands were run.
@@ -312,8 +403,9 @@ Describe what is now true, not which commands were run.
 bash .claude/skills/qa-tester/scripts/post-qa-report.sh <pr> <drafted-file>
 ```
 
-It refuses a file that does not open with the caption; `--update <comment-id>` replaces
-an earlier report instead of adding one. The report names no video files.
+It refuses a file that does not open with the caption, or that has no error-channel
+sentence naming both builds; `--update <comment-id>` replaces an earlier report instead
+of adding one. The report names no video files.
 
 **Then post the recordings as a separate comment**, one player per video. Preparation comes
 first, each as `**Preparation <k>:** <what is prepared, and which test needs it>`, then each

@@ -1,11 +1,18 @@
 module TestFixtures exposing
     ( emptyAcuteIllnessMeasurements
     , emptyTuberculosisMeasurements
+    , emptyWellChildMeasurements
+    , expectDoseInHistory
+    , expectSaveEnabled
+    , expectYesAnswerSends
+    , labsEntry
     , testChild
     , testParticipant
     , testPerson
     , testSyncManagerModel
     , urineGlucoseValue
+    , vaccinationQuestionPrevious
+    , vaccinationQuestionToday
     , vitalsValueWith
     , wrapMeasurement
     )
@@ -19,18 +26,26 @@ import Backend.Measurement.Model
         ( AcuteIllnessMeasurements
         , Gender(..)
         , GlucoseValue
+        , LaboratoryTest
+        , LabsResultsValue
         , Measurement
         , TestExecutionNote(..)
         , TuberculosisMeasurements
         , UrineDipstickTestValue
         , VitalsValue
+        , WellChildMeasurements
         )
 import Backend.Person.Model exposing (Person)
 import Date
 import EverySet
-import Gizra.NominalDate exposing (NominalDate)
+import Expect exposing (Expectation)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Html exposing (Html, div)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SyncInfoStatus(..))
+import Test.Html.Event as Event
+import Test.Html.Query as Query
+import Test.Html.Selector exposing (class, containing, tag, text)
 import Time
 
 
@@ -200,6 +215,43 @@ emptyTuberculosisMeasurements =
     }
 
 
+emptyWellChildMeasurements : WellChildMeasurements
+emptyWellChildMeasurements =
+    { pregnancySummary = Nothing
+    , symptomsReview = Nothing
+    , vitals = Nothing
+    , height = Nothing
+    , muac = Nothing
+    , nutrition = Nothing
+    , photo = Nothing
+    , weight = Nothing
+    , contributingFactors = Nothing
+    , healthEducation = Nothing
+    , followUp = Nothing
+    , sendToHC = Nothing
+    , headCircumference = Nothing
+    , ecd = Nothing
+    , albendazole = Nothing
+    , mebendezole = Nothing
+    , vitaminA = Nothing
+    , nextVisit = Nothing
+    , bcgImmunisation = Nothing
+    , dtpImmunisation = Nothing
+    , dtpStandaloneImmunisation = Nothing
+    , hpvImmunisation = Nothing
+    , ipvImmunisation = Nothing
+    , mrImmunisation = Nothing
+    , opvImmunisation = Nothing
+    , pcv13Immunisation = Nothing
+    , rotarixImmunisation = Nothing
+    , ncda = Nothing
+    , feeding = Nothing
+    , hygiene = Nothing
+    , foodSecurity = Nothing
+    , caring = Nothing
+    }
+
+
 {-| A sync manager model with no health centers and nothing synced.
 -}
 testSyncManagerModel : SyncManager.Model.Model
@@ -224,3 +276,75 @@ testSyncManagerModel =
             , offline = 10000
             }
         }
+
+
+{-| A labs entry with the given performed and completed tests, open for 30
+days from the given date.
+-}
+labsEntry : NominalDate -> List LaboratoryTest -> List LaboratoryTest -> LabsResultsValue
+labsEntry date performed completed =
+    { performedTests = EverySet.fromList performed
+    , completedTests = EverySet.fromList completed
+    , resolutionDate = Date.add Date.Days 30 date
+    , patientNotified = False
+    , reviewState = Nothing
+    , testsWithFollowUp = Nothing
+    }
+
+
+{-| Part of the English text of the immunisation form's "administered
+previously?" question. Well Child and Prenatal word it alike:
+"Did the child / patient receive any <vaccine> immunizations prior to today
+that are not recorded above?"
+-}
+vaccinationQuestionPrevious : String
+vaccinationQuestionPrevious =
+    "immunizations prior to today"
+
+
+{-| Part of the English text of the immunisation form's "will receive
+today?" question: "Will the child / patient receive the <vaccine>
+immunization today?"
+-}
+vaccinationQuestionToday : String
+vaccinationQuestionToday =
+    "immunization today"
+
+
+{-| The immunisation form's dose history holds an entry for the given dose
+number (1 for the first dose), dated on the given day.
+-}
+expectDoseInHistory : Int -> NominalDate -> List (Html msg) -> Expectation
+expectDoseInHistory doseNumber date inputs =
+    Query.fromHtml (div [] inputs)
+        |> Query.find [ class "history" ]
+        |> Query.findAll
+            [ class "history-entry"
+            , containing [ class "dose", text (String.fromInt doseNumber) ]
+            , containing [ class "date", text (formatDDMMYYYY date) ]
+            ]
+        |> Query.count (Expect.equal 1)
+
+
+{-| The hosts enable Save once every active task of the form is completed.
+The triple is what `vaccinationFormDynamicContentAndTasks` returns:
+inputs, tasks completed, tasks active.
+-}
+expectSaveEnabled : ( List (Html msg), Int, Int ) -> Expectation
+expectSaveEnabled ( _, completed, active ) =
+    Expect.equal active completed
+
+
+{-| Tapping "Yes" (the first of the two answers) on the n-th yes/no question
+of the form (0 for the first) sends the given message. The message carries the dose the question is
+about.
+-}
+expectYesAnswerSends : Int -> msg -> List (Html msg) -> Expectation
+expectYesAnswerSends questionIndex msg inputs =
+    Query.fromHtml (div [] inputs)
+        |> Query.findAll [ class "yes-no" ]
+        |> Query.index questionIndex
+        |> Query.findAll [ tag "label" ]
+        |> Query.first
+        |> Event.simulate Event.click
+        |> Event.expect msg

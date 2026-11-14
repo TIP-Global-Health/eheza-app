@@ -4,7 +4,8 @@
 #   bash .claude/skills/qa-tester/scripts/qa-watch.sh next
 #       prints "<pr> <label>" for the PR to run next, or nothing
 #   bash .claude/skills/qa-tester/scripts/qa-watch.sh ready
-#       prints what stops a run on this station, or "ready"
+#       fast-forwards the main tree's develop, then prints what stops a run on this
+#       station, or "ready"
 #   bash .claude/skills/qa-tester/scripts/qa-watch.sh label <pr> ready|running|approved|followup|blocked
 #       gives the PR that QA label and removes the other QA labels
 
@@ -29,6 +30,11 @@ case ${1:-} in
     [ "$branch" = develop ] || problems+=("the main tree is on '$branch', not develop")
     staged=$(git -C "$main" diff --cached --name-only)
     [ -z "$staged" ] || problems+=("the main tree has staged files: $staged")
+    # The run reads this skill from the main tree, so it must hold origin's latest develop.
+    if [ ${#problems[@]} -eq 0 ]; then
+      git -C "$main" pull -q --ff-only origin develop 2>/dev/null \
+        || problems+=("the main tree's develop cannot fast-forward to origin/develop")
+    fi
     port=$(sed -n 's/.*- \([0-9]*\):3000.*/\1/p' "$main/.ddev/docker-compose.client-http.yaml" 2>/dev/null | head -1)
     code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://localhost:${port:-3000}/Main.js" || true)
     [ "$code" = 200 ] || problems+=("gulp does not serve Main.js on port ${port:-3000} (HTTP $code)")

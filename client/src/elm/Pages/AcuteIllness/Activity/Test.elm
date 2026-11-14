@@ -1,5 +1,6 @@
 module Pages.AcuteIllness.Activity.Test exposing (all)
 
+import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model as AcuteIllnessEncounterModel
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -12,10 +13,13 @@ import Backend.Measurement.Model
         , AcuteFindingsValue
         , AcuteIllnessDangerSign(..)
         , AcuteIllnessMeasurements
+        , ChildNutritionSign(..)
         , CovidTestingValue
+        , FollowUpOption(..)
         , HeartCPESign
         , LungsCPESign
         , Measurement
+        , MuacInCm(..)
         , RapidTestResult(..)
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
@@ -25,27 +29,30 @@ import Backend.Measurement.Model
         , TreatmentReviewSign(..)
         , VitalsValue
         )
-import Backend.Model exposing (emptyModelIndexedDb)
+import Backend.Model exposing (ModelIndexedDb, emptyModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
+import Html exposing (Html, div)
 import Measurement.Model exposing (RangedMeasurement(..), emptyMuacForm)
 import Pages.AcuteIllness.Activity.Model exposing (Msg(..), emptyCovidTestingForm, emptyModel)
-import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
+import Pages.AcuteIllness.Activity.Types exposing (NextStepsTask(..), SymptomsTask(..))
 import Pages.AcuteIllness.Activity.Update exposing (update)
 import Pages.AcuteIllness.Activity.Utils
     exposing
         ( covidTestingFormWithDefault
         , malariaDangerSignsPresent
         , malariaTestingFormWithDefault
+        , medicationDistributionFormInputsAndTasks
         , mildGastrointestinalInfectionSymptomsPresent
         , nonBloodyDiarrheaAtSymptoms
         , resolveAcuteIllnessDiagnosis
         , resolveAcuteIllnessDiagnosisByMalariaRDT
         , resolveAmoxicillinDosage
         , resolveCoartemDosage
+        , resolveNextStepsTasks
         , resolveORSDosage
         , resolveZincDosage
         , respiratoryInfectionDangerSignsPresent
@@ -60,13 +67,18 @@ import Pages.AcuteIllness.Activity.Utils
         , treatmentReviewFormWithDefault
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
-import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, splitByInitialNurseEncounter)
+import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, generateAssembledData, splitByInitialNurseEncounter)
+import Pages.AcuteIllness.Encounter.View as EncounterView
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
+import Test.Html.Query as Query
+import Test.Html.Selector exposing (class, text)
 import TestFixtures exposing (emptyAcuteIllnessMeasurements, testPerson)
 import Time
+import Translate exposing (translate)
+import Translate.Model exposing (Language(..))
 
 
 
@@ -884,6 +896,8 @@ all =
         , editedRecordDerivedQuestionsTest
         , generateAllEncountersDataTest
         , splitByInitialNurseEncounterTest
+        , generateAssembledDataTest
+        , followUpMalariaTestTest
         ]
 
 
@@ -1151,4 +1165,957 @@ splitByInitialNurseEncounterTest =
         , test "returns empty sequences for no encounters" <|
             \_ ->
                 expectSplit [] ( [], [] )
+        ]
+
+
+{-| A CHW encounter is the initial one when no encounter of the illness came
+before it. Encounters that come after it, by date and then sequence number,
+are not its history, and their diagnosis is not its diagnosis.
+-}
+generateAssembledDataTest : Test
+generateAssembledDataTest =
+    let
+        nextDay =
+            Date.add Date.Days 1 currentDate
+
+        chwEncounter startDate sequenceNumber diagnosis =
+            { dummyEncounter
+                | startDate = startDate
+                , sequenceNumber = sequenceNumber
+                , diagnosis = diagnosis
+            }
+
+        -- Assembles the encounter with the given id, out of an illness
+        -- holding the given encounters, all with no measurements.
+        assemble id encounters =
+            assembleWithLoading [] id encounters
+
+        -- As assemble, with measurements of the listed encounters still loading.
+        assembleWithLoading loadingIds id encounters =
+            let
+                encountersDict =
+                    List.map (Tuple.mapFirst toEntityUuid) encounters
+                        |> Dict.fromList
+
+                loadingUuids =
+                    List.map toEntityUuid loadingIds
+
+                measurementsFor encounterId =
+                    if List.member encounterId loadingUuids then
+                        Loading
+
+                    else
+                        Success emptyAcuteIllnessMeasurements
+
+                db =
+                    { emptyModelIndexedDb
+                        | acuteIllnessEncounters = Dict.map (\_ encounter -> Success encounter) encountersDict
+                        , acuteIllnessMeasurements = Dict.map (\encounterId _ -> measurementsFor encounterId) encountersDict
+                        , acuteIllnessEncountersByParticipant = Dict.singleton dummyEncounter.participant (Success encountersDict)
+                        , individualParticipants = Dict.singleton dummyEncounter.participant (Success dummyParticipant)
+                        , people = Dict.singleton dummyParticipant.person (Success testPerson)
+                    }
+            in
+            generateAssembledData currentDate EverySet.empty (toEntityUuid id) True db
+                |> RemoteData.toMaybe
+
+        first =
+            ( "first", chwEncounter currentDate 1 NoAcuteIllnessDiagnosis )
+    in
+    describe "generateAssembledData"
+        [ test "a CHW encounter with no other encounters is initial" <|
+            \_ ->
+                assemble "first" [ first ]
+                    |> Maybe.map .initialEncounter
+                    |> Expect.equal (Just True)
+        , test "a CHW encounter stays initial when a later day's encounter exists" <|
+            \_ ->
+                assemble "first" [ first, ( "later", chwEncounter nextDay 1 NoAcuteIllnessDiagnosis ) ]
+                    |> Maybe.map .initialEncounter
+                    |> Expect.equal (Just True)
+        , test "a CHW encounter stays initial when a later encounter of the same day exists" <|
+            \_ ->
+                assemble "first" [ first, ( "later", chwEncounter currentDate 2 NoAcuteIllnessDiagnosis ) ]
+                    |> Maybe.map .initialEncounter
+                    |> Expect.equal (Just True)
+        , test "a later encounter's diagnosis is not taken by an earlier encounter" <|
+            \_ ->
+                assemble "first" [ first, ( "later", chwEncounter nextDay 1 DiagnosisMalariaUncomplicated ) ]
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just Nothing)
+        , test "a later CHW encounter is subsequent, and takes the earlier encounter's diagnosis" <|
+            \_ ->
+                assemble "later"
+                    [ ( "first", chwEncounter currentDate 1 DiagnosisMalariaUncomplicated )
+                    , ( "later", chwEncounter nextDay 1 NoAcuteIllnessDiagnosis )
+                    ]
+                    |> Maybe.map (\assembled -> ( assembled.initialEncounter, assembled.diagnosis ))
+                    |> Expect.equal (Just ( False, Just ( currentDate, DiagnosisMalariaUncomplicated ) ))
+        , test "a follow-up takes the diagnosis of the most recent earlier encounter that has one" <|
+            \_ ->
+                let
+                    twoDaysAgo =
+                        Date.add Date.Days -2 currentDate
+
+                    yesterday =
+                        Date.add Date.Days -1 currentDate
+                in
+                assemble "today"
+                    [ ( "twoDaysAgo", chwEncounter twoDaysAgo 1 DiagnosisFeverOfUnknownOrigin )
+                    , ( "yesterday", chwEncounter yesterday 1 DiagnosisMalariaUncomplicated )
+                    , ( "today", chwEncounter currentDate 1 NoAcuteIllnessDiagnosis )
+                    ]
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just (Just ( yesterday, DiagnosisMalariaUncomplicated )))
+        , test "a follow-up stays a follow-up, with the earlier diagnosis, while earlier measurements load" <|
+            \_ ->
+                assembleWithLoading [ "first" ]
+                    "later"
+                    [ ( "first", chwEncounter currentDate 1 DiagnosisMalariaUncomplicated )
+                    , ( "later", chwEncounter nextDay 1 NoAcuteIllnessDiagnosis )
+                    ]
+                    |> Maybe.map (\assembled -> ( assembled.initialEncounter, assembled.diagnosis ))
+                    |> Expect.equal (Just ( False, Just ( currentDate, DiagnosisMalariaUncomplicated ) ))
+        , test "two CHW encounters with the same date and sequence number are both initial" <|
+            \_ ->
+                let
+                    tied =
+                        [ first, ( "twin", chwEncounter currentDate 1 NoAcuteIllnessDiagnosis ) ]
+                in
+                [ assemble "first" tied, assemble "twin" tied ]
+                    |> List.map (Maybe.map .initialEncounter)
+                    |> Expect.equal [ Just True, Just True ]
+        , test "previous encounters hold only those that came before" <|
+            \_ ->
+                assemble "middle"
+                    [ first
+                    , ( "middle", chwEncounter currentDate 2 NoAcuteIllnessDiagnosis )
+                    , ( "last", chwEncounter nextDay 1 NoAcuteIllnessDiagnosis )
+                    ]
+                    |> Maybe.map (.previousEncountersData >> List.map .id)
+                    |> Expect.equal (Just [ toEntityUuid "first" ])
+        ]
+
+
+
+-- FOLLOW-UP VISIT FIXTURES
+--
+-- These tests run a visit through generateAssembledData, as the screens do,
+-- so that a test covers what a health worker sees rather than one helper.
+-- An illness is a first visit dayBefore, stored as Simple Cold and Cough
+-- unless a test says otherwise, and a follow-up visit today, whose stored
+-- diagnosis is empty until the malaria test has been written to it.
+
+
+dayBefore : NominalDate
+dayBefore =
+    Date.add Date.Days -1 currentDate
+
+
+type alias IllnessVisit =
+    ( String, AcuteIllnessEncounterModel.AcuteIllnessEncounter, AcuteIllnessMeasurements )
+
+
+illnessEncounter :
+    AcuteIllnessEncounterType
+    -> NominalDate
+    -> AcuteIllnessDiagnosis
+    -> AcuteIllnessEncounterModel.AcuteIllnessEncounter
+illnessEncounter encounterType startDate diagnosis =
+    { dummyEncounter | encounterType = encounterType, startDate = startDate, diagnosis = diagnosis }
+
+
+{-| The illness holds exactly the given visits, each with its measurements
+loaded.
+-}
+illnessDb : Person -> List IllnessVisit -> ModelIndexedDb
+illnessDb person visits =
+    let
+        encounters =
+            List.map (\( id, encounter, _ ) -> ( toEntityUuid id, encounter )) visits
+                |> Dict.fromList
+    in
+    { emptyModelIndexedDb
+        | acuteIllnessEncounters = Dict.map (\_ encounter -> Success encounter) encounters
+        , acuteIllnessMeasurements =
+            List.map (\( id, _, measurements ) -> ( toEntityUuid id, Success measurements )) visits
+                |> Dict.fromList
+        , acuteIllnessEncountersByParticipant = Dict.singleton dummyEncounter.participant (Success encounters)
+        , individualParticipants = Dict.singleton dummyEncounter.participant (Success dummyParticipant)
+        , people = Dict.singleton dummyParticipant.person (Success person)
+    }
+
+
+assembleVisit : Bool -> EverySet SiteFeature -> Person -> String -> List IllnessVisit -> Maybe AssembledData
+assembleVisit isChw features person visitId visits =
+    generateAssembledData currentDate features (toEntityUuid visitId) isChw (illnessDb person visits)
+        |> RemoteData.toMaybe
+
+
+firstVisit : AcuteIllnessDiagnosis -> IllnessVisit
+firstVisit diagnosis =
+    ( "first", illnessEncounter AcuteIllnessEncounterCHW dayBefore diagnosis, emptyAcuteIllnessMeasurements )
+
+
+{-| A visit between the first one and the follow-up, later in the same day as
+the first one.
+-}
+secondVisit : AcuteIllnessDiagnosis -> IllnessVisit
+secondVisit diagnosis =
+    let
+        encounter =
+            illnessEncounter AcuteIllnessEncounterCHW dayBefore diagnosis
+    in
+    ( "second", { encounter | sequenceNumber = 2 }, emptyAcuteIllnessMeasurements )
+
+
+followUpVisit : AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> IllnessVisit
+followUpVisit storedDiagnosis measurements =
+    ( "followUp", illnessEncounter AcuteIllnessEncounterCHW currentDate storedDiagnosis, measurements )
+
+
+{-| A CHW follow-up of an illness whose first visit found the given diagnosis.
+-}
+followUpOfIllness : Person -> AcuteIllnessDiagnosis -> AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> Maybe AssembledData
+followUpOfIllness person earlierDiagnosis storedDiagnosis measurements =
+    assembleVisit True
+        EverySet.empty
+        person
+        "followUp"
+        [ firstVisit earlierDiagnosis, followUpVisit storedDiagnosis measurements ]
+
+
+coldFollowUp : Person -> AcuteIllnessMeasurements -> Maybe AssembledData
+coldFollowUp person measurements =
+    followUpOfIllness person DiagnosisSimpleColdAndCough NoAcuteIllnessDiagnosis measurements
+
+
+firstVisitOnly : Person -> AcuteIllnessMeasurements -> Maybe AssembledData
+firstVisitOnly person measurements =
+    assembleVisit True
+        EverySet.empty
+        person
+        "first"
+        [ ( "first", illnessEncounter AcuteIllnessEncounterCHW currentDate NoAcuteIllnessDiagnosis, measurements ) ]
+
+
+{-| Everything that makes a follow-up visit complete, apart from Laboratory:
+no danger sign, a temperature that asks for the malaria test, and the
+child-only and nurse-only exams, which are simply not read for other patients.
+-}
+followUpMeasurements : AcuteIllnessMeasurements
+followUpMeasurements =
+    { emptyAcuteIllnessMeasurements
+        | dangerSigns = wrapMeasurement (EverySet.singleton NoAcuteIllnessDangerSign)
+        , muac = wrapMeasurement (MuacInCm 14)
+        , nutrition = wrapMeasurement (EverySet.singleton NormalChildNutrition)
+    }
+        |> withVitals (Just 38) Nothing Nothing Nothing
+        |> withCoreExam EverySet.empty EverySet.empty
+
+
+withDangerSigns : List AcuteIllnessDangerSign -> AcuteIllnessMeasurements -> AcuteIllnessMeasurements
+withDangerSigns signs measurements =
+    { measurements | dangerSigns = wrapMeasurement (EverySet.fromList signs) }
+
+
+withoutFever : AcuteIllnessMeasurements -> AcuteIllnessMeasurements
+withoutFever =
+    withVitals Nothing Nothing Nothing Nothing
+
+
+positiveFollowUp : AcuteIllnessMeasurements
+positiveFollowUp =
+    followUpMeasurements
+        |> withMalariaTesting RapidTestPositive
+
+
+diagnosisOf : Maybe AssembledData -> Maybe (Maybe AcuteIllnessDiagnosis)
+diagnosisOf =
+    Maybe.map (.diagnosis >> Maybe.map Tuple.second)
+
+
+chwNextSteps : Maybe AssembledData -> Maybe (List NextStepsTask)
+chwNextSteps =
+    Maybe.map (resolveNextStepsTasks currentDate True)
+
+
+{-| The inputs of the Medication Distribution form the visit shows, opened
+empty, as it is the first time a health worker reaches it.
+-}
+medicationFormOf : AssembledData -> List (Html Pages.AcuteIllness.Activity.Model.Msg)
+medicationFormOf assembled =
+    medicationDistributionFormInputsAndTasks English
+        currentDate
+        assembled.person
+        (Maybe.map Tuple.second assembled.diagnosis)
+        emptyModel.nextStepsData.medicationDistributionForm
+        |> Tuple.first
+
+
+expectVisit : (AssembledData -> Expect.Expectation) -> Maybe AssembledData -> Expect.Expectation
+expectVisit expectation assembled =
+    Maybe.map expectation assembled
+        |> Maybe.withDefault (Expect.fail "The visit did not assemble")
+
+
+{-| What the health worker's Save on the Follow Up form writes: the same
+message the Next Steps screen sends, carrying the visit's diagnosis and any
+Follow Up already saved on the visit.
+-}
+savedFollowUpDiagnoses : AssembledData -> List (Maybe AcuteIllnessDiagnosis)
+savedFollowUpDiagnoses assembled =
+    let
+        data =
+            emptyModel.nextStepsData
+
+        form =
+            data.followUpForm
+
+        model =
+            { emptyModel | nextStepsData = { data | followUpForm = { form | option = Just OneDay } } }
+
+        ( _, _, appMsgs ) =
+            update SiteRwanda
+                Nothing
+                assembled.id
+                emptyModelIndexedDb
+                (SaveFollowUp assembled.participant.person
+                    (Maybe.map Tuple.second assembled.diagnosis)
+                    assembled.measurements.followUp
+                    Nothing
+                )
+                model
+    in
+    List.filterMap
+        (\msg ->
+            case msg of
+                App.Model.MsgIndexedDb (Backend.Model.MsgAcuteIllnessEncounter _ (AcuteIllnessEncounterModel.SaveFollowUp _ _ value)) ->
+                    Just value.diagnosis
+
+                _ ->
+                    Nothing
+        )
+        appMsgs
+
+
+{-| The label the screens print for a diagnosis.
+-}
+diagnosisLabel : AcuteIllnessDiagnosis -> String
+diagnosisLabel diagnosis =
+    translate English (Translate.AcuteIllnessDiagnosis diagnosis)
+
+
+{-| The heading of the encounter page, as rendered for the visit.
+-}
+encounterHeaderOf : Person -> List IllnessVisit -> String -> Query.Single Pages.AcuteIllness.Encounter.Model.Msg
+encounterHeaderOf person visits visitId =
+    EncounterView.view English
+        currentDate
+        EverySet.empty
+        (toEntityUuid visitId)
+        True
+        (illnessDb person visits)
+        Pages.AcuteIllness.Encounter.Model.emptyModel
+        |> Query.fromHtml
+        |> Query.find [ class "head" ]
+
+
+{-| The popup the Next Steps page opens, which is told to show the diagnosis
+held by the visit.
+-}
+expectPopupNames : String -> AssembledData -> Expect.Expectation
+expectPopupNames expectedText assembled =
+    EncounterView.warningPopup English
+        currentDate
+        (Maybe.map Tuple.second assembled.diagnosis)
+        identity
+        assembled
+        |> Maybe.map (\popup -> Query.fromHtml popup |> Query.has [ text expectedText ])
+        |> Maybe.withDefault (Expect.fail "The diagnosis popup is not shown")
+
+
+
+-- FOLLOW-UP VISIT TESTS
+
+
+followUpMalariaTestTest : Test
+followUpMalariaTestTest =
+    describe "Acute Illness follow-up visit and its malaria test"
+        [ followUpPositiveNoDangerSignTest
+        , followUpPositiveDangerSignTest
+        , followUpPositiveUnderSixMonthsTest
+        , followUpSavedFollowUpTest
+        , followUpHeaderAndPopupTest
+        , followUpNegativeOrNoTestTest
+        , followUpCorrectedTestTest
+        , firstVisitUnchangedTest
+        , followUpPositiveAndPregnantTest
+        , followUpOtherShapesTest
+        ]
+
+
+followUpPositiveNoDangerSignTest : Test
+followUpPositiveNoDangerSignTest =
+    describe "follow-up, positive test, no danger sign, six months or older"
+        [ test "the visit's diagnosis is uncomplicated malaria" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "the visit's diagnosis is dated this visit, not the earlier illness" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just (Just ( currentDate, DiagnosisMalariaUncomplicated )))
+        , test "the visit's diagnosis is uncomplicated malaria at exactly six months" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 6) positiveFollowUp
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "Next Steps asks for Medication Distribution and Follow Up" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsMedicationDistribution, NextStepsFollowUp ])
+        , test "Next Steps asks for Medication Distribution and Follow Up at exactly six months" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 6) positiveFollowUp
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsMedicationDistribution, NextStepsFollowUp ])
+        , test "the medication form offers Coartem" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> expectVisit
+                        (\assembled ->
+                            Query.fromHtml (div [] (medicationFormOf assembled))
+                                |> Query.findAll [ class "coartem-medication" ]
+                                |> Query.count (Expect.equal 1)
+                        )
+        , test "the medication form offers Coartem at exactly six months" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 6) positiveFollowUp
+                    |> expectVisit
+                        (\assembled ->
+                            Query.fromHtml (div [] (medicationFormOf assembled))
+                                |> Query.findAll [ class "coartem-medication" ]
+                                |> Query.count (Expect.equal 1)
+                        )
+        , test "the diagnosis does not depend on what the earlier illness was" <|
+            \_ ->
+                List.map
+                    (\earlierDiagnosis ->
+                        followUpOfIllness testPerson earlierDiagnosis NoAcuteIllnessDiagnosis positiveFollowUp
+                            |> diagnosisOf
+                    )
+                    [ NoAcuteIllnessDiagnosis
+                    , DiagnosisFeverOfUnknownOrigin
+                    , DiagnosisGastrointestinalInfectionUncomplicated
+                    , DiagnosisRespiratoryInfectionComplicated
+                    ]
+                    |> Expect.equal
+                        (List.repeat 4 (Just (Just DiagnosisMalariaUncomplicated)))
+        , test "with the condition not improving, the visit's diagnosis is the one the app stores" <|
+            \_ ->
+                -- Asserts the visit agrees with the diagnosis the app stores for these same
+                -- measurements, rather than naming the sign's meaning here.
+                coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [ DangerSignConditionNotImproving ])
+                    |> expectVisit
+                        (\assembled ->
+                            Maybe.map Tuple.second assembled.diagnosis
+                                |> Expect.equal
+                                    (subsequentEncounterDiagnosisUpdate currentDate EverySet.empty True assembled)
+                        )
+        , test "a nurse's subsequent visit gets uncomplicated malaria too" <|
+            \_ ->
+                assembleVisit False
+                    EverySet.empty
+                    testPerson
+                    "nurseSubsequent"
+                    [ ( "first", illnessEncounter AcuteIllnessEncounterNurse dayBefore DiagnosisSimpleColdAndCough, emptyAcuteIllnessMeasurements )
+                    , ( "nurseSubsequent", illnessEncounter AcuteIllnessEncounterNurseSubsequent currentDate NoAcuteIllnessDiagnosis, positiveFollowUp )
+                    ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "a site with Tuberculosis Management gets uncomplicated malaria too" <|
+            \_ ->
+                assembleVisit True
+                    (EverySet.singleton FeatureTuberculosisManagement)
+                    testPerson
+                    "followUp"
+                    [ firstVisit DiagnosisSimpleColdAndCough, followUpVisit NoAcuteIllnessDiagnosis positiveFollowUp ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "a third visit with a positive test is malaria, whichever visit came before" <|
+            \_ ->
+                assembleVisit True
+                    EverySet.empty
+                    testPerson
+                    "third"
+                    [ firstVisit DiagnosisSimpleColdAndCough
+                    , secondVisit NoAcuteIllnessDiagnosis
+                    , ( "third", illnessEncounter AcuteIllnessEncounterCHW currentDate NoAcuteIllnessDiagnosis, positiveFollowUp )
+                    ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        ]
+
+
+followUpPositiveDangerSignTest : Test
+followUpPositiveDangerSignTest =
+    describe "follow-up, positive test, a danger sign"
+        [ test "the visit's diagnosis is complicated malaria" <|
+            \_ ->
+                coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ])
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaComplicated))
+        , test "any danger sign makes it complicated malaria" <|
+            \_ ->
+                List.map
+                    (\sign ->
+                        coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [ sign ])
+                            |> diagnosisOf
+                    )
+                    [ DangerSignUnableDrinkSuck
+                    , DangerSignVomiting
+                    , DangerSignLethargyUnconsciousness
+                    , DangerSignRespiratoryDistress
+                    , DangerSignSpontaneousBleeding
+                    , DangerSignBloodyDiarrhea
+                    , DangerSignNewSkinRash
+                    ]
+                    |> Expect.equal (List.repeat 7 (Just (Just DiagnosisMalariaComplicated)))
+        , test "Next Steps asks for Send to Health Centre and Follow Up, not Medication Distribution" <|
+            \_ ->
+                coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ])
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        , test "Next Steps is the same for a child with a danger sign" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 24) (positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ])
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        , test "the medication form does not offer Coartem" <|
+            \_ ->
+                coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ])
+                    |> expectVisit
+                        (\assembled ->
+                            Query.fromHtml (div [] (medicationFormOf assembled))
+                                |> Query.findAll [ class "coartem-medication" ]
+                                |> Query.count (Expect.equal 0)
+                        )
+        , test "a nurse's subsequent visit asks for Send to Health Centre and Follow Up" <|
+            \_ ->
+                assembleVisit False
+                    EverySet.empty
+                    testPerson
+                    "nurseSubsequent"
+                    [ ( "first", illnessEncounter AcuteIllnessEncounterNurse dayBefore DiagnosisSimpleColdAndCough, emptyAcuteIllnessMeasurements )
+                    , ( "nurseSubsequent", illnessEncounter AcuteIllnessEncounterNurseSubsequent currentDate NoAcuteIllnessDiagnosis, positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ] )
+                    ]
+                    |> Maybe.map (resolveNextStepsTasks currentDate False)
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        ]
+
+
+followUpPositiveUnderSixMonthsTest : Test
+followUpPositiveUnderSixMonthsTest =
+    describe "follow-up, positive test, no danger sign, under six months"
+        [ test "Next Steps asks for Send to Health Centre and Follow Up, not Medication Distribution" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 3) positiveFollowUp
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        , test "the same at five months, the last month under six" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 5) positiveFollowUp
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        ]
+
+
+followUpSavedFollowUpTest : Test
+followUpSavedFollowUpTest =
+    describe "the Follow Up saved on a follow-up visit with a positive test"
+        [ test "carries the malaria diagnosis" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> expectVisit
+                        (savedFollowUpDiagnoses
+                            >> Expect.equal [ Just DiagnosisMalariaUncomplicated ]
+                        )
+        , test "carries the complicated malaria diagnosis" <|
+            \_ ->
+                coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ])
+                    |> expectVisit
+                        (savedFollowUpDiagnoses
+                            >> Expect.equal [ Just DiagnosisMalariaComplicated ]
+                        )
+        , test "carries the malaria diagnosis for a child under six months" <|
+            \_ ->
+                coldFollowUp (personAgedMonths 3) positiveFollowUp
+                    |> expectVisit
+                        (savedFollowUpDiagnoses
+                            >> Expect.equal [ Just DiagnosisMalariaUncomplicated ]
+                        )
+        , test "replaces a Follow Up already saved on the visit with the earlier illness" <|
+            \_ ->
+                let
+                    alreadySaved =
+                        { positiveFollowUp
+                            | followUp =
+                                wrapMeasurement
+                                    { options = EverySet.singleton OneDay
+                                    , resolutionDate = Nothing
+                                    , diagnosis = Just DiagnosisSimpleColdAndCough
+                                    }
+                        }
+                in
+                coldFollowUp testPerson alreadySaved
+                    |> expectVisit
+                        (savedFollowUpDiagnoses
+                            >> Expect.equal [ Just DiagnosisMalariaUncomplicated ]
+                        )
+        , test "a follow-up with no positive test still saves the earlier illness" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withMalariaTesting RapidTestNegative)
+                    |> expectVisit
+                        (savedFollowUpDiagnoses
+                            >> Expect.equal [ Just DiagnosisSimpleColdAndCough ]
+                        )
+        ]
+
+
+followUpHeaderAndPopupTest : Test
+followUpHeaderAndPopupTest =
+    let
+        visits measurements =
+            [ firstVisit DiagnosisSimpleColdAndCough, followUpVisit NoAcuteIllnessDiagnosis measurements ]
+
+        complicated =
+            positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ]
+    in
+    describe "the visit's header and the diagnosis popup"
+        [ test "the header names the malaria diagnosis" <|
+            \_ ->
+                encounterHeaderOf testPerson (visits positiveFollowUp) "followUp"
+                    |> Query.has [ text (diagnosisLabel DiagnosisMalariaUncomplicated) ]
+        , test "the header no longer names the earlier illness" <|
+            \_ ->
+                encounterHeaderOf testPerson (visits positiveFollowUp) "followUp"
+                    |> Query.hasNot [ text (diagnosisLabel DiagnosisSimpleColdAndCough) ]
+        , test "the header names complicated malaria when there is a danger sign" <|
+            \_ ->
+                encounterHeaderOf testPerson (visits complicated) "followUp"
+                    |> Query.has [ text (diagnosisLabel DiagnosisMalariaComplicated) ]
+        , test "the diagnosis popup names the malaria diagnosis" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> expectVisit
+                        (expectPopupNames (translate English (Translate.AcuteIllnessDiagnosisWarning DiagnosisMalariaUncomplicated)))
+        , test "the diagnosis popup names complicated malaria when there is a danger sign" <|
+            \_ ->
+                coldFollowUp testPerson complicated
+                    |> expectVisit
+                        (expectPopupNames (translate English (Translate.AcuteIllnessDiagnosisWarning DiagnosisMalariaComplicated)))
+        , test "the header keeps the earlier illness with a negative test" <|
+            \_ ->
+                encounterHeaderOf testPerson (visits (followUpMeasurements |> withMalariaTesting RapidTestNegative)) "followUp"
+                    |> Query.has [ text (diagnosisLabel DiagnosisSimpleColdAndCough) ]
+        ]
+
+
+followUpNegativeOrNoTestTest : Test
+followUpNegativeOrNoTestTest =
+    describe "a follow-up visit with a negative malaria test, or none"
+        [ test "a negative test keeps the earlier illness's diagnosis" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withMalariaTesting RapidTestNegative)
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just (Just ( dayBefore, DiagnosisSimpleColdAndCough )))
+        , test "no test keeps the earlier illness's diagnosis" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withoutFever)
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just (Just ( dayBefore, DiagnosisSimpleColdAndCough )))
+        , test "a test with no result keeps the earlier illness's diagnosis" <|
+            \_ ->
+                List.map
+                    (\result ->
+                        coldFollowUp testPerson (followUpMeasurements |> withMalariaTesting result)
+                            |> diagnosisOf
+                    )
+                    [ RapidTestIndeterminate, RapidTestUnableToRun, RapidTestUnableToRunAndPregnant ]
+                    |> Expect.equal (List.repeat 3 (Just (Just DiagnosisSimpleColdAndCough)))
+        , test "a negative test with fever: the same Next Steps as today" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withMalariaTesting RapidTestNegative)
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ])
+        , test "a negative test without fever: the same Next Steps as today" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withoutFever |> withMalariaTesting RapidTestNegative)
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsHealthEducation ])
+        , test "no test and no fever: the same Next Steps as today" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withoutFever)
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsHealthEducation ])
+        , test "no test and a danger sign: the same Next Steps as today" <|
+            \_ ->
+                coldFollowUp testPerson (followUpMeasurements |> withoutFever |> withDangerSigns [ DangerSignConvulsions ])
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ])
+        , test "fever and the test not recorded yet: Next Steps stay closed" <|
+            \_ ->
+                coldFollowUp testPerson followUpMeasurements
+                    |> chwNextSteps
+                    |> Expect.equal (Just [])
+        , test "a negative test on an illness with no diagnosis yet leaves none" <|
+            \_ ->
+                followUpOfIllness testPerson NoAcuteIllnessDiagnosis NoAcuteIllnessDiagnosis (followUpMeasurements |> withMalariaTesting RapidTestNegative)
+                    |> diagnosisOf
+                    |> Expect.equal (Just Nothing)
+        , test "no test on an illness already diagnosed as malaria keeps malaria" <|
+            \_ ->
+                followUpOfIllness testPerson DiagnosisMalariaUncomplicated NoAcuteIllnessDiagnosis (followUpMeasurements |> withoutFever)
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "a visit after a follow-up that found malaria keeps the malaria found there" <|
+            \_ ->
+                assembleVisit True
+                    EverySet.empty
+                    testPerson
+                    "third"
+                    [ firstVisit DiagnosisSimpleColdAndCough
+                    , secondVisit DiagnosisMalariaUncomplicated
+                    , ( "third", illnessEncounter AcuteIllnessEncounterCHW currentDate NoAcuteIllnessDiagnosis, followUpMeasurements |> withoutFever )
+                    ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "a positive test on a later visit does not reach back to this one" <|
+            \_ ->
+                assembleVisit True
+                    EverySet.empty
+                    testPerson
+                    "followUp"
+                    [ firstVisit DiagnosisSimpleColdAndCough
+                    , followUpVisit NoAcuteIllnessDiagnosis (followUpMeasurements |> withoutFever)
+                    , ( "later", illnessEncounter AcuteIllnessEncounterCHW (Date.add Date.Days 1 currentDate) DiagnosisMalariaUncomplicated, positiveFollowUp )
+                    ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisSimpleColdAndCough))
+        ]
+
+
+followUpCorrectedTestTest : Test
+followUpCorrectedTestTest =
+    let
+        correctedToNegative =
+            followUpMeasurements |> withMalariaTesting RapidTestNegative
+    in
+    describe "a malaria test corrected on the same follow-up visit"
+        [ test "corrected from positive to negative brings back the earlier illness's diagnosis" <|
+            \_ ->
+                -- The encounter still holds the malaria diagnosis the positive test wrote.
+                followUpOfIllness testPerson DiagnosisSimpleColdAndCough DiagnosisMalariaUncomplicated correctedToNegative
+                    |> Maybe.map .diagnosis
+                    |> Expect.equal (Just (Just ( dayBefore, DiagnosisSimpleColdAndCough )))
+        , test "corrected from positive to negative with complicated malaria still stored" <|
+            \_ ->
+                followUpOfIllness testPerson DiagnosisSimpleColdAndCough DiagnosisMalariaComplicated correctedToNegative
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisSimpleColdAndCough))
+        , test "corrected to negative on an illness that had no diagnosis leaves none" <|
+            \_ ->
+                followUpOfIllness testPerson NoAcuteIllnessDiagnosis DiagnosisMalariaUncomplicated correctedToNegative
+                    |> diagnosisOf
+                    |> Expect.equal (Just Nothing)
+        , test "corrected to negative brings back the same Next Steps as a negative test" <|
+            \_ ->
+                followUpOfIllness testPerson DiagnosisSimpleColdAndCough DiagnosisMalariaUncomplicated correctedToNegative
+                    |> chwNextSteps
+                    |> Expect.equal
+                        (coldFollowUp testPerson correctedToNegative
+                            |> chwNextSteps
+                        )
+        , test "a danger sign removed with the test still positive makes it uncomplicated malaria" <|
+            \_ ->
+                followUpOfIllness testPerson DiagnosisSimpleColdAndCough DiagnosisMalariaComplicated positiveFollowUp
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        ]
+
+
+firstVisitUnchangedTest : Test
+firstVisitUnchangedTest =
+    let
+        firstVisitComplete =
+            gateBaseChw
+                |> withVitals (Just 38) Nothing Nothing Nothing
+
+        childFirstVisit =
+            { firstVisitComplete
+                | muac = wrapMeasurement (MuacInCm 14)
+                , nutrition = wrapMeasurement (EverySet.singleton NormalChildNutrition)
+            }
+
+        coldFirstVisit =
+            gateBaseChw
+                |> withSymptomsRespiratory Cough
+                |> withVitals Nothing (Just 25) Nothing Nothing
+    in
+    describe "a first visit gets the same diagnosis and Next Steps as today"
+        [ test "positive test, no danger sign: uncomplicated malaria" <|
+            \_ ->
+                firstVisitOnly testPerson (firstVisitComplete |> withMalariaTesting RapidTestPositive)
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "positive test, no danger sign: Next Steps" <|
+            \_ ->
+                firstVisitOnly testPerson (firstVisitComplete |> withMalariaTesting RapidTestPositive)
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsMedicationDistribution, NextStepsFollowUp ])
+        , test "positive test, a danger sign at symptoms: complicated malaria" <|
+            \_ ->
+                firstVisitOnly testPerson (firstVisitComplete |> withSymptomsGeneral SymptomsGeneralConvulsions |> withMalariaTesting RapidTestPositive)
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaComplicated))
+        , test "positive test, a danger sign at symptoms: Next Steps" <|
+            \_ ->
+                firstVisitOnly testPerson (firstVisitComplete |> withSymptomsGeneral SymptomsGeneralConvulsions |> withMalariaTesting RapidTestPositive)
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        , test "positive test, child under six months: Next Steps" <|
+            \_ ->
+                firstVisitOnly (personAgedMonths 3) (childFirstVisit |> withMalariaTesting RapidTestPositive)
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsSendToHC, NextStepsFollowUp ])
+        , test "negative test: fever of unknown origin and Send to Health Centre" <|
+            \_ ->
+                firstVisitOnly testPerson (firstVisitComplete |> withMalariaTesting RapidTestNegative)
+                    |> Maybe.map (\assembled -> ( assembled.diagnosis, resolveNextStepsTasks currentDate True assembled ))
+                    |> Expect.equal (Just ( Just ( currentDate, DiagnosisFeverOfUnknownOrigin ), [ NextStepsSendToHC ] ))
+        , test "no fever, a cough: simple cold and cough, with no Next Steps for an adult" <|
+            \_ ->
+                firstVisitOnly testPerson coldFirstVisit
+                    |> Maybe.map (\assembled -> ( assembled.diagnosis, resolveNextStepsTasks currentDate True assembled ))
+                    |> Expect.equal (Just ( Just ( currentDate, DiagnosisSimpleColdAndCough ), [] ))
+        , test "no fever, a cough, a child of two: Medication Distribution and Follow Up" <|
+            \_ ->
+                firstVisitOnly (personAgedMonths 24)
+                    { coldFirstVisit
+                        | muac = wrapMeasurement (MuacInCm 14)
+                        , nutrition = wrapMeasurement (EverySet.singleton NormalChildNutrition)
+                    }
+                    |> chwNextSteps
+                    |> Expect.equal (Just [ NextStepsMedicationDistribution, NextStepsFollowUp ])
+        , test "symptoms not recorded yet: no diagnosis, though the test is positive" <|
+            \_ ->
+                firstVisitOnly testPerson (emptyAcuteIllnessMeasurements |> withMalariaTesting RapidTestPositive)
+                    |> diagnosisOf
+                    |> Expect.equal (Just Nothing)
+        , test "a nurse's first encounter after a CHW visit is judged as a first visit" <|
+            \_ ->
+                assembleVisit False
+                    EverySet.empty
+                    testPerson
+                    "nurse"
+                    [ firstVisit DiagnosisSimpleColdAndCough
+                    , ( "nurse"
+                      , illnessEncounter AcuteIllnessEncounterNurse currentDate NoAcuteIllnessDiagnosis
+                      , gateBaseNurse |> withVitals (Just 38) Nothing Nothing Nothing |> withMalariaTesting RapidTestPositive
+                      )
+                    ]
+                    |> Maybe.map (\assembled -> ( assembled.initialEncounter, Maybe.map Tuple.second assembled.diagnosis ))
+                    |> Expect.equal (Just ( True, Just DiagnosisMalariaUncomplicated ))
+        , test "a nurse's first encounter does not fall back on the CHW visit's diagnosis" <|
+            \_ ->
+                assembleVisit False
+                    EverySet.empty
+                    testPerson
+                    "nurse"
+                    [ firstVisit DiagnosisSimpleColdAndCough
+                    , ( "nurse", illnessEncounter AcuteIllnessEncounterNurse currentDate NoAcuteIllnessDiagnosis, emptyAcuteIllnessMeasurements )
+                    ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just Nothing)
+        , test "a site with Tuberculosis Management: a long cough is a Tuberculosis suspect, even with malaria" <|
+            \_ ->
+                assembleVisit True
+                    (EverySet.singleton FeatureTuberculosisManagement)
+                    testPerson
+                    "first"
+                    [ ( "first"
+                      , illnessEncounter AcuteIllnessEncounterCHW currentDate NoAcuteIllnessDiagnosis
+                      , gateBaseChw
+                            |> withVitals (Just 38) Nothing Nothing Nothing
+                            |> withSymptomsRespiratoryDuration Cough symptomMaxDuration
+                            |> withMalariaTesting RapidTestPositive
+                      )
+                    ]
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisTuberculosisSuspect))
+        ]
+
+
+followUpPositiveAndPregnantTest : Test
+followUpPositiveAndPregnantTest =
+    let
+        positiveAndPregnant =
+            followUpMeasurements |> withMalariaTesting RapidTestPositiveAndPregnant
+    in
+    describe "a follow-up visit with a positive-and-pregnant test"
+        [ test "the visit's diagnosis is malaria in pregnancy" <|
+            \_ ->
+                coldFollowUp testPerson positiveAndPregnant
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicatedAndPregnant))
+        , test "the visit's diagnosis is the one the app stores for the same test" <|
+            \_ ->
+                coldFollowUp testPerson positiveAndPregnant
+                    |> expectVisit
+                        (\assembled ->
+                            Maybe.map Tuple.second assembled.diagnosis
+                                |> Expect.equal
+                                    (subsequentEncounterDiagnosisUpdate currentDate EverySet.empty True assembled)
+                        )
+        ]
+
+
+followUpOtherShapesTest : Test
+followUpOtherShapesTest =
+    describe "other shapes of a follow-up visit's record"
+        [ test "the visit's diagnosis is the one the app stores, for each positive combination" <|
+            \_ ->
+                List.map
+                    (\measurements ->
+                        coldFollowUp testPerson measurements
+                            |> Maybe.map
+                                (\assembled ->
+                                    Maybe.map Tuple.second assembled.diagnosis
+                                        == subsequentEncounterDiagnosisUpdate currentDate EverySet.empty True assembled
+                                )
+                    )
+                    [ positiveFollowUp
+                    , positiveFollowUp |> withDangerSigns [ DangerSignConvulsions ]
+                    , positiveFollowUp |> withDangerSigns [ DangerSignConditionNotImproving, DangerSignConvulsions ]
+                    ]
+                    |> Expect.equal (List.repeat 3 (Just True))
+        , test "a positive test recorded before the danger signs: Next Steps stay closed" <|
+            \_ ->
+                coldFollowUp testPerson { positiveFollowUp | dangerSigns = Nothing }
+                    |> chwNextSteps
+                    |> Expect.equal (Just [])
+        , test "a positive test with an empty set of danger signs counts as no danger sign" <|
+            \_ ->
+                coldFollowUp testPerson (positiveFollowUp |> withDangerSigns [])
+                    |> diagnosisOf
+                    |> Expect.equal (Just (Just DiagnosisMalariaUncomplicated))
+        , test "a follow-up is not treated as a first visit by the assembled record" <|
+            \_ ->
+                coldFollowUp testPerson positiveFollowUp
+                    |> Maybe.map .initialEncounter
+                    |> Expect.equal (Just False)
         ]

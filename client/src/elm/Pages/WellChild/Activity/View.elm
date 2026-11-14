@@ -167,7 +167,7 @@ viewContent :
     -> AssembledData
     -> Html Msg
 viewContent language currentDate zscores site features isChw activity db model assembled =
-    ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
+    ((viewPersonDetailsExtended language currentDate site assembled.person |> div [ class "item" ])
         :: viewActivity language currentDate zscores site features isChw activity assembled db model
     )
         |> div [ class "ui unstackable items" ]
@@ -466,8 +466,8 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                     if form.deliveryComplicationsPresent == Just True then
                         ( [ viewLabel language Translate.DeliveryComplicationsSelectionLabel
                           , viewCheckBoxMultipleSelectInput language
-                                [ ComplicationGestationalDiabetes, ComplicationEmergencyCSection, ComplicationPreclampsia, ComplicationOther ]
-                                [ ComplicationMaternalHemmorhage, ComplicationHiv, ComplicationMaternalDeath ]
+                                [ ComplicationGestationalDiabetes, ComplicationEmergencyCSection, ComplicationPreeclampsia, ComplicationOther ]
+                                [ ComplicationMaternalHemorrhage, ComplicationHiv, ComplicationMaternalDeath ]
                                 (form.deliveryComplications |> Maybe.withDefault [])
                                 Nothing
                                 SetDeliveryComplication

@@ -3,22 +3,28 @@ module Backend.Session.Update exposing (update)
 import App.Model
 import App.Ports exposing (bindDropZone)
 import App.Utils exposing (triggerRollbarOnFailure)
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Endpoints exposing (attendanceEndpoint, childFbfEndpoint, contributingFactorsEndpoint, counselingSessionEndpoint, familyPlanningEndpoint, followUpEndpoint, groupHealthEducationEndpoint, groupNCDAEndpoint, groupSendToHCEndpoint, heightEndpoint, lactationEndpoint, motherFbfEndpoint, muacEndpoint, nutritionEndpoint, participantConsentEndpoint, photoEndpoint, sessionEndpoint, weightEndpoint)
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Fetch
 import Backend.Session.Model exposing (Model, Msg(..), Session)
+import Backend.Session.Utils exposing (isSaveAllowed, saveRequestOf)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toCmd, withoutDecoder)
 
 
-update : NominalDate -> Maybe NurseId -> SessionId -> Maybe Session -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate nurseId sessionId maybeSession db msg model =
+update : NominalDate -> Maybe NurseId -> SessionId -> Maybe Session -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate nurseId sessionId maybeSession msg model =
+    let
+        saveFollowUpCmd personId valueId value =
+            saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value followUpEndpoint (HandleSaveFollowUp personId)
+
+        saveNutritionCmd personId valueId value =
+            saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value nutritionEndpoint (HandleSaveNutrition personId)
+    in
     case msg of
         CloseSession ->
             unwrap
@@ -45,85 +51,41 @@ update currentDate nurseId sessionId maybeSession db msg model =
                 NoOp ->
                     ( model, Cmd.none, [] )
 
-                FetchIndividualNutritionData id ->
-                    let
-                        appMsgs =
-                            Backend.NutritionEncounter.Fetch.fetch id db
-                                |> List.map App.Model.MsgIndexedDb
-                    in
-                    ( model, Cmd.none, appMsgs )
-
                 SaveHeight valueId value ->
-                    ( { model | saveHeightRequest = Dict.insert personId Loading model.saveHeightRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value heightEndpoint (HandleSaveHeight personId)
-                    , []
-                    )
+                    startSave personId valueId .saveHeightRequest (\requests -> { model | saveHeightRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value heightEndpoint (HandleSaveHeight personId)) model
 
                 SaveWeight valueId value ->
-                    ( { model | saveWeightRequest = Dict.insert personId Loading model.saveWeightRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value weightEndpoint (HandleSaveWeight personId)
-                    , []
-                    )
+                    startSave personId valueId .saveWeightRequest (\requests -> { model | saveWeightRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value weightEndpoint (HandleSaveWeight personId)) model
 
                 SaveMuac valueId value ->
-                    ( { model | saveMuacRequest = Dict.insert personId Loading model.saveMuacRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value muacEndpoint (HandleSaveMuac personId)
-                    , []
-                    )
+                    startSave personId valueId .saveMuacRequest (\requests -> { model | saveMuacRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value muacEndpoint (HandleSaveMuac personId)) model
 
                 SaveCounselingSession valueId timing topics ->
-                    ( { model | saveCounselingSessionRequest = Dict.insert personId Loading model.saveCounselingSessionRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId ( timing, topics ) counselingSessionEndpoint (HandleSaveCounselingSession personId)
-                    , []
-                    )
+                    startSave personId valueId .saveCounselingSessionRequest (\requests -> { model | saveCounselingSessionRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId ( timing, topics ) counselingSessionEndpoint (HandleSaveCounselingSession personId)) model
 
                 SaveNutrition valueId value ->
-                    ( { model | saveNutritionRequest = Dict.insert personId Loading model.saveNutritionRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value nutritionEndpoint (HandleSaveNutrition personId)
-                    , []
-                    )
+                    startSave personId valueId .saveNutritionRequest (\requests -> { model | saveNutritionRequest = requests }) (saveNutritionCmd personId valueId value) model
 
                 SavePhoto valueId value ->
-                    ( { model | savePhotoRequest = Dict.insert personId Loading model.savePhotoRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value photoEndpoint (HandleSavePhoto personId)
-                    , []
-                    )
+                    startSave personId valueId .savePhotoRequest (\requests -> { model | savePhotoRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value photoEndpoint (HandleSavePhoto personId)) model
 
                 SaveChildFbf valueId value ->
-                    ( { model | saveFbfRequest = Dict.insert personId Loading model.saveFbfRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value childFbfEndpoint (HandleSaveFbf personId)
-                    , []
-                    )
+                    startSave personId valueId .saveFbfRequest (\requests -> { model | saveFbfRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value childFbfEndpoint (HandleSaveFbf personId)) model
 
                 SaveContributingFactors valueId value ->
-                    ( { model | saveContributingFactorsRequest = Dict.insert personId Loading model.saveContributingFactorsRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value contributingFactorsEndpoint (HandleSaveContributingFactors personId)
-                    , []
-                    )
+                    startSave personId valueId .saveContributingFactorsRequest (\requests -> { model | saveContributingFactorsRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value contributingFactorsEndpoint (HandleSaveContributingFactors personId)) model
 
                 SaveFollowUp valueId value ->
-                    ( { model | saveFollowUpRequest = Dict.insert personId Loading model.saveFollowUpRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value followUpEndpoint (HandleSaveFollowUp personId)
-                    , []
-                    )
+                    startSave personId valueId .saveFollowUpRequest (\requests -> { model | saveFollowUpRequest = requests }) (saveFollowUpCmd personId valueId value) model
 
                 SaveHealthEducation valueId value ->
-                    ( { model | saveHealthEducationRequest = Dict.insert personId Loading model.saveHealthEducationRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value groupHealthEducationEndpoint (HandleSaveHealthEducation personId)
-                    , []
-                    )
+                    startSave personId valueId .saveHealthEducationRequest (\requests -> { model | saveHealthEducationRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value groupHealthEducationEndpoint (HandleSaveHealthEducation personId)) model
 
                 SaveSendToHC valueId value ->
-                    ( { model | saveSendToHCRequest = Dict.insert personId Loading model.saveSendToHCRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value groupSendToHCEndpoint (HandleSaveSendToHC personId)
-                    , []
-                    )
+                    startSave personId valueId .saveSendToHCRequest (\requests -> { model | saveSendToHCRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value groupSendToHCEndpoint (HandleSaveSendToHC personId)) model
 
                 SaveNCDA valueId value ->
-                    ( { model | saveNCDARequest = Dict.insert personId Loading model.saveNCDARequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value groupNCDAEndpoint (HandleSaveNCDA personId)
-                    , []
-                    )
+                    startSave personId valueId .saveNCDARequest (\requests -> { model | saveNCDARequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value groupNCDAEndpoint (HandleSaveNCDA personId)) model
 
         -- We're handling responses in order to pick up error conditions.
         -- However, we'll let the general "handleRevision" mechanism handle
@@ -138,22 +100,13 @@ update currentDate nurseId sessionId maybeSession db msg model =
                     )
 
                 SaveFamilyPlanningSigns valueId value ->
-                    ( { model | saveFamilyPlanningRequest = Dict.insert personId Loading model.saveFamilyPlanningRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value familyPlanningEndpoint (HandleSaveFamilyPlanning personId)
-                    , []
-                    )
+                    startSave personId valueId .saveFamilyPlanningRequest (\requests -> { model | saveFamilyPlanningRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value familyPlanningEndpoint (HandleSaveFamilyPlanning personId)) model
 
                 SaveLactation valueId value ->
-                    ( { model | saveLactationRequest = Dict.insert personId Loading model.saveLactationRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value lactationEndpoint (HandleSaveLactation personId)
-                    , []
-                    )
+                    startSave personId valueId .saveLactationRequest (\requests -> { model | saveLactationRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value lactationEndpoint (HandleSaveLactation personId)) model
 
                 SaveMotherFbf valueId value ->
-                    ( { model | saveFbfRequest = Dict.insert personId Loading model.saveLactationRequest }
-                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value motherFbfEndpoint (HandleSaveFbf personId)
-                    , []
-                    )
+                    startSave personId valueId .saveFbfRequest (\requests -> { model | saveFbfRequest = requests }) (saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value motherFbfEndpoint (HandleSaveFbf personId)) model
 
                 SaveCompletedForm valueId formId language ->
                     let
@@ -262,3 +215,37 @@ update currentDate nurseId sessionId maybeSession db msg model =
             , bindDropZone ()
             , triggerRollbarOnFailure data
             )
+
+        UpdateFollowUpAssessment personId valueId value ->
+            ( { model | saveFollowUpRequest = Dict.insert personId Loading model.saveFollowUpRequest }
+            , saveFollowUpCmd personId valueId value
+            , []
+            )
+
+        UpdateNutritionAssessment personId valueId value ->
+            ( { model | saveNutritionRequest = Dict.insert personId Loading model.saveNutritionRequest }
+            , saveNutritionCmd personId valueId value
+            , []
+            )
+
+
+{-| Sends a save and marks it in progress, when `isSaveAllowed` lets it go ahead.
+-}
+startSave :
+    PersonId
+    -> Maybe valueId
+    -> (Model -> Dict PersonId (WebData ()))
+    -> (Dict PersonId (WebData ()) -> Model)
+    -> Cmd Msg
+    -> Model
+    -> ( Model, Cmd Msg, List App.Model.Msg )
+startSave personId valueId getRequests setRequests cmd model =
+    let
+        requests =
+            getRequests model
+    in
+    if isSaveAllowed valueId (saveRequestOf personId requests) then
+        ( setRequests (Dict.insert personId Loading requests), cmd, [] )
+
+    else
+        ( model, Cmd.none, [] )

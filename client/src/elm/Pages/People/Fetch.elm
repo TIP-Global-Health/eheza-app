@@ -12,9 +12,9 @@ import Pages.Person.Fetch exposing (fetchSessionForInitiator)
 fetch : Maybe PersonId -> Initiator -> Model -> List MsgIndexedDb
 fetch relation initiator model =
     let
+        -- The relationships let the results leave out people already related.
         fetchRelation =
-            Maybe.map FetchPerson relation
-                |> Maybe.Extra.toList
+            Maybe.Extra.unwrap [] (\personId -> [ FetchPerson personId, FetchRelationshipsForPerson personId ]) relation
     in
     Components.PatientsSearchForm.Fetch.fetch model
         ++ fetchRelation

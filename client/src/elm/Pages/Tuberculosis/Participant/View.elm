@@ -8,7 +8,7 @@ import Backend.IndividualEncounterParticipant.Model
         ( IndividualEncounterParticipant
         , emptyIndividualEncounterParticipant
         )
-import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive, resolveOpenParticipant)
+import Backend.IndividualEncounterParticipant.Utils exposing (resolveOpenParticipant, resolveTodaysEncounterState)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getTuberculosisEncountersForParticipant)
 import Backend.TuberculosisEncounter.Model
@@ -102,23 +102,7 @@ viewTuberculosisAction language currentDate selectedHealthCenter id db sessions 
         -- (started and ended on the same day), as we do not want to allow creating new encounter
         -- at same day, previous one has ended.
         ( maybeActiveEncounterId, encounterWasCompletedToday ) =
-            Maybe.map
-                (getTuberculosisEncountersForParticipant db
-                    >> (\list ->
-                            ( List.filter (Tuple.second >> isDailyEncounterActive currentDate) list
-                                |> List.head
-                                |> Maybe.map Tuple.first
-                            , List.filter
-                                (\( _, encounter ) ->
-                                    encounter.startDate == currentDate && encounter.endDate == Just currentDate
-                                )
-                                list
-                                |> List.isEmpty
-                                |> not
-                            )
-                       )
-                )
-                maybeSessionId
+            Maybe.map (getTuberculosisEncountersForParticipant db >> resolveTodaysEncounterState currentDate) maybeSessionId
                 |> Maybe.withDefault ( Nothing, False )
 
         action =

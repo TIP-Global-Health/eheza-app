@@ -10,21 +10,10 @@
  */
 
 require_once dirname(__DIR__) . '/hedley_reports.module';
+require_once __DIR__ . '/assertions.inc';
 
 $passed = 0;
 $failed = 0;
-
-/**
- * Compares a result with the expected value and records the outcome.
- */
-function assert_same($result, $expected, $case, &$passed, &$failed) {
-  if ($result === $expected) {
-    $passed++;
-    return;
-  }
-  $failed++;
-  echo "FAIL: $case\n  expected: " . var_export($expected, TRUE) . "\n  got: " . var_export($result, TRUE) . "\n";
-}
 
 const BIRTH_DATE = '2024-01-01';
 
@@ -112,14 +101,4 @@ assert_complete('mr', [$first_mr, weeks_old(75)], 'burundi', 'MR: two doses comp
 // A vaccine with no dose given is expected.
 assert_same(is_expected('bcg', [], 'rwanda', BIRTH_DATE), TRUE, 'a vaccine with no dose given is expected', $passed, $failed);
 
-$total = $passed + $failed;
-echo "\n";
-echo "Expected immunisation tests: $total total, $passed passed, $failed failed.\n";
-
-if ($failed > 0) {
-  echo "FAILED\n";
-  exit(1);
-}
-
-echo "OK\n";
-exit(0);
+report_results('Expected immunisation', $passed, $failed);

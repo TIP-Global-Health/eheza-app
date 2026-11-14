@@ -4,7 +4,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..))
 import App.Fetch
 import App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), RollbarErrorSource(..), emptyLoggedInModel, emptyModel)
 import App.Ports exposing (cacheHealthCenter, cachePinCode, cacheVillage, coordinates, logByRollbar, memoryQuota, persistentStorage, scrollToElement, setLanguage, storageQuota)
-import App.Utils exposing (getLoggedInData, getLoggedInModel, updateSubModel)
+import App.Utils exposing (getLoggedInData, getLoggedInModel, getSessionPages, updateSubModel)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
@@ -109,7 +109,6 @@ import Pages.Prenatal.RecurrentEncounter.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
 import Pages.Router exposing (activePageByUrl, pageToFragment)
-import Pages.Session.Model
 import Pages.Session.Update
 import Pages.StockManagement.Model
 import Pages.StockManagement.Update
@@ -455,13 +454,8 @@ update msg model =
                         MsgPageSession sessionId subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
-                                    data.sessionPages
-                                        |> Dict.get sessionId
-                                        |> Maybe.withDefault Pages.Session.Model.emptyModel
-                                        |> Pages.Session.Update.update currentDate
-                                            model.zscores
-                                            site
-                                            features
+                                    getSessionPages sessionId data
+                                        |> Pages.Session.Update.update site
                                             sessionId
                                             model.indexedDb
                                             subMsg
@@ -490,7 +484,7 @@ update msg model =
                                     data.prenatalRecurrentEncounterPages
                                         |> Dict.get id
                                         |> Maybe.withDefault Pages.Prenatal.RecurrentEncounter.Model.emptyModel
-                                        |> Pages.Prenatal.RecurrentEncounter.Update.update currentDate id subMsg
+                                        |> Pages.Prenatal.RecurrentEncounter.Update.update id subMsg
                             in
                             ( { data | prenatalRecurrentEncounterPages = Dict.insert id subModel data.prenatalRecurrentEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalRecurrentEncounter id) subCmd

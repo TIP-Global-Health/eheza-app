@@ -1,7 +1,6 @@
 module Pages.Session.Fetch exposing (fetch)
 
-import Activity.Model exposing (Activity(..), ChildActivity(..))
-import Activity.Utils
+import Activity.Model exposing (Activity(..))
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
@@ -9,14 +8,17 @@ import Backend.NutritionEncounter.Fetch
 import Backend.Session.Fetch exposing (fetchEditableSession)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import LocalData
 import Pages.Activities.Fetch
 import Pages.Activity.Fetch
+import Pages.Activity.Model
+import Pages.Activity.Utils exposing (resolveChildToLoad, summarizeForActivity)
 import Pages.Attendance.Fetch
 import Pages.Page exposing (SessionPage(..))
 import Pages.Participant.Fetch
 import Pages.Participants.Fetch
 import Pages.ProgressReport.Fetch
+import Pages.Session.Model
+import Participant.Utils exposing (childParticipant)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (SiteFeature)
 import ZScore.Model
@@ -26,11 +28,13 @@ fetch :
     NominalDate
     -> ZScore.Model.Model
     -> EverySet SiteFeature
+    -> Bool
     -> SessionId
     -> SessionPage
+    -> Pages.Session.Model.Model
     -> ModelIndexedDb
     -> List MsgIndexedDb
-fetch currentDate zscores features sessionId sessionPage db =
+fetch currentDate zscores features isChw sessionId sessionPage pages db =
     let
         fetchForChild childId =
             let
@@ -43,51 +47,26 @@ fetch currentDate zscores features sessionId sessionPage db =
             case sessionPage of
                 ActivityPage activity ->
                     let
-                        maybeChildActivity =
+                        childToLoad =
                             case activity of
-                                ChildActivity Height ->
-                                    Just Height
-
-                                ChildActivity Muac ->
-                                    Just Muac
-
-                                ChildActivity Weight ->
-                                    Just Weight
+                                ChildActivity childActivity ->
+                                    Dict.get sessionId db.editableSessions
+                                        |> Maybe.withDefault NotAsked
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.andThen
+                                            (\editableSession ->
+                                                summarizeForActivity childParticipant currentDate zscores features isChw childActivity editableSession db
+                                                    |> resolveChildToLoad
+                                                        (Dict.get childActivity pages.childActivityPages
+                                                            |> Maybe.withDefault Pages.Activity.Model.emptyModel
+                                                        )
+                                            )
 
                                 _ ->
                                     Nothing
 
-                        firstPendingParticipant =
-                            maybeChildActivity
-                                |> Maybe.andThen
-                                    (\childActivity ->
-                                        Dict.get sessionId db.editableSessions
-                                            |> Maybe.withDefault NotAsked
-                                            |> RemoteData.toMaybe
-                                            |> Maybe.andThen
-                                                (\ediatbleSession ->
-                                                    ediatbleSession.checkedIn
-                                                        |> LocalData.unwrap
-                                                            { completed = Dict.empty
-                                                            , pending = Dict.empty
-                                                            }
-                                                            (Activity.Utils.summarizeChildActivity currentDate
-                                                                zscores
-                                                                features
-                                                                childActivity
-                                                                ediatbleSession.offlineSession
-                                                                False
-                                                                db
-                                                            )
-                                                        |> .pending
-                                                        |> Dict.toList
-                                                        |> List.head
-                                                        |> Maybe.map Tuple.first
-                                                )
-                                    )
-
                         fetchIndividualDataMsgs =
-                            firstPendingParticipant
+                            childToLoad
                                 |> Maybe.map (\childId -> Backend.NutritionEncounter.Fetch.fetch childId db)
                                 |> Maybe.withDefault []
 
@@ -115,7 +94,7 @@ fetch currentDate zscores features sessionId sessionPage db =
                     Pages.Participants.Fetch.fetch sessionId
 
                 ProgressReportPage childId ->
-                    Pages.ProgressReport.Fetch.fetch childId db
+                    Pages.ProgressReport.Fetch.fetch sessionId childId db
 
         -- We gather all the msgs needed to construct an editable session, and
         -- also the message that indicates that we want the EditableSession

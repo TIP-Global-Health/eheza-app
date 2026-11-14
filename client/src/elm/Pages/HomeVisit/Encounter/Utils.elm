@@ -6,6 +6,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant)
+import Backend.Utils exposing (resolveIndividualParticipantWithDuplicates)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.HomeVisit.Encounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -40,7 +41,7 @@ generateAssembledData id db =
 
         previousMeasurementsWithDates =
             RemoteData.toMaybe encounter
-                |> Maybe.map (\encounter_ -> generatePreviousMeasurements (Just id) encounter_.participant db)
+                |> Maybe.map (\encounter_ -> generatePreviousMeasurements (Just id) (resolveIndividualParticipantWithDuplicates encounter_.participant db) db)
                 |> Maybe.withDefault []
     in
     RemoteData.map AssembledData (Success id)
@@ -53,7 +54,7 @@ generateAssembledData id db =
 
 generatePreviousMeasurements :
     Maybe HomeVisitEncounterId
-    -> IndividualEncounterParticipantId
+    -> List IndividualEncounterParticipantId
     -> ModelIndexedDb
     -> List ( NominalDate, ( HomeVisitEncounterId, HomeVisitMeasurements ) )
 generatePreviousMeasurements =

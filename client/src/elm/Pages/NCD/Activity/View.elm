@@ -120,7 +120,7 @@ viewHeader language id activity =
 viewContent : Language -> NominalDate -> Site -> NCDActivity -> Model -> AssembledData -> Html Msg
 viewContent language currentDate site activity model assembled =
     div [ class "ui unstackable items" ]
-        ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
+        ((viewPersonDetailsExtended language currentDate site assembled.person |> div [ class "item" ])
             :: viewActivity language currentDate site activity assembled model
         )
 

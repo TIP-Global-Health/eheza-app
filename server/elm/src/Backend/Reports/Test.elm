@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Reports.Decoder
     exposing
         ( acuteIllnessDiagnosisFromMapping
+        , decodeReportsData
         , decodeSyncResponse
         , prenatalDiagnosisFromMapping
         , prenatalIndicatorFromMapping
@@ -14,6 +15,7 @@ import Backend.Reports.Model
         ( AcuteIllnessDiagnosis(..)
         , AcuteIllnessEncounterType(..)
         , Gender(..)
+        , NutritionReportTableType(..)
         , PatientData
         , PrenatalDiagnosis(..)
         , PrenatalEncounterType(..)
@@ -278,9 +280,72 @@ payloadsTest =
         ]
 
 
+{-| The indicator keys of a stored Nutrition table.
+-}
+nutritionIndicatorKeys : List String
+nutritionIndicatorKeys =
+    [ "stunting_moderate", "stunting_severe", "wasting_moderate", "wasting_severe", "underweight_moderate", "underweight_severe", "acute_malnutrition_mam", "acute_malnutrition_sam" ]
+
+
+{-| A wide-scope report payload whose one stored Nutrition table has
+every rate given as `cell`.
+-}
+reportWithNutritionCell : String -> String
+reportWithNutritionCell cell =
+    let
+        rates =
+            nutritionIndicatorKeys
+                |> List.map (\key -> "\"" ++ key ++ "\": " ++ cell)
+                |> String.join ", "
+    in
+    """{"site": "rwanda", "features": "", "entity_name": "", "entity_type": "global", "params": {},
+      "additional": {"nutrition_report_data": [{"type": "prevalence-1", "period": ["2026-9"], "results": [{"""
+        ++ rates
+        ++ "}]}]}}"
+
+
+{-| A payload whose stored Nutrition table holds a list of percentages
+per indicator, as tables were stored before they carried counts.
+-}
+oldStoredReport : String
+oldStoredReport =
+    let
+        rows =
+            nutritionIndicatorKeys
+                |> List.map (\key -> "\"" ++ key ++ "\": [\"17.137%\"]")
+                |> String.join ", "
+    in
+    """{"site": "rwanda", "features": "", "entity_name": "", "entity_type": "global", "params": {},
+      "additional": {"nutrition_report_data": [{"type": "prevalence-1", "period": ["2026-9"], """
+        ++ rows
+        ++ "}]}}"
+
+
+nutritionReportDataTest : Test
+nutritionReportDataTest =
+    describe "The stored Nutrition tables"
+        [ test "a rate is read as its count and total" <|
+            \_ ->
+                decodeString decodeReportsData (reportWithNutritionCell "[85, 496]")
+                    |> Result.map (.nutritionReportData >> Maybe.map (List.map (\table -> ( table.tableType, table.captions, List.map .stuntingSevere table.results ))))
+                    |> Expect.equal (Ok (Just [ ( NutritionTablePrevalanceOneOrMore, [ "2026-9" ], [ { count = 85, total = 496 } ] ) ]))
+        , test "a table stored as percentages is skipped, and the rest of the report still loads" <|
+            \_ ->
+                decodeString decodeReportsData oldStoredReport
+                    |> Result.map .nutritionReportData
+                    |> Expect.equal (Ok Nothing)
+        , test "a broken rate in a table with counts fails the payload" <|
+            \_ ->
+                decodeString decodeReportsData (reportWithNutritionCell "[85, null]")
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
+        ]
+
+
 all : Test
 all =
     describe "Backend.Reports"
         [ letterTablesTest
+        , nutritionReportDataTest
         , payloadsTest
         ]

@@ -4,7 +4,8 @@
 #   bash .claude/skills/qa-tester/scripts/post-qa-report.sh <pr> <report.md> [--update <comment-id>]
 #
 # With --update, the run's earlier report comment is replaced instead of a new one added.
-# Refuses a report that does not open with the QA caption, so a stray file is never posted.
+# Refuses a report that does not open with the QA caption, so a stray file is never posted,
+# and one with no sentence on what the error channel showed on each build.
 
 set -eu
 
@@ -15,9 +16,14 @@ update=
 caption='**Manual tests executed using the QA Tester skill**'
 
 [ -s "$file" ] || { echo "empty or missing: $file" >&2; exit 1; }
-first=$(grep -m1 -v '^[[:space:]]*$' "$file" | sed 's/^> *//')
+first=$(grep -m1 -v '^[[:space:]]*$' "$file")
 if [ "$first" != "$caption" ]; then
-  echo "the report must open with: $caption" >&2
+  echo "the report's first line must be exactly, with no '>' in front: $caption" >&2
+  exit 1
+fi
+# The error channel is read on both builds, so the report says what each showed.
+if ! grep -iE 'error' "$file" | grep -qiE 'develop|either build|both builds|each build'; then
+  echo "the report must say what the error channel showed on each build, e.g. 'No console errors, failed requests or error responses on either build'" >&2
   exit 1
 fi
 
