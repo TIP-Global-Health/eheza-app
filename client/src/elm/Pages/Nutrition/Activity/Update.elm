@@ -118,8 +118,8 @@ update site id db msg model =
 
         SaveHeight skippedForms personId saved ->
             let
-                -- The form as shown on screen: after a reload, the not-taken
-                -- answer comes from the encounter, not from what was typed.
+                -- The form as shown on screen: the box as ticked in this run,
+                -- else the encounter's "unable to take" answer, which survives a reload.
                 form_ =
                     getMeasurementValueFunc saved
                         |> heightFormWithDefault skippedForms model.heightData.form
@@ -326,8 +326,8 @@ update site id db msg model =
 
         SaveWeight skippedForms personId saved ->
             let
-                -- The form as shown on screen: after a reload, the not-taken
-                -- answer comes from the encounter, not from what was typed.
+                -- The form as shown on screen: the box as ticked in this run,
+                -- else the encounter's "unable to take" answer, which survives a reload.
                 form_ =
                     getMeasurementValueFunc saved
                         |> weightFormWithDefault skippedForms model.weightData.form
