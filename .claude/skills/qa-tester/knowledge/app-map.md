@@ -326,6 +326,7 @@ flag simply does not appear.
   Below 28 weeks, leave `completeMentalHealth` out and the rest of the chain runs (19, 20 and 25 weeks tried).
 - With labs sent to the lab, Next Steps ends on Wait → Pause Encounter, which ENDS the visit (`scheduled_date.value2` = that day)
   and lands on `#pincode` drawing the main menu. A later day's results go in through Case Management › ANC Labs.
+  Wait shows only once it is the last open Next Steps task, so it is missing from the tab list until Next ANC Visit is saved.
 - BP 165/100 at 19 w 5 d gives `chronic-hypertension-immediate` + `high-risk-of-preeclampsia-initial`; at 36 w 5 d
   `gestational-hypertension-immediate`. Next Steps then has Medication Distribution, which `completeNextSteps` fills.
 - Severe preeclampsia fixture: `completeExamination(page, { vitals: { sys: '165', dia: '115' } })`, then reopen Examination from Completed →
@@ -339,6 +340,10 @@ flag simply does not appear.
   At 37 w+ a point-of-care result that diagnoses an emergency jumps to Next Steps behind the warning, leaving the other lab tabs unasked.
 - Eclampsia fixture: Dating, History, Examination, then Danger Signs "Convulsions" (no other activity needed). After 165/115 it also gives high risk
   of preeclampsia on develop; gestational hypertension is not stored beside eclampsia.
+- Moderate Preeclampsia fixture: 26 w, 165 / 100, then reopen Examination from Completed → Core Physical Exam → the first "Edema" (hands) →
+  Save: `moderate-preeclampsia-initial`, Next Steps Referral + Next ANC Visit. A later visit then has Treatment Review and Medication Distribution.
+- A later visit at 150 / 95 after earlier hypertension: Medication Distribution recommends Methyldopa three times a day, and Save stays off
+  until that option is ticked (server `methyldopa-3`).
 - Moderate risk of preeclampsia from BMI: reopen Examination from Completed → Nutrition Assessment → weight 80 (height 160 from the helper) → Save.
   BMI 31 gives moderate risk on its own, also beside gestational hypertension at 28 w (since #2511), with Aspirin. Beside chronic hypertension only high risk is stored.
 - "Hypertension before pregnancy": after `completeHistory`, reopen History from Completed → Medical History tab → tick it (it unticks that group's
@@ -389,6 +394,8 @@ flag simply does not appear.
   still open); the tablet's `scheduled_date` mirrors it. Editing either with drush and syncing
   moves the visit on the device. For a visit started yesterday and still open, set only `value`:
   `backdateEncounter` sets both, which ends the visit.
+- A nurse postpartum visit for a woman with no visits: Examination (`completeExamination(page, { isPostpartum: true, vitals })`) runs straight
+  after the start; To Do then lists Pregnancy Outcome, Symptom Review, Maternal Mental Health, Breastfeeding, Family Planning, Treatment Review.
 - Prenatal participant page buttons: nurse — FIRST ANTENATAL ENCOUNTER / SUBSEQUENT ANTENATAL
   ENCOUNTER / POSTPARTUM / RECORD PREGNANCY OUTCOME; a CHW's first reads FIRST ANTENATAL VISIT.
   `qa.state()` marks the off ones `[disabled]`, but read straight after navigating it can show
@@ -579,8 +586,9 @@ flag simply does not appear.
 - Read-only labels (`viewLabel`) end in a colon: "Will this test be performed today:", "Why not:". The question
   above a yes/no input ends in "?".
 - **ANC Labs** (nurse) lists an encounter while today is before its `prenatal_labs_results` resolution
-  date, labelled "ANC Lab Results", or "Vitals Recheck" while the recheck is owed. First-visit
-  Vitals with systolic 140–159 or diastolic 90–109 schedules the recheck; 145/95 does it.
+  date, labelled "ANC Lab Results", or "Vitals Recheck" while the recheck is owed. On develop, Vitals with systolic
+  140–159 or diastolic 90–109 schedules the recheck only at the first nurse contact, a postpartum one included (145/95 does it);
+  PR #2527 moves this to any antenatal nurse visit without earlier hypertension or Moderate Preeclampsia, never postpartum.
 - On the device, `shards` rows `prenatal_labs_results` / `ncd_labs_results` carry `performed_tests`,
   `completed_tests` and `date_concluded`; the server fields are `field_performed_tests` and
   `field_date_concluded`.
@@ -592,8 +600,10 @@ flag simply does not appear.
 - At the recurrent phase an HIV result brings Next Steps (HIV health education), so the phase ends on that save.
   Negative Syphilis or Hepatitis B, or Hemoglobin 12, bring none: the last result's save ends the phase and opens
   the progress report, which carries End Encounter.
-- Recurrent Examination (the vitals recheck) is offered whenever the first visit's BP was marginal, on any later
-  day, and the phase cannot end until it is taken. On a later day the last lab result alone still closes the entry.
+- Recurrent Examination (the vitals recheck) is offered on develop whenever the visit's BP was marginal, on any later
+  day, and after earlier Moderate Preeclampsia even when no recheck was scheduled. On a later day the last lab result alone
+  still closes the entry. PR #2527 (as QA'd) offers it only on the day the recheck was scheduled.
+- Encounter page cards: the label is plain text in `.card` (`page.locator('.card').allTextContents()`), counted in the "To Do (n)" tab.
 - After entering results, the lab technician lands on the progress report (SUBMIT RESULTS / EDIT RESULTS); Submit
   returns to Case Management. The nurse's Review & Accept saves the tablet's whole copy, changing only the review state.
 - Every save of a labs entry sets its `date_measured` to the save day.

@@ -839,3 +839,27 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a develop control ended with a 10 s hover timeout on "Save", which was disabled.
 - **Wrong conclusion:** none; app-map already says `.actions` takes the pointer from a disabled button.
 - **Rule:** before a scripted save, read the button's `active` class and save only when it is there.
+
+## Looking for the Wait task while other Next Steps tasks are open
+
+- **Symptom:** a later-visit borderline reading's Next Steps listed only "Next ANC Visit", on the build that schedules the recheck.
+- **Wrong conclusion:** no recheck was scheduled. The toggle check "borderline: Wait offered" would have failed on the PR.
+- **Rule:** prenatal Next Steps hides Wait until it is the only open task (`showWaitTask`). Save the other tasks first, or read the labs record's `performed_tests`.
+
+## `completeNextSteps` after earlier hypertension with a higher reading
+
+- **Symptom:** the helper stopped on Medication Distribution, Save disabled, "Methyldopa twice a day" ticked; a `.actions` hover timeout ended the control.
+- **Wrong conclusion:** the save is broken.
+- **Rule:** at 150 / 95 after earlier hypertension the page recommends a higher dose, and Save stays off until that option (or a reason) is ticked. Tick the option the page names before calling the helper.
+
+## Reading encounter cards by `.card .label`
+
+- **Symptom:** the recurrent page read "To Do (3)" with an empty card list; older scratch scripts had logged "left []" the same way.
+- **Wrong conclusion:** the page drew no activities.
+- **Rule:** the card label is plain text inside `.card`; read `page.locator('.card').allTextContents()`, and compare its count with the tab header.
+
+## A progress Monitor that matches `consoleErrors`
+
+- **Symptom:** a Monitor on `Error` lines fired once per driver command, since every reply prints `consoleErrors: None`.
+- **Wrong conclusion:** the chain was failing.
+- **Rule:** for a fixture chain, wait with a capped `until grep -qE 'DONE|^ERROR'` loop instead, and read the summaries after.
