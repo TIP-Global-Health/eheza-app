@@ -3043,7 +3043,8 @@ the first reading is enough. Postpartum encounters have no recheck.
 vitalsRecheckAllowed : AssembledData -> Bool
 vitalsRecheckAllowed assembled =
     (assembled.encounter.encounterType == NurseEncounter)
-        && isNothing (resolvePreviousHypertensionDiagnosis assembled.nursePreviousEncountersData)
+        && (not <| diagnosedHypertensionPreviously assembled)
+        && (not <| diagnosedModeratePreeclampsiaPreviously assembled)
 
 
 diagnosedHypertensionPreviously : AssembledData -> Bool

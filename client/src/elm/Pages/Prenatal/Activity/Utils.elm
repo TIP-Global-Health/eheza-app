@@ -551,7 +551,7 @@ expectNextStepsTask currentDate assembled task =
                    (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
                 && -- We show Wait activity when there's at least one
                    -- test that was performed, or, 2 hours waiting is required
-                   -- for blood pressure recheck during initial nurse encounter.
+                   -- for blood pressure recheck.
                    (getMeasurementValueFunc assembled.measurements.labsResults
                         |> Maybe.map
                             (\value ->

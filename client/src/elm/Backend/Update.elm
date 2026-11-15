@@ -9050,7 +9050,9 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
         |> Maybe.map
             (\assembled ->
                 if
+                    -- Blocks only scheduling; a recheck scheduled earlier can still be removed.
                     (test == Backend.Measurement.Model.TestVitalsRecheck)
+                        && testPerformedByExecutionNote executionNote
                         && (not <| Pages.Prenatal.Utils.vitalsRecheckAllowed assembled)
                 then
                     []

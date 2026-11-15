@@ -534,6 +534,35 @@ vitalsRecheckTest =
         , postpartumTest
         , severeReadingTest
         , normalReadingTest
+        , scheduledRecheckTest
+        ]
+
+
+{-| A recheck saved before the rules changed, or before an earlier diagnosis
+synced in, stays completable in the recurrent phase.
+-}
+scheduledRecheckTest : Test
+scheduledRecheckTest =
+    describe "A scheduled recheck keeps its vitals task"
+        [ test "at a postpartum visit" <|
+            \_ ->
+                postpartumVisit [] (withPendingTests [ TestVitalsRecheck ] borderlineReading)
+                    |> withItsDiagnoses
+                    |> recheckVitalsTaskShown
+                    |> Expect.equal True
+        , test "after hypertension diagnosed at an earlier visit" <|
+            \_ ->
+                antenatalVisit [ earlierVisit 4 [ DiagnosisGestationalHypertensionImmediate ] ]
+                    (withPendingTests [ TestVitalsRecheck ] borderlineReading)
+                    |> withItsDiagnoses
+                    |> recheckVitalsTaskShown
+                    |> Expect.equal True
+        , test "not when only another test is pending" <|
+            \_ ->
+                antenatalVisit [] (withPendingTests [ TestHemoglobin ] borderlineReading)
+                    |> withItsDiagnoses
+                    |> recheckVitalsTaskShown
+                    |> Expect.equal False
         ]
 
 
