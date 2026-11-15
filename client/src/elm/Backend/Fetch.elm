@@ -1,7 +1,9 @@
 module Backend.Fetch exposing (forget, shouldFetch)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
+import Backend.Entities exposing (PersonId)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.Session.Model exposing (ExpectedParticipants)
 import LocalData exposing (isNotNeeded)
 import RemoteData exposing (RemoteData(..), isNotAsked, isSuccess)
 import Time
@@ -526,7 +528,11 @@ forget : MsgIndexedDb -> ModelIndexedDb -> ModelIndexedDb
 forget msg model =
     case msg of
         FetchChildMeasurements childId ->
-            { model | childMeasurements = Dict.remove childId model.childMeasurements }
+            if heldByGroupSession .byChildId childId model then
+                model
+
+            else
+                { model | childMeasurements = Dict.remove childId model.childMeasurements }
 
         FetchClinics ->
             { model | clinics = NotAsked }
@@ -550,7 +556,11 @@ forget msg model =
             { model | villages = NotAsked }
 
         FetchMotherMeasurements motherId ->
-            { model | motherMeasurements = Dict.remove motherId model.motherMeasurements }
+            if heldByGroupSession .byMotherId motherId model then
+                model
+
+            else
+                { model | motherMeasurements = Dict.remove motherId model.motherMeasurements }
 
         FetchParticipantForms ->
             { model | participantForms = NotAsked }
@@ -565,7 +575,11 @@ forget msg model =
             { model | peopleInVillage = Dict.remove id model.peopleInVillage }
 
         FetchPerson id ->
-            { model | people = Dict.remove id model.people }
+            if heldByGroupSession .byChildId id model || heldByGroupSession .byMotherId id model then
+                model
+
+            else
+                { model | people = Dict.remove id model.people }
 
         FetchTraceContact id ->
             { model | traceContacts = Dict.remove id model.traceContacts }
@@ -714,3 +728,12 @@ forget msg model =
         -- For other messages, we do nothing.
         _ ->
             model
+
+
+{-| Is the person a mother or child of a group session whose participants are
+loaded? That session's lists are rebuilt from their data, so it stays.
+-}
+heldByGroupSession : (ExpectedParticipants -> Dict PersonId a) -> PersonId -> ModelIndexedDb -> Bool
+heldByGroupSession index personId model =
+    Dict.values model.expectedParticipants
+        |> List.any (RemoteData.map (index >> Dict.member personId) >> RemoteData.withDefault False)
