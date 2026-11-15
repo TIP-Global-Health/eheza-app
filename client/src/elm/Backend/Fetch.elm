@@ -1,9 +1,8 @@
 module Backend.Fetch exposing (forget, shouldFetch)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (PersonId)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Backend.Session.Model exposing (ExpectedParticipants)
 import LocalData exposing (isNotNeeded)
 import RemoteData exposing (RemoteData(..), isNotAsked, isSuccess)
 import Time
@@ -528,7 +527,7 @@ forget : MsgIndexedDb -> ModelIndexedDb -> ModelIndexedDb
 forget msg model =
     case msg of
         FetchChildMeasurements childId ->
-            if heldByGroupSession .byChildId childId model then
+            if heldByGroupSession childId model then
                 model
 
             else
@@ -556,7 +555,7 @@ forget msg model =
             { model | villages = NotAsked }
 
         FetchMotherMeasurements motherId ->
-            if heldByGroupSession .byMotherId motherId model then
+            if heldByGroupSession motherId model then
                 model
 
             else
@@ -575,7 +574,7 @@ forget msg model =
             { model | peopleInVillage = Dict.remove id model.peopleInVillage }
 
         FetchPerson id ->
-            if heldByGroupSession .byChildId id model || heldByGroupSession .byMotherId id model then
+            if heldByGroupSession id model then
                 model
 
             else
@@ -733,7 +732,10 @@ forget msg model =
 {-| Is the person a mother or child of a group session whose participants are
 loaded? That session's lists are rebuilt from their data, so it stays.
 -}
-heldByGroupSession : (ExpectedParticipants -> Dict PersonId a) -> PersonId -> ModelIndexedDb -> Bool
-heldByGroupSession index personId model =
+heldByGroupSession : PersonId -> ModelIndexedDb -> Bool
+heldByGroupSession personId model =
     Dict.values model.expectedParticipants
-        |> List.any (RemoteData.map (index >> Dict.member personId) >> RemoteData.withDefault False)
+        |> List.any
+            (RemoteData.map (\participants -> Dict.member personId participants.byChildId || Dict.member personId participants.byMotherId)
+                >> RemoteData.withDefault False
+            )
