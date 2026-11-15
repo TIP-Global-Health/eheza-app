@@ -9049,10 +9049,14 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
+                let
+                    testExecuted =
+                        testPerformedByExecutionNote executionNote
+                in
                 if
                     -- Blocks only scheduling; a recheck scheduled earlier can still be removed.
                     (test == Backend.Measurement.Model.TestVitalsRecheck)
-                        && testPerformedByExecutionNote executionNote
+                        && testExecuted
                         && (not <| Pages.Prenatal.Utils.vitalsRecheckAllowed assembled)
                 then
                     []
@@ -9060,7 +9064,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                 else
                     labsResultsTestAddedMsgs currentDate
                         test
-                        (testPerformedByExecutionNote executionNote)
+                        testExecuted
                         assembled.measurements.labsResults
                         (savePrenatalLabsResultsMsg id assembled.participant.person)
             )

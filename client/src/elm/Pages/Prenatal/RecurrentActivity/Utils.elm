@@ -53,7 +53,7 @@ expectActivity currentDate isLabTech assembled activity =
                 |> not
 
         RecurrentExamination ->
-            resolveExaminationTasks assembled
+            resolveExaminationTasks currentDate assembled
                 |> List.isEmpty
                 |> not
 
@@ -83,7 +83,7 @@ activityCompleted currentDate isLabTech assembled activity =
 
         RecurrentExamination ->
             (not <| expectActivity currentDate isLabTech assembled RecurrentExamination)
-                || (resolveExaminationTasks assembled
+                || (resolveExaminationTasks currentDate assembled
                         |> List.all (examinationMeasurementTaken assembled)
                    )
 
@@ -725,19 +725,19 @@ diagnosisRequiresEmergencyReferral diagnosis =
     List.member diagnosis emergencyReferralDiagnosesRecurrent
 
 
-resolveExaminationTasks : AssembledData -> List ExaminationTask
-resolveExaminationTasks assembled =
-    List.filter (expectExaminationTask assembled)
+resolveExaminationTasks : NominalDate -> AssembledData -> List ExaminationTask
+resolveExaminationTasks currentDate assembled =
+    List.filter (expectExaminationTask currentDate assembled)
         [ ExaminationVitals ]
 
 
-expectExaminationTask : AssembledData -> ExaminationTask -> Bool
-expectExaminationTask assembled task =
+expectExaminationTask : NominalDate -> AssembledData -> ExaminationTask -> Bool
+expectExaminationTask currentDate assembled task =
     case task of
         ExaminationVitals ->
-            -- The recheck runs when the initial phase scheduled it.
-            (getMeasurementValueFunc assembled.measurements.labsResults
-                |> Maybe.map (.performedTests >> EverySet.member TestVitalsRecheck)
+            -- The recheck runs when the initial phase scheduled it, on the same day.
+            (assembled.measurements.labsResults
+                |> Maybe.map (Tuple.second >> labsResultsTestData currentDate >> Tuple.first >> EverySet.member TestVitalsRecheck)
                 |> Maybe.withDefault False
             )
                 && (not <| diagnosedAnyOf hierarchalBloodPressureDiagnosesInitialPhase assembled)

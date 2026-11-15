@@ -557,6 +557,17 @@ scheduledRecheckTest =
                     |> withItsDiagnoses
                     |> recheckVitalsTaskShown
                     |> Expect.equal True
+        , test "not when it was scheduled on an earlier day" <|
+            \_ ->
+                let
+                    yesterday =
+                        Date.add Date.Days -1 currentDate
+                in
+                { borderlineReading | labsResults = TestFixtures.wrapMeasurement yesterday (TestFixtures.labsEntry yesterday [ TestVitalsRecheck ] []) }
+                    |> antenatalVisit []
+                    |> withItsDiagnoses
+                    |> recheckVitalsTaskShown
+                    |> Expect.equal False
         , test "not when only another test is pending" <|
             \_ ->
                 antenatalVisit [] (withPendingTests [ TestHemoglobin ] borderlineReading)
