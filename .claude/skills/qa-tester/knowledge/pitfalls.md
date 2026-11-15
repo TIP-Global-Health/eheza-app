@@ -875,3 +875,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after a server edit of a weight (9.5 → 9.6) was downloaded, the child's Weight form still showed 9.5; the device record read 9.6.
 - **Wrong conclusion:** the download did not reach the session.
 - **Rule:** the same pit as "A develop control run in the session that filled the form": a form typed into in this app run keeps that value. Read the device record, or reload and reopen, before judging a downloaded value.
+
+## Re-running a FAIL that the issue settled, not the code
+
+- **Symptom:** a PR came back to QA with no new commits; the developer had changed the issue's criteria so the failed row's behaviour became intended.
+- **Wrong conclusion:** re-run the row against the old expectation, or against the old report alone.
+- **Rule:** compare the PR's head with the last run's, and the issue's `updatedAt` and text. The new criterion is the oracle: the hold row becomes a fix row, and each new criterion gets its own row.
+
+## Reusing a video name on a re-run
+
+- **Symptom:** the re-run's upload video was about to be recorded as `qa-<pr>-upload-device-status-pr-build.mp4`, the earlier run's file.
+- **Wrong conclusion:** the earlier run's videos are only on GitHub now, so local names can be reused.
+- **Rule:** the ledger cites local paths. Give every re-run video a new name (`rerun-…`, or the new row number).

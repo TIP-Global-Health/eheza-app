@@ -608,7 +608,9 @@ flag simply does not appear.
   the progress report, which carries End Encounter.
 - Recurrent Examination (the vitals recheck) is offered on develop whenever the visit's BP was marginal, on any later
   day, and after earlier Moderate Preeclampsia even when no recheck was scheduled. On a later day the last lab result alone
-  still closes the entry. PR #2527 (as QA'd) offers it only on the day the recheck was scheduled.
+  still closes the entry. PR #2527 offers it only on the day the recheck was scheduled, as issue #2526 now asks.
+- A labs entry saved again on a later day (a lab result entered) drops `vitals-recheck` from its stored performed tests, on
+  develop and the PR alike. With nothing else owed it is concluded that day and leaves ANC Labs; the stale recheck never returns.
 - Encounter page cards: the label is plain text in `.card` (`page.locator('.card').allTextContents()`), counted in the "To Do (n)" tab.
 - After entering results, the lab technician lands on the progress report (SUBMIT RESULTS / EDIT RESULTS); Submit
   returns to Case Management. The nurse's Review & Accept saves the tablet's whole copy, changing only the review state.
