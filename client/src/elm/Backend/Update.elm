@@ -9050,10 +9050,8 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
         |> Maybe.map
             (\assembled ->
                 if
-                    -- We allow Vitals recheck only during initial encounter.
-                    -- At subsequent encounter, no need to retake blood preasure.
                     (test == Backend.Measurement.Model.TestVitalsRecheck)
-                        && (not <| List.isEmpty assembled.nursePreviousEncountersData)
+                        && (not <| Pages.Prenatal.Utils.vitalsRecheckAllowed assembled)
                 then
                     []
 
