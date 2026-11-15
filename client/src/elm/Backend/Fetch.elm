@@ -1,7 +1,6 @@
 module Backend.Fetch exposing (forget, shouldFetch)
 
 import AssocList as Dict
-import Backend.Entities exposing (PersonId)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import LocalData exposing (isNotNeeded)
 import RemoteData exposing (RemoteData(..), isNotAsked, isSuccess)
