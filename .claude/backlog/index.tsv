@@ -595,7 +595,7 @@ B-594	1	IMPLEMENTED	MED-HIGH	2526	2527	55	Prenatal: the two-hour blood-pressure 
 B-595	1	READY	LOW			55	Prenatal: a positive partner HIV result entered later by the NURSE shows "Is the partner taking ARVs?" already answered 
 B-596	4	READY	LOW			55	Prenatal postpartum nurse visit: the continued-hypertension treatment block appears in Medication Distribution only when
 B-597	4	READY	LOW			55	Home Visit › Feeding (and the Well Child CHW home-visit copy): "is water given with the food supplement" has not been as
-B-598	4	READY	LOW			55	NCDA › Antenatal Care step: "there are ANC visits not on record: Yes" with no month ticked counts as complete and saves 
+B-598	4	IMPLEMENTED	LOW	2530	2533	55	NCDA › Antenatal Care step: "there are ANC visits not on record: Yes" with no month ticked counts as complete and saves 
 B-599	1	READY	MED			B-594	Prenatal: a woman diagnosed with hypertension at an earlier visit can never be diagnosed with Moderate Preeclampsia from
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
