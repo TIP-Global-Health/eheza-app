@@ -48,7 +48,7 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html, div)
 import Html.Attributes
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), OutMsgChild(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHealthEducationForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyOngoingTreatmentReviewForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm, emptySendToHCForm)
+import Measurement.Model exposing (ModelChild, MsgChild(..), NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), OutMsgChild(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHealthEducationForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyOngoingTreatmentReviewForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm, emptySendToHCForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -100,11 +100,17 @@ import Measurement.Utils
         , treatmentReviewInputsAndTasks
         )
 import Measurement.View exposing (healthEducationFormInputsAndTasks, sendToFacilityInputsAndTasks, viewColorAlertIndication, viewNCDAContent)
+import Pages.ChildScoreboard.Activity.Model as ChildScoreboardActivity
+import Pages.ChildScoreboard.Activity.Update as ChildScoreboardActivityUpdate
+import Pages.Nutrition.Activity.Model as NutritionActivity
+import Pages.Nutrition.Activity.Update as NutritionActivityUpdate
+import Pages.WellChild.Activity.Model as WellChildActivity
+import Pages.WellChild.Activity.Update as WellChildActivityUpdate
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
-import Test.Html.Event as Event
+import Test.Html.Event as Event exposing (Event)
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (attribute, class, classes, containing, selected, tag, text)
 import TestFixtures exposing (testChild, testParticipant)
@@ -1297,6 +1303,7 @@ all =
         , ancVisitDateForMonthTest
         , ncdaAncMonthTapsTest
         , ncdaAncMonthsViewTest
+        , ncdaAncVisitsNotOnRecordTest
         , referralWhyNotTest
         , healthEducationWhyNotTest
         , ongoingTreatmentReviewFollowUpTest
@@ -2103,26 +2110,33 @@ ncdaAncMonthTapsTest =
         ]
 
 
-{-| The NCDA Antenatal Care step as the shared view renders it. The group
-session, Nutrition, Well Child and Child Scoreboard all render this one view,
-each passing its own toggle message; the group session's is used here.
+{-| The child the NCDA Antenatal Care step is filled for: born on 17 October
+2025, three months old on the day the questionnaire is filled.
+-}
+ancChildId : PersonId
+ancChildId =
+    toEntityUuid "ncda-child"
 
-The child's mother has a pregnancy whose EDD puts its start on 10 January
+
+ancChildBirthDate : NominalDate
+ancChildBirthDate =
+    Date.fromCalendarDate 2025 Oct 17
+
+
+ancQuestionnaireDate : NominalDate
+ancQuestionnaireDate =
+    Date.fromCalendarDate 2026 Jan 15
+
+
+{-| The child's mother has a pregnancy whose EDD puts its start on 10 January
 2025, with nurse prenatal encounters on the three recorded visit dates. A
 postpartum encounter is not an antenatal visit and blocks no month.
-
 -}
-ncdaAncMonthsViewTest : Test
-ncdaAncMonthsViewTest =
+ancPregnancyDb : ModelIndexedDb
+ancPregnancyDb =
     let
-        childId =
-            toEntityUuid "ncda-child"
-
         participantId =
             toEntityUuid "ncda-pregnancy"
-
-        birthDate =
-            Date.fromCalendarDate 2025 Oct 17
 
         pregnancy =
             let
@@ -2135,57 +2149,77 @@ ncdaAncMonthsViewTest =
             [ ( "enc-1", emptyPrenatalEncounter participantId ancRecordedMonth2 NurseEncounter Nothing )
             , ( "enc-2", emptyPrenatalEncounter participantId ancRecordedMonth4FirstDay NurseEncounter Nothing )
             , ( "enc-3", emptyPrenatalEncounter participantId ancRecordedMonth6LastDay NurseEncounter Nothing )
-            , ( "enc-4", emptyPrenatalEncounter participantId birthDate NursePostpartumEncounter Nothing )
+            , ( "enc-4", emptyPrenatalEncounter participantId ancChildBirthDate NursePostpartumEncounter Nothing )
             ]
                 |> List.map (\( id, encounter ) -> ( toEntityUuid id, encounter ))
                 |> Dict.fromList
+    in
+    { emptyModelIndexedDb
+        | pregnancyByNewborn = Dict.singleton ancChildId (Success (Just ( participantId, pregnancy )))
+        , prenatalEncountersByParticipant = Dict.singleton participantId (Success encounters)
+    }
 
-        db =
-            { emptyModelIndexedDb
-                | pregnancyByNewborn = Dict.singleton childId (Success (Just ( participantId, pregnancy )))
-                , prenatalEncountersByParticipant = Dict.singleton participantId (Success encounters)
-            }
 
-        config =
-            { atHealthCenter = True
-            , showTasksTray = False
-            , pregnancySummary = Nothing
-            , ncdaNeverFilled = True
-            , ncdaNotFilledAfterAgeOfSixMonths = True
-            , setUpdateANCVisitsMsg = SetUpdateANCVisits
-            , toggleANCVisitDateMsg = ToggleANCVisitDate
-            , setBoolInputMsg = SetNCDABoolInput
-            , setBirthWeightMsg = SetBirthWeight
-            , setChildReceivesVitaminAMsg = SetChildReceivesVitaminA
-            , setStuntingLevelMsg = SetStuntingLevel
-            , setWeightMsg = SetWeight
-            , setMuacMsg = SetMuac
-            , setStepMsg = SetNCDAFormStep
-            , setHelperStateMsg = SetNCDAHelperState
-            , setMeasurementOutOfRangePopupMsg = SetMeasurementOutOfRangePopup
-            , saveMsg = SendOutMsgChild NoOp
-            }
+{-| The NCDA config the group session builds, for a child whose NCDA was never
+filled before (so the Antenatal Care step is asked), with no newborn exam (so
+the birth weight and birth defect questions are asked on that step too).
+-}
+groupNCDAConfig : NCDAContentConfig MsgChild
+groupNCDAConfig =
+    { atHealthCenter = True
+    , showTasksTray = False
+    , pregnancySummary = Nothing
+    , ncdaNeverFilled = True
+    , ncdaNotFilledAfterAgeOfSixMonths = True
+    , setUpdateANCVisitsMsg = SetUpdateANCVisits
+    , toggleANCVisitDateMsg = ToggleANCVisitDate
+    , setBoolInputMsg = SetNCDABoolInput
+    , setBirthWeightMsg = SetBirthWeight
+    , setChildReceivesVitaminAMsg = SetChildReceivesVitaminA
+    , setStuntingLevelMsg = SetStuntingLevel
+    , setWeightMsg = SetWeight
+    , setMuacMsg = SetMuac
+    , setStepMsg = SetNCDAFormStep
+    , setHelperStateMsg = SetNCDAHelperState
+    , setMeasurementOutOfRangePopupMsg = SetMeasurementOutOfRangePopup
+    , saveMsg = SendOutMsgChild NoOp
+    }
 
-        form =
-            { emptyNCDAForm
-                | step = Just NCDAStepAntenatalCare
-                , updateANCVisits = Just True
-                , ancVisitsDates = Just EverySet.empty
-            }
 
+{-| The NCDA questionnaire as the shared view renders it for the child above,
+on the day it is filled, at Rwanda.
+-}
+renderNCDA : NCDAContentConfig msg -> ModelIndexedDb -> NCDAForm -> Query.Single msg
+renderNCDA config db form =
+    viewNCDAContent English
+        ancQuestionnaireDate
+        SiteRwanda
+        ancChildId
+        (testChild ancChildBirthDate)
+        config
+        Nothing
+        False
+        form
+        db
+        |> div []
+        |> Query.fromHtml
+
+
+{-| The NCDA Antenatal Care step as the shared view renders it. The group
+session, Nutrition, Well Child and Child Scoreboard all render this one view,
+each passing its own toggle message; the group session's is used here.
+-}
+ncdaAncMonthsViewTest : Test
+ncdaAncMonthsViewTest =
+    let
         rendered =
-            viewNCDAContent English
-                (Date.fromCalendarDate 2026 Jan 15)
-                SiteRwanda
-                childId
-                (testChild birthDate)
-                config
-                Nothing
-                False
-                form
-                db
-                |> div []
-                |> Query.fromHtml
+            renderNCDA groupNCDAConfig
+                ancPregnancyDb
+                { emptyNCDAForm
+                    | step = Just NCDAStepAntenatalCare
+                    , updateANCVisits = Just True
+                    , ancVisitsDates = Just EverySet.empty
+                }
 
         monthRadio monthNumber =
             rendered
@@ -2241,6 +2275,491 @@ ncdaAncMonthsViewTest =
             \_ ->
                 rendered
                     |> Query.has [ classes [ "label", "counseling" ] ]
+        ]
+
+
+
+-- NCDA ANTENATAL CARE: ANC VISITS NOT ON RECORD
+
+
+{-| The Antenatal Care step with every question but the ANC visits one
+answered: no supplements during pregnancy, no birth defect, born at 3000 g.
+
+With no newborn exam, the step's tasks are the ANC visits question, the months
+(only after "Yes"), supplements, birth defect and birth weight. So after "No"
+the step has 4 tasks, and after "Yes" it has 5.
+
+-}
+ancOtherQuestionsAnswered : NCDAForm
+ancOtherQuestionsAnswered =
+    { emptyNCDAForm
+        | step = Just NCDAStepAntenatalCare
+        , supplementsDuringPregnancy = Just False
+        , bornWithBirthDefect = Just False
+        , birthWeight = Just (WeightInGrm 3000)
+    }
+
+
+{-| The "ANC visits not on record" question is the first Yes/No question on
+the Antenatal Care step; its first answer is "Yes", its second "No".
+-}
+ancVisitsAnswer : Int -> Query.Single msg -> Query.Single msg
+ancVisitsAnswer index rendered =
+    rendered
+        |> Query.findAll [ class "yes-no" ]
+        |> Query.first
+        |> Query.findAll [ tag "input" ]
+        |> Query.index index
+
+
+tapAncVisitsAnswer : Bool -> Query.Single msg -> Event msg
+tapAncVisitsAnswer answer rendered =
+    rendered
+        |> Query.findAll [ class "yes-no" ]
+        |> Query.first
+        |> Query.findAll [ tag "label" ]
+        |> Query.index
+            (if answer then
+                0
+
+             else
+                1
+            )
+        |> Event.simulate Event.click
+
+
+tapAncMonth : Int -> Query.Single msg -> Event msg
+tapAncMonth monthNumber rendered =
+    rendered
+        |> Query.findAll [ class "month-radio" ]
+        |> Query.index (monthNumber - 1)
+        |> Query.find [ tag "label" ]
+        |> Event.simulate Event.click
+
+
+{-| What the nurse sees of the step's state: the task counter, and whether the
+one button below the step (Save, which also moves on to the next step) can be
+pressed. A button that cannot be pressed is greyed out and sends nothing.
+-}
+expectAncStep : { counter : String, canMoveOn : Bool } -> Query.Single msg -> Expect.Expectation
+expectAncStep expected rendered =
+    let
+        button =
+            rendered
+                |> Query.find [ class "actions" ]
+                |> Query.find [ tag "button" ]
+    in
+    Expect.all
+        [ \_ ->
+            rendered
+                |> Query.find [ class "tasks-count" ]
+                |> Query.has [ text expected.counter ]
+        , \_ ->
+            if expected.canMoveOn then
+                button |> Query.has [ class "active" ]
+
+            else
+                button |> Query.has [ class "disabled" ]
+        , \_ ->
+            if expected.canMoveOn then
+                button |> Event.simulate Event.click |> Event.toResult |> Expect.ok
+
+            else
+                button |> Event.simulate Event.click |> Event.toResult |> Expect.err
+        ]
+        ()
+
+
+ancStepIncomplete : { counter : String, canMoveOn : Bool }
+ancStepIncomplete =
+    { counter = "4/5 Tasks Completed", canMoveOn = False }
+
+
+ancStepCompleteAfterYes : { counter : String, canMoveOn : Bool }
+ancStepCompleteAfterYes =
+    { counter = "5/5 Tasks Completed", canMoveOn = True }
+
+
+ancStepCompleteAfterNo : { counter : String, canMoveOn : Bool }
+ancStepCompleteAfterNo =
+    { counter = "4/4 Tasks Completed", canMoveOn = True }
+
+
+{-| The Antenatal Care step, rendered by the shared view from a form in a given
+state. The group session's config is used; the hosts below drive the same view
+with their own configs.
+
+The child's mother has visits on record in months 2, 4 and 6, which the view
+shows checked and greyed out. Those are not months the nurse ticked.
+
+-}
+ncdaAncVisitsNotOnRecordViewTest : Test
+ncdaAncVisitsNotOnRecordViewTest =
+    let
+        shown form =
+            renderNCDA groupNCDAConfig ancPregnancyDb form
+
+        answeredYes picked =
+            { ancOtherQuestionsAnswered | updateANCVisits = Just True, ancVisitsDates = Just picked }
+
+        answeredNo picked =
+            { ancOtherQuestionsAnswered | updateANCVisits = Just False, ancVisitsDates = picked }
+
+        -- The NCDA saved earlier the same day, with every Antenatal Care
+        -- question answered "No" and a birth weight of 3000 g, and the given
+        -- months of ANC visits not on record.
+        savedWithMonths months =
+            { signs = EverySet.singleton NoNCDASigns
+            , birthWeight = Just (WeightInGrm 3000)
+            , ancVisitsDates = EverySet.fromList (List.map ancPickedDate months)
+            , receivesVitaminA = Nothing
+            , stuntingLevel = Nothing
+            , weight = Nothing
+            , muac = Nothing
+            }
+
+        reopened saved =
+            shown (ncdaFormWithDefault { emptyNCDAForm | step = Just NCDAStepAntenatalCare } (Just saved))
+
+        monthInput monthNumber rendered =
+            rendered
+                |> Query.findAll [ class "month-radio" ]
+                |> Query.index (monthNumber - 1)
+                |> Query.find [ tag "input" ]
+
+        -- The Child Scoreboard's step tray: the Antenatal Care tab is marked
+        -- completed when it is not the step being shown and its tasks are done.
+        ancTab rendered =
+            rendered
+                |> Query.find [ class "link-section", containing [ class "icon-ncda-antenatal" ] ]
+
+        childScoreboardOnLaterStep form =
+            renderNCDA (childScoreboardNCDAConfig ancChildId)
+                ancPregnancyDb
+                { form | step = Just NCDAStepUniversalInterventions }
+    in
+    describe "NCDA Antenatal Care: the \"ANC visits not on record\" answer and its months"
+        [ describe "In the NCDA questionnaire's Antenatal Care step, answering \"Yes\" to \"there are ANC visits not on record\" with no month ticked leaves the step incomplete: the task counter is short by one, and the step cannot be saved or continued"
+            [ test "\"Yes\" with no month ticked: the counter reads 4/5 and the button is greyed out and sends nothing" <|
+                \_ ->
+                    shown (answeredYes EverySet.empty)
+                        |> expectAncStep ancStepIncomplete
+            , -- Months 2, 4 and 6 show checked because visits are on record
+              -- in them. The nurse ticked none, so nothing about missing
+              -- visits would be saved.
+              test "\"Yes\" with only the months of recorded visits showing checked: the step is still incomplete" <|
+                \_ ->
+                    Expect.all
+                        [ \rendered ->
+                            monthInput 4 rendered |> Query.has [ classes [ "checked", "disabled" ] ]
+                        , expectAncStep ancStepIncomplete
+                        ]
+                        (shown (answeredYes EverySet.empty))
+            , test "\"Yes\" with no month ticked, for a child whose mother has no pregnancy on record: the step is incomplete" <|
+                \_ ->
+                    renderNCDA groupNCDAConfig emptyModelIndexedDb (answeredYes EverySet.empty)
+                        |> expectAncStep ancStepIncomplete
+            , test "\"Yes\" before any set of months exists on the form: the step is incomplete" <|
+                \_ ->
+                    shown { ancOtherQuestionsAnswered | updateANCVisits = Just True, ancVisitsDates = Nothing }
+                        |> expectAncStep ancStepIncomplete
+            , test "the Child Scoreboard tray, on a later step: the Antenatal Care tab is not marked completed after \"Yes\" with no month" <|
+                \_ ->
+                    childScoreboardOnLaterStep (answeredYes EverySet.empty)
+                        |> ancTab
+                        |> Query.hasNot [ class "completed" ]
+            ]
+        , describe "Ticking at least one month completes the step"
+            [ test "\"Yes\" with month 3 ticked: 5/5, the button can be pressed" <|
+                \_ ->
+                    shown (answeredYes (EverySet.singleton (ancPickedDate 3)))
+                        |> expectAncStep ancStepCompleteAfterYes
+            , test "\"Yes\" with months 3 and 8 ticked: 5/5, the button can be pressed" <|
+                \_ ->
+                    shown (answeredYes (EverySet.fromList [ ancPickedDate 3, ancPickedDate 8 ]))
+                        |> expectAncStep ancStepCompleteAfterYes
+            , test "the Child Scoreboard tray, on a later step: the Antenatal Care tab is marked completed after \"Yes\" with month 3" <|
+                \_ ->
+                    childScoreboardOnLaterStep (answeredYes (EverySet.singleton (ancPickedDate 3)))
+                        |> ancTab
+                        |> Query.has [ class "completed" ]
+            ]
+        , describe "Answering \"No\" completes the step without any month"
+            [ test "\"No\" with no set of months on the form: 4/4, the button can be pressed, no months are asked" <|
+                \_ ->
+                    Expect.all
+                        [ expectAncStep ancStepCompleteAfterNo
+                        , Query.findAll [ class "month-radio" ] >> Query.count (Expect.equal 0)
+                        ]
+                        (shown (answeredNo Nothing))
+            , -- The shape the form is left in when "No" is tapped, or when the
+              -- last ticked month is unticked: "No" with an empty set of months.
+              test "\"No\" with an empty set of months: 4/4, the button can be pressed" <|
+                \_ ->
+                    shown (answeredNo (Just EverySet.empty))
+                        |> expectAncStep ancStepCompleteAfterNo
+            ]
+        , describe "Reopening a saved questionnaire with months ticked shows \"Yes\" with those months, and the step is complete"
+            [ test "saved with months 3 and 8: \"Yes\" is selected" <|
+                \_ ->
+                    reopened (savedWithMonths [ 3, 8 ])
+                        |> ancVisitsAnswer 0
+                        |> Query.has [ class "checked" ]
+            , test "saved with months 3 and 8: months 3 and 8 show ticked, and are not greyed out" <|
+                \_ ->
+                    Expect.all
+                        (List.concatMap
+                            (\monthNumber ->
+                                [ monthInput monthNumber >> Query.has [ class "checked" ]
+                                , monthInput monthNumber >> Query.hasNot [ class "disabled" ]
+                                ]
+                            )
+                            [ 3, 8 ]
+                        )
+                        (reopened (savedWithMonths [ 3, 8 ]))
+            , test "saved with months 3 and 8: month 5 shows unticked" <|
+                \_ ->
+                    reopened (savedWithMonths [ 3, 8 ])
+                        |> monthInput 5
+                        |> Query.hasNot [ class "checked" ]
+            , test "saved with months 3 and 8: 5/5, the button can be pressed" <|
+                \_ ->
+                    reopened (savedWithMonths [ 3, 8 ])
+                        |> expectAncStep ancStepCompleteAfterYes
+            , -- A saved NCDA holds no answer to the question itself, only the
+              -- months; no months reads back as "No".
+              test "saved with no months: \"No\" is selected, 4/4, the button can be pressed" <|
+                \_ ->
+                    Expect.all
+                        [ ancVisitsAnswer 1 >> Query.has [ class "checked" ]
+                        , expectAncStep ancStepCompleteAfterNo
+                        ]
+                        (reopened (savedWithMonths []))
+            ]
+        ]
+
+
+{-| One place the NCDA questionnaire appears: the config it builds for the
+shared view, how it holds the form, and its own handler for the messages the
+view sends.
+-}
+type alias NCDAHost msg model =
+    { name : String
+    , config : NCDAContentConfig msg
+    , start : NCDAForm -> model
+    , update : msg -> model -> model
+    , form : model -> NCDAForm
+    }
+
+
+withNCDAForm : NCDAForm -> { a | ncdaData : NCDAData } -> { a | ncdaData : NCDAData }
+withNCDAForm form model =
+    let
+        data =
+            model.ncdaData
+    in
+    { model | ncdaData = { data | form = form } }
+
+
+groupSessionHost : NCDAHost MsgChild ModelChild
+groupSessionHost =
+    { name = "group session"
+    , config = groupNCDAConfig
+    , start = \form -> withNCDAForm form emptyModelChild
+    , update = \msg model -> updateChild SiteRwanda msg model |> (\( updated, _, _ ) -> updated)
+    , form = .ncdaData >> .form
+    }
+
+
+{-| The config the Child Scoreboard builds: filled by a CHW (not at a health
+centre), with the step tray.
+-}
+childScoreboardNCDAConfig : PersonId -> NCDAContentConfig ChildScoreboardActivity.Msg
+childScoreboardNCDAConfig personId =
+    { atHealthCenter = False
+    , showTasksTray = True
+    , pregnancySummary = Nothing
+    , ncdaNeverFilled = True
+    , ncdaNotFilledAfterAgeOfSixMonths = True
+    , setUpdateANCVisitsMsg = ChildScoreboardActivity.SetUpdateANCVisits
+    , toggleANCVisitDateMsg = ChildScoreboardActivity.ToggleANCVisitDate
+    , setBoolInputMsg = ChildScoreboardActivity.SetNCDABoolInput
+    , setBirthWeightMsg = ChildScoreboardActivity.SetBirthWeight
+    , setChildReceivesVitaminAMsg = ChildScoreboardActivity.SetChildReceivesVitaminA
+    , setStuntingLevelMsg = ChildScoreboardActivity.SetStuntingLevel
+    , setWeightMsg = ChildScoreboardActivity.SetWeight
+    , setMuacMsg = ChildScoreboardActivity.SetMuac
+    , setStepMsg = ChildScoreboardActivity.SetNCDAFormStep
+    , setHelperStateMsg = ChildScoreboardActivity.SetNCDAHelperState
+    , setMeasurementOutOfRangePopupMsg = ChildScoreboardActivity.SetMeasurementOutOfRangePopup
+    , saveMsg = ChildScoreboardActivity.SaveNCDA personId Nothing
+    }
+
+
+childScoreboardHost : NCDAHost ChildScoreboardActivity.Msg ChildScoreboardActivity.Model
+childScoreboardHost =
+    { name = "Child Scoreboard"
+    , config = childScoreboardNCDAConfig ancChildId
+    , start = \form -> withNCDAForm form ChildScoreboardActivity.emptyModel
+    , update =
+        \msg model ->
+            ChildScoreboardActivityUpdate.update ancQuestionnaireDate SiteRwanda (toEntityUuid "encounter") emptyModelIndexedDb msg model
+                |> (\( updated, _, _ ) -> updated)
+    , form = .ncdaData >> .form
+    }
+
+
+{-| The config Nutrition (individual) builds: at a health centre, with the
+step tray.
+-}
+nutritionHost : NCDAHost NutritionActivity.Msg NutritionActivity.Model
+nutritionHost =
+    { name = "Nutrition (individual)"
+    , config =
+        { atHealthCenter = True
+        , showTasksTray = True
+        , pregnancySummary = Nothing
+        , ncdaNeverFilled = True
+        , ncdaNotFilledAfterAgeOfSixMonths = True
+        , setUpdateANCVisitsMsg = NutritionActivity.SetUpdateANCVisits
+        , toggleANCVisitDateMsg = NutritionActivity.ToggleANCVisitDate
+        , setBoolInputMsg = NutritionActivity.SetNCDABoolInput
+        , setBirthWeightMsg = NutritionActivity.SetBirthWeight
+        , setChildReceivesVitaminAMsg = NutritionActivity.SetChildReceivesVitaminA
+        , setStuntingLevelMsg = NutritionActivity.SetStuntingLevel
+        , setWeightMsg = NutritionActivity.SetWeightForNCDA
+        , setMuacMsg = NutritionActivity.SetMuacForNCDA
+        , setStepMsg = NutritionActivity.SetNCDAFormStep
+        , setHelperStateMsg = NutritionActivity.SetNCDAHelperState
+        , setMeasurementOutOfRangePopupMsg = NutritionActivity.SetMeasurementOutOfRangePopup
+        , saveMsg = NutritionActivity.SaveNCDA ancChildId Nothing
+        }
+    , start = \form -> withNCDAForm form NutritionActivity.emptyModel
+    , update =
+        \msg model ->
+            NutritionActivityUpdate.update SiteRwanda (toEntityUuid "encounter") emptyModelIndexedDb msg model
+                |> (\( updated, _, _ ) -> updated)
+    , form = .ncdaData >> .form
+    }
+
+
+{-| The config Well Child builds: at a health centre, with the step tray.
+-}
+wellChildHost : NCDAHost WellChildActivity.Msg WellChildActivity.Model
+wellChildHost =
+    { name = "Well Child"
+    , config =
+        { atHealthCenter = True
+        , showTasksTray = True
+        , pregnancySummary = Nothing
+        , ncdaNeverFilled = True
+        , ncdaNotFilledAfterAgeOfSixMonths = True
+        , setUpdateANCVisitsMsg = WellChildActivity.SetUpdateANCVisits
+        , toggleANCVisitDateMsg = WellChildActivity.ToggleANCVisitDate
+        , setBoolInputMsg = WellChildActivity.SetNCDABoolInput
+        , setBirthWeightMsg = WellChildActivity.SetBirthWeight
+        , setChildReceivesVitaminAMsg = WellChildActivity.SetChildReceivesVitaminA
+        , setStuntingLevelMsg = WellChildActivity.SetStuntingLevel
+        , setWeightMsg = WellChildActivity.SetWeightForNCDA
+        , setMuacMsg = WellChildActivity.SetMuacForNCDA
+        , setStepMsg = WellChildActivity.SetNCDAFormStep
+        , setHelperStateMsg = WellChildActivity.SetNCDAHelperState
+        , setMeasurementOutOfRangePopupMsg = WellChildActivity.SetMeasurementOutOfRangePopup
+        , saveMsg = WellChildActivity.SaveNCDA ancChildId Nothing
+        }
+    , start = \form -> withNCDAForm form WellChildActivity.emptyModel
+    , update =
+        \msg model ->
+            WellChildActivityUpdate.update ancQuestionnaireDate SiteRwanda (toEntityUuid "encounter") emptyModelIndexedDb msg model
+                |> (\( updated, _, _ ) -> updated)
+    , form = .ncdaData >> .form
+    }
+
+
+{-| The nurse's taps, played through one place the questionnaire appears: each
+tap is made on the step as the shared view renders the current form, and the
+message it sends goes to that place's own handler. A tap that sends nothing
+stops the play with the reason.
+-}
+playAncTaps : NCDAHost msg model -> List (Query.Single msg -> Event msg) -> Result String model
+playAncTaps host taps =
+    List.foldl
+        (\tap ->
+            Result.andThen
+                (\model ->
+                    renderNCDA host.config ancPregnancyDb (host.form model)
+                        |> tap
+                        |> Event.toResult
+                        |> Result.map (\msg -> host.update msg model)
+                )
+        )
+        (Ok (host.start ancOtherQuestionsAnswered))
+        taps
+
+
+expectAfterAncTaps : NCDAHost msg model -> List (Query.Single msg -> Event msg) -> (Query.Single msg -> Expect.Expectation) -> Expect.Expectation
+expectAfterAncTaps host taps expectation =
+    case playAncTaps host taps of
+        Err reason ->
+            Expect.fail reason
+
+        Ok model ->
+            renderNCDA host.config ancPregnancyDb (host.form model)
+                |> expectation
+
+
+{-| Every criterion, played as taps on the step through each place the
+questionnaire appears. Month 3 and month 8 have no visit on record.
+-}
+ncdaAncVisitsNotOnRecordHostTest : NCDAHost msg model -> Test
+ncdaAncVisitsNotOnRecordHostTest host =
+    let
+        yes =
+            tapAncVisitsAnswer True
+
+        no =
+            tapAncVisitsAnswer False
+
+        expectAnswer index =
+            ancVisitsAnswer index >> Query.has [ class "checked" ]
+    in
+    describe ("This holds wherever the questionnaire appears: " ++ host.name)
+        [ test "answering \"Yes\" with no month ticked leaves the step incomplete: 4/5, the button is greyed out and sends nothing" <|
+            \_ ->
+                expectAfterAncTaps host [ yes ] (expectAncStep ancStepIncomplete)
+        , test "ticking at least one month completes the step: \"Yes\", month 3 — 5/5, the button can be pressed" <|
+            \_ ->
+                expectAfterAncTaps host [ yes, tapAncMonth 3 ] (expectAncStep ancStepCompleteAfterYes)
+        , test "\"Yes\", months 3 and 8, month 8 unticked: \"Yes\" stays, 5/5, the button can be pressed" <|
+            \_ ->
+                expectAfterAncTaps host
+                    [ yes, tapAncMonth 3, tapAncMonth 8, tapAncMonth 8 ]
+                    (Expect.all [ expectAnswer 0, expectAncStep ancStepCompleteAfterYes ])
+        , test "unticking the last ticked month switches the answer to \"No\", and the step is complete: 4/4" <|
+            \_ ->
+                expectAfterAncTaps host
+                    [ yes, tapAncMonth 3, tapAncMonth 3 ]
+                    (Expect.all [ expectAnswer 1, expectAncStep ancStepCompleteAfterNo ])
+        , test "answering \"No\" completes the step without any month: 4/4" <|
+            \_ ->
+                expectAfterAncTaps host [ no ] (expectAncStep ancStepCompleteAfterNo)
+        , test "\"Yes\" then \"No\": the step is complete without any month: 4/4" <|
+            \_ ->
+                expectAfterAncTaps host [ yes, no ] (expectAncStep ancStepCompleteAfterNo)
+        , test "\"No\" then \"Yes\" with no month ticked: the step is incomplete: 4/5" <|
+            \_ ->
+                expectAfterAncTaps host [ no, yes ] (expectAncStep ancStepIncomplete)
+        ]
+
+
+ncdaAncVisitsNotOnRecordTest : Test
+ncdaAncVisitsNotOnRecordTest =
+    describe "NCDA Antenatal Care: ANC visits not on record"
+        [ ncdaAncVisitsNotOnRecordViewTest
+        , ncdaAncVisitsNotOnRecordHostTest childScoreboardHost
+        , ncdaAncVisitsNotOnRecordHostTest groupSessionHost
+        , ncdaAncVisitsNotOnRecordHostTest nutritionHost
+        , ncdaAncVisitsNotOnRecordHostTest wellChildHost
         ]
 
 
