@@ -13,19 +13,28 @@ import Backend.Measurement.Model
         , AcuteFindingsValue
         , AcuteIllnessDangerSign(..)
         , AcuteIllnessMeasurements
+        , AdministrationNote(..)
+        , AdverseEvent(..)
         , ChildNutritionSign(..)
         , CovidTestingValue
         , FollowUpOption(..)
+        , Gender(..)
+        , HealthEducationSign(..)
         , HeartCPESign
         , LungsCPESign
         , Measurement
         , MuacInCm(..)
         , RapidTestResult(..)
+        , ReasonForNonReferral(..)
+        , ReasonForNotProvidingHealthEducation(..)
+        , ReasonForNotTaking(..)
+        , SendToHCSign(..)
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGIValue
         , SymptomsGeneralSign(..)
         , SymptomsRespiratorySign(..)
+        , TreatmentOngoingSign(..)
         , TreatmentReviewSign(..)
         , VitalsValue
         )
@@ -37,17 +46,22 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html, div)
 import Measurement.Model exposing (RangedMeasurement(..), emptyMuacForm)
+import Measurement.Utils exposing (ongoingTreatmentReviewFormWithDefault, toHealthEducationValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toSendToHCValueWithDefault, treatmentReviewInputsAndTasks)
 import Pages.AcuteIllness.Activity.Model exposing (Msg(..), emptyCovidTestingForm, emptyModel)
-import Pages.AcuteIllness.Activity.Types exposing (NextStepsTask(..), SymptomsTask(..))
+import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), NextStepsTask(..), OngoingTreatmentTask(..), PriorTreatmentTask(..), SymptomsTask(..))
 import Pages.AcuteIllness.Activity.Update exposing (update)
 import Pages.AcuteIllness.Activity.Utils
     exposing
-        ( covidTestingFormWithDefault
+        ( covidTestingFormInputsAndTasks
+        , covidTestingFormWithDefault
+        , laboratoryTasksCompletedFromTotal
         , malariaDangerSignsPresent
         , malariaTestingFormWithDefault
         , medicationDistributionFormInputsAndTasks
         , mildGastrointestinalInfectionSymptomsPresent
+        , nextStepsTasksCompletedFromTotal
         , nonBloodyDiarrheaAtSymptoms
+        , ongoingTreatmentTasksCompletedFromTotal
         , resolveAcuteIllnessDiagnosis
         , resolveAcuteIllnessDiagnosisByMalariaRDT
         , resolveAmoxicillinDosage
@@ -64,7 +78,10 @@ import Pages.AcuteIllness.Activity.Utils
         , symptomsTasksCompletedFromTotal
         , toCovidTestingValueWithDefault
         , toSymptomsGIValueWithDefault
+        , toTreatmentReviewValueWithDefault
+        , treatmentReviewFormInputsAndTasks
         , treatmentReviewFormWithDefault
+        , treatmentTasksCompletedFromTotal
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (generateAllEncountersData, generateAssembledData, splitByInitialNurseEncounter)
@@ -73,8 +90,9 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature(..))
 import Test exposing (Test, describe, test)
+import Test.Html.Event as Event
 import Test.Html.Query as Query
-import Test.Html.Selector exposing (class, text)
+import Test.Html.Selector exposing (class, containing, tag, text)
 import TestFixtures exposing (emptyAcuteIllnessMeasurements, testPerson)
 import Time
 import Translate exposing (translate)
@@ -898,6 +916,10 @@ all =
         , splitByInitialNurseEncounterTest
         , generateAssembledDataTest
         , followUpMalariaTestTest
+        , priorTreatmentDidItHelpTest
+        , covidTestNotPerformedReasonTest
+        , ongoingTreatmentReviewFollowUpTest
+        , nextStepsWhyNotTest
         ]
 
 
@@ -2118,4 +2140,585 @@ followUpOtherShapesTest =
                 coldFollowUp testPerson positiveFollowUp
                     |> Maybe.map .initialEncounter
                     |> Expect.equal (Just False)
+        ]
+
+
+
+-- YES/NO QUESTIONS WITH A FOLLOW-UP
+
+
+{-| The message the page sends when the label `answer` of the Yes/No input
+`inputClass` is tapped, read off the rendered inputs.
+-}
+tapYesNo : String -> String -> List (Html Msg) -> Result String Msg
+tapYesNo inputClass answer inputs =
+    div [] inputs
+        |> Query.fromHtml
+        |> Query.find [ class inputClass ]
+        |> Query.find [ tag "label", containing [ text answer ] ]
+        |> Event.simulate Event.click
+        |> Event.toResult
+
+
+{-| The page after `msgs` ran, in order, on a freshly opened activity whose
+encounter holds `measurements` as its saved records.
+-}
+reopenAndRun : AcuteIllnessMeasurements -> List Msg -> Pages.AcuteIllness.Activity.Model.Model
+reopenAndRun measurements msgs =
+    let
+        encounterId =
+            toEntityUuid "encounter"
+
+        db =
+            { emptyModelIndexedDb
+                | acuteIllnessMeasurements = Dict.singleton encounterId (Success measurements)
+            }
+    in
+    List.foldl
+        (\msg model ->
+            let
+                ( updatedModel, _, _ ) =
+                    update SiteRwanda Nothing encounterId db msg model
+            in
+            updatedModel
+        )
+        emptyModel
+        msgs
+
+
+{-| A task counts as complete when every one of its questions is answered.
+-}
+expectTaskComplete : Bool -> ( Int, Int ) -> Expect.Expectation
+expectTaskComplete complete ( completed, total ) =
+    if complete then
+        Expect.equal ( total, total ) ( completed, total )
+
+    else
+        completed |> Expect.lessThan total
+
+
+{-| Prior treatment asks "Did it help?" only after "took the medication: Yes".
+Each test reopens a saved record, taps the real Yes/No label, lets the page
+handle the message, and then reads what Save would store.
+-}
+priorTreatmentDidItHelpTest : Test
+priorTreatmentDidItHelpTest =
+    let
+        -- Reopens `saved`, taps `answer` on `inputClass`, and returns what Save would store and the task count.
+        change saved ( inputClass, answer ) expectation =
+            let
+                savedSet =
+                    EverySet.fromList saved
+
+                ( inputs, _ ) =
+                    treatmentReviewFormWithDefault emptyModel.priorTreatmentData.treatmentReviewForm (Just savedSet)
+                        |> treatmentReviewFormInputsAndTasks English
+            in
+            case tapYesNo inputClass answer inputs of
+                Ok msg ->
+                    let
+                        measurements =
+                            { emptyAcuteIllnessMeasurements | treatmentReview = wrapMeasurement savedSet }
+
+                        data =
+                            (reopenAndRun measurements [ msg ]).priorTreatmentData
+                    in
+                    expectation
+                        { stored =
+                            toTreatmentReviewValueWithDefault (Just savedSet) data.treatmentReviewForm
+                                |> Maybe.map (\value -> List.filter (\sign -> EverySet.member sign value) allSigns)
+                        , tasks = treatmentTasksCompletedFromTotal measurements data TreatmentReview
+                        }
+
+                Err error ->
+                    Expect.fail error
+
+        allSigns =
+            [ FeverPast6Hours
+            , FeverPast6HoursHelped
+            , MalariaToday
+            , MalariaTodayHelped
+            , MalariaWithinPastMonth
+            , MalariaWithinPastMonthHelped
+            , NoTreatmentReviewSigns
+            ]
+
+        storedIs expected result =
+            Expect.equal (Just expected) result.stored
+    in
+    describe "Acute Illness prior treatment: \"Did it help?\" when a saved answer is changed"
+        [ describe "Acute Illness prior treatment saved with \"took the medication: Yes, it helped: Yes\", changed to \"took the medication: No\" and saved: the record does not say it helped"
+            [ test "fever medication in the past 6 hours" <|
+                \_ ->
+                    change [ FeverPast6Hours, FeverPast6HoursHelped ] ( "fever-past-6-hours", "No" ) <|
+                        storedIs [ NoTreatmentReviewSigns ]
+            , test "malaria medication today" <|
+                \_ ->
+                    change [ MalariaToday, MalariaTodayHelped ] ( "malaria-today", "No" ) <|
+                        storedIs [ NoTreatmentReviewSigns ]
+            , test "malaria medication within the past month" <|
+                \_ ->
+                    change [ MalariaWithinPastMonth, MalariaWithinPastMonthHelped ] ( "malaria-within-past-month", "No" ) <|
+                        storedIs [ NoTreatmentReviewSigns ]
+            , test "the other medications' answers are saved as they were" <|
+                \_ ->
+                    change
+                        [ FeverPast6Hours
+                        , FeverPast6HoursHelped
+                        , MalariaToday
+                        , MalariaTodayHelped
+                        , MalariaWithinPastMonth
+                        ]
+                        ( "fever-past-6-hours", "No" )
+                    <|
+                        storedIs [ MalariaToday, MalariaTodayHelped, MalariaWithinPastMonth ]
+            , test "\"Did it help?\" is no longer asked, so the task is complete" <|
+                \_ ->
+                    change [ FeverPast6Hours, FeverPast6HoursHelped ]
+                        ( "fever-past-6-hours", "No" )
+                        (.tasks >> Expect.equal ( 3, 3 ))
+            ]
+        , describe "Prior treatment records the defect does not touch stay as they are"
+            [ test "saved \"took the medication: Yes, it helped: No\", changed to \"No\": the record does not say it helped" <|
+                \_ ->
+                    change [ FeverPast6Hours ] ( "fever-past-6-hours", "No" ) <|
+                        storedIs [ NoTreatmentReviewSigns ]
+            , test "saved \"took the medication: Yes, it helped: Yes\", another medication changed to \"No\": the record still says it helped" <|
+                \_ ->
+                    change [ FeverPast6Hours, FeverPast6HoursHelped, MalariaToday ] ( "malaria-today", "No" ) <|
+                        storedIs [ FeverPast6Hours, FeverPast6HoursHelped ]
+            , test "saved \"took the medication: Yes, it helped: Yes\", reopened without changes: the same record is saved" <|
+                \_ ->
+                    toTreatmentReviewValueWithDefault
+                        (Just (EverySet.fromList [ FeverPast6Hours, FeverPast6HoursHelped ]))
+                        emptyModel.priorTreatmentData.treatmentReviewForm
+                        |> Maybe.map (\value -> List.filter (\sign -> EverySet.member sign value) allSigns)
+                        |> Expect.equal (Just [ FeverPast6Hours, FeverPast6HoursHelped ])
+            ]
+        ]
+
+
+{-| COVID testing asks why the test was not performed after "test performed:
+No". Each test reopens a saved record, taps the real Yes/No label, lets the
+page handle the messages, and reads the task count and what Save would store.
+
+The patient is a man, so that the pregnancy question never joins the task list.
+
+-}
+covidTestNotPerformedReasonTest : Test
+covidTestNotPerformedReasonTest =
+    let
+        person =
+            { testPerson | gender = Male }
+
+        measurementsWith saved =
+            { emptyAcuteIllnessMeasurements | covidTesting = wrapMeasurement saved }
+
+        result saved msgs =
+            let
+                data =
+                    (reopenAndRun (measurementsWith saved) msgs).laboratoryData
+            in
+            { stored = toCovidTestingValueWithDefault (Just saved) data.covidTestingForm
+            , tasks = laboratoryTasksCompletedFromTotal dummyDate person (measurementsWith saved) data LaboratoryCovidTesting
+            }
+
+        -- Reopens `saved`, taps `answer` on "Test performed?", then runs `msgs`.
+        change saved answer msgs expectation =
+            let
+                ( inputs, _ ) =
+                    covidTestingFormWithDefault emptyCovidTestingForm (Just saved)
+                        |> covidTestingFormInputsAndTasks English dummyDate person
+            in
+            case tapYesNo "test-performed" answer inputs of
+                Ok msg ->
+                    expectation (result saved (msg :: msgs))
+
+                Err error ->
+                    Expect.fail error
+
+        notPerformed note =
+            CovidTestingValue RapidTestUnableToRun note
+    in
+    describe "Acute Illness COVID test: the reason for not testing when a saved answer is changed"
+        [ describe "A COVID test saved as not performed with a reason, changed to performed and saved: the record holds no reason for not testing"
+            (List.map
+                (\( label, note ) ->
+                    test ("saved reason: " ++ label ++ ", result Negative") <|
+                        \_ ->
+                            change (notPerformed (Just note))
+                                "Yes"
+                                [ SetCovidTestingBoolInput setCovidTestPositive False ]
+                                (.stored >> Expect.equal (Just (CovidTestingValue RapidTestNegative Nothing)))
+                )
+                [ ( "administered previously", AdministeredPreviously )
+                , ( "lack of stock", NonAdministrationLackOfStock )
+                , ( "other", NonAdministrationOther )
+                , ( "patient declined", NonAdministrationPatientDeclined )
+                , ( "patient unable to afford", NonAdministrationPatientUnableToAfford )
+                ]
+                ++ [ test "result Positive" <|
+                        \_ ->
+                            change (notPerformed (Just NonAdministrationLackOfStock))
+                                "Yes"
+                                [ SetCovidTestingBoolInput setCovidTestPositive True ]
+                                (.stored >> Maybe.map .administrationNote >> Expect.equal (Just Nothing))
+                   , test "saved as not performed while pregnant, result Negative" <|
+                        \_ ->
+                            change (CovidTestingValue RapidTestUnableToRunAndPregnant (Just NonAdministrationPatientDeclined))
+                                "Yes"
+                                [ SetCovidTestingBoolInput setCovidTestPositive False ]
+                                (.stored >> Maybe.map .administrationNote >> Expect.equal (Just Nothing))
+                   , test "the task is complete once the result is answered" <|
+                        \_ ->
+                            change (notPerformed (Just NonAdministrationLackOfStock))
+                                "Yes"
+                                [ SetCovidTestingBoolInput setCovidTestPositive False ]
+                                (.tasks >> expectTaskComplete True)
+                   , test "the task is not complete before the result is answered" <|
+                        \_ ->
+                            change (notPerformed (Just NonAdministrationLackOfStock))
+                                "Yes"
+                                []
+                                (.tasks >> expectTaskComplete False)
+                   ]
+            )
+        , describe "A COVID test saved as performed, changed to not performed: the reason is unanswered and the task is not complete until a reason is chosen"
+            [ test "saved Negative: the task is not complete" <|
+                \_ ->
+                    change (CovidTestingValue RapidTestNegative Nothing)
+                        "No"
+                        []
+                        (.tasks >> expectTaskComplete False)
+            , test "saved Positive: the task is not complete" <|
+                \_ ->
+                    change (CovidTestingValue RapidTestPositive Nothing)
+                        "No"
+                        []
+                        (.tasks >> expectTaskComplete False)
+            , test "once a reason is chosen the task is complete" <|
+                \_ ->
+                    change (CovidTestingValue RapidTestNegative Nothing)
+                        "No"
+                        [ SetCovidTestingAdministrationNote NonAdministrationLackOfStock ]
+                        (.tasks >> expectTaskComplete True)
+            , test "the chosen reason is what gets saved" <|
+                \_ ->
+                    change (CovidTestingValue RapidTestNegative Nothing)
+                        "No"
+                        [ SetCovidTestingAdministrationNote NonAdministrationLackOfStock ]
+                        (.stored >> Expect.equal (Just (notPerformed (Just NonAdministrationLackOfStock))))
+            ]
+        , describe "A COVID test saved as not performed with a reason, reopened without changes: the reason is shown selected and the task is complete"
+            [ test "the task is complete" <|
+                \_ ->
+                    (result (notPerformed (Just NonAdministrationPatientDeclined)) []).tasks
+                        |> expectTaskComplete True
+            , test "the saved reason is ticked" <|
+                \_ ->
+                    covidTestingFormWithDefault emptyCovidTestingForm (Just (notPerformed (Just NonAdministrationPatientDeclined)))
+                        |> covidTestingFormInputsAndTasks English dummyDate person
+                        |> Tuple.first
+                        |> div []
+                        |> Query.fromHtml
+                        |> Query.find [ class "why-not" ]
+                        |> Query.findAll [ tag "input", class "checked" ]
+                        |> Query.count (Expect.equal 1)
+            , test "saving it again stores the same record" <|
+                \_ ->
+                    (result (notPerformed (Just NonAdministrationPatientDeclined)) []).stored
+                        |> Expect.equal (Just (notPerformed (Just NonAdministrationPatientDeclined)))
+            , test "a different reason chosen replaces the saved one" <|
+                \_ ->
+                    (result (notPerformed (Just NonAdministrationPatientDeclined)) [ SetCovidTestingAdministrationNote NonAdministrationOther ]).stored
+                        |> Expect.equal (Just (notPerformed (Just NonAdministrationOther)))
+            ]
+        , describe "An older COVID test saved as not performed with no reason, reopened: the reason is unanswered and the task is not complete"
+            [ test "the task is not complete" <|
+                \_ ->
+                    (result (notPerformed Nothing) []).tasks
+                        |> expectTaskComplete False
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    result (notPerformed Nothing) [ SetCovidTestingAdministrationNote AdministeredPreviously ]
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just (notPerformed (Just AdministeredPreviously)))
+                            ]
+            ]
+        ]
+
+
+{-| The subsequent-visit treatment review, driven through the page: each test
+reopens a saved record, taps the real Yes/No label, lets the page handle the
+messages, and reads the task count and what Save would store.
+
+A stored "no reason" is `NoReasonForNotTakingSign`; stored "no number" is 0
+missed doses.
+
+-}
+ongoingTreatmentReviewFollowUpTest : Test
+ongoingTreatmentReviewFollowUpTest =
+    let
+        savedWith signs reason doses =
+            { signs = EverySet.fromList signs
+            , reasonForNotTaking = reason
+            , missedDoses = doses
+            , adverseEvents = EverySet.singleton NoAdverseEvent
+            }
+
+        -- Taken as prescribed, feeling better, no missed doses, no side effects.
+        savedAllGood =
+            savedWith [ FeelingBetter, TakenAsPrescribed ] NoReasonForNotTakingSign 0
+
+        savedNotTaken reason =
+            savedWith [ FeelingBetter ] reason 0
+
+        savedMissed doses =
+            savedWith [ FeelingBetter, MissedDoses, TakenAsPrescribed ] NoReasonForNotTakingSign doses
+
+        measurementsWith saved =
+            { emptyAcuteIllnessMeasurements | treatmentOngoing = wrapMeasurement saved }
+
+        result saved msgs =
+            let
+                data =
+                    (reopenAndRun (measurementsWith saved) msgs).ongoingTreatmentData
+            in
+            { stored =
+                toOngoingTreatmentReviewValueWithDefault (Just saved) data.treatmentReviewForm
+                    |> Maybe.map (\value -> ( value.reasonForNotTaking, value.missedDoses ))
+            , tasks = ongoingTreatmentTasksCompletedFromTotal (measurementsWith saved) data OngoingTreatmentReview
+            }
+
+        -- Reopens `saved`, taps `answer` on `inputClass`, then runs `msgs`.
+        change saved ( inputClass, answer ) msgs expectation =
+            let
+                ( inputs, _ ) =
+                    ongoingTreatmentReviewFormWithDefault emptyModel.ongoingTreatmentData.treatmentReviewForm (Just saved)
+                        |> treatmentReviewInputsAndTasks English
+                            SetOngoingTreatmentReviewBoolInput
+                            SetReasonForNotTaking
+                            SetTotalMissedDoses
+                            SetAdverseEvent
+            in
+            case tapYesNo inputClass answer inputs of
+                Ok msg ->
+                    expectation (result saved (msg :: msgs))
+
+                Err error ->
+                    Expect.fail error
+    in
+    describe "Acute Illness subsequent visit treatment review: follow-ups when a saved answer is changed"
+        [ describe "A treatment review saved with \"taken as prescribed: Yes\", changed to \"No\": \"Why not?\" is unanswered and the task is not complete until a reason is chosen"
+            [ test "the task is not complete" <|
+                \_ ->
+                    change savedAllGood
+                        ( "taken-as-prescribed", "No" )
+                        []
+                        (.tasks >> expectTaskComplete False)
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    change savedAllGood ( "taken-as-prescribed", "No" ) [ SetReasonForNotTaking NotTakingNoMoney ] <|
+                        Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( NotTakingNoMoney, 0 ))
+                            ]
+            ]
+        , describe "A treatment review saved with \"missed doses: No\", changed to \"Yes\": \"How many doses?\" is empty and the task is not complete until a number is chosen"
+            [ test "the task is not complete" <|
+                \_ ->
+                    change savedAllGood
+                        ( "missed-doses", "Yes" )
+                        []
+                        (.tasks >> expectTaskComplete False)
+            , test "once a number is chosen the task is complete and the number is saved" <|
+                \_ ->
+                    change savedAllGood ( "missed-doses", "Yes" ) [ SetTotalMissedDoses "4" ] <|
+                        Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( NoReasonForNotTakingSign, 4 ))
+                            ]
+            ]
+        , describe "A treatment review whose follow-up is no longer asked saves no earlier answer"
+            [ test "saved \"taken as prescribed: No\" with a reason, changed to \"Yes\" and saved: the record holds no reason" <|
+                \_ ->
+                    change (savedNotTaken NotTakingNoMoney) ( "taken-as-prescribed", "Yes" ) [] <|
+                        Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( NoReasonForNotTakingSign, 0 ))
+                            ]
+            , test "saved \"missed doses: Yes\" with 5 doses, changed to \"No\" and saved: the record holds zero doses" <|
+                \_ ->
+                    change (savedMissed 5) ( "missed-doses", "No" ) [] <|
+                        Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( NoReasonForNotTakingSign, 0 ))
+                            ]
+            ]
+        , describe "A treatment review saved with \"No\" and a reason, reopened without changes: the reason is shown selected and the task is complete"
+            [ test "saved reason: the task is complete and the same reason is saved" <|
+                \_ ->
+                    result (savedNotTaken NotTakingAdverseEvent) []
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( NotTakingAdverseEvent, 0 ))
+                            ]
+            , test "saved 5 missed doses: the task is complete and the same number is saved" <|
+                \_ ->
+                    result (savedMissed 5) []
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( NoReasonForNotTakingSign, 5 ))
+                            ]
+            ]
+        , describe "An older treatment review saved with \"No\" and no reason, reopened: \"Why not?\" is unanswered and the task is not complete"
+            [ test "saved \"taken as prescribed: No\" with no reason: the task is not complete" <|
+                \_ ->
+                    (result (savedNotTaken NoReasonForNotTakingSign) []).tasks
+                        |> expectTaskComplete False
+            , test "saved \"missed doses: Yes\" with zero doses: the task is not complete" <|
+                \_ ->
+                    (result (savedMissed 0) []).tasks
+                        |> expectTaskComplete False
+            ]
+        ]
+
+
+{-| Referral and health education in Next Steps, driven through the page: each
+test reopens a saved record, sends the page the Yes/No message its inputs
+send, and reads the task count and what Save would store.
+
+A stored "no reason" is `NoReasonForNonReferral` for a referral and
+`NoReasonForNotProvidingHealthEducation` for health education.
+
+-}
+nextStepsWhyNotTest : Test
+nextStepsWhyNotTest =
+    let
+        diagnosis =
+            Just DiagnosisMalariaUncomplicated
+
+        savedReferred =
+            { signs = EverySet.fromList [ HandReferrerForm, ReferToHealthCenter ]
+            , reasonForNotSendingToHC = NoReasonForNonReferral
+            }
+
+        savedNotReferred reason =
+            { signs = EverySet.singleton NoSendToHCSigns
+            , reasonForNotSendingToHC = reason
+            }
+
+        -- The referral task as a CHW (health centre) or a nurse (hospital) sees it, after `msgs`.
+        referral isChw saved msgs =
+            let
+                measurements =
+                    { emptyAcuteIllnessMeasurements | sendToHC = wrapMeasurement saved }
+
+                data =
+                    (reopenAndRun measurements msgs).nextStepsData
+            in
+            { stored =
+                toSendToHCValueWithDefault (Just saved) data.sendToHCForm
+                    |> Maybe.map (\value -> ( EverySet.member ReferToHealthCenter value.signs, value.reasonForNotSendingToHC ))
+            , tasks = nextStepsTasksCompletedFromTotal dummyDate isChw testPerson diagnosis measurements data NextStepsSendToHC
+            }
+
+        savedEducated =
+            { signs = EverySet.singleton MalariaPrevention
+            , reasonForNotProvidingHealthEducation = NoReasonForNotProvidingHealthEducation
+            }
+
+        savedNotEducated reason =
+            { signs = EverySet.singleton NoHealthEducationSigns
+            , reasonForNotProvidingHealthEducation = reason
+            }
+
+        education saved msgs =
+            let
+                measurements =
+                    { emptyAcuteIllnessMeasurements | healthEducation = wrapMeasurement saved }
+
+                data =
+                    (reopenAndRun measurements msgs).nextStepsData
+            in
+            { stored =
+                toHealthEducationValueWithDefault (Just saved) data.healthEducationForm
+                    |> Maybe.map (\value -> ( EverySet.member MalariaPrevention value.signs, value.reasonForNotProvidingHealthEducation ))
+            , tasks = nextStepsTasksCompletedFromTotal dummyDate True testPerson diagnosis measurements data NextStepsHealthEducation
+            }
+    in
+    describe "Acute Illness Next Steps: the \"Why not?\" follow-up when a saved answer is changed"
+        [ describe "A referral saved with \"Yes\", reopened and changed to \"No\": \"Why not?\" is unanswered and the task is not complete until a reason is chosen"
+            [ test "CHW, referral to the health centre: the task is not complete" <|
+                \_ ->
+                    (referral True savedReferred [ SetReferToHealthCenter False ]).tasks
+                        |> expectTaskComplete False
+            , test "nurse, referral to the hospital: the task is not complete" <|
+                \_ ->
+                    (referral False savedReferred [ SetReferToHealthCenter False ]).tasks
+                        |> expectTaskComplete False
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    referral True savedReferred [ SetReferToHealthCenter False, SetReasonForNonReferral ClientRefused ]
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( False, ClientRefused ))
+                            ]
+            ]
+        , describe "Health education saved with \"Yes\", reopened and changed to \"No\": \"Why not?\" is unanswered and the task is not complete until a reason is chosen"
+            [ test "the task is not complete" <|
+                \_ ->
+                    (education savedEducated [ SetProvidedEducationForDiagnosis False ]).tasks
+                        |> expectTaskComplete False
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    education savedEducated [ SetProvidedEducationForDiagnosis False, SetReasonForNotProvidingHealthEducation PatientRefused ]
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( False, PatientRefused ))
+                            ]
+            ]
+        , describe "A referral or health education saved with \"No\" and a reason, changed to \"Yes\" and saved: the record holds no reason"
+            [ test "referral" <|
+                \_ ->
+                    referral True (savedNotReferred ClientRefused) [ SetReferToHealthCenter True ]
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( True, NoReasonForNonReferral ))
+                            ]
+            , test "health education" <|
+                \_ ->
+                    education (savedNotEducated PatientRefused) [ SetProvidedEducationForDiagnosis True ]
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( True, NoReasonForNotProvidingHealthEducation ))
+                            ]
+            ]
+        , describe "A form saved with \"No\" and a reason, reopened without changes: the reason is shown selected and the task is complete"
+            [ test "referral: the task is complete and the same reason is saved" <|
+                \_ ->
+                    referral True (savedNotReferred ClientRefused) []
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( False, ClientRefused ))
+                            ]
+            , test "health education: the task is complete and the same reason is saved" <|
+                \_ ->
+                    education (savedNotEducated PatientRefused) []
+                        |> Expect.all
+                            [ .tasks >> expectTaskComplete True
+                            , .stored >> Expect.equal (Just ( False, PatientRefused ))
+                            ]
+            ]
+        , describe "An older record saved with \"No\" and no reason, reopened: \"Why not?\" is unanswered and the task is not complete"
+            [ test "referral: the task is not complete" <|
+                \_ ->
+                    (referral True (savedNotReferred NoReasonForNonReferral) []).tasks
+                        |> expectTaskComplete False
+            , test "health education: the task is not complete" <|
+                \_ ->
+                    (education (savedNotEducated NoReasonForNotProvidingHealthEducation) []).tasks
+                        |> expectTaskComplete False
+            ]
         ]
