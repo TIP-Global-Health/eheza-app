@@ -3607,8 +3607,11 @@ ancVisitsInpustAndTasks language personId person config form db =
                                   , div [ class "form-input anc-months" ]
                                         content
                                   ]
-                                , [ Maybe.Extra.filter (not << EverySet.isEmpty) form.ancVisitsDates
-                                        |> maybeToBoolTask
+                                , [ if EverySet.isEmpty encountersDatesFromForm then
+                                        Nothing
+
+                                    else
+                                        Just True
                                   ]
                                 )
 
