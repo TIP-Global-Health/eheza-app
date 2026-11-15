@@ -9,12 +9,20 @@ import Backend.IndividualEncounterParticipant.Model
         , IndividualEncounterType(..)
         , PregnancyOutcome(..)
         )
+import Backend.Measurement.Model exposing (LaboratoryTest(..), PrenatalMeasurements, emptyPrenatalMeasurements)
+import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..), emptyPrenatalEncounter)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date
+import EverySet
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
+import Pages.Prenatal.Activity.Types exposing (NextStepsTask(..))
+import Pages.Prenatal.Activity.Utils exposing (generatePrenatalDiagnosesForNurse, resolveNextStepsTasks)
+import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit, resolveShownPregnancy)
-import Pages.Prenatal.Utils exposing (marginalBloodPressureCondition)
+import Pages.Prenatal.RecurrentActivity.Utils
+import Pages.Prenatal.Utils exposing (marginalBloodPressureCondition, vitalsRecheckAllowed)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import Test exposing (Test, describe, test)
 import TestFixtures
@@ -327,6 +335,504 @@ resolveShownPregnancyTest =
         ]
 
 
+
+-- VITALS RECHECK
+--
+-- At a nurse antenatal visit, a borderline blood pressure (systolic 140-159
+-- or diastolic 90-109) is measured again two hours later. While the recheck
+-- is pending the Next Steps activity shows the Wait task, and the recheck
+-- itself is the Vitals task of the recurrent phase. A repeated reading still
+-- at 140 / 90 or above diagnoses hypertension: gestational from week 20,
+-- chronic before it. A reading of 160 / 110 or above diagnoses hypertension
+-- at once, with no recheck.
+--
+-- Hypertension and moderate preeclampsia are chronic for the rest of the
+-- pregnancy, so once either was diagnosed at an earlier visit, there is
+-- nothing for a recheck to decide: no recheck is scheduled, and no recheck
+-- vitals task is shown. Postpartum visits never recheck.
+--
+-- The scheduling decision is `vitalsRecheckAllowed`: the vitals save handler
+-- asks it whether to record the recheck as a pending test. The Wait task and
+-- the recurrent Vitals task are read from what was saved, so they are tested
+-- here from the saved shapes: a pending recheck test in the labs results
+-- record, and the vitals measurement.
+--
+-- Every visit below happens on `currentDate`; earlier visits of the same
+-- pregnancy are whole weeks before it.
+
+
+{-| The LMP that puts a visit on `currentDate` at the given gestational age,
+counted in days (140 days is exactly week 20).
+-}
+lmpForEGADays : Int -> NominalDate
+lmpForEGADays days =
+    Date.add Date.Days -days currentDate
+
+
+{-| A nurse visit of the given type on `currentDate`, at the given
+gestational age in days, after the given earlier nurse visits of the
+pregnancy, holding the given measurements. Nothing is diagnosed at it yet.
+-}
+nurseVisit : PrenatalEncounterType -> Int -> List PreviousEncounterData -> PrenatalMeasurements -> AssembledData
+nurseVisit encounterType egaDays earlierVisits measurements =
+    { id = toEntityUuid "visit"
+    , encounter = emptyPrenatalEncounter (toEntityUuid "pregnancy") currentDate encounterType Nothing
+    , participant = TestFixtures.testParticipant (lmpForEGADays egaDays) AntenatalEncounter
+    , person = TestFixtures.testPerson
+    , measurements = measurements
+    , nursePreviousEncountersData = earlierVisits
+    , chwPreviousMeasurementsWithDates = []
+    , globalLmpDate = Just (lmpForEGADays egaDays)
+    , globalObstetricHistory = Nothing
+    , vaccinationHistory = AssocList.empty
+    , vaccinationProgress = AssocList.empty
+    }
+
+
+{-| A nurse antenatal visit at 24 weeks: past week 20, so a hypertension
+found here is gestational.
+-}
+antenatalVisit : List PreviousEncounterData -> PrenatalMeasurements -> AssembledData
+antenatalVisit =
+    nurseVisit NurseEncounter (24 * 7)
+
+
+{-| A nurse postpartum visit, two weeks after a term birth.
+-}
+postpartumVisit : List PreviousEncounterData -> PrenatalMeasurements -> AssembledData
+postpartumVisit =
+    nurseVisit NursePostpartumEncounter (42 * 7)
+
+
+{-| An earlier nurse antenatal visit of the pregnancy, `weeksAgo` weeks
+before `currentDate`, where the given diagnoses were made. Its blood
+pressure was normal.
+-}
+earlierVisit : Int -> List PrenatalDiagnosis -> PreviousEncounterData
+earlierVisit weeksAgo diagnoses =
+    { startDate = Date.add Date.Weeks -weeksAgo currentDate
+    , diagnoses = EverySet.fromList diagnoses
+    , pastDiagnoses = EverySet.empty
+    , measurements = withBloodPressure 120 80 emptyPrenatalMeasurements
+    }
+
+
+{-| One earlier visit, four weeks back, with nothing diagnosed.
+-}
+oneUneventfulEarlierVisit : List PreviousEncounterData
+oneUneventfulEarlierVisit =
+    [ earlierVisit 4 [] ]
+
+
+{-| The vitals measurement with the given first reading, systolic first, and
+no repeated reading yet.
+-}
+withBloodPressure : Float -> Float -> PrenatalMeasurements -> PrenatalMeasurements
+withBloodPressure sys dia measurements =
+    { measurements | vitals = TestFixtures.wrapMeasurement currentDate (TestFixtures.vitalsValueWith sys dia) }
+
+
+{-| The vitals measurement with a first reading and the repeated reading
+taken two hours later, systolic first in each pair.
+-}
+withRecheckedBloodPressure : ( Float, Float ) -> ( Float, Float ) -> PrenatalMeasurements -> PrenatalMeasurements
+withRecheckedBloodPressure ( sys, dia ) ( sysRepeated, diaRepeated ) measurements =
+    let
+        first =
+            TestFixtures.vitalsValueWith sys dia
+    in
+    { measurements
+        | vitals =
+            TestFixtures.wrapMeasurement currentDate
+                { first | sysRepeated = Just sysRepeated, diaRepeated = Just diaRepeated }
+    }
+
+
+{-| The labs results record with the given tests pending: ordered at this
+visit, no result yet. A scheduled recheck is the pending `TestVitalsRecheck`.
+-}
+withPendingTests : List LaboratoryTest -> PrenatalMeasurements -> PrenatalMeasurements
+withPendingTests tests measurements =
+    { measurements | labsResults = TestFixtures.wrapMeasurement currentDate (TestFixtures.labsEntry currentDate tests []) }
+
+
+{-| A borderline first reading, 150 / 95, as in the issue's example.
+-}
+borderlineReading : PrenatalMeasurements
+borderlineReading =
+    withBloodPressure 150 95 emptyPrenatalMeasurements
+
+
+{-| The visit as the app holds it after the initial phase: the diagnoses
+the visit's measurements give are stored on the encounter.
+-}
+withItsDiagnoses : AssembledData -> AssembledData
+withItsDiagnoses assembled =
+    let
+        encounter =
+            assembled.encounter
+    in
+    { assembled | encounter = { encounter | diagnoses = generatePrenatalDiagnosesForNurse assembled } }
+
+
+{-| Whether the Wait task is one of the visit's Next Steps tasks.
+-}
+waitTaskShown : AssembledData -> Bool
+waitTaskShown assembled =
+    resolveNextStepsTasks currentDate assembled
+        |> List.member NextStepsWait
+
+
+{-| Whether the recurrent phase shows the recheck vitals task (a nurse, not
+a lab technician).
+-}
+recheckVitalsTaskShown : AssembledData -> Bool
+recheckVitalsTaskShown assembled =
+    Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate False assembled RecurrentExamination
+
+
+{-| The hypertension diagnoses the visit's measurements give, in a fixed
+order: chronic before gestational, immediate before after-recheck.
+-}
+hypertensionDiagnosed : AssembledData -> List PrenatalDiagnosis
+hypertensionDiagnosed assembled =
+    let
+        diagnoses =
+            generatePrenatalDiagnosesForNurse assembled
+    in
+    List.filter (\diagnosis -> EverySet.member diagnosis diagnoses) allHypertensionDiagnoses
+
+
+allHypertensionDiagnoses : List PrenatalDiagnosis
+allHypertensionDiagnoses =
+    [ DiagnosisChronicHypertensionImmediate
+    , DiagnosisChronicHypertensionAfterRecheck
+    , DiagnosisGestationalHypertensionImmediate
+    , DiagnosisGestationalHypertensionAfterRecheck
+    ]
+
+
+{-| Every stored form of moderate preeclampsia: both phases, before and from
+week 37.
+-}
+allModeratePreeclampsiaDiagnoses : List PrenatalDiagnosis
+allModeratePreeclampsiaDiagnoses =
+    [ DiagnosisModeratePreeclampsiaInitialPhase
+    , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaRecurrentPhase
+    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+    ]
+
+
+vitalsRecheckTest : Test
+vitalsRecheckTest =
+    describe "Vitals recheck at nurse visits"
+        [ laterVisitWithoutEarlierHypertensionTest
+        , laterVisitRecheckDiagnosesTest
+        , firstVisitTest
+        , earlierHypertensionTest
+        , postpartumTest
+        , severeReadingTest
+        , normalReadingTest
+        ]
+
+
+laterVisitWithoutEarlierHypertensionTest : Test
+laterVisitWithoutEarlierHypertensionTest =
+    describe "At a nurse antenatal visit after the first, with no hypertension or moderate preeclampsia diagnosed earlier in the pregnancy, a borderline reading schedules the two-hour recheck, and the Wait task appears"
+        [ test "a borderline reading schedules the two-hour recheck" <|
+            \_ ->
+                antenatalVisit oneUneventfulEarlierVisit borderlineReading
+                    |> vitalsRecheckAllowed
+                    |> Expect.equal True
+
+        -- The third visit: two earlier visits, neither diagnosing hypertension.
+        , test "after two earlier visits, a borderline reading schedules the two-hour recheck" <|
+            \_ ->
+                antenatalVisit [ earlierVisit 4 [], earlierVisit 8 [] ] borderlineReading
+                    |> vitalsRecheckAllowed
+                    |> Expect.equal True
+
+        -- What was diagnosed earlier is unrelated to blood pressure.
+        , test "after an earlier visit that diagnosed only malaria and heartburn, a borderline reading schedules the two-hour recheck" <|
+            \_ ->
+                antenatalVisit [ earlierVisit 4 [ DiagnosisHeartburn, DiagnosisMalariaInitialPhase ] ] borderlineReading
+                    |> vitalsRecheckAllowed
+                    |> Expect.equal True
+
+        -- Before week 20 the recheck still decides, as chronic hypertension.
+        , test "at a later visit at 16 weeks, a borderline reading schedules the two-hour recheck" <|
+            \_ ->
+                nurseVisit NurseEncounter (16 * 7) oneUneventfulEarlierVisit borderlineReading
+                    |> vitalsRecheckAllowed
+                    |> Expect.equal True
+
+        -- Once the recheck is recorded as a pending test, Next Steps waits for it.
+        , test "the Wait task appears while the scheduled recheck is pending" <|
+            \_ ->
+                antenatalVisit oneUneventfulEarlierVisit (withPendingTests [ TestVitalsRecheck ] borderlineReading)
+                    |> waitTaskShown
+                    |> Expect.equal True
+
+        -- The recheck itself, in the recurrent phase, for each borderline shape:
+        -- both numbers, systolic only, diastolic only.
+        , test "the recurrent phase shows the recheck vitals task for 150 / 95, 150 / 80 and 130 / 95" <|
+            \_ ->
+                [ ( 150, 95 ), ( 150, 80 ), ( 130, 95 ) ]
+                    |> List.map
+                        (\( sys, dia ) ->
+                            withBloodPressure sys dia emptyPrenatalMeasurements
+                                |> withPendingTests [ TestVitalsRecheck ]
+                                |> antenatalVisit oneUneventfulEarlierVisit
+                                |> withItsDiagnoses
+                                |> recheckVitalsTaskShown
+                        )
+                    |> Expect.equal [ True, True, True ]
+        ]
+
+
+laterVisitRecheckDiagnosesTest : Test
+laterVisitRecheckDiagnosesTest =
+    let
+        recheckedAt egaDays first repeated =
+            emptyPrenatalMeasurements
+                |> withRecheckedBloodPressure first repeated
+                |> nurseVisit NurseEncounter egaDays oneUneventfulEarlierVisit
+                |> hypertensionDiagnosed
+    in
+    describe "At such a visit, a repeated reading that is still 140 / 90 or above diagnoses hypertension, gestational from week 20 and chronic before it, as at the first visit"
+        [ test "repeated 150 / 95 at 24 weeks diagnoses gestational hypertension after recheck" <|
+            \_ ->
+                recheckedAt (24 * 7) ( 150, 95 ) ( 150, 95 )
+                    |> Expect.equal [ DiagnosisGestationalHypertensionAfterRecheck ]
+        , test "repeated 150 / 95 at 16 weeks diagnoses chronic hypertension after recheck" <|
+            \_ ->
+                recheckedAt (16 * 7) ( 150, 95 ) ( 150, 95 )
+                    |> Expect.equal [ DiagnosisChronicHypertensionAfterRecheck ]
+        , test "repeated 150 / 95 at exactly 20 weeks is gestational" <|
+            \_ ->
+                recheckedAt 140 ( 150, 95 ) ( 150, 95 )
+                    |> Expect.equal [ DiagnosisGestationalHypertensionAfterRecheck ]
+        , test "repeated 150 / 95 at 19 weeks and 6 days is chronic" <|
+            \_ ->
+                recheckedAt 139 ( 150, 95 ) ( 150, 95 )
+                    |> Expect.equal [ DiagnosisChronicHypertensionAfterRecheck ]
+        , test "repeated 140 / 80 (systolic at the threshold) diagnoses hypertension" <|
+            \_ ->
+                recheckedAt (24 * 7) ( 150, 95 ) ( 140, 80 )
+                    |> Expect.equal [ DiagnosisGestationalHypertensionAfterRecheck ]
+        , test "repeated 130 / 90 (diastolic at the threshold) diagnoses hypertension" <|
+            \_ ->
+                recheckedAt (24 * 7) ( 150, 95 ) ( 130, 90 )
+                    |> Expect.equal [ DiagnosisGestationalHypertensionAfterRecheck ]
+        , test "repeated 139 / 89 diagnoses no hypertension" <|
+            \_ ->
+                recheckedAt (24 * 7) ( 150, 95 ) ( 139, 89 )
+                    |> Expect.equal []
+        ]
+
+
+firstVisitTest : Test
+firstVisitTest =
+    describe "At the first nurse visit, the recheck works as it does today"
+        [ test "a borderline reading schedules the two-hour recheck" <|
+            \_ ->
+                antenatalVisit [] borderlineReading
+                    |> vitalsRecheckAllowed
+                    |> Expect.equal True
+
+        -- CHW visits came first; this is still the first nurse visit.
+        , test "after CHW visits only, a borderline reading schedules the two-hour recheck" <|
+            \_ ->
+                let
+                    assembled =
+                        antenatalVisit [] borderlineReading
+                in
+                { assembled
+                    | chwPreviousMeasurementsWithDates =
+                        [ ( Date.add Date.Weeks -4 currentDate, ChwFirstEncounter, emptyPrenatalMeasurements ) ]
+                }
+                    |> vitalsRecheckAllowed
+                    |> Expect.equal True
+        , test "the Wait task appears while the scheduled recheck is pending" <|
+            \_ ->
+                antenatalVisit [] (withPendingTests [ TestVitalsRecheck ] borderlineReading)
+                    |> waitTaskShown
+                    |> Expect.equal True
+        , test "the recurrent phase shows the recheck vitals task" <|
+            \_ ->
+                antenatalVisit [] (withPendingTests [ TestVitalsRecheck ] borderlineReading)
+                    |> withItsDiagnoses
+                    |> recheckVitalsTaskShown
+                    |> Expect.equal True
+        , test "repeated 150 / 95 at 24 weeks diagnoses gestational hypertension after recheck" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withRecheckedBloodPressure ( 150, 95 ) ( 150, 95 )
+                    |> antenatalVisit []
+                    |> hypertensionDiagnosed
+                    |> Expect.equal [ DiagnosisGestationalHypertensionAfterRecheck ]
+        ]
+
+
+earlierHypertensionTest : Test
+earlierHypertensionTest =
+    let
+        diagnosedEarlier =
+            allHypertensionDiagnoses ++ allModeratePreeclampsiaDiagnoses
+
+        -- For each diagnosis made at the earlier visit, the answer at this one.
+        forEachEarlierDiagnosis check =
+            List.map (\diagnosis -> ( diagnosis, check [ earlierVisit 4 [ diagnosis ] ] )) diagnosedEarlier
+
+        allFalse =
+            List.map (\diagnosis -> ( diagnosis, False )) diagnosedEarlier
+    in
+    describe "When hypertension or moderate preeclampsia was diagnosed at an earlier visit of the pregnancy, a borderline reading schedules no recheck and shows no Wait task. The recheck vitals task does not appear even when another test opens the recurrent phase"
+        [ test "a borderline reading schedules no recheck" <|
+            \_ ->
+                forEachEarlierDiagnosis (\earlier -> vitalsRecheckAllowed (antenatalVisit earlier borderlineReading))
+                    |> Expect.equal allFalse
+
+        -- Diagnosed two visits back, with an uneventful visit in between.
+        , test "diagnosed at a visit before the latest one, a borderline reading schedules no recheck" <|
+            \_ ->
+                antenatalVisit [ earlierVisit 4 [], earlierVisit 8 [ DiagnosisModeratePreeclampsiaInitialPhase ] ] borderlineReading
+                    |> vitalsRecheckAllowed
+                    |> Expect.equal False
+
+        -- Nothing was scheduled, so no test is pending.
+        , test "no Wait task is shown" <|
+            \_ ->
+                forEachEarlierDiagnosis (\earlier -> waitTaskShown (antenatalVisit earlier borderlineReading))
+                    |> Expect.equal allFalse
+
+        -- A pending hemoglobin result opens the recurrent phase on its own.
+        , test "the recheck vitals task does not appear when a pending hemoglobin test opens the recurrent phase" <|
+            \_ ->
+                forEachEarlierDiagnosis
+                    (\earlier ->
+                        antenatalVisit earlier (withPendingTests [ TestHemoglobin ] borderlineReading)
+                            |> withItsDiagnoses
+                            |> recheckVitalsTaskShown
+                    )
+                    |> Expect.equal allFalse
+        ]
+
+
+postpartumTest : Test
+postpartumTest =
+    describe "At a postpartum visit, a borderline reading never schedules a recheck, even when it is the woman's first nurse visit"
+        [ test "at the woman's first nurse visit, a borderline reading schedules no recheck" <|
+            \_ ->
+                postpartumVisit [] borderlineReading
+                    |> vitalsRecheckAllowed
+                    |> Expect.equal False
+        , test "after antenatal visits with no hypertension, a borderline reading schedules no recheck" <|
+            \_ ->
+                postpartumVisit [ earlierVisit 6 [], earlierVisit 20 [] ] borderlineReading
+                    |> vitalsRecheckAllowed
+                    |> Expect.equal False
+
+        -- Even a pending recheck saved by an older version shows no Wait task.
+        , test "no Wait task is shown, even with a pending recheck test" <|
+            \_ ->
+                postpartumVisit [] (withPendingTests [ TestVitalsRecheck ] borderlineReading)
+                    |> waitTaskShown
+                    |> Expect.equal False
+        ]
+
+
+severeReadingTest : Test
+severeReadingTest =
+    let
+        -- The reading at a visit at the given gestational age, after the
+        -- given earlier visits: its hypertension diagnoses, and whether the
+        -- recurrent phase shows the recheck vitals task once the visit's
+        -- diagnoses are stored.
+        readingAt egaDays earlier ( sys, dia ) =
+            let
+                assembled =
+                    nurseVisit NurseEncounter egaDays earlier (withBloodPressure sys dia emptyPrenatalMeasurements)
+            in
+            ( hypertensionDiagnosed assembled
+            , recheckVitalsTaskShown (withItsDiagnoses assembled)
+            )
+
+        immediately diagnosis =
+            ( [ diagnosis ], False )
+    in
+    describe "A reading of 160 / 110 or above at any visit diagnoses without a recheck, as today"
+        [ test "170 / 85 at a later visit at 24 weeks diagnoses gestational hypertension at once" <|
+            \_ ->
+                readingAt (24 * 7) oneUneventfulEarlierVisit ( 170, 85 )
+                    |> Expect.equal (immediately DiagnosisGestationalHypertensionImmediate)
+        , test "130 / 112 at a later visit at 24 weeks diagnoses gestational hypertension at once" <|
+            \_ ->
+                readingAt (24 * 7) oneUneventfulEarlierVisit ( 130, 112 )
+                    |> Expect.equal (immediately DiagnosisGestationalHypertensionImmediate)
+        , test "160 / 80 (systolic at the threshold) at a later visit diagnoses at once" <|
+            \_ ->
+                readingAt (24 * 7) oneUneventfulEarlierVisit ( 160, 80 )
+                    |> Expect.equal (immediately DiagnosisGestationalHypertensionImmediate)
+        , test "130 / 110 (diastolic at the threshold) at a later visit diagnoses at once" <|
+            \_ ->
+                readingAt (24 * 7) oneUneventfulEarlierVisit ( 130, 110 )
+                    |> Expect.equal (immediately DiagnosisGestationalHypertensionImmediate)
+
+        -- One number severe, the other borderline: still no recheck.
+        , test "165 / 95 at a later visit diagnoses at once, with no recheck vitals task" <|
+            \_ ->
+                readingAt (24 * 7) oneUneventfulEarlierVisit ( 165, 95 )
+                    |> Expect.equal (immediately DiagnosisGestationalHypertensionImmediate)
+        , test "170 / 85 at a later visit at 16 weeks diagnoses chronic hypertension at once" <|
+            \_ ->
+                readingAt (16 * 7) oneUneventfulEarlierVisit ( 170, 85 )
+                    |> Expect.equal (immediately DiagnosisChronicHypertensionImmediate)
+        , test "170 / 85 at the first visit at 24 weeks diagnoses gestational hypertension at once" <|
+            \_ ->
+                readingAt (24 * 7) [] ( 170, 85 )
+                    |> Expect.equal (immediately DiagnosisGestationalHypertensionImmediate)
+        ]
+
+
+normalReadingTest : Test
+normalReadingTest =
+    let
+        -- The normal reading at a visit after the given earlier visits: its
+        -- hypertension diagnoses, whether the Wait task is shown, and
+        -- whether the recurrent phase shows the recheck vitals task.
+        readingAfter earlier ( sys, dia ) =
+            let
+                assembled =
+                    antenatalVisit earlier (withBloodPressure sys dia emptyPrenatalMeasurements)
+            in
+            ( hypertensionDiagnosed assembled
+            , waitTaskShown assembled
+            , recheckVitalsTaskShown (withItsDiagnoses assembled)
+            )
+
+        nothing =
+            ( [], False, False )
+    in
+    describe "A normal reading schedules no recheck at any visit"
+        [ test "120 / 80 at the first visit: no diagnosis, no Wait task, no recheck vitals task" <|
+            \_ ->
+                readingAfter [] ( 120, 80 )
+                    |> Expect.equal nothing
+        , test "120 / 80 at a later visit: no diagnosis, no Wait task, no recheck vitals task" <|
+            \_ ->
+                readingAfter oneUneventfulEarlierVisit ( 120, 80 )
+                    |> Expect.equal nothing
+
+        -- Just under both borderline thresholds.
+        , test "139 / 89 at a later visit: no diagnosis, no Wait task, no recheck vitals task" <|
+            \_ ->
+                readingAfter oneUneventfulEarlierVisit ( 139, 89 )
+                    |> Expect.equal nothing
+        ]
+
+
 all : Test
 all =
     describe "Prenatal tests"
@@ -334,4 +840,5 @@ all =
         , marginalBloodPressureConditionTest
         , pregnancyConcludedInTodaysPostpartumVisitTest
         , resolveShownPregnancyTest
+        , vitalsRecheckTest
         ]
