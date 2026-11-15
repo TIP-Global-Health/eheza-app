@@ -863,3 +863,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a Monitor on `Error` lines fired once per driver command, since every reply prints `consoleErrors: None`.
 - **Wrong conclusion:** the chain was failing.
 - **Rule:** for a fixture chain, wait with a capped `until grep -qE 'DONE|^ERROR'` loop instead, and read the summaries after.
+
+## Registering a fixture holds its people for five minutes
+
+- **Symptom:** none here; caught while planning. Registering families opens each person's and relationship page, which asks for those people's data.
+- **Wrong conclusion:** only the pages the scenario opens decide what the five-minute forget drops.
+- **Rule:** for a scenario about data forgotten five minutes after its page, reload the app after building the fixture (`page.goto('/')` + `reload`), then re-enter the screen. Otherwise every registered person is forgotten together.
+
+## A group form showing its typed value after a download changed the record
+
+- **Symptom:** after a server edit of a weight (9.5 → 9.6) was downloaded, the child's Weight form still showed 9.5; the device record read 9.6.
+- **Wrong conclusion:** the download did not reach the session.
+- **Rule:** the same pit as "A develop control run in the session that filled the form": a form typed into in this app run keeps that value. Read the device record, or reload and reopen, before judging a downloaded value.

@@ -527,11 +527,17 @@ flag simply does not appear.
 - ANC Examination: Vitals / Nutrition Assessment / Core Physical Exam / Obstetrical Exam /
   Breast Exam. Height, weight, BMI and MUAC share one task and one Save; fundal height is on
   Obstetrical Exam behind "Is fundal palpable? → Yes". Neither form prints its ranges.
-- **Group sessions start empty on a fresh device** ("This Group has no mothers assigned to
-  it") even though the backend has participants. Build one: Attendance → Add New Participant
-  → register the mother → her person page → Add Child → "is the parent of" → Save. The
-  child's activities are then under PARTICIPANTS in the header → the mother's card → the
-  baby icon.
+- **A group session's Participants page lists only mothers checked in today**, so a new day's session looks
+  empty; Attendance's "Display all mothers / caregivers" lists every member from earlier runs (Nyange I has dozens).
+  Build families: Attendance → Add New Participant → register the mother → her person page → Add Child →
+  "is the parent of" → Save (checks her in). The child's activities are then under PARTICIPANTS in the header →
+  the mother's card → the baby icon. Programs at Nyange: PMTCT, FBF, ACHI; FBF has only Nyange I.
+- Participants cards cut names to "E2ETest Qa2532…", so a video shows counts, not names; Attendance shows full names.
+  The Activities page cards read "<n> / <N> Completed" per activity and settle about a second after the page opens.
+- From a session page, `.link-back` three times reaches the main menu in-app (Participants → Groups → Programs → `#pincode`).
+- **The five-minute forget**: data a page asked for is dropped five minutes after no page asks for it (`CheckDataWanted`,
+  `App/Update.elm`). Reloads are `/sw/nodes/person/<uuid>`, `child-measurements/<uuid>`, `relationship?person=<uuid>`;
+  `page.context().on('request')` shows which person's data a step reloads.
 - Group activity page (activities icon in the header → a card's `.icon-task-<name>`; Child Scorecard is
   `icon-task-history`, nurse only, and first asks "YES, PROCEED / NO, SKIP" on the activities page). Children are
   `.participant.card` (the shown one `.active`), in uuid order, not registration order; tabs are `.ui.tabular.menu .item`.
@@ -763,6 +769,8 @@ flag simply does not appear.
   goto does not reload. Measurements and visits then carry that date, and the backend stores
   it. The service worker keeps the real date (see pitfalls); `page.clock` must not be used.
   A shift of more than a year into the past works. Queued saves still upload once the offset is back to 0.
+  A subclass that reads `localStorage.qaDateOffset` on every `now()` call takes a new offset without a reload: the
+  app's clock picks it up within 10 s (its Tick). Moving it +6.5 min passed the five-minute forget in one step.
 - A PR whose branch is behind develop, or stacked on another PR: build its tree with `git merge-tree --write-tree origin/develop origin/<branch>`
   and `git checkout <tree> -- <files>`; the control tree merges develop with the parent branch.
   When that merge conflicts, overlay every `client/src` file that differs between HEAD and the PR tip (`git diff --name-only HEAD <branch>`).
