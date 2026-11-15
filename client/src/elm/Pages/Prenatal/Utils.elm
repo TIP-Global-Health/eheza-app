@@ -3037,11 +3037,13 @@ diagnosedHypertension phase =
 
 
 {-| Whether a borderline blood pressure at this encounter schedules the
-two-hour recheck.
+two-hour recheck. Once Hypertension or Moderate Preeclampsia is diagnosed,
+the first reading is enough. Postpartum encounters have no recheck.
 -}
 vitalsRecheckAllowed : AssembledData -> Bool
 vitalsRecheckAllowed assembled =
-    List.isEmpty assembled.nursePreviousEncountersData
+    (assembled.encounter.encounterType == NurseEncounter)
+        && isNothing (resolvePreviousHypertensionDiagnosis assembled.nursePreviousEncountersData)
 
 
 diagnosedHypertensionPreviously : AssembledData -> Bool
