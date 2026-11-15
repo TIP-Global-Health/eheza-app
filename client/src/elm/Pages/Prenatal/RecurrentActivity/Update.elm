@@ -1136,7 +1136,7 @@ update id isLabTech db msg model =
         SetRecommendedTreatmentSign allowedSigns sign ->
             let
                 updatedSigns =
-                    -- Since we may have values from inital phase of encounter, we make
+                    -- Since we may have values from initial phase of encounter, we make
                     -- sure to preserve them, before setting new value at recurrent phase.
                     Maybe.map
                         (\signs ->

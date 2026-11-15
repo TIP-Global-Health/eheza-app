@@ -1,4 +1,4 @@
-module Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, HypertensionTreatementUpdateOption(..), MalariaPreventionData, MalariaPreventionForm, MedicationDistributionForm, PrenatalEncounterPhase(..), PreviousEncounterData, ReferralForm, VaccinationProgressDict, emptyHealthEducationForm, emptyMalariaPreventionData, emptyMedicationDistributionForm, emptyReferralForm)
+module Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, HypertensionTreatmentUpdateOption(..), MalariaPreventionData, MalariaPreventionForm, MedicationDistributionForm, PrenatalEncounterPhase(..), PreviousEncounterData, ReferralForm, VaccinationProgressDict, emptyHealthEducationForm, emptyMalariaPreventionData, emptyMedicationDistributionForm, emptyReferralForm)
 
 import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
@@ -222,11 +222,11 @@ type PrenatalEncounterPhase
     | PrenatalEncounterPhaseRecurrent
 
 
-type HypertensionTreatementUpdateOption
-    = TreatementUpdateMaintainCurrentDoasage
-    | TreatementUpdateIncreaseOneDose
-    | TreatementUpdateIncreaseTwoDoses
-    | TreatementUpdateHospitalize
+type HypertensionTreatmentUpdateOption
+    = TreatmentUpdateMaintainCurrentDosage
+    | TreatmentUpdateIncreaseOneDose
+    | TreatmentUpdateIncreaseTwoDoses
+    | TreatmentUpdateHospitalize
 
 
 type alias MalariaPreventionData =

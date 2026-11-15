@@ -785,3 +785,57 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a recorded dashboard row waited 60 s on "CHW SNAPSHOT" with a spinner, leaving a dead video.
 - **Wrong conclusion:** the dashboard is broken on this build.
 - **Rule:** app-map already says it needs the health centre's statistics. Before recording, run `hedley_stats_calculate_stats_for_health_center(4)`, sync, and reload.
+
+## Clicking a main-menu card by its text
+
+- **Symptom:** `qa.click('PARTICIPANT DIRECTORY')` returned ok and the page stayed on the main menu.
+- **Wrong conclusion:** the click navigated; the next step then waits on the wrong page.
+- **Rule:** the card's handler is on its icon. Click `.icon-task-participant-directory` (as the helpers click `.icon-task-clinical`), and check the URL before going on.
+
+## A form loop that picks "the first tab not completed"
+
+- **Symptom:** the Medication script saved Fefol twice and MMS twice; the log showed the same tab answered again after its save.
+- **Wrong conclusion:** the save did not take, or the app asks again.
+- **Rule:** the active tab never carries `completed` (app-map, Controls), and after some saves the app leaves a saved tab active. Track the tabs the script has saved by name, not by class.
+
+## `ddev` run from the scratchpad
+
+- **Symptom:** `ddev mysql < file.sql` failed with `unknown command "mysql" for "ddev"`.
+- **Wrong conclusion:** ddev or the database is down.
+- **Rule:** ddev finds its project from the working directory. Prefix every ddev call with `cd /var/www/html/ihangane &&`.
+
+## Logging in to Drupal a second time in one driver session
+
+- **Symptom:** a second report recording failed at once: `input[name="name"]` never appeared on `/user/login`.
+- **Wrong conclusion:** the admin site is broken.
+- **Rule:** the driver keeps the Drupal session. Open `/user/login` and call `h.reports.drupalLogin` only when the name field is visible.
+
+## Waiting for an element that was already showing before the click
+
+- **Symptom:** on develop, a check that the banner came back after a second failed Save read 0, though the video showed it.
+- **Wrong conclusion:** the second save did not fail, or the banner went for good.
+- **Rule:** the stale banner was still there when `waitFor` ran, so the wait returned at once and the count fell in the Loading moment, when the banner is hidden. When the element can already be there before the action, wait for the change: pause past the request first, or wait for it to go away and then come back.
+
+## Planning a row on the browser Back button
+
+- **Symptom:** the first plan held a hold row for reaching the Relationship page with `page.goBack()`.
+- **Wrong conclusion:** the Back route is a user path the change must not alter.
+- **Rule:** the user closed B-544 because the tablets have no Back button. Read the backlog item behind a "residual" before planning a row on it, and reach pages only through the app's own arrows and buttons.
+
+## A develop control run in the session that filled the form
+
+- **Symptom:** on develop, a Treatment Review saved Yes / No / No and changed in the same session showed "Why not?", "How many doses?" and the adverse events unanswered, Save off, as the PR should.
+- **Wrong conclusion:** develop does not have the defect. After a reload, develop showed 7/7 with Save on and stored `none` / 0 / `none`.
+- **Rule:** a page keeps its form, dirty flags included, after a save. For a fix about reopening a saved record, reload the app before reopening, on both builds, as a nurse coming back later would.
+
+## Finding the "How many doses?" select by `select.form-input`
+
+- **Symptom:** `selectOption` on `select.form-input` timed out on the treatment review, leaving a dead 10 s tail and a re-recorded video. `qa.form().selects` was empty too.
+- **Wrong conclusion:** the select was not shown.
+- **Rule:** `viewCustomSelectListInput` draws a select without the `form-input` class. Use `.ui.form select` and read its `inputValue()`.
+
+## Pressing a disabled Save inside `.actions` (met again)
+
+- **Symptom:** a develop control ended with a 10 s hover timeout on "Save", which was disabled.
+- **Wrong conclusion:** none; app-map already says `.actions` takes the pointer from a disabled button.
+- **Rule:** before a scripted save, read the button's `active` class and save only when it is there.

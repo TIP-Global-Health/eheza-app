@@ -278,7 +278,7 @@ B-277	3	IMPLEMENTED	MED			26	Well Child immunisation (Burundi): the DTP-booster 
 B-278	4	IMPLEMENTED	LOW	2356	2357	26	Well Child head circumference: correcting a reading that triggered the macro/microcephaly popup leaves the warning on th
 B-279	4	READY	LOW			26	Well Child head circumference "not taken" checkbox toggles the raw form, so after a reload the first click on a saved no
 B-280	3	IMPLEMENTED	MED-LOW	2184	2185	26	Acute Illness subsequent visit: a diagnosis once written to the encounter is never corrected, even when the RDT or dange
-B-281	4	READY	LOW			26	Shared Yes/No-with-reason forms: flipping the answer back to Yes persists the stale "why not" reason alongside it, in th
+B-281	4	IMPLEMENTED	LOW	2524	2525	26	Shared Yes/No-with-reason forms: flipping the answer back to Yes persists the stale "why not" reason alongside it, in th
 B-282	4	READY	LOW			26	Acute Illness participant page: with two illnesses started today, whether "New illness" is disabled, opens the existing 
 B-283	4	READY	LOW			26	NCDA questionnaire (Child Scoreboard, Nutrition, Well Child): after a reload, switching a parent question to "No" keeps 
 B-284	4	READY	LOW			26	TB and HIV "not diagnosed": the participant is closed but the encounter is never ended, so every screening that finds no
@@ -459,7 +459,7 @@ B-458	4	READY	LOW			39	Admin content: outside super user mode, three more ways t
 B-459	1	PARKED	LOW			38	Prenatal diagnosis: a treated malaria found again at a different anemia level is filed as a new episode, and "treated" m
 B-460	2	IMPLEMENTED		2320	2321		Sync incidents: the backend cannot re-create a missing entity the device sent, because a `false` boolean is written as a
 B-461	4	READY					Client build: `client/yarn.lock` is a second lockfile nothing reads, and it has drifted from `package.json` · CONFIRMED 
-B-462	4	READY	LOW			40	Shared Yes/No-with-reason forms: editing a saved "Yes" to "No" shows the "Why not?" / "How many doses?" question with no
+B-462	4	IMPLEMENTED	LOW	2524	2525	40	Shared Yes/No-with-reason forms: editing a saved "Yes" to "No" shows the "Why not?" / "How many doses?" question with no
 B-463	3	READY	MED-LOW			40	Case Management TB pane (server): a second Acute Illness encounter of the same illness closes the TB-suspect follow-up, 
 B-464	4	READY	LOW			40	Case Management Nutrition pane: a follow-up written on the same day as an earlier home visit is hidden, and the server n
 B-465	3	IMPLEMENTED	MED-LOW	2340	2341	40	CHW Dashboard: the "Home Visit" case-management figure for a PAST month counts nutrition follow-ups created in later mon
@@ -484,7 +484,7 @@ B-483	3	IMPLEMENTED	MED	2390	2391	42	Statistical Queries › Nutrition report: t
 B-484	4	READY	LOW			42	Dashboard › Beneficiaries table, "Last month": the 0–5 / 6–8 / 9–11 / 12+ month bands are cut at the child's age TODAY w
 B-485	4	READY	LOW			42	Antenatal clinical progress report of a CONCLUDED pregnancy (opened from the Patient Record): the header EGA keeps count
 B-486	3	IMPLEMENTED	MED-LOW	2362	2363	42	Antenatal progress report › CHW Activity pane: a CHW postpartum visit never gets the "Danger Signs Present" chip, becaus
-B-487	4	READY	LOW			42	Acute Illness progress report: the treatment review's "feeling better after taking the medication?" answer is asked and 
+B-487	4	CLOSED	LOW			42	Acute Illness progress report: the treatment review's "feeling better after taking the medication?" answer is asked and 
 B-488	4	READY	LOW			42	Person registration GPS: a create or edit person page reached by reload or app start never asks for a GPS reading, so th
 B-489	4	READY	LOW			42	WhatsApp send script: a record with no phone number, screenshot or template is skipped on every run and never retired
 B-490	4	READY	LOW		2367	42	Prenatal labs Case Management: a test sent to the lab after the nurse has completed every other result never reaches the
@@ -541,8 +541,8 @@ B-540	4	READY	LOW			49	Statistical Queries demographics and the aggregated NCDA 
 B-541	4	READY	LOW			49	Dashboard beneficiaries: a child's "join date" is the day the enrolment REACHED the server — the individual branch ships
 B-542	4	READY	LOW			49	Completion report: every generator orders a participant's encounters by `nid` and treats the lower nids as the history, 
 B-543	4	READY	LOW			49	Photos (group Child Picture, Family Nutrition, person registration): the Dropzone completion event is delivered to which
-B-544	4	READY	LOW			49	Person registration, person edit, Relationship and Receive Stock: the on-entry form resets run only for in-app taps (`Se
-B-545	4	READY	LOW			49	Relationship page: a failed save of A→B keeps showing "Backend error" on A→C and every later relationship page of A, bec
+B-544	4	CLOSED	LOW			49	Person registration, person edit, Relationship and Receive Stock: the on-entry form resets run only for in-app taps (`Se
+B-545	4	IMPLEMENTED	LOW	2522	2523	49	Relationship page: a failed save of A→B keeps showing "Backend error" on A→C and every later relationship page of A, bec
 B-546	3	READY	MED-LOW			49	Case Management Nutrition pane: a follow-up the CHW never answered with a home visit stays listed for years, and a later
 B-547	3	READY	MED-LOW			49	Malnutrition assessment (individual Nutrition encounter and group session): the weight-history rules deliberately skip W
 B-548	2	IMPLEMENTED	MED	2464	2465	49	Group session, activity-first flow: the child's individual Nutrition data is fetched only for the FIRST pending child of
@@ -576,18 +576,26 @@ B-575	4	READY	LOW			54	Prenatal labs history: saving an EARLIER visit's pending 
 B-576	1	IMPLEMENTED	MED-HIGH			54	Prenatal: severe preeclampsia confirmed by a urine protein result that arrives LATER (dipstick sent to the lab) is filed
 B-577	1	IMPLEMENTED	MED-HIGH	2508	2509	54	Prenatal: "high risk of preeclampsia" found in the recurrent phase (hypertension after the blood-pressure recheck, or di
 B-578	1	PARKED	MED-HIGH			54	Prenatal: a pregnancy whose FIRST nurse encounter was ended without an LMP can never be dated at a later nurse visit, so
-B-579	2	READY	MED-HIGH			54	Prenatal (nurse): the Medication activity (calcium, MMS, Fefol / iron / folate, Mebendazole) is listed only at the FIRST
+B-579	2	IMPLEMENTED	MED-HIGH	2520	2521	54	Prenatal (nurse): the Medication activity (calcium, MMS, Fefol / iron / folate, Mebendazole) is listed only at the FIRST
 B-580	3	READY	MED			54	Prenatal (CHW): the referral task's completion is decided by the NURSE's facility list — on a CHW visit with danger sign
 B-581	1	READY	MED-HIGH			54	Prenatal: hypertension diagnosed at an earlier visit with NO treatment record gets no hypertension pathway at later visi
 B-582	3	READY	MED-LOW			54	Prenatal recurrent phase: the hospital-referral task for a diagnosis found by a lab result reads complete from the refer
 B-583	4	IMPLEMENTED	LOW			54	Prenatal (nurse): "high risk of preeclampsia" is stored beside severe or moderate preeclampsia, or eclampsia, found at 3
 B-584	4	READY	LOW		2507	54	Completion report: a next medication or vaccine dose that falls 6, 9 or 12 months after a dose given on the 29th–31st is
-B-585		IMPLEMENTED				54	Prenatal: misspelt function names `…Prevoiusly…` and `…Inital…` — rename only, no logic change
+B-585		IMPLEMENTED		2516	2517	54	Prenatal: misspelt function names `…Prevoiusly…` and `…Inital…` — rename only, no logic change
 B-586	1	IMPLEMENTED	MED	2510	2511	54	Prenatal: "high risk of preeclampsia" is diagnosed from GESTATIONAL hypertension (today's or an earlier visit's), while 
 B-587	1	CLOSED	MED			54	Prenatal: Aspirin for a preeclampsia risk is offered at ONE visit only — declined, skipped or "not given" at that visit,
 B-588	4	READY	LOW		2511	54	Prenatal: chronic hypertension or diabetes reported through Outside Care at an earlier visit is not a high-risk conditio
 B-589	4	READY	LOW		2515	54	Case Management: a TB or HIV follow-up of a patient who is in no village roster is listed for nobody
-B-590	4	IMPLEMENTED	LOW		2517	54	Prenatal: on-screen English text misspells "Preeclampsia" ("Preeclamsia", "Preclampsia"), and more misspelt names remain
+B-590	4	IMPLEMENTED	LOW	2518	2519	54	Prenatal: on-screen English text misspells "Preeclampsia" ("Preeclamsia", "Preclampsia"), and more misspelt names remain
+B-591	4	READY	LOW		2521	54	Completion report: a first nurse visit at 24 weeks or later is charged with an unfinished Next Steps medication distribu
+B-592	4	READY	LOW			26	NCD and Prenatal referral, and Outside Care medicines: changing a saved Yes/No answer keeps the follow-up answers of the
+B-593	1	READY	LOW			55	Prenatal: diabetes found from a blood sugar result entered through a LATER visit's lab history never gives high risk of 
+B-594	1	READY	MED-HIGH			55	Prenatal: the two-hour blood-pressure recheck is scheduled only at the FIRST nurse visit, so a borderline reading (140–1
+B-595	1	READY	LOW			55	Prenatal: a positive partner HIV result entered later by the NURSE shows "Is the partner taking ARVs?" already answered 
+B-596	4	READY	LOW			55	Prenatal postpartum nurse visit: the continued-hypertension treatment block appears in Medication Distribution only when
+B-597	4	READY	LOW			55	Home Visit › Feeding (and the Well Child CHW home-visit copy): "is water given with the food supplement" has not been as
+B-598	4	READY	LOW			55	NCDA › Antenatal Care step: "there are ANC visits not on record: Yes" with no month ticked counts as complete and saves 
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers

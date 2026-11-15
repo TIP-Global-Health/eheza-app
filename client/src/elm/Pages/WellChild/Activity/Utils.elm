@@ -29,9 +29,9 @@ import Measurement.Model exposing (ImmunisationTask(..), InvokationModule(..), M
 import Measurement.Utils exposing (behindOnVaccinationsByHistory, contributingFactorsFormWithDefault, expectVaccineDoseForPerson, generateFutureVaccinationsData, getAllDosesForVaccine, getIntervalForVaccine, getPreviousMeasurements, healthEducationFormWithDefault, heightFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, measurementOutOfRange, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, nextVaccinationDataForVaccine, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, outOfRange, sendToHCFormWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault)
 import Measurement.View
     exposing
-        ( contributingFactorsFormInutsAndTasks
+        ( contributingFactorsFormInputsAndTasks
         , followUpFormInputsAndTasks
-        , healthEducationFormInutsAndTasks
+        , healthEducationFormInputsAndTasks
         , heightFormAndTasks
         , nutritionFormInputsAndTasks
         , referToProgramFormInputsAndTasks
@@ -1837,7 +1837,7 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
                 ( _, tasks ) =
                     getMeasurementValueFunc measurements.contributingFactors
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
-                        |> contributingFactorsFormInutsAndTasks English
+                        |> contributingFactorsFormInputsAndTasks English
                             Pages.WellChild.Activity.Model.SetContributingFactorsSign
             in
             resolveTasksCompletedFromTotal tasks
@@ -1847,7 +1847,7 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
                 ( _, tasks ) =
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> healthEducationFormInutsAndTasks English
+                        |> healthEducationFormInputsAndTasks English
                             Pages.WellChild.Activity.Model.SetProvidedEducationForDiagnosis
                             Pages.WellChild.Activity.Model.SetReasonForNotProvidingHealthEducation
             in

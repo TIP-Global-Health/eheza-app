@@ -1076,7 +1076,7 @@ getCurrentReasonForNonReferralByForm reasonToSignFunc form =
     getCurrentReasonForNonReferral reasonToSignFunc form.nonReferralReasons
 
 
-{-| Referal to facility is completed when we mark that facility was referred to,
+{-| Referral to facility is completed when we mark that facility was referred to,
 or, reason was set for not referring to that facility.
 -}
 referralToFacilityCompleted : AssembledData -> ReferralFacility -> Bool

@@ -772,7 +772,7 @@ viewObstetricHistoryPane language measurements =
                                 else
                                     []
 
-                            conditionsDuringPrevoiusPregnancy =
+                            conditionsDuringPreviousPregnancy =
                                 case EverySet.toList value.signs of
                                     [] ->
                                         []
@@ -789,7 +789,7 @@ viewObstetricHistoryPane language measurements =
                                         in
                                         [ translate language Translate.ConditionsDuringPreviousPregnancy ++ ": " ++ conditions ]
                         in
-                        periodFromPreviousDeliveryInfo ++ cSectionInfo ++ conditionsDuringPrevoiusPregnancy
+                        periodFromPreviousDeliveryInfo ++ cSectionInfo ++ conditionsDuringPreviousPregnancy
                     )
                 |> Maybe.withDefault []
 

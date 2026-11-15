@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, concludedLabsResultsValue, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, labsResultsTests, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault, withCompletedTestsFromMeasurements)
+module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, concludedLabsResultsValue, diagnosisRequiresEmergencyReferral, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, labsResultsTests, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault, withCompletedTestsFromMeasurements)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
@@ -28,7 +28,7 @@ import Pages.GlobalCaseManagement.Utils exposing (allLabsCompleted, labsResultsT
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (ExaminationData, Msg(..), NextStepsData)
 import Pages.Prenatal.RecurrentActivity.Types exposing (ExaminationTask(..), NextStepsTask(..))
-import Pages.Prenatal.Utils exposing (diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, marginalBloodPressureCondition, medicationDistributionFormWithDefaultRecurrentPhase, provideHIVEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForSyphilis, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveMedicationDistributionInputsAndTasks, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet)
+import Pages.Prenatal.Utils exposing (diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHypertension, diagnosedHypertensionPreviously, diagnosedMalariaByPhase, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, marginalBloodPressureCondition, medicationDistributionFormWithDefaultRecurrentPhase, provideHIVEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForSyphilis, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveMedicationDistributionInputsAndTasks, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -576,7 +576,7 @@ expectNextStepsTask currentDate isLabTech assembled task =
 
         NextStepsMedicationDistribution ->
             -- Emergency referral is not required.
-            (not <| emergencyReferalRequired assembled)
+            (not <| emergencyReferralRequired assembled)
                 && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
                         |> List.isEmpty
                         |> not
@@ -591,7 +591,7 @@ expectNextStepsTask currentDate isLabTech assembled task =
 
         NextStepsHealthEducation ->
             -- Emergency referral is not required.
-            (not <| emergencyReferalRequired assembled)
+            (not <| emergencyReferralRequired assembled)
                 && diagnosisSourcesCompleted currentDate isLabTech assembled
                 && (provideHIVEducation PrenatalEncounterPhaseRecurrent assembled.measurements
                         || diagnosedAnyOf (DiagnosisHIVDetectableViralLoadRecurrentPhase :: diabetesDiagnosesRecurrentPhase) assembled
@@ -712,16 +712,16 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
             )
 
 
-emergencyReferalRequired : AssembledData -> Bool
-emergencyReferalRequired assembled =
+emergencyReferralRequired : AssembledData -> Bool
+emergencyReferralRequired assembled =
     EverySet.toList assembled.encounter.diagnoses
-        |> List.filter diagnosisRequiresEmergencyReferal
+        |> List.filter diagnosisRequiresEmergencyReferral
         |> List.isEmpty
         |> not
 
 
-diagnosisRequiresEmergencyReferal : PrenatalDiagnosis -> Bool
-diagnosisRequiresEmergencyReferal diagnosis =
+diagnosisRequiresEmergencyReferral : PrenatalDiagnosis -> Bool
+diagnosisRequiresEmergencyReferral diagnosis =
     List.member diagnosis emergencyReferralDiagnosesRecurrent
 
 
@@ -738,7 +738,7 @@ expectExaminationTask assembled task =
             -- Hypertension is a chronic diagnosis for whole duration
             -- of pregnancy. If diagnised, we do not need to recheck the BP.
             -- Measurement taken at initial phase of encounter is sufficient.
-            (not <| diagnosedHypertensionPrevoiusly assembled)
+            (not <| diagnosedHypertensionPreviously assembled)
                 && (not <| diagnosedAnyOf hierarchalBloodPressureDiagnosesInitialPhase assembled)
                 && (getMeasurementValueFunc assembled.measurements.vitals
                         |> Maybe.andThen

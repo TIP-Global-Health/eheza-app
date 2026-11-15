@@ -7,10 +7,13 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model
     exposing
         ( AdministrationNote(..)
+        , AdverseEvent(..)
         , BloodSmearResult(..)
         , ChildNutritionSign(..)
         , ColorAlertIndication(..)
         , CreatinineTestValue
+        , HealthEducationSign(..)
+        , HealthEducationValue
         , HeightInCm(..)
         , LiverFunctionTestValue
         , MalariaTestValue
@@ -18,11 +21,19 @@ import Backend.Measurement.Model
         , NCDASign(..)
         , NutritionAssessment(..)
         , PartnerHIVTestValue
+        , ReasonForNonReferral(..)
+        , ReasonForNotProvidingHealthEducation(..)
+        , ReasonForNotTaking(..)
+        , ReferralFacility(..)
+        , SendToHCSign(..)
+        , SendToHCValue
         , SkippedForm(..)
         , StuntingLevel(..)
         , TestExecutionNote(..)
         , TestPrerequisite(..)
         , TestResult(..)
+        , TreatmentOngoingSign(..)
+        , TreatmentOngoingValue
         , VaccineDose(..)
         , WeightInGrm(..)
         , WeightInKg(..)
@@ -35,8 +46,9 @@ import Date exposing (Date, Unit(..))
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Html exposing (div)
-import Measurement.Model exposing (MsgChild(..), NCDAStep(..), OutMsgChild(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm)
+import Html exposing (Html, div)
+import Html.Attributes
+import Measurement.Model exposing (MsgChild(..), NCDAStep(..), OutMsgChild(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHealthEducationForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyOngoingTreatmentReviewForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm, emptySendToHCForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -52,6 +64,7 @@ import Measurement.Utils
         , getInputConstraintsMuac
         , getInputConstraintsWeight
         , getIntervalForVaccine
+        , healthEducationFormWithDefault
         , heightFormWithDefault
         , initialVaccinationDateByBirthDate
         , knownAsPositiveUpdate
@@ -64,30 +77,36 @@ import Measurement.Utils
         , ncdaFormWithDefault
         , ncdaMeasurementsOutOfRange
         , nextVaccinationDataForVaccine
+        , ongoingTreatmentReviewFormWithDefault
         , outOfRangeAsEntered
         , partnerHIVResultFormWithDefault
         , rdtKnownAsPositiveUpdate
         , rdtTestPerformedUpdate
+        , sendToHCFormWithDefault
         , setNCDAStep
         , showNCDAMeasurementOutOfRange
         , toHIVTestValueUniversalWithDefault
         , toHIVTestValueWithDefault
+        , toHealthEducationValueWithDefault
         , toHepatitisBTestValueWithDefault
         , toMalariaResultValueWithDefault
         , toMalariaTestValueWithDefault
         , toNCDAValueWithDefault
+        , toOngoingTreatmentReviewValueWithDefault
         , toPartnerHIVTestValueWithDefault
         , toPregnancyTestValueWithDefault
         , toRandomBloodSugarTestValueUniversalWithDefault
+        , toSendToHCValueWithDefault
+        , treatmentReviewInputsAndTasks
         )
-import Measurement.View exposing (viewColorAlertIndication, viewNCDAContent)
+import Measurement.View exposing (healthEducationFormInputsAndTasks, sendToFacilityInputsAndTasks, viewColorAlertIndication, viewNCDAContent)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import Test.Html.Event as Event
 import Test.Html.Query as Query
-import Test.Html.Selector exposing (class, classes, tag, text)
+import Test.Html.Selector exposing (attribute, class, classes, containing, selected, tag, text)
 import TestFixtures exposing (testChild, testParticipant)
 import Time exposing (Month(..))
 import Translate.Model exposing (Language(..))
@@ -1278,6 +1297,9 @@ all =
         , ancVisitDateForMonthTest
         , ncdaAncMonthTapsTest
         , ncdaAncMonthsViewTest
+        , referralWhyNotTest
+        , healthEducationWhyNotTest
+        , ongoingTreatmentReviewFollowUpTest
         ]
 
 
@@ -2219,4 +2241,653 @@ ncdaAncMonthsViewTest =
             \_ ->
                 rendered
                     |> Query.has [ classes [ "label", "counseling" ] ]
+        ]
+
+
+
+-- YES/NO QUESTIONS WITH A FOLLOW-UP
+
+
+{-| A task list is complete when every entry holds an answer.
+-}
+followUpTasksComplete : List (Maybe Bool) -> Bool
+followUpTasksComplete =
+    List.all ((/=) Nothing)
+
+
+{-| What the nurse sees of a "Why not?" question in the rendered inputs: whether
+its options are on screen at all, how many of them are ticked, and whether the
+task list counts as complete.
+
+A stored "no reason" placeholder is not among the options, so it never shows
+ticked; what gives the defect away is the task list reading complete while
+nothing is ticked.
+
+-}
+expectWhyNot : { asked : Bool, ticked : Int, complete : Bool } -> ( List (Html msg), List (Maybe Bool) ) -> Expect.Expectation
+expectWhyNot expected ( inputs, tasks ) =
+    let
+        rendered =
+            Query.fromHtml (div [] inputs)
+
+        options =
+            Query.findAll [ classes [ "ui", "checkbox", "activity" ] ] rendered
+    in
+    Expect.all
+        [ \_ ->
+            if expected.asked then
+                Query.count (Expect.atLeast 1) options
+
+            else
+                Query.count (Expect.equal 0) options
+        , \_ ->
+            Query.findAll
+                [ classes [ "ui", "checkbox", "activity" ]
+                , containing [ tag "input", class "checked" ]
+                ]
+                rendered
+                |> Query.count (Expect.equal expected.ticked)
+        , \_ ->
+            followUpTasksComplete tasks
+                |> Expect.equal expected.complete
+        ]
+        ()
+
+
+{-| Referral to a facility asks "Why not?" after a "No". The saved record is
+passed as `saved`; the form is the page's own form after the answer handler
+ran, which sets the Yes/No answer and clears the reason. A stored "no reason"
+is `NoReasonForNonReferral`.
+-}
+referralWhyNotTest : Test
+referralWhyNotTest =
+    let
+        savedReferred =
+            { signs = EverySet.fromList [ HandReferrerForm, ReferToHealthCenter ]
+            , reasonForNotSendingToHC = NoReasonForNonReferral
+            }
+
+        savedNotReferred : ReasonForNonReferral -> SendToHCValue
+        savedNotReferred reason =
+            { signs = EverySet.singleton NoSendToHCSigns
+            , reasonForNotSendingToHC = reason
+            }
+
+        -- The page's form right after "Yes" or "No" is tapped on a reopened record.
+        answered value =
+            { emptySendToHCForm | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+
+        reasonChosen reason form =
+            { form | reasonForNotSendingToHC = Just reason }
+
+        shown facility saved form =
+            sendToHCFormWithDefault form saved
+                |> sendToFacilityInputsAndTasks English facility (always ()) (always ()) (always ()) Nothing
+
+        -- The record as comparable data: a set of signs compares unequal when built in another order.
+        comparable =
+            Maybe.map
+                (\value ->
+                    ( List.filter (\sign -> EverySet.member sign value.signs)
+                        [ EnrollToNutritionProgram, HandReferrerForm, NoSendToHCSigns, PrenatalAccompanyToHC, ReferToHealthCenter, ReferToNutritionProgram ]
+                    , value.reasonForNotSendingToHC
+                    )
+                )
+
+        stored saved form =
+            toSendToHCValueWithDefault saved form
+
+        expectRecord expected =
+            comparable >> Expect.equal (comparable (Just expected))
+    in
+    describe "Referral: the \"Why not?\" follow-up when a saved answer is changed"
+        [ describe "A referral saved with \"Yes\", reopened and changed to \"No\": \"Why not?\" is unanswered and the task is not complete until a reason is chosen"
+            [ test "health centre referral: \"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    shown FacilityHealthCenter (Just savedReferred) (answered False)
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            , test "hospital referral: \"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    shown FacilityHospital (Just savedReferred) (answered False)
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            , test "once a reason is chosen it is ticked and the task is complete" <|
+                \_ ->
+                    shown FacilityHealthCenter (Just savedReferred) (answered False |> reasonChosen ClientRefused)
+                        |> expectWhyNot { asked = True, ticked = 1, complete = True }
+            , test "the chosen reason is what gets saved, with no referral" <|
+                \_ ->
+                    stored (Just savedReferred) (answered False |> reasonChosen NoAmbulance)
+                        |> Maybe.map
+                            (\value ->
+                                ( EverySet.member ReferToHealthCenter value.signs
+                                , value.reasonForNotSendingToHC
+                                )
+                            )
+                        |> Expect.equal (Just ( False, NoAmbulance ))
+            , test "changed to \"No\" and back to \"Yes\": the task is complete and no reason is saved" <|
+                \_ ->
+                    Expect.all
+                        [ \form ->
+                            shown FacilityHealthCenter (Just savedReferred) form
+                                |> expectWhyNot { asked = False, ticked = 0, complete = True }
+                        , \form ->
+                            stored (Just savedReferred) form
+                                |> Maybe.map .reasonForNotSendingToHC
+                                |> Expect.equal (Just NoReasonForNonReferral)
+                        ]
+                        (answered True)
+            ]
+        , describe "A referral saved with \"No\" and a reason, changed to \"Yes\" and saved: the record holds no reason"
+            (List.map
+                (\( label, reason ) ->
+                    test ("saved reason: " ++ label) <|
+                        \_ ->
+                            stored (Just (savedNotReferred reason)) (answered True)
+                                |> Maybe.map
+                                    (\value ->
+                                        ( EverySet.member ReferToHealthCenter value.signs
+                                        , value.reasonForNotSendingToHC
+                                        )
+                                    )
+                                |> Expect.equal (Just ( True, NoReasonForNonReferral ))
+                )
+                [ ( "client already in care", ClientAlreadyInCare )
+                , ( "client refused", ClientRefused )
+                , ( "client unable to afford fees", ClientUnableToAffordFees )
+                , ( "no ambulance", NoAmbulance )
+                , ( "not indicated", ReasonForNonReferralNotIndicated )
+                , ( "other", ReasonForNonReferralOther )
+                ]
+                ++ [ test "the \"Why not?\" question is no longer asked and the task is complete" <|
+                        \_ ->
+                            shown FacilityHealthCenter (Just (savedNotReferred ClientRefused)) (answered True)
+                                |> expectWhyNot { asked = False, ticked = 0, complete = True }
+                   ]
+            )
+        , describe "A referral saved with \"No\" and a reason, reopened without changes: the reason is shown selected and the task is complete"
+            [ test "the saved reason is ticked and the task is complete" <|
+                \_ ->
+                    shown FacilityHealthCenter (Just (savedNotReferred ClientRefused)) emptySendToHCForm
+                        |> expectWhyNot { asked = True, ticked = 1, complete = True }
+            , test "saving it again stores the same record" <|
+                \_ ->
+                    stored (Just (savedNotReferred ClientRefused)) emptySendToHCForm
+                        |> expectRecord (savedNotReferred ClientRefused)
+            , test "a different reason chosen replaces the saved one" <|
+                \_ ->
+                    stored (Just (savedNotReferred ClientRefused)) (reasonChosen NoAmbulance emptySendToHCForm)
+                        |> expectRecord (savedNotReferred NoAmbulance)
+            ]
+        , describe "An older referral saved with \"No\" and no reason, reopened: \"Why not?\" is unanswered and the task is not complete"
+            [ test "\"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    shown FacilityHealthCenter (Just (savedNotReferred NoReasonForNonReferral)) emptySendToHCForm
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    Expect.all
+                        [ \form ->
+                            shown FacilityHealthCenter (Just (savedNotReferred NoReasonForNonReferral)) form
+                                |> expectWhyNot { asked = True, ticked = 1, complete = True }
+                        , \form ->
+                            stored (Just (savedNotReferred NoReasonForNonReferral)) form
+                                |> expectRecord (savedNotReferred ClientUnableToAffordFees)
+                        ]
+                        (reasonChosen ClientUnableToAffordFees emptySendToHCForm)
+            ]
+        , describe "Records the defect does not touch stay as they are"
+            [ test "a referral saved with \"Yes\", reopened without changes, is complete and saves the same record" <|
+                \_ ->
+                    Expect.all
+                        [ \form ->
+                            shown FacilityHealthCenter (Just savedReferred) form
+                                |> expectWhyNot { asked = False, ticked = 0, complete = True }
+                        , \form ->
+                            stored (Just savedReferred) form
+                                |> expectRecord savedReferred
+                        ]
+                        emptySendToHCForm
+            , test "a first-time \"No\", with no saved record, leaves \"Why not?\" unanswered and the task not complete" <|
+                \_ ->
+                    let
+                        form =
+                            answered False
+                    in
+                    shown FacilityHealthCenter Nothing { form | handReferralForm = Just False }
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            ]
+        ]
+
+
+{-| Health education asks "Why not?" after a "No". The saved record is passed
+as `saved`; the form is the page's own form after the answer handler ran, which
+sets the Yes/No answer and clears the reason. A stored "no reason" is
+`NoReasonForNotProvidingHealthEducation`.
+-}
+healthEducationWhyNotTest : Test
+healthEducationWhyNotTest =
+    let
+        savedProvided =
+            { signs = EverySet.singleton MalariaPrevention
+            , reasonForNotProvidingHealthEducation = NoReasonForNotProvidingHealthEducation
+            }
+
+        savedNotProvided : ReasonForNotProvidingHealthEducation -> HealthEducationValue
+        savedNotProvided reason =
+            { signs = EverySet.singleton NoHealthEducationSigns
+            , reasonForNotProvidingHealthEducation = reason
+            }
+
+        -- The page's form right after "Yes" or "No" is tapped on a reopened record.
+        answered value =
+            { emptyHealthEducationForm | educationForDiagnosis = Just value, reasonForNotProvidingHealthEducation = Nothing }
+
+        reasonChosen reason form =
+            { form | reasonForNotProvidingHealthEducation = Just reason }
+
+        shown saved form =
+            healthEducationFormWithDefault form saved
+                |> healthEducationFormInputsAndTasks English (always ()) (always ())
+
+        stored saved form =
+            toHealthEducationValueWithDefault saved form
+    in
+    describe "Health education: the \"Why not?\" follow-up when a saved answer is changed"
+        [ describe "Health education saved with \"Yes\", reopened and changed to \"No\": \"Why not?\" is unanswered and the task is not complete until a reason is chosen"
+            [ test "\"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    shown (Just savedProvided) (answered False)
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            , test "once a reason is chosen it is ticked and the task is complete" <|
+                \_ ->
+                    shown (Just savedProvided) (answered False |> reasonChosen PatientRefused)
+                        |> expectWhyNot { asked = True, ticked = 1, complete = True }
+            , test "the chosen reason is what gets saved, with no education provided" <|
+                \_ ->
+                    stored (Just savedProvided) (answered False |> reasonChosen PatientTooIll)
+                        |> Expect.equal (Just (savedNotProvided PatientTooIll))
+            , test "changed to \"No\" and back to \"Yes\": the task is complete and no reason is saved" <|
+                \_ ->
+                    Expect.all
+                        [ \form ->
+                            shown (Just savedProvided) form
+                                |> expectWhyNot { asked = False, ticked = 0, complete = True }
+                        , \form ->
+                            stored (Just savedProvided) form
+                                |> Expect.equal (Just savedProvided)
+                        ]
+                        (answered True)
+            ]
+        , describe "Health education saved with \"No\" and a reason, changed to \"Yes\" and saved: the record holds no reason"
+            (List.map
+                (\( label, reason ) ->
+                    test ("saved reason: " ++ label) <|
+                        \_ ->
+                            stored (Just (savedNotProvided reason)) (answered True)
+                                |> Expect.equal (Just savedProvided)
+                )
+                [ ( "lack of appropriate education user guide", LackOfAppropriateEducationUserGuide )
+                , ( "patient needs emergency referral", PatientNeedsEmergencyReferral )
+                , ( "patient refused", PatientRefused )
+                , ( "patient too ill", PatientTooIll )
+                , ( "received emergency case", ReceivedEmergencyCase )
+                ]
+                ++ [ test "the \"Why not?\" question is no longer asked and the task is complete" <|
+                        \_ ->
+                            shown (Just (savedNotProvided PatientRefused)) (answered True)
+                                |> expectWhyNot { asked = False, ticked = 0, complete = True }
+                   ]
+            )
+        , describe "Health education saved with \"No\" and a reason, reopened without changes: the reason is shown selected and the task is complete"
+            [ test "the saved reason is ticked and the task is complete" <|
+                \_ ->
+                    shown (Just (savedNotProvided PatientRefused)) emptyHealthEducationForm
+                        |> expectWhyNot { asked = True, ticked = 1, complete = True }
+            , test "saving it again stores the same record" <|
+                \_ ->
+                    stored (Just (savedNotProvided PatientRefused)) emptyHealthEducationForm
+                        |> Expect.equal (Just (savedNotProvided PatientRefused))
+            , test "a different reason chosen replaces the saved one" <|
+                \_ ->
+                    stored (Just (savedNotProvided PatientRefused)) (reasonChosen ReceivedEmergencyCase emptyHealthEducationForm)
+                        |> Expect.equal (Just (savedNotProvided ReceivedEmergencyCase))
+            ]
+        , describe "Older health education saved with \"No\" and no reason, reopened: \"Why not?\" is unanswered and the task is not complete"
+            [ test "\"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    shown (Just (savedNotProvided NoReasonForNotProvidingHealthEducation)) emptyHealthEducationForm
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    Expect.all
+                        [ \form ->
+                            shown (Just (savedNotProvided NoReasonForNotProvidingHealthEducation)) form
+                                |> expectWhyNot { asked = True, ticked = 1, complete = True }
+                        , \form ->
+                            stored (Just (savedNotProvided NoReasonForNotProvidingHealthEducation)) form
+                                |> Expect.equal (Just (savedNotProvided PatientRefused))
+                        ]
+                        (reasonChosen PatientRefused emptyHealthEducationForm)
+            ]
+        , describe "Records the defect does not touch stay as they are"
+            [ test "health education saved with \"Yes\", reopened without changes, is complete and saves the same record" <|
+                \_ ->
+                    Expect.all
+                        [ \form ->
+                            shown (Just savedProvided) form
+                                |> expectWhyNot { asked = False, ticked = 0, complete = True }
+                        , \form ->
+                            stored (Just savedProvided) form
+                                |> Expect.equal (Just savedProvided)
+                        ]
+                        emptyHealthEducationForm
+            , test "a first-time \"No\", with no saved record, leaves \"Why not?\" unanswered and the task not complete" <|
+                \_ ->
+                    shown Nothing (answered False)
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            ]
+        ]
+
+
+{-| The treatment review (Acute Illness subsequent visit, HIV, Tuberculosis)
+asks "Why not?" after "taken as prescribed: No" and "How many doses?" after
+"missed doses: Yes".
+
+Its Yes/No handlers live inside `treatmentReviewInputsAndTasks`, so each test
+reads the real handler off the rendered Yes/No label instead of copying it. The
+pages run that handler on the form already merged with the saved record, keep
+the result as the page's form, and merge it with the saved record again to
+draw and to save; `tap` and `choose*` below follow the same steps.
+
+A stored "no reason" is `NoReasonForNotTakingSign`; stored "no number" is 0
+missed doses.
+
+-}
+ongoingTreatmentReviewFollowUpTest : Test
+ongoingTreatmentReviewFollowUpTest =
+    let
+        savedWith : List TreatmentOngoingSign -> ReasonForNotTaking -> Int -> TreatmentOngoingValue
+        savedWith signs reason doses =
+            { signs = EverySet.fromList signs
+            , reasonForNotTaking = reason
+            , missedDoses = doses
+            , adverseEvents = EverySet.singleton NoAdverseEvent
+            }
+
+        -- Taken as prescribed, feeling better, no missed doses, no side effects.
+        savedAllGood =
+            savedWith [ FeelingBetter, TakenAsPrescribed ] NoReasonForNotTakingSign 0
+
+        savedNotTaken reason =
+            savedWith [ FeelingBetter ] reason 0
+
+        savedMissed doses =
+            savedWith [ FeelingBetter, MissedDoses, TakenAsPrescribed ] NoReasonForNotTakingSign doses
+
+        merged saved pageForm =
+            ongoingTreatmentReviewFormWithDefault pageForm saved
+
+        -- The page's form after the label `answer` of the Yes/No input `inputClass` is tapped.
+        tap inputClass answer saved pageForm =
+            let
+                form =
+                    merged saved pageForm
+            in
+            treatmentReviewInputsAndTasks English
+                (\updateFunc value -> updateFunc value)
+                (always identity)
+                (always identity)
+                (always identity)
+                form
+                |> Tuple.first
+                |> div []
+                |> Query.fromHtml
+                |> Query.find [ class inputClass ]
+                |> Query.find [ tag "label", containing [ text answer ] ]
+                |> Event.simulate Event.click
+                |> Event.toResult
+                |> Result.map (\updateFunc -> updateFunc form)
+
+        -- The page's form after a reason for not taking is picked.
+        chooseReason reason saved pageForm =
+            let
+                form =
+                    merged saved pageForm
+            in
+            { form | reasonForNotTaking = Just reason, reasonForNotTakingDirty = True }
+
+        -- The page's form after a number of missed doses is picked.
+        chooseDoses doses saved pageForm =
+            let
+                form =
+                    merged saved pageForm
+            in
+            { form | totalMissedDoses = Just doses, totalMissedDosesDirty = True }
+
+        shown saved pageForm =
+            merged saved pageForm
+                |> treatmentReviewInputsAndTasks English (\_ _ -> ()) (always ()) (always ()) (always ())
+
+        -- The record as comparable data: a set of signs compares unequal when built in another order.
+        comparable =
+            Maybe.map
+                (\value ->
+                    { signs =
+                        List.filter (\sign -> EverySet.member sign value.signs)
+                            [ FeelingBetter, MissedDoses, NoTreatmentOngoingSign, SideEffects, TakenAsPrescribed ]
+                    , reasonForNotTaking = value.reasonForNotTaking
+                    , missedDoses = value.missedDoses
+                    , adverseEvents = EverySet.toList value.adverseEvents
+                    }
+                )
+
+        stored saved pageForm =
+            toOngoingTreatmentReviewValueWithDefault saved pageForm
+                |> comparable
+
+        expectRecord expected =
+            Expect.equal (comparable (Just expected))
+
+        onTapped result expectation =
+            case result of
+                Ok pageForm ->
+                    expectation pageForm
+
+                Err error ->
+                    Expect.fail error
+
+        -- "How many doses?" as drawn: asked or not, the number it shows (Nothing for empty), and the task list.
+        expectHowManyDoses expected ( inputs, tasks ) =
+            let
+                selects =
+                    Query.fromHtml (div [] inputs)
+                        |> Query.findAll [ tag "select" ]
+
+                numberShown =
+                    case expected.number of
+                        Just number ->
+                            Query.first selects
+                                |> Query.find [ tag "option", selected True ]
+                                |> Query.has [ attribute (Html.Attributes.value (String.fromInt number)) ]
+
+                        Nothing ->
+                            -- Empty: any option marked selected is the blank one.
+                            Query.first selects
+                                |> Query.findAll [ tag "option", selected True ]
+                                |> Query.each (Query.has [ attribute (Html.Attributes.value "") ])
+            in
+            Expect.all
+                [ \_ ->
+                    if expected.asked then
+                        Expect.all [ \_ -> Query.count (Expect.equal 1) selects, \_ -> numberShown ] ()
+
+                    else
+                        Query.count (Expect.equal 0) selects
+                , \_ ->
+                    followUpTasksComplete tasks
+                        |> Expect.equal expected.complete
+                ]
+                ()
+    in
+    describe "Treatment review: \"Why not?\" and \"How many doses?\" when a saved answer is changed"
+        [ describe "A treatment review saved with \"taken as prescribed: Yes\", changed to \"No\": \"Why not?\" is unanswered and the task is not complete until a reason is chosen"
+            [ test "\"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    onTapped (tap "taken-as-prescribed" "No" (Just savedAllGood) emptyOngoingTreatmentReviewForm)
+                        (shown (Just savedAllGood)
+                            >> expectWhyNot { asked = True, ticked = 0, complete = False }
+                        )
+            , test "once a reason is chosen it is ticked and the task is complete" <|
+                \_ ->
+                    onTapped (tap "taken-as-prescribed" "No" (Just savedAllGood) emptyOngoingTreatmentReviewForm)
+                        (chooseReason NotTakingNoMoney (Just savedAllGood)
+                            >> shown (Just savedAllGood)
+                            >> expectWhyNot { asked = True, ticked = 1, complete = True }
+                        )
+            , test "the chosen reason is what gets saved" <|
+                \_ ->
+                    onTapped (tap "taken-as-prescribed" "No" (Just savedAllGood) emptyOngoingTreatmentReviewForm)
+                        (chooseReason NotTakingMemoryProblems (Just savedAllGood)
+                            >> stored (Just savedAllGood)
+                            >> expectRecord (savedNotTaken NotTakingMemoryProblems)
+                        )
+            , test "changed to \"No\" and back to \"Yes\": the task is complete and no reason is saved" <|
+                \_ ->
+                    onTapped
+                        (tap "taken-as-prescribed" "No" (Just savedAllGood) emptyOngoingTreatmentReviewForm
+                            |> Result.andThen (tap "taken-as-prescribed" "Yes" (Just savedAllGood))
+                        )
+                        (Expect.all
+                            [ shown (Just savedAllGood) >> expectWhyNot { asked = False, ticked = 0, complete = True }
+                            , stored (Just savedAllGood) >> expectRecord savedAllGood
+                            ]
+                        )
+            ]
+        , describe "A treatment review saved with \"missed doses: No\", changed to \"Yes\": \"How many doses?\" is empty and the task is not complete until a number is chosen"
+            [ test "\"How many doses?\" is asked, shows no number, the task is not complete" <|
+                \_ ->
+                    onTapped (tap "missed-doses" "Yes" (Just savedAllGood) emptyOngoingTreatmentReviewForm)
+                        (shown (Just savedAllGood)
+                            >> expectHowManyDoses { asked = True, number = Nothing, complete = False }
+                        )
+            , test "once a number is chosen it is shown and the task is complete" <|
+                \_ ->
+                    onTapped (tap "missed-doses" "Yes" (Just savedAllGood) emptyOngoingTreatmentReviewForm)
+                        (chooseDoses 3 (Just savedAllGood)
+                            >> shown (Just savedAllGood)
+                            >> expectHowManyDoses { asked = True, number = Just 3, complete = True }
+                        )
+            , test "the chosen number is what gets saved" <|
+                \_ ->
+                    onTapped (tap "missed-doses" "Yes" (Just savedAllGood) emptyOngoingTreatmentReviewForm)
+                        (chooseDoses 21 (Just savedAllGood)
+                            >> stored (Just savedAllGood)
+                            >> expectRecord (savedMissed 21)
+                        )
+            , test "changed to \"Yes\" and back to \"No\": the task is complete and zero doses are saved" <|
+                \_ ->
+                    onTapped
+                        (tap "missed-doses" "Yes" (Just savedAllGood) emptyOngoingTreatmentReviewForm
+                            |> Result.andThen (tap "missed-doses" "No" (Just savedAllGood))
+                        )
+                        (Expect.all
+                            [ shown (Just savedAllGood) >> expectHowManyDoses { asked = False, number = Nothing, complete = True }
+                            , stored (Just savedAllGood) >> expectRecord savedAllGood
+                            ]
+                        )
+            ]
+        , describe "A treatment review whose follow-up is no longer asked saves no earlier answer"
+            [ test "saved \"taken as prescribed: No\" with a reason, changed to \"Yes\" and saved: the record holds no reason" <|
+                \_ ->
+                    onTapped (tap "taken-as-prescribed" "Yes" (Just (savedNotTaken NotTakingNoMoney)) emptyOngoingTreatmentReviewForm)
+                        (stored (Just (savedNotTaken NotTakingNoMoney))
+                            >> expectRecord savedAllGood
+                        )
+            , test "saved \"missed doses: Yes\" with 5 doses, changed to \"No\" and saved: the record holds zero doses" <|
+                \_ ->
+                    onTapped (tap "missed-doses" "No" (Just (savedMissed 5)) emptyOngoingTreatmentReviewForm)
+                        (stored (Just (savedMissed 5))
+                            >> expectRecord savedAllGood
+                        )
+            ]
+        , describe "A treatment review saved with \"No\" and a reason, reopened without changes: the reason is shown selected and the task is complete"
+            [ test "the saved reason is ticked and the task is complete" <|
+                \_ ->
+                    shown (Just (savedNotTaken NotTakingAdverseEvent)) emptyOngoingTreatmentReviewForm
+                        |> expectWhyNot { asked = True, ticked = 1, complete = True }
+            , test "saving it again stores the same record" <|
+                \_ ->
+                    stored (Just (savedNotTaken NotTakingAdverseEvent)) emptyOngoingTreatmentReviewForm
+                        |> expectRecord (savedNotTaken NotTakingAdverseEvent)
+            , test "the saved reason stays ticked when another question's answer is changed" <|
+                \_ ->
+                    onTapped (tap "feeling-better" "No" (Just (savedNotTaken NotTakingAdverseEvent)) emptyOngoingTreatmentReviewForm)
+                        (shown (Just (savedNotTaken NotTakingAdverseEvent))
+                            >> expectWhyNot { asked = True, ticked = 1, complete = True }
+                        )
+            , test "saved \"missed doses: Yes\" with 5 doses, reopened: 5 is shown and the task is complete" <|
+                \_ ->
+                    shown (Just (savedMissed 5)) emptyOngoingTreatmentReviewForm
+                        |> expectHowManyDoses { asked = True, number = Just 5, complete = True }
+            , test "saved \"missed doses: Yes\" with 5 doses, saved again: the same record" <|
+                \_ ->
+                    stored (Just (savedMissed 5)) emptyOngoingTreatmentReviewForm
+                        |> expectRecord (savedMissed 5)
+            ]
+        , describe "An older treatment review saved with \"No\" and no reason, reopened: \"Why not?\" is unanswered and the task is not complete"
+            [ test "\"Why not?\" is asked, nothing is ticked, the task is not complete" <|
+                \_ ->
+                    shown (Just (savedNotTaken NoReasonForNotTakingSign)) emptyOngoingTreatmentReviewForm
+                        |> expectWhyNot { asked = True, ticked = 0, complete = False }
+            , test "once a reason is chosen the task is complete and the reason is saved" <|
+                \_ ->
+                    Expect.all
+                        [ shown (Just (savedNotTaken NoReasonForNotTakingSign)) >> expectWhyNot { asked = True, ticked = 1, complete = True }
+                        , stored (Just (savedNotTaken NoReasonForNotTakingSign)) >> expectRecord (savedNotTaken NotTakingOther)
+                        ]
+                        (chooseReason NotTakingOther (Just (savedNotTaken NoReasonForNotTakingSign)) emptyOngoingTreatmentReviewForm)
+            , test "saved \"missed doses: Yes\" with zero doses, reopened: \"How many doses?\" is empty and the task is not complete" <|
+                \_ ->
+                    shown (Just (savedMissed 0)) emptyOngoingTreatmentReviewForm
+                        |> expectHowManyDoses { asked = True, number = Nothing, complete = False }
+            ]
+        , describe "Records the defect does not touch stay as they are"
+            [ test "a review with no follow-up asked, reopened without changes, is complete and saves the same record" <|
+                \_ ->
+                    Expect.all
+                        [ shown (Just savedAllGood) >> expectWhyNot { asked = False, ticked = 0, complete = True }
+                        , stored (Just savedAllGood) >> expectRecord savedAllGood
+                        ]
+                        emptyOngoingTreatmentReviewForm
+            , test "a first-time \"taken as prescribed: No\", with no saved record, leaves \"Why not?\" unanswered and the task not complete" <|
+                \_ ->
+                    onTapped
+                        (tap "taken-as-prescribed"
+                            "No"
+                            Nothing
+                            { emptyOngoingTreatmentReviewForm
+                                | feelingBetter = Just True
+                                , missedDoses = Just False
+                                , sideEffects = Just False
+                            }
+                        )
+                        (shown Nothing
+                            >> expectWhyNot { asked = True, ticked = 0, complete = False }
+                        )
+            , test "a first-time \"missed doses: Yes\", with no saved record, leaves \"How many doses?\" empty and the task not complete" <|
+                \_ ->
+                    onTapped
+                        (tap "missed-doses"
+                            "Yes"
+                            Nothing
+                            { emptyOngoingTreatmentReviewForm
+                                | feelingBetter = Just True
+                                , sideEffects = Just False
+                                , takenAsPrescribed = Just True
+                            }
+                        )
+                        (shown Nothing
+                            >> expectHowManyDoses { asked = True, number = Nothing, complete = False }
+                        )
+            ]
         ]

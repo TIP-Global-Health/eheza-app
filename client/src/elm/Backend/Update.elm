@@ -87,7 +87,7 @@ import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
-import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, storedDiagnosesEqual, sw, updateVillageStockManagementCaches)
+import Backend.Utils exposing (clearFinishedPost, everySetsEqual, gpsCoordinatesEnabled, isPostInFlight, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, storedDiagnosesEqual, sw, updateVillageStockManagementCaches)
 import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
@@ -3857,6 +3857,12 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     else
                         NotAsked
               }
+            , Cmd.none
+            , []
+            )
+
+        ResetPostRelationshipRequest personId ->
+            ( { model | postRelationship = clearFinishedPost personId model.postRelationship }
             , Cmd.none
             , []
             )
@@ -8947,7 +8953,7 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                                     let
                                         urgentDiagnoses =
                                             List.filter
-                                                Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferal
+                                                Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferral
                                                 addedDiagnoses
 
                                         additionalMsgs =
@@ -8976,7 +8982,7 @@ generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTec
                                     let
                                         urgentDiagnoses =
                                             List.filter
-                                                Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal
+                                                Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferral
                                                 addedDiagnoses
 
                                         additionalMsgs =

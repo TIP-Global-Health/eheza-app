@@ -2575,7 +2575,7 @@ partnerSignsAfterPartnerTestedTest =
 --
 -- The same recurrent moderate / severe pre-eclampsia recipes as GROUP B / F,
 -- but at EGA ~38 weeks (>= 37). At that EGA the recurrent pre-eclampsia
--- diagnoses are produced by `matchEmergencyReferalPrenatalDiagnosis` as the
+-- diagnoses are produced by `matchEmergencyReferralPrenatalDiagnosis` as the
 -- `*EGA37Plus` emergency-referral variants instead.
 --
 --   * Moderate: repeated marginal BP (sysRepeated 145) + urine protein, normal
@@ -4319,7 +4319,7 @@ lateLabResultLabTechAndHistoryTest =
 -- result). The protein result is entered later on the encounter's Lab Results
 -- page. Saving it reassesses the encounter; the diagnoses it adds over the
 -- stored set decide the emergency warning on Lab Results
--- (`Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal`),
+-- (`Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferral`),
 -- and the stored set decides whether Lab Results' Next Steps asks for a
 -- hospital referral (`diagnosesCausingHospitalReferralByPhase
 -- PrenatalEncounterPhaseRecurrent`).
@@ -4460,7 +4460,7 @@ jump to its Next Steps.
 labResultsWarning : LateResult -> List PrenatalDiagnosis
 labResultsWarning result =
     addedByLateResult result
-        |> List.filter Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal
+        |> List.filter Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferral
 
 
 {-| Severe preeclampsia among the diagnoses for which the visit's own Next
@@ -4478,7 +4478,7 @@ visitHospitalReferral result =
 visitWarning : LateResult -> List PrenatalDiagnosis
 visitWarning result =
     EverySet.toList result.visitDayDiagnoses
-        |> List.filter Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferal
+        |> List.filter Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferral
 
 
 {-| Today's progress report wording for severe preeclampsia, per language.
@@ -7270,7 +7270,7 @@ preeclampsiaRiskReferralUnchangedTest =
         riskVisitWarning ega measurements =
             diagnoseVisitAt ega measurements
                 |> EverySet.toList
-                |> List.filter Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferal
+                |> List.filter Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferral
 
         visitReferral ega measurements =
             let
@@ -7283,7 +7283,7 @@ preeclampsiaRiskReferralUnchangedTest =
 
         riskLabResultsWarning result =
             addedByLateResult result
-                |> List.filter Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal
+                |> List.filter Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferral
 
         labResultsReferral ega measurementsAfterEntry result =
             visitAssembled ega [] result.afterEntry measurementsAfterEntry
@@ -7358,8 +7358,8 @@ preeclampsiaRiskReferralUnchangedTest =
             \_ ->
                 List.filter
                     (\diagnosis ->
-                        Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferal diagnosis
-                            || Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal diagnosis
+                        Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferral diagnosis
+                            || Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferral diagnosis
                     )
                     preeclampsiaRiskDiagnoses
                     |> Expect.equal []

@@ -3640,7 +3640,7 @@ reviewStateFromString state =
             Nothing
 
 
-{-| Referal to facility is completed when we mark that facility was referred to,
+{-| Referral to facility is completed when we mark that facility was referred to,
 or, reason was set for not referring to that facility.
 -}
 referralToFacilityCompleted : EverySet ReferToFacilitySign -> Maybe (EverySet NonReferralSign) -> ReferralFacility -> Bool
@@ -3668,7 +3668,7 @@ referralToFacilityCompleted referralSigns nonReferralReasons facility =
 
                 FacilityHealthCenter ->
                     -- We should never get here, as referral to HC
-                    -- got special treatement, and not supported here.
+                    -- got special treatment, and not supported here.
                     Nothing
     in
     Maybe.map
@@ -3736,7 +3736,7 @@ nonReferralReasonToSign facility reason =
 
         FacilityHealthCenter ->
             -- We should never get here, as referral to HC
-            -- got special treatement, and not supported here.
+            -- got special treatment, and not supported here.
             NoNonReferralSigns
 
 

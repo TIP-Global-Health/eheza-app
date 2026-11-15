@@ -31,6 +31,9 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   entries before the script's own arguments (read from index 2).
 - A measurement node is found by its patient: join `field_data_field_person` to the person
   node and match its title (`E2ETest <firstName>`).
+- Yes/No follow-up fields on the server: `field_send_to_hc` + `field_reason_not_sent_to_hc`, `field_health_education_signs` + `field_reason_not_given_education`,
+  `field_treatment_ongoing` + `field_reason_for_not_taking` / `field_missed_doses` / `field_adverse_events`, `field_treatment_history`, `field_administration_note`.
+  The "no answer" value is stored as `none` (0 for doses).
 - A **server reinstall** (`server/install`) wipes every device, person and pairing, restores
   the migration devices (Tablet 1 `12345678`, Tablet 2 `87654321`) and turns the feature
   flags back on. A browser profile from before it holds credentials for a database that no
@@ -143,6 +146,14 @@ flag simply does not appear.
 - Search results and Participant Directory rows open through their `span.action-icon.forward`;
   the row itself is not clickable. The edit pencil (`span.action-icon.edit`) is on the person
   page, as is "Add Child" (`div.add-participant-icon-wrapper`).
+- Participant Directory: main menu `.icon-task-participant-directory` → `#persons/directory`, `input.search-input`. The Relationship page
+  (`#relationship/<id1>/<id2>/<origin>`) has `label.relationship-selection` radios; `qa.state().choices` shows the chosen one as `(x)`.
+  `page.goBack()` reaches a page through the URL, not through the in-app entry. The tablets have no Back button (user, closing B-544),
+  so a row built on `page.goBack()` tests no real path: open pages through the in-app arrow and buttons.
+- Relationship page controls: Save `.save-buttons button.ui.button.primary.fluid` (`loading disabled` while a save is on its way), Cancel beside it,
+  the failed-save banner `.ui.warning.message` ("Error contacting backend"), back arrow `.link-back` → the first person's page. The save
+  result is held per first person in memory only, so a reload clears it. A successful save goes to the first person's page even when the
+  nurse has meanwhile opened another pair.
 - Save buttons: `button.ui.fluid.primary.button` with class `disabled` or `active`; the
   `disabled` attribute is never set, so read the class. Buttons from `viewEncounterActionButton`
   (prenatal Next Steps › Next ANC Visit) carry neither class when pressable — only `disabled` means off.
@@ -150,6 +161,7 @@ flag simply does not appear.
   done (`not isActive && isCompleted`); read the task counter for the open tab instead.
 - Yes/no inputs: the chosen side is `input.checked` inside `.form-input.yes-no.<name>`; the
   label never gets an `active` class.
+- The treatment review's "How many doses?" select has no `form-input` class, so `qa.form().selects` misses it: read `.ui.form select`.
 - The out-of-range warning covers the page with a dimmer; its Close button is the only
   in-app way out, while browser Back goes around it and leaves the warning standing.
 - End Encounter is `ui fluid primary button` + `disabled` until the mandatory activities are
@@ -202,7 +214,13 @@ flag simply does not appear.
   `shards` row, or `field_latitude` / `field_longitude` on the server. The server ignores
   `save_gps_location`, so a downloaded person always has it false.
 - A nurse's Add Child: the child form takes the parent's address. On the relationship page,
-  Save stays disabled until "Add to Group..." has a value.
+  Save stays disabled until "Add to Group..." has a value (at Nyange: Nyagne II, Nyagne III, Nyange I; from a group session only that
+  session's group, already chosen). The nurse's save POSTs `pmtct_participant` (the group membership) first, then `relationship`.
+- Linking existing people: Participant Directory → adult → `div.add-participant-icon-wrapper` → type the child's name → the result's
+  `span.action-icon.forward` opens the Relationship page. One adult and three children by the registration helpers took about 20 s.
+- Failing or holding a relationship save: wrap `XMLHttpRequest` POSTs to `/sw/nodes/<type>` (`installSaveControls` in
+  `client/e2e/group-session-save-button.spec.ts`). Fail `relationship` and `pmtct_participant` together, or each failed attempt still
+  leaves a group membership behind. The page shows the network-error banner.
 - Person page: "Family Members:" lists each relative as "<name> (Child)" / "(Parent)", then "Add Child" (adult) or
   "Add Parent or Caregiver" (child), opened by `div.add-participant-icon-wrapper`. It leads to
   `#relations/<uuid>/<origin>`, headed "ADD FAMILY MEMBER FOR <NAME>". That search shows only the other age group
@@ -263,6 +281,11 @@ flag simply does not appear.
 - Acute Illness Prior Treatment: yes/no inputs `fever-past-6-hours`, `malaria-today`,
   `malaria-within-past-month`. A Yes reveals "Do you feel better after taking this?" as
   `<question>-helped`.
+- Acute Illness COVID test "Why not?": the first option is Administered Previously (`administered-previously`), which `completeLaboratory(… covidTestPerformed: false)` ticks.
+  Nurse adult, Fever + Cough + Nasal Congestion, 38.5 °C, malaria Negative, COVID not performed: "COVID-19 with signs of Pneumonia", Next Steps Contact Tracing, Medication
+  Distribution, Follow Up. Changing COVID to performed Negative re-diagnoses Fever of Unknown Origin, with Next Steps Refer to Hospital only (the nurse's hospital referral form).
+- CHW follow-up after a Coartem first visit, condition not improving + Respiratory Distress, no malaria test: Treatment Review (`.icon-task-ongoing-treatment`), then Next Steps
+  Send to Health Center, Health Education, Follow Up. A page keeps a form's dirty flags after its save, so reload before reopening a saved form to see what a later visit sees.
 - A saved activity is reopened from the encounter's Completed tab (`#completed-tab`), then
   its `.icon-task-<activity>` card.
 - NCD Medical History has five tabs: Co-Morbidities, Medication History, Social History
@@ -294,7 +317,11 @@ flag simply does not appear.
 - Aspirin is given in Next Steps → Medication Distribution ("Administer: Aspirin (150 mg)"), once a
   preeclampsia risk is diagnosed. Next Steps shows only after every activity but Malaria Prevention,
   Photo and Ultrasound is saved. `completeHistory` overwrites obstetric counts, so a first pregnancy
-  needs Obstetric (all 0) and Medical filled by hand. Medication's Calcium tab starts at 14 weeks.
+  needs Obstetric (all 0) and Medical filled by hand. Medication's Calcium tab starts at 14 weeks, Mebendazole at 24.
+- Medication tabs: `.link-section .icon-activity-task.icon-<mms|fefol|folate|iron|calcium|mebendezole>`, each one yes/no; No adds reasons
+  (the first is Lack of stock). Fefol given hides Iron and Folate. Since #2521 a follow-up nurse visit lists Medication while a supplement is due.
+- Follow-up Treatment Review, Prenatal Medication tab: `.form-input.yes-no.iron-folic-acid` always, and `.mebendezole` from 24 weeks while
+  Mebendazole was not given or reported at an earlier visit. A "No" there puts Mebendazole into Next Steps › Medication Distribution.
   The full first-visit helper chain needs EGA ≥ 28 weeks: `completeMentalHealth` waits for a card shown only then.
   Below 28 weeks, leave `completeMentalHealth` out and the rest of the chain runs (19, 20 and 25 weeks tried).
 - With labs sent to the lab, Next Steps ends on Wait → Pause Encounter, which ENDS the visit (`scheduled_date.value2` = that day)
@@ -518,6 +545,8 @@ flag simply does not appear.
 - The child-data load for one child requests `/sw/nodes/pregnancy-by-newborn/<child uuid>` (`context.on('request')` sees it).
 - CHW TB visit with a follow-up: `startTBEncounter`, `completeDiagnostics` `positive-pulmonary`, `completeMedication`, `completeNextSteps`, `closeReport` if open, `endTBEncounter`.
   About 40 s, ending on the main menu. HIV is the same chain with `positive-reported`. Both start from the participant page.
+- A TB first visit's Medication activity ends with a Treatment Review tab (`.icon-treatment-review`), so no follow-up visit is needed to reach it. The participant page's
+  Tuberculosis Encounter button reopens the open visit.
 
 ## Patient Record
 
@@ -677,6 +706,9 @@ flag simply does not appear.
 - Recompute one person: `hedley_reports_calculate_aggregated_data_for_person(node_load($nid, NULL, TRUE))`
   in a script run by `ddev drush scr`. The script must sit under `server/www/` (container path
   `/var/www/html/server/www/…`); delete it afterwards.
+- **Completion report**: `/admin/reports/completion/health-center/4` (`h.reports.navigateToCompletionReportPage`, then type, Taken By, dates).
+  It sums each encounter's stored `field_reports_data` (`expected|completed` codes; the mapping is in `hedley_reports_generate_completion_data_for_prenatal`).
+  Rebuild one pregnancy with that function (`node_load($participant)`, `FALSE`). A narrow date range then shows only the run's fixtures.
 - Prenatal data sits under `individual.antenatal`. Each encounter is `date|nurse|<diagnosis codes>|<indicator codes>`;
   the codes are in `hedley_reports_prenatal_*_mapping()` (for example `h` is intra-uterine death).
 
@@ -723,6 +755,8 @@ flag simply does not appear.
   A shift of more than a year into the past works. Queued saves still upload once the offset is back to 0.
 - A PR whose branch is behind develop, or stacked on another PR: build its tree with `git merge-tree --write-tree origin/develop origin/<branch>`
   and `git checkout <tree> -- <files>`; the control tree merges develop with the parent branch.
+  When that merge conflicts, overlay every `client/src` file that differs between HEAD and the PR tip (`git diff --name-only HEAD <branch>`).
+  Then restore them all; develop stays the control while its own changes since the base change no behaviour.
 - The main tree starts a run on `develop`, so a develop control is cheapest before the overlay:
   record it on the served build, then overlay and wait for gulp once. For a change only to what a page shows, one fixture can
   serve both builds: overlay, build and read on the PR, restore the files (needed anyway), wait for gulp, activate the update in the same driver, read again.

@@ -25,9 +25,9 @@ import Measurement.Utils
         )
 import Measurement.View
     exposing
-        ( contributingFactorsFormInutsAndTasks
+        ( contributingFactorsFormInputsAndTasks
         , followUpFormInputsAndTasks
-        , healthEducationFormInutsAndTasks
+        , healthEducationFormInputsAndTasks
         , sendToFacilityInputsAndTasks
         )
 import Pages.Nutrition.Activity.Model exposing (NextStepsData)
@@ -162,14 +162,14 @@ nextStepsTasksCompletedFromTotal measurements data task =
                 NextStepsHealthEducation ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> healthEducationFormInutsAndTasks English
+                        |> healthEducationFormInputsAndTasks English
                             Pages.Nutrition.Activity.Model.SetProvidedEducationForDiagnosis
                             Pages.Nutrition.Activity.Model.SetReasonForNotProvidingHealthEducation
 
                 NextStepContributingFactors ->
                     getMeasurementValueFunc measurements.contributingFactors
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
-                        |> contributingFactorsFormInutsAndTasks English
+                        |> contributingFactorsFormInputsAndTasks English
                             Pages.Nutrition.Activity.Model.SetContributingFactorsSign
 
                 NextStepFollowUp ->

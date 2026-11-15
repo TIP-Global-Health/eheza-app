@@ -1839,7 +1839,7 @@ update currentDate id db msg model =
             let
                 updatedSigns =
                     -- Since we may have values from recurrent phase of encounter, we make
-                    -- sure to preserve them, before setting new value at inital phase.
+                    -- sure to preserve them, before setting new value at initial phase.
                     Maybe.map
                         (\signs ->
                             List.filter (\sign_ -> not <| List.member sign_ allowedSigns) signs
