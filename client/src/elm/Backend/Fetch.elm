@@ -525,13 +525,18 @@ shouldFetch currentTime model msg =
 -}
 forget : MsgIndexedDb -> ModelIndexedDb -> ModelIndexedDb
 forget msg model =
+    if heldByGroupSession msg model then
+        model
+
+    else
+        forgetData msg model
+
+
+forgetData : MsgIndexedDb -> ModelIndexedDb -> ModelIndexedDb
+forgetData msg model =
     case msg of
         FetchChildMeasurements childId ->
-            if heldByGroupSession childId model then
-                model
-
-            else
-                { model | childMeasurements = Dict.remove childId model.childMeasurements }
+            { model | childMeasurements = Dict.remove childId model.childMeasurements }
 
         FetchClinics ->
             { model | clinics = NotAsked }
@@ -555,11 +560,7 @@ forget msg model =
             { model | villages = NotAsked }
 
         FetchMotherMeasurements motherId ->
-            if heldByGroupSession motherId model then
-                model
-
-            else
-                { model | motherMeasurements = Dict.remove motherId model.motherMeasurements }
+            { model | motherMeasurements = Dict.remove motherId model.motherMeasurements }
 
         FetchParticipantForms ->
             { model | participantForms = NotAsked }
@@ -574,11 +575,7 @@ forget msg model =
             { model | peopleInVillage = Dict.remove id model.peopleInVillage }
 
         FetchPerson id ->
-            if heldByGroupSession id model then
-                model
-
-            else
-                { model | people = Dict.remove id model.people }
+            { model | people = Dict.remove id model.people }
 
         FetchTraceContact id ->
             { model | traceContacts = Dict.remove id model.traceContacts }
@@ -729,13 +726,28 @@ forget msg model =
             model
 
 
-{-| Is the person a mother or child of a group session whose participants are
-loaded? That session's lists are rebuilt from their data, so it stays.
+{-| Does the message fetch a person, or measurements, of a mother or child of a
+group session whose participants are loaded? That session is rebuilt from it.
 -}
-heldByGroupSession : PersonId -> ModelIndexedDb -> Bool
-heldByGroupSession personId model =
-    Dict.values model.expectedParticipants
-        |> List.any
-            (RemoteData.map (\participants -> Dict.member personId participants.byChildId || Dict.member personId participants.byMotherId)
-                >> RemoteData.withDefault False
-            )
+heldByGroupSession : MsgIndexedDb -> ModelIndexedDb -> Bool
+heldByGroupSession msg model =
+    let
+        held personId =
+            Dict.values model.expectedParticipants
+                |> List.any
+                    (RemoteData.map (\participants -> Dict.member personId participants.byChildId || Dict.member personId participants.byMotherId)
+                        >> RemoteData.withDefault False
+                    )
+    in
+    case msg of
+        FetchChildMeasurements childId ->
+            held childId
+
+        FetchMotherMeasurements motherId ->
+            held motherId
+
+        FetchPerson id ->
+            held id
+
+        _ ->
+            False
