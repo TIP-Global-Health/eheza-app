@@ -3974,6 +3974,8 @@ nutritionFeedingInputsAndTasks language personId setBoolInputMsg setNutritionSup
                         , rationPresentAtHome = Nothing
                         , enoughTillNextSession = Nothing
                         , supplementShared = Nothing
+                        , sachetsPerDay = Nothing
+                        , eatenWithWater = Nothing
                     }
             in
             ( [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion ReceiveSupplement

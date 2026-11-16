@@ -20,6 +20,7 @@ import Backend.Measurement.Model
         , MuacInCm(..)
         , NCDASign(..)
         , NutritionAssessment(..)
+        , NutritionSupplementType(..)
         , PartnerHIVTestValue
         , ReasonForNonReferral(..)
         , ReasonForNotProvidingHealthEducation(..)
@@ -48,7 +49,7 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html, div)
 import Html.Attributes
-import Measurement.Model exposing (ModelChild, MsgChild(..), NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), OutMsgChild(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHealthEducationForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyOngoingTreatmentReviewForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm, emptySendToHCForm)
+import Measurement.Model exposing (ModelChild, MsgChild(..), NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), OutMsgChild(..), RangedMeasurement(..), emptyCreatinineResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHealthEducationForm, emptyHeightForm, emptyHepatitisBTestForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyModelChild, emptyNCDAData, emptyNCDAForm, emptyNutritionFeedingForm, emptyOngoingTreatmentReviewForm, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPregnancyTestForm, emptyRandomBloodSugarTestUniversalForm, emptySendToHCForm)
 import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
@@ -99,7 +100,7 @@ import Measurement.Utils
         , toSendToHCValueWithDefault
         , treatmentReviewInputsAndTasks
         )
-import Measurement.View exposing (healthEducationFormInputsAndTasks, sendToFacilityInputsAndTasks, viewColorAlertIndication, viewNCDAContent)
+import Measurement.View exposing (healthEducationFormInputsAndTasks, nutritionFeedingInputsAndTasks, sendToFacilityInputsAndTasks, viewColorAlertIndication, viewNCDAContent)
 import Pages.ChildScoreboard.Activity.Model as ChildScoreboardActivity
 import Pages.ChildScoreboard.Activity.Update as ChildScoreboardActivityUpdate
 import Pages.Nutrition.Activity.Model as NutritionActivity
@@ -1269,6 +1270,7 @@ all : Test
 all =
     describe "Measurement of children: form tests"
         [ nextVaccinationDataForVaccineTest
+        , nutritionFeedingWaterQuestionTest
         , generateIndividualNutritionAssessmentEntriesTest
         , viewChildFormsTest
         , viewMotherFormsTest
@@ -3409,4 +3411,53 @@ ongoingTreatmentReviewFollowUpTest =
                             >> expectHowManyDoses { asked = True, number = Nothing, complete = False }
                         )
             ]
+        ]
+
+
+nutritionFeedingWaterQuestionTest : Test
+nutritionFeedingWaterQuestionTest =
+    let
+        feedingForm supplementType eatenWithWater =
+            nutritionFeedingInputsAndTasks English
+                (toEntityUuid "child")
+                (\_ _ -> ())
+                (\_ -> ())
+                (\_ -> ())
+                emptyModelIndexedDb
+                { emptyNutritionFeedingForm
+                    | receiveSupplement = Just True
+                    , supplementType = Just supplementType
+                    , eatenWithWater = eatenWithWater
+                }
+
+        answeredTasks supplementType eatenWithWater =
+            feedingForm supplementType eatenWithWater
+                |> Tuple.second
+                |> List.filterMap identity
+                |> List.length
+
+        showsWaterQuestion supplementType =
+            feedingForm supplementType Nothing
+                |> Tuple.first
+                |> div []
+                |> Query.fromHtml
+                |> Query.findAll [ text "Is water given to the child when eating the food supplement" ]
+    in
+    describe "nutritionFeedingInputsAndTasks, the water question"
+        [ test "with RUTF, the question is shown" <|
+            \_ ->
+                showsWaterQuestion Rutf
+                    |> Query.count (Expect.atLeast 1)
+        , test "with RUTF, answering it completes one more task" <|
+            \_ ->
+                answeredTasks Rutf (Just False)
+                    |> Expect.equal (answeredTasks Rutf Nothing + 1)
+        , test "with fortified porridge, the question is not shown" <|
+            \_ ->
+                showsWaterQuestion FortifiedPorridge
+                    |> Query.count (Expect.equal 0)
+        , test "with fortified porridge, it is not a task" <|
+            \_ ->
+                answeredTasks FortifiedPorridge (Just False)
+                    |> Expect.equal (answeredTasks FortifiedPorridge Nothing)
         ]
