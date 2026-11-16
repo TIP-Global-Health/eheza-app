@@ -11,9 +11,8 @@ import RemoteData exposing (RemoteData(..), WebData)
 import SyncManager.Model exposing (SiteFeature)
 
 
-{-| The data the outcome page shows for an illness, assembled on its latest
-visit. Its diagnosis is the one saved at the latest visit that has one, as on
-the participant page's outcome button.
+{-| The outcome page's data, assembled on the illness's latest visit, with the
+diagnosis saved at the latest visit that has one, as on the outcome button.
 -}
 generateOutcomeData : NominalDate -> EverySet SiteFeature -> IndividualEncounterParticipantId -> Bool -> ModelIndexedDb -> WebData AssembledData
 generateOutcomeData currentDate features id isChw db =

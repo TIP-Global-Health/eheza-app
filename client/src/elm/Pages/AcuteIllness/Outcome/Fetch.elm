@@ -24,8 +24,7 @@ fetch participantId db =
         latestEncounterId =
             List.head encountersIds
 
-        -- We fetch measurements for all encounters, to be
-        -- able to apply `expectedAcuteIllnessActivity` logic.
+        -- The page's data is assembled from every visit's measurements.
         fetchMeasurements =
             List.map FetchAcuteIllnessMeasurements encountersIds
     in

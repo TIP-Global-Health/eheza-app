@@ -18,7 +18,7 @@ import Pages.AcuteIllness.Encounter.Utils exposing (getAcuteIllnessDiagnosisForP
 import Pages.AcuteIllness.Participant.Model exposing (AcuteIllnessParticipantViewMode(..), Model, Msg(..))
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive, noPursueAcuteIllnessDiagnoses)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Report.Utils exposing (compareAcuteIllnessEncounters, compareAcuteIllnessEncountersDesc, getAcuteIllnessDiagnosisForEncounters)
+import Pages.Report.Utils exposing (compareAcuteIllnessEncounters, getAcuteIllnessDiagnosisForEncounters)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.NominalDate exposing (sortEncounterTuples)
@@ -331,9 +331,9 @@ viewActiveIllness :
     -> Maybe (Html Msg)
 viewActiveIllness language currentDate selectedHealthCenter isChw db viewMode sessionId =
     let
+        -- Latest first.
         sessionEncounters =
-            getAcuteIllnessEncountersForParticipant db sessionId
-                |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncountersDesc e1 e2)
+            Pages.Report.Utils.getAcuteIllnessEncountersForParticipant db sessionId
 
         mDiagnosis =
             getAcuteIllnessDiagnosisForEncounters sessionEncounters
