@@ -598,6 +598,7 @@ B-597	4	IMPLEMENTED	LOW	2537	2539	55	Home Visit › Feeding (and the Well Child 
 B-598	4	IMPLEMENTED	LOW	2530	2533	55	NCDA › Antenatal Care step: "there are ANC visits not on record: Yes" with no month ticked counts as complete and saves 
 B-599	1	IMPLEMENTED	MED	2534	2535	B-594	Prenatal: a woman diagnosed with hypertension at an earlier visit can never be diagnosed with Moderate Preeclampsia from
 B-600	3	READY	MED-LOW			B-574	Prenatal (CHW and nurse): a postpartum visit where the outcome was SAVED but the visit was left open cannot be reached o
+B-601	4	READY	LOW			56	Prenatal alerts dialog: "no fetal movement" / "no fetal heart rate" from this visit's exam is graded against TODAY's ges
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
