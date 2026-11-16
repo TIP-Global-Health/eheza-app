@@ -33,6 +33,7 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   node and match its title (`E2ETest <firstName>`).
 - A prenatal encounter's diagnoses on the server: `field_data_field_prenatal_diagnoses` by encounter nid; the encounter reaches the person
   through `field_individual_participant` → the participant's `field_person`. A referral saved in Next Steps is a `prenatal_send_to_hc` node.
+- A pregnancy (`individual_participant`) holds its outcome in `field_outcome` (`live-at-term`, `still-at-term`, …), `field_date_concluded` and the newborn in `field_newborn`.
 - Yes/No follow-up fields on the server: `field_send_to_hc` + `field_reason_not_sent_to_hc`, `field_health_education_signs` + `field_reason_not_given_education`,
   `field_treatment_ongoing` + `field_reason_for_not_taking` / `field_missed_doses` / `field_adverse_events`, `field_treatment_history`, `field_administration_note`.
   The "no answer" value is stored as `none` (0 for doses).
@@ -408,6 +409,11 @@ flag simply does not appear.
   no backdating is needed to reach one. A CHW viewing a pregnancy with only nurse visits
   gets the `.open-pregnancy-popup` warning; its "No - document pregnancy outcome" works only once
   a visit has ended.
+- The prenatal participant page shows no name: only "Select Antenatal Visit", the three visit buttons and Record Pregnancy Outcome.
+  The CHW's labels read FIRST ANTENATAL VISIT / SUBSEQUENT ANTENATAL ENCOUNTER / POSTPARTUM. A CHW visit without nurse visits opens behind
+  a "has not yet been seen at the health center" notice (OK).
+- CHW buttons with a visit left open on an earlier day: an open postpartum visit is reopened by Postpartum on any day (since #2540), First
+  and Subsequent off. An open first visit from yesterday gives Subsequent and Postpartum on; Subsequent starts a new `chw-2` visit.
 - CHW visits 2 and 3: the day after a visit 1 left open, Subsequent Antenatal is offered. Visit 2
   is Danger Signs, Birth Plan, Health Education, Next Steps; visit 3 has no Birth Plan. Visit 3's
   Health Education also asks `family-planning`, which `completeHealthEducation(page, 3)` leaves

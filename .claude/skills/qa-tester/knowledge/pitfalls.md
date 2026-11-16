@@ -911,3 +911,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the first posted report said an edit back to RUTF "still brings back the saved water answer", worked out from the code; no scenario ran it.
 - **Wrong conclusion:** reading the code is enough for one sentence in the report.
 - **Rule:** the report states only what a scenario showed. Name an unrun path as not run, and replace a posted report with `--update` when one slips through.
+
+## Waiting for the prenatal participant page by the woman's name
+
+- **Symptom:** a recorded preparation waited 10 s for `div.page-participant.individual.prenatal` with `hasText` the woman's name, then failed, leaving a dead video.
+- **Wrong conclusion:** the page had not opened.
+- **Rule:** the prenatal participant page shows only "Select Antenatal Visit" and the buttons, no name. Wait for the page class alone, and tell women apart by the search you came through.
+
+## Tapping CHW Subsequent Antenatal by hand
+
+- **Symptom:** after a scripted tap on Subsequent Antenatal, the back-arrow click timed out: "`<div class="overlay">` intercepts pointer events".
+- **Wrong conclusion:** the encounter page hung.
+- **Rule:** a CHW visit without nurse visits opens behind a "has not yet been seen at the health center" notice. `startPrenatalEncounter` presses its OK; a hand-written tap must press it too.
