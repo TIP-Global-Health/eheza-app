@@ -524,6 +524,15 @@ shouldFetch currentTime model msg =
 -}
 forget : MsgIndexedDb -> ModelIndexedDb -> ModelIndexedDb
 forget msg model =
+    if heldByGroupSession msg model then
+        model
+
+    else
+        forgetData msg model
+
+
+forgetData : MsgIndexedDb -> ModelIndexedDb -> ModelIndexedDb
+forgetData msg model =
     case msg of
         FetchChildMeasurements childId ->
             { model | childMeasurements = Dict.remove childId model.childMeasurements }
@@ -714,3 +723,30 @@ forget msg model =
         -- For other messages, we do nothing.
         _ ->
             model
+
+
+{-| Does the message fetch a person, or measurements, of a mother or child of a
+group session whose participants are loaded? That session is rebuilt from it.
+-}
+heldByGroupSession : MsgIndexedDb -> ModelIndexedDb -> Bool
+heldByGroupSession msg model =
+    let
+        held personId =
+            Dict.values model.expectedParticipants
+                |> List.any
+                    (RemoteData.map (\participants -> Dict.member personId participants.byChildId || Dict.member personId participants.byMotherId)
+                        >> RemoteData.withDefault False
+                    )
+    in
+    case msg of
+        FetchChildMeasurements childId ->
+            held childId
+
+        FetchMotherMeasurements motherId ->
+            held motherId
+
+        FetchPerson id ->
+            held id
+
+        _ ->
+            False
