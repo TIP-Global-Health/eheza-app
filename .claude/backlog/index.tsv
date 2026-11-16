@@ -571,7 +571,7 @@ B-570	4	READY	LOW		2498	0	Dashboard "Number of Cephaly": a later in-range head c
 B-571	4	IMPLEMENTED	LOW	2503	2507	53	Completion report (Well Child): the server still counts a child's age in whole months by flooring, while the app since #
 B-572	4	READY	LOW			53	HIV encounter: the Prescribed Medication form cannot be saved without at least one antiretroviral, so a positive patient
 B-573	4	READY	LOW			53	NCD initial phase: the Referral task counts as done when ANY referral record exists, so a hospital referral saved first 
-B-574	3	READY	MED			54	Prenatal (CHW): a postpartum visit left unfinished on an earlier day locks the woman's Antenatal page — First, Subsequen
+B-574	3	IMPLEMENTED	MED	2536	2540	54	Prenatal (CHW): a postpartum visit left unfinished on an earlier day locks the woman's Antenatal page — First, Subsequen
 B-575	4	READY	LOW			54	Prenatal labs history: saving an EARLIER visit's pending lab result from today's Laboratory page can throw the nurse ont
 B-576	1	IMPLEMENTED	MED-HIGH			54	Prenatal: severe preeclampsia confirmed by a urine protein result that arrives LATER (dipstick sent to the lab) is filed
 B-577	1	IMPLEMENTED	MED-HIGH	2508	2509	54	Prenatal: "high risk of preeclampsia" found in the recurrent phase (hypertension after the blood-pressure recheck, or di
@@ -594,9 +594,10 @@ B-593	1	READY	LOW			55	Prenatal: diabetes found from a blood sugar result entere
 B-594	1	IMPLEMENTED	MED-HIGH	2526	2527	55	Prenatal: the two-hour blood-pressure recheck is scheduled only at the FIRST nurse visit, so a borderline reading (140–1
 B-595	1	READY	LOW			55	Prenatal: a positive partner HIV result entered later by the NURSE shows "Is the partner taking ARVs?" already answered 
 B-596	4	READY	LOW			55	Prenatal postpartum nurse visit: the continued-hypertension treatment block appears in Medication Distribution only when
-B-597	4	READY	LOW			55	Home Visit › Feeding (and the Well Child CHW home-visit copy): "is water given with the food supplement" has not been as
+B-597	4	IMPLEMENTED	LOW	2537	2539	55	Home Visit › Feeding (and the Well Child CHW home-visit copy): "is water given with the food supplement" has not been as
 B-598	4	IMPLEMENTED	LOW	2530	2533	55	NCDA › Antenatal Care step: "there are ANC visits not on record: Yes" with no month ticked counts as complete and saves 
 B-599	1	IMPLEMENTED	MED	2534	2535	B-594	Prenatal: a woman diagnosed with hypertension at an earlier visit can never be diagnosed with Moderate Preeclampsia from
+B-600	3	READY	MED-LOW			B-574	Prenatal (CHW): a postpartum visit where the outcome was SAVED but the visit was left open cannot be reached on any late
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
