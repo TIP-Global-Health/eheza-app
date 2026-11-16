@@ -1942,7 +1942,9 @@ generatePrenatalDiagnosesForNurseRecurrentLabsTest =
 --
 -- `moderatePreeclampsiaByMeasurementsRecurrentPhase` is
 --   (highBloodPressure && highUrineProtein)
---     || (repeatedTestForMarginalBloodPressure && (edema || highUrineProtein)).
+--     || ((repeatedTestForMarginalBloodPressure || elevatedReadingWithKnownHypertension)
+--           && (edema || highUrineProtein)).
+-- No hypertension was diagnosed earlier here, so the repeated reading decides.
 -- Here the *initial* reading is normal (120/80, so `highBloodPressure` is
 -- False and the Initial-phase variant does not fire), but the REPEATED reading
 -- is marginal (`sysRepeated` 145 >= 140), so `repeatedTestForMarginalBloodPressure`

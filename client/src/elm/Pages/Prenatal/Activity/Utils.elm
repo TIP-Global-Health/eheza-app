@@ -3317,7 +3317,7 @@ moderatePreeclampsiaByMeasurementsInitialPhase assembled =
         measurements =
             assembled.measurements
     in
-    moderatePreeclampsiaBloodPressure assembled
+    (highBloodPressure measurements || elevatedReadingWithKnownHypertension assembled)
         && (highUrineProteinInitialPhase measurements || edemaOnHandOrLegs measurements)
 
 
@@ -3330,28 +3330,26 @@ moderatePreeclampsiaByMeasurementsRecurrentPhase assembled =
         highProtein =
             highUrineProtein measurements
     in
-    (moderatePreeclampsiaBloodPressure assembled && highProtein)
-        || (repeatedTestForMarginalBloodPressure measurements
+    (highBloodPressure measurements && highProtein)
+        || ((repeatedTestForMarginalBloodPressure measurements || elevatedReadingWithKnownHypertension assembled)
                 && (edemaOnHandOrLegs measurements || highProtein)
            )
 
 
-{-| Blood pressure high enough for Moderate Preeclampsia without a recheck: 160 / 110 or above,
-or 140 / 90 once hypertension was diagnosed at an earlier visit.
+{-| A first reading of 140 / 90 or above, after hypertension was diagnosed at an earlier
+visit. No recheck runs for her, so this reading counts as confirmed.
 -}
-moderatePreeclampsiaBloodPressure : AssembledData -> Bool
-moderatePreeclampsiaBloodPressure assembled =
-    highBloodPressure assembled.measurements
-        || (diagnosedHypertensionPreviously assembled
-                && (getMeasurementValueFunc assembled.measurements.vitals
-                        |> Maybe.andThen
-                            (\value ->
-                                Maybe.map2 elevatedBloodPressureCondition
-                                    value.dia
-                                    value.sys
-                            )
-                        |> Maybe.withDefault False
-                   )
+elevatedReadingWithKnownHypertension : AssembledData -> Bool
+elevatedReadingWithKnownHypertension assembled =
+    diagnosedHypertensionPreviously assembled
+        && (getMeasurementValueFunc assembled.measurements.vitals
+                |> Maybe.andThen
+                    (\value ->
+                        Maybe.map2 elevatedBloodPressureCondition
+                            value.dia
+                            value.sys
+                    )
+                |> Maybe.withDefault False
            )
 
 
