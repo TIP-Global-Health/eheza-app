@@ -3987,7 +3987,7 @@ nutritionFeedingInputsAndTasks language personId setBoolInputMsg setNutritionSup
             , form.receiveSupplement :: derivedReceiveSupplementTasks
             )
 
-        ( ( sachetsPerDayInput, sachetsPerDayTask ), _ ) =
+        ( ( sachetsPerDayInput, sachetsPerDayTask ), ( eatenWithWaterInput, eatenWithWaterTask ) ) =
             if form.receiveSupplement == Just True && form.supplementType == Just Rutf then
                 let
                     sachetsPerDayHelper =
@@ -4112,12 +4112,14 @@ nutritionFeedingInputsAndTasks language personId setBoolInputMsg setNutritionSup
     in
     ( receiveSupplementInputs
         ++ sachetsPerDayInput
+        ++ eatenWithWaterInput
         ++ encouragedToEatInput
         ++ refusingToEatInput
         ++ breastfeedingInput
         ++ cleanWaterAvailableInput
     , receiveSupplementTasks
         ++ sachetsPerDayTask
+        ++ eatenWithWaterTask
         ++ [ form.encouragedToEat
            , form.refusingToEat
            , form.breastfeeding
