@@ -603,6 +603,8 @@ B-602	4	READY	LOW			56	Family Nutrition progress report: the MUAC chart is a fix
 B-603	3	READY	MED-LOW			56	Prenatal › Next Steps › Enrol newborn: if the registration form stays open more than five minutes (or the app reloads on
 B-604	3	READY	LOW			56	Registration: the duplicate national-ID warning is lost when any person record arrives by sync between typing the ID and
 B-605	4	READY	LOW			56	Person edit / add family member: an address level left blank or invalid is silently replaced by the related person's sto
+B-606	4	READY	LOW			56	Prenatal Completion report: gestational age comes from the LMP only, while the app prefers the Healthy Start ultrasound'
+B-607	4	READY	LOW			56	Antenatal progress report › Medication History: Mebendazole shows "--" when it was handed over from Next Steps, although
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
