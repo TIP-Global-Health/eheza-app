@@ -20,6 +20,7 @@ import Backend.Measurement.Model
         , MuacInCm(..)
         , NCDASign(..)
         , NutritionAssessment(..)
+        , NutritionFeedingSign(..)
         , NutritionSupplementType(..)
         , PartnerHIVTestValue
         , ReasonForNonReferral(..)
@@ -93,6 +94,7 @@ import Measurement.Utils
         , toMalariaResultValueWithDefault
         , toMalariaTestValueWithDefault
         , toNCDAValueWithDefault
+        , toNutritionFeedingValueWithDefault
         , toOngoingTreatmentReviewValueWithDefault
         , toPartnerHIVTestValueWithDefault
         , toPregnancyTestValueWithDefault
@@ -1271,6 +1273,7 @@ all =
     describe "Measurement of children: form tests"
         [ nextVaccinationDataForVaccineTest
         , nutritionFeedingWaterQuestionTest
+        , toNutritionFeedingValueTest
         , generateIndividualNutritionAssessmentEntriesTest
         , viewChildFormsTest
         , viewMotherFormsTest
@@ -3460,4 +3463,49 @@ nutritionFeedingWaterQuestionTest =
             \_ ->
                 answeredTasks FortifiedPorridge (Just False)
                     |> Expect.equal (answeredTasks FortifiedPorridge Nothing)
+        ]
+
+
+toNutritionFeedingValueTest : Test
+toNutritionFeedingValueTest =
+    let
+        rutfForm =
+            { emptyNutritionFeedingForm
+                | receiveSupplement = Just True
+                , supplementType = Just Rutf
+                , eatenWithWater = Just True
+                , sachetsPerDay = Just 2
+            }
+
+        savedRutf =
+            Just
+                { signs = EverySet.fromList [ ReceiveSupplement, EatenWithWater ]
+                , supplementType = Rutf
+                , sachetsPerDay = 3
+                }
+
+        waterAndSachets =
+            Maybe.map (\value -> ( EverySet.member EatenWithWater value.signs, value.sachetsPerDay ))
+    in
+    describe "toNutritionFeedingValueWithDefault, the water and sachets answers"
+        [ test "kept for RUTF that is received" <|
+            \_ ->
+                toNutritionFeedingValueWithDefault Nothing rutfForm
+                    |> waterAndSachets
+                    |> Expect.equal (Just ( True, 2 ))
+        , test "dropped for another supplement" <|
+            \_ ->
+                toNutritionFeedingValueWithDefault Nothing { rutfForm | supplementType = Just FortifiedPorridge }
+                    |> waterAndSachets
+                    |> Expect.equal (Just ( False, 0 ))
+        , test "dropped when an edit switches saved RUTF to another supplement" <|
+            \_ ->
+                toNutritionFeedingValueWithDefault savedRutf { emptyNutritionFeedingForm | supplementType = Just FortifiedPorridge }
+                    |> waterAndSachets
+                    |> Expect.equal (Just ( False, 0 ))
+        , test "dropped when an edit says the supplement is no longer received" <|
+            \_ ->
+                toNutritionFeedingValueWithDefault savedRutf { emptyNutritionFeedingForm | receiveSupplement = Just False }
+                    |> waterAndSachets
+                    |> Expect.equal (Just ( False, 0 ))
         ]
