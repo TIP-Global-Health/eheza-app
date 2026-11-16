@@ -11,7 +11,7 @@ import EverySet
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
 import Measurement.Model exposing (RangedMeasurement)
-import Measurement.Utils exposing (contributingFactorsFormWithDefault, heightFormWithDefault, heightOutOfRange, muacFormWithDefault, muacOutOfRange, ncdaFormWithDefault, nutritionFormWithDefault, setNCDAStep, showNCDAMeasurementOutOfRange, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toWeightValueWithDefault, weightFormWithDefault, weightOutOfRange)
+import Measurement.Utils exposing (contributingFactorsFormWithDefault, heightFormWithDefault, heightOutOfRange, muacFormWithDefault, muacOutOfRange, ncdaFormWithDefault, nutritionFormWithDefault, setNCDAStep, showNCDAMeasurementOutOfRange, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValue, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toWeightValue, weightFormWithDefault, weightOutOfRange)
 import Pages.Nutrition.Activity.Model exposing (Model, Msg(..), emptyPhotoData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue)
@@ -118,8 +118,11 @@ update site id db msg model =
 
         SaveHeight skippedForms personId saved ->
             let
+                -- The form as shown on screen: the box as ticked in this run,
+                -- else the encounter's "unable to take" answer, which survives a reload.
                 form_ =
-                    model.heightData.form
+                    getMeasurementValueFunc saved
+                        |> heightFormWithDefault skippedForms model.heightData.form
 
                 appMsgs =
                     if form_.measurementNotTaken == Just True then
@@ -141,11 +144,8 @@ update site id db msg model =
                         let
                             measurementId =
                                 Maybe.map Tuple.first saved
-
-                            measurement =
-                                getMeasurementValueFunc saved
                         in
-                        toHeightValueWithDefault skippedForms measurement form_
+                        toHeightValue form_
                             |> unwrap
                                 []
                                 (\value ->
@@ -326,8 +326,11 @@ update site id db msg model =
 
         SaveWeight skippedForms personId saved ->
             let
+                -- The form as shown on screen: the box as ticked in this run,
+                -- else the encounter's "unable to take" answer, which survives a reload.
                 form_ =
-                    model.weightData.form
+                    getMeasurementValueFunc saved
+                        |> weightFormWithDefault skippedForms model.weightData.form
 
                 appMsgs =
                     if form_.measurementNotTaken == Just True then
@@ -349,11 +352,8 @@ update site id db msg model =
                         let
                             measurementId =
                                 Maybe.map Tuple.first saved
-
-                            measurement =
-                                getMeasurementValueFunc saved
                         in
-                        toWeightValueWithDefault skippedForms measurement form_
+                        toWeightValue form_
                             |> unwrap
                                 []
                                 (\value ->
