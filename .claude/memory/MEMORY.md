@@ -20,6 +20,7 @@
 - [Design brief: module splits](design-brief-module-splits.md) — parked R2-#5; Backend/Update extraction → Measurement/Utils clusters → Translate per-domain nested unions (in-file precedent exists)
 - [gh pr edit workaround](gh-pr-edit-projectcards-workaround.md) — `gh pr edit` fails on eheza-app (Projects-classic GraphQL); use `gh api ... pulls/N -X PATCH`
 - [Release issue reconciliation](release-issue-reconciliation.md) — post-release sweep to close delivered-but-open issues (PRs merge to develop, non-default → Fixes #N never auto-closes); tag-range→PR refs→open filter→close recipe + judgment caveats
+- [Spec mismatch is fixed regardless of size](spec-mismatch-is-fixed-regardless-of-size.md) — ⛔ code contradicting a written requirement is fixed however rare (user 2026-11-16, B-599); size sets priority, never whether
 - [Read the issue for requirements](read-the-issue-for-requirements.md) — ⛔ doubt about INTENDED behaviour → commit→PR→issue and read the spec; also before calling a fix "revert that commit"
 - [Obsolete: consent + trace contacts](obsolete-participant-consent-and-trace-contacts.md) — `participant_consent` and `acute_illness_trace_contact` are DEAD (0 nodes, all 4 sites) though fully wired in code; do not design exemptions around their many-per-encounter shapes
 - [Server report counts diagnoses once](server-report-counts-diagnoses-once.md) — ⛔ Statistical Queries counts DIFFERENT diagnoses per pregnancy: phase variants collapse to one code, `-continued` reconfirmations get NO code; check the derivation for `diagnosedPreviously`
