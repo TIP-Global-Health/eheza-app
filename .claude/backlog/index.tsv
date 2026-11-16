@@ -600,6 +600,9 @@ B-599	1	IMPLEMENTED	MED	2534	2535	B-594	Prenatal: a woman diagnosed with hyperte
 B-600	3	READY	MED-LOW			B-574	Prenatal (CHW and nurse): a postpartum visit where the outcome was SAVED but the visit was left open cannot be reached o
 B-601	4	READY	LOW			56	Prenatal alerts dialog: "no fetal movement" / "no fetal heart rate" from this visit's exam is graded against TODAY's ges
 B-602	4	READY	LOW			56	Family Nutrition progress report: the MUAC chart is a fixed 36-month window starting at the person's FIRST reading, so r
+B-603	3	READY	MED-LOW			56	Prenatal › Next Steps › Enrol newborn: if the registration form stays open more than five minutes (or the app reloads on
+B-604	3	READY	LOW			56	Registration: the duplicate national-ID warning is lost when any person record arrives by sync between typing the ID and
+B-605	4	READY	LOW			56	Person edit / add family member: an address level left blank or invalid is silently replaced by the related person's sto
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
