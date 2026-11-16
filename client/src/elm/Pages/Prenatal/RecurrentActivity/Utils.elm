@@ -28,7 +28,7 @@ import Pages.GlobalCaseManagement.Utils exposing (allLabsCompleted, labsResultsT
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (ExaminationData, Msg(..), NextStepsData)
 import Pages.Prenatal.RecurrentActivity.Types exposing (ExaminationTask(..), NextStepsTask(..))
-import Pages.Prenatal.Utils exposing (diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHypertension, diagnosedHypertensionPreviously, diagnosedMalariaByPhase, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, marginalBloodPressureCondition, medicationDistributionFormWithDefaultRecurrentPhase, provideHIVEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForSyphilis, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveMedicationDistributionInputsAndTasks, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet)
+import Pages.Prenatal.Utils exposing (diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHypertension, diagnosedMalariaByPhase, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, marginalBloodPressureCondition, medicationDistributionFormWithDefaultRecurrentPhase, provideHIVEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForSyphilis, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveMedicationDistributionInputsAndTasks, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -53,7 +53,7 @@ expectActivity currentDate isLabTech assembled activity =
                 |> not
 
         RecurrentExamination ->
-            resolveExaminationTasks assembled
+            resolveExaminationTasks currentDate assembled
                 |> List.isEmpty
                 |> not
 
@@ -83,7 +83,7 @@ activityCompleted currentDate isLabTech assembled activity =
 
         RecurrentExamination ->
             (not <| expectActivity currentDate isLabTech assembled RecurrentExamination)
-                || (resolveExaminationTasks assembled
+                || (resolveExaminationTasks currentDate assembled
                         |> List.all (examinationMeasurementTaken assembled)
                    )
 
@@ -725,20 +725,21 @@ diagnosisRequiresEmergencyReferral diagnosis =
     List.member diagnosis emergencyReferralDiagnosesRecurrent
 
 
-resolveExaminationTasks : AssembledData -> List ExaminationTask
-resolveExaminationTasks assembled =
-    List.filter (expectExaminationTask assembled)
+resolveExaminationTasks : NominalDate -> AssembledData -> List ExaminationTask
+resolveExaminationTasks currentDate assembled =
+    List.filter (expectExaminationTask currentDate assembled)
         [ ExaminationVitals ]
 
 
-expectExaminationTask : AssembledData -> ExaminationTask -> Bool
-expectExaminationTask assembled task =
+expectExaminationTask : NominalDate -> AssembledData -> ExaminationTask -> Bool
+expectExaminationTask currentDate assembled task =
     case task of
         ExaminationVitals ->
-            -- Hypertension is a chronic diagnosis for whole duration
-            -- of pregnancy. If diagnised, we do not need to recheck the BP.
-            -- Measurement taken at initial phase of encounter is sufficient.
-            (not <| diagnosedHypertensionPreviously assembled)
+            -- The recheck runs when the initial phase scheduled it, on the same day.
+            (assembled.measurements.labsResults
+                |> Maybe.map (Tuple.second >> labsResultsTestData currentDate >> Tuple.first >> EverySet.member TestVitalsRecheck)
+                |> Maybe.withDefault False
+            )
                 && (not <| diagnosedAnyOf hierarchalBloodPressureDiagnosesInitialPhase assembled)
                 && (getMeasurementValueFunc assembled.measurements.vitals
                         |> Maybe.andThen
