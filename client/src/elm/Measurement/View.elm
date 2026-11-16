@@ -3607,7 +3607,12 @@ ancVisitsInpustAndTasks language personId person config form db =
                                   , div [ class "form-input anc-months" ]
                                         content
                                   ]
-                                , [ maybeToBoolTask form.ancVisitsDates ]
+                                , [ if EverySet.isEmpty encountersDatesFromForm then
+                                        Nothing
+
+                                    else
+                                        Just True
+                                  ]
                                 )
 
                             else
