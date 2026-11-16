@@ -114,12 +114,17 @@ resolveChwVisitButtons currentDate encounters =
                 |> Maybe.map
                     (\( encounterId, encounter ) ->
                         let
+                            -- An open visit is resumed on the day it started. An open
+                            -- postpartum visit is resumed on any day, as the nurse's is.
                             activeEncounterId =
-                                if isJust encounter.endDate || encounter.startDate /= currentDate then
+                                if isJust encounter.endDate then
                                     Nothing
 
-                                else
+                                else if encounter.startDate == currentDate || encounter.encounterType == ChwPostpartumEncounter then
                                     Just encounterId
+
+                                else
+                                    Nothing
                         in
                         ( activeEncounterId, Just encounter.encounterType, encounter.endDate == Just currentDate )
                     )
