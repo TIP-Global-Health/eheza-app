@@ -130,10 +130,8 @@ resolveChwVisitButtons currentDate encounters =
                     )
                 |> Maybe.withDefault ( Nothing, Nothing, False )
 
-        -- Button for certain type is active when:
-        -- 1. There's an active encounter, and it's type matches button encounter type.
-        -- 2. No active encounter, and last completed encounter was of previous type.
-        --   For example, second encounter is active, if last completed encounter was first encounter.
+        -- A button is enabled when its type matches the visit to resume, or, with
+        -- none, when the last visit was of the type before it (first before second).
         encounterTypeButtonActive encounterType =
             if isJust visitToResume then
                 lastEncounterType == Just encounterType
