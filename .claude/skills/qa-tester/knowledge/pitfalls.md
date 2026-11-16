@@ -899,3 +899,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** an `until grep … DONE` loop on a `run_in_background` chain's log hit the Bash default 120 s timeout and became a background task of its own.
 - **Wrong conclusion:** a capped loop is a safe way to wait.
 - **Rule:** the same pit as "Starting a waiter on a background driver run". Once a chain runs with `run_in_background`, start no waiter; end the turn and act on its completion notice.
+
+## Reading a form in the same tick as the click
+
+- **Symptom:** on develop, a counter read straight after switching back to RUTF said 2/9, and one read after the last answer said 9/10 while Save already read active.
+- **Wrong conclusion:** the form counts tasks wrongly, or Save turns on early.
+- **Rule:** when not recording, `qa.click` does not pause, so the read can come before Elm redraws. Wait about 400 ms before `qa.form()` or a counter read.
+
+## A "not covered" line that states behaviour nobody ran
+
+- **Symptom:** the first posted report said an edit back to RUTF "still brings back the saved water answer", worked out from the code; no scenario ran it.
+- **Wrong conclusion:** reading the code is enough for one sentence in the report.
+- **Rule:** the report states only what a scenario showed. Name an unrun path as not run, and replace a posted report with `--update` when one slips through.

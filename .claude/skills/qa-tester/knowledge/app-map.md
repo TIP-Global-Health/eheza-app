@@ -482,6 +482,10 @@ flag simply does not appear.
 - Server fields of a lab test: `field_test_execution_note`, `field_test_prerequisites` (multi-value),
   `field_sugar_count`. A drush edit through `entity_metadata_wrapper(...)->save()` reaches the
   tablet on the next sync.
+- **Home Visit › Feeding** (CHW): the nutrition participant page's HOME VISIT button starts the visit, or reopens today's open one. Receive Yes reveals the type checkboxes
+  (`.ui.checkbox.activity label`); RUTF adds a sachets select (class `form-input select`, values 0–9.5; `.ui.form select` matches nothing here) and, since #2539,
+  `.form-input.yes-no.eaten-with-water`. Tasks: RUTF 11, other supplement 9, receive No 5. The Well Child CHW visit has the same form as the Home Visit activity's
+  Feeding tab; its Save moves to Caring. Server: `nutrition_feeding` / `well_child_feeding`, `field_nutrition_feeding_signs` (multi), `field_supplement_type`, `field_sachets_per_day`.
 - **Immunisation forms** (Well Child Immunisations, Child Scorecard Vaccination History) have one
   tab per vaccine. The tab list hides a vaccine until its next dose is due, judged from the latest
   dose by number. "Received prior to today? Yes" opens Select Date: a picker whose year and month
