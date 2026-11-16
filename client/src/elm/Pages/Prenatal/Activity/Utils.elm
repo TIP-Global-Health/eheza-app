@@ -2048,7 +2048,7 @@ matchEmergencyReferralPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         (egaWeeks >= 37)
-                            && moderatePreeclampsiaByMeasurementsInitialPhase measurements
+                            && moderatePreeclampsiaByMeasurementsInitialPhase assembled
                     )
 
         DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
@@ -2065,7 +2065,7 @@ matchEmergencyReferralPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         (egaWeeks >= 37)
-                            && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
+                            && moderatePreeclampsiaByMeasurementsRecurrentPhase assembled
                     )
 
         DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
@@ -2778,7 +2778,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     (\egaWeeks ->
                         (egaWeeks >= 20)
                             && (egaWeeks < 37)
-                            && moderatePreeclampsiaByMeasurementsInitialPhase measurements
+                            && moderatePreeclampsiaByMeasurementsInitialPhase assembled
                     )
 
         DiagnosisModeratePreeclampsiaRecurrentPhase ->
@@ -2795,7 +2795,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     (\egaWeeks ->
                         (egaWeeks >= 20)
                             && (egaWeeks < 37)
-                            && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
+                            && moderatePreeclampsiaByMeasurementsRecurrentPhase assembled
                     )
 
         DiagnosisSeverePreeclampsiaInitialPhase ->
@@ -3311,25 +3311,47 @@ gestationalHypertensionByMeasurementsAfterRecheck measurements egaWeeks =
     egaWeeks >= 20 && repeatedTestForMarginalBloodPressure measurements
 
 
-moderatePreeclampsiaByMeasurementsInitialPhase : PrenatalMeasurements -> Bool
-moderatePreeclampsiaByMeasurementsInitialPhase measurements =
+moderatePreeclampsiaByMeasurementsInitialPhase : AssembledData -> Bool
+moderatePreeclampsiaByMeasurementsInitialPhase assembled =
     let
-        highProtein =
-            highUrineProteinInitialPhase measurements
+        measurements =
+            assembled.measurements
     in
-    highBloodPressure measurements
-        && (highProtein || edemaOnHandOrLegs measurements)
+    moderatePreeclampsiaBloodPressure assembled
+        && (highUrineProteinInitialPhase measurements || edemaOnHandOrLegs measurements)
 
 
-moderatePreeclampsiaByMeasurementsRecurrentPhase : PrenatalMeasurements -> Bool
-moderatePreeclampsiaByMeasurementsRecurrentPhase measurements =
+moderatePreeclampsiaByMeasurementsRecurrentPhase : AssembledData -> Bool
+moderatePreeclampsiaByMeasurementsRecurrentPhase assembled =
     let
+        measurements =
+            assembled.measurements
+
         highProtein =
             highUrineProtein measurements
     in
-    (highBloodPressure measurements && highProtein)
+    (moderatePreeclampsiaBloodPressure assembled && highProtein)
         || (repeatedTestForMarginalBloodPressure measurements
                 && (edemaOnHandOrLegs measurements || highProtein)
+           )
+
+
+{-| Blood pressure high enough for Moderate Preeclampsia without a recheck: 160 / 110 or above,
+or 140 / 90 once hypertension was diagnosed at an earlier visit.
+-}
+moderatePreeclampsiaBloodPressure : AssembledData -> Bool
+moderatePreeclampsiaBloodPressure assembled =
+    highBloodPressure assembled.measurements
+        || (diagnosedHypertensionPreviously assembled
+                && (getMeasurementValueFunc assembled.measurements.vitals
+                        |> Maybe.andThen
+                            (\value ->
+                                Maybe.map2 elevatedBloodPressureCondition
+                                    value.dia
+                                    value.sys
+                            )
+                        |> Maybe.withDefault False
+                   )
            )
 
 
@@ -3402,6 +3424,11 @@ highBloodPressureCondition dia sys =
     dia >= 110 || sys >= 160
 
 
+elevatedBloodPressureCondition : Float -> Float -> Bool
+elevatedBloodPressureCondition dia sys =
+    dia >= 90 || sys >= 140
+
+
 {-| We measure BP again when we suspect Hypertension or Preeclampsia
 (dia 90 to 110, sys 140 to 160). Hypertension is diagnosed if
 repeated measurements are within or above that range.
@@ -3411,7 +3438,7 @@ repeatedTestForMarginalBloodPressure measurements =
     getMeasurementValueFunc measurements.vitals
         |> Maybe.andThen
             (\value ->
-                Maybe.map2 (\dia sys -> dia >= 90 || sys >= 140)
+                Maybe.map2 elevatedBloodPressureCondition
                     value.diaRepeated
                     value.sysRepeated
             )
