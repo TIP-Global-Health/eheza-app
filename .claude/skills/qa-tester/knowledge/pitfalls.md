@@ -887,3 +887,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the re-run's upload video was about to be recorded as `qa-<pr>-upload-device-status-pr-build.mp4`, the earlier run's file.
 - **Wrong conclusion:** the earlier run's videos are only on GitHub now, so local names can be reused.
 - **Rule:** the ledger cites local paths. Give every re-run video a new name (`rerun-…`, or the new row number).
+
+## Waiting on a detached chain ends the run
+
+- **Symptom:** the run started a chain as `(./chain.sh > out 2>&1 &)` and ended its turn to wait. Monitors watched it. The harness then sent `[handback-send-enforce] … Call SubagentHandback now`.
+- **Wrong conclusion:** the caller ordered a stop. The run killed the chain and handed back `ready` with no PR results (PR #2535, 2026-11-16).
+- **Rule:** start every long chain with the Bash tool's `run_in_background: true`; Monitors alone do not keep a run waiting. That message means "your turn ended without a report", not "stop".
