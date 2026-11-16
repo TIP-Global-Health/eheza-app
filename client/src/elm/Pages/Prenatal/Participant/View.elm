@@ -21,7 +21,7 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Encounter.Utils exposing (generatePostCreateDestination, getPrenatalEncountersForParticipantDesc)
 import Pages.Prenatal.Participant.Model exposing (Model, Msg(..))
-import Pages.Prenatal.Participant.Utils exposing (resolveShownPregnancy)
+import Pages.Prenatal.Participant.Utils exposing (resolveChwVisitButtons, resolveShownPregnancy)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
@@ -336,67 +336,11 @@ viewActionsForChw :
     -> List (Html Msg)
 viewActionsForChw language currentDate selectedHealthCenter id maybeSessionId encounters hasNurseEncounter =
     let
-        ( maybeActiveEncounterId, lastEncounterType, encounterWasCompletedToday ) =
-            encounters
-                |> List.head
-                |> Maybe.map
-                    (\( encounterId, encounter ) ->
-                        let
-                            activeEncounterId =
-                                if isJust encounter.endDate || encounter.startDate /= currentDate then
-                                    Nothing
-
-                                else
-                                    Just encounterId
-                        in
-                        ( activeEncounterId, Just encounter.encounterType, encounter.endDate == Just currentDate )
-                    )
-                |> Maybe.withDefault ( Nothing, Nothing, False )
-
-        -- Button for certain type is active when:
-        -- 1. There's an active encounter, and it's type matches button encounter type.
-        -- 2. No active encounter, and last completed encounter was of previous type.
-        --   For example, second encounter is active, if last completed encounter was first encounter.
-        encounterTypeButtonActive encounterType =
-            if isJust maybeActiveEncounterId then
-                lastEncounterType == Just encounterType
-
-            else
-                case encounterType of
-                    ChwFirstEncounter ->
-                        isNothing lastEncounterType
-
-                    ChwSecondEncounter ->
-                        lastEncounterType == Just ChwFirstEncounter && not encounterWasCompletedToday
-
-                    ChwThirdPlusEncounter ->
-                        -- There can be multiple 'ChwThird' encounters.
-                        (lastEncounterType == Just ChwSecondEncounter || lastEncounterType == Just ChwThirdPlusEncounter)
-                            && not encounterWasCompletedToday
-
-                    ChwPostpartumEncounter ->
-                        case lastEncounterType of
-                            Just lastEncounterType_ ->
-                                -- Last encounter is not a postpartum encounter,
-                                -- and there's no encounter that was completed today.
-                                (lastEncounterType_ /= ChwPostpartumEncounter)
-                                    && not encounterWasCompletedToday
-
-                            Nothing ->
-                                -- When there're no encounters, we allow to
-                                -- create postpartum encounter.
-                                True
-
-                    -- We should never get here, as we deal only with CHW encounters.
-                    NurseEncounter ->
-                        False
-
-                    -- We should never get here, as we deal only with CHW encounters.
-                    NursePostpartumEncounter ->
-                        False
+        buttons =
+            resolveChwVisitButtons currentDate encounters
 
         encounterTypeButtonAction encounterType =
-            maybeActiveEncounterId
+            buttons.visitToResume
                 -- If there's an active encounter, navigate to it.
                 |> Maybe.map navigateToEncounterAction
                 |> Maybe.withDefault
@@ -425,36 +369,19 @@ viewActionsForChw language currentDate selectedHealthCenter id maybeSessionId en
             viewButton language
                 (encounterTypeButtonAction ChwFirstEncounter)
                 (Translate.PrenatalEncounterType ChwFirstEncounter)
-                (not <| encounterTypeButtonActive ChwFirstEncounter)
+                (not buttons.firstVisitEnabled)
 
         createSubsequentEncounterButton =
             viewButton language
-                (encounterTypeButtonAction subsequentEncounterType)
+                (encounterTypeButtonAction buttons.subsequentVisitType)
                 (Translate.IndividualEncounterSubsequentVisit Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
-                (not <| encounterTypeButtonActive subsequentEncounterType)
-
-        -- Used for subsequent encounter button, which is responsible
-        -- to start / navigate to second or third encounters.
-        subsequentEncounterType =
-            case lastEncounterType of
-                Just ChwFirstEncounter ->
-                    ChwSecondEncounter
-
-                Just ChwSecondEncounter ->
-                    if isJust maybeActiveEncounterId then
-                        ChwSecondEncounter
-
-                    else
-                        ChwThirdPlusEncounter
-
-                _ ->
-                    ChwThirdPlusEncounter
+                (not buttons.subsequentVisitEnabled)
 
         createPostpartumEncounterButton =
             viewButton language
                 (encounterTypeButtonAction ChwPostpartumEncounter)
                 (Translate.PrenatalEncounterType ChwPostpartumEncounter)
-                (not <| encounterTypeButtonActive ChwPostpartumEncounter)
+                (not buttons.postpartumVisitEnabled)
     in
     [ createFirstEncounterButton
     , createSubsequentEncounterButton
