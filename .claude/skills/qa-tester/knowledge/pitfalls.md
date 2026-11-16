@@ -893,3 +893,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the run started a chain as `(./chain.sh > out 2>&1 &)` and ended its turn to wait. Monitors watched it. The harness then sent `[handback-send-enforce] … Call SubagentHandback now`.
 - **Wrong conclusion:** the caller ordered a stop. The run killed the chain and handed back `ready` with no PR results (PR #2535, 2026-11-16).
 - **Rule:** start every long chain with the Bash tool's `run_in_background: true`; Monitors alone do not keep a run waiting. That message means "your turn ended without a report", not "stop".
+
+## A foreground wait on a background chain (met again)
+
+- **Symptom:** an `until grep … DONE` loop on a `run_in_background` chain's log hit the Bash default 120 s timeout and became a background task of its own.
+- **Wrong conclusion:** a capped loop is a safe way to wait.
+- **Rule:** the same pit as "Starting a waiter on a background driver run". Once a chain runs with `run_in_background`, start no waiter; end the turn and act on its completion notice.

@@ -31,6 +31,8 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   entries before the script's own arguments (read from index 2).
 - A measurement node is found by its patient: join `field_data_field_person` to the person
   node and match its title (`E2ETest <firstName>`).
+- A prenatal encounter's diagnoses on the server: `field_data_field_prenatal_diagnoses` by encounter nid; the encounter reaches the person
+  through `field_individual_participant` → the participant's `field_person`. A referral saved in Next Steps is a `prenatal_send_to_hc` node.
 - Yes/No follow-up fields on the server: `field_send_to_hc` + `field_reason_not_sent_to_hc`, `field_health_education_signs` + `field_reason_not_given_education`,
   `field_treatment_ongoing` + `field_reason_for_not_taking` / `field_missed_doses` / `field_adverse_events`, `field_treatment_history`, `field_administration_note`.
   The "no answer" value is stored as `none` (0 for doses).
@@ -344,6 +346,8 @@ flag simply does not appear.
   Save: `moderate-preeclampsia-initial`, Next Steps Referral + Next ANC Visit. A later visit then has Treatment Review and Medication Distribution.
 - A later visit at 150 / 95 after earlier hypertension: Medication Distribution recommends Methyldopa three times a day, and Save stays off
   until that option is ticked (server `methyldopa-3`).
+- The same visit with hand edema (reopen Core Physical Exam) or protein +1 or more: develop stores no Moderate Preeclampsia; PR #2535 stores
+  `moderate-preeclampsia-initial` with Referral (lab protein later: `-recurrent`; at 37 w the edema save opens Next Steps behind the immediate-delivery warning).
 - Moderate risk of preeclampsia from BMI: reopen Examination from Completed → Nutrition Assessment → weight 80 (height 160 from the helper) → Save.
   BMI 31 gives moderate risk on its own, also beside gestational hypertension at 28 w (since #2511), with Aspirin. Beside chronic hypertension only high risk is stored.
 - "Hypertension before pregnancy": after `completeHistory`, reopen History from Completed → Medical History tab → tick it (it unticks that group's
