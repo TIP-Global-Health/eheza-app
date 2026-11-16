@@ -1942,7 +1942,7 @@ generatePrenatalDiagnosesForNurseRecurrentLabsTest =
 --
 -- `moderatePreeclampsiaByMeasurementsRecurrentPhase` is
 --   (highBloodPressure && highUrineProtein)
---     || ((repeatedTestForMarginalBloodPressure || elevatedReadingWithKnownHypertension)
+--     || ((repeatedTestForMarginalBloodPressure || firstReadingConfirmed)
 --           && (edema || highUrineProtein)).
 -- No hypertension was diagnosed earlier here, so the repeated reading decides.
 -- Here the *initial* reading is normal (120/80, so `highBloodPressure` is
@@ -3079,6 +3079,7 @@ all =
         , preeclampsiaRiskAfterTheVisitTest
         , gestationalHypertensionAndPreeclampsiaRiskTest
         , knownHypertensionModeratePreeclampsiaTest
+        , knownHypertensionRecordedRecheckTest
         , ultrasoundFormTest
         , preeclampsiaRiskSevereAt37PlusTest
         , preeclampsiaRiskModerateAt37PlusTest
@@ -9090,4 +9091,38 @@ knownHypertensionBefore20WeeksTest =
                 readingWith ( 165, 115 ) (withUrineProtein ProteinPlus1)
                     |> knownHypertensionVisit ( 16, 0 ) earlierChronicHypertension
                     |> Expect.equal noModeratePreeclampsia
+        ]
+
+
+{-| The first reading (sys, dia) with a recorded recheck (sys, dia). An older app could
+schedule a recheck for a woman with known hypertension.
+-}
+withReadingAndRecheck : ( Float, Float ) -> ( Float, Float ) -> PrenatalMeasurements -> PrenatalMeasurements
+withReadingAndRecheck ( sys, dia ) ( sysRepeated, diaRepeated ) measurements =
+    let
+        value =
+            TestFixtures.vitalsValueWith sys dia
+    in
+    { measurements | vitals = wrapMeasurement { value | sysRepeated = Just sysRepeated, diaRepeated = Just diaRepeated } }
+
+
+knownHypertensionRecordedRecheckTest : Test
+knownHypertensionRecordedRecheckTest =
+    describe "known hypertension, a recheck recorded at a normal reading"
+        [ test "edema at the visit: no Moderate Preeclampsia, the normal recheck decides" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withReadingAndRecheck ( 150, 95 ) ( 125, 80 )
+                    |> withLegsEdema
+                    |> knownHypertensionVisit ( 28, 0 ) earlierGestationalHypertension
+                    |> Expect.equal noModeratePreeclampsia
+        , test "protein entered later through the lab: no Moderate Preeclampsia when it is entered" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withReadingAndRecheck ( 150, 95 ) ( 125, 80 )
+                    |> withUrineDipstickSentToLab
+                    |> enterResultLaterAfter earlierGestationalHypertension ( 28, 0 ) 3 (enterProteinInLabResults ProteinPlus1)
+                    |> lateProteinVerdict
+                    |> .addedAtEntry
+                    |> Expect.equal False
         ]
