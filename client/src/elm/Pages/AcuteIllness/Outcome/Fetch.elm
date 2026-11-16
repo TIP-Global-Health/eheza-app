@@ -3,8 +3,8 @@ module Pages.AcuteIllness.Outcome.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Backend.NutritionEncounter.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Maybe.Extra
+import Pages.Report.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import RemoteData
 
 
@@ -20,7 +20,8 @@ fetch participantId db =
             getAcuteIllnessEncountersForParticipant db participantId
                 |> List.map Tuple.first
 
-        firstEncounterId =
+        -- The page is assembled on the latest visit.
+        latestEncounterId =
             List.head encountersIds
 
         -- We fetch measurements for all encounters, to be
@@ -32,6 +33,6 @@ fetch participantId db =
         [ Just (FetchIndividualEncounterParticipant participantId)
         , Maybe.map FetchPerson personId
         , Just (FetchAcuteIllnessEncountersForParticipant participantId)
-        , Maybe.map FetchAcuteIllnessEncounter firstEncounterId
+        , Maybe.map FetchAcuteIllnessEncounter latestEncounterId
         ]
         ++ fetchMeasurements
