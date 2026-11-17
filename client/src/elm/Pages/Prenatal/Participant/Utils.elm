@@ -1,4 +1,4 @@
-module Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit, resolveShownPregnancy)
+module Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit, resolveChwVisitButtons, resolveShownPregnancy)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -8,8 +8,8 @@ import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Date
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra
-import Maybe.Extra exposing (isJust)
-import Pages.Prenatal.Participant.Model exposing (ShownPregnancy)
+import Maybe.Extra exposing (isJust, isNothing)
+import Pages.Prenatal.Participant.Model exposing (ChwVisitButtons, ShownPregnancy)
 import Restful.Endpoint exposing (fromEntityUuid)
 
 
@@ -101,3 +101,95 @@ pregnancyConcludedInTodaysPostpartumVisit currentDate isChw session encounters =
                     && List.member encounter.endDate [ Nothing, Just currentDate ]
             )
             encounters
+
+
+{-| State of the three CHW visit buttons, from the pregnancy's CHW visits,
+newest first.
+-}
+resolveChwVisitButtons : NominalDate -> List ( PrenatalEncounterId, PrenatalEncounter ) -> ChwVisitButtons
+resolveChwVisitButtons currentDate encounters =
+    let
+        ( visitToResume, lastEncounterType, encounterWasCompletedToday ) =
+            List.head encounters
+                |> Maybe.map
+                    (\( encounterId, encounter ) ->
+                        let
+                            -- An open visit is resumed on the day it started. An open
+                            -- postpartum visit is resumed on any day, as the nurse's is.
+                            activeEncounterId =
+                                if isJust encounter.endDate then
+                                    Nothing
+
+                                else if encounter.startDate == currentDate || encounter.encounterType == ChwPostpartumEncounter then
+                                    Just encounterId
+
+                                else
+                                    Nothing
+                        in
+                        ( activeEncounterId, Just encounter.encounterType, encounter.endDate == Just currentDate )
+                    )
+                |> Maybe.withDefault ( Nothing, Nothing, False )
+
+        -- A button is enabled when its type matches the visit to resume, or, with
+        -- none, when the last visit was of the type before it (first before second).
+        encounterTypeButtonActive encounterType =
+            if isJust visitToResume then
+                lastEncounterType == Just encounterType
+
+            else
+                case encounterType of
+                    ChwFirstEncounter ->
+                        isNothing lastEncounterType
+
+                    ChwSecondEncounter ->
+                        lastEncounterType == Just ChwFirstEncounter && not encounterWasCompletedToday
+
+                    ChwThirdPlusEncounter ->
+                        -- There can be multiple 'ChwThird' encounters.
+                        (lastEncounterType == Just ChwSecondEncounter || lastEncounterType == Just ChwThirdPlusEncounter)
+                            && not encounterWasCompletedToday
+
+                    ChwPostpartumEncounter ->
+                        case lastEncounterType of
+                            Just lastEncounterType_ ->
+                                -- Last encounter is not a postpartum encounter,
+                                -- and there's no encounter that was completed today.
+                                (lastEncounterType_ /= ChwPostpartumEncounter)
+                                    && not encounterWasCompletedToday
+
+                            Nothing ->
+                                -- When there're no encounters, we allow to
+                                -- create postpartum encounter.
+                                True
+
+                    -- We should never get here, as we deal only with CHW encounters.
+                    NurseEncounter ->
+                        False
+
+                    -- We should never get here, as we deal only with CHW encounters.
+                    NursePostpartumEncounter ->
+                        False
+
+        -- Used for subsequent encounter button, which is responsible
+        -- to start / navigate to second or third encounters.
+        subsequentVisitType =
+            case lastEncounterType of
+                Just ChwFirstEncounter ->
+                    ChwSecondEncounter
+
+                Just ChwSecondEncounter ->
+                    if isJust visitToResume then
+                        ChwSecondEncounter
+
+                    else
+                        ChwThirdPlusEncounter
+
+                _ ->
+                    ChwThirdPlusEncounter
+    in
+    { visitToResume = visitToResume
+    , firstVisitEnabled = encounterTypeButtonActive ChwFirstEncounter
+    , subsequentVisitType = subsequentVisitType
+    , subsequentVisitEnabled = encounterTypeButtonActive subsequentVisitType
+    , postpartumVisitEnabled = encounterTypeButtonActive ChwPostpartumEncounter
+    }

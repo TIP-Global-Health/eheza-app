@@ -20,7 +20,8 @@ import Gizra.NominalDate exposing (NominalDate)
 import Pages.Prenatal.Activity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.Activity.Utils exposing (generatePrenatalDiagnosesForNurse, resolveNextStepsTasks)
 import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
-import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit, resolveShownPregnancy)
+import Pages.Prenatal.Participant.Model exposing (ChwVisitButtons)
+import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive, pregnancyConcludedInTodaysPostpartumVisit, resolveChwVisitButtons, resolveShownPregnancy)
 import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Prenatal.Utils exposing (marginalBloodPressureCondition, vitalsRecheckAllowed)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
@@ -332,6 +333,216 @@ resolveShownPregnancyTest =
                     (participants [ ( "concluded-earlier", pregnancyConcludedDaysAgo 30 ), ( "concluded-today", pregnancyConcludedDaysAgo 0 ) ])
                     |> Maybe.map (\shown -> ( fromEntityUuid shown.sessionId, shown.keptForPostpartumVisit ))
                     |> Expect.equal (Just ( "concluded-today", True ))
+        ]
+
+
+
+-- CHW VISIT BUTTONS
+--
+-- On the woman's Antenatal page a CHW sees three buttons: First Visit,
+-- Subsequent Visit and Postpartum. Each one either opens an open visit
+-- (`visitToResume`) or starts a new one. The input is the pregnancy's CHW
+-- visits, newest first. Visit ids below name the visit, so a test can tell
+-- which visit a button opens.
+--
+-- A CHW postpartum visit left open on an earlier day (tablet switched off
+-- overnight, CHW moved to another patient before saving the outcome) must
+-- still be reachable: Postpartum opens that same visit, and the two
+-- antenatal buttons stay disabled. A postpartum visit opened today, or one
+-- already ended, keeps today's behaviour, and so does an antenatal visit left
+-- open on an earlier day.
+--
+-- The nurse's buttons are built in the view from the nurse's visits and do
+-- not go through resolveChwVisitButtons, so they are not covered here.
+
+
+{-| The CHW buttons for the given visits, newest first, keyed by visit id.
+-}
+chwButtons : List ( String, PrenatalEncounter ) -> ChwVisitButtons
+chwButtons =
+    List.map (Tuple.mapFirst toEntityUuid) >> resolveChwVisitButtons currentDate
+
+
+{-| A visit started `startedDaysAgo` and ended `endedDaysAgo` days before
+`currentDate`.
+-}
+visitStartedAndEndedDaysAgo : Int -> Int -> PrenatalEncounterType -> PrenatalEncounter
+visitStartedAndEndedDaysAgo startedDaysAgo endedDaysAgo encounterType =
+    let
+        visit =
+            visitStartedDaysAgo startedDaysAgo encounterType
+    in
+    { visit | endDate = Just (Date.add Date.Days -endedDaysAgo currentDate) }
+
+
+{-| A completed first and second visit, older than the postpartum visit.
+-}
+earlierAntenatalVisits : List ( String, PrenatalEncounter )
+earlierAntenatalVisits =
+    [ ( "second", visitEndedDaysAgo 40 ChwSecondEncounter )
+    , ( "first", visitEndedDaysAgo 80 ChwFirstEncounter )
+    ]
+
+
+{-| What Postpartum does: whether it is enabled, and which visit it opens
+(`Nothing` means it starts a new visit).
+-}
+postpartumButton : ChwVisitButtons -> ( Bool, Maybe String )
+postpartumButton buttons =
+    ( buttons.postpartumVisitEnabled, Maybe.map fromEntityUuid buttons.visitToResume )
+
+
+{-| Whether First Visit and Subsequent Visit are enabled.
+-}
+antenatalButtonsEnabled : ChwVisitButtons -> ( Bool, Bool )
+antenatalButtonsEnabled buttons =
+    ( buttons.firstVisitEnabled, buttons.subsequentVisitEnabled )
+
+
+resolveChwVisitButtonsTest : Test
+resolveChwVisitButtonsTest =
+    let
+        allDisabled =
+            { visitToResume = Nothing
+            , firstVisitEnabled = False
+            , subsequentVisitType = ChwThirdPlusEncounter
+            , subsequentVisitEnabled = False
+            , postpartumVisitEnabled = False
+            }
+    in
+    describe "resolveChwVisitButtons"
+        [ -- Criterion 1: postpartum visit opened yesterday, never ended,
+          -- after two completed antenatal visits.
+          test "newest CHW visit is a postpartum visit started on an earlier day and not ended: the Postpartum button is enabled and opens that same visit; no new visit is created" <|
+            \_ ->
+                chwButtons (( "postpartum", visitStartedDaysAgo 1 ChwPostpartumEncounter ) :: earlierAntenatalVisits)
+                    |> postpartumButton
+                    |> Expect.equal ( True, Just "postpartum" )
+
+        -- Boundary: the visit was opened weeks ago, not just yesterday.
+        , test "postpartum visit started 30 days ago and not ended: Postpartum opens that same visit" <|
+            \_ ->
+                chwButtons (( "postpartum", visitStartedDaysAgo 30 ChwPostpartumEncounter ) :: earlierAntenatalVisits)
+                    |> postpartumButton
+                    |> Expect.equal ( True, Just "postpartum" )
+
+        -- Boundary: the open postpartum visit follows an antenatal visit
+        -- that was itself left open on an earlier day. Postpartum must open
+        -- the postpartum visit, never the older antenatal one.
+        , test "postpartum visit started on an earlier day and not ended, after an antenatal visit also left open: Postpartum opens the postpartum visit" <|
+            \_ ->
+                chwButtons
+                    [ ( "postpartum", visitStartedDaysAgo 2 ChwPostpartumEncounter )
+                    , ( "first", visitStartedDaysAgo 50 ChwFirstEncounter )
+                    ]
+                    |> postpartumButton
+                    |> Expect.equal ( True, Just "postpartum" )
+
+        -- Criterion 2: same scenario as criterion 1.
+        , test "in that case the First Visit and Subsequent Visit buttons are disabled" <|
+            \_ ->
+                chwButtons (( "postpartum", visitStartedDaysAgo 1 ChwPostpartumEncounter ) :: earlierAntenatalVisits)
+                    |> antenatalButtonsEnabled
+                    |> Expect.equal ( False, False )
+
+        -- Criterion 3: no antenatal visit at all, only the open postpartum
+        -- visit from an earlier day.
+        , test "this holds when that postpartum visit is the woman's only visit: Postpartum opens it" <|
+            \_ ->
+                chwButtons [ ( "postpartum", visitStartedDaysAgo 1 ChwPostpartumEncounter ) ]
+                    |> postpartumButton
+                    |> Expect.equal ( True, Just "postpartum" )
+        , test "this holds when that postpartum visit is the woman's only visit: First Visit and Subsequent Visit are disabled" <|
+            \_ ->
+                chwButtons [ ( "postpartum", visitStartedDaysAgo 1 ChwPostpartumEncounter ) ]
+                    |> antenatalButtonsEnabled
+                    |> Expect.equal ( False, False )
+
+        -- Criterion 4 (unchanged): postpartum visit opened today, still open.
+        , test "a postpartum visit started today and not ended: Postpartum opens it (unchanged)" <|
+            \_ ->
+                chwButtons (( "postpartum", visitStartedDaysAgo 0 ChwPostpartumEncounter ) :: earlierAntenatalVisits)
+                    |> Expect.equal
+                        { visitToResume = Just (toEntityUuid "postpartum")
+                        , firstVisitEnabled = False
+                        , subsequentVisitType = ChwThirdPlusEncounter
+                        , subsequentVisitEnabled = False
+                        , postpartumVisitEnabled = True
+                        }
+        , test "a postpartum visit started today and not ended, as the only visit: Postpartum opens it (unchanged)" <|
+            \_ ->
+                chwButtons [ ( "postpartum", visitStartedDaysAgo 0 ChwPostpartumEncounter ) ]
+                    |> postpartumButton
+                    |> Expect.equal ( True, Just "postpartum" )
+
+        -- Criterion 5 (unchanged): an ended postpartum visit leaves every
+        -- button disabled, whichever day it started and ended.
+        , test "a postpartum visit that was ended: Postpartum stays disabled (unchanged) - started and ended on an earlier day" <|
+            \_ ->
+                chwButtons (( "postpartum", visitEndedDaysAgo 3 ChwPostpartumEncounter ) :: earlierAntenatalVisits)
+                    |> Expect.equal allDisabled
+        , test "a postpartum visit that was ended: Postpartum stays disabled (unchanged) - started on an earlier day, ended today" <|
+            \_ ->
+                chwButtons (( "postpartum", visitStartedAndEndedDaysAgo 3 0 ChwPostpartumEncounter ) :: earlierAntenatalVisits)
+                    |> Expect.equal allDisabled
+        , test "a postpartum visit that was ended: Postpartum stays disabled (unchanged) - started and ended today" <|
+            \_ ->
+                chwButtons (( "postpartum", visitEndedDaysAgo 0 ChwPostpartumEncounter ) :: earlierAntenatalVisits)
+                    |> Expect.equal allDisabled
+        , test "a postpartum visit that was ended: Postpartum stays disabled (unchanged) - the only visit, ended on an earlier day" <|
+            \_ ->
+                chwButtons [ ( "postpartum", visitStartedAndEndedDaysAgo 5 2 ChwPostpartumEncounter ) ]
+                    |> Expect.equal allDisabled
+
+        -- Criterion 6 (unchanged): an antenatal CHW visit left open on an
+        -- earlier day is not reopened. Subsequent Visit starts the next
+        -- antenatal visit and Postpartum starts a new postpartum visit.
+        , test "a first CHW visit left unfinished on an earlier day: the buttons behave as today" <|
+            \_ ->
+                chwButtons [ ( "first", visitStartedDaysAgo 3 ChwFirstEncounter ) ]
+                    |> Expect.equal
+                        { visitToResume = Nothing
+                        , firstVisitEnabled = False
+                        , subsequentVisitType = ChwSecondEncounter
+                        , subsequentVisitEnabled = True
+                        , postpartumVisitEnabled = True
+                        }
+        , test "a second CHW visit left unfinished on an earlier day: the buttons behave as today" <|
+            \_ ->
+                chwButtons
+                    [ ( "second", visitStartedDaysAgo 3 ChwSecondEncounter )
+                    , ( "first", visitEndedDaysAgo 40 ChwFirstEncounter )
+                    ]
+                    |> Expect.equal
+                        { visitToResume = Nothing
+                        , firstVisitEnabled = False
+                        , subsequentVisitType = ChwThirdPlusEncounter
+                        , subsequentVisitEnabled = True
+                        , postpartumVisitEnabled = True
+                        }
+        , test "a third CHW visit left unfinished on an earlier day: the buttons behave as today" <|
+            \_ ->
+                chwButtons (( "third", visitStartedDaysAgo 3 ChwThirdPlusEncounter ) :: earlierAntenatalVisits)
+                    |> Expect.equal
+                        { visitToResume = Nothing
+                        , firstVisitEnabled = False
+                        , subsequentVisitType = ChwThirdPlusEncounter
+                        , subsequentVisitEnabled = True
+                        , postpartumVisitEnabled = True
+                        }
+
+        -- Boundary (unchanged): no CHW visit yet. First Visit and Postpartum
+        -- start a new visit; Subsequent Visit is disabled.
+        , test "no CHW visit yet: First Visit and Postpartum start a new visit (unchanged)" <|
+            \_ ->
+                chwButtons []
+                    |> Expect.equal
+                        { visitToResume = Nothing
+                        , firstVisitEnabled = True
+                        , subsequentVisitType = ChwThirdPlusEncounter
+                        , subsequentVisitEnabled = False
+                        , postpartumVisitEnabled = True
+                        }
         ]
 
 
@@ -879,6 +1090,7 @@ all =
         [ isPregnancyActiveTest
         , marginalBloodPressureConditionTest
         , pregnancyConcludedInTodaysPostpartumVisitTest
+        , resolveChwVisitButtonsTest
         , resolveShownPregnancyTest
         , vitalsRecheckTest
         ]
