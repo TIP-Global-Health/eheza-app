@@ -252,7 +252,7 @@ B-251	3	READY	MED			25	Progress-report lab pane: urine-dipstick rows are built f
 B-252	4	IMPLEMENTED	LOW	2198	2200	25	NCD progress report: the Partner HIV lab row ignores its own display flag, so every NCD report shows a permanently blank
 B-253	4	IMPLEMENTED	LOW			25	Pregnancy Outcome page reads an arbitrary encounter instead of the latest, so Gravida and Para can render as `----`
 B-254	4	IMPLEMENTED	LOW	2408	2409	25	Prenatal participant page picks an arbitrary pregnancy when a person has two active ones, so encounters can land on the 
-B-255	4	READY	LOW			25	CHW progress report: the breech/transverse alert re-grades a stale exam against TODAY's gestational age, so a normal EGA
+B-255	4	IMPLEMENTED	LOW	2545	2548	25	CHW progress report: the breech/transverse alert re-grades a stale exam against TODAY's gestational age, so a normal EGA
 B-256	4	IMPLEMENTED	MED-LOW	2478	2483	25	Well-child registration: a birth date exactly 13 years back is offered, and then the form demands two fields it never re
 B-257	4	READY	LOW			25	Duplicate-patient lookup is triggered by any text field over 13 characters and sized to Rwanda's ID, so the duplicate wa
 B-258	4	READY	LOW			25	Person edit page never fetches relationships, so after a page reload an address change silently skips the children
@@ -577,7 +577,7 @@ B-576	1	IMPLEMENTED	MED-HIGH			54	Prenatal: severe preeclampsia confirmed by a u
 B-577	1	IMPLEMENTED	MED-HIGH	2508	2509	54	Prenatal: "high risk of preeclampsia" found in the recurrent phase (hypertension after the blood-pressure recheck, or di
 B-578	1	PARKED	MED-HIGH			54	Prenatal: a pregnancy whose FIRST nurse encounter was ended without an LMP can never be dated at a later nurse visit, so
 B-579	2	IMPLEMENTED	MED-HIGH	2520	2521	54	Prenatal (nurse): the Medication activity (calcium, MMS, Fefol / iron / folate, Mebendazole) is listed only at the FIRST
-B-580	3	READY	MED			54	Prenatal (CHW): the referral task's completion is decided by the NURSE's facility list — on a CHW visit with danger sign
+B-580	3	IMPLEMENTED	MED	2544	2547	54	Prenatal (CHW): the referral task's completion is decided by the NURSE's facility list — on a CHW visit with danger sign
 B-581	1	CLOSED	MED-HIGH			54	Prenatal: hypertension diagnosed at an earlier visit with NO treatment record gets no hypertension pathway at later visi
 B-582	3	READY	MED-LOW			54	Prenatal recurrent phase: the hospital-referral task for a diagnosis found by a lab result reads complete from the refer
 B-583	4	IMPLEMENTED	LOW			54	Prenatal (nurse): "high risk of preeclampsia" is stored beside severe or moderate preeclampsia, or eclampsia, found at 3
@@ -598,14 +598,15 @@ B-597	4	IMPLEMENTED	LOW	2537	2539	55	Home Visit › Feeding (and the Well Child 
 B-598	4	IMPLEMENTED	LOW	2530	2533	55	NCDA › Antenatal Care step: "there are ANC visits not on record: Yes" with no month ticked counts as complete and saves 
 B-599	1	IMPLEMENTED	MED	2534	2535	B-594	Prenatal: a woman diagnosed with hypertension at an earlier visit can never be diagnosed with Moderate Preeclampsia from
 B-600	3	READY	MED-LOW			B-574	Prenatal (CHW and nurse): a postpartum visit where the outcome was SAVED but the visit was left open cannot be reached o
-B-601	4	READY	LOW			56	Prenatal alerts dialog: "no fetal movement" / "no fetal heart rate" from this visit's exam is graded against TODAY's ges
+B-601	4	IMPLEMENTED	LOW	2545	2548	56	Prenatal alerts dialog: "no fetal movement" / "no fetal heart rate" from this visit's exam is graded against TODAY's ges
 B-602	4	READY	LOW			56	Family Nutrition progress report: the MUAC chart is a fixed 36-month window starting at the person's FIRST reading, so r
 B-603	3	READY	MED-LOW			56	Prenatal › Next Steps › Enrol newborn: if the registration form stays open more than five minutes (or the app reloads on
 B-604	3	READY	LOW			56	Registration: the duplicate national-ID warning is lost when any person record arrives by sync between typing the ID and
 B-605	4	READY	LOW			56	Person edit / add family member: an address level left blank or invalid is silently replaced by the related person's sto
 B-606	4	READY	LOW			56	Prenatal Completion report: gestational age comes from the LMP only, while the app prefers the Healthy Start ultrasound'
-B-607	4	READY	LOW			56	Antenatal progress report › Medication History: Mebendazole shows "--" when it was handed over from Next Steps, although
+B-607	4	IMPLEMENTED	LOW	2546	2549	56	Antenatal progress report › Medication History: Mebendazole shows "--" when it was handed over from Next Steps, although
 B-608	1	READY	LOW			B-593	Prenatal: diabetes reported to a visit from lab history is diagnosed again at the next visit, with a second hospital ref
+B-609	4	READY	LOW		2549	B-607	Antenatal progress report › Medication History: Iron and Folic acid handed over in Next Steps (anaemia treatment) show "
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
