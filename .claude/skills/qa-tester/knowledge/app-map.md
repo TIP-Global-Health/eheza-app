@@ -85,7 +85,7 @@ flag simply does not appear.
 - **The newborn exam (Birth History) is CHW-only.** A nurse always starts a `PediatricCare`
   encounter, which never offers it (`Pages/WellChild/Participant/View.elm` picks
   `NewbornExam` only for a CHW and a child under two months).
-- A CHW's participant search lists only people living in the chosen village. A nurse's registration
+- A CHW's participant search, and the CHW's Participant Directory, list only people living in the chosen village. A nurse's registration
   puts a woman in Birambo, so a woman both roles must open is registered by the CHW: Akanduga
   belongs to Nyange, where the nurse finds her.
 - Group sessions: a CHW opens straight onto Attendance; a nurse goes Clinical → Group
@@ -330,6 +330,8 @@ flag simply does not appear.
   (the first is Lack of stock). Fefol given hides Iron and Folate. Since #2521 a follow-up nurse visit lists Medication while a supplement is due.
 - Follow-up Treatment Review, Prenatal Medication tab: `.form-input.yes-no.iron-folic-acid` always, and `.mebendezole` from 24 weeks while
   Mebendazole was not given or reported at an earlier visit. A "No" there puts Mebendazole into Next Steps › Medication Distribution.
+  A first visit has no Treatment Review record, so Next Steps never offers Mebendazole there. Its "Why not?" reads Out of Stock, Known Allergy,
+  Patient Unable to Afford, Patient Declined, Other (the Medication activity's first reason is Lack of stock).
   The full first-visit helper chain needs EGA ≥ 28 weeks: `completeMentalHealth` waits for a card shown only then.
   Below 28 weeks, leave `completeMentalHealth` out and the rest of the chain runs (19, 20 and 25 weeks tried).
 - With labs sent to the lab, Next Steps ends on Wait → Pause Encounter, which ENDS the visit (`scheduled_date.value2` = that day)
@@ -397,7 +399,10 @@ flag simply does not appear.
 - Progress report panes: chronic hypertension and diabetes are under `.medical-diagnosis`; gestational hypertension
   ("Pregnancy-induced hypertension"), gestational diabetes and preeclampsia under `.obstetric-diagnosis`.
 - An ended visit's progress report: Participant Directory → `span.patient-record` → `.pane.progress-reports` button
-  Antenatal Care → `.entry.antenatal .icon-forward` (one row per pregnancy). It writes nothing.
+  Antenatal Care → `.entry.antenatal .icon-forward` (one row per pregnancy). It writes nothing. Opened by a CHW, the report leaves out the
+  pregnancy's last encounter, so its Medication History shows only earlier nurse visits.
+- Medication History pane: `.medication-history .entry.medication`, one row per supplement (name, date or "--"). Since #2549 the Mebendazole
+  row also takes a Next Steps hand-over; the latest date across both wins.
 - Prenatal progress report: Reports tab → Clinical Progress Report (`h.progressReport.openReport(page,
   'prenatal')`). The Obstetric History pane is the first `.risk-factors`; diagnoses are under
   OBSTETRIC DIAGNOSIS. The encounter page's red `div.alerts` icon opens `.alerts-dialog` (High Risk
@@ -525,8 +530,8 @@ flag simply does not appear.
   and `field_deleted` 0; shards fill in on save. An encounter moves by `field_individual_participant`.
 - Develop's participant pages pick the participant with the LOWEST uuid (Dexie order), so a chosen uuid
   (`00000000-…` or `ffffffff-…`) decides develop's pick. Since #2455 new encounters go on the earliest start date.
-- An encounter or participant with `field_deleted` 1 drops out of the tablet's queries after a sync: the way
-  to hide a stray record from a fixture, and to bring it back.
+- An encounter, participant or measurement (`prenatal_mebendazole` tried) with `field_deleted` 1 drops out of the tablet's queries after a sync: the way
+  to hide a stray record from a fixture, and to bring it back. A hidden earlier Mebendazole makes a later visit offer it again.
 - From the main menu, an in-app jump to `#well-child-encounter/<uuid>` (location.hash) showed a spinner for a
   minute. Reach the visit through its participant page.
 - Child Scorecard offers Vaccination History only after NCDA is saved
