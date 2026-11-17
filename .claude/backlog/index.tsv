@@ -605,6 +605,7 @@ B-604	3	READY	LOW			56	Registration: the duplicate national-ID warning is lost w
 B-605	4	READY	LOW			56	Person edit / add family member: an address level left blank or invalid is silently replaced by the related person's sto
 B-606	4	READY	LOW			56	Prenatal Completion report: gestational age comes from the LMP only, while the app prefers the Healthy Start ultrasound'
 B-607	4	READY	LOW			56	Antenatal progress report › Medication History: Mebendazole shows "--" when it was handed over from Next Steps, although
+B-608	1	READY	LOW			B-593	Prenatal: diabetes reported to a visit from lab history is diagnosed again at the next visit, with a second hospital ref
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
