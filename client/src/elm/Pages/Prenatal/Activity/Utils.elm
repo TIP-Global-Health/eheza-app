@@ -664,17 +664,9 @@ nextStepsTaskCompleted currentDate assembled task =
                     |> List.all (referralToFacilityCompleted assembled)
 
             else
-                -- The CHW form asks only about the health centre:
-                -- referred, or not referred for a reason.
-                getMeasurementValueFunc assembled.measurements.sendToHC
-                    |> Maybe.map
-                        (\value ->
-                            (Maybe.map (EverySet.member ReferToHealthCenter) value.sendToHCSigns
-                                |> Maybe.withDefault False
-                            )
-                                || isJust value.reasonForNotSendingToHC
-                        )
-                    |> Maybe.withDefault False
+                -- The CHW form asks only about the health centre,
+                -- and saves once that is answered.
+                isJust assembled.measurements.sendToHC
 
         NextStepsHealthEducation ->
             isJust assembled.measurements.healthEducation
