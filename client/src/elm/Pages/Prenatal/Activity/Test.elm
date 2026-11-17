@@ -3103,6 +3103,7 @@ all =
         , mebendazoleInMedicationUntilGivenOrReceivedTest
         , mebendazoleQuestionWhileNotGivenOrReceivedTest
         , ironFolicAcidAnswerDoesNotStopFefolIronFolateTest
+        , reportedDiabetesPreeclampsiaRiskTest
         ]
 
 
@@ -9125,4 +9126,518 @@ knownHypertensionRecordedRecheckTest =
                     |> lateProteinVerdict
                     |> .addedAtEntry
                     |> Expect.equal False
+        ]
+
+
+
+-- DIABETES REPORTED FROM LAB HISTORY: HIGH RISK OF PREECLAMPSIA
+--
+-- The scenario: a nurse visit (the "first visit") sends a fasting blood sugar
+-- test to the lab. At a later nurse visit, the nurse enters the result from
+-- Case Management lab history. The result is saved on the first visit's own
+-- test, naming the later visit as its origin. Reassessing the first visit
+-- finds diabetes (gestational diabetes after 20 weeks), and the app records
+-- it on the later visit as a REPORTED diagnosis: the later visit's
+-- `pastDiagnoses`. The first visit's stored diagnoses stay as they were on
+-- its visit day.
+--
+-- After that, every save at the later visit reassesses it with
+-- `generatePrenatalDiagnosesForNurse`, reading the later visit's assembled
+-- data: its own `encounter.pastDiagnoses` carries the reported diabetes. Once
+-- the later visit ends, the next visit sees it as an earlier encounter whose
+-- `pastDiagnoses` carries the reported diabetes.
+--
+-- Medication Distribution at a nurse visit is the visit's own Next Steps:
+-- `resolveRequiredMedicationsSet English _ PrenatalEncounterPhaseInitial` on
+-- the visit carrying the diagnoses it was assessed with.
+--
+-- Every visit of a scenario shares one LMP; each visit's pregnancy week is
+-- carried by its start date, so the week travels with the data the function
+-- reads. Weeks are written as (weeks, days) of EGA at the visit's start.
+--
+-- Oracle: issue #2542, "Expected behaviour". A test named after a criterion
+-- carries the criterion's words; the others are boundary cases around it.
+-- "Diagnoses high risk of preeclampsia" accepts either high risk variant:
+-- the issue names the risk, not a variant.
+
+
+{-| The LMP shared by every visit of a reported-diabetes scenario.
+-}
+reportedDiabetesLmp : NominalDate
+reportedDiabetesLmp =
+    Date.fromCalendarDate 2020 Time.Jan 6
+
+
+{-| The day the pregnancy is at the given EGA (weeks, days).
+-}
+dayAtEga : ( Int, Int ) -> NominalDate
+dayAtEga ( weeks, days ) =
+    Date.add Date.Days (weeks * 7 + days) reportedDiabetesLmp
+
+
+{-| An earlier nurse visit at the given EGA, with its stored diagnoses, the
+diagnoses reported to it, and its measurements.
+-}
+earlierNurseVisitAt : ( Int, Int ) -> List PrenatalDiagnosis -> List PrenatalDiagnosis -> PrenatalMeasurements -> PreviousEncounterData
+earlierNurseVisitAt ega diagnoses reported measurements =
+    { startDate = dayAtEga ega
+    , diagnoses = EverySet.fromList diagnoses
+    , pastDiagnoses = EverySet.fromList reported
+    , measurements = measurements
+    }
+
+
+{-| The visit that sent the fasting blood sugar test to the lab, at the given
+EGA, with nothing diagnosed on its visit day. Its test now holds a diabetic
+result (130, above 126), entered from the later visit's lab history.
+-}
+bloodSugarSentAt : ( Int, Int ) -> PreviousEncounterData
+bloodSugarSentAt ega =
+    emptyPrenatalMeasurements
+        |> withBloodSugarFromLabHistory ega 130
+        |> earlierNurseVisitAt ega [] []
+
+
+{-| A fasting blood sugar test sent to the lab at a visit at the given EGA,
+with the given result entered from a later visit's lab history.
+-}
+withBloodSugarFromLabHistory : ( Int, Int ) -> Float -> PrenatalMeasurements -> PrenatalMeasurements
+withBloodSugarFromLabHistory ega count measurements =
+    { measurements
+        | randomBloodSugarTest =
+            TestFixtures.wrapMeasurement (dayAtEga ega)
+                { executionNote = TestNoteRunToday
+                , executionDate = Just (dayAtEga ega)
+                , testPrerequisites = Just (EverySet.singleton PrerequisiteFastFor12h)
+                , sugarCount = Just count
+                , originatingEncounter = Just (toEntityUuid "later-visit")
+                }
+    }
+
+
+{-| The nurse visit under assessment, at the given EGA, after the given
+earlier visits, with the given diagnoses reported to it, and its own
+measurements. Nothing is stored on it yet.
+-}
+nurseVisitAt : ( Int, Int ) -> List PreviousEncounterData -> List PrenatalDiagnosis -> PrenatalMeasurements -> AssembledData
+nurseVisitAt ega earlierVisits reported measurements =
+    let
+        base =
+            testAssembled measurements
+
+        encounter =
+            base.encounter
+    in
+    { base
+        | encounter =
+            { encounter
+                | startDate = dayAtEga ega
+                , diagnoses = EverySet.empty
+                , pastDiagnoses = EverySet.fromList reported
+            }
+        , globalLmpDate = Just reportedDiabetesLmp
+        , nursePreviousEncountersData = earlierVisits
+    }
+
+
+{-| A nurse visit with no activity recorded beyond the one being saved.
+-}
+nurseVisitWithReported : ( Int, Int ) -> List PreviousEncounterData -> List PrenatalDiagnosis -> AssembledData
+nurseVisitWithReported ega earlierVisits reported =
+    nurseVisitAt ega earlierVisits reported emptyPrenatalMeasurements
+
+
+{-| A visit assessed, and the assessment stored on it: (diagnoses, the visit
+carrying them).
+-}
+assessedVisit : AssembledData -> ( EverySet PrenatalDiagnosis, AssembledData )
+assessedVisit assembled =
+    let
+        diagnoses =
+            generatePrenatalDiagnosesForNurse assembled
+
+        encounter =
+            assembled.encounter
+    in
+    ( diagnoses, { assembled | encounter = { encounter | diagnoses = diagnoses } } )
+
+
+{-| (high risk of preeclampsia diagnosed, Aspirin offered by the visit's own
+Medication Distribution).
+-}
+highRiskAndAspirinAtVisit : AssembledData -> ( Bool, Bool )
+highRiskAndAspirinAtVisit assembled =
+    let
+        ( diagnoses, stored ) =
+            assessedVisit assembled
+    in
+    ( highRiskOfPreeclampsiaIn diagnoses, aspirinOffered PrenatalEncounterPhaseInitial stored )
+
+
+{-| (any preeclampsia risk diagnosed, Aspirin offered by the visit's own
+Medication Distribution).
+-}
+anyRiskAndAspirinAtVisit : AssembledData -> ( Bool, Bool )
+anyRiskAndAspirinAtVisit assembled =
+    let
+        ( diagnoses, stored ) =
+            assessedVisit assembled
+    in
+    ( preeclampsiaRiskIn diagnoses, aspirinOffered PrenatalEncounterPhaseInitial stored )
+
+
+highRiskDiagnosedAt : AssembledData -> Bool
+highRiskDiagnosedAt =
+    generatePrenatalDiagnosesForNurse >> highRiskOfPreeclampsiaIn
+
+
+{-| The diagnoses lab history can report from a blood sugar result: diabetes
+up to 20 weeks at the first visit, gestational diabetes after.
+-}
+reportedDiabetes : PrenatalDiagnosis
+reportedDiabetes =
+    DiagnosisDiabetesRecurrentPhase
+
+
+reportedGestationalDiabetes : PrenatalDiagnosis
+reportedGestationalDiabetes =
+    DiagnosisGestationalDiabetesRecurrentPhase
+
+
+{-| The other diagnoses lab history reports, which bring a hospital referral
+but are no preeclampsia risk sign.
+-}
+reportedNonRiskDiagnoses : List PrenatalDiagnosis
+reportedNonRiskDiagnoses =
+    [ DiagnosisHepatitisBRecurrentPhase
+    , DiagnosisNeurosyphilisRecurrentPhase
+    , DiagnosisRhesusNegativeRecurrentPhase
+    , DiagnosisSyphilisRecurrentPhase
+    , DiagnosisSyphilisWithComplicationsRecurrentPhase
+    ]
+
+
+{-| Preeclampsia of any kind, and eclampsia.
+-}
+preeclampsiaOrEclampsiaDiagnoses : List PrenatalDiagnosis
+preeclampsiaOrEclampsiaDiagnoses =
+    DiagnosisEclampsia :: allPreeclampsiaDiagnoses
+
+
+reportedDiabetesPreeclampsiaRiskTest : Test
+reportedDiabetesPreeclampsiaRiskTest =
+    describe "diabetes reported from lab history: high risk of preeclampsia"
+        [ reportedDiabetesAtLaterVisitTest
+        , reportedDiabetesAtNextVisitTest
+        , reportedGestationalDiabetesTest
+        , reportedDiabetesBefore12WeeksTest
+        , reportedDiabetesRiskOnceTest
+        , reportedDiabetesAfterPreeclampsiaTest
+        , reportedNonDiabetesTest
+        , diabetesOnOwnLabResultsTest
+        , noDiabetesNoRiskTest
+        ]
+
+
+reportedDiabetesAtLaterVisitTest : Test
+reportedDiabetesAtLaterVisitTest =
+    describe "at the visit diabetes is reported to"
+        [ test "A diabetes result entered from lab history at a later nurse visit (12 weeks or later) diagnoses high risk of preeclampsia at that visit, once any further activity there is saved, and Medication Distribution offers Aspirin." <|
+            -- Blood sugar sent at 14 weeks; the result (130) is entered from
+            -- lab history at the next visit at 18 weeks, which gets diabetes
+            -- reported. Another activity is then saved at 18 weeks.
+            \_ ->
+                nurseVisitWithReported ( 18, 0 ) [ bloodSugarSentAt ( 14, 0 ) ] [ reportedDiabetes ]
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
+        , test "later visit at exactly 12 weeks 0 days, test sent at 8 weeks: high risk and Aspirin" <|
+            \_ ->
+                nurseVisitWithReported ( 12, 0 ) [ bloodSugarSentAt ( 8, 0 ) ] [ reportedDiabetes ]
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
+        , test "later visit at 30 weeks, diabetes from a test sent at 16 weeks: high risk and Aspirin" <|
+            \_ ->
+                nurseVisitWithReported ( 30, 0 ) [ bloodSugarSentAt ( 16, 0 ) ] [ reportedDiabetes ]
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
+        , test "the activity saved records something unrelated (a normal blood pressure): still high risk and Aspirin" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitals 115 75
+                    |> nurseVisitAt ( 18, 0 ) [ bloodSugarSentAt ( 14, 0 ) ] [ reportedDiabetes ]
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
+        , test "diabetes reported together with rhesus negative: high risk and Aspirin" <|
+            \_ ->
+                nurseVisitWithReported ( 18, 0 ) [ bloodSugarSentAt ( 14, 0 ) ] [ DiagnosisRhesusNegativeRecurrentPhase, reportedDiabetes ]
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
+        , test "only one high risk diagnosis at the visit, never both variants" <|
+            \_ ->
+                nurseVisitWithReported ( 18, 0 ) [ bloodSugarSentAt ( 14, 0 ) ] [ reportedDiabetes ]
+                    |> generatePrenatalDiagnosesForNurse
+                    |> presentOf highRiskOfPreeclampsiaVariants
+                    |> List.length
+                    |> Expect.equal 1
+        ]
+
+
+reportedDiabetesAtNextVisitTest : Test
+reportedDiabetesAtNextVisitTest =
+    describe "at the next visit after the one diabetes was reported to"
+        [ test "If that visit ends without the risk diagnosis, the next nurse visit (12 weeks or later) diagnoses high risk of preeclampsia and offers Aspirin." <|
+            -- Blood sugar sent at 14 weeks; diabetes reported to the visit at
+            -- 18 weeks, which ended with nothing diagnosed. Next visit at 22
+            -- weeks.
+            \_ ->
+                nurseVisitWithReported ( 22, 0 )
+                    [ bloodSugarSentAt ( 14, 0 ), earlierNurseVisitAt ( 18, 0 ) [] [ reportedDiabetes ] emptyPrenatalMeasurements ]
+                    []
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
+        , test "diabetes reported to a visit at 10 weeks (too early for the risk), next visit at 12 weeks 0 days: high risk and Aspirin" <|
+            \_ ->
+                nurseVisitWithReported ( 12, 0 )
+                    [ bloodSugarSentAt ( 6, 0 ), earlierNurseVisitAt ( 10, 0 ) [] [ reportedDiabetes ] emptyPrenatalMeasurements ]
+                    []
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
+        , test "the visit diabetes was reported to ended with other diagnoses stored (rhesus negative): next visit has high risk and Aspirin" <|
+            \_ ->
+                nurseVisitWithReported ( 22, 0 )
+                    [ bloodSugarSentAt ( 14, 0 )
+                    , earlierNurseVisitAt ( 18, 0 ) [ DiagnosisRhesusNegativeInitialPhase ] [ reportedDiabetes ] emptyPrenatalMeasurements
+                    ]
+                    []
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
+        , test "two visits after the report, none of them diagnosing the risk: the latest visit has high risk and Aspirin" <|
+            \_ ->
+                nurseVisitWithReported ( 26, 0 )
+                    [ bloodSugarSentAt ( 8, 0 )
+                    , earlierNurseVisitAt ( 10, 0 ) [] [ reportedDiabetes ] emptyPrenatalMeasurements
+                    , earlierNurseVisitAt ( 11, 0 ) [] [] emptyPrenatalMeasurements
+                    ]
+                    []
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
+        ]
+
+
+reportedGestationalDiabetesTest : Test
+reportedGestationalDiabetesTest =
+    describe "gestational diabetes reported from lab history"
+        [ test "The same holds for a gestational diabetes result." <|
+            -- Blood sugar sent at 24 weeks (gestational diabetes after 20
+            -- weeks); reported to the visit at 28 weeks; that visit, and the
+            -- next one at 32 weeks after a visit at 28 weeks that ended
+            -- without the risk.
+            \_ ->
+                [ nurseVisitWithReported ( 28, 0 ) [ bloodSugarSentAt ( 24, 0 ) ] [ reportedGestationalDiabetes ]
+                , nurseVisitWithReported ( 32, 0 )
+                    [ bloodSugarSentAt ( 24, 0 ), earlierNurseVisitAt ( 28, 0 ) [] [ reportedGestationalDiabetes ] emptyPrenatalMeasurements ]
+                    []
+                ]
+                    |> List.map highRiskAndAspirinAtVisit
+                    |> Expect.equal (List.repeat 2 ( True, True ))
+        , test "gestational diabetes reported at 37 weeks or later: high risk and Aspirin" <|
+            \_ ->
+                nurseVisitWithReported ( 38, 0 ) [ bloodSugarSentAt ( 34, 0 ) ] [ reportedGestationalDiabetes ]
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
+        ]
+
+
+reportedDiabetesBefore12WeeksTest : Test
+reportedDiabetesBefore12WeeksTest =
+    describe "before week 12"
+        [ test "Before 12 weeks, the reported diabetes gives no preeclampsia risk diagnosis." <|
+            -- Blood sugar sent at 6 weeks; diabetes reported to the visit at
+            -- 11 weeks 6 days.
+            \_ ->
+                nurseVisitWithReported ( 11, 6 ) [ bloodSugarSentAt ( 6, 0 ) ] [ reportedDiabetes ]
+                    |> anyRiskAndAspirinAtVisit
+                    |> Expect.equal ( False, False )
+        , test "diabetes reported to a visit at 8 weeks, next visit at 11 weeks 6 days: no preeclampsia risk, no Aspirin" <|
+            \_ ->
+                nurseVisitWithReported ( 11, 6 )
+                    [ bloodSugarSentAt ( 4, 0 ), earlierNurseVisitAt ( 8, 0 ) [] [ reportedDiabetes ] emptyPrenatalMeasurements ]
+                    []
+                    |> anyRiskAndAspirinAtVisit
+                    |> Expect.equal ( False, False )
+        ]
+
+
+reportedDiabetesRiskOnceTest : Test
+reportedDiabetesRiskOnceTest =
+    let
+        earlierHighRisk diagnosis =
+            [ earlierNurseVisitAt ( 14, 0 ) [ diagnosis ] [] (withBloodSugarFromLabHistory ( 14, 0 ) 130 emptyPrenatalMeasurements) ]
+    in
+    describe "high risk of preeclampsia is diagnosed once"
+        [ test "Once high risk of preeclampsia was diagnosed at an earlier visit, it is not diagnosed again." <|
+            -- Diabetes reported to the visit at 18 weeks, whose risk was
+            -- already diagnosed at the visit at 14 weeks (either variant);
+            -- and the next visit at 22 weeks after the visit at 18 weeks
+            -- diagnosed the risk from the report.
+            \_ ->
+                [ nurseVisitWithReported ( 18, 0 ) (earlierHighRisk DiagnosisHighRiskOfPreeclampsiaInitialPhase) [ reportedDiabetes ]
+                , nurseVisitWithReported ( 18, 0 ) (earlierHighRisk DiagnosisHighRiskOfPreeclampsiaRecurrentPhase) [ reportedDiabetes ]
+                , nurseVisitWithReported ( 22, 0 )
+                    [ bloodSugarSentAt ( 14, 0 )
+                    , earlierNurseVisitAt ( 18, 0 ) [ DiagnosisHighRiskOfPreeclampsiaInitialPhase ] [ reportedDiabetes ] emptyPrenatalMeasurements
+                    ]
+                    []
+                , nurseVisitWithReported ( 22, 0 )
+                    [ bloodSugarSentAt ( 14, 0 )
+                    , earlierNurseVisitAt ( 18, 0 ) [ DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ] [ reportedDiabetes ] emptyPrenatalMeasurements
+                    ]
+                    []
+                ]
+                    |> List.map highRiskDiagnosedAt
+                    |> Expect.equal (List.repeat 4 False)
+        , test "high risk diagnosed earlier: the visit diabetes is reported to does not offer Aspirin" <|
+            \_ ->
+                nurseVisitWithReported ( 18, 0 ) (earlierHighRisk DiagnosisHighRiskOfPreeclampsiaInitialPhase) [ reportedDiabetes ]
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( False, False )
+        ]
+
+
+reportedDiabetesAfterPreeclampsiaTest : Test
+reportedDiabetesAfterPreeclampsiaTest =
+    describe "preeclampsia or eclampsia diagnosed earlier"
+        [ test "If preeclampsia of any kind, or eclampsia, was diagnosed at an earlier visit, high risk of preeclampsia is not diagnosed." <|
+            -- Each of the eight preeclampsia diagnoses and eclampsia, at the
+            -- visit at 14 weeks that sent the blood sugar test; diabetes
+            -- reported to the visit at 18 weeks. The list names the earlier
+            -- diagnoses after which the risk still showed up.
+            \_ ->
+                preeclampsiaOrEclampsiaDiagnoses
+                    |> List.filter
+                        (\diagnosis ->
+                            nurseVisitWithReported ( 18, 0 )
+                                [ earlierNurseVisitAt ( 14, 0 ) [ diagnosis ] [] (withBloodSugarFromLabHistory ( 14, 0 ) 130 emptyPrenatalMeasurements) ]
+                                [ reportedDiabetes ]
+                                |> highRiskDiagnosedAt
+                        )
+                    |> Expect.equal []
+        , test "preeclampsia or eclampsia at the visit diabetes was reported to: the next visit diagnoses no high risk" <|
+            \_ ->
+                preeclampsiaOrEclampsiaDiagnoses
+                    |> List.filter
+                        (\diagnosis ->
+                            nurseVisitWithReported ( 22, 0 )
+                                [ bloodSugarSentAt ( 14, 0 )
+                                , earlierNurseVisitAt ( 18, 0 ) [ diagnosis ] [ reportedDiabetes ] emptyPrenatalMeasurements
+                                ]
+                                []
+                                |> highRiskDiagnosedAt
+                        )
+                    |> Expect.equal []
+        , test "preeclampsia at a visit before the one that sent the test: no high risk where diabetes is reported" <|
+            \_ ->
+                nurseVisitWithReported ( 26, 0 )
+                    [ earlierNurseVisitAt ( 20, 0 ) [ DiagnosisModeratePreeclampsiaInitialPhase ] [] emptyPrenatalMeasurements
+                    , bloodSugarSentAt ( 22, 0 )
+                    ]
+                    [ reportedGestationalDiabetes ]
+                    |> highRiskDiagnosedAt
+                    |> Expect.equal False
+        ]
+
+
+reportedNonDiabetesTest : Test
+reportedNonDiabetesTest =
+    describe "other diagnoses reported from lab history"
+        [ test "A hepatitis B, syphilis or rhesus negative result reported from lab history gives no preeclampsia risk diagnosis." <|
+            -- Each reported to the visit at 18 weeks, from a test sent at 14
+            -- weeks. The list names the reported diagnoses that brought a
+            -- risk.
+            \_ ->
+                reportedNonRiskDiagnoses
+                    |> List.filter
+                        (\diagnosis ->
+                            nurseVisitWithReported ( 18, 0 ) [ earlierNurseVisitAt ( 14, 0 ) [] [] emptyPrenatalMeasurements ] [ diagnosis ]
+                                |> generatePrenatalDiagnosesForNurse
+                                |> preeclampsiaRiskIn
+                        )
+                    |> Expect.equal []
+        , test "the same reports, seen by the next visit: no preeclampsia risk" <|
+            \_ ->
+                reportedNonRiskDiagnoses
+                    |> List.filter
+                        (\diagnosis ->
+                            nurseVisitWithReported ( 22, 0 )
+                                [ earlierNurseVisitAt ( 14, 0 ) [] [] emptyPrenatalMeasurements
+                                , earlierNurseVisitAt ( 18, 0 ) [] [ diagnosis ] emptyPrenatalMeasurements
+                                ]
+                                []
+                                |> generatePrenatalDiagnosesForNurse
+                                |> preeclampsiaRiskIn
+                        )
+                    |> Expect.equal []
+        , test "a non-diabetic blood sugar (90) entered from lab history, nothing reported: no preeclampsia risk at the later visit" <|
+            \_ ->
+                nurseVisitWithReported ( 18, 0 )
+                    [ earlierNurseVisitAt ( 14, 0 ) [] [] (withBloodSugarFromLabHistory ( 14, 0 ) 90 emptyPrenatalMeasurements) ]
+                    []
+                    |> anyRiskAndAspirinAtVisit
+                    |> Expect.equal ( False, False )
+        ]
+
+
+diabetesOnOwnLabResultsTest : Test
+diabetesOnOwnLabResultsTest =
+    describe "diabetes entered on the visit's own Lab Results page"
+        [ test "Diabetes entered on the first visit's own Lab Results page still diagnoses high risk of preeclampsia at that visit, as today." <|
+            -- Blood sugar sent at 14 weeks (diabetes) and at 28 weeks
+            -- (gestational diabetes); the result, 130, is entered on that
+            -- visit's own Lab Results page. Lab Results' Next Steps offer
+            -- Aspirin.
+            \_ ->
+                [ bloodSugarResultLaterAt ( 14, 0 ) 130 emptyPrenatalMeasurements
+                , bloodSugarResultLaterAt ( 28, 0 ) 130 emptyPrenatalMeasurements
+                ]
+                    |> List.map (\result -> ( highRiskOfPreeclampsiaIn result.afterEntry, aspirinAfterRecheckOrResult result ))
+                    |> Expect.equal (List.repeat 2 ( True, True ))
+        , test "own Lab Results at exactly 12 weeks 0 days: high risk and Aspirin in Lab Results' Next Steps" <|
+            \_ ->
+                bloodSugarResultLaterAt ( 12, 0 ) 130 emptyPrenatalMeasurements
+                    |> (\result -> ( highRiskOfPreeclampsiaIn result.afterEntry, aspirinAfterRecheckOrResult result ))
+                    |> Expect.equal ( True, True )
+        ]
+
+
+noDiabetesNoRiskTest : Test
+noDiabetesNoRiskTest =
+    describe "no diabetes anywhere"
+        [ test "A visit with no diabetes diagnosed, reported, or in the medical history, and no other risk sign, gets no high risk of preeclampsia." <|
+            -- A first visit at 18 weeks; and a visit at 22 weeks after a
+            -- visit at 14 weeks whose blood sugar result (90) is normal and
+            -- a visit at 18 weeks with nothing diagnosed or reported.
+            \_ ->
+                [ nurseVisitWithReported ( 18, 0 ) [] []
+                , nurseVisitWithReported ( 22, 0 )
+                    [ earlierNurseVisitAt ( 14, 0 ) [] [] (withBloodSugarFromLabHistory ( 14, 0 ) 90 emptyPrenatalMeasurements)
+                    , earlierNurseVisitAt ( 18, 0 ) [] [] emptyPrenatalMeasurements
+                    ]
+                    []
+                ]
+                    |> List.map highRiskAndAspirinAtVisit
+                    |> Expect.equal (List.repeat 2 ( False, False ))
+        , test "guard: diabetes in the medical history gives high risk and Aspirin" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withMedicalHistorySign Diabetes
+                    |> nurseVisitAt ( 18, 0 ) [] []
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
+        , test "guard: diabetes diagnosed at an earlier visit gives high risk and Aspirin" <|
+            \_ ->
+                nurseVisitWithReported ( 22, 0 )
+                    [ earlierNurseVisitAt ( 18, 0 ) [ DiagnosisDiabetesRecurrentPhase ] [] emptyPrenatalMeasurements ]
+                    []
+                    |> highRiskAndAspirinAtVisit
+                    |> Expect.equal ( True, True )
         ]
