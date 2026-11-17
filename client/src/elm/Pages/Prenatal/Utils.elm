@@ -3191,9 +3191,18 @@ hypertensionlikeDiagnoses =
         ++ [ DiagnosisEclampsia ]
 
 
+{-| Diabetes diagnosed at an earlier visit, or reported to this visit or an
+earlier one, for example from a result entered through lab history.
+-}
 diagnosedDiabetesPreviously : AssembledData -> Bool
 diagnosedDiabetesPreviously assembled =
+    let
+        diabetesIn set =
+            List.any (\diagnosis -> EverySet.member diagnosis set) diabetesDiagnoses
+    in
     diagnosedPreviouslyAnyOf diabetesDiagnoses assembled
+        || diabetesIn assembled.encounter.pastDiagnoses
+        || List.any (.pastDiagnoses >> diabetesIn) assembled.nursePreviousEncountersData
 
 
 resolvePreviousDiabetesDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
