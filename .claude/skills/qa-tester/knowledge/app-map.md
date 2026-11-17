@@ -33,7 +33,8 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   node and match its title (`E2ETest <firstName>`).
 - A prenatal encounter's diagnoses on the server: `field_data_field_prenatal_diagnoses` by encounter nid; the encounter reaches the person
   through `field_individual_participant` → the participant's `field_person`. A referral saved in Next Steps is a `prenatal_send_to_hc` node;
-  a hospital referral is in its `field_referrals` (`hospital`, `hospital-referral-form`), not `field_send_to_hc`.
+  a hospital referral is in its `field_referrals` (`hospital`, `hospital-referral-form`; ultrasound `us`, `us-referral-form`), not `field_send_to_hc`.
+  A CHW's referral is `field_send_to_hc` (`refer-to-hc`, `referral-form`, `accompany-to-hc`), or `none` with `field_reason_not_sent_to_hc` (`client-refused`).
 - A pregnancy (`individual_participant`) holds its outcome in `field_outcome` (`live-at-term`, `still-at-term`, …), `field_date_concluded` and the newborn in `field_newborn`.
 - Yes/No follow-up fields on the server: `field_send_to_hc` + `field_reason_not_sent_to_hc`, `field_health_education_signs` + `field_reason_not_given_education`,
   `field_treatment_ongoing` + `field_reason_for_not_taking` / `field_missed_doses` / `field_adverse_events`, `field_treatment_history`, `field_administration_note`.
@@ -346,7 +347,8 @@ flag simply does not appear.
   shows three selects: protein, pH, glucose; protein and glucose share the options 0, +1 … +4. Lab Results shows the same selects.
   At 37 w+ a point-of-care result that diagnoses an emergency jumps to Next Steps behind the warning, leaving the other lab tabs unasked.
 - Eclampsia fixture: Dating, History, Examination, then Danger Signs "Convulsions" (no other activity needed). After 165/115 it also gives high risk
-  of preeclampsia on develop; gestational hypertension is not stored beside eclampsia.
+  of preeclampsia on develop; gestational hypertension is not stored beside eclampsia. Next Steps is Referral + Next ANC Visit; Next Steps completes only once both are saved.
+  Dating answered "not confident" with a reason adds an ultrasound referral to the same Referral form (nurse only).
 - Moderate Preeclampsia fixture: 26 w, 165 / 100, then reopen Examination from Completed → Core Physical Exam → the first "Edema" (hands) →
   Save: `moderate-preeclampsia-initial`, Next Steps Referral + Next ANC Visit. A later visit then has Treatment Review and Medication Distribution.
 - A later visit at 150 / 95 after earlier hypertension: Medication Distribution recommends Methyldopa three times a day, and Save stays off
@@ -440,6 +442,7 @@ flag simply does not appear.
 - CHW visit 2 with no danger signs: Danger Signs, Birth Plan, Health Education, Next Steps; Next Steps
   is Appointment Confirmation, CHW Follow Up, Next ANC Visit. Next ANC Visit shows a date computed
   from the LMP; saving it as the last task opens the progress report, which carries End Encounter.
+- CHW postpartum visit with a mother's danger sign: Next Steps is Send to Health Center, CHW Follow Up, Health Education. The child's danger-sign list shows after a stillbirth too.
 - CHW postpartum visit: Pregnancy Outcome, Danger Signs (tick "None of these" for mother and child),
   Next Steps. Postpartum Danger Signs has two "None of these" lists, so `completeDangerSigns` fails
   there. With no danger signs Next Steps is Health Education, plus Newborn Enrolment after a
@@ -672,7 +675,8 @@ flag simply does not appear.
   - **Antenatal (CHW) → Antenatal Care pane.** Every CHW antenatal visit except postpartum has
     Follow Up in Next Steps. A danger sign makes Danger Signs' Save open Next Steps with a
     "refer to health center" warning: Send to Health Center, CHW Follow Up, Next ANC Visit, and
-    no Health Education.
+    no Health Education. The Send to Health Center form: `.yes-no.refer-to-hc`; Yes adds `hand-referral-form`
+    and `accompany-to-hc`, No adds "Why not?" checkboxes (Client refused first).
   - **Well Child (CHW) → Immunization pane.** The child must be under two (`expectImmunizationFollowUp`), so a 2-year-old never lists. Danger Signs, Nutrition Assessment, then
     Immunizations answering **No** to each vaccine — `h.wellChild.completeImmunisation(page,
     { isChw: true })`; without `isChw` it answers Yes and gives the vaccines. Leave them

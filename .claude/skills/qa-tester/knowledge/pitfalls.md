@@ -929,3 +929,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after starting a Monitor for gulp's rebuild, the run ended its turn to wait, and the harness sent `[handback-send-enforce]` (PR #2543).
 - **Wrong conclusion:** a Monitor keeps a subagent waiting like a background Bash job does.
 - **Rule:** the same pit as "Waiting on a detached chain ends the run". In a subagent, wait for gulp with a capped foreground `until grep -qF … Main.js` loop (under 175 s, repeated), or a `run_in_background` Bash wait, never a Monitor alone.
+
+## Matching encounter card labels with a mixed-case regex
+
+- **Symptom:** a recorded check "Next Steps still To Do" failed, though the logged To Do list read `["NEXT STEPS"]`; test 1 had to be re-recorded on a new fixture (PR #2547).
+- **Wrong conclusion:** the PR left Next Steps out of To Do.
+- **Rule:** encounter card labels are uppercase in `textContent` itself, not only by CSS. Match card and tab labels with a case-insensitive regex (`/next steps/i`), and read the logged values before trusting a failed check.
