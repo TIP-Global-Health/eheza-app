@@ -41,7 +41,7 @@ One station runs discovery rounds at night on spare Fable allowance. Two station
 double the spending, so install the cron entry on one machine only:
 
 ```
-0 1 * * 6,0,1,2 /var/www/html/ihangane/.claude/scripts/night-discovery.sh
+0 0 * * 6,0,1,2 /var/www/html/ihangane/.claude/scripts/night-discovery.sh
 ```
 
 Its decisions and the measured cost of each round are logged in

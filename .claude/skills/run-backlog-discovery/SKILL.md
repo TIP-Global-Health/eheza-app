@@ -26,12 +26,15 @@ there: **never ask a question, never wait for approval.** The plan gate above do
 Everything else holds: verify every candidate yourself, respect the declined list, read no open PR,
 record as you go.
 
-**Units — five scouts at most, chosen in this order:**
+**Units — two scouts per round, chosen in this order.** Five parallel scouts use up a whole
+five-hour session window; the launcher runs several small rounds instead.
+
 
 1. **Code PRs merged to `develop` since the previous round's commit** (in `rounds.md`), read as
-   merged. **At most two scouts**; group the PRs by area. No merges, no such unit.
-2. **The oldest `R<n>` rows in the coverage table's "Last swept" column** fill the remaining
-   scouts. Skip `↑` and `—` rows.
+   merged. **At most two scouts**; group the PRs by area. No merges, no such unit. PRs a stopped
+   round still owes come first.
+2. **The oldest `R<n>` rows in the coverage table's "Last swept" column** fill any
+   scout left over. Skip `↑` and `—` rows.
 
 For each re-swept area add a new coverage row with this round, and change the older row of that
 area to `↑ R<n>`.

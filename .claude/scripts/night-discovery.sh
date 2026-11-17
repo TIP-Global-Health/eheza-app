@@ -1,7 +1,7 @@
 #!/bin/bash
 # Spend spare Fable weekly allowance on discovery rounds, unattended.
 #
-# Cron starts this at 01:00 on Saturday, Sunday, Monday and Tuesday. It reads
+# Cron starts this at 00:00 on Saturday, Sunday, Monday and Tuesday. It reads
 # the Fable weekly figure, compares it with that night's ceiling, and launches
 # rounds one after another while a whole round still fits under the ceiling.
 #
@@ -22,7 +22,8 @@ SCOPE="Fable"            # The weekly row to read, by its model label.
 END_HOUR=7               # No round may still be running after this hour.
 SESSION_MAX=90           # Five-hour meter: a round must end below this.
 DRY_STOP_AFTER=3         # Consecutive rounds with no new item.
-FIRST_ROUND_MINUTES=120  # Assumed length until a round has been measured.
+FIRST_ROUND_MINUTES=60   # Assumed length until a round has been measured.
+FIRST_ROUND_SESSION=40   # Assumed session cost until one has been measured.
 
 MODE="night"
 case "${1:-}" in
@@ -131,7 +132,7 @@ while :; do
   fi
 
   weekly_cost=$(recent_max 9); session_cost=$(recent_max 10); minutes=$(recent_max 2)
-  : "${weekly_cost:=1}" "${session_cost:=0}" "${minutes:=$FIRST_ROUND_MINUTES}"
+  : "${weekly_cost:=1}" "${session_cost:=$FIRST_ROUND_SESSION}" "${minutes:=$FIRST_ROUND_MINUTES}"
   [ "$weekly_cost" -lt 1 ] && weekly_cost=1
   status="weekly $weekly% (ceiling $ceiling%, a round costs up to $weekly_cost), session $session% (a round costs up to $session_cost), a round takes up to $minutes min"
 
