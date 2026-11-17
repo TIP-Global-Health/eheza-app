@@ -1,10 +1,11 @@
-module Pages.Prenatal.ProgressReport.Utils exposing (allCHWActions, chwActionToColor, diagnosisForProgressReportToString, thumbnailDimensions, updateChronicHypertensionDiagnoses, wrapWithLI)
+module Pages.Prenatal.ProgressReport.Utils exposing (allCHWActions, chwActionToColor, diagnosisForProgressReportToString, generateAllNurseEncountersData, resolveMedicationHistoryDate, thumbnailDimensions, updateChronicHypertensionDiagnoses, wrapWithLI)
 
+import Backend.Measurement.Model exposing (AdministrationNote(..), MedicationDistributionSign(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
-import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..))
 import Pages.Prenatal.Utils
     exposing
@@ -13,6 +14,7 @@ import Pages.Prenatal.Utils
         )
 import Pages.Utils exposing (filterPreviousEncountersDataToDate)
 import Translate exposing (Language, translate)
+import Utils.NominalDate exposing (sortByDateDesc)
 
 
 thumbnailDimensions : { width : Int, height : Int }
@@ -87,3 +89,65 @@ allCHWActions =
     , ActionHealthEducation
     , ActionBirthPlan
     ]
+
+
+generateAllNurseEncountersData : Bool -> AssembledData -> List PreviousEncounterData
+generateAllNurseEncountersData isChw assembled =
+    assembled.nursePreviousEncountersData
+        ++ (if isChw then
+                []
+
+            else
+                [ { startDate = assembled.encounter.startDate
+                  , diagnoses = assembled.encounter.diagnoses
+                  , pastDiagnoses = assembled.encounter.pastDiagnoses
+                  , measurements = assembled.measurements
+                  }
+                ]
+           )
+
+
+{-| The Medication History date of a medication: the latest nurse visit
+where it was handed over.
+-}
+resolveMedicationHistoryDate : Bool -> AssembledData -> MedicationDistributionSign -> Maybe NominalDate
+resolveMedicationHistoryDate isChw assembled medication =
+    let
+        administeredDate measurementFunc =
+            generateAllNurseEncountersData isChw assembled
+                |> List.sortWith (sortByDateDesc .startDate)
+                |> List.filterMap
+                    (.measurements
+                        >> measurementFunc
+                        >> Maybe.andThen
+                            (\( _, measurement ) ->
+                                if measurement.value == AdministeredToday then
+                                    Just measurement.dateMeasured
+
+                                else
+                                    Nothing
+                            )
+                    )
+                |> List.head
+    in
+    case medication of
+        Calcium ->
+            administeredDate .calcium
+
+        Fefol ->
+            administeredDate .fefol
+
+        FolicAcid ->
+            administeredDate .folate
+
+        Iron ->
+            administeredDate .iron
+
+        Mebendezole ->
+            administeredDate .mebendazole
+
+        MMS ->
+            administeredDate .mms
+
+        _ ->
+            Nothing

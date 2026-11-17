@@ -91,7 +91,7 @@ import Pages.Prenatal.Activity.Utils
         )
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, getAllActivities, getFirstNurseEncounterMeasurements, getObstetricHistoryStep2, resolveGlobalLmpValue)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
-import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
+import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..), Model, Msg(..), medicalDiagnoses, obstetricalDiagnoses)
 import Pages.Prenatal.ProgressReport.Svg
     exposing
@@ -100,7 +100,7 @@ import Pages.Prenatal.ProgressReport.Svg
         , viewWeightGainForEGA
         , viewWeightGainForEGAHealthyStart
         )
-import Pages.Prenatal.ProgressReport.Utils exposing (allCHWActions, chwActionToColor, diagnosisForProgressReportToString, thumbnailDimensions, updateChronicHypertensionDiagnoses, wrapWithLI)
+import Pages.Prenatal.ProgressReport.Utils exposing (allCHWActions, chwActionToColor, diagnosisForProgressReportToString, generateAllNurseEncountersData, resolveMedicationHistoryDate, thumbnailDimensions, updateChronicHypertensionDiagnoses, wrapWithLI)
 import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
@@ -1188,23 +1188,8 @@ viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurs
 viewMedicationHistoryPane : Language -> Bool -> AssembledData -> Html any
 viewMedicationHistoryPane language isChw assembled =
     let
-        allNurseEncountersData =
-            generateAllNurseEncountersData isChw assembled
-                |> List.sortWith (sortByDateDesc .startDate)
-
-        resolveMedicationAdministrationDate measurementFunc =
-            List.map (.measurements >> measurementFunc) allNurseEncountersData
-                |> List.filterMap
-                    (Maybe.andThen
-                        (\( _, measurement ) ->
-                            if measurement.value == AdministeredToday then
-                                Just measurement.dateMeasured
-
-                            else
-                                Nothing
-                        )
-                    )
-                |> List.head
+        resolveMedicationAdministrationDate =
+            resolveMedicationHistoryDate isChw assembled
 
         entriesHeading =
             div [ class "heading medication" ]
@@ -1227,12 +1212,12 @@ viewMedicationHistoryPane language isChw assembled =
         [ viewItemHeading language Translate.MedicationHistory "blue"
         , div [ class "pane-content" ]
             [ entriesHeading
-            , resolveMedicationAdministrationDate .calcium |> viewEntry Calcium
-            , resolveMedicationAdministrationDate .fefol |> viewEntry Fefol
-            , resolveMedicationAdministrationDate .folate |> viewEntry FolicAcid
-            , resolveMedicationAdministrationDate .iron |> viewEntry Iron
-            , resolveMedicationAdministrationDate .mms |> viewEntry MMS
-            , resolveMedicationAdministrationDate .mebendazole |> viewEntry Mebendezole
+            , resolveMedicationAdministrationDate Calcium |> viewEntry Calcium
+            , resolveMedicationAdministrationDate Fefol |> viewEntry Fefol
+            , resolveMedicationAdministrationDate FolicAcid |> viewEntry FolicAcid
+            , resolveMedicationAdministrationDate Iron |> viewEntry Iron
+            , resolveMedicationAdministrationDate MMS |> viewEntry MMS
+            , resolveMedicationAdministrationDate Mebendezole |> viewEntry Mebendezole
             ]
         ]
 
@@ -3254,19 +3239,3 @@ viewTreatmentForPastDiagnosis language date diagnosis =
         ++ (String.toLower <| translate language Translate.PastDiagnosisReportReason)
         ++ "."
         |> wrapWithLI
-
-
-generateAllNurseEncountersData : Bool -> AssembledData -> List PreviousEncounterData
-generateAllNurseEncountersData isChw assembled =
-    assembled.nursePreviousEncountersData
-        ++ (if isChw then
-                []
-
-            else
-                [ { startDate = assembled.encounter.startDate
-                  , diagnoses = assembled.encounter.diagnoses
-                  , pastDiagnoses = assembled.encounter.pastDiagnoses
-                  , measurements = assembled.measurements
-                  }
-                ]
-           )
