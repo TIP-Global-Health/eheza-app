@@ -18,6 +18,40 @@ What the user *does* frame is the round itself — which surfaces to sweep, and 
 that, **wait for an explicit go, and only then run.** Reading state and writing the plan is free;
 spawning the first agent is not — nothing fans out until the user has approved the plan.
 
+## Night mode — an unattended round
+
+`.claude/scripts/night-discovery.sh` starts a round at night and says so in its prompt. Nobody is
+there: **never ask a question, never wait for approval.** The plan gate above does not apply.
+
+Everything else holds: verify every candidate yourself, respect the declined list, read no open PR,
+record as you go.
+
+**Units — five scouts at most, chosen in this order:**
+
+1. **Code PRs merged to `develop` since the previous round's commit** (in `rounds.md`), read as
+   merged. **At most two scouts**; group the PRs by area. No merges, no such unit.
+2. **The oldest `R<n>` rows in the coverage table's "Last swept" column** fill the remaining
+   scouts. Skip `↑` and `—` rows.
+
+For each re-swept area add a new coverage row with this round, and change the older row of that
+area to `↑ R<n>`.
+
+**The round cap does not apply at night.** The launcher keeps the dry-stop: it pauses itself after
+three rounds that add no item.
+
+**Wait for every scout before the final answer.** The session ends with that answer, and a scout
+still running then is lost.
+
+**If something blocks the round** — a scout that cannot start, a tree not on `develop` — record
+what happened in the handoff entry and end. Do not improvise around it.
+
+**Handoff entry.** Before ending, add one short entry at the top of `## Night discovery runs` in
+`HANDOFF.md` (create it above `## Open right now` if missing). Re-read the file immediately before
+writing.
+
+Keep it to a few lines: the date and round number, the usage figures from the launch prompt, the
+units, the new items with tier, and anything that failed. The user reads it to be briefed.
+
 ## State to read first, in this order
 
 All of it is in `.claude/backlog/` (see its README for the layout).
@@ -61,7 +95,7 @@ clears modules is productive, not dry.
    agents get killed mid-round; anything unrecorded is lost.
 
 **Stop rule:** dry-stop after three consecutive rounds with zero new verified findings (a sweep
-that clears modules counts as productive). Hard cap at Round 50.
+that clears modules counts as productive). Hard cap at Round 50, unless the user raises it for a round.
 
 ## What makes a finding worth recording
 
