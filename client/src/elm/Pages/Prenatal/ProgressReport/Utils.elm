@@ -10,6 +10,7 @@ import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..))
 import Pages.Prenatal.Utils
     exposing
         ( applyHypertensionlikeDiagnosesHierarchy
+        , mebendazoleDistributed
         , resolvePreviousHypertensionDiagnosis
         )
 import Pages.Utils exposing (filterPreviousEncountersDataToDate)
@@ -108,46 +109,58 @@ generateAllNurseEncountersData isChw assembled =
 
 
 {-| The Medication History date of a medication: the latest nurse visit
-where it was handed over.
+where it was handed over, in the Medication activity or, for Mebendazole,
+in Next Steps.
 -}
 resolveMedicationHistoryDate : Bool -> AssembledData -> MedicationDistributionSign -> Maybe NominalDate
 resolveMedicationHistoryDate isChw assembled medication =
     let
-        administeredDate measurementFunc =
+        dateGiven routes =
             generateAllNurseEncountersData isChw assembled
                 |> List.sortWith (sortByDateDesc .startDate)
                 |> List.filterMap
-                    (.measurements
-                        >> measurementFunc
-                        >> Maybe.andThen
-                            (\( _, measurement ) ->
-                                if measurement.value == AdministeredToday then
-                                    Just measurement.dateMeasured
-
-                                else
-                                    Nothing
-                            )
+                    (\{ measurements } ->
+                        List.filterMap (\route -> route measurements) routes
+                            |> List.head
                     )
                 |> List.head
+
+        administered measurementFunc measurements =
+            measurementFunc measurements
+                |> Maybe.andThen
+                    (\( _, measurement ) ->
+                        if measurement.value == AdministeredToday then
+                            Just measurement.dateMeasured
+
+                        else
+                            Nothing
+                    )
+
+        distributedMebendazole measurements =
+            if mebendazoleDistributed measurements then
+                Maybe.map (Tuple.second >> .dateMeasured) measurements.medicationDistribution
+
+            else
+                Nothing
     in
     case medication of
         Calcium ->
-            administeredDate .calcium
+            dateGiven [ administered .calcium ]
 
         Fefol ->
-            administeredDate .fefol
+            dateGiven [ administered .fefol ]
 
         FolicAcid ->
-            administeredDate .folate
+            dateGiven [ administered .folate ]
 
         Iron ->
-            administeredDate .iron
+            dateGiven [ administered .iron ]
 
         Mebendezole ->
-            administeredDate .mebendazole
+            dateGiven [ administered .mebendazole, distributedMebendazole ]
 
         MMS ->
-            administeredDate .mms
+            dateGiven [ administered .mms ]
 
         _ ->
             Nothing
