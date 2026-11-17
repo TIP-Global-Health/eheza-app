@@ -101,15 +101,28 @@ earlier visit of the pregnancy.
 -}
 diagnosisKnownAnyOf : List PrenatalDiagnosis -> AssembledData -> Bool
 diagnosisKnownAnyOf diagnoses assembled =
+    diagnosedOrReportedAnyOf diagnoses assembled.encounter
+        || diagnosedOrReportedPreviouslyAnyOf diagnoses assembled
+
+
+{-| Diagnosed at, or reported to, an earlier visit of the pregnancy. A result
+entered from lab history is reported to the visit it was entered at.
+-}
+diagnosedOrReportedPreviouslyAnyOf : List PrenatalDiagnosis -> AssembledData -> Bool
+diagnosedOrReportedPreviouslyAnyOf diagnoses assembled =
+    List.any (diagnosedOrReportedAnyOf diagnoses) assembled.nursePreviousEncountersData
+
+
+diagnosedOrReportedAnyOf :
+    List PrenatalDiagnosis
+    -> { a | diagnoses : EverySet PrenatalDiagnosis, pastDiagnoses : EverySet PrenatalDiagnosis }
+    -> Bool
+diagnosedOrReportedAnyOf diagnoses encounter =
     let
         anyOf set =
             List.any (\diagnosis -> EverySet.member diagnosis set) diagnoses
-
-        knownTo encounter =
-            anyOf encounter.diagnoses || anyOf encounter.pastDiagnoses
     in
-    knownTo assembled.encounter
-        || List.any knownTo assembled.nursePreviousEncountersData
+    anyOf encounter.diagnoses || anyOf encounter.pastDiagnoses
 
 
 filterNonUrgentDiagnoses : List PrenatalDiagnosis -> List PrenatalDiagnosis
@@ -3191,18 +3204,9 @@ hypertensionlikeDiagnoses =
         ++ [ DiagnosisEclampsia ]
 
 
-{-| Diabetes diagnosed at an earlier visit, or reported to this visit or an
-earlier one, for example from a result entered through lab history.
--}
 diagnosedDiabetesPreviously : AssembledData -> Bool
 diagnosedDiabetesPreviously assembled =
-    let
-        diabetesIn set =
-            List.any (\diagnosis -> EverySet.member diagnosis set) diabetesDiagnoses
-    in
-    diagnosedPreviouslyAnyOf diabetesDiagnoses assembled
-        || diabetesIn assembled.encounter.pastDiagnoses
-        || List.any (.pastDiagnoses >> diabetesIn) assembled.nursePreviousEncountersData
+    diagnosedOrReportedPreviouslyAnyOf diabetesDiagnoses assembled
 
 
 resolvePreviousDiabetesDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
