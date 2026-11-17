@@ -1,6 +1,6 @@
 module Pages.Prenatal.ProgressReport.Utils exposing (allCHWActions, chwActionToColor, diagnosisForProgressReportToString, generateAllNurseEncountersData, resolveMedicationHistoryDate, thumbnailDimensions, updateChronicHypertensionDiagnoses, wrapWithLI)
 
-import Backend.Measurement.Model exposing (AdministrationNote(..), MedicationDistributionSign(..))
+import Backend.Measurement.Model exposing (MedicationDistributionSign(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Date
 import EverySet exposing (EverySet)
@@ -13,6 +13,7 @@ import Pages.Prenatal.Utils
     exposing
         ( applyHypertensionlikeDiagnosesHierarchy
         , mebendazoleDistributed
+        , medicationAdministered
         , resolvePreviousHypertensionDiagnosis
         )
 import Pages.Utils exposing (filterPreviousEncountersDataToDate)
@@ -124,23 +125,22 @@ resolveMedicationHistoryDate isChw assembled =
             List.concatMap (\measurements -> List.filterMap (\route -> route measurements) routes) allMeasurements
                 |> List.Extra.maximumWith Date.compare
 
-        administered measurementFunc measurements =
-            measurementFunc measurements
-                |> Maybe.andThen
-                    (\( _, measurement ) ->
-                        if measurement.value == AdministeredToday then
-                            Just measurement.dateMeasured
-
-                        else
-                            Nothing
-                    )
-
-        distributedMebendazole measurements =
-            if mebendazoleDistributed measurements then
-                Maybe.map (Tuple.second >> .dateMeasured) measurements.medicationDistribution
+        dateMeasuredWhen given measurement =
+            if given then
+                Maybe.map (Tuple.second >> .dateMeasured) measurement
 
             else
                 Nothing
+
+        administered measurementFunc measurements =
+            let
+                measurement =
+                    measurementFunc measurements
+            in
+            dateMeasuredWhen (medicationAdministered measurement) measurement
+
+        distributedMebendazole measurements =
+            dateMeasuredWhen (mebendazoleDistributed measurements) measurements.medicationDistribution
     in
     \medication ->
         case medication of
