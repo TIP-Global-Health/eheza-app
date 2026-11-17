@@ -1,4 +1,4 @@
-module Pages.Prenatal.Encounter.Utils exposing (calculateBmi, diagnosisRequiresEmergencyReferral, emergencyReferralRequired, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, generatePostCreateDestination, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, getLastEncounterMeasurementsWithDate, getLmpValue, getObstetricHistoryStep2, getPrenatalEncountersForParticipantDesc, getSubsequentEncounterType, resolveGlobalLmpValue, secondPhaseRequired, skipObstetricHistorySecondStep)
+module Pages.Prenatal.Encounter.Utils exposing (calculateBmi, diagnosisRequiresEmergencyReferral, emergencyReferralRequired, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, generatePostCreateDestination, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, getLmpValue, getObstetricHistoryStep2, getPrenatalEncountersForParticipantDesc, getSubsequentEncounterType, resolveGlobalLmpValue, resolveObstetricalExamWithEGAWeeks, secondPhaseRequired, skipObstetricHistorySecondStep)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -445,18 +445,39 @@ getFirstNurseEncounterMeasurements isChw assembled =
             encounterData.measurements
 
 
-getLastEncounterMeasurementsWithDate : NominalDate -> Bool -> AssembledData -> ( NominalDate, PrenatalMeasurements )
-getLastEncounterMeasurementsWithDate currentDate isChw assembled =
+getLastEncounterMeasurements : Bool -> AssembledData -> PrenatalMeasurements
+getLastEncounterMeasurements isChw assembled =
     case List.reverse assembled.nursePreviousEncountersData of
         [] ->
             if isChw then
-                ( currentDate, emptyPrenatalMeasurements )
+                emptyPrenatalMeasurements
 
             else
-                ( assembled.encounter.startDate, assembled.measurements )
+                assembled.measurements
 
         encounterData :: _ ->
-            ( encounterData.startDate, encounterData.measurements )
+            encounterData.measurements
+
+
+{-| This visit's obstetrical exam, or else the latest earlier nurse visit's,
+with the week of pregnancy at which it was recorded.
+-}
+resolveObstetricalExamWithEGAWeeks : Bool -> AssembledData -> Maybe ( Int, ObstetricalExamValue )
+resolveObstetricalExamWithEGAWeeks isChw assembled =
+    let
+        exam =
+            if isJust assembled.measurements.obstetricalExam then
+                assembled.measurements.obstetricalExam
+
+            else
+                (getLastEncounterMeasurements isChw assembled).obstetricalExam
+    in
+    Maybe.map2
+        (\lmpDate ( _, measurement ) ->
+            ( calculateEGAWeeks measurement.dateMeasured lmpDate, measurement.value )
+        )
+        assembled.globalLmpDate
+        exam
 
 
 getAllNurseMeasurements : Bool -> AssembledData -> List PreviousEncounterData
@@ -522,53 +543,29 @@ generateRecurringHighSeverityAlertData language isChw assembled alert =
 
 generateObstetricalDiagnosisAlertData :
     Language
-    -> NominalDate
     -> Bool
     -> PrenatalMeasurements
     -> AssembledData
     -> ObstetricalDiagnosis
     -> Maybe String
-generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncounterMeasurements assembled diagnosis =
+generateObstetricalDiagnosisAlertData language isChw firstNurseEncounterMeasurements assembled diagnosis =
     let
         transAlert diagnosis_ =
             translate language (Translate.ObstetricalDiagnosisAlert diagnosis_)
 
-        lastEncounterMeasurementsWithDate =
-            getLastEncounterMeasurementsWithDate currentDate isChw assembled
-
         lastEncounterMeasurements =
-            Tuple.second lastEncounterMeasurementsWithDate
+            getLastEncounterMeasurements isChw assembled
 
-        -- A presentation is judged at the week of the exam that recorded it.
         presentationAlert presentation =
-            let
-                resolveAlert ( date, measurements ) =
-                    assembled.globalLmpDate
-                        |> Maybe.andThen
-                            (\lmpDate ->
-                                if calculateEGAWeeks date lmpDate < 32 then
-                                    Nothing
+            resolveObstetricalExamWithEGAWeeks isChw assembled
+                |> Maybe.andThen
+                    (\( egaInWeeks, value ) ->
+                        if egaInWeeks >= 32 && value.fetalPresentation == presentation then
+                            Just (transAlert diagnosis)
 
-                                else
-                                    measurements.obstetricalExam
-                                        |> Maybe.andThen
-                                            (\measurement ->
-                                                if (Tuple.second measurement |> .value |> .fetalPresentation) == presentation then
-                                                    Just (transAlert diagnosis)
-
-                                                else
-                                                    Nothing
-                                            )
-                            )
-            in
-            -- If obstetricalExam measurements were taken at current encounter,
-            -- we issue the alarm according to those values.
-            -- Otherwise, we use values of last encounter.
-            if isJust assembled.measurements.obstetricalExam then
-                resolveAlert ( assembled.encounter.startDate, assembled.measurements )
-
-            else
-                resolveAlert lastEncounterMeasurementsWithDate
+                        else
+                            Nothing
+                    )
     in
     case diagnosis of
         DiagnosisModerateUnderweight ->
@@ -577,7 +574,6 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncou
                     isJust <|
                         generateObstetricalDiagnosisAlertData
                             language
-                            currentDate
                             isChw
                             firstNurseEncounterMeasurements
                             assembled

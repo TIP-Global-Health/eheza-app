@@ -563,7 +563,7 @@ viewContent language currentDate zscores site features isChw isLabTech isResults
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalHistory)
                     , viewMedicalDiagnosisPane language isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
-                    , viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurseEncounterMeasurements assembled
+                    , viewObstetricalDiagnosisPane language isChw globalLmpValue firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
                     , viewMedicationHistoryPane language isChw assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicationHistory)
@@ -1008,8 +1008,8 @@ viewProgramReferralEntry language date diagnosis facility =
         |> wrapWithLI
 
 
-viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> Maybe LastMenstrualPeriodValue -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurseEncounterMeasurements assembled =
+viewObstetricalDiagnosisPane : Language -> Bool -> Maybe LastMenstrualPeriodValue -> PrenatalMeasurements -> AssembledData -> Html Msg
+viewObstetricalDiagnosisPane language isChw globalLmpValue firstNurseEncounterMeasurements assembled =
     let
         allNurseEncountersData =
             generateAllNurseEncountersData isChw assembled
@@ -1168,7 +1168,7 @@ viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurs
             -- Alerts are displayed only for CHW.
             if isChw then
                 List.filterMap
-                    (generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncounterMeasurements assembled)
+                    (generateObstetricalDiagnosisAlertData language isChw firstNurseEncounterMeasurements assembled)
                     allObstetricalDiagnoses
                     |> List.map (\alert -> li [] [ text alert ])
                     |> ul []

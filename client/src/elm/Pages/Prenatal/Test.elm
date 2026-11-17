@@ -1206,17 +1206,17 @@ closedOnTheDay assembled =
 {-| Whether the mother's alerts on the nurse Encounter / Activity pages show
 the given alert when the visit is opened on the given date.
 -}
-motherAlertShown : NominalDate -> AssembledData -> HighSeverityAlert -> Bool
-motherAlertShown openedOn assembled alert =
-    generateHighSeverityAlertData English openedOn False assembled alert /= Nothing
+motherAlertShown : AssembledData -> HighSeverityAlert -> Bool
+motherAlertShown assembled alert =
+    generateHighSeverityAlertData English False assembled alert /= Nothing
 
 
 {-| Whether the progress report, opened on the given date from a CHW visit
 (`True`) or a nurse visit (`False`), shows the given presentation alert.
 -}
-presentationAlertShown : NominalDate -> Bool -> AssembledData -> ObstetricalDiagnosis -> Bool
-presentationAlertShown openedOn isChw assembled diagnosis =
-    generateObstetricalDiagnosisAlertData English openedOn isChw emptyPrenatalMeasurements assembled diagnosis /= Nothing
+presentationAlertShown : Bool -> AssembledData -> ObstetricalDiagnosis -> Bool
+presentationAlertShown isChw assembled diagnosis =
+    generateObstetricalDiagnosisAlertData English isChw emptyPrenatalMeasurements assembled diagnosis /= Nothing
 
 
 examWeekAlertsTest : Test
@@ -1236,48 +1236,48 @@ this visit's exam.
 fetalFindingTest : String -> HighSeverityAlert -> ObstetricalExamValue -> Test
 fetalFindingTest finding alert exam =
     let
-        shown openedOn assembled =
-            motherAlertShown openedOn assembled alert
+        shown assembled =
+            motherAlertShown assembled alert
     in
     describe ("Mother's alerts: " ++ finding)
         [ test ("An exam at 18 weeks recording " ++ finding ++ " shows no alert, on the day") <|
             \_ ->
-                shown (onWeek 18) (nurseVisitWithExam (onWeek 18) exam)
+                shown (nurseVisitWithExam (onWeek 18) exam)
                     |> Expect.equal False
         , test ("An exam at 18 weeks recording " ++ finding ++ " shows no alert when the visit is reopened after week 20") <|
             \_ ->
-                shown (onWeek 22) (nurseVisitWithExam (onWeek 18) exam)
+                shown (nurseVisitWithExam (onWeek 18) exam)
                     |> Expect.equal False
 
         -- The same, with the visit closed on its day and reopened later for
         -- the lab results.
         , test ("An exam at 18 weeks recording " ++ finding ++ " shows no alert when the closed visit is reopened after week 20") <|
             \_ ->
-                shown (onWeek 22) (closedOnTheDay (nurseVisitWithExam (onWeek 18) exam))
+                shown (closedOnTheDay (nurseVisitWithExam (onWeek 18) exam))
                     |> Expect.equal False
 
         -- The last day before week 20, reopened on the first day of week 20.
         , test ("An exam on the last day of week 19 recording " ++ finding ++ " shows no alert when the visit is reopened in week 20") <|
             \_ ->
-                shown (onWeek 20) (nurseVisitWithExam (onWeekAndDay 19 6) exam)
+                shown (nurseVisitWithExam (onWeekAndDay 19 6) exam)
                     |> Expect.equal False
         , test ("The same finding (" ++ finding ++ ") recorded at 21 weeks shows the alert, on the day") <|
             \_ ->
-                shown (onWeek 21) (nurseVisitWithExam (onWeek 21) exam)
+                shown (nurseVisitWithExam (onWeek 21) exam)
                     |> Expect.equal True
         , test ("The same finding (" ++ finding ++ ") recorded at 21 weeks shows the alert when the visit is reopened later") <|
             \_ ->
-                shown (onWeek 25) (nurseVisitWithExam (onWeek 21) exam)
+                shown (nurseVisitWithExam (onWeek 21) exam)
                     |> Expect.equal True
 
         -- Week 20 is the first week at which the finding is abnormal.
         , test ("An exam on the first day of week 20 recording " ++ finding ++ " shows the alert") <|
             \_ ->
-                shown (onWeek 20) (nurseVisitWithExam (onWeek 20) exam)
+                shown (nurseVisitWithExam (onWeek 20) exam)
                     |> Expect.equal True
         , test "A normal exam at 21 weeks shows no alert" <|
             \_ ->
-                shown (onWeek 21) (nurseVisitWithExam (onWeek 21) normalExam)
+                shown (nurseVisitWithExam (onWeek 21) normalExam)
                     |> Expect.equal False
 
         -- With no LMP known, no week can be worked out.
@@ -1285,7 +1285,7 @@ fetalFindingTest finding alert exam =
             \_ ->
                 nurseVisitWithExam (onWeek 21) exam
                     |> (\assembled -> { assembled | globalLmpDate = Nothing })
-                    |> shown (onWeek 21)
+                    |> shown
                     |> Expect.equal False
         ]
 
@@ -1299,9 +1299,9 @@ fetalFindingFromEarlierVisitTest =
         visitAfter earlierVisits =
             pregnancyVisit NurseEncounter (onWeek 24) earlierVisits emptyPrenatalMeasurements
 
-        bothShown openedOn assembled =
-            ( motherAlertShown openedOn assembled FetalMovement
-            , motherAlertShown openedOn assembled FetalHeartRate
+        bothShown assembled =
+            ( motherAlertShown assembled FetalMovement
+            , motherAlertShown assembled FetalHeartRate
             )
 
         bothAbnormal =
@@ -1311,19 +1311,19 @@ fetalFindingFromEarlierVisitTest =
         [ test "When this visit has no exam, these alerts follow the latest earlier nurse visit's exam, judged at that visit's week: 18 weeks shows none" <|
             \_ ->
                 visitAfter [ earlierNurseExam (onWeek 18) bothAbnormal ]
-                    |> bothShown (onWeek 24)
+                    |> bothShown
                     |> Expect.equal ( False, False )
         , test "When this visit has no exam, these alerts follow the latest earlier nurse visit's exam, judged at that visit's week: 21 weeks shows both" <|
             \_ ->
                 visitAfter [ earlierNurseExam (onWeek 21) bothAbnormal ]
-                    |> bothShown (onWeek 24)
+                    |> bothShown
                     |> Expect.equal ( True, True )
 
         -- Reopened later still: the earlier visit's week does not move.
         , test "The latest earlier nurse visit's exam at 18 weeks shows no alert when this visit is reopened weeks later" <|
             \_ ->
                 visitAfter [ earlierNurseExam (onWeek 18) bothAbnormal ]
-                    |> bothShown (onWeek 28)
+                    |> bothShown
                     |> Expect.equal ( False, False )
 
         -- An older visit's abnormal exam is not what the alerts follow when a
@@ -1334,7 +1334,7 @@ fetalFindingFromEarlierVisitTest =
                     [ earlierNurseExam (onWeek 20) bothAbnormal
                     , earlierNurseExam (onWeek 22) normalExam
                     ]
-                    |> bothShown (onWeek 24)
+                    |> bothShown
                     |> Expect.equal ( False, False )
 
         -- This visit's own exam, when there is one, wins over the earlier
@@ -1345,7 +1345,7 @@ fetalFindingFromEarlierVisitTest =
                     (onWeek 24)
                     [ earlierNurseExam (onWeek 21) bothAbnormal ]
                     (examOn (onWeek 24) normalExam)
-                    |> bothShown (onWeek 24)
+                    |> bothShown
                     |> Expect.equal ( False, False )
         , test "This visit's exam at 18 weeks shows no alert when reopened after week 20, after an earlier normal nurse visit" <|
             \_ ->
@@ -1353,14 +1353,14 @@ fetalFindingFromEarlierVisitTest =
                     (onWeek 18)
                     [ earlierNurseExam (onWeek 14) normalExam ]
                     (examOn (onWeek 18) bothAbnormal)
-                    |> bothShown (onWeek 22)
+                    |> bothShown
                     |> Expect.equal ( False, False )
 
         -- The first visit of the pregnancy, without an exam.
         , test "No exam at this visit and no earlier nurse visit shows no alert" <|
             \_ ->
                 visitAfter []
-                    |> bothShown (onWeek 24)
+                    |> bothShown
                     |> Expect.equal ( False, False )
         ]
 
@@ -1374,14 +1374,14 @@ chwPresentationTest =
         chwReport chwVisitDate earlierVisits =
             pregnancyVisit ChwThirdPlusEncounter chwVisitDate earlierVisits emptyPrenatalMeasurements
 
-        bothShown openedOn assembled =
-            ( presentationAlertShown openedOn True assembled DiagnosisFetusBreech
-            , presentationAlertShown openedOn True assembled DiagnosisFetusTransverse
+        bothShown assembled =
+            ( presentationAlertShown True assembled DiagnosisFetusBreech
+            , presentationAlertShown True assembled DiagnosisFetusTransverse
             )
 
         alertFor presentation openedOn examDate =
             chwReport openedOn [ earlierNurseExam examDate (withPresentation presentation) ]
-                |> bothShown openedOn
+                |> bothShown
     in
     describe "CHW progress report: breech and transverse presentation"
         [ test "On the CHW progress report, a breech presentation recorded at a nurse visit before week 32 shows no alert, even when the report is opened after week 32" <|
@@ -1431,18 +1431,18 @@ chwPresentationTest =
                     [ earlierNurseExam (onWeek 33) (withPresentation FetalBreech)
                     , earlierNurseExam (onWeek 35) normalExam
                     ]
-                    |> bothShown (onWeek 36)
+                    |> bothShown
                     |> Expect.equal ( False, False )
         , test "No nurse visit before the CHW visit shows no alert" <|
             \_ ->
                 chwReport (onWeek 34) []
-                    |> bothShown (onWeek 34)
+                    |> bothShown
                     |> Expect.equal ( False, False )
         , test "A breech presentation at 33 weeks shows no alert when the pregnancy has no LMP" <|
             \_ ->
                 chwReport (onWeek 34) [ earlierNurseExam (onWeek 33) (withPresentation FetalBreech) ]
                     |> (\assembled -> { assembled | globalLmpDate = Nothing })
-                    |> bothShown (onWeek 34)
+                    |> bothShown
                     |> Expect.equal ( False, False )
         ]
 
@@ -1454,31 +1454,31 @@ too.
 nurseVisitPresentationTest : Test
 nurseVisitPresentationTest =
     let
-        bothShown openedOn assembled =
-            ( presentationAlertShown openedOn False assembled DiagnosisFetusBreech
-            , presentationAlertShown openedOn False assembled DiagnosisFetusTransverse
+        bothShown assembled =
+            ( presentationAlertShown False assembled DiagnosisFetusBreech
+            , presentationAlertShown False assembled DiagnosisFetusTransverse
             )
     in
     describe "Nurse visit progress report: the visit's own exam"
         [ test "A breech presentation recorded at this nurse visit at 30 weeks shows no alert when the report is opened after week 32" <|
             \_ ->
                 nurseVisitWithExam (onWeek 30) (withPresentation FetalBreech)
-                    |> bothShown (onWeek 34)
+                    |> bothShown
                     |> Expect.equal ( False, False )
         , test "A transverse presentation recorded at this nurse visit at 30 weeks shows no alert when the report is opened after week 32" <|
             \_ ->
                 nurseVisitWithExam (onWeek 30) (withPresentation Transverse)
-                    |> bothShown (onWeek 34)
+                    |> bothShown
                     |> Expect.equal ( False, False )
         , test "A breech presentation recorded at this nurse visit at 32 weeks shows the alert" <|
             \_ ->
                 nurseVisitWithExam (onWeek 32) (withPresentation FetalBreech)
-                    |> bothShown (onWeek 32)
+                    |> bothShown
                     |> Expect.equal ( True, False )
         , test "A transverse presentation recorded at this nurse visit at 33 weeks shows the alert when the report is opened later" <|
             \_ ->
                 nurseVisitWithExam (onWeek 33) (withPresentation Transverse)
-                    |> bothShown (onWeek 36)
+                    |> bothShown
                     |> Expect.equal ( False, True )
         ]
 
