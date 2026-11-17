@@ -923,3 +923,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after a scripted tap on Subsequent Antenatal, the back-arrow click timed out: "`<div class="overlay">` intercepts pointer events".
 - **Wrong conclusion:** the encounter page hung.
 - **Rule:** a CHW visit without nurse visits opens behind a "has not yet been seen at the health center" notice. `startPrenatalEncounter` presses its OK; a hand-written tap must press it too.
+
+## Waiting on a Monitor ends the run (met again)
+
+- **Symptom:** after starting a Monitor for gulp's rebuild, the run ended its turn to wait, and the harness sent `[handback-send-enforce]` (PR #2543).
+- **Wrong conclusion:** a Monitor keeps a subagent waiting like a background Bash job does.
+- **Rule:** the same pit as "Waiting on a detached chain ends the run". In a subagent, wait for gulp with a capped foreground `until grep -qF … Main.js` loop (under 175 s, repeated), or a `run_in_background` Bash wait, never a Monitor alone.

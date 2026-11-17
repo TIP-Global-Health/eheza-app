@@ -32,7 +32,8 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
 - A measurement node is found by its patient: join `field_data_field_person` to the person
   node and match its title (`E2ETest <firstName>`).
 - A prenatal encounter's diagnoses on the server: `field_data_field_prenatal_diagnoses` by encounter nid; the encounter reaches the person
-  through `field_individual_participant` → the participant's `field_person`. A referral saved in Next Steps is a `prenatal_send_to_hc` node.
+  through `field_individual_participant` → the participant's `field_person`. A referral saved in Next Steps is a `prenatal_send_to_hc` node;
+  a hospital referral is in its `field_referrals` (`hospital`, `hospital-referral-form`), not `field_send_to_hc`.
 - A pregnancy (`individual_participant`) holds its outcome in `field_outcome` (`live-at-term`, `still-at-term`, …), `field_date_concluded` and the newborn in `field_newborn`.
 - Yes/No follow-up fields on the server: `field_send_to_hc` + `field_reason_not_sent_to_hc`, `field_health_education_signs` + `field_reason_not_given_education`,
   `field_treatment_ongoing` + `field_reason_for_not_taking` / `field_missed_doses` / `field_adverse_events`, `field_treatment_history`, `field_administration_note`.
@@ -304,6 +305,9 @@ flag simply does not appear.
 - Labs history rows are `.history-entry` (name, date, and an `.action` reading UPDATE). Random Blood Sugar is listed
   as "Blood Sugar". A result entered there is reported to the current visit's `past_prenatal_diagnoses`, and its report
   reads "<diagnosis> - diagnosed on <date> as a result of entering lab results from past encounter".
+  The Blood Sugar result page shows the test date and `.form-input.measurement.sugar-count`; after its Save, with no other pending entry,
+  the History tab goes and Laboratory shows that visit's own tabs, with no "updated all results" question. 250 → hospital Referral in Next Steps.
+  Blood sugar is not offered at the visit diabetes was reported to, but is offered again at the next visit.
 - A Pregnancy Dating save sends two requests together: the LMP (POST, PATCH when corrected) and a PATCH of the
   pregnancy (`individual_participant`) setting its EDD. The visit header shows EDD and EGA; reopen the form from
   Completed to correct it, which sends both again. Backend EDD: `h.common.queryPregnancyEdd(name)`.
@@ -358,6 +362,7 @@ flag simply does not appear.
   missed doses, adverse events; adverse Yes adds a hospital-referral question). Its Medication Distribution reads "previously diagnosed with
   Hypertension … remain unchanged" and lists Carvedilol/Amlodipine steps; the report adds "(continued)".
 - With Healthy Start on, End Encounter stayed disabled after the full first-visit helper chain (Ultrasound, Malaria Prevention, Photo left in To Do).
+  Visits a week apart on a shifted page clock: upload, then `backdatePrenatalEncounter(name, offsetDays)` ends the latest visit on its own day. A visit with labs at the lab ends itself (Pause).
 - Same-day vitals recheck: visit 145/95, Next Steps ends on Wait › Pause; then Case Management › ANC Labs › the entry › Examination
   (`completeRecurrentExamination(page, { sys, dia })`). Recheck 145/95 stores `gestational-hypertension-recheck` at 20 w+, `chronic-hypertension-recheck`
   below; Next Steps › Medication Distribution offers Methyldopa. 165/100 schedules no recheck.
@@ -396,7 +401,7 @@ flag simply does not appear.
   OBSTETRIC DIAGNOSIS. The encounter page's red `div.alerts` icon opens `.alerts-dialog` (High Risk
   Factors, such as convulsions at a previous delivery). The icon is absent when there is no alert.
 - An encounter's `field_scheduled_date` holds the start in `value` and the end in `value2` (null =
-  still open); the tablet's `scheduled_date` mirrors it. Editing either with drush and syncing
+  still open); the tablet's `scheduled_date` mirrors it as `{ value, value2 }`. Editing either with drush and syncing
   moves the visit on the device. For a visit started yesterday and still open, set only `value`:
   `backdateEncounter` sets both, which ends the visit.
 - A nurse postpartum visit for a woman with no visits: Examination (`completeExamination(page, { isPostpartum: true, vitals })`) runs straight
