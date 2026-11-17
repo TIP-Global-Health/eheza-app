@@ -253,6 +253,9 @@ generateHighSeverityAlertData language currentDate isChw data alert =
 
         lastEncounterMeasurementsWithDate =
             getLastEncounterMeasurementsWithDate currentDate isChw data
+
+        currentEncounterMeasurementsWithDate =
+            ( data.encounter.startDate, data.measurements )
     in
     case alert of
         BodyTemperature ->
@@ -314,7 +317,7 @@ generateHighSeverityAlertData language currentDate isChw data alert =
             -- we issue the alarm according to those values.
             -- Otherwise, we use values of last encounter.
             if isJust data.measurements.obstetricalExam then
-                resolveAlert ( currentDate, data.measurements )
+                resolveAlert currentEncounterMeasurementsWithDate
 
             else
                 resolveAlert lastEncounterMeasurementsWithDate
@@ -352,7 +355,7 @@ generateHighSeverityAlertData language currentDate isChw data alert =
             -- we issue the alarm according to those values.
             -- Otherwise, we use values of last encounter.
             if isJust data.measurements.obstetricalExam then
-                resolveAlert ( currentDate, data.measurements )
+                resolveAlert currentEncounterMeasurementsWithDate
 
             else
                 resolveAlert lastEncounterMeasurementsWithDate

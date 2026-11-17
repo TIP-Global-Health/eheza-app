@@ -459,11 +459,6 @@ getLastEncounterMeasurementsWithDate currentDate isChw assembled =
             ( encounterData.startDate, encounterData.measurements )
 
 
-getLastEncounterMeasurements : NominalDate -> Bool -> AssembledData -> PrenatalMeasurements
-getLastEncounterMeasurements currentDate isChw assembled =
-    getLastEncounterMeasurementsWithDate currentDate isChw assembled |> Tuple.second
-
-
 getAllNurseMeasurements : Bool -> AssembledData -> List PreviousEncounterData
 getAllNurseMeasurements isChw assembled =
     let
@@ -538,8 +533,42 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncou
         transAlert diagnosis_ =
             translate language (Translate.ObstetricalDiagnosisAlert diagnosis_)
 
+        lastEncounterMeasurementsWithDate =
+            getLastEncounterMeasurementsWithDate currentDate isChw assembled
+
         lastEncounterMeasurements =
-            getLastEncounterMeasurements currentDate isChw assembled
+            Tuple.second lastEncounterMeasurementsWithDate
+
+        -- A presentation is judged at the week of the exam that recorded it.
+        presentationAlert presentation =
+            let
+                resolveAlert ( date, measurements ) =
+                    assembled.globalLmpDate
+                        |> Maybe.andThen
+                            (\lmpDate ->
+                                if calculateEGAWeeks date lmpDate < 32 then
+                                    Nothing
+
+                                else
+                                    measurements.obstetricalExam
+                                        |> Maybe.andThen
+                                            (\measurement ->
+                                                if (Tuple.second measurement |> .value |> .fetalPresentation) == presentation then
+                                                    Just (transAlert diagnosis)
+
+                                                else
+                                                    Nothing
+                                            )
+                            )
+            in
+            -- If obstetricalExam measurements were taken at current encounter,
+            -- we issue the alarm according to those values.
+            -- Otherwise, we use values of last encounter.
+            if isJust assembled.measurements.obstetricalExam then
+                resolveAlert ( assembled.encounter.startDate, assembled.measurements )
+
+            else
+                resolveAlert lastEncounterMeasurementsWithDate
     in
     case diagnosis of
         DiagnosisModerateUnderweight ->
@@ -747,80 +776,10 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncou
                 resolveAlert lastEncounterMeasurements
 
         DiagnosisFetusBreech ->
-            let
-                resolveAlert measurements =
-                    assembled.globalLmpDate
-                        |> Maybe.andThen
-                            (\lmpDate ->
-                                let
-                                    egaInWeeks =
-                                        calculateEGAWeeks currentDate lmpDate
-                                in
-                                if egaInWeeks < 32 then
-                                    Nothing
-
-                                else
-                                    measurements.obstetricalExam
-                                        |> Maybe.andThen
-                                            (\measurement ->
-                                                let
-                                                    value =
-                                                        Tuple.second measurement |> .value |> .fetalPresentation
-                                                in
-                                                if value == Backend.Measurement.Model.FetalBreech then
-                                                    Just (transAlert diagnosis)
-
-                                                else
-                                                    Nothing
-                                            )
-                            )
-            in
-            -- If obstetricalExam measurements were taken at current encounter,
-            -- we issue the alarm according to those values.
-            -- Otherwise, we use values of last encounter.
-            if isJust assembled.measurements.obstetricalExam then
-                resolveAlert assembled.measurements
-
-            else
-                resolveAlert lastEncounterMeasurements
+            presentationAlert Backend.Measurement.Model.FetalBreech
 
         DiagnosisFetusTransverse ->
-            let
-                resolveAlert measurements =
-                    assembled.globalLmpDate
-                        |> Maybe.andThen
-                            (\lmpDate ->
-                                let
-                                    egaInWeeks =
-                                        calculateEGAWeeks currentDate lmpDate
-                                in
-                                if egaInWeeks < 32 then
-                                    Nothing
-
-                                else
-                                    measurements.obstetricalExam
-                                        |> Maybe.andThen
-                                            (\measurement ->
-                                                let
-                                                    value =
-                                                        Tuple.second measurement |> .value |> .fetalPresentation
-                                                in
-                                                if value == Backend.Measurement.Model.Transverse then
-                                                    Just (transAlert diagnosis)
-
-                                                else
-                                                    Nothing
-                                            )
-                            )
-            in
-            -- If obstetricalExam measurements were taken at current encounter,
-            -- we issue the alarm according to those values.
-            -- Otherwise, we use values of last encounter.
-            if isJust assembled.measurements.obstetricalExam then
-                resolveAlert assembled.measurements
-
-            else
-                resolveAlert lastEncounterMeasurements
+            presentationAlert Backend.Measurement.Model.Transverse
 
         DiagnosisBreastExamination ->
             let
