@@ -118,6 +118,10 @@ What changes because of this:
 - **B-120's "write it after the release" gate is MET** (see below).
 - **B-168's monitoring gate is MET** — its diagnostic is live (see below).
 
+## Night discovery runs
+
+- **2026-11-18, Round 58** (launched 00:00:03; Fable weekly 12 %, ceiling 100 %; ended ≈00:35). Units: (1) #2535 + #2540 as merged — the two PRs the stopped R57 owed — both CLEAN; (2) `hedley_restful` sync plugins + upload / download paths (oldest row, R11). New: **B-610** (tier 3, not sized — a record saved while the upload lanes run goes up without its photo; the child's avatar is emptied too), **B-611** (tier 4, intent question — accents and apostrophes deleted from names on upload). Amended: B-187, B-195, B-244, B-045. Failures: none; note both scout worktrees were cut from `main` and the scouts moved themselves to develop; unit 1's tests ran under Elm 0.19.1. Next oldest rows: Dexie schema (R11), i18n mechanics (R12).
+
 ## Open right now — updated 2026-10-29 (no backlog PR open; all nine PRs opened 2026-10-26..28 merged today)
 
 ✅ **Merged 2026-10-29 with `--delete-branch` (user: "merge all PRs"), all CI green, all threads resolved:** #2420 `6cc375d61` (issue #2225, declined prenatal lab test shows its reason; QA approved), #2422 `c3fe69036` (B-168, issue #2421; QA approved), #2424 `2acec37d7` (B-261, issue #2423), #2426 `280ed1d3b` (B-322, issue #2425), #2432 `7bb68d410` (B-301, issue #2427; QA approved), #2433 `a520bf057` (B-456, issue #2428), #2434 `179e7a795` (B-410, issue #2429), #2435 `42e72fb65` (B-023, issue #2430), #2436 `99853ca46` (B-082 + B-091, issue #2431). No post-deploy steps. Issues stay open — `develop` target; close them in the release sweep. All branches deleted, no worktrees left.
