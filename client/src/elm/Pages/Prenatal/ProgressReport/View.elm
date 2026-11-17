@@ -1196,10 +1196,11 @@ viewMedicationHistoryPane language isChw assembled =
                 , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
                 ]
 
-        viewEntry medicationType administrationDate =
+        viewEntry medicationType =
             let
                 dateForView =
-                    Maybe.map formatDDMMYYYY administrationDate
+                    resolveMedicationAdministrationDate medicationType
+                        |> Maybe.map formatDDMMYYYY
                         |> Maybe.withDefault "--"
             in
             div [ class "entry medication" ]
@@ -1209,15 +1210,9 @@ viewMedicationHistoryPane language isChw assembled =
     in
     div [ class "medication-history" ]
         [ viewItemHeading language Translate.MedicationHistory "blue"
-        , div [ class "pane-content" ]
-            [ entriesHeading
-            , resolveMedicationAdministrationDate Calcium |> viewEntry Calcium
-            , resolveMedicationAdministrationDate Fefol |> viewEntry Fefol
-            , resolveMedicationAdministrationDate FolicAcid |> viewEntry FolicAcid
-            , resolveMedicationAdministrationDate Iron |> viewEntry Iron
-            , resolveMedicationAdministrationDate MMS |> viewEntry MMS
-            , resolveMedicationAdministrationDate Mebendezole |> viewEntry Mebendezole
-            ]
+        , div [ class "pane-content" ] <|
+            entriesHeading
+                :: List.map viewEntry [ Calcium, Fefol, FolicAcid, Iron, MMS, Mebendezole ]
         ]
 
 

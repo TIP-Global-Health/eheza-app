@@ -2,9 +2,11 @@ module Pages.Prenatal.ProgressReport.Utils exposing (allCHWActions, chwActionToC
 
 import Backend.Measurement.Model exposing (AdministrationNote(..), MedicationDistributionSign(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
+import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
+import List.Extra
 import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..))
 import Pages.Prenatal.Utils
@@ -15,7 +17,6 @@ import Pages.Prenatal.Utils
         )
 import Pages.Utils exposing (filterPreviousEncountersDataToDate)
 import Translate exposing (Language, translate)
-import Utils.NominalDate exposing (sortByDateDesc)
 
 
 thumbnailDimensions : { width : Int, height : Int }
@@ -108,22 +109,20 @@ generateAllNurseEncountersData isChw assembled =
            )
 
 
-{-| The Medication History date of a medication: the latest nurse visit
-where it was handed over, in the Medication activity or, for Mebendazole,
+{-| The Medication History date of a medication: the latest date it was
+handed over at a nurse visit, in the Medication activity or, for Mebendazole,
 in Next Steps.
 -}
 resolveMedicationHistoryDate : Bool -> AssembledData -> MedicationDistributionSign -> Maybe NominalDate
-resolveMedicationHistoryDate isChw assembled medication =
+resolveMedicationHistoryDate isChw assembled =
     let
-        dateGiven routes =
+        allMeasurements =
             generateAllNurseEncountersData isChw assembled
-                |> List.sortWith (sortByDateDesc .startDate)
-                |> List.filterMap
-                    (\{ measurements } ->
-                        List.filterMap (\route -> route measurements) routes
-                            |> List.head
-                    )
-                |> List.head
+                |> List.map .measurements
+
+        latestDate routes =
+            List.concatMap (\measurements -> List.filterMap (\route -> route measurements) routes) allMeasurements
+                |> List.Extra.maximumWith Date.compare
 
         administered measurementFunc measurements =
             measurementFunc measurements
@@ -143,24 +142,25 @@ resolveMedicationHistoryDate isChw assembled medication =
             else
                 Nothing
     in
-    case medication of
-        Calcium ->
-            dateGiven [ administered .calcium ]
+    \medication ->
+        case medication of
+            Calcium ->
+                latestDate [ administered .calcium ]
 
-        Fefol ->
-            dateGiven [ administered .fefol ]
+            Fefol ->
+                latestDate [ administered .fefol ]
 
-        FolicAcid ->
-            dateGiven [ administered .folate ]
+            FolicAcid ->
+                latestDate [ administered .folate ]
 
-        Iron ->
-            dateGiven [ administered .iron ]
+            Iron ->
+                latestDate [ administered .iron ]
 
-        Mebendezole ->
-            dateGiven [ administered .mebendazole, distributedMebendazole ]
+            Mebendezole ->
+                latestDate [ administered .mebendazole, distributedMebendazole ]
 
-        MMS ->
-            dateGiven [ administered .mms ]
+            MMS ->
+                latestDate [ administered .mms ]
 
-        _ ->
-            Nothing
+            _ ->
+                Nothing
