@@ -2,7 +2,7 @@ module Pages.AcuteIllness.Participant.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter, emptyAcuteIllnessEncounter)
-import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis, AcuteIllnessEncounterType(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
@@ -18,7 +18,7 @@ import Pages.AcuteIllness.Encounter.Utils exposing (getAcuteIllnessDiagnosisForP
 import Pages.AcuteIllness.Participant.Model exposing (AcuteIllnessParticipantViewMode(..), Model, Msg(..))
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive, noPursueAcuteIllnessDiagnoses)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Report.Utils exposing (compareAcuteIllnessEncounters, compareAcuteIllnessEncountersDesc)
+import Pages.Report.Utils exposing (compareAcuteIllnessEncounters, getAcuteIllnessDiagnosisForEncounters)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.NominalDate exposing (sortEncounterTuples)
@@ -331,15 +331,13 @@ viewActiveIllness :
     -> Maybe (Html Msg)
 viewActiveIllness language currentDate selectedHealthCenter isChw db viewMode sessionId =
     let
+        -- Latest first.
         sessionEncounters =
-            getAcuteIllnessEncountersForParticipant db sessionId
-                |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncountersDesc e1 e2)
+            Pages.Report.Utils.getAcuteIllnessEncountersForParticipant db sessionId
 
         mDiagnosis =
-            List.map Tuple.second sessionEncounters
-                |> List.filter (\encounter -> encounter.diagnosis /= NoAcuteIllnessDiagnosis)
-                |> List.head
-                |> Maybe.map .diagnosis
+            getAcuteIllnessDiagnosisForEncounters sessionEncounters
+                |> Maybe.map Tuple.second
     in
     Maybe.andThen
         (\diagnosis ->

@@ -4,19 +4,17 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..), allAcuteIllnessOutcome)
 import Backend.IndividualEncounterParticipant.Utils exposing (acuteIllnessOutcomeToString)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
-import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert)
 import Pages.AcuteIllness.Outcome.Model exposing (Model, Msg(..))
+import Pages.AcuteIllness.Outcome.Utils exposing (generateOutcomeData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (taskCompleted, viewLabel, viewSaveAction, viewSelectListInput, viewTasksCount)
-import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
@@ -25,18 +23,8 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> EverySet SiteFeature -> IndividualEncounterParticipantId -> Bool -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate features id isChw db model =
     let
-        firstEncounterId =
-            getAcuteIllnessEncountersForParticipant db id
-                |> List.head
-                |> Maybe.map Tuple.first
-
         data =
-            Maybe.map
-                (\encounterId ->
-                    generateAssembledData currentDate features encounterId isChw db
-                )
-                firstEncounterId
-                |> Maybe.withDefault NotAsked
+            generateOutcomeData currentDate features id isChw db
 
         header =
             viewWebData language (viewHeader language) identity data
