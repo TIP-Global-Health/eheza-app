@@ -4,8 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model
     exposing
-        ( AdministrationNote(..)
-        , DangerSign(..)
+        ( DangerSign(..)
         , EyesCPESign(..)
         , FetalPresentation(..)
         , HandsCPESign(..)
