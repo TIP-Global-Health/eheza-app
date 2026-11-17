@@ -659,8 +659,28 @@ nextStepsTaskCompleted currentDate assembled task =
             isJust assembled.measurements.followUp
 
         NextStepsSendToHC ->
-            resolveRequiredReferralFacilities assembled
-                |> List.all (referralToFacilityCompleted assembled)
+            let
+                nurseReferralCompleted =
+                    resolveRequiredReferralFacilities assembled
+                        |> List.all (referralToFacilityCompleted assembled)
+            in
+            case assembled.encounter.encounterType of
+                NurseEncounter ->
+                    nurseReferralCompleted
+
+                NursePostpartumEncounter ->
+                    nurseReferralCompleted
+
+                _ ->
+                    -- The CHW form asks only about the health centre:
+                    -- referred, or not referred for a reason.
+                    getMeasurementValueFunc assembled.measurements.sendToHC
+                        |> Maybe.map
+                            (\value ->
+                                (Maybe.map (EverySet.member ReferToHealthCenter) value.sendToHCSigns == Just True)
+                                    || isJust value.reasonForNotSendingToHC
+                            )
+                        |> Maybe.withDefault False
 
         NextStepsHealthEducation ->
             isJust assembled.measurements.healthEducation
