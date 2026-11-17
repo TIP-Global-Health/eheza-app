@@ -22,6 +22,7 @@ import Backend.Measurement.Model
         , HeightInCm(..)
         , HemoglobinTestValue
         , HepatitisBTestValue
+        , LegsCPESign(..)
         , LungsCPESign(..)
         , MalariaTestValue
         , Measurement
@@ -83,7 +84,7 @@ import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..),
 import Pages.Prenatal.ProgressReport.Model exposing (obstetricalDiagnoses)
 import Pages.Prenatal.RecurrentActivity.Types
 import Pages.Prenatal.RecurrentActivity.Utils
-import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedHypertension, diagnosedPreviouslyAnyOf, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet, showMebendazoleQuestion)
+import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedHypertension, diagnosedPreviouslyAnyOf, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet, showMebendazoleQuestion, updateHypertensionTreatmentWithMedication)
 import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
@@ -1941,7 +1942,9 @@ generatePrenatalDiagnosesForNurseRecurrentLabsTest =
 --
 -- `moderatePreeclampsiaByMeasurementsRecurrentPhase` is
 --   (highBloodPressure && highUrineProtein)
---     || (repeatedTestForMarginalBloodPressure && (edema || highUrineProtein)).
+--     || ((repeatedTestForMarginalBloodPressure || firstReadingConfirmed)
+--           && (edema || highUrineProtein)).
+-- No hypertension was diagnosed earlier here, so the repeated reading decides.
 -- Here the *initial* reading is normal (120/80, so `highBloodPressure` is
 -- False and the Initial-phase variant does not fire), but the REPEATED reading
 -- is marginal (`sysRepeated` 145 >= 140), so `repeatedTestForMarginalBloodPressure`
@@ -3075,6 +3078,8 @@ all =
         , lateUrineProteinSeverePreeclampsiaTest
         , preeclampsiaRiskAfterTheVisitTest
         , gestationalHypertensionAndPreeclampsiaRiskTest
+        , knownHypertensionModeratePreeclampsiaTest
+        , knownHypertensionRecordedRecheckTest
         , ultrasoundFormTest
         , preeclampsiaRiskSevereAt37PlusTest
         , preeclampsiaRiskModerateAt37PlusTest
@@ -8516,4 +8521,608 @@ ironFolicAcidAnswerDoesNotStopFefolIronFolateTest =
                     ]
                     emptyPrenatalMeasurements
                     |> expectOfferedExactly [ TaskFefol, TaskFolate, TaskIron ]
+        ]
+
+
+
+-- MODERATE PREECLAMPSIA FROM A BORDERLINE READING, ONCE HYPERTENSION IS KNOWN
+--
+-- Scenario: a nurse visit, after an earlier nurse visit of the pregnancy that
+-- diagnosed hypertension (chronic or gestational, immediate or after the
+-- two-hour recheck). Once hypertension is known the app takes no recheck, so
+-- the visit's single reading is all there is: the vitals carry no repeated
+-- values.
+--
+-- Oracle (the issue's "Expected behaviour", from the preeclampsia spec): for
+-- her, the first borderline reading (systolic 140-159 or diastolic 90-109)
+-- counts as confirmed high blood pressure. With edema on the hands or legs,
+-- or urine protein +1 or more, it is Moderate Preeclampsia:
+--   * at 20 to 36 weeks it is diagnosed at the visit, and the visit refers
+--     her to hospital (`diagnosesCausingHospitalReferralByPhase
+--     PrenatalEncounterPhaseInitial` over the stored visit diagnoses);
+--   * with the protein entered later through the lab, it is diagnosed when
+--     the result is entered, and Lab Results' Next Steps refer her to
+--     hospital (`diagnosesCausingHospitalReferralByPhase
+--     PrenatalEncounterPhaseRecurrent` over the reassessed diagnoses);
+--   * at 37 weeks or more it is diagnosed as one of the
+--     `emergencyReferralDiagnoses`.
+-- Unchanged: a borderline reading with no protein and no edema (her
+-- hypertension treatment is updated), a normal reading, a woman with no
+-- earlier hypertension (the recheck is still needed), Moderate Preeclampsia
+-- diagnosed at an earlier visit (never diagnosed twice), and before 20 weeks.
+--
+-- The tests name the disease (any of the four Moderate Preeclampsia
+-- variants), split only by whether it is an emergency referral.
+
+
+moderatePreeclampsiaAllVariants : List PrenatalDiagnosis
+moderatePreeclampsiaAllVariants =
+    [ DiagnosisModeratePreeclampsiaInitialPhase
+    , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaRecurrentPhase
+    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+    ]
+
+
+{-| The Moderate Preeclampsia variants in a diagnosis set, as
+( the non-emergency ones, the emergency-referral ones ).
+-}
+moderatePreeclampsiaIn : EverySet PrenatalDiagnosis -> ( List PrenatalDiagnosis, List PrenatalDiagnosis )
+moderatePreeclampsiaIn diagnoses =
+    List.filter (\diagnosis -> EverySet.member diagnosis diagnoses) moderatePreeclampsiaAllVariants
+        |> List.partition (\diagnosis -> not (List.member diagnosis emergencyReferralDiagnoses))
+
+
+{-| What a visit concludes about Moderate Preeclampsia: diagnosed as a
+non-emergency, diagnosed as an emergency referral, and whether the visit's
+Next Steps refer her to hospital for it.
+-}
+type alias ModeratePreeclampsiaVerdict =
+    { diagnosed : Bool
+    , emergency : Bool
+    , referred : Bool
+    }
+
+
+moderatePreeclampsiaReferred : ModeratePreeclampsiaVerdict
+moderatePreeclampsiaReferred =
+    { diagnosed = True, emergency = False, referred = True }
+
+
+moderatePreeclampsiaEmergency : ModeratePreeclampsiaVerdict
+moderatePreeclampsiaEmergency =
+    { diagnosed = False, emergency = True, referred = True }
+
+
+noModeratePreeclampsia : ModeratePreeclampsiaVerdict
+noModeratePreeclampsia =
+    { diagnosed = False, emergency = False, referred = False }
+
+
+{-| A nurse visit on `visitDay` at `ega`, after the given earlier nurse
+visits, with the given measurements. The visit's diagnoses are generated and
+stored on the encounter, as the device stores them, before the visit's
+hospital referral is read.
+-}
+knownHypertensionVisit : ( Int, Int ) -> List PreviousEncounterData -> PrenatalMeasurements -> ModeratePreeclampsiaVerdict
+knownHypertensionVisit ega earlierVisits measurements =
+    let
+        diagnoses =
+            generatePrenatalDiagnosesForNurse (visitAssembled ega earlierVisits EverySet.empty measurements)
+
+        ( nonEmergency, emergency ) =
+            moderatePreeclampsiaIn diagnoses
+
+        ( referredNonEmergency, referredEmergency ) =
+            visitAssembled ega earlierVisits diagnoses measurements
+                |> diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial
+                |> moderatePreeclampsiaIn
+    in
+    { diagnosed = not (List.isEmpty nonEmergency)
+    , emergency = not (List.isEmpty emergency)
+    , referred = not (List.isEmpty (referredNonEmergency ++ referredEmergency))
+    }
+
+
+{-| An earlier nurse visit, four weeks back, that stored the given diagnosis.
+-}
+earlierVisitWith : PrenatalDiagnosis -> PreviousEncounterData
+earlierVisitWith diagnosis =
+    earlierVisit 4 [ diagnosis ] emptyPrenatalMeasurements
+
+
+{-| The issue's woman: gestational hypertension diagnosed at her first visit,
+four weeks back.
+-}
+earlierGestationalHypertension : List PreviousEncounterData
+earlierGestationalHypertension =
+    [ earlierVisitWith DiagnosisGestationalHypertensionImmediate ]
+
+
+{-| Hypertension diagnosed before 20 weeks is chronic.
+-}
+earlierChronicHypertension : List PreviousEncounterData
+earlierChronicHypertension =
+    [ earlierVisitWith DiagnosisChronicHypertensionImmediate ]
+
+
+{-| The four hypertension diagnoses an earlier visit can store.
+-}
+earlierHypertensionDiagnoses : List PrenatalDiagnosis
+earlierHypertensionDiagnoses =
+    [ DiagnosisChronicHypertensionAfterRecheck
+    , DiagnosisChronicHypertensionImmediate
+    , DiagnosisGestationalHypertensionAfterRecheck
+    , DiagnosisGestationalHypertensionImmediate
+    ]
+
+
+{-| Visit measurements: the single blood pressure reading (sys, dia), no
+recheck, and the other given findings.
+-}
+readingWith : ( Float, Float ) -> (PrenatalMeasurements -> PrenatalMeasurements) -> PrenatalMeasurements
+readingWith ( sys, dia ) withFindings =
+    emptyPrenatalMeasurements
+        |> withVitals sys dia
+        |> withFindings
+
+
+{-| Edema on the legs in the physical exam, with no severe preeclampsia sign.
+-}
+withLegsEdema : PrenatalMeasurements -> PrenatalMeasurements
+withLegsEdema measurements =
+    let
+        exam =
+            corePhysicalExamValueWith EverySet.empty EverySet.empty
+    in
+    { measurements | corePhysicalExam = wrapMeasurement { exam | legs = EverySet.singleton EdemaLegs } }
+
+
+{-| A physical exam with normal hands and legs: no edema, no severe sign.
+-}
+withNormalExam : PrenatalMeasurements -> PrenatalMeasurements
+withNormalExam measurements =
+    let
+        exam =
+            corePhysicalExamValueWith EverySet.empty EverySet.empty
+    in
+    { measurements
+        | corePhysicalExam =
+            wrapMeasurement
+                { exam
+                    | hands = EverySet.singleton NormalHands
+                    , legs = EverySet.singleton NormalLegs
+                }
+    }
+
+
+{-| Methyldopa twice a day, recommended for hypertension at a visit.
+-}
+withMethyldopa2 : PrenatalMeasurements -> PrenatalMeasurements
+withMethyldopa2 measurements =
+    { measurements
+        | medicationDistribution =
+            wrapMeasurement
+                { distributionSigns = EverySet.empty
+                , nonAdministrationSigns = EverySet.empty
+                , recommendedTreatmentSigns = Just (EverySet.singleton TreatmentMethyldopa2)
+                , avoidingGuidanceReason = Nothing
+                , reinforceTreatmentSigns = Nothing
+                }
+    }
+
+
+{-| A visit at `ega`, after the issue's earlier gestational hypertension,
+reading 150/95 with the urine dipstick still pending (`withPending`); the
+protein is entered later by `enterResult`.
+-}
+knownHypertensionLateProtein : ( Int, Int ) -> (PrenatalMeasurements -> PrenatalMeasurements) -> (PrenatalMeasurements -> PrenatalMeasurements) -> LateResult
+knownHypertensionLateProtein ega withPending enterResult =
+    readingWith ( 150, 95 ) withPending
+        |> enterResultLaterAfter earlierGestationalHypertension ega 3 enterResult
+
+
+{-| What the late protein result changes about Moderate Preeclampsia.
+-}
+type alias LateProteinVerdict =
+    { atVisit : Bool
+    , addedAtEntry : Bool
+    , emergencyAtEntry : Bool
+    , referredInLabResults : Bool
+    }
+
+
+lateProteinVerdict : LateResult -> LateProteinVerdict
+lateProteinVerdict result =
+    let
+        ( visitNonEmergency, visitEmergency ) =
+            moderatePreeclampsiaIn result.visitDayDiagnoses
+
+        ( addedNonEmergency, addedEmergency ) =
+            addedByLateResult result
+                |> EverySet.fromList
+                |> moderatePreeclampsiaIn
+
+        ( referredNonEmergency, referredEmergency ) =
+            diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseRecurrent result.saved
+                |> moderatePreeclampsiaIn
+    in
+    { atVisit = not (List.isEmpty (visitNonEmergency ++ visitEmergency))
+    , addedAtEntry = not (List.isEmpty addedNonEmergency)
+    , emergencyAtEntry = not (List.isEmpty addedEmergency)
+    , referredInLabResults = not (List.isEmpty (referredNonEmergency ++ referredEmergency))
+    }
+
+
+knownHypertensionModeratePreeclampsiaTest : Test
+knownHypertensionModeratePreeclampsiaTest =
+    describe "moderate preeclampsia from a borderline reading, once hypertension is known"
+        [ knownHypertensionEdemaTest
+        , knownHypertensionImmediateProteinTest
+        , knownHypertensionLateProteinTest
+        , knownHypertensionFrom37WeeksTest
+        , knownHypertensionNoProteinNoEdemaTest
+        , knownHypertensionNormalReadingTest
+        , noEarlierHypertensionTest
+        , earlierModeratePreeclampsiaTest
+        , knownHypertensionBefore20WeeksTest
+        ]
+
+
+knownHypertensionEdemaTest : Test
+knownHypertensionEdemaTest =
+    describe "borderline reading with edema, 20 to 36 weeks"
+        [ test "A woman diagnosed with hypertension at an earlier nurse visit, now at 20 to 36 weeks, with a borderline reading (systolic 140-159 or diastolic 90-109) and edema on the hands or legs, is diagnosed with Moderate Preeclampsia at that visit, without a recheck, and referred to hospital." <|
+            -- The issue's reproduction: 28 weeks, 150/95, edema on the legs.
+            \_ ->
+                readingWith ( 150, 95 ) withLegsEdema
+                    |> knownHypertensionVisit ( 28, 0 ) earlierGestationalHypertension
+                    |> Expect.equal moderatePreeclampsiaReferred
+        , test "edema on the hands instead of the legs: Moderate Preeclampsia, referred to hospital" <|
+            \_ ->
+                readingWith ( 150, 95 ) withHandsEdema
+                    |> knownHypertensionVisit ( 28, 0 ) earlierGestationalHypertension
+                    |> Expect.equal moderatePreeclampsiaReferred
+        , test "whichever hypertension the earlier visit diagnosed (chronic or gestational, immediate or after the recheck): Moderate Preeclampsia" <|
+            \_ ->
+                earlierHypertensionDiagnoses
+                    |> List.map
+                        (\diagnosis ->
+                            ( diagnosis
+                            , readingWith ( 150, 95 ) withLegsEdema
+                                |> knownHypertensionVisit ( 28, 0 ) [ earlierVisitWith diagnosis ]
+                            )
+                        )
+                    |> Expect.equal (List.map (\diagnosis -> ( diagnosis, moderatePreeclampsiaReferred )) earlierHypertensionDiagnoses)
+        , test "the borderline edges: 140/80 (systolic only), 120/90 (diastolic only) and 159/109 each give Moderate Preeclampsia with edema" <|
+            \_ ->
+                [ ( 140, 80 ), ( 120, 90 ), ( 159, 109 ) ]
+                    |> List.map
+                        (\bloodPressure ->
+                            readingWith bloodPressure withLegsEdema
+                                |> knownHypertensionVisit ( 28, 0 ) earlierGestationalHypertension
+                        )
+                    |> Expect.equal [ moderatePreeclampsiaReferred, moderatePreeclampsiaReferred, moderatePreeclampsiaReferred ]
+        , test "the week edges: at exactly 20 weeks 0 days and at 36 weeks 6 days, Moderate Preeclampsia, not as an emergency" <|
+            -- Hypertension known before 20 weeks is chronic.
+            \_ ->
+                [ ( ( 20, 0 ), earlierChronicHypertension ), ( ( 36, 6 ), earlierGestationalHypertension ) ]
+                    |> List.map
+                        (\( ega, earlierVisits ) ->
+                            readingWith ( 150, 95 ) withLegsEdema
+                                |> knownHypertensionVisit ega earlierVisits
+                        )
+                    |> Expect.equal [ moderatePreeclampsiaReferred, moderatePreeclampsiaReferred ]
+        , test "hypertension diagnosed two visits back, with a visit since that diagnosed nothing: Moderate Preeclampsia" <|
+            \_ ->
+                readingWith ( 150, 95 ) withLegsEdema
+                    |> knownHypertensionVisit ( 28, 0 )
+                        [ earlierVisit 8 [ DiagnosisGestationalHypertensionImmediate ] emptyPrenatalMeasurements
+                        , earlierVisit 4 [] emptyPrenatalMeasurements
+                        ]
+                    |> Expect.equal moderatePreeclampsiaReferred
+        , test "guard: a reading of 160/110 or more with edema already gives Moderate Preeclampsia for her" <|
+            \_ ->
+                readingWith ( 165, 115 ) withLegsEdema
+                    |> knownHypertensionVisit ( 28, 0 ) earlierGestationalHypertension
+                    |> Expect.equal moderatePreeclampsiaReferred
+        ]
+
+
+knownHypertensionImmediateProteinTest : Test
+knownHypertensionImmediateProteinTest =
+    describe "borderline reading with protein read at the visit, 20 to 36 weeks"
+        [ test "The same, with urine protein +1 or more as an immediate result instead of edema, also diagnoses Moderate Preeclampsia at that visit." <|
+            -- The issue's reproduction: 28 weeks, 150/95, protein read at the
+            -- visit, physical exam with no edema.
+            \_ ->
+                readingWith ( 150, 95 ) (withNormalExam >> withUrineProtein ProteinPlus2)
+                    |> knownHypertensionVisit ( 28, 0 ) earlierGestationalHypertension
+                    |> Expect.equal moderatePreeclampsiaReferred
+        , test "each protein level from +1 to +4, read at the visit: Moderate Preeclampsia" <|
+            \_ ->
+                [ ProteinPlus1, ProteinPlus2, ProteinPlus3, ProteinPlus4 ]
+                    |> List.map
+                        (\protein ->
+                            readingWith ( 150, 95 ) (withUrineProtein protein)
+                                |> knownHypertensionVisit ( 28, 0 ) earlierGestationalHypertension
+                        )
+                    |> Expect.equal (List.repeat 4 moderatePreeclampsiaReferred)
+        , test "guard: protein 0 read at the visit, no edema: no Moderate Preeclampsia" <|
+            \_ ->
+                readingWith ( 150, 95 ) (withNormalExam >> withUrineProtein Protein0)
+                    |> knownHypertensionVisit ( 28, 0 ) earlierGestationalHypertension
+                    |> Expect.equal noModeratePreeclampsia
+        ]
+
+
+knownHypertensionLateProteinTest : Test
+knownHypertensionLateProteinTest =
+    describe "borderline reading with protein entered later through the lab"
+        [ test "The same, with the protein result entered later through the lab, diagnoses Moderate Preeclampsia when the result is entered." <|
+            \_ ->
+                knownHypertensionLateProtein ( 28, 0 ) withUrineDipstickSentToLab (enterProteinInLabResults ProteinPlus1)
+                    |> lateProteinVerdict
+                    |> (\verdict -> ( verdict.atVisit, verdict.addedAtEntry, verdict.emergencyAtEntry ))
+                    |> Expect.equal ( False, True, False )
+        , test "the protein entered later: Lab Results' Next Steps refer her to hospital" <|
+            \_ ->
+                knownHypertensionLateProtein ( 28, 0 ) withUrineDipstickSentToLab (enterProteinInLabResults ProteinPlus1)
+                    |> lateProteinVerdict
+                    |> .referredInLabResults
+                    |> Expect.equal True
+        , test "the protein entered later by a lab technician: Moderate Preeclampsia when it is entered" <|
+            \_ ->
+                knownHypertensionLateProtein ( 28, 0 ) withUrineDipstickSentToLab (enterProteinByLabTech ProteinPlus3)
+                    |> lateProteinVerdict
+                    |> .addedAtEntry
+                    |> Expect.equal True
+        , test "a pending dipstick stored with no prerequisites answer at all (Nothing), protein +1 entered later: Moderate Preeclampsia when it is entered" <|
+            \_ ->
+                knownHypertensionLateProtein ( 28, 0 ) withPendingUrineDipstick (enterUrineProtein ProteinPlus1)
+                    |> lateProteinVerdict
+                    |> .addedAtEntry
+                    |> Expect.equal True
+        , test "guard: protein 0 entered later: no Moderate Preeclampsia and no referral for it" <|
+            \_ ->
+                knownHypertensionLateProtein ( 28, 0 ) withUrineDipstickSentToLab (enterProteinInLabResults Protein0)
+                    |> lateProteinVerdict
+                    |> Expect.equal { atVisit = False, addedAtEntry = False, emergencyAtEntry = False, referredInLabResults = False }
+        ]
+
+
+knownHypertensionFrom37WeeksTest : Test
+knownHypertensionFrom37WeeksTest =
+    describe "borderline reading with protein or edema, 37 weeks or more"
+        [ test "At 37 weeks or more, the same findings diagnose Moderate Preeclampsia as an emergency referral, as a confirmed reading does today." <|
+            \_ ->
+                [ readingWith ( 150, 95 ) withLegsEdema
+                , readingWith ( 150, 95 ) (withUrineProtein ProteinPlus1)
+                ]
+                    |> List.map (knownHypertensionVisit ( 38, 0 ) earlierGestationalHypertension)
+                    |> Expect.equal [ moderatePreeclampsiaEmergency, moderatePreeclampsiaEmergency ]
+        , test "at exactly 37 weeks 0 days, edema: Moderate Preeclampsia as an emergency referral" <|
+            \_ ->
+                readingWith ( 150, 95 ) withLegsEdema
+                    |> knownHypertensionVisit ( 37, 0 ) earlierGestationalHypertension
+                    |> Expect.equal moderatePreeclampsiaEmergency
+        , test "at 38 weeks, the protein entered later through the lab: Moderate Preeclampsia as an emergency referral when it is entered" <|
+            \_ ->
+                knownHypertensionLateProtein ( 38, 0 ) withUrineDipstickSentToLab (enterProteinInLabResults ProteinPlus1)
+                    |> lateProteinVerdict
+                    |> (\verdict -> ( verdict.atVisit, verdict.addedAtEntry, verdict.emergencyAtEntry ))
+                    |> Expect.equal ( False, False, True )
+        , test "guard: today, a confirmed reading (165/115) with protein at 38 weeks, no earlier hypertension, is an emergency referral" <|
+            \_ ->
+                readingWith ( 165, 115 ) (withUrineProtein ProteinPlus1)
+                    |> knownHypertensionVisit ( 38, 0 ) []
+                    |> Expect.equal moderatePreeclampsiaEmergency
+        ]
+
+
+knownHypertensionNoProteinNoEdemaTest : Test
+knownHypertensionNoProteinNoEdemaTest =
+    describe "borderline reading with neither protein nor edema"
+        [ test "A borderline reading with neither protein nor edema diagnoses no Moderate Preeclampsia; her hypertension treatment is updated as today." <|
+            -- The earlier visit diagnosed gestational hypertension and
+            -- recommended Methyldopa twice a day; 150/95 today raises it.
+            \_ ->
+                let
+                    earlierVisits =
+                        [ earlierVisit 4 [ DiagnosisGestationalHypertensionImmediate ] (withMethyldopa2 emptyPrenatalMeasurements) ]
+
+                    measurements =
+                        readingWith ( 150, 95 ) (withNormalExam >> withUrineProtein Protein0)
+                in
+                ( knownHypertensionVisit ( 28, 0 ) earlierVisits measurements
+                , updateHypertensionTreatmentWithMedication (visitAssembled ( 28, 0 ) earlierVisits EverySet.empty measurements)
+                )
+                    |> Expect.equal ( noModeratePreeclampsia, True )
+        , test "no physical exam and no urine dipstick recorded: no Moderate Preeclampsia" <|
+            \_ ->
+                readingWith ( 150, 95 ) identity
+                    |> knownHypertensionVisit ( 28, 0 ) earlierGestationalHypertension
+                    |> Expect.equal noModeratePreeclampsia
+        , test "the urine dipstick sent to the lab, its protein still pending, no edema: no Moderate Preeclampsia at the visit" <|
+            \_ ->
+                readingWith ( 150, 95 ) (withNormalExam >> withUrineDipstickSentToLab)
+                    |> knownHypertensionVisit ( 28, 0 ) earlierGestationalHypertension
+                    |> Expect.equal noModeratePreeclampsia
+        , test "at 38 weeks, neither protein nor edema: no Moderate Preeclampsia, emergency or not" <|
+            \_ ->
+                readingWith ( 150, 95 ) (withNormalExam >> withUrineProtein Protein0)
+                    |> knownHypertensionVisit ( 38, 0 ) earlierGestationalHypertension
+                    |> Expect.equal noModeratePreeclampsia
+        ]
+
+
+knownHypertensionNormalReadingTest : Test
+knownHypertensionNormalReadingTest =
+    describe "normal reading with protein or edema"
+        [ test "A normal reading (below 140 / 90) with protein or edema diagnoses no Moderate Preeclampsia." <|
+            \_ ->
+                [ readingWith ( 139, 89 ) withLegsEdema
+                , readingWith ( 139, 89 ) (withUrineProtein ProteinPlus1)
+                , readingWith ( 120, 80 ) (withHandsEdema >> withUrineProtein ProteinPlus4)
+                ]
+                    |> List.map (knownHypertensionVisit ( 28, 0 ) earlierGestationalHypertension)
+                    |> Expect.equal (List.repeat 3 noModeratePreeclampsia)
+        , test "a normal reading with protein entered later through the lab: no Moderate Preeclampsia when it is entered" <|
+            \_ ->
+                readingWith ( 130, 85 ) withUrineDipstickSentToLab
+                    |> enterResultLaterAfter earlierGestationalHypertension ( 28, 0 ) 3 (enterProteinInLabResults ProteinPlus2)
+                    |> lateProteinVerdict
+                    |> Expect.equal { atVisit = False, addedAtEntry = False, emergencyAtEntry = False, referredInLabResults = False }
+        , test "at 38 weeks, a normal reading with edema: no Moderate Preeclampsia, emergency or not" <|
+            \_ ->
+                readingWith ( 139, 89 ) withLegsEdema
+                    |> knownHypertensionVisit ( 38, 0 ) earlierGestationalHypertension
+                    |> Expect.equal noModeratePreeclampsia
+        ]
+
+
+noEarlierHypertensionTest : Test
+noEarlierHypertensionTest =
+    let
+        borderlineWithFindings =
+            [ readingWith ( 150, 95 ) withLegsEdema
+            , readingWith ( 150, 95 ) (withUrineProtein ProteinPlus1)
+            ]
+    in
+    describe "no earlier hypertension diagnosis"
+        [ test "A woman with no earlier hypertension diagnosis is unchanged: a borderline reading still needs the two-hour recheck before Moderate Preeclampsia can be diagnosed." <|
+            -- Her first visit: no earlier visits at all.
+            \_ ->
+                borderlineWithFindings
+                    |> List.map (knownHypertensionVisit ( 28, 0 ) [])
+                    |> Expect.equal [ noModeratePreeclampsia, noModeratePreeclampsia ]
+        , test "a later visit, after an earlier visit that diagnosed nothing: a borderline reading with edema or protein gives no Moderate Preeclampsia before the recheck" <|
+            \_ ->
+                borderlineWithFindings
+                    |> List.map (knownHypertensionVisit ( 28, 0 ) [ earlierVisit 4 [] emptyPrenatalMeasurements ])
+                    |> Expect.equal [ noModeratePreeclampsia, noModeratePreeclampsia ]
+        , test "a later visit, after an earlier visit that diagnosed only a high risk of preeclampsia: no Moderate Preeclampsia before the recheck" <|
+            \_ ->
+                borderlineWithFindings
+                    |> List.map (knownHypertensionVisit ( 28, 0 ) [ earlierVisitWith DiagnosisHighRiskOfPreeclampsiaInitialPhase ])
+                    |> Expect.equal [ noModeratePreeclampsia, noModeratePreeclampsia ]
+        , test "at 38 weeks, her first visit: a borderline reading with edema or protein gives no emergency Moderate Preeclampsia before the recheck" <|
+            \_ ->
+                borderlineWithFindings
+                    |> List.map (knownHypertensionVisit ( 38, 0 ) [])
+                    |> Expect.equal [ noModeratePreeclampsia, noModeratePreeclampsia ]
+        , test "guard: her first visit, the recheck reads borderline again, with edema or protein: Moderate Preeclampsia" <|
+            \_ ->
+                [ emptyPrenatalMeasurements |> withBloodPressures ( 150, 95 ) (Just ( 150, 95 )) |> withLegsEdema
+                , emptyPrenatalMeasurements |> withBloodPressures ( 150, 95 ) (Just ( 150, 95 )) |> withUrineProtein ProteinPlus1
+                ]
+                    |> List.map (knownHypertensionVisit ( 28, 0 ) [] >> .diagnosed)
+                    |> Expect.equal [ True, True ]
+        ]
+
+
+earlierModeratePreeclampsiaTest : Test
+earlierModeratePreeclampsiaTest =
+    let
+        diagnosedOrEmergency verdict =
+            ( verdict.diagnosed, verdict.emergency )
+    in
+    describe "Moderate Preeclampsia diagnosed at an earlier visit"
+        [ test "A woman diagnosed with Moderate Preeclampsia at an earlier visit is not diagnosed with it again." <|
+            -- Each of the four variants an earlier visit can store, then a
+            -- borderline reading with edema at 28 weeks.
+            \_ ->
+                moderatePreeclampsiaAllVariants
+                    |> List.map
+                        (\diagnosis ->
+                            readingWith ( 150, 95 ) withLegsEdema
+                                |> knownHypertensionVisit ( 28, 0 ) [ earlierVisitWith diagnosis ]
+                                |> diagnosedOrEmergency
+                        )
+                    |> Expect.equal (List.repeat 4 ( False, False ))
+        , test "hypertension at one earlier visit and Moderate Preeclampsia at a later one, then a borderline reading with protein: not diagnosed again" <|
+            \_ ->
+                readingWith ( 150, 95 ) (withUrineProtein ProteinPlus1)
+                    |> knownHypertensionVisit ( 28, 0 )
+                        [ earlierVisit 8 [ DiagnosisGestationalHypertensionImmediate ] emptyPrenatalMeasurements
+                        , earlierVisit 4 [ DiagnosisModeratePreeclampsiaInitialPhase ] emptyPrenatalMeasurements
+                        ]
+                    |> diagnosedOrEmergency
+                    |> Expect.equal ( False, False )
+        , test "at 38 weeks, after Moderate Preeclampsia at an earlier visit, a borderline reading with edema: not diagnosed again as an emergency" <|
+            \_ ->
+                readingWith ( 150, 95 ) withLegsEdema
+                    |> knownHypertensionVisit ( 38, 0 ) [ earlierVisitWith DiagnosisModeratePreeclampsiaInitialPhase ]
+                    |> diagnosedOrEmergency
+                    |> Expect.equal ( False, False )
+        , test "guard: after Moderate Preeclampsia at an earlier visit, a reading of 165/115 with protein: not diagnosed again" <|
+            \_ ->
+                readingWith ( 165, 115 ) (withUrineProtein ProteinPlus1)
+                    |> knownHypertensionVisit ( 28, 0 ) [ earlierVisitWith DiagnosisModeratePreeclampsiaInitialPhase ]
+                    |> diagnosedOrEmergency
+                    |> Expect.equal ( False, False )
+        ]
+
+
+knownHypertensionBefore20WeeksTest : Test
+knownHypertensionBefore20WeeksTest =
+    describe "before 20 weeks"
+        [ test "Before 20 weeks, no Moderate Preeclampsia is diagnosed, as today." <|
+            -- Hypertension known before 20 weeks is chronic.
+            \_ ->
+                [ readingWith ( 150, 95 ) withLegsEdema
+                , readingWith ( 150, 95 ) (withUrineProtein ProteinPlus1)
+                ]
+                    |> List.map (knownHypertensionVisit ( 16, 0 ) earlierChronicHypertension)
+                    |> Expect.equal [ noModeratePreeclampsia, noModeratePreeclampsia ]
+        , test "at 19 weeks 6 days, a borderline reading with edema: no Moderate Preeclampsia" <|
+            \_ ->
+                readingWith ( 150, 95 ) withLegsEdema
+                    |> knownHypertensionVisit ( 19, 6 ) earlierChronicHypertension
+                    |> Expect.equal noModeratePreeclampsia
+        , test "at 16 weeks, the protein entered later through the lab: no Moderate Preeclampsia when it is entered" <|
+            \_ ->
+                readingWith ( 150, 95 ) withUrineDipstickSentToLab
+                    |> enterResultLaterAfter earlierChronicHypertension ( 16, 0 ) 3 (enterProteinInLabResults ProteinPlus1)
+                    |> lateProteinVerdict
+                    |> Expect.equal { atVisit = False, addedAtEntry = False, emergencyAtEntry = False, referredInLabResults = False }
+        , test "guard: at 16 weeks, a reading of 165/115 with protein: no Moderate Preeclampsia" <|
+            \_ ->
+                readingWith ( 165, 115 ) (withUrineProtein ProteinPlus1)
+                    |> knownHypertensionVisit ( 16, 0 ) earlierChronicHypertension
+                    |> Expect.equal noModeratePreeclampsia
+        ]
+
+
+{-| The first reading (sys, dia) with a recorded recheck (sys, dia). An older app could
+schedule a recheck for a woman with known hypertension.
+-}
+withReadingAndRecheck : ( Float, Float ) -> ( Float, Float ) -> PrenatalMeasurements -> PrenatalMeasurements
+withReadingAndRecheck ( sys, dia ) ( sysRepeated, diaRepeated ) measurements =
+    let
+        value =
+            TestFixtures.vitalsValueWith sys dia
+    in
+    { measurements | vitals = wrapMeasurement { value | sysRepeated = Just sysRepeated, diaRepeated = Just diaRepeated } }
+
+
+knownHypertensionRecordedRecheckTest : Test
+knownHypertensionRecordedRecheckTest =
+    describe "known hypertension, a recheck recorded at a normal reading"
+        [ test "edema at the visit: no Moderate Preeclampsia, the normal recheck decides" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withReadingAndRecheck ( 150, 95 ) ( 125, 80 )
+                    |> withLegsEdema
+                    |> knownHypertensionVisit ( 28, 0 ) earlierGestationalHypertension
+                    |> Expect.equal noModeratePreeclampsia
+        , test "protein entered later through the lab: no Moderate Preeclampsia when it is entered" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withReadingAndRecheck ( 150, 95 ) ( 125, 80 )
+                    |> withUrineDipstickSentToLab
+                    |> enterResultLaterAfter earlierGestationalHypertension ( 28, 0 ) 3 (enterProteinInLabResults ProteinPlus1)
+                    |> lateProteinVerdict
+                    |> .addedAtEntry
+                    |> Expect.equal False
         ]

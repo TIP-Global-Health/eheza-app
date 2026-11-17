@@ -60,7 +60,7 @@ import Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, Birt
 import Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), SymptomReviewStep(..), TreatmentReviewTask(..))
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferralRequired, getAllActivities, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
-import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPreviously, diagnosedHighRiskOfPreeclampsiaPreviously, diagnosedHypertension, diagnosedHypertensionPreviously, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPreviously, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPreviously, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, labTestWithImmediateResult, mebendazoleDistributed, mebendazoleGivenPreviously, mebendazoleReported, medicationAdministered, medicationAdministeredPreviously, medicationDistributionFormWithDefaultInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication)
+import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPreviously, diagnosedHighRiskOfPreeclampsiaPreviously, diagnosedHypertension, diagnosedHypertensionPreviously, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPreviously, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPreviously, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, labTestWithImmediateResult, mebendazoleDistributed, mebendazoleGivenPreviously, mebendazoleReported, medicationAdministered, medicationAdministeredPreviously, medicationDistributionFormWithDefaultInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication, vitalsRecheckAllowed)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -2048,7 +2048,7 @@ matchEmergencyReferralPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         (egaWeeks >= 37)
-                            && moderatePreeclampsiaByMeasurementsInitialPhase measurements
+                            && moderatePreeclampsiaByMeasurementsInitialPhase assembled
                     )
 
         DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
@@ -2065,7 +2065,7 @@ matchEmergencyReferralPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         (egaWeeks >= 37)
-                            && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
+                            && moderatePreeclampsiaByMeasurementsRecurrentPhase assembled
                     )
 
         DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
@@ -2778,7 +2778,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     (\egaWeeks ->
                         (egaWeeks >= 20)
                             && (egaWeeks < 37)
-                            && moderatePreeclampsiaByMeasurementsInitialPhase measurements
+                            && moderatePreeclampsiaByMeasurementsInitialPhase assembled
                     )
 
         DiagnosisModeratePreeclampsiaRecurrentPhase ->
@@ -2795,7 +2795,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     (\egaWeeks ->
                         (egaWeeks >= 20)
                             && (egaWeeks < 37)
-                            && moderatePreeclampsiaByMeasurementsRecurrentPhase measurements
+                            && moderatePreeclampsiaByMeasurementsRecurrentPhase assembled
                     )
 
         DiagnosisSeverePreeclampsiaInitialPhase ->
@@ -3311,26 +3311,48 @@ gestationalHypertensionByMeasurementsAfterRecheck measurements egaWeeks =
     egaWeeks >= 20 && repeatedTestForMarginalBloodPressure measurements
 
 
-moderatePreeclampsiaByMeasurementsInitialPhase : PrenatalMeasurements -> Bool
-moderatePreeclampsiaByMeasurementsInitialPhase measurements =
+moderatePreeclampsiaByMeasurementsInitialPhase : AssembledData -> Bool
+moderatePreeclampsiaByMeasurementsInitialPhase assembled =
     let
-        highProtein =
-            highUrineProteinInitialPhase measurements
+        measurements =
+            assembled.measurements
     in
-    highBloodPressure measurements
-        && (highProtein || edemaOnHandOrLegs measurements)
+    (highBloodPressure measurements || firstReadingConfirmed assembled)
+        && (highUrineProteinInitialPhase measurements || edemaOnHandOrLegs measurements)
 
 
-moderatePreeclampsiaByMeasurementsRecurrentPhase : PrenatalMeasurements -> Bool
-moderatePreeclampsiaByMeasurementsRecurrentPhase measurements =
+moderatePreeclampsiaByMeasurementsRecurrentPhase : AssembledData -> Bool
+moderatePreeclampsiaByMeasurementsRecurrentPhase assembled =
     let
+        measurements =
+            assembled.measurements
+
         highProtein =
             highUrineProtein measurements
     in
     (highBloodPressure measurements && highProtein)
-        || (repeatedTestForMarginalBloodPressure measurements
+        || ((repeatedTestForMarginalBloodPressure measurements || firstReadingConfirmed assembled)
                 && (edemaOnHandOrLegs measurements || highProtein)
            )
+
+
+{-| A first reading of 140 / 90 or above counts as confirmed when no recheck runs for her,
+as after an earlier hypertension diagnosis. A recorded repeated reading decides instead.
+-}
+firstReadingConfirmed : AssembledData -> Bool
+firstReadingConfirmed assembled =
+    (getMeasurementValueFunc assembled.measurements.vitals
+        |> Maybe.map
+            (\value ->
+                isNothing value.sysRepeated
+                    && isNothing value.diaRepeated
+                    && (Maybe.map2 elevatedBloodPressureCondition value.dia value.sys
+                            |> Maybe.withDefault False
+                       )
+            )
+        |> Maybe.withDefault False
+    )
+        && (not <| vitalsRecheckAllowed assembled)
 
 
 severePreeclampsiaInitialPhase : List DangerSign -> PrenatalMeasurements -> Bool
@@ -3402,6 +3424,11 @@ highBloodPressureCondition dia sys =
     dia >= 110 || sys >= 160
 
 
+elevatedBloodPressureCondition : Float -> Float -> Bool
+elevatedBloodPressureCondition dia sys =
+    dia >= 90 || sys >= 140
+
+
 {-| We measure BP again when we suspect Hypertension or Preeclampsia
 (dia 90 to 110, sys 140 to 160). Hypertension is diagnosed if
 repeated measurements are within or above that range.
@@ -3411,7 +3438,7 @@ repeatedTestForMarginalBloodPressure measurements =
     getMeasurementValueFunc measurements.vitals
         |> Maybe.andThen
             (\value ->
-                Maybe.map2 (\dia sys -> dia >= 90 || sys >= 140)
+                Maybe.map2 elevatedBloodPressureCondition
                     value.diaRepeated
                     value.sysRepeated
             )
