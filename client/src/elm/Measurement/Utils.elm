@@ -10859,6 +10859,11 @@ toNutritionFeedingValueWithDefault saved form =
 toNutritionFeedingValue : NutritionFeedingForm -> Maybe NutritionFeedingValue
 toNutritionFeedingValue form =
     let
+        -- The water and sachets answers are kept only for RUTF that is received,
+        -- also when an edit brings back answers from the saved record.
+        rutfReceived =
+            form.receiveSupplement == Just True && form.supplementType == Just Rutf
+
         signs =
             [ ifNullableTrue ReceiveSupplement form.receiveSupplement
             , ifNullableTrue RationPresentAtHome form.rationPresentAtHome
@@ -10868,7 +10873,11 @@ toNutritionFeedingValue form =
             , ifNullableTrue RefusingToEat form.refusingToEat
             , ifNullableTrue FeedingSignBreastfeeding form.breastfeeding
             , ifNullableTrue CleanWaterAvailable form.cleanWaterAvailable
-            , ifNullableTrue EatenWithWater form.eatenWithWater
+            , if rutfReceived then
+                ifNullableTrue EatenWithWater form.eatenWithWater
+
+              else
+                Just EverySet.empty
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNutritionFeedingSigns)
@@ -10879,9 +10888,13 @@ toNutritionFeedingValue form =
                 |> Just
 
         sachetsPerDay =
-            form.sachetsPerDay
-                |> Maybe.withDefault 0
-                |> Just
+            if rutfReceived then
+                form.sachetsPerDay
+                    |> Maybe.withDefault 0
+                    |> Just
+
+            else
+                Just 0
     in
     Maybe.map NutritionFeedingValue signs
         |> andMap supplementType
