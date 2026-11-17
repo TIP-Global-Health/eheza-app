@@ -18,7 +18,7 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.PrenatalActivity.Model exposing (HighRiskFactor(..), HighSeverityAlert(..), PregnancyTrimester(..), PrenatalActivity(..), PrenatalRecurrentActivity(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays)
-import Pages.Prenatal.Encounter.Utils exposing (getObstetricHistoryStep2, resolveObstetricalExamWithEGAWeeks)
+import Pages.Prenatal.Encounter.Utils exposing (getObstetricHistoryStep2, obstetricalExamFindingFromWeek)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Translate exposing (Language, translate)
 
@@ -251,15 +251,11 @@ generateHighSeverityAlertData language isChw data alert =
             trans (Translate.HighSeverityAlert alert_)
 
         fetalAlert isAbnormal =
-            resolveObstetricalExamWithEGAWeeks isChw data
-                |> Maybe.andThen
-                    (\( egaInWeeks, value ) ->
-                        if egaInWeeks > 19 && isAbnormal value then
-                            Just ( transAlert alert, "" )
+            if obstetricalExamFindingFromWeek isChw data 20 isAbnormal then
+                Just ( transAlert alert, "" )
 
-                        else
-                            Nothing
-                    )
+            else
+                Nothing
     in
     case alert of
         BodyTemperature ->

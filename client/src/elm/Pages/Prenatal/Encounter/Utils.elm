@@ -1,4 +1,4 @@
-module Pages.Prenatal.Encounter.Utils exposing (calculateBmi, diagnosisRequiresEmergencyReferral, emergencyReferralRequired, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, generatePostCreateDestination, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, getLmpValue, getObstetricHistoryStep2, getPrenatalEncountersForParticipantDesc, getSubsequentEncounterType, resolveGlobalLmpValue, resolveObstetricalExamWithEGAWeeks, secondPhaseRequired, skipObstetricHistorySecondStep)
+module Pages.Prenatal.Encounter.Utils exposing (calculateBmi, diagnosisRequiresEmergencyReferral, emergencyReferralRequired, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, generatePostCreateDestination, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, getLmpValue, getObstetricHistoryStep2, getPrenatalEncountersForParticipantDesc, getSubsequentEncounterType, obstetricalExamFindingFromWeek, resolveGlobalLmpValue, secondPhaseRequired, skipObstetricHistorySecondStep)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -459,25 +459,19 @@ getLastEncounterMeasurements isChw assembled =
             encounterData.measurements
 
 
-{-| This visit's obstetrical exam, or else the latest earlier nurse visit's,
-with the week of pregnancy at which it was recorded.
+{-| Whether this visit's obstetrical exam, or else the latest earlier nurse
+visit's, records the finding at or after the given week of pregnancy.
 -}
-resolveObstetricalExamWithEGAWeeks : Bool -> AssembledData -> Maybe ( Int, ObstetricalExamValue )
-resolveObstetricalExamWithEGAWeeks isChw assembled =
-    let
-        exam =
-            if isJust assembled.measurements.obstetricalExam then
-                assembled.measurements.obstetricalExam
-
-            else
-                (getLastEncounterMeasurements isChw assembled).obstetricalExam
-    in
-    Maybe.map2
-        (\lmpDate ( _, measurement ) ->
-            ( calculateEGAWeeks measurement.dateMeasured lmpDate, measurement.value )
-        )
-        assembled.globalLmpDate
-        exam
+obstetricalExamFindingFromWeek : Bool -> AssembledData -> Int -> (ObstetricalExamValue -> Bool) -> Bool
+obstetricalExamFindingFromWeek isChw assembled fromWeek finding =
+    Maybe.Extra.orElseLazy (\_ -> (getLastEncounterMeasurements isChw assembled).obstetricalExam)
+        assembled.measurements.obstetricalExam
+        |> Maybe.map2
+            (\lmpDate ( _, measurement ) ->
+                calculateEGAWeeks measurement.dateMeasured lmpDate >= fromWeek && finding measurement.value
+            )
+            assembled.globalLmpDate
+        |> Maybe.withDefault False
 
 
 getAllNurseMeasurements : Bool -> AssembledData -> List PreviousEncounterData
@@ -557,15 +551,11 @@ generateObstetricalDiagnosisAlertData language isChw firstNurseEncounterMeasurem
             getLastEncounterMeasurements isChw assembled
 
         presentationAlert presentation =
-            resolveObstetricalExamWithEGAWeeks isChw assembled
-                |> Maybe.andThen
-                    (\( egaInWeeks, value ) ->
-                        if egaInWeeks >= 32 && value.fetalPresentation == presentation then
-                            Just (transAlert diagnosis)
+            if obstetricalExamFindingFromWeek isChw assembled 32 (.fetalPresentation >> (==) presentation) then
+                Just (transAlert diagnosis)
 
-                        else
-                            Nothing
-                    )
+            else
+                Nothing
     in
     case diagnosis of
         DiagnosisModerateUnderweight ->
