@@ -42,6 +42,9 @@ area to `↑ R<n>`.
 **The round cap does not apply at night.** The launcher keeps the dry-stop: it pauses itself after
 three rounds that add no item.
 
+**Scouts audit `develop`.** A scout worktree can start from `main`; name the `develop` commit in each
+brief and have the scout check it out first.
+
 **Wait for every scout before the final answer.** The session ends with that answer, and a scout
 still running then is lost.
 
