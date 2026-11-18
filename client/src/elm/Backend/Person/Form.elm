@@ -374,6 +374,43 @@ validatePerson site maybeRelated operation maybeCurrentDate =
         geoInfo =
             getGeoInfo site
 
+        provinceLevel =
+            ( province, validateProvince, .province )
+
+        districtLevel =
+            ( district, validateDistrict, .district )
+
+        sectorLevel =
+            ( sector, validateSector, .sector )
+
+        cellLevel =
+            ( cell, validateCell, .cell )
+
+        villageLevel =
+            ( village, validateVillage, .village )
+
+        validateAddressLevel ( key, validateLevel, _ ) levelsAbove validationField =
+            let
+                -- An unset level keeps its stored value only while every level
+                -- above it saves its own stored value. A new cell never keeps
+                -- the old village.
+                levelsAboveStored =
+                    List.all
+                        (\( keyAbove, validateAbove, storedAbove ) ->
+                            field keyAbove (validateAbove geoInfo maybeRelated) validationField
+                                == Ok (Maybe.andThen storedAbove maybeRelated)
+                        )
+                        levelsAbove
+
+                fallback =
+                    if levelsAboveStored then
+                        maybeRelated
+
+                    else
+                        Nothing
+            in
+            field key (validateLevel geoInfo fallback) validationField
+
         externalExpectedAge =
             Maybe.map2
                 (\related currentDate -> expectedAgeByPerson currentDate related operation)
@@ -448,11 +485,11 @@ validatePerson site maybeRelated operation maybeCurrentDate =
                 |> andMap (field ubudehe (validateUbudehe maybeRelated))
                 |> andMap (field educationLevel <| validateEducationLevel expectedAge)
                 |> andMap (field maritalStatus <| validateMaritalStatus expectedAge)
-                |> andMap (field province (validateProvince geoInfo maybeRelated))
-                |> andMap (field district (validateDistrict geoInfo maybeRelated))
-                |> andMap (field sector (validateSector geoInfo maybeRelated))
-                |> andMap (field cell (validateCell geoInfo maybeRelated))
-                |> andMap (field village (validateVillage geoInfo maybeRelated))
+                |> andMap (validateAddressLevel provinceLevel [])
+                |> andMap (validateAddressLevel districtLevel [ provinceLevel ])
+                |> andMap (validateAddressLevel sectorLevel [ provinceLevel, districtLevel ])
+                |> andMap (validateAddressLevel cellLevel [ provinceLevel, districtLevel, sectorLevel ])
+                |> andMap (validateAddressLevel villageLevel [ provinceLevel, districtLevel, sectorLevel, cellLevel ])
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
                 |> andMap (field saveGPSLocation bool)
