@@ -959,3 +959,27 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the hold row "blood sugar not offered at the reporting visit" passed on the logged tab list, but the video's frame showed only the first five Laboratory tabs (PR #2551).
 - **Wrong conclusion:** the frame is the evidence for the absent tab.
 - **Rule:** the Laboratory tab bar scrolls sideways and cuts off at about five tabs. To show an absence on video, scroll the bar to its end (`.link-section` last, `scrollIntoView`) and hold before the frame; otherwise say the list was read from the page.
+
+## Tapping the encounter button as soon as the participant page draws
+
+- **Symptom:** after a reload, `navigateToParticipantPage` then a tap on "NCD Encounter" opened a new, empty encounter instead of the visit already open that day (PR #2555, develop control).
+- **Wrong conclusion:** the button reopens today's open visit, so the tap is safe at once.
+- **Rule:** the page acts on the encounters it has loaded, and right after a full load it has none (the B-195 lag). Wait about 5 s on the participant page, then check the URL's encounter id. Hide a stray encounter with `field_deleted` 1 and sync.
+
+## A form filler that clicks a checkbox already ticked
+
+- **Symptom:** a Medication Distribution filler at the NCD lab-results phase left Save off; Methyldopa read unticked after the script "ticked" it.
+- **Wrong conclusion:** the save is broken, or the option was never offered.
+- **Rule:** both phases of an NCD visit share one Medication Distribution record, so the visit's choice opens ticked, and a click unticks it. Tick only boxes whose `input` is not `isChecked()`.
+
+## A filler with a page guard, run from the wrong page
+
+- **Symptom:** a Laboratory filler returned at once, saving nothing; the encounter still showed LABORATORY in To Do.
+- **Wrong conclusion:** none here; the log showed no tab answered.
+- **Rule:** a script that stops when it is not on the activity page must open that activity itself first. Read the log for each tab's answers before going on.
+
+## Evidence below the fold of a recorded form (met again)
+
+- **Symptom:** the handed-form and accompany questions, unanswered after ANC Yes, sat under the 1024 px frame in test 1's video (PR #2555); only the checks read them.
+- **Wrong conclusion:** none; the report says the follow-ups were read from the page.
+- **Rule:** the same pit. After an answer that reveals questions, `page.mouse.move(400, 900)` and `wheel(0, 500)` before the shot, as test 2 then did.

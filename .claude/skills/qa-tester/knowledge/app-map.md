@@ -260,10 +260,23 @@ flag simply does not appear.
   LEAVE ENCOUNTER → Case Management). RBS 250 offers Next Steps (Medication Distribution);
   `completeRecurrentNextSteps` saves it. Lab Results stays openable from Completed, where a
   result can be saved again unchanged.
-- NCD Next Steps appears only after Danger Signs, Symptom Review, Examination and Medical
-  History are saved, even when a lab result already diagnoses (the four helpers do it). Its
+- NCD Next Steps appears only after every other activity offered is saved — Laboratory and, for a
+  woman of child-bearing age, Family Planning included — even when a lab result already diagnoses. Its
   Medication Distribution names the diagnosis: "This patient has Diabetes with glucose … of
   250 mg/dL". The encounter's diagnoses are `field_ncd_diagnoses` (`diabetes-recurrent`).
+- NCD Laboratory has a Pregnancy tab for a woman; `known-as-positive` Yes makes her pregnant. Sending only the blood
+  sugar to the lab (performed Yes → Lab → fasted No → today Yes) and the other tabs "not performed" with the first reason
+  leaves Next Steps ready; the NCD Labs entry is listed at once, and the visit can be left open while results go in.
+- NCD Referral: the visit and its lab-results phase share one `ncd_referral` record and one Medication Distribution record.
+  A pregnant woman with any hypertension stage is referred to ANC services at the visit; anyone else with stage 3 (or
+  hypertension plus diabetes) to the hospital. The lab-results phase refers to the hospital when the result finds diabetes
+  (250) beside hypertension. Server: `field_referrals` (`hospital`, `hospital-referral-form`, `anc`, `anc-referral-form`,
+  `anc-accompany`), `field_reasons_for_non_referrals` (`anc-client-refused`). ANC Yes adds handed-form and accompany questions.
+- Stage 3 Medication Distribution asks for two medicines (Methyldopa and Amlodipine work); a pregnant woman gets Methyldopa only.
+- After the last lab result the NCD Labs entry closes, so the lab-results page cannot be reopened from Case Management;
+  read its saved answers on the server or through the visit's own Next Steps.
+- The NCD participant page's "NCD Encounter" reopens today's open visit only once the person's encounters have loaded
+  (see pitfalls); right after a full load it starts a second one.
 - Acute Illness laboratory (nurse, initial encounter): the COVID rapid test is offered only
   while there is fever with respiratory symptoms (or two or more general ones) **and the
   malaria RDT is not positive** (`covid19SuspectDiagnosed`). Turning malaria Positive takes
