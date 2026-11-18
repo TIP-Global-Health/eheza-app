@@ -953,3 +953,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after test 5 failed on its Next Steps step, the chain ran the next tests and signed in the CHW, so the resumed script found neither the page nor the woman.
 - **Wrong conclusion:** the half-finished visit is lost.
 - **Rule:** reopen it as the nurse (`qa.signIn` first) through Subsequent Antenatal, which reopens today's open visit, and record the rest as a continuation video.
+
+## Proving a lab tab is absent with a frame of the tab bar
+
+- **Symptom:** the hold row "blood sugar not offered at the reporting visit" passed on the logged tab list, but the video's frame showed only the first five Laboratory tabs (PR #2551).
+- **Wrong conclusion:** the frame is the evidence for the absent tab.
+- **Rule:** the Laboratory tab bar scrolls sideways and cuts off at about five tabs. To show an absence on video, scroll the bar to its end (`.link-section` last, `scrollIntoView`) and hold before the frame; otherwise say the list was read from the page.

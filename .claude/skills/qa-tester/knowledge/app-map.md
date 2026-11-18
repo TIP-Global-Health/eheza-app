@@ -309,6 +309,8 @@ flag simply does not appear.
   The Blood Sugar result page shows the test date and `.form-input.measurement.sugar-count`; after its Save, with no other pending entry,
   the History tab goes and Laboratory shows that visit's own tabs, with no "updated all results" question. 250 → hospital Referral in Next Steps.
   Blood sugar is not offered at the visit diabetes was reported to, but is offered again at the next visit.
+  Since #2551 a diabetic result at a later visit (point of care, or Lab Results the same day) adds no new diabetes and no Referral once diabetes was reported to an earlier visit.
+  The same-day Lab Results route then returns to the recurrent page, whose To Do shows a greyed Malaria Prevention on every build.
 - A Pregnancy Dating save sends two requests together: the LMP (POST, PATCH when corrected) and a PATCH of the
   pregnancy (`individual_participant`) setting its EDD. The visit header shows EDD and EGA; reopen the form from
   Completed to correct it, which sends both again. Backend EDD: `h.common.queryPregnancyEdd(name)`.
@@ -413,6 +415,11 @@ flag simply does not appear.
   `backdateEncounter` sets both, which ends the visit.
 - A nurse postpartum visit for a woman with no visits: Examination (`completeExamination(page, { isPostpartum: true, vitals })`) runs straight
   after the start; To Do then lists Pregnancy Outcome, Symptom Review, Maternal Mental Health, Breastfeeding, Family Planning, Treatment Review.
+- Postpartum Specialty Care (`.icon-task-speciality-care`) shows only when an earlier nurse visit holds diabetes or a hypertension-like diagnosis
+  (NCD) or HIV (ARV). Its form reads "You were diagnosed with Diabetes during your pregnancy." with `.form-input.yes-no.ncd` (`.arv` for HIV).
+  NCD No adds Next Steps › Referral "…Refer patient to NCD services…"; the report's Medical Diagnosis then reads "Diabetes - referred to NCD program
+  for post-partum management on <date>". Server: `prenatal_speciality_care` `field_speciality_care_signs` (`none` = not enrolled), referral `ncd`,
+  `ncd-referral-form`, `ncd-accompany`. A postpartum visit on the day after a 15 w visit is accepted; the seven activities' helpers ran in ~2 min.
 - Prenatal participant page buttons: nurse — FIRST ANTENATAL ENCOUNTER / SUBSEQUENT ANTENATAL
   ENCOUNTER / POSTPARTUM / RECORD PREGNANCY OUTCOME; a CHW's first reads FIRST ANTENATAL VISIT.
   `qa.state()` marks the off ones `[disabled]`, but read straight after navigating it can show
@@ -804,6 +811,7 @@ flag simply does not appear.
 - A PR whose branch is behind develop, or stacked on another PR: build its tree with `git merge-tree --write-tree origin/develop origin/<branch>`
   and `git checkout <tree> -- <files>`; the control tree merges develop with the parent branch.
   When that merge conflicts, overlay every `client/src` file that differs between HEAD and the PR tip (`git diff --name-only HEAD <branch>`).
+  A conflict only in a `Test.elm` does not matter: overlay the app files from the tree; gulp never builds tests.
   Then restore them all; develop stays the control while its own changes since the base change no behaviour.
 - The main tree starts a run on `develop`, so a develop control is cheapest before the overlay:
   record it on the served build, then overlay and wait for gulp once. For a change only to what a page shows, one fixture can
