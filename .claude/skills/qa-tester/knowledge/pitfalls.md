@@ -983,3 +983,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** the handed-form and accompany questions, unanswered after ANC Yes, sat under the 1024 px frame in test 1's video (PR #2555); only the checks read them.
 - **Wrong conclusion:** none; the report says the follow-ups were read from the page.
 - **Rule:** the same pit. After an answer that reveals questions, `page.mouse.move(400, 900)` and `wheel(0, 500)` before the shot, as test 2 then did.
+
+## A hold row whose checks pass while its logged state differs
+
+- **Symptom:** test 11 (new registration, village unpicked) passed every check on the PR: the same single "village is a required field" as develop after Save (PR #2556).
+- **Wrong conclusion:** the row is "same as develop". The logged select classes showed Village already red before Save on the PR, and not on develop.
+- **Rule:** a hold row compares the whole logged state of both builds, not only the checks. Diff the two runs' logs line by line; any extra class or value is the change's doing.
+
+## Expecting a person edit to land on `#person/<uuid>`
+
+- **Symptom:** none here; the develop control showed the URL first. A check written for `#person/<uuid>$` would have failed every PR save.
+- **Wrong conclusion:** the save did not go through.
+- **Rule:** a saved edit from the Participant Directory lands on `#person/<uuid>/directory`. Run the develop control before writing URL checks.

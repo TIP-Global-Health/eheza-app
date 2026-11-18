@@ -206,6 +206,17 @@ flag simply does not appear.
   CHW's registration fails there ("cell/district/… is a required field"): the local villages are Rwandan. Use the nurse.
   `registerChild` and `createChildAndStartWellChildEncounter` select the Rwandan labels (District, Sector, …), so walk the Burundi
   labels with `h.common.selectByLabel(page, label, 1)`; the first option at each level saves. "Health Center:" still lists Nyange.
+- **Person edit form** (person page pencil, `#person/<uuid>/edit`): a select is greyed out (`select-input disabled`, pointer events off) while the
+  level below it holds a place, and the health centre always is once set, so a nurse cannot clear it on edit. To change an adult's address: blank
+  Village, then Cell, and so on up. A child's Village is locked on edit, so a child's address cannot change there. A saved edit lands on `#person/<uuid>/directory`.
+- Form errors: an erroneous select gets class `error` (red border); after Save, `.ui.error.message li` lists "<field> is a required field"
+  (`health_center` for the health centre). The box sits under SAVE, below the fold. Add family member's form is `#person/directory/new/<parent uuid>`;
+  its Save creates the person before the Relationship page opens.
+- Busengo's cells: Birambo 2758 (village Birambo 2759), Butereri 2763 (villages Buhuga 2764, Butereri, Gasakuza, …).
+- **A stored place missing from the address list**: set `field_village` on the server (`entity_metadata_wrapper` save) and sync. The edit form then
+  shows Village blank and Cell open. A save stores the name lower-cased after the first letter (`Qa2556Lost` → `Qa2556lost`), on develop too.
+- Person address on the server: `field_province`, `field_district`, `field_sector`, `field_cell`, `field_village` (names), `field_health_center`
+  (nid); `node_revision` rows count the saves.
 - An address edit propagates to children only if each child is loaded: open the child's own
   person page first, then go back and edit the parent.
 - Saving a photo measurement also sets the **person's** photo, server-side
