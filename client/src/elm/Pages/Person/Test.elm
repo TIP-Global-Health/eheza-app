@@ -413,4 +413,26 @@ all =
         , newbornEnrolmentFetchTest
         , otherOriginsTest
         , nextStepsAfterSaveTest
+        , rememberedRequestsTest
+        ]
+
+
+{-| The app forgets an entity five minutes after the last request for it by
+id, so the page must ask with the single-entity requests, not the list ones.
+-}
+rememberedRequestsTest : Test
+rememberedRequestsTest =
+    let
+        requests =
+            fetchForCreateOrEdit (Just motherId) newbornEnrolment dbWithVisitAndPregnancy
+    in
+    describe "Enrol newborn: the requests that keep the visit and the pregnancy remembered"
+        [ test "asks for the visit by its id" <|
+            \_ ->
+                List.member (FetchPrenatalEncounter visitId) requests
+                    |> Expect.equal True
+        , test "asks for the pregnancy by its id" <|
+            \_ ->
+                List.member (FetchIndividualEncounterParticipant pregnancyId) requests
+                    |> Expect.equal True
         ]
