@@ -570,7 +570,7 @@ B-569	3	READY	LOW		2493	52	Acute Illness follow-up: with a positive malaria test
 B-570	4	READY	LOW		2498	0	Dashboard "Number of Cephaly": a later in-range head circumference does not end an earlier macrocephaly or microcephaly 
 B-571	4	IMPLEMENTED	LOW	2503	2507	53	Completion report (Well Child): the server still counts a child's age in whole months by flooring, while the app since #
 B-572	4	READY	LOW			53	HIV encounter: the Prescribed Medication form cannot be saved without at least one antiretroviral, so a positive patient
-B-573	4	READY	LOW			53	NCD initial phase: the Referral task counts as done when ANY referral record exists, so a hospital referral saved first 
+B-573	4	IMPLEMENTED	LOW	2553	2555	53	NCD initial phase: the Referral task counts as done when ANY referral record exists, so a hospital referral saved first 
 B-574	3	IMPLEMENTED	MED	2536	2540	54	Prenatal (CHW): a postpartum visit left unfinished on an earlier day locks the woman's Antenatal page — First, Subsequen
 B-575	4	READY	LOW			54	Prenatal labs history: saving an EARLIER visit's pending lab result from today's Laboratory page can throw the nurse ont
 B-576	1	IMPLEMENTED	MED-HIGH			54	Prenatal: severe preeclampsia confirmed by a urine protein result that arrives LATER (dipstick sent to the lab) is filed
@@ -600,9 +600,9 @@ B-599	1	IMPLEMENTED	MED	2534	2535	B-594	Prenatal: a woman diagnosed with hyperte
 B-600	3	READY	MED-LOW			B-574	Prenatal (CHW and nurse): a postpartum visit where the outcome was SAVED but the visit was left open cannot be reached o
 B-601	4	IMPLEMENTED	LOW	2545	2548	56	Prenatal alerts dialog: "no fetal movement" / "no fetal heart rate" from this visit's exam is graded against TODAY's ges
 B-602	4	READY	LOW			56	Family Nutrition progress report: the MUAC chart is a fixed 36-month window starting at the person's FIRST reading, so r
-B-603	3	READY	MED-LOW			56	Prenatal › Next Steps › Enrol newborn: if the registration form stays open more than five minutes (or the app reloads on
+B-603	3	IMPLEMENTED	MED-LOW	2552	2557	56	Prenatal › Next Steps › Enrol newborn: if the registration form stays open more than five minutes (or the app reloads on
 B-604	3	READY	LOW			56	Registration: the duplicate national-ID warning is lost when any person record arrives by sync between typing the ID and
-B-605	4	READY	LOW			56	Person edit / add family member: an address level left blank or invalid is silently replaced by the related person's sto
+B-605	4	IMPLEMENTED	LOW	2554	2556	56	Person edit / add family member: an address level left blank or invalid is silently replaced by the related person's sto
 B-606	4	READY	LOW			56	Prenatal Completion report: gestational age comes from the LMP only, while the app prefers the Healthy Start ultrasound'
 B-607	4	IMPLEMENTED	LOW	2546	2549	56	Antenatal progress report › Medication History: Mebendazole shows "--" when it was handed over from Next Steps, although
 B-608	1	IMPLEMENTED	LOW	2550	2551	B-593	Prenatal: diabetes reported to a visit from lab history is diagnosed again at the next visit, with a second hospital ref
@@ -611,6 +611,8 @@ B-610	3	READY	MED			58	Sync upload: a record saved while the upload lanes are ru
 B-611	4	READY				58	Person upload: every character outside `a-z A-Z 0-9 _ space -` is silently deleted from first and second names ("Désiré"
 B-612	4	READY	LOW			B-608	Dashboard: diabetes or gestational diabetes found from a lab-history result is never counted in the prenatal diabetes fi
 B-613	4	READY	LOW			B-608	Prenatal (nurse): diabetes found from a lab-history result gives no diabetes health education at the visit it is reporte
+B-614	3	READY	LOW		2555	B-573	NCD lab-results phase: when both phases refer to the hospital, the lab-results Referral task reads done from the initial
+B-615	3	READY	LOW		2555	B-573	NCD initial phase: a pregnant woman with hypertension AND diabetes or renal complications is referred to ANC services on
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
