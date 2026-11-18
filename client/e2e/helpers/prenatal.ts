@@ -1,5 +1,8 @@
+import { execSync } from 'child_process';
+
 import { Page, Locator, expect } from '@playwright/test';
 import { click } from './auth';
+import { drushEnv } from './device';
 import {
   answerYesNo,
   backdateEncounter,
@@ -1865,13 +1868,20 @@ export async function recordPregnancyOutcome(
  *
  * After a live birth, Next Steps also enrols the newborn: the baby is
  * registered as `E2ETest <newbornFirstName>`, born on the conclusion date.
+ * `onRegistrationForm` runs once the registration form is open, before it
+ * is filled in (to reload the app on it, or to leave it open a while). Back
+ * on Next Steps, the task must read done with its button disabled.
  *
  * Ends on the progress report that carries End Encounter; follow with
  * endPrenatalEncounter. Returns the newborn's full name, or null.
  */
 export async function completeChwPostpartumVisit(
   page: Page,
-  options?: { outcome?: PregnancyOutcome; newbornFirstName?: string },
+  options?: {
+    outcome?: PregnancyOutcome;
+    newbornFirstName?: string;
+    onRegistrationForm?: (page: Page) => Promise<void>;
+  },
 ): Promise<string | null> {
   const outcome = options?.outcome ?? 'live-at-term';
   await completePregnancyOutcome(page, { outcome });
@@ -1901,6 +1911,10 @@ export async function completeChwPostpartumVisit(
     // date of birth already set; saving it returns to Next Steps.
     await click(page.locator('button', { hasText: 'Enroll Newborn' }), page);
     await formInput(page, 'First Name:').waitFor({ timeout: 10000 });
+    if (options?.onRegistrationForm) {
+      await options.onRegistrationForm(page);
+      await formInput(page, 'First Name:').waitFor({ timeout: 30000 });
+    }
     const newborn = await fillChildRegistrationFields(
       page,
       options?.newbornFirstName ?? `Newborn${Date.now()}`,
@@ -1910,6 +1924,10 @@ export async function completeChwPostpartumVisit(
     await page
       .locator('div.page-activity.prenatal', { hasText: 'Newborn is already enrolled' })
       .waitFor({ timeout: 15000 });
+    // The task is done, so it no longer offers to register a baby.
+    await expect(
+      page.locator('button.ui.fluid.primary.button.disabled', { hasText: 'Enroll Newborn' }),
+    ).toBeVisible();
     newbornName = newborn.fullName;
   }
 
@@ -2094,6 +2112,78 @@ export async function endRecurrentEncounter(page: Page) {
  */
 export function backdatePrenatalEncounter(personName: string, daysAgo: number = 1) {
   backdateEncounter(personName, 'prenatal_encounter', daysAgo);
+}
+
+/**
+ * Returns the title of the person the mother's most recent pregnancy links as
+ * its newborn (`field_newborn` of her antenatal `individual_participant`), or
+ * null when the pregnancy has none. Retries until a link appears, to tolerate
+ * sync eventual-consistency; also returns how many people carry `newbornName`,
+ * so a test can tell an unlinked duplicate registration.
+ */
+export function queryPregnancyNewborn(
+  motherName: string,
+  newbornName: string,
+): { newborn: string | null; peopleNamedAsNewborn: number } {
+  const { drushCmd, cwd } = drushEnv();
+  const motherB64 = Buffer.from(motherName, 'utf8').toString('base64');
+  const newbornB64 = Buffer.from(newbornName, 'utf8').toString('base64');
+
+  const php = `
+    \\$mother = base64_decode('${motherB64}');
+    \\$baby = base64_decode('${newbornB64}');
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$mother)
+      ->execute();
+    if (empty(\\$r['node'])) { echo json_encode(['error' => 'Mother not found']); return; }
+    \\$nid = key(\\$r['node']);
+
+    \\$bq = new EntityFieldQuery();
+    \\$babies = \\$bq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$baby)
+      ->count()
+      ->execute();
+
+    \\$pq = new EntityFieldQuery();
+    \\$pr = \\$pq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'individual_participant')
+      ->fieldCondition('field_person', 'target_id', \\$nid)
+      ->fieldCondition('field_encounter_type', 'value', 'antenatal')
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No pregnancy found']); return; }
+
+    \\$p = node_load(key(\\$pr['node']));
+    \\$newborn = null;
+    if (isset(\\$p->field_newborn[LANGUAGE_NONE][0]['target_id'])) {
+      \\$n = node_load(\\$p->field_newborn[LANGUAGE_NONE][0]['target_id']);
+      \\$newborn = \\$n ? \\$n->title : null;
+    }
+    echo json_encode(['newborn' => \\$newborn, 'babies' => (int) \\$babies]);
+  `;
+
+  let last = { newborn: null as string | null, peopleNamedAsNewborn: 0 };
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const output = execSync(`${drushCmd} eval "${php}"`, {
+        cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+      }).trim();
+      const parsed = JSON.parse(output);
+      if (!parsed.error) {
+        last = { newborn: parsed.newborn, peopleNamedAsNewborn: parsed.babies };
+        if (parsed.newborn) return last;
+      }
+      console.log(`queryPregnancyNewborn attempt ${attempt + 1}: ${parsed.error || 'no newborn linked yet'}`);
+    } catch (err) {
+      console.log(`queryPregnancyNewborn attempt ${attempt + 1}: error`, err);
+    }
+    if (attempt < 9) execSync('sleep 5');
+  }
+  return last;
 }
 
 export function queryPrenatalNodes(
