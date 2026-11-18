@@ -23,6 +23,7 @@ import Backend.Measurement.Model
         , HemoglobinTestValue
         , HepatitisBTestValue
         , LegsCPESign(..)
+        , LmpDateNotConfidentReason(..)
         , LungsCPESign(..)
         , MalariaTestValue
         , Measurement
@@ -33,9 +34,12 @@ import Backend.Measurement.Model
         , MedicationDistributionSign(..)
         , MedicationSign(..)
         , MuacInCm(..)
+        , NonReferralSign(..)
         , ObstetricHistoryStep2Sign(..)
         , OccursInFamilySign(..)
         , PartnerHIVTestValue
+        , PostpartumChildDangerSign(..)
+        , PostpartumMotherDangerSign(..)
         , PregnancySign(..)
         , PrenatalAssesment(..)
         , PrenatalHIVSign(..)
@@ -49,6 +53,7 @@ import Backend.Measurement.Model
         , PreviousDeliverySign(..)
         , ProteinValue(..)
         , RandomBloodSugarTestValue
+        , ReasonForNonReferral(..)
         , RecommendedTreatmentSign(..)
         , Rhesus(..)
         , SyphilisTestValue
@@ -78,13 +83,13 @@ import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateH
 import Pages.Prenatal.Activity.Model exposing (Msg(..), UltrasoundForm, emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
-import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, expectActivity, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, immunisationTasksCompletedFromTotal, mandatoryActivitiesForNextStepsCompleted, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveMedicationTasks, resolveNextStepsTasks, resolveWarningPopupContentForUrgentDiagnoses, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, suicideRiskDiagnosedBySigns, toUltrasoundValueWithDefault, ultrasoundEDDDate, ultrasoundFormWithDefault, ultrasoundTasks, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (activityCompleted, bmiToPrePregnancyClassification, expectActivity, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, immunisationTasksCompletedFromTotal, mandatoryActivitiesForNextStepsCompleted, nextStepsTaskCompleted, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveGWGClassificationSincePreviousVisit, resolveMedicationTasks, resolveNextStepsTasks, resolveWarningPopupContentForUrgentDiagnoses, setUltrasoundEDDDays, setUltrasoundEDDWeeks, setUltrasoundExecutionDate, setUltrasoundExecutionDateSelectorState, suicideRiskDiagnosedBySigns, toUltrasoundValueWithDefault, ultrasoundEDDDate, ultrasoundFormWithDefault, ultrasoundTasks, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData, generateGravida, generatePara, getAllActivities, skipObstetricHistorySecondStep)
-import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), PreviousEncounterData, emptyHealthEducationForm)
+import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..), PreviousEncounterData, ReferralForm, emptyHealthEducationForm, emptyReferralForm)
 import Pages.Prenatal.ProgressReport.Model exposing (obstetricalDiagnoses)
 import Pages.Prenatal.RecurrentActivity.Types
 import Pages.Prenatal.RecurrentActivity.Utils
-import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedHypertension, diagnosedPreviouslyAnyOf, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet, showMebendazoleQuestion, updateHypertensionTreatmentWithMedication)
+import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedHypertension, diagnosedPreviouslyAnyOf, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet, showMebendazoleQuestion, toPrenatalReferralValueWithDefault, updateHypertensionTreatmentWithMedication)
 import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
@@ -3103,6 +3108,8 @@ all =
         , mebendazoleInMedicationUntilGivenOrReceivedTest
         , mebendazoleQuestionWhileNotGivenOrReceivedTest
         , ironFolicAcidAnswerDoesNotStopFefolIronFolateTest
+        , chwReferralToHealthCentreTest
+        , nurseReferralToFacilitiesTest
         , reportedDiabetesPreeclampsiaRiskTest
         ]
 
@@ -9712,4 +9719,442 @@ noDiabetesNoRiskTest =
                     []
                     |> highRiskAndAspirinAtVisit
                     |> Expect.equal ( True, True )
+        ]
+
+
+
+-- SEND TO HEALTH CENTRE TASK
+--
+-- On a CHW antenatal or postpartum visit, the Send to health centre task is
+-- asked when there is a danger sign. The CHW form asks only one question --
+-- "referred to the health centre?" -- with "hand referral form" and
+-- "accompany" follow-ups on Yes, and a reason on No. These tests check when
+-- the task counts as done.
+--
+-- The saved values are produced from a filled form with
+-- `toPrenatalReferralValueWithDefault`, the same conversion the Save button
+-- runs, so each test asserts on the shape the app really stores.
+--
+-- On nurse visits the same task lists one question per facility the nurse
+-- must refer to (hospital, ultrasound, ...), and is done when all of them are
+-- answered. Those tests guard that this stays the same.
+
+
+{-| The value the app stores when the given referral form is saved.
+-}
+savedReferral : ReferralForm -> PrenatalMeasurements -> PrenatalMeasurements
+savedReferral form measurements =
+    { measurements
+        | sendToHC =
+            toPrenatalReferralValueWithDefault Nothing form
+                |> Maybe.andThen wrapMeasurement
+    }
+
+
+{-| CHW form: "referred to the health centre: Yes", with the two follow-up
+questions answered as given.
+-}
+chwReferredYes : Bool -> Bool -> ReferralForm
+chwReferredYes handReferralForm accompany =
+    { emptyReferralForm
+        | referToHealthCenter = Just True
+        , handReferralForm = Just handReferralForm
+        , accompanyToHealthCenter = Just accompany
+    }
+
+
+{-| CHW form: "referred to the health centre: No", with the given reason.
+-}
+chwReferredNo : ReasonForNonReferral -> ReferralForm
+chwReferredNo reason =
+    { emptyReferralForm
+        | referToHealthCenter = Just False
+        , reasonForNotSendingToHC = Just reason
+    }
+
+
+{-| Every reason the CHW form offers for not referring to the health centre.
+-}
+chwNonReferralReasons : List ReasonForNonReferral
+chwNonReferralReasons =
+    [ ClientRefused
+    , NoAmbulance
+    , ClientUnableToAffordFees
+    , ReasonForNonReferralNotIndicated
+    , ReasonForNonReferralOther
+    ]
+
+
+{-| The CHW antenatal visit types: first, second and third-plus.
+-}
+chwAntenatalEncounterTypes : List PrenatalEncounterType
+chwAntenatalEncounterTypes =
+    [ ChwFirstEncounter, ChwSecondEncounter, ChwThirdPlusEncounter ]
+
+
+{-| The shared visit fixture with the given encounter type and diagnoses.
+-}
+visitOfType : PrenatalEncounterType -> List PrenatalDiagnosis -> PrenatalMeasurements -> AssembledData
+visitOfType encounterType diagnoses measurements =
+    let
+        base =
+            testAssembled measurements
+
+        encounter =
+            base.encounter
+    in
+    { base | encounter = { encounter | encounterType = encounterType, diagnoses = EverySet.fromList diagnoses } }
+
+
+{-| Pregnancy Dating answered: confident or not, with an optional reason.
+-}
+withPregnancyDating : Bool -> Maybe LmpDateNotConfidentReason -> PrenatalMeasurements -> PrenatalMeasurements
+withPregnancyDating confident notConfidentReason measurements =
+    { measurements
+        | lastMenstrualPeriod =
+            wrapMeasurement
+                { date = lmpDate
+                , prePregnancyWeight = Nothing
+                , confident = confident
+                , notConfidentReason = notConfidentReason
+                , lateFirstVisitReason = Nothing
+                , confirmation = True
+                }
+    }
+
+
+{-| Pregnancy Dating answered "not confident" with a reason. On a nurse visit
+this requires a referral to ultrasound.
+-}
+withNotConfidentDating : PrenatalMeasurements -> PrenatalMeasurements
+withNotConfidentDating =
+    withPregnancyDating False (Just ReasonIrregularMenses)
+
+
+withVaginalBleeding : PrenatalMeasurements -> PrenatalMeasurements
+withVaginalBleeding =
+    withDangerSigns (EverySet.singleton VaginalBleeding)
+
+
+{-| Postpartum danger signs: the mother's set and the child's set.
+-}
+withPostpartumDangerSigns : List PostpartumMotherDangerSign -> List PostpartumChildDangerSign -> PrenatalMeasurements -> PrenatalMeasurements
+withPostpartumDangerSigns motherSigns childSigns measurements =
+    { measurements
+        | dangerSigns =
+            wrapMeasurement
+                { signs = EverySet.empty
+                , postpartumMother = EverySet.fromList motherSigns
+                , postpartumChild = EverySet.fromList childSigns
+                }
+    }
+
+
+sendToHCDone : AssembledData -> Bool
+sendToHCDone assembled =
+    nextStepsTaskCompleted currentDate assembled NextStepsSendToHC
+
+
+sendToHCExpected : AssembledData -> Bool
+sendToHCExpected assembled =
+    resolveNextStepsTasks currentDate assembled
+        |> List.member NextStepsSendToHC
+
+
+chwReferralToHealthCentreTest : Test
+chwReferralToHealthCentreTest =
+    let
+        chwAntenatalWithDangerSign encounterType measurements =
+            visitOfType encounterType [] (withVaginalBleeding measurements)
+
+        chwPostpartum motherSigns childSigns measurements =
+            visitOfType ChwPostpartumEncounter [] (withPostpartumDangerSigns motherSigns childSigns measurements)
+
+        -- CHW first visit: Pregnancy Dating "not confident" with a reason,
+        -- and vaginal bleeding as the danger sign.
+        notConfidentFirstVisit measurements =
+            emptyPrenatalMeasurements
+                |> withNotConfidentDating
+                |> withVaginalBleeding
+                |> measurements
+                |> visitOfType ChwFirstEncounter []
+
+        -- Every other Next Steps task of that visit done: the follow-up is
+        -- saved and the next visit date is set.
+        withOtherNextStepsDone assembled =
+            let
+                encounter =
+                    assembled.encounter
+
+                measurements =
+                    assembled.measurements
+            in
+            { assembled
+                | encounter = { encounter | nextVisitDate = Just (Date.add Date.Weeks 4 currentDate) }
+                , measurements =
+                    { measurements
+                        | followUp =
+                            wrapMeasurement
+                                { options = EverySet.singleton OneDay
+                                , resolutionDate = Nothing
+                                , assesment = AssesmentNormalPregnancy
+                                }
+                    }
+            }
+
+        nextStepsCompleted site assembled =
+            activityCompleted currentDate site EverySet.empty assembled Backend.PrenatalActivity.Model.NextSteps
+    in
+    describe "CHW visit: Send to health centre task"
+        [ describe "CHW antenatal visit with a danger sign"
+            [ test "On a CHW antenatal visit with a danger sign, the Send to health centre task stays not done until the referral form is saved" <|
+                \_ ->
+                    chwAntenatalEncounterTypes
+                        |> List.map (\encounterType -> chwAntenatalWithDangerSign encounterType emptyPrenatalMeasurements |> sendToHCDone)
+                        |> Expect.equal [ False, False, False ]
+            , test "Saving \"referred to the health centre: Yes\" marks the task done" <|
+                \_ ->
+                    chwAntenatalEncounterTypes
+                        |> List.map
+                            (\encounterType ->
+                                emptyPrenatalMeasurements
+                                    |> savedReferral (chwReferredYes True True)
+                                    |> chwAntenatalWithDangerSign encounterType
+                                    |> sendToHCDone
+                            )
+                        |> Expect.equal [ True, True, True ]
+            , test "Yes, with no referral form handed and nobody accompanying: the task is done" <|
+                -- Both follow-ups answered No: the stored signs hold only
+                -- "referred to the health centre".
+                \_ ->
+                    emptyPrenatalMeasurements
+                        |> savedReferral (chwReferredYes False False)
+                        |> chwAntenatalWithDangerSign ChwFirstEncounter
+                        |> sendToHCDone
+                        |> Expect.equal True
+            , test "Saving \"No\" with a reason marks the task done" <|
+                \_ ->
+                    chwNonReferralReasons
+                        |> List.map
+                            (\reason ->
+                                emptyPrenatalMeasurements
+                                    |> savedReferral (chwReferredNo reason)
+                                    |> chwAntenatalWithDangerSign ChwFirstEncounter
+                                    |> sendToHCDone
+                            )
+                        |> Expect.equal (List.map (always True) chwNonReferralReasons)
+            , test "No with a reason on a subsequent CHW visit: the task is done" <|
+                \_ ->
+                    [ ChwSecondEncounter, ChwThirdPlusEncounter ]
+                        |> List.map
+                            (\encounterType ->
+                                emptyPrenatalMeasurements
+                                    |> savedReferral (chwReferredNo ClientRefused)
+                                    |> chwAntenatalWithDangerSign encounterType
+                                    |> sendToHCDone
+                            )
+                        |> Expect.equal [ True, True ]
+            , test "Pregnancy Dating confident, or not confident without a reason: not done until saved, done once saved" <|
+                -- Neither of these shapes requires an ultrasound referral on a
+                -- nurse visit, so the CHW task is decided by the form alone.
+                \_ ->
+                    [ withPregnancyDating True Nothing, withPregnancyDating False Nothing ]
+                        |> List.map
+                            (\dating ->
+                                ( emptyPrenatalMeasurements
+                                    |> dating
+                                    |> chwAntenatalWithDangerSign ChwFirstEncounter
+                                    |> sendToHCDone
+                                , emptyPrenatalMeasurements
+                                    |> dating
+                                    |> savedReferral (chwReferredYes True False)
+                                    |> chwAntenatalWithDangerSign ChwFirstEncounter
+                                    |> sendToHCDone
+                                )
+                            )
+                        |> Expect.equal [ ( False, True ), ( False, True ) ]
+            , test "guard: the task is asked on every CHW antenatal visit with a danger sign" <|
+                \_ ->
+                    chwAntenatalEncounterTypes
+                        |> List.map (\encounterType -> chwAntenatalWithDangerSign encounterType emptyPrenatalMeasurements |> sendToHCExpected)
+                        |> Expect.equal [ True, True, True ]
+            , test "guard: with no danger sign, or danger signs answered \"none\", the task is not asked" <|
+                \_ ->
+                    [ visitOfType ChwFirstEncounter [] emptyPrenatalMeasurements
+                    , visitOfType ChwFirstEncounter [] (withDangerSigns (EverySet.singleton NoDangerSign) emptyPrenatalMeasurements)
+                    , visitOfType ChwSecondEncounter [] (withDangerSigns EverySet.empty emptyPrenatalMeasurements)
+                    ]
+                        |> List.map sendToHCExpected
+                        |> Expect.equal [ False, False, False ]
+            ]
+        , describe "CHW first visit, Pregnancy Dating not confident with a reason"
+            [ test "On a CHW first visit where Pregnancy Dating was answered \"not confident\" with a reason, saving the health-centre referral marks the task done" <|
+                \_ ->
+                    [ chwReferredYes True True, chwReferredYes False False, chwReferredNo ClientRefused ]
+                        |> List.map (\form -> notConfidentFirstVisit (savedReferral form) |> sendToHCDone)
+                        |> Expect.equal [ True, True, True ]
+            , test "not confident with a reason, nothing saved: the task is not done" <|
+                \_ ->
+                    notConfidentFirstVisit identity
+                        |> sendToHCDone
+                        |> Expect.equal False
+            , test "not confident with a reason: Next Steps can complete once the health-centre referral is saved, so the visit can be ended" <|
+                -- With a danger sign the visit's Next Steps are the referral,
+                -- the follow-up and the next visit date. The Site argument is
+                -- varied to show the result does not depend on it.
+                \_ ->
+                    [ SiteRwanda, SiteBurundi ]
+                        |> List.map
+                            (\site ->
+                                ( notConfidentFirstVisit identity |> withOtherNextStepsDone |> nextStepsCompleted site
+                                , notConfidentFirstVisit (savedReferral (chwReferredYes True True)) |> withOtherNextStepsDone |> nextStepsCompleted site
+                                )
+                            )
+                        |> Expect.equal [ ( False, True ), ( False, True ) ]
+            , test "guard: in that visit, with the follow-up saved and the next visit date set, only the referral is left" <|
+                -- Shows the Next Steps tests above and below turn on the
+                -- referral alone.
+                \_ ->
+                    let
+                        visit =
+                            notConfidentFirstVisit identity |> withOtherNextStepsDone
+                    in
+                    resolveNextStepsTasks currentDate visit
+                        |> List.filter (nextStepsTaskCompleted currentDate visit >> not)
+                        |> Expect.equal [ NextStepsSendToHC ]
+            , test "not confident with a reason, No with a reason saved: Next Steps completes" <|
+                \_ ->
+                    notConfidentFirstVisit (savedReferral (chwReferredNo NoAmbulance))
+                        |> withOtherNextStepsDone
+                        |> nextStepsCompleted SiteRwanda
+                        |> Expect.equal True
+            ]
+        , describe "CHW postpartum visit"
+            [ test "A CHW postpartum visit with a danger sign in the mother or the child behaves the same way: not done until the referral form is saved" <|
+                \_ ->
+                    [ chwPostpartum [ PostpartumMotheUterineBleeding ] [ NoPostpartumChildDangerSigns ] emptyPrenatalMeasurements
+                    , chwPostpartum [ NoPostpartumMotherDangerSigns ] [ PostpartumChildInabilityToSuckle ] emptyPrenatalMeasurements
+                    , chwPostpartum [ PostpartumMotherFever ] [ PostpartumChildLabouredBreathing ] emptyPrenatalMeasurements
+                    ]
+                        |> List.map sendToHCDone
+                        |> Expect.equal [ False, False, False ]
+            , test "A CHW postpartum visit with a danger sign in the mother or the child behaves the same way: Yes marks the task done" <|
+                \_ ->
+                    [ chwPostpartum [ PostpartumMotheUterineBleeding ] [ NoPostpartumChildDangerSigns ]
+                    , chwPostpartum [ NoPostpartumMotherDangerSigns ] [ PostpartumChildInabilityToSuckle ]
+                    ]
+                        |> List.map (\visit -> savedReferral (chwReferredYes True True) emptyPrenatalMeasurements |> visit |> sendToHCDone)
+                        |> Expect.equal [ True, True ]
+            , test "A CHW postpartum visit with a danger sign in the mother or the child behaves the same way: No with a reason marks the task done" <|
+                \_ ->
+                    [ chwPostpartum [ PostpartumMotheUterineBleeding ] [ NoPostpartumChildDangerSigns ]
+                    , chwPostpartum [ NoPostpartumMotherDangerSigns ] [ PostpartumChildInabilityToSuckle ]
+                    ]
+                        |> List.map (\visit -> savedReferral (chwReferredNo ClientUnableToAffordFees) emptyPrenatalMeasurements |> visit |> sendToHCDone)
+                        |> Expect.equal [ True, True ]
+            , test "guard: the postpartum task is asked for a danger sign in the mother or the child, not when both answered \"none\"" <|
+                \_ ->
+                    [ chwPostpartum [ PostpartumMotheUterineBleeding ] [ NoPostpartumChildDangerSigns ] emptyPrenatalMeasurements
+                    , chwPostpartum [ NoPostpartumMotherDangerSigns ] [ PostpartumChildInabilityToSuckle ] emptyPrenatalMeasurements
+                    , chwPostpartum [ NoPostpartumMotherDangerSigns ] [ NoPostpartumChildDangerSigns ] emptyPrenatalMeasurements
+                    ]
+                        |> List.map sendToHCExpected
+                        |> Expect.equal [ True, True, False ]
+            ]
+        ]
+
+
+nurseReferralToFacilitiesTest : Test
+nurseReferralToFacilitiesTest =
+    let
+        -- Nurse first visit with Pregnancy Dating "not confident" with a
+        -- reason: the nurse must refer to ultrasound.
+        nurseUltrasound measurements =
+            emptyPrenatalMeasurements
+                |> withNotConfidentDating
+                |> measurements
+                |> visitOfType NurseEncounter []
+
+        -- Nurse visit needing both a hospital referral (severe anemia) and an
+        -- ultrasound referral.
+        nurseHospitalAndUltrasound measurements =
+            emptyPrenatalMeasurements
+                |> withNotConfidentDating
+                |> measurements
+                |> visitOfType NurseEncounter [ DiagnosisSevereAnemiaInitialPhase ]
+
+        -- Nurse postpartum visit with excessive bleeding: the nurse must refer
+        -- to hospital.
+        nursePostpartumHospital measurements =
+            visitOfType NursePostpartumEncounter [ DiagnosisPostpartumExcessiveBleeding ] (measurements emptyPrenatalMeasurements)
+
+        ultrasoundReferred =
+            { emptyReferralForm | referToUltrasound = Just True, referralFormUltrasound = Just True }
+
+        ultrasoundNotReferred =
+            { emptyReferralForm | referToUltrasound = Just False, facilityNonReferralReasons = Just (EverySet.singleton (NonReferralReasonUltrasound ClientRefused)) }
+
+        hospitalReferred =
+            { emptyReferralForm | referToHospital = Just True, referralFormHospital = Just True }
+
+        hospitalNotReferred =
+            { emptyReferralForm | referToHospital = Just False, facilityNonReferralReasons = Just (EverySet.singleton (NonReferralReasonHospital NoAmbulance)) }
+
+        hospitalAndUltrasoundReferred =
+            { emptyReferralForm
+                | referToHospital = Just True
+                , referralFormHospital = Just True
+                , referToUltrasound = Just True
+                , referralFormUltrasound = Just True
+            }
+    in
+    describe "nurse visit: Send to health centre task"
+        [ test "On nurse antenatal and postpartum visits nothing changes: the task is done when every facility the nurse must refer to has been answered" <|
+            \_ ->
+                [ nurseUltrasound (savedReferral ultrasoundReferred)
+                , nurseUltrasound (savedReferral ultrasoundNotReferred)
+                , nurseHospitalAndUltrasound (savedReferral hospitalAndUltrasoundReferred)
+                , nursePostpartumHospital (savedReferral hospitalReferred)
+                , nursePostpartumHospital (savedReferral hospitalNotReferred)
+                ]
+                    |> List.map sendToHCDone
+                    |> Expect.equal [ True, True, True, True, True ]
+        , test "guard: nurse antenatal, a facility to refer to and nothing saved: not done" <|
+            \_ ->
+                [ nurseUltrasound identity, nurseHospitalAndUltrasound identity ]
+                    |> List.map (\visit -> ( sendToHCExpected visit, sendToHCDone visit ))
+                    |> Expect.equal [ ( True, False ), ( True, False ) ]
+        , test "guard: nurse antenatal, only one of two facilities answered: not done" <|
+            \_ ->
+                [ nurseHospitalAndUltrasound (savedReferral ultrasoundReferred)
+                , nurseHospitalAndUltrasound (savedReferral hospitalReferred)
+                ]
+                    |> List.map sendToHCDone
+                    |> Expect.equal [ False, False ]
+        , test "guard: nurse antenatal, a health-centre answer does not stand for the ultrasound referral" <|
+            -- A saved "referred to the health centre: Yes" or "No" with a
+            -- reason answers the CHW question, not the nurse's facility.
+            \_ ->
+                [ nurseUltrasound (savedReferral (chwReferredYes True True))
+                , nurseUltrasound (savedReferral (chwReferredNo ClientRefused))
+                ]
+                    |> List.map sendToHCDone
+                    |> Expect.equal [ False, False ]
+        , test "guard: nurse antenatal with a danger sign but no facility to refer to: the task is not asked" <|
+            \_ ->
+                visitOfType NurseEncounter [] (withVaginalBleeding emptyPrenatalMeasurements)
+                    |> sendToHCExpected
+                    |> Expect.equal False
+        , test "guard: nurse postpartum, hospital referral and nothing saved: not done" <|
+            \_ ->
+                nursePostpartumHospital identity
+                    |> (\visit -> ( sendToHCExpected visit, sendToHCDone visit ))
+                    |> Expect.equal ( True, False )
+        , test "guard: nurse postpartum, a health-centre answer does not stand for the hospital referral" <|
+            \_ ->
+                [ nursePostpartumHospital (savedReferral (chwReferredYes True True))
+                , nursePostpartumHospital (savedReferral (chwReferredNo ClientRefused))
+                ]
+                    |> List.map sendToHCDone
+                    |> Expect.equal [ False, False ]
         ]
