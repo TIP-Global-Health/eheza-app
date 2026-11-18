@@ -561,13 +561,21 @@ validateHmisNumber =
 
 
 withDefault : Maybe a -> Validation ValidationError (Maybe a) -> Validation ValidationError (Maybe a)
-withDefault related =
+withDefault related validation =
     case related of
         Just _ ->
-            defaultValue related
+            \validationField ->
+                -- A field the nurse never set keeps the stored value, which may
+                -- name a place missing from the address list. A cleared field
+                -- holds "" and is validated as given.
+                if isNothing (Form.Field.asString validationField) then
+                    defaultValue related validation validationField
+
+                else
+                    validation validationField
 
         Nothing ->
-            identity
+            validation
 
 
 validateProvince : GeoInfo -> Maybe Person -> Validation ValidationError (Maybe String)
