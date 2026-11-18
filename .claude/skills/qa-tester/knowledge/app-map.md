@@ -32,7 +32,9 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
 - A measurement node is found by its patient: join `field_data_field_person` to the person
   node and match its title (`E2ETest <firstName>`).
 - A prenatal encounter's diagnoses on the server: `field_data_field_prenatal_diagnoses` by encounter nid; the encounter reaches the person
-  through `field_individual_participant` → the participant's `field_person`. A referral saved in Next Steps is a `prenatal_send_to_hc` node.
+  through `field_individual_participant` → the participant's `field_person`. A referral saved in Next Steps is a `prenatal_send_to_hc` node;
+  a hospital referral is in its `field_referrals` (`hospital`, `hospital-referral-form`; ultrasound `us`, `us-referral-form`), not `field_send_to_hc`.
+  A CHW's referral is `field_send_to_hc` (`refer-to-hc`, `referral-form`, `accompany-to-hc`), or `none` with `field_reason_not_sent_to_hc` (`client-refused`).
 - A pregnancy (`individual_participant`) holds its outcome in `field_outcome` (`live-at-term`, `still-at-term`, …), `field_date_concluded` and the newborn in `field_newborn`.
 - Yes/No follow-up fields on the server: `field_send_to_hc` + `field_reason_not_sent_to_hc`, `field_health_education_signs` + `field_reason_not_given_education`,
   `field_treatment_ongoing` + `field_reason_for_not_taking` / `field_missed_doses` / `field_adverse_events`, `field_treatment_history`, `field_administration_note`.
@@ -83,7 +85,7 @@ flag simply does not appear.
 - **The newborn exam (Birth History) is CHW-only.** A nurse always starts a `PediatricCare`
   encounter, which never offers it (`Pages/WellChild/Participant/View.elm` picks
   `NewbornExam` only for a CHW and a child under two months).
-- A CHW's participant search lists only people living in the chosen village. A nurse's registration
+- A CHW's participant search, and the CHW's Participant Directory, list only people living in the chosen village. A nurse's registration
   puts a woman in Birambo, so a woman both roles must open is registered by the CHW: Akanduga
   belongs to Nyange, where the nurse finds her.
 - Group sessions: a CHW opens straight onto Attendance; a nurse goes Clinical → Group
@@ -304,6 +306,9 @@ flag simply does not appear.
 - Labs history rows are `.history-entry` (name, date, and an `.action` reading UPDATE). Random Blood Sugar is listed
   as "Blood Sugar". A result entered there is reported to the current visit's `past_prenatal_diagnoses`, and its report
   reads "<diagnosis> - diagnosed on <date> as a result of entering lab results from past encounter".
+  The Blood Sugar result page shows the test date and `.form-input.measurement.sugar-count`; after its Save, with no other pending entry,
+  the History tab goes and Laboratory shows that visit's own tabs, with no "updated all results" question. 250 → hospital Referral in Next Steps.
+  Blood sugar is not offered at the visit diabetes was reported to, but is offered again at the next visit.
 - A Pregnancy Dating save sends two requests together: the LMP (POST, PATCH when corrected) and a PATCH of the
   pregnancy (`individual_participant`) setting its EDD. The visit header shows EDD and EGA; reopen the form from
   Completed to correct it, which sends both again. Backend EDD: `h.common.queryPregnancyEdd(name)`.
@@ -325,6 +330,8 @@ flag simply does not appear.
   (the first is Lack of stock). Fefol given hides Iron and Folate. Since #2521 a follow-up nurse visit lists Medication while a supplement is due.
 - Follow-up Treatment Review, Prenatal Medication tab: `.form-input.yes-no.iron-folic-acid` always, and `.mebendezole` from 24 weeks while
   Mebendazole was not given or reported at an earlier visit. A "No" there puts Mebendazole into Next Steps › Medication Distribution.
+  A first visit has no Treatment Review record, so Next Steps never offers Mebendazole there. Its "Why not?" reads Out of Stock, Known Allergy,
+  Patient Unable to Afford, Patient Declined, Other (the Medication activity's first reason is Lack of stock).
   The full first-visit helper chain needs EGA ≥ 28 weeks: `completeMentalHealth` waits for a card shown only then.
   Below 28 weeks, leave `completeMentalHealth` out and the rest of the chain runs (19, 20 and 25 weeks tried).
 - With labs sent to the lab, Next Steps ends on Wait → Pause Encounter, which ENDS the visit (`scheduled_date.value2` = that day)
@@ -342,7 +349,8 @@ flag simply does not appear.
   shows three selects: protein, pH, glucose; protein and glucose share the options 0, +1 … +4. Lab Results shows the same selects.
   At 37 w+ a point-of-care result that diagnoses an emergency jumps to Next Steps behind the warning, leaving the other lab tabs unasked.
 - Eclampsia fixture: Dating, History, Examination, then Danger Signs "Convulsions" (no other activity needed). After 165/115 it also gives high risk
-  of preeclampsia on develop; gestational hypertension is not stored beside eclampsia.
+  of preeclampsia on develop; gestational hypertension is not stored beside eclampsia. Next Steps is Referral + Next ANC Visit; Next Steps completes only once both are saved.
+  Dating answered "not confident" with a reason adds an ultrasound referral to the same Referral form (nurse only).
 - Moderate Preeclampsia fixture: 26 w, 165 / 100, then reopen Examination from Completed → Core Physical Exam → the first "Edema" (hands) →
   Save: `moderate-preeclampsia-initial`, Next Steps Referral + Next ANC Visit. A later visit then has Treatment Review and Medication Distribution.
 - A later visit at 150 / 95 after earlier hypertension: Medication Distribution recommends Methyldopa three times a day, and Save stays off
@@ -358,6 +366,7 @@ flag simply does not appear.
   missed doses, adverse events; adverse Yes adds a hospital-referral question). Its Medication Distribution reads "previously diagnosed with
   Hypertension … remain unchanged" and lists Carvedilol/Amlodipine steps; the report adds "(continued)".
 - With Healthy Start on, End Encounter stayed disabled after the full first-visit helper chain (Ultrasound, Malaria Prevention, Photo left in To Do).
+  Visits a week apart on a shifted page clock: upload, then `backdatePrenatalEncounter(name, offsetDays)` ends the latest visit on its own day. A visit with labs at the lab ends itself (Pause).
 - Same-day vitals recheck: visit 145/95, Next Steps ends on Wait › Pause; then Case Management › ANC Labs › the entry › Examination
   (`completeRecurrentExamination(page, { sys, dia })`). Recheck 145/95 stores `gestational-hypertension-recheck` at 20 w+, `chronic-hypertension-recheck`
   below; Next Steps › Medication Distribution offers Methyldopa. 165/100 schedules no recheck.
@@ -390,13 +399,16 @@ flag simply does not appear.
 - Progress report panes: chronic hypertension and diabetes are under `.medical-diagnosis`; gestational hypertension
   ("Pregnancy-induced hypertension"), gestational diabetes and preeclampsia under `.obstetric-diagnosis`.
 - An ended visit's progress report: Participant Directory → `span.patient-record` → `.pane.progress-reports` button
-  Antenatal Care → `.entry.antenatal .icon-forward` (one row per pregnancy). It writes nothing.
+  Antenatal Care → `.entry.antenatal .icon-forward` (one row per pregnancy). It writes nothing. Opened by a CHW, the report leaves out the
+  pregnancy's last encounter, so its Medication History shows only earlier nurse visits.
+- Medication History pane: `.medication-history .entry.medication`, one row per supplement (name, date or "--"). Since #2549 the Mebendazole
+  row also takes a Next Steps hand-over; the latest date across both wins.
 - Prenatal progress report: Reports tab → Clinical Progress Report (`h.progressReport.openReport(page,
   'prenatal')`). The Obstetric History pane is the first `.risk-factors`; diagnoses are under
   OBSTETRIC DIAGNOSIS. The encounter page's red `div.alerts` icon opens `.alerts-dialog` (High Risk
   Factors, such as convulsions at a previous delivery). The icon is absent when there is no alert.
 - An encounter's `field_scheduled_date` holds the start in `value` and the end in `value2` (null =
-  still open); the tablet's `scheduled_date` mirrors it. Editing either with drush and syncing
+  still open); the tablet's `scheduled_date` mirrors it as `{ value, value2 }`. Editing either with drush and syncing
   moves the visit on the device. For a visit started yesterday and still open, set only `value`:
   `backdateEncounter` sets both, which ends the visit.
 - A nurse postpartum visit for a woman with no visits: Examination (`completeExamination(page, { isPostpartum: true, vitals })`) runs straight
@@ -435,6 +447,7 @@ flag simply does not appear.
 - CHW visit 2 with no danger signs: Danger Signs, Birth Plan, Health Education, Next Steps; Next Steps
   is Appointment Confirmation, CHW Follow Up, Next ANC Visit. Next ANC Visit shows a date computed
   from the LMP; saving it as the last task opens the progress report, which carries End Encounter.
+- CHW postpartum visit with a mother's danger sign: Next Steps is Send to Health Center, CHW Follow Up, Health Education. The child's danger-sign list shows after a stillbirth too.
 - CHW postpartum visit: Pregnancy Outcome, Danger Signs (tick "None of these" for mother and child),
   Next Steps. Postpartum Danger Signs has two "None of these" lists, so `completeDangerSigns` fails
   there. With no danger signs Next Steps is Health Education, plus Newborn Enrolment after a
@@ -517,8 +530,8 @@ flag simply does not appear.
   and `field_deleted` 0; shards fill in on save. An encounter moves by `field_individual_participant`.
 - Develop's participant pages pick the participant with the LOWEST uuid (Dexie order), so a chosen uuid
   (`00000000-…` or `ffffffff-…`) decides develop's pick. Since #2455 new encounters go on the earliest start date.
-- An encounter or participant with `field_deleted` 1 drops out of the tablet's queries after a sync: the way
-  to hide a stray record from a fixture, and to bring it back.
+- An encounter, participant or measurement (`prenatal_mebendazole` tried) with `field_deleted` 1 drops out of the tablet's queries after a sync: the way
+  to hide a stray record from a fixture, and to bring it back. A hidden earlier Mebendazole makes a later visit offer it again.
 - From the main menu, an in-app jump to `#well-child-encounter/<uuid>` (location.hash) showed a spinner for a
   minute. Reach the visit through its participant page.
 - Child Scorecard offers Vaccination History only after NCDA is saved
@@ -667,7 +680,8 @@ flag simply does not appear.
   - **Antenatal (CHW) → Antenatal Care pane.** Every CHW antenatal visit except postpartum has
     Follow Up in Next Steps. A danger sign makes Danger Signs' Save open Next Steps with a
     "refer to health center" warning: Send to Health Center, CHW Follow Up, Next ANC Visit, and
-    no Health Education.
+    no Health Education. The Send to Health Center form: `.yes-no.refer-to-hc`; Yes adds `hand-referral-form`
+    and `accompany-to-hc`, No adds "Why not?" checkboxes (Client refused first).
   - **Well Child (CHW) → Immunization pane.** The child must be under two (`expectImmunizationFollowUp`), so a 2-year-old never lists. Danger Signs, Nutrition Assessment, then
     Immunizations answering **No** to each vaccine — `h.wellChild.completeImmunisation(page,
     { isChw: true })`; without `isChw` it answers Yes and gives the vaccines. Leave them

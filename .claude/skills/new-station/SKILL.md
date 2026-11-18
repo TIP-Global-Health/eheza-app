@@ -23,7 +23,9 @@ These do **not** travel, and each new station recreates them:
 | `.git/info/exclude` | per-clone by design | `.claude/hooks/` is excluded here only |
 | `client/src/elm/LocalConfig.elm`, `.ddev/config.local.yaml` | gitignored config | covered by Local Setup in `CLAUDE.md` |
 | `server/.pantheon-*/` | deploy checkouts | recreated by the deploy skills |
+| host `elm` and `elm-test` | global npm packages, per machine | tests run on the wrong compiler; `npm i -g elm@0.19.3-0 elm-test@0.19.3-0` |
 | `<repo>-wt/` | per-item worktrees | recreated by `.claude/scripts/new-worktree.sh <branch>` |
+| the night-discovery cron entry | crontab is per machine | no night rounds; see below — **one station only** |
 
 ## Memory
 
@@ -33,3 +35,15 @@ Memory lives in the repo only because each station points Claude Code at it. Set
 That key is deliberately ignored in checked-in project settings, so it has to be set per station.
 
 Without it a station writes to `~/.claude/projects/<project>/memory/` and the two copies drift.
+
+## Night discovery
+
+One station runs discovery rounds at night on spare Fable allowance. Two stations doing it would
+double the spending, so install the cron entry on one machine only:
+
+```
+0 0 * * 6,0,1,2 /var/www/html/ihangane/.claude/scripts/night-discovery.sh
+```
+
+Its decisions and the measured cost of each round are logged in
+`~/.local/state/eheza-night-discovery/`. `night-discovery.sh --dry-run` prints tonight's decision.

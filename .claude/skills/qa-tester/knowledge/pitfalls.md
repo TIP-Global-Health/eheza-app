@@ -923,3 +923,33 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after a scripted tap on Subsequent Antenatal, the back-arrow click timed out: "`<div class="overlay">` intercepts pointer events".
 - **Wrong conclusion:** the encounter page hung.
 - **Rule:** a CHW visit without nurse visits opens behind a "has not yet been seen at the health center" notice. `startPrenatalEncounter` presses its OK; a hand-written tap must press it too.
+
+## Waiting on a Monitor ends the run (met again)
+
+- **Symptom:** after starting a Monitor for gulp's rebuild, the run ended its turn to wait, and the harness sent `[handback-send-enforce]` (PR #2543).
+- **Wrong conclusion:** a Monitor keeps a subagent waiting like a background Bash job does.
+- **Rule:** the same pit as "Waiting on a detached chain ends the run". In a subagent, wait for gulp with a capped foreground `until grep -qF … Main.js` loop (under 175 s, repeated), or a `run_in_background` Bash wait, never a Monitor alone.
+
+## Matching encounter card labels with a mixed-case regex
+
+- **Symptom:** a recorded check "Next Steps still To Do" failed, though the logged To Do list read `["NEXT STEPS"]`; test 1 had to be re-recorded on a new fixture (PR #2547).
+- **Wrong conclusion:** the PR left Next Steps out of To Do.
+- **Rule:** encounter card labels are uppercase in `textContent` itself, not only by CSS. Match card and tab labels with a case-insensitive regex (`/next steps/i`), and read the logged values before trusting a failed check.
+
+## A name regex that ends with `(?!\w)` on a Participant Directory row (met again)
+
+- **Symptom:** two report readings timed out finding `span.patient-record` in the row for "Qa2549Y"; the row's text runs on as "Qa2549YDOB: …" (PR #2549).
+- **Wrong conclusion:** the person is not in the directory.
+- **Rule:** the same pit as "A name regex that ends with `(?!\w)` on a Case Management entry". End every name match with `(?!\d)`.
+
+## Guessing a reason label from a sibling form
+
+- **Symptom:** a script ticking "Lack of stock" in prenatal Next Steps › Medication Distribution timed out; that form says "Out of Stock" (PR #2549).
+- **Wrong conclusion:** the "Why not?" list did not appear.
+- **Rule:** the Medication activity and Medication Distribution word their reasons differently. Take labels from the view code or `qa.state().choices`.
+
+## A chain that carries on after a failed test leaves the visit unrecoverable in place
+
+- **Symptom:** after test 5 failed on its Next Steps step, the chain ran the next tests and signed in the CHW, so the resumed script found neither the page nor the woman.
+- **Wrong conclusion:** the half-finished visit is lost.
+- **Rule:** reopen it as the nurse (`qa.signIn` first) through Subsequent Antenatal, which reopens today's open visit, and record the rest as a continuation video.
