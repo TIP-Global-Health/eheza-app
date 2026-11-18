@@ -2,7 +2,8 @@ module Backend.Person.Test exposing (all)
 
 {-| What the person form offers and saves: the birth-date range offered when
 registering a child, the age rule the save applies to the date picked, and
-the national ID saved for the text typed.
+the national ID saved for the text typed, and the address and health centre
+saved when a person is edited or a family member is added.
 
 A child-only birth-date picker offers `earliestChildBirthDate currentDate` up
 to `currentDate`, both ends selectable. An adult-only picker offers dates up
@@ -12,21 +13,41 @@ which case education level and marital status are required.
 
 -}
 
+import AssocList as Dict
+import Backend.Entities exposing (HealthCenterId)
 import Backend.Person.Form
     exposing
-        ( birthDate
+        ( applyDefaultValuesForPerson
+        , birthDate
+        , cell
+        , district
         , educationLevel
+        , emptyCreateForm
+        , emptyEditForm
+        , firstName
+        , gender
+        , healthCenter
         , maritalStatus
+        , modeOfDelivery
+        , phoneNumber
+        , province
+        , secondName
+        , sector
         , validatePerson
+        , village
         )
-import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), Person)
+import Backend.Person.Model exposing (EducationLevel(..), Initiator(..), MaritalStatus(..), ModeOfDelivery(..), ParticipantDirectoryOperation(..), Person, Ubudehe(..))
 import Backend.Person.Utils exposing (earliestChildBirthDate, graduatingAgeInMonth, isAdult)
 import Date exposing (Interval(..), Unit(..))
 import Expect
 import Form exposing (Form)
 import Form.Field
+import GeoLocation.Model exposing (GeoLocation, GeoLocationId, ReverseGeoInfo)
+import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
-import Restful.Endpoint exposing (toEntityUuid)
+import List.Extra
+import Maybe.Extra exposing (isJust)
+import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 import TestFixtures exposing (testChild, testPerson)
@@ -147,6 +168,7 @@ all =
             , graduatingAgeUnchanged
             ]
         , nationalIdNumberSaved
+        , addressAndHealthCentre
         ]
 
 
@@ -475,3 +497,844 @@ graduatingAgeUnchanged =
         \_ ->
             graduatingAgeInMonth
                 |> Expect.equal 26
+
+
+
+-- ADDRESS AND HEALTH CENTRE ON SAVE
+
+
+{-| The day every address scenario is saved on.
+-}
+saveDate : NominalDate
+saveDate =
+    date 2026 Nov 18
+
+
+{-| One place on the device's address list: its ID, which is what the form's
+select holds, and its name and parent.
+-}
+type alias Place =
+    ( GeoLocationId, GeoLocation )
+
+
+{-| A full address on the device's address list: one place per level, each
+inside the one before it.
+-}
+type alias Address =
+    { province : Place
+    , district : Place
+    , sector : Place
+    , cell : Place
+    , village : Place
+    }
+
+
+{-| The places the address scenarios need on one site.
+
+`home` is where the person lives. `otherCell` is an address in the same
+sector as `home` but in another cell; `otherSector` is in the same district
+but another sector. Somalia has a single cell per sector, so its `otherCell`
+is `Nothing`.
+
+-}
+type alias Places =
+    { home : Address
+    , otherCell : Maybe Address
+    , otherSector : Maybe Address
+    }
+
+
+{-| Every full address on the site's address list.
+-}
+addressesOn : Site -> List Address
+addressesOn site =
+    let
+        geoInfo =
+            getGeoInfo site
+
+        childrenOf level =
+            Dict.foldr
+                (\id place ->
+                    Dict.update place.parent
+                        (Maybe.withDefault [] >> (::) ( id, place ) >> Just)
+                )
+                Dict.empty
+                level
+
+        districts =
+            childrenOf geoInfo.districts
+
+        sectors =
+            childrenOf geoInfo.sectors
+
+        cells =
+            childrenOf geoInfo.cells
+
+        villages =
+            childrenOf geoInfo.villages
+
+        under children ( parentId, _ ) =
+            Dict.get (Just parentId) children
+                |> Maybe.withDefault []
+    in
+    Dict.toList geoInfo.provinces
+        |> List.concatMap
+            (\province_ ->
+                under districts province_
+                    |> List.concatMap
+                        (\district_ ->
+                            under sectors district_
+                                |> List.concatMap
+                                    (\sector_ ->
+                                        under cells sector_
+                                            |> List.concatMap
+                                                (\cell_ ->
+                                                    under villages cell_
+                                                        |> List.map (Address province_ district_ sector_ cell_)
+                                                )
+                                    )
+                        )
+            )
+
+
+placesOn : Site -> Maybe Places
+placesOn site =
+    let
+        addresses =
+            addressesOn site
+
+        samePlace a b =
+            Tuple.first a == Tuple.first b
+
+        otherCellFor home =
+            List.Extra.find
+                (\address -> samePlace address.sector home.sector && not (samePlace address.cell home.cell))
+                addresses
+
+        otherSectorFor home =
+            List.Extra.find
+                (\address -> samePlace address.district home.district && not (samePlace address.sector home.sector))
+                addresses
+
+        withBoth home =
+            Maybe.map2 (\otherCell otherSector -> Places home (Just otherCell) (Just otherSector))
+                (otherCellFor home)
+                (otherSectorFor home)
+
+        withOtherSector home =
+            Maybe.map (\otherSector -> Places home Nothing (Just otherSector))
+                (otherSectorFor home)
+    in
+    case List.Extra.findMap withBoth addresses of
+        Just places ->
+            Just places
+
+        Nothing ->
+            List.Extra.findMap withOtherSector addresses
+
+
+rwandaPlaces : Maybe Places
+rwandaPlaces =
+    placesOn SiteRwanda
+
+
+burundiPlaces : Maybe Places
+burundiPlaces =
+    placesOn SiteBurundi
+
+
+somaliaPlaces : Maybe Places
+somaliaPlaces =
+    placesOn SiteSomalia
+
+
+rwandaReverseGeoInfo : ReverseGeoInfo
+rwandaReverseGeoInfo =
+    getReverseGeoInfo (getGeoInfo SiteRwanda)
+
+
+burundiReverseGeoInfo : ReverseGeoInfo
+burundiReverseGeoInfo =
+    getReverseGeoInfo (getGeoInfo SiteBurundi)
+
+
+somaliaReverseGeoInfo : ReverseGeoInfo
+somaliaReverseGeoInfo =
+    getReverseGeoInfo (getGeoInfo SiteSomalia)
+
+
+reverseGeoInfoOn : Site -> ReverseGeoInfo
+reverseGeoInfoOn site =
+    case site of
+        SiteBurundi ->
+            burundiReverseGeoInfo
+
+        SiteRwanda ->
+            rwandaReverseGeoInfo
+
+        SiteSomalia ->
+            somaliaReverseGeoInfo
+
+        _ ->
+            getReverseGeoInfo (getGeoInfo site)
+
+
+{-| Runs the check with the site's places, or fails when the site's address
+list has none to offer.
+-}
+withPlaces : Site -> (Places -> Expect.Expectation) -> Expect.Expectation
+withPlaces site check =
+    let
+        places =
+            case site of
+                SiteBurundi ->
+                    burundiPlaces
+
+                SiteRwanda ->
+                    rwandaPlaces
+
+                SiteSomalia ->
+                    somaliaPlaces
+
+                _ ->
+                    placesOn site
+    in
+    case places of
+        Just found ->
+            check found
+
+        Nothing ->
+            Expect.fail "the site's address list has no address these scenarios can use"
+
+
+{-| The sites every address scenario runs on.
+-}
+sites : List ( String, Site )
+sites =
+    [ ( "Rwanda", SiteRwanda ), ( "Burundi", SiteBurundi ), ( "Somalia", SiteSomalia ) ]
+
+
+{-| One test per site, named after it.
+-}
+onEverySite : String -> (Site -> Expect.Expectation) -> Test
+onEverySite description check =
+    describe description <|
+        List.map (\( name, site ) -> test name <| \_ -> check site) sites
+
+
+placeName : Place -> String
+placeName ( _, place ) =
+    place.name
+
+
+{-| What the form's select holds when the place is picked.
+-}
+placeId : Place -> String
+placeId ( id, _ ) =
+    String.fromInt (fromEntityId id)
+
+
+homeHealthCentre : HealthCenterId
+homeHealthCentre =
+    toEntityUuid "home-health-centre"
+
+
+{-| An adult who lives at the address and is registered at
+`homeHealthCentre`. Education level and marital status are set, since an
+adult's save requires them.
+-}
+personAt : Address -> Person
+personAt address =
+    { testPerson
+        | province = Just (placeName address.province)
+        , district = Just (placeName address.district)
+        , sector = Just (placeName address.sector)
+        , cell = Just (placeName address.cell)
+        , village = Just (placeName address.village)
+        , healthCenterId = Just homeHealthCentre
+        , educationLevel = Just PrimarySchool
+        , maritalStatus = Just Married
+        , ubudehe = Just Ubudehe2
+        , telephoneNumber = Just "0788000000"
+    }
+
+
+{-| The part of a person the address scenarios look at.
+-}
+type alias SavedAddress =
+    { province : Maybe String
+    , district : Maybe String
+    , sector : Maybe String
+    , cell : Maybe String
+    , village : Maybe String
+    , healthCenterId : Maybe HealthCenterId
+    }
+
+
+{-| The saved address, written out for a failure message.
+-}
+describeSaved : SavedAddress -> String
+describeSaved saved =
+    [ saved.province, saved.district, saved.sector, saved.cell, saved.village, Maybe.map fromEntityUuid saved.healthCenterId ]
+        |> List.map (Maybe.withDefault "(none)")
+        |> String.join " / "
+
+
+savedAddress : Person -> SavedAddress
+savedAddress person =
+    { province = person.province
+    , district = person.district
+    , sector = person.sector
+    , cell = person.cell
+    , village = person.village
+    , healthCenterId = person.healthCenterId
+    }
+
+
+pick : String -> String -> Form.Msg
+pick name value =
+    Form.Input name Form.Select (Form.Field.String value)
+
+
+{-| The nurse sets a select back to its empty option.
+-}
+clear : String -> Form.Msg
+clear name =
+    pick name ""
+
+
+typeText : String -> String -> Form.Msg
+typeText name value =
+    Form.Input name Form.Text (Form.Field.String value)
+
+
+{-| The nurse opens the form, makes the given changes, and presses Save. This
+follows the person page: the form keeps only what the nurse changed, and the
+related person's values are filled into the fields still empty, both on
+screen and on Save. `Ok` is the person saved; `Err` lists the fields shown in
+error, sorted, and nothing is saved.
+-}
+pressSave : Site -> ParticipantDirectoryOperation -> Person -> List Form.Msg -> Result (List String) Person
+pressSave site operation related changes =
+    let
+        validation =
+            validatePerson site (Just related) operation (Just saveDate)
+
+        opened =
+            case operation of
+                CreatePerson _ ->
+                    emptyCreateForm site
+
+                EditPerson _ ->
+                    emptyEditForm site
+
+        changed =
+            List.foldl (Form.update validation) opened changes
+
+        withDefaults =
+            applyDefaultValuesForPerson saveDate
+                site
+                (reverseGeoInfoOn site)
+                Nothing
+                False
+                (Just related)
+                operation
+                ParticipantDirectoryOrigin
+    in
+    case Form.getOutput (withDefaults changed) of
+        Just person ->
+            Ok person
+
+        Nothing ->
+            let
+                shown =
+                    withDefaults (Form.update validation Form.Submit changed)
+            in
+            Form.getErrors shown
+                |> List.map Tuple.first
+                |> List.filter (\name -> isJust (Form.getFieldAsString name shown).liveError)
+                |> List.sort
+                |> Err
+
+
+editPerson : ParticipantDirectoryOperation
+editPerson =
+    EditPerson (toEntityUuid "edited-person")
+
+
+{-| The nurse edits the person, makes the changes and presses Save.
+-}
+saveEdit : Site -> Person -> List Form.Msg -> Result (List String) SavedAddress
+saveEdit site person changes =
+    pressSave site editPerson person changes
+        |> Result.map savedAddress
+
+
+{-| The fields shown as required when the save is refused, or a failure
+naming the address that was saved instead.
+-}
+expectRequired : List String -> Result (List String) SavedAddress -> Expect.Expectation
+expectRequired fields result =
+    case result of
+        Err shown ->
+            Expect.equalLists (List.sort fields) shown
+
+        Ok saved ->
+            Expect.fail <|
+                "nothing should be saved until "
+                    ++ String.join ", " fields
+                    ++ " is picked, but the form saved "
+                    ++ describeSaved saved
+
+
+{-| The cleared field is among those shown as required, and nothing is
+saved.
+-}
+expectAmongRequired : String -> Result (List String) SavedAddress -> Expect.Expectation
+expectAmongRequired field result =
+    case result of
+        Err shown ->
+            if List.member field shown then
+                Expect.pass
+
+            else
+                Expect.fail <| field ++ " is not shown as required; the fields in error are " ++ String.join ", " shown
+
+        Ok saved ->
+            Expect.fail <|
+                "nothing should be saved until "
+                    ++ field
+                    ++ " is picked, but the form saved "
+                    ++ describeSaved saved
+
+
+addressLevels : List String
+addressLevels =
+    [ province, district, sector, cell, village ]
+
+
+{-| The same address and health centre as the person's, as saved.
+-}
+unchanged : Person -> Result (List String) SavedAddress
+unchanged person =
+    Ok (savedAddress person)
+
+
+addressAndHealthCentre : Test
+addressAndHealthCentre =
+    describe "the address and health centre saved"
+        [ clearedVillageIsRequired
+        , everyClearedLevelIsRequired
+        , changedCellNeedsAVillage
+        , untouchedAddressSavesUnchanged
+        , unlistedAddressSavesWhenUntouched
+        , familyMemberAddress
+        ]
+
+
+{-| Criterion: editing a person, clearing the village and saving shows the
+village as required. Nothing is saved until a village is picked.
+-}
+clearedVillageIsRequired : Test
+clearedVillageIsRequired =
+    describe "Editing a person, clearing the village and saving"
+        [ onEverySite "shows the village as required, and nothing is saved until a village is picked" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        saveEdit site (personAt places.home) [ clear village ]
+                            |> expectRequired [ village ]
+        , onEverySite "then picking the same village again saves the address unchanged" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+                        in
+                        saveEdit site person [ clear village, pick village (placeId places.home.village) ]
+                            |> Expect.equal (unchanged person)
+        , test "Rwanda: also editing the phone number does not let the cleared village through" <|
+            \_ ->
+                withPlaces SiteRwanda <|
+                    \places ->
+                        saveEdit SiteRwanda (personAt places.home) [ typeText phoneNumber "0788111111", clear village ]
+                            |> expectRequired [ village ]
+        , test "Rwanda: clearing the village of a child shows it as required too" <|
+            -- The village select is locked for a child being edited, but the
+            -- save must not depend on that lock.
+            \_ ->
+                withPlaces SiteRwanda <|
+                    \places ->
+                        let
+                            child =
+                                personAt places.home
+                                    |> (\person -> { person | birthDate = Just (date 2023 Mar 10), educationLevel = Nothing, maritalStatus = Nothing, modeOfDelivery = Just CesareanDelivery })
+                        in
+                        saveEdit SiteRwanda child [ clear village ]
+                            |> expectRequired [ village ]
+        ]
+
+
+{-| Criterion: the same holds for every address level, and for the health
+centre.
+
+The address selects lock a level until the levels below it are cleared, so on
+screen clearing the province means clearing all five. The save must not rely
+on that lock: each level cleared alone is shown as required too.
+
+-}
+everyClearedLevelIsRequired : Test
+everyClearedLevelIsRequired =
+    describe "The same holds for every address level, and for the health centre"
+        [ describe "a level cleared alone is shown as required, and nothing is saved" <|
+            List.map
+                (\level ->
+                    onEverySite level <|
+                        \site ->
+                            withPlaces site <|
+                                \places ->
+                                    saveEdit site (personAt places.home) [ clear level ]
+                                        |> expectAmongRequired level
+                )
+                [ province, district, sector, cell ]
+        , onEverySite "clearing the levels from the village up to the province shows all five as required" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        saveEdit site (personAt places.home) (List.map clear (List.reverse addressLevels))
+                            |> expectRequired addressLevels
+        , onEverySite "clearing the village and the cell shows both as required" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        saveEdit site (personAt places.home) [ clear village, clear cell ]
+                            |> expectRequired [ cell, village ]
+        , onEverySite "clearing the health centre shows it as required, and nothing is saved" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        saveEdit site (personAt places.home) [ clear healthCenter ]
+                            |> expectRequired [ healthCenter ]
+        , onEverySite "picking another health centre saves it" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+
+                            otherHealthCentre =
+                                toEntityUuid "other-health-centre"
+                        in
+                        saveEdit site person [ pick healthCenter (fromEntityUuid otherHealthCentre) ]
+                            |> Expect.equal (Ok (savedAddress { person | healthCenterId = Just otherHealthCentre }))
+        ]
+
+
+{-| Criterion: changing the cell and saving without picking a village shows
+the village as required, so a new cell can never be saved with the old
+village.
+
+On screen the cell is locked while a village is set, so the nurse clears the
+village, then the cell, then picks the new cell.
+
+-}
+changedCellNeedsAVillage : Test
+changedCellNeedsAVillage =
+    let
+        changeCell otherCell =
+            [ clear village, clear cell, pick cell (placeId otherCell.cell) ]
+
+        changeSector otherSector =
+            [ clear village, clear cell, clear sector, pick sector (placeId otherSector.sector) ]
+
+        onSitesWithAnotherCell description check =
+            describe description <|
+                List.map
+                    (\( name, site ) ->
+                        test name <|
+                            \_ ->
+                                withPlaces site <|
+                                    \places ->
+                                        case places.otherCell of
+                                            Just otherCell ->
+                                                check site places otherCell
+
+                                            Nothing ->
+                                                Expect.fail "no sector on this site has two cells"
+                    )
+                    [ ( "Rwanda", SiteRwanda ), ( "Burundi", SiteBurundi ) ]
+
+        onEverySiteWithAnotherSector description check =
+            onEverySite description <|
+                \site ->
+                    withPlaces site <|
+                        \places ->
+                            case places.otherSector of
+                                Just otherSector ->
+                                    check site places otherSector
+
+                                Nothing ->
+                                    Expect.fail "no district on this site has two sectors"
+    in
+    describe "Changing the cell and saving without picking a village"
+        [ onSitesWithAnotherCell "shows the village as required, so a new cell can never be saved with the old village" <|
+            \site places otherCell ->
+                saveEdit site (personAt places.home) (changeCell otherCell)
+                    |> expectRequired [ village ]
+        , onSitesWithAnotherCell "picking the same cell again without a village shows the village as required" <|
+            \site places _ ->
+                saveEdit site (personAt places.home) [ clear village, clear cell, pick cell (placeId places.home.cell) ]
+                    |> expectRequired [ village ]
+        , onSitesWithAnotherCell "picking a village of the new cell saves the new cell with that village" <|
+            \site places otherCell ->
+                let
+                    person =
+                        personAt places.home
+                in
+                saveEdit site person (changeCell otherCell ++ [ pick village (placeId otherCell.village) ])
+                    |> Expect.equal
+                        (Ok
+                            (savedAddress
+                                { person
+                                    | cell = Just (placeName otherCell.cell)
+                                    , village = Just (placeName otherCell.village)
+                                }
+                            )
+                        )
+        , onEverySiteWithAnotherSector "changing the sector and picking a cell without a village shows the village as required" <|
+            \site places otherSector ->
+                saveEdit site (personAt places.home) (changeSector otherSector ++ [ pick cell (placeId otherSector.cell) ])
+                    |> expectRequired [ village ]
+        , onEverySiteWithAnotherSector "changing the sector without picking a cell shows the cell and the village as required" <|
+            \site places otherSector ->
+                saveEdit site (personAt places.home) (changeSector otherSector)
+                    |> expectRequired [ cell, village ]
+        , onSitesWithAnotherCell "a person whose stored village is missing from the address list: changing the cell still needs a village" <|
+            -- The stored village cannot be shown in the select, so the
+            -- village field starts empty. Once the cell changes, that stored
+            -- village must not be saved with the new cell either.
+            \site places otherCell ->
+                let
+                    person =
+                        personAt places.home
+                            |> (\atHome -> { atHome | village = Just "Village missing from the list" })
+                in
+                saveEdit site person [ clear cell, pick cell (placeId otherCell.cell) ]
+                    |> expectRequired [ village ]
+        , onSitesWithAnotherCell "a person whose stored cell is missing from the address list: picking a cell still needs a village" <|
+            -- Neither the stored cell nor its village can be shown, so both
+            -- fields start empty. The nurse picks a cell and presses Save.
+            \site places otherCell ->
+                let
+                    person =
+                        personAt places.home
+                            |> (\atHome -> { atHome | cell = Just "Cell missing from the list" })
+                in
+                saveEdit site person [ pick cell (placeId otherCell.cell) ]
+                    |> expectRequired [ village ]
+        ]
+
+
+{-| Criterion: editing any other field of a person, without touching the
+address, saves the address unchanged.
+-}
+untouchedAddressSavesUnchanged : Test
+untouchedAddressSavesUnchanged =
+    describe "Editing any other field of a person, without touching the address"
+        [ onEverySite "saves the address unchanged when the phone number is edited" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+                        in
+                        saveEdit site person [ typeText phoneNumber "0788111111" ]
+                            |> Expect.equal (unchanged person)
+        , onEverySite "saves the address unchanged when the first name is edited" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+                        in
+                        saveEdit site person [ typeText firstName "Renamed" ]
+                            |> Expect.equal (unchanged person)
+        , onEverySite "saves the address unchanged when nothing is edited" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+                        in
+                        saveEdit site person []
+                            |> Expect.equal (unchanged person)
+        , test "Rwanda: saves the phone number that was edited" <|
+            \_ ->
+                withPlaces SiteRwanda <|
+                    \places ->
+                        pressSave SiteRwanda editPerson (personAt places.home) [ typeText phoneNumber "0788111111" ]
+                            |> Result.map .telephoneNumber
+                            |> Expect.equal (Ok (Just "0788111111"))
+        ]
+
+
+{-| Criterion: a person whose stored address names a place missing from the
+device's address list still saves when the address is not touched, and keeps
+that address.
+
+A missing place cannot be shown in its select, and neither can any level
+below it, since each select offers only the places inside the one above.
+
+-}
+unlistedAddressSavesWhenUntouched : Test
+unlistedAddressSavesWhenUntouched =
+    let
+        keepsAddress description withUnlisted =
+            onEverySite description <|
+                \site ->
+                    withPlaces site <|
+                        \places ->
+                            let
+                                person =
+                                    withUnlisted (personAt places.home)
+                            in
+                            saveEdit site person [ typeText phoneNumber "0788111111" ]
+                                |> Expect.equal (unchanged person)
+    in
+    describe "A person whose stored address names a place missing from the device's address list"
+        [ keepsAddress "still saves when the address is not touched, and keeps a village missing from the list" <|
+            \person -> { person | village = Just "Village missing from the list" }
+        , keepsAddress "keeps a cell missing from the list, and the village stored under it" <|
+            \person -> { person | cell = Just "Cell missing from the list" }
+        , keepsAddress "keeps a sector missing from the list, and the levels stored under it" <|
+            \person -> { person | sector = Just "Sector missing from the list" }
+        , keepsAddress "keeps an address where no level is on the list" <|
+            \person ->
+                { person
+                    | province = Just "Province missing from the list"
+                    , district = Just "District missing from the list"
+                    , sector = Just "Sector missing from the list"
+                    , cell = Just "Cell missing from the list"
+                    , village = Just "Village missing from the list"
+                }
+        , onEverySite "still saves, and keeps the address, when nothing at all is edited" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+                                    |> (\atHome -> { atHome | village = Just "Village missing from the list" })
+                        in
+                        saveEdit site person []
+                            |> Expect.equal (unchanged person)
+        ]
+
+
+{-| Criterion: adding a family member, the address and health centre are
+filled in from the related person, and saving them unchanged works. Clearing
+a level shows it as required.
+
+The family member added is a child of the related adult, so the save asks
+for the mode of delivery and not for education level or marital status.
+
+-}
+familyMemberAddress : Test
+familyMemberAddress =
+    let
+        addFamilyMember =
+            CreatePerson (Just (toEntityUuid "related-person"))
+
+        newChild =
+            [ typeText firstName "New"
+            , typeText secondName "Child"
+            , typeText birthDate "2024-03-10"
+            , pick gender "male"
+            , pick modeOfDelivery "cesarean-delivery"
+            ]
+
+        saveFamilyMember site related changes =
+            pressSave site addFamilyMember related (newChild ++ changes)
+                |> Result.map savedAddress
+
+        filledIn site related =
+            applyDefaultValuesForPerson saveDate
+                site
+                (reverseGeoInfoOn site)
+                Nothing
+                False
+                (Just related)
+                addFamilyMember
+                ParticipantDirectoryOrigin
+                (emptyCreateForm site)
+                |> (\form ->
+                        List.map (\name -> ( name, (Form.getFieldAsString name form).value ))
+                            (addressLevels ++ [ healthCenter ])
+                   )
+    in
+    describe "Adding a family member"
+        [ onEverySite "the address and health centre are filled in from the related person" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        filledIn site (personAt places.home)
+                            |> Expect.equalLists
+                                [ ( province, Just (placeId places.home.province) )
+                                , ( district, Just (placeId places.home.district) )
+                                , ( sector, Just (placeId places.home.sector) )
+                                , ( cell, Just (placeId places.home.cell) )
+                                , ( village, Just (placeId places.home.village) )
+                                , ( healthCenter, Just (fromEntityUuid homeHealthCentre) )
+                                ]
+        , onEverySite "saving the address and health centre unchanged works" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            related =
+                                personAt places.home
+                        in
+                        saveFamilyMember site related []
+                            |> Expect.equal (unchanged related)
+        , describe "clearing a level shows it as required, and nothing is saved" <|
+            List.map
+                (\level ->
+                    onEverySite level <|
+                        \site ->
+                            withPlaces site <|
+                                \places ->
+                                    saveFamilyMember site (personAt places.home) [ clear level ]
+                                        |> expectAmongRequired level
+                )
+                addressLevels
+        , onEverySite "clearing the village shows only the village as required" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        saveFamilyMember site (personAt places.home) [ clear village ]
+                            |> expectRequired [ village ]
+        , onEverySite "clearing the health centre shows it as required, and nothing is saved" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        saveFamilyMember site (personAt places.home) [ clear healthCenter ]
+                            |> expectRequired [ healthCenter ]
+        , onEverySite "the related person's stored village missing from the list: saving the address unchanged keeps it" <|
+            -- The village cannot be filled in, as it is not in the select.
+            -- The nurse leaves the address as it is and presses Save.
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            related =
+                                personAt places.home
+                                    |> (\atHome -> { atHome | village = Just "Village missing from the list" })
+                        in
+                        saveFamilyMember site related []
+                            |> Expect.equal (unchanged related)
+        ]
