@@ -2364,6 +2364,11 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     )
                 |> Maybe.withDefault False
 
+        -- Diabetes found from a lab-history result is reported to the visit
+        -- it was entered at, so earlier visits' reported diagnoses count too.
+        diabetesKnownPreviously =
+            diagnosedOrReportedPreviouslyAnyOf diabetesDiagnoses assembled
+
         -- A load recorded as undetectable is under 20 copies, whatever number
         -- is stored with it.
         hivDetectableViralLoadDiagnosed =
@@ -2569,15 +2574,12 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
                 byPreviousChronicHypertension =
                     diagnosedPreviouslyAnyOf chronicHypertensionDiagnoses assembled
-
-                byPreviousDiabetesDiagnoses =
-                    diagnosedOrReportedPreviouslyAnyOf diabetesDiagnoses assembled
             in
             byPreviousPreeclampsia
                 || byFetalPresentation
                 || byMedicalHistorySigns
                 || byPreviousChronicHypertension
-                || byPreviousDiabetesDiagnoses
+                || diabetesKnownPreviously
 
         allMeasurements =
             assembled.measurements
@@ -2938,7 +2940,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 && (not <| diagnosedAtInitialPhase DiagnosisSevereAnemiaInitialPhase)
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase ->
-            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+            not diabetesKnownPreviously
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         egaWeeks <= 20 && diabetesDiagnosedInitialPhase
@@ -2946,14 +2948,14 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase ->
             (not <| diagnosedAtInitialPhase Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase)
-                && (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+                && not diabetesKnownPreviously
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         egaWeeks <= 20 && diabetesDiagnosedAnyPhase
                     )
 
         Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase ->
-            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+            not diabetesKnownPreviously
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         egaWeeks > 20 && diabetesDiagnosedInitialPhase
@@ -2961,7 +2963,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase ->
             (not <| diagnosedAtInitialPhase Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase)
-                && (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+                && not diabetesKnownPreviously
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         egaWeeks > 20 && diabetesDiagnosedAnyPhase

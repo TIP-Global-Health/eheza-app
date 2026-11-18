@@ -3203,7 +3203,7 @@ resolvePreviousDiabetesDiagnosis : List PreviousEncounterData -> Maybe PrenatalD
 resolvePreviousDiabetesDiagnosis nursePreviousEncountersData =
     List.concatMap
         (\data ->
-            EverySet.toList data.diagnoses
+            (EverySet.toList data.diagnoses ++ EverySet.toList data.pastDiagnoses)
                 |> List.filter
                     (\diagnosis ->
                         List.member diagnosis diabetesDiagnoses
