@@ -169,6 +169,7 @@ all =
             ]
         , nationalIdNumberSaved
         , addressAndHealthCentre
+        , storedAddressComparison
         ]
 
 
@@ -1337,4 +1338,71 @@ familyMemberAddress =
                         in
                         saveFamilyMember site related []
                             |> Expect.equal (unchanged related)
+        ]
+
+
+{-| Guards for how a level counts as changed. The form finds stored places by
+name without regard to letter case, so a case-only difference is no change. A
+CHW's form is filled from the CHW's village and its address section is
+hidden, so nothing there may become required.
+-}
+storedAddressComparison : Test
+storedAddressComparison =
+    describe "Whether an address level counts as changed"
+        [ onEverySite "a stored name that differs from the list only in letter case is not a change" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            atHome =
+                                personAt places.home
+
+                            person =
+                                { atHome
+                                    | province = Maybe.map String.toUpper atHome.province
+                                    , village = Just "Village missing from the list"
+                                }
+                        in
+                        saveEdit site person [ typeText phoneNumber "0788111111" ]
+                            |> Result.map .village
+                            |> Expect.equal (Ok (Just "Village missing from the list"))
+        , onEverySite "a CHW editing a person who lives elsewhere still saves when the CHW's village is missing from the list" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+
+                            chwAddress =
+                                Maybe.withDefault places.home places.otherSector
+
+                            chwVillage =
+                                { healthCenterId = homeHealthCentre
+                                , name = "CHW village"
+                                , province = placeName chwAddress.province
+                                , district = placeName chwAddress.district
+                                , sector = placeName chwAddress.sector
+                                , cell = placeName chwAddress.cell
+                                , village = "Village missing from the list"
+                                }
+
+                            validation =
+                                validatePerson site (Just person) editPerson (Just saveDate)
+
+                            changed =
+                                Form.update validation (typeText phoneNumber "0788111111") (emptyEditForm site)
+                        in
+                        applyDefaultValuesForPerson saveDate
+                            site
+                            (reverseGeoInfoOn site)
+                            (Just chwVillage)
+                            True
+                            (Just person)
+                            editPerson
+                            ParticipantDirectoryOrigin
+                            changed
+                            |> Form.getOutput
+                            |> isJust
+                            |> Expect.equal True
         ]
