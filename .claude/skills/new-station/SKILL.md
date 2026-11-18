@@ -23,6 +23,7 @@ These do **not** travel, and each new station recreates them:
 | `.git/info/exclude` | per-clone by design | `.claude/hooks/` is excluded here only |
 | `client/src/elm/LocalConfig.elm`, `.ddev/config.local.yaml` | gitignored config | covered by Local Setup in `CLAUDE.md` |
 | `server/.pantheon-*/` | deploy checkouts | recreated by the deploy skills |
+| host `elm` and `elm-test` | global npm packages, per machine | tests run on the wrong compiler; `npm i -g elm@0.19.3-0 elm-test@0.19.3-0` |
 | `<repo>-wt/` | per-item worktrees | recreated by `.claude/scripts/new-worktree.sh <branch>` |
 | the night-discovery cron entry | crontab is per machine | no night rounds; see below — **one station only** |
 
