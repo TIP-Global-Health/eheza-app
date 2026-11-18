@@ -3106,6 +3106,7 @@ all =
         , ironFolicAcidAnswerDoesNotStopFefolIronFolateTest
         , reportedDiabetesPreeclampsiaRiskTest
         , reportedDiabetesKnownAtLaterVisitTest
+        , reportedDiabetesKnownAtReportingVisitTest
         ]
 
 
@@ -10225,4 +10226,49 @@ diabetesOnEarlierOwnLabResultsTest =
                 , ncdDiabetesNamed (diagnosedAt ( 24, 0 ) DiagnosisGestationalDiabetesRecurrentPhase)
                 )
                     |> Expect.equal ( noDiabetesNoReferral, [ DiagnosisGestationalDiabetesRecurrentPhase ] )
+        ]
+
+
+{-| The reporting visit sent its own blood sugar test to the lab before
+diabetes was reported to it; its own diabetic result is then entered on its
+Lab Results page.
+-}
+reportedDiabetesKnownAtReportingVisitTest : Test
+reportedDiabetesKnownAtReportingVisitTest =
+    describe "diabetes found from a lab-history result: known at the visit it was reported to"
+        [ test "the visit's own diabetic result diagnoses no second diabetes" <|
+            \_ ->
+                let
+                    ega =
+                        ( 18, 0 )
+
+                    earlierVisits =
+                        [ bloodSugarSentAt ( 14, 0 ) ]
+
+                    reported =
+                        [ DiagnosisDiabetesRecurrentPhase ]
+
+                    visitAfterEntry count =
+                        emptyPrenatalMeasurements
+                            |> withBloodSugarAtVisit ega [ PrerequisiteFastFor12h ] count
+                            |> nurseVisitAt ega earlierVisits reported
+
+                    ( visitDayDiagnoses, _ ) =
+                        assessedVisit (visitAfterEntry Nothing)
+
+                    afterEntryVisit =
+                        visitAfterEntry (Just 130)
+
+                    encounter =
+                        afterEntryVisit.encounter
+                in
+                generatePrenatalDiagnosesForNurse
+                    { afterEntryVisit | encounter = { encounter | diagnoses = visitDayDiagnoses } }
+                    |> diabetesAmong
+                    |> Expect.equal []
+        , test "without the reported diabetes, the same result diagnoses diabetes" <|
+            \_ ->
+                bloodSugarOnOwnLabResults ( 18, 0 ) [ bloodSugarSentAt ( 14, 0 ) ] 130
+                    |> Tuple.first
+                    |> Expect.equal [ DiagnosisDiabetesRecurrentPhase ]
         ]
