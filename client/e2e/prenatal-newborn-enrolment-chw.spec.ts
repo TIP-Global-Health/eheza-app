@@ -56,6 +56,11 @@ async function reloadOnRegistrationForm(page: Page) {
 test.describe('CHW: Postpartum visit, Enrol newborn', () => {
   test.describe.configure({ timeout: 900000 });
 
+  // Each test waits in real time (six minutes, or a reload and sign-in), so
+  // these run locally and in QA only; the Elm tests in Pages/Person/Test.elm
+  // cover the same defect on CI.
+  test.skip(!!process.env.CI, 'Runs locally only: six-minute real-time wait');
+
   if (process.env.RECORD) {
     test.beforeEach(async ({ page }) => {
       await page.addInitScript(installCursorScript());
