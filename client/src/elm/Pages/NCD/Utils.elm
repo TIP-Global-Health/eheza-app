@@ -470,12 +470,29 @@ referralFormWithDefault form saved =
 
                     facilityAnswered =
                         Backend.Measurement.Utils.referralToFacilityCompleted value.referralSigns value.nonReferralReasons
+
+                    referToHospital =
+                        or form.referToHospital (answeredWhen (facilityAnswered FacilityHospital) ReferToHospital)
+
+                    referToANCServices =
+                        or form.referToANCServices (answeredWhen (facilityAnswered FacilityANCServices) ReferToANCServices)
+
+                    -- Follow-up answers are read from the record only while
+                    -- its "referred" answer still stands on the form.
+                    savedReferralStands referralSign referredOnForm =
+                        hasSign referralSign && referredOnForm == Just True
                 in
-                { referToHospital = or form.referToHospital (answeredWhen (facilityAnswered FacilityHospital) ReferToHospital)
-                , referralFormHospital = or form.referralFormHospital (answeredWhen (hasSign ReferToHospital) ReferralFormHospital)
-                , referToANCServices = or form.referToANCServices (answeredWhen (facilityAnswered FacilityANCServices) ReferToANCServices)
-                , referralFormANCServices = or form.referralFormANCServices (answeredWhen (hasSign ReferToANCServices) ReferralFormANCServices)
-                , accompanyToANCServices = or form.accompanyToANCServices (answeredWhen (hasSign ReferToANCServices) AccompanyToANCServices)
+                { referToHospital = referToHospital
+                , referralFormHospital =
+                    or form.referralFormHospital
+                        (answeredWhen (savedReferralStands ReferToHospital referToHospital) ReferralFormHospital)
+                , referToANCServices = referToANCServices
+                , referralFormANCServices =
+                    or form.referralFormANCServices
+                        (answeredWhen (savedReferralStands ReferToANCServices referToANCServices) ReferralFormANCServices)
+                , accompanyToANCServices =
+                    or form.accompanyToANCServices
+                        (answeredWhen (savedReferralStands ReferToANCServices referToANCServices) AccompanyToANCServices)
                 , nonReferralReasons = or form.nonReferralReasons value.nonReferralReasons
                 }
             )

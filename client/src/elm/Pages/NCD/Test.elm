@@ -995,6 +995,7 @@ all =
         , randomBloodSugarNotPerformedTest
         , labsEntryClosingTest
         , referralTasksTest
+        , changedReferralAnswerTest
         ]
 
 
@@ -1922,4 +1923,33 @@ referralTasksTest =
                                    )
                                 |> Expect.equal ( False, False )
                    ]
+        ]
+
+
+{-| A saved "referred" answer changed to No on the form: the follow-up answers
+saved with it are not shown again, and are not saved beside the No.
+-}
+changedReferralAnswerTest : Test
+changedReferralAnswerTest =
+    let
+        savedReferral =
+            Just
+                { referralSigns = EverySet.fromList [ ReferToHospital, ReferralFormHospital ]
+                , nonReferralReasons = Nothing
+                }
+
+        changedToNo =
+            { emptyReferralForm | referToHospital = Just False }
+    in
+    describe "A saved hospital referral changed to No"
+        [ test "the handed-form question is not filled from the record" <|
+            \_ ->
+                referralFormWithDefault changedToNo savedReferral
+                    |> .referralFormHospital
+                    |> Expect.equal Nothing
+        , test "the record saved holds no handed-form answer" <|
+            \_ ->
+                toReferralValueWithDefault savedReferral changedToNo
+                    |> Maybe.map (.referralSigns >> EverySet.member ReferralFormHospital)
+                    |> Expect.equal (Just False)
         ]
