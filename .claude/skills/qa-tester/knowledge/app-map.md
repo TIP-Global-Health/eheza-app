@@ -856,5 +856,8 @@ flag simply does not appear.
   requests from a browser page are refused.
 - `qa.freshDevice()` can fail once with "Navigation … interrupted by another navigation" on a fresh
   profile; running it again pairs normally.
+- A PR's own e2e spec can be recorded instead of driven: `RECORD=1 EHEZA_SITE=rwanda ./node_modules/.bin/playwright test <spec>` from `client/`
+  runs headed on the user's display and keeps each test's `video.mp4` under `client/e2e-recordings/<run>/`. Copy them into
+  `client/qa-recordings/<pr>/` under `qa-<pr>-…` names to attach. The newborn spec's two tests made 1.7 MB and 3.6 MB videos.
 - Measured: empty profile → paired, signed in and synced in ~10 s; register a woman, open a
   first ANC encounter and reach the Random Blood Sugar tab, while recording, in ~17 s.
