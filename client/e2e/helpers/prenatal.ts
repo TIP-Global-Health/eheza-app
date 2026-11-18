@@ -1921,6 +1921,9 @@ export async function completeChwPostpartumVisit(
       false,
     );
     await click(page.locator('button[type="submit"]'), page);
+    // Back on Next Steps. After a reload the page opens on its first tab, so
+    // open Newborn Enrollment before reading it.
+    await clickSubTaskTab(page, 'next-steps-newborn-enrolment');
     await page
       .locator('div.page-activity.prenatal', { hasText: 'Newborn is already enrolled' })
       .waitFor({ timeout: 15000 });
