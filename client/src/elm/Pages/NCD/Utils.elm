@@ -481,6 +481,9 @@ referralFormWithDefault form saved =
                     -- its "referred" answer still stands on the form.
                     savedReferralStands referralSign referredOnForm =
                         hasSign referralSign && referredOnForm == Just True
+
+                    savedANCReferralStands =
+                        savedReferralStands ReferToANCServices referToANCServices
                 in
                 { referToHospital = referToHospital
                 , referralFormHospital =
@@ -489,10 +492,10 @@ referralFormWithDefault form saved =
                 , referToANCServices = referToANCServices
                 , referralFormANCServices =
                     or form.referralFormANCServices
-                        (answeredWhen (savedReferralStands ReferToANCServices referToANCServices) ReferralFormANCServices)
+                        (answeredWhen savedANCReferralStands ReferralFormANCServices)
                 , accompanyToANCServices =
                     or form.accompanyToANCServices
-                        (answeredWhen (savedReferralStands ReferToANCServices referToANCServices) AccompanyToANCServices)
+                        (answeredWhen savedANCReferralStands AccompanyToANCServices)
                 , nonReferralReasons = or form.nonReferralReasons value.nonReferralReasons
                 }
             )
