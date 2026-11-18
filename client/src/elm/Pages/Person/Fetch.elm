@@ -44,6 +44,17 @@ fetch id initiator db =
 
 fetchForCreateOrEdit : Maybe PersonId -> Initiator -> ModelIndexedDb -> List MsgIndexedDb
 fetchForCreateOrEdit related initiator db =
+    let
+        newbornEnrolmentEncounter =
+            -- Saving a baby registered from Enrol newborn links it to this
+            -- encounter's pregnancy, so the encounter must stay loaded.
+            case initiator of
+                PrenatalNextStepsNewbornEnrolmentOrigin _ encounterId ->
+                    [ FetchPrenatalEncounter encounterId ]
+
+                _ ->
+                    []
+    in
     [ FetchHealthCenters
     , FetchVillages
     , FetchClinics
@@ -53,6 +64,7 @@ fetchForCreateOrEdit related initiator db =
                 |> Maybe.withDefault []
            )
         ++ fetchSessionForInitiator initiator
+        ++ newbornEnrolmentEncounter
 
 
 {-| Fetches the session a page was opened from, when it was opened from a group
