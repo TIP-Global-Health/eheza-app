@@ -13,7 +13,7 @@ import Pages.GlobalCaseManagement.Utils exposing (allLabsCompleted)
 import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
 import Pages.NCD.RecurrentActivity.Model exposing (Msg(..), NextStepsData)
 import Pages.NCD.RecurrentActivity.Types exposing (NextStepsTask(..))
-import Pages.NCD.Utils exposing (generateRecommendedTreatmentSignsForHypertension, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralToFacilityCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks)
+import Pages.NCD.Utils exposing (generateRecommendedTreatmentSignsForHypertension, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralTaskCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks)
 import Pages.Utils exposing (resolveTasksCompletedFromTotal)
 import Translate.Model exposing (Language)
 
@@ -92,10 +92,7 @@ nextStepsTaskCompleted assembled task =
             hypertensionTreatmentCompleted && diabetesTreatmentCompleted
 
         TaskReferral ->
-            -- On recurrent phase of the encounter, only referral
-            -- facility possible is hospital, since referral to ARV
-            -- Services always happens on initial phase.
-            referralToFacilityCompleted assembled FacilityHospital
+            referralTaskCompleted NCDEncounterPhaseRecurrent assembled
 
 
 nextStepsTasksCompletedFromTotal :
