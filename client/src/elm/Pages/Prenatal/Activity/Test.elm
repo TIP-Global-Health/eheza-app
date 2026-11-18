@@ -51,6 +51,7 @@ import Backend.Measurement.Model
         , RandomBloodSugarTestValue
         , RecommendedTreatmentSign(..)
         , Rhesus(..)
+        , SpecialityCareSign(..)
         , SyphilisTestValue
         , TestExecutionNote(..)
         , TestPrerequisite(..)
@@ -84,7 +85,7 @@ import Pages.Prenatal.Model exposing (AssembledData, PrenatalEncounterPhase(..),
 import Pages.Prenatal.ProgressReport.Model exposing (obstetricalDiagnoses)
 import Pages.Prenatal.RecurrentActivity.Types
 import Pages.Prenatal.RecurrentActivity.Utils
-import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedHypertension, diagnosedPreviouslyAnyOf, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet, showMebendazoleQuestion, updateHypertensionTreatmentWithMedication)
+import Pages.Prenatal.Utils exposing (diabetesDiagnoses, diagnosedHypertension, diagnosedPreviouslyAnyOf, diagnosesCausingHospitalReferralByPhase, diagnosisKnownAnyOf, emergencyReferralDiagnoses, healthEducationFormInputsAndTasksForNurse, resolveDiscordantCoupleStatus, resolveNCDReferralDiagnoses, resolvePartnerHIVTestResult, resolveRequiredMedicationsSet, showMebendazoleQuestion, updateHypertensionTreatmentWithMedication)
 import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
@@ -3104,6 +3105,7 @@ all =
         , mebendazoleQuestionWhileNotGivenOrReceivedTest
         , ironFolicAcidAnswerDoesNotStopFefolIronFolateTest
         , reportedDiabetesPreeclampsiaRiskTest
+        , reportedDiabetesKnownAtLaterVisitTest
         ]
 
 
@@ -9712,4 +9714,515 @@ noDiabetesNoRiskTest =
                     []
                     |> highRiskAndAspirinAtVisit
                     |> Expect.equal ( True, True )
+        ]
+
+
+
+-- DIABETES FOUND FROM LAB HISTORY: KNOWN AT LATER VISITS
+--
+-- The scenario: a nurse visit (the "first visit") sends a fasting blood sugar
+-- test to the lab. At a later nurse visit (the "reporting visit"), the nurse
+-- enters a diabetic result for it from Case Management lab history. The app
+-- records diabetes (gestational diabetes when the first visit was after 20
+-- weeks) on the reporting visit as a REPORTED diagnosis, its `pastDiagnoses`,
+-- and refers her to hospital there. The first visit's stored diagnoses stay as
+-- they were on its visit day. This is the stored shape built by
+-- `sentAndReported` above.
+--
+-- At a nurse visit after the reporting visit, the diabetes is already known:
+--   * a diabetic blood sugar there, read at the visit or entered on that
+--     visit's own Lab Results page, diagnoses no diabetes of either kind and
+--     brings no hospital referral for diabetes
+--     (`diagnosesCausingHospitalReferralByPhase`, initial phase for the visit's
+--     Next Steps, recurrent phase for Lab Results' Next Steps);
+--   * the NCD services question in Specialty Care (offered at the postpartum
+--     nurse visit), the postpartum referral to NCD services and the progress
+--     report's program referrals name diabetes. All three are built from
+--     `resolveNCDReferralDiagnoses <the earlier nurse visits>`.
+--
+-- Diabetes diagnosed at an earlier visit, on the visit day or on its own Lab
+-- Results page, is stored in that visit's `diagnoses` and already behaves this
+-- way; those tests are guards. So is a visit with no earlier diabetes, which
+-- still diagnoses diabetes and refers her to hospital.
+--
+-- Every visit shares `reportedDiabetesLmp`; each visit's pregnancy week is
+-- carried by its start date. Weeks are written as (weeks, days) of EGA.
+--
+-- Oracle: issue #2550, "Expected behaviour". A test named after a criterion
+-- carries the criterion's words; the others are boundary cases around it.
+
+
+{-| A fasting blood sugar test taken at a visit at the given EGA, with the
+given prerequisites and count. With `PrerequisiteImmediateResult` it is read
+at the visit; without it, it was sent to the lab, and a count is the result
+entered on the visit's own Lab Results page.
+-}
+withBloodSugarAtVisit : ( Int, Int ) -> List TestPrerequisite -> Maybe Float -> PrenatalMeasurements -> PrenatalMeasurements
+withBloodSugarAtVisit ega prerequisites count measurements =
+    { measurements
+        | randomBloodSugarTest =
+            TestFixtures.wrapMeasurement (dayAtEga ega)
+                { executionNote = TestNoteRunToday
+                , executionDate = Just (dayAtEga ega)
+                , testPrerequisites = Just (EverySet.fromList prerequisites)
+                , sugarCount = count
+                , originatingEncounter = Nothing
+                }
+    }
+
+
+{-| The diabetes diagnoses among the given ones.
+-}
+diabetesAmong : EverySet PrenatalDiagnosis -> List PrenatalDiagnosis
+diabetesAmong =
+    presentOf allDiabetesDiagnoses
+
+
+{-| A nurse visit at `ega` after `earlierVisits`, with the given measurements,
+assessed: (diabetes diagnoses made, diabetes among the reasons the visit's
+Next Steps refer her to hospital).
+-}
+diabetesOutcomeAtVisit : ( Int, Int ) -> List PreviousEncounterData -> PrenatalMeasurements -> ( List PrenatalDiagnosis, List PrenatalDiagnosis )
+diabetesOutcomeAtVisit ega earlierVisits measurements =
+    let
+        ( diagnoses, stored ) =
+            nurseVisitAt ega earlierVisits [] measurements
+                |> assessedVisit
+    in
+    ( diabetesAmong diagnoses
+    , diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial stored
+        |> diabetesAmong
+    )
+
+
+{-| `diabetesOutcomeAtVisit` with a fasting blood sugar of the given count read
+at the visit.
+-}
+bloodSugarReadAtVisit : ( Int, Int ) -> List PreviousEncounterData -> Float -> ( List PrenatalDiagnosis, List PrenatalDiagnosis )
+bloodSugarReadAtVisit ega earlierVisits count =
+    emptyPrenatalMeasurements
+        |> withBloodSugarAtVisit ega [ PrerequisiteFastFor12h, PrerequisiteImmediateResult ] (Just count)
+        |> diabetesOutcomeAtVisit ega earlierVisits
+
+
+{-| A nurse visit at `ega` after `earlierVisits` sends a fasting blood sugar
+test to the lab; the visit-day assessment is stored on it, and the given
+count is then entered on the visit's own Lab Results page and the visit
+reassessed: (diabetes diagnoses the entry adds, diabetes among the reasons
+Lab Results' Next Steps refer her to hospital).
+-}
+bloodSugarOnOwnLabResults : ( Int, Int ) -> List PreviousEncounterData -> Float -> ( List PrenatalDiagnosis, List PrenatalDiagnosis )
+bloodSugarOnOwnLabResults ega earlierVisits count =
+    let
+        prerequisites =
+            [ PrerequisiteFastFor12h ]
+
+        ( visitDayDiagnoses, _ ) =
+            emptyPrenatalMeasurements
+                |> withBloodSugarAtVisit ega prerequisites Nothing
+                |> nurseVisitAt ega earlierVisits []
+                |> assessedVisit
+
+        afterEntryVisit =
+            emptyPrenatalMeasurements
+                |> withBloodSugarAtVisit ega prerequisites (Just count)
+                |> nurseVisitAt ega earlierVisits []
+
+        visitEncounter =
+            afterEntryVisit.encounter
+
+        reassessed =
+            { afterEntryVisit
+                | encounter =
+                    { visitEncounter
+                        | diagnoses = visitDayDiagnoses
+                        , endDate = Just (dayAtEga ega)
+                    }
+            }
+
+        afterEntry =
+            generatePrenatalDiagnosesForNurse reassessed
+
+        reassessedEncounter =
+            reassessed.encounter
+    in
+    ( EverySet.diff afterEntry visitDayDiagnoses
+        |> diabetesAmong
+    , diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseRecurrent
+        { reassessed | encounter = { reassessedEncounter | diagnoses = afterEntry } }
+        |> diabetesAmong
+    )
+
+
+{-| No diabetes diagnosed, and no hospital referral for diabetes.
+-}
+noDiabetesNoReferral : ( List PrenatalDiagnosis, List PrenatalDiagnosis )
+noDiabetesNoReferral =
+    ( [], [] )
+
+
+{-| Diabetes found from a lab-history result: blood sugar sent at 14 weeks,
+the diabetic result (130) entered from lab history at the visit at 18 weeks.
+-}
+diabetesFoundFromLabHistory : List PreviousEncounterData
+diabetesFoundFromLabHistory =
+    sentAndReported ( 14, 0 ) ( 18, 0 ) [] reportedDiabetes
+
+
+{-| Gestational diabetes found from a lab-history result: blood sugar sent at
+24 weeks, the diabetic result entered from lab history at the visit at 28
+weeks.
+-}
+gestationalDiabetesFoundFromLabHistory : List PreviousEncounterData
+gestationalDiabetesFoundFromLabHistory =
+    sentAndReported ( 24, 0 ) ( 28, 0 ) [] reportedGestationalDiabetes
+
+
+{-| The diabetes diagnoses the NCD services question and referral name, after
+the given earlier nurse visits.
+-}
+ncdDiabetesNamed : List PreviousEncounterData -> List PrenatalDiagnosis
+ncdDiabetesNamed earlierVisits =
+    resolveNCDReferralDiagnoses earlierVisits
+        |> List.filter (\diagnosis -> List.member diagnosis allDiabetesDiagnoses)
+
+
+{-| A postpartum nurse visit at 42 weeks after the given earlier nurse visits,
+with the given measurements.
+-}
+postpartumVisitAfter : List PreviousEncounterData -> PrenatalMeasurements -> AssembledData
+postpartumVisitAfter earlierVisits measurements =
+    let
+        visit =
+            nurseVisitAt ( 42, 0 ) earlierVisits [] measurements
+
+        encounter =
+            visit.encounter
+    in
+    { visit | encounter = { encounter | encounterType = NursePostpartumEncounter } }
+
+
+{-| The postpartum visit lists Specialty Care. With no HIV anywhere, its only
+section is the NCD services question.
+-}
+specialtyCareShownAt : Site -> AssembledData -> Bool
+specialtyCareShownAt site assembled =
+    expectActivity (dayAtEga ( 42, 0 )) site EverySet.empty assembled Backend.PrenatalActivity.Model.SpecialityCare
+
+
+{-| Specialty Care at the postpartum visit answered: enrolled in neither the
+ARV nor the NCD program.
+-}
+withNotEnrolledInSpecialityCare : PrenatalMeasurements -> PrenatalMeasurements
+withNotEnrolledInSpecialityCare measurements =
+    { measurements
+        | specialityCare =
+            TestFixtures.wrapMeasurement (dayAtEga ( 42, 0 )) (EverySet.singleton NoSpecialityCareSigns)
+    }
+
+
+{-| The postpartum visit, after Specialty Care says she is not enrolled, has
+the referral step (Send to HC). With no other reason to refer, that step is
+the referral to NCD services.
+-}
+postpartumReferralAfter : List PreviousEncounterData -> Bool
+postpartumReferralAfter earlierVisits =
+    emptyPrenatalMeasurements
+        |> withNotEnrolledInSpecialityCare
+        |> postpartumVisitAfter earlierVisits
+        |> resolveNextStepsTasks (dayAtEga ( 42, 0 ))
+        |> List.member NextStepsSendToHC
+
+
+reportedDiabetesKnownAtLaterVisitTest : Test
+reportedDiabetesKnownAtLaterVisitTest =
+    describe "diabetes found from a lab-history result: known at later nurse visits"
+        [ reportedDiabetesNotDiagnosedAgainTest
+        , reportedGestationalDiabetesNotDiagnosedAgainTest
+        , reportedDiabetesSpecialtyCareTest
+        , reportedDiabetesNCDReferralTest
+        , noEarlierDiabetesStillDiagnosedTest
+        , diabetesOnEarlierOwnLabResultsTest
+        ]
+
+
+reportedDiabetesNotDiagnosedAgainTest : Test
+reportedDiabetesNotDiagnosedAgainTest =
+    describe "diabetes found from lab history, then a diabetic blood sugar at a later visit"
+        [ test "After diabetes is found from a lab-history result, a diabetic blood sugar result at a later nurse visit does not diagnose diabetes again and does not refer her to hospital again." <|
+            -- Diabetes reported to the visit at 18 weeks; the next visit, at
+            -- 20 weeks, reads a fasting blood sugar of 130 at the visit.
+            \_ ->
+                bloodSugarReadAtVisit ( 20, 0 ) diabetesFoundFromLabHistory 130
+                    |> Expect.equal noDiabetesNoReferral
+        , test "the later visit's blood sugar sent to the lab, 130 entered on its own Lab Results page: no diabetes, no hospital referral in Lab Results' Next Steps" <|
+            \_ ->
+                bloodSugarOnOwnLabResults ( 20, 0 ) diabetesFoundFromLabHistory 130
+                    |> Expect.equal noDiabetesNoReferral
+        , test "later visit at 24 weeks, past the diabetes window: no gestational diabetes either, no hospital referral" <|
+            \_ ->
+                bloodSugarReadAtVisit ( 24, 0 ) diabetesFoundFromLabHistory 130
+                    |> Expect.equal noDiabetesNoReferral
+        , test "later visit at 24 weeks, 130 entered on its own Lab Results page: no gestational diabetes, no hospital referral" <|
+            \_ ->
+                bloodSugarOnOwnLabResults ( 24, 0 ) diabetesFoundFromLabHistory 130
+                    |> Expect.equal noDiabetesNoReferral
+        , test "blood sugar not done at the later visit, urine glucose +3 read at the visit: no diabetes, no hospital referral" <|
+            \_ ->
+                let
+                    urineDipstick =
+                        urineDipstickValueWith Protein0
+                in
+                { emptyPrenatalMeasurements
+                    | urineDipstickTest = wrapMeasurement { urineDipstick | glucose = Just GlucosePlus3 }
+                }
+                    |> withRandomBloodSugarNotDone
+                    |> diabetesOutcomeAtVisit ( 20, 0 ) diabetesFoundFromLabHistory
+                    |> Expect.equal noDiabetesNoReferral
+        , test "a visit with nothing diabetic between the reporting visit and the later one: no diabetes, no hospital referral" <|
+            -- Sent at 8 weeks, reported to the visit at 10 weeks, a visit at
+            -- 12 weeks with nothing, then 130 read at 16 weeks.
+            \_ ->
+                bloodSugarReadAtVisit ( 16, 0 )
+                    (sentAndReported ( 8, 0 ) ( 10, 0 ) [] reportedDiabetes
+                        ++ [ earlierNurseVisitAt ( 12, 0 ) [] [] emptyPrenatalMeasurements ]
+                    )
+                    130
+                    |> Expect.equal noDiabetesNoReferral
+        , test "diabetes reported together with rhesus negative: no diabetes, no hospital referral at the later visit" <|
+            \_ ->
+                bloodSugarReadAtVisit ( 20, 0 )
+                    [ bloodSugarSentAt ( 14, 0 )
+                    , earlierNurseVisitAt ( 18, 0 ) [] [ DiagnosisRhesusNegativeRecurrentPhase, reportedDiabetes ] emptyPrenatalMeasurements
+                    ]
+                    130
+                    |> Expect.equal noDiabetesNoReferral
+        , test "the reporting visit ended with another diagnosis stored (rhesus negative): no diabetes, no hospital referral at the later visit" <|
+            \_ ->
+                bloodSugarReadAtVisit ( 20, 0 ) (sentAndReported ( 14, 0 ) ( 18, 0 ) [ DiagnosisRhesusNegativeInitialPhase ] reportedDiabetes) 130
+                    |> Expect.equal noDiabetesNoReferral
+        , test "guard: a normal blood sugar (90) at a later visit after diabetes found from lab history: no diabetes, no hospital referral" <|
+            \_ ->
+                bloodSugarReadAtVisit ( 20, 0 ) diabetesFoundFromLabHistory 90
+                    |> Expect.equal noDiabetesNoReferral
+        ]
+
+
+reportedGestationalDiabetesNotDiagnosedAgainTest : Test
+reportedGestationalDiabetesNotDiagnosedAgainTest =
+    describe "gestational diabetes found from lab history, then a diabetic blood sugar at a later visit"
+        [ test "The same holds after gestational diabetes is found from a lab-history result." <|
+            -- Gestational diabetes reported to the visit at 28 weeks; the
+            -- next visit, at 32 weeks, reads a fasting blood sugar of 130.
+            \_ ->
+                bloodSugarReadAtVisit ( 32, 0 ) gestationalDiabetesFoundFromLabHistory 130
+                    |> Expect.equal noDiabetesNoReferral
+        , test "gestational diabetes reported at 28 weeks, 130 entered on the 32-week visit's own Lab Results page: no diabetes, no hospital referral" <|
+            \_ ->
+                bloodSugarOnOwnLabResults ( 32, 0 ) gestationalDiabetesFoundFromLabHistory 130
+                    |> Expect.equal noDiabetesNoReferral
+        , test "gestational diabetes reported at 28 weeks, a visit at 32 weeks with nothing, 130 read at 36 weeks: no diabetes, no hospital referral" <|
+            \_ ->
+                bloodSugarReadAtVisit ( 36, 0 )
+                    (gestationalDiabetesFoundFromLabHistory ++ [ earlierNurseVisitAt ( 32, 0 ) [] [] emptyPrenatalMeasurements ])
+                    130
+                    |> Expect.equal noDiabetesNoReferral
+        ]
+
+
+reportedDiabetesSpecialtyCareTest : Test
+reportedDiabetesSpecialtyCareTest =
+    describe "diabetes found from lab history: Specialty Care at a later visit"
+        [ test "After diabetes is found from a lab-history result, Specialty Care at a later nurse visit asks whether she is enrolled in NCD services, naming diabetes." <|
+            -- Diabetes reported to the visit at 18 weeks; the postpartum
+            -- nurse visit at 42 weeks. (Specialty Care listed, the diabetes
+            -- diagnoses the NCD services question names.)
+            \_ ->
+                ( postpartumVisitAfter diabetesFoundFromLabHistory emptyPrenatalMeasurements
+                    |> specialtyCareShownAt SiteRwanda
+                , ncdDiabetesNamed diabetesFoundFromLabHistory
+                    |> List.isEmpty
+                    |> not
+                )
+                    |> Expect.equal ( True, True )
+        , test "the same at a Burundi postpartum visit: Specialty Care is listed" <|
+            \_ ->
+                postpartumVisitAfter diabetesFoundFromLabHistory emptyPrenatalMeasurements
+                    |> specialtyCareShownAt SiteBurundi
+                    |> Expect.equal True
+        , test "diabetes reported together with rhesus negative: Specialty Care is listed at the postpartum visit" <|
+            \_ ->
+                postpartumVisitAfter
+                    [ bloodSugarSentAt ( 14, 0 )
+                    , earlierNurseVisitAt ( 18, 0 ) [] [ DiagnosisRhesusNegativeRecurrentPhase, reportedDiabetes ] emptyPrenatalMeasurements
+                    ]
+                    emptyPrenatalMeasurements
+                    |> specialtyCareShownAt SiteRwanda
+                    |> Expect.equal True
+        , test "guard: a hepatitis B, syphilis or rhesus negative result reported from lab history alone does not list Specialty Care" <|
+            -- The list names the reported diagnoses after which the
+            -- postpartum visit listed Specialty Care.
+            \_ ->
+                reportedNonRiskDiagnoses
+                    |> List.filter
+                        (\diagnosis ->
+                            postpartumVisitAfter
+                                [ earlierNurseVisitAt ( 14, 0 ) [] [] emptyPrenatalMeasurements
+                                , earlierNurseVisitAt ( 18, 0 ) [] [ diagnosis ] emptyPrenatalMeasurements
+                                ]
+                                emptyPrenatalMeasurements
+                                |> specialtyCareShownAt SiteRwanda
+                        )
+                    |> Expect.equal []
+        ]
+
+
+reportedDiabetesNCDReferralTest : Test
+reportedDiabetesNCDReferralTest =
+    describe "diabetes found from lab history: the NCD services referral and the progress report"
+        [ test "After diabetes is found from a lab-history result, the postpartum referral to NCD services and the progress report's program referrals list diabetes." <|
+            -- Diabetes reported to the visit at 18 weeks. (The NCD referral
+            -- list names diabetes; the postpartum visit whose Specialty Care
+            -- says she is not enrolled has the referral step.)
+            \_ ->
+                ( ncdDiabetesNamed diabetesFoundFromLabHistory
+                    |> List.isEmpty
+                    |> not
+                , postpartumReferralAfter diabetesFoundFromLabHistory
+                )
+                    |> Expect.equal ( True, True )
+        , test "diabetes reported to an earlier visit with a later visit after it that found nothing: the NCD referral list names diabetes" <|
+            \_ ->
+                (diabetesFoundFromLabHistory ++ [ earlierNurseVisitAt ( 22, 0 ) [] [] emptyPrenatalMeasurements ])
+                    |> ncdDiabetesNamed
+                    |> List.isEmpty
+                    |> not
+                    |> Expect.equal True
+        , test "hypertension diagnosed at an earlier visit, then diabetes found from lab history: the NCD referral list names both" <|
+            \_ ->
+                (earlierNurseVisitAt ( 12, 0 ) [ DiagnosisChronicHypertensionImmediate ] [] emptyPrenatalMeasurements
+                    :: diabetesFoundFromLabHistory
+                )
+                    |> resolveNCDReferralDiagnoses
+                    |> (\diagnoses ->
+                            ( List.member DiagnosisChronicHypertensionImmediate diagnoses
+                            , List.any (\diagnosis -> List.member diagnosis allDiabetesDiagnoses) diagnoses
+                            )
+                       )
+                    |> Expect.equal ( True, True )
+        , test "diabetes diagnosed at an earlier visit and found again from lab history: the NCD referral list names diabetes once" <|
+            \_ ->
+                (earlierNurseVisitAt ( 12, 0 ) [ DiagnosisDiabetesInitialPhase ] [] emptyPrenatalMeasurements
+                    :: diabetesFoundFromLabHistory
+                )
+                    |> ncdDiabetesNamed
+                    |> List.length
+                    |> Expect.equal 1
+        , test "guard: a hepatitis B, syphilis or rhesus negative result reported from lab history alone gives an empty NCD referral list" <|
+            \_ ->
+                reportedNonRiskDiagnoses
+                    |> List.filter
+                        (\diagnosis ->
+                            [ earlierNurseVisitAt ( 14, 0 ) [] [] emptyPrenatalMeasurements
+                            , earlierNurseVisitAt ( 18, 0 ) [] [ diagnosis ] emptyPrenatalMeasurements
+                            ]
+                                |> resolveNCDReferralDiagnoses
+                                |> List.isEmpty
+                                |> not
+                        )
+                    |> Expect.equal []
+        ]
+
+
+noEarlierDiabetesStillDiagnosedTest : Test
+noEarlierDiabetesStillDiagnosedTest =
+    describe "no earlier diabetes"
+        [ test "With no earlier diabetes diagnosed or found from a lab-history result, a diabetic blood sugar result at a nurse visit still diagnoses diabetes and refers her to hospital." <|
+            -- A first nurse visit at 20 weeks, and a visit at 20 weeks after
+            -- a visit at 14 weeks whose lab-history result (90) is normal and
+            -- a visit at 18 weeks with nothing diagnosed or reported. Each
+            -- reads a fasting blood sugar of 130.
+            \_ ->
+                [ bloodSugarReadAtVisit ( 20, 0 ) [] 130
+                , bloodSugarReadAtVisit ( 20, 0 )
+                    [ earlierNurseVisitAt ( 14, 0 ) [] [] (withBloodSugarFromLabHistory ( 14, 0 ) 90 emptyPrenatalMeasurements)
+                    , earlierNurseVisitAt ( 18, 0 ) [] [] emptyPrenatalMeasurements
+                    ]
+                    130
+                ]
+                    |> Expect.equal (List.repeat 2 ( [ DiagnosisDiabetesInitialPhase ], [ DiagnosisDiabetesInitialPhase ] ))
+        , test "first nurse visit at 24 weeks, 130 read at the visit: gestational diabetes and a hospital referral" <|
+            \_ ->
+                bloodSugarReadAtVisit ( 24, 0 ) [] 130
+                    |> Expect.equal ( [ DiagnosisGestationalDiabetesInitialPhase ], [ DiagnosisGestationalDiabetesInitialPhase ] )
+        , test "first nurse visit at 20 weeks, 130 entered on its own Lab Results page: diabetes and a hospital referral in Lab Results' Next Steps" <|
+            \_ ->
+                bloodSugarOnOwnLabResults ( 20, 0 ) [] 130
+                    |> Expect.equal ( [ DiagnosisDiabetesRecurrentPhase ], [ DiagnosisDiabetesRecurrentPhase ] )
+        , test "only rhesus negative reported to an earlier visit from lab history: 130 read at the next visit diagnoses diabetes and refers her to hospital" <|
+            \_ ->
+                bloodSugarReadAtVisit ( 20, 0 )
+                    [ earlierNurseVisitAt ( 14, 0 ) [] [] emptyPrenatalMeasurements
+                    , earlierNurseVisitAt ( 18, 0 ) [] [ DiagnosisRhesusNegativeRecurrentPhase ] emptyPrenatalMeasurements
+                    ]
+                    130
+                    |> Expect.equal ( [ DiagnosisDiabetesInitialPhase ], [ DiagnosisDiabetesInitialPhase ] )
+        , test "no diabetes at earlier visits: no Specialty Care at the postpartum visit, an empty NCD referral list, and no referral step" <|
+            \_ ->
+                let
+                    earlierVisits =
+                        [ earlierNurseVisitAt ( 14, 0 ) [] [] (withBloodSugarFromLabHistory ( 14, 0 ) 90 emptyPrenatalMeasurements)
+                        , earlierNurseVisitAt ( 18, 0 ) [] [] emptyPrenatalMeasurements
+                        ]
+                in
+                ( postpartumVisitAfter earlierVisits emptyPrenatalMeasurements
+                    |> specialtyCareShownAt SiteRwanda
+                , resolveNCDReferralDiagnoses earlierVisits
+                , postpartumReferralAfter earlierVisits
+                )
+                    |> Expect.equal ( False, [], False )
+        ]
+
+
+diabetesOnEarlierOwnLabResultsTest : Test
+diabetesOnEarlierOwnLabResultsTest =
+    let
+        -- Diabetes stored in the diagnoses of the visit at 14 weeks: on its
+        -- own Lab Results page (recurrent variant), or on its visit day
+        -- (initial variant); gestational diabetes likewise at 24 weeks.
+        diagnosedAt ega diagnosis =
+            [ earlierNurseVisitAt ega [ diagnosis ] [] emptyPrenatalMeasurements ]
+
+        onOwnLabResults =
+            diagnosedAt ( 14, 0 ) DiagnosisDiabetesRecurrentPhase
+    in
+    describe "diabetes diagnosed at an earlier visit's own Lab Results"
+        [ test "Diabetes diagnosed at an earlier visit's own Lab Results behaves as today: no second diagnosis, and the NCD services question and referral name diabetes." <|
+            -- 130 read at the next visit at 18 weeks; the postpartum visit
+            -- at 42 weeks.
+            \_ ->
+                ( bloodSugarReadAtVisit ( 18, 0 ) onOwnLabResults 130
+                , ( postpartumVisitAfter onOwnLabResults emptyPrenatalMeasurements
+                        |> specialtyCareShownAt SiteRwanda
+                  , ncdDiabetesNamed onOwnLabResults
+                  , postpartumReferralAfter onOwnLabResults
+                  )
+                )
+                    |> Expect.equal ( noDiabetesNoReferral, ( True, [ DiagnosisDiabetesRecurrentPhase ], True ) )
+        , test "guard: diabetes on the earlier visit's own Lab Results, 130 entered on the next visit's own Lab Results page: no second diagnosis" <|
+            \_ ->
+                bloodSugarOnOwnLabResults ( 18, 0 ) onOwnLabResults 130
+                    |> Expect.equal noDiabetesNoReferral
+        , test "guard: diabetes diagnosed on an earlier visit day: no second diagnosis, and the NCD referral list names it" <|
+            \_ ->
+                ( bloodSugarReadAtVisit ( 18, 0 ) (diagnosedAt ( 14, 0 ) DiagnosisDiabetesInitialPhase) 130
+                , ncdDiabetesNamed (diagnosedAt ( 14, 0 ) DiagnosisDiabetesInitialPhase)
+                )
+                    |> Expect.equal ( noDiabetesNoReferral, [ DiagnosisDiabetesInitialPhase ] )
+        , test "guard: gestational diabetes on an earlier visit's own Lab Results: no second diagnosis at 28 weeks, and the NCD referral list names it" <|
+            \_ ->
+                ( bloodSugarReadAtVisit ( 28, 0 ) (diagnosedAt ( 24, 0 ) DiagnosisGestationalDiabetesRecurrentPhase) 130
+                , ncdDiabetesNamed (diagnosedAt ( 24, 0 ) DiagnosisGestationalDiabetesRecurrentPhase)
+                )
+                    |> Expect.equal ( noDiabetesNoReferral, [ DiagnosisGestationalDiabetesRecurrentPhase ] )
         ]
