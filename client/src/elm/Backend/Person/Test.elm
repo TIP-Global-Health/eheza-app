@@ -1354,16 +1354,13 @@ storedAddressComparison =
                 withPlaces site <|
                     \places ->
                         let
-                            person =
-                                personAt places.home
-
                             otherProvince =
                                 addressesOn site
                                     |> List.Extra.find (\address -> placeId address.province /= placeId places.home.province)
                         in
                         case otherProvince of
                             Just address ->
-                                saveEdit site person [ pick province (placeId address.province) ]
+                                saveEdit site (personAt places.home) [ pick province (placeId address.province) ]
                                     |> expectAmongRequired district
 
                             Nothing ->
