@@ -242,66 +242,40 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
                             form_
                     )
 
-        applyDefaultLocation fieldName maybeDefault form_ =
-            case maybeDefault of
-                Just defaultId ->
-                    if formFieldEmpty fieldName form_ then
-                        Form.update
-                            validation
-                            (Form.Input fieldName Form.Select (Form.Field.String (String.fromInt <| fromEntityId defaultId)))
-                            form_
+        applyDefaultAddress form_ =
+            [ ( province, defaultProvinceId )
+            , ( district, defaultDistrictId )
+            , ( sector, defaultSectorId )
+            , ( cell, defaultCellId )
+            , ( village, defaultVillageId )
+            ]
+                |> List.foldl
+                    (\( fieldName, defaultId ) ( levelAboveChanged, accum ) ->
+                        let
+                            storedId =
+                                Maybe.map (fromEntityId >> String.fromInt) defaultId
 
-                    else
-                        form_
+                            setLevel value =
+                                Form.update validation (Form.Input fieldName Form.Select (Form.Field.String value)) accum
+                        in
+                        case (Form.getFieldAsString fieldName accum).value of
+                            Nothing ->
+                                if levelAboveChanged then
+                                    -- The stored place sits under the old level above,
+                                    -- so the level is cleared and must be picked.
+                                    ( True, setLevel "" )
 
-                Nothing ->
-                    form_
+                                else
+                                    ( False, unwrap accum setLevel storedId )
 
-        clearLevelsBelowChangedLevel form_ =
-            -- A level left unset keeps the stored place. Under a level the
-            -- nurse changed, that place is wrong, so the unset level is
-            -- cleared and must be picked.
-            if isChw then
-                form_
-
-            else
-                [ ( province, defaultProvinceId )
-                , ( district, defaultDistrictId )
-                , ( sector, defaultSectorId )
-                , ( cell, defaultCellId )
-                , ( village, defaultVillageId )
-                ]
-                    |> List.foldl
-                        (\( fieldName, defaultId ) ( levelAboveChanged, accum ) ->
-                            let
-                                value =
-                                    Form.getFieldAsString fieldName accum
-                                        |> .value
-                            in
-                            if levelAboveChanged then
-                                ( True
-                                , if isNothing value then
-                                    Form.update validation
-                                        (Form.Input fieldName Form.Select (Form.Field.String ""))
-                                        accum
-
-                                  else
-                                    accum
-                                )
-
-                            else
-                                ( Maybe.map
-                                    (\picked ->
-                                        (picked /= "")
-                                            && (Just picked /= Maybe.map (fromEntityId >> String.fromInt) defaultId)
-                                    )
-                                    value
-                                    |> Maybe.withDefault False
+                            Just picked ->
+                                ( levelAboveChanged
+                                    || (not isChw && picked /= "" && Just picked /= storedId)
                                 , accum
                                 )
-                        )
-                        ( False, form_ )
-                    |> Tuple.second
+                    )
+                    ( False, form_ )
+                |> Tuple.second
     in
     case operation of
         CreatePerson _ ->
@@ -319,12 +293,7 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
             in
             form
                 |> applyDefaultSelectInput ubudehe defaultUbudehe (ubudeheToInt >> String.fromInt)
-                |> applyDefaultLocation province defaultProvinceId
-                |> applyDefaultLocation district defaultDistrictId
-                |> applyDefaultLocation sector defaultSectorId
-                |> applyDefaultLocation cell defaultCellId
-                |> applyDefaultLocation village defaultVillageId
-                |> clearLevelsBelowChangedLevel
+                |> applyDefaultAddress
                 |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
                 |> applyDefaultBirthDate
 
@@ -399,12 +368,7 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
                 |> applyDefaultSelectInput modeOfDelivery defaultModeOfDelivery modeOfDeliveryToString
                 |> applyDefaultSelectInput numberOfChildren defaultlNumberOfChildrenl String.fromInt
                 |> applyDefaultSelectInput ubudehe defaultUbudehe (ubudeheToInt >> String.fromInt)
-                |> applyDefaultLocation province defaultProvinceId
-                |> applyDefaultLocation district defaultDistrictId
-                |> applyDefaultLocation sector defaultSectorId
-                |> applyDefaultLocation cell defaultCellId
-                |> applyDefaultLocation village defaultVillageId
-                |> clearLevelsBelowChangedLevel
+                |> applyDefaultAddress
                 |> applyDefaultTextInput phoneNumber defaultTelephoneNumber identity
                 |> applyDefaultTextInput spouseName defaultSpouseName identity
                 |> applyDefaultTextInput spousePhoneNumber defaultSpousePhoneNumber identity

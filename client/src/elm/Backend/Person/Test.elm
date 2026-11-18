@@ -1349,7 +1349,26 @@ hidden, so nothing there may become required.
 storedAddressComparison : Test
 storedAddressComparison =
     describe "Whether an address level counts as changed"
-        [ onEverySite "a stored name that differs from the list only in letter case is not a change" <|
+        [ onEverySite "picking another province leaves no stored district, sector, cell or village under it" <|
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            person =
+                                personAt places.home
+
+                            otherProvince =
+                                addressesOn site
+                                    |> List.Extra.find (\address -> placeId address.province /= placeId places.home.province)
+                        in
+                        case otherProvince of
+                            Just address ->
+                                saveEdit site person [ pick province (placeId address.province) ]
+                                    |> expectAmongRequired district
+
+                            Nothing ->
+                                Expect.pass
+        , onEverySite "a stored name that differs from the list only in letter case is not a change" <|
             \site ->
                 withPlaces site <|
                     \places ->
