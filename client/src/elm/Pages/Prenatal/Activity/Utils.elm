@@ -5551,14 +5551,12 @@ expectLaboratoryTask currentDate assembled task =
                         && isInitialTest TaskHIVTest
 
                 TaskSyphilisTest ->
-                    List.all (\diagnosis -> not <| EverySet.member diagnosis assembled.encounter.pastDiagnoses)
-                        syphilisDiagnosesIncludingNeurosyphilis
+                    (not <| reportedAnyOf syphilisDiagnosesIncludingNeurosyphilis assembled)
                         && isRepeatingTestOnWeek 38 TaskSyphilisTest
 
                 TaskHepatitisBTest ->
                     (not <| isKnownAsPositive .hepatitisBTest)
-                        && (not <| EverySet.member DiagnosisHepatitisBInitialPhase assembled.encounter.pastDiagnoses)
-                        && (not <| EverySet.member DiagnosisHepatitisBRecurrentPhase assembled.encounter.pastDiagnoses)
+                        && (not <| reportedAnyOf [ DiagnosisHepatitisBInitialPhase, DiagnosisHepatitisBRecurrentPhase ] assembled)
                         && isInitialTest TaskHepatitisBTest
 
                 TaskMalariaTest ->
