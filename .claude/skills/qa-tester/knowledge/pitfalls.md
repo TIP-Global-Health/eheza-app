@@ -995,3 +995,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** none here; the develop control showed the URL first. A check written for `#person/<uuid>$` would have failed every PR save.
 - **Wrong conclusion:** the save did not go through.
 - **Rule:** a saved edit from the Participant Directory lands on `#person/<uuid>/directory`. Run the develop control before writing URL checks.
+
+## Expecting Next Steps to reopen on the tab that sent you away, after a reload
+
+- **Symptom:** a develop control reloaded on the Enroll Newborn form, saved, and timed out waiting for `.form.newborn-enrolment`; Next Steps showed Health Education (PR #2557). The PR's own reload e2e test failed the same way.
+- **Wrong conclusion:** the save did not return to Next Steps, or the task is gone.
+- **Rule:** a reload resets the Next Steps page, so it opens on its first tab. Open the task's tab by its label before reading it.
+
+## Concatenated body files that declare the same `const`
+
+- **Symptom:** a recorded test chaining three body files failed at once with "Identifier 'mS' has already been declared", leaving a 0.2 s video.
+- **Wrong conclusion:** none; but a recording was spent.
+- **Rule:** body files that run together in one command share one function scope. Give each file's variables distinct names, or wrap each body in a block.

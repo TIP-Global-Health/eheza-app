@@ -98,6 +98,8 @@ flag simply does not appear.
 - The pairing lives in the service worker's `config` cache, not in localStorage, so only an
   empty profile (`qa.sh start --fresh`) can be paired anew; `qa.freshDevice()` refuses
   any other.
+- `page.reload()` on a deep route (a registration form) keeps the CHW signed in with the village chosen and reopens that route;
+  only a load of `/` asks for the village again.
 - After pairing, general data (nurses, villages, health centres) must download before a PIN
   works: "Your PIN code was not recognized" straight after pairing means not synced yet.
 - **A health centre downloads nothing until its "START SYNCING" button on Device Status is
@@ -232,6 +234,8 @@ flag simply does not appear.
 - A nurse's Add Child: the child form takes the parent's address. On the relationship page,
   Save stays disabled until "Add to Group..." has a value (at Nyange: Nyagne II, Nyagne III, Nyange I; from a group session only that
   session's group, already chosen). The nurse's save POSTs `pmtct_participant` (the group membership) first, then `relationship`.
+- A CHW's Add Child: Participant Directory → mother → Add Child → REGISTER A NEW PARTICIPANT → `#person/directory/new/<mother uuid>`;
+  Save posts the person and opens Create Relationship ("is the parent of" / "is the caregiver for"), whose Save needs only that choice.
 - Linking existing people: Participant Directory → adult → `div.add-participant-icon-wrapper` → type the child's name → the result's
   `span.action-icon.forward` opens the Relationship page. One adult and three children by the registration helpers took about 20 s.
 - Failing or holding a relationship save: wrap `XMLHttpRequest` POSTs to `/sw/nodes/<type>` (`installSaveControls` in
@@ -485,6 +489,10 @@ flag simply does not appear.
   live birth — record a stillbirth (outcome option 3) to skip it. Saving Next Steps opens the
   progress report, which carries End Encounter. Ending either role's postpartum visit lands on the
   main menu.
+- Newborn Enrollment (Next Steps tab, `.form.newborn-enrolment`): "Click on 'Enroll Newborn'…" with the button `active`, or "Newborn is already enrolled" with it
+  `disabled`. The button opens `#person/prenatal-next-steps-<date>-<encounter uuid>/new/<mother uuid>`; Save sends a PATCH of the pregnancy
+  (`individual_participant`) and returns to Next Steps. After a reload Next Steps opens on its first tab (Health Education): open the
+  Newborn Enrollment tab by its label before reading it. With every task done, Next Steps sits under the encounter's Completed tab.
 - A second encounter on the same day is impossible: backdate the first with
   `h.common.backdateEncounter(name, type, days)`, then sync before starting the next.
   Well Child measurements point at their visit through `field_well_child_encounter`; set each one's
