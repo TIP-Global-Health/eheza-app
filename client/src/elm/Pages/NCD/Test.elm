@@ -10,15 +10,22 @@ import Backend.Measurement.Model
         , Measurement
         , MedicalCondition(..)
         , NCDMeasurements
+        , NonReferralSign(..)
         , ProteinValue(..)
         , RandomBloodSugarTestValue
+        , ReasonForNonReferral(..)
+        , RecommendedTreatmentSign(..)
+        , ReferToFacilitySign(..)
+        , ReferralFacility(..)
+        , ReferralValue
         , TestExecutionNote(..)
         , TestPrerequisite(..)
         , TestResult(..)
         , UrineDipstickTestValue
         )
-import Backend.Measurement.Utils exposing (laboratoryTestToString)
+import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, laboratoryTestToString)
 import Backend.Model exposing (emptyModelIndexedDb)
+import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model as NCDEncounterModel
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Date
@@ -30,9 +37,12 @@ import Measurement.Utils exposing (rdtKnownAsPositiveUpdate, rdtTestPerformedUpd
 import Pages.NCD.Activity.Model exposing (Msg(..), emptyModel)
 import Pages.NCD.Activity.Types exposing (NextStepsTask(..))
 import Pages.NCD.Activity.Update
-import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask, resolveNextStepsTasks, resolvePreviousMaybeValue)
-import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..), PreviousEncounterData)
-import Pages.NCD.RecurrentActivity.Utils exposing (labsResultsValueWithResult, resolveLaboratoryResultTasks, resolvedLabsResultsValue, withCompletedTestsFromMeasurements)
+import Pages.NCD.Activity.Utils exposing (activityCompleted, expectLaboratoryTask, nextStepsTaskCompleted, resolveNextStepsTasks, resolvePreviousMaybeValue)
+import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..), PreviousEncounterData, ReferralForm, emptyReferralForm)
+import Pages.NCD.RecurrentActivity.Model as RecurrentModel
+import Pages.NCD.RecurrentActivity.Types as RecurrentTypes
+import Pages.NCD.RecurrentActivity.Update as RecurrentUpdate
+import Pages.NCD.RecurrentActivity.Utils as RecurrentUtils exposing (labsResultsValueWithResult, resolveLaboratoryResultTasks, resolvedLabsResultsValue, withCompletedTestsFromMeasurements)
 import Pages.NCD.Utils
     exposing
         ( generateAssembledData
@@ -40,15 +50,19 @@ import Pages.NCD.Utils
         , lowerHypertensionStageCondition
         , patientIsPregnant
         , referForRenalComplications
+        , referralFormWithDefault
+        , resolveReferralInputsAndTasks
         , stage1BloodPressureCondition
         , stage2BloodPressureCondition
         , stage3BloodPressureCondition
+        , toReferralValueWithDefault
         )
 import RemoteData
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import Test exposing (Test, describe, test)
 import TestFixtures exposing (testPerson)
 import Time
+import Translate.Model exposing (Language(..))
 
 
 
@@ -980,6 +994,7 @@ all =
         , repeatedTapOnSavedTest
         , randomBloodSugarNotPerformedTest
         , labsEntryClosingTest
+        , referralTasksTest
         ]
 
 
@@ -1246,4 +1261,665 @@ labsEntryClosingTest =
             \_ ->
                 resolvedLabsResultsValue (Date.add Date.Days 31 dummyDate) (labsEntry [ TestCreatinine ] [ TestCreatinine ])
                     |> Expect.equal Nothing
+        ]
+
+
+
+-- REFERRAL TASKS
+--
+-- The initial Next Steps and the lab-results Next Steps of one NCD visit share
+-- one referral record. For a pregnant woman with hypertension the initial phase
+-- asks for the ANC services referral, while the lab-results phase asks for the
+-- hospital referral (renal complications found from lab results). Each phase's
+-- Referral task must be decided by the answer to its own question, and the
+-- question of one facility must not open already answered because the other
+-- facility's answer is on the record.
+
+
+{-| The record as the lab-results phase saves it when the hospital referral is
+answered Yes and the referral form was handed.
+-}
+hospitalReferred : ReferralValue
+hospitalReferred =
+    { referralSigns = EverySet.fromList [ ReferToHospital, ReferralFormHospital ]
+    , nonReferralReasons = Nothing
+    }
+
+
+{-| The same record as it reads after a round trip through the backend, where
+an empty list of reasons decodes as an empty set rather than as nothing.
+-}
+hospitalReferredAfterSync : ReferralValue
+hospitalReferredAfterSync =
+    { hospitalReferred | nonReferralReasons = Just EverySet.empty }
+
+
+{-| The record saved when the hospital referral is answered No, with a reason.
+No referral sign is set, so the answer lives only in the reasons.
+-}
+hospitalNotReferred : ReferralValue
+hospitalNotReferred =
+    { referralSigns = EverySet.singleton NoReferToFacilitySigns
+    , nonReferralReasons = Just (EverySet.singleton (NonReferralReasonHospital NoAmbulance))
+    }
+
+
+{-| The record saved when the ANC services referral is answered Yes, the form
+handed and the patient accompanied.
+-}
+ancReferred : ReferralValue
+ancReferred =
+    { referralSigns = EverySet.fromList [ ReferToANCServices, ReferralFormANCServices, AccompanyToANCServices ]
+    , nonReferralReasons = Nothing
+    }
+
+
+{-| The record saved when the ANC services referral is answered No, with a
+reason.
+-}
+ancNotReferred : ReferralValue
+ancNotReferred =
+    { referralSigns = EverySet.singleton NoReferToFacilitySigns
+    , nonReferralReasons = Just (EverySet.singleton (NonReferralReasonANCServices ClientRefused))
+    }
+
+
+knownPregnant : NCDMeasurements -> NCDMeasurements
+knownPregnant =
+    withPregnancyTest TestNoteKnownAsPositive Nothing
+
+
+testedNotPregnant : NCDMeasurements -> NCDMeasurements
+testedNotPregnant =
+    withPregnancyTest TestNoteRunToday (Just TestNegative)
+
+
+{-| Measurements of a visit whose medication was already given, so the
+Referral task is the only Next Steps task left to decide whether Next Steps is
+complete. Methyldopa is accepted for pregnant and non-pregnant patients alike.
+-}
+referralMeasurements : (NCDMeasurements -> NCDMeasurements) -> Maybe ReferralValue -> NCDMeasurements
+referralMeasurements pregnancy referral =
+    { emptyNCDMeasurements
+        | medicationDistribution =
+            wrapMeasurement
+                { recommendedTreatmentSigns = EverySet.singleton TreatmentMethyldopa2
+                , guidanceSigns = EverySet.empty
+                }
+        , referral = Maybe.andThen wrapMeasurement referral
+    }
+        |> pregnancy
+
+
+{-| A first visit carrying the given diagnoses on the encounter.
+-}
+referralAssembled : (NCDMeasurements -> NCDMeasurements) -> List NCDDiagnosis -> Maybe ReferralValue -> AssembledData
+referralAssembled pregnancy diagnoses referral =
+    let
+        assembled =
+            ncdAssembled (referralMeasurements pregnancy referral)
+
+        encounter =
+            assembled.encounter
+    in
+    { assembled | encounter = { encounter | diagnoses = EverySet.fromList diagnoses } }
+
+
+{-| A later visit: hypertension was diagnosed, and pregnancy recorded, at a
+visit two months earlier. Only the renal complications found from today's lab
+results are on today's encounter.
+-}
+laterVisitAssembled : Maybe ReferralValue -> AssembledData
+laterVisitAssembled referral =
+    let
+        assembled =
+            referralAssembled identity [ DiagnosisRenalComplications ] referral
+
+        previous =
+            previousEncounterAt 2 (knownPregnant emptyNCDMeasurements)
+    in
+    { assembled | previousEncountersData = [ { previous | diagnoses = EverySet.singleton DiagnosisHypertensionStage2 } ] }
+
+
+{-| The shapes of "pregnant woman with hypertension" the criteria cover. Each
+one carries the renal complications that make the lab-results phase ask for a
+hospital referral. Stage 3 is the stage that sends a woman who is not pregnant
+to hospital, so it checks that pregnancy still decides the facility.
+-}
+pregnantWithHypertension : List ( String, Maybe ReferralValue -> AssembledData )
+pregnantWithHypertension =
+    [ ( "Stage 1 at this visit", referralAssembled knownPregnant [ DiagnosisHypertensionStage1, DiagnosisRenalComplications ] )
+    , ( "Stage 3 at this visit", referralAssembled knownPregnant [ DiagnosisHypertensionStage3, DiagnosisRenalComplications ] )
+    , ( "hypertension and pregnancy from an earlier visit", laterVisitAssembled )
+    ]
+
+
+{-| Stage 3 hypertension with renal complications, for a woman who is not
+pregnant: a negative test, and no pregnancy answer at all.
+-}
+notPregnantWithHypertension : List ( String, Maybe ReferralValue -> AssembledData )
+notPregnantWithHypertension =
+    [ ( "pregnancy test negative", referralAssembled testedNotPregnant [ DiagnosisHypertensionStage3, DiagnosisRenalComplications ] )
+    , ( "no pregnancy answer", referralAssembled identity [ DiagnosisHypertensionStage3, DiagnosisRenalComplications ] )
+    ]
+
+
+initialReferralDone : AssembledData -> Bool
+initialReferralDone assembled =
+    nextStepsTaskCompleted assembled TaskReferral
+
+
+recurrentReferralDone : AssembledData -> Bool
+recurrentReferralDone assembled =
+    RecurrentUtils.nextStepsTaskCompleted assembled RecurrentTypes.TaskReferral
+
+
+nextStepsCompleted : AssembledData -> Bool
+nextStepsCompleted assembled =
+    activityCompleted dummyDate assembled Backend.NCDActivity.Model.NextSteps
+
+
+{-| The answers the Referral form of a phase counts as its tasks, for the given
+form as displayed. The first one is the "referred to the facility?" question.
+-}
+referralTasks : NCDEncounterPhase -> AssembledData -> ReferralForm -> List (Maybe Bool)
+referralTasks phase assembled form =
+    resolveReferralInputsAndTasks English phase assembled SetReferralBoolInput SetFacilityNonReferralReason form
+        |> Tuple.second
+
+
+{-| The form each phase displays: the form in the model, filled from the saved
+record.
+-}
+displayed : ReferralValue -> ReferralForm -> ReferralForm
+displayed saved form =
+    referralFormWithDefault form (Just saved)
+
+
+referralDb : ReferralValue -> Backend.Model.ModelIndexedDb
+referralDb saved =
+    { emptyModelIndexedDb
+        | ncdMeasurements =
+            Dict.singleton (toEntityUuid "dummy-encounter")
+                (RemoteData.Success { emptyNCDMeasurements | referral = wrapMeasurement saved })
+    }
+
+
+{-| The referral form in the initial phase's model after the nurse's inputs,
+with the given record already saved.
+-}
+initialFormAfter : ReferralValue -> List Msg -> ReferralForm
+initialFormAfter saved msgs =
+    List.foldl
+        (\msg model ->
+            Pages.NCD.Activity.Update.update dummyDate (toEntityUuid "dummy-encounter") (referralDb saved) msg model
+                |> (\( updated, _, _ ) -> updated)
+        )
+        emptyModel
+        msgs
+        |> .nextStepsData
+        |> .referralForm
+
+
+{-| The referral form in the lab-results phase's model after the nurse's
+inputs, with the given record already saved.
+-}
+recurrentFormAfter : ReferralValue -> List RecurrentModel.Msg -> ReferralForm
+recurrentFormAfter saved msgs =
+    List.foldl
+        (\msg model ->
+            RecurrentUpdate.update dummyDate (toEntityUuid "dummy-encounter") (referralDb saved) msg model
+                |> (\( updated, _, _ ) -> updated)
+        )
+        RecurrentModel.emptyModel
+        msgs
+        |> .nextStepsData
+        |> .referralForm
+
+
+{-| What the ANC "referred?" answer does to the form, as the Referral form
+sets it.
+-}
+setReferToANCServices : Bool -> ReferralForm -> ReferralForm
+setReferToANCServices value form =
+    { form | referToANCServices = Just value, referralFormANCServices = Nothing, accompanyToANCServices = Nothing }
+
+
+setReferralFormANCServices : Bool -> ReferralForm -> ReferralForm
+setReferralFormANCServices value form =
+    { form | referralFormANCServices = Just value }
+
+
+setAccompanyToANCServices : Bool -> ReferralForm -> ReferralForm
+setAccompanyToANCServices value form =
+    { form | accompanyToANCServices = Just value }
+
+
+{-| What the hospital "referred?" answer does to the form, as the Referral form
+sets it.
+-}
+setReferToHospital : Bool -> ReferralForm -> ReferralForm
+setReferToHospital value form =
+    { form | referToHospital = Just value, referralFormHospital = Nothing }
+
+
+setReferralFormHospital : Bool -> ReferralForm -> ReferralForm
+setReferralFormHospital value form =
+    { form | referralFormHospital = Just value }
+
+
+{-| The nurse answers the ANC referral Yes, hands the form and accompanies.
+-}
+ancYesInputs : List Msg
+ancYesInputs =
+    [ SetReferralBoolInput setReferToANCServices True
+    , SetReferralBoolInput setReferralFormANCServices True
+    , SetReferralBoolInput setAccompanyToANCServices True
+    ]
+
+
+{-| The nurse answers the ANC referral No and picks a reason.
+-}
+ancNoInputs : List Msg
+ancNoInputs =
+    [ SetReferralBoolInput setReferToANCServices False
+    , SetFacilityNonReferralReason Nothing FacilityANCServices ClientRefused
+    ]
+
+
+hospitalYesInputs : List RecurrentModel.Msg
+hospitalYesInputs =
+    [ RecurrentModel.SetReferralBoolInput setReferToHospital True
+    , RecurrentModel.SetReferralBoolInput setReferralFormHospital True
+    ]
+
+
+hospitalNoInputs : List RecurrentModel.Msg
+hospitalNoInputs =
+    [ RecurrentModel.SetReferralBoolInput setReferToHospital False
+    , RecurrentModel.SetFacilityNonReferralReason Nothing FacilityHospital NoAmbulance
+    ]
+
+
+{-| The record the initial phase saves after the inputs, over the saved one.
+-}
+savedAfterInitial : ReferralValue -> List Msg -> Maybe ReferralValue
+savedAfterInitial saved msgs =
+    toReferralValueWithDefault (Just saved) (initialFormAfter saved msgs)
+
+
+savedAfterRecurrent : ReferralValue -> List RecurrentModel.Msg -> Maybe ReferralValue
+savedAfterRecurrent saved msgs =
+    toReferralValueWithDefault (Just saved) (recurrentFormAfter saved msgs)
+
+
+hasSigns : List ReferToFacilitySign -> Maybe ReferralValue -> Bool
+hasSigns signs =
+    Maybe.map (\value -> List.all (\sign -> EverySet.member sign value.referralSigns) signs)
+        >> Maybe.withDefault False
+
+
+reasonsFor : Maybe ReferralValue -> ( Maybe ReasonForNonReferral, Maybe ReasonForNonReferral )
+reasonsFor =
+    Maybe.andThen .nonReferralReasons
+        >> (\reasons ->
+                ( getCurrentReasonForNonReferral NonReferralReasonHospital reasons
+                , getCurrentReasonForNonReferral NonReferralReasonANCServices reasons
+                )
+           )
+
+
+{-| One test per pregnant-with-hypertension scenario.
+-}
+forEachPregnantScenario : String -> ((Maybe ReferralValue -> AssembledData) -> Expect.Expectation) -> List Test
+forEachPregnantScenario name expectation =
+    List.map
+        (\( scenario, assembledWith ) -> test (scenario ++ ": " ++ name) <| \_ -> expectation assembledWith)
+        pregnantWithHypertension
+
+
+forEachNotPregnantScenario : String -> ((Maybe ReferralValue -> AssembledData) -> Expect.Expectation) -> List Test
+forEachNotPregnantScenario name expectation =
+    List.map
+        (\( scenario, assembledWith ) -> test (scenario ++ ": " ++ name) <| \_ -> expectation assembledWith)
+        notPregnantWithHypertension
+
+
+referralTasksTest : Test
+referralTasksTest =
+    describe "NCD Next Steps referral tasks of a visit that refers to two facilities"
+        [ describe "At an NCD visit of a pregnant woman with hypertension, the initial Next Steps Referral task asks for the ANC services referral and stays not done until it is answered." <|
+            forEachPregnantScenario "the initial phase offers the Referral task"
+                (\assembledWith ->
+                    resolveNextStepsTasks (assembledWith Nothing)
+                        |> List.member TaskReferral
+                        |> Expect.equal True
+                )
+                ++ forEachPregnantScenario "the lab-results phase offers its Referral task"
+                    (\assembledWith ->
+                        RecurrentUtils.resolveNextStepsTasks (assembledWith Nothing)
+                            |> List.member RecurrentTypes.TaskReferral
+                            |> Expect.equal True
+                    )
+                ++ forEachPregnantScenario "the initial Referral form asks the ANC services questions"
+                    (\assembledWith ->
+                        { emptyReferralForm
+                            | referToANCServices = Just True
+                            , referralFormANCServices = Just True
+                            , accompanyToANCServices = Just True
+                        }
+                            |> referralTasks NCDEncounterPhaseInitial (assembledWith Nothing)
+                            |> Expect.equal [ Just True, Just True, Just True ]
+                    )
+                ++ forEachPregnantScenario "with no referral saved, the initial Referral task is not done"
+                    (\assembledWith ->
+                        assembledWith Nothing
+                            |> initialReferralDone
+                            |> Expect.equal False
+                    )
+        , describe "This holds when a hospital referral was already saved from lab results in the same visit: the ANC question is still asked, and Next Steps cannot complete until it is answered." <|
+            forEachPregnantScenario "hospital referred from lab results, the initial Referral task is not done"
+                (\assembledWith ->
+                    assembledWith (Just hospitalReferred)
+                        |> initialReferralDone
+                        |> Expect.equal False
+                )
+                ++ forEachPregnantScenario "hospital not referred from lab results, with a reason, the initial Referral task is not done"
+                    (\assembledWith ->
+                        assembledWith (Just hospitalNotReferred)
+                            |> initialReferralDone
+                            |> Expect.equal False
+                    )
+                ++ forEachPregnantScenario "hospital referred, record read back after sync, the initial Referral task is not done"
+                    (\assembledWith ->
+                        assembledWith (Just hospitalReferredAfterSync)
+                            |> initialReferralDone
+                            |> Expect.equal False
+                    )
+                ++ forEachPregnantScenario "hospital referred from lab results, Next Steps is not completed"
+                    (\assembledWith ->
+                        assembledWith (Just hospitalReferred)
+                            |> nextStepsCompleted
+                            |> Expect.equal False
+                    )
+                ++ forEachPregnantScenario "hospital referred from lab results, the lab-results Referral task is done"
+                    (\assembledWith ->
+                        assembledWith (Just hospitalReferred)
+                            |> recurrentReferralDone
+                            |> Expect.equal True
+                    )
+        , describe "The ANC services question then starts unanswered. It does not show as already answered No." <|
+            [ test "hospital referred: the ANC question starts unanswered" <|
+                \_ ->
+                    displayed hospitalReferred emptyReferralForm
+                        |> .referToANCServices
+                        |> Expect.equal Nothing
+            , test "hospital not referred, with a reason: the ANC question starts unanswered" <|
+                \_ ->
+                    displayed hospitalNotReferred emptyReferralForm
+                        |> .referToANCServices
+                        |> Expect.equal Nothing
+            , test "hospital referred, record read back after sync: the ANC question starts unanswered" <|
+                \_ ->
+                    displayed hospitalReferredAfterSync emptyReferralForm
+                        |> .referToANCServices
+                        |> Expect.equal Nothing
+            ]
+                ++ forEachPregnantScenario "hospital referred: the ANC question on the initial Referral form is unanswered"
+                    (\assembledWith ->
+                        displayed hospitalReferred emptyReferralForm
+                            |> referralTasks NCDEncounterPhaseInitial (assembledWith (Just hospitalReferred))
+                            |> List.head
+                            |> Expect.equal (Just Nothing)
+                    )
+                ++ [ -- The follow-up questions belong to the ANC section too: once
+                     -- the nurse answers Yes, "handed the referral form?" and
+                     -- "accompanied?" must not open answered No either.
+                     test "hospital referred, ANC answered Yes: the handed-form and accompany questions start unanswered" <|
+                        \_ ->
+                            initialFormAfter hospitalReferred [ SetReferralBoolInput setReferToANCServices True ]
+                                |> displayed hospitalReferred
+                                |> (\form -> ( form.referToANCServices, form.referralFormANCServices, form.accompanyToANCServices ))
+                                |> Expect.equal ( Just True, Nothing, Nothing )
+                   , test "hospital referred: the form keeps the hospital answers" <|
+                        \_ ->
+                            displayed hospitalReferred emptyReferralForm
+                                |> (\form -> ( form.referToHospital, form.referralFormHospital ))
+                                |> Expect.equal ( Just True, Just True )
+                   , test "hospital not referred, with a reason: the hospital question still reads No, with its reason" <|
+                        \_ ->
+                            displayed hospitalNotReferred emptyReferralForm
+                                |> (\form -> ( form.referToHospital, getCurrentReasonForNonReferral NonReferralReasonHospital form.nonReferralReasons ))
+                                |> Expect.equal ( Just False, Just NoAmbulance )
+                   , test "an ANC answer the nurse gave wins over the saved record" <|
+                        \_ ->
+                            displayed hospitalReferred { emptyReferralForm | referToANCServices = Just True }
+                                |> .referToANCServices
+                                |> Expect.equal (Just True)
+                   , test "an ANC referral saved as No still reads No" <|
+                        \_ ->
+                            displayed ancNotReferred emptyReferralForm
+                                |> .referToANCServices
+                                |> Expect.equal (Just False)
+                   , test "an ANC referral saved as Yes reads Yes, with its handed-form and accompany answers" <|
+                        \_ ->
+                            displayed ancReferred emptyReferralForm
+                                |> (\form -> ( form.referToANCServices, form.referralFormANCServices, form.accompanyToANCServices ))
+                                |> Expect.equal ( Just True, Just True, Just True )
+                   , test "an ANC referral saved as Yes, with no form handed and no one accompanying, reads No for those two" <|
+                        \_ ->
+                            displayed { ancReferred | referralSigns = EverySet.singleton ReferToANCServices } emptyReferralForm
+                                |> (\form -> ( form.referToANCServices, form.referralFormANCServices, form.accompanyToANCServices ))
+                                |> Expect.equal ( Just True, Just False, Just False )
+                   ]
+        , describe "Answering the ANC referral Yes, or No with a reason, marks the task done. The hospital referral saved from lab results stays as it was." <|
+            forEachPregnantScenario "hospital referred, then ANC answered Yes: the initial Referral task is done"
+                (\assembledWith ->
+                    assembledWith (savedAfterInitial hospitalReferred ancYesInputs)
+                        |> initialReferralDone
+                        |> Expect.equal True
+                )
+                ++ forEachPregnantScenario "hospital referred, then ANC answered No with a reason: the initial Referral task is done"
+                    (\assembledWith ->
+                        assembledWith (savedAfterInitial hospitalReferred ancNoInputs)
+                            |> initialReferralDone
+                            |> Expect.equal True
+                    )
+                ++ forEachPregnantScenario "hospital not referred, then ANC answered No with a reason: the initial Referral task is done"
+                    (\assembledWith ->
+                        assembledWith (savedAfterInitial hospitalNotReferred ancNoInputs)
+                            |> initialReferralDone
+                            |> Expect.equal True
+                    )
+                ++ forEachPregnantScenario "hospital referred, then ANC answered Yes: Next Steps is completed"
+                    (\assembledWith ->
+                        assembledWith (savedAfterInitial hospitalReferred ancYesInputs)
+                            |> nextStepsCompleted
+                            |> Expect.equal True
+                    )
+                ++ forEachPregnantScenario "hospital referred, then ANC answered Yes: the lab-results Referral task stays done"
+                    (\assembledWith ->
+                        assembledWith (savedAfterInitial hospitalReferred ancYesInputs)
+                            |> recurrentReferralDone
+                            |> Expect.equal True
+                    )
+                ++ forEachPregnantScenario "hospital not referred, then ANC answered No: the lab-results Referral task stays done"
+                    (\assembledWith ->
+                        assembledWith (savedAfterInitial hospitalNotReferred ancNoInputs)
+                            |> recurrentReferralDone
+                            |> Expect.equal True
+                    )
+                ++ [ test "hospital referred, then ANC answered Yes: the record keeps the hospital referral and holds the ANC one" <|
+                        \_ ->
+                            savedAfterInitial hospitalReferred ancYesInputs
+                                |> (\value ->
+                                        ( hasSigns [ ReferToHospital, ReferralFormHospital ] value
+                                        , hasSigns [ ReferToANCServices, ReferralFormANCServices, AccompanyToANCServices ] value
+                                        )
+                                   )
+                                |> Expect.equal ( True, True )
+                   , test "hospital referred, then ANC answered No: the record keeps the hospital referral and holds the ANC reason" <|
+                        \_ ->
+                            savedAfterInitial hospitalReferred ancNoInputs
+                                |> (\value -> ( hasSigns [ ReferToHospital, ReferralFormHospital ] value, reasonsFor value ))
+                                |> Expect.equal ( True, ( Nothing, Just ClientRefused ) )
+                   , test "hospital not referred, then ANC answered No: the record keeps both reasons" <|
+                        \_ ->
+                            savedAfterInitial hospitalNotReferred ancNoInputs
+                                |> (\value -> ( hasSigns [ ReferToHospital ] value, reasonsFor value ))
+                                |> Expect.equal ( False, ( Just NoAmbulance, Just ClientRefused ) )
+                   ]
+        , describe "In the opposite order, ANC referral saved first, hospital referral asked later from lab results: the hospital question starts unanswered, and that task is done only when it is answered." <|
+            [ test "ANC referred: the hospital question starts unanswered" <|
+                \_ ->
+                    displayed ancReferred emptyReferralForm
+                        |> .referToHospital
+                        |> Expect.equal Nothing
+            , test "ANC not referred, with a reason: the hospital question starts unanswered" <|
+                \_ ->
+                    displayed ancNotReferred emptyReferralForm
+                        |> .referToHospital
+                        |> Expect.equal Nothing
+            , -- As on the ANC side: once the nurse answers Yes, "handed the
+              -- referral form?" must not open answered No.
+              test "ANC referred, hospital answered Yes: the handed-form question starts unanswered" <|
+                \_ ->
+                    recurrentFormAfter ancReferred [ RecurrentModel.SetReferralBoolInput setReferToHospital True ]
+                        |> displayed ancReferred
+                        |> (\form -> ( form.referToHospital, form.referralFormHospital ))
+                        |> Expect.equal ( Just True, Nothing )
+            ]
+                ++ forEachPregnantScenario "ANC referred: the hospital question on the lab-results Referral form is unanswered"
+                    (\assembledWith ->
+                        displayed ancReferred emptyReferralForm
+                            |> referralTasks NCDEncounterPhaseRecurrent (assembledWith (Just ancReferred))
+                            |> List.head
+                            |> Expect.equal (Just Nothing)
+                    )
+                ++ forEachPregnantScenario "the lab-results Referral form asks the hospital questions"
+                    (\assembledWith ->
+                        { emptyReferralForm | referToHospital = Just True, referralFormHospital = Just True }
+                            |> referralTasks NCDEncounterPhaseRecurrent (assembledWith (Just ancReferred))
+                            |> Expect.equal [ Just True, Just True ]
+                    )
+                ++ forEachPregnantScenario "ANC referred: the lab-results Referral task is not done"
+                    (\assembledWith ->
+                        assembledWith (Just ancReferred)
+                            |> recurrentReferralDone
+                            |> Expect.equal False
+                    )
+                ++ forEachPregnantScenario "ANC not referred, with a reason: the lab-results Referral task is not done"
+                    (\assembledWith ->
+                        assembledWith (Just ancNotReferred)
+                            |> recurrentReferralDone
+                            |> Expect.equal False
+                    )
+                ++ forEachPregnantScenario "ANC referred: the initial Referral task is done"
+                    (\assembledWith ->
+                        assembledWith (Just ancReferred)
+                            |> initialReferralDone
+                            |> Expect.equal True
+                    )
+                ++ forEachPregnantScenario "ANC not referred, with a reason: the initial Referral task is done"
+                    (\assembledWith ->
+                        assembledWith (Just ancNotReferred)
+                            |> initialReferralDone
+                            |> Expect.equal True
+                    )
+                ++ forEachPregnantScenario "ANC referred, then hospital answered Yes: both Referral tasks are done"
+                    (\assembledWith ->
+                        assembledWith (savedAfterRecurrent ancReferred hospitalYesInputs)
+                            |> (\assembled -> ( initialReferralDone assembled, recurrentReferralDone assembled ))
+                            |> Expect.equal ( True, True )
+                    )
+                ++ forEachPregnantScenario "ANC not referred, then hospital answered No with a reason: both Referral tasks are done"
+                    (\assembledWith ->
+                        assembledWith (savedAfterRecurrent ancNotReferred hospitalNoInputs)
+                            |> (\assembled -> ( initialReferralDone assembled, recurrentReferralDone assembled ))
+                            |> Expect.equal ( True, True )
+                    )
+                ++ [ test "ANC referred, then hospital answered Yes: the record keeps the ANC referral and holds the hospital one" <|
+                        \_ ->
+                            savedAfterRecurrent ancReferred hospitalYesInputs
+                                |> (\value ->
+                                        ( hasSigns [ ReferToANCServices, ReferralFormANCServices, AccompanyToANCServices ] value
+                                        , hasSigns [ ReferToHospital, ReferralFormHospital ] value
+                                        )
+                                   )
+                                |> Expect.equal ( True, True )
+                   , test "ANC not referred, then hospital answered No: the record keeps both reasons" <|
+                        \_ ->
+                            savedAfterRecurrent ancNotReferred hospitalNoInputs
+                                |> reasonsFor
+                                |> Expect.equal ( Just NoAmbulance, Just ClientRefused )
+                   ]
+        , describe "For a woman who is not pregnant, or has no hypertension, both Referral tasks work as before." <|
+            forEachNotPregnantScenario "both phases offer the Referral task"
+                (\assembledWith ->
+                    ( resolveNextStepsTasks (assembledWith Nothing) |> List.member TaskReferral
+                    , RecurrentUtils.resolveNextStepsTasks (assembledWith Nothing) |> List.member RecurrentTypes.TaskReferral
+                    )
+                        |> Expect.equal ( True, True )
+                )
+                ++ forEachNotPregnantScenario "the initial Referral form asks the hospital questions"
+                    (\assembledWith ->
+                        { emptyReferralForm | referToHospital = Just True, referralFormHospital = Just True }
+                            |> referralTasks NCDEncounterPhaseInitial (assembledWith Nothing)
+                            |> Expect.equal [ Just True, Just True ]
+                    )
+                ++ forEachNotPregnantScenario "with no referral saved, neither Referral task is done"
+                    (\assembledWith ->
+                        assembledWith Nothing
+                            |> (\assembled -> ( initialReferralDone assembled, recurrentReferralDone assembled ))
+                            |> Expect.equal ( False, False )
+                    )
+                ++ forEachNotPregnantScenario "hospital referred: both Referral tasks are done"
+                    (\assembledWith ->
+                        assembledWith (Just hospitalReferred)
+                            |> (\assembled -> ( initialReferralDone assembled, recurrentReferralDone assembled ))
+                            |> Expect.equal ( True, True )
+                    )
+                ++ forEachNotPregnantScenario "hospital not referred, with a reason: both Referral tasks are done"
+                    (\assembledWith ->
+                        assembledWith (Just hospitalNotReferred)
+                            |> (\assembled -> ( initialReferralDone assembled, recurrentReferralDone assembled ))
+                            |> Expect.equal ( True, True )
+                    )
+                ++ forEachNotPregnantScenario "hospital referred: Next Steps is completed"
+                    (\assembledWith ->
+                        assembledWith (Just hospitalReferred)
+                            |> nextStepsCompleted
+                            |> Expect.equal True
+                    )
+                ++ [ test "not pregnant, hospital referred: the hospital question reads Yes, with its handed-form answer" <|
+                        \_ ->
+                            displayed hospitalReferred emptyReferralForm
+                                |> (\form -> ( form.referToHospital, form.referralFormHospital ))
+                                |> Expect.equal ( Just True, Just True )
+                   , test "not pregnant, hospital referred with no form handed: the handed-form question reads No" <|
+                        \_ ->
+                            displayed { hospitalReferred | referralSigns = EverySet.singleton ReferToHospital } emptyReferralForm
+                                |> (\form -> ( form.referToHospital, form.referralFormHospital ))
+                                |> Expect.equal ( Just True, Just False )
+                   , -- With no hypertension there is no referral at all: the
+                     -- renal complications and diabetes referrals both need it.
+                     test "pregnant, no hypertension: neither phase offers a Referral task" <|
+                        \_ ->
+                            referralAssembled knownPregnant [] Nothing
+                                |> (\assembled ->
+                                        ( resolveNextStepsTasks assembled |> List.member TaskReferral
+                                        , RecurrentUtils.resolveNextStepsTasks assembled |> List.member RecurrentTypes.TaskReferral
+                                        )
+                                   )
+                                |> Expect.equal ( False, False )
+                   , test "pregnant, no hypertension, renal complications from lab results: neither phase offers a Referral task" <|
+                        \_ ->
+                            referralAssembled knownPregnant [ DiagnosisRenalComplications ] Nothing
+                                |> (\assembled ->
+                                        ( resolveNextStepsTasks assembled |> List.member TaskReferral
+                                        , RecurrentUtils.resolveNextStepsTasks assembled |> List.member RecurrentTypes.TaskReferral
+                                        )
+                                   )
+                                |> Expect.equal ( False, False )
+                   ]
         ]
