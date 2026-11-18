@@ -605,10 +605,12 @@ B-604	3	READY	LOW			56	Registration: the duplicate national-ID warning is lost w
 B-605	4	READY	LOW			56	Person edit / add family member: an address level left blank or invalid is silently replaced by the related person's sto
 B-606	4	READY	LOW			56	Prenatal Completion report: gestational age comes from the LMP only, while the app prefers the Healthy Start ultrasound'
 B-607	4	IMPLEMENTED	LOW	2546	2549	56	Antenatal progress report › Medication History: Mebendazole shows "--" when it was handed over from Next Steps, although
-B-608	1	READY	LOW			B-593	Prenatal: diabetes reported to a visit from lab history is diagnosed again at the next visit, with a second hospital ref
+B-608	1	IMPLEMENTED	LOW	2550	2551	B-593	Prenatal: diabetes reported to a visit from lab history is diagnosed again at the next visit, with a second hospital ref
 B-609	4	READY	LOW		2549	B-607	Antenatal progress report › Medication History: Iron and Folic acid handed over in Next Steps (anaemia treatment) show "
 B-610	3	READY	MED			58	Sync upload: a record saved while the upload lanes are running goes up WITHOUT its photo, the pending photo row is then 
 B-611	4	READY				58	Person upload: every character outside `a-z A-Z 0-9 _ space -` is silently deleted from first and second names ("Désiré"
+B-612	4	READY	LOW			B-608	Dashboard: diabetes or gestational diabetes found from a lab-history result is never counted in the prenatal diabetes fi
+B-613	4	READY	LOW			B-608	Prenatal (nurse): diabetes found from a lab-history result gives no diabetes health education at the visit it is reporte
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
