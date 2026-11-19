@@ -10780,11 +10780,7 @@ function hedley_reports_age_in_months_reached(DateTime $birth_date_obj, DateTime
 
   $whole_months = ($year - $birth_year) * 12 + $month - $birth_month - ($day < $birth_day ? 1 : 0);
 
-  // The next monthly anniversary, moved back to its month's last day when
-  // that month is shorter.
-  $next_month_index = $birth_year * 12 + $birth_month + $whole_months;
-  $next_month_start = new DateTime(sprintf('%04d-%02d-01', intdiv($next_month_index, 12), $next_month_index % 12 + 1));
-  $next_anniversary = $next_month_start->format('Y-m-') . sprintf('%02d', min($birth_day, (int) $next_month_start->format('t')));
+  $next_anniversary = hedley_reports_add_interval($birth_date_obj, '+' . ($whole_months + 1) . ' months')->format('Y-m-d');
 
   return $next_anniversary === $date_obj->format('Y-m-d') ? $whole_months + 1 : $whole_months;
 }
@@ -10792,8 +10788,8 @@ function hedley_reports_age_in_months_reached(DateTime $birth_date_obj, DateTime
 /**
  * Adds an interval such as '+6 months' to a copy of a date.
  *
- * Months stop on a shorter month's last day: 2025-08-31 plus 6 months is
- * 2026-02-28.
+ * Months and years stop on a shorter month's last day: 2025-08-31 plus 6
+ * months is 2026-02-28.
  *
  * @param DateTime $date_obj
  *   The date to start from. It is not changed.
@@ -10805,13 +10801,14 @@ function hedley_reports_age_in_months_reached(DateTime $birth_date_obj, DateTime
  */
 function hedley_reports_add_interval(DateTime $date_obj, $interval) {
   $result = clone $date_obj;
-  if (!preg_match('/^\+(\d+) months?$/', $interval, $matches)) {
+  if (!preg_match('/^\+(\d+) (month|year)s?$/', $interval, $matches)) {
     $result->modify($interval);
     return $result;
   }
 
+  $months = $matches[2] == 'year' ? 12 * $matches[1] : $matches[1];
   $day = (int) $date_obj->format('j');
-  $result->modify('first day of this month')->modify('+' . $matches[1] . ' months');
+  $result->modify('first day of this month')->modify('+' . $months . ' months');
   $result->setDate((int) $result->format('Y'), (int) $result->format('n'), min($day, (int) $result->format('t')));
 
   return $result;
