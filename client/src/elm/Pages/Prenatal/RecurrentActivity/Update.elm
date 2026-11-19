@@ -13,6 +13,7 @@ import Gizra.Update exposing (sequenceExtra)
 import Measurement.Utils
     exposing
         ( syphilisResultFormWithDefault
+        , testResultUpdateHIVTest
         , testResultUpdatePartnerHIVTest
         , toBloodGpRsResultValueWithDefault
         , toHIVPCRResultValueWithDefault
@@ -835,21 +836,8 @@ update id isLabTech db msg model =
 
         SetHIVTestResult value ->
             let
-                form =
-                    model.labResultsData.hivTestForm
-
                 updatedForm =
-                    { form
-                        | testResult = testResultFromString value
-                        , hivProgramHC = Nothing
-                        , hivProgramHCDirty = True
-                        , partnerHIVPositive = Nothing
-                        , partnerHIVPositiveDirty = True
-                        , partnerTakingARV = Nothing
-                        , partnerTakingARVDirty = True
-                        , partnerSurpressedViralLoad = Nothing
-                        , partnerSurpressedViralLoadDirty = True
-                    }
+                    testResultUpdateHIVTest (testResultFromString value) model.labResultsData.hivTestForm
 
                 updatedData =
                     model.labResultsData
@@ -1709,21 +1697,8 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
 
         SetHIVTestResult value ->
             let
-                form =
-                    data.hivTestForm
-
                 updatedForm =
-                    { form
-                        | testResult = testResultFromString value
-                        , hivProgramHC = Nothing
-                        , hivProgramHCDirty = True
-                        , partnerHIVPositive = Nothing
-                        , partnerHIVPositiveDirty = True
-                        , partnerTakingARV = Nothing
-                        , partnerTakingARVDirty = True
-                        , partnerSurpressedViralLoad = Nothing
-                        , partnerSurpressedViralLoadDirty = True
-                    }
+                    testResultUpdateHIVTest (testResultFromString value) data.hivTestForm
             in
             ( { data | hivTestForm = updatedForm }
             , Cmd.none
