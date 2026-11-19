@@ -80,7 +80,7 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (div)
 import Measurement.Model exposing (RangedMeasurement(..), emptyHIVPCRResultForm, emptyPartnerHIVTestForm, emptyVaccinationForm)
-import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, testResultUpdatePartnerHIVTest, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault, toVaccinationValueWithDefault, vaccinationFormWithDefault)
+import Measurement.Utils exposing (knownAsPositiveUpdate, knownAsPositiveUpdateHIVTest, knownAsPositiveUpdatePartnerHIVTest, partnerHIVTestFormWithDefault, testResultUpdatePartnerHIVTest, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVTestValueUniversalWithDefault, toHepatitisBTestValueWithDefault, toPartnerHIVTestValueWithDefault, toVaccinationValueWithDefault, vaccinationFormWithDefault)
 import Pages.Prenatal.Activity.Model exposing (Msg(..), UltrasoundForm, emptyModel)
 import Pages.Prenatal.Activity.Types exposing (GWGClassification(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), WarningPopupType(..))
 import Pages.Prenatal.Activity.Update exposing (update)
@@ -3355,6 +3355,12 @@ labTechPendingSignsTest =
                     |> testResultUpdatePartnerHIVTest (Just TestNegative)
                     |> savedSigns
                     |> Expect.equal (Just (EverySet.singleton NoPrenatalHIVSign))
+        , test "a known positive partner saved without signs is asked about ARVs" <|
+            \_ ->
+                Just { savedByLabTech | executionNote = TestNoteKnownAsPositive, testResult = Nothing, hivSigns = Nothing }
+                    |> partnerHIVTestFormWithDefault emptyPartnerHIVTestForm
+                    |> .partnerTakingARV
+                    |> Expect.equal Nothing
         ]
 
 

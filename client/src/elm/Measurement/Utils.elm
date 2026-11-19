@@ -3774,19 +3774,8 @@ viewHIVTestUniversalForm language currentDate configInitial configPerformed part
                             prerequisiteByImmediateResultInputsAndTasks language
                                 (configInitial.setHIVTestFormBoolInputMsg
                                     (\value form_ ->
-                                        { form_
-                                            | immediateResult = Just value
-                                            , testResult = Nothing
-                                            , testResultDirty = True
-                                            , hivProgramHC = Nothing
-                                            , hivProgramHCDirty = True
-                                            , partnerHIVPositive = Nothing
-                                            , partnerHIVPositiveDirty = True
-                                            , partnerTakingARV = Nothing
-                                            , partnerTakingARVDirty = True
-                                            , partnerSurpressedViralLoad = Nothing
-                                            , partnerSurpressedViralLoadDirty = True
-                                        }
+                                        testResultUpdateHIVTest Nothing
+                                            { form_ | immediateResult = Just value, testResultDirty = True }
                                     )
                                 )
                                 form.immediateResult
@@ -3870,21 +3859,13 @@ contentAndTasksLaboratoryResultConfirmation language config task form =
                     let
                         updateFunc =
                             \value form_ ->
-                                { form_
-                                    | runConfirmedByLabTech = Just value
-                                    , executionNote = resolveNote value
-                                    , executionNoteDirty = True
-                                    , testResult = Nothing
-                                    , testResultDirty = True
-                                    , hivProgramHC = Nothing
-                                    , hivProgramHCDirty = True
-                                    , partnerHIVPositive = Nothing
-                                    , partnerHIVPositiveDirty = True
-                                    , partnerTakingARV = Nothing
-                                    , partnerTakingARVDirty = True
-                                    , partnerSurpressedViralLoad = Nothing
-                                    , partnerSurpressedViralLoadDirty = True
-                                }
+                                testResultUpdateHIVTest Nothing
+                                    { form_
+                                        | runConfirmedByLabTech = Just value
+                                        , executionNote = resolveNote value
+                                        , executionNoteDirty = True
+                                        , testResultDirty = True
+                                    }
                     in
                     { setBoolInputMsg = config.setHIVTestFormBoolInputMsg updateFunc
                     , setExecutionNoteMsg = config.setHIVTestExecutionNoteMsg
@@ -4694,11 +4675,8 @@ viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
                                     prerequisiteByImmediateResultInputsAndTasks language
                                         (configInitial.setPartnerHIVTestFormBoolInputMsg
                                             (\value form_ ->
-                                                { form_
-                                                    | immediateResult = Just value
-                                                    , testResult = Nothing
-                                                    , testResultDirty = True
-                                                }
+                                                testResultUpdatePartnerHIVTest Nothing
+                                                    { form_ | immediateResult = Just value, testResultDirty = True }
                                             )
                                         )
                                         form.immediateResult
@@ -6763,18 +6741,7 @@ knownAsPositiveUpdateHIVTest knownAsPositive form =
             updated =
                 knownAsPositiveUpdate knownAsPositive form
         in
-        { updated
-            | testResult = Nothing
-            , testResultDirty = True
-            , hivProgramHC = Nothing
-            , hivProgramHCDirty = True
-            , partnerHIVPositive = Nothing
-            , partnerHIVPositiveDirty = True
-            , partnerTakingARV = Nothing
-            , partnerTakingARVDirty = True
-            , partnerSurpressedViralLoad = Nothing
-            , partnerSurpressedViralLoadDirty = True
-        }
+        testResultUpdateHIVTest Nothing { updated | testResultDirty = True }
 
 
 {-| A partner known as positive is not tested, so the result is cleared with the
@@ -6791,14 +6758,7 @@ knownAsPositiveUpdatePartnerHIVTest knownAsPositive form =
             updated =
                 knownAsPositiveUpdate knownAsPositive form
         in
-        { updated
-            | testResult = Nothing
-            , testResultDirty = True
-            , partnerTakingARV = Nothing
-            , partnerTakingARVDirty = True
-            , partnerSurpressedViralLoad = Nothing
-            , partnerSurpressedViralLoadDirty = True
-        }
+        testResultUpdatePartnerHIVTest Nothing { updated | testResultDirty = True }
 
 
 {-| Sets the woman's HIV test result. The follow up questions depend on the
@@ -8987,11 +8947,11 @@ hivSignsAnswered signs =
 
 
 {-| The answer saved signs give to one follow up question. Signs pending for
-the nurse give no answer, so she is asked; a test saved without signs reads as No.
+the nurse, or no signs at all, give no answer, so she is asked.
 -}
 hivSignAnswer : PrenatalHIVSign -> Maybe (EverySet PrenatalHIVSign) -> Maybe Bool
 hivSignAnswer sign =
-    Maybe.map
+    Maybe.andThen
         (\signs ->
             if hivSignsAnswered signs then
                 Just <| EverySet.member sign signs
@@ -8999,7 +8959,6 @@ hivSignAnswer sign =
             else
                 Nothing
         )
-        >> Maybe.withDefault (Just False)
 
 
 {-| The signs saved from the follow up answers. Signs pending for the nurse stay
