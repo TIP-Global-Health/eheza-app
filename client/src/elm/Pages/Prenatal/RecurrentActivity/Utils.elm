@@ -93,9 +93,7 @@ activityCompleted currentDate isLabTech assembled activity =
 
         LabsResultsFollowUps ->
             (not <| expectActivity currentDate isLabTech assembled LabsResultsFollowUps)
-                || (resolveLaboratoryResultFollowUpsTasks assembled
-                        |> List.all (laboratoryResultFollowUpsTaskCompleted assembled)
-                   )
+                || laboratoryResultFollowUpsCompleted assembled
 
 
 laboratoryResultTasks : List LaboratoryTask
@@ -304,8 +302,10 @@ labsResultsValueOnResultSaved currentDate isLabTech assembled results test =
             else
                 value.testsWithFollowUp
 
+        -- The entry stays open while the nurse still has a lab technician's
+        -- follow up questions to answer.
         closedByNurse =
-            not isLabTech && allCompleted
+            not isLabTech && allCompleted && laboratoryResultFollowUpsCompleted assembled
 
         reviewState =
             if isLabTech && isNothing value.reviewState && allCompleted then
@@ -540,6 +540,12 @@ laboratoryResultFollowUpsTasks =
 resolveLaboratoryResultFollowUpsTasks : AssembledData -> List LaboratoryTask
 resolveLaboratoryResultFollowUpsTasks assembled =
     List.filter (expectLaboratoryResultFollowUpsTask assembled) laboratoryResultFollowUpsTasks
+
+
+laboratoryResultFollowUpsCompleted : AssembledData -> Bool
+laboratoryResultFollowUpsCompleted assembled =
+    resolveLaboratoryResultFollowUpsTasks assembled
+        |> List.all (laboratoryResultFollowUpsTaskCompleted assembled)
 
 
 laboratoryResultFollowUpsTaskCompleted : AssembledData -> LaboratoryTask -> Bool
