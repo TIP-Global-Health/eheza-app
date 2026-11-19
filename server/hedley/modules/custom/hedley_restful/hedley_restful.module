@@ -336,11 +336,12 @@ function hedley_restful_copy_photo_to_person($measurement_id) {
 
   $photo = $wrapper->field_photo->value();
   if (empty($photo)) {
+    watchdog('hedley_restful', 'Photo measurement @nid was saved without a photo.', ['@nid' => $measurement_id], WATCHDOG_WARNING);
     return;
   }
 
   $person_wrapper = $wrapper->field_person;
-  if (!$person_wrapper || !is_object($person_wrapper)) {
+  if (empty($person_wrapper->value())) {
     return;
   }
 

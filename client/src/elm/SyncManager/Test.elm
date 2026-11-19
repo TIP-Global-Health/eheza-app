@@ -427,8 +427,8 @@ syncPosition model =
     ( model.syncStatus, model.syncInfoAuthorities )
 
 
-{-| Whether the photo pages leave a model exactly where it was, as they did
-for every stage before. Reports the pages that moved it.
+{-| Whether the photo pages leave a model exactly where it was. Reports the
+pages that moved it.
 -}
 photoPagesLeaveUnchanged : Model -> Expect.Expectation
 photoPagesLeaveUnchanged model =
@@ -916,10 +916,9 @@ all =
                     |> String.contains "\"photo\":100"
                     |> Expect.equal True
 
-        -- A group session's child page and its bulk Photo page used to hold
-        -- sync at whatever stage it was in when they opened. Opened while
-        -- records were uploading, the app kept uploading records for the
-        -- whole visit, and every photo taken there went up without its image.
+        -- A group session's child page and its bulk Photo page hold sync,
+        -- except that uploads after photos finish there. The record upload
+        -- is not started there, so photos taken go up before their records.
         -- These tests run determineSyncStatus with each stage already done,
         -- which is the shape the update leaves it in once nothing is left.
         , describe "Sync on the group session photo pages"
@@ -1046,8 +1045,8 @@ all =
                             |> Expect.equal "upload photo"
                 ]
 
-            -- Before, the photo pages left every stage as it was.
-            , describe "Opened while sync is idle, uploading photos or downloading, those pages behave as before"
+            -- In these stages the photo pages leave sync where it is.
+            , describe "Opened while sync is idle, uploading photos or downloading, those pages leave sync where it is"
                 [ test "opened while sync is idle, the photo pages keep it idle" <|
                     \() ->
                         photoPagesLeaveUnchanged (atStage SyncIdle [ "hc-A" ])
