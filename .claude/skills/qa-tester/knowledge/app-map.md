@@ -29,6 +29,8 @@ mechanics are in `../../e2e-test/references/e2e-knowledge-base.md`. Neither is r
   Most take `--dry_run` and `--nid` (only records after that nid), so a run can be limited
   to the records it created. In your own `drush scr` script, `drush_get_arguments()` holds two
   entries before the script's own arguments (read from index 2).
+  The script must sit inside the project, which the container sees as `/var/www/html/…`: a scratchpad
+  path fails with only `exit status 1`. Copy it into `client/qa-recordings/.driver/` (gitignored) first.
 - A measurement node is found by its patient: join `field_data_field_person` to the person
   node and match its title (`E2ETest <firstName>`).
 - A prenatal encounter's diagnoses on the server: `field_data_field_prenatal_diagnoses` by encounter nid; the encounter reaches the person
@@ -848,6 +850,8 @@ flag simply does not appear.
 - The main tree starts a run on `develop`, so a develop control is cheapest before the overlay:
   record it on the served build, then overlay and wait for gulp once. For a change only to what a page shows, one fixture can
   serve both builds: overlay, build and read on the PR, restore the files (needed anyway), wait for gulp, activate the update in the same driver, read again.
+- On a re-test, a hold row's control is the PR at the commit QA last tested, not `develop`: overlay that commit's files, wait for gulp,
+  run the hold rows, then overlay the head. Fix rows keep `develop` as their control. Both overlays rebuilt `Main.js` in under 90 s (PR #2556).
 - After an overlay, gulp copies `app.js` at once, but `Main.js` takes about 2.5 minutes to rebuild (a three-file Elm change once took
   seconds). Wait until `grep -F` finds a name from the overlay in `client/serve/Main.js`.
 - The service worker precaches the bundle as `Main.js?__WB_REVISION__=<hash>`, so `caches.match('/Main.js')` finds nothing. To read the

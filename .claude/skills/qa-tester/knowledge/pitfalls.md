@@ -1007,3 +1007,9 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** a recorded test chaining three body files failed at once with "Identifier 'mS' has already been declared", leaving a 0.2 s video.
 - **Wrong conclusion:** none; but a recording was spent.
 - **Rule:** body files that run together in one command share one function scope. Give each file's variables distinct names, or wrap each body in a block.
+
+## Running a `drush scr` script from the scratchpad
+
+- **Symptom:** `ddev drush scr <scratchpad>/lost.php` failed four times with only `exit status 1` (PR #2556 re-test).
+- **Wrong conclusion:** the script or the person lookup is broken.
+- **Rule:** ddev runs drush in its container, which sees only the project. Copy the script into `client/qa-recordings/.driver/` and pass `/var/www/html/client/qa-recordings/.driver/<file>`.
