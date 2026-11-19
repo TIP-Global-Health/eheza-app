@@ -60,7 +60,7 @@ import Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, Birt
 import Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), SymptomReviewStep(..), TreatmentReviewTask(..))
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferralRequired, getAllActivities, skipObstetricHistorySecondStep)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
-import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHighRiskOfPreeclampsiaPreviously, diagnosedHypertension, diagnosedHypertensionPreviously, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPreviously, diagnosedOrReportedPreviouslyAnyOf, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPreviously, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, labTestWithImmediateResult, mebendazoleDistributed, mebendazoleGivenPreviously, mebendazoleReported, medicationAdministered, medicationAdministeredPreviously, medicationDistributionFormWithDefaultInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication, vitalsRecheckAllowed)
+import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, chronicHypertensionDiagnoses, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHighRiskOfPreeclampsiaPreviously, diagnosedHypertension, diagnosedHypertensionPreviously, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPreviously, diagnosedOrReportedPreviouslyAnyOf, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPreviously, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, labTestWithImmediateResult, mebendazoleDistributed, mebendazoleGivenPreviously, mebendazoleReported, medicationAdministered, medicationAdministeredPreviously, medicationDistributionFormWithDefaultInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, partnerSignsByHIVTest, patientHIVNegative, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, reportedAnyOf, requiredMedicationsAddressed, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication, vitalsRecheckAllowed)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -2370,6 +2370,15 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     )
                 |> Maybe.withDefault False
 
+        -- Diabetes found from a lab-history result is reported to the visit
+        -- it was entered at, so earlier visits' reported diagnoses count too.
+        diabetesKnownPreviously =
+            diagnosedOrReportedPreviouslyAnyOf diabetesDiagnoses assembled
+
+        -- Diabetes reported to this visit is not diagnosed again by its own result.
+        diabetesKnown =
+            diabetesKnownPreviously || reportedAnyOf diabetesDiagnoses assembled
+
         -- A load recorded as undetectable is under 20 copies, whatever number
         -- is stored with it.
         hivDetectableViralLoadDiagnosed =
@@ -2575,15 +2584,12 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
                 byPreviousChronicHypertension =
                     diagnosedPreviouslyAnyOf chronicHypertensionDiagnoses assembled
-
-                byPreviousDiabetesDiagnoses =
-                    diagnosedOrReportedPreviouslyAnyOf diabetesDiagnoses assembled
             in
             byPreviousPreeclampsia
                 || byFetalPresentation
                 || byMedicalHistorySigns
                 || byPreviousChronicHypertension
-                || byPreviousDiabetesDiagnoses
+                || diabetesKnownPreviously
 
         allMeasurements =
             assembled.measurements
@@ -2944,7 +2950,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 && (not <| diagnosedAtInitialPhase DiagnosisSevereAnemiaInitialPhase)
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase ->
-            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+            not diabetesKnown
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         egaWeeks <= 20 && diabetesDiagnosedInitialPhase
@@ -2952,14 +2958,14 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase ->
             (not <| diagnosedAtInitialPhase Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase)
-                && (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+                && not diabetesKnown
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         egaWeeks <= 20 && diabetesDiagnosedAnyPhase
                     )
 
         Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase ->
-            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+            not diabetesKnown
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         egaWeeks > 20 && diabetesDiagnosedInitialPhase
@@ -2967,7 +2973,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase ->
             (not <| diagnosedAtInitialPhase Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase)
-                && (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+                && not diabetesKnown
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         egaWeeks > 20 && diabetesDiagnosedAnyPhase
@@ -5551,14 +5557,12 @@ expectLaboratoryTask currentDate assembled task =
                         && isInitialTest TaskHIVTest
 
                 TaskSyphilisTest ->
-                    List.all (\diagnosis -> not <| EverySet.member diagnosis assembled.encounter.pastDiagnoses)
-                        syphilisDiagnosesIncludingNeurosyphilis
+                    (not <| reportedAnyOf syphilisDiagnosesIncludingNeurosyphilis assembled)
                         && isRepeatingTestOnWeek 38 TaskSyphilisTest
 
                 TaskHepatitisBTest ->
                     (not <| isKnownAsPositive .hepatitisBTest)
-                        && (not <| EverySet.member DiagnosisHepatitisBInitialPhase assembled.encounter.pastDiagnoses)
-                        && (not <| EverySet.member DiagnosisHepatitisBRecurrentPhase assembled.encounter.pastDiagnoses)
+                        && (not <| reportedAnyOf [ DiagnosisHepatitisBInitialPhase, DiagnosisHepatitisBRecurrentPhase ] assembled)
                         && isInitialTest TaskHepatitisBTest
 
                 TaskMalariaTest ->
@@ -5574,8 +5578,7 @@ expectLaboratoryTask currentDate assembled task =
                     True
 
                 TaskRandomBloodSugarTest ->
-                    List.all (\diagnosis -> not <| EverySet.member diagnosis assembled.encounter.pastDiagnoses)
-                        diabetesDiagnoses
+                    not <| reportedAnyOf diabetesDiagnoses assembled
 
                 TaskHIVPCRTest ->
                     isKnownAsPositive .hivTest
