@@ -953,3 +953,57 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** after test 5 failed on its Next Steps step, the chain ran the next tests and signed in the CHW, so the resumed script found neither the page nor the woman.
 - **Wrong conclusion:** the half-finished visit is lost.
 - **Rule:** reopen it as the nurse (`qa.signIn` first) through Subsequent Antenatal, which reopens today's open visit, and record the rest as a continuation video.
+
+## Proving a lab tab is absent with a frame of the tab bar
+
+- **Symptom:** the hold row "blood sugar not offered at the reporting visit" passed on the logged tab list, but the video's frame showed only the first five Laboratory tabs (PR #2551).
+- **Wrong conclusion:** the frame is the evidence for the absent tab.
+- **Rule:** the Laboratory tab bar scrolls sideways and cuts off at about five tabs. To show an absence on video, scroll the bar to its end (`.link-section` last, `scrollIntoView`) and hold before the frame; otherwise say the list was read from the page.
+
+## Tapping the encounter button as soon as the participant page draws
+
+- **Symptom:** after a reload, `navigateToParticipantPage` then a tap on "NCD Encounter" opened a new, empty encounter instead of the visit already open that day (PR #2555, develop control).
+- **Wrong conclusion:** the button reopens today's open visit, so the tap is safe at once.
+- **Rule:** the page acts on the encounters it has loaded, and right after a full load it has none (the B-195 lag). Wait about 5 s on the participant page, then check the URL's encounter id. Hide a stray encounter with `field_deleted` 1 and sync.
+
+## A form filler that clicks a checkbox already ticked
+
+- **Symptom:** a Medication Distribution filler at the NCD lab-results phase left Save off; Methyldopa read unticked after the script "ticked" it.
+- **Wrong conclusion:** the save is broken, or the option was never offered.
+- **Rule:** both phases of an NCD visit share one Medication Distribution record, so the visit's choice opens ticked, and a click unticks it. Tick only boxes whose `input` is not `isChecked()`.
+
+## A filler with a page guard, run from the wrong page
+
+- **Symptom:** a Laboratory filler returned at once, saving nothing; the encounter still showed LABORATORY in To Do.
+- **Wrong conclusion:** none here; the log showed no tab answered.
+- **Rule:** a script that stops when it is not on the activity page must open that activity itself first. Read the log for each tab's answers before going on.
+
+## Evidence below the fold of a recorded form (met again)
+
+- **Symptom:** the handed-form and accompany questions, unanswered after ANC Yes, sat under the 1024 px frame in test 1's video (PR #2555); only the checks read them.
+- **Wrong conclusion:** none; the report says the follow-ups were read from the page.
+- **Rule:** the same pit. After an answer that reveals questions, `page.mouse.move(400, 900)` and `wheel(0, 500)` before the shot, as test 2 then did.
+
+## A hold row whose checks pass while its logged state differs
+
+- **Symptom:** test 11 (new registration, village unpicked) passed every check on the PR: the same single "village is a required field" as develop after Save (PR #2556).
+- **Wrong conclusion:** the row is "same as develop". The logged select classes showed Village already red before Save on the PR, and not on develop.
+- **Rule:** a hold row compares the whole logged state of both builds, not only the checks. Diff the two runs' logs line by line; any extra class or value is the change's doing.
+
+## Expecting a person edit to land on `#person/<uuid>`
+
+- **Symptom:** none here; the develop control showed the URL first. A check written for `#person/<uuid>$` would have failed every PR save.
+- **Wrong conclusion:** the save did not go through.
+- **Rule:** a saved edit from the Participant Directory lands on `#person/<uuid>/directory`. Run the develop control before writing URL checks.
+
+## Expecting Next Steps to reopen on the tab that sent you away, after a reload
+
+- **Symptom:** a develop control reloaded on the Enroll Newborn form, saved, and timed out waiting for `.form.newborn-enrolment`; Next Steps showed Health Education (PR #2557). The PR's own reload e2e test failed the same way.
+- **Wrong conclusion:** the save did not return to Next Steps, or the task is gone.
+- **Rule:** a reload resets the Next Steps page, so it opens on its first tab. Open the task's tab by its label before reading it.
+
+## Concatenated body files that declare the same `const`
+
+- **Symptom:** a recorded test chaining three body files failed at once with "Identifier 'mS' has already been declared", leaving a 0.2 s video.
+- **Wrong conclusion:** none; but a recording was spent.
+- **Rule:** body files that run together in one command share one function scope. Give each file's variables distinct names, or wrap each body in a block.

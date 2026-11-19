@@ -4,8 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model
     exposing
-        ( AdministrationNote(..)
-        , DangerSign(..)
+        ( DangerSign(..)
         , EyesCPESign(..)
         , FetalPresentation(..)
         , HandsCPESign(..)
@@ -91,7 +90,7 @@ import Pages.Prenatal.Activity.Utils
         )
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, getAllActivities, getFirstNurseEncounterMeasurements, getObstetricHistoryStep2, resolveGlobalLmpValue)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
-import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
+import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..), Model, Msg(..), medicalDiagnoses, obstetricalDiagnoses)
 import Pages.Prenatal.ProgressReport.Svg
     exposing
@@ -100,7 +99,7 @@ import Pages.Prenatal.ProgressReport.Svg
         , viewWeightGainForEGA
         , viewWeightGainForEGAHealthyStart
         )
-import Pages.Prenatal.ProgressReport.Utils exposing (allCHWActions, chwActionToColor, diagnosisForProgressReportToString, thumbnailDimensions, updateChronicHypertensionDiagnoses, wrapWithLI)
+import Pages.Prenatal.ProgressReport.Utils exposing (allCHWActions, chwActionToColor, diagnosisForProgressReportToString, generateAllNurseEncountersData, resolveMedicationHistoryDate, thumbnailDimensions, updateChronicHypertensionDiagnoses, wrapWithLI)
 import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
@@ -563,7 +562,7 @@ viewContent language currentDate zscores site features isChw isLabTech isResults
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalHistory)
                     , viewMedicalDiagnosisPane language isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
-                    , viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurseEncounterMeasurements assembled
+                    , viewObstetricalDiagnosisPane language isChw globalLmpValue firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
                     , viewMedicationHistoryPane language isChw assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicationHistory)
@@ -1008,8 +1007,8 @@ viewProgramReferralEntry language date diagnosis facility =
         |> wrapWithLI
 
 
-viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> Maybe LastMenstrualPeriodValue -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurseEncounterMeasurements assembled =
+viewObstetricalDiagnosisPane : Language -> Bool -> Maybe LastMenstrualPeriodValue -> PrenatalMeasurements -> AssembledData -> Html Msg
+viewObstetricalDiagnosisPane language isChw globalLmpValue firstNurseEncounterMeasurements assembled =
     let
         allNurseEncountersData =
             generateAllNurseEncountersData isChw assembled
@@ -1168,7 +1167,7 @@ viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurs
             -- Alerts are displayed only for CHW.
             if isChw then
                 List.filterMap
-                    (generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncounterMeasurements assembled)
+                    (generateObstetricalDiagnosisAlertData language isChw firstNurseEncounterMeasurements assembled)
                     allObstetricalDiagnoses
                     |> List.map (\alert -> li [] [ text alert ])
                     |> ul []
@@ -1188,23 +1187,8 @@ viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurs
 viewMedicationHistoryPane : Language -> Bool -> AssembledData -> Html any
 viewMedicationHistoryPane language isChw assembled =
     let
-        allNurseEncountersData =
-            generateAllNurseEncountersData isChw assembled
-                |> List.sortWith (sortByDateDesc .startDate)
-
-        resolveMedicationAdministrationDate measurementFunc =
-            List.map (.measurements >> measurementFunc) allNurseEncountersData
-                |> List.filterMap
-                    (Maybe.andThen
-                        (\( _, measurement ) ->
-                            if measurement.value == AdministeredToday then
-                                Just measurement.dateMeasured
-
-                            else
-                                Nothing
-                        )
-                    )
-                |> List.head
+        resolveMedicationAdministrationDate =
+            resolveMedicationHistoryDate isChw assembled
 
         entriesHeading =
             div [ class "heading medication" ]
@@ -1212,10 +1196,11 @@ viewMedicationHistoryPane language isChw assembled =
                 , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
                 ]
 
-        viewEntry medicationType administrationDate =
+        viewEntry medicationType =
             let
                 dateForView =
-                    Maybe.map formatDDMMYYYY administrationDate
+                    resolveMedicationAdministrationDate medicationType
+                        |> Maybe.map formatDDMMYYYY
                         |> Maybe.withDefault "--"
             in
             div [ class "entry medication" ]
@@ -1225,15 +1210,9 @@ viewMedicationHistoryPane language isChw assembled =
     in
     div [ class "medication-history" ]
         [ viewItemHeading language Translate.MedicationHistory "blue"
-        , div [ class "pane-content" ]
-            [ entriesHeading
-            , resolveMedicationAdministrationDate .calcium |> viewEntry Calcium
-            , resolveMedicationAdministrationDate .fefol |> viewEntry Fefol
-            , resolveMedicationAdministrationDate .folate |> viewEntry FolicAcid
-            , resolveMedicationAdministrationDate .iron |> viewEntry Iron
-            , resolveMedicationAdministrationDate .mms |> viewEntry MMS
-            , resolveMedicationAdministrationDate .mebendazole |> viewEntry Mebendezole
-            ]
+        , div [ class "pane-content" ] <|
+            entriesHeading
+                :: List.map viewEntry [ Calcium, Fefol, FolicAcid, Iron, MMS, Mebendezole ]
         ]
 
 
@@ -3254,19 +3233,3 @@ viewTreatmentForPastDiagnosis language date diagnosis =
         ++ (String.toLower <| translate language Translate.PastDiagnosisReportReason)
         ++ "."
         |> wrapWithLI
-
-
-generateAllNurseEncountersData : Bool -> AssembledData -> List PreviousEncounterData
-generateAllNurseEncountersData isChw assembled =
-    assembled.nursePreviousEncountersData
-        ++ (if isChw then
-                []
-
-            else
-                [ { startDate = assembled.encounter.startDate
-                  , diagnoses = assembled.encounter.diagnoses
-                  , pastDiagnoses = assembled.encounter.pastDiagnoses
-                  , measurements = assembled.measurements
-                  }
-                ]
-           )

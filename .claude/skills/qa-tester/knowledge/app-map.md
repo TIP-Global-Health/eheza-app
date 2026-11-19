@@ -98,6 +98,8 @@ flag simply does not appear.
 - The pairing lives in the service worker's `config` cache, not in localStorage, so only an
   empty profile (`qa.sh start --fresh`) can be paired anew; `qa.freshDevice()` refuses
   any other.
+- `page.reload()` on a deep route (a registration form) keeps the CHW signed in with the village chosen and reopens that route;
+  only a load of `/` asks for the village again.
 - After pairing, general data (nurses, villages, health centres) must download before a PIN
   works: "Your PIN code was not recognized" straight after pairing means not synced yet.
 - **A health centre downloads nothing until its "START SYNCING" button on Device Status is
@@ -206,6 +208,17 @@ flag simply does not appear.
   CHW's registration fails there ("cell/district/… is a required field"): the local villages are Rwandan. Use the nurse.
   `registerChild` and `createChildAndStartWellChildEncounter` select the Rwandan labels (District, Sector, …), so walk the Burundi
   labels with `h.common.selectByLabel(page, label, 1)`; the first option at each level saves. "Health Center:" still lists Nyange.
+- **Person edit form** (person page pencil, `#person/<uuid>/edit`): a select is greyed out (`select-input disabled`, pointer events off) while the
+  level below it holds a place, and the health centre always is once set, so a nurse cannot clear it on edit. To change an adult's address: blank
+  Village, then Cell, and so on up. A child's Village is locked on edit, so a child's address cannot change there. A saved edit lands on `#person/<uuid>/directory`.
+- Form errors: an erroneous select gets class `error` (red border); after Save, `.ui.error.message li` lists "<field> is a required field"
+  (`health_center` for the health centre). The box sits under SAVE, below the fold. Add family member's form is `#person/directory/new/<parent uuid>`;
+  its Save creates the person before the Relationship page opens.
+- Busengo's cells: Birambo 2758 (village Birambo 2759), Butereri 2763 (villages Buhuga 2764, Butereri, Gasakuza, …).
+- **A stored place missing from the address list**: set `field_village` on the server (`entity_metadata_wrapper` save) and sync. The edit form then
+  shows Village blank and Cell open. A save stores the name lower-cased after the first letter (`Qa2556Lost` → `Qa2556lost`), on develop too.
+- Person address on the server: `field_province`, `field_district`, `field_sector`, `field_cell`, `field_village` (names), `field_health_center`
+  (nid); `node_revision` rows count the saves.
 - An address edit propagates to children only if each child is loaded: open the child's own
   person page first, then go back and edit the parent.
 - Saving a photo measurement also sets the **person's** photo, server-side
@@ -221,6 +234,8 @@ flag simply does not appear.
 - A nurse's Add Child: the child form takes the parent's address. On the relationship page,
   Save stays disabled until "Add to Group..." has a value (at Nyange: Nyagne II, Nyagne III, Nyange I; from a group session only that
   session's group, already chosen). The nurse's save POSTs `pmtct_participant` (the group membership) first, then `relationship`.
+- A CHW's Add Child: Participant Directory → mother → Add Child → REGISTER A NEW PARTICIPANT → `#person/directory/new/<mother uuid>`;
+  Save posts the person and opens Create Relationship ("is the parent of" / "is the caregiver for"), whose Save needs only that choice.
 - Linking existing people: Participant Directory → adult → `div.add-participant-icon-wrapper` → type the child's name → the result's
   `span.action-icon.forward` opens the Relationship page. One adult and three children by the registration helpers took about 20 s.
 - Failing or holding a relationship save: wrap `XMLHttpRequest` POSTs to `/sw/nodes/<type>` (`installSaveControls` in
@@ -260,10 +275,23 @@ flag simply does not appear.
   LEAVE ENCOUNTER → Case Management). RBS 250 offers Next Steps (Medication Distribution);
   `completeRecurrentNextSteps` saves it. Lab Results stays openable from Completed, where a
   result can be saved again unchanged.
-- NCD Next Steps appears only after Danger Signs, Symptom Review, Examination and Medical
-  History are saved, even when a lab result already diagnoses (the four helpers do it). Its
+- NCD Next Steps appears only after every other activity offered is saved — Laboratory and, for a
+  woman of child-bearing age, Family Planning included — even when a lab result already diagnoses. Its
   Medication Distribution names the diagnosis: "This patient has Diabetes with glucose … of
   250 mg/dL". The encounter's diagnoses are `field_ncd_diagnoses` (`diabetes-recurrent`).
+- NCD Laboratory has a Pregnancy tab for a woman; `known-as-positive` Yes makes her pregnant. Sending only the blood
+  sugar to the lab (performed Yes → Lab → fasted No → today Yes) and the other tabs "not performed" with the first reason
+  leaves Next Steps ready; the NCD Labs entry is listed at once, and the visit can be left open while results go in.
+- NCD Referral: the visit and its lab-results phase share one `ncd_referral` record and one Medication Distribution record.
+  A pregnant woman with any hypertension stage is referred to ANC services at the visit; anyone else with stage 3 (or
+  hypertension plus diabetes) to the hospital. The lab-results phase refers to the hospital when the result finds diabetes
+  (250) beside hypertension. Server: `field_referrals` (`hospital`, `hospital-referral-form`, `anc`, `anc-referral-form`,
+  `anc-accompany`), `field_reasons_for_non_referrals` (`anc-client-refused`). ANC Yes adds handed-form and accompany questions.
+- Stage 3 Medication Distribution asks for two medicines (Methyldopa and Amlodipine work); a pregnant woman gets Methyldopa only.
+- After the last lab result the NCD Labs entry closes, so the lab-results page cannot be reopened from Case Management;
+  read its saved answers on the server or through the visit's own Next Steps.
+- The NCD participant page's "NCD Encounter" reopens today's open visit only once the person's encounters have loaded
+  (see pitfalls); right after a full load it starts a second one.
 - Acute Illness laboratory (nurse, initial encounter): the COVID rapid test is offered only
   while there is fever with respiratory symptoms (or two or more general ones) **and the
   malaria RDT is not positive** (`covid19SuspectDiagnosed`). Turning malaria Positive takes
@@ -309,6 +337,8 @@ flag simply does not appear.
   The Blood Sugar result page shows the test date and `.form-input.measurement.sugar-count`; after its Save, with no other pending entry,
   the History tab goes and Laboratory shows that visit's own tabs, with no "updated all results" question. 250 → hospital Referral in Next Steps.
   Blood sugar is not offered at the visit diabetes was reported to, but is offered again at the next visit.
+  Since #2551 a diabetic result at a later visit (point of care, or Lab Results the same day) adds no new diabetes and no Referral once diabetes was reported to an earlier visit.
+  The same-day Lab Results route then returns to the recurrent page, whose To Do shows a greyed Malaria Prevention on every build.
 - A Pregnancy Dating save sends two requests together: the LMP (POST, PATCH when corrected) and a PATCH of the
   pregnancy (`individual_participant`) setting its EDD. The visit header shows EDD and EGA; reopen the form from
   Completed to correct it, which sends both again. Backend EDD: `h.common.queryPregnancyEdd(name)`.
@@ -413,6 +443,11 @@ flag simply does not appear.
   `backdateEncounter` sets both, which ends the visit.
 - A nurse postpartum visit for a woman with no visits: Examination (`completeExamination(page, { isPostpartum: true, vitals })`) runs straight
   after the start; To Do then lists Pregnancy Outcome, Symptom Review, Maternal Mental Health, Breastfeeding, Family Planning, Treatment Review.
+- Postpartum Specialty Care (`.icon-task-speciality-care`) shows only when an earlier nurse visit holds diabetes or a hypertension-like diagnosis
+  (NCD) or HIV (ARV). Its form reads "You were diagnosed with Diabetes during your pregnancy." with `.form-input.yes-no.ncd` (`.arv` for HIV).
+  NCD No adds Next Steps › Referral "…Refer patient to NCD services…"; the report's Medical Diagnosis then reads "Diabetes - referred to NCD program
+  for post-partum management on <date>". Server: `prenatal_speciality_care` `field_speciality_care_signs` (`none` = not enrolled), referral `ncd`,
+  `ncd-referral-form`, `ncd-accompany`. A postpartum visit on the day after a 15 w visit is accepted; the seven activities' helpers ran in ~2 min.
 - Prenatal participant page buttons: nurse — FIRST ANTENATAL ENCOUNTER / SUBSEQUENT ANTENATAL
   ENCOUNTER / POSTPARTUM / RECORD PREGNANCY OUTCOME; a CHW's first reads FIRST ANTENATAL VISIT.
   `qa.state()` marks the off ones `[disabled]`, but read straight after navigating it can show
@@ -454,6 +489,10 @@ flag simply does not appear.
   live birth — record a stillbirth (outcome option 3) to skip it. Saving Next Steps opens the
   progress report, which carries End Encounter. Ending either role's postpartum visit lands on the
   main menu.
+- Newborn Enrollment (Next Steps tab, `.form.newborn-enrolment`): "Click on 'Enroll Newborn'…" with the button `active`, or "Newborn is already enrolled" with it
+  `disabled`. The button opens `#person/prenatal-next-steps-<date>-<encounter uuid>/new/<mother uuid>`; Save sends a PATCH of the pregnancy
+  (`individual_participant`) and returns to Next Steps. After a reload Next Steps opens on its first tab (Health Education): open the
+  Newborn Enrollment tab by its label before reading it. With every task done, Next Steps sits under the encounter's Completed tab.
 - A second encounter on the same day is impossible: backdate the first with
   `h.common.backdateEncounter(name, type, days)`, then sync before starting the next.
   Well Child measurements point at their visit through `field_well_child_encounter`; set each one's
@@ -804,6 +843,7 @@ flag simply does not appear.
 - A PR whose branch is behind develop, or stacked on another PR: build its tree with `git merge-tree --write-tree origin/develop origin/<branch>`
   and `git checkout <tree> -- <files>`; the control tree merges develop with the parent branch.
   When that merge conflicts, overlay every `client/src` file that differs between HEAD and the PR tip (`git diff --name-only HEAD <branch>`).
+  A conflict only in a `Test.elm` does not matter: overlay the app files from the tree; gulp never builds tests.
   Then restore them all; develop stays the control while its own changes since the base change no behaviour.
 - The main tree starts a run on `develop`, so a develop control is cheapest before the overlay:
   record it on the served build, then overlay and wait for gulp once. For a change only to what a page shows, one fixture can
@@ -816,5 +856,8 @@ flag simply does not appear.
   requests from a browser page are refused.
 - `qa.freshDevice()` can fail once with "Navigation … interrupted by another navigation" on a fresh
   profile; running it again pairs normally.
+- A PR's own e2e spec can be recorded instead of driven: `RECORD=1 EHEZA_SITE=rwanda ./node_modules/.bin/playwright test <spec>` from `client/`
+  runs headed on the user's display and keeps each test's `video.mp4` under `client/e2e-recordings/<run>/`. Copy them into
+  `client/qa-recordings/<pr>/` under `qa-<pr>-…` names to attach. The newborn spec's two tests made 1.7 MB and 3.6 MB videos.
 - Measured: empty profile → paired, signed in and synced in ~10 s; register a woman, open a
   first ANC encounter and reach the Random Blood Sugar tab, while recording, in ~17 s.

@@ -659,8 +659,14 @@ nextStepsTaskCompleted currentDate assembled task =
             isJust assembled.measurements.followUp
 
         NextStepsSendToHC ->
-            resolveRequiredReferralFacilities assembled
-                |> List.all (referralToFacilityCompleted assembled)
+            if isNurseEncounter assembled.encounter.encounterType then
+                resolveRequiredReferralFacilities assembled
+                    |> List.all (referralToFacilityCompleted assembled)
+
+            else
+                -- The CHW form asks only about the health centre,
+                -- and saves once that is answered.
+                isJust assembled.measurements.sendToHC
 
         NextStepsHealthEducation ->
             isJust assembled.measurements.healthEducation

@@ -18,8 +18,7 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.PrenatalActivity.Model exposing (HighRiskFactor(..), HighSeverityAlert(..), PregnancyTrimester(..), PrenatalActivity(..), PrenatalRecurrentActivity(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays)
-import Maybe.Extra exposing (isJust)
-import Pages.Prenatal.Encounter.Utils exposing (getLastEncounterMeasurementsWithDate, getObstetricHistoryStep2)
+import Pages.Prenatal.Encounter.Utils exposing (getObstetricHistoryStep2, obstetricalExamFindingFromWeek)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Translate exposing (Language, translate)
 
@@ -242,8 +241,8 @@ generateHighRiskAlertData language measurements factor =
             alertBySign Backend.Measurement.Model.ObstetricHistoryConvulsionsPreviousDelivery
 
 
-generateHighSeverityAlertData : Language -> NominalDate -> Bool -> AssembledData -> HighSeverityAlert -> Maybe ( String, String )
-generateHighSeverityAlertData language currentDate isChw data alert =
+generateHighSeverityAlertData : Language -> Bool -> AssembledData -> HighSeverityAlert -> Maybe ( String, String )
+generateHighSeverityAlertData language isChw data alert =
     let
         trans =
             translate language
@@ -251,8 +250,12 @@ generateHighSeverityAlertData language currentDate isChw data alert =
         transAlert alert_ =
             trans (Translate.HighSeverityAlert alert_)
 
-        lastEncounterMeasurementsWithDate =
-            getLastEncounterMeasurementsWithDate currentDate isChw data
+        fetalAlert isAbnormal =
+            if obstetricalExamFindingFromWeek isChw data 20 isAbnormal then
+                Just ( transAlert alert, "" )
+
+            else
+                Nothing
     in
     case alert of
         BodyTemperature ->
@@ -282,80 +285,10 @@ generateHighSeverityAlertData language currentDate isChw data alert =
                     )
 
         FetalHeartRate ->
-            let
-                resolveAlert ( date, measurements ) =
-                    data.globalLmpDate
-                        |> Maybe.andThen
-                            (\lmpDate ->
-                                let
-                                    egaInWeeks =
-                                        diffDays lmpDate date // 7
-                                in
-                                if egaInWeeks > 19 then
-                                    measurements.obstetricalExam
-                                        |> Maybe.andThen
-                                            (\measurement ->
-                                                let
-                                                    value =
-                                                        Tuple.second measurement |> .value |> .fetalHeartRate
-                                                in
-                                                if value == 0 then
-                                                    Just ( transAlert alert, "" )
-
-                                                else
-                                                    Nothing
-                                            )
-
-                                else
-                                    Nothing
-                            )
-            in
-            -- If obstetricalExam measurements were taken at current encounter,
-            -- we issue the alarm according to those values.
-            -- Otherwise, we use values of last encounter.
-            if isJust data.measurements.obstetricalExam then
-                resolveAlert ( currentDate, data.measurements )
-
-            else
-                resolveAlert lastEncounterMeasurementsWithDate
+            fetalAlert (.fetalHeartRate >> (==) 0)
 
         FetalMovement ->
-            let
-                resolveAlert ( date, measurements ) =
-                    data.globalLmpDate
-                        |> Maybe.andThen
-                            (\lmpDate ->
-                                let
-                                    egaInWeeks =
-                                        diffDays lmpDate date // 7
-                                in
-                                if egaInWeeks > 19 then
-                                    measurements.obstetricalExam
-                                        |> Maybe.andThen
-                                            (\measurement ->
-                                                let
-                                                    value =
-                                                        Tuple.second measurement |> .value |> .fetalMovement
-                                                in
-                                                if value == False then
-                                                    Just ( transAlert alert, "" )
-
-                                                else
-                                                    Nothing
-                                            )
-
-                                else
-                                    Nothing
-                            )
-            in
-            -- If obstetricalExam measurements were taken at current encounter,
-            -- we issue the alarm according to those values.
-            -- Otherwise, we use values of last encounter.
-            if isJust data.measurements.obstetricalExam then
-                resolveAlert ( currentDate, data.measurements )
-
-            else
-                resolveAlert lastEncounterMeasurementsWithDate
+            fetalAlert (.fetalMovement >> not)
 
         HeartRate ->
             getMeasurementValueFunc data.measurements.vitals

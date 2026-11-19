@@ -66,6 +66,10 @@ The subagent picks the result:
 it, its run was cut short, for example when a session closed. Run it again from the start;
 if that run already posted a report, the new run replaces it with `--update`.
 
+A PR QA has reported on before — sent back to `Ready for QA` after `QA Followup`, or after
+new commits — gets a re-test scoped to what changed since that report, whatever label sent
+it (see "A PR QA has seen before" in Step 1). There is no separate re-test label.
+
 A watch run never posts a new issue for a pre-existing bug, and nobody is there to answer a
 helper proposal: both go in the subagent's reply, for the loop to relay. Removing
 `Approved by QA` after new commits land is the user's manual step.
@@ -142,6 +146,31 @@ criteria the backlog item records as fail-first unit tests. A tested criterion n
 end-to-end row only once per user-visible path the diff touches, to prove the wiring:
 that each caller passes the right data and the screen shows it. The report lists the
 other criteria as covered by tests, by name.
+
+### A PR QA has seen before
+
+```bash
+bash .claude/skills/qa-tester/scripts/qa-watch.sh last-report <n>
+```
+
+It prints the comment id and tested commit of this skill's newest report on the PR. Nothing
+means QA has not reported on it: run in full. Otherwise this run is a re-test:
+
+- If the tested commit is not an ancestor of the PR's head (a rebase or force-push), run
+  in full.
+- The scope is the PR's own commits since then: `git log --no-merges -p <tested>..origin/<branch>`.
+  A merge from `develop` brings in develop's changes, not the PR's; they need no rows.
+- Apply this step to that diff alone: its behaviours, callers and readers.
+- Every row the earlier report failed or blocked is re-run, with its `develop` control.
+  So is every earlier row whose code the new diff touches.
+- Every other earlier row is carried over, not re-run. The plan and the report mark it
+  `carried over (<tested commit>)`.
+- Replace the earlier report with `--update <comment-id>`. Its opening note names the
+  commit this version covers and the rows re-run, and says whether an earlier FAIL
+  comment is resolved.
+
+An inferred commit (from a report with no "Tested at" line) is a best guess: check it
+against the report's text before scoping from it.
 
 ## Step 2: Environment
 
@@ -389,7 +418,8 @@ approval.** Its first line is exactly this, with no `>` or heading mark in front
 **Manual tests executed using the QA Tester skill**
 ```
 
-then a table with one row per plan row — the plain-words test from Step 3, its kind (fix,
+then a line `` Tested at `<commit>` `` naming the PR commit the run tested; a later re-test
+scopes from it. Then a table with one row per plan row — the plain-words test from Step 3, its kind (fix,
 hold, boundary) and its result — and a short paragraph per row saying what it showed —
 including which part was set up by helpers, which was checked by hand, and which proofs
 the diff called for. Then one sentence on what the error channel showed on each build.

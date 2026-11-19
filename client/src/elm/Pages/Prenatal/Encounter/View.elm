@@ -200,7 +200,7 @@ viewMotherDetails language currentDate isChw assembled alertsDialogData =
 
                             highSeverityAlertsData =
                                 allHighSeverityAlerts
-                                    |> List.filterMap (generateHighSeverityAlertData language currentDate isChw assembled)
+                                    |> List.filterMap (generateHighSeverityAlertData language isChw assembled)
 
                             recurringHighSeverityAlertsData =
                                 allRecurringHighSeverityAlerts

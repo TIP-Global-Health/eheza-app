@@ -102,4 +102,6 @@ R16 verification note: all 2026-07-12 additions entered CONFIRMED (or PROVEN for
 
 ⭐ **R58 adds (2026-11-18, night round, 2 units — #2535 / #2540 as merged, sync plugins + upload / download paths; detail in `rounds.md` and the entries).** Tier 3 (1): **B-610** a record saved while the upload lanes run goes up without its photo and the person's avatar is emptied (⚠ tier is a judgement; not sized). Tier 4 (1): **B-611** names stripped to ASCII on upload (intent question).
 
+➕ **2026-11-18 (side-findings, B-593 → B-608):** **B-608** (tier 1) diabetes from lab history diagnosed again at the next visit ✅ **IMPLEMENTED 2026-11-18, issue #2550, PR #2551**; from its review: **B-612** (tier 4, dashboard ignores reported diabetes), **B-613** (tier 4, no health education for reported diabetes, product question).
+
 ⭐ **Tier 4 picks 2026-11-11 (user: "Find 2 t4 items worth tackling" → "Implement both").** **B-234** ✅ IMPLEMENTED, issue #2512, PR #2515 · **B-561** ✅ IMPLEMENTED, issue #2513, PR #2514 · side-finding **B-589** (tier 4, product question).
