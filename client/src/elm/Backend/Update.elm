@@ -34,8 +34,6 @@ import Backend.Measurement.Model
         ( BloodSmearResult(..)
         , ChildMeasurements
         , HistoricalMeasurements
-        , LaboratoryTest(..)
-        , LabsResultsReviewState(..)
         , Measurements
         , TestExecutionNote(..)
         , WellChildSymptom(..)
@@ -97,7 +95,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
-import Maybe.Extra exposing (isJust, isNothing)
+import Maybe.Extra exposing (isJust)
 import Measurement.Model
 import Measurement.Utils exposing (bloodSmearResultSet)
 import Pages.AcuteIllness.Activity.Model
