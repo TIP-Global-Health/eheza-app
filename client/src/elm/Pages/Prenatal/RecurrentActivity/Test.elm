@@ -30,6 +30,7 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb, emptyModelIndexedDb)
+import Backend.PrenatalActivity.Model as PrenatalActivity
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Date
@@ -61,10 +62,12 @@ import Pages.Prenatal.RecurrentActivity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.RecurrentActivity.Update as RecurrentUpdate
 import Pages.Prenatal.RecurrentActivity.Utils
     exposing
-        ( concludedLabsResultsValue
+        ( activityCompleted
+        , concludedLabsResultsValue
         , laboratoryResultFollowUpsTaskCompleted
         , laboratoryResultNotPerformed
         , laboratoryResultTaskCompleted
+        , labsResultsValueOnResultSaved
         , nextStepsTaskCompleted
         , resolveLaboratoryResultFollowUpsTasks
         , resolveLaboratoryResultTasks
@@ -1643,23 +1646,39 @@ partnerTaskResavedAfterLabTechTest =
         ]
 
 
+{-| A lab technician's entry of the woman's own HIV result, "positive" or
+"negative", on a test sent to the lab at the visit.
+-}
+hivResultByLabTech : String -> Maybe HIVTestValue
+hivResultByLabTech result =
+    hivTestSentToLab
+        |> Maybe.andThen
+            (\stored ->
+                hivResultSaved True
+                    stored
+                    [ Recurrent.SetHIVTestFormBoolInput tapHIVRunConfirmedByLabTech True
+                    , Recurrent.SetHIVTestResult result
+                    ]
+            )
+
+
+{-| The same, then the nurse opens the visit's HIV task again and saves it
+unchanged.
+-}
+hivTaskResavedAfterLabTech : String -> Maybe HIVTestValue
+hivTaskResavedAfterLabTech result =
+    hivResultByLabTech result
+        |> Maybe.andThen
+            (\stored ->
+                hivTestSavedAtVisit (withHIVTestValue stored emptyPrenatalMeasurements) []
+            )
+
+
 hivTaskResavedAfterLabTechTest : Test
 hivTaskResavedAfterLabTechTest =
     let
-        resavedAfter result =
-            hivTestSentToLab
-                |> Maybe.andThen
-                    (\stored ->
-                        hivResultSaved True
-                            stored
-                            [ Recurrent.SetHIVTestFormBoolInput tapHIVRunConfirmedByLabTech True
-                            , Recurrent.SetHIVTestResult result
-                            ]
-                    )
-                |> Maybe.andThen
-                    (\stored ->
-                        hivTestSavedAtVisit (withHIVTestValue stored emptyPrenatalMeasurements) []
-                    )
+        resavedAfter =
+            hivTaskResavedAfterLabTech
 
         assembledWithHIVFollowUp hivTest =
             measurementsWith [ TestHIV ] Nothing Nothing
@@ -1795,6 +1814,342 @@ partnerKnownPositiveAtVisitTest =
         ]
 
 
+
+-- The woman's ANC Labs entry in Case Management, after the nurse saves the
+-- visit's HIV or Partner HIV task again, unchanged.
+--
+-- A lab technician who enters an HIV or Partner HIV result completes the test
+-- on the entry, asks the nurse to review it, and lists the test for follow up.
+-- The nurse then sees the entry as "Review & Accept"; through it she reaches
+-- Lab Results Follow Ups, the only place the follow up questions are asked.
+--
+-- Saving the visit's task again fires the same update a nurse's own result
+-- does, because the task's record holds a result: the "result saved" update
+-- of the labs entry, with the saving user a nurse. That save must leave the
+-- entry for the nurse: still listed, still ready for review, the test still
+-- on its follow up list, and Lab Results Follow Ups still asking.
+--
+-- The visit, and the lab technician's entry, are on `currentDate`. The nurse
+-- saves the task again two days later, unless a test says otherwise.
+
+
+{-| The day the nurse saves the visit's task again.
+-}
+resaveDate : NominalDate
+resaveDate =
+    Date.add Date.Days 2 currentDate
+
+
+{-| How the nurse's Case Management shows the labs entry on the given day. It
+follows the Prenatal labs pane: an entry whose resolution date has come is
+not listed, and one closing within a week shows as closing soon.
+-}
+type NurseLabsEntry
+    = EntryClosingSoon
+    | EntryNotListed
+    | EntryPending
+    | EntryReadyForReview
+    | EntryReviewed
+
+
+nurseLabsEntry : NominalDate -> LabsResultsValue -> NurseLabsEntry
+nurseLabsEntry date value =
+    if Date.compare date value.resolutionDate /= LT then
+        EntryNotListed
+
+    else if Date.diff Date.Days date value.resolutionDate < 8 then
+        EntryClosingSoon
+
+    else
+        case value.reviewState of
+            Just LabsResultsReviewCompleted ->
+                EntryReviewed
+
+            Just LabsResultsReviewRequested ->
+                EntryReadyForReview
+
+            Nothing ->
+                EntryPending
+
+
+{-| The labs entry as a lab technician leaves it after entering the results
+of the given tests at the visit: every test completed, review requested, and
+the tests listed for follow up.
+-}
+entryAfterLabTech : List LaboratoryTest -> LabsResultsValue
+entryAfterLabTech tests =
+    let
+        entry =
+            TestFixtures.labsEntry currentDate tests tests
+    in
+    { entry
+        | reviewState = Just LabsResultsReviewRequested
+        , testsWithFollowUp = Just (EverySet.fromList tests)
+    }
+
+
+withLabsEntry : LabsResultsValue -> PrenatalMeasurements -> PrenatalMeasurements
+withLabsEntry value measurements =
+    { measurements | labsResults = TestFixtures.wrapMeasurement currentDate value }
+
+
+{-| The labs entry after a result of the given test is saved on the given day,
+by a lab technician or by the nurse, on a visit whose measurements are
+already as the save leaves them. The visit's measurements come back holding
+the updated entry.
+-}
+entrySavedBy : Bool -> NominalDate -> LaboratoryTest -> PrenatalMeasurements -> Maybe PrenatalMeasurements
+entrySavedBy isLabTech date test measurements =
+    measurements.labsResults
+        |> Maybe.map
+            (\( _, results ) ->
+                withLabsEntry
+                    (labsResultsValueOnResultSaved date isLabTech (testAssembled measurements) results test)
+                    measurements
+            )
+
+
+nurseResave : NominalDate -> LaboratoryTest -> PrenatalMeasurements -> Maybe PrenatalMeasurements
+nurseResave =
+    entrySavedBy False
+
+
+labsEntryOf : PrenatalMeasurements -> Maybe LabsResultsValue
+labsEntryOf measurements =
+    getMeasurementValueFunc measurements.labsResults
+
+
+{-| What the nurse's Case Management shows for the visit's labs entry.
+-}
+entryShown : NominalDate -> PrenatalMeasurements -> Maybe NurseLabsEntry
+entryShown date =
+    labsEntryOf >> Maybe.map (nurseLabsEntry date)
+
+
+{-| Whether the test is still on the entry's follow up list.
+-}
+listedForFollowUp : LaboratoryTest -> PrenatalMeasurements -> Bool
+listedForFollowUp test measurements =
+    labsEntryOf measurements
+        |> Maybe.andThen .testsWithFollowUp
+        |> Maybe.map (EverySet.member test)
+        |> Maybe.withDefault False
+
+
+{-| The follow up tasks Lab Results Follow Ups offers the nurse, and whether
+the activity is done.
+-}
+followUpsOffered : PrenatalMeasurements -> ( List LaboratoryTask, Bool )
+followUpsOffered measurements =
+    let
+        assembled =
+            testAssembled measurements
+    in
+    ( resolveLaboratoryResultFollowUpsTasks assembled
+    , activityCompleted resaveDate False assembled PrenatalActivity.LabsResultsFollowUps
+    )
+
+
+{-| The visit's measurements once the woman's negative HIV test (point of
+care) and the given partner test are recorded, with the labs entry a lab
+technician left for the partner test.
+-}
+partnerVisitWith : PartnerHIVTestValue -> PrenatalMeasurements
+partnerVisitWith partnerTest =
+    emptyPrenatalMeasurements
+        |> withHIVTestValue womanHIVNegative
+        |> withPartnerHIVTestValue partnerTest
+        |> withLabsEntry (entryAfterLabTech [ TestPartnerHIV ])
+
+
+{-| The visit's measurements once the woman's own HIV test is recorded, no
+partner test on record, with the labs entry a lab technician left for it.
+-}
+hivVisitWith : HIVTestValue -> PrenatalMeasurements
+hivVisitWith hivTest =
+    emptyPrenatalMeasurements
+        |> withHIVTestValue hivTest
+        |> withLabsEntry (entryAfterLabTech [ TestHIV ])
+
+
+partnerTaskResavedLabsEntryTest : Test
+partnerTaskResavedLabsEntryTest =
+    let
+        -- The partner test sent to the lab at the visit, a Positive result
+        -- entered by a lab technician, then the visit's task saved again.
+        resavedVisit =
+            partnerTestSentToLab
+                |> Maybe.andThen partnerPositiveByLabTech
+                |> Maybe.andThen partnerTaskResaved
+                |> Maybe.map partnerVisitWith
+
+        afterResave =
+            Maybe.andThen (nurseResave resaveDate TestPartnerHIV) resavedVisit
+    in
+    describe "a lab technician entered a Positive partner result, then the nurse saves the visit's Partner HIV task again unchanged: the ANC Labs entry"
+        [ test "stays listed for the nurse, as Review & Accept" <|
+            \_ ->
+                afterResave
+                    |> Maybe.andThen (entryShown resaveDate)
+                    |> Expect.equal (Just EntryReadyForReview)
+        , test "keeps the Partner HIV test on its follow up list" <|
+            \_ ->
+                afterResave
+                    |> Maybe.map (listedForFollowUp TestPartnerHIV)
+                    |> Expect.equal (Just True)
+        , test "still leads to Lab Results Follow Ups asking \"Is the partner taking ARVs?\", unanswered" <|
+            \_ ->
+                afterResave
+                    |> Maybe.map followUpsOffered
+                    |> Expect.equal (Just ( [ TaskPartnerHIVTest ], False ))
+        , test "with the visit's record exactly as the lab technician left it, stays listed for the nurse, as Review & Accept" <|
+            -- The re-save stores nothing new here, so only the labs entry's
+            -- own update is exercised.
+            \_ ->
+                partnerTestSentToLab
+                    |> Maybe.andThen partnerPositiveByLabTech
+                    |> Maybe.map partnerVisitWith
+                    |> Maybe.andThen (nurseResave resaveDate TestPartnerHIV)
+                    |> Maybe.andThen (entryShown resaveDate)
+                    |> Expect.equal (Just EntryReadyForReview)
+        , test "re-saved on the day of the visit, stays listed for the nurse, as Review & Accept" <|
+            \_ ->
+                resavedVisit
+                    |> Maybe.andThen (nurseResave currentDate TestPartnerHIV)
+                    |> Maybe.andThen (entryShown currentDate)
+                    |> Expect.equal (Just EntryReadyForReview)
+        , test "on a partner test sent to the lab before this change, stays listed for the nurse, as Review & Accept" <|
+            \_ ->
+                partnerPositiveByLabTech legacyPartnerTestSentToLab
+                    |> Maybe.andThen partnerTaskResaved
+                    |> Maybe.map partnerVisitWith
+                    |> Maybe.andThen (nurseResave resaveDate TestPartnerHIV)
+                    |> Maybe.andThen (entryShown resaveDate)
+                    |> Expect.equal (Just EntryReadyForReview)
+        ]
+
+
+hivTaskResavedLabsEntryTest : Test
+hivTaskResavedLabsEntryTest =
+    let
+        afterResave result =
+            hivTaskResavedAfterLabTech result
+                |> Maybe.map hivVisitWith
+                |> Maybe.andThen (nurseResave resaveDate TestHIV)
+    in
+    describe "a lab technician entered the woman's own HIV result, then the nurse saves the visit's HIV task again unchanged: the ANC Labs entry"
+        [ test "Positive: stays listed for the nurse, as Review & Accept" <|
+            \_ ->
+                afterResave "positive"
+                    |> Maybe.andThen (entryShown resaveDate)
+                    |> Expect.equal (Just EntryReadyForReview)
+        , test "Positive: keeps the HIV test on its follow up list" <|
+            \_ ->
+                afterResave "positive"
+                    |> Maybe.map (listedForFollowUp TestHIV)
+                    |> Expect.equal (Just True)
+        , test "Positive: still leads to Lab Results Follow Ups asking \"enrolled in the HIV programme\", unanswered" <|
+            \_ ->
+                afterResave "positive"
+                    |> Maybe.map followUpsOffered
+                    |> Expect.equal (Just ( [ TaskHIVTest ], False ))
+        , test "Negative: stays listed for the nurse, as Review & Accept" <|
+            \_ ->
+                afterResave "negative"
+                    |> Maybe.andThen (entryShown resaveDate)
+                    |> Expect.equal (Just EntryReadyForReview)
+        , test "Negative: still leads to Lab Results Follow Ups asking the partner's status, unanswered" <|
+            \_ ->
+                afterResave "negative"
+                    |> Maybe.map followUpsOffered
+                    |> Expect.equal (Just ( [ TaskHIVTest ], False ))
+        , test "Positive, with the visit's record exactly as the lab technician left it: stays listed for the nurse, as Review & Accept" <|
+            \_ ->
+                hivResultByLabTech "positive"
+                    |> Maybe.map hivVisitWith
+                    |> Maybe.andThen (nurseResave resaveDate TestHIV)
+                    |> Maybe.andThen (entryShown resaveDate)
+                    |> Expect.equal (Just EntryReadyForReview)
+        , test "Negative, with a Positive partner result from the lab technician on the same entry: stays listed for the nurse, as Review & Accept" <|
+            -- Both tests are on the entry and on its follow up list. The
+            -- partner's follow up asks the woman's questions too, so it is
+            -- the one task offered.
+            \_ ->
+                Maybe.map2
+                    (\hivTest partnerTest ->
+                        emptyPrenatalMeasurements
+                            |> withHIVTestValue hivTest
+                            |> withPartnerHIVTestValue partnerTest
+                            |> withLabsEntry (entryAfterLabTech [ TestHIV, TestPartnerHIV ])
+                    )
+                    (hivTaskResavedAfterLabTech "negative")
+                    (partnerTestSentToLab |> Maybe.andThen partnerPositiveByLabTech)
+                    |> Maybe.andThen (nurseResave resaveDate TestHIV)
+                    |> Maybe.map (\measurements -> ( entryShown resaveDate measurements, followUpsOffered measurements ))
+                    |> Expect.equal (Just ( Just EntryReadyForReview, ( [ TaskPartnerHIVTest ], False ) ))
+        ]
+
+
+labsEntryResultSavedGuardTest : Test
+labsEntryResultSavedGuardTest =
+    let
+        -- The labs entry as the visit created it, the partner test sent to
+        -- the lab and waiting.
+        entryAtVisit =
+            TestFixtures.labsEntry currentDate [ TestPartnerHIV ] []
+
+        visitWithWaitingEntry partnerTest =
+            emptyPrenatalMeasurements
+                |> withHIVTestValue womanHIVNegative
+                |> withPartnerHIVTestValue partnerTest
+                |> withLabsEntry entryAtVisit
+    in
+    describe "the ANC Labs entry when a result is saved, outside the re-save"
+        [ test "the lab technician's Positive partner result leaves the entry listed for the nurse, as Review & Accept, with the test on its follow up list" <|
+            \_ ->
+                partnerTestSentToLab
+                    |> Maybe.andThen partnerPositiveByLabTech
+                    |> Maybe.map visitWithWaitingEntry
+                    |> Maybe.andThen (entrySavedBy True currentDate TestPartnerHIV)
+                    |> Maybe.map (\measurements -> ( entryShown resaveDate measurements, listedForFollowUp TestPartnerHIV measurements ))
+                    |> Expect.equal (Just ( Just EntryReadyForReview, True ))
+        , test "once the nurse answers \"Is the partner taking ARVs?\" in the follow up, her save closes the entry as reviewed" <|
+            \_ ->
+                partnerTestSentToLab
+                    |> Maybe.andThen partnerPositiveByLabTech
+                    |> Maybe.andThen (\stored -> partnerResultSaved LabResults False stored [ Recurrent.SetPartnerHIVTestFormBoolInput tapPartnerTakingARV False ])
+                    |> Maybe.map partnerVisitWith
+                    |> Maybe.andThen (nurseResave resaveDate TestPartnerHIV)
+                    |> Maybe.andThen labsEntryOf
+                    |> Maybe.map .reviewState
+                    |> Expect.equal (Just (Just LabsResultsReviewCompleted))
+        , test "a Negative partner result the nurse enters herself closes the entry as reviewed" <|
+            \_ ->
+                partnerTestSentToLab
+                    |> Maybe.andThen (\stored -> partnerResultSaved LabResults False stored [ Recurrent.SetPartnerHIVTestResult "negative" ])
+                    |> Maybe.map visitWithWaitingEntry
+                    |> Maybe.andThen (nurseResave resaveDate TestPartnerHIV)
+                    |> Maybe.andThen labsEntryOf
+                    |> Maybe.map .reviewState
+                    |> Expect.equal (Just (Just LabsResultsReviewCompleted))
+        , test "a re-save while another test on the entry is still waiting for the lab leaves the entry listed for the nurse" <|
+            \_ ->
+                partnerTestSentToLab
+                    |> Maybe.andThen partnerPositiveByLabTech
+                    |> Maybe.andThen partnerTaskResaved
+                    |> Maybe.map
+                        (visitWithWaitingEntry
+                            >> withLabsEntry
+                                (TestFixtures.labsEntry currentDate [ TestHemoglobin, TestPartnerHIV ] [ TestPartnerHIV ]
+                                    |> (\entry -> { entry | testsWithFollowUp = Just (EverySet.singleton TestPartnerHIV) })
+                                )
+                        )
+                    |> Maybe.andThen (nurseResave resaveDate TestPartnerHIV)
+                    |> Maybe.andThen (entryShown resaveDate)
+                    |> Expect.equal (Just EntryPending)
+        ]
+
+
 all : Test
 all =
     describe "Pages.Prenatal.RecurrentActivity.Utils"
@@ -1814,4 +2169,7 @@ all =
         , partnerTaskResavedAfterLabTechTest
         , hivTaskResavedAfterLabTechTest
         , partnerKnownPositiveAtVisitTest
+        , partnerTaskResavedLabsEntryTest
+        , hivTaskResavedLabsEntryTest
+        , labsEntryResultSavedGuardTest
         ]
