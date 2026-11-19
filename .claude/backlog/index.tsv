@@ -581,14 +581,14 @@ B-580	3	IMPLEMENTED	MED	2544	2547	54	Prenatal (CHW): the referral task's complet
 B-581	1	CLOSED	MED-HIGH			54	Prenatal: hypertension diagnosed at an earlier visit with NO treatment record gets no hypertension pathway at later visi
 B-582	3	READY	MED-LOW			54	Prenatal recurrent phase: the hospital-referral task for a diagnosis found by a lab result reads complete from the refer
 B-583	4	IMPLEMENTED	LOW			54	Prenatal (nurse): "high risk of preeclampsia" is stored beside severe or moderate preeclampsia, or eclampsia, found at 3
-B-584	4	READY	LOW		2507	54	Completion report: a next medication or vaccine dose that falls 6, 9 or 12 months after a dose given on the 29th–31st is
+B-584	4	IMPLEMENTED	LOW	2561	2564	54	Completion report: a next medication or vaccine dose that falls 6, 9 or 12 months after a dose given on the 29th–31st is
 B-585		IMPLEMENTED		2516	2517	54	Prenatal: misspelt function names `…Prevoiusly…` and `…Inital…` — rename only, no logic change
 B-586	1	IMPLEMENTED	MED	2510	2511	54	Prenatal: "high risk of preeclampsia" is diagnosed from GESTATIONAL hypertension (today's or an earlier visit's), while 
 B-587	1	CLOSED	MED			54	Prenatal: Aspirin for a preeclampsia risk is offered at ONE visit only — declined, skipped or "not given" at that visit,
 B-588	4	READY	LOW		2511	54	Prenatal: chronic hypertension or diabetes reported through Outside Care at an earlier visit is not a high-risk conditio
 B-589	4	READY	LOW		2515	54	Case Management: a TB or HIV follow-up of a patient who is in no village roster is listed for nobody
 B-590	4	IMPLEMENTED	LOW	2518	2519	54	Prenatal: on-screen English text misspells "Preeclampsia" ("Preeclamsia", "Preclampsia"), and more misspelt names remain
-B-591	4	READY	LOW		2521	54	Completion report: a first nurse visit at 24 weeks or later is charged with an unfinished Next Steps medication distribu
+B-591	4	IMPLEMENTED	LOW	2562	2563	54	Completion report: a first nurse visit at 24 weeks or later is charged with an unfinished Next Steps medication distribu
 B-592	4	READY	LOW			26	NCD and Prenatal referral, and Outside Care medicines: changing a saved Yes/No answer keeps the follow-up answers of the
 B-593	1	IMPLEMENTED	LOW	2542	2543	55	Prenatal: diabetes found from a blood sugar result entered through a LATER visit's lab history never gives high risk of 
 B-594	1	IMPLEMENTED	MED-HIGH	2526	2527	55	Prenatal: the two-hour blood-pressure recheck is scheduled only at the FIRST nurse visit, so a borderline reading (140–1
@@ -614,6 +614,9 @@ B-613	4	READY	LOW			B-608	Prenatal (nurse): diabetes found from a lab-history re
 B-614	3	READY	LOW		2555	B-573	NCD lab-results phase: when both phases refer to the hospital, the lab-results Referral task reads done from the initial
 B-615	3	READY	LOW		2555	B-573	NCD initial phase: a pregnant woman with hypertension AND diabetes or renal complications is referred to ANC services on
 B-616	4	READY	LOW			B-595	NCD HIV test: a saved test whose follow-up signs are pending or absent reopens with all four questions answered No
+B-617	4	READY	LOW			B-584	Completion report immunisations: two doses of one vaccine entered with the same date lose the last dose, so the next dos
+B-618	4	READY	LOW			B-584	Completion report (NCD): a recurrent test due 6 or 12 months after one done on the 29th–31st may not be expected on the 
+B-619	4	READY	LOW			B-584	Completion report (Prenatal): a tetanus dose the app offers at once because the last dose was before this pregnancy is n
 G-01		READY				16	Photo-encoder dispatch guard (CI script)
 G-02		READY				16	Elm-version lockstep guard (CI script)
 G-03		READY				16	Prune 4 STALE NoDebug.TodoOrToString waivers
