@@ -8,6 +8,9 @@
 #       station, or "ready"
 #   bash .claude/skills/qa-tester/scripts/qa-watch.sh label <pr> ready|running|approved|followup|blocked
 #       gives the PR that QA label and removes the other QA labels
+#   bash .claude/skills/qa-tester/scripts/qa-watch.sh last-report <pr>
+#       prints "<comment-id> <tested-commit>" for this skill's newest report on the PR,
+#       or nothing when QA has not reported on it yet
 
 set -eu
 
@@ -63,8 +66,26 @@ case ${1:-} in
     gh api "repos/$repo/issues/$pr/labels" -f "labels[]=$want" --jq '[.[].name] | join(", ")'
     ;;
 
+  last-report)
+    pr=${2:?usage: $0 last-report <pr>}
+    caption='**Manual tests executed using the QA Tester skill**'
+    report=$(gh api --paginate "repos/$repo/issues/$pr/comments" \
+      | jq -s --arg c "$caption" 'add | map(select(.body | startswith($c))) | last // empty')
+    [ -n "$report" ] || exit 0
+    id=$(jq -r .id <<<"$report")
+    sha=$(jq -r .body <<<"$report" | sed -n 's/^Tested at `\([0-9a-f]\{7,40\}\)`.*/\1/p' | head -1)
+    # A report from before the "Tested at" line: the PR's last commit made before its last edit.
+    if [ -z "$sha" ]; then
+      at=$(jq -r .updated_at <<<"$report")
+      sha=$(gh api --paginate "repos/$repo/pulls/$pr/commits" 2>/dev/null \
+        | jq -rs --arg at "$at" 'add | map(select(.commit.committer.date <= $at)) | last | .sha // empty' | cut -c1-9)
+      [ -z "$sha" ] || sha="$sha (inferred)"
+    fi
+    echo "$id $sha"
+    ;;
+
   *)
-    sed -n '3,9p' "$0" >&2
+    sed -n '3,12p' "$0" >&2
     exit 1
     ;;
 esac
