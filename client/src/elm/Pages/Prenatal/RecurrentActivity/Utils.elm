@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, concludedLabsResultsValue, diagnosisRequiresEmergencyReferral, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, labsResultsTests, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault, withCompletedTestsFromMeasurements)
+module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, concludedLabsResultsValue, diagnosisRequiresEmergencyReferral, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, labsResultsTests, labsResultsValueOnResultSaved, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault, withCompletedTestsFromMeasurements)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
@@ -7,7 +7,7 @@ import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
-import Maybe.Extra exposing (isJust, or, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, or, unwrap)
 import Measurement.Model
     exposing
         ( InvokationModule(..)
@@ -267,6 +267,69 @@ concludedLabsResultsValue currentDate assembled results =
             else
                 value.reviewState
         , resolutionDate = currentDate
+    }
+
+
+{-| The labs entry after a test's result is saved. A lab technician's result
+asks the nurse for review; a nurse's save closes the entry once every performed
+test is completed.
+-}
+labsResultsValueOnResultSaved : NominalDate -> Bool -> AssembledData -> PrenatalLabsResults -> LaboratoryTest -> LabsResultsValue
+labsResultsValueOnResultSaved currentDate isLabTech assembled results test =
+    let
+        ( performedTests, completedTests ) =
+            labsResultsTests currentDate assembled results
+
+        value =
+            results.value
+
+        -- A result can be entered at point of care or later, after the test
+        -- was sent to the lab, so the test is added to both sets.
+        updatedPerformedTests =
+            EverySet.insert test performedTests
+
+        updatedCompletedTests =
+            EverySet.insert test completedTests
+
+        allCompleted =
+            allLabsCompleted updatedPerformedTests updatedCompletedTests
+
+        -- A lab technician's result for these tests leaves follow up
+        -- questions for the nurse.
+        updatedTestsWithFollowUp =
+            if isLabTech && List.member test [ TestHIV, TestSyphilis, TestPartnerHIV ] then
+                Maybe.map (EverySet.insert test >> Just) value.testsWithFollowUp
+                    |> Maybe.withDefault (Just <| EverySet.singleton test)
+
+            else
+                value.testsWithFollowUp
+
+        closedByNurse =
+            not isLabTech && allCompleted
+
+        reviewState =
+            if isLabTech && isNothing value.reviewState && allCompleted then
+                Just LabsResultsReviewRequested
+
+            else if closedByNurse then
+                Just LabsResultsReviewCompleted
+
+            else
+                value.reviewState
+
+        resolutionDate =
+            if closedByNurse then
+                currentDate
+
+            else
+                value.resolutionDate
+    in
+    { value
+        | performedTests = updatedPerformedTests
+        , completedTests = updatedCompletedTests
+        , testsWithFollowUp = updatedTestsWithFollowUp
+        , reviewState = reviewState
+        , resolutionDate = resolutionDate
     }
 
 
