@@ -27,7 +27,7 @@ import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
 import GeoLocation.Utils exposing (getGeoInfo, getGeoLocation)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffYears, formatYYYYMMDD)
 import Json.Decode
-import Maybe.Extra exposing (isNothing, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (decodeEntityUuid, fromEntityId, fromEntityUuid, toEntityId, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
@@ -261,9 +261,16 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
                         case (Form.getFieldAsString fieldName accum).value of
                             Nothing ->
                                 if levelAboveChanged then
-                                    -- The stored place sits under the old level above,
-                                    -- so the level is cleared and must be picked.
-                                    ( True, setLevel "" )
+                                    -- The related person's place sits under the old level
+                                    -- above, so it is cleared and must be picked. With no
+                                    -- related person, nothing is cleared before Save.
+                                    ( True
+                                    , if isJust maybeRelatedPerson then
+                                        setLevel ""
+
+                                      else
+                                        accum
+                                    )
 
                                 else
                                     ( False, unwrap accum setLevel storedId )

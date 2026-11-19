@@ -1421,4 +1421,38 @@ storedAddressComparison =
                             |> Form.getOutput
                             |> isJust
                             |> Expect.equal True
+        , onEverySite "a new registration with no related person: picking a province shows no level below it in error before Save" <|
+            -- With no related person nothing is stored, so picking a province
+            -- clears no level below it; those levels are checked at Save.
+            \site ->
+                withPlaces site <|
+                    \places ->
+                        let
+                            registration =
+                                CreatePerson Nothing
+
+                            validation =
+                                validatePerson site Nothing registration (Just saveDate)
+
+                            shown =
+                                [ typeText firstName "New"
+                                , typeText secondName "Person"
+                                , typeText birthDate "2024-03-10"
+                                , pick gender "male"
+                                , pick modeOfDelivery "cesarean-delivery"
+                                , pick province (placeId places.home.province)
+                                ]
+                                    |> List.foldl (Form.update validation) (emptyCreateForm site)
+                                    |> applyDefaultValuesForPerson saveDate
+                                        site
+                                        (reverseGeoInfoOn site)
+                                        Nothing
+                                        False
+                                        Nothing
+                                        registration
+                                        ParticipantDirectoryOrigin
+                        in
+                        [ district, sector, cell, village ]
+                            |> List.filter (\name -> isJust (Form.getFieldAsString name shown).liveError)
+                            |> Expect.equalLists []
         ]
