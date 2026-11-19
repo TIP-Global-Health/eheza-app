@@ -10806,7 +10806,8 @@ function hedley_reports_age_in_months_reached(DateTime $birth_date_obj, DateTime
 function hedley_reports_add_interval(DateTime $date_obj, $interval) {
   $result = clone $date_obj;
   if (!preg_match('/^\+(\d+) months?$/', $interval, $matches)) {
-    return $result->modify($interval);
+    $result->modify($interval);
+    return $result;
   }
 
   $day = (int) $date_obj->format('j');
