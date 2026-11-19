@@ -269,8 +269,8 @@ concludedLabsResultsValue currentDate assembled results =
 
 
 {-| The labs entry after a test's result is saved. A lab technician's result
-asks the nurse for review; a nurse's save closes the entry once every performed
-test is completed and every follow up question answered.
+requests review; a nurse's save closes the entry once all tests are completed
+and follow ups answered.
 -}
 labsResultsValueOnResultSaved : NominalDate -> Bool -> AssembledData -> PrenatalLabsResults -> LaboratoryTest -> LabsResultsValue
 labsResultsValueOnResultSaved currentDate isLabTech assembled results test =
