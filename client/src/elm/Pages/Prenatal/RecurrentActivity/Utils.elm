@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, concludedLabsResultsValue, diagnosisRequiresEmergencyReferral, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, labsResultsTests, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault, withCompletedTestsFromMeasurements)
+module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, concludedLabsResultsValue, diagnosisRequiresEmergencyReferral, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultNotPerformed, laboratoryResultTaskCompleted, labsResultsValueOnResultSaved, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault, withCompletedTestsFromMeasurements)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testPerformedByExecutionNote)
@@ -7,7 +7,7 @@ import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
-import Maybe.Extra exposing (isJust, or, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, or, unwrap)
 import Measurement.Model
     exposing
         ( InvokationModule(..)
@@ -93,9 +93,7 @@ activityCompleted currentDate isLabTech assembled activity =
 
         LabsResultsFollowUps ->
             (not <| expectActivity currentDate isLabTech assembled LabsResultsFollowUps)
-                || (resolveLaboratoryResultFollowUpsTasks assembled
-                        |> List.all (laboratoryResultFollowUpsTaskCompleted assembled)
-                   )
+                || laboratoryResultFollowUpsCompleted assembled
 
 
 laboratoryResultTasks : List LaboratoryTask
@@ -267,6 +265,75 @@ concludedLabsResultsValue currentDate assembled results =
             else
                 value.reviewState
         , resolutionDate = currentDate
+    }
+
+
+{-| The labs entry after a test's result is saved. A lab technician's result
+requests review; a nurse's save closes the entry once all tests are completed
+and follow ups answered.
+-}
+labsResultsValueOnResultSaved : NominalDate -> Bool -> AssembledData -> PrenatalLabsResults -> LaboratoryTest -> LabsResultsValue
+labsResultsValueOnResultSaved currentDate isLabTech assembled results test =
+    let
+        ( performedTests, completedTests ) =
+            labsResultsTests currentDate assembled results
+
+        value =
+            results.value
+
+        -- A result can be entered at point of care or later, after the test
+        -- was sent to the lab, so the test is added to both sets.
+        updatedPerformedTests =
+            EverySet.insert test performedTests
+
+        updatedCompletedTests =
+            EverySet.insert test completedTests
+
+        allCompleted =
+            allLabsCompleted updatedPerformedTests updatedCompletedTests
+
+        -- A lab technician's result for these tests leaves follow up
+        -- questions for the nurse.
+        updatedTestsWithFollowUp =
+            if isLabTech && List.member test [ TestHIV, TestSyphilis, TestPartnerHIV ] then
+                Maybe.map (EverySet.insert test >> Just) value.testsWithFollowUp
+                    |> Maybe.withDefault (Just <| EverySet.singleton test)
+
+            else
+                value.testsWithFollowUp
+
+        followUpsAnswered =
+            laboratoryResultFollowUpsCompleted assembled
+
+        -- The entry stays open while the nurse still has a lab technician's
+        -- follow up questions to answer.
+        closedByNurse =
+            not isLabTech && allCompleted && followUpsAnswered
+
+        -- Unanswered follow up questions reach the nurse through Review & Accept.
+        reviewState =
+            if isNothing value.reviewState && allCompleted && (isLabTech || not followUpsAnswered) then
+                Just LabsResultsReviewRequested
+
+            else if closedByNurse then
+                Just LabsResultsReviewCompleted
+
+            else
+                value.reviewState
+
+        resolutionDate =
+            if closedByNurse then
+                currentDate
+
+            else
+                value.resolutionDate
+    in
+    { value
+        | performedTests = updatedPerformedTests
+        , completedTests = updatedCompletedTests
+        , testsWithFollowUp = updatedTestsWithFollowUp
+        , reviewState = reviewState
+        , resolutionDate = resolutionDate
     }
 
 
@@ -477,6 +544,12 @@ laboratoryResultFollowUpsTasks =
 resolveLaboratoryResultFollowUpsTasks : AssembledData -> List LaboratoryTask
 resolveLaboratoryResultFollowUpsTasks assembled =
     List.filter (expectLaboratoryResultFollowUpsTask assembled) laboratoryResultFollowUpsTasks
+
+
+laboratoryResultFollowUpsCompleted : AssembledData -> Bool
+laboratoryResultFollowUpsCompleted assembled =
+    resolveLaboratoryResultFollowUpsTasks assembled
+        |> List.all (laboratoryResultFollowUpsTaskCompleted assembled)
 
 
 laboratoryResultFollowUpsTaskCompleted : AssembledData -> LaboratoryTask -> Bool
