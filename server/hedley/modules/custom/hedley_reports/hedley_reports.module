@@ -9487,22 +9487,12 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
         !hedley_reports_prenatal_mebendazole_given_previously($encounter_data) &&
         !hedley_reports_prenatal_mebendazole_administered($encounter_data['measurements_by_type'])
       ) {
-        // Required, unless at this visit the patient reported receiving it.
-        $received = FALSE;
+        // Required once Treatment Review says what the patient received, and
+        // it is not Mebendazole. A first visit has no Treatment Review, so it
+        // is never required there.
         $medication_measurement = $encounter_data['measurements_by_type']['medication'];
-        if (!empty($medication_measurement)) {
-          $medications = $medication_measurement->field_medication[LANGUAGE_NONE];
-          if (!empty($medications)) {
-            foreach ($medications as $sign) {
-              if ($sign['value'] == 'mebendezole') {
-                $received = TRUE;
-                break;
-              }
-            }
-          }
-        }
-
-        if (!$received) {
+        $medications = empty($medication_measurement->field_medication[LANGUAGE_NONE]) ? [] : array_column($medication_measurement->field_medication[LANGUAGE_NONE], 'value');
+        if (!empty($medications) && !in_array('mebendezole', $medications)) {
           return TRUE;
         }
       }
