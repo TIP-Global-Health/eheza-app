@@ -923,7 +923,7 @@ $criterion = 'Other medicines at a first visit, such as anaemia, HIV and gonorrh
 // the @ keeps PHP's notice about it out of the output.
 foreach ([30, 20] as $ega_weeks) {
   assert_same(
-    @distribution_expected(with_diagnoses(nurse_follow_up_visit($ega_weeks, []), ['anemia'])),
+    distribution_expected(with_diagnoses(nurse_follow_up_visit($ega_weeks, []), ['anemia'])),
     TRUE,
     "guard: $criterion: moderate anaemia at a first visit at $ega_weeks weeks",
     $passed,

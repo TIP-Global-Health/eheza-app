@@ -9453,7 +9453,7 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
     ['anemia', 'anemia-initial']
   );
   if ($moderate_anemia_diagnosed) {
-    $treatments = $medication_measurement->field_anemia_treatment[LANGUAGE_NONE];
+    $treatments = empty($medication_measurement->field_anemia_treatment[LANGUAGE_NONE]) ? [] : $medication_measurement->field_anemia_treatment[LANGUAGE_NONE];
     if (!empty($treatments)) {
       $referred = FALSE;
       foreach ($treatments as $treatment) {
@@ -9490,8 +9490,8 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
         // Required once Treatment Review says what the patient received, and
         // it is not Mebendazole. A first visit has no Treatment Review, so it
         // is never required there.
-        $medication_measurement = $encounter_data['measurements_by_type']['medication'];
-        $medications = empty($medication_measurement->field_medication[LANGUAGE_NONE]) ? [] : array_column($medication_measurement->field_medication[LANGUAGE_NONE], 'value');
+        $signs = empty($medication_measurement->field_medication[LANGUAGE_NONE]) ? [] : $medication_measurement->field_medication[LANGUAGE_NONE];
+        $medications = array_column($signs, 'value');
         if (!empty($medications) && !in_array('mebendezole', $medications)) {
           return TRUE;
         }
