@@ -8,7 +8,7 @@ metadata:
   modified: 2026-09-14
 ---
 
-⏰ **Monitoring due — raise at the start of the survey on or after the date:** **B-514** 2026-11-19 (rerun the recurrence query in the entry on ihangane + vhw; user 2026-10-29: mention it when process-backlog runs that day) · **B-499** 2026-11-24 (second restore pass; harness lost, rebuild first).
+⏰ **Monitoring due — raise at the start of the survey on or after the date:** **B-514** 2026-12-19 (rerun the recurrence query in the entry on ihangane + vhw; none found 2026-11-19; user 2026-11-19: "keep monitoring for another 30 days") · **B-499** 2026-11-24 (second restore pass; harness lost, rebuild first).
 
 ✅ **Merged 2026-11-19 (user: "merge #2551, #2555 and #2557 now"), merge commits, fix and `-tests` branches deleted, all Approved by QA:** #2555 `941f3b4fc` (B-573, issue #2553), #2557 `de7f7538f` (B-603, issue #2552), #2551 `b7f1b342e` (B-608, issue #2550). #2551 conflicted with #2547 in `Pages/Prenatal/Activity/Test.elm` (both appended a section, plus one import line); resolved by a develop merge (`1dd197798`) keeping both, PR diff unchanged; elm make, elm-review, 5,576 elm-tests green locally, pushed `[ci skip]`. Issues stay open until the release sweep. ⏳ **#2556 (B-605) still open:** first QA run FAILED 2026-11-18 (a new registration with no related person turned the lower address levels red on picking a Province); fixed in `ef3638dd7` 2026-11-19, QA re-running, CI running.
 
