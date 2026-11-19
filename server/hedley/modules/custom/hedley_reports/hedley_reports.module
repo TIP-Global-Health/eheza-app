@@ -10790,10 +10790,10 @@ function hedley_reports_age_in_months_reached(DateTime $birth_date_obj, DateTime
 }
 
 /**
- * Moves a copy of a date by an interval, such as '+6 months' or '+4 weeks'.
+ * Adds an interval such as '+6 months' to a copy of a date.
  *
- * Months stop on the last day of a shorter month, as the app does: 2025-08-31
- * plus 6 months is 2026-02-28.
+ * Months stop on a shorter month's last day: 2025-08-31 plus 6 months is
+ * 2026-02-28.
  *
  * @param DateTime $date_obj
  *   The date to start from. It is not changed.
