@@ -1025,3 +1025,27 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** register, a 100 s recorded preparation and a 40 s test in one call passed the 120 s limit and moved to the background (PR #2559).
 - **Wrong conclusion:** none; its completion notice came, but the same pit as "A long chain of driver commands in one Bash call".
 - **Rule:** any chain with a recorded preparation goes in `run_in_background` from the start.
+
+## Dropping a photo the moment its form opens
+
+- **Symptom:** the first `uploadTestPhoto` on a group child's Photo form did not take, and raised "Cannot read properties of null (reading 'files')"; the second drop worked (PR #2565, three fixtures).
+- **Wrong conclusion:** the PR's sync change breaks the photo widget.
+- **Rule:** the app binds the Dropzone about 500 ms after the form opens (`waitForElement`), the same moment `openActivity` returns. A drop before that lands on the hidden input left by the registration form's Dropzone. Wait a second after opening any photo form.
+
+## A hold counter left from an earlier command
+
+- **Symptom:** "record upload in flight" passed at once, the scenario opened the child page before any upload, and `st.release()` then failed.
+- **Wrong conclusion:** the upload was held as planned.
+- **Rule:** the same pit as "A global set in an earlier driver command". Reset every counter a scenario checks (`heldCount = 0`) at the top of that scenario.
+
+## Saving a photo at a fast sync speed on an individual visit
+
+- **Symptom:** with `syncSpeed` idle 3000, a develop Nutrition photo reached the server without its image although nothing was held.
+- **Wrong conclusion:** the hold row fails, or the photo upload is broken.
+- **Rule:** a cycle runs every 3 s, so a save often lands in the gap between the photo and record uploads, which drops the image on every build (B-610's short window). For a photo meant to go up whole, save just after a cycle's statistics GET.
+
+## Blaming the build for a 404 on a new profile photo
+
+- **Symptom:** recorded PR runs showed a 404 for `styles/person-photo/…/<new image>` straight after the sync; unrecorded develop runs did not.
+- **Wrong conclusion:** the PR's server change breaks the photo copy.
+- **Rule:** a recorded run with develop's server files showed the same 404, and the image loaded moments later. Before calling an error the PR's, rerun with only the suspect half swapped back and the same recording settings.

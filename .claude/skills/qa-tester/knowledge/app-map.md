@@ -138,6 +138,12 @@ flag simply does not appear.
   phase, which is not a download: let it through. The request times out at 30 s, so hold under 25 s.
   localStorage `syncSpeed` `{"idle":3000,"cycle":50,"offline":30000}`, then a reload, runs a cycle
   every ~3 s, so a GET is held within a few seconds.
+- **Holding an upload in flight**: the same `context.route(/\/api\/sync/)` catches the main-thread `POST /api/sync`; hold the one whose
+  `postData()` holds `"type":"<bundle>"` (`family_planning`, `nutrition_height`, `aheza_child`). A photo goes up as `POST /api/file-upload`, then
+  its record carries `"photo": <fid>`; a record sent before its file has no `photo` key.
+- A cycle's last request is the statistics GET (`stats_cache_hash=`); acting just after it lands between two cycles.
+- Group photo pages (a child's page, the bulk Photo page): sync is held there. Opened while sync is idle, nothing is sent during the visit;
+  leaving starts a cycle with the photos first. Opened while a health-centre download is in flight, the download is re-sent about 20 times a second (B-621).
 - A server edit of a measurement (`entity_metadata_wrapper` save) reached an open encounter page
   about 7 s later with that sync speed.
 - **Relationships load slowly after a fresh pairing.** A person page can show "Family
@@ -223,9 +229,10 @@ flag simply does not appear.
   (nid); `node_revision` rows count the saves.
 - An address edit propagates to children only if each child is loaded: open the child's own
   person page first, then go back and edit the parent.
-- Saving a photo measurement also sets the **person's** photo, server-side
-  (`HedleyRestful*Photos`, around line 104). Re-read a person's photo fid after any photo
-  activity before asserting on it.
+- Saving a group, Nutrition, Well Child or Family Nutrition photo also sets the **person's** photo, server-side
+  (`HedleyRestful*Photos`; prenatal does not). Re-read a person's photo fid after any photo activity before asserting on it.
+  PR #2565 keeps the person's photo when the record arrives without an image, and logs "Photo measurement … was saved without a photo".
+- A person's photo history: `field_revision_field_photo` joined to `node_revision` by vid shows each revision's fid (empty = cleared).
 - **GPS** (flag `gps_coordinates`, on locally): create and edit forms show a "GPS Info:" section.
   With a fix it reads "GPS Location: <lat> , <lng>" plus a Save GPS Location checkbox
   (`fieldset.gps-info input[type=checkbox]`); without one, only the heading. The registration
@@ -610,6 +617,10 @@ flag simply does not appear.
 - **The five-minute forget**: data a page asked for is dropped five minutes after no page asks for it (`CheckDataWanted`,
   `App/Update.elm`). Reloads are `/sw/nodes/person/<uuid>`, `child-measurements/<uuid>`, `relationship?person=<uuid>`;
   `page.context().on('request')` shows which person's data a step reloads.
+- Child's Photo in a group session: mother's page → `ul.links-body li:has(.icon-baby)` → `h.groupSession.openActivity(page, 'Photo')`; Save is
+  `#save-form`. The bulk Photo page is the Activities page's `.icon-task-photo`, which moves to the Completed tab once every checked-in child has a photo.
+- Individual visit photo: `h.common.openActivity(page, '<nutrition|well-child>', 'photo')`; Family Nutrition (CHW): `.link-section:has(.icon-activity-task.icon-photo)`
+  after `selectFamilyMember(page, 1)` picks the child.
 - Group activity page (activities icon in the header → a card's `.icon-task-<name>`; Child Scorecard is
   `icon-task-history`, nurse only, and first asks "YES, PROCEED / NO, SKIP" on the activities page). Children are
   `.participant.card` (the shown one `.active`), in uuid order, not registration order; tabs are `.ui.tabular.menu .item`.
