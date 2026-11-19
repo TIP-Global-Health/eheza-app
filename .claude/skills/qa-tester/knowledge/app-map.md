@@ -328,6 +328,10 @@ flag simply does not appear.
   `.form-input.number.beverages`, smoking Yes reveals `.form-input.number.cigarettes`.
 - Labs history: on a subsequent prenatal encounter, Laboratory shows only the History task
   while earlier labs are pending; each row's UPDATE opens `#prenatal-labs-history/...`.
+- Light prenatal lab fixture: Pregnancy Dating + Danger Signs + Laboratory is enough for diagnoses and an ANC Labs entry; the visit can stay open. `completeLaboratoryNurseForLab(page, { hivPointOfCareNegative: true, onlyTabs: ['Partner HIV', 'HIV'] })`,
+  `.icon-back`, then `completeLaboratoryNurse(page)` answers the rest No (~30 s with registration).
+- Partner HIV result forms (Lab Results, labs history, visit point of care): `.form-input.yes-no.partner-taking-arv`, then `partner-surpressed-viral-load` after Yes; both sit below the 1024 px fold.
+  A result entered through labs history stores `partner-hiv-recurrent` on the earlier visit the test belongs to.
 - Prenatal HIV PCR is offered only at a visit after one where HIV was found positive (or known
   positive). Its question "Are there less than 20 copies/mm3?" is `.form-input.yes-no.hiv-level-undetectable`;
   No shows the input `.form-input.measurement.hiv-viral-load`. Partner HIV, HIV and HIV PCR tabs share
@@ -683,6 +687,9 @@ flag simply does not appear.
 - After entering results, the lab technician lands on the progress report (SUBMIT RESULTS / EDIT RESULTS); Submit
   returns to Case Management. The nurse's Review & Accept saves the tablet's whole copy, changing only the review state.
 - Every save of a labs entry sets its `date_measured` to the save day.
+- A nurse's save of any prenatal lab test, a re-save of a visit's Laboratory tab included, sets the entry `review_state: completed` and `date_concluded` to today once every performed test is complete,
+  even while `tests_with_follow_up` is still pending. The entry then leaves ANC Labs, and Lab Results Follow Ups can no longer be reached (PR #2559, both builds).
+- The lab technician can enter results while the nurse's visit is still open; the nurse's entry then reads READY FOR REVIEW. A Positive partner or HIV result stores `hiv_signs: [pending-input]`.
 - Each save of a labs entry is a server revision: read `field_revision_field_completed_tests`,
   `field_revision_field_review_state` and `field_revision_field_date_concluded` by `revision_id` from `node_revision`.
 - **NCD Labs** lists an encounter while today is before its results record's resolution date

@@ -1013,3 +1013,15 @@ to driving through the Chrome extension are in `chrome-extension.md`.
 - **Symptom:** `ddev drush scr <scratchpad>/lost.php` failed four times with only `exit status 1` (PR #2556 re-test).
 - **Wrong conclusion:** the script or the person lookup is broken.
 - **Rule:** ddev runs drush in its container, which sees only the project. Copy the script into `client/qa-recordings/.driver/` and pass `/var/www/html/client/qa-recordings/.driver/<file>`.
+
+## Reopening Lab Results through Case Management after its last save
+
+- **Symptom:** a proof-2 script waited 10 s for the woman's ANC Labs entry right after her only Lab Results save, and left a dead video (PR #2559).
+- **Wrong conclusion:** the entry or the save was lost.
+- **Rule:** a nurse's lab save that completes every performed test closes the entry that day. Read the result back through the visit (participant page → visit → Reports) or the server, not Case Management.
+
+## A setup and a recording chained in one foreground Bash call (met again)
+
+- **Symptom:** register, a 100 s recorded preparation and a 40 s test in one call passed the 120 s limit and moved to the background (PR #2559).
+- **Wrong conclusion:** none; its completion notice came, but the same pit as "A long chain of driver commands in one Bash call".
+- **Rule:** any chain with a recorded preparation goes in `run_in_background` from the start.
