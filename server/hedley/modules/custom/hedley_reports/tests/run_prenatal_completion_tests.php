@@ -918,9 +918,7 @@ foreach (['chw-1', 'chw-2', 'chw-3', 'chw-postpartum'] as $type) {
 // Criterion 7.
 $criterion = 'Other medicines at a first visit, such as anaemia, HIV and gonorrhea treatment, are charged as before';
 
-// At a first visit there is no Treatment Review record, and the moderate
-// anaemia rule reads its anaemia treatment answers off that missing record;
-// the @ keeps PHP's notice about it out of the output.
+// At a first visit there is no Treatment Review record.
 foreach ([30, 20] as $ega_weeks) {
   assert_same(
     distribution_expected(with_diagnoses(nurse_follow_up_visit($ega_weeks, []), ['anemia'])),
